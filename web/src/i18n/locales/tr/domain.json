@@ -338,6 +338,30 @@
     "many_one": "{{count}} başvurunun altında dosyalı",
     "many_other": "{{count}} başvurunun altında dosyalı"
   },
+  "picked": {
+    "two": "{{a}} ve {{b}}",
+    "many_one": "{{count}} başvuru",
+    "many_other": "{{count}} başvuru"
+  },
+  "twinOffer": {
+    "unnamed": "o belge",
+    "title": "{{first}} okunup profilinize eklensin mi?",
+    "titleMore_one": "{{first}} ve {{count}} belge daha okunup profilinize eklensin mi?",
+    "titleMore_other": "{{first}} ve {{count}} belge daha okunup profilinize eklensin mi?",
+    "body": "jojo içeriği okuyacak ve belirttiği bilgileri — derecelerinizi, görevlerinizi, yayınlarınızı ve becerilerinizi — kaydedecek; böylece bir ilanı gerçekten yaptıklarınızla karşılaştırabilecek. Eklenen her kayıt size önce gösterilir ve hangi belgeden geldiğini belirtir."
+  },
+  "duplicate": {
+    "id": "Bu ilanın kimliği zaten {{name}} üzerinde kayıtlı.",
+    "url": "Bu ilanı zaten {{name}} olarak kaydettiniz.",
+    "name": "{{name}} zaten sizde var."
+  },
+  "captureRejected": {
+    "not-a-page": "Bu bir sayfa olarak dönmedi.",
+    "bad-source": "Bir ilanın adresi http ya da https olmalıdır.",
+    "empty": "Sayfa boş döndü — yüklenmesi bitmemiş olabilir.",
+    "too-large": "Bu sayfa saklanamayacak kadar büyük. Görseller yüklendikten sonra yeniden deneyin.",
+    "leaks": "Kopya hâlâ geldiği siteye işaret ediyor, bu yüzden saklanmadı."
+  },
   "readBy": "Okuyan: {{model}} · {{ago}}",
   "missingSource": "artık Kasa'da olmayan bir belge",
   "undo": {

@@ -130,6 +130,7 @@
       "profile": "マイプロフィール",
       "assistant": "アシスタント",
       "settings": "設定"
-    }
+    },
+    "showAll_other": "すべて表示（{{count}} 件）"
   }
 }

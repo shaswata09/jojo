@@ -8,6 +8,7 @@ import type { SheetName } from '@/lib/sheets-context'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
 import { i18next } from '@/i18n/i18n'
+import { toTab } from '@/navigation/to-tab'
 
 export type CreateAction = {
   id: string
@@ -178,10 +179,7 @@ export function useRunCreateAction() {
     (action: CreateAction) => {
       if (action.sheet) open(action.sheet.name, action.sheet.props)
       else if (action.tab) {
-        navigation.navigate('Tabs', {
-          screen: action.tab.screen,
-          params: action.tab.params,
-        } as never)
+        toTab(navigation, action.tab.screen, action.tab.params as never)
       } else if (action.screen) navigation.navigate(action.screen as never)
     },
     [open, navigation],

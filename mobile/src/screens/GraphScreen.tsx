@@ -34,6 +34,7 @@ import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { toTab } from '@/navigation/to-tab'
 
 /** Enough to see the shape of the answer without turning a panel into a list view. */
 const PATTERN_SHOWN = 8
@@ -152,21 +153,23 @@ export function GraphScreen() {
       return
     }
     if (node.type === 'item') {
-      navigation.navigate('Tabs', {
-        screen: 'Vault',
-        params: { tool: 'reminders', focus: node.recordId },
-      })
+      // Every timeline item is a node, events included, and the Vault lists
+      // only reminders: an interview sent there landed on a list without it.
+      // The calendar's day holds both kinds, which is where the web sends it.
+      const item = timeline.find((i) => i.id === node.recordId)
+      if (item && !item.remind) toTab(navigation, 'Calendar', { date: item.date, focus: item.id })
+      else toTab(navigation, 'Vault', { tool: 'reminders', focus: node.recordId })
       return
     }
     if (node.type === 'file' || node.type === 'link' || node.type === 'snippet') {
-      navigation.navigate('Tabs', {
-        screen: 'Vault',
-        params: { tool: `${node.type}s` as 'files' | 'links' | 'snippets' },
+      toTab(navigation, 'Vault', {
+        tool: `${node.type}s` as 'files' | 'links' | 'snippets',
+        focus: node.recordId,
       })
       return
     }
     if (node.type === 'match' || node.type === 'posting') {
-      navigation.navigate('JobScout')
+      navigation.navigate('JobScout', { focus: { kind: node.type, id: node.recordId } })
     }
   }
 

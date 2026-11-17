@@ -26,6 +26,7 @@ import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
 import type { FileBucket } from '@/data/vault'
 import { dragAnnouncements, dragInstructions } from '@/components/common/drag-announcements'
+import { fileBucketLabel } from '@/components/vault/files/bucket-label'
 
 /**
  * One arrow press, one position.
@@ -151,7 +152,7 @@ export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
             count: sources.reduce((n, source) => n + source.pages.length, 0),
           }),
           documents: t('pdf.merge.documents', { count: sources.length }),
-          bucket,
+          bucket: fileBucketLabel(bucket),
         }),
       })
       setRows([])

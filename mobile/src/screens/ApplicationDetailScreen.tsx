@@ -25,7 +25,7 @@ import { NoteText } from '@/components/ui/NoteText'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { ACTION_PHRASES } from '@jojo/service/core/domain-text'
 import type { NodeId } from '@jojo/service/core/model'
-import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@jojo/service/data/seed'
+import { STAGE_LABEL, displayName, offerDaysLeft } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
 import { bucketOf, compareItems, timeLabel } from '@jojo/service/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
@@ -44,6 +44,8 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space, type } from '@/theme/tokens'
 import { useDomain } from '@/i18n/domain'
+import { toTab } from '@/navigation/to-tab'
+import { Icon } from '@/components/ui/Icon'
 
 /**
  * One application, at its own address.
@@ -73,7 +75,9 @@ export function ApplicationDetailScreen() {
               <Button
                 label={t('detail.missing.back')}
                 variant="outline"
-                onPress={() => navigation.goBack()}
+                onPress={() =>
+                  navigation.canGoBack() ? navigation.goBack() : toTab(navigation, 'Applications')
+                }
               />
             }
           />
@@ -451,7 +455,7 @@ function Detail({ application: a }: { application: Application }) {
                   <Txt size="base" tone="info" style={s.fill} numberOfLines={1}>
                     {f.value}
                   </Txt>
-                  <Feather name="chevron-right" size={14} color={c.info} />
+                  <Icon name="chevron-right" size={14} color={c.info} />
                 </Pressable>
               ) : (
                 <Txt size="base">{f.value}</Txt>
@@ -666,6 +670,7 @@ function OfferBlock({
   settled?: Outcome
 }) {
   const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const offer = a.offer!
   // Second argument required, and see the note in `lib/priority.ts`.
@@ -691,7 +696,7 @@ function OfferBlock({
       </PanelTitle>
 
       <Txt size="xl" weight="semibold" tone={tone}>
-        {t('detail.offer.respondBy', { date: respondByLabel(offer) })}
+        {t('detail.offer.respondBy', { date: domain.shortDate(offer.respondBy) })}
       </Txt>
       {offer.comp ? (
         <Txt size="base" tone="secondary" style={{ marginTop: space[1] }}>

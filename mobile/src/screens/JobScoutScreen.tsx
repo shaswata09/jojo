@@ -40,6 +40,7 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 /** Fit bands. A number alone doesn't say whether 64 is good. */
 const fitTone = (fit: number) => (fit >= 80 ? 'green' : fit >= 60 ? 'amber' : 'gray')
@@ -189,9 +190,13 @@ export function JobScoutScreen() {
     <Screen
       title={t('jobScout.title')}
       subtitle={t('jobScout.subtitle')}
-      focus={route.params?.section}
+      // A record (a match or a saved posting, from search or the graph) or a
+      // panel; the record rows are FocusTargets keyed by their id.
+      focus={route.params?.focus?.id ?? route.params?.section}
       openOptions={route.params?.options === true}
-      onArrived={() => navigation.setParams({ section: undefined, options: undefined })}
+      onArrived={() =>
+        navigation.setParams({ focus: undefined, section: undefined, options: undefined })
+      }
       actions={
         <Button label={t('applications.new')} icon="plus" onPress={() => setEditing('new')} />
       }
@@ -391,7 +396,7 @@ export function JobScoutScreen() {
             const application = m.applicationId ? get(m.applicationId) : undefined
             const fit = fitOf(profile, m.role, m.detail)
             return (
-              <View key={m.id}>
+              <FocusTarget key={m.id} id={m.id}>
                 {i > 0 ? <Divider /> : null}
                 <View style={styles.matchRow}>
                   <View style={s.fill}>
@@ -455,7 +460,7 @@ export function JobScoutScreen() {
                     )}
                   </View>
                 </View>
-              </View>
+              </FocusTarget>
             )
           })
         )}
@@ -493,7 +498,7 @@ export function JobScoutScreen() {
             postings.map((p, i) => {
               const application = p.applicationId ? get(p.applicationId) : undefined
               return (
-                <View key={p.id}>
+                <FocusTarget key={p.id} id={p.id}>
                   {i > 0 ? <Divider /> : null}
                   <View style={styles.matchRow}>
                     <Pressable
@@ -540,7 +545,7 @@ export function JobScoutScreen() {
                       />
                     </View>
                   </View>
-                </View>
+                </FocusTarget>
               )
             })
           )}

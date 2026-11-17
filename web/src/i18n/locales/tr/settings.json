@@ -233,7 +233,8 @@
     "errors": {
       "taken": "Başka bir anahtar kelime zaten bu adı taşıyor.",
       "blank": "Bir anahtar kelimenin adı olmalı.",
-      "exists": "Bu anahtar kelime zaten var."
+      "exists": "Bu anahtar kelime zaten var.",
+      "tooLong": "En fazla {{max}} karakter olmalı."
     },
     "renameNamed": "Yeniden adlandır: {{name}}",
     "rename": "Yeniden adlandır",

@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Tampilkan {{label}}",
-    "hide": "Sembunyikan {{label}}"
+    "hide": "Sembunyikan {{label}}",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Semua seri dimatikan di legenda.",

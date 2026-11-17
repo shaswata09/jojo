@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Hiện {{label}}",
-    "hide": "Ẩn {{label}}"
+    "hide": "Ẩn {{label}}",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Mọi chuỗi dữ liệu đều đang tắt trong chú giải.",

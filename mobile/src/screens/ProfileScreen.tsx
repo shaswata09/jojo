@@ -26,6 +26,7 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { BackgroundPanel } from '@/components/profile/BackgroundPanel'
 import { useDomain } from '@/i18n/domain'
+import { toTab } from '@/navigation/to-tab'
 
 /** The bucket a profile document belongs to, in the Vault's own vocabulary. */
 const DOCUMENTS_BUCKET = 'Applications' as const
@@ -347,9 +348,7 @@ export function ProfileScreen() {
                   <Button
                     label={t('profile.documents.openVault')}
                     variant="outline"
-                    onPress={() =>
-                      navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'files' } })
-                    }
+                    onPress={() => toTab(navigation, 'Vault', { tool: 'files' })}
                   />
                 </>
               }

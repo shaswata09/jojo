@@ -59,6 +59,7 @@ export function LinkRow({
         <button
           type="button"
           onClick={onEdit}
+          dir="auto"
           /* `hover:underline` as well as the colour. In the dark theme
              --accent and --text-1 are the same #fafafa (see index.css), so the
              colour change alone painted nothing — which is also why the

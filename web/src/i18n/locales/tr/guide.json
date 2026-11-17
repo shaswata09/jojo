@@ -612,5 +612,6 @@
       "order": "Sıralama tesadüf değil, bir gerekçedir: herkes ilk sayfadan sonra durup uygulamayı kullanabilir ve herkes doğrudan sonuncusuna atlayabilir.",
       "address": "<lead>Adres çubuğu</lead> sayfanın kendisidir. İlk sayfa <code>/guide/overview</code> değil <code>/guide</code>'dır; böylece dört sayfa olmadan önce alınan her bağlantı ve yer imi hâlâ gerçek bir yere çıkar."
     }
-  }
+  },
+  "englishOnly": "Bu sayfa İngilizcedir: kodu, paketleri ve lisans koşullarını yazıldıkları sözcüklerle adlandırır."
 }

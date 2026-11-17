@@ -338,6 +338,30 @@
     "many_one": "abgelegt unter {{count}} Bewerbung",
     "many_other": "abgelegt unter {{count}} Bewerbungen"
   },
+  "picked": {
+    "two": "{{a}} und {{b}}",
+    "many_one": "{{count}} Bewerbung",
+    "many_other": "{{count}} Bewerbungen"
+  },
+  "twinOffer": {
+    "unnamed": "dieses Dokument",
+    "title": "{{first}} in dein Profil einlesen?",
+    "titleMore_one": "{{first}} und {{count}} weiteres in dein Profil einlesen?",
+    "titleMore_other": "{{first}} und {{count}} weitere in dein Profil einlesen?",
+    "body": "jojo liest den Inhalt und hält die darin genannten Fakten fest – deine Abschlüsse, Stellen, Publikationen und Fähigkeiten –, damit es eine Stellenanzeige an dem messen kann, was du tatsächlich gemacht hast. Jeder Eintrag wird dir vorher gezeigt und nennt das Dokument, aus dem er stammt."
+  },
+  "duplicate": {
+    "id": "Die ID dieser Anzeige ist bereits bei {{name}} hinterlegt.",
+    "url": "Du hast diese Anzeige bereits als {{name}} gespeichert.",
+    "name": "Du hast bereits {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Das kam nicht als Seite zurück.",
+    "bad-source": "Eine Anzeige muss eine http- oder https-Adresse haben.",
+    "empty": "Die Seite kam leer zurück – vielleicht war sie noch nicht fertig geladen.",
+    "too-large": "Diese Seite ist zu groß zum Aufbewahren. Versuch es noch einmal, wenn alle Bilder geladen sind.",
+    "leaks": "Die Kopie verweist noch auf die Website, von der sie stammt, und wurde deshalb nicht aufbewahrt."
+  },
   "readBy": "Gelesen von {{model}} · {{ago}}",
   "missingSource": "ein Dokument, das nicht mehr im Tresor liegt",
   "undo": {

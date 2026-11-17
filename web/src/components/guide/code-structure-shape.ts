@@ -58,8 +58,8 @@ export const SHAPE: DirRow[] = [
     // Four more on 2026-11-16 (i18n): `domain-text.ts` and `advice-text.ts`
     // with a test each — the model's own words in any language, the translator
     // passed in, the English held to core's word for word.
-    files: 190,
-    tests: 79,
+    files: 193,
+    tests: 80,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -99,7 +99,7 @@ export const SHAPE: DirRow[] = [
     // application a conversation is about, so "this one" has a referent.
     // `record-query.ts` and its test: filter, sort, group and add up over a
     // record's stored and derived fields, for `memory.list`.
-    files: 103,
+    files: 104,
     tests: 41,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
@@ -187,9 +187,9 @@ export const SHAPE: DirRow[] = [
     // `diagrams/StackDiagram.tsx`.
     // `transfer/PairingQrCard.tsx`: the pairing key as a QR code (Q329), in
     // place of `PulseOverlay.tsx` and `pulse-paint.ts` and its test.
-    files: 495,
-    tests: 137,
-    lines: 72307,
+    files: 502,
+    tests: 139,
+    lines: 74745,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -239,8 +239,8 @@ export const SHAPE: DirRow[] = [
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
     // 217 with `search-places.ts` — every setting, profile field and place the
     // search palette can reach — its completeness guard, and the arrival test.
-    files: 217,
-    tests: 99,
+    files: 221,
+    tests: 102,
     lines: 37400,
     what: 'web-only adapters and URL state',
   },
@@ -271,4 +271,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 257
+export const WEB_TEST_FILES = 263

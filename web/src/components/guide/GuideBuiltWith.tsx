@@ -17,6 +17,7 @@ import {
   type Credit,
 } from '@/components/guide/credits'
 import { useTitle } from '@/lib/links'
+import { EnglishOnlyNotice } from '@/components/guide/EnglishOnlyNotice'
 
 /**
  * Page 4 — acknowledgements, plus the few repo facts a contributor needs first.
@@ -54,6 +55,7 @@ export function GuideBuiltWith() {
         title="Built with"
         subtitle="The open-source work jojo is made of, and how the code around it is arranged."
       />
+      <EnglishOnlyNotice />
 
       <Panel>
         <PanelTitle hint="read from node_modules, not from package.json">

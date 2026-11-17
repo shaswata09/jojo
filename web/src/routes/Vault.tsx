@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { LabelFilter } from '@/components/common/LabelFilter'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
@@ -51,7 +52,10 @@ export function Vault() {
   // The highlight is an arrival cue, not a selection: it fades and takes the
   // parameter with it, so a copied URL and the Back stack stop carrying a row
   // nobody is looking at any more.
-  useArrivalHighlight(focus, () => set({ focus: undefined }))
+  // The navigation's key, so picking the same result again re-lights the row
+  // rather than leaving the first arrival's nearly-faded tint on it.
+  const { key: arrival } = useLocation()
+  useArrivalHighlight(focus, () => set({ focus: undefined }), arrival)
   const { reminders } = useTimeline()
   const { links, files, snippets, people } = useVault()
   // Counts in the subtitle are informative but noisy on a narrow screen.

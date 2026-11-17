@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Ref } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +17,24 @@ import { KIND_ICON } from '@/lib/timeline-visuals'
 import { cn } from '@/lib/utils'
 import { useDomain } from '@/i18n/domain'
 
-export function ReminderRow({
+/**
+ * Memoized, with `related` compared by its members: the tool builds that array
+ * afresh each render, while the records in it keep their identity across
+ * commits. Ticking one row then re-renders that row, not the list.
+ */
+export const ReminderRow = memo(
+  ReminderRowView,
+  (a, b) =>
+    a.item === b.item &&
+    a.focused === b.focused &&
+    a.rowRef === b.rowRef &&
+    a.transit === b.transit &&
+    a.actions === b.actions &&
+    a.related.length === b.related.length &&
+    a.related.every((app, i) => app === b.related[i]),
+)
+
+function ReminderRowView({
   item,
   related,
   focused,
@@ -119,6 +137,7 @@ export function ReminderRow({
             <button
               type="button"
               onClick={() => actions.edit(item)}
+              dir="auto"
               className={cn(
                 // `hover:underline` as well as the colour. In the dark theme
                 // --accent and --text-1 are the same #fafafa (see index.css),

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
-import { applicationsLabel, displayName } from '@jojo/service/data/seed'
+import { displayName } from '@jojo/service/data/seed'
+import { useDomain } from '@/i18n/domain'
 import { useApplications } from '@/lib/store-context'
 
 /**
@@ -118,6 +119,8 @@ export function ApplicationField({
   hint: string
 }) {
   const { t } = useTranslation('components')
+  // The label in the language on screen; `applicationsLabel` is its English.
+  const domain = useDomain()
   const { byId } = useApplications()
   const [open, setOpen] = useState(false)
 
@@ -131,7 +134,9 @@ export function ApplicationField({
           it in. */}
       <FormField label={t('picker.title')} hint={hint}>
         <Button
-          label={chosen.length === 0 ? t('picker.notLinked') : applicationsLabel(chosen)}
+          label={
+            chosen.length === 0 ? t('picker.notLinked') : domain.picked(chosen.map(displayName))
+          }
           variant="outline"
           size="md"
           full

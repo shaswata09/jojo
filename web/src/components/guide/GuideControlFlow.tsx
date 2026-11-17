@@ -15,6 +15,7 @@ import {
 } from '@/components/guide/flow-map'
 import { useTitle } from '@/lib/links'
 import { cn } from '@/lib/utils'
+import { EnglishOnlyNotice } from '@/components/guide/EnglishOnlyNotice'
 
 /*
  * Both graphs are drawn with @xyflow/react, which is a sizeable chunk, so they
@@ -84,6 +85,7 @@ export function GuideControlFlow() {
         title="Control flow graph"
         subtitle="Every module of the web app, the phone app, the extension and the shared service, how they depend on each other, and how control moves through the journeys that matter — so a change lands in the right place."
       />
+      <EnglishOnlyNotice />
 
       <OnThisPage sections={SECTIONS} caption="On this page" />
 
@@ -107,7 +109,12 @@ export function GuideControlFlow() {
           Read the one closest to what you are changing first: the step you are about to touch is
           rarely the only one that has to agree.
         </p>
-        <div className="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Journey" onKeyDown={onTabKey}>
+        <div
+          className="mb-3 flex flex-wrap gap-1.5"
+          role="tablist"
+          aria-label="Journey"
+          onKeyDown={onTabKey}
+        >
           {CONTROL_FLOWS.map((f, i) => {
             const chosen = f.id === flow?.id
             return (
@@ -158,8 +165,8 @@ export function GuideControlFlow() {
               ))}
             </ol>
             <p className="mt-2 text-xs text-text-3">
-              Amber boxes are decisions, red ones stop the journey, green ones end it. Dashed arrows loop
-              back. Hover or focus a box for the full path of its file.
+              Amber boxes are decisions, red ones stop the journey, green ones end it. Dashed arrows
+              loop back. Hover or focus a box for the full path of its file.
             </p>
           </div>
         ) : null}
@@ -169,18 +176,24 @@ export function GuideControlFlow() {
         <PanelTitle hint="model and rules in the service, views in the apps">The stack</PanelTitle>
         <p className="mb-4 text-sm text-text-2">
           The apps are views. The domain — what a record is, what may change it, how it is stored —
-          lives once, in <Path>service/</Path>, in six layers that may only depend downward. The
-          web app and the phone app each add their own screens and platform wiring on top, and the
+          lives once, in <Path>service/</Path>, in six layers that may only depend downward. The web
+          app and the phone app each add their own screens and platform wiring on top, and the
           extension does the few things a web page cannot.
         </p>
         <StackDiagram />
       </Panel>
 
       <Panel id="cf-layers" className="scroll-mt-4">
-        <PanelTitle hint={`${String(FLOW_LAYERS.length)} parts, top to bottom`}>Layer by layer</PanelTitle>
+        <PanelTitle hint={`${String(FLOW_LAYERS.length)} parts, top to bottom`}>
+          Layer by layer
+        </PanelTitle>
         <div className="divide-y divide-hairline">
           {FLOW_LAYERS.map((layer) => (
-            <section key={layer.id} aria-labelledby={`cf-layer-${layer.id}`} className="py-4 first:pt-0 last:pb-0">
+            <section
+              key={layer.id}
+              aria-labelledby={`cf-layer-${layer.id}`}
+              className="py-4 first:pt-0 last:pb-0"
+            >
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <h3 id={`cf-layer-${layer.id}`} className="text-sm font-medium text-text-1">
                   {layer.name}

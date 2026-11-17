@@ -67,6 +67,10 @@ import { keptDocuments } from './backup'
 import type { RestorePlan } from './backup'
 import { lossOf, validateRows } from './validate'
 import { daysBetween, partsOf } from './dates'
+import type { TwinGap } from './twin'
+import type { DuplicateOf } from './duplicates'
+import { CAPTURE_REJECTION_MESSAGE } from './capture'
+import type { CaptureRejection } from './capture'
 
 /** The shape of `i18next.t` this file uses: a key, and values to put in it. */
 export type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -253,6 +257,36 @@ export const DOMAIN_EN = {
     many_one: 'filed under {{count}} application',
     many_other: 'filed under {{count}} applications',
   },
+  /**
+   * An application picker's label (`applicationsLabel` in `data/seed.ts`): one
+   * name as it is, two joined, more counted.
+   */
+  picked: {
+    two: '{{a}} and {{b}}',
+    many_one: '{{count}} application',
+    many_other: '{{count}} applications',
+  },
+  /**
+   * The offer to read a document into the profile (`twinOfferCopy` in
+   * `twin.ts`). The wording is the consent, so it says what happens: a model
+   * reads the document and records what it states, and each entry is shown
+   * first.
+   */
+  twinOffer: {
+    unnamed: 'that document',
+    title: 'Read {{first}} into your profile?',
+    titleMore_one: 'Read {{first}} and {{count}} more into your profile?',
+    titleMore_other: 'Read {{first}} and {{count}} more into your profile?',
+    body: 'jojo will read what is inside and record the facts it states — your degrees, posts, publications and skills — so it can weigh a job posting against what you have actually done. Every entry it adds is shown to you first, and says which document it came from.',
+  },
+  /** Why Save stopped on a posting already tracked (`duplicateMessage` in `duplicates.ts`). */
+  duplicate: {
+    id: "This posting's ID is already on {{name}}.",
+    url: 'You already saved this posting as {{name}}.',
+    name: 'You already have {{name}}.',
+  },
+  /** Why a captured page was not kept (`CAPTURE_REJECTION_MESSAGE` in `capture.ts`). */
+  captureRejected: { ...CAPTURE_REJECTION_MESSAGE },
   /** Under a fit reading: who read it, and when. */
   readBy: 'Read by {{model}} · {{ago}}',
   /** A tailored snippet whose source document has since left the Vault. */
@@ -600,6 +634,35 @@ export function domainText(t: Translate) {
     readBy: (model: string, day: string, today: string) =>
       d('readBy', { model, ago: ago(day, today) }),
     missingSource: () => d('missingSource'),
+
+    /** 'Rice — CS and Baylor', '3 applications', or '' for none. Names are display names. */
+    picked: (names: readonly string[]) =>
+      names.length === 0
+        ? ''
+        : names.length === 1
+          ? (names[0] ?? '')
+          : names.length === 2
+            ? d('picked.two', { a: names[0], b: names[1] })
+            : d('picked.many', { count: names.length }),
+
+    /** The profile-read offer's title and body. See `DOMAIN_EN.twinOffer`. */
+    twinOffer: (gaps: readonly Pick<TwinGap, 'subject'>[]) => {
+      const first = gaps[0]?.subject ?? d('twinOffer.unnamed')
+      return {
+        title:
+          gaps.length <= 1
+            ? d('twinOffer.title', { first })
+            : d('twinOffer.titleMore', { first, count: gaps.length - 1 }),
+        body: d('twinOffer.body'),
+      }
+    },
+
+    /** Why Save stopped on a duplicate, naming the record already tracked. */
+    duplicate: (reason: DuplicateOf<unknown>['reason'], name: string) =>
+      d(`duplicate.${reason}`, { name }),
+
+    /** Why a captured page was not kept. */
+    captureRejected: (reason: CaptureRejection) => d(`captureRejected.${reason}`),
 
     /** The undo and redo toasts. See `DOMAIN_EN.undo`. */
     undo: {

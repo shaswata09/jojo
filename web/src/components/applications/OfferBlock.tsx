@@ -5,7 +5,8 @@ import type { TFunction } from 'i18next'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { displayName, offerDaysLeft, respondByLabel } from '@/data/seed'
+import { displayName, offerDaysLeft } from '@/data/seed'
+import { useDomain } from '@/i18n/domain'
 import type { OfferApplication, Outcome } from '@/data/seed'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
@@ -84,6 +85,9 @@ export function OfferBlock({
   settled?: Outcome
 }) {
   const { t } = useTranslation('applications')
+  // The date in the language on screen ('Dec 20', '12月20日'), not core's
+  // English `respondByLabel`.
+  const domain = useDomain()
   const [pending, setPending] = useState<OfferDecision | null>(null)
   const { offer } = application
   const left = countdown(offerDaysLeft(offer, TODAY), t)
@@ -101,14 +105,14 @@ export function OfferBlock({
         <p className={cn('text-sm font-medium', SETTLED[settled].tone)}>
           {t(SETTLED[settled].label)}
           <span className="ms-2 font-normal text-text-3 [unicode-bidi:isolate]">
-            {t('offer.respondBy', { date: respondByLabel(offer) })}
+            {t('offer.respondBy', { date: domain.shortDate(offer.respondBy) })}
           </span>
         </p>
       ) : (
         <p className={cn('text-sm font-medium', left.tone)}>
           {left.text}
           <span className="ms-2 font-normal text-text-3 [unicode-bidi:isolate]">
-            {t('offer.respondBy', { date: respondByLabel(offer) })}
+            {t('offer.respondBy', { date: domain.shortDate(offer.respondBy) })}
           </span>
         </p>
       )}

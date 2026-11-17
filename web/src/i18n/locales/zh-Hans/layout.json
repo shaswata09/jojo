@@ -130,6 +130,7 @@
       "profile": "我的资料",
       "assistant": "助手",
       "settings": "设置"
-    }
+    },
+    "showAll_other": "显示全部 {{count}} 条"
   }
 }

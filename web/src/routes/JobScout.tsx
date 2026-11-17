@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { MatchesPanel } from '@/components/scout/MatchesPanel'
 import { PipelineDialog } from '@/components/scout/PipelineDialog'
@@ -20,11 +21,7 @@ import { useScout } from '@jojo/service/react/use-scout'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { useTitle } from '@/lib/links'
 import { useScoutParams } from '@/lib/link-params'
-import {
-  useArrivalHighlight,
-  useArrivalScroll,
-  useFocusArrival,
-} from '@/lib/use-arrival-highlight'
+import { useArrivalHighlight, useArrivalScroll, useFocusArrival } from '@/lib/use-arrival-highlight'
 import { jobFromApproval } from '@jojo/service/core/proposal'
 
 export function JobScout() {
@@ -64,12 +61,16 @@ export function JobScout() {
   // Both lists live on this page and their ids come from different collections,
   // so the parameter names the list too — see `ScoutFocus` in links.ts.
   const { focus, token, set } = useScoutParams()
-  useArrivalHighlight(token, () => set({ focus: undefined }))
+  // The navigation's key, so picking the same result twice lights it twice.
+  const { key: arrival } = useLocation()
+  useArrivalHighlight(token, () => set({ focus: undefined }), arrival)
   const focusedRow = useArrivalScroll<HTMLDivElement>(token)
   // A pipeline or a whole panel, named by search: found by `data-focus-id`,
   // which is the whole token ('pipeline:p1', 'section:matches'). The two
   // record lists above keep their own ref and class.
-  useFocusArrival(focus?.kind === 'pipeline' || focus?.kind === 'section' ? token : undefined)
+  useFocusArrival(focus?.kind === 'pipeline' || focus?.kind === 'section' ? token : undefined, {
+    arrival,
+  })
 
   const pages = usePostingPages()
   const [snapshot, setSnapshot] = useState<VaultFile | null>(null)

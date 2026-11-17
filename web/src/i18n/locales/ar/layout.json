@@ -165,6 +165,12 @@
       "profile": "ملفي الشخصي",
       "assistant": "المساعد",
       "settings": "الإعدادات"
-    }
+    },
+    "showAll_zero": "عرض الكل ({{count}})",
+    "showAll_one": "عرض الكل ({{count}})",
+    "showAll_two": "عرض الكل ({{count}})",
+    "showAll_few": "عرض الكل ({{count}})",
+    "showAll_many": "عرض الكل ({{count}})",
+    "showAll_other": "عرض الكل ({{count}})"
   }
 }

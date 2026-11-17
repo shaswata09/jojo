@@ -162,7 +162,8 @@
     "stopFiltering": "Nicht mehr nach {{name}} filtern",
     "filterBy": "Nach {{name}} filtern",
     "edit": "Stichwort {{name}} bearbeiten",
-    "editHint": "Umbenennen, umfärben oder löschen"
+    "editHint": "Umbenennen, umfärben oder löschen",
+    "tooLong": "Höchstens {{max}} Zeichen."
   },
   "welcome": {
     "title": "Ein bisschen über dich",
@@ -270,5 +271,8 @@
   "command": {
     "title": "Befehlspalette",
     "description": "Nach einem Befehl suchen ..."
+  },
+  "rows": {
+    "showMore": "Mehr anzeigen ({{shown}} von {{total}})"
   }
 }

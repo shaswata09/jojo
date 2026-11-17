@@ -600,5 +600,6 @@
       "order": "A ordem é um argumento, não um acaso: qualquer pessoa pode parar depois da primeira página e usar o app, e qualquer pessoa pode pular direto para a última.",
       "address": "<lead>A barra de endereço</lead> é a própria página. A primeira página é <code>/guide</code> em vez de <code>/guide/overview</code>, para que todo link e favorito criado antes de haver quatro páginas continue levando a algum lugar real."
     }
-  }
+  },
+  "englishOnly": "Esta página está em inglês: ela nomeia o código, os pacotes e os termos de licença nas palavras em que foram escritos."
 }

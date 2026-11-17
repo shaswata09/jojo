@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Göster: {{label}}",
-    "hide": "Gizle: {{label}}"
+    "hide": "Gizle: {{label}}",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Göstergedeki tüm seriler kapalı.",

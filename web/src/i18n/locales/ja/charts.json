@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}}を表示",
-    "hide": "{{label}}を非表示"
+    "hide": "{{label}}を非表示",
+    "item": "{{label}}：{{count}}、{{percent}}"
   },
   "allHidden": {
     "withReset": "凡例ですべての系列がオフになっています。",

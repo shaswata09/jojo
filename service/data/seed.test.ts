@@ -36,7 +36,8 @@ import { createRepository } from '../kg/repo/repository'
 import { seedToGraph } from '../kg/repo/seed'
 import { TOOLS } from '../kg/tools/index'
 import { createToolRuntime } from '../kg/tools/runtime'
-import { applicationsLabel, filedUnderLabel } from './seed'
+import { applicationsLabel, displayName, filedUnderLabel } from './seed'
+import { domainText, englishT } from '../kg/core/domain-text'
 import { applications } from './demo-applications'
 
 type Options = Parameters<typeof createRepository>[0]
@@ -183,6 +184,15 @@ describe('applicationsLabel', () => {
   it('names up to two and counts past that', () => {
     expect(applicationsLabel([app('Rice'), app('Baylor')])).toBe('Rice and Baylor')
     expect(applicationsLabel([app('Rice'), app('Baylor'), app('UH')])).toBe('3 applications')
+  })
+
+  // Review 2026-11-17: the picker showed this English in every language. The
+  // apps now render `domain.picked`, which must say the same thing in English.
+  it('says in English what the translated picker label says', () => {
+    const en = domainText(englishT)
+    for (const apps of [[], [app('Rice')], [app('Rice'), app('Baylor')], [app('a'), app('b'), app('c')]]) {
+      expect(en.picked(apps.map(displayName))).toBe(applicationsLabel(apps))
+    }
   })
 })
 

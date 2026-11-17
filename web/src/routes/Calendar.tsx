@@ -9,6 +9,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { CalendarArrowDown, Plus } from 'lucide-react'
+import { useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { DayRail } from '@/components/calendar/DayRail'
 import { EventChip } from '@/components/calendar/EventChip'
@@ -45,7 +46,9 @@ export function Calendar() {
   // it. `useCalendarParams` also clamps '?m=2&d=31' to something real.
   const { y, m, d, focus, set } = useCalendarParams()
   // Same contract as the Vault's: the tint decays, then the parameter goes.
-  useArrivalHighlight(focus, () => set({ focus: undefined }))
+  // And the navigation's key, so a second pick of the same result re-lights it.
+  const { key: arrival } = useLocation()
+  useArrivalHighlight(focus, () => set({ focus: undefined }), arrival)
   const view = useMemo(() => ({ year: y, month: m }), [y, m])
   // The month is the whole point of this tab — 'Calendar' alone tells a
   // person with three tabs open nothing about which one they left here.

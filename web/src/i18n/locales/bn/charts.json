@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} দেখান",
-    "hide": "{{label}} লুকান"
+    "hide": "{{label}} লুকান",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "লেজেন্ডে প্রতিটি সিরিজ বন্ধ করা আছে।",

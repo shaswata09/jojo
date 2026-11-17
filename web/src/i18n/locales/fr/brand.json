@@ -5,7 +5,7 @@
     "trigger": "Mouvements de jojo",
     "triggerAria": "Mouvements et crédits de jojo",
     "plays": "joue",
-    "modelCredit": "Modèle du robot :"
+    "modelCreditFull": "Modèle du robot : <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work> par <artist>Jungle Jim</artist>, sous licence <licence>CC BY 4.0</licence>. Modifié pour jojo : maillage et textures allégés, yeux et mouvements propres (Mode d’emploi › Conçu avec liste chaque modification). L’artiste n’approuve pas jojo."
   },
   "theme": {
     "toggle": "Changer de thème",

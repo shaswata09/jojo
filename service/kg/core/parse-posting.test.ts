@@ -289,3 +289,41 @@ describe('draftFromShare', () => {
     expect(d.role).toBe('Assistant Professor, CS')
   })
 })
+
+/**
+ * Workday and iCIMS keep the tenant in the hostname (review 2026-11-17). A
+ * Workday path starts with the career SITE's name, so a locale-less link was
+ * filed under an employer called "External".
+ */
+describe('a board that keeps the employer in its hostname', () => {
+  it('takes the Workday tenant, not the career-site segment', () => {
+    expect(
+      draftFromUrl(
+        'https://acme.wd1.myworkdayjobs.com/External/job/Austin-TX/Data-Scientist_R-12345',
+      ),
+    ).toMatchObject({ org: 'Acme', role: 'Data scientist' })
+    expect(
+      draftFromUrl(
+        'https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA/Senior-Engineer_JR1988734',
+      )?.org,
+    ).toBe('Nvidia')
+  })
+
+  it("drops a requisition number written with an underscore, '_R_00012345'", () => {
+    expect(
+      draftFromUrl(
+        'https://utexas.wd1.myworkdayjobs.com/UTstaff/job/AUSTIN-TX/Research-Scientist_R_00012345',
+      ),
+    ).toMatchObject({ org: 'Utexas', role: 'Research scientist' })
+  })
+
+  it('strips the careers affix from an iCIMS tenant', () => {
+    expect(draftFromUrl('https://careers-acme.icims.com/jobs/12345/data-scientist/job')?.org).toBe(
+      'Acme',
+    )
+  })
+
+  it('still reads a Greenhouse tenant from the path', () => {
+    expect(draftFromUrl('https://boards.greenhouse.io/acme/jobs/4567')?.org).toBe('Acme')
+  })
+})

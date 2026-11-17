@@ -143,6 +143,7 @@
     "explain": "The newest change can be put back. Older ones are a record, not a time machine.",
     "undoLast": "Undo the last",
     "cannotUndo": "Loading or clearing the data set cannot be undone.",
+    "cannotUndoTrimmed": "jojo kept a record of this change but not enough to put it back — it was a background write (a fit reading, a file's bytes) or is too far back.",
     "showAll_one": "Show all {{count}}",
     "showAll_other": "Show all {{count}}"
   },

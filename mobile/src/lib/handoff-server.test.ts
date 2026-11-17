@@ -21,8 +21,10 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { pairPath, writeResponse } from '@jojo/service/core/handoff'
+import { chunkPath, pairPath, writeResponse } from '@jojo/service/core/handoff'
 import {
+  EVICT_GRACE_MS,
+  HEADER_MS,
   IDLE_MS,
   MAX_CONNECTIONS,
   startHandoffServer,
@@ -255,8 +257,23 @@ describe('a listener that strangers on the network cannot tie up', () => {
     vi.useRealTimers()
   })
 
-  /** Half a header: no CRLFCRLF, so the parser can only say "incomplete". */
-  const partial = (): Uint8Array => request(`GET ${pairPath(TOKEN)}`).slice(0, 20)
+  /**
+   * A whole header for a chunk upload, and the body it promises.
+   *
+   * The idle cases below are about a request whose HEADER is in and whose
+   * BODY is still arriving: since review 2 (security-5) a header has its own
+   * deadline from accept, which trickled bytes do not extend, so a header sent
+   * slowly is no longer "a slow request" this listener waits on.
+   */
+  const BODY = 64
+  const upload = (): { head: Uint8Array; body: Uint8Array } => {
+    const text = `POST ${chunkPath(TOKEN)} HTTP/1.1\r\nHost: 192.168.1.9:51234\r\nContent-Length: ${String(BODY)}\r\n\r\n`
+    const head = new Uint8Array(text.length)
+    for (let i = 0; i < text.length; i += 1) head[i] = text.charCodeAt(i) & 0xff
+    const body = new Uint8Array(BODY)
+    for (let i = 0; i < BODY; i += 1) body[i] = i
+    return { head, body }
+  }
 
   it('closes connections past the cap on arrival', async () => {
     await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
@@ -283,7 +300,9 @@ describe('a listener that strangers on the network cannot tie up', () => {
     await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
     const socket = new FakeSocket()
     connect?.(socket)
-    socket.emit('data', partial())
+    const { head, body } = upload()
+    socket.emit('data', head)
+    socket.emit('data', body.slice(0, 8))
     vi.advanceTimersByTime(IDLE_MS - 1)
     expect(socket.destroyed).toBe(false)
     vi.advanceTimersByTime(1)
@@ -308,12 +327,14 @@ describe('a listener that strangers on the network cannot tie up', () => {
     })
     const socket = new FakeSocket()
     connect?.(socket)
-    // One byte just inside the window each time, for several windows' worth.
-    const whole = request(`GET ${pairPath(TOKEN)}`)
-    for (let i = 0; i < whole.length; i += 1) {
+    // The header at once, as a browser sends it; then the body one byte just
+    // inside the idle window each time, for several windows' worth.
+    const { head, body } = upload()
+    socket.emit('data', head)
+    for (let i = 0; i < body.length; i += 1) {
       vi.advanceTimersByTime(IDLE_MS - 1)
       expect(socket.destroyed).toBe(false)
-      socket.emit('data', whole.slice(i, i + 1))
+      socket.emit('data', body.slice(i, i + 1))
     }
     await vi.runAllTimersAsync()
     expect(seen).toHaveLength(1)
@@ -338,5 +359,77 @@ describe('a listener that strangers on the network cannot tie up', () => {
     finish({ status: 204 })
     await vi.runAllTimersAsync()
     expect(socket.bytes()).toEqual(writeResponse(204))
+  })
+})
+
+/**
+ * Review 2, security-5: the cap made exhaustion cheap. Eight sockets trickling a
+ * header byte inside every idle window held every slot for hours, and the real
+ * browser was turned away on arrival.
+ */
+describe('a header that is trickled to hold a slot', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const header = (): Uint8Array => request(`GET ${pairPath(TOKEN)}`)
+
+  it('has a deadline from accept that more bytes do not extend', async () => {
+    vi.useFakeTimers()
+    expect(HEADER_MS).toBeLessThan(IDLE_MS)
+    await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
+    const socket = new FakeSocket()
+    connect?.(socket)
+    const whole = header()
+    let at = 0
+    // A byte every second: well inside the idle window, every time.
+    for (let elapsed = 0; elapsed < HEADER_MS - 1000; elapsed += 1000) {
+      socket.emit('data', whole.slice(at, at + 1))
+      at += 1
+      vi.advanceTimersByTime(1000)
+    }
+    expect(socket.destroyed).toBe(false)
+    vi.advanceTimersByTime(1000)
+    expect(socket.destroyed).toBe(true)
+  })
+
+  it('still lets the real browser in when every slot is held by a trickler', async () => {
+    vi.useFakeTimers()
+    const seen: string[] = []
+    await startHandoffServer(TOKEN, (read) => {
+      seen.push(read.route)
+      return Promise.resolve({ status: 204 })
+    })
+    const held = Array.from({ length: MAX_CONNECTIONS }, () => new FakeSocket())
+    for (const socket of held) {
+      connect?.(socket)
+      socket.emit('data', header().slice(0, 1))
+    }
+    vi.advanceTimersByTime(EVICT_GRACE_MS)
+    const browser = new FakeSocket()
+    connect?.(browser)
+    expect(browser.destroyed).toBe(false)
+    // The oldest trickler made the room, and only that one.
+    expect(held[0]!.destroyed).toBe(true)
+    expect(held.slice(1).every((socket) => !socket.destroyed)).toBe(true)
+    browser.emit('data', header())
+    await vi.runAllTimersAsync()
+    expect(seen).toEqual(['pair'])
+    expect(browser.bytes()).toEqual(writeResponse(204))
+  })
+
+  it('never evicts a connection whose request is being answered', async () => {
+    vi.useFakeTimers()
+    await startHandoffServer(TOKEN, () => new Promise<HandoffAnswer>(() => {}))
+    const held = Array.from({ length: MAX_CONNECTIONS }, () => new FakeSocket())
+    for (const socket of held) {
+      connect?.(socket)
+      socket.emit('data', header())
+    }
+    vi.advanceTimersByTime(EVICT_GRACE_MS * 5)
+    const extra = new FakeSocket()
+    connect?.(extra)
+    expect(extra.destroyed).toBe(true)
+    expect(held.every((socket) => !socket.destroyed)).toBe(true)
   })
 })

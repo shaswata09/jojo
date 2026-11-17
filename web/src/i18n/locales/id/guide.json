@@ -612,5 +612,6 @@
       "order": "Urutannya disengaja, bukan kebetulan: siapa pun dapat berhenti setelah halaman pertama dan langsung memakai aplikasi, dan siapa pun dapat langsung melompat ke halaman terakhir.",
       "address": "<lead>Di bilah alamat</lead> adalah halaman itu sendiri. Halaman pertama adalah <code>/guide</code>, bukan <code>/guide/overview</code>, jadi setiap tautan dan penanda yang dibuat sebelum ada empat halaman tetap mengarah ke tempat yang nyata."
     }
-  }
+  },
+  "englishOnly": "Halaman ini berbahasa Inggris: kode, paket, dan ketentuan lisensi disebut dengan kata-kata aslinya."
 }

@@ -600,5 +600,6 @@
       "order": "Die Reihenfolge ist Absicht, kein Zufall: Jeder kann nach der ersten Seite aufhören und die App benutzen, und jeder kann direkt zur letzten springen.",
       "address": "<lead>Die Adressleiste</lead> ist die Seite selbst. Die erste Seite ist <code>/guide</code> statt <code>/guide/overview</code>, damit jeder Link und jedes Lesezeichen aus der Zeit, als es noch nicht vier Seiten gab, weiterhin irgendwo Echtes landet."
     }
-  }
+  },
+  "englishOnly": "Diese Seite ist auf Englisch: Sie nennt Code, Pakete und Lizenzbedingungen in den Worten, in denen sie geschrieben sind."
 }

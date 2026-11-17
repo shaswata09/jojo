@@ -486,6 +486,22 @@ html[data-theme='dark'] {
   html {
     background: var(--page);
     @apply font-sans;
+    /* Focus not obscured (WCAG 2.4.11). The top bar is sticky and the chat
+       dock is fixed at the foot, so a control that Tab scrolled into view used
+       to be parked at the viewport edge, underneath one of them. Browsers apply
+       scroll-padding to focus-driven scrolling. `--topbar-clearance` is kept
+       current by the Topbar, because the bar wraps to two rows on a phone. */
+    scroll-padding-top: var(--topbar-clearance, 0px);
+    scroll-padding-bottom: calc(var(--dock-clearance, 0px) + 1rem);
+  }
+
+  /* An ellipsis box in an RTL page holding Latin user text — a title, a file
+     name, a URL — overflowed from the text's START, so "Finalize UT Austin
+     statements" read "…atements". Plaintext resolves each box's direction from
+     its own first strong character, so Latin text is cut at its end and Arabic
+     or Urdu text is untouched. Title elements also carry `dir="auto"`. */
+  [dir='rtl'] .truncate {
+    unicode-bidi: plaintext;
   }
 
   body {
@@ -1589,6 +1605,9 @@ html[data-theme='dark'] {
      and the chat dock's bar height while the dock is on the page — it owns
      the bottom-right corner everywhere but the Assistant. Set by ChatDock. */
   --dock-clearance: 0px;
+  /* The sticky top bar's height plus its offset and a small gap: what a
+     focused control has to clear at the top. Set by Topbar. */
+  --topbar-clearance: 0px;
 }
 
 @media (min-width: 40rem) {

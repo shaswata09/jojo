@@ -131,6 +131,27 @@ export function McpLinkProvider({ children }: { children: ReactNode }) {
     }
   }, [on, stored.token, local, live])
 
+  /*
+   * Another tab's switch or new token, taken in here.
+   *
+   * Only one tab runs the link (`runElected`), and it is rarely the one the
+   * person is looking at. Read once at mount, a switch turned off in tab B left
+   * tab A holding the lock and answering Claude Code with the old token —
+   * consent withdrawn on screen and still in force behind it. The `storage`
+   * event reaches every OTHER tab of this origin, so the holder's `on` goes
+   * false (its effect aborts, the lock is released) or its token changes (the
+   * loop restarts with the new one). `key === null` is a cleared storage.
+   */
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY || event.key === null) setStored(load())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
   const save = useCallback((next: Stored) => {
     setStored(next)
     writeStored(STORAGE_KEY, JSON.stringify(next))

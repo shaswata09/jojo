@@ -19,14 +19,14 @@
  * user chose. Everything it carried is derived elsewhere now.
  */
 
-import { shortDate } from '../kg/core/dates'
-import type { Application, Offer, Period, Stage } from '../kg/core/model'
+import type { Application, Period, Stage } from '../kg/core/model'
 import { STAGE_LABEL, STAGE_VALUES } from '../kg/core/model'
 
 export { ROLES, SOURCES, STAGE_LABEL } from '../kg/core/model'
 /* `offerDaysLeft` followed `kg/react/use-priority.ts`, its only reader outside
- * this file's own callers, down into `kg/core/dates.ts`. `respondByLabel` below
- * stayed: nothing under `service/kg` asks for it. */
+ * this file's own callers, down into `kg/core/dates.ts`. `respondByLabel` is
+ * gone: both apps write the date with `domain.shortDate`, in the language on
+ * screen, and an English 'Dec 20' was the one thing it could say. */
 export { offerDaysLeft } from '../kg/core/dates'
 export type {
   Application,
@@ -84,10 +84,6 @@ export function filedUnderLabel(apps: readonly Pick<Application, 'org' | 'role'>
   return apps.length === 0 ? 'unfiled' : `filed under ${applicationsLabel(apps)}`
 }
 
-/** 'Nov 15'. */
-export function respondByLabel(offer: Offer) {
-  return shortDate(offer.respondBy)
-}
 
 
 /*

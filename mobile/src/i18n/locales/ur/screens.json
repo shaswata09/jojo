@@ -434,6 +434,7 @@
       "transferLast": "آخری بار {{date}} کو استعمال ہوئی"
     },
     "footer": "jojo — Jarvis fOr Job Organization۔ سب کچھ اسی آلے پر چلتا ہے۔",
+    "statusEnglish": "اسے لفظ بہ لفظ انگریزی میں رکھا گیا ہے، تاکہ یہ اس لائسنس سے ہٹ نہ جائے جس کا یہ خلاصہ ہے۔",
     "overdue_one": "{{count}} یاد دہانی تاخیر میں ہے۔",
     "overdue_other": "{{count}} یاد دہانیاں تاخیر میں ہیں۔"
   },

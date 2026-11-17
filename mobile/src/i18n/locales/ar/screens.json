@@ -530,6 +530,7 @@
       "transferLast": "آخر استخدام في {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. كل شيء يعمل على هذا الجهاز.",
+    "statusEnglish": "محفوظ بالإنجليزية حرفيًا، كي لا يبتعد عن الترخيص الذي يلخّصه.",
     "overdue_zero": "{{count}} تذكير متأخر.",
     "overdue_one": "{{count}} تذكير متأخر.",
     "overdue_two": "{{count}} تذكير متأخر.",

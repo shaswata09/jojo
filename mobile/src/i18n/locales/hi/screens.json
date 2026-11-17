@@ -434,6 +434,7 @@
       "transferLast": "पिछली बार {{date}} को"
     },
     "footer": "jojo — Jarvis fOr Job Organization. सब कुछ इसी डिवाइस पर चलता है।",
+    "statusEnglish": "इसे शब्दशः अंग्रेज़ी में रखा गया है, ताकि यह उस लाइसेंस से अलग न हो जिसका यह सार है।",
     "overdue_one": "{{count}} रिमाइंडर की समय-सीमा पार।",
     "overdue_other": "{{count}} रिमाइंडर की समय-सीमा पार।"
   },

@@ -162,7 +162,8 @@
     "stopFiltering": "Stop filtering by {{name}}",
     "filterBy": "Filter by {{name}}",
     "edit": "Edit the keyword {{name}}",
-    "editHint": "Rename, recolour or delete"
+    "editHint": "Rename, recolour or delete",
+    "tooLong": "Keep it to {{max}} characters or fewer."
   },
   "welcome": {
     "title": "A little about you",
@@ -270,5 +271,8 @@
   "command": {
     "title": "Command Palette",
     "description": "Search for a command to run..."
+  },
+  "rows": {
+    "showMore": "Show more ({{shown}} of {{total}})"
   }
 }

@@ -835,6 +835,10 @@ describe('a run abandoned while a new one takes its place', () => {
     const throwing = new Promise<Turn>((_resolve, reject) => {
       fail = reject
     })
+    // The abandoned run may never ask for its model at all now (the loop is
+    // loaded on first use, and a run forgotten meanwhile stops there), so this
+    // pre-made answer can be left with no reader; that is not the failure.
+    throwing.catch(() => {})
 
     runs.start({ threadId: A, prompt: 'first', history: [], llm: () => () => throwing, host })
     runs.forget(A)
@@ -1036,5 +1040,51 @@ describe('what a subscriber is woken for', () => {
     await vi.waitFor(() => expect(runs.get(A)?.busy).toBe(false))
     expect(runs.busyThreads()).not.toBe(working)
     expect(runs.busyThreads()).toEqual([])
+  })
+})
+
+/*
+ * Review 2026-11-17: the gate `use-agent` hands a run is read from the
+ * conversation before every call, so an approval mode changed mid-run applies
+ * to the rest of it (the loop half is in `agent/loop-guards.test.ts`).
+ */
+describe('the approval gate a chat run is given', () => {
+  it('is read from the conversation as it is now, not as it was at send', async () => {
+    const { liveGate } = await import('./use-agent')
+    const { createRepository } = await import('../repo/repository')
+    const { createToolRuntime } = await import('../tools/runtime')
+    const at = '2026-10-12T09:00:00.000Z'
+    const ok = { ok: true as const, value: undefined }
+    const repo = createRepository({
+      driver: {
+        open: async () => ({ ok: true as const, value: { version: 1, from: 0, migrated: [], crossTab: false } }),
+        readAll: async () => ({ ok: true as const, value: { nodes: [], edges: [], meta: [], ops: [] } }),
+        commit: async () => ok,
+        replace: async () => ok,
+        seedIfPristine: async () => ({ ok: true as const, value: true }),
+        destroy: async () => ok,
+        onRemoteCommit: () => () => {},
+        onBlocking: () => () => {},
+        close: () => {},
+      } as never,
+      snapshot: new MutableSnapshot(),
+      meta: { schemaVersion: 1, createdAt: at, lastOpenedAt: at, dataSet: 'empty', seededAt: null, handoverAt: null },
+      now: () => at,
+    })
+    const runtime = createToolRuntime({ repo, now: () => at })
+    const made = runtime.run('assistant.thread.create', { title: 't' })
+    if (!made.ok) throw new Error('setup refused')
+    const id = made.output as NodeId
+    const gate = liveGate({ memory: () => repo.getSnapshot() }, id, 'manual')
+    expect(gate()).toBe('writes')
+    expect(runtime.run('assistant.thread.auto.set', { id, mode: 'auto' }).ok).toBe(true)
+    expect(gate()).toBe('none')
+    expect(runtime.run('assistant.thread.auto.set', { id, mode: 'semi' }).ok).toBe(true)
+    expect(gate()).toBe('destructive')
+  })
+
+  it('falls back to the mode at send when the conversation cannot be read', async () => {
+    const { liveGate } = await import('./use-agent')
+    expect(liveGate({ memory: () => new MutableSnapshot() }, 'thread:gone' as NodeId, 'auto')()).toBe('none')
   })
 })

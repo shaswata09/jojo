@@ -35,7 +35,12 @@ import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
 import { revokeLater } from '@/lib/save-file'
 import { announceRefusal } from '@/components/common/write-result'
-import { noPreviewText, previewKind, TEXT_PREVIEW_BYTES } from '@/components/vault/file-preview'
+import {
+  isPdfHeader,
+  noPreviewText,
+  previewKind,
+  TEXT_PREVIEW_BYTES,
+} from '@/components/vault/file-preview'
 import { useDomain } from '@/i18n/domain'
 
 /**
@@ -315,16 +320,45 @@ export function FileViewer({
     // up after themselves — without it every preview leaks a document for the
     // life of the tab.
     if (real) {
-      let next: string
-      try {
-        next = URL.createObjectURL(real)
-      } catch (error) {
-        setUrl(null)
-        setPreviewError(error instanceof Error ? error.message : String(error))
-        return
+      /*
+       * Only PDF bytes reach the frame, and only typed as a PDF.
+       *
+       * The stored File is typed from its stored PATH's extension, and a
+       * restored backup can pair a `pdf` record with `Documents/<id>__x.html`.
+       * Framed as stored, that was an HTML document on jojo's own origin — with
+       * every API key in localStorage in reach of its scripts. The frame cannot
+       * simply be sandboxed: Chrome will not run its PDF viewer in a sandboxed
+       * frame. So the bytes are sniffed for the `%PDF-` header (allowed
+       * anywhere in the first 1024 bytes) and re-wrapped as
+       * `application/pdf`, which the browser renders as a PDF or not at all.
+       */
+      let next: string | null = null
+      let live = true
+      setUrl(null)
+      void real
+        .slice(0, 1024)
+        .arrayBuffer()
+        .then((head) => {
+          if (!live) return
+          if (!isPdfHeader(new Uint8Array(head))) {
+            setPreviewError(t('viewer.notPdf'))
+            return
+          }
+          try {
+            next = URL.createObjectURL(new Blob([real], { type: 'application/pdf' }))
+          } catch (error) {
+            setPreviewError(error instanceof Error ? error.message : String(error))
+            return
+          }
+          setUrl(next)
+        })
+        .catch((error: unknown) => {
+          if (live) setPreviewError(error instanceof Error ? error.message : String(error))
+        })
+      return () => {
+        live = false
+        if (next) URL.revokeObjectURL(next)
       }
-      setUrl(next)
-      return () => URL.revokeObjectURL(next)
     }
     if (!pdf) return setUrl(null)
     let next: string
@@ -337,7 +371,7 @@ export function FileViewer({
     }
     setUrl(next)
     return () => URL.revokeObjectURL(next)
-  }, [pdf, real, kind])
+  }, [pdf, real, kind, t])
 
   /**
    * Hands the document to the browser's downloader.

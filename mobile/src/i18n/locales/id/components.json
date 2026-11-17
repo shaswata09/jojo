@@ -136,6 +136,7 @@
     "explain": "Perubahan terbaru dapat dikembalikan. Yang lebih lama hanyalah catatan, bukan mesin waktu.",
     "undoLast": "Urungkan yang terakhir",
     "cannotUndo": "Memuat atau mengosongkan kumpulan data tidak dapat diurungkan.",
+    "cannotUndoTrimmed": "jojo mencatat perubahan ini tetapi tidak cukup untuk mengembalikannya — ini adalah penulisan latar belakang (penilaian kecocokan, isi berkas) atau sudah terlalu lama.",
     "showAll_other": "Tampilkan semua {{count}}"
   },
   "crash": {

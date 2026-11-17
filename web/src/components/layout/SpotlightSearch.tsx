@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
@@ -7,6 +8,7 @@ import {
   BellRing,
   CalendarDays,
   ChartColumn,
+  ChevronsDown,
   CircleHelp,
   ClipboardList,
   CornerDownLeft,
@@ -57,6 +59,7 @@ import { TOOLS } from '@jojo/service/tools/index'
 import type { ToolName } from '@jojo/service/tools/index'
 import type { AnyTool } from '@jojo/service/tools/tool'
 import { TODAY } from '@/lib/today'
+import { hasWords, haystackOf, searchWords } from '@jojo/service/core/word-match'
 import {
   appPath,
   applicationsPath,
@@ -233,36 +236,124 @@ type ToolRow = { name: ToolName; plan: FormPlan; icon: LucideIcon }
  * Spotlight-style search.
  *
  * Built on CommandDialog, so the overlay, focus trap, Escape handling and
- * arrow-key navigation come from Radix rather than being re-implemented —
- * and cmdk does the filtering, which is what keeps the results list matching
- * on every field rather than just the visible label.
+ * arrow-key navigation come from Radix rather than being re-implemented. The
+ * FILTERING is ours (`shouldFilter={false}`), and that is the point of the next
+ * two notes.
  */
 
 /**
- * Substring matching, replacing cmdk's default fuzzy scorer.
+ * Rows a group shows before it offers the rest: with nothing typed, and while
+ * typing.
  *
- * The default is subsequence-based: it scores "rice" against "Databri(c)ks — ML
- * (e)ngineer" because r-i-c-e appear in order somewhere in the string. With
- * twelve applications every query matched all twelve, so typing did not narrow
- * anything — which is worse than a search that finds too little, because the
- * user cannot tell it is working at all.
- *
- * Words are matched independently so "rice stat" still finds "Rice —
- * Statistics", and the score is only ever 1 or 0: this list is short enough
- * that presentation order (Actions first, then by type) is more useful than a
- * relevance ranking that reshuffles rows as you type.
+ * Every row is a cmdk item, and cmdk ran its filter over every item on every
+ * keystroke and then re-appended each visible one to sort the DOM. With 2,700
+ * records the palette mounted 2,373 items, took over half a second to open,
+ * and a keystroke cost up to 180 ms — for a list nobody can read past its first
+ * screen. The phone caps each group at twenty for the same reason
+ * (`GROUP_ROWS` in its SearchScreen); this is the web's twin of that, with a
+ * Show all row so nothing is out of reach. With nothing typed, five a group:
+ * the empty palette is a menu of where to go, not an index of everything.
  */
-function matchesQuery(value: string, search: string, keywords?: string[]) {
-  if (!search.trim()) return 1
-  const haystack = `${value} ${keywords?.join(' ') ?? ''}`.toLowerCase()
-  return search
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean)
-    .every((word) => haystack.includes(word))
-    ? 1
-    : 0
+const IDLE_ROWS = 5
+const GROUP_ROWS = 20
+
+/**
+ * The words typed, matched the way the phone matches them — `core/word-match`.
+ *
+ * Every word must appear somewhere in the row (label, detail and keywords taken
+ * together), case and accents aside: "rice stat" finds "Rice — Statistics", and
+ * in French "theme" finds "Thème". The palette had its own copy of this rule
+ * that did not fold accents, and the phone had one that did but needed the
+ * whole query inside one field; both now call the same function.
+ *
+ * Substring rather than cmdk's fuzzy scorer, which is subsequence-based: it
+ * scored "rice" against "Databri(c)ks — ML (e)ngineer", so with twelve
+ * applications every query matched all twelve and typing narrowed nothing. A
+ * match is yes or no — presentation order (Actions first, then by type) is more
+ * use here than a relevance ranking that reshuffles rows as you type.
+ */
+function useMatches<T>(
+  items: readonly T[],
+  fields: (item: T) => (string | undefined)[],
+  words: readonly string[],
+): readonly T[] {
+  // Folded once per list, not once per keystroke: only the query is folded
+  // as the person types.
+  const hays = useMemo(() => items.map((item) => haystackOf(...fields(item))), [items, fields])
+  return useMemo(
+    () => (words.length === 0 ? items : items.filter((_, i) => hasWords(words, hays[i] ?? ''))),
+    [items, hays, words],
+  )
 }
+
+/** Which groups were opened past their cap, for which query. */
+type Opened = { query: string; groups: ReadonlySet<string> }
+
+/**
+ * The "Show all" row at the foot of a capped group.
+ *
+ * An item rather than a button, so it is reached with the arrow keys like
+ * everything above it and Enter opens it.
+ */
+function ShowAll({
+  group,
+  count,
+  onOpen,
+}: {
+  group: string
+  count: number
+  onOpen: (group: string) => void
+}) {
+  const { t } = useTranslation('layout')
+  return (
+    <CommandItem value={`show-all:${group}`} onSelect={() => onOpen(group)} className="gap-2.5">
+      <ChevronsDown className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
+      <span className="text-text-2">{t('spotlight.showAll', { count })}</span>
+    </CommandItem>
+  )
+}
+
+const resultFields = (r: Result) => [r.label, r.detail, r.keywords]
+const actionFields = (a: { label: string; hint?: string }) => [a.label, a.hint]
+const toolFields = (row: ToolRow) => [row.plan.tool.title, row.plan.tool.summary, row.name]
+
+/**
+ * Keeps the input's `aria-activedescendant` on the row Enter will open.
+ *
+ * cmdk marks the first match `aria-selected` as the person types, but sets
+ * `aria-activedescendant` only on its arrow-key path — its first-match
+ * selection looks for the selected row before the row has re-rendered as
+ * selected, and finds none. So a screen-reader user who typed "stripe" and
+ * pressed Enter opened a row that was never announced. This watches the list
+ * for the selected row changing and points the input (and the listbox) at it.
+ * React leaves the attribute alone between cmdk's own updates, and when cmdk
+ * does set it, it sets the same id.
+ */
+function useActiveDescendant(root: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const element = root.current
+    const list = element?.querySelector('[cmdk-list]')
+    if (!element || !list) return
+    const point = () => {
+      const selected = list.querySelector('[cmdk-item][aria-selected="true"]')
+      for (const owner of [element.querySelector('[cmdk-input]'), list]) {
+        if (!owner) continue
+        if (selected?.id) owner.setAttribute('aria-activedescendant', selected.id)
+        else owner.removeAttribute('aria-activedescendant')
+      }
+    }
+    point()
+    const observer = new MutationObserver(point)
+    observer.observe(list, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['aria-selected'],
+    })
+    return () => observer.disconnect()
+  }, [root])
+}
+
 /**
  * One group of palette rows.
  *
@@ -279,32 +370,58 @@ function Section({
   heading,
   items,
   go,
+  words,
+  group,
+  opened,
+  onOpen,
+  capped = true,
 }: {
   heading: string
   items: Result[]
   go: (to: string) => void
+  /** The query, folded and split (`searchWords`); empty when nothing is typed. */
+  words: readonly string[]
+  /** This group's name in `opened`. */
+  group: string
+  opened: boolean
+  onOpen: (group: string) => void
+  /** False for the short fixed list of pages, which is always shown whole. */
+  capped?: boolean
 }) {
+  const matched = useMatches(items, resultFields, words)
+  // A group with nothing to show is not drawn at all — heading included. cmdk
+  // used to hide it; with the filtering ours, so is that.
+  if (matched.length === 0) return null
+  const cap = words.length === 0 ? IDLE_ROWS : GROUP_ROWS
+  const shown = !capped || opened ? matched : matched.slice(0, cap)
   return (
-    <CommandGroup heading={heading}>
-      {items.map((r) => (
-        <CommandItem
-          key={r.id}
-          // cmdk matches on `value`, so everything searchable goes in here
-          // while the row still renders a clean label.
-          value={`${r.label} ${r.detail ?? ''} ${r.keywords ?? ''}`}
-          onSelect={() => go(r.to)}
-          className="gap-2.5"
-        >
-          <r.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate">{r.label}</span>
-            {r.detail ? (
-              <span className="block truncate text-xs text-text-3">{r.detail}</span>
-            ) : null}
-          </span>
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <>
+      <CommandGroup heading={heading} data-group={group}>
+        {shown.map((r) => (
+          <CommandItem
+            key={r.id}
+            // The row's own id: unique, which a label is not, and what the
+            // selection is kept by. The filtering is ours, so cmdk no longer
+            // needs every searchable word in here.
+            value={r.id}
+            onSelect={() => go(r.to)}
+            className="gap-2.5"
+          >
+            <r.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{r.label}</span>
+              {r.detail ? (
+                <span className="block truncate text-xs text-text-3">{r.detail}</span>
+              ) : null}
+            </span>
+          </CommandItem>
+        ))}
+        {shown.length < matched.length ? (
+          <ShowAll group={group} count={matched.length} onOpen={onOpen} />
+        ) : null}
+      </CommandGroup>
+      <CommandSeparator />
+    </>
   )
 }
 
@@ -341,6 +458,15 @@ function PaletteBody({
   const { labels } = useLabels()
   // Any namespace: the registry's keys carry their own ('settings:…').
   const { t: tAny } = useTranslation()
+
+  const [search, setSearch] = useState('')
+  const words = useMemo(() => searchWords(search), [search])
+  /** The row Enter opens, by its `value` — held here so Show all can move it. */
+  const [selected, setSelected] = useState('')
+  const [opened, setOpened] = useState<Opened>({ query: '', groups: new Set() })
+  const isOpen = (group: string) => opened.query === search && opened.groups.has(group)
+  const root = useRef<HTMLDivElement>(null)
+  useActiveDescendant(root)
 
   /**
    * Every registered tool that can be given an honest form, in registry order.
@@ -540,12 +666,64 @@ function PaletteBody({
     navigate(to)
   }
 
+  const actions = useMatches(createActions, actionFields, words)
+  const toolRows = useMatches(tools, toolFields, words)
+  const toolsShown =
+    isOpen('tools') || toolRows.length <= (words.length === 0 ? IDLE_ROWS : GROUP_ROWS)
+      ? toolRows
+      : toolRows.slice(0, words.length === 0 ? IDLE_ROWS : GROUP_ROWS)
+
+  /*
+   * Opens a group past its cap and moves the selection onto the first row it
+   * revealed, so a keyboard user who pressed Enter on Show all carries on from
+   * where they were rather than being thrown back to the top. A frame later:
+   * the Show all row unmounting makes cmdk re-select the first row of the
+   * whole list, and this has to land after that.
+   */
+  const open = (group: string) => {
+    setOpened((was) => ({
+      query: search,
+      groups: new Set([...(was.query === search ? was.groups : []), group]),
+    }))
+    const shownBefore = words.length === 0 ? IDLE_ROWS : GROUP_ROWS
+    requestAnimationFrame(() => {
+      const items = root.current?.querySelectorAll<HTMLElement>(
+        `[cmdk-group][data-group="${group}"] [cmdk-item]`,
+      )
+      const next = items?.[shownBefore]
+      const value = next?.getAttribute('data-value')
+      if (!next || !value) return
+      setSelected(value)
+      next.scrollIntoView({ block: 'nearest' })
+    })
+  }
+
+  /** What every record group is handed besides its heading and rows. */
+  const section = (group: string) => ({
+    go,
+    words,
+    group,
+    opened: isOpen(group),
+    onOpen: open,
+  })
+
   // This build's CommandDialog renders Dialog > DialogContent > children with
   // no cmdk root, so the Command provider has to be supplied here — without it
   // CommandInput has no store and throws on mount.
   return (
-    <Command label={t('spotlight.label')} filter={matchesQuery} data-tour="palette">
-      <CommandInput placeholder={t('spotlight.placeholder')} />
+    <Command
+      ref={root}
+      label={t('spotlight.label')}
+      shouldFilter={false}
+      value={selected}
+      onValueChange={setSelected}
+      data-tour="palette"
+    >
+      <CommandInput
+        placeholder={t('spotlight.placeholder')}
+        value={search}
+        onValueChange={setSearch}
+      />
       <CommandList className="max-h-[62vh]">
         <CommandEmpty>
           <div className="py-6 text-center">
@@ -561,87 +739,100 @@ function PaletteBody({
           same array the topbar's menu renders, run through the same hook —
           so a row that became a link cannot still be fired as a dialog
           here. */}
-        <CommandGroup heading={t('spotlight.actions')}>
-          {createActions.map((action) => (
-            <CommandItem
-              key={action.id}
-              value={`${action.label} ${action.hint ?? ''}`}
-              onSelect={() => {
-                onOpenChange(false)
-                // Deferred a frame: this dialog returns focus to its trigger
-                // as it unmounts, and a dialog mounted in the same commit
-                // would have that focus pulled straight back out of it.
-                requestAnimationFrame(() => runCreate(action))
-              }}
-              className="gap-2.5"
-            >
-              <action.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate">{action.label}</span>
-                {action.hint ? (
-                  <span className="block truncate text-xs text-text-3">{action.hint}</span>
-                ) : null}
-              </span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandSeparator />
+        {actions.length > 0 ? (
+          <CommandGroup heading={t('spotlight.actions')}>
+            {actions.map((action) => (
+              <CommandItem
+                key={action.id}
+                value={`${action.label} ${action.hint ?? ''}`}
+                onSelect={() => {
+                  onOpenChange(false)
+                  // Deferred a frame: this dialog returns focus to its trigger
+                  // as it unmounts, and a dialog mounted in the same commit
+                  // would have that focus pulled straight back out of it.
+                  requestAnimationFrame(() => runCreate(action))
+                }}
+                className="gap-2.5"
+              >
+                <action.icon
+                  className="size-4 shrink-0 text-text-3"
+                  strokeWidth={1.7}
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate">{action.label}</span>
+                  {action.hint ? (
+                    <span className="block truncate text-xs text-text-3">{action.hint}</span>
+                  ) : null}
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        ) : null}
+        {actions.length > 0 ? <CommandSeparator /> : null}
 
-        <Section heading={t('spotlight.applications')} items={apps} go={go} />
-        <CommandSeparator />
-        <Section heading={t('spotlight.reminders')} items={rems} go={go} />
-        <CommandSeparator />
-        <Section heading={t('spotlight.calendar')} items={events} go={go} />
-        <CommandSeparator />
-        <Section heading={t('spotlight.pages.vault')} items={vaultRows} go={go} />
-        <CommandSeparator />
-        <Section heading={t('spotlight.pages.jobScout')} items={scoutRows} go={go} />
-        <CommandSeparator />
+        <Section heading={t('spotlight.applications')} items={apps} {...section('applications')} />
+        <Section heading={t('spotlight.reminders')} items={rems} {...section('reminders')} />
+        <Section heading={t('spotlight.calendar')} items={events} {...section('calendar')} />
+        <Section heading={t('spotlight.pages.vault')} items={vaultRows} {...section('vault')} />
+        <Section heading={t('spotlight.pages.jobScout')} items={scoutRows} {...section('scout')} />
 
         {/* Below the records, above the pages. A palette is asked for a
           record far more often than for a verb, and the verbs are long
           enough a list to push everything under them off the screen — but
           they are what someone types "delete" or "snooze" hoping to find,
           and typing is what this group is reached by. */}
-        <CommandGroup heading={t('spotlight.tools')}>
-          {tools.map((row) => (
-            <CommandItem
-              key={row.name}
-              // The tool's own name is in here as well: it is what the
-              // architecture document and the audit log call it, and someone
-              // who has read either should be able to type it.
-              value={`${row.plan.tool.title} ${row.plan.tool.summary} ${row.name}`}
-              onSelect={() => {
-                onOpenChange(false)
-                // A frame later, for the same reason the create rows defer:
-                // this dialog hands focus back to its trigger as it unmounts,
-                // and a dialog mounted in the same commit loses it again.
-                requestAnimationFrame(() => onPickTool(row))
-              }}
-              className="gap-2.5"
-            >
-              <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate">{row.plan.tool.title}</span>
-                <span className="block truncate text-xs text-text-3">{row.plan.tool.summary}</span>
-              </span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandSeparator />
+        {toolRows.length > 0 ? (
+          <CommandGroup heading={t('spotlight.tools')} data-group="tools">
+            {toolsShown.map((row) => (
+              <CommandItem
+                key={row.name}
+                // The tool's own name is in here as well: it is what the
+                // architecture document and the audit log call it, and someone
+                // who has read either should be able to type it.
+                value={`${row.plan.tool.title} ${row.plan.tool.summary} ${row.name}`}
+                onSelect={() => {
+                  onOpenChange(false)
+                  // A frame later, for the same reason the create rows defer:
+                  // this dialog hands focus back to its trigger as it unmounts,
+                  // and a dialog mounted in the same commit loses it again.
+                  requestAnimationFrame(() => onPickTool(row))
+                }}
+                className="gap-2.5"
+              >
+                <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate">{row.plan.tool.title}</span>
+                  <span className="block truncate text-xs text-text-3">
+                    {row.plan.tool.summary}
+                  </span>
+                </span>
+              </CommandItem>
+            ))}
+            {toolsShown.length < toolRows.length ? (
+              <ShowAll group="tools" count={toolRows.length} onOpen={open} />
+            ) : null}
+          </CommandGroup>
+        ) : null}
+        {toolRows.length > 0 ? <CommandSeparator /> : null}
 
-        <Section heading={t('spotlight.goTo')} items={pages} go={go} />
-        <CommandSeparator />
+        <Section heading={t('spotlight.goTo')} items={pages} {...section('pages')} capped={false} />
 
         {/* Last, and the longest: every setting, every profile field, and the
           places inside pages. Below the pages so an empty palette still opens
           on the short list of where to go; typing is what reaches these, and
           typing "theme" or "api key" leaves nothing above them. */}
-        <Section heading={t('spotlight.pages.settings')} items={settingRows} go={go} />
-        <CommandSeparator />
-        <Section heading={t('spotlight.pages.profile')} items={profileRows} go={go} />
-        <CommandSeparator />
-        <Section heading={t('spotlight.places')} items={placesRows} go={go} />
+        <Section
+          heading={t('spotlight.pages.settings')}
+          items={settingRows}
+          {...section('settings')}
+        />
+        <Section
+          heading={t('spotlight.pages.profile')}
+          items={profileRows}
+          {...section('profile')}
+        />
+        <Section heading={t('spotlight.places')} items={placesRows} {...section('places')} />
       </CommandList>
 
       <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">

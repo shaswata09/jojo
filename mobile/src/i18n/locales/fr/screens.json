@@ -434,6 +434,7 @@
       "transferLast": "dernière utilisation le {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Tout fonctionne sur cet appareil.",
+    "statusEnglish": "Conservé en anglais, mot pour mot, pour ne pas s’écarter de la licence qu’il résume.",
     "overdue_one": "{{count}} rappel en retard.",
     "overdue_other": "{{count}} rappels en retard."
   },

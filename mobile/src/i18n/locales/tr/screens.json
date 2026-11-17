@@ -434,6 +434,7 @@
       "transferLast": "son kullanım: {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Her şey bu cihazda çalışır.",
+    "statusEnglish": "Özetlediği lisanstan sapmasın diye kelimesi kelimesine İngilizce bırakıldı.",
     "overdue_one": "{{count}} hatırlatıcı gecikmiş.",
     "overdue_other": "{{count}} hatırlatıcı gecikmiş."
   },

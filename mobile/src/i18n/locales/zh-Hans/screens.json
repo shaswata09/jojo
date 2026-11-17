@@ -410,6 +410,7 @@
       "transferLast": "上次使用于 {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization。一切都在此设备上运行。",
+    "statusEnglish": "保留英文原文，逐字不改，以免与其概括的许可证出现出入。",
     "overdue_other": "{{count}} 个提醒已逾期。"
   },
   "statistics": {

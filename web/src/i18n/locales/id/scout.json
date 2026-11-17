@@ -134,7 +134,9 @@
     "status": {
       "applied": "diterapkan",
       "discarded": "dibuang",
-      "failed": "tidak dapat diterapkan"
+      "failed": "tidak dapat diterapkan",
+      "savedToMatches": "Disimpan ke Kecocokan",
+      "savedToPostings": "Disimpan ke Lowongan"
     },
     "noSummary": "Saran ini tidak disertai ringkasan — buka lowongannya untuk melihat isinya.",
     "reading": "Membaca lowongan untuk mengambil detailnya…",

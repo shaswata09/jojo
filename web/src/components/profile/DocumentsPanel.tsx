@@ -16,6 +16,7 @@ import { pickedFiles } from '@/lib/file-input'
 import { DocumentTile } from './DocumentTile'
 import { DOCUMENTS_BUCKET } from './profile-lists'
 import { useDocumentViewer } from './use-document-viewer'
+import { fileBucketLabel } from '@/components/vault/files/bucket-label'
 
 /** The Profile's Documents card: upload, drop, the grid of documents and the inline viewer. */
 export function DocumentsPanel() {
@@ -62,10 +63,16 @@ export function DocumentsPanel() {
   return (
     <Panel focusId="profile-documents">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <PanelTitle className="mb-0" hint={t('documents.hint', { bucket: DOCUMENTS_BUCKET })}>
+        <PanelTitle
+          className="mb-0"
+          hint={t('documents.hint', { bucket: fileBucketLabel(DOCUMENTS_BUCKET) })}
+        >
           {t('documents.title')}
         </PanelTitle>
-        <div className="flex gap-2" data-focus-id="profile-documents-upload">
+        {/* `flex-wrap`: in German at 360px "Hochladen" and "In den Einstellungen
+            exportieren" need 351px in a 302px row, and without it the pair ran
+            off the card and scrolled the whole page sideways. */}
+        <div className="flex flex-wrap gap-2" data-focus-id="profile-documents-upload">
           {/* The button is the affordance; the input is only the mechanism, so
               it is hidden rather than styled. `hidden` and not `sr-only`:
               there is nothing here for a screen reader to operate that the
@@ -112,7 +119,9 @@ export function DocumentsPanel() {
           <EmptyState
             icon={FileText}
             title={t('documents.empty.title')}
-            description={t('documents.empty.description', { bucket: DOCUMENTS_BUCKET })}
+            description={t('documents.empty.description', {
+              bucket: fileBucketLabel(DOCUMENTS_BUCKET),
+            })}
             action={
               <Button size="sm" onClick={() => fileInput.current?.click()}>
                 <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -158,7 +167,7 @@ export function DocumentsPanel() {
         <Trans
           t={t}
           i18nKey="documents.footer"
-          values={{ bucket: DOCUMENTS_BUCKET }}
+          values={{ bucket: fileBucketLabel(DOCUMENTS_BUCKET) }}
           components={{
             anchor: (
               <Link

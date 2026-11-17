@@ -136,6 +136,7 @@
     "explain": "最近一次更改可以恢复。更早的只是记录，不是时光机。",
     "undoLast": "撤销最后一次",
     "cannotUndo": "加载或清空数据集无法撤销。",
+    "cannotUndoTrimmed": "jojo 记录了这次更改,但信息不足以撤销——它是一次后台写入(匹配度评估、文件的字节),或者时间太久远。",
     "showAll_other": "显示全部 {{count}} 条"
   },
   "crash": {

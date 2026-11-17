@@ -8,6 +8,7 @@ import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { sortDrop } from '@/components/vault/files/intake'
 import { CAPTURE_MAX_BYTES, remoteRefCount } from '@jojo/service/core/capture'
+import { fileBucketLabel } from '@/components/vault/files/bucket-label'
 
 /**
  * What to tell the person about a web page they dropped in, or null when there
@@ -163,6 +164,7 @@ export function useFileIntake({
       }
 
       if (fresh.length > 0) {
+        const shownBucket = fileBucketLabel(bucket)
         toast({
           title:
             fresh.length === 1
@@ -170,11 +172,11 @@ export function useFileIntake({
               : i18next.t('vault:files.intake.addedMany', { count: fresh.length }),
           description: hidden
             ? namesVault
-              ? i18next.t('vault:files.intake.addedHiddenVault', { bucket })
-              : i18next.t('vault:files.intake.addedHidden', { bucket })
+              ? i18next.t('vault:files.intake.addedHiddenVault', { bucket: shownBucket })
+              : i18next.t('vault:files.intake.addedHidden', { bucket: shownBucket })
             : namesVault
-              ? i18next.t('vault:files.intake.addedDescriptionVault', { bucket })
-              : i18next.t('vault:files.intake.addedDescription', { bucket }),
+              ? i18next.t('vault:files.intake.addedDescriptionVault', { bucket: shownBucket })
+              : i18next.t('vault:files.intake.addedDescription', { bucket: shownBucket }),
           action: {
             label: i18next.t('vault:common.undo'),
             onClick: () =>

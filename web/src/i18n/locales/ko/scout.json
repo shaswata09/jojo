@@ -134,7 +134,9 @@
     "status": {
       "applied": "적용됨",
       "discarded": "버림",
-      "failed": "적용할 수 없음"
+      "failed": "적용할 수 없음",
+      "savedToMatches": "매칭에 저장됨",
+      "savedToPostings": "공고에 저장됨"
     },
     "noSummary": "요약이 함께 오지 않았어요. 공고를 열어 어떤 내용인지 확인하세요.",
     "reading": "공고를 읽어 세부 정보를 가져오는 중…",

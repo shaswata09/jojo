@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { MoreHorizontal } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -41,10 +41,25 @@ export function RowMenu({
 }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  const trigger = useRef<HTMLButtonElement>(null)
+
+  /*
+   * Focus goes back to the ⋯ BEFORE the menu closes and the item's action runs.
+   * An item that opens a dialog (Edit, Delete, Draft) unmounts itself in the
+   * same commit the dialog mounts in, so the dialog found no live control to
+   * hand focus back to — it recorded nothing, and closing it dropped focus on
+   * `<body>`, a Tab away from the skip link. With the trigger focused first,
+   * that is what the dialog records and returns to.
+   */
+  const close = () => {
+    trigger.current?.focus({ preventScroll: true })
+    setOpen(false)
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        ref={trigger}
         aria-label={t('rowMenu.moreFor', { name })}
         title={t('rowMenu.more')}
         className={cn(
@@ -57,7 +72,7 @@ export function RowMenu({
         <MoreHorizontal className="size-4" strokeWidth={1.9} aria-hidden />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-48 gap-1 p-1.5">
-        <CloseMenu.Provider value={() => setOpen(false)}>{children}</CloseMenu.Provider>
+        <CloseMenu.Provider value={close}>{children}</CloseMenu.Provider>
       </PopoverContent>
     </Popover>
   )

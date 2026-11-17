@@ -30,6 +30,11 @@
  * the worker in a tab carrying the user's cookies. Vite's range covers the
  * ports below; a project that needs another adds it here deliberately.
  *
+ * And the ports are for the DEVELOPMENT build only — this folder loaded
+ * unpacked. Vite's range is every other local project's range too, so the
+ * same threat applied to them, and the zip the app hands out leaves them out
+ * (`web/scripts/extension-origins.mjs`); only a `--dev` pack keeps them.
+ *
  * The `event.source !== window` check below is the other half, and it is about
  * frames rather than origins: it refuses a message from an embedded document,
  * so a page jojo happens to iframe cannot ask on jojo's behalf.

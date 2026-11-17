@@ -6,7 +6,6 @@
  * comment on a refused repair for why `repair.ts` does not get to write them.
  */
 
-import type { ApprovalMode } from '../core/model'
 import type { ToolCall } from '../core/model-server'
 import { CATALOG, needsConfirming } from './catalog'
 import type { CatalogEntry } from './catalog'
@@ -212,20 +211,8 @@ function refuseUnparsed(base: AgentStep, args: unknown, call: ToolCall, truncate
   return null
 }
 
-/**
- * What each approval mode means to the loop.
- *
- * A table rather than a chain of ternaries, so adding a mode is a line here and
- * a compile error everywhere it has not been handled — which is what an
- * exhaustive `Record` buys over an `if`. Here rather than in the hook that
- * reads it so the mapping is tested: it is the whole meaning of a setting the
- * person chooses, and `semi` mapped to `none` once passed every test there was.
- */
-export const GATE_FOR: { readonly [M in ApprovalMode]: NonNullable<AgentOptions['gate']> } = {
-  manual: 'writes',
-  semi: 'destructive',
-  auto: 'none',
-}
+/** The approval table lives in `gate.ts` so the app can read it without the loop. */
+export { GATE_FOR } from './gate'
 
 /** Whether this step has to be approved before it runs, under the caller's policy. */
 function isGated(options: AgentOptions, entry: CatalogEntry | undefined, base: AgentStep): boolean {
@@ -254,7 +241,8 @@ function isGated(options: AgentOptions, entry: CatalogEntry | undefined, base: A
    * being cleared, and the agent's own permission being raised. Closing an application is a `move`, so it passes here — which is
    * the measured gap this exists to be honest about, not a bug in this line.
    */
-  const mode = options.gate ?? 'destructive'
+  // Read per call, not per run: see `AgentOptions.gate`.
+  const mode = (typeof options.gate === 'function' ? options.gate() : options.gate) ?? 'destructive'
   const gated =
     mode === 'none'
       ? false

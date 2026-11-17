@@ -18,6 +18,8 @@ import { appPath, listStateOf, type ApplicationsSortKey } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 import { domain as domainText, useDomain } from '@/i18n/domain'
+import { ShowMoreRows } from '@/components/common/ShowMoreRows'
+import { useRowCap } from '@/components/common/use-row-cap'
 
 /**
  * The words come from `agoLabel`, so this column speaks the same past tense as
@@ -72,6 +74,54 @@ function NextDateCell({ item }: { item?: TimelineItem }) {
   )
 }
 
+/**
+ * A sortable column header.
+ *
+ * At module scope, not declared inside the table's render: a component made
+ * per render is a new type each time, so React remounted the header — and the
+ * button inside it — whenever the sort changed. The focused button was
+ * destroyed by its own press, focus fell to `<body>`, and a keyboard user could
+ * not press it again to reverse the order.
+ */
+function SortHeader({
+  label,
+  k,
+  align,
+  sort,
+  onToggle,
+}: {
+  label: string
+  k: ApplicationsSortKey
+  align?: 'right'
+  sort: { key: ApplicationsSortKey; dir: 'asc' | 'desc' }
+  onToggle: (key: ApplicationsSortKey) => void
+}) {
+  return (
+    <th
+      scope="col"
+      // aria-sort belongs to the column, not to the control inside it — on the
+      // button it described a button rather than a column of data.
+      aria-sort={sort.key === k ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className={cn('py-2 pe-3 font-medium', align === 'right' && 'text-end')}
+    >
+      <button
+        type="button"
+        onClick={() => onToggle(k)}
+        className="inline-flex items-center gap-1 rounded-sm text-text-3 hover:text-text-1"
+      >
+        {label}
+        {sort.key === k ? (
+          sort.dir === 'asc' ? (
+            <ArrowUp className="size-3" aria-hidden />
+          ) : (
+            <ArrowDown className="size-3" aria-hidden />
+          )
+        ) : null}
+      </button>
+    </th>
+  )
+}
+
 /** The sorted, stage-filtered list as a table — one row per application. */
 export function ApplicationsTable({
   rows,
@@ -96,6 +146,10 @@ export function ApplicationsTable({
   const domain = useDomain()
   const keep = listStateOf(useLocation().search)
   const { all: timelineItems } = useTimeline()
+  // A page of rows at a time, always including the open record's row — the
+  // sheet scrolls the table to it, and a cap that hid it would leave the
+  // sheet pointing at nothing.
+  const cap = useRowCap(rows.length, openId ? rows.findIndex((a) => a.id === openId) : -1)
 
   /**
    * The next dated thing per application, built once rather than filtered per
@@ -117,39 +171,6 @@ export function ApplicationsTable({
     return new Map([...byApp].map(([id, items]) => [id, nextDateOf(items)]))
   }, [timelineItems])
 
-  const SortHeader = ({
-    label,
-    k,
-    align,
-  }: {
-    label: string
-    k: ApplicationsSortKey
-    align?: 'right'
-  }) => (
-    <th
-      scope="col"
-      // aria-sort belongs to the column, not to the control inside it — on the
-      // button it described a button rather than a column of data.
-      aria-sort={sort.key === k ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-      className={cn('py-2 pe-3 font-medium', align === 'right' && 'text-end')}
-    >
-      <button
-        type="button"
-        onClick={() => toggleSort(k)}
-        className="inline-flex items-center gap-1 rounded-sm text-text-3 hover:text-text-1"
-      >
-        {label}
-        {sort.key === k ? (
-          sort.dir === 'asc' ? (
-            <ArrowUp className="size-3" aria-hidden />
-          ) : (
-            <ArrowDown className="size-3" aria-hidden />
-          )
-        ) : null}
-      </button>
-    </th>
-  )
-
   return (
     <PanelScroll>
       <table className="w-full min-w-[780px] text-sm">
@@ -168,22 +189,28 @@ export function ApplicationsTable({
           {/* Sticky so the column labels survive scrolling. Needs its own
               background or rows show through as they pass under it. */}
           <tr className="sticky top-0 z-[1] border-b border-hairline bg-panel text-start text-xs">
-            <SortHeader label={t('table.position')} k="role" />
+            <SortHeader label={t('table.position')} k="role" sort={sort} onToggle={toggleSort} />
             <th scope="col" className="py-2 pe-3 font-medium text-text-3">
               {t('table.role')}
             </th>
-            <SortHeader label={t('table.stage')} k="stage" />
+            <SortHeader label={t('table.stage')} k="stage" sort={sort} onToggle={toggleSort} />
             <th scope="col" className="py-2 pe-3 font-medium text-text-3">
               {t('table.nextDate')}
             </th>
-            <SortHeader label={t('table.lastActivity')} k="daysAgo" align="right" />
+            <SortHeader
+              label={t('table.lastActivity')}
+              k="daysAgo"
+              align="right"
+              sort={sort}
+              onToggle={toggleSort}
+            />
             <th scope="col" className="py-2 text-end font-medium">
               <span className="sr-only">{t('table.actions')}</span>
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-hairline">
-          {rows.map((a) => {
+          {rows.slice(0, cap.shown).map((a) => {
             const isOpen = a.id === openId
             return (
               <tr
@@ -205,6 +232,7 @@ export function ApplicationsTable({
                     // the record opens. See `listStateOf`.
                     to={{ pathname: appPath(a), search: keep }}
                     aria-current={isOpen ? 'page' : undefined}
+                    dir="auto"
                     className="block truncate hover:text-accent hover:underline"
                   >
                     {displayName(a)}
@@ -275,6 +303,7 @@ export function ApplicationsTable({
           })}
         </tbody>
       </table>
+      <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
     </PanelScroll>
   )
 }

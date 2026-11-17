@@ -226,7 +226,8 @@
     "errors": {
       "taken": "已有其他關鍵字使用這個名稱。",
       "blank": "關鍵字需要名稱。",
-      "exists": "這個關鍵字已經存在。"
+      "exists": "這個關鍵字已經存在。",
+      "tooLong": "最多 {{max}} 個字元。"
     },
     "renameNamed": "重新命名「{{name}}」",
     "rename": "重新命名",

@@ -54,8 +54,96 @@ export function useArrivalHighlight(
       // A page being left must not clear its own focus (see above).
       if (window.location.pathname === armedOn) latest.current()
     }, ARRIVAL_HIGHLIGHT_MS)
-    return () => window.clearTimeout(timer)
+    /*
+     * A second arrival at the same row replays the fade, not only the timer.
+     * The Vault's and the Calendar's rows wear the class straight from the URL,
+     * so the same `focus` again leaves the class on and its animation where the
+     * first arrival left it — nearly faded. Rewinding every running highlight
+     * a frame later (once this navigation has rendered) lights it afresh.
+     */
+    const replay = requestAnimationFrame(() => replayArrivalHighlights())
+    return () => {
+      window.clearTimeout(timer)
+      cancelAnimationFrame(replay)
+    }
   }, [focus, arrival])
+}
+
+/** Restarts the `arrival-highlight` fade on every row wearing it. */
+export function replayArrivalHighlights(root: ParentNode = document): void {
+  for (const element of root.querySelectorAll('.arrival-highlight')) {
+    for (const animation of element.getAnimations?.() ?? []) animation.currentTime = 0
+  }
+}
+
+/** Whether a row has left the middle half of a viewport `height` tall. */
+export function offCentre(rect: { top: number; bottom: number }, height: number): boolean {
+  const margin = height * 0.25
+  return rect.top < margin || rect.bottom > height - margin
+}
+
+/**
+ * Keeps a lit row on screen while the page around it settles.
+ *
+ * The arrival scrolls once, on the first frame the row exists — and a panel
+ * above it can still grow after that. On Settings at 360px the capture panel
+ * says "Checking…" for a second and then draws its install steps, 600px
+ * taller, and the Theme row a search had just scrolled to ended up below the
+ * screen with the install steps in its place. So until the highlight fades,
+ * any change in the page's size that pushes the row out of the middle of the
+ * screen centres it again — without animation, which would chase a moving target. The first
+ * wheel, touch or key from the person ends it: the page is theirs to scroll.
+ *
+ * Returns the stop.
+ */
+export function keepInView(element: HTMLElement, until: number): () => void {
+  if (typeof ResizeObserver === 'undefined') return () => {}
+  let stopped = false
+  /*
+   * Pushed out of the middle half of the screen, not merely off it: at 1280
+   * the same growth left the Theme row lit 95px above the bottom edge, which is
+   * on screen and still not where anyone is looking. A row taller than the band
+   * always counts as out, and centring it again moves nothing.
+   */
+  const outside = () => offCentre(element.getBoundingClientRect(), window.innerHeight)
+  /*
+   * Heights as first seen. An observer reports every element once when it
+   * starts watching; acting on that would cut the arrival's smooth scroll short
+   * with a jump. Only a height that has CHANGED is a page that moved.
+   */
+  const seen = new Map<Element, number>()
+  const observer = new ResizeObserver((entries) => {
+    let grew = false
+    for (const entry of entries) {
+      const height = entry.contentRect.height
+      const before = seen.get(entry.target)
+      seen.set(entry.target, height)
+      if (before !== undefined && before !== height) grew = true
+    }
+    if (grew && !stopped && element.isConnected && outside()) {
+      element.scrollIntoView({ block: 'center', behavior: 'auto' })
+    }
+  })
+  /*
+   * The row's ancestors, up to the body: anything above the row that grows
+   * grows one of them, whichever element scrolls. A handful of elements, for
+   * 2.6 seconds.
+   */
+  for (let node: HTMLElement | null = element.parentElement; node; node = node.parentElement) {
+    observer.observe(node)
+  }
+  const userEvents = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
+  const stop = () => {
+    if (stopped) return
+    stopped = true
+    observer.disconnect()
+    window.clearTimeout(timer)
+    for (const type of userEvents) window.removeEventListener(type, stop, true)
+  }
+  for (const type of userEvents)
+    window.addEventListener(type, stop, { capture: true, passive: true })
+  const timer = window.setTimeout(stop, until)
+  return stop
 }
 
 /**
@@ -78,8 +166,9 @@ export function useArrivalScroll<T extends HTMLElement = HTMLElement>(focus: str
   const row = useRef<T | null>(null)
 
   useEffect(() => {
-    if (!focus) return
-    row.current?.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+    if (!focus || !row.current) return
+    row.current.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+    return keepInView(row.current, ARRIVAL_HIGHLIGHT_MS)
   }, [focus, reduced])
 
   return row
@@ -164,6 +253,7 @@ export function useFocusArrival(
     let frame = 0
     let fade = 0
     let lit: HTMLElement | null = null
+    let settle = () => {}
 
     const look = () => {
       const waited = performance.now() - started
@@ -172,6 +262,7 @@ export function useFocusArrival(
         element.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
         element.classList.add('arrival-highlight')
         lit = element
+        settle = keepInView(element, ARRIVAL_HIGHLIGHT_MS)
         fade = window.setTimeout(() => {
           element.classList.remove('arrival-highlight')
         }, ARRIVAL_HIGHLIGHT_MS)
@@ -184,6 +275,7 @@ export function useFocusArrival(
     return () => {
       cancelAnimationFrame(frame)
       window.clearTimeout(fade)
+      settle()
       lit?.classList.remove('arrival-highlight')
     }
   }, [focus, find, fallbackOf, reduced, arrival])

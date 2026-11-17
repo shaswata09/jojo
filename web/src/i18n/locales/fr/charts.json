@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Afficher {{label}}",
-    "hide": "Masquer {{label}}"
+    "hide": "Masquer {{label}}",
+    "item": "{{label}} : {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Toutes les séries sont désactivées dans la légende.",

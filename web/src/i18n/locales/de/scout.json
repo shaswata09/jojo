@@ -136,7 +136,9 @@
     "status": {
       "applied": "übernommen",
       "discarded": "verworfen",
-      "failed": "nicht übernehmbar"
+      "failed": "nicht übernehmbar",
+      "savedToMatches": "In Treffer gespeichert",
+      "savedToPostings": "In Anzeigen gespeichert"
     },
     "noSummary": "Hierzu kam keine Zusammenfassung – öffne die Anzeige, um zu sehen, worum es geht.",
     "reading": "Die Anzeige wird nach Details gelesen …",

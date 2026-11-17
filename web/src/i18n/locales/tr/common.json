@@ -162,7 +162,8 @@
     "stopFiltering": "{{name}} filtresini kaldır",
     "filterBy": "Filtrele: {{name}}",
     "edit": "Anahtar kelimeyi düzenle: {{name}}",
-    "editHint": "Yeniden adlandırın, rengini değiştirin ya da silin"
+    "editHint": "Yeniden adlandırın, rengini değiştirin ya da silin",
+    "tooLong": "En fazla {{max}} karakter olmalı."
   },
   "welcome": {
     "title": "Biraz sizden bahsedin",
@@ -270,5 +271,8 @@
   "command": {
     "title": "Komut Paleti",
     "description": "Çalıştırılacak bir komut arayın..."
+  },
+  "rows": {
+    "showMore": "Daha fazla göster ({{total}} içinden {{shown}})"
   }
 }

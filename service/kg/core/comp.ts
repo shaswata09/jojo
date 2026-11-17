@@ -40,13 +40,15 @@
  * comp field and there is nothing there to choose wrongly between.
  */
 
-/** How often the amount is paid, when the text says. */
-export type CompPeriod = 'year' | 'month' | 'week' | 'day' | 'hour'
+/** How often the amount is paid, when the text says. `fortnight` is every two
+ *  weeks — "biweekly" — which is how a lot of US payroll quotes a cheque. */
+export type CompPeriod = 'year' | 'month' | 'fortnight' | 'week' | 'day' | 'hour'
 
 export type ParsedComp = {
   /** The number as written, before any annualising. */
   amount: number
-  /** '$', '£', '€', '¥', '₹' or a three-letter code, when one was written. */
+  /** '$', '£', '€', '¥', '₹' or a three-letter code, when one was written. A
+   *  dollar with a country prefix (`A$`, `C$`, `R$`) is its code, never '$'. */
   currency?: string
   period: CompPeriod
   /** Whether the period was stated or assumed. See `annualised`. */
@@ -55,17 +57,135 @@ export type ParsedComp = {
   matched: string
 }
 
-const SYMBOLS: Record<string, string> = { $: '$', '£': '£', '€': '€', '¥': '¥', '₹': '₹' }
+/*
+ * `円` is the yen written after the figures (`400万円`), the usual Japanese
+ * order, and reads as the same unit as `¥`.
+ */
+const SYMBOLS: Record<string, string> = {
+  $: '$',
+  '£': '£',
+  '€': '€',
+  '¥': '¥',
+  '₹': '₹',
+  円: '¥',
+}
 
-const CODES = new Set(['usd', 'gbp', 'eur', 'cad', 'aud', 'chf', 'sek', 'jpy', 'inr'])
+/*
+ * A dollar with a country prefix glued to it. Each one used to read as a bare
+ * `$` — the prefix fell through both the symbol group and the three-letter
+ * `before` group — so an Australian, Canadian or Brazilian offer was ranked
+ * against a US one with no conversion, which `comparable()` exists to refuse.
+ * Each maps to its ISO code, so `C$95,000` and `CAD 95,000` read as one unit.
+ */
+const PREFIXED_DOLLAR: Record<string, string> = {
+  us: 'USD',
+  a: 'AUD',
+  au: 'AUD',
+  c: 'CAD',
+  ca: 'CAD',
+  nz: 'NZD',
+  hk: 'HKD',
+  s: 'SGD',
+  sg: 'SGD',
+  r: 'BRL',
+  mx: 'MXN',
+}
 
+/*
+ * Real currency codes only. Everyday three-letter words that happen to be
+ * codes too (`try`, `all`, `top`, `php`) are left out on purpose: a code is a
+ * money signal, so `5 PHP devs` would otherwise read as five pesos.
+ */
+const CODES = new Set([
+  'usd',
+  'gbp',
+  'eur',
+  'cad',
+  'aud',
+  'nzd',
+  'chf',
+  'sek',
+  'nok',
+  'dkk',
+  'pln',
+  'czk',
+  'jpy',
+  'cny',
+  'krw',
+  'inr',
+  'hkd',
+  'sgd',
+  'brl',
+  'mxn',
+  'zar',
+  'ils',
+  'aed',
+  'myr',
+  'twd',
+])
+
+/*
+ * The period words, English first and then the ones the app's other languages
+ * write on an offer. Without them `3.500 € pro Monat`, `2 500 € par mois` and
+ * `R$ 8.000/mês` read as YEARLY figures — twelve times too low, and ranked.
+ * French `an` is only read after `par`/`/`, because on its own it is the
+ * English article. The CJK words (`月給` a monthly wage, `年収` a yearly income,
+ * `時給` an hourly one) are the label written BEFORE the figure, which
+ * `nearestPeriod` finds; `/月` and `/年` touch it.
+ */
 const PERIODS: { pattern: RegExp; period: CompPeriod }[] = [
-  { pattern: /\b(?:per\s+)?(?:hour|hr|hourly)\b|\/\s*(?:hour|hr)\b/i, period: 'hour' },
-  { pattern: /\b(?:per\s+)?(?:day|daily)\b|\/\s*day\b/i, period: 'day' },
-  { pattern: /\b(?:per\s+)?(?:week|wk|weekly)\b|\/\s*(?:week|wk)\b/i, period: 'week' },
-  { pattern: /\b(?:per\s+)?(?:month|mo|monthly|pcm)\b|\/\s*(?:month|mo)\b/i, period: 'month' },
-  { pattern: /\b(?:per\s+)?(?:year|yr|annum|annually|pa)\b|\/\s*(?:year|yr)\b/i, period: 'year' },
+  {
+    pattern:
+      /\b(?:per\s+)?(?:hour|hr|hourly)\b|\/\s*(?:hour|hr|h|std|heure|hora)\b|\bpro\s+stunde\b|\bpar\s+heure\b|\bpor\s+hora\b|\bstündlich|時給|\/\s*時間?/i,
+    period: 'hour',
+  },
+  {
+    pattern: /\b(?:per\s+)?(?:day|daily)\b|\/\s*(?:day|tag|jour|d[ií]a)\b|\bpro\s+tag\b|\bpar\s+jour\b|日給|\/\s*日/i,
+    period: 'day',
+  },
+  {
+    pattern:
+      /\b(?:bi-?weekly|fortnightly|per\s+fortnight|every\s+(?:two|2)\s+weeks)\b|\/\s*fortnight\b/i,
+    period: 'fortnight',
+  },
+  {
+    pattern:
+      /(?<!bi-?)\b(?:per\s+)?(?:week|wk|weekly)\b|\/\s*(?:week|wk|woche|semaine|semana)\b|\bpro\s+woche\b|\bpar\s+semaine\b|\bpor\s+semana\b|\bwöchentlich|週給|\/\s*週/i,
+    period: 'week',
+  },
+  {
+    pattern:
+      /\b(?:per\s+)?(?:month|mo|monthly|pcm)\b|\/\s*(?:month|mo|monat|mois|mes|mês)(?![a-z])|\b(?:pro|im)\s+monat\b|\bmonatlich\b|\bpar\s+mois\b|\bmensuel(?:le)?\b|\b(?:al|por|cada)\s+mes\b|\bpor\s+mês|\bmensual\b|\bmensal\b|月給|月収|月額|月薪|\/\s*月/i,
+    period: 'month',
+  },
+  {
+    pattern:
+      /\b(?:per\s+)?(?:year|yr|annum|annually|pa)\b|\/\s*(?:year|yr|jahr|an|año|ano)(?![a-z])|\b(?:pro|im)\s+jahr\b|\bjährlich|\bpar\s+an\b|\bannuel(?:le)?\b|\b(?:al|por)\s+año|\b(?:por|ao)\s+ano\b|\banual\b|年収|年俸|年薪|\/\s*年/i,
+    period: 'year',
+  },
 ]
+
+/*
+ * What a multiplier after the digits is worth. `k`/`m` as before, and the ones
+ * the other locales write: the Indian lakh (1,00,000) and crore (1,00,00,000),
+ * `LPA` — lakh per annum, the usual way an Indian offer is quoted — and the
+ * Japanese/Chinese 万 (ten thousand) and 億 (a hundred million). Before these
+ * `₹12 LPA` read as twelve rupees a year and `¥400万` as four hundred yen.
+ * A bare `L` counts only glued to the digits (`₹12L`), because a spaced `L` is
+ * as likely to be a litre or a level.
+ */
+const MULTIPLIER = String.raw`k\b|m\b|lpa\b|lakhs?\b|lacs?\b|crores?\b|cr\b|(?<=\d)l\b|万|億`
+
+function multiplierOf(suffix: string | undefined): number {
+  if (suffix === undefined) return 1
+  const s = suffix.toLowerCase()
+  if (s === 'k') return 1_000
+  if (s === 'm') return 1_000_000
+  if (s === '万') return 10_000
+  if (s === '億') return 100_000_000
+  if (s.startsWith('cr')) return 10_000_000
+  return 100_000 // lakh, lac, L, LPA
+}
 
 /**
  * `112k`, `112,000`, `112 000`, `112.500`, `112.5k`.
@@ -95,19 +215,29 @@ const PERIODS: { pattern: RegExp; period: CompPeriod }[] = [
  *   the period touches again; `readAmount` keeps it only when its separator is
  *   not the grouping one.
  */
-const AMOUNT =
-  /(?<currency>[$£€¥₹])?\s*(?<before>[a-z]{3})?\s*(?<digits>\d{1,3}(?:[,\s.]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3}|\d+(?:\.\d+)?)(?<cents>[.,]\d{1,2}(?!\d))?\s*(?<k>k\b|m\b)?\s*(?<code>[a-z]{3}\b)?/i
+/*
+ * And the Swiss apostrophe, `CHF 120'000` (or the typographic `’`): it ended
+ * the number, so a Zurich salary read as CHF 120 a year.
+ */
+const AMOUNT = new RegExp(
+  String.raw`(?<currency>(?<![a-z])(?:us|au|a|ca|c|nz|hk|sg|s|r|mx)\$|[$£€¥₹])?\s*(?<before>[a-z]{3})?\s*(?<digits>\d{1,3}(?:[,\s.'’]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3}|\d+(?:\.\d+)?)(?<cents>[.,]\d{1,2}(?!\d))?\s*(?<k>${MULTIPLIER})?\s*(?<code>[a-z]{3}\b)?`,
+  'i',
+)
 
-/** `112,500`, `112 000`, `112.500`, `12,00,000` — the grouped form, where the
- *  separator is standing between thousands rather than in front of cents. */
-const GROUPED = /^(?:\d{1,3}(?:[,\s.]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})$/
+/** `112,500`, `112 000`, `112.500`, `12,00,000`, `120'000` — the grouped form,
+ *  where the separator is standing between thousands rather than in front of
+ *  cents. */
+const GROUPED = /^(?:\d{1,3}(?:[,\s.'’]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})$/
 
 /**
  * The upper end of a range straight after an amount: ` – $30`, `-30`,
  * `-$3,500`, ` to 140k`. Its own currency, separators and multiplier are
  * allowed, and nothing else — a comma ends it.
  */
-const RANGE_END = /^\s*(?:-|–|—|to\b)\s*[$£€¥₹]?\s*\d+(?:[,.\s]\d{3})*(?:\.\d+)?\s*(?:k\b|m\b)?/i
+const RANGE_END = new RegExp(
+  String.raw`^\s*(?:-|–|—|to\b)\s*(?:(?:us|au|a|ca|c|nz|hk|sg|s|r|mx)?\$|[£€¥₹])?\s*(?<end>\d+(?:[,.\s'’]\d{3})*(?:\.\d+)?)\s*(?<k>${MULTIPLIER})?`,
+  'i',
+)
 
 /**
  * A currency written AFTER the figures: `120.000,50 €`, or the `EUR` in
@@ -115,7 +245,7 @@ const RANGE_END = /^\s*(?:-|–|—|to\b)\s*[$£€¥₹]?\s*\d+(?:[,.\s]\d{3})*
  * follows it, or the `$` of the next amount (`Team of 12 $112k`) would label
  * the headcount. A code counts only when it is a real one (`CODES`).
  */
-const CURRENCY_AFTER = /^\s*(?:(?<symbol>[$£€¥₹])(?!\s*\d)|(?<code>[a-z]{3})\b)/i
+const CURRENCY_AFTER = /^\s*(?:(?<symbol>[$£€¥₹円])(?!\s*\d)|(?<code>[a-z]{3})\b)/i
 
 function currencyAfter(text: string | undefined): { currency: string; length: number } | undefined {
   if (text === undefined) return undefined
@@ -234,7 +364,7 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
    * reason `112.5k` does — the writer already said which thousands they meant.
    */
   const grouped = suffix === undefined && separated
-  const whole = Number(raw.replace(grouped ? /[,\s.]/g : /[,\s]/g, ''))
+  const whole = Number(raw.replace(grouped ? /[,\s.'’]/g : /[,\s'’]/g, ''))
   /*
    * A decimal tail counts only after the GROUPED form and only when its
    * separator differs from the grouping one: `€1.200,50` and `$1,200.50` are
@@ -247,8 +377,6 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
       : 0
   const base = whole + tail
   if (!Number.isFinite(base) || base <= 0) return undefined
-
-  const amount = base * (suffix === 'm' ? 1_000_000 : suffix === 'k' ? 1_000 : 1)
 
   const symbol = groups['currency']
   /*
@@ -290,6 +418,32 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
   const range = RANGE_END.exec(rawAfter)
   const rawAfterRange = range ? rawAfter.slice(range[0].length) : undefined
   /*
+   * A multiplier written once, after the top of the range: `$120-140k`,
+   * `£45-50k`, `₹12-15 LPA`. It belongs to both ends. Without this the low end
+   * read as $120 a year — a thousandth of the offer, ranked below a $95,000 one
+   * — while the unmarked `120-140k` skipped its bare low end and read as the
+   * TOP of the range, so one band format came out as its bottom over a
+   * thousand and the other as its top.
+   *
+   * Borrowed only when the low end has no multiplier and no grouping of its
+   * own (`$95,000-110k` already said what it meant) and is not larger than the
+   * top's digits — `50000-60k` is somebody's typo, and multiplying 50,000 by a
+   * thousand would be a worse one. When it is borrowed, `matched` runs to the
+   * end of the range, so the text a reader is shown contains the `k` that the
+   * figure depends on.
+   */
+  const rangeSuffix = range?.groups?.['k']
+  const rangeTop = Number((range?.groups?.['end'] ?? '').replace(/[,\s'’]/g, ''))
+  const borrowed =
+    suffix === undefined &&
+    !separated &&
+    cents === undefined &&
+    rangeSuffix !== undefined &&
+    Number.isFinite(rangeTop) &&
+    base <= rangeTop
+  const multiplierText = borrowed ? rangeSuffix : suffix
+  const amount = base * multiplierOf(multiplierText)
+  /*
    * A currency written after the figures, or after the end of the range, is
    * the whole range's — the same as a touching period. Without it `60000-70000
    * EUR` passed over the unmarked 60000 and read the range as its TOP end,
@@ -308,7 +462,7 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
   const after = skip(rawAfter) ?? rawAfter
   const afterRange = skip(rawAfterRange)
   const currency = symbol
-    ? SYMBOLS[symbol]
+    ? (SYMBOLS[symbol] ?? PREFIXED_DOLLAR[symbol.slice(0, -1).toLowerCase()])
     : code
       ? code.toUpperCase()
       : trailingCurrency?.currency
@@ -319,6 +473,7 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
     code !== undefined ||
     trailingCurrency !== undefined ||
     suffix !== undefined ||
+    borrowed ||
     separated ||
     touchingIn(after) !== -1 ||
     touchingIn(afterRange) !== -1
@@ -340,7 +495,16 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
    */
   const direct = touchingIn(after)
   const touching = direct !== -1 ? direct : touchingIn(afterRange)
-  const stated = touching === -1 ? nearestPeriod(source, hit.index) : PERIODS[touching]
+  /*
+   * `LPA` is "lakh per annum": the multiplier states the period itself, and
+   * nothing after it has to.
+   */
+  const perAnnum = multiplierText?.toLowerCase() === 'lpa'
+  const stated = perAnnum
+    ? PERIODS.find((p) => p.period === 'year')
+    : touching === -1
+      ? nearestPeriod(source, hit.index)
+      : PERIODS[touching]
 
   return {
     signalled,
@@ -356,7 +520,9 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
        */
       period: stated?.period ?? 'year',
       periodStated: stated !== undefined,
-      matched: hit[0].trim(),
+      matched: borrowed
+        ? source.slice(hit.index, hit.index + hit[0].length - giveBack + (range?.[0].length ?? 0)).trim()
+        : hit[0].trim(),
     },
   }
 }
@@ -407,6 +573,7 @@ export function parseComp(text: string): ParsedComp | undefined {
 export const PER_YEAR: Record<CompPeriod, number> = {
   year: 1,
   month: 12,
+  fortnight: 26,
   week: 52,
   day: 260,
   hour: 2080,

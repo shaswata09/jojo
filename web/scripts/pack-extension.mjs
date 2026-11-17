@@ -34,6 +34,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, join, posix, relative, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zipSync } from 'fflate'
+import { isDevPack, shippedMatches } from './extension-origins.mjs'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
 const SOURCE = join(WEB, 'extension')
@@ -167,40 +168,36 @@ const files = new Map(
 )
 
 /*
- * The origin this build of the app will be served from, added to the packed
- * manifest.
+ * The pages the packed bridge runs on — see `extension-origins.mjs`.
  *
  * `content_scripts.matches` is the only thing that decides whether the bridge
  * exists on a page, so an origin missing from it is an extension that installs,
  * reports itself healthy, and silently answers nothing — which is exactly how
  * the hosted app came to say "the extension did not answer" while the extension
- * was running.
+ * was running. And an origin too many is a page that can drive the extension:
+ * the localhost dev ports the checked-in manifest names for development are
+ * Vite's defaults, which every other local project uses as well.
  *
- * The checked-in manifest names this repository's own Pages URL, which covers
- * the published build and every developer. A FORK is served from somewhere else
- * and would otherwise have to hand-edit the manifest, so `JOJO_APP_ORIGIN` sets
- * it at pack time — the same shape as `BASE_PATH` in the workflow, and set from
- * the same place.
- *
- * Appended rather than replacing: the dev ports have to keep working in a fork
- * too, and dropping them would trade one silent failure for another.
+ * So the zip ships the deployed origin only, plus `JOJO_APP_ORIGIN` — a FORK
+ * is served from somewhere else, and sets it at pack time the same way the
+ * workflow sets `BASE_PATH`. A dev pack (`--dev`, or `JOJO_PACK_DEV=1`) keeps
+ * the dev ports: `npm run dev` packs that way, and so does the dev server's
+ * repack, for a developer installing from their own server.
  */
-const extra = (process.env.JOJO_APP_ORIGIN ?? '').trim()
-if (extra) {
+{
+  const dev = isDevPack(process.argv.slice(2), process.env)
+  const origin = process.env.JOJO_APP_ORIGIN ?? ''
   const manifest = JSON.parse(new TextDecoder().decode(files.get('manifest.json')))
-  /*
-   * `${origin}/*`, never a bare origin. A match pattern MUST carry a path
-   * component: `https://example.com` is invalid, and Chrome's response to one
-   * invalid entry is to drop the whole content_scripts block — so the extension
-   * installs, reports itself healthy, and injects nothing anywhere. That failure
-   * is silent in exactly the way that cost a day here.
-   */
-  const pattern = `${extra.replace(/\/+$/, '')}/*`
-  if (!manifest.content_scripts[0].matches.includes(pattern)) {
-    manifest.content_scripts[0].matches.push(pattern)
-  }
+  const before = manifest.content_scripts[0].matches
+  const after = shippedMatches(before, { dev, origin })
+  manifest.content_scripts[0].matches = after
   files.set('manifest.json', new TextEncoder().encode(`${JSON.stringify(manifest, null, 2)}\n`))
-  console.log(`pack-extension: added ${pattern} to content_scripts.matches`)
+  const dropped = before.filter((pattern) => !after.includes(pattern)).length
+  const added = after.filter((pattern) => !before.includes(pattern))
+  console.log(
+    `pack-extension: ${dev ? 'dev pack, dev ports kept' : `${dropped} dev match patterns left out`}` +
+      (added.length > 0 ? `; added ${added.join(', ')}` : ''),
+  )
 }
 
 /*

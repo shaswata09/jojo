@@ -10,7 +10,6 @@ import {
   captureFileName,
   captureNote,
   hostOf,
-  CAPTURE_REJECTION_MESSAGE,
 } from '@jojo/service/core/capture'
 import { sizeLabel } from '@jojo/service/core/files'
 import { Button } from '@/components/ui/Button'
@@ -23,6 +22,7 @@ import { useToast } from '@/lib/toast-context'
 import { byteLengthOf } from '@/lib/text'
 import { now, TODAY } from '@/lib/today'
 import { useColors } from '@/theme/theme-context'
+import { domain } from '@/i18n/domain'
 import { space } from '@/theme/tokens'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PostingBrowser'>
@@ -137,7 +137,7 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
               description:
                 outcome.reason === 'script-failed'
                   ? (outcome.detail ?? t('postingBrowser.noAnswer'))
-                  : CAPTURE_REJECTION_MESSAGE[outcome.reason],
+                  : domain.captureRejected(outcome.reason),
             })
             return
           }

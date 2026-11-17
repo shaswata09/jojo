@@ -33,10 +33,10 @@ import { capitalize } from '@/lib/text'
 import { useCopy } from '@/lib/use-copy'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
-import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record<SnippetTag, string>
 
@@ -47,11 +47,9 @@ const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record
  * overflow onto the card. Everything else — edit, duplicate, retag, delete —
  * lives behind the ⋯ in the order every list in the app uses.
  */
-export function SnippetsTool({ focus }: { focus?: string }) {
+export function SnippetsTool() {
   const { t } = useTranslation('vault')
   const domain = useDomain()
-  // Only the arrival highlight needs the palette here.
-  const c = useColors()
   const { snippets, addSnippet, duplicateSnippet, updateSnippet, removeSnippet } = useVault()
   // Named for the filing toast; the picker sheet reads the list itself.
   const { byId } = useApplications()
@@ -199,53 +197,52 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         </Panel>
       ) : (
         rows.map((snippet) => (
-          <Panel
-            key={snippet.id}
-            style={focus === snippet.id ? { borderColor: c.accentBorder } : undefined}
-          >
-            <View style={styles.head}>
-              <View style={s.fill}>
-                <Txt size="base" weight="medium">
-                  {snippet.title}
-                </Txt>
-                <View style={styles.chips}>
-                  <Chip size="sm" tone="gray">
-                    {snippet.tag}
-                  </Chip>
-                  <LabelChips recordId={snippet.id} />
+          <FocusTarget key={snippet.id} id={snippet.id}>
+            <Panel>
+              <View style={styles.head}>
+                <View style={s.fill}>
+                  <Txt size="base" weight="medium">
+                    {snippet.title}
+                  </Txt>
+                  <View style={styles.chips}>
+                    <Chip size="sm" tone="gray">
+                      {snippet.tag}
+                    </Chip>
+                    <LabelChips recordId={snippet.id} />
+                  </View>
+                  {/* The card never said what it was filed under, which made the
+                      menu action that files it look like it did nothing. */}
+                  <FiledUnderLinks applicationIds={snippet.applicationIds} />
                 </View>
-                {/* The card never said what it was filed under, which made the
-                    menu action that files it look like it did nothing. */}
-                <FiledUnderLinks applicationIds={snippet.applicationIds} />
+                {/* Copy is the point of a snippet, so it is the one action on the
+                    card. Delete is not: it costs a menu, like every other. */}
+                <IconButton
+                  icon={isCopied(snippet.id) ? 'check' : 'copy'}
+                  label={t('snippets.copyNamed', { name: snippet.title })}
+                  active={isCopied(snippet.id)}
+                  onPress={() =>
+                    copy(snippet.tailored ? stripMarks(snippet.body) : snippet.body, snippet.id)
+                  }
+                />
+                <LabelPicker recordId={snippet.id} name={snippet.title} />
+                <IconButton
+                  icon="more-horizontal"
+                  label={t('common.moreActionsFor', { name: snippet.title })}
+                  onPress={() => setMenuFor(snippet)}
+                />
               </View>
-              {/* Copy is the point of a snippet, so it is the one action on the
-                  card. Delete is not: it costs a menu, like every other. */}
-              <IconButton
-                icon={isCopied(snippet.id) ? 'check' : 'copy'}
-                label={t('snippets.copyNamed', { name: snippet.title })}
-                active={isCopied(snippet.id)}
-                onPress={() =>
-                  copy(snippet.tailored ? stripMarks(snippet.body) : snippet.body, snippet.id)
-                }
-              />
-              <LabelPicker recordId={snippet.id} name={snippet.title} />
-              <IconButton
-                icon="more-horizontal"
-                label={t('common.moreActionsFor', { name: snippet.title })}
-                onPress={() => setMenuFor(snippet)}
-              />
-            </View>
-            {/* A tailored body is drawn with its marks; see `core/marks.ts`. */}
-            {snippet.tailored ? (
-              <View style={{ marginTop: space[2], maxHeight: 132, overflow: 'hidden' }}>
-                <Marked body={snippet.body} />
-              </View>
-            ) : (
-              <Txt size="sm" tone="secondary" numberOfLines={6} style={{ marginTop: space[2] }}>
-                {snippet.body}
-              </Txt>
-            )}
-          </Panel>
+              {/* A tailored body is drawn with its marks; see `core/marks.ts`. */}
+              {snippet.tailored ? (
+                <View style={{ marginTop: space[2], maxHeight: 132, overflow: 'hidden' }}>
+                  <Marked body={snippet.body} />
+                </View>
+              ) : (
+                <Txt size="sm" tone="secondary" numberOfLines={6} style={{ marginTop: space[2] }}>
+                  {snippet.body}
+                </Txt>
+              )}
+            </Panel>
+          </FocusTarget>
         ))
       )}
 

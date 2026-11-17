@@ -56,8 +56,13 @@ export const clockValue = (mins: number) => `${pad(Math.floor(mins / 60) % 24)}:
 export function minutesOf(value: string): number | undefined {
   const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim())
   if (!match) return undefined
-  const mins = Number(match[1]) * 60 + Number(match[2])
-  return Number.isFinite(mins) && mins >= 0 && mins < 24 * 60 ? mins : undefined
+  // Each part on its own, not only the total: '9:75' is under 24 hours as
+  // minutes, and was saved as 10:15 without a word. A minute past 59 is a slip,
+  // and the field says so rather than guessing which digit was meant.
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (hours > 23 || minutes > 59) return undefined
+  return hours * 60 + minutes
 }
 
 /**

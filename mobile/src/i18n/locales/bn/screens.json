@@ -434,6 +434,7 @@
       "transferLast": "শেষ ব্যবহার {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization। সবকিছু এই ডিভাইসেই চলে।",
+    "statusEnglish": "হুবহু ইংরেজিতে রাখা হয়েছে, যাতে এটি যে লাইসেন্সের সারাংশ তার থেকে সরে না যায়।",
     "overdue_one": "{{count}}টি রিমাইন্ডার মেয়াদোত্তীর্ণ।",
     "overdue_other": "{{count}}টি রিমাইন্ডার মেয়াদোত্তীর্ণ।"
   },

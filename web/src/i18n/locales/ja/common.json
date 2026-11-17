@@ -158,7 +158,8 @@
     "stopFiltering": "{{name}} での絞り込みをやめる",
     "filterBy": "{{name}} で絞り込む",
     "edit": "キーワード {{name}} を編集",
-    "editHint": "名前の変更、色の変更、削除"
+    "editHint": "名前の変更、色の変更、削除",
+    "tooLong": "{{max}}文字以内にしてください。"
   },
   "welcome": {
     "title": "あなたについて少し教えてください",
@@ -265,5 +266,8 @@
   "command": {
     "title": "コマンドパレット",
     "description": "実行するコマンドを検索..."
+  },
+  "rows": {
+    "showMore": "さらに表示（{{total}} 件中 {{shown}} 件）"
   }
 }

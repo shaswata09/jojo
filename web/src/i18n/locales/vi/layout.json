@@ -130,6 +130,7 @@
       "profile": "Hồ sơ cá nhân",
       "assistant": "Trợ lý",
       "settings": "Cài đặt"
-    }
+    },
+    "showAll_other": "Hiện tất cả {{count}}"
   }
 }

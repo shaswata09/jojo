@@ -20,6 +20,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { domain } from '@/i18n/domain'
+import { toTab } from '@/navigation/to-tab'
 
 /**
  * The person's own documents, rewritten for this posting.
@@ -268,8 +269,7 @@ function TailoredCard({
       id: 'open',
       label: t('tailored.openInVault'),
       icon: 'external-link',
-      onPress: () =>
-        navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets', focus: s.id } }),
+      onPress: () => toTab(navigation, 'Vault', { tool: 'snippets', focus: s.id }),
     },
     {
       id: 'delete',

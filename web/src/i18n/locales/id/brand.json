@@ -5,7 +5,7 @@
     "trigger": "Gerakan jojo",
     "triggerAria": "Gerakan dan kredit jojo",
     "plays": "diputar",
-    "modelCredit": "Model robot:"
+    "modelCreditFull": "Model robot: <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work> oleh <artist>Jungle Jim</artist>, berlisensi <licence>CC BY 4.0</licence>. Diubah untuk jojo: mesh dan tekstur lebih ringan, mata dan gerakan sendiri (Cara menggunakan › Dibangun dengan mencantumkan setiap perubahan). Senimannya tidak mendukung jojo."
   },
   "theme": {
     "toggle": "Ganti tema",

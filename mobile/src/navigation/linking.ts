@@ -26,6 +26,13 @@ import type { RootStackParamList } from '@/navigation/types'
 export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ['jojo://'],
   config: {
+    /*
+     * The tabs sit under whatever a link opens. Without this, a cold start on
+     * `jojo://application/<slug>` (or `settings`, `scout`, …) built a stack
+     * holding ONLY that screen: no back arrow, no tab bar, Android Back left
+     * the app, and the missing-record "Back" button had nothing to go back to.
+     */
+    initialRouteName: 'Tabs',
     screens: {
       Tabs: {
         screens: {

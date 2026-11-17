@@ -43,3 +43,25 @@ export function noPreviewText(file: Pick<VaultFile, 'kind'>, stored: boolean): s
     ? i18next.t('vault:viewer.noPreview.stored', { kind: file.kind })
     : i18next.t('vault:viewer.noPreview.missing', { kind: file.kind })
 }
+
+/**
+ * Whether these leading bytes are a PDF's: `%PDF-` within the first 1024, the
+ * window readers accept. A stored record's file name and type come from its
+ * path, which a restored backup controls — the bytes are the only honest
+ * answer to "is this a PDF" before it goes into a frame on jojo's origin.
+ */
+export function isPdfHeader(head: Uint8Array): boolean {
+  const magic = [0x25, 0x50, 0x44, 0x46, 0x2d] // %PDF-
+  const end = Math.min(head.length, 1024) - magic.length
+  for (let i = 0; i <= end; i++) {
+    let hit = true
+    for (let j = 0; j < magic.length; j++) {
+      if (head[i + j] !== magic[j]) {
+        hit = false
+        break
+      }
+    }
+    if (hit) return true
+  }
+  return false
+}

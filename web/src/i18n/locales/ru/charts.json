@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Показать: {{label}}",
-    "hide": "Скрыть: {{label}}"
+    "hide": "Скрыть: {{label}}",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Все ряды отключены в легенде.",

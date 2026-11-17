@@ -89,6 +89,7 @@ export type {
   AgentRun,
   AgentStep,
   Cancellation,
+  GateMode,
   LlmTurnFn,
   StepStatus,
 } from './types'

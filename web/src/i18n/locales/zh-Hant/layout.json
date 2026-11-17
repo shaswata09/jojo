@@ -130,6 +130,7 @@
       "profile": "我的個人檔案",
       "assistant": "助理",
       "settings": "設定"
-    }
+    },
+    "showAll_other": "顯示全部 {{count}} 個"
   }
 }

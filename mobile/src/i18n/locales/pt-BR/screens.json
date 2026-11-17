@@ -434,6 +434,7 @@
       "transferLast": "último uso em {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Tudo roda neste dispositivo.",
+    "statusEnglish": "Mantido em inglês, palavra por palavra, para não se afastar da licença que resume.",
     "overdue_one": "{{count}} lembrete atrasado.",
     "overdue_other": "{{count}} lembretes atrasados."
   },

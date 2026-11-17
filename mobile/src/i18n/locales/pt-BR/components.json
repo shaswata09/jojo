@@ -143,6 +143,7 @@
     "explain": "A mudança mais recente pode ser revertida. As mais antigas são um registro, não uma máquina do tempo.",
     "undoLast": "Desfazer a última",
     "cannotUndo": "Carregar ou limpar o conjunto de dados não pode ser desfeito.",
+    "cannotUndoTrimmed": "O jojo registrou esta alteração, mas não o suficiente para desfazê-la — foi uma gravação em segundo plano (uma leitura de compatibilidade, os bytes de um arquivo) ou é antiga demais.",
     "showAll_one": "Mostrar {{count}}",
     "showAll_other": "Mostrar todas as {{count}}"
   },

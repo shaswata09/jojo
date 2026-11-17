@@ -36,6 +36,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 import { domain, useDomain } from '@/i18n/domain'
+import { toTab } from '@/navigation/to-tab'
 
 /**
  * "Monday 12 October", computed once from the seed's pinned today.
@@ -396,7 +397,7 @@ function PriorityActions() {
             <Button
               label={t('statistics.openApplications')}
               variant="outline"
-              onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
+              onPress={() => toTab(navigation, 'Applications')}
             />
           }
         />
@@ -445,7 +446,7 @@ function GlancePanel() {
       id: 'active',
       label: t('today.glance.active'),
       value: String(all.length - countOf('closed')),
-      onPress: () => navigation.navigate('Tabs', { screen: 'Applications' }),
+      onPress: () => toTab(navigation, 'Applications'),
     },
     {
       id: 'interviews',
@@ -453,8 +454,7 @@ function GlancePanel() {
       value: String(countOf('screen') + countOf('interview')),
       // The honest destination, not the exact one: no filter selects two stages
       // at once, so this opens the list sorted by stage, where they sit together.
-      onPress: () =>
-        navigation.navigate('Tabs', { screen: 'Applications', params: { sort: 'stage' } }),
+      onPress: () => toTab(navigation, 'Applications', { sort: 'stage' }),
     },
     {
       id: 'overdue',
@@ -462,17 +462,13 @@ function GlancePanel() {
       value: String(overdue.length),
       alert: overdue.length > 0,
       onPress: () =>
-        navigation.navigate('Tabs', {
-          screen: 'Calendar',
-          params: oldestOverdue ? { date: oldestOverdue.date } : undefined,
-        }),
+        toTab(navigation, 'Calendar', oldestOverdue ? { date: oldestOverdue.date } : undefined),
     },
     {
       id: 'doneToday',
       label: t('today.glance.doneToday'),
       value: String(items.filter((i) => i.completedOn === TODAY).length),
-      onPress: () =>
-        navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'reminders' } }),
+      onPress: () => toTab(navigation, 'Vault', { tool: 'reminders' }),
     },
   ]
 
@@ -610,12 +606,7 @@ function OwedThisWeek() {
                     date: day.day,
                     count: events.length,
                   })}
-                  onPress={() =>
-                    navigation.navigate('Tabs', {
-                      screen: 'Calendar',
-                      params: { date: day.iso },
-                    })
-                  }
+                  onPress={() => toTab(navigation, 'Calendar', { date: day.iso })}
                   style={[
                     styles.weekCell,
                     {
@@ -747,12 +738,7 @@ function OwedThisWeek() {
                 {later.length > LATER_SHOWN ? (
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() =>
-                      navigation.navigate('Tabs', {
-                        screen: 'Calendar',
-                        params: { date: later[LATER_SHOWN].date },
-                      })
-                    }
+                    onPress={() => toTab(navigation, 'Calendar', { date: later[LATER_SHOWN].date })}
                   >
                     <Chip tone="gray">
                       {t('today.owed.moreOnCalendar', { count: later.length - LATER_SHOWN })}
@@ -835,7 +821,7 @@ function RecentApplications() {
             <Button
               label={t('today.recent.viewAll')}
               variant="ghost"
-              onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
+              onPress={() => toTab(navigation, 'Applications')}
             />
           )
         }
@@ -987,12 +973,7 @@ function PipelineBreakdown() {
             value: stage.count,
             color: c.stage[stage.id],
           }))}
-          onSelect={(key) =>
-            navigation.navigate('Tabs', {
-              screen: 'Applications',
-              params: { stage: key as Stage },
-            })
-          }
+          onSelect={(key) => toTab(navigation, 'Applications', { stage: key as Stage })}
         />
       )}
     </Panel>

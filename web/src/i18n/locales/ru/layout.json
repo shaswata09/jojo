@@ -151,6 +151,10 @@
       "profile": "Мой профиль",
       "assistant": "Ассистент",
       "settings": "Настройки"
-    }
+    },
+    "showAll_one": "Показать все ({{count}})",
+    "showAll_few": "Показать все ({{count}})",
+    "showAll_many": "Показать все ({{count}})",
+    "showAll_other": "Показать все ({{count}})"
   }
 }

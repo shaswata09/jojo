@@ -105,7 +105,9 @@ export function EventChip({
           non-replaced inline box, so a bare <span class="truncate"> inside a
           block button renders the title in full and simply overflows the cell.
           It only worked before because the button was a flex row. */}
-      <span className={cn('block truncate', done && 'line-through decoration-1')}>
+      {/* `dir="auto"`: a Latin title in an RTL page otherwise overflows from
+          its start, and the ellipsis ate the first words ("…atements"). */}
+      <span dir="auto" className={cn('block truncate', done && 'line-through decoration-1')}>
         {item.title}
       </span>
     </button>

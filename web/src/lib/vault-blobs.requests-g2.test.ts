@@ -31,13 +31,17 @@ const fake = vi.hoisted(() => ({
 
 vi.mock('@/kg/storage/idb-file-store', async () => ({
   trashPath: (await import('@jojo/service/storage/file-store')).trashPath,
-  isBlockedFailure: (error: { context?: Record<string, unknown> }) => error.context?.blocked === true,
+  isBlockedFailure: (error: { context?: Record<string, unknown> }) =>
+    error.context?.blocked === true,
   createIdbFileStore: () => ({
-    open: async () => ({ ok: true, value: undefined }),
-    purgeTrash: async () => {
+    // Hydration opens the store before its first listing; holding the open
+    // holds the listing. (It used to be the trash purge that ran first — that
+    // now waits for the records, see `bindRecords`.)
+    open: async () => {
       if (fake.purgeGate) await fake.purgeGate
-      return 0
+      return { ok: true, value: undefined }
     },
+    purgeTrash: async () => 0,
     persisted: async () => false,
     list: (dir: string) => fake.store.list(dir),
     stat: (path: string) => fake.store.stat(path),

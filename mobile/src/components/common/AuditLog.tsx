@@ -64,7 +64,19 @@ export function AuditLog() {
   const entries = repo.audit
   const shown = all ? entries : entries.slice(0, FIRST_PAGE)
   const top = entries[0]
-  const canUndo = top !== undefined && !NO_UNDO.includes(top.tool)
+  // `trimmed` as well as the tool, as on the web: an entry whose record images
+  // were dropped cannot be reverted (`repo.revert` throws), and every
+  // background write lands trimmed — `assistant.thread.set` after each chat —
+  // so the button used to sit enabled and answer with a red English error.
+  const wholeStore = top !== undefined && NO_UNDO.includes(top.tool)
+  const canUndo = top !== undefined && !wholeStore && top.trimmed !== true
+  /** Why the button is off, by case: the whole-store sentence is wrong for a trimmed row. */
+  const blocker =
+    top === undefined || canUndo
+      ? undefined
+      : wholeStore
+        ? t('audit.cannotUndo')
+        : t('audit.cannotUndoTrimmed')
 
   const onUndo = () => {
     if (!top) return
@@ -110,7 +122,7 @@ export function AuditLog() {
               variant="outline"
               onPress={onUndo}
               disabled={!canUndo}
-              blocker={top && !canUndo ? t('audit.cannotUndo') : undefined}
+              blocker={blocker}
             />
           </View>
 

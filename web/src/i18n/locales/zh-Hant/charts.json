@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "顯示「{{label}}」",
-    "hide": "隱藏「{{label}}」"
+    "hide": "隱藏「{{label}}」",
+    "item": "{{label}}：{{count}}，{{percent}}"
   },
   "allHidden": {
     "withReset": "圖例中的每個數列都已關閉。",

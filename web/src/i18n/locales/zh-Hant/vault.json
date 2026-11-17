@@ -94,6 +94,13 @@
       "title": "放開即可新增到「{{bucket}}」",
       "description": "只會讀取名稱、大小和類型。不會上傳任何內容。",
       "hint": "將檔案拖放到這個面板上的任何位置，即可新增到「{{bucket}}」。"
+    },
+    "buckets": {
+      "toRead": "待讀",
+      "applications": "申請",
+      "jobPostings": "職缺",
+      "talks": "演講",
+      "admin": "行政事務"
     }
   },
   "pdf": {
@@ -232,7 +239,8 @@
       "placeholder": "這份文件的重點——藏在第 3 頁的截止日期、相關問題該問誰…",
       "saved": "已儲存",
       "save": "儲存備註"
-    }
+    },
+    "notPdf": "此檔案的內容不是 PDF，因此 jojo 不會把它當作 PDF 顯示。"
   },
   "reminders": {
     "snooze": {

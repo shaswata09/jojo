@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactElement } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -63,10 +63,16 @@ export function StageMenu({
     setUncontrolled(next)
     onOpenChange?.(next)
   }
+  /*
+   * Focused before a stage is picked, for the same reason `RowMenu` does it:
+   * a pick that opens the stage form unmounts the item it was made from, and
+   * the form then had no control to return focus to when it closed.
+   */
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   return (
     <Popover open={isOpen} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild ref={triggerRef}>
         {trigger ?? (
           <button
             type="button"
@@ -110,6 +116,7 @@ export function StageMenu({
                   }
                   aria-current={current ? 'true' : undefined}
                   onClick={() => {
+                    triggerRef.current?.focus({ preventScroll: true })
                     onSelect(stage.id)
                     setOpen(false)
                   }}

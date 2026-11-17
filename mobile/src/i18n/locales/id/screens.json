@@ -410,6 +410,7 @@
       "transferLast": "terakhir dipakai {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Semuanya berjalan di perangkat ini.",
+    "statusEnglish": "Dibiarkan dalam bahasa Inggris, kata demi kata, agar tidak menyimpang dari lisensi yang diringkasnya.",
     "overdue_other": "{{count}} pengingat terlambat."
   },
   "statistics": {

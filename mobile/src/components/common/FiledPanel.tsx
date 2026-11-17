@@ -13,6 +13,7 @@ import type { RootStackParamList, VaultTool } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { toTab } from '@/navigation/to-tab'
 
 /**
  * Everything filed under this application.
@@ -152,10 +153,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                     // light it — the same arrival the calendar already uses, so
                     // the highlight means one thing across the app.
                     onPress={() =>
-                      navigation.navigate('Tabs', {
-                        screen: 'Vault',
-                        params: { tool: section.tool, focus: row.id },
-                      })
+                      toTab(navigation, 'Vault', { tool: section.tool, focus: row.id })
                     }
                     style={({ pressed }) => [
                       s.row,

@@ -233,7 +233,8 @@
     "errors": {
       "taken": "Another keyword already has that name.",
       "blank": "A keyword needs a name.",
-      "exists": "That keyword already exists."
+      "exists": "That keyword already exists.",
+      "tooLong": "Keep it to {{max}} characters or fewer."
     },
     "renameNamed": "Rename {{name}}",
     "rename": "Rename",

@@ -104,7 +104,12 @@ export function VaultScreen() {
       title={t('screen.title')}
       subtitle={subtitle}
       openOptions={route.params?.options === true}
-      onArrived={() => navigation.setParams({ options: undefined } as never)}
+      // A record named by search, the graph or an application's Filed panel:
+      // each tool wraps its rows in `FocusTarget`, so the screen scrolls to the
+      // row and lights it once. Cleared on arrival, like `options` — it used to
+      // stay as a tint until some later link happened to replace the params.
+      focus={route.params?.focus}
+      onArrived={() => navigation.setParams({ options: undefined, focus: undefined } as never)}
       options={
         <SettingRow
           label={t('screen.showCounts')}
@@ -135,11 +140,11 @@ export function VaultScreen() {
           each tab its own copy with its own selection. */}
       {scopeIds && scopeIds.length > 0 ? <LabelFilter scopeIds={scopeIds} /> : null}
 
-      {tool === 'reminders' ? <RemindersTool focus={route.params?.focus} /> : null}
-      {tool === 'links' ? <LinksTool focus={route.params?.focus} /> : null}
-      {tool === 'files' ? <FilesTool focus={route.params?.focus} /> : null}
-      {tool === 'snippets' ? <SnippetsTool focus={route.params?.focus} /> : null}
-      {tool === 'people' ? <PeopleTool focus={route.params?.focus} /> : null}
+      {tool === 'reminders' ? <RemindersTool /> : null}
+      {tool === 'links' ? <LinksTool /> : null}
+      {tool === 'files' ? <FilesTool /> : null}
+      {tool === 'snippets' ? <SnippetsTool /> : null}
+      {tool === 'people' ? <PeopleTool /> : null}
       {tool === 'tools' ? <CalculatorTool /> : null}
     </Screen>
   )

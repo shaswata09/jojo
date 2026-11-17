@@ -226,6 +226,18 @@ export function DetailSheet({
           onFocusOutside={(event) => event.preventDefault()}
           onCloseAutoFocus={onCloseAutoFocus}
           /*
+           * Tab wrapping past the resize handle lands on the stage chip in the
+           * header, and Radix focuses with `preventScroll` — so with the record
+           * scrolled down, focus sat 1262px above the visible area and the
+           * keyboard user saw no focus at all for that step. `nearest` is a
+           * no-op for anything already in view, so clicks and ordinary Tabs
+           * move nothing.
+           */
+          onFocusCapture={(event) => {
+            if (event.target instanceof HTMLElement)
+              event.target.scrollIntoView?.({ block: 'nearest' })
+          }}
+          /*
            * The chat dock is outside the sheet and must not dismiss it. Radix
            * closes a layer on any pointer-down outside it and on Escape from
            * anywhere, so clicking into a conversation — or pressing Escape in

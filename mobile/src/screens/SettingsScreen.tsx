@@ -223,7 +223,17 @@ export function SettingsScreen() {
     setNameEdit(null)
     setFailure(null)
     setPicking(false)
-    save({ ...settings, endpoint: server.endpoint, model: server.model })
+    // The row's own provider and key, as the web restores them: the list is
+    // filtered by provider, so a row loaded under another one would talk to its
+    // address with the wrong protocol. A row saved before either was kept has
+    // neither, and leaves what is already chosen alone.
+    save({
+      ...settings,
+      provider: providerMeta(server.provider ?? settings.provider).id,
+      endpoint: server.endpoint,
+      model: server.model,
+      apiKey: server.apiKey ?? settings.apiKey,
+    })
   }
 
   /**
@@ -240,13 +250,18 @@ export function SettingsScreen() {
     const result = await listModels({ ...settings, endpoint: endpoint.trim() })
     setTesting(false)
     if (!result.ok) {
+      // The model is kept (Q172, as on the web). Clearing it also locked the
+      // field — it is editable only once a model is there — so one failed test
+      // threw away an id the person had typed and stopped them typing it again.
       setFailure(result.reason)
-      setModel('')
       return
     }
-    // The first is the one to use. vLLM serves exactly one model and lists it;
-    // Ollama and LM Studio list everything they hold, most-recent first.
-    const found = result.models[0] ?? ''
+    // The person's choice wins when the server lists it (Q172). Taking the
+    // first unconditionally suits vLLM, which serves one model, and Ollama,
+    // which lists most-recent first; NVIDIA lists over a hundred alphabetically,
+    // and its first was measured to 404 for the account it replaced a typed id on.
+    const current = model.trim()
+    const found = current && result.models.includes(current) ? current : (result.models[0] ?? '')
     const label = saved?.name ?? found
     setModel(found)
     setNameEdit(null)
@@ -255,7 +270,17 @@ export function SettingsScreen() {
     // Saved under the model's own name unless this address already had one the
     // user chose. That is the "auto-saved" half: connecting is the act, and
     // keeping the address is a consequence of it rather than a second button.
-    remember({ name: label, endpoint, model: found })
+    // With its provider and key, as the web saves it: the Saved servers list is
+    // filtered by provider, and a row without one was filed under
+    // OpenAI-compatible, out of sight of an Ollama or NVIDIA user. The key is
+    // kept beside the settings that already hold it, in the app's own storage.
+    remember({
+      name: label,
+      endpoint,
+      model: found,
+      provider: settings.provider,
+      ...(settings.apiKey ? { apiKey: settings.apiKey } : {}),
+    })
   }
 
   /** Renaming the entry on this card renames the row in the list. */

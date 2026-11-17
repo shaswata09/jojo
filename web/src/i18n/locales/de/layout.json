@@ -137,6 +137,8 @@
       "profile": "Mein Profil",
       "assistant": "Assistent",
       "settings": "Einstellungen"
-    }
+    },
+    "showAll_one": "Alle {{count}} anzeigen",
+    "showAll_other": "Alle {{count}} anzeigen"
   }
 }

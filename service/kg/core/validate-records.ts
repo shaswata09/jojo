@@ -66,6 +66,29 @@ const INSTANT = s.instant()
 const isInstant = (value: string): boolean => INSTANT.parse(value).ok
 
 /**
+ * The one value this boundary mends rather than refuses: a match's fractional
+ * `fit`.
+ *
+ * `scout.match.save` and `scout.match.update` declared `fit` without `int`
+ * while `matchProps` requires it, so a model's 0.85 or 87.5 committed and every
+ * later boot refused the record — the match disappeared from the feed, and a
+ * restore dropped it again. The tools refuse a fraction now (review
+ * 2026-11-17), but a store written before that still holds them, and the record
+ * is the user's. A value below 1 can only have come from a 0–1 score, so it is
+ * read on that scale (0.85 → 85); anything else is rounded. Only finite numbers
+ * in range are touched — anything wronger than that is still refused and
+ * counted, as everywhere else in this file. The row on disk is rewritten with
+ * the mended value the next time the match is saved.
+ */
+function repaired(type: NodeType, props: unknown): unknown {
+  if (type !== 'match' || !isRow(props)) return props
+  const fit = props['fit']
+  if (typeof fit !== 'number' || !Number.isFinite(fit) || Number.isInteger(fit)) return props
+  if (fit < 0 || fit > 100) return props
+  return { ...props, fit: Math.round(fit < 1 ? fit * 100 : fit) }
+}
+
+/**
  * A node row off disk.
  *
  * The id and the `type` field are checked against each other rather than
@@ -107,7 +130,7 @@ export function validateNode(row: unknown): Validated<StoredNode> {
     return { ok: false, diagnostics: [diagnostic('nodes', id, 'Its timestamps are not times.')] }
   }
 
-  const props = propSchemaFor(parsed.type).parse(row['props'], '')
+  const props = propSchemaFor(parsed.type).parse(repaired(parsed.type, row['props']), '')
   if (!props.ok) {
     return {
       ok: false,

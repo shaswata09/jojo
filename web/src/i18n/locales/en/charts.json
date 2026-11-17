@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Show {{label}}",
-    "hide": "Hide {{label}}"
+    "hide": "Hide {{label}}",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Every series is switched off in the legend.",

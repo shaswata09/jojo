@@ -1,4 +1,3 @@
-import { Feather } from '@react-native-vector-icons/feather/static'
 import { Pressable, StyleSheet, View } from 'react-native'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Txt } from '@/components/ui/Text'
@@ -6,6 +5,7 @@ import type { FeatherName } from '@/lib/timeline-visuals'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space, type } from '@/theme/tokens'
+import { Icon } from '@/components/ui/Icon'
 
 export type ButtonVariant = 'default' | 'outline' | 'ghost' | 'destructive'
 export type ButtonSize = 'sm' | 'md' | 'lg'
@@ -80,7 +80,7 @@ export function Button({
           },
         ]}
       >
-        {icon ? <Feather name={icon} size={ICON[size]} color={skin.fg} /> : null}
+        {icon ? <Icon name={icon} size={ICON[size]} color={skin.fg} /> : null}
         {/* Same reasoning as the chip: a one-line label still grows the button
             to fit it unless it is allowed to shrink. */}
         <Txt size={FONT[size]} weight="medium" color={skin.fg} numberOfLines={1} style={s.shrink}>
@@ -148,7 +148,7 @@ export function IconButton({
         style,
       ]}
     >
-      <Feather name={icon} size={17} color={fg} />
+      <Icon name={icon} size={17} color={fg} />
     </Pressable>
   )
 }

@@ -38,6 +38,28 @@ describe('the search overlay (Q025)', () => {
     const list = code.indexOf('<CommandList')
     expect(input).toBeGreaterThan(-1)
     expect(list).toBeGreaterThan(input)
-    expect(code).toMatch(/<Command\b[^>]*filter=\{matchesQuery\}/)
+    // The filtering is the palette's own, with the shared matcher (below).
+    expect(code).toMatch(/<Command\b[^>]*shouldFilter=\{false\}/)
+  })
+})
+
+describe('the palette at scale (review 2: performance-2, health-4, web-a11y-7)', () => {
+  it('filters its rows itself and caps each group, with a Show all row', () => {
+    // cmdk filtered and re-appended every one of 2,373 items per keystroke.
+    expect(code).toMatch(/const IDLE_ROWS = \d+/)
+    expect(code).toMatch(/const GROUP_ROWS = 20\b/)
+    expect(code).toMatch(/matched\.slice\(0, cap\)/)
+    expect(code).toMatch(/<ShowAll\b/)
+    expect(code).toContain("t('spotlight.showAll', { count })")
+  })
+
+  it('matches with the one word matcher the phone uses, accents folded', () => {
+    expect(code).toMatch(/from '@jojo\/service\/core\/word-match'/)
+    expect(code).not.toMatch(/function matchesQuery\(/)
+  })
+
+  it('points aria-activedescendant at the row Enter will open', () => {
+    expect(code).toMatch(/useActiveDescendant\(root\)/)
+    expect(code).toContain("setAttribute('aria-activedescendant', selected.id)")
   })
 })

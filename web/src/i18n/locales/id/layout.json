@@ -130,6 +130,7 @@
       "profile": "Profil saya",
       "assistant": "Asisten",
       "settings": "Pengaturan"
-    }
+    },
+    "showAll_other": "Tampilkan semua {{count}}"
   }
 }

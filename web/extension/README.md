@@ -87,6 +87,28 @@ The dev entries are written out one port at a time rather than as a single
 wildcard. A wildcard handed this bridge to every page on every local server —
 any second dev server could have taken the capture queue.
 
+**The dev entries are for the unpacked development build only.** They are
+Vite's default ports, which every other local project uses too, so the zip the
+app offers in Settings leaves them out: a page on `localhost:5173` could
+otherwise have the extension open a site in your signed-in browser and read the
+page back. `npm run dev` packs with `--dev` (as does the dev server when it
+repacks), which keeps them; any other pack ships the deployed origin and
+`JOJO_APP_ORIGIN` only. `scripts/extension-origins.mjs` holds the rule.
+
+**The hosted app shares its origin.** GitHub Pages serves every project site of
+an account from one origin — `https://shaswata09.github.io` — and browsers keep
+storage per origin, not per path. Any page published under that account (the
+owner's personal site at `/` included) can read jojo's localStorage (model API
+keys, the MCP link token), its IndexedDB (every record and document), and can
+script a `/jojo/` window it opens, whose messages pass this bridge's
+`event.source === window` check. Nothing in the code can draw a line inside one
+origin: the service worker is already scoped to `/jojo/` and the content-script
+pattern to `/jojo/*`, and neither is a boundary against same-origin script. So
+no other Pages site on the account may load third-party or untrusted script.
+The real fix is to serve jojo from an origin of its own — a custom domain on
+the Pages project, or a dedicated `<name>.github.io` site — and pack the
+extension with that origin as `JOJO_APP_ORIGIN`.
+
 `npm -w web run pack-extension` refuses to build if any script in this directory
 fails to parse, because that failure is otherwise completely silent.
 

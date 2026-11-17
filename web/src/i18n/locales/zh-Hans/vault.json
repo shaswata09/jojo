@@ -94,6 +94,13 @@
       "title": "拖放以添加到“{{bucket}}”",
       "description": "只读取名称、大小和类型。不会上传任何内容。",
       "hint": "将文件拖到此面板任意位置，即可添加到“{{bucket}}”。"
+    },
+    "buckets": {
+      "toRead": "待读",
+      "applications": "申请",
+      "jobPostings": "职位发布",
+      "talks": "讲座",
+      "admin": "行政"
     }
   },
   "pdf": {
@@ -232,7 +239,8 @@
       "placeholder": "这份文档的要点——藏在第 3 页的截止日期、该向谁询问…",
       "saved": "已保存",
       "save": "保存备注"
-    }
+    },
+    "notPdf": "此文件的内容不是 PDF，因此 jojo 不会把它当作 PDF 显示。"
   },
   "reminders": {
     "snooze": {

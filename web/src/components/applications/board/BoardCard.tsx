@@ -128,12 +128,15 @@ export function BoardCardBody({
               to={{ pathname: appPath(app), search: keep }}
               draggable={false}
               aria-current={open ? 'page' : undefined}
+              dir="auto"
               className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-[''] hover:text-accent"
             >
               {displayName(app)}
             </Link>
           ) : (
-            <div className="truncate text-sm font-semibold">{displayName(app)}</div>
+            <div dir="auto" className="truncate text-sm font-semibold">
+              {displayName(app)}
+            </div>
           )}
           {/*
            * No note here, and that is a size decision rather than a tidiness

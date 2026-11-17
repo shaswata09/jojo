@@ -348,6 +348,32 @@
     "many_many": "archivado bajo {{count}} candidaturas",
     "many_other": "archivado bajo {{count}} candidaturas"
   },
+  "picked": {
+    "two": "{{a}} y {{b}}",
+    "many_one": "{{count}} candidatura",
+    "many_many": "{{count}} candidaturas",
+    "many_other": "{{count}} candidaturas"
+  },
+  "twinOffer": {
+    "unnamed": "ese documento",
+    "title": "¿Leer {{first}} y añadirlo a tu perfil?",
+    "titleMore_one": "¿Leer {{first}} y {{count}} documento más y añadirlos a tu perfil?",
+    "titleMore_many": "¿Leer {{first}} y {{count}} documentos más y añadirlos a tu perfil?",
+    "titleMore_other": "¿Leer {{first}} y {{count}} documentos más y añadirlos a tu perfil?",
+    "body": "jojo leerá su contenido y registrará los datos que indica —tus títulos, puestos, publicaciones y habilidades— para poder comparar una oferta con lo que realmente has hecho. Cada entrada que añada se te mostrará primero e indicará de qué documento procede."
+  },
+  "duplicate": {
+    "id": "El ID de esta oferta ya figura en {{name}}.",
+    "url": "Ya guardaste esta oferta como {{name}}.",
+    "name": "Ya tienes {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Eso no se devolvió como una página.",
+    "bad-source": "Una oferta debe tener una dirección http o https.",
+    "empty": "La página llegó vacía; puede que no hubiera terminado de cargar.",
+    "too-large": "Esa página es demasiado grande para guardarla. Vuelve a intentarlo cuando terminen de cargar las imágenes.",
+    "leaks": "La copia todavía apunta al sitio de origen, así que no se guardó."
+  },
   "readBy": "Leído por {{model}} · {{ago}}",
   "missingSource": "un documento que ya no está en la Bóveda",
   "undo": {

@@ -24,6 +24,7 @@ import type { Application } from '@/data/seed'
 import { displayName } from '@/data/seed'
 import { appPath } from '@/lib/links'
 import { cn } from '@/lib/utils'
+import { fileBucketLabel } from '@/components/vault/files/bucket-label'
 
 /**
  * The three things a row can be editing in place.
@@ -130,6 +131,7 @@ export function FileRow({
             key="note"
             label={t('links.fields.note')}
             value={f.note ?? ''}
+            multiline
             onCancel={onCancelEdit}
             onSave={(next) => onNote(f, next)}
           />
@@ -158,6 +160,7 @@ export function FileRow({
               type="button"
               onClick={() => onEdit('name')}
               title={t('files.row.renameHint')}
+              dir="auto"
               /* `hover:underline` as well as the colour. In the dark theme
                  --accent and --text-1 are the same #fafafa (see index.css), so
                  the colour change alone painted nothing and the file name gave
@@ -167,7 +170,7 @@ export function FileRow({
               {f.name}
             </button>
             <div className="mt-0.5 flex items-center gap-x-2 overflow-hidden text-xs text-text-3">
-              <span className="shrink-0">{f.bucket}</span>
+              <span className="shrink-0">{fileBucketLabel(f.bucket)}</span>
               <span aria-hidden>·</span>
               <span className="tabular shrink-0">{f.size}</span>
               {onDevice ? (
@@ -225,7 +228,7 @@ export function FileRow({
           <MenuSection title={t('snippets.card.moveTo')}>
             {FILE_BUCKETS.map((b) => (
               <MenuItem key={b} current={b === f.bucket} onSelect={() => onMove(f, b)}>
-                {b}
+                {fileBucketLabel(b)}
               </MenuItem>
             ))}
           </MenuSection>

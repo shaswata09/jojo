@@ -158,7 +158,8 @@
     "stopFiltering": "停止依「{{name}}」篩選",
     "filterBy": "依「{{name}}」篩選",
     "edit": "編輯關鍵字「{{name}}」",
-    "editHint": "重新命名、更換顏色或刪除"
+    "editHint": "重新命名、更換顏色或刪除",
+    "tooLong": "最多 {{max}} 個字元。"
   },
   "welcome": {
     "title": "簡單介紹一下你自己",
@@ -265,5 +266,8 @@
   "command": {
     "title": "命令選擇區",
     "description": "搜尋要執行的命令…"
+  },
+  "rows": {
+    "showMore": "顯示更多（{{shown}}/{{total}}）"
   }
 }

@@ -5,7 +5,7 @@
     "trigger": "jojo の動き",
     "triggerAria": "jojo の動きとクレジット",
     "plays": "再生",
-    "modelCredit": "ロボットのモデル："
+    "modelCreditFull": "ロボットのモデル：<artist>Jungle Jim</artist> による <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work>（<licence>CC BY 4.0</licence> ライセンス）。jojo 向けの変更：メッシュとテクスチャの軽量化、独自の目と動き（変更点の一覧は 使い方 › 使用技術）。作者は jojo を推奨していません。"
   },
   "theme": {
     "toggle": "テーマを切り替え",

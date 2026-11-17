@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import type { ReactNode } from 'react'
+import type { Cancellation } from '@jojo/service/agent/loop'
 import { PipelinesContext } from '@jojo/service/react/pipelines-context'
 import { reportError } from '@/lib/report-error'
 import { usePipelines } from '@jojo/service/react/use-pipelines'
@@ -27,8 +28,27 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
       agentTurn(settings, messages, tools),
     [settings],
   )
+  /*
+   * Per round, on the round's own Stop — as the web does. Switching a pipeline
+   * off and a settings change both stop the round in flight, and Settings saves
+   * as the person types; without a signal the request to the OLD endpoint ran
+   * on for up to the model timeout, holding the one lock every pipeline and
+   * Run now shares.
+   */
+  const llmFor = useCallback(
+    (signal: Cancellation) => {
+      const controller = new AbortController()
+      signal.onAbort?.(() => {
+        controller.abort()
+      })
+      return (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+        agentTurn(settings, messages, tools, controller.signal)
+    },
+    [settings],
+  )
   const state = usePipelines({
     llm: isConfigured(settings) ? llm : null,
+    llmFor,
     scan: scanBoard,
     /*
      * A round that throws is caught inside the hook so the schedule is not left

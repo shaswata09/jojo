@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { toneClass, usage } from '@/components/common/label-display'
+import { KEYWORD_NAME_MAX, toneClass, usage } from '@/components/common/label-display'
 import { ToneSwatches } from '@/components/common/ToneSwatches'
 import { inkStyle } from '@/components/common/label-display'
 import { useTheme } from '@/lib/theme-context'
@@ -40,7 +40,13 @@ function KeywordMenu({
     // Left open on failure with the reason in place. Closing would look like it
     // worked, and the chip behind the popover would still read the old name.
     if (!renameLabel(label.id, next)) {
-      setError(next ? t('keywordChip.taken') : t('keywordChip.needsName'))
+      setError(
+        !next
+          ? t('keywordChip.needsName')
+          : next.length > KEYWORD_NAME_MAX
+            ? t('keywordChip.tooLong', { max: KEYWORD_NAME_MAX })
+            : t('keywordChip.taken'),
+      )
       return
     }
     onClose()
@@ -56,6 +62,7 @@ function KeywordMenu({
           <Input
             id={nameId}
             value={draft}
+            maxLength={KEYWORD_NAME_MAX}
             autoComplete="off"
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? errorId : undefined}

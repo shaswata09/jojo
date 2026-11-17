@@ -158,7 +158,8 @@
     "stopFiltering": "Berhenti memfilter menurut {{name}}",
     "filterBy": "Filter menurut {{name}}",
     "edit": "Edit kata kunci {{name}}",
-    "editHint": "Ganti nama, ganti warna, atau hapus"
+    "editHint": "Ganti nama, ganti warna, atau hapus",
+    "tooLong": "Maksimal {{max}} karakter."
   },
   "welcome": {
     "title": "Sedikit tentang Anda",
@@ -265,5 +266,8 @@
   "command": {
     "title": "Palet Perintah",
     "description": "Cari perintah untuk dijalankan..."
+  },
+  "rows": {
+    "showMore": "Tampilkan lebih banyak ({{shown}} dari {{total}})"
   }
 }

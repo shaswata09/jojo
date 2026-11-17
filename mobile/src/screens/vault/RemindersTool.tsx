@@ -25,6 +25,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 const BUCKETS: TimelineBucket[] = ['overdue', 'today', 'upcoming', 'done']
 
@@ -43,7 +44,7 @@ const BUCKET_TONE = {
  * whichever of the three you are looking at, and an undo puts the keywords back
  * wherever it is pressed.
  */
-export function RemindersTool({ focus }: { focus?: string }) {
+export function RemindersTool() {
   const { t, i18n } = useTranslation('vault')
   const domain = useDomain()
   // Built per render rather than at module scope, so a language change reaches it.
@@ -183,9 +184,9 @@ export function RemindersTool({ focus }: { focus?: string }) {
             const date = domain.shortDate(r.date)
 
             return (
-              <View key={r.id}>
+              <FocusTarget key={r.id} id={r.id}>
                 {i > 0 ? <Divider /> : null}
-                <View style={[styles.row, focus === r.id && { backgroundColor: c.accentSoft }]}>
+                <View style={styles.row}>
                   <Pressable
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: done }}
@@ -255,7 +256,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
                     onPress={() => setMenuFor(r)}
                   />
                 </View>
-              </View>
+              </FocusTarget>
             )
           })
         )}

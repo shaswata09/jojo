@@ -11,6 +11,7 @@ import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
 import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
+import { legendName } from '@/components/charts/legend-name'
 
 /** The two readings, labelled where they are rendered — `sources.views.*` in the reader's language. */
 const VIEWS = ['bars', 'donut'] as const
@@ -35,7 +36,7 @@ const UNRECORDED_COLOR = 'var(--text-3)'
  * "where do my applications come from", which is a share, not a magnitude.
  */
 export function ApplicationSources() {
-  const { t } = useTranslation('dashboard')
+  const { t, i18n } = useTranslation(['dashboard', 'charts'])
   const [view, setView] = useState<View>('donut')
   const views = VIEWS.map((value) => ({ value, label: t(`sources.views.${value}`) }))
   // Scoped to the roles picked in the top bar; everything when none are.
@@ -126,12 +127,14 @@ export function ApplicationSources() {
         <ul className="space-y-3">
           {slices.map((s) => {
             const off = isHidden(s.key)
+            const pct = !off && total > 0 ? Math.round((s.value / total) * 100) : 0
             return (
               <li key={s.key}>
                 <button
                   type="button"
                   onClick={() => toggle(s.key)}
                   aria-pressed={!off}
+                  aria-label={legendName(t, i18n.language, s.label, s.value, pct)}
                   title={
                     off
                       ? t('sources.show', { name: s.label })
@@ -156,7 +159,7 @@ export function ApplicationSources() {
                     >
                       {s.value}
                       <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
-                        {!off && total > 0 ? Math.round((s.value / total) * 100) : 0}%
+                        {pct}%
                       </span>
                     </span>
                   </div>

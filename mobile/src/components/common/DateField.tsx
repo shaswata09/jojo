@@ -13,6 +13,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 import { useDomain } from '@/i18n/domain'
+import { Icon } from '@/components/ui/Icon'
 
 /**
  * A date, picked from a month rather than typed.
@@ -88,7 +89,7 @@ export function DateField({
             onPress={() => onChange('')}
           />
         ) : (
-          <Feather name="chevron-right" size={16} color={c.text3} />
+          <Icon name="chevron-right" size={16} color={c.text3} />
         )}
       </Pressable>
 

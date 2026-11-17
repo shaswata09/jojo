@@ -4,7 +4,7 @@ import { Feather } from '@react-native-vector-icons/feather/static'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
-import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
+import { newlyReadable, twinState } from '@jojo/service/core/twin'
 import { clearProfileRead, useProfileReadRequest } from '@jojo/service/react/profile-read-request'
 import type { TwinGap } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
@@ -16,6 +16,7 @@ import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { markOffered, offered } from '@/lib/twin-offer'
 import { useColors } from '@/theme/theme-context'
+import { useDomain } from '@/i18n/domain'
 import { space } from '@/theme/tokens'
 
 /**
@@ -109,7 +110,10 @@ export function ProfileUpdateOffer() {
       : gaps[0]
     return { target: chosen, offering: requested && chosen ? [chosen] : gaps }
   }, [requested, gaps])
-  const copy = useMemo(() => twinOfferCopy(offering), [offering])
+  // The consent wording in the language on screen: core's English
+  // (`twinOfferCopy`) through the `domain` catalog.
+  const domain = useDomain()
+  const copy = domain.twinOffer(offering)
 
   if (seen === null || !target || target.id === undefined) return null
   // A model has to be configured for "yes" to lead anywhere. An offer whose

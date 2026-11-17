@@ -68,7 +68,10 @@ function freshExtensionZip(): Plugin {
     new Promise<void>((resolve) => {
       execFile(
         process.execPath,
-        [path.join(here, 'scripts', 'pack-extension.mjs')],
+        // `--dev`: this zip is served by the dev server, to a developer whose
+        // own server is on one of the localhost ports the shipped zip leaves
+        // out (see `scripts/extension-origins.mjs`).
+        [path.join(here, 'scripts', 'pack-extension.mjs'), '--dev'],
         { cwd: here },
         () => {
           resolve()

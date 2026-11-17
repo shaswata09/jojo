@@ -41,7 +41,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { runAgent } from '../agent/loop'
+import type { runAgent } from '../agent/loop'
 import type { AgentStep, Cancellation } from '../agent/loop'
 import type { LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
@@ -58,6 +58,10 @@ import type { ToolResult, ToolRuntime } from '../tools/runtime'
 import { canonicalPostingUrl, postingIdentity } from '../core/capture'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
+
+/** The agent loop, fetched on a pipeline's first round instead of at boot. */
+const runAgentWhenNeeded: typeof runAgent = (options) =>
+  import('../agent/loop').then((loop) => loop.runAgent(options))
 
 /**
  * How often the scheduler looks at the clock. Not how often a pipeline runs.
@@ -151,6 +155,7 @@ export function usePipelines({
   onError,
   hasDocument,
   documentsReady = true,
+  schedule = true,
 }: {
   /** `null` when no model is configured — the whole feature is then paused. */
   llm: LlmTurnFn | null
@@ -191,6 +196,15 @@ export function usePipelines({
    * records instead.
    */
   scan?: ToolHost['scan']
+  /**
+   * Whether this copy of the hook runs the schedule. Absent means yes.
+   *
+   * False in a browser tab that is not the elected one: every open tab mounts
+   * this hook, and each used to start the same due round, so a round ran once
+   * per tab. A tab that does not schedule still answers, switches and runs a
+   * round on Run now — only the ticking is left to one tab.
+   */
+  schedule?: boolean
 }): PipelinesState {
   const graph = useGraph()
   const { repo, runtime, projections, now } = useKg()
@@ -286,7 +300,7 @@ export function usePipelines({
         ...(maxSteps === undefined ? {} : { maxSteps }),
         ...(onError === undefined ? {} : { onError }),
         ...(hasDocument === undefined ? {} : { hasDocument }),
-        agent: runAgent,
+        agent: runAgentWhenNeeded,
       })
     },
     [hasDocument, host, llm, llmFor, maxSteps, note, onError, runtime],
@@ -300,7 +314,7 @@ export function usePipelines({
   const tickRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
-    if (!llm) return
+    if (!llm || !schedule) return
     const tick = () => {
       if (busy.current) return
       const at = now()
@@ -333,7 +347,7 @@ export function usePipelines({
       clearInterval(id)
       abortInFlight(cancel)
     }
-  }, [llm, now])
+  }, [llm, now, schedule])
 
   // The index arriving is a reason to look again now rather than a tick later.
   // Its own effect, because re-running the scheduler's would abort the round

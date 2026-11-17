@@ -328,6 +328,28 @@
     "two": "歸檔在 {{a}} 和 {{b}}",
     "many_other": "歸檔在 {{count}} 份申請下"
   },
+  "picked": {
+    "two": "{{a}} 和 {{b}}",
+    "many_other": "{{count}} 份申請"
+  },
+  "twinOffer": {
+    "unnamed": "該文件",
+    "title": "讀取 {{first}} 並寫入你的個人檔案？",
+    "titleMore_other": "讀取 {{first}} 及另外 {{count}} 份文件並寫入你的個人檔案？",
+    "body": "jojo 會讀取其中的內容，並記錄它所陳述的事實——你的學位、職位、論文和技能——以便拿職缺要求和你的實際經歷做比較。新增的每一筆都會先給你過目，並註明來自哪份文件。"
+  },
+  "duplicate": {
+    "id": "這個職缺的編號已記錄在 {{name}} 上。",
+    "url": "你已經把這個職缺儲存為 {{name}}。",
+    "name": "你已經有 {{name}} 了。"
+  },
+  "captureRejected": {
+    "not-a-page": "傳回的內容不是一個網頁。",
+    "bad-source": "職缺網址必須以 http 或 https 開頭。",
+    "empty": "頁面傳回空白——可能還沒載入完成。",
+    "too-large": "這個頁面太大，無法保存。請等圖片載入完成後再試一次。",
+    "leaks": "副本仍然指向原本的網站，因此沒有保存。"
+  },
   "readBy": "由 {{model}} 讀取 · {{ago}}",
   "missingSource": "一份已不在保管庫中的文件",
   "undo": {

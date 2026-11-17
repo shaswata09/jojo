@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { legendName } from '@/components/charts/legend-name'
 import { cn } from '@/lib/utils'
 
 export type DonutSlice = { key: string; label: string; value: number; color: string }
@@ -30,7 +31,7 @@ export function Donut({
   onToggle: (key: string) => void
   className?: string
 }) {
-  const { t } = useTranslation('charts')
+  const { t, i18n } = useTranslation('charts')
   const [hover, setHover] = useState<number | null>(null)
   // Arcs and the centre figure both follow what's visible, so the ring always
   // closes and the total always matches the slices you can actually see.
@@ -98,12 +99,14 @@ export function Donut({
         {slices.map((s) => {
           const off = isHidden(s.key)
           const vi = visible.findIndex((v) => v.key === s.key)
+          const pct = !off && total > 0 ? Math.round((s.value / total) * 100) : 0
           return (
             <li key={s.key}>
               <button
                 type="button"
                 onClick={() => onToggle(s.key)}
                 aria-pressed={!off}
+                aria-label={legendName(t, i18n.language, s.label, s.value, pct)}
                 title={
                   off ? t('legend.show', { label: s.label }) : t('legend.hide', { label: s.label })
                 }
@@ -117,6 +120,7 @@ export function Donut({
                   style={{ background: off ? 'transparent' : s.color, borderColor: s.color }}
                 />
                 <span
+                  dir="auto"
                   className={cn(
                     'min-w-0 flex-1 truncate text-start',
                     off ? 'text-text-3 line-through decoration-1' : 'text-text-2',
@@ -128,9 +132,7 @@ export function Donut({
                   className={cn('tabular shrink-0 font-mono', off ? 'text-text-3' : 'text-text-1')}
                 >
                   {s.value}
-                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
-                    {!off && total > 0 ? Math.round((s.value / total) * 100) : 0}%
-                  </span>
+                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">{pct}%</span>
                 </span>
               </button>
             </li>

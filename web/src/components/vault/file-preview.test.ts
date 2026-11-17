@@ -5,7 +5,7 @@
  * a row with no bytes. The rule is now two pure functions, run here.
  */
 import { describe, expect, it } from 'vitest'
-import { noPreviewText, previewKind } from './file-preview'
+import { isPdfHeader, noPreviewText, previewKind } from './file-preview'
 
 const blob = (type: string) => ({ type })
 
@@ -39,5 +39,21 @@ describe('noPreviewText', () => {
   it('still says so when nothing is', () => {
     expect(noPreviewText({ kind: 'doc' }, false)).toMatch(/no stored document/)
     expect(noPreviewText({ kind: 'page' }, false)).toMatch(/no saved copy on this device/)
+  })
+})
+
+describe('isPdfHeader (review 2, security-2)', () => {
+  const bytes = (text: string) => new TextEncoder().encode(text)
+
+  it('accepts a PDF header at the start or inside the first 1024 bytes', () => {
+    expect(isPdfHeader(bytes('%PDF-1.7\n%âãÏÓ'))).toBe(true)
+    expect(isPdfHeader(bytes(`${' '.repeat(500)}%PDF-1.4`))).toBe(true)
+  })
+
+  it('refuses HTML or SVG stored under a pdf record, and a header past the window', () => {
+    expect(isPdfHeader(bytes('<html><script>alert(1)</script></html>'))).toBe(false)
+    expect(isPdfHeader(bytes('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toBe(false)
+    expect(isPdfHeader(bytes(`${' '.repeat(1100)}%PDF-1.4`))).toBe(false)
+    expect(isPdfHeader(new Uint8Array())).toBe(false)
   })
 })

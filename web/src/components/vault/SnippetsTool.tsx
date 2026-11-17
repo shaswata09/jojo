@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { stripMarks } from '@jojo/service/core/marks'
 import { useApplications } from '@jojo/service/react/use-applications'
-import { useGraph } from '@jojo/service/react/kg-context'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import type { NodeId } from '@jojo/service/core/model'
 import type { FormEvent } from 'react'
 import { Plus, Quote } from 'lucide-react'
@@ -29,7 +29,8 @@ import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
 import { report } from '@/lib/analytics'
-import { announceRefusal } from '@/components/common/write-result'
+import { announceRefusal, refusalToast } from '@/components/common/write-result'
+import { useUndoable } from '@/lib/undo'
 
 /** How long the copied confirmation stays up. */
 const COPIED_MS = 1600
@@ -64,6 +65,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  /** Which record the panel is open on, for an Undo fired from an older toast. */
+  const openId = useRef<string | null>(null)
+  useEffect(() => {
+    openId.current = editing?.id ?? null
+  }, [editing])
+  const undoable = useUndoable()
+  const { repo, projections } = useKg()
 
   const {
     matches,
@@ -232,19 +240,26 @@ export function SnippetsTool({ focus }: { focus?: string }) {
 
     if (editing.id) {
       const id = editing.id
-      // Read before the write, or Undo restores what it just created.
-      const before = snippets.find((s) => s.id === id)
+      // Read before the write: the journal puts these back, and the label
+      // index this reads from has not re-rendered by the time Undo runs.
       const beforeKeywords = labelIdsOf(id)
 
-      const result = updateSnippet(
-        id,
-        { title, tag: editing.tag, body, applicationIds: editing.applicationIds },
-        // '' rather than omitted when there is none: absent means "keep what is
-        // stored", and clearing every mark off a snippet has to be savable.
-        format ?? '',
-      )
+      // The journal's Undo, not a hand-built patch. Handing `updateSnippet` the
+      // projection back carried no `bodyFormat`, and an omitted format means
+      // "keep what is stored" — so every mark the save added survived Undo.
+      // The write and the keywords are one burst, so one Undo takes both back.
+      const { value: result, restore } = undoable(() => {
+        const written = updateSnippet(
+          id,
+          { title, tag: editing.tag, body, applicationIds: editing.applicationIds },
+          // '' rather than omitted when there is none: absent means "keep what
+          // is stored", and clearing every mark off a snippet has to be savable.
+          format ?? '',
+        )
+        if (refusalToast(written) === null) commitKeywords(id, chosen)
+        return written
+      })
       if (announceRefusal(result, toast)) return
-      commitKeywords(id, chosen)
       // The draft takes the trimmed title too, or the dirty check compares
       // 'Short bio ' against the 'Short bio' that was stored and the panel keeps
       // claiming unsaved changes forever.
@@ -259,41 +274,54 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       toast({
         title: t('common.saved', { title }),
         description: t('snippets.toast.filed', { tag: editing.tag }),
-        action: {
-          label: t('common.undo'),
-          onClick: () => {
-            if (before) updateSnippet(id, before)
-            commitKeywords(id, beforeKeywords)
-            // The panel is very likely still open on this record, so it has to
-            // be handed the restored values as well — otherwise Undo puts the
-            // store back and leaves the editor claiming the new text is saved.
-            setEditing((prev) =>
-              prev?.id === id && before
-                ? {
-                    ...prev,
-                    title: before.title,
-                    tag: before.tag,
-                    html: htmlFromNote(
-                      before.body,
-                      graph.node(id as NodeId, 'snippet')?.props.bodyFormat,
-                    ),
-                    keywords: beforeKeywords,
-                  }
-                : prev,
-            )
-            setClean(
-              before
-                ? {
-                    title: before.title,
-                    tag: before.tag,
-                    body: before.body,
-                    keywords: keywordKey(beforeKeywords),
-                    applicationIds: before.applicationIds,
-                  }
-                : null,
-            )
-          },
-        },
+        // A save that committed nothing offers no Undo rather than a dead button.
+        ...(restore
+          ? {
+              action: {
+                label: t('common.undo'),
+                onClick: () => {
+                  restore()
+                  // The panel is very likely still open on this record, so it
+                  // is re-seeded from what the store now holds — text, marks,
+                  // filing and keywords alike. Seeding it from a copy taken
+                  // before the write left the new filing in the picker and the
+                  // new marks in the editor after the store had reverted.
+                  const snapshot = repo.getSnapshot()
+                  const stored = projections.snippets(snapshot).find((s) => s.id === id)
+                  if (!stored) return
+                  const keywords = beforeKeywords
+                  const html = htmlFromNote(
+                    stored.body,
+                    snapshot.node(id as NodeId, 'snippet')?.props.bodyFormat,
+                  )
+                  setEditing((prev) =>
+                    prev?.id === id
+                      ? {
+                          ...prev,
+                          title: stored.title,
+                          tag: stored.tag,
+                          html,
+                          applicationIds: stored.applicationIds,
+                          keywords,
+                        }
+                      : prev,
+                  )
+                  if (openId.current !== id) return
+                  setClean((prev) =>
+                    prev
+                      ? {
+                          title: stored.title,
+                          tag: stored.tag,
+                          body: noteFromRuns(rawRunsFromHtml(html)).text,
+                          keywords: keywordKey(keywords),
+                          applicationIds: stored.applicationIds,
+                        }
+                      : prev,
+                  )
+                },
+              },
+            }
+          : {}),
       })
       return
     }

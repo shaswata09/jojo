@@ -373,3 +373,142 @@ describe('a currency written after the figures', () => {
     expect(parseComp('Team of 12 $112k base')).toMatchObject({ amount: 112000, currency: '$' })
   })
 })
+
+/**
+ * A multiplier written once, after the top of a range (review 2026-11-17).
+ *
+ * `$120-140k` is how most US and UK postings write a band. The low end used to
+ * read as $120 a year — ranked below a $95,000 offer — while the unmarked
+ * `120-140k` skipped to the TOP of the range. Both now read the low end, the
+ * same as `$120k-$140k`.
+ */
+describe('a range sharing one trailing multiplier', () => {
+  for (const [text, amount] of [
+    ['$120-140k', 120_000],
+    ['£45-50k', 45_000],
+    ['€45-55k per year', 45_000],
+    ['$1.2-1.5m', 1_200_000],
+    ['$100 - 120K', 100_000],
+    ['$120 to 140k', 120_000],
+    ['120-140k', 120_000],
+    ['30 - 40k', 30_000],
+    ['₹12-15 LPA', 1_200_000],
+  ] as const) {
+    it(`reads ${text} as ${amount}`, () => {
+      expect(parseComp(text)?.amount).toBe(amount)
+    })
+  }
+
+  it('shows the multiplier it borrowed in the matched text', () => {
+    expect(parseComp('$120-140k')?.matched).toBe('$120-140k')
+    expect(parseComp('120-140k')?.matched).toBe('120-140k')
+  })
+
+  it('does not borrow when the low end already said what it meant', () => {
+    expect(parseComp('$95,000-110k')).toMatchObject({ amount: 95_000, matched: '$95,000' })
+    expect(parseComp('$120k-$140k')?.amount).toBe(120_000)
+    expect(parseComp('$25-30/hr')).toMatchObject({ amount: 25, period: 'hour' })
+  })
+
+  it('no longer ranks a $120-140k band below a $95,000 offer', () => {
+    const [band, flat] = ['$120-140k', '$95,000'].map((t) => parseComp(t)!)
+    expect(annualised(band!)).toBeGreaterThan(annualised(flat!))
+  })
+})
+
+/**
+ * A dollar with a country prefix (review 2026-11-17). Every one of these read
+ * as a bare `$`, so an Australian or Canadian offer was ranked against a US
+ * one with no conversion.
+ */
+describe('a prefixed dollar is its own currency', () => {
+  for (const [text, currency] of [
+    ['A$110k', 'AUD'],
+    ['AU$110k', 'AUD'],
+    ['C$95,000', 'CAD'],
+    ['NZ$90k', 'NZD'],
+    ['HK$40,000 per month', 'HKD'],
+    ['S$8,000 monthly', 'SGD'],
+    ['R$ 8.000/mês', 'BRL'],
+    ['MX$30,000', 'MXN'],
+    ['US$120,000', 'USD'],
+  ] as const) {
+    it(`reads ${text} as ${currency}`, () => {
+      expect(parseComp(text)?.currency).toBe(currency)
+    })
+  }
+
+  it('keeps the prefix in the matched text', () => {
+    expect(parseComp('A$110k')?.matched).toBe('A$110k')
+  })
+
+  it('refuses to rank a prefixed dollar against a bare one', () => {
+    expect(rankable(['A$150k', '$120k'].map((t) => parseComp(t)!))).toBe(false)
+  })
+
+  it('reads the prefix and the ISO code as one unit', () => {
+    expect(rankable(['C$95,000', 'CAD 90,000'].map((t) => parseComp(t)!))).toBe(true)
+  })
+
+  it('does not take the end of a word for a prefix', () => {
+    expect(parseComp('plus$5k')?.currency).toBe('$')
+  })
+})
+
+/**
+ * Notations the app's other languages write (review 2026-11-17). Each read as a
+ * tiny yearly figure: `₹12 LPA` as twelve rupees, `¥400万` as four hundred yen,
+ * `CHF 120'000` as a hundred and twenty francs, and a German or French monthly
+ * figure as a yearly one, twelve times too low.
+ */
+describe('lakh, crore, 万 and other non-English notations', () => {
+  for (const [text, amount] of [
+    ['₹12 LPA', 1_200_000],
+    ['₹12 lakh', 1_200_000],
+    ['₹12 lakhs', 1_200_000],
+    ['₹18L', 1_800_000],
+    ['₹1.2 crore', 12_000_000],
+    ['¥400万', 4_000_000],
+    ['400万円', 4_000_000],
+    ["CHF 120'000", 120_000],
+    ['CHF 120’000', 120_000],
+  ] as const) {
+    it(`reads ${text} as ${amount}`, () => {
+      expect(parseComp(text)?.amount).toBe(amount)
+    })
+  }
+
+  it('reads LPA as a stated yearly figure', () => {
+    expect(parseComp('₹12 LPA')).toMatchObject({ period: 'year', periodStated: true })
+  })
+
+  it('reads yen written after the figure as yen', () => {
+    expect(parseComp('400万円')?.currency).toBe('¥')
+  })
+
+  for (const [text, period] of [
+    ['3.500 € pro Monat', 'month'],
+    ['2 500 € par mois', 'month'],
+    ['€3.000 al mes', 'month'],
+    ['R$ 8.000/mês', 'month'],
+    ['45.000 € pro Jahr', 'year'],
+    ['月給30万円', 'month'],
+    ['年収600万円', 'year'],
+    ['$3,000 biweekly', 'fortnight'],
+    ['$3,000 bi-weekly', 'fortnight'],
+    ['£1,500 fortnightly', 'fortnight'],
+  ] as const) {
+    it(`reads the period of ${text} as ${period}`, () => {
+      expect(parseComp(text)).toMatchObject({ period, periodStated: true })
+    })
+  }
+
+  it('annualises a fortnightly figure at 26 a year', () => {
+    expect(annualised(parseComp('$3,000 biweekly')!)).toBe(78_000)
+  })
+
+  it('does not read a spaced L or the English article as notation', () => {
+    expect(parseComp('an offer of 50k')).toMatchObject({ amount: 50_000, periodStated: false })
+    expect(parseComp('Grade 7 L, $90k')?.amount).toBe(90_000)
+  })
+})

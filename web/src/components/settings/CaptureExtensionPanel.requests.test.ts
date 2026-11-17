@@ -33,7 +33,9 @@ describe('Q110 the extension is installed from Settings, not from a store', () =
   })
 
   it('packs it before every dev server and every build', () => {
-    expect(pkg.scripts.dev).toMatch(/^npm run pack-extension && /)
+    // `--dev` keeps the localhost ports in the dev server's zip; the build's
+    // zip leaves them out (scripts/extension-origins.mjs, review 2 security-1).
+    expect(pkg.scripts.dev).toMatch(/^npm run pack-extension -- --dev && /)
     expect(pkg.scripts.build).toMatch(/^npm run pack-extension && /)
     expect(pkg.scripts['pack-extension']).toContain('node scripts/pack-extension.mjs')
   })

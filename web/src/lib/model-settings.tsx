@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { removeServer, renameServer, saveServer } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
@@ -62,11 +62,42 @@ export function ModelSettingsProvider({ children }: { children: ReactNode }) {
    * `servers` and storage keeps whichever finished last.
    */
   const write = useCallback((change: (list: readonly ModelServer[]) => ModelServer[]) => {
+    /*
+     * From storage, not from React's copy of it. Another tab may have written
+     * since this one mounted, and the list here is whole-list-replaced: with
+     * two tabs open, forgetting a server in A and then renaming one in B wrote
+     * B's stale list back — the forgotten server, API key and all, returned.
+     * Storage is the one list both tabs share; reading it at the moment of the
+     * write applies this change to the latest of it. The updater form stays for
+     * the reason above: two changes in one render each read what the last wrote.
+     */
     setServers((list) => {
-      const next = change(list)
+      // Nothing stored is either a browser that blocks storage — where this
+      // tab's copy is the only list there is — or a list never written.
+      const next = change(readStored(SERVERS_KEY) === null ? list : readServers())
       writeStored(SERVERS_KEY, JSON.stringify(next))
       return next
     })
+  }, [])
+
+  /*
+   * Another tab's change, taken in. The `storage` event reaches every other tab
+   * of this origin, never the one that wrote; `key === null` is a cleared
+   * storage. Without this a tab went on showing — and offering to load — a
+   * server another tab had forgotten, and kept an endpoint or reader that had
+   * since changed.
+   */
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      const all = event.key === null
+      if (all || event.key === SERVERS_KEY) setServers(readServers())
+      if (all || event.key === STORAGE_KEY) setSettings(readSettings())
+      if (all || event.key === READER_KEY) setReaderState(readStored(READER_KEY) ?? '')
+    }
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('storage', onStorage)
+    }
   }, [])
 
   const remember = useCallback(

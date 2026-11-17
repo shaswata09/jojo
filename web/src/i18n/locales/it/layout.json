@@ -144,6 +144,9 @@
       "profile": "Il mio profilo",
       "assistant": "Assistente",
       "settings": "Impostazioni"
-    }
+    },
+    "showAll_one": "Mostra tutto ({{count}})",
+    "showAll_many": "Mostra tutto ({{count}})",
+    "showAll_other": "Mostra tutto ({{count}})"
   }
 }

@@ -112,6 +112,13 @@
       "title": "Solte para adicionar a {{bucket}}",
       "description": "Nome, tamanho e tipo são lidos. Nada é enviado.",
       "hint": "Solte arquivos em qualquer lugar deste painel para adicioná-los a {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "Para ler",
+      "applications": "Candidaturas",
+      "jobPostings": "Anúncios de vagas",
+      "talks": "Palestras",
+      "admin": "Administrativo"
     }
   },
   "pdf": {
@@ -258,7 +265,8 @@
       "placeholder": "O que importa neste documento — o prazo escondido na página 3, a quem perguntar…",
       "saved": "Salvo",
       "save": "Salvar nota"
-    }
+    },
+    "notPdf": "O conteúdo deste arquivo não é um PDF, então o jojo não vai exibi-lo como tal."
   },
   "reminders": {
     "snooze": {

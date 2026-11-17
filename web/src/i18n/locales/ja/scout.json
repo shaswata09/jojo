@@ -134,7 +134,9 @@
     "status": {
       "applied": "適用済み",
       "discarded": "破棄済み",
-      "failed": "適用できませんでした"
+      "failed": "適用できませんでした",
+      "savedToMatches": "マッチに保存済み",
+      "savedToPostings": "求人に保存済み"
     },
     "noSummary": "これには要約がありません。求人を開いて内容を確認してください。",
     "reading": "求人を読んで詳細を取得しています…",

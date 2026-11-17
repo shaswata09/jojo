@@ -147,8 +147,16 @@ export interface IdbFileStore extends FileStore {
    * safety net and becomes a quota leak the user cannot see or clear.
    *
    * Returns how many were reclaimed.
+   *
+   * `only`, when given, is asked about every trashed key and only those it
+   * answers true for go. The Vault passes it so the sweep is decided by the
+   * records rather than by the folder: a trashed document whose record an Undo
+   * brought back is not unreachable, it is waiting to be put back — and
+   * emptying the whole trash on every load deleted exactly those (review
+   * 2026-11-17, health-1). Without it, everything under `jojo/Trash` goes, as
+   * before.
    */
-  purgeTrash(): Promise<number>
+  purgeTrash(only?: (key: string) => boolean): Promise<number>
   /** Whether the browser exempted this data from eviction. See the note above. */
   persisted(): Promise<boolean>
 }
@@ -343,8 +351,7 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
     // resolved, or permanently if IndexedDB is blocked outright.
     connected: () => connected,
 
-    open: async () =>
-      attempt<void>('open', undefined, async () => fileOk(undefined)),
+    open: async () => attempt<void>('open', undefined, async () => fileOk(undefined)),
 
     persisted: async () => {
       try {
@@ -527,12 +534,14 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
       }
     },
 
-    purgeTrash: async () => {
+    purgeTrash: async (only) => {
       if (forgotten) return 0
       try {
         const handle = await ensure()
         const keys = (await handle.getAllKeys(STORE)) as string[]
-        const doomed = keys.filter((k) => k.startsWith(`${TRASH_DIR}/`))
+        const doomed = keys.filter(
+          (k) => k.startsWith(`${TRASH_DIR}/`) && (only === undefined || only(k)),
+        )
         // One transaction: a purge that half-completes leaves keys that the next
         // sweep will find anyway, but doing it atomically means the count
         // returned is the count actually freed.

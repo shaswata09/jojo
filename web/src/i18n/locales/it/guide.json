@@ -612,5 +612,6 @@
       "order": "L'ordine è una scelta, non un caso: chiunque può fermarsi dopo la prima pagina e usare l'app, e chiunque può saltare direttamente all'ultima.",
       "address": "<lead>La barra degli indirizzi</lead> è la pagina stessa. La prima pagina è <code>/guide</code> anziché <code>/guide/overview</code>, così ogni link e preferito creato prima che le pagine fossero quattro porta ancora da qualche parte."
     }
-  }
+  },
+  "englishOnly": "Questa pagina è in inglese: nomina codice, pacchetti e termini di licenza con le parole in cui sono scritti."
 }

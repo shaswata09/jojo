@@ -30,11 +30,12 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { GATE_FOR } from '../agent/loop'
+import { GATE_FOR } from '../agent/gate'
 import type { AgentOptions, AgentStep, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import type { ChatMessage } from '../core/model-server'
 import type { ApprovalMode, NodeId } from '../core/model'
+import { approvalOf } from '../core/model'
 import { useAgentRun, useAgentRuns } from './agent-runs-context'
 import type { AgentEntry, RunSignal } from './agent-runs'
 import { useToolHost } from './use-tool-host'
@@ -226,8 +227,15 @@ export function useAgent({
          * The conversation's own setting, mapped to what the loop understands.
          * `manual` is the default a thread gets without choosing, so a person
          * who never touches this is asked about every write.
+         *
+         * Read from the graph before every call rather than captured here: the
+         * setting can be changed while the run is going — it is the control a
+         * person reaches for to stop an Auto run writing — and it showed the
+         * new mode at once while the run kept the old one to the end
+         * (review 2026-11-17). The mode at send stands in only if the thread
+         * cannot be read.
          */
-        gate: GATE_FOR[thread.approval ?? 'manual'],
+        gate: liveGate(host, id, thread.approval ?? 'manual'),
         ...(thread.context === undefined ? {} : { context: thread.context }),
         ...(thread.focus === undefined ? {} : { focus: thread.focus }),
         ...(onCompacted === undefined ? {} : { onCompacted }),
@@ -288,4 +296,16 @@ export function useAgent({
   )
 
   return { entries, busy: run?.busy ?? false, send, stop, clear, undoable }
+}
+
+/**
+ * The approval gate for one run, as the loop reads it before each call: the
+ * conversation's CURRENT setting, so a change made mid-run applies to the
+ * rest of that run. See `AgentOptions.gate`.
+ */
+export function liveGate(host: Pick<ToolHost, 'memory'>, threadId: NodeId, atSend: ApprovalMode) {
+  return () => {
+    const node = host.memory().node(threadId, 'thread')
+    return GATE_FOR[node === undefined ? atSend : approvalOf(node.props)]
+  }
 }

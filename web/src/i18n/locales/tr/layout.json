@@ -137,6 +137,8 @@
       "profile": "Profilim",
       "assistant": "Asistan",
       "settings": "Ayarlar"
-    }
+    },
+    "showAll_one": "Tümünü göster ({{count}})",
+    "showAll_other": "Tümünü göster ({{count}})"
   }
 }

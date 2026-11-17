@@ -103,6 +103,13 @@
       "title": "{{bucket}} bölümüne eklemek için bırakın",
       "description": "Ad, boyut ve tür okunur. Hiçbir şey yüklenmez.",
       "hint": "{{bucket}} bölümüne eklemek için dosyaları bu panelin herhangi bir yerine bırakın."
+    },
+    "buckets": {
+      "toRead": "Okunacak",
+      "applications": "Başvurular",
+      "jobPostings": "İş ilanları",
+      "talks": "Sunumlar",
+      "admin": "İdari"
     }
   },
   "pdf": {
@@ -245,7 +252,8 @@
       "placeholder": "Bu belgede önemli olanlar — 3. sayfaya gömülü son tarih, kime sorulacağı…",
       "saved": "Kaydedildi",
       "save": "Notu kaydet"
-    }
+    },
+    "notPdf": "Bu dosyanın içeriği PDF değil, bu yüzden jojo onu PDF olarak göstermez."
   },
   "reminders": {
     "snooze": {

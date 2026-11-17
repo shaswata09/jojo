@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  CAPTURE_REJECTION_MESSAGE,
   readCapture,
   type CaptureEnvelope,
   type CaptureRejection,
 } from '@jojo/service/core/capture'
 import type { BoardScan, ScanCancellation } from '@jojo/service/core/board'
 import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 
 /**
  * The app's end of the conversation with the capture extension.
@@ -620,7 +620,8 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
   }
   const read = readCapture(reply.capture)
   if (typeof read === 'string') {
-    return { ok: false, absent: false, reason: CAPTURE_REJECTION_MESSAGE[read] }
+    // In the language on screen, like every other reason this returns.
+    return { ok: false, absent: false, reason: domain.captureRejected(read) }
   }
   return { ok: true, capture: read }
 }

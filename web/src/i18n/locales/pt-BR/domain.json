@@ -348,6 +348,32 @@
     "many_many": "arquivado em {{count}} candidaturas",
     "many_other": "arquivado em {{count}} candidaturas"
   },
+  "picked": {
+    "two": "{{a}} e {{b}}",
+    "many_one": "{{count}} candidatura",
+    "many_many": "{{count}} candidaturas",
+    "many_other": "{{count}} candidaturas"
+  },
+  "twinOffer": {
+    "unnamed": "esse documento",
+    "title": "Ler {{first}} e adicionar ao seu perfil?",
+    "titleMore_one": "Ler {{first}} e mais {{count}} documento e adicionar ao seu perfil?",
+    "titleMore_many": "Ler {{first}} e mais {{count}} documentos e adicionar ao seu perfil?",
+    "titleMore_other": "Ler {{first}} e mais {{count}} documentos e adicionar ao seu perfil?",
+    "body": "O jojo vai ler o conteúdo e registrar os fatos que ele informa — seus diplomas, cargos, publicações e habilidades — para poder comparar uma vaga com o que você realmente fez. Cada entrada adicionada é mostrada a você antes e indica de qual documento veio."
+  },
+  "duplicate": {
+    "id": "O ID desta vaga já está em {{name}}.",
+    "url": "Você já salvou esta vaga como {{name}}.",
+    "name": "Você já tem {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Isso não voltou como uma página.",
+    "bad-source": "Uma vaga precisa ter um endereço http ou https.",
+    "empty": "A página voltou vazia — talvez não tivesse terminado de carregar.",
+    "too-large": "Essa página é grande demais para guardar. Tente de novo quando as imagens terminarem de carregar.",
+    "leaks": "A cópia ainda aponta para o site de origem, então não foi guardada."
+  },
   "readBy": "Lido por {{model}} · {{ago}}",
   "missingSource": "um documento que não está mais no Cofre",
   "undo": {

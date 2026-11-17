@@ -158,7 +158,8 @@
     "stopFiltering": "Ngừng lọc theo {{name}}",
     "filterBy": "Lọc theo {{name}}",
     "edit": "Sửa từ khóa {{name}}",
-    "editHint": "Đổi tên, đổi màu hoặc xóa"
+    "editHint": "Đổi tên, đổi màu hoặc xóa",
+    "tooLong": "Tối đa {{max}} ký tự."
   },
   "welcome": {
     "title": "Đôi điều về bạn",
@@ -265,5 +266,8 @@
   "command": {
     "title": "Bảng lệnh",
     "description": "Tìm một lệnh để chạy..."
+  },
+  "rows": {
+    "showMore": "Hiển thị thêm ({{shown}}/{{total}})"
   }
 }

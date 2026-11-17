@@ -35,6 +35,7 @@ import { space } from '@/theme/tokens'
 import { TourTarget } from '@/components/tour/TourTarget'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
   FileBucket,
@@ -54,7 +55,7 @@ const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Rec
  * on a laptop, or a paper form, is a real thing to track; the viewer tells those
  * two kinds apart rather than treating the second as a failure of the first.
  */
-export function FilesTool({ focus }: { focus?: string }) {
+export function FilesTool() {
   const { t } = useTranslation('vault')
   const domain = useDomain()
   const c = useColors()
@@ -111,10 +112,11 @@ export function FilesTool({ focus }: { focus?: string }) {
      */
     const shared = files.some((other) => other.id !== f.id && other.uri === f.uri)
     const { restore } = removeFile(f.id)
-    let restoreBytes: (() => Promise<void>) | null = null
-    void trashDocument(f.uri, shared).then((undo) => {
-      restoreBytes = undo
-    })
+    // The promise, not the function it resolves to: an Undo pressed before the
+    // move finished used to find nothing to call. Every OTHER Undo — Undo last
+    // in the audit log, the assistant's — reaches the bytes through
+    // `reconcileTrashedDocuments`, which watches the records (health-1).
+    const trashing = trashDocument(f.uri, shared)
 
     toast({
       title: t('files.toast.removed'),
@@ -124,7 +126,7 @@ export function FilesTool({ focus }: { focus?: string }) {
         label: t('common.undo'),
         onPress: () => {
           restore()
-          void restoreBytes?.()
+          void trashing.then((restoreBytes) => restoreBytes())
         },
       },
     })
@@ -248,9 +250,9 @@ export function FilesTool({ focus }: { focus?: string }) {
           ) : (
             rows.map((f, i) => {
               return (
-                <View key={f.id}>
+                <FocusTarget key={f.id} id={f.id}>
                   {i > 0 ? <Divider /> : null}
-                  <View style={[styles.row, focus === f.id && { backgroundColor: c.accentSoft }]}>
+                  <View style={styles.row}>
                     <Feather
                       name={FILE_KIND_ICON[f.kind]}
                       size={17}
@@ -289,7 +291,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                       onPress={() => setMenuFor(f)}
                     />
                   </View>
-                </View>
+                </FocusTarget>
               )
             })
           )}

@@ -158,7 +158,8 @@
     "stopFiltering": "{{name}} 필터 해제",
     "filterBy": "{{name}}(으)로 필터링",
     "edit": "키워드 {{name}} 편집",
-    "editHint": "이름 바꾸기, 색 바꾸기, 삭제"
+    "editHint": "이름 바꾸기, 색 바꾸기, 삭제",
+    "tooLong": "{{max}}자 이내로 입력하세요."
   },
   "welcome": {
     "title": "나에 대해 조금만 알려 주세요",
@@ -265,5 +266,8 @@
   "command": {
     "title": "명령 팔레트",
     "description": "실행할 명령 검색..."
+  },
+  "rows": {
+    "showMore": "더 보기 ({{total}}개 중 {{shown}}개)"
   }
 }

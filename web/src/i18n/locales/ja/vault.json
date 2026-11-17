@@ -94,6 +94,13 @@
       "title": "ドロップして「{{bucket}}」に追加",
       "description": "名前、サイズ、種類を読み取ります。アップロードはしません。",
       "hint": "このパネルのどこにでもファイルをドロップすると「{{bucket}}」に追加されます。"
+    },
+    "buckets": {
+      "toRead": "読むもの",
+      "applications": "応募",
+      "jobPostings": "求人",
+      "talks": "講演",
+      "admin": "事務"
     }
   },
   "pdf": {
@@ -232,7 +239,8 @@
       "placeholder": "このドキュメントで大事なこと：3ページ目に埋もれた締め切り、誰に聞けばいいか…",
       "saved": "保存しました",
       "save": "メモを保存"
-    }
+    },
+    "notPdf": "このファイルの中身は PDF ではないため、jojo は PDF として表示しません。"
   },
   "reminders": {
     "snooze": {

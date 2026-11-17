@@ -2,6 +2,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { RootStackParamList, VaultTool } from '@/navigation/types'
 import { i18next } from '@/i18n/i18n'
+import { toTab } from '@/navigation/to-tab'
 
 /** The navigator every screen in the app is pushed onto. */
 type Nav = NativeStackNavigationProp<RootStackParamList>
@@ -35,10 +36,9 @@ export type Destination = {
 }
 
 const tab = (screen: 'Today' | 'Applications' | 'Calendar' | 'More') => (nav: Nav) =>
-  nav.navigate('Tabs', { screen })
+  toTab(nav, screen)
 
-const vault = (tool: VaultTool) => (nav: Nav) =>
-  nav.navigate('Tabs', { screen: 'Vault', params: { tool } })
+const vault = (tool: VaultTool) => (nav: Nav) => toTab(nav, 'Vault', { tool })
 
 /*
  * The screens you can simply go to, which is the ones that need no parameters.

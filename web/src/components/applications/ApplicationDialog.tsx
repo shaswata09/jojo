@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dialog'
 import { displayName } from '@/data/seed'
 import type { RoleTag } from '@/data/seed'
-import { duplicateMessage, findDuplicate } from '@jojo/service/core/duplicates'
+import { findDuplicate } from '@jojo/service/core/duplicates'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { encodeFormat } from '@jojo/service/core/note-format'
 import type { NodeId } from '@jojo/service/core/model'
@@ -70,6 +70,7 @@ export function ApplicationDialog({
   initial?: ApplicationInitial
 }) {
   const { t } = useTranslation('applications')
+  const domain = useDomain()
   const applications = useApplications()
   const { labelIdsOf } = useLabels()
   const { toast } = useToast()
@@ -405,7 +406,7 @@ export function ApplicationDialog({
               t={t}
               i18nKey="dialog.duplicateWarning"
               values={{
-                message: duplicateMessage(duplicate.reason, displayName(duplicate.record)),
+                message: domain.duplicate(duplicate.reason, displayName(duplicate.record)),
               }}
               components={{
                 anchor: (
@@ -525,7 +526,7 @@ function DuplicateConfirm({
   const why =
     found.how === 'model'
       ? (found.because ?? t('dialog.duplicate.modelSame'))
-      : duplicateMessage(found.reason, displayName(original))
+      : domain.duplicate(found.reason, displayName(original))
   return (
     <div className="space-y-4" role="alertdialog" aria-labelledby="duplicate-title">
       <div className="rounded-lg border border-warning-border bg-warning-soft px-3 py-2 text-sm text-warning">

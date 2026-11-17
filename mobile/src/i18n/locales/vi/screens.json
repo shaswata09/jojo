@@ -410,6 +410,7 @@
       "transferLast": "dùng lần cuối {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Mọi thứ chạy trên thiết bị này.",
+    "statusEnglish": "Giữ nguyên tiếng Anh từng chữ, để không lệch khỏi giấy phép mà nó tóm tắt.",
     "overdue_other": "{{count}} lời nhắc quá hạn."
   },
   "statistics": {

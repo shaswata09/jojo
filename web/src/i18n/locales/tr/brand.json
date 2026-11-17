@@ -5,7 +5,7 @@
     "trigger": "jojo'nun hareketleri",
     "triggerAria": "jojo'nun hareketleri ve emeği geçenler",
     "plays": "oynatılma",
-    "modelCredit": "Robot modeli:"
+    "modelCreditFull": "Robot modeli: <artist>Jungle Jim</artist> tarafından <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work>, <licence>CC BY 4.0</licence> lisansıyla. jojo için değiştirildi: daha hafif ağ ve dokular, kendi gözleri ve hareketleri (her değişiklik Nasıl kullanılır › Kullanılan yazılımlar sayfasında listelenir). Sanatçı jojo'yu onaylamaz."
   },
   "theme": {
     "toggle": "Temayı değiştir",

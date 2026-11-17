@@ -110,3 +110,11 @@ export function inkStyle(
 
 /** The solid disc for a custom colour: the ink itself, at swatch size. */
 export const inkFill = (ink: string, theme: Theme): string => inkOf(ink, theme)?.fg ?? ink
+
+/**
+ * The longest keyword name the `keyword.add` / `keyword.rename` tools accept
+ * (`service/kg/tools/keyword.ts`). Every keyword input carries it as
+ * `maxLength`: without one, a longer name was silently dropped on add and
+ * refused as "already taken" on rename.
+ */
+export const KEYWORD_NAME_MAX = 40

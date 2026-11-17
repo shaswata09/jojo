@@ -138,7 +138,9 @@
     "status": {
       "applied": "aplicada",
       "discarded": "descartada",
-      "failed": "no se pudo aplicar"
+      "failed": "no se pudo aplicar",
+      "savedToMatches": "Guardada en Coincidencias",
+      "savedToPostings": "Guardada en Ofertas"
     },
     "noSummary": "Esta llegó sin resumen; abre la oferta para ver de qué se trata.",
     "reading": "Leyendo la oferta para obtener sus detalles…",

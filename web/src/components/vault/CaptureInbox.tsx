@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Globe, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { CAPTURE_REJECTION_MESSAGE } from '@jojo/service/core/capture'
 import { useCaptureInbox } from '@/lib/capture-bridge'
 import { useFileCapture } from '@/lib/file-capture'
 import { displayName } from '@/data/seed'
 import { useToast } from '@/lib/toast-context'
+import { domain } from '@/i18n/domain'
 
 /**
  * What the extension captured, waiting to be filed.
@@ -104,9 +104,9 @@ export function CaptureInbox() {
             refused.length === 1
               ? t('capture.refusedOne')
               : t('capture.refusedMany', { count: refused.length }),
-          description: [...new Set(refused.map((r) => CAPTURE_REJECTION_MESSAGE[r.reason]))].join(
-            ' ',
-          ),
+          // Said in the language on screen, as the title is; core's table is
+          // the English.
+          description: [...new Set(refused.map((r) => domain.captureRejected(r.reason)))].join(' '),
         })
       }
     } finally {

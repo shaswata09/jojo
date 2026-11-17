@@ -23,6 +23,7 @@ import { radius, space } from '@/theme/tokens'
 import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
 import { TourTarget } from '@/components/tour/TourTarget'
 import { useDomain } from '@/i18n/domain'
+import { Icon } from '@/components/ui/Icon'
 
 type Entry = {
   screen: keyof RootStackParamList
@@ -65,7 +66,7 @@ function storageMeta(health: PersistenceHealth): string {
 }
 
 export function MoreScreen() {
-  const { t } = useTranslation('screens')
+  const { t, i18n } = useTranslation('screens')
   const domain = useDomain()
   const { health } = useStoreStatus()
   const c = useColors()
@@ -176,7 +177,7 @@ export function MoreScreen() {
             </Txt>
           </View>
         ) : null}
-        <Feather name="chevron-right" size={18} color={c.text3} />
+        <Icon name="chevron-right" size={18} color={c.text3} />
       </Pressable>
     </TourTarget>
   )
@@ -283,15 +284,31 @@ export function MoreScreen() {
           phone has no sidebar, and More is where somebody goes when they want
           to know what jojo is. The words come from `core/status.ts` so the two
           platforms cannot drift. */}
+      {/* English in every language, on purpose: it is the single source the
+          README, NOTICE and the web's Licence page are checked against, and a
+          translated liability statement is a second text that can disagree.
+          What IS translated is the line saying so, and the English is marked as
+          English so a screen reader does not read it in the phone's voice. */}
       <Panel>
-        <Txt size="sm" weight="medium" tone="warning">
+        {i18n.language.split('-')[0] !== 'en' ? (
+          <Txt size="xs" tone="muted" style={{ marginBottom: space[1] }}>
+            {t('more.statusEnglish')}
+          </Txt>
+        ) : null}
+        <Txt size="sm" weight="medium" tone="warning" accessibilityLanguage="en">
           {STATUS_HEADLINE}
         </Txt>
-        <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
+        <Txt size="xs" tone="muted" style={{ marginTop: space[1] }} accessibilityLanguage="en">
           {STATUS_SUMMARY}
         </Txt>
         {STATUS_POINTS.map((point) => (
-          <Txt key={point.label} size="xs" tone="muted" style={{ marginTop: space[2] }}>
+          <Txt
+            key={point.label}
+            size="xs"
+            tone="muted"
+            style={{ marginTop: space[2] }}
+            accessibilityLanguage="en"
+          >
             <Txt size="xs">{point.label}. </Txt>
             {point.body}
           </Txt>

@@ -597,5 +597,6 @@
       "order": "The order is an argument rather than an accident: anyone can stop after the first page and use the app, and anyone can jump straight to the last one.",
       "address": "<lead>In the address bar</lead> is the page itself. The first page is <code>/guide</code> rather than <code>/guide/overview</code>, so every link and bookmark taken before there were four of them still lands somewhere real."
     }
-  }
+  },
+  "englishOnly": "This page is in English: it names code, packages and licence terms in the words they are written in."
 }

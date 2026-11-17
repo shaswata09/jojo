@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Loader2, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
+import { newlyReadable, twinState } from '@jojo/service/core/twin'
 import type { TwinGap } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { clearProfileRead, useProfileReadRequest } from '@jojo/service/react/profile-read-request'
@@ -14,6 +14,7 @@ import { useReadCv } from '@/lib/cv-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { markOffered, offered } from '@/lib/twin-offer'
 import { useVaultBlobs } from '@/lib/vault-blobs'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The offer to read a newly filed document into the person's profile.
@@ -146,7 +147,10 @@ export function ProfileUpdateOffer() {
       : gaps[0]
     return { target: chosen, offering: requested && chosen ? [chosen] : gaps }
   }, [requested, gaps])
-  const copy = useMemo(() => twinOfferCopy(offering), [offering])
+  // The consent wording in the language on screen: core's English
+  // (`twinOfferCopy`) through the `domain` catalog.
+  const domain = useDomain()
+  const copy = domain.twinOffer(offering)
 
   /*
    * Nothing to ask, or nothing to ask WITH. A model has to be configured for

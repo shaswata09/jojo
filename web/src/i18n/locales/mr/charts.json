@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} दाखवा",
-    "hide": "{{label}} लपवा"
+    "hide": "{{label}} लपवा",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "सूचीमध्ये प्रत्येक मालिका बंद केलेली आहे.",

@@ -6,7 +6,9 @@
  *   1. deleting the record deletes its bytes (`useFileDelete` -> `blobs.remove`);
  *   2. `remove` takes the bytes out of `Documents/` — into `jojo/Trash`, so the
  *      Undo on screen can put them back;
- *   3. the next page load purges `jojo/Trash` before anything is listed.
+ *   3. the next page load purges `jojo/Trash` — the copies whose record is
+ *      gone, once the records have hydrated (health-1, 2026-11-17: a blanket
+ *      purge also took the bytes of every record an Undo had brought back).
  *
  * That `purgeTrash` really frees the bytes in IndexedDB is
  * `kg/storage/idb-file-store.test.ts` ("purgeTrash reclaims deleted
@@ -31,9 +33,13 @@ vi.mock('@/kg/storage/idb-file-store', async () => ({
   isBlockedFailure: () => false,
   createIdbFileStore: () => ({
     open: async () => ({ ok: true, value: undefined }),
-    purgeTrash: async () => {
+    purgeTrash: async (only?: (key: string) => boolean) => {
       fake.calls.push('purgeTrash')
-      return 0
+      const doomed = Object.keys(fake.store.snapshot()).filter(
+        (key) => key.startsWith('jojo/Trash/') && (only === undefined || only(key)),
+      )
+      for (const key of doomed) fake.store.remove(key)
+      return doomed.length
     },
     persisted: async () => false,
     list: (dir: string) => {
@@ -73,13 +79,23 @@ describe('a deleted document’s bytes (Q099)', () => {
   })
 
   it('are purged on the next page load, before the index is read', async () => {
-    const mod = await load({ [blobPath('f2', 'cv.pdf')]: bytes('cv') })
-    await mod.blobIndex.ready()
+    // A copy trashed in an earlier session, whose record is gone.
+    const mod = await load({ [`jojo/Trash/${blobPath('f2', 'cv.pdf')}`]: bytes('cv') })
+    // The records, hydrated from disk, name no `f2`.
+    mod.bindRecords({ subscribe: () => () => {}, getSnapshot: () => ({ ofType: () => [] }) }, true)
+    await vi.waitFor(() => expect(fake.calls).toContain('purgeTrash'))
 
+    // Once for the page, and the copy is gone.
+    mod.bindRecords({ subscribe: () => () => {}, getSnapshot: () => ({ ofType: () => [] }) }, true)
+    await mod.blobIndex.ready()
     expect(fake.calls.filter((c) => c === 'purgeTrash')).toHaveLength(1)
+    expect(Object.keys(fake.store.snapshot())).toEqual([])
+    // The documents the page reads were listed by then; the purge never runs
+    // ahead of the listing it is decided against.
     const purge = fake.calls.indexOf('purgeTrash')
     const firstList = fake.calls.findIndex((c) => c.startsWith('list '))
-    expect(firstList).toBeGreaterThan(purge)
+    expect(firstList).toBeGreaterThan(-1)
+    expect(firstList).toBeLessThan(purge)
   })
 
   it('go with the record: the delete hook removes them as well', () => {

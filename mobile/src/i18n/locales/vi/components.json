@@ -136,6 +136,7 @@
     "explain": "Thay đổi mới nhất có thể được đưa về. Các thay đổi cũ hơn chỉ là bản ghi, không phải cỗ máy thời gian.",
     "undoLast": "Hoàn tác thay đổi cuối",
     "cannotUndo": "Không thể hoàn tác việc tải hoặc xóa bộ dữ liệu.",
+    "cannotUndoTrimmed": "jojo có ghi lại thay đổi này nhưng không đủ để đưa về — đó là một thao tác ghi chạy nền (một lần đánh giá mức phù hợp, dữ liệu của một tệp) hoặc đã quá lâu.",
     "showAll_other": "Hiện tất cả {{count}}"
   },
   "crash": {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Highlighter, MessageSquarePlus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,7 @@ import { PdfPageView } from './PdfPageView'
 import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import type { Quad } from '@/lib/pdf/geometry'
 import type { FileBucket } from '@/data/vault'
+import { fileBucketLabel } from '@/components/vault/files/bucket-label'
 
 type Tool = 'highlight' | 'comment'
 
@@ -59,16 +60,33 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
   /** The mark whose text box should take the caret — the one just placed. */
   const [typing, setTyping] = useState<string | null>(null)
 
+  /*
+   * The latest pick wins. Opening is async, so a large PDF picked first used to
+   * resolve AFTER a small one picked second and overwrite it: the panel showed
+   * the first document while `choice` — and so Save — named the second, and
+   * edits placed on one document's pages were written into the other's bytes.
+   * Each open takes a ticket; a resolution whose ticket is no longer current is
+   * closed and dropped, and the old document leaves the screen at once.
+   */
+  const request = useRef(0)
   const open = useCallback(
     async (picked: PdfChoice) => {
+      const ticket = ++request.current
       setError(null)
       setChoice(picked)
+      setDocument(null)
       setMarks([])
       setPage(0)
       setName('')
       try {
-        setDocument(await openPdf(await bytesOf(picked)))
+        const opened = await openPdf(await bytesOf(picked))
+        if (ticket !== request.current) {
+          opened.close()
+          return
+        }
+        setDocument(opened)
       } catch (cause) {
+        if (ticket !== request.current) return
         setError(cause instanceof Error ? cause.message : String(cause))
         setDocument(null)
       }
@@ -145,7 +163,7 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
         title: t('pdf.saved', { name: record.name }),
         description: t('pdf.annotate.savedDescription', {
           summary: summarise(marks),
-          bucket,
+          bucket: fileBucketLabel(bucket),
           name: choice.name,
         }),
       })

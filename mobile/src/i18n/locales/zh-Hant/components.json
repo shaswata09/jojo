@@ -136,6 +136,7 @@
     "explain": "最新的變更可以還原。較舊的只是紀錄，不是時光機。",
     "undoLast": "復原最後一項",
     "cannotUndo": "載入或清除資料集無法復原。",
+    "cannotUndoTrimmed": "jojo 記錄了這次變更，但資訊不足以恢復——它是背景寫入（契合度評估、檔案內容），或時間太久遠。",
     "showAll_other": "顯示全部 {{count}} 項"
   },
   "crash": {

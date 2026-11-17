@@ -18,6 +18,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { toTab } from '@/navigation/to-tab'
 
 /** `id` names the rung's `name`, `requires` and `gives` under `overview.layers` in the guide catalog. */
 type Layer = {
@@ -119,7 +120,7 @@ export function GuideOverview() {
       body: t('overview.steps.file.body'),
       done: files.length > 0,
       label: t('overview.steps.file.label'),
-      onPress: () => navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'files' } }),
+      onPress: () => toTab(navigation, 'Vault', { tool: 'files' }),
     },
     {
       id: 'keyword',

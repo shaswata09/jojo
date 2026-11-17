@@ -11,7 +11,8 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { applicationsLabel, displayName } from '@/data/seed'
+import { displayName } from '@/data/seed'
+import { useDomain } from '@/i18n/domain'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { cn } from '@/lib/utils'
 
@@ -46,15 +47,16 @@ export function ApplicationPicker({
   className?: string
 }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const { all, byId } = useApplications()
   const [open, setOpen] = useState(false)
 
   const chosen = values.map((v) => byId.get(v)).filter((a) => a !== undefined)
-  // `applicationsLabel` is the shared rule for how many names fit before a
-  // count reads better — the same one the phone's picker and every filing
-  // toast use, so the three cannot disagree about where two becomes 'three
-  // applications'.
-  const label = chosen.length === 0 ? t('picker.none') : applicationsLabel(chosen)
+  // `domain.picked` is the shared rule for how many names fit before a count
+  // reads better — the same one the phone's picker uses and `applicationsLabel`
+  // writes in English, so they cannot disagree about where two becomes 'three
+  // applications'. Translated: the English joined with 'and' in every language.
+  const label = chosen.length === 0 ? t('picker.none') : domain.picked(chosen.map(displayName))
   // `what` names the record — 'file', 'link' — and picks a whole sentence, so
   // no language has to splice a noun into it. An unknown one reads generically.
   const unfile = t(`picker.unfile.${what}`, { defaultValue: t('picker.unfile.record') })

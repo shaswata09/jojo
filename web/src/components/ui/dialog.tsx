@@ -111,6 +111,40 @@ function applyTransformOrigin(node: HTMLElement) {
   node.style.transformOrigin = `${Math.round(x)}px ${Math.round(y)}px`
 }
 
+/**
+ * The control to hand focus back to, mapped out of a menu that is closing.
+ *
+ * A dialog opened from a popover item — a row's ⋯ menu, the detail sheet's ⋯,
+ * the stage menu — recorded that ITEM: the pointer landed on it, and it is
+ * still in the DOM for the menu's exit animation when the dialog mounts. By
+ * the time the dialog closed the item was gone, Radix had no trigger to fall
+ * back to, and focus landed on `<body>`: the next Tab went to the skip link at
+ * the top of the page.
+ *
+ * The menus focus their own trigger (the ⋯ or the stage pill) before they
+ * close, so that is what holds focus here and what is returned to. The
+ * popover's `aria-controls` is the fallback, though Radix drops it in the same
+ * commit the menu closes in, so it is rarely still there.
+ */
+function survivingTrigger(candidate: HTMLElement | null): HTMLElement | null {
+  const popper = candidate?.closest('[data-radix-popper-content-wrapper]')
+  if (!candidate || !popper) return candidate
+  const active = document.activeElement
+  if (active instanceof HTMLElement && active !== document.body && !popper.contains(active)) {
+    return active
+  }
+  for (
+    let node: Element | null = candidate;
+    node && popper.contains(node);
+    node = node.parentElement
+  ) {
+    if (!node.id) continue
+    const trigger = document.querySelector(`[aria-controls="${CSS.escape(node.id)}"]`)
+    if (trigger instanceof HTMLElement) return trigger
+  }
+  return candidate
+}
+
 function DialogContent({
   className,
   children,
@@ -146,7 +180,7 @@ function DialogContent({
       if (typeof ref === 'function') ref(node)
       else if (ref) ref.current = node
       if (!node) return
-      returnFocusRef.current ??= triggerElement()
+      returnFocusRef.current ??= survivingTrigger(triggerElement())
       if (reducedMotion) fadeIn(node)
       else applyTransformOrigin(node)
     },

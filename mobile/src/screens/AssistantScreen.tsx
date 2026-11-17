@@ -41,6 +41,7 @@ import { useColors } from '@/theme/theme-context'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { fonts, radius, space, type } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
+import { toTab } from '@/navigation/to-tab'
 
 /**
  * A worked example, and the prompt that produces it.
@@ -407,8 +408,7 @@ function AgentScreen() {
       description: t('assistant.savedDescription', { title: snippet.title, tag: snippet.tag }),
       action: {
         label: t('assistant.openVault'),
-        onPress: () =>
-          navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
+        onPress: () => toTab(navigation, 'Vault', { tool: 'snippets' }),
       },
     })
   }
@@ -722,8 +722,7 @@ function ScriptedScreen() {
       description: t('assistant.savedDescription', { title: snippet.title, tag: snippet.tag }),
       action: {
         label: t('assistant.openVault'),
-        onPress: () =>
-          navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
+        onPress: () => toTab(navigation, 'Vault', { tool: 'snippets' }),
       },
     })
   }

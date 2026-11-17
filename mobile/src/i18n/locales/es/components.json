@@ -143,6 +143,7 @@
     "explain": "El cambio más reciente se puede revertir. Los anteriores son un registro, no una máquina del tiempo.",
     "undoLast": "Deshacer el último",
     "cannotUndo": "Cargar o vaciar el conjunto de datos no se puede deshacer.",
+    "cannotUndoTrimmed": "jojo guardó constancia de este cambio, pero no lo suficiente para revertirlo: fue una escritura en segundo plano (una lectura de encaje, los bytes de un archivo) o es demasiado antiguo.",
     "showAll_one": "Mostrar {{count}}",
     "showAll_other": "Mostrar los {{count}}"
   },

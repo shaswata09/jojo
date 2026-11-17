@@ -169,7 +169,9 @@ describe('a fetched stylesheet that uses image-set', () => {
       fetched.push(href)
       return Promise.resolve(
         href.endsWith('s.css')
-          ? sheet('.a{background-image:image-set("https://cdn.test/x.png" 1x, "//cdn.test/y.png" 2x)}')
+          ? sheet(
+              '.a{background-image:image-set("https://cdn.test/x.png" 1x, "//cdn.test/y.png" 2x)}',
+            )
           : opaque(),
       )
     })
@@ -232,5 +234,71 @@ describe('the final sweep', () => {
     if (!out.ok) return
     expect(out.capture.html).toBe(prose)
     expect(out.capture.dropped).toBe(0)
+  })
+})
+
+describe('an asset on the phone’s own network (review 2, security-3)', () => {
+  const secret = () =>
+    ({
+      ok: true,
+      status: 200,
+      url: '',
+      text: () => Promise.resolve('wifi_psk=hunter2'),
+    }) as unknown as Response
+
+  it('is never fetched when a public page names it, at the top level or nested', async () => {
+    const fetched: string[] = []
+    vi.stubGlobal('fetch', (href: string) => {
+      fetched.push(href)
+      if (href === 'https://cdn.example/site.css') {
+        return Promise.resolve(
+          sheet(
+            '@import "http://127.0.0.1:8080/admin.css"; body { background: url(http://10.0.0.1/x.png) }',
+          ),
+        )
+      }
+      return Promise.resolve(secret())
+    })
+    const out = await capture(
+      '<html><head><style>__JOJO_ASSET_0__</style><style>__JOJO_ASSET_1__</style></head></html>',
+      [
+        { href: 'http://192.168.1.1/cgi-bin/config', kind: 'css' },
+        { href: 'https://cdn.example/site.css', kind: 'css' },
+      ],
+    )
+    vi.unstubAllGlobals()
+    expect(fetched).toEqual(['https://cdn.example/site.css'])
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    expect(out.capture.html).not.toContain('wifi_psk')
+    // The router page, the @import and the url() are each counted as left out.
+    expect(out.capture.dropped).toBeGreaterThanOrEqual(3)
+  })
+
+  it('is not read when a public address redirects to it', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve({ ...secret(), url: 'http://192.168.1.1/cgi-bin/config' } as Response),
+    )
+    const out = await capture('<html><head><style>__JOJO_ASSET_0__</style></head></html>', [
+      { href: 'https://short.example/r', kind: 'css' },
+    ])
+    vi.unstubAllGlobals()
+    expect(out.ok && out.capture.html).not.toContain('wifi_psk')
+  })
+
+  it('is kept when the page itself is on that network', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(sheet('body { color: red }')))
+    const out = await inlineCapture(
+      {
+        type: 'jojo:capture',
+        url: 'http://intranet.lan/jobs/1',
+        title: 'An intranet job',
+        html: '<html><head><style>__JOJO_ASSET_0__</style></head></html>',
+        assets: [{ href: 'http://intranet.lan/site.css', kind: 'css' }],
+      },
+      NOW,
+    )
+    vi.unstubAllGlobals()
+    expect(out.ok && out.capture.html).toContain('color: red')
   })
 })

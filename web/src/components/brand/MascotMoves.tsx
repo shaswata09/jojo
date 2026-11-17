@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { GESTURES, type MascotPose } from '@/lib/mascot-context'
 import { PAD_STROKES, strokesFor } from '@/lib/gesture-pad'
 import { cn } from '@/lib/utils'
@@ -113,20 +113,25 @@ export function MascotCredit({ className }: { className?: string }) {
   const { t } = useTranslation('brand')
   return (
     <p className={cn('text-xs leading-relaxed text-text-3', className)}>
-      {t('moves.modelCredit')}{' '}
-      <a href={MODEL_URL} target="_blank" rel="noreferrer noopener" className={link}>
-        &ldquo;Sci-fi O.B. Robot Unit TH-ICC02 (animated)&rdquo;
-      </a>{' '}
-      by{' '}
-      <a href={ARTIST_URL} target="_blank" rel="noreferrer noopener" className={link}>
-        Jungle Jim
-      </a>
-      , licensed under{' '}
-      <a href={LICENCE_URL} target="_blank" rel="noreferrer noopener" className={link}>
-        CC BY 4.0
-      </a>
-      . Changed for jojo: lighter mesh and textures, its own eyes and moves (Guide › Built with
-      lists every change). The artist does not endorse jojo.
+      {/* One sentence in the catalog, with the three links as tags. The work's
+          title, the artist's name and "CC BY 4.0" stay verbatim in every
+          locale — the licence asks for them as written — while the words
+          joining them are the reader's. The English is kept here as the
+          default so the credit can never render empty. */}
+      <Trans
+        t={t}
+        i18nKey="moves.modelCreditFull"
+        defaults="Robot model: <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work> by <artist>Jungle Jim</artist>, licensed under <licence>CC BY 4.0</licence>. Changed for jojo: lighter mesh and textures, its own eyes and moves (Guide › Built with lists every change). The artist does not endorse jojo."
+        components={{
+          work: <a href={MODEL_URL} target="_blank" rel="noreferrer noopener" className={link} />,
+          artist: (
+            <a href={ARTIST_URL} target="_blank" rel="noreferrer noopener" className={link} />
+          ),
+          licence: (
+            <a href={LICENCE_URL} target="_blank" rel="noreferrer noopener" className={link} />
+          ),
+        }}
+      />
     </p>
   )
 }

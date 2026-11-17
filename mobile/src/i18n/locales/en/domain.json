@@ -338,6 +338,30 @@
     "many_one": "filed under {{count}} application",
     "many_other": "filed under {{count}} applications"
   },
+  "picked": {
+    "two": "{{a}} and {{b}}",
+    "many_one": "{{count}} application",
+    "many_other": "{{count}} applications"
+  },
+  "twinOffer": {
+    "unnamed": "that document",
+    "title": "Read {{first}} into your profile?",
+    "titleMore_one": "Read {{first}} and {{count}} more into your profile?",
+    "titleMore_other": "Read {{first}} and {{count}} more into your profile?",
+    "body": "jojo will read what is inside and record the facts it states — your degrees, posts, publications and skills — so it can weigh a job posting against what you have actually done. Every entry it adds is shown to you first, and says which document it came from."
+  },
+  "duplicate": {
+    "id": "This posting's ID is already on {{name}}.",
+    "url": "You already saved this posting as {{name}}.",
+    "name": "You already have {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "That did not come back as a page.",
+    "bad-source": "A posting has to be an http or https address.",
+    "empty": "The page came back empty — it may not have finished loading.",
+    "too-large": "That page is too big to keep. Try again once it has finished loading images.",
+    "leaks": "The copy still points at the site it came from, so it was not kept."
+  },
   "readBy": "Read by {{model}} · {{ago}}",
   "missingSource": "a document no longer in the Vault",
   "undo": {

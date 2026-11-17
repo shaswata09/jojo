@@ -348,6 +348,32 @@
     "many_many": "classé sous {{count}} candidatures",
     "many_other": "classé sous {{count}} candidatures"
   },
+  "picked": {
+    "two": "{{a}} et {{b}}",
+    "many_one": "{{count}} candidature",
+    "many_many": "{{count}} candidatures",
+    "many_other": "{{count}} candidatures"
+  },
+  "twinOffer": {
+    "unnamed": "ce document",
+    "title": "Lire {{first}} pour compléter votre profil ?",
+    "titleMore_one": "Lire {{first}} et {{count}} autre document pour compléter votre profil ?",
+    "titleMore_many": "Lire {{first}} et {{count}} autres documents pour compléter votre profil ?",
+    "titleMore_other": "Lire {{first}} et {{count}} autres documents pour compléter votre profil ?",
+    "body": "jojo va lire son contenu et noter les faits qu’il indique — vos diplômes, postes, publications et compétences — afin de pouvoir comparer une offre à ce que vous avez réellement fait. Chaque entrée ajoutée vous est d’abord montrée et indique de quel document elle provient."
+  },
+  "duplicate": {
+    "id": "L’identifiant de cette offre figure déjà sur {{name}}.",
+    "url": "Vous avez déjà enregistré cette offre sous {{name}}.",
+    "name": "Vous avez déjà {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Le résultat n’est pas revenu sous forme de page.",
+    "bad-source": "Une offre doit avoir une adresse http ou https.",
+    "empty": "La page est revenue vide — elle n’avait peut-être pas fini de se charger.",
+    "too-large": "Cette page est trop volumineuse pour être conservée. Réessayez une fois les images chargées.",
+    "leaks": "La copie pointe encore vers le site d’origine, elle n’a donc pas été conservée."
+  },
   "readBy": "Lu par {{model}} · {{ago}}",
   "missingSource": "un document qui n’est plus dans le Coffre",
   "undo": {

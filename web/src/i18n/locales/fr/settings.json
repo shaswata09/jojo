@@ -240,7 +240,8 @@
     "errors": {
       "taken": "Un autre mot-clé porte déjà ce nom.",
       "blank": "Un mot-clé a besoin d’un nom.",
-      "exists": "Ce mot-clé existe déjà."
+      "exists": "Ce mot-clé existe déjà.",
+      "tooLong": "{{max}} caractères au maximum."
     },
     "renameNamed": "Renommer {{name}}",
     "rename": "Renommer",

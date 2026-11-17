@@ -137,6 +137,8 @@
       "profile": "माझी प्रोफाइल",
       "assistant": "सहाय्यक",
       "settings": "सेटिंग्ज"
-    }
+    },
+    "showAll_one": "सर्व {{count}} दाखवा",
+    "showAll_other": "सर्व {{count}} दाखवा"
   }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Check, Tag } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { inkStyle, toneClass } from '@/components/common/label-display'
+import { KEYWORD_NAME_MAX, inkStyle, toneClass } from '@/components/common/label-display'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useLabels } from '@/lib/labels-context'
@@ -54,7 +54,9 @@ export function LabelPicker({
     // was false, so the failed create was followed straight away by an attach of
     // the keyword that does not exist: two errors at a user who made one
     // mistake. `LabelFilter` already guarded this way.
-    if (id && !mine.has(id)) toggleOn(recordId, id)
+    // Kept in the box on a refusal, so the name can be corrected rather than retyped.
+    if (!id) return
+    if (!mine.has(id)) toggleOn(recordId, id)
     setDraft('')
   }
 
@@ -107,6 +109,7 @@ export function LabelPicker({
 
         <Input
           value={draft}
+          maxLength={KEYWORD_NAME_MAX}
           autoComplete="off"
           placeholder={t('keywordPicker.newPlaceholder')}
           aria-label={t('keywordPicker.new')}

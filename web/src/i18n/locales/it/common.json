@@ -166,7 +166,8 @@
     "stopFiltering": "Smetti di filtrare per {{name}}",
     "filterBy": "Filtra per {{name}}",
     "edit": "Modifica la parola chiave {{name}}",
-    "editHint": "Rinomina, cambia colore o elimina"
+    "editHint": "Rinomina, cambia colore o elimina",
+    "tooLong": "Al massimo {{max}} caratteri."
   },
   "welcome": {
     "title": "Qualcosa su di te",
@@ -275,5 +276,8 @@
   "command": {
     "title": "Tavolozza dei comandi",
     "description": "Cerca un comando da eseguire..."
+  },
+  "rows": {
+    "showMore": "Mostra altri ({{shown}} di {{total}})"
   }
 }

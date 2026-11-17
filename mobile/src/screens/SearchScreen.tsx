@@ -36,6 +36,8 @@ import { space } from '@/theme/tokens'
 const GROUP_ROWS = 20
 import { TourTarget } from '@/components/tour/TourTarget'
 import { useDomain } from '@/i18n/domain'
+import { toTab } from '@/navigation/to-tab'
+import { Icon } from '@/components/ui/Icon'
 
 type Result = {
   id: string
@@ -75,7 +77,7 @@ export function SearchScreen() {
 
   const { all: applications } = useApplications()
   const { all: items } = useTimeline()
-  const { links, files, snippets } = useVault()
+  const { links, files, snippets, people } = useVault()
   const { postings, matches } = useScout()
 
   const [query, setQuery] = useState('')
@@ -128,7 +130,7 @@ export function SearchScreen() {
         title: l.title,
         detail: l.category,
         group: 'vault',
-        onPress: () => navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'links' } }),
+        onPress: () => toTab(navigation, 'Vault', { tool: 'links', focus: l.id }),
       })
     }
 
@@ -140,7 +142,7 @@ export function SearchScreen() {
         title: f.name,
         detail: `${f.bucket} · ${f.size}`,
         group: 'vault',
-        onPress: () => navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'files' } }),
+        onPress: () => toTab(navigation, 'Vault', { tool: 'files', focus: f.id }),
       })
     }
 
@@ -152,8 +154,20 @@ export function SearchScreen() {
         title: s.title,
         detail: s.tag,
         group: 'vault',
-        onPress: () =>
-          navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
+        onPress: () => toTab(navigation, 'Vault', { tool: 'snippets', focus: s.id }),
+      })
+    }
+
+    // People, as the web's palette has them: a referee is looked up by name.
+    for (const p of people) {
+      if (!hit(p.name, p.role, p.affiliation, p.email, p.note)) continue
+      out.push({
+        id: `person-${p.id}`,
+        icon: 'user',
+        title: p.name,
+        detail: [p.role, p.affiliation].filter(Boolean).join(' · '),
+        group: 'vault',
+        onPress: () => toTab(navigation, 'Vault', { tool: 'people', focus: p.id }),
       })
     }
 
@@ -165,7 +179,7 @@ export function SearchScreen() {
         title: p.title,
         detail: p.url,
         group: 'jobScout',
-        onPress: () => navigation.navigate('JobScout'),
+        onPress: () => navigation.navigate('JobScout', { focus: { kind: 'posting', id: p.id } }),
       })
     }
 
@@ -177,7 +191,7 @@ export function SearchScreen() {
         title: m.role,
         detail: t('search.fit', { fit: m.fit }),
         group: 'jobScout',
-        onPress: () => navigation.navigate('JobScout'),
+        onPress: () => navigation.navigate('JobScout', { focus: { kind: 'match', id: m.id } }),
       })
     }
 
@@ -230,6 +244,7 @@ export function SearchScreen() {
     links,
     files,
     snippets,
+    people,
     postings,
     matches,
     navigation,
@@ -298,7 +313,7 @@ export function SearchScreen() {
                       </Txt>
                     ) : null}
                   </View>
-                  <Feather name="chevron-right" size={16} color={c.text3} />
+                  <Icon name="chevron-right" size={16} color={c.text3} />
                 </Pressable>
               </View>
             ))}
@@ -337,7 +352,7 @@ export function SearchScreen() {
                       {r.detail}
                     </Txt>
                   </View>
-                  <Feather name="chevron-right" size={16} color={c.text3} />
+                  <Icon name="chevron-right" size={16} color={c.text3} />
                 </Pressable>
               </View>
             ))}

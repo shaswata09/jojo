@@ -136,7 +136,9 @@
     "status": {
       "applied": "uygulandı",
       "discarded": "atıldı",
-      "failed": "uygulanamadı"
+      "failed": "uygulanamadı",
+      "savedToMatches": "Eşleşmelere kaydedildi",
+      "savedToPostings": "İlanlara kaydedildi"
     },
     "noSummary": "Bununla birlikte özet gelmedi — ne olduğunu görmek için ilanı açın.",
     "reading": "Ayrıntılar için ilan okunuyor…",

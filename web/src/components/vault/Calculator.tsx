@@ -190,13 +190,19 @@ export function Calculator() {
   const sci = cn(key, 'h-9 border-hairline bg-well text-xs text-text-2 hover:text-text-1')
   const accent = cn(key, 'border-accent-border bg-accent text-[color:var(--accent-fg)]')
 
-  const Digit = ({ d, className }: { d: string; className?: string }) => (
+  /*
+   * Plain functions called inline, not components declared in this render: a
+   * component made per render is a new type each time, so every press
+   * remounted the whole pad and the key you had Tabbed to lost focus to
+   * `<body>` — the next Space scrolled the page instead of typing.
+   */
+  const digitKey = (d: string, className?: string) => (
     <button type="button" onClick={() => digit(d)} className={cn(number, className)}>
       {d}
     </button>
   )
 
-  const Operator = ({ op }: { op: Op }) => (
+  const operatorKey = (op: Op) => (
     <button
       type="button"
       onClick={() => operator(op)}
@@ -286,29 +292,29 @@ export function Calculator() {
           >
             <Delete className="size-4" strokeWidth={1.8} aria-hidden />
           </button>
-          <Operator op="÷" />
-          <Operator op="×" />
+          {operatorKey('÷')}
+          {operatorKey('×')}
 
-          <Digit d="7" />
-          <Digit d="8" />
-          <Digit d="9" />
-          <Operator op="−" />
+          {digitKey('7')}
+          {digitKey('8')}
+          {digitKey('9')}
+          {operatorKey('−')}
 
-          <Digit d="4" />
-          <Digit d="5" />
-          <Digit d="6" />
-          <Operator op="+" />
+          {digitKey('4')}
+          {digitKey('5')}
+          {digitKey('6')}
+          {operatorKey('+')}
 
-          <Digit d="1" />
-          <Digit d="2" />
-          <Digit d="3" />
+          {digitKey('1')}
+          {digitKey('2')}
+          {digitKey('3')}
           {/* Equals spans two rows, the usual place the hand expects it. */}
           <button type="button" onClick={equals} className={cn(accent, 'row-span-2 h-auto')}>
             =
           </button>
 
-          <Digit d="0" className="col-span-2" />
-          <Digit d="." />
+          {digitKey('0', 'col-span-2')}
+          {digitKey('.')}
         </div>
       </Panel>
 

@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "إظهار {{label}}",
-    "hide": "إخفاء {{label}}"
+    "hide": "إخفاء {{label}}",
+    "item": "{{label}}: {{count}}، {{percent}}"
   },
   "allHidden": {
     "withReset": "كل السلاسل مُطفأة في وسيلة الإيضاح.",

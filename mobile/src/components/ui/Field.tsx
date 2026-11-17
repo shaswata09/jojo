@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Linking, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native'
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native'
-import { Feather } from '@react-native-vector-icons/feather/static'
 import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/ui/Button'
 import { FocusTarget } from '@/components/ui/FocusTarget'
@@ -11,6 +10,7 @@ import { openHref } from '@/lib/urls'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space, type } from '@/theme/tokens'
+import { Icon } from '@/components/ui/Icon'
 
 /**
  * A labelled slot for any control.
@@ -232,7 +232,7 @@ export function SettingRow({
         ) : null}
       </View>
       {control ? <View style={styles.settingControl}>{control}</View> : null}
-      {onPress && !control ? <Feather name="chevron-right" size={18} color={c.text3} /> : null}
+      {onPress && !control ? <Icon name="chevron-right" size={18} color={c.text3} /> : null}
     </View>
   )
 

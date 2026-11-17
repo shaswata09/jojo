@@ -2855,3 +2855,60 @@ describe('a note a model meant to delete', () => {
     expect(noteText('  Ask about lab space ')).toBe('Ask about lab space')
   })
 })
+
+/*
+ * Review 2026-11-17. `assistant.thread.set` trimmed to its cap without moving
+ * `contextThrough`, an index into the entries, so the summary boundary slid
+ * past exchanges the summary never saw and `historyFor` sent neither.
+ */
+describe('a conversation past its turn cap', () => {
+  const turns = (n: number) =>
+    Array.from({ length: n }, (_, i) => [
+      { kind: 'you', id: `y${i}`, text: `Q${i}` },
+      { kind: 'answer', id: `a${i}`, text: `A${i}` },
+    ]).flat()
+
+  const thread = (repo: Repository, id: NodeId) =>
+    repo.getSnapshot().node(id, 'thread')?.props as {
+      entries: { text?: string }[]
+      contextThrough?: number
+    }
+
+  it('moves the summary boundary back by what it trimmed', () => {
+    const { repo, runtime } = harness()
+    const id = okOr(runtime.run('assistant.thread.create', { title: 't' })) as NodeId
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(90) }))
+    okOr(runtime.run('assistant.thread.context.set', { id, context: 'Q0–Q74', through: 150 }))
+    const firstUncovered = thread(repo, id).entries[150]?.text
+
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(115) }))
+    const after = thread(repo, id)
+    expect(after.entries).toHaveLength(200)
+    expect(after.contextThrough).toBe(120)
+    // The first entry past the boundary is the same exchange it was before.
+    expect(after.entries[after.contextThrough ?? 0]?.text).toBe(firstUncovered)
+  })
+
+  it('never trims an entry the summary does not account for', () => {
+    const { repo, runtime } = harness()
+    const id = okOr(runtime.run('assistant.thread.create', { title: 't' })) as NodeId
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(90) }))
+    okOr(runtime.run('assistant.thread.context.set', { id, context: 'Q0–Q9', through: 20 }))
+
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(115) }))
+    const after = thread(repo, id)
+    // 30 over the cap, but only 20 are summarised: those go, the rest stay.
+    expect(after.entries).toHaveLength(210)
+    expect(after.contextThrough).toBe(0)
+    expect(after.entries[0]?.text).toBe('Q10')
+  })
+
+  it('keeps the plain cap on a conversation nothing has summarised', () => {
+    const { repo, runtime } = harness()
+    const id = okOr(runtime.run('assistant.thread.create', { title: 't' })) as NodeId
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(115) }))
+    const after = thread(repo, id)
+    expect(after.entries).toHaveLength(200)
+    expect(after.contextThrough).toBeUndefined()
+  })
+})

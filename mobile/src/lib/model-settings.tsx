@@ -98,7 +98,13 @@ export function ModelSettingsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const remember = useCallback(
-    (entry: { name: string; endpoint: string; model: string }) => {
+    (entry: {
+      name: string
+      endpoint: string
+      model: string
+      provider?: string
+      apiKey?: string
+    }) => {
       write((list) => saveServer(list, entry))
     },
     [write],

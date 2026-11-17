@@ -7,6 +7,7 @@ import type { FeatherName } from '@/lib/timeline-visuals'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { Icon } from '@/components/ui/Icon'
 
 export type MenuAction = {
   id: string
@@ -91,7 +92,7 @@ export function MenuSheet({
             {a.dotColor ? (
               <View style={[styles.dot, { backgroundColor: a.dotColor }]} />
             ) : a.icon ? (
-              <Feather name={a.icon} size={17} color={a.tone === 'danger' ? c.danger : c.text2} />
+              <Icon name={a.icon} size={17} color={a.tone === 'danger' ? c.danger : c.text2} />
             ) : null}
 
             <View style={s.fill}>

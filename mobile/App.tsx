@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { LocaleProvider } from '@/i18n/LocaleProvider'
-import { sweepTrashedDocuments } from '@/lib/documents'
+import { reconcileTrashedDocuments } from '@/lib/documents'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import { useStoreStatus } from '@jojo/service/react/status-context'
 import { reportError } from '@/lib/report-error'
 import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
@@ -114,22 +116,6 @@ export default function App() {
 function Themed() {
   const { theme, colors } = useTheme()
 
-  /*
-   * Delete the documents an earlier session set aside.
-   *
-   * `trashDocument` moves a deleted file's bytes rather than unlinking them, so
-   * the Undo on "Document removed" can put them back. The undo ring is in memory
-   * and `rehydrate` clears it — so anything still in the trash when the app
-   * starts is a file nothing can restore, and this is the point at which
-   * deleting it is unambiguous.
-   *
-   * Once, on mount, and it never rejects: a leaked copy is a few kilobytes, and
-   * a thrown promise here would take the app down before its first frame.
-   */
-  useEffect(() => {
-    void sweepTrashedDocuments()
-  }, [])
-
   return (
     <View style={[styles.root, { backgroundColor: colors.page }]}>
       {/* Dynamic, and it has to stay dynamic. `light-content` means light
@@ -139,6 +125,7 @@ function Themed() {
       <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
       <RootNavigator />
       <SheetHost />
+      <DocumentTrash />
       {/* Beside the sheet host, outside the navigator: an approval for a run
           whose screen has been popped has nowhere else to be drawn. */}
       <ApprovalSheet />
@@ -147,6 +134,41 @@ function Themed() {
       <TourOverlay />
     </View>
   )
+}
+
+/**
+ * The documents set aside by a delete, kept in line with the records.
+ *
+ * `trashDocument` moves a deleted file's bytes rather than unlinking them, so an
+ * Undo can put them back. This used to delete everything set aside, once, at
+ * launch, on the reasoning that the undo ring is in memory so nothing could ask
+ * for them again — but Settings › Audit log › Undo last and the assistant's Undo
+ * revert from the persisted journal, and only the toast moved the bytes back.
+ * The record came back; the next launch deleted its document (health-1).
+ *
+ * So: on every change to the records, a set-aside copy whose record exists again
+ * is moved back, whichever Undo ran. Once per launch, and only once the store
+ * has hydrated from disk, copies no record names are deleted — an in-memory
+ * store after a failed boot names none, and must not read as "all deleted".
+ *
+ * Its own component, rendering nothing, so a commit re-renders this and not the
+ * navigator. Never rejects: a leaked copy is a few kilobytes.
+ */
+function DocumentTrash() {
+  const { boot } = useStoreStatus()
+  const { projections } = useKg()
+  const files = projections.files(useGraph())
+  const hydrated = boot.phase === 'ready'
+  const swept = useRef(false)
+  useEffect(() => {
+    const sweep = hydrated && !swept.current
+    if (sweep) swept.current = true
+    void reconcileTrashedDocuments(
+      files.map((f) => f.uri),
+      { sweep, hydrated },
+    )
+  }, [files, hydrated])
+  return null
 }
 
 const styles = StyleSheet.create({

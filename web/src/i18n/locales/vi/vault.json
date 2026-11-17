@@ -94,6 +94,13 @@
       "title": "Thả để thêm vào {{bucket}}",
       "description": "Tên, kích thước và loại tệp được đọc. Không có gì được tải lên.",
       "hint": "Thả tệp vào bất kỳ đâu trên bảng này để thêm vào {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "Cần đọc",
+      "applications": "Đơn ứng tuyển",
+      "jobPostings": "Tin tuyển dụng",
+      "talks": "Bài nói",
+      "admin": "Hành chính"
     }
   },
   "pdf": {
@@ -232,7 +239,8 @@
       "placeholder": "Điều quan trọng trong tài liệu này — hạn chót ẩn ở trang 3, cần hỏi ai về nó…",
       "saved": "Đã lưu",
       "save": "Lưu ghi chú"
-    }
+    },
+    "notPdf": "Nội dung tệp này không phải PDF, nên jojo sẽ không hiển thị nó như PDF."
   },
   "reminders": {
     "snooze": {

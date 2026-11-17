@@ -9,9 +9,10 @@ import { scanBoard } from '@/lib/capture-bridge'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { ScoutReader } from '@/lib/scout-reading'
+import { SCOUT_LOCK, useTabLeader } from '@/lib/tab-leader'
 
 /**
- * Runs the pipelines for as long as this tab is open.
+ * Runs the pipelines for as long as this tab is open — in one tab at a time.
  *
  * Mounted above the router, which is the whole point: the Job Scout page used to
  * call `usePipelines` itself, so leaving that page cleared the interval and
@@ -48,6 +49,13 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
   // The twin's briefing names the documents worth reading, and on this platform
   // only the blob store knows which records have one behind them.
   const blobs = useVaultBlobs()
+  /*
+   * One tab of this browser runs the schedule and the reader; the rest wait in
+   * line and take over when it closes (`useTabLeader`). Every tab still shows
+   * the queue and answers it — a round's commit reaches them as a remote
+   * change — and Run now still runs where it was pressed.
+   */
+  const leader = useTabLeader(SCOUT_LOCK)
   const state = usePipelines({
     llm: isConfigured(settings) ? llm : null,
     llmFor,
@@ -56,6 +64,7 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
     // The blob index loads after mount; until it has, `has` answers no for
     // every document, and a twin round would be told there is no CV.
     documentsReady: blobs.ready,
+    schedule: leader,
     /*
      * A round that throws is caught inside the hook so the schedule is not left
      * wedged — and catching it took away the only durable record. It used to
@@ -75,7 +84,7 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
       {/* Reads each suggested posting while it waits for an answer — up here
           with the rounds that raise them, so a suggestion raised while you are
           on another page is read there too. */}
-      <ScoutReader />
+      {leader ? <ScoutReader /> : null}
       {children}
     </PipelinesContext>
   )

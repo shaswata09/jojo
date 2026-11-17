@@ -150,6 +150,7 @@
     "explain": "La modifica più recente si può annullare. Le più vecchie sono un registro, non una macchina del tempo.",
     "undoLast": "Annulla l'ultima",
     "cannotUndo": "Caricare o cancellare l'insieme di dati non si può annullare.",
+    "cannotUndoTrimmed": "jojo ha registrato questa modifica ma non abbastanza per annullarla: era una scrittura in background (una lettura di compatibilità, i dati di un file) o è troppo vecchia.",
     "showAll_one": "Mostra {{count}}",
     "showAll_many": "Mostra tutte e {{count}}",
     "showAll_other": "Mostra tutte e {{count}}"

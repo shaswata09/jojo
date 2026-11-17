@@ -12,6 +12,8 @@ import {
   ARRIVAL_WAIT_MS,
   arrivalTarget,
   focusSelector,
+  offCentre,
+  replayArrivalHighlights,
 } from '@/lib/use-arrival-highlight'
 import { guidePath, profilePath, scoutPath, settingsPath, statisticsPath } from '@/lib/links'
 
@@ -59,5 +61,26 @@ describe('arriving at a focused place (Q333)', () => {
     expect(guidePath('screens', 'vault')).toBe('/guide/screens#vault')
     expect(guidePath('overview', 'dates')).toBe('/guide#dates')
     expect(guidePath('licence')).toBe('/guide/licence')
+  })
+})
+
+describe('staying on the row while the page settles (review 2: web-a11y-1, web-lib-4)', () => {
+  it('re-centres a row that growth above it pushed out of the middle of the screen', () => {
+    // Measured at 360×780: the capture panel grew after the scroll and left the
+    // Theme row at top 969 — below the screen.
+    expect(offCentre({ top: 969, bottom: 1061 }, 780)).toBe(true)
+    // At 1280×900 it stayed on screen but 95px off the bottom edge.
+    expect(offCentre({ top: 744, bottom: 805 }, 900)).toBe(true)
+    // Centred, it is left alone, so a settled page is never scrolled again.
+    expect(offCentre({ top: 389, bottom: 481 }, 780)).toBe(false)
+    expect(offCentre({ top: 427, bottom: 488 }, 900)).toBe(false)
+  })
+
+  it('replays the fade on a second arrival at the same row', () => {
+    const animation = { currentTime: 1500 as number | null }
+    const row = { getAnimations: () => [animation] }
+    const root = { querySelectorAll: () => [row] } as unknown as ParentNode
+    replayArrivalHighlights(root)
+    expect(animation.currentTime).toBe(0)
   })
 })

@@ -410,6 +410,7 @@
       "transferLast": "最終使用 {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization。すべてこのデバイス上で動作します。",
+    "statusEnglish": "要約しているライセンスとずれないよう、英語の原文のまま載せています。",
     "overdue_other": "期限切れのリマインダーが {{count}} 件あります。"
   },
   "statistics": {

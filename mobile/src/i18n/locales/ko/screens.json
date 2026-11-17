@@ -410,6 +410,7 @@
       "transferLast": "마지막 사용 {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. 모든 것이 이 기기에서 실행돼요.",
+    "statusEnglish": "요약하는 라이선스와 어긋나지 않도록 영어 원문 그대로 둡니다.",
     "overdue_other": "기한이 지난 알림 {{count}}개."
   },
   "statistics": {

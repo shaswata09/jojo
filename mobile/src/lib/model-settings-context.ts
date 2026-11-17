@@ -79,7 +79,13 @@ export type ModelSettingsValue = {
   ready: boolean
   save: (next: ModelSettings) => void
   /** Records a server that answered. Called on a successful test, not on typing. */
-  remember: (entry: { name: string; endpoint: string; model: string }) => void
+  remember: (entry: {
+    name: string
+    endpoint: string
+    model: string
+    provider?: string
+    apiKey?: string
+  }) => void
   rename: (id: string, name: string) => void
   forget: (id: string) => void
 }

@@ -4,6 +4,7 @@ import type { ToastContextValue as KgToastContextValue } from '@jojo/service/rea
 import type { ReactNode } from 'react'
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import {
   TOAST_ACTION_DURATION_MS,
   TOAST_DURATION_MS,
@@ -109,6 +110,7 @@ function ToastViewport({
 }
 
 function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
+  const { t } = useTranslation('common')
   const c = useColors()
   const enter = useRef(new Animated.Value(0)).current
   const danger = toast.tone === 'danger'
@@ -188,11 +190,13 @@ function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       ) : (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Dismiss"
+          // The word on the button, in the language on screen: it was English
+          // "Close" read out as English "Dismiss" under every action-less toast.
+          accessibilityLabel={t('actions.close')}
           onPress={() => onDismiss(toast.id)}
           style={styles.action}
         >
-          <Text style={[styles.actionLabel, { color: c.text3 }]}>Close</Text>
+          <Text style={[styles.actionLabel, { color: c.text3 }]}>{t('actions.close')}</Text>
         </Pressable>
       )}
     </Animated.View>

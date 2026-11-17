@@ -12,6 +12,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { Icon } from '@/components/ui/Icon'
 
 /**
  * What the assistant can do to your records, and what stops it.
@@ -255,7 +256,7 @@ function ToolGateFigure({ total }: { total: number }) {
 
             {step.note ? (
               <View style={[s.row, styles.gateNote]}>
-                <Feather name="corner-down-right" size={14} color={ink[step.tone]} />
+                <Icon name="corner-down-right" size={14} color={ink[step.tone]} />
                 <Txt size="xs" tone="secondary" style={s.fill}>
                   {step.note}
                 </Txt>
@@ -333,7 +334,7 @@ function ToolGraphFigure() {
             </View>
 
             <View style={[s.row, styles.gateNote]}>
-              <Feather name="corner-down-right" size={14} color={c.hairlineStrong} />
+              <Icon name="corner-down-right" size={14} color={c.hairlineStrong} />
               <Txt size="xs" tone="secondary" style={s.fill}>
                 {t(`tools.graphFigure.needs.${pull.needs}`)}
               </Txt>

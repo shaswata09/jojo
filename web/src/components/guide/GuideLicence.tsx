@@ -6,6 +6,7 @@ import { GuideContents } from '@/components/guide/GuideNav'
 import { APACHE_CLAUSES } from '@/components/guide/credits'
 import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
 import { useTitle } from '@/lib/links'
+import { EnglishOnlyNotice } from '@/components/guide/EnglishOnlyNotice'
 
 /**
  * Page 6 — what jojo costs, what you may do with it, and whose rules you take on
@@ -45,6 +46,7 @@ export function GuideLicence() {
         title="Licence"
         subtitle="jojo is a research preview under Apache-2.0. The services you can point it at are not jojo's, and they come with their own terms."
       />
+      <EnglishOnlyNotice />
 
       {/* ------------------------------------------------------------ status
           FIRST on the page, above the licence itself, because it is the thing

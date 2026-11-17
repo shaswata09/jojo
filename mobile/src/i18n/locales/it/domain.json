@@ -348,6 +348,32 @@
     "many_many": "archiviato sotto {{count}} di candidature",
     "many_other": "archiviato sotto {{count}} candidature"
   },
+  "picked": {
+    "two": "{{a}} e {{b}}",
+    "many_one": "{{count}} candidatura",
+    "many_many": "{{count}} di candidature",
+    "many_other": "{{count}} candidature"
+  },
+  "twinOffer": {
+    "unnamed": "quel documento",
+    "title": "Leggere {{first}} e aggiungerlo al tuo profilo?",
+    "titleMore_one": "Leggere {{first}} e {{count}} altro documento e aggiungerli al tuo profilo?",
+    "titleMore_many": "Leggere {{first}} e altri {{count}} di documenti e aggiungerli al tuo profilo?",
+    "titleMore_other": "Leggere {{first}} e altri {{count}} documenti e aggiungerli al tuo profilo?",
+    "body": "jojo leggerà il contenuto e registrerà i fatti che riporta — i tuoi titoli di studio, incarichi, pubblicazioni e competenze — per poter confrontare un annuncio con ciò che hai effettivamente fatto. Ogni voce aggiunta ti viene mostrata prima e indica da quale documento proviene."
+  },
+  "duplicate": {
+    "id": "L'ID di questo annuncio è già su {{name}}.",
+    "url": "Hai già salvato questo annuncio come {{name}}.",
+    "name": "Hai già {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Non è tornata come pagina.",
+    "bad-source": "Un annuncio deve avere un indirizzo http o https.",
+    "empty": "La pagina è tornata vuota: forse non aveva finito di caricarsi.",
+    "too-large": "Questa pagina è troppo grande per essere conservata. Riprova quando le immagini avranno finito di caricarsi.",
+    "leaks": "La copia punta ancora al sito da cui proviene, quindi non è stata conservata."
+  },
   "readBy": "Letto da {{model}} · {{ago}}",
   "missingSource": "un documento che non è più nella Cassaforte",
   "undo": {

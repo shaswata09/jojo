@@ -226,7 +226,8 @@
     "errors": {
       "taken": "Sudah ada kata kunci lain dengan nama itu.",
       "blank": "Kata kunci memerlukan nama.",
-      "exists": "Kata kunci itu sudah ada."
+      "exists": "Kata kunci itu sudah ada.",
+      "tooLong": "Maksimal {{max}} karakter."
     },
     "renameNamed": "Ganti nama {{name}}",
     "rename": "Ganti nama",

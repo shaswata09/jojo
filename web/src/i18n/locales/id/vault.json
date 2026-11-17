@@ -94,6 +94,13 @@
       "title": "Lepas untuk menambahkan ke {{bucket}}",
       "description": "Nama, ukuran, dan jenis dibaca. Tidak ada yang diunggah.",
       "hint": "Letakkan berkas di mana saja di panel ini untuk menambahkannya ke {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "Untuk dibaca",
+      "applications": "Lamaran",
+      "jobPostings": "Lowongan kerja",
+      "talks": "Presentasi",
+      "admin": "Administrasi"
     }
   },
   "pdf": {
@@ -232,7 +239,8 @@
       "placeholder": "Apa yang penting di dokumen ini — tenggat yang terselip di halaman 3, siapa yang perlu ditanya…",
       "saved": "Tersimpan",
       "save": "Simpan catatan"
-    }
+    },
+    "notPdf": "Isi berkas ini bukan PDF, jadi jojo tidak akan menampilkannya sebagai PDF."
   },
   "reminders": {
     "snooze": {

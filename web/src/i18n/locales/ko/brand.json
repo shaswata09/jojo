@@ -5,7 +5,7 @@
     "trigger": "jojo의 동작",
     "triggerAria": "jojo의 동작과 크레딧",
     "plays": "재생",
-    "modelCredit": "로봇 모델:"
+    "modelCreditFull": "로봇 모델: <artist>Jungle Jim</artist>의 <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work>, <licence>CC BY 4.0</licence> 라이선스. jojo에 맞게 변경: 더 가벼운 메시와 텍스처, 고유한 눈과 동작(모든 변경 사항은 사용 방법 › 사용 기술에 있어요). 작가는 jojo를 보증하지 않아요."
   },
   "theme": {
     "toggle": "테마 전환",

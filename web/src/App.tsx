@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
+import type { ComponentType } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { Loader } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -9,17 +10,10 @@ import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath, useTitle } from '@/lib/links'
 import { ApplicationDetail } from '@/routes/ApplicationDetail'
 import { Applications } from '@/routes/Applications'
-import { Assistant } from '@/routes/Assistant'
-import { Calendar } from '@/routes/Calendar'
 import { Organisation } from '@/routes/Organisation'
 import { Dashboard } from '@/routes/Dashboard'
 import { Guide } from '@/routes/Guide'
-import { JobScout } from '@/routes/JobScout'
 import { Placeholder } from '@/routes/Placeholder'
-import { Profile } from '@/routes/Profile'
-import { Vault } from '@/routes/Vault'
-import { Settings } from '@/routes/Settings'
-import { Statistics } from '@/routes/Statistics'
 
 /**
  * The two heavy routes, split out of the main bundle.
@@ -37,6 +31,56 @@ import { Statistics } from '@/routes/Statistics'
  */
 const Graph = lazy(async () => ({ default: (await import('@/routes/Graph')).Graph }))
 const Transfer = lazy(async () => ({ default: (await import('@/routes/Transfer')).Transfer }))
+
+/**
+ * The pages nobody lands on first, split out too (review 2, performance-5).
+ *
+ * Statically imported, Settings, the Job scout, the Assistant, the profile,
+ * Statistics, the Calendar and the Vault — every panel, the tool forms — were all in the
+ * modules the dashboard waits on: 42 files, 2 MB minified, preloaded before the
+ * first paint. Each is now its own chunk, fetched the first time it is opened.
+ *
+ * Wrapped where they are declared, so the route table below still reads
+ * `element={<Settings />}` and each page keeps its own Suspense boundary (see
+ * the note on the route table for why one shared boundary is wrong).
+ */
+function suspended(page: FallbackPage, Page: ComponentType): ComponentType {
+  return function SuspendedPage() {
+    return (
+      <Suspense fallback={<RouteFallback page={page} />}>
+        <Page />
+      </Suspense>
+    )
+  }
+}
+const Settings = suspended(
+  'settings',
+  lazy(async () => ({ default: (await import('@/routes/Settings')).Settings })),
+)
+const JobScout = suspended(
+  'jobScout',
+  lazy(async () => ({ default: (await import('@/routes/JobScout')).JobScout })),
+)
+const Assistant = suspended(
+  'assistant',
+  lazy(async () => ({ default: (await import('@/routes/Assistant')).Assistant })),
+)
+const Profile = suspended(
+  'profile',
+  lazy(async () => ({ default: (await import('@/routes/Profile')).Profile })),
+)
+const Calendar = suspended(
+  'calendar',
+  lazy(async () => ({ default: (await import('@/routes/Calendar')).Calendar })),
+)
+const Vault = suspended(
+  'vault',
+  lazy(async () => ({ default: (await import('@/routes/Vault')).Vault })),
+)
+const Statistics = suspended(
+  'statistics',
+  lazy(async () => ({ default: (await import('@/routes/Statistics')).Statistics })),
+)
 
 /**
  * The guide's pages, split out the same way.
@@ -83,7 +127,18 @@ const GuideLicence = lazy(async () => ({
  * cache the transfer chunk is several hundred kilobytes and this is on screen
  * long enough to be read.
  */
-function RouteFallback({ page }: { page: 'graph' | 'transfer' }) {
+type FallbackPage =
+  | 'graph'
+  | 'transfer'
+  | 'settings'
+  | 'jobScout'
+  | 'assistant'
+  | 'profile'
+  | 'statistics'
+  | 'calendar'
+  | 'vault'
+
+function RouteFallback({ page }: { page: FallbackPage }) {
   const { t } = useTranslation('pages')
   const title = t(`${page}.title`)
   useTitle(title)

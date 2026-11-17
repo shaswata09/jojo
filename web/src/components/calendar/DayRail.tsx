@@ -156,6 +156,7 @@ export function DayRail({
                       from a list on another page. */}
                   <button
                     type="button"
+                    dir="auto"
                     onClick={() => onOpen(e)}
                     className={cn(
                       'block max-w-full cursor-pointer truncate text-start text-sm transition-colors hover:text-accent',

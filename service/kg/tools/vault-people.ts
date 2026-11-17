@@ -249,6 +249,12 @@ function dropsBriefOrRole(
   return existing.some((b) => !after.has(b.applicationId))
 }
 
+/** The role this person is filed under on this job, when they have one. */
+function filedRole(input: { id: NodeId; applicationId: NodeId }, memory: GraphSnapshot): unknown {
+  const edge = memory.out(input.id, 'FILED_UNDER').find((e) => e.to === input.applicationId)
+  return (edge?.props as { role?: unknown } | undefined)?.role
+}
+
 /** Whether taking this person off this one job deletes their brief or role for it. */
 function unfileDropsBriefOrRole(input: { id: NodeId; applicationId: NodeId }, memory: GraphSnapshot): boolean {
   const briefed = (memory.node(input.id, 'person')?.props.briefs ?? []).some(
@@ -299,6 +305,17 @@ export const vaultPersonFile = defineTool({
   summary: 'Names a person on one application, as recommender or point of contact.',
   effect: 'update',
   touches: ['person'],
+  /*
+   * `role: null` deletes the role this person has on that job — the loss
+   * `vault.person.unfile` and `vault.person.update` both ask about. This one
+   * did not, so under Semi-auto the same deletion went through by this route
+   * with no question (review 2026-11-17). Setting a role, or changing one to
+   * another, is an edit and stays a plain save.
+   */
+  confirms: {
+    when: (input, memory) => input.role === null && filedRole(input, memory) !== undefined,
+    because: 'Asks first when this clears the role this person already has on that application: it is deleted.',
+  },
   input: s.object({
     id: personId,
     applicationId: s.id('application', { label: 'Application' }),

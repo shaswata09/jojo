@@ -458,6 +458,7 @@
       "transferLast": "usato l'ultima volta il {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Tutto gira su questo dispositivo.",
+    "statusEnglish": "Mantenuto in inglese, parola per parola, perché non si discosti dalla licenza che riassume.",
     "overdue_one": "{{count}} promemoria in ritardo.",
     "overdue_many": "{{count}} di promemoria in ritardo.",
     "overdue_other": "{{count}} promemoria in ritardo."

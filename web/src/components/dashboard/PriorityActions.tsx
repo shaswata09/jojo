@@ -48,10 +48,30 @@ const URGENCY_BORDER: Record<DateMark, string> = {
  * missing (an offer) renders neither rather than showing two controls with
  * nothing to write to.
  */
-function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | 'xs' }) {
+/**
+ * The timeline's writers, read ONCE by the deck and handed to every card.
+ *
+ * Each card used to call `useTimeline()` itself, and every instance rebuilds
+ * its own index and five filters over the whole timeline — so one commit cost
+ * cards × items, measured at 1.6s for a single tick on a large store.
+ */
+type DeckTimeline = Pick<
+  ReturnType<typeof useTimeline>,
+  'get' | 'toggleDone' | 'update' | 'snooze' | 'reschedule'
+>
+
+function ItemControls({
+  itemId,
+  timeline,
+  size = 'sm',
+}: {
+  itemId: string
+  timeline: DeckTimeline
+  size?: 'sm' | 'xs'
+}) {
   const { t } = useTranslation('dashboard')
   const domain = useDomain()
-  const { get, toggleDone, update, snooze, reschedule } = useTimeline()
+  const { get, toggleDone, update, snooze, reschedule } = timeline
   const { toast } = useToast()
   const mascot = useMascot()
   const [open, setOpen] = useState(false)
@@ -159,7 +179,7 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
  * top-down by importance and wrong for one laid out along time, where no card
  * is "first" except by date.
  */
-function DecisionCard({ action }: { action: PriorityAction }) {
+function DecisionCard({ action, timeline }: { action: PriorityAction; timeline: DeckTimeline }) {
   return (
     <div
       className={cn(
@@ -183,11 +203,19 @@ function DecisionCard({ action }: { action: PriorityAction }) {
         ))}
         {/* Done and Snooze come last: they end the card, and putting them first
             would put "dismiss this" ahead of "deal with it". */}
-        {action.itemId ? <ItemControls itemId={action.itemId} /> : null}
+        {action.itemId ? <ItemControls itemId={action.itemId} timeline={timeline} /> : null}
       </div>
     </div>
   )
 }
+
+/**
+ * How many cards the deck renders before a "Show all" stop at the end of the
+ * track — `OwedThisWeek`'s OVERDUE_SHOWN, for the same reason: the deck had no
+ * cap, one card per overdue application or offer, and a large store mounted a
+ * thousand of them on the page the app opens on.
+ */
+const DECK_SHOWN = 20
 
 /** How much of the track a step moves when there is no card to measure. */
 const FALLBACK_STEP = 0.8
@@ -214,6 +242,14 @@ const FALLBACK_STEP = 0.8
  */
 function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: string }) {
   const { t } = useTranslation('dashboard')
+  const { get, toggleDone, update, snooze, reschedule } = useTimeline()
+  const timeline = useMemo<DeckTimeline>(
+    () => ({ get, toggleDone, update, snooze, reschedule }),
+    [get, toggleDone, update, snooze, reschedule],
+  )
+  const [showAll, setShowAll] = useState(false)
+  const capped = actions.length > DECK_SHOWN
+  const shown = capped && !showAll ? actions.slice(0, DECK_SHOWN) : actions
   const track = useRef<HTMLUListElement>(null)
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)')
   /** Whether there is more to scroll to on each side, and which way the track runs. */
@@ -242,7 +278,7 @@ function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: 
     const observer = new ResizeObserver(measure)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [measure, actions.length])
+  }, [measure, shown.length])
 
   /** One card's width per press, so a step always lands on a card edge. */
   const step = (direction: -1 | 1) => {
@@ -335,11 +371,19 @@ function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: 
         className="-mx-4 -mb-4 flex min-h-0 flex-1 snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-4 sm:-mx-5 sm:-mb-5 sm:scroll-px-5 sm:px-5 sm:pb-5"
         style={mask === undefined ? undefined : { maskImage: mask, WebkitMaskImage: mask }}
       >
-        {actions.map((action) => (
+        {shown.map((action) => (
           <li key={action.id} className="w-[min(20rem,85%)] shrink-0 snap-start">
-            <DecisionCard action={action} />
+            <DecisionCard action={action} timeline={timeline} />
           </li>
         ))}
+        {capped ? (
+          // The last stop on the track, in date order like everything before it.
+          <li className="grid shrink-0 snap-start place-items-center px-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowAll(!showAll)}>
+              {showAll ? t('owed.showFewer') : t('owed.showAll', { total: actions.length })}
+            </Button>
+          </li>
+        ) : null}
       </ul>
     </>
   )

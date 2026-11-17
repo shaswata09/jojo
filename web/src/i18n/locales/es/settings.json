@@ -240,7 +240,8 @@
     "errors": {
       "taken": "Otra palabra clave ya tiene ese nombre.",
       "blank": "Una palabra clave necesita un nombre.",
-      "exists": "Esa palabra clave ya existe."
+      "exists": "Esa palabra clave ya existe.",
+      "tooLong": "Usa {{max}} caracteres como máximo."
     },
     "renameNamed": "Renombrar {{name}}",
     "rename": "Renombrar",

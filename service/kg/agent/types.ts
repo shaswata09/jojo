@@ -152,6 +152,9 @@ export type Cancellation = {
   readonly onAbort?: (fn: () => void) => void
 }
 
+/** Which steps a run stops to ask about. See `AgentOptions.gate`. */
+export type GateMode = 'destructive' | 'writes' | 'none'
+
 export type AgentOptions = {
   host: ToolHost
   llm: LlmTurnFn
@@ -189,13 +192,20 @@ export type AgentOptions = {
    * undone, so they are asked about under all three, `none` included. See
    * `CatalogEntry.alwaysAsks`.
    *
+   * A function is read again before EVERY call, so a conversation's approval
+   * setting changed while a run is going applies to the rest of that run. As a
+   * fixed value captured at send it did not: switching an Auto run to Manual
+   * showed Manual selected while the run kept writing unasked until it ended
+   * (review 2026-11-17). The apps pass a function; tests and the bench pass a
+   * value.
+   *
    * The policy is the CALLER'S, which is why it is here rather than widening
    * `destructive` in `catalog.ts`. That flag is load-bearing elsewhere — it
    * fills MCP's `destructiveHint` and appends "this removes a record" to the
    * description the model reads — and marking every create destructive would
    * lie to both.
    */
-  gate?: 'destructive' | 'writes' | 'none'
+  gate?: GateMode | (() => GateMode)
   /**
    * One line naming the record this conversation is about — `focusLine` in
    * `focus.ts` — appended to the system message so "this application" has a

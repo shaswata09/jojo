@@ -126,9 +126,36 @@ export const threadSet = defineTool({
   undoable: false,
   input: s.object({ id: threadId, entries }),
   run(ctx, input): void {
-    ctx.require('thread', input.id)
-    const kept = input.entries.slice(-TURN_CAP) as ThreadEntry[]
-    ctx.tx.patch<'thread'>(input.id, { entries: kept })
+    const thread = ctx.require('thread', input.id)
+    const all = input.entries as ThreadEntry[]
+    /*
+     * The cap, and the summary boundary with it (review 2026-11-17).
+     *
+     * `contextThrough` is an INDEX into `entries`. Trimming the front without
+     * moving it pointed the summary that many entries further on than it had
+     * reached, and `historyFor` then sent neither the summary's account of the
+     * exchanges in between nor the exchanges themselves: they were gone from
+     * the model's view with nothing standing in for them, and every save past
+     * the cap shifted the gap again.
+     *
+     * So the boundary moves back by what was trimmed, and on a summarised
+     * thread the trim stops AT the boundary: only entries the summary already
+     * accounts for go. What lies past it is what the last compaction left to
+     * fit in one context window, and the next compaction moves the boundary on
+     * and lets the cap take the rest, so the store stays bounded. A thread with
+     * no summary keeps the plain rule — the oldest go, from the transcript and
+     * the model's view alike.
+     */
+    const over = Math.max(0, all.length - TURN_CAP)
+    const through = thread.props.contextThrough
+    const summarised = thread.props.context !== undefined && through !== undefined && through > 0
+    const trimmed = summarised ? Math.min(over, through) : over
+    ctx.tx.patch<'thread'>(input.id, {
+      entries: all.slice(trimmed),
+      ...(through !== undefined && trimmed > 0
+        ? { contextThrough: Math.max(0, through - trimmed) }
+        : {}),
+    })
   },
   describe: (input, _output, m) => ({ title: 'Conversation saved', description: nameOf(m, input.id) }),
 })

@@ -137,6 +137,8 @@
       "profile": "میرا پروفائل",
       "assistant": "معاون",
       "settings": "ترتیبات"
-    }
+    },
+    "showAll_one": "تمام {{count}} دکھائیں",
+    "showAll_other": "تمام {{count}} دکھائیں"
   }
 }

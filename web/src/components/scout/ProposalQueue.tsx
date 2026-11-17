@@ -19,12 +19,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import {
-  approvedLabel,
-  postingPreview,
-  proposalDetail,
-  scoutReading,
-} from '@jojo/service/core/proposal'
+import { postingPreview, proposalDetail, scoutReading } from '@jojo/service/core/proposal'
 import type { ScoutReading } from '@jojo/service/core/proposal'
 import { KeywordChips } from '@/components/common/LabelPicker'
 import { useReadingNow } from '@/lib/scout-reading-hooks'
@@ -213,8 +208,23 @@ function ProposalCard({
   const { t } = useTranslation('scout')
   const settled = p.status !== 'pending'
   const base = settled ? STATUS[p.status as Exclude<Proposal['status'], 'pending'>] : null
+  // The approved label in the reader's language. `approvedLabel` is core's
+  // English (agents and tools read it); the card names the same three outcomes
+  // from the catalog, keyed by the same tool ids.
   const status = base
-    ? { ...base, label: p.status === 'approved' ? approvedLabel(p.tool) : t(base.label) }
+    ? {
+        ...base,
+        label:
+          p.status === 'approved'
+            ? t(
+                p.tool === 'scout.match.save'
+                  ? 'proposals.status.savedToMatches'
+                  : p.tool === 'scout.posting.save'
+                    ? 'proposals.status.savedToPostings'
+                    : 'proposals.status.applied',
+              )
+            : t(base.label),
+      }
     : null
   const posting = postingPreview(p.tool, p.input)
   const detail = posting ? null : proposalDetail(p.input)

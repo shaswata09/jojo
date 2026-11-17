@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { PIE_VIEWBOX, pieSlices } from '@jojo/service/core/pie'
+import { useTranslation } from 'react-i18next'
+import { legendName } from '@/components/charts/legend-name'
 import { cn } from '@/lib/utils'
 
 export type PieDatum = { key: string; label: string; value: number; color: string }
@@ -37,6 +39,7 @@ export function Pie({
   ariaLabel: string
   className?: string
 }) {
+  const { t, i18n } = useTranslation('charts')
   const [hover, setHover] = useState<string | null>(null)
 
   const slices = pieSlices(data)
@@ -81,10 +84,12 @@ export function Pie({
         {data.map((datum) => {
           const slice = byKey.get(datum.key)
           const empty = slice === undefined
+          const pct = total > 0 ? (slice?.percent ?? 0) : 0
           return (
             <li key={datum.key}>
               <button
                 type="button"
+                aria-label={legendName(t, i18n.language, datum.label, datum.value, pct)}
                 onClick={onSelect ? () => onSelect(datum.key) : undefined}
                 onMouseEnter={() => setHover(datum.key)}
                 onMouseLeave={() => setHover(null)}
@@ -116,9 +121,7 @@ export function Pie({
                 </span>
                 <span className="tabular shrink-0 font-mono text-text-1">
                   {datum.value}
-                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
-                    {total > 0 ? (slice?.percent ?? 0) : 0}%
-                  </span>
+                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">{pct}%</span>
                 </span>
               </button>
             </li>

@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "Mostra {{label}}",
-    "hide": "Nascondi {{label}}"
+    "hide": "Nascondi {{label}}",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Tutte le serie sono disattivate nella legenda.",

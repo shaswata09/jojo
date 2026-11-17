@@ -134,7 +134,9 @@
     "status": {
       "applied": "đã áp dụng",
       "discarded": "đã loại bỏ",
-      "failed": "không áp dụng được"
+      "failed": "không áp dụng được",
+      "savedToMatches": "Đã lưu vào Gợi ý",
+      "savedToPostings": "Đã lưu vào Tin tuyển dụng"
     },
     "noSummary": "Mục này không kèm tóm tắt — mở tin tuyển dụng để xem đó là gì.",
     "reading": "Đang đọc tin tuyển dụng để lấy thông tin chi tiết…",

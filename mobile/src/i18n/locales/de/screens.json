@@ -434,6 +434,7 @@
       "transferLast": "zuletzt genutzt am {{date}}"
     },
     "footer": "jojo — Jarvis fOr Job Organization. Alles läuft auf diesem Gerät.",
+    "statusEnglish": "Bewusst wörtlich auf Englisch, damit der Text nicht von der Lizenz abweicht, die er zusammenfasst.",
     "overdue_one": "{{count}} Erinnerung überfällig.",
     "overdue_other": "{{count}} Erinnerungen überfällig."
   },

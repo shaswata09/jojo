@@ -143,6 +143,7 @@
     "explain": "En yeni değişiklik geri alınabilir. Eskiler bir kayıttır, zaman makinesi değil.",
     "undoLast": "Sonuncuyu geri al",
     "cannotUndo": "Veri setini yüklemek ya da temizlemek geri alınamaz.",
+    "cannotUndoTrimmed": "jojo bu değişikliğin kaydını tuttu ama geri getirmeye yetecek kadarını değil — arka planda yapılan bir yazma (bir uyum değerlendirmesi, bir dosyanın baytları) ya da çok eski.",
     "showAll_one": "Tümünü göster ({{count}})",
     "showAll_other": "Tümünü göster ({{count}})"
   },

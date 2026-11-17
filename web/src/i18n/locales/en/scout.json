@@ -136,7 +136,9 @@
     "status": {
       "applied": "applied",
       "discarded": "discarded",
-      "failed": "could not apply"
+      "failed": "could not apply",
+      "savedToMatches": "Saved to Matches",
+      "savedToPostings": "Saved to Postings"
     },
     "noSummary": "No summary came with this one — open the posting to see what it is.",
     "reading": "Reading the posting for its details…",

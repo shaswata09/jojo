@@ -21,6 +21,7 @@ import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 /**
  * The people a job search is actually made of, on a phone.
@@ -41,7 +42,7 @@ import { useDomain } from '@/i18n/domain'
  * on is a row that has to be copied out by hand, which on a phone is the whole
  * cost of the interaction — so they open the mail app and the dialler.
  */
-export function PeopleTool({ focus }: { focus?: string }) {
+export function PeopleTool() {
   const { t } = useTranslation('vault')
   const { people, addPerson, updatePerson, removePerson } = useVault()
   const { toast } = useToast()
@@ -93,14 +94,9 @@ export function PeopleTool({ focus }: { focus?: string }) {
           />
         ) : (
           shown.map((p, i) => (
-            <View key={p.id}>
+            <FocusTarget key={p.id} id={p.id}>
               {i > 0 ? <Divider /> : null}
-              <View
-                style={[
-                  styles.row,
-                  focus === p.id ? { backgroundColor: 'rgba(113,220,239,0.08)' } : null,
-                ]}
-              >
+              <View style={styles.row}>
                 <View style={s.fill}>
                   <Txt size="sm">{p.name}</Txt>
                   {p.role || p.affiliation ? (
@@ -155,7 +151,7 @@ export function PeopleTool({ focus }: { focus?: string }) {
                   onPress={() => setMenuFor(p)}
                 />
               </View>
-            </View>
+            </FocusTarget>
           ))
         )}
       </Panel>

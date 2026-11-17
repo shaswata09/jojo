@@ -240,7 +240,8 @@
     "errors": {
       "taken": "Outra palavra-chave já tem esse nome.",
       "blank": "Uma palavra-chave precisa de um nome.",
-      "exists": "Essa palavra-chave já existe."
+      "exists": "Essa palavra-chave já existe.",
+      "tooLong": "Use no máximo {{max}} caracteres."
     },
     "renameNamed": "Renomear {{name}}",
     "rename": "Renomear",

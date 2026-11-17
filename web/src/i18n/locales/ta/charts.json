@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} காட்டு",
-    "hide": "{{label}} மறை"
+    "hide": "{{label}} மறை",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "விளக்கக் குறிப்பில் ஒவ்வொரு தொடரும் அணைக்கப்பட்டுள்ளது.",

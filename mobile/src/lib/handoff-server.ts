@@ -49,7 +49,7 @@ import {
 const MAX_PENDING = 512 * 1024
 
 /**
- * Connections held open at once; one more is closed on arrival.
+ * Connections held open at once.
  *
  * The listener is bound to every interface and the token is only checked once
  * a header is complete, so without a cap anyone on the same network could open
@@ -58,8 +58,50 @@ const MAX_PENDING = 512 * 1024
  * The browser's client is sequential (one request at a time, `Connection:
  * close`), so eight leaves room for a request still closing and a browser's
  * speculative pre-connects.
+ *
+ * A cap alone made exhaustion CHEAP rather than impossible (review 2,
+ * security-5): eight sockets each trickling a header byte inside every idle
+ * window held every slot for hours, and the real browser's connections were
+ * destroyed on arrival. Two things close that. A header now has a deadline of
+ * its own (`HEADER_MS`), which data does not reset. And a full house no longer
+ * turns the newcomer away while a slot is held by a connection that has been
+ * open past `EVICT_GRACE_MS` without finishing its header: the oldest such one
+ * is closed to make room. A browser sends its header the moment it connects,
+ * so it is never the one evicted, and an attacker has to keep opening eight
+ * fresh connections every second just to stay in the way.
  */
 export const MAX_CONNECTIONS = 8
+
+/**
+ * How long a connection has, from accept, to finish its request HEADER.
+ *
+ * Not reset by data — that is what made the idle timer alone a slot anyone
+ * could hold with one byte every fourteen seconds. Shorter than `IDLE_MS`, and
+ * generous beside what it measures: a browser's header is a few hundred bytes
+ * written in one go. Cleared once the header is whole, so a large body that
+ * keeps moving is still governed by the idle timer alone.
+ */
+export const HEADER_MS = 10_000
+
+/**
+ * How long a connection must have been waiting on its header before a newcomer
+ * may take its slot. Long enough for any real client's header to have arrived.
+ */
+export const EVICT_GRACE_MS = 1_000
+
+/** True once the bytes hold a whole request header (CRLFCRLF). */
+function headerArrived(bytes: Uint8Array): boolean {
+  for (let i = 3; i < bytes.byteLength; i += 1) {
+    if (
+      bytes[i - 3] === 0x0d &&
+      bytes[i - 2] === 0x0a &&
+      bytes[i - 1] === 0x0d &&
+      bytes[i] === 0x0a
+    )
+      return true
+  }
+  return false
+}
 
 /**
  * How long a connection may go without sending a byte before it has handed
@@ -96,11 +138,27 @@ export function startHandoffServer(
 ): Promise<HandoffServer> {
   return new Promise((resolve, reject) => {
     const sockets = new Set<{ destroy: () => void }>()
+    /**
+     * Connections still waiting on their header, oldest first (a Map keeps
+     * insertion order), each with whether it is past the eviction grace and
+     * how to close it. Left once the header is whole or the socket is gone.
+     */
+    const waiting = new Map<object, { stale: boolean; shut: () => void }>()
 
     const server = TcpSocket.createServer((socket) => {
       if (sockets.size >= MAX_CONNECTIONS) {
-        socket.destroy()
-        return
+        let oldest: { stale: boolean; shut: () => void } | undefined
+        for (const entry of waiting.values()) {
+          if (entry.stale) {
+            oldest = entry
+            break
+          }
+        }
+        if (oldest === undefined) {
+          socket.destroy()
+          return
+        }
+        oldest.shut()
       }
       sockets.add(socket as unknown as { destroy: () => void })
 
@@ -116,11 +174,31 @@ export function startHandoffServer(
         idle = null
       }
 
+      // The header's own clocks: the deadline, and the grace after which this
+      // connection may be evicted for a newcomer. Both end with the header.
+      let headerDeadline: ReturnType<typeof setTimeout> | null = null
+      let graceOver: ReturnType<typeof setTimeout> | null = null
+      const headed = () => {
+        if (headerDeadline !== null) clearTimeout(headerDeadline)
+        if (graceOver !== null) clearTimeout(graceOver)
+        headerDeadline = null
+        graceOver = null
+        waiting.delete(socket)
+      }
+
       const shut = () => {
         disarm()
+        headed()
         sockets.delete(socket as unknown as { destroy: () => void })
         socket.destroy()
       }
+
+      const entry = { stale: false, shut }
+      waiting.set(socket, entry)
+      headerDeadline = setTimeout(shut, HEADER_MS)
+      graceOver = setTimeout(() => {
+        entry.stale = true
+      }, EVICT_GRACE_MS)
 
       const arm = () => {
         disarm()
@@ -194,6 +272,7 @@ export function startHandoffServer(
           shut()
           return
         }
+        if (headerDeadline !== null && headerArrived(held)) headed()
         if (busy) return
 
         const read = readRequest(held, token, direction)
@@ -235,6 +314,7 @@ export function startHandoffServer(
       socket.on('error', shut)
       socket.on('close', () => {
         disarm()
+        headed()
         sockets.delete(socket as unknown as { destroy: () => void })
       })
     })
@@ -257,8 +337,10 @@ export function startHandoffServer(
         stop: () => {
           if (closed) return
           closed = true
+          for (const open of waiting.values()) open.shut()
           for (const open of sockets) open.destroy()
           sockets.clear()
+          waiting.clear()
           server.close()
         },
       })

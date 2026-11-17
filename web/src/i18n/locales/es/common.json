@@ -166,7 +166,8 @@
     "stopFiltering": "Dejar de filtrar por {{name}}",
     "filterBy": "Filtrar por {{name}}",
     "edit": "Editar la palabra clave {{name}}",
-    "editHint": "Renombrar, cambiar color o eliminar"
+    "editHint": "Renombrar, cambiar color o eliminar",
+    "tooLong": "Usa {{max}} caracteres como máximo."
   },
   "welcome": {
     "title": "Un poco sobre ti",
@@ -275,5 +276,8 @@
   "command": {
     "title": "Paleta de comandos",
     "description": "Busca un comando para ejecutar..."
+  },
+  "rows": {
+    "showMore": "Mostrar más ({{shown}} de {{total}})"
   }
 }

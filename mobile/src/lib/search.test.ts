@@ -52,6 +52,13 @@ describe('matchesQuery', () => {
     expect(matchesQuery('note', undefined, null)).toBe(false)
     expect(matchesQuery('x')).toBe(false)
   })
+
+  it('finds every word anywhere in the record, as the web palette does', () => {
+    expect(matchesQuery('rice stat', 'Rice — Statistics')).toBe(true)
+    expect(matchesQuery('rice statistics', 'Rice University', 'Statistics')).toBe(true)
+    expect(matchesQuery('dark theme', 'Theme', 'dark mode light mode')).toBe(true)
+    expect(matchesQuery('rice mit', 'Rice University', 'Statistics')).toBe(false)
+  })
 })
 
 describe('fold', () => {

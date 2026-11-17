@@ -328,6 +328,28 @@
     "two": "được xếp vào {{a}} và {{b}}",
     "many_other": "được xếp vào {{count}} đơn ứng tuyển"
   },
+  "picked": {
+    "two": "{{a}} và {{b}}",
+    "many_other": "{{count}} đơn ứng tuyển"
+  },
+  "twinOffer": {
+    "unnamed": "tài liệu đó",
+    "title": "Đọc {{first}} vào hồ sơ cá nhân của bạn?",
+    "titleMore_other": "Đọc {{first}} và {{count}} tài liệu khác vào hồ sơ cá nhân của bạn?",
+    "body": "jojo sẽ đọc nội dung bên trong và ghi lại những thông tin được nêu — bằng cấp, vị trí công tác, công bố và kỹ năng của bạn — để có thể so một tin tuyển dụng với những gì bạn thực sự đã làm. Mỗi mục được thêm sẽ được cho bạn xem trước và ghi rõ đến từ tài liệu nào."
+  },
+  "duplicate": {
+    "id": "Mã của tin tuyển dụng này đã có ở {{name}}.",
+    "url": "Bạn đã lưu tin tuyển dụng này dưới tên {{name}}.",
+    "name": "Bạn đã có {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Kết quả trả về không phải là một trang.",
+    "bad-source": "Tin tuyển dụng phải có địa chỉ http hoặc https.",
+    "empty": "Trang trả về trống — có thể trang chưa tải xong.",
+    "too-large": "Trang này quá lớn để lưu. Hãy thử lại khi hình ảnh đã tải xong.",
+    "leaks": "Bản sao vẫn trỏ về trang gốc nên không được lưu."
+  },
   "readBy": "Được đọc bởi {{model}} · {{ago}}",
   "missingSource": "một tài liệu không còn trong Kho lưu trữ",
   "undo": {

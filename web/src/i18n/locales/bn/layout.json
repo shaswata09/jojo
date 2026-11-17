@@ -137,6 +137,8 @@
       "profile": "আমার প্রোফাইল",
       "assistant": "সহকারী",
       "settings": "সেটিংস"
-    }
+    },
+    "showAll_one": "সব {{count}}টি দেখান",
+    "showAll_other": "সব {{count}}টি দেখান"
   }
 }

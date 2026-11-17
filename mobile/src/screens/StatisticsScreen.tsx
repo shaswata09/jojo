@@ -38,6 +38,7 @@ import { NextSteps } from '@/components/statistics/NextSteps'
 import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
 import { useDomain } from '@/i18n/domain'
 import { useAdvice } from '@/i18n/advice'
+import { toTab } from '@/navigation/to-tab'
 
 /**
  * Below three plotted axes a radar is a line or a triangle with nothing to
@@ -325,7 +326,7 @@ export function StatisticsScreen() {
                 <Button
                   label={t('statistics.openApplications')}
                   variant="outline"
-                  onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
+                  onPress={() => toTab(navigation, 'Applications')}
                 />
               }
             />
@@ -459,7 +460,7 @@ export function StatisticsScreen() {
                 <Button
                   label={t('statistics.openApplications')}
                   variant="outline"
-                  onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
+                  onPress={() => toTab(navigation, 'Applications')}
                 />
               }
             />

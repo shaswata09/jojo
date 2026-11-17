@@ -2,6 +2,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import { GUIDE_PAGES } from '@/navigation/types'
 import type { GuidePage, RootStackParamList, VaultTool } from '@/navigation/types'
+import { toTab } from '@/navigation/to-tab'
 
 /** The navigator every screen in the app is pushed onto. */
 type Nav = NativeStackNavigationProp<RootStackParamList>
@@ -538,13 +539,13 @@ export function goToPlace(nav: Nav, to: PlaceTarget): void {
       nav.navigate('Guide', { page: to.page })
       return
     case 'Applications':
-      nav.navigate('Tabs', { screen: 'Applications', params: { options: true } })
+      toTab(nav, 'Applications', { options: true })
       return
     case 'Calendar':
-      nav.navigate('Tabs', { screen: 'Calendar', params: { options: true } })
+      toTab(nav, 'Calendar', { options: true })
       return
     case 'Vault':
-      nav.navigate('Tabs', { screen: 'Vault', params: { tool: to.tool, options: to.options } })
+      toTab(nav, 'Vault', { tool: to.tool, options: to.options })
       return
   }
 }

@@ -103,6 +103,13 @@
       "title": "Ablegen, um zu {{bucket}} hinzuzufügen",
       "description": "Name, Größe und Typ werden gelesen. Nichts wird hochgeladen.",
       "hint": "Zieh Dateien irgendwo auf dieses Feld, um sie zu {{bucket}} hinzuzufügen."
+    },
+    "buckets": {
+      "toRead": "Zu lesen",
+      "applications": "Bewerbungen",
+      "jobPostings": "Stellenanzeigen",
+      "talks": "Vorträge",
+      "admin": "Verwaltung"
     }
   },
   "pdf": {
@@ -245,7 +252,8 @@
       "placeholder": "Was in diesem Dokument wichtig ist – die Frist auf Seite 3, wen du dazu fragen kannst …",
       "saved": "Gespeichert",
       "save": "Notiz speichern"
-    }
+    },
+    "notPdf": "Der Inhalt dieser Datei ist kein PDF, deshalb zeigt jojo ihn nicht als PDF an."
   },
   "reminders": {
     "snooze": {

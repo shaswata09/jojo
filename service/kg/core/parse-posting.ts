@@ -306,7 +306,11 @@ function looksLikeId(segment: string) {
  * 'Data-Scientist_R-12345'. Left on, `looksLikeId` throws the whole segment
  * away and the one part of the URL that names the job is lost with it.
  */
-const withoutReqNumber = (segment: string) => segment.replace(/[_-](?:r|req|jr|job)?-?\d{4,}$/i, '')
+const withoutReqNumber = (segment: string) =>
+  // `[-_]?` between the prefix and the digits: Workday writes both
+  // 'Data-Scientist_R-12345' and 'Research-Scientist_R_00012345', and the
+  // second used to leave '_R' behind as a role of 'Research scientist r'.
+  segment.replace(/[_-](?:r|req|jr|job)?[-_]?\d{4,}$/i, '')
 
 const words = (s: string) =>
   s
@@ -418,12 +422,27 @@ function orgFromBoard(url: URL, segments: string[], named: string[]) {
     .split('.')
   if (labels.some((l) => AGGREGATORS.has(l)) || onBoardHost(url.hostname)) return ''
 
+  /*
+   * Hostname first on the boards that keep the tenant there. A Workday path's
+   * first segment is the career SITE's name ('External', 'UTstaff',
+   * 'NVIDIAExternalCareerSite'), not the employer, and checking the path first
+   * filed applications under an employer called "External". iCIMS tenants are
+   * often 'careers-acme', and the affix is not part of the name.
+   */
+  if (labels.slice(1).some((l) => TENANT_IN_HOST.has(l))) {
+    const tenant = (labels[0] ?? '').replace(/^careers?-|-careers?$/, '')
+    if (tenant !== '' && !GENERIC_HOSTS.has(tenant) && !JOB_BOARDS.has(tenant)) return tenant
+  }
+
   const first = segments[0]
   if (first && named.includes(first)) return first
 
   const leading = labels[0] ?? ''
   return GENERIC_HOSTS.has(leading) || JOB_BOARDS.has(leading) ? '' : leading
 }
+
+/** The boards whose hostname's first label is the employer's tenant. */
+const TENANT_IN_HOST = new Set(['myworkdayjobs', 'icims'])
 
 /** Whether this address is a job board's rather than an employer's own site. */
 const isBoard = (url: URL) =>

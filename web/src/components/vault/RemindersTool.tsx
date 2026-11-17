@@ -1,4 +1,12 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Fragment,
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { BellRing, Check, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BucketFilter } from '@/components/common/BucketFilter'
@@ -29,6 +37,8 @@ import { announceRefusal } from '@/components/common/write-result'
 import { useMascot } from '@/lib/mascot-context'
 import { CUES } from '@/lib/mascot-cues'
 import { useDomain } from '@/i18n/domain'
+import { ShowMoreRows } from '@/components/common/ShowMoreRows'
+import { useRowCap } from '@/components/common/use-row-cap'
 
 /**
  * Everything flagged to come back to, off the one timeline.
@@ -61,12 +71,28 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const focusedRow = useArrivalScroll<HTMLLIElement>(focus)
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+  /**
+   * The writes still waiting out their animation, by row.
+   *
+   * Two jobs. A second activation of a row already in flight is ignored — the
+   * row's `pointer-events-none` stops a second click but not a second Space,
+   * and both closures had captured the same "not done", so the second write
+   * reopened what the first had completed under two "completed" toasts. And
+   * leaving the tab mid-flight FLUSHES these instead of dropping them: the
+   * store is global and the toast provider sits above the Vault, so the write
+   * has somewhere to land, and cancelling it threw the user's tick away
+   * without a word.
+   */
+  const inFlight = useRef(new Map<string, () => void>())
   useEffect(() => {
     const pending = timers.current
-    // Leaving the tab mid-flight must not fire a store write into an unmounted
-    // tree — and the write is deliberately the *last* step, so cancelling here
-    // cancels the whole action rather than half of it.
-    return () => pending.forEach(clearTimeout)
+    const commits = inFlight.current
+    return () => {
+      pending.forEach(clearTimeout)
+      const flush = [...commits.values()]
+      commits.clear()
+      for (const commit of flush) commit()
+    }
   }, [])
 
   /**
@@ -109,10 +135,12 @@ export function RemindersTool({ focus }: { focus?: string }) {
     options: { preview?: Partial<TimelineItem>; arrive?: boolean },
     commit: () => void,
   ) => {
+    if (inFlight.current.has(id)) return
     if (reduceMotion) {
       commit()
       return
     }
+    inFlight.current.set(id, commit)
     const { preview, arrive } = options
     setTransits((prev) => ({ ...prev, [id]: { phase: preview ? 'held' : 'leaving', preview } }))
 
@@ -130,6 +158,8 @@ export function RemindersTool({ focus }: { focus?: string }) {
     }
     timers.current.push(
       setTimeout(() => {
+        // Out of the map first: a commit that toasts must not be flushed twice.
+        if (!inFlight.current.delete(id)) return
         commit()
         setTransits((prev) => {
           const next = { ...prev }
@@ -172,11 +202,14 @@ export function RemindersTool({ focus }: { focus?: string }) {
     return related ? t('reminders.describe', { title: item.title, related }) : item.title
   }
 
-  const actions: RowActions = {
+  const handlers: RowActions = {
     edit,
 
     toggle: (item) => {
       const done = Boolean(item.completedOn)
+      // The date it was completed on, not just whether: undoing a reopen has to
+      // put back the day it was ticked, not stamp today over it.
+      const before = item.completedOn ?? null
       play(item.id, { preview: { completedOn: done ? null : TODAY }, arrive: true }, () => {
         if (announceRefusal(toggleDone(item.id), toast)) return
         if (!done) mascot.play(CUES.taskDone)
@@ -192,7 +225,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
             // Not `toggleDone` again: by the time this is pressed the user may
             // have changed the row by hand, and a second toggle would flip it
             // back the wrong way.
-            onClick: () => update(item.id, { completedOn: done ? TODAY : null }),
+            onClick: () => update(item.id, { completedOn: before }),
           },
         })
       })
@@ -301,6 +334,28 @@ export function RemindersTool({ focus }: { focus?: string }) {
     draft: (item) => open('draft', { itemId: item.id }),
   }
 
+  /*
+   * One `actions` object for the life of the tool, forwarding to the handlers
+   * of the latest render. A fresh object every render defeated `memo` on the
+   * rows, so each phase of one row's tick animation re-rendered the whole list.
+   */
+  const latest = useRef(handlers)
+  useLayoutEffect(() => {
+    latest.current = handlers
+  })
+  const actions = useMemo<RowActions>(
+    () => ({
+      edit: (item) => latest.current.edit(item),
+      toggle: (item) => latest.current.toggle(item),
+      duplicate: (item) => latest.current.duplicate(item),
+      remove: (item) => latest.current.remove(item),
+      snooze: (item, days) => latest.current.snooze(item, days),
+      moveTo: (item, iso) => latest.current.moveTo(item, iso),
+      draft: (item) => latest.current.draft(item),
+    }),
+    [],
+  )
+
   const counts = useMemo(() => {
     const map: Record<string, number> = {}
     for (const r of reminders) {
@@ -310,11 +365,14 @@ export function RemindersTool({ focus }: { focus?: string }) {
     return map
   }, [reminders])
 
+  // Deferred, so a keystroke paints the box at once and the filter over a long
+  // list follows when the main thread is free.
+  const deferredQuery = useDeferredValue(query)
   const visible = reminders.filter(
     (r) =>
       labelMatches(r.id) &&
       matchesQuery(
-        query,
+        deferredQuery,
         r.title,
         r.detail,
         r.note,
@@ -335,7 +393,13 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const rowsIn = (b: TimelineBucket) =>
     bucket !== 'all' && bucket !== b ? [] : visible.filter((r) => bucketOf(r, TODAY) === b)
 
-  const shownRows = BUCKETS.reduce((n, b) => n + rowsIn(b).length, 0)
+  const groups = BUCKETS.map((b) => ({ bucket: b, rows: rowsIn(b) }))
+  const shownRows = groups.reduce((n, g) => n + g.rows.length, 0)
+  // A page of rows at a time across the groups, in reading order, always
+  // including the row a link arrived at.
+  const flat = groups.flatMap((g) => g.rows)
+  const cap = useRowCap(shownRows, focus ? flat.findIndex((r) => r.id === focus) : -1)
+  let budget = cap.shown
 
   // Only ever read by the branches that already know the chip is on; named
   // here because the copy object is built before the branch is chosen.
@@ -429,8 +493,9 @@ export function RemindersTool({ focus }: { focus?: string }) {
         // borders and headings between eight rows, and the group you were
         // reading changed size every time a row moved out of it.
         <ul>
-          {BUCKETS.map((b) => {
-            const rows = rowsIn(b)
+          {groups.map(({ bucket: b, rows: all }) => {
+            const rows = all.slice(0, Math.max(0, budget))
+            budget -= rows.length
             if (rows.length === 0) return null
 
             return (
@@ -444,7 +509,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
                   )}
                 >
                   {BUCKET_LABEL[b]}
-                  <span className="tabular font-normal text-text-3">{rows.length}</span>
+                  <span className="tabular font-normal text-text-3">{all.length}</span>
                 </li>
                 {rows.map((r) => (
                   <ReminderRow
@@ -462,6 +527,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
           })}
         </ul>
       )}
+      <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
     </Panel>
   )
 }

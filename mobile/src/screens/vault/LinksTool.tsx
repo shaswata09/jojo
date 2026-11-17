@@ -32,10 +32,10 @@ import { useCopy } from '@/lib/use-copy'
 import { displayUrl, hrefOf, normalizeUrl } from '@/lib/urls'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
-import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) as Record<
   LinkCategory,
@@ -43,11 +43,9 @@ const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) a
 >
 
 /** Postings, department pages, people and guides — anything to come back to. */
-export function LinksTool({ focus }: { focus?: string }) {
+export function LinksTool() {
   const { t } = useTranslation('vault')
   const domain = useDomain()
-  // Only the arrival highlight needs the palette here.
-  const c = useColors()
   const { links, addLink, updateLink, removeLink } = useVault()
   const { byId } = useApplications()
   const { matches, selected, clearSelected } = useLabels()
@@ -208,9 +206,9 @@ export function LinksTool({ focus }: { focus?: string }) {
         ) : (
           rows.map((l, i) => {
             return (
-              <View key={l.id}>
+              <FocusTarget key={l.id} id={l.id}>
                 {i > 0 ? <Divider /> : null}
-                <View style={[styles.row, focus === l.id && { backgroundColor: c.accentSoft }]}>
+                <View style={styles.row}>
                   <Pressable
                     accessibilityRole="link"
                     accessibilityLabel={t('common.openNamed', { name: l.title })}
@@ -244,7 +242,7 @@ export function LinksTool({ focus }: { focus?: string }) {
                     onPress={() => setMenuFor(l)}
                   />
                 </View>
-              </View>
+              </FocusTarget>
             )
           })
         )}

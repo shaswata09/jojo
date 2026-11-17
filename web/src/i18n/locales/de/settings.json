@@ -233,7 +233,8 @@
     "errors": {
       "taken": "Ein anderes Schlagwort hat bereits diesen Namen.",
       "blank": "Ein Schlagwort braucht einen Namen.",
-      "exists": "Dieses Schlagwort gibt es bereits."
+      "exists": "Dieses Schlagwort gibt es bereits.",
+      "tooLong": "Höchstens {{max}} Zeichen."
     },
     "renameNamed": "{{name}} umbenennen",
     "rename": "Umbenennen",

@@ -5,7 +5,7 @@
     "trigger": "jojo 的動作",
     "triggerAria": "jojo 的動作與出處",
     "plays": "會播放",
-    "modelCredit": "機器人模型："
+    "modelCreditFull": "機器人模型：<artist>Jungle Jim</artist> 創作的 <work>“Sci-fi O.B. Robot Unit TH-ICC02 (animated)”</work>，採用 <licence>CC BY 4.0</licence> 授權。為 jojo 所做的修改：更輕的網格與材質，以及專屬的眼睛和動作（每項修改見 使用說明 › 建構基礎）。作者並未為 jojo 背書。"
   },
   "theme": {
     "toggle": "切換主題",

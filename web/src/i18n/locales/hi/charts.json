@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} दिखाएँ",
-    "hide": "{{label}} छिपाएँ"
+    "hide": "{{label}} छिपाएँ",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "लेजेंड में हर सीरीज़ बंद है।",

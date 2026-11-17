@@ -226,7 +226,8 @@
     "errors": {
       "taken": "Đã có từ khóa khác mang tên đó.",
       "blank": "Từ khóa cần có tên.",
-      "exists": "Từ khóa đó đã tồn tại."
+      "exists": "Từ khóa đó đã tồn tại.",
+      "tooLong": "Tối đa {{max}} ký tự."
     },
     "renameNamed": "Đổi tên {{name}}",
     "rename": "Đổi tên",

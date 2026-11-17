@@ -33,6 +33,9 @@ import { requestProfileRead } from '@jojo/service/react/profile-read-request'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { announceRefusal } from '@/components/common/write-result'
 import { useDomain } from '@/i18n/domain'
+import { fileBucketLabel, fileBucketLabels } from '@/components/vault/files/bucket-label'
+import { ShowMoreRows } from '@/components/common/ShowMoreRows'
+import { useRowCap } from '@/components/common/use-row-cap'
 
 /**
  * Read-later files, in buckets.
@@ -141,13 +144,25 @@ export function FilesTool({ focus }: { focus?: string }) {
     keywords: matches,
     // The application's name too, matching the links tool: a document you can
     // file under a job is one you will look for by that job's name.
-    search: (f) => matchesQuery(query, f.name, f.note, f.bucket, ...f.applicationIds.map(nameOf)),
+    search: (f) =>
+      matchesQuery(
+        query,
+        f.name,
+        f.note,
+        f.bucket,
+        fileBucketLabel(f.bucket),
+        ...f.applicationIds.map(nameOf),
+      ),
   })
   const open = visible.find((f) => f.id === openId) ?? null
+  // A page of rows at a time, always including the one a link arrived at.
+  const cap = useRowCap(visible.length, focus ? visible.findIndex((f) => f.id === focus) : -1)
 
   // Where a drop lands: the bucket being looked at, so adding while filtered
   // cannot file something into a list that is not on screen.
   const target: FileBucket = bucket === 'all' ? 'To read' : bucket
+  // The drawer as the reader names it, for sentences. Only read where a chip is on.
+  const bucketShown = bucket === 'all' ? '' : fileBucketLabel(bucket)
 
   useEffect(() => {
     // Cleared first, every time: until the new document's read resolves, the
@@ -249,7 +264,10 @@ export function FilesTool({ focus }: { focus?: string }) {
       title: t('reminders.toast.moved', { title: file.name }),
       description:
         bucket !== 'all' && bucket !== next
-          ? t('snippets.toast.movedOut', { tag: next, filter: bucket })
+          ? t('snippets.toast.movedOut', {
+              tag: fileBucketLabel(next),
+              filter: fileBucketLabel(bucket),
+            })
           : t('snippets.toast.moved', { tag: next }),
       action: { label: t('common.undo'), onClick: () => updateFile(file.id, { bucket: before }) },
     })
@@ -300,9 +318,9 @@ export function FilesTool({ focus }: { focus?: string }) {
         action: addButton,
       },
       search: (q) => t('files.empty.search', { query: q }),
-      both: t('files.empty.both', { bucket }),
+      both: t('files.empty.both', { bucket: bucketShown }),
       bucket: {
-        title: t('files.empty.bucketTitle', { bucket }),
+        title: t('files.empty.bucketTitle', { bucket: bucketShown }),
         description: t('files.empty.bucketDescription', { count: files.length }),
         clearLabel: t('files.empty.showAll'),
       },
@@ -317,7 +335,7 @@ export function FilesTool({ focus }: { focus?: string }) {
         withOthers:
           bucket === 'all'
             ? t('files.empty.unfiledKeywords')
-            : t('files.empty.unfiledBucket', { bucket }),
+            : t('files.empty.unfiledBucket', { bucket: bucketShown }),
       },
     },
   })
@@ -364,6 +382,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                 <BucketFilter
                   label={t('files.filterLabel')}
                   options={FILE_BUCKETS}
+                  labels={fileBucketLabels()}
                   counts={counts}
                   value={bucket}
                   onChange={setBucket}
@@ -393,7 +412,7 @@ export function FilesTool({ focus }: { focus?: string }) {
           />
         ) : (
           <ul className="divide-y divide-hairline">
-            {visible.map((f) => (
+            {visible.slice(0, cap.shown).map((f) => (
               <FileRow
                 key={f.id}
                 file={f}
@@ -416,6 +435,7 @@ export function FilesTool({ focus }: { focus?: string }) {
             ))}
           </ul>
         )}
+        <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
 
         {/* `pointer-events-none` so the drag events keep reaching the panel
             underneath — an overlay that swallowed them would cancel the drop it
@@ -428,7 +448,7 @@ export function FilesTool({ focus }: { focus?: string }) {
             <div>
               <Upload aria-hidden strokeWidth={1.7} className="mx-auto mb-2 size-5 text-accent" />
               <p className="text-sm font-medium text-text-1">
-                {t('files.drop.title', { bucket: target })}
+                {t('files.drop.title', { bucket: fileBucketLabel(target) })}
               </p>
               <p className="mt-1 text-xs text-text-3">{t('files.drop.description')}</p>
             </div>
@@ -437,7 +457,9 @@ export function FilesTool({ focus }: { focus?: string }) {
 
         {/* The drop target is invisible until something is over it, so the one
             line that says it exists has to be here in the quiet state. */}
-        <p className="mt-3 text-xs text-text-3">{t('files.drop.hint', { bucket: target })}</p>
+        <p className="mt-3 text-xs text-text-3">
+          {t('files.drop.hint', { bucket: fileBucketLabel(target) })}
+        </p>
       </Panel>
 
       {open ? (

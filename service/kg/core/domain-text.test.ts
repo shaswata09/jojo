@@ -38,6 +38,10 @@ import { comparisonsFor } from './segments'
 import type { Application, TimelineItem } from './model'
 import { addDays, agoLabel, shortDate, whenLabel } from './dates'
 import { bucketKeys, bucketLabel } from './frequency'
+import { twinOfferCopy } from './twin'
+import { duplicateMessage } from './duplicates'
+import { CAPTURE_REJECTION_MESSAGE } from './capture'
+import type { CaptureRejection } from './capture'
 
 const en = domainText(englishT)
 const at = '2026-11-16T09:00:00.000Z' as Instant
@@ -319,5 +323,40 @@ describe('labels and stored phrases', () => {
     const walk = (v: unknown): string[] =>
       typeof v === 'string' ? [v] : Object.values(v as object).flatMap(walk)
     for (const s of walk(DOMAIN_EN)) expect(s.trim()).not.toBe('')
+  })
+})
+
+/*
+ * Review 2026-11-17: three sentences core wrote in English went into
+ * translated screens as they were — the profile-read consent banner, the
+ * duplicate warning at Save, and why a captured page was refused. Each now has
+ * a `domain` key, and says in English exactly what the core function says.
+ */
+describe('sentences the apps used to show in English', () => {
+  const gap = (subject: string) => ({ kind: 'unread-document' as const, subject, id: subject, instruction: '' })
+
+  it('asks to read a document exactly as twinOfferCopy does', () => {
+    for (const gaps of [[], [gap('CV.pdf')], [gap('CV.pdf'), gap('bio.pdf')], [gap('a'), gap('b'), gap('c')]]) {
+      expect(en.twinOffer(gaps)).toEqual(twinOfferCopy(gaps))
+    }
+  })
+
+  it('names a duplicate exactly as duplicateMessage does', () => {
+    for (const reason of ['id', 'url', 'name'] as const) {
+      expect(en.duplicate(reason, 'Rice — Statistics')).toBe(duplicateMessage(reason, 'Rice — Statistics'))
+    }
+  })
+
+  it('says why a capture was refused exactly as the core table does', () => {
+    for (const [reason, message] of Object.entries(CAPTURE_REJECTION_MESSAGE)) {
+      expect(en.captureRejected(reason as CaptureRejection)).toBe(message)
+    }
+  })
+
+  it('labels a picker with one name, two, or a count', () => {
+    expect(en.picked([])).toBe('')
+    expect(en.picked(['Rice'])).toBe('Rice')
+    expect(en.picked(['Rice', 'Baylor'])).toBe('Rice and Baylor')
+    expect(en.picked(['a', 'b', 'c'])).toBe('3 applications')
   })
 })

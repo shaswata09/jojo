@@ -158,7 +158,8 @@
     "stopFiltering": "停止按 {{name}} 筛选",
     "filterBy": "按 {{name}} 筛选",
     "edit": "编辑关键词 {{name}}",
-    "editHint": "重命名、改色或删除"
+    "editHint": "重命名、改色或删除",
+    "tooLong": "最多 {{max}} 个字符。"
   },
   "welcome": {
     "title": "简单介绍一下你自己",
@@ -265,5 +266,8 @@
   "command": {
     "title": "命令面板",
     "description": "搜索要运行的命令..."
+  },
+  "rows": {
+    "showMore": "显示更多（{{shown}}/{{total}}）"
   }
 }

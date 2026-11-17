@@ -112,6 +112,13 @@
       "title": "Rilascia per aggiungere a {{bucket}}",
       "description": "Vengono letti nome, dimensione e tipo. Non viene caricato nulla.",
       "hint": "Trascina i file in qualsiasi punto di questo pannello per aggiungerli a {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "Da leggere",
+      "applications": "Candidature",
+      "jobPostings": "Annunci di lavoro",
+      "talks": "Presentazioni",
+      "admin": "Amministrazione"
     }
   },
   "pdf": {
@@ -258,7 +265,8 @@
       "placeholder": "Cosa conta in questo documento: la scadenza nascosta a pagina 3, a chi chiedere…",
       "saved": "Salvata",
       "save": "Salva nota"
-    }
+    },
+    "notPdf": "Il contenuto di questo file non è un PDF, quindi jojo non lo mostrerà come tale."
   },
   "reminders": {
     "snooze": {

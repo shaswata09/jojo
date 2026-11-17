@@ -112,6 +112,13 @@
       "title": "Déposez pour ajouter à {{bucket}}",
       "description": "Le nom, la taille et le type sont lus. Rien n’est envoyé.",
       "hint": "Déposez des fichiers n’importe où sur ce panneau pour les ajouter à {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "À lire",
+      "applications": "Candidatures",
+      "jobPostings": "Offres d’emploi",
+      "talks": "Présentations",
+      "admin": "Administratif"
     }
   },
   "pdf": {
@@ -258,7 +265,8 @@
       "placeholder": "Ce qui compte dans ce document — l’échéance cachée en page 3, à qui poser la question…",
       "saved": "Enregistré",
       "save": "Enregistrer la note"
-    }
+    },
+    "notPdf": "Le contenu de ce fichier n’est pas un PDF : jojo ne l’affichera donc pas comme tel."
   },
   "reminders": {
     "snooze": {

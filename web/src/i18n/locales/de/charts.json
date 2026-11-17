@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} einblenden",
-    "hide": "{{label}} ausblenden"
+    "hide": "{{label}} ausblenden",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "Alle Reihen sind in der Legende ausgeschaltet.",

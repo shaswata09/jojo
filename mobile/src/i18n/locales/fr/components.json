@@ -143,6 +143,7 @@
     "explain": "Le changement le plus récent peut être annulé. Les plus anciens sont un historique, pas une machine à remonter le temps.",
     "undoLast": "Annuler le dernier",
     "cannotUndo": "Le chargement ou l’effacement du jeu de données ne peut pas être annulé.",
+    "cannotUndoTrimmed": "jojo a gardé une trace de ce changement, mais pas assez pour l’annuler — c’était une écriture en arrière-plan (une évaluation d’adéquation, les octets d’un fichier) ou il est trop ancien.",
     "showAll_one": "Tout afficher ({{count}})",
     "showAll_other": "Tout afficher ({{count}})"
   },

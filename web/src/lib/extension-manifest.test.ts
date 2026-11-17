@@ -21,6 +21,7 @@
 import { describe, expect, it } from 'vitest'
 import manifest from '../../extension/manifest.json'
 import pkg from '../../package.json'
+import { isDevMatch, isDevPack, shippedMatches } from '../../scripts/extension-origins.mjs'
 
 /** Every API permission, and the one feature that would break without it. */
 const WHY: Record<string, string> = {
@@ -63,6 +64,27 @@ describe('the extension manifest', () => {
     // this string. Two places to edit and one of them silent is the shape of
     // every version bug; this makes the second one loud.
     expect(manifest.version).toBe(pkg.version)
+  })
+
+  it('ships the localhost dev ports only in a dev pack (review 2, security-1)', () => {
+    // The checked-in list is the unpacked DEV build's. Vite's default ports are
+    // every other local project's too, so the zip everyone downloads leaves
+    // them out and keeps only the deployed origin.
+    const matches = manifest.content_scripts[0]?.matches ?? []
+    expect(matches.some(isDevMatch)).toBe(true)
+    const shipped = shippedMatches(matches)
+    expect(shipped).toEqual(['https://shaswata09.github.io/jojo/*'])
+    expect(shipped.some(isDevMatch)).toBe(false)
+    // A fork's origin is added, as a pattern with a path.
+    expect(shippedMatches(matches, { origin: 'https://example.org/jojo/' })).toEqual([
+      'https://shaswata09.github.io/jojo/*',
+      'https://example.org/jojo/*',
+    ])
+    // A dev pack keeps them.
+    expect(shippedMatches(matches, { dev: true })).toEqual(matches)
+    expect(isDevPack(['--dev'], {})).toBe(true)
+    expect(isDevPack([], { JOJO_PACK_DEV: '1' })).toBe(true)
+    expect(isDevPack([], {})).toBe(false)
   })
 
   it('runs the bridge at document_idle, not document_start', () => {

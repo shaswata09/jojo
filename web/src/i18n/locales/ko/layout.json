@@ -130,6 +130,7 @@
       "profile": "내 프로필",
       "assistant": "어시스턴트",
       "settings": "설정"
-    }
+    },
+    "showAll_other": "{{count}}개 모두 보기"
   }
 }

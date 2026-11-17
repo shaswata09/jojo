@@ -143,6 +143,7 @@
     "explain": "Die neueste Änderung lässt sich zurücknehmen. Ältere sind ein Protokoll, keine Zeitmaschine.",
     "undoLast": "Letzte rückgängig machen",
     "cannotUndo": "Laden oder Leeren des Datenbestands lässt sich nicht rückgängig machen.",
+    "cannotUndoTrimmed": "jojo hat diese Änderung protokolliert, aber nicht genug, um sie rückgängig zu machen – es war ein Schreibvorgang im Hintergrund (eine Passungsbewertung, die Bytes einer Datei) oder sie liegt zu weit zurück.",
     "showAll_one": "Alle {{count}} anzeigen",
     "showAll_other": "Alle {{count}} anzeigen"
   },

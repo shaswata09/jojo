@@ -138,7 +138,9 @@
     "status": {
       "applied": "appliquée",
       "discarded": "écartée",
-      "failed": "impossible à appliquer"
+      "failed": "impossible à appliquer",
+      "savedToMatches": "Enregistrée dans Correspondances",
+      "savedToPostings": "Enregistrée dans Offres"
     },
     "noSummary": "Aucun résumé n’accompagnait celle-ci — ouvrez l’offre pour voir de quoi il s’agit.",
     "reading": "Lecture de l’offre pour en extraire les détails…",

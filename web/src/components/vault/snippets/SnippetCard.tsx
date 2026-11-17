@@ -70,6 +70,7 @@ export function SnippetCard({
             type="button"
             onClick={onOpen}
             title={t('snippets.card.edit')}
+            dir="auto"
             /* `hover:underline` as well as the colour. In the dark theme
                --accent and --text-1 are the same #fafafa (see index.css), so
                the colour change alone painted nothing and the only thing left

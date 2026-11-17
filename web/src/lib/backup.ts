@@ -296,8 +296,8 @@ export type BackupProgress = { readonly done: number; readonly total: number }
  * ## The two refusals, which are different failures
  *
  * NOT READY is the ordinary one and has nothing wrong with it. The index loads
- * asynchronously on mount — `purgeOnce()` opens the store and sweeps the trash
- * before the first `list` — so for a moment after the page appears `all()`
+ * asynchronously on mount — `hydrate()` opens the store before the first
+ * `list` — so for a moment after the page appears `all()`
  * answers `[]` for a store that is full. An empty index is not "no documents",
  * it is "not known yet", and the two must not produce the same file. It is
  * checked BEFORE anything is written.

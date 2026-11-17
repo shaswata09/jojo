@@ -138,7 +138,9 @@
     "status": {
       "applied": "aplicada",
       "discarded": "descartada",
-      "failed": "não foi possível aplicar"
+      "failed": "não foi possível aplicar",
+      "savedToMatches": "Salva em Correspondências",
+      "savedToPostings": "Salva em Anúncios"
     },
     "noSummary": "Esta veio sem resumo — abra o anúncio para ver do que se trata.",
     "reading": "Lendo o anúncio para obter os detalhes…",

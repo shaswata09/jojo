@@ -328,6 +328,28 @@
     "two": "diarsipkan di {{a}} dan {{b}}",
     "many_other": "diarsipkan di {{count}} lamaran"
   },
+  "picked": {
+    "two": "{{a}} dan {{b}}",
+    "many_other": "{{count}} lamaran"
+  },
+  "twinOffer": {
+    "unnamed": "dokumen itu",
+    "title": "Baca {{first}} ke dalam profil Anda?",
+    "titleMore_other": "Baca {{first}} dan {{count}} dokumen lainnya ke dalam profil Anda?",
+    "body": "jojo akan membaca isinya dan mencatat fakta yang disebutkannya — gelar, jabatan, publikasi, dan keahlian Anda — agar dapat menimbang lowongan terhadap apa yang benar-benar telah Anda lakukan. Setiap entri yang ditambahkan akan ditunjukkan kepada Anda terlebih dahulu, beserta dokumen asalnya."
+  },
+  "duplicate": {
+    "id": "ID lowongan ini sudah tercatat di {{name}}.",
+    "url": "Anda sudah menyimpan lowongan ini sebagai {{name}}.",
+    "name": "Anda sudah memiliki {{name}}."
+  },
+  "captureRejected": {
+    "not-a-page": "Hasilnya tidak kembali sebagai halaman.",
+    "bad-source": "Lowongan harus berupa alamat http atau https.",
+    "empty": "Halaman kembali kosong — mungkin belum selesai dimuat.",
+    "too-large": "Halaman itu terlalu besar untuk disimpan. Coba lagi setelah gambar selesai dimuat.",
+    "leaks": "Salinannya masih mengarah ke situs asalnya, jadi tidak disimpan."
+  },
   "readBy": "Dibaca oleh {{model}} · {{ago}}",
   "missingSource": "dokumen yang sudah tidak ada di Brankas",
   "undo": {

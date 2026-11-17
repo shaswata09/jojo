@@ -2788,3 +2788,21 @@ Guarded by:
 - `mobile/src/lib/search-places.requests.test.ts` › "lists settings and places in search, under a heading in every language"
 - `mobile/src/lib/search-places.requests.test.ts` › "scrolls to the row and lights it once, then clears the param"
 Note: The web half is Q333. Not searchable on purpose: fields inside per-record sheets (an application's stage change, a reminder's all-day switch) and the onboarding's reporting step, which repeats the two Crash reports switches Settings already lists. The scroll-and-light was verified by tests only; no Android emulator was attached.
+
+### Q335 — With multiple agents, thoroughly review the full codebase, and fix what is found.
+`fix` · 2026-11-17 · cross · active
+Must stay true: Undoing a document delete by any route (⌘Z, either audit log, the assistant's undo, the toast) brings the file back, and nothing in the trash is deleted before the records have loaded or while a record still names it. A salary band written with one trailing multiplier ("$120-140k") reads as its low end, prefixed dollars (A$, C$…) are their own currencies, and lakh, crore and 万 are read. The assistant cannot store a match fit the store would refuse, and a run applies an approval-mode change made during it. Only one browser tab runs scheduled scout rounds, and settings changed in one tab reach the others. Going to a tab on the phone returns to the one tab navigator rather than stacking another. A dialog opened from a menu gives focus back to the menu's trigger. The web palette and the phone's search match with one accent-insensitive, word-by-word rule. The extension shipped to users does not run on localhost development ports.
+Guarded by:
+- `web/src/lib/vault-blobs-sweep.test.ts` › "puts back a trashed document whose record a revert brought back"
+- `web/src/lib/vault-blobs-sweep.test.ts` › "touches nothing before the record store has hydrated"
+- `mobile/src/lib/documents-trash.test.ts` › "deletes a copy at launch only when its record is gone"
+- `service/kg/core/comp.test.ts` › "no longer ranks a $120-140k band below a $95,000 offer"
+- `service/kg/core/comp.test.ts` › "refuses to rank a prefixed dollar against a bare one"
+- `service/kg/tools/scout.test.ts` › "is refused at save and at update, before anything reaches the store"
+- `service/kg/react/agent-runs.test.ts` › "is read from the conversation as it is now, not as it was at send"
+- `web/src/lib/tab-leader.test.ts` › "lets one tab lead, and hands over when it closes"
+- `mobile/src/lib/to-tab.test.ts` › "returns to the one tab navigator instead of stacking another"
+- `web/src/components/common/ui-review2.requests.test.ts` › "hands focus to the menu’s trigger before the menu closes and the action runs"
+- `service/kg/core/word-match.test.ts` › "ignores accents and case on both sides"
+- `web/src/lib/extension-manifest.test.ts` › "ships the localhost dev ports only in a dev pack (review 2, security-1)"
+Note: Ten reviewers, each followed by an adversarial verifier: 62 findings confirmed, 2 refuted, 1 uncertain (reproduced and fixed). Fixed by five agents with disjoint files. Left open: bytes orphaned on the phone by an assistant delete are not reclaimed; a document whose trash copy was purged in an earlier session cannot be brought back by an audit-log Undo; the hosted app shares its github.io origin (documented in web/extension/README.md); the phone's Today deck and long lists are not yet capped as the web's are.

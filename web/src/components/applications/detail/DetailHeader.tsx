@@ -103,6 +103,17 @@ export function DetailHeader({
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuTrigger = useRef<HTMLButtonElement>(null)
+  /*
+   * Focus back on the ⋯ before the menu closes and an item's dialog opens —
+   * see `RowMenu`. The item unmounts in the commit the dialog mounts in, so
+   * without this the dialog recorded no control to return to and closing it
+   * left focus on `<body>`.
+   */
+  const closeMenu = () => {
+    menuTrigger.current?.focus({ preventScroll: true })
+    setMenuOpen(false)
+  }
   const [stageOpen, setStageOpen] = useState(false)
 
   /** Set while the overflow menu is handing off to the stage menu — see below. */
@@ -231,6 +242,7 @@ export function DetailHeader({
 
           <Popover open={menuOpen} onOpenChange={setMenuOpen}>
             <PopoverTrigger
+              ref={menuTrigger}
               aria-label={t('header.moreActions')}
               title={t('header.moreActions')}
               className="grid size-8 place-items-center rounded-lg border border-hairline bg-well text-text-3 transition-colors hover:border-hairline-strong hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent"
@@ -258,8 +270,8 @@ export function DetailHeader({
                 // would actually be true if a second caller ever omitted it.
                 title={onEdit ? undefined : t('header.editUnavailable')}
                 onClick={() => {
+                  closeMenu()
                   onEdit?.(a.id)
-                  setMenuOpen(false)
                 }}
               >
                 <Pencil className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
@@ -273,7 +285,7 @@ export function DetailHeader({
                 type="button"
                 className={menuItem}
                 onClick={() => {
-                  setMenuOpen(false)
+                  closeMenu()
                   onDraft()
                 }}
               >
@@ -285,7 +297,7 @@ export function DetailHeader({
                 type="button"
                 className={menuItem}
                 onClick={() => {
-                  setMenuOpen(false)
+                  closeMenu()
                   onDuplicate()
                 }}
               >
@@ -310,7 +322,7 @@ export function DetailHeader({
                 type="button"
                 className={cn(menuItem, 'text-danger hover:bg-danger-soft hover:text-danger')}
                 onClick={() => {
-                  setMenuOpen(false)
+                  closeMenu()
                   onRequestDelete()
                 }}
               >

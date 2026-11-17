@@ -91,3 +91,15 @@ describe('the round trip through the time box', () => {
     for (const mins of [0, 540, 870, 1439]) expect(minutesOf(clockValue(mins))).toBe(mins)
   })
 })
+
+describe('minutes past 59 (review 2, mobile-7)', () => {
+  it.each(['9:75', '10:60', '00:60', '23:99'])(
+    "refuses %j with the field's own sentence instead of saving another time",
+    (time) => {
+      expect(minutesOf(time)).toBeUndefined()
+      const errors = timelineFormErrors(form({ time }))
+      expect(errors.time).toBe('Use a time like 14:30.')
+      expect(canSaveTimelineItem(errors)).toBe(false)
+    },
+  )
+})

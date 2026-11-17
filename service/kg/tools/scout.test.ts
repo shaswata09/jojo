@@ -22,6 +22,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { MutableSnapshot } from '../core/snapshot'
+import { validateNode } from '../core/validate'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from './runtime'
 import type { NodeId } from '../core/model'
@@ -248,5 +249,58 @@ describe('promoting a posting whose page was kept', () => {
     const m = repo.getSnapshot()
     expect(m.node(application as NodeId, 'application')).toBeDefined()
     expect(m.many(other, 'FILED_UNDER', 'out', 'application')).toEqual([])
+  })
+})
+
+/*
+ * A fractional fit (review 2026-11-17). The tools declared `fit` without the
+ * `int` the stored `matchProps` requires, so a model's 0.85 committed and the
+ * next boot refused the record: the match vanished from the feed.
+ */
+describe('a match fit that is not a whole number', () => {
+  it('is refused at save and at update, before anything reaches the store', () => {
+    const { runtime, repo, okOr } = world()
+    const save = runtime.run('scout.match.save', { role: 'Rice — ML', detail: '', fit: 0.85 })
+    expect(save.ok).toBe(false)
+    expect(repo.getSnapshot().ofType('match')).toHaveLength(0)
+
+    const match = okOr(runtime.run('scout.match.save', { role: 'Rice — ML', detail: '', fit: 85 })) as NodeId
+    expect(runtime.run('scout.match.update', { id: match, fit: 87.5 }).ok).toBe(false)
+    expect(repo.getSnapshot().node(match, 'match')?.props.fit).toBe(85)
+  })
+
+  it('stores only fits the boot-time validator accepts', () => {
+    const { runtime, repo, okOr } = world()
+    const match = okOr(runtime.run('scout.match.save', { role: 'Rice — ML', detail: '', fit: 85 })) as NodeId
+    const stored = repo.getSnapshot().node(match, 'match')
+    expect(validateNode(stored).ok).toBe(true)
+  })
+})
+
+describe('a match stored with a fractional fit before the fix', () => {
+  const row = (fit: unknown) => ({
+    id: 'match:01990000-0000-7000-8000-000000000001',
+    type: 'match',
+    props: { slug: 'rice-ml', role: 'Rice — ML', detail: '', fit },
+    createdAt: NOW,
+    updatedAt: NOW,
+  })
+
+  it('is kept on boot, read on the 0–1 scale it was written on', () => {
+    const read = validateNode(row(0.85))
+    expect(read.ok).toBe(true)
+    if (read.ok) expect((read.value.props as { fit: number }).fit).toBe(85)
+  })
+
+  it('is kept on boot, rounded, when it was a fraction of a percent', () => {
+    const read = validateNode(row(87.5))
+    expect(read.ok).toBe(true)
+    if (read.ok) expect((read.value.props as { fit: number }).fit).toBe(88)
+  })
+
+  it('is still refused when the fit is out of range or not a number', () => {
+    expect(validateNode(row(140.5)).ok).toBe(false)
+    expect(validateNode(row('high')).ok).toBe(false)
+    expect(validateNode(row(Number.NaN)).ok).toBe(false)
   })
 })

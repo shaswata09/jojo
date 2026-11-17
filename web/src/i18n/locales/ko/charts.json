@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} 표시",
-    "hide": "{{label}} 숨기기"
+    "hide": "{{label}} 숨기기",
+    "item": "{{label}}: {{count}}, {{percent}}"
   },
   "allHidden": {
     "withReset": "범례에서 모든 계열이 꺼져 있어요.",

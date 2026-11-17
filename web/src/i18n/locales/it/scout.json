@@ -138,7 +138,9 @@
     "status": {
       "applied": "applicato",
       "discarded": "scartato",
-      "failed": "non applicabile"
+      "failed": "non applicabile",
+      "savedToMatches": "Salvato in Risultati",
+      "savedToPostings": "Salvato in Annunci"
     },
     "noSummary": "Questo non è arrivato con un riepilogo: apri l'annuncio per vedere di cosa si tratta.",
     "reading": "Lettura dei dettagli dell'annuncio…",

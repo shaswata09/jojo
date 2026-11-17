@@ -32,7 +32,7 @@ import { useApplications, useTimeline, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { useColors } from '@/theme/theme-context'
 import { isOpenableUrl } from '@/lib/urls'
-import { duplicateMessage, findDuplicate } from '@jojo/service/core/duplicates'
+import { findDuplicate } from '@jojo/service/core/duplicates'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useReadFit } from '@/lib/fit-agent'
@@ -563,7 +563,7 @@ export function ApplicationSheet({
             ]}
           >
             <Txt size="xs" style={{ color: c.warning }}>
-              {duplicateMessage(duplicate.reason, displayName(duplicate.record))}{' '}
+              {domain.duplicate(duplicate.reason, displayName(duplicate.record))}{' '}
               {t('application.duplicate.tapToOpen')}
             </Txt>
           </Pressable>
@@ -759,7 +759,7 @@ function DuplicateConfirm({
   const why =
     found.how === 'model'
       ? (found.because ?? t('application.duplicate.modelSame'))
-      : duplicateMessage(found.reason, displayName(original))
+      : domain.duplicate(found.reason, displayName(original))
   const card = {
     borderWidth: 1,
     borderColor: c.hairline,

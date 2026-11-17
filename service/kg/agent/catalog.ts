@@ -170,8 +170,24 @@ function confirmsOf(tool: AnyTool | ReadTool<any>): Pick<CatalogEntry, 'confirms
   return {
     // Arguments arrive from a model as `unknown`; a non-object cannot name the
     // fields the predicate is about, and `runtime.check` refuses it later anyway.
-    confirmsFor: (input, memory) =>
-      typeof input === 'object' && input !== null && confirms.when(input as never, memory),
+    confirmsFor: (input, memory) => {
+      if (typeof input !== 'object' || input === null) return false
+      /*
+       * The predicate is typed against the tool's CHECKED input and runs on the
+       * unchecked one — `performCall` asks it while building the step, before
+       * any refusal. `vault.person.update` with one brief sent as an object
+       * instead of a list threw 'briefs is not iterable' out of `runAgent`, the
+       * whole turn ended in "Something went wrong", and the model never saw
+       * the refusal written for exactly that mistake (review 2026-11-17). A
+       * throw means "cannot tell", which asks — and the refusal that follows
+       * settles the call before anyone is asked anything.
+       */
+      try {
+        return confirms.when(input as never, memory)
+      } catch {
+        return true
+      }
+    },
     confirmsBecause: confirms.because,
   }
 }

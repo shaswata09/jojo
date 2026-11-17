@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react'
 import type { RefObject } from 'react'
 import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -55,6 +56,32 @@ export function Topbar({
 }) {
   const { t } = useTranslation('layout')
   const spotlight = useSpotlight()
+
+  /*
+   * Publishes how much of the top of the viewport the bar covers, for the
+   * page's `scroll-padding-top` (index.css). Measured, not a constant: the bar
+   * wraps to a second row on a phone and its sticky offset changes at `sm`.
+   */
+  useLayoutEffect(() => {
+    // The bar itself, reached through the menu button it always contains (the
+    // button is only hidden from `lg` up, never unmounted).
+    const node = navButtonRef.current?.parentElement
+    if (!node) return
+    const root = document.documentElement
+    const publish = () => {
+      const top = Number.parseFloat(getComputedStyle(node).top) || 0
+      root.style.setProperty('--topbar-clearance', `${Math.ceil(node.offsetHeight + top + 8)}px`)
+    }
+    publish()
+    const observer = new ResizeObserver(publish)
+    observer.observe(node)
+    window.addEventListener('resize', publish)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', publish)
+      root.style.removeProperty('--topbar-clearance')
+    }
+  }, [navButtonRef])
 
   return (
     // Pinned so search stays reachable on long pages — the offsets match the

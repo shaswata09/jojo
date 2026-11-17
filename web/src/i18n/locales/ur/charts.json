@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "{{label}} دکھائیں",
-    "hide": "{{label}} چھپائیں"
+    "hide": "{{label}} چھپائیں",
+    "item": "{{label}}: {{count}}، {{percent}}"
   },
   "allHidden": {
     "withReset": "لیجنڈ میں ہر سلسلہ بند ہے۔",

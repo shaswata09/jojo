@@ -7,6 +7,7 @@ import {
   type CaptureEnvelope,
   type CaptureRejection,
 } from '@jojo/service/core/capture'
+import { isLocalTarget } from '@jojo/service/core/local-target'
 
 /**
  * The half of a capture that runs outside the WebView.
@@ -97,6 +98,28 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
    */
   const byHref = new Map<string, string>()
   let dropped = raw.dropped ?? 0
+  /*
+   * Whether this page may pull assets off the phone or the network it is on.
+   *
+   * A posting on the public web may NOT. This fetch is React Native's, which
+   * no CORS governs, so a page naming `<link rel=stylesheet
+   * href=http://192.168.1.1/cgi-bin/config>` had the router's answer fetched
+   * from inside the person's home or office network, spliced into the capture
+   * and carried on in backups, Transfers and the posting reader's prompt
+   * (review 2, security-3; measured with a stub: `wifi_psk=…` in the stored
+   * file). The extension's inliner has refused these since the same leak was
+   * measured there; this is its rule (`isLocalTarget`, shared through core).
+   *
+   * A page that is itself local — an intranet posting — keeps its local
+   * assets: it names nothing the person was not already shown. Only a real
+   * http(s) address counts, because `isLocalTarget` says yes to anything it
+   * cannot parse and a page with no usable url must not unlock this.
+   *
+   * By name, not by resolved address: React Native has no DNS lookup to ask,
+   * so a public name pointed at a private address still passes — the limit
+   * the extension's rule documents too.
+   */
+  const localPage = /^https?:\/\//i.test(raw.url) && isLocalTarget(raw.url)
 
   // Indexed rather than for-of because the loop appends to what it is walking:
   // a stylesheet's own url() references are discovered only once its text has
@@ -150,7 +173,14 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
     try {
       // Timed out rather than hung: the loop is sequential, so one CDN that
       // never answers leaves the Save button on 'Keeping…' forever.
+      if (!localPage && isLocalTarget(asset.href)) throw new Error('a local address')
       const response = await withTimeout(asset.href)
+      // Where a redirect ENDED is judged as well: a public address that 302s to
+      // the router is the same request by another route. The hops between are
+      // blind GETs whose answers are never read.
+      if (!localPage && response.url && isLocalTarget(response.url)) {
+        throw new Error('redirected to a local address')
+      }
       if (!response.ok) throw new Error(`HTTP ${String(response.status)}`)
 
       if (asset.kind === 'css') {

@@ -112,6 +112,13 @@
       "title": "Suelta para añadir a {{bucket}}",
       "description": "Se leen el nombre, el tamaño y el tipo. No se sube nada.",
       "hint": "Suelta archivos en cualquier parte de este panel para añadirlos a {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "Por leer",
+      "applications": "Candidaturas",
+      "jobPostings": "Ofertas de empleo",
+      "talks": "Charlas",
+      "admin": "Administración"
     }
   },
   "pdf": {
@@ -258,7 +265,8 @@
       "placeholder": "Lo importante de este documento: la fecha límite escondida en la página 3, a quién preguntar…",
       "saved": "Guardado",
       "save": "Guardar nota"
-    }
+    },
+    "notPdf": "El contenido de este archivo no es un PDF, así que jojo no lo mostrará como tal."
   },
   "reminders": {
     "snooze": {

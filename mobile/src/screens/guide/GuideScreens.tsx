@@ -12,6 +12,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { Pressable } from 'react-native'
+import { Icon } from '@/components/ui/Icon'
 
 /**
  * Every screen, what it is for, and a way in.
@@ -67,7 +68,7 @@ export function GuideScreens() {
                 {d.hint}
               </Txt>
             </View>
-            <Feather name="chevron-right" size={16} color={c.text3} />
+            <Icon name="chevron-right" size={16} color={c.text3} />
           </Pressable>
         </View>
       ))}

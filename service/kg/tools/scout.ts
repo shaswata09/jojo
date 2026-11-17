@@ -295,6 +295,9 @@ export const scoutPostingUpdate = defineTool({
  * It is `internal: true`, so it is not offered in the palette and carries no UI
  * surface. If scout is dropped, this goes with the other eleven.
  */
+/** Said to the model, which commonly scores on a 0–1 scale. */
+const FIT_HINT = 'A whole-number percentage from 0 to 100 — 85, not 0.85.'
+
 export const scoutMatchSave = defineTool({
   name: 'scout.match.save',
   title: 'Add match',
@@ -305,7 +308,11 @@ export const scoutMatchSave = defineTool({
   input: s.object({
     role: s.string({ min: 1, label: 'Role' }),
     detail: s.string({ label: 'Detail' }),
-    fit: s.number({ min: 0, max: 100, label: 'Fit' }),
+    // Whole numbers, as the stored `matchProps` demands. Without `int` here a
+    // model's 0.85 or 87.5 committed, and the next boot refused the record —
+    // the match vanished from the feed with only a console warning
+    // (review 2026-11-17). Now it is a refusal the model can correct.
+    fit: s.number({ min: 0, max: 100, int: true, label: 'Fit', description: FIT_HINT }),
     applicationId: s.optional(s.nullable(s.id('application'))),
   }),
 
@@ -341,7 +348,7 @@ export const scoutMatchUpdate = defineTool({
     id: matchId,
     role: s.optional(s.string({ min: 1, label: 'Role' })),
     detail: s.optional(s.string({ label: 'Detail' })),
-    fit: s.optional(s.number({ min: 0, max: 100, label: 'Fit' })),
+    fit: s.optional(s.number({ min: 0, max: 100, int: true, label: 'Fit', description: FIT_HINT })),
     applicationId: s.optional(s.nullable(s.id('application'))),
   }),
 

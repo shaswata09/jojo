@@ -612,5 +612,6 @@
       "order": "Thứ tự là có chủ đích chứ không phải ngẫu nhiên: ai cũng có thể dừng sau trang đầu tiên và dùng ứng dụng, và ai cũng có thể nhảy thẳng tới trang cuối.",
       "address": "<lead>Trên thanh địa chỉ</lead> chính là trang đó. Trang đầu tiên là <code>/guide</code> chứ không phải <code>/guide/overview</code>, để mọi liên kết và dấu trang tạo ra trước khi có bốn trang vẫn dẫn tới một nơi thật."
     }
-  }
+  },
+  "englishOnly": "Trang này bằng tiếng Anh: nó gọi mã nguồn, các gói và điều khoản giấy phép đúng bằng những từ chúng được viết."
 }

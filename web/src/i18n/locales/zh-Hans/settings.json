@@ -226,7 +226,8 @@
     "errors": {
       "taken": "已有其他关键词使用这个名称。",
       "blank": "关键词需要一个名称。",
-      "exists": "该关键词已存在。"
+      "exists": "该关键词已存在。",
+      "tooLong": "最多 {{max}} 个字符。"
     },
     "renameNamed": "重命名 {{name}}",
     "rename": "重命名",

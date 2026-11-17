@@ -103,6 +103,13 @@
       "title": "Drop to add to {{bucket}}",
       "description": "Name, size and type are read. Nothing is uploaded.",
       "hint": "Drop files anywhere on this panel to add them to {{bucket}}."
+    },
+    "buckets": {
+      "toRead": "To read",
+      "applications": "Applications",
+      "jobPostings": "Job postings",
+      "talks": "Talks",
+      "admin": "Admin"
     }
   },
   "pdf": {
@@ -245,7 +252,8 @@
       "placeholder": "What matters in this document — the deadline buried on page 3, who to ask about it…",
       "saved": "Saved",
       "save": "Save note"
-    }
+    },
+    "notPdf": "The bytes in this file are not a PDF, so jojo will not show them as one."
   },
   "reminders": {
     "snooze": {

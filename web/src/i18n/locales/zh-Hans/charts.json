@@ -1,7 +1,8 @@
 {
   "legend": {
     "show": "显示{{label}}",
-    "hide": "隐藏{{label}}"
+    "hide": "隐藏{{label}}",
+    "item": "{{label}}：{{count}}，{{percent}}"
   },
   "allHidden": {
     "withReset": "图例中的所有系列都已关闭。",

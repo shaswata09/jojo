@@ -23,6 +23,7 @@ import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
 import { useDomain } from '@/i18n/domain'
+import { legendName } from '@/components/charts/legend-name'
 
 /**
  * Outcomes are slices of one whole, so a sequential ramp — the same treatment
@@ -43,7 +44,7 @@ const OUTCOME_RAMP = [
 ]
 
 export function Statistics() {
-  const { t } = useTranslation('pages')
+  const { t, i18n } = useTranslation('pages')
   const domain = useDomain()
   useTitle(t('statistics.title'))
   // A search result naming one card (`?focus=stats-funnel`) — see `Settings`.
@@ -317,6 +318,15 @@ export function Statistics() {
                         type="button"
                         onClick={() => outcomeToggle.toggle(o.label)}
                         aria-pressed={!off}
+                        // An explicit name: from the content, the count and its
+                        // percentage were read as one number ("In progress 667%").
+                        aria-label={legendName(
+                          t,
+                          i18n.language,
+                          domain.band(o.label),
+                          o.count,
+                          off ? 0 : share(o.count, outcomeTotal),
+                        )}
                         title={
                           off
                             ? t('statistics.showBand', { label: domain.band(o.label) })

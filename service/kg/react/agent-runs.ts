@@ -38,9 +38,8 @@
  */
 
 import { kgError } from '../log'
-import { runAgent } from '../agent/loop'
 import type { AgentOptions } from '../agent/loop'
-import type { AgentStep, Cancellation, LlmTurnFn } from '../agent/loop'
+import type { AgentStep, Cancellation, GateMode, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import type { ChatMessage } from '../core/model-server'
 import type { NodeId } from '../core/model'
@@ -162,7 +161,7 @@ export type StartOptions = {
   llm: (signal: RunSignal) => LlmTurnFn
   host: ToolHost
   /** Which steps to stop and ask about. See `AgentOptions.gate`. */
-  gate?: 'destructive' | 'writes' | 'none'
+  gate?: GateMode | (() => GateMode)
   /**
    * The conversation as it is stored.
    *
@@ -521,9 +520,22 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
 
     void (async () => {
       try {
+        // The model is built first, synchronously, so the app has hung its
+        // request's AbortController on `cancel` before anything can be awaited —
+        // a Stop pressed in the next instant cancels the request, not just the
+        // loop. Then the loop is loaded: on the first run rather than at boot,
+        // because it and everything it reaches was the largest thing the app's
+        // first download carried.
+        const model = llm(cancel)
+        const { runAgent } = await import('../agent/loop')
+        // Forgotten or replaced while the loop was loading: nobody owns this run
+        // any more, so it must not send a model request. (A run that was only
+        // STOPPED is still this conversation's, and goes on into the loop, which
+        // returns at once on the aborted signal and saves what was said.)
+        if (!mine()) return
         const run = await runAgent({
           host,
-          llm: llm(cancel),
+          llm: model,
           history,
           prompt: clean,
           ...(options.maxSteps === undefined ? {} : { maxSteps: options.maxSteps }),

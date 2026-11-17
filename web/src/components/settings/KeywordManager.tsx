@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import type { Label } from '@/data/labels'
 import { useLabels } from '@/lib/labels-context'
 import { isCommitEnter } from '@/components/common/enter-key'
+import { KEYWORD_NAME_MAX } from '@/components/common/label-display'
 
 /** Whether two names are the same keyword. Folded, so case is not a difference. */
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -49,7 +50,15 @@ function KeywordRow({
   const save = () => {
     const next = draft.trim()
     if (next !== label.name && !renameLabel(label.id, next)) {
-      setError(next ? t('keywords.errors.taken') : t('keywords.errors.blank'))
+      // Branched on why: a refused rename is not always a clash, and calling a
+      // too-long name "taken" sent people looking for a duplicate that was not there.
+      setError(
+        !next
+          ? t('keywords.errors.blank')
+          : next.length > KEYWORD_NAME_MAX
+            ? t('keywords.errors.tooLong', { max: KEYWORD_NAME_MAX })
+            : t('keywords.errors.taken'),
+      )
       return
     }
     setEditing(false)
@@ -69,6 +78,7 @@ function KeywordRow({
                 id={fieldId}
                 autoFocus
                 value={draft}
+                maxLength={KEYWORD_NAME_MAX}
                 autoComplete="off"
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? errorId : undefined}
@@ -176,7 +186,16 @@ export function KeywordManager() {
       setError(t('keywords.errors.exists'))
       return
     }
-    addLabel(name)
+    // '' is `addLabel`'s answer for a name the tool refused. Clearing the box
+    // anyway made the name vanish with nothing added and nothing said.
+    if (!addLabel(name)) {
+      setError(
+        name.length > KEYWORD_NAME_MAX
+          ? t('keywords.errors.tooLong', { max: KEYWORD_NAME_MAX })
+          : t('keywords.errors.taken'),
+      )
+      return
+    }
     setDraft('')
     setError(null)
   }
@@ -217,6 +236,7 @@ export function KeywordManager() {
         <Input
           id={newId}
           value={draft}
+          maxLength={KEYWORD_NAME_MAX}
           autoComplete="off"
           placeholder={t('keywords.placeholder')}
           className="w-52"

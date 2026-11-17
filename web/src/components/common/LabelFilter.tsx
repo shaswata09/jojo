@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useLabels } from '@/lib/labels-context'
 import { cn } from '@/lib/utils'
 import { isCommitEnter } from '@/components/common/enter-key'
+import { KEYWORD_NAME_MAX } from '@/components/common/label-display'
 
 /**
  * Filter by the user's own keywords, and manage them in place.
@@ -128,6 +129,7 @@ export function LabelFilter({
           <Input
             id="new-keyword"
             value={draft}
+            maxLength={KEYWORD_NAME_MAX}
             autoComplete="off"
             placeholder={t('labelFilter.example')}
             onChange={(e) => setDraft(e.target.value)}

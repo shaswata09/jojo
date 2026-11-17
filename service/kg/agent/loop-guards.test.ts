@@ -498,4 +498,86 @@ describe('a filing that would drop a referee’s brief is asked about', () => {
     expect(r.w.memory().node(r.person, 'person')?.props.briefs).toHaveLength(1)
     expect(r.w.memory().out(r.person, 'FILED_UNDER')).toHaveLength(1)
   })
+
+  /*
+   * Review 2026-11-17: `vault.person.file` with `role: null` deletes the role
+   * the same way unfiling does, and was the one route that did not ask.
+   */
+  it('asks before clearing their role on a job, and a no keeps it', async () => {
+    const r = referee()
+    r.w.must(r.w.runtime.run('vault.person.file' as ToolName, { id: r.person, applicationId: r.app, role: 'recommender' } as never))
+    const { step, asked } = await semi(r.w, 'vault_person_file', { id: r.person, applicationId: r.app, role: null })
+    expect(asked.map((s) => s.name)).toEqual(['vault.person.file'])
+    expect(step?.status).toBe('declined')
+    const edge = r.w.memory().out(r.person, 'FILED_UNDER').find((e) => e.to === r.app)
+    expect((edge?.props as { role?: unknown } | undefined)?.role).toBe('recommender')
+  })
+
+  it('does not ask about setting or changing a role', async () => {
+    const r = referee()
+    const { step, asked } = await semi(r.w, 'vault_person_file', { id: r.person, applicationId: r.app, role: 'contact' })
+    expect(asked).toEqual([])
+    expect(step?.status).toBe('done')
+  })
+
+  /*
+   * Review 2026-11-17: the confirm predicate runs on the unchecked arguments,
+   * and one brief sent as an object rather than a list threw out of `runAgent`
+   * — the turn ended in "Something went wrong" and the model never saw the
+   * refusal written for that mistake.
+   */
+  it('answers a brief sent as one object with a refusal, not a crash', async () => {
+    const r = referee()
+    const { step } = await semi(r.w, 'vault_person_update', {
+      id: r.person,
+      briefs: { applicationId: r.app, note: 'Stress my teaching record.' },
+    })
+    expect(step?.status).toBe('failed')
+    expect(step?.detail?.length ?? 0).toBeGreaterThan(0)
+    expect(r.w.memory().node(r.person, 'person')?.props.briefs).toHaveLength(1)
+  })
+
+  it('settles malformed filing lists as a step, not a crash', async () => {
+    // Asked about (a throw means "cannot tell") or refused — either way the
+    // turn goes on and nothing is written.
+    for (const args of [{ applicationIds: 5 }, { applicationIds: {} }, { applicationIds: true }, { briefs: [null] }]) {
+      const r = referee()
+      const { step } = await semi(r.w, 'vault_person_update', { id: r.person, ...args })
+      expect(['declined', 'failed'], JSON.stringify(args)).toContain(step?.status)
+      expect(r.w.memory().node(r.person, 'person')?.props.briefs).toHaveLength(1)
+      expect(r.w.memory().out(r.person, 'FILED_UNDER')).toHaveLength(1)
+    }
+  })
+})
+
+/*
+ * Review 2026-11-17: the approval mode was captured once at send, so switching
+ * an Auto run to Manual showed Manual while the run kept writing unasked. The
+ * gate is now read before every call.
+ */
+describe('an approval mode changed during a run', () => {
+  it('applies to the calls that follow the change', async () => {
+    const w = world()
+    let mode: 'none' | 'writes' = 'none'
+    const asked: AgentStep[] = []
+    const app = { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'draft' }
+    const run = await runAgent({
+      host: w.host,
+      llm: script([calls('application_create', app), calls('application_create', { ...app, org: 'Baylor' }), says('Done.')]),
+      history: [],
+      prompt: 'add two',
+      gate: () => mode,
+      approve: (step) => {
+        asked.push(step)
+        return false
+      },
+      onEvent: (e) => {
+        // The person switches to Manual as soon as the first write lands.
+        if (e.type === 'step' && e.step.status === 'done') mode = 'writes'
+      },
+    })
+    expect(run.steps.map((s) => s.status)).toEqual(['done', 'declined'])
+    expect(asked).toHaveLength(1)
+    expect(w.memory().ofType('application')).toHaveLength(1)
+  })
 })

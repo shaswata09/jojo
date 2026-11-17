@@ -29,6 +29,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 import { domain as domainWords, useDomain } from '@/i18n/domain'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 
 /*
  * FUNCTIONS, not constants, because `TODAY_PARTS` is a live binding.
@@ -172,7 +173,10 @@ export function CalendarScreen() {
       title={t('calendar.title')}
       subtitle={t('calendar.subtitle')}
       openOptions={route.params?.options === true}
-      onArrived={() => navigation.setParams({ options: undefined } as never)}
+      // `date` picks the day; `focus` then lights the item on it (the graph's
+      // Open on an event lands here — an event is not in the Vault's reminders).
+      focus={route.params?.focus}
+      onArrived={() => navigation.setParams({ options: undefined, focus: undefined } as never)}
       actions={
         <>
           {/*
@@ -432,7 +436,7 @@ export function CalendarScreen() {
             const mark = markOf(e)
             const done = mark === 'done'
             return (
-              <View key={e.id}>
+              <FocusTarget key={e.id} id={e.id}>
                 {i > 0 ? <Divider /> : null}
                 <View style={styles.eventRow}>
                   <Feather
@@ -488,7 +492,7 @@ export function CalendarScreen() {
                     onPress={() => setMenuFor(e)}
                   />
                 </View>
-              </View>
+              </FocusTarget>
             )
           })
         )}

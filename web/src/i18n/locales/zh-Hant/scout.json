@@ -134,7 +134,9 @@
     "status": {
       "applied": "已套用",
       "discarded": "已捨棄",
-      "failed": "無法套用"
+      "failed": "無法套用",
+      "savedToMatches": "已儲存到符合結果",
+      "savedToPostings": "已儲存到職缺"
     },
     "noSummary": "這項建議沒有附上摘要——請開啟職缺查看內容。",
     "reading": "正在讀取職缺的詳細資料…",

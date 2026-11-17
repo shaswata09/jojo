@@ -134,7 +134,9 @@
     "status": {
       "applied": "已应用",
       "discarded": "已丢弃",
-      "failed": "无法应用"
+      "failed": "无法应用",
+      "savedToMatches": "已保存到匹配结果",
+      "savedToPostings": "已保存到职位发布"
     },
     "noSummary": "这条没有附带摘要——打开职位发布看看是什么。",
     "reading": "正在读取职位发布的详细信息……",

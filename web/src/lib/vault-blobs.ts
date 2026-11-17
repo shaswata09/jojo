@@ -28,7 +28,7 @@
  * an afterthought.
  */
 
-import { useMemo, useSyncExternalStore } from 'react'
+import { useContext, useEffect, useMemo, useSyncExternalStore } from 'react'
 import {
   createIdbFileStore,
   isBlockedFailure,
@@ -36,6 +36,9 @@ import {
   type IdbFileStore,
 } from '@/kg/storage/idb-file-store'
 import { mimeOfFile } from '@jojo/service/core/files'
+import type { GraphSnapshot } from '@jojo/service/core/snapshot'
+import { KgContext } from '@jojo/service/react/kg-context'
+import { StatusContext } from '@jojo/service/react/status-context'
 import { revokeLater } from '@/lib/save-file'
 /*
  * The path format lives in `core/blob-path.ts` and is re-exported here, so the
@@ -210,17 +213,346 @@ function announce(): void {
  * did not have — and the consequence was data loss: delete a document, switch
  * tool, press the Undo still on screen, and the record came back with its bytes
  * gone for good.
+ *
+ * ## It asks the records now, not the folder (review 2026-11-17, health-1)
+ *
+ * Once per load was still not enough, because "everything in the trash is
+ * unreachable" was never true either. Only the toast's Undo put the bytes back;
+ * ⌘Z, Settings › Audit log › Undo and the assistant's step Undo revert the same
+ * journal entry and never touched the documents, so the record came back, its
+ * bytes stayed in `jojo/Trash`, and the next load emptied the trash for good —
+ * a row that looks intact over a document that is gone. Reproduced in a browser:
+ * upload, Delete, ⌘Z, reload, and "on this device" was gone.
+ *
+ * So the sweep is decided by the records, after they have hydrated
+ * (`planSweep`): a trashed copy whose record exists again is PUT BACK, one whose
+ * record is gone is purged, and a live document no record names — ⌘Z of an
+ * upload, the assistant's `vault.file.delete`, which never touches the bytes —
+ * is moved to the trash, to be purged on the load after if its record is still
+ * gone. It never runs before `bindRecords` is told the store hydrated: a failed
+ * or in-memory boot has no records to ask, and "no record" read off an empty
+ * graph would delete every document on the device.
  */
-let purged: Promise<void> | null = null
+let swept: Promise<void> | null = null
 
-function purgeOnce(): Promise<void> {
-  purged ??= store()
-    .open()
-    .then(() => store().purgeTrash())
-    .then(() => undefined)
-    .catch(() => undefined)
-  return purged
+/** Everything `trash` moved out of `Documents/` sits under here, keyed by its old path. */
+const TRASH_PREFIX = 'jojo/Trash/'
+const TRASH_DOCS = `${TRASH_PREFIX}${DIR}`
+
+/**
+ * How old a document with no record has to be before the sweep reclaims it.
+ *
+ * Not zero, because "no record" can be momentary. A document is written by one
+ * tab while its record is still in that tab's write queue, and another tab
+ * loading in that window reads the graph without it and the documents with it.
+ * Ten minutes is far past any flush and still reclaims a forgotten upload on
+ * the next ordinary load.
+ */
+export const ORPHAN_GRACE_MS = 10 * 60_000
+
+/**
+ * `jojo/Trash/Documents/<id>__CV (2).pdf` -> the path it was trashed from.
+ *
+ * The inverse of `trashPath`, which numbers a second copy of the same path
+ * `CV (2).pdf`. A name that already ended ` (2)` before it was ever trashed
+ * cannot be told apart from that, so it comes back without the suffix — the id
+ * half is never touched, so the record it belongs to is never in doubt. Null for
+ * anything not under the trash.
+ */
+export function untrashed(key: string): { path: string; n: number } | null {
+  if (!key.startsWith(TRASH_PREFIX)) return null
+  const rest = key.slice(TRASH_PREFIX.length)
+  const slash = rest.lastIndexOf('/')
+  const dir = rest.slice(0, slash + 1)
+  const base = rest.slice(slash + 1)
+  const numbered = /^(.*) \((\d+)\)(\.[^.]*)?$/.exec(base)
+  if (numbered !== null) {
+    const n = Number(numbered[2])
+    const original = `${dir}${numbered[1] ?? ''}${numbered[3] ?? ''}`
+    if (n >= 2 && trashPath(original, n) === key) return { path: original, n }
+  }
+  return { path: rest, n: 1 }
 }
+
+/** The record a trashed document belonged to, or null if it was not one of jojo's. */
+export const idOfTrashed = (key: string): string | null => {
+  const from = untrashed(key)
+  return from === null ? null : idOfPath(from.path)
+}
+
+/** What the sweep needs to know about the records, asked at the moment it acts. */
+export type SweepFacts = {
+  /** False until the record store has hydrated from disk. Nothing is touched while it is. */
+  readonly hydrated: boolean
+  /** Whether a `file` record with this id exists. */
+  readonly isLive: (id: string) => boolean
+  /** Whether `Documents/` holds bytes for this id. */
+  readonly hasDocument: (id: string) => boolean
+  /**
+   * Whether this page trashed the id itself and may still be asked for it back
+   * — its Undo reads the trash copy once the held bytes are let go.
+   */
+  readonly heldBySession: (id: string) => boolean
+}
+
+/**
+ * Whether one trashed copy goes for good.
+ *
+ * Pure, and the single rule both the plan and the purge itself apply, so the
+ * purge re-asks at the last moment rather than trusting a list taken before
+ * several awaits. Purged: a copy no record names, a copy whose record already
+ * has its document (a leftover from an Undo that wrote the bytes back), and
+ * anything under the trash that is not a document at all. Kept: a copy whose
+ * record exists with no document — `planSweep` puts it back — and a copy this
+ * page's own Undo may still read.
+ */
+export function purgesTrashed(key: string, facts: SweepFacts): boolean {
+  if (!facts.hydrated) return false
+  const id = idOfTrashed(key)
+  if (id === null) return true
+  if (facts.heldBySession(id)) return false
+  if (!facts.isLive(id)) return true
+  return facts.hasDocument(id)
+}
+
+export type SweepPlan = {
+  /** Trashed copies whose record exists again and has no document: written back to `to`. */
+  readonly restore: readonly { readonly id: string; readonly from: string; readonly to: string }[]
+  /** Trashed copies deleted for good. */
+  readonly purge: readonly string[]
+  /** Documents no record names, past `ORPHAN_GRACE_MS`: moved to the trash. */
+  readonly reclaim: readonly string[]
+}
+
+/**
+ * What one page-load sweep does, decided from a listing of each folder.
+ *
+ * Pure so the decisions that lose data, or keep it, are tested without a
+ * browser. Nothing at all before the records have hydrated. Of several trashed
+ * copies for one record, the newest is put back — newest by when its bytes were
+ * written, then by its copy number.
+ */
+export function planSweep(input: {
+  readonly facts: SweepFacts
+  readonly documents: readonly { readonly path: string; readonly mtime: number }[]
+  readonly trash: readonly { readonly path: string; readonly mtime: number }[]
+  readonly now: number
+  readonly graceMs?: number
+}): SweepPlan {
+  const { facts } = input
+  if (!facts.hydrated) return { restore: [], purge: [], reclaim: [] }
+  const grace = input.graceMs ?? ORPHAN_GRACE_MS
+
+  const reclaim: string[] = []
+  for (const entry of input.documents) {
+    const id = idOfPath(entry.path)
+    // Not one of jojo's paths, so not one this can judge.
+    if (id === null || facts.isLive(id)) continue
+    if (input.now - entry.mtime < grace) continue
+    reclaim.push(entry.path)
+  }
+
+  const purge: string[] = []
+  const newest = new Map<string, { key: string; to: string; n: number; mtime: number }>()
+  for (const entry of input.trash) {
+    if (purgesTrashed(entry.path, facts)) {
+      purge.push(entry.path)
+      continue
+    }
+    const from = untrashed(entry.path)
+    const id = from === null ? null : idOfPath(from.path)
+    if (from === null || id === null) continue
+    if (!facts.isLive(id) || facts.hasDocument(id) || facts.heldBySession(id)) continue
+    const best = newest.get(id)
+    const newer =
+      best === undefined ||
+      entry.mtime > best.mtime ||
+      (entry.mtime === best.mtime && from.n > best.n)
+    if (newer) newest.set(id, { key: entry.path, to: from.path, n: from.n, mtime: entry.mtime })
+  }
+  const restore = [...newest].map(([id, copy]) => ({ id, from: copy.key, to: copy.to }))
+  return { restore, purge, reclaim }
+}
+
+/**
+ * The ids of the `file` records in a snapshot.
+ *
+ * Every document jojo stores is keyed by a `file` record's id — the uploads,
+ * the captured pages, the PDF editor's saves — so that is the one type asked.
+ */
+export function liveFileIdsOf(snapshot: Pick<GraphSnapshot, 'ofType'>): Set<string> {
+  return new Set(snapshot.ofType('file').map((node) => node.id as string))
+}
+
+/** Ids live in `next` that were not in `previous` — a revert, a redo, or a new record. */
+export function appearedIds(previous: ReadonlySet<string>, next: ReadonlySet<string>): string[] {
+  const out: string[] = []
+  for (const id of next) if (!previous.has(id)) out.push(id)
+  return out
+}
+
+/** The narrowest view of the record store this file needs. `Repository` satisfies it. */
+export type FileRecords = {
+  readonly subscribe: (onChange: () => void) => () => void
+  readonly getSnapshot: () => Pick<GraphSnapshot, 'ofType'>
+}
+
+type Binding = {
+  readonly records: FileRecords
+  unsubscribe: () => void
+  /** The live ids at the last commit, so the next one can tell what appeared. */
+  previous: Set<string>
+}
+
+let binding: Binding | null = null
+
+/**
+ * Connects the documents to the records they belong to. Idempotent.
+ *
+ * Two jobs. On every commit, a `file` record that has just appeared — ⌘Z of a
+ * delete, either audit log's Undo, the assistant's step Undo, the toast — gets
+ * its bytes back if they are in the trash, whichever of those ran the revert.
+ * And once per page, when `hydrated` is first true, the sweep (`sweepOnce`).
+ *
+ * `fromDisk` is the caller's word that `records` are the person's records read
+ * from disk — the boot phase `ready`. An in-memory stand-in after a failed boot
+ * is bound all the same, because putting bytes back is safe against any graph;
+ * it is never swept.
+ */
+export function bindRecords(records: FileRecords | null, fromDisk: boolean): void {
+  // A caller outside the store's providers has no records to offer, and must
+  // not take away the binding a caller inside them made.
+  if (records === null) return
+  if (records !== binding?.records) {
+    binding?.unsubscribe()
+    const bound: Binding = {
+      records,
+      previous: liveFileIdsOf(records.getSnapshot()),
+      unsubscribe: () => {},
+    }
+    bound.unsubscribe = records.subscribe(() => {
+      const live = liveFileIdsOf(records.getSnapshot())
+      const appeared = appearedIds(bound.previous, live)
+      bound.previous = live
+      for (const id of appeared) bringBack(id)
+    })
+    binding = bound
+  }
+  if (fromDisk) void sweepOnce(records)
+}
+
+/** Ids live in the bound records right now. Empty when nothing is bound. */
+const liveNow = (): Set<string> =>
+  binding === null ? new Set() : liveFileIdsOf(binding.records.getSnapshot())
+
+function sweepOnce(records: FileRecords): Promise<void> {
+  swept ??= sweepNow(records).catch(() => undefined)
+  return swept
+}
+
+async function sweepNow(records: FileRecords): Promise<void> {
+  await hydrate()
+  const [documents, trash] = await Promise.all([store().list(DIR), store().list(TRASH_DOCS)])
+  // A store that will not list is a store the sweep knows nothing about.
+  if (!documents.ok || !trash.ok) return
+  const live = () => liveFileIdsOf(records.getSnapshot())
+  const facts = (): SweepFacts => {
+    const ids = live()
+    return {
+      hydrated: true,
+      isLive: (id) => ids.has(id),
+      hasDocument: (id) => current.index.has(id),
+      heldBySession: (id) => trashed.has(id) || trashedFrom.has(id) || removing.has(id),
+    }
+  }
+  const plan = planSweep({
+    facts: facts(),
+    documents: documents.value,
+    trash: trash.value,
+    now: Date.now(),
+  })
+
+  for (const copy of plan.restore) await putBack(copy.id, copy.from, copy.to)
+
+  for (const path of plan.reclaim) {
+    const id = idOfPath(path)
+    // Re-asked: a record can arrive while the sweep awaits.
+    if (id === null || live().has(id) || current.index.get(id) !== path) continue
+    const stat = await store().stat(path)
+    const moved = await store().trash(path)
+    if (!moved.ok) continue
+    // Remembered as this page's own, so a record that comes back later in the
+    // session — an audit-log Undo of an older delete — still finds the bytes.
+    if (stat.ok) trashedFrom.set(id, { path, bytes: stat.value.bytes })
+    edit((index) => index.delete(id))
+    announce()
+  }
+
+  // Decided again per key at the moment of the purge, not from `plan.purge`.
+  const now = facts()
+  await store().purgeTrash((key) => purgesTrashed(key, now))
+}
+
+/**
+ * A trashed copy whose record has come back, written back where it was.
+ *
+ * Bumped past by `replaceAll`: a restore that replaced every document between
+ * this read and this write has the newer answer, and an older trash copy must
+ * not land over it.
+ */
+async function putBack(id: string, from: string, to: string): Promise<boolean> {
+  const before = generation
+  if (current.index.has(id) || removing.has(id)) return false
+  const read = await store().read(from)
+  if (!read.ok) return false
+  if (generation !== before || current.index.has(id)) return false
+  const written = await store().write(to, read.value)
+  if (!written.ok) return false
+  edit((index) => index.set(id, to))
+  announce()
+  return true
+}
+
+/**
+ * A record has just appeared: give it its bytes back if they are in the trash.
+ *
+ * Whatever reverted the delete — this is the one place it is handled, so ⌘Z,
+ * both audit logs and the assistant's Undo cannot differ from the toast. The
+ * delete this page made itself goes through `restore`, which holds the bytes;
+ * any other (another tab's, or one from before this load) is read from the
+ * newest trash copy. A brand-new record finds nothing and costs one listing.
+ */
+function bringBack(id: string): void {
+  if (trashed.has(id) || trashedFrom.has(id) || removing.has(id)) {
+    void restore(id)
+    return
+  }
+  void fromAnyTrash(id)
+}
+
+async function fromAnyTrash(id: string): Promise<boolean> {
+  await hydrate()
+  if (current.index.has(id)) return false
+  const listed = await store().list(TRASH_DOCS)
+  if (!listed.ok) return false
+  const ids = liveNow()
+  const plan = planSweep({
+    facts: {
+      hydrated: true,
+      isLive: (other) => other === id && ids.has(id),
+      hasDocument: (other) => current.index.has(other),
+      heldBySession: () => false,
+    },
+    documents: [],
+    trash: listed.value.filter((entry) => idOfTrashed(entry.path) === id),
+    now: 0,
+  })
+  const copy = plan.restore[0]
+  return copy === undefined ? false : putBack(copy.id, copy.from, copy.to)
+}
+
+/** Bumped by `replaceAll`. See `putBack`. */
+let generation = 0
 
 function store(): IdbFileStore {
   shared ??= createIdbFileStore({
@@ -314,11 +646,22 @@ async function relist(): Promise<void> {
 let hydrated: Promise<void> | null = null
 
 /**
- * The first listing, once per page. `purgeOnce` first, for the reason its own
- * comment gives — reclaiming a previous session's deletions is a page-load job.
+ * The first listing, once per page.
+ *
+ * It used to run the trash purge first and list after. The purge now waits for
+ * the records (`bindRecords`), and the listing does not: a document has to show
+ * as "on this device" whether or not anything has asked the records yet.
  */
 function hydrate(): Promise<void> {
-  hydrated ??= purgeOnce().then(relist)
+  // Opened first, as the purge used to open it: one place a blocked or
+  // upgrading database is met, before anything reads.
+  hydrated ??= store()
+    .open()
+    .then(
+      () => undefined,
+      () => undefined,
+    )
+    .then(relist)
   return hydrated
 }
 
@@ -540,7 +883,25 @@ async function removeNow(id: string): Promise<boolean> {
   return true
 }
 
-async function restore(id: string): Promise<boolean> {
+/**
+ * Undos in flight, by id. A revert now asks for the bytes back from the
+ * records subscription (`bringBack`) AND, for the toast, from its own button —
+ * the same press, twice. The second used to find the hold already released and
+ * answer false, which the toast reads as "the document did not come back".
+ */
+const restoring = new Map<string, Promise<boolean>>()
+
+function restore(id: string): Promise<boolean> {
+  const running = restoring.get(id)
+  if (running !== undefined) return running
+  const next = restoreNow(id).finally(() => {
+    if (restoring.get(id) === next) restoring.delete(id)
+  })
+  restoring.set(id, next)
+  return next
+}
+
+async function restoreNow(id: string): Promise<boolean> {
   await removing.get(id)
   const held = trashed.get(id) ?? (await fromTrash(id))
   if (held === null) return false
@@ -585,6 +946,7 @@ async function replaceAll(
   // ones: bytes no record points at, counted against the quota. `removeNow`
   // awaits this for the same reason.
   await hydrate()
+  generation += 1
   // Trashed, not deleted: `FileStore` never unlinks, and a restore is
   // exactly the moment a person might discover they picked the wrong file.
   // What they replaced is still under `jojo/Trash`.
@@ -650,6 +1012,19 @@ export const vaultBlobStore = {
  * returned object changes identity exactly when the set of documents does.
  */
 export function useVaultBlobs(): VaultBlobs {
+  /*
+   * The records this page's documents belong to — see `bindRecords`. Read
+   * without the throwing hooks, so a caller outside the store's providers still
+   * gets its documents; it just binds nothing. Every mount binds the same repo,
+   * so all but the first are no-ops — and `StorageBanner` is one of them and is
+   * mounted for the life of the app shell.
+   */
+  const repo = useContext(KgContext)?.repo ?? null
+  const fromDisk = useContext(StatusContext)?.boot.phase === 'ready'
+  useEffect(() => {
+    bindRecords(repo, fromDisk)
+  }, [repo, fromDisk])
+
   const snapshot = useSyncExternalStore(
     blobIndex.subscribe,
     blobIndex.getSnapshot,
