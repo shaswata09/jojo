@@ -32,6 +32,7 @@ import {
   URGENCY_VALUES,
   APPROVAL_MODES,
   DEFAULT_ROLES,
+  TRIM_MARKER,
   approvalOf,
 } from '../core/model'
 import type { NodeId, StoredEdge, StoredNode } from '../core/model'
@@ -2897,10 +2898,100 @@ describe('a conversation past its turn cap', () => {
 
     okOr(runtime.run('assistant.thread.set', { id, entries: turns(115) }))
     const after = thread(repo, id)
-    // 30 over the cap, but only 20 are summarised: those go, the rest stay.
-    expect(after.entries).toHaveLength(210)
-    expect(after.contextThrough).toBe(0)
-    expect(after.entries[0]?.text).toBe('Q10')
+    // 30 over the cap, but only 20 are summarised: those go, the rest stay —
+    // and the head says the person's own turns were among them.
+    expect(after.entries).toHaveLength(211)
+    expect(after.contextThrough).toBe(1)
+    expect(after.entries[0]?.text).toBe(TRIM_MARKER.messages)
+    expect(after.entries[1]?.text).toBe('Q10')
+  })
+
+  /*
+   * Review 2026-11-17, the leftover. Trimming the covered prefix whole took the
+   * person's turns with the replies, and `historyFor` replays exactly those
+   * turns verbatim — so a long conversation silently lost the words the
+   * compaction design keeps. The replies go first now.
+   */
+  it('takes the replies from the summarised part before any of the person’s turns', () => {
+    const { repo, runtime } = harness()
+    const id = okOr(runtime.run('assistant.thread.create', { title: 't' })) as NodeId
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(90) }))
+    okOr(runtime.run('assistant.thread.context.set', { id, context: 'Q0–Q74', through: 150 }))
+
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(115) }))
+    const after = thread(repo, id)
+    const said = after.entries.flatMap((e) => (/^Q\d+$/.test(e.text ?? '') ? [e.text] : []))
+    expect(said).toEqual(Array.from({ length: 115 }, (_, i) => `Q${String(i)}`))
+    // A0–A30 went, oldest first; A31 on are where they were.
+    expect(after.entries.some((e) => e.text === 'A30')).toBe(false)
+    expect(after.entries.some((e) => e.text === 'A31')).toBe(true)
+    // One app note at the head says so, inside the summarised part.
+    expect(after.entries[0]).toEqual({ kind: 'note', app: true, text: TRIM_MARKER.replies })
+  })
+
+  it('takes the person’s own turns last, and only once nothing else is left', () => {
+    const { repo, runtime } = harness()
+    const id = okOr(runtime.run('assistant.thread.create', { title: 't' })) as NodeId
+    // 150 exchanges, all but the last ten summarised: 101 replies are enough
+    // to bring it to the cap, so 101 replies go and no turn of theirs does.
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(150) }))
+    okOr(runtime.run('assistant.thread.context.set', { id, context: 'early', through: 280 }))
+    okOr(runtime.run('assistant.thread.set', { id, entries: turns(150) }))
+    let after = thread(repo, id)
+    expect(after.entries).toHaveLength(200)
+    expect(after.entries[0]?.text).toBe(TRIM_MARKER.replies)
+    expect(after.entries.filter((e) => /^Q\d+$/.test(e.text ?? ''))).toHaveLength(150)
+
+    // Now 220 exchanges, the last ten left out: with every reply gone, 210
+    // turns of theirs and the tail are still over. The oldest of theirs go,
+    // and the head says so — upgraded, never back.
+    const longer = [...after.entries, ...turns(220).slice(300)]
+    const through = longer.length - 20
+    okOr(runtime.run('assistant.thread.context.set', { id, context: 'more', through }))
+    okOr(runtime.run('assistant.thread.set', { id, entries: longer }))
+    after = thread(repo, id)
+    expect(after.entries).toHaveLength(200)
+    expect(after.entries[0]?.text).toBe(TRIM_MARKER.messages)
+    // Only the person's turns are left before the boundary, newest kept.
+    const covered = after.entries.slice(1, after.contextThrough)
+    expect(covered.every((e) => /^Q\d+$/.test(e.text ?? ''))).toBe(true)
+    expect(covered.at(-1)?.text).toBe('Q209')
+    expect(after.entries[after.contextThrough ?? 0]?.text).toBe('Q210')
+  })
+
+  it('stays within the cap however long the conversation runs', () => {
+    const { repo, runtime } = harness()
+    const id = okOr(runtime.run('assistant.thread.create', { title: 't' })) as NodeId
+    let stored: { kind?: string; text?: string }[] = []
+    for (let i = 0; i < 400; i += 1) {
+      const sent = [
+        ...stored,
+        { kind: 'you', text: `Q${String(i)}` },
+        {
+          kind: 'step',
+          tool: 'memory.list',
+          title: 'List',
+          effect: 'read',
+          args: {},
+          status: 'done',
+          detail: `R${String(i)}`,
+        },
+        { kind: 'answer', text: `A${String(i)}` },
+      ]
+      const before = thread(repo, id)
+      okOr(runtime.run('assistant.thread.set', { id, entries: sent }))
+      const after = thread(repo, id)
+      // Nothing the summary does not account for is ever taken.
+      const from = before.contextThrough ?? 0
+      expect(after.entries.slice(after.contextThrough ?? 0)).toEqual(sent.slice(from))
+      expect(after.entries.length).toBeLessThanOrEqual(200)
+      stored = after.entries
+      // A compaction every tenth exchange, leaving the last two uncovered.
+      if (i % 10 === 9) {
+        const through = stored.length - 6
+        okOr(runtime.run('assistant.thread.context.set', { id, context: `to ${String(i)}`, through }))
+      }
+    }
   })
 
   it('keeps the plain cap on a conversation nothing has summarised', () => {

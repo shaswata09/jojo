@@ -36,6 +36,10 @@ import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
 import { FocusTarget } from '@/components/ui/FocusTarget'
+import { useArrivingFocus } from '@/components/ui/focus-scope'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { useDiscardGuard } from '@/components/ui/discard-guard'
+import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
 const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) as Record<
   LinkCategory,
@@ -91,6 +95,10 @@ export function LinksTool() {
   }, [pool])
 
   const rows = category === 'all' ? pool : pool.filter((l) => l.category === category)
+  // A page of rows at a time, always including the row a search result or a
+  // Filed panel arrived at (`useRowCap`, `useArrivingFocus`).
+  const arriving = useArrivingFocus()
+  const cap = useRowCap(rows.length, indexOfId(rows, arriving))
 
   const onDelete = (l: VaultLink) => {
     const { restore } = removeLink(l.id)
@@ -204,7 +212,7 @@ export function LinksTool() {
             />
           </View>
         ) : (
-          rows.map((l, i) => {
+          rows.slice(0, cap.shown).map((l, i) => {
             return (
               <FocusTarget key={l.id} id={l.id}>
                 {i > 0 ? <Divider /> : null}
@@ -246,6 +254,7 @@ export function LinksTool() {
             )
           })
         )}
+        <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
       </Panel>
 
       <ApplicationPickerSheet
@@ -350,6 +359,10 @@ function LinkEditor({
     initial?.applicationIds ?? [],
   )
   const [attempted, setAttempted] = useState(false)
+  // Anything typed that closing would take with it — see `useDiscardGuard`.
+  const typed = JSON.stringify([title, url, note, category, applicationIds])
+  const [opened] = useState(typed)
+  const { close, guard } = useDiscardGuard(typed !== opened, onClose)
 
   const submit = () => {
     setAttempted(true)
@@ -366,12 +379,12 @@ function LinkEditor({
   return (
     <Sheet
       open
-      onClose={onClose}
+      onClose={close}
       title={initial ? t('links.editor.editTitle') : t('links.add')}
       description={t('links.editor.description')}
       footer={
         <>
-          <Button label={t('common.cancel')} variant="ghost" size="md" onPress={onClose} />
+          <Button label={t('common.cancel')} variant="ghost" size="md" onPress={close} />
           <Button
             label={initial ? t('common.save') : t('links.editor.saveLink')}
             size="md"
@@ -427,6 +440,8 @@ function LinkEditor({
           onChangeText={setNote}
         />
       </View>
+
+      {guard}
     </Sheet>
   )
 }

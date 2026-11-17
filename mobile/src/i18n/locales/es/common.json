@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "Opciones de página",
     "description": "Se aplican solo a esta pantalla y solo en esta visita."
+  },
+  "rows": {
+    "showMore": "Mostrar más ({{shown}} de {{total}})"
   }
 }

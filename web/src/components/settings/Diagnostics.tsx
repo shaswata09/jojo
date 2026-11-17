@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -85,7 +86,7 @@ function bytes(value: number | null, t: TFunction<'settings'>): string {
 function at(instant: string | null | undefined, locale: string): string {
   if (!instant) return '—'
   const parsed = new Date(instant)
-  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString(locale)
+  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString(intlLocale(locale))
 }
 
 /**
@@ -139,7 +140,7 @@ const Line = forwardRef<
 export function Diagnostics() {
   const { t, i18n } = useTranslation('settings')
   const locale = i18n.language
-  const numbers = new Intl.NumberFormat(locale)
+  const numbers = new Intl.NumberFormat(intlLocale(locale))
   const { state } = useBoot()
   /*
    * The deep link from `StorageBanner`. Scrolled to and lit rather than merely

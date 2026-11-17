@@ -6,10 +6,12 @@ import { Brain, ChevronRight, Quote } from 'lucide-react'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import { useVault } from '@jojo/service/react/use-vault'
+import { appNoteText } from '@jojo/service/react/app-note'
 import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
 import { Mark } from '@/components/assistant/Mark'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { CopyFeedback } from '@/components/common/CopyFeedback'
+import { useDomain } from '@/i18n/domain'
 import { Button } from '@/components/ui/button'
 import { vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
@@ -74,6 +76,7 @@ export function Transcript({
   compact?: boolean
 }) {
   const { t } = useTranslation('assistant')
+  const domain = useDomain()
   const { addSnippet } = useVault()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -183,10 +186,14 @@ export function Transcript({
           if (entry.kind === 'note') {
             // Narration while it is still working. Quieter than an answer on
             // purpose: it is not the reply, and styling it like one makes a run
-            // look finished when it is not.
+            // look finished when it is not. The app's own notes are stored in
+            // English and shown in the language on screen.
             return (
               <li key={entry.id} className={cn('px-1 wrap-anywhere text-text-3 italic', text)}>
-                <Mark text={entry.text} query={query} />
+                <Mark
+                  text={entry.app === true ? appNoteText(entry.text, domain) : entry.text}
+                  query={query}
+                />
               </li>
             )
           }

@@ -36,6 +36,7 @@
  * A backup moves the later instant forward too, which is what resets the count.
  */
 
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { i18next } from '@/i18n/i18n'
 import { reportError } from '@/lib/report-error'
 import { revokeLater } from '@/lib/save-file'
@@ -217,7 +218,9 @@ export function backupPromptText(changed: number, lastBackupAt: string | null): 
   }
   // In the language jojo is showing, not the browser's: the date sits inside a
   // translated sentence.
-  const day = new Date(parsed).toLocaleDateString(i18next.language, { dateStyle: 'medium' })
+  const day = new Date(parsed).toLocaleDateString(intlLocale(i18next.language), {
+    dateStyle: 'medium',
+  })
   return i18next.t('messages:backup.prompt.since', { count: changed, day })
 }
 

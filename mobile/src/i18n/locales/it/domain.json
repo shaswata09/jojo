@@ -456,5 +456,30 @@
       "phone_many": "Il ripristino sostituisce tutti i record su questo telefono e tutti i documenti, tranne {{count}} di record che arrivano senza i loro documenti, di cui si conservano le copie già presenti qui",
       "phone_other": "Il ripristino sostituisce tutti i record su questo telefono e tutti i documenti, tranne {{count}} record che arrivano senza i loro documenti, di cui si conservano le copie già presenti qui"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Le risposte precedenti di questa conversazione sono state rimosse per mantenerla entro il suo limite di dimensione. I tuoi messaggi sono tutti conservati e l’assistente ha un riassunto del resto.",
+      "messages": "Questa conversazione ha superato il suo limite di dimensione, quindi i suoi messaggi più vecchi sono stati rimossi — i tuoi come le risposte. L’assistente ha un riassunto delle risposte e sa che alcuni dei tuoi primi messaggi non ci sono più."
+    },
+    "summarised_one": "Questa conversazione ha superato ciò che il modello può contenere, quindi il messaggio più vecchio ({{count}}) è stato sostituito da un breve riassunto. L’assistente sa ancora cosa è successo; non ne ha più le parole esatte.",
+    "summarised_many": "Questa conversazione ha superato ciò che il modello può contenere, quindi i {{count}} messaggi più vecchi sono stati sostituiti da un breve riassunto. L’assistente sa ancora cosa è successo; non ne ha più le parole esatte.",
+    "summarised_other": "Questa conversazione ha superato ciò che il modello può contenere, quindi i {{count}} messaggi più vecchi sono stati sostituiti da un breve riassunto. L’assistente sa ancora cosa è successo; non ne ha più le parole esatte.",
+    "leftOut_one": "Questa conversazione ha superato ciò che il modello può contenere, quindi il messaggio più vecchio ({{count}}) è stato escluso da questa richiesta. I tuoi record non sono stati toccati — inizia una nuova conversazione per ripartire da zero.",
+    "leftOut_many": "Questa conversazione ha superato ciò che il modello può contenere, quindi i {{count}} messaggi più vecchi sono stati esclusi da questa richiesta. I tuoi record non sono stati toccati — inizia una nuova conversazione per ripartire da zero.",
+    "leftOut_other": "Questa conversazione ha superato ciò che il modello può contenere, quindi i {{count}} messaggi più vecchi sono stati esclusi da questa richiesta. I tuoi record non sono stati toccati — inizia una nuova conversazione per ripartire da zero.",
+    "stubbed_one": "Questo turno ha superato ciò che il modello può contenere, quindi {{count}} risultato precedente di uno strumento è stato ridotto a una riga di riepilogo. Non si è perso nulla — i record sono ancora salvati e si possono rileggere.",
+    "stubbed_many": "Questo turno ha superato ciò che il modello può contenere, quindi {{count}} risultati precedenti di strumenti sono stati ridotti a una riga di riepilogo. Non si è perso nulla — i record sono ancora salvati e si possono rileggere.",
+    "stubbed_other": "Questo turno ha superato ciò che il modello può contenere, quindi {{count}} risultati precedenti di strumenti sono stati ridotti a una riga di riepilogo. Non si è perso nulla — i record sono ancora salvati e si possono rileggere.",
+    "toolsOverflow": "Già solo l’elenco degli strumenti supera ciò che questo modello può contenere. Restringi ciò a cui l’assistente può ricorrere, oppure aumenta la finestra di contesto in Impostazioni se il tuo server lo consente.",
+    "cutCall": "La chiamata a uno strumento del modello è stata troncata dal suo limite di output prima di essere completa, quindi non è stata eseguita. Gli è stato chiesto di inviarla di nuovo.",
+    "cutReply": "Il modello si è fermato a metà risposta perché ha raggiunto il proprio limite di output. Quanto segue potrebbe essere incompleto — una domanda più breve, o un limite di risposta più alto sul server, di solito risolve.",
+    "verify": {
+      "claimed-write-none-attempted": "L’assistente ha detto di aver modificato qualcosa, ma non è stato chiamato nulla che scrive e i tuoi record sono invariati. Gli è stato chiesto di verificare prima di concludere.",
+      "claimed-write-none-landed": "L’assistente ha detto di aver modificato qualcosa, ma ogni scrittura tentata in questo turno è fallita o è stata rifiutata, quindi i tuoi record sono invariati. Gli è stato chiesto di verificare prima di concludere.",
+      "named-unread-record": "L’assistente ha nominato un record che non ha letto in questo turno. Gli è stato chiesto di consultarlo prima di rispondere, invece di rispondere a memoria.",
+      "bare-acknowledgement": "L’assistente ha accettato di fare il lavoro senza farlo, quindi non è ancora successo nulla. Gli è stato chiesto di eseguire la chiamata.",
+      "stopped-mid-task": "L’assistente si è fermato a metà, dicendo cosa avrebbe fatto dopo senza farlo. Gli è stato chiesto di proseguire."
+    }
   }
 }

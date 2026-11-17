@@ -53,7 +53,7 @@ import { HOW_LABEL } from './posting-source'
 import type { PostingSource } from './posting-source'
 import { CONTACT_ROLE_LABEL } from './model-person'
 import type { ContactRole } from './model-person'
-import { APPROVAL_LABEL, APPROVAL_SAID } from './model-thread'
+import { APPROVAL_LABEL, APPROVAL_SAID, TRIM_MARKER } from './model-thread'
 import type { ApprovalMode } from './model-thread'
 import { EDGE_SCHEMA, RELS } from './model-graph'
 import type { Rel } from './model-graph'
@@ -390,7 +390,67 @@ export const DOMAIN_EN = {
         'Restoring replaces every record on this phone and every document, except for the {{count}} records arriving without their documents, whose copies already here are kept',
     },
   },
+  /**
+   * The app's own notes in an assistant conversation (`app: true`). Stored and
+   * replayed in English — the agent writes them and the model may read them —
+   * and shown through `appNoteText` (`react/app-note.ts`), which reads a stored
+   * note back to its key. Each text is worded exactly as its producer writes it
+   * (`app-note.test.ts` holds them word for word): `trimmed` is `TRIM_MARKER`;
+   * the rest are written in `agent/`, which core may not import, so they are
+   * spelled here and checked there.
+   */
+  appNote: {
+    trimmed: { ...TRIM_MARKER },
+    /** `agent/budget.ts` `summarisedNote`. */
+    summarised_one:
+      'This conversation grew past what the model can hold, so the earliest {{count}} message was replaced with a short summary. The assistant still knows what happened; it no longer has the exact wording.',
+    summarised_other:
+      'This conversation grew past what the model can hold, so the earliest {{count}} messages were replaced with a short summary. The assistant still knows what happened; it no longer has the exact wording.',
+    /** `agent/budget.ts` `trimNote`. */
+    leftOut_one:
+      'This conversation grew past what the model can hold, so the earliest {{count}} message was left out of this request. Your records are untouched — start a new conversation to give it a clean slate.',
+    leftOut_other:
+      'This conversation grew past what the model can hold, so the earliest {{count}} messages were left out of this request. Your records are untouched — start a new conversation to give it a clean slate.',
+    /** `agent/budget.ts` `stubbedNote`. */
+    stubbed_one:
+      'This turn grew past what the model can hold, so {{count}} earlier tool result was shortened to a summary line. Nothing was lost — the records are still in your store and can be read again.',
+    stubbed_other:
+      'This turn grew past what the model can hold, so {{count}} earlier tool results were shortened to a summary line. Nothing was lost — the records are still in your store and can be read again.',
+    /** `agent/history.ts` `TOOLS_OVERFLOW_NOTE`. */
+    toolsOverflow:
+      'The tool list alone is larger than this model can hold. Narrow what the assistant may reach for, or raise the context window in Settings if your server allows it.',
+    /** `agent/round.ts` `CUT_CALL_NOTE` and `CUT_REPLY_NOTE`. */
+    cutCall:
+      'The model’s tool call was cut off by its output limit before it was complete, so it was not run. It has been asked to send it again.',
+    cutReply:
+      'The model stopped mid-reply because it hit its own output limit. Anything below this may be incomplete — a shorter question, or a larger reply limit on the server, usually fixes it.',
+    /** `agent/exit.ts` `VERIFY_NOTE`, by the verification gate's reason. */
+    verify: {
+      'claimed-write-none-attempted':
+        'The assistant said it had changed something, but nothing that writes was called and the store is unchanged. It has been asked to check before finishing.',
+      'claimed-write-none-landed':
+        'The assistant said it had changed something, but every write it tried this turn failed or was declined, so the store is unchanged. It has been asked to check before finishing.',
+      'named-unread-record':
+        'The assistant named a record it did not read this turn. It has been asked to look it up before answering, rather than answering from memory.',
+      'bare-acknowledgement':
+        'The assistant agreed to do the work without doing it, so nothing has happened yet. It has been asked to make the call.',
+      'stopped-mid-task':
+        'The assistant stopped partway, saying what it would do next without doing it. It has been asked to carry on.',
+    },
+  },
 } as const
+
+/** The counted app notes, each a `_one`/`_other` pair under `appNote`. */
+export type CountedAppNote = 'summarised' | 'leftOut' | 'stubbed'
+
+/** A key under `appNote`, as `domainText(t).appNote` takes it. */
+export type AppNoteKey =
+  | `trimmed.${keyof typeof TRIM_MARKER}`
+  | CountedAppNote
+  | 'toolsOverflow'
+  | 'cutCall'
+  | 'cutReply'
+  | `verify.${keyof typeof DOMAIN_EN.appNote.verify}`
 
 /** Reads a stored English `lastAction` back to the key that wrote it. */
 const ACTION_KEYS: ReadonlyMap<string, string> = new Map([
@@ -619,6 +679,14 @@ export function domainText(t: Translate) {
       const key = ACTION_KEYS.get(stored)
       return key === undefined ? stored : d(key)
     },
+
+    /**
+     * One of the app's own conversation notes, by its `appNote` key; `count`
+     * for the counted ones. `react/app-note.ts` reads a stored note back to
+     * the key and count — call `appNoteText` there, not this, with a note.
+     */
+    appNote: (key: AppNoteKey, count?: number) =>
+      d(`appNote.${key}`, count === undefined ? undefined : { count }),
 
     /** 'filed under Rice and Baylor', or 'unfiled'. Names are display names. */
     filedUnder: (names: readonly string[]) =>

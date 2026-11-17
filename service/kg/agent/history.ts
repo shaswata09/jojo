@@ -313,6 +313,14 @@ function carriedSummary(
 }
 
 /**
+ * Told to the person when the tool list alone overflows the window. Stored
+ * English; shown translated through `appNoteText` (`react/app-note.ts`), which
+ * reads it back by this exact text.
+ */
+export const TOOLS_OVERFLOW_NOTE =
+  'The tool list alone is larger than this model can hold. Narrow what the assistant may reach for, or raise the context window in Settings if your server allows it.'
+
+/**
  * The app notes about the trim.
  *
  * What the person is told, counted by what actually went. `dropped` is the
@@ -343,11 +351,7 @@ function reportTrim(
     })
   }
   if (fitted.overflows) {
-    onEvent({
-      type: 'note',
-      app: true,
-      text: 'The tool list alone is larger than this model can hold. Narrow what the assistant may reach for, or raise the context window in Settings if your server allows it.',
-    })
+    onEvent({ type: 'note', app: true, text: TOOLS_OVERFLOW_NOTE })
   }
 }
 

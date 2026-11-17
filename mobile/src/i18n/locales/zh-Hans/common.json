@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "页面选项",
     "description": "仅对此屏幕的本次访问生效。"
+  },
+  "rows": {
+    "showMore": "显示更多（{{shown}}/{{total}}）"
   }
 }

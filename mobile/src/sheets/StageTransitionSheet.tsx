@@ -8,6 +8,7 @@ import { FormField, SettingRow, TextField, Toggle } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
+import { useDiscardGuard } from '@/components/ui/discard-guard'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
 import { addDays } from '@jojo/service/data/timeline'
@@ -78,6 +79,10 @@ export function StageTransitionSheet({
   const domain = useDomain()
   const needs = stageNeedsDetails(application, target)
   const applied = useRef(false)
+  // Whether the form holds something typed that a close would throw away —
+  // reported up by `TransitionForm`, which owns the fields. See `useDiscardGuard`.
+  const [dirty, setDirty] = useState(false)
+  const { close, guard } = useDiscardGuard(dirty, () => onOpenChange(false))
 
   /**
    * Backstop for a caller that opened this without checking
@@ -101,7 +106,7 @@ export function StageTransitionSheet({
   return (
     <Sheet
       open={open}
-      onClose={() => onOpenChange(false)}
+      onClose={close}
       title={t('stage.moveTo', { stage: domain.stage(target) })}
       description={t('stage.currently', {
         name: displayName(application),
@@ -118,7 +123,11 @@ export function StageTransitionSheet({
         target={target}
         onApply={onApply}
         onClose={() => onOpenChange(false)}
+        onCancel={close}
+        onDirty={setDirty}
       />
+
+      {guard}
     </Sheet>
   )
 }
@@ -128,11 +137,17 @@ function TransitionForm({
   target,
   onApply,
   onClose,
+  onCancel,
+  onDirty,
 }: {
   application: Application
   target: Stage
   onApply: StageTransitionSheetProps['onApply']
+  /** After a move: closes without asking, since nothing is left to lose. */
   onClose: () => void
+  /** Cancel: asks first when something typed would be lost. */
+  onCancel: () => void
+  onDirty: (dirty: boolean) => void
 }) {
   const { t } = useTranslation('sheets')
   const domain = useDomain()
@@ -189,6 +204,13 @@ function TransitionForm({
 
   /** Empty when the form can be applied; otherwise what is missing. */
   const blocker = stageBlocker(target, draft)
+
+  // Measured against what the form opened with, so tapping in and out is not a change.
+  const typed = JSON.stringify(draft)
+  const [opened] = useState(typed)
+  useEffect(() => {
+    onDirty(typed !== opened)
+  }, [typed, opened, onDirty])
 
   const apply = () => {
     if (blocker) return
@@ -355,7 +377,7 @@ function TransitionForm({
           full
           onPress={moveWithoutDetails}
         />
-        <Button label={t('common.cancel')} variant="ghost" size="md" full onPress={onClose} />
+        <Button label={t('common.cancel')} variant="ghost" size="md" full onPress={onCancel} />
       </View>
 
       <MenuSheet

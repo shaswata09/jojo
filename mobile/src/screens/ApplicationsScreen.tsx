@@ -49,6 +49,8 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { TourTarget } from '@/components/tour/TourTarget'
 import { domain as domainWords, useDomain } from '@/i18n/domain'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { useRowCap } from '@/lib/use-row-cap'
 
 type View_ = 'list' | 'board'
 
@@ -241,6 +243,10 @@ export function ApplicationsScreen() {
     const filtered = stageFilter === 'all' ? pool : pool.filter((a) => a.stage === stageFilter)
     return sortApplications(filtered, sort, dir)
   }, [pool, stageFilter, sort, dir])
+
+  // A page of rows at a time (`useRowCap`). No arrival to keep: a record found
+  // by search opens its detail screen, not a row here.
+  const cap = useRowCap(rows.length)
 
   const shown = view === 'list' ? rows.length : pool.length
   const empty = all.length === 0
@@ -438,7 +444,7 @@ export function ApplicationsScreen() {
           ) : view === 'list' ? (
             <TourTarget id="records">
               <Panel padded={false}>
-                {rows.map((a, i) => (
+                {rows.slice(0, cap.shown).map((a, i) => (
                   <View key={a.id}>
                     {i > 0 ? <Divider /> : null}
                     <ApplicationRow
@@ -450,6 +456,7 @@ export function ApplicationsScreen() {
                     />
                   </View>
                 ))}
+                <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
               </Panel>
             </TourTarget>
           ) : (

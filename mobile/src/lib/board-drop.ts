@@ -79,3 +79,33 @@ export function columnAt(
   'worklet'
   return Math.min(count - 1, Math.max(0, Math.floor((fromStart + scrolled) / stride)))
 }
+
+/**
+ * The column under the finger, from everything the drag tracks.
+ *
+ * One function for both places that have to ask: the gesture's `onUpdate`, when
+ * the finger moves, and the edge auto-scroll's frame callback, when the BOARD
+ * moves under a finger held still. Only the first used to ask. Held at the edge,
+ * the board scrolled two or three columns on while the highlight — and the
+ * stage written on release — stayed on the column the finger had last moved
+ * over (seen on an Android AVD, 2026-11-17).
+ */
+export function hoveredColumn(
+  pointerX: number,
+  viewportX: number,
+  viewportW: number,
+  nativeScroll: number,
+  contentW: number,
+  rtl: boolean,
+  physical: boolean,
+  stride: number,
+  count: number,
+): number {
+  'worklet'
+  return columnAt(
+    fromStartEdge(pointerX, viewportX, viewportW, rtl),
+    startOffset(nativeScroll, rtl, physical, contentW, viewportW),
+    stride,
+    count,
+  )
+}

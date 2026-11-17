@@ -453,5 +453,30 @@
       "phone_many": "La restauration remplace toutes les fiches de ce téléphone et tous les documents, sauf pour {{count}} fiches qui arrivent sans leurs documents : leurs copies déjà présentes ici sont conservées",
       "phone_other": "La restauration remplace toutes les fiches de ce téléphone et tous les documents, sauf pour {{count}} fiches qui arrivent sans leurs documents : leurs copies déjà présentes ici sont conservées"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Les réponses précédentes de cette conversation ont été retirées pour qu’elle reste dans sa limite de taille. Tous vos messages sont conservés, et l’assistant dispose d’un résumé du reste.",
+      "messages": "Cette conversation a dépassé sa limite de taille, donc ses premiers messages ont été retirés — les vôtres comme les réponses. L’assistant dispose d’un résumé des réponses et sait qu’une partie de vos premiers messages a disparu."
+    },
+    "summarised_one": "Cette conversation a dépassé ce que le modèle peut contenir, donc son message le plus ancien ({{count}}) a été remplacé par un court résumé. L’assistant sait toujours ce qui s’est passé ; il n’en a plus la formulation exacte.",
+    "summarised_many": "Cette conversation a dépassé ce que le modèle peut contenir, donc ses {{count}} messages les plus anciens ont été remplacés par un court résumé. L’assistant sait toujours ce qui s’est passé ; il n’en a plus la formulation exacte.",
+    "summarised_other": "Cette conversation a dépassé ce que le modèle peut contenir, donc ses {{count}} messages les plus anciens ont été remplacés par un court résumé. L’assistant sait toujours ce qui s’est passé ; il n’en a plus la formulation exacte.",
+    "leftOut_one": "Cette conversation a dépassé ce que le modèle peut contenir, donc son message le plus ancien ({{count}}) a été laissé hors de cette requête. Vos fiches ne sont pas touchées — commencez une nouvelle conversation pour repartir de zéro.",
+    "leftOut_many": "Cette conversation a dépassé ce que le modèle peut contenir, donc ses {{count}} messages les plus anciens ont été laissés hors de cette requête. Vos fiches ne sont pas touchées — commencez une nouvelle conversation pour repartir de zéro.",
+    "leftOut_other": "Cette conversation a dépassé ce que le modèle peut contenir, donc ses {{count}} messages les plus anciens ont été laissés hors de cette requête. Vos fiches ne sont pas touchées — commencez une nouvelle conversation pour repartir de zéro.",
+    "stubbed_one": "Ce tour a dépassé ce que le modèle peut contenir, donc {{count}} résultat d’outil antérieur a été raccourci en une ligne de résumé. Rien n’est perdu — les fiches sont toujours enregistrées et peuvent être relues.",
+    "stubbed_many": "Ce tour a dépassé ce que le modèle peut contenir, donc {{count}} résultats d’outils antérieurs ont été raccourcis en une ligne de résumé. Rien n’est perdu — les fiches sont toujours enregistrées et peuvent être relues.",
+    "stubbed_other": "Ce tour a dépassé ce que le modèle peut contenir, donc {{count}} résultats d’outils antérieurs ont été raccourcis en une ligne de résumé. Rien n’est perdu — les fiches sont toujours enregistrées et peuvent être relues.",
+    "toolsOverflow": "La liste des outils dépasse à elle seule ce que ce modèle peut contenir. Limitez ce à quoi l’assistant peut recourir, ou augmentez la fenêtre de contexte dans Paramètres si votre serveur le permet.",
+    "cutCall": "L’appel d’outil du modèle a été coupé par sa limite de sortie avant d’être complet, il n’a donc pas été exécuté. Il lui a été demandé de le renvoyer.",
+    "cutReply": "Le modèle s’est arrêté en pleine réponse parce qu’il a atteint sa propre limite de sortie. Ce qui suit peut être incomplet — une question plus courte, ou une limite de réponse plus élevée sur le serveur, règle généralement le problème.",
+    "verify": {
+      "claimed-write-none-attempted": "L’assistant a dit avoir modifié quelque chose, mais rien de ce qui écrit n’a été appelé et vos fiches sont inchangées. Il lui a été demandé de vérifier avant de terminer.",
+      "claimed-write-none-landed": "L’assistant a dit avoir modifié quelque chose, mais chaque écriture tentée pendant ce tour a échoué ou a été refusée, donc vos fiches sont inchangées. Il lui a été demandé de vérifier avant de terminer.",
+      "named-unread-record": "L’assistant a cité une fiche qu’il n’a pas lue pendant ce tour. Il lui a été demandé de la consulter avant de répondre, plutôt que de répondre de mémoire.",
+      "bare-acknowledgement": "L’assistant a accepté de faire le travail sans le faire, donc rien ne s’est encore passé. Il lui a été demandé de lancer l’appel.",
+      "stopped-mid-task": "L’assistant s’est arrêté en cours de route, en disant ce qu’il ferait ensuite sans le faire. Il lui a été demandé de continuer."
+    }
   }
 }

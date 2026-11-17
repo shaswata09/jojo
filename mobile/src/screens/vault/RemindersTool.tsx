@@ -26,6 +26,9 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { useDomain } from '@/i18n/domain'
 import { FocusTarget } from '@/components/ui/FocusTarget'
+import { useArrivingFocus } from '@/components/ui/focus-scope'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
 const BUCKETS: TimelineBucket[] = ['overdue', 'today', 'upcoming', 'done']
 
@@ -87,6 +90,10 @@ export function RemindersTool() {
   }, [pool])
 
   const rows = bucket === 'all' ? pool : pool.filter((r) => bucketOf(r, TODAY) === bucket)
+  // A page of rows at a time, always including the row a search result or a
+  // Filed panel arrived at (`useRowCap`, `useArrivingFocus`).
+  const arriving = useArrivingFocus()
+  const cap = useRowCap(rows.length, indexOfId(rows, arriving))
 
   const addButton = (
     <Button
@@ -177,7 +184,7 @@ export function RemindersTool() {
             />
           </View>
         ) : (
-          rows.map((r, i) => {
+          rows.slice(0, cap.shown).map((r, i) => {
             const b = bucketOf(r, TODAY)
             const done = Boolean(r.completedOn)
             const when = domain.when(r, TODAY)
@@ -260,6 +267,7 @@ export function RemindersTool() {
             )
           })
         )}
+        <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
       </Panel>
 
       <ItemMenu

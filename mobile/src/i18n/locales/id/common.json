@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "Opsi halaman",
     "description": "Ini hanya berlaku untuk layar ini, selama kunjungan ini."
+  },
+  "rows": {
+    "showMore": "Tampilkan lebih banyak ({{shown}} dari {{total}})"
   }
 }

@@ -74,6 +74,18 @@ function refitToWindow(state: TurnState): void {
   }
 }
 
+/**
+ * Told to the person when a tool call was cut off by the output limit and the
+ * model was asked to send it again. Stored English; shown translated through
+ * `appNoteText` (`react/app-note.ts`), which reads it back by this exact text.
+ */
+export const CUT_CALL_NOTE =
+  'The model’s tool call was cut off by its output limit before it was complete, so it was not run. It has been asked to send it again.'
+
+/** Told to the person when a reply stopped at the output limit for good. As `CUT_CALL_NOTE`. */
+export const CUT_REPLY_NOTE =
+  'The model stopped mid-reply because it hit its own output limit. Anything below this may be incomplete — a shorter question, or a larger reply limit on the server, usually fixes it.'
+
 /** One request to the model, streaming its fragments out as events. */
 function ask(state: TurnState): Promise<Turn> {
   const { llm, onEvent } = state.options
@@ -152,11 +164,7 @@ function continueCutOff(state: TurnState, turn: OkTurn, round: number): boolean 
   if (cutOff && state.continuations < MAX_CONTINUATIONS_PER_TURN && round < state.maxSteps - 1) {
     if (turn.toolCalls.length > 0) {
       state.continuations += 1
-      onEvent({
-        type: 'note',
-        app: true,
-        text: 'The model’s tool call was cut off by its output limit before it was complete, so it was not run. It has been asked to send it again.',
-      })
+      onEvent({ type: 'note', app: true, text: CUT_CALL_NOTE })
       state.messages.push({ role: 'user', content: CUT_CALL_PROMPT })
       return true
     }
@@ -172,11 +180,7 @@ function continueCutOff(state: TurnState, turn: OkTurn, round: number): boolean 
     }
   }
   if (cutOff) {
-    onEvent({
-      type: 'note',
-      app: true,
-      text: 'The model stopped mid-reply because it hit its own output limit. Anything below this may be incomplete — a shorter question, or a larger reply limit on the server, usually fixes it.',
-    })
+    onEvent({ type: 'note', app: true, text: CUT_REPLY_NOTE })
   }
   return false
 }

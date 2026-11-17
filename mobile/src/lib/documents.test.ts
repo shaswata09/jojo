@@ -162,7 +162,11 @@ describe('the URI a record holds, and the path the filesystem wants', () => {
   it('deletes through the same decode, and survives a copy that is already gone', async () => {
     onDisk.set(path, 188416)
     await forgetDocument(uri)
-    expect(fsCalls).toEqual([{ call: 'unlink', path }])
+    // And the set-aside copy, which a commit may have moved it to first.
+    expect(fsCalls).toEqual([
+      { call: 'unlink', path },
+      { call: 'unlink', path: `${path}.jojo-trashed` },
+    ])
     expect(onDisk.has(path)).toBe(false)
     // Best effort: the record is the truth, and a failed unlink must not fail
     // the delete the user asked for.
@@ -194,7 +198,9 @@ describe('forgetting every copy at once', () => {
 
     expect(fsCalls.map((c) => c.path).sort()).toEqual([
       '/files/a/CV 2026.pdf',
+      '/files/a/CV 2026.pdf.jojo-trashed',
       '/files/b/Offer.pdf',
+      '/files/b/Offer.pdf.jojo-trashed',
     ])
     expect(onDisk.size).toBe(0)
   })
@@ -210,7 +216,9 @@ describe('forgetting every copy at once', () => {
 
     await forgetDocuments(['file:///files/a/CV.pdf', 'file:///files/a/CV.pdf'])
 
-    expect(fsCalls).toHaveLength(1)
+    // Once for the file, once for its set-aside copy — not twice each.
+    expect(fsCalls.filter((c) => c.path === '/files/a/CV.pdf')).toHaveLength(1)
+    expect(fsCalls).toHaveLength(2)
   })
 
   it('touches nothing for a vault of hand-typed rows', async () => {

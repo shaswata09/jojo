@@ -414,5 +414,24 @@
       "computer_other": "Khôi phục sẽ thay thế mọi bản ghi bạn đang có và mọi tài liệu, trừ {{count}} bản ghi đến mà không kèm tài liệu — bản sao đã có ở đây của chúng sẽ được giữ lại",
       "phone_other": "Khôi phục sẽ thay thế mọi bản ghi trên điện thoại này và mọi tài liệu, trừ {{count}} bản ghi đến mà không kèm tài liệu — bản sao đã có ở đây của chúng sẽ được giữ lại"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Các câu trả lời trước đó trong cuộc trò chuyện này đã bị xóa để giữ nó trong giới hạn kích thước. Mọi tin nhắn của bạn vẫn được giữ lại, và trợ lý có bản tóm tắt phần còn lại.",
+      "messages": "Cuộc trò chuyện này đã vượt quá giới hạn kích thước, nên các tin nhắn sớm nhất đã bị xóa — cả tin nhắn của bạn lẫn các câu trả lời. Trợ lý có bản tóm tắt các câu trả lời và được báo rằng một số tin nhắn sớm nhất của bạn không còn nữa."
+    },
+    "summarised_other": "Cuộc trò chuyện này đã vượt quá lượng mà mô hình có thể chứa, nên {{count}} tin nhắn sớm nhất đã được thay bằng một bản tóm tắt ngắn. Trợ lý vẫn biết chuyện gì đã xảy ra; chỉ là không còn nguyên văn chính xác.",
+    "leftOut_other": "Cuộc trò chuyện này đã vượt quá lượng mà mô hình có thể chứa, nên {{count}} tin nhắn sớm nhất đã bị bỏ ra khỏi yêu cầu này. Bản ghi của bạn không bị ảnh hưởng — hãy bắt đầu cuộc trò chuyện mới để làm lại từ đầu.",
+    "stubbed_other": "Lượt này đã vượt quá lượng mà mô hình có thể chứa, nên {{count}} kết quả công cụ trước đó đã được rút gọn thành một dòng tóm tắt. Không có gì bị mất — các bản ghi vẫn được lưu và có thể đọc lại.",
+    "toolsOverflow": "Chỉ riêng danh sách công cụ đã lớn hơn lượng mà mô hình này có thể chứa. Hãy thu hẹp những gì trợ lý được dùng, hoặc tăng cửa sổ ngữ cảnh trong Cài đặt nếu máy chủ của bạn cho phép.",
+    "cutCall": "Lệnh gọi công cụ của mô hình bị cắt bởi giới hạn đầu ra trước khi hoàn tất, nên đã không được chạy. Mô hình đã được yêu cầu gửi lại.",
+    "cutReply": "Mô hình dừng giữa chừng câu trả lời vì chạm giới hạn đầu ra của chính nó. Phần bên dưới có thể chưa đầy đủ — một câu hỏi ngắn hơn, hoặc giới hạn trả lời lớn hơn trên máy chủ, thường sẽ khắc phục được.",
+    "verify": {
+      "claimed-write-none-attempted": "Trợ lý nói đã thay đổi điều gì đó, nhưng không có thao tác ghi nào được gọi và bản ghi của bạn không thay đổi. Trợ lý đã được yêu cầu kiểm tra trước khi kết thúc.",
+      "claimed-write-none-landed": "Trợ lý nói đã thay đổi điều gì đó, nhưng mọi thao tác ghi nó thử trong lượt này đều thất bại hoặc bị từ chối, nên bản ghi của bạn không thay đổi. Trợ lý đã được yêu cầu kiểm tra trước khi kết thúc.",
+      "named-unread-record": "Trợ lý đã nhắc đến một bản ghi mà nó chưa đọc trong lượt này. Trợ lý đã được yêu cầu tra cứu trước khi trả lời, thay vì trả lời theo trí nhớ.",
+      "bare-acknowledgement": "Trợ lý đã đồng ý làm việc đó nhưng không làm, nên chưa có gì xảy ra. Trợ lý đã được yêu cầu thực hiện lệnh gọi.",
+      "stopped-mid-task": "Trợ lý dừng giữa chừng, nói điều sẽ làm tiếp theo mà không làm. Trợ lý đã được yêu cầu tiếp tục."
+    }
   }
 }

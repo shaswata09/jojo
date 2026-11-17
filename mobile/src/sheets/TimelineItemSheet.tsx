@@ -19,6 +19,7 @@ import { canSaveTimelineItem, clockValue, minutesOf, timelineFormErrors } from '
 import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON, TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { useDiscardGuard } from '@/components/ui/discard-guard'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
@@ -120,6 +121,27 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
   const [more, setMore] = useState(false)
   const [durationOpen, setDurationOpen] = useState(false)
   const [attempted, setAttempted] = useState(false)
+  /*
+   * Everything closing would throw away, measured against what the sheet
+   * opened with — so tapping into a field and back out is not a change. The
+   * backdrop, the X, Back and Cancel used to close a half-typed reminder with
+   * no question and no undo: it was never written, so nothing can restore it.
+   */
+  const typed = JSON.stringify([
+    title,
+    applicationIds,
+    date,
+    allDay,
+    time,
+    duration,
+    kind,
+    detail,
+    note,
+    remind,
+    keywords,
+  ])
+  const [opened] = useState(typed)
+  const { close, guard } = useDiscardGuard(typed !== opened, () => onOpenChange(false))
 
   /*
    * One reading of what is wrong with the form, shared by the fields and by
@@ -342,7 +364,7 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
   return (
     <Sheet
       open={open}
-      onClose={() => onOpenChange(false)}
+      onClose={close}
       size="tall"
       title={
         mode === 'reminder'
@@ -366,12 +388,7 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
               onPress={onDelete}
             />
           ) : null}
-          <Button
-            label={t('common.cancel')}
-            variant="ghost"
-            size="md"
-            onPress={() => onOpenChange(false)}
-          />
+          <Button label={t('common.cancel')} variant="ghost" size="md" onPress={close} />
           <Button
             label={
               editing
@@ -533,6 +550,8 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
           onPress: () => setDuration(mins),
         }))}
       />
+
+      {guard}
     </Sheet>
   )
 }

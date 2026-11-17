@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Trans, useTranslation } from 'react-i18next'
@@ -65,9 +66,11 @@ export function GlancePanel() {
   // Month and day names come from the reader's locale rather than from the
   // English tables in `data/calendar`.
   const monthName = (year: number, month: number) =>
-    new Intl.DateTimeFormat(lang, { month: 'long' }).format(new Date(year, month - 1, 1))
+    new Intl.DateTimeFormat(intlLocale(lang), { month: 'long' }).format(
+      new Date(year, month - 1, 1),
+    )
   const dayName = (year: number, month: number, day: number) =>
-    new Intl.DateTimeFormat(lang, { month: 'long', day: 'numeric' }).format(
+    new Intl.DateTimeFormat(intlLocale(lang), { month: 'long', day: 'numeric' }).format(
       new Date(year, month - 1, day),
     )
   // From the catalog, not `Intl` directly: CLDR has no narrow weekdays for

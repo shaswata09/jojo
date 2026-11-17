@@ -743,7 +743,7 @@
       "connect": "Connect one in Settings →",
       "emptyDescription": "Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model’s answer.",
       "badge": "Example response · no model connected",
-      "placeholder": "Ask about a cover letter, a follow-up email, an interview…",
+      "placeholder": "Ask the assistant…",
       "footer": "With a model connected each of these reads your profile and documents as context. Because inference is local, your CV and your notes are never uploaded anywhere."
     },
     "thought": {

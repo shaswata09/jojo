@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "Sayfa seçenekleri",
     "description": "Bunlar yalnızca bu ekran için, bu ziyaret boyunca geçerlidir."
+  },
+  "rows": {
+    "showMore": "Daha fazla göster ({{total}} içinden {{shown}})"
   }
 }

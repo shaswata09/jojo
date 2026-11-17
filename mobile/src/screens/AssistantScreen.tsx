@@ -6,6 +6,8 @@ import { agentTurn, isConfigured } from '@/lib/llm'
 import type { ChatMessage } from '@jojo/service/core/model-server'
 import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
 import { useAgent } from '@jojo/service/react/use-agent'
+import { appNoteText } from '@jojo/service/react/app-note'
+import { useDomain } from '@/i18n/domain'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import {
@@ -162,6 +164,7 @@ export function AssistantScreen() {
  */
 function AgentScreen() {
   const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { settings, reader } = useModelSettings()
@@ -522,10 +525,11 @@ function AgentScreen() {
               if (entry.kind === 'note') {
                 // Narration while it is still working. Quieter than an answer on
                 // purpose: it is not the reply, and styling it like one makes a
-                // run look finished when it is not.
+                // run look finished when it is not. The app's own notes are
+                // stored in English and shown in the language on screen.
                 return (
                   <Txt key={entry.id} size="sm" tone="muted" style={{ fontStyle: 'italic' }}>
-                    {entry.text}
+                    {entry.app === true ? appNoteText(entry.text, domain) : entry.text}
                   </Txt>
                 )
               }

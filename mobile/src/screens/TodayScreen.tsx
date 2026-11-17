@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -31,6 +32,7 @@ import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON } from '@/lib/timeline-visuals'
 import { useItemActions } from '@/lib/use-item-actions'
+import type { ItemActions } from '@/lib/use-item-actions'
 import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -66,7 +68,7 @@ const todayLabel = (): string => {
   if (!lang || lang === 'en') {
     return `${domain.weekday(new Date(y, m - 1, d).getDay())} ${d} ${domain.month(m)}`
   }
-  return new Date(y, m - 1, d).toLocaleDateString(lang, {
+  return new Date(y, m - 1, d).toLocaleDateString(intlLocale(lang), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -129,10 +131,16 @@ export function TodayScreen() {
  * missing (an offer, which is a decision rather than an appointment) renders
  * neither, rather than showing two controls with nothing to write to.
  */
-function ItemControls({ itemId }: { itemId: string }) {
+function ItemControls({
+  itemId,
+  actions,
+  onSnooze,
+}: {
+  itemId: string
+  actions: ItemActions
+  onSnooze: (item: TimelineItem) => void
+}) {
   const { t } = useTranslation('screens')
-  const actions = useItemActions()
-  const [snoozing, setSnoozing] = useState<TimelineItem | null>(null)
   const item = actions.get(itemId)
   if (!item) return null
 
@@ -148,9 +156,8 @@ function ItemControls({ itemId }: { itemId: string }) {
         label={t('today.decision.snooze')}
         icon="clock"
         variant="ghost"
-        onPress={() => setSnoozing(item)}
+        onPress={() => onSnooze(item)}
       />
-      <SnoozeMenu item={snoozing} actions={actions} onClose={() => setSnoozing(null)} />
     </>
   )
 }
@@ -193,7 +200,18 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
  * filled button. The web version once made a 28px countdown the loudest element
  * on the screen and the primary action a ghost.
  */
-function DecisionCard({ action, hero }: { action: PriorityAction; hero?: boolean }) {
+function DecisionCard({
+  action,
+  hero,
+  actions,
+  onSnooze,
+}: {
+  action: PriorityAction
+  hero?: boolean
+  /** The deck's one `useItemActions`, shared by every card. */
+  actions: ItemActions
+  onSnooze: (item: TimelineItem) => void
+}) {
   const c = useColors()
   const border: Record<PriorityUrgency, string> = {
     overdue: c.dangerBorder,
@@ -227,7 +245,9 @@ function DecisionCard({ action, hero }: { action: PriorityAction; hero?: boolean
         ))}
         {/* Done and Snooze come last: they end the card, and putting them first
             would put "dismiss this" ahead of "deal with it". */}
-        {action.itemId ? <ItemControls itemId={action.itemId} /> : null}
+        {action.itemId ? (
+          <ItemControls itemId={action.itemId} actions={actions} onSnooze={onSnooze} />
+        ) : null}
       </View>
     </View>
   )
@@ -252,10 +272,25 @@ function useFirstStepsProgress() {
   )
 }
 
+/**
+ * How many cards the deck renders before a "Show all" stop — the web's
+ * `DECK_SHOWN`, for the same reason: one card per overdue application or
+ * offer, uncapped, mounted hundreds of them on the screen the app opens on.
+ */
+const DECK_SHOWN = 20
+
 function PriorityActions() {
   const { t } = useTranslation('screens')
   const c = useColors()
   const actions = usePriorityActions()
+  // ONE reading of the timeline for the whole deck, handed to every card. Each
+  // card's Done/Snooze used to call `useItemActions` itself, and every call is a
+  // `useTimeline` that rebuilds its index, reminders sort and five filters over
+  // the whole timeline — cards × items on every commit. The snooze menu is the
+  // deck's too: one sheet, opened for whichever card asked.
+  const itemActions = useItemActions()
+  const [snoozing, setSnoozing] = useState<TimelineItem | null>(null)
+  const [showAll, setShowAll] = useState(false)
   const progress = useFirstStepsProgress()
   const { open } = useSheets()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -405,7 +440,8 @@ function PriorityActions() {
     )
   }
 
-  const [first, ...rest] = actions
+  const capped = actions.length > DECK_SHOWN && !showAll
+  const [first, ...rest] = capped ? actions.slice(0, DECK_SHOWN) : actions
 
   return (
     <Panel>
@@ -413,11 +449,22 @@ function PriorityActions() {
         {t('today.decision.title')}
       </PanelTitle>
       <View style={{ gap: space[2.5] }}>
-        <DecisionCard action={first} hero />
+        <DecisionCard action={first} hero actions={itemActions} onSnooze={setSnoozing} />
         {rest.map((a) => (
-          <DecisionCard key={a.id} action={a} />
+          <DecisionCard key={a.id} action={a} actions={itemActions} onSnooze={setSnoozing} />
         ))}
+        {/* The last stop, in date order like every card above it. One-way:
+            the count in the title already says how many there are. */}
+        {capped ? (
+          <Button
+            label={t('search.showAll', { count: actions.length })}
+            variant="ghost"
+            onPress={() => setShowAll(true)}
+            style={{ alignSelf: 'center' }}
+          />
+        ) : null}
       </View>
+      <SnoozeMenu item={snoozing} actions={itemActions} onClose={() => setSnoozing(null)} />
     </Panel>
   )
 }

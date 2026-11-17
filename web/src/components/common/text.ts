@@ -19,6 +19,7 @@
  * shown in, because every language joins a list its own way.
  */
 
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { i18next } from '@/i18n/i18n'
 
 export const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`
@@ -28,7 +29,9 @@ export function listJoin(parts: string[]) {
   if (parts.length <= 1) return parts[0] ?? ''
   const language = i18next.language
   if (language && language !== 'en') {
-    return new Intl.ListFormat(language, { style: 'long', type: 'conjunction' }).format(parts)
+    return new Intl.ListFormat(intlLocale(language), { style: 'long', type: 'conjunction' }).format(
+      parts,
+    )
   }
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }

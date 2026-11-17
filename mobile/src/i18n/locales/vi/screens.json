@@ -711,7 +711,7 @@
       "connect": "Kết nối trong Cài đặt →",
       "emptyDescription": "Chọn một gợi ý bên dưới, hoặc nhập bất cứ điều gì. Các câu trả lời là ví dụ viết sẵn — hữu ích để làm theo, và không bao giờ được trình bày như câu trả lời của mô hình.",
       "badge": "Câu trả lời mẫu · chưa kết nối mô hình",
-      "placeholder": "Hỏi về thư xin việc, email liên hệ lại, phỏng vấn…",
+      "placeholder": "Hỏi trợ lý…",
       "footer": "Khi đã kết nối mô hình, mỗi mục này đều đọc hồ sơ cá nhân và tài liệu của bạn làm ngữ cảnh. Vì suy luận chạy cục bộ, CV và ghi chú của bạn không bao giờ bị tải lên đâu cả."
     },
     "thought": {

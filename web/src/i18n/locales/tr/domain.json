@@ -435,5 +435,27 @@
       "phone_one": "Geri yükleme, bu telefondaki tüm kayıtların ve tüm belgelerin yerini alır; yalnızca belgesi olmadan gelen {{count}} kayıt hariç — onun buradaki kopyası korunur",
       "phone_other": "Geri yükleme, bu telefondaki tüm kayıtların ve tüm belgelerin yerini alır; yalnızca belgeleri olmadan gelen {{count}} kayıt hariç — onların buradaki kopyaları korunur"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Bu sohbetin boyut sınırı içinde kalması için önceki yanıtlar kaldırıldı. Kendi mesajlarınızın tümü korunuyor ve asistanın geri kalanının bir özeti var.",
+      "messages": "Bu sohbet boyut sınırını aştı, bu yüzden en eski mesajları kaldırıldı — hem sizinkiler hem de yanıtlar. Asistanın yanıtların bir özeti var ve en eski mesajlarınızdan bazılarının artık olmadığı ona bildirildi."
+    },
+    "summarised_one": "Bu sohbet modelin alabileceğinden büyük hâle geldi, bu yüzden en eski {{count}} mesaj kısa bir özetle değiştirildi. Asistan ne olduğunu hâlâ biliyor; yalnızca tam ifadelere artık sahip değil.",
+    "summarised_other": "Bu sohbet modelin alabileceğinden büyük hâle geldi, bu yüzden en eski {{count}} mesaj kısa bir özetle değiştirildi. Asistan ne olduğunu hâlâ biliyor; yalnızca tam ifadelere artık sahip değil.",
+    "leftOut_one": "Bu sohbet modelin alabileceğinden büyük hâle geldi, bu yüzden en eski {{count}} mesaj bu isteğe dahil edilmedi. Kayıtlarınıza dokunulmadı — temiz bir başlangıç için yeni bir sohbet başlatın.",
+    "leftOut_other": "Bu sohbet modelin alabileceğinden büyük hâle geldi, bu yüzden en eski {{count}} mesaj bu isteğe dahil edilmedi. Kayıtlarınıza dokunulmadı — temiz bir başlangıç için yeni bir sohbet başlatın.",
+    "stubbed_one": "Bu tur modelin alabileceğinden büyük hâle geldi, bu yüzden önceki {{count}} araç sonucu tek satırlık bir özete kısaltıldı. Hiçbir şey kaybolmadı — kayıtlar hâlâ saklanıyor ve yeniden okunabilir.",
+    "stubbed_other": "Bu tur modelin alabileceğinden büyük hâle geldi, bu yüzden önceki {{count}} araç sonucu tek satırlık bir özete kısaltıldı. Hiçbir şey kaybolmadı — kayıtlar hâlâ saklanıyor ve yeniden okunabilir.",
+    "toolsOverflow": "Yalnızca araç listesi bile bu modelin alabileceğinden büyük. Asistanın başvurabileceklerini daraltın ya da sunucunuz izin veriyorsa Ayarlar’da bağlam penceresini büyütün.",
+    "cutCall": "Modelin araç çağrısı tamamlanmadan çıktı sınırı tarafından kesildi, bu yüzden çalıştırılmadı. Modelden çağrıyı yeniden göndermesi istendi.",
+    "cutReply": "Model kendi çıktı sınırına ulaştığı için yanıtın ortasında durdu. Bunun altındaki her şey eksik olabilir — daha kısa bir soru ya da sunucuda daha yüksek bir yanıt sınırı genellikle sorunu çözer.",
+    "verify": {
+      "claimed-write-none-attempted": "Asistan bir şeyi değiştirdiğini söyledi, ancak yazan hiçbir şey çağrılmadı ve kayıtlarınız değişmedi. Bitirmeden önce kontrol etmesi istendi.",
+      "claimed-write-none-landed": "Asistan bir şeyi değiştirdiğini söyledi, ancak bu turda denediği her yazma başarısız oldu ya da reddedildi, bu yüzden kayıtlarınız değişmedi. Bitirmeden önce kontrol etmesi istendi.",
+      "named-unread-record": "Asistan bu turda okumadığı bir kayıttan bahsetti. Bellekten yanıtlamak yerine, yanıtlamadan önce o kaydı bulması istendi.",
+      "bare-acknowledgement": "Asistan işi yapmayı kabul etti ama yapmadı, bu yüzden henüz hiçbir şey olmadı. Çağrıyı yapması istendi.",
+      "stopped-mid-task": "Asistan sırada ne yapacağını söyleyip yapmadan yarı yolda durdu. Devam etmesi istendi."
+    }
   }
 }

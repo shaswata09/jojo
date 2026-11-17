@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import type { ScrollView, View } from 'react-native'
 import { nearestFocus } from '@/lib/focus-id'
@@ -22,6 +22,23 @@ export type FocusScope = {
 
 /** Provided by `Screen`; read by every `FocusTarget` inside it. */
 export const FocusScopeContext = createContext<FocusScope | null>(null)
+
+/**
+ * The id the screen was last asked to arrive at, latched by `Screen`.
+ *
+ * Read by a list that mounts its rows a page at a time (`useRowCap`): the row a
+ * search result names may sit past the first page, and an unmounted row cannot
+ * register, be measured or be scrolled to. Latched rather than read off the
+ * route, because the route's `focus` is cleared the moment it is taken — before
+ * a tool that mounts a beat later (the Vault's, behind its segment) has read it.
+ *
+ * Its own context, apart from `FocusScopeContext`, so an arrival re-renders the
+ * few lists that ask for it rather than every `FocusTarget` on the screen.
+ */
+export const FocusArrivalContext = createContext<string | undefined>(undefined)
+
+/** The id a capped list must keep mounted: see `FocusArrivalContext`. */
+export const useArrivingFocus = () => useContext(FocusArrivalContext)
 
 /** How long to wait for the target to mount, and how often to look. */
 const LOOK_EVERY_MS = 120

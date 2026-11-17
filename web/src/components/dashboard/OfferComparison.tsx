@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Scale } from 'lucide-react'
@@ -139,7 +140,7 @@ export function OfferComparison() {
                         }
                         title={t('offers.readFrom', { text: p?.matched ?? '' })}
                       >
-                        {yearly.toLocaleString(i18n.language)}
+                        {yearly.toLocaleString(intlLocale(i18n.language))}
                         {/* The green was the ONLY thing saying which offer is
                             the bigger one — colour alone, on the row that
                             carries the decision. Said out loud here as well,

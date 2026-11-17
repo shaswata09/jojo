@@ -453,5 +453,30 @@
       "phone_many": "Restaurar reemplaza todos los registros de este teléfono y todos los documentos, salvo {{count}} registros que llegan sin sus documentos: se conservan las copias que ya están aquí",
       "phone_other": "Restaurar reemplaza todos los registros de este teléfono y todos los documentos, salvo {{count}} registros que llegan sin sus documentos: se conservan las copias que ya están aquí"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Se quitaron respuestas anteriores de esta conversación para mantenerla dentro de su límite de tamaño. Todos tus mensajes se conservan, y el asistente tiene un resumen del resto.",
+      "messages": "Esta conversación superó su límite de tamaño, así que se quitaron sus mensajes más antiguos — los tuyos y también las respuestas. El asistente tiene un resumen de las respuestas y sabe que faltan algunos de tus primeros mensajes."
+    },
+    "summarised_one": "Esta conversación superó lo que el modelo puede abarcar, así que su mensaje más antiguo ({{count}}) se sustituyó por un breve resumen. El asistente sigue sabiendo lo que pasó; ya no tiene la redacción exacta.",
+    "summarised_many": "Esta conversación superó lo que el modelo puede abarcar, así que sus {{count}} mensajes más antiguos se sustituyeron por un breve resumen. El asistente sigue sabiendo lo que pasó; ya no tiene la redacción exacta.",
+    "summarised_other": "Esta conversación superó lo que el modelo puede abarcar, así que sus {{count}} mensajes más antiguos se sustituyeron por un breve resumen. El asistente sigue sabiendo lo que pasó; ya no tiene la redacción exacta.",
+    "leftOut_one": "Esta conversación superó lo que el modelo puede abarcar, así que su mensaje más antiguo ({{count}}) quedó fuera de esta solicitud. Tus registros no se han tocado: empieza una conversación nueva para partir de cero.",
+    "leftOut_many": "Esta conversación superó lo que el modelo puede abarcar, así que sus {{count}} mensajes más antiguos quedaron fuera de esta solicitud. Tus registros no se han tocado: empieza una conversación nueva para partir de cero.",
+    "leftOut_other": "Esta conversación superó lo que el modelo puede abarcar, así que sus {{count}} mensajes más antiguos quedaron fuera de esta solicitud. Tus registros no se han tocado: empieza una conversación nueva para partir de cero.",
+    "stubbed_one": "Este turno superó lo que el modelo puede abarcar, así que {{count}} resultado anterior de una herramienta se acortó a una línea de resumen. No se perdió nada: los registros siguen guardados y se pueden volver a leer.",
+    "stubbed_many": "Este turno superó lo que el modelo puede abarcar, así que {{count}} resultados anteriores de herramientas se acortaron a una línea de resumen. No se perdió nada: los registros siguen guardados y se pueden volver a leer.",
+    "stubbed_other": "Este turno superó lo que el modelo puede abarcar, así que {{count}} resultados anteriores de herramientas se acortaron a una línea de resumen. No se perdió nada: los registros siguen guardados y se pueden volver a leer.",
+    "toolsOverflow": "La lista de herramientas por sí sola es más grande de lo que este modelo puede abarcar. Limita a qué puede recurrir el asistente, o aumenta la ventana de contexto en Ajustes si tu servidor lo permite.",
+    "cutCall": "La llamada a una herramienta del modelo se cortó por su límite de salida antes de completarse, así que no se ejecutó. Se le ha pedido que la envíe de nuevo.",
+    "cutReply": "El modelo se detuvo a mitad de respuesta porque alcanzó su propio límite de salida. Lo que sigue puede estar incompleto — una pregunta más corta, o un límite de respuesta mayor en el servidor, suele solucionarlo.",
+    "verify": {
+      "claimed-write-none-attempted": "El asistente dijo que había cambiado algo, pero no se llamó a nada que escriba y tus registros no han cambiado. Se le ha pedido que lo compruebe antes de terminar.",
+      "claimed-write-none-landed": "El asistente dijo que había cambiado algo, pero todas las escrituras que intentó en este turno fallaron o se rechazaron, así que tus registros no han cambiado. Se le ha pedido que lo compruebe antes de terminar.",
+      "named-unread-record": "El asistente mencionó un registro que no leyó en este turno. Se le ha pedido que lo consulte antes de responder, en lugar de responder de memoria.",
+      "bare-acknowledgement": "El asistente aceptó hacer el trabajo sin hacerlo, así que todavía no ha pasado nada. Se le ha pedido que haga la llamada.",
+      "stopped-mid-task": "El asistente se detuvo a medias, diciendo lo que haría a continuación sin hacerlo. Se le ha pedido que continúe."
+    }
   }
 }

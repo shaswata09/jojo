@@ -7,9 +7,12 @@
  * so a thread that continues wrongly fails as an opaque 400 several turns later.
  */
 import { describe, expect, it } from 'vitest'
-import type { NodePropsByType, NodeType, StoredNode, ThreadEntry } from '../core/model'
+import type { NodeId, NodePropsByType, NodeType, StoredNode, ThreadEntry } from '../core/model'
+import { TRIM_MARKER, TRIM_SAID_TO_MODEL } from '../core/model'
 import { edgeId, newNodeId } from '../core/ref'
 import { MutableSnapshot } from '../core/snapshot'
+import { createRepository } from '../repo/repository'
+import { createToolRuntime } from '../tools/runtime'
 import {
   entriesForMessages,
   historyFor,
@@ -20,6 +23,8 @@ import {
   toTranscript,
 } from './use-threads'
 import type { AgentEntry } from './use-agent'
+import type { Thread } from './use-threads'
+import type { ChatMessage } from '../core/model-server'
 
 const step = (over: Partial<Extract<ThreadEntry, { kind: 'step' }>> = {}) =>
   ({
@@ -484,5 +489,128 @@ describe('readThreads', () => {
     const first = readThreads(g, null)
     g.removeNode(a.id)
     expect(readThreads(g, first).list.map((t) => t.title)).toEqual(['b'])
+  })
+})
+
+/*
+ * The joined path: what `assistant.thread.set` stores past its cap, read back
+ * the way a screen reads it (`readThreads`) and sent the way a turn sends it
+ * (`historyFor`). Review 2026-11-17's leftover: the cap took the person's
+ * turns from the summarised part along with the replies, and those turns are
+ * exactly what `historyFor` replays verbatim — so the model silently stopped
+ * being sent words the compaction design keeps.
+ */
+describe('a conversation the store has capped', () => {
+  const NOW = '2026-11-14T09:00:00.000Z'
+  type Driver = Parameters<typeof createRepository>[0]['driver']
+  const driver = (): Driver => ({
+    open: async () => ({ ok: true, value: { version: 1, from: 0, migrated: [], crossTab: false } }),
+    readAll: async () => ({ ok: true, value: { nodes: [], edges: [], meta: [], ops: [] } }),
+    commit: async () => ({ ok: true, value: undefined }),
+    replace: async () => ({ ok: true, value: undefined }),
+    seedIfPristine: async () => ({ ok: true, value: true }),
+    destroy: async () => ({ ok: true, value: undefined }),
+    onRemoteCommit: () => () => {},
+    onBlocking: () => () => {},
+    close: () => {},
+  })
+
+  /**
+   * A conversation driven the way the app drives one, `exchanges` long: each
+   * exchange saved onto what the store holds, and a compaction every tenth
+   * that leaves the last two exchanges uncovered. `check` sees each save: the
+   * list sent, the boundary it was sent under, and what the store kept.
+   */
+  function converse(
+    exchanges: number,
+    check: (sent: readonly ThreadEntry[], from: number, kept: Thread) => void = () => {},
+  ): Thread {
+    let tick = 0
+    const now = () => new Date(Date.parse(NOW) + tick++ * 1000).toISOString()
+    const repo = createRepository({
+      driver: driver(),
+      snapshot: new MutableSnapshot(),
+      meta: {
+        schemaVersion: 1,
+        createdAt: NOW,
+        lastOpenedAt: NOW,
+        dataSet: 'empty',
+        seededAt: null,
+        handoverAt: null,
+      },
+      now,
+    })
+    const runtime = createToolRuntime({ repo, now })
+    const made = runtime.run('assistant.thread.create', { title: 't' })
+    if (!made.ok) throw new Error('create')
+    const id = made.output as NodeId
+    const read = (): Thread => {
+      const t = readThreads(repo.getSnapshot(), null).list.find((x) => x.id === id)
+      if (!t) throw new Error('gone')
+      return t
+    }
+    for (let i = 0; i < exchanges; i += 1) {
+      const before = read()
+      const sent: ThreadEntry[] = [
+        ...before.entries,
+        { kind: 'you', text: `Q${String(i)}` },
+        step({ detail: `R${String(i)}` }),
+        { kind: 'answer', text: `A${String(i)}` },
+      ]
+      if (!runtime.run('assistant.thread.set', { id, entries: sent }).ok) throw new Error('set')
+      const after = read()
+      check(sent, before.contextThrough, after)
+      if (i % 10 === 9) {
+        const through = after.entries.length - 6
+        runtime.run('assistant.thread.context.set', { id, context: `to ${String(i)}`, through })
+      }
+    }
+    return read()
+  }
+
+  const userTurns = (history: readonly ChatMessage[]) =>
+    history.flatMap((m) => (m.role === 'user' && typeof m.content === 'string' ? [m.content] : []))
+
+  const asked = (from: number, to: number) =>
+    Array.from({ length: to - from }, (_, i) => `Q${String(from + i)}`)
+
+  it('sends the model every one of the person’s turns after the cap has trimmed', () => {
+    let trimmed = 0
+    const last = converse(150, (sent, from, kept) => {
+      if (kept.entries.length < sent.length) trimmed += 1
+      // What the untrimmed list would have sent is what the kept one sends,
+      // byte for byte: the cap took only what the model was not sent anyway.
+      expect(historyFor(kept.entries, kept.contextThrough)).toEqual(historyFor(sent, from))
+      expect(kept.entries.length).toBeLessThanOrEqual(200)
+    })
+    expect(trimmed).toBeGreaterThan(0)
+    expect(last.entries[0]).toEqual({ kind: 'note', app: true, text: TRIM_MARKER.replies })
+    const { history } = historyFor(last.entries, last.contextThrough)
+    expect(userTurns(history)).toEqual(asked(0, 150))
+    // The transcript the person reads holds the same turns of theirs.
+    const shown = toAgentEntries(last.entries).flatMap((e) => (e.kind === 'you' ? [e.text] : []))
+    expect(shown).toEqual(asked(0, 150))
+  })
+
+  it('tells the model, as the transcript tells the person, when their own turns had to go', () => {
+    const last = converse(300, (sent, from, kept) => {
+      // Never what the summary does not account for.
+      expect(kept.entries.slice(kept.contextThrough)).toEqual(sent.slice(from))
+      expect(kept.entries.length).toBeLessThanOrEqual(200)
+    })
+    expect(last.entries[0]).toEqual({ kind: 'note', app: true, text: TRIM_MARKER.messages })
+    const { history, replayed } = historyFor(last.entries, last.contextThrough)
+    expect(history[0]).toEqual({ role: 'user', content: TRIM_SAID_TO_MODEL })
+    // What is left of theirs is the newest, unbroken, up to the last question.
+    const theirs = userTurns(history).slice(1)
+    const first = Number(theirs[0]?.slice(1))
+    expect(first).toBeGreaterThan(0)
+    expect(theirs).toEqual(asked(first, 300))
+    // And the transcript shows the same turns the model is sent.
+    const shown = toAgentEntries(last.entries).flatMap((e) => (e.kind === 'you' ? [e.text] : []))
+    expect(shown).toEqual(theirs)
+    // The marker's line is part of the head, so the boundary arithmetic takes
+    // it back out with the replayed turns rather than counting it as covered.
+    expect(nextContextThrough(last.entries, last.contextThrough, replayed)).toBe(last.contextThrough)
   })
 })

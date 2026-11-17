@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import {
   CX,
   CY,
@@ -40,10 +41,10 @@ export function Radar({
         className="h-auto w-full max-w-[340px]"
         role="img"
         aria-label={t('radar.aria', {
-          series: new Intl.ListFormat(i18n.language, { type: 'conjunction' }).format(
+          series: new Intl.ListFormat(intlLocale(i18n.language), { type: 'conjunction' }).format(
             series.map((s) => s.label),
           ),
-          axes: new Intl.ListFormat(i18n.language, { type: 'unit' }).format(axes),
+          axes: new Intl.ListFormat(intlLocale(i18n.language), { type: 'unit' }).format(axes),
         })}
       >
         {/* Concentric rings as the scale, spokes to each axis. */}

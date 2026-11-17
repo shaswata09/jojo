@@ -243,9 +243,13 @@ export {
   APPROVAL_TITLE,
   approvalOf,
   MAX_THOUGHT_STORED,
+  TRIM_MARKER,
+  TRIM_SAID_TO_MODEL,
+  trimLevelOf,
 } from './model-thread'
 export type {
   ApprovalMode,
   ThreadEntry,
   ThreadProps,
+  TrimLevel,
 } from './model-thread'

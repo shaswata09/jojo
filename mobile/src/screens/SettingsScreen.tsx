@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useModelSettings } from '@/lib/model-settings-context'
@@ -718,10 +719,10 @@ export function SettingsScreen() {
                 hint={
                   provider.dialect === 'ollama'
                     ? t('settings.model.contextOllama', {
-                        tokens: provider.defaultContext.toLocaleString(i18n.language),
+                        tokens: provider.defaultContext.toLocaleString(intlLocale(i18n.language)),
                       })
                     : t('settings.model.contextHint', {
-                        tokens: provider.defaultContext.toLocaleString(i18n.language),
+                        tokens: provider.defaultContext.toLocaleString(intlLocale(i18n.language)),
                       })
                 }
                 onChangeText={(next) => {
@@ -991,6 +992,7 @@ export function SettingsScreen() {
               focusId="settings.data.reset"
               label={t('settings.data.reset')}
               description={t('settings.data.resetDescription')}
+              stacked={isEmpty}
               control={
                 <Button
                   label={t('settings.data.resetButton')}

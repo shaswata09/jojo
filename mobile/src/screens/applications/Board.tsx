@@ -18,12 +18,14 @@ import { Feather } from '@react-native-vector-icons/feather/static'
 import { LabelChips } from '@/components/common/Labels'
 import { StagePicker } from '@/components/common/StagePicker'
 import { Chip } from '@/components/ui/Chip'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
 import { Txt } from '@/components/ui/Text'
 import { STAGES, displayName } from '@jojo/service/data/seed'
-import type { Application } from '@jojo/service/data/seed'
-import { columnAt, dropStage, fromStartEdge, startOffset } from '@/lib/board-drop'
+import type { Application, Stage } from '@jojo/service/data/seed'
+import { columnAt, dropStage, fromStartEdge, hoveredColumn, startOffset } from '@/lib/board-drop'
 import { refKey } from '@/lib/ids'
 import { useSheets } from '@/lib/sheets-context'
+import { ROW_PAGE, indexOfId, rowCap } from '@/lib/use-row-cap'
 import type { RowActions } from '@/screens/applications/use-row-actions'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -289,6 +291,14 @@ export function Board({
 
   const [dragging, setDragging] = useState<Application | null>(null)
   const [hover, setHover] = useState(-1)
+  /**
+   * Each column mounts a page of cards at a time (`rowCap`, the list view's
+   * `useRowCap` per column — a hook cannot be called once per stage in a loop).
+   * `dropped` is the last card moved by drag: kept mounted in its new column
+   * however far down it sorts, so a drop never makes the card vanish.
+   */
+  const [limits, setLimits] = useState<Partial<Record<Stage, number>>>({})
+  const [dropped, setDropped] = useState<string | undefined>(undefined)
 
   // Read by the gesture, which is built once and must not capture a render's
   // values. `dragging` is the same card, kept where a callback can reach the
@@ -323,6 +333,8 @@ export function Board({
     // nowhere — or is released over the column it started in — costs nothing.
     const target = dropStage(columnIndex, released)
     if (card && target) latest.current.actions.onMoveStage(card, target)
+    // Kept mounted in the column it lands in, past that column's page if need be.
+    if (card && target) setDropped(card.id)
   }, [])
 
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -347,6 +359,25 @@ export function Board({
     const to = Math.min(max, Math.max(0, from + delta))
     scrollX.value = startOffset(to, RTL, PHYSICAL_SCROLL, contentW.value, viewportW.value)
     scrollTo(scroller, scrollX.value, 0, false)
+    // The board moved under the finger, so the column under it may have
+    // changed with no `onUpdate` to say so — a finger held at the edge is a
+    // finger that does not move. Ask again, or the highlight and the drop stay
+    // on the column the finger last moved over.
+    const idx = hoveredColumn(
+      pointerX.value,
+      wrapX.value,
+      viewportW.value,
+      scrollX.value,
+      contentW.value,
+      RTL,
+      PHYSICAL_SCROLL,
+      COLUMN_STRIDE,
+      STAGES.length,
+    )
+    if (idx !== hoverSV.value) {
+      hoverSV.value = idx
+      runOnJS(setHover)(idx)
+    }
   }, false)
 
   // Everything a card's gesture needs, in one stable object. Bundled so each
@@ -423,6 +454,11 @@ export function Board({
         <View style={styles.board}>
           {STAGES.map((stage, i) => {
             const items = pool.filter((a) => a.stage === stage.id)
+            const cap = rowCap(
+              items.length,
+              limits[stage.id] ?? ROW_PAGE,
+              indexOfId(items, dropped),
+            )
             const isTarget = dragging != null && hover === i && dragging.stage !== stage.id
             return (
               <View
@@ -453,7 +489,7 @@ export function Board({
                   </Txt>
                 </View>
 
-                {items.map((a) => (
+                {items.slice(0, cap.shown).map((a) => (
                   <DraggableCard
                     key={a.id}
                     application={a}
@@ -463,6 +499,11 @@ export function Board({
                     onOpen={onOpen}
                   />
                 ))}
+                <ShowMoreRows
+                  shown={cap.shown}
+                  hidden={cap.hidden}
+                  onMore={() => setLimits((now) => ({ ...now, [stage.id]: cap.shown + ROW_PAGE }))}
+                />
 
                 {/* Per column, so the stage is already chosen: logging a job you
                     have already interviewed for should not mean adding it as a

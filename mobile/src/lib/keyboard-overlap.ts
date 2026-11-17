@@ -1,8 +1,9 @@
 /**
  * How far a view's bottom edge reaches below the keyboard's top edge, in dp.
  *
- * Both arguments in window coordinates: the view as `measureInWindow` reports
- * it, the keyboard as its event's `endCoordinates.screenY`. Zero when the view
+ * Both arguments in screen coordinates: the view's top as `measure` reports
+ * its page offset on Android (`measureInWindow` on iOS), the keyboard as its
+ * event's `endCoordinates.screenY`. Zero when the view
  * ends above the keyboard; whole numbers, so a sub-pixel wobble in either
  * measurement cannot re-render the padding on every layout.
  */

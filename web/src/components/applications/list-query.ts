@@ -19,6 +19,7 @@
  * vocabulary a second front end restates verbatim; nothing in it is web.
  */
 
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { listJoin } from '@/components/common/text'
 import { i18next } from '@/i18n/i18n'
 import { domain } from '@/i18n/domain'
@@ -149,5 +150,5 @@ export function emptyReason({
 function joinList(parts: string[]) {
   const lang = i18next.language
   if (!lang || lang === 'en') return listJoin(parts)
-  return new Intl.ListFormat(lang, { type: 'conjunction' }).format(parts)
+  return new Intl.ListFormat(intlLocale(lang), { type: 'conjunction' }).format(parts)
 }

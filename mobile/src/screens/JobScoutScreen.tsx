@@ -41,6 +41,8 @@ import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
 import { FocusTarget } from '@/components/ui/FocusTarget'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { indexOfId, useLatchedFocus, useRowCap } from '@/lib/use-row-cap'
 
 /** Fit bands. A number alone doesn't say whether 64 is good. */
 const fitTone = (fit: number) => (fit >= 80 ? 'green' : fit >= 60 ? 'amber' : 'gray')
@@ -96,6 +98,14 @@ export function JobScoutScreen() {
   const { profile } = useProfile()
   const { get } = useApplications()
   const { toast } = useToast()
+
+  // Both lists mount a page at a time (`useRowCap`), always including the row
+  // a search result or the graph arrived at. Latched here rather than read from
+  // `useArrivingFocus`: the lists are drawn by this component, outside the
+  // `Screen` that provides it, and the route's `focus` is cleared on arrival.
+  const arriving = useLatchedFocus(route.params?.focus?.id)
+  const matchCap = useRowCap(matches.length, indexOfId(matches, arriving))
+  const postingCap = useRowCap(postings.length, indexOfId(postings, arriving))
 
   /*
    * The engine is mounted above the navigator (`lib/pipelines.tsx`), not here.
@@ -390,7 +400,7 @@ export function JobScoutScreen() {
             description={t('jobScout.matches.emptyDescription')}
           />
         ) : (
-          matches.map((m, i) => {
+          matches.slice(0, matchCap.shown).map((m, i) => {
             // The edge is cleared when an application is deleted, so a match can
             // carry an id whose record has just gone; read it, never assume it.
             const application = m.applicationId ? get(m.applicationId) : undefined
@@ -464,6 +474,7 @@ export function JobScoutScreen() {
             )
           })
         )}
+        <ShowMoreRows shown={matchCap.shown} hidden={matchCap.hidden} onMore={matchCap.more} />
       </Panel>
 
       <Panel focusId="scout.save">
@@ -495,7 +506,7 @@ export function JobScoutScreen() {
               description={t('jobScout.save.emptyDescription')}
             />
           ) : (
-            postings.map((p, i) => {
+            postings.slice(0, postingCap.shown).map((p, i) => {
               const application = p.applicationId ? get(p.applicationId) : undefined
               return (
                 <FocusTarget key={p.id} id={p.id}>
@@ -549,6 +560,11 @@ export function JobScoutScreen() {
               )
             })
           )}
+          <ShowMoreRows
+            shown={postingCap.shown}
+            hidden={postingCap.hidden}
+            onMore={postingCap.more}
+          />
         </View>
       </Panel>
 

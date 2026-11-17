@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useId, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link2 } from 'lucide-react'
@@ -507,10 +508,10 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
           hint={
             provider.dialect === 'ollama'
               ? t('model.contextWindow.hintOllama', {
-                  tokens: provider.defaultContext.toLocaleString(i18n.language),
+                  tokens: provider.defaultContext.toLocaleString(intlLocale(i18n.language)),
                 })
               : t('model.contextWindow.hint', {
-                  tokens: provider.defaultContext.toLocaleString(i18n.language),
+                  tokens: provider.defaultContext.toLocaleString(intlLocale(i18n.language)),
                 })
           }
           onChange={(e) => {

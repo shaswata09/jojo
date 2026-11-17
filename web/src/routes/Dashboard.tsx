@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useTranslation } from 'react-i18next'
 import { AddByUrl } from '@/components/applications/AddByUrl'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -33,9 +34,11 @@ const spellOut = (parts: { year: number; month: number; day: number }, language:
     ? `${domain.weekday(new Date(parts.year, parts.month - 1, parts.day).getDay())} ${parts.day} ${domain.month(parts.month)}`
     : // Every other language spells the day its own way — order, case and
       // punctuation included — which is what `Intl` is for.
-      new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
-        new Date(parts.year, parts.month - 1, parts.day),
-      )
+      new Intl.DateTimeFormat(intlLocale(language), {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(new Date(parts.year, parts.month - 1, parts.day))
 
 /**
  * The landing screen, and until now the only route with no `PageHeader` — no

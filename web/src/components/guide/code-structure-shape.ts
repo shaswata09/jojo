@@ -58,8 +58,8 @@ export const SHAPE: DirRow[] = [
     // Four more on 2026-11-16 (i18n): `domain-text.ts` and `advice-text.ts`
     // with a test each — the model's own words in any language, the translator
     // passed in, the English held to core's word for word.
-    files: 193,
-    tests: 80,
+    files: 195,
+    tests: 81,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -139,12 +139,12 @@ export const SHAPE: DirRow[] = [
     // `jobs.ts`, its test, `jobs-context.ts` and `jobs-provider.tsx`: the
     // registry above the router that makes a job outlive the screen that
     // asked for it — `agent-runs.ts`'s argument, generalised.
-    files: 64,
-    tests: 22,
+    files: 66,
+    tests: 23,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 14026,
+    lines: 14559,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -152,7 +152,7 @@ export const SHAPE: DirRow[] = [
     dir: 'web/src/kg/storage',
     files: 12,
     tests: 4,
-    lines: 3085,
+    lines: 3207,
     what: 'the IndexedDB adapter and the documents store',
   },
   {
@@ -239,9 +239,9 @@ export const SHAPE: DirRow[] = [
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
     // 217 with `search-places.ts` — every setting, profile field and place the
     // search palette can reach — its completeness guard, and the arrival test.
-    files: 221,
-    tests: 102,
-    lines: 37400,
+    files: 222,
+    tests: 103,
+    lines: 38679,
     what: 'web-only adapters and URL state',
   },
   {
@@ -271,4 +271,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 263
+export const WEB_TEST_FILES = 264

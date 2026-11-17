@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "頁面選項",
     "description": "這些設定只適用於這個畫面，且只在這次使用期間有效。"
+  },
+  "rows": {
+    "showMore": "顯示更多（{{shown}}/{{total}}）"
   }
 }

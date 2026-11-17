@@ -43,11 +43,16 @@ async function freshStore(): Promise<IdbFileStore> {
   // itself. The suite expects an already-connected store.
   const opened = await store.open()
   expect(opened.ok, 'the store failed to open').toBe(true)
-  await store.write('jojo/folder.json', enc.encode(JSON.stringify({
-    vaultId: `vault-idb-${seq}`,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    appVersion: 'test',
-  })))
+  await store.write(
+    'jojo/folder.json',
+    enc.encode(
+      JSON.stringify({
+        vaultId: `vault-idb-${seq}`,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        appVersion: 'test',
+      }),
+    ),
+  )
   return store
 }
 
@@ -184,6 +189,33 @@ describe('idb-file-store — what only this adapter has to answer for', () => {
     if (survivor.ok) expect(new TextDecoder().decode(survivor.value)).toBe('two')
   })
 
+  it('listTrash says when each copy was trashed and from where, and stamps one that predates that', async () => {
+    const store = await freshStore()
+    await store.write('Documents/f1__CV (2).pdf', enc.encode('two'))
+    await store.trash('Documents/f1__CV (2).pdf')
+    // A copy an older build trashed: written straight under the trash, so its
+    // `meta` has neither field.
+    await store.write('jojo/Trash/Documents/old__cv.pdf', enc.encode('old'))
+
+    const first = await store.listTrash('jojo/Trash/Documents')
+    expect(first.ok).toBe(true)
+    if (!first.ok) return
+    const byPath = new Map(first.value.map((e) => [e.path, e]))
+    const fresh = byPath.get('jojo/Trash/Documents/f1__CV (2).pdf')
+    // The exact name, which the key alone cannot give back.
+    expect(fresh?.from).toBe('Documents/f1__CV (2).pdf')
+    const old = byPath.get('jojo/Trash/Documents/old__cv.pdf')
+    expect(old?.from).toBeUndefined()
+    expect(typeof old?.trashedAt).toBe('number')
+
+    // The stamp is kept: listing again does not restart the window.
+    const second = await store.listTrash('jojo/Trash/Documents')
+    expect(second.ok && second.value.find((e) => e.path === old?.path)?.trashedAt).toBe(
+      old?.trashedAt,
+    )
+    expect((await store.listTrash('Documents')).ok).toBe(false)
+  })
+
   it('purgeTrash on an empty trash is a no-op, not an error', async () => {
     const store = await freshStore()
     await store.write('Documents/a.pdf', enc.encode('one'))
@@ -208,7 +240,8 @@ describe('idb-file-store — what list and open cost', () => {
    */
   it('lists without reading a single document', async () => {
     const store = await freshStore()
-    for (let i = 0; i < 5; i += 1) await store.write(`Documents/${String(i)}.pdf`, new Uint8Array(1000 + i))
+    for (let i = 0; i < 5; i += 1)
+      await store.write(`Documents/${String(i)}.pdf`, new Uint8Array(1000 + i))
     const proto = IDBObjectStore.prototype
     const realGet = proto.get
     let blobReads = 0
@@ -280,9 +313,11 @@ describe('idb-file-store — what list and open cost', () => {
     // open at version 2. A failure, not a hang.
     const after = await Promise.race([
       store.exists('Documents/CV.pdf'),
-      new Promise<'hung'>((resolve) => setTimeout(() => {
-        resolve('hung')
-      }, 2_000)),
+      new Promise<'hung'>((resolve) =>
+        setTimeout(() => {
+          resolve('hung')
+        }, 2_000),
+      ),
     ])
     expect(after).not.toBe('hung')
   })
@@ -316,9 +351,11 @@ describe('idb-file-store — what list and open cost', () => {
       const store = createIdbFileStore({ now: tickingClock(), dbName, blockedGraceMs: 300 })
       const first = await Promise.race([
         store.list('Documents'),
-        new Promise<'hung'>((resolve) => setTimeout(() => {
-          resolve('hung')
-        }, 2_000)),
+        new Promise<'hung'>((resolve) =>
+          setTimeout(() => {
+            resolve('hung')
+          }, 2_000),
+        ),
       ])
       expect(first).not.toBe('hung')
       expect(first !== 'hung' && !first.ok && first.error.code).toBe('files/failed')
@@ -326,9 +363,11 @@ describe('idb-file-store — what list and open cost', () => {
       // Still blocked: answered at once, not after another grace.
       const again = await Promise.race([
         store.open(),
-        new Promise<'waited'>((resolve) => setTimeout(() => {
-          resolve('waited')
-        }, 100)),
+        new Promise<'waited'>((resolve) =>
+          setTimeout(() => {
+            resolve('waited')
+          }, 100),
+        ),
       ])
       expect(again !== 'waited' && !again.ok && isBlockedFailure(again.error)).toBe(true)
 

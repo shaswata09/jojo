@@ -711,7 +711,7 @@
       "connect": "Hubungkan di Pengaturan →",
       "emptyDescription": "Pilih salah satu perintah di bawah, atau ketik apa saja. Balasannya adalah contoh tertulis — berguna sebagai bahan, dan tidak pernah disajikan sebagai jawaban model.",
       "badge": "Contoh respons · tidak ada model yang terhubung",
-      "placeholder": "Tanyakan tentang surat pengantar, email tindak lanjut, wawancara…",
+      "placeholder": "Tanya asisten…",
       "footer": "Jika model terhubung, masing-masing akan membaca profil dan dokumen Anda sebagai konteks. Karena inferensi berjalan lokal, CV dan catatan Anda tidak pernah diunggah ke mana pun."
     },
     "thought": {

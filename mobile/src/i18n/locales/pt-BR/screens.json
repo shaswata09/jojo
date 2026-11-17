@@ -743,7 +743,7 @@
       "connect": "Conecte um nas Configurações →",
       "emptyDescription": "Escolha uma das sugestões abaixo ou digite qualquer coisa. As respostas são exemplos escritos — úteis para trabalhar e nunca apresentados como a resposta de um modelo.",
       "badge": "Resposta de exemplo · nenhum modelo conectado",
-      "placeholder": "Pergunte sobre uma carta de apresentação, um e-mail de acompanhamento, uma entrevista…",
+      "placeholder": "Pergunte ao assistente…",
       "footer": "Com um modelo conectado, cada uma destas lê seu perfil e seus documentos como contexto. Como a inferência é local, seu currículo e suas notas nunca são enviados para lugar nenhum."
     },
     "thought": {

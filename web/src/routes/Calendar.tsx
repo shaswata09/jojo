@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useEffect, useMemo, useState } from 'react'
 import {
   DndContext,
@@ -57,9 +58,10 @@ export function Calendar() {
       month:
         i18n.language === 'en'
           ? `${domain.month(m)} ${y}`
-          : new Intl.DateTimeFormat(i18n.language, { month: 'long', year: 'numeric' }).format(
-              new Date(y, m - 1, 1),
-            ),
+          : new Intl.DateTimeFormat(intlLocale(i18n.language), {
+              month: 'long',
+              year: 'numeric',
+            }).format(new Date(y, m - 1, 1)),
     }),
   )
   const selected = d

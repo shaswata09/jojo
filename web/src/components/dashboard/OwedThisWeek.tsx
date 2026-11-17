@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import type { ReactNode } from 'react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
@@ -238,9 +239,9 @@ export function OwedThisWeek() {
       Array.from({ length: 7 }, (_, i) => {
         const iso = addDays(today, i)
         const { y, m, d } = partsOf(iso)
-        const label = new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(
-          new Date(y, m - 1, d),
-        )
+        const label = new Intl.DateTimeFormat(intlLocale(i18n.language), {
+          weekday: 'short',
+        }).format(new Date(y, m - 1, d))
         return { iso, day: d, label }
       }),
     [today, i18n.language],

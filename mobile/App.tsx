@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { LocaleProvider } from '@/i18n/LocaleProvider'
-import { reconcileTrashedDocuments } from '@/lib/documents'
+import { reconcileTrashedDocuments, vanishedDocuments } from '@/lib/documents'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useStoreStatus } from '@jojo/service/react/status-context'
 import { reportError } from '@/lib/report-error'
@@ -148,8 +148,19 @@ function Themed() {
  *
  * So: on every change to the records, a set-aside copy whose record exists again
  * is moved back, whichever Undo ran. Once per launch, and only once the store
- * has hydrated from disk, copies no record names are deleted — an in-memory
- * store after a failed boot names none, and must not read as "all deleted".
+ * has hydrated from disk, copies no record names are deleted if they were set
+ * aside more than `TRASH_RETENTION_MS` ago — an in-memory store after a failed
+ * boot names none, and must not read as "all deleted"; and the audit log can
+ * Undo a delete from an earlier launch.
+ *
+ * And the other direction: a document whose record left WITHOUT the row's
+ * delete — the assistant's `vault.file.delete`, Undo last of an upload, a
+ * restore that dropped it — used to stay in the sandbox for good, because only
+ * the row called `trashDocument`. Each commit is compared with the previous
+ * one (`vanishedDocuments`), and a path it named that no record names now is
+ * set aside the same way, so the same machinery brings it back or sweeps it.
+ * The baseline is the first HYDRATED commit: before that the graph is not the
+ * person's records, and "gone from it" means nothing.
  *
  * Its own component, rendering nothing, so a commit re-renders this and not the
  * navigator. Never rejects: a leaked copy is a few kilobytes.
@@ -160,13 +171,16 @@ function DocumentTrash() {
   const files = projections.files(useGraph())
   const hydrated = boot.phase === 'ready'
   const swept = useRef(false)
+  /** The uris the last hydrated commit named; null until there was one. */
+  const named = useRef<readonly (string | undefined)[] | null>(null)
   useEffect(() => {
     const sweep = hydrated && !swept.current
     if (sweep) swept.current = true
-    void reconcileTrashedDocuments(
-      files.map((f) => f.uri),
-      { sweep, hydrated },
-    )
+    const uris = files.map((f) => f.uri)
+    const vanished =
+      hydrated && named.current !== null ? vanishedDocuments(named.current, uris) : []
+    named.current = hydrated ? uris : null
+    void reconcileTrashedDocuments(uris, { sweep, hydrated, vanished })
   }, [files, hydrated])
   return null
 }

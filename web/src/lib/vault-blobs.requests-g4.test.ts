@@ -6,9 +6,11 @@
  *   1. deleting the record deletes its bytes (`useFileDelete` -> `blobs.remove`);
  *   2. `remove` takes the bytes out of `Documents/` — into `jojo/Trash`, so the
  *      Undo on screen can put them back;
- *   3. the next page load purges `jojo/Trash` — the copies whose record is
+ *   3. a later page load purges `jojo/Trash` — the copies whose record is
  *      gone, once the records have hydrated (health-1, 2026-11-17: a blanket
- *      purge also took the bytes of every record an Undo had brought back).
+ *      purge also took the bytes of every record an Undo had brought back) and
+ *      once the copy has been there for `TRASH_RETENTION_MS`, so an audit-log
+ *      Undo from an earlier session still finds it.
  *
  * That `purgeTrash` really frees the bytes in IndexedDB is
  * `kg/storage/idb-file-store.test.ts` ("purgeTrash reclaims deleted
@@ -26,6 +28,8 @@ const fake = vi.hoisted(() => ({
   store: null as unknown as MemoryFileStore,
   /** Every call the module made, in order, so "purge before list" is checkable. */
   calls: [] as string[],
+  /** When each trashed key was trashed, as the adapter records it in `meta`. */
+  trashedAt: new Map<string, number>(),
 }))
 
 vi.mock('@/kg/storage/idb-file-store', async () => ({
@@ -50,6 +54,16 @@ vi.mock('@/kg/storage/idb-file-store', async () => ({
     read: (path: string) => fake.store.read(path),
     write: (path: string, data: Uint8Array) => fake.store.write(path, data),
     trash: (path: string) => fake.store.trash(path),
+    listTrash: async (dir: string) => {
+      fake.calls.push(`list ${dir}`)
+      const listed = await fake.store.list(dir)
+      if (!listed.ok) return listed
+      const value = listed.value.map((entry) => ({
+        ...entry,
+        trashedAt: fake.trashedAt.get(entry.path) ?? Date.now(),
+      }))
+      return { ok: true, value }
+    },
   }),
 }))
 
@@ -63,6 +77,7 @@ async function load(files: Record<string, Uint8Array>) {
 beforeEach(() => {
   vi.resetModules()
   fake.calls = []
+  fake.trashedAt.clear()
 })
 
 describe('a deleted document’s bytes (Q099)', () => {
@@ -79,8 +94,13 @@ describe('a deleted document’s bytes (Q099)', () => {
   })
 
   it('are purged on the next page load, before the index is read', async () => {
-    // A copy trashed in an earlier session, whose record is gone.
+    // A copy trashed in an earlier session, whose record is gone — longer ago
+    // than the retention window, which is what lets the next load purge it.
     const mod = await load({ [`jojo/Trash/${blobPath('f2', 'cv.pdf')}`]: bytes('cv') })
+    fake.trashedAt.set(
+      `jojo/Trash/${blobPath('f2', 'cv.pdf')}`,
+      Date.now() - mod.TRASH_RETENTION_MS,
+    )
     // The records, hydrated from disk, name no `f2`.
     mod.bindRecords({ subscribe: () => () => {}, getSnapshot: () => ({ ofType: () => [] }) }, true)
     await vi.waitFor(() => expect(fake.calls).toContain('purgeTrash'))

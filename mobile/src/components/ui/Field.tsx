@@ -208,6 +208,7 @@ export function SettingRow({
   description,
   control,
   onPress,
+  stacked = false,
 }: {
   /**
    * Where search lands on this row (`FocusTarget`); listed in
@@ -219,11 +220,19 @@ export function SettingRow({
   description?: string
   control?: ReactNode
   onPress?: () => void
+  /**
+   * The control goes under the text instead of beside it. For a control that
+   * is saying why it is off: a `Button`'s blocker is a sentence, and beside
+   * the label that sentence's width became the control's — the label and its
+   * description were squeezed into a column a word wide ("Reset the demo
+   * data" with Records on Empty, seen on an Android AVD, 2026-11-17).
+   */
+  stacked?: boolean
 }) {
   const c = useColors()
   const body = (
-    <View style={styles.settingRow}>
-      <View style={s.fill}>
+    <View style={stacked ? styles.settingStacked : styles.settingRow}>
+      <View style={stacked ? undefined : s.fill}>
         <Txt size="base">{label}</Txt>
         {description ? (
           <Txt size="xs" tone="muted" style={{ marginTop: 2 }}>
@@ -293,4 +302,5 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   settingControl: { flexShrink: 0 },
+  settingStacked: { gap: space[2], paddingVertical: space[3] },
 })

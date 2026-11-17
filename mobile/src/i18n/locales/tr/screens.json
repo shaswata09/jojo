@@ -743,7 +743,7 @@
       "connect": "Ayarlar'dan bir model bağlayın →",
       "emptyDescription": "Aşağıdaki isteklerden birini seçin ya da istediğinizi yazın. Yanıtlar yazılı örneklerdir — üzerinde çalışmak için yararlıdır ve asla bir modelin cevabı olarak sunulmaz.",
       "badge": "Örnek yanıt · bağlı model yok",
-      "placeholder": "Ön yazı, takip e-postası, mülakat hakkında sorun…",
+      "placeholder": "Asistana sorun…",
       "footer": "Bir model bağlıyken bunların her biri profilinizi ve belgelerinizi bağlam olarak okur. Çıkarım yerel olduğu için CV'niz ve notlarınız hiçbir yere yüklenmez."
     },
     "thought": {

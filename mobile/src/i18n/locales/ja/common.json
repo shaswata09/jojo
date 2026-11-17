@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "ページのオプション",
     "description": "この画面の今回の表示にだけ適用されます。"
+  },
+  "rows": {
+    "showMore": "さらに表示（{{total}} 件中 {{shown}} 件）"
   }
 }

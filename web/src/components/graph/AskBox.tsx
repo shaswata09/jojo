@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { Trans, useTranslation } from 'react-i18next'
 import { ArrowUp, Sparkles } from 'lucide-react'
 import { useAgent } from '@jojo/service/react/use-agent'
+import { appNoteText } from '@jojo/service/react/app-note'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { NodeId } from '@jojo/service/core/model'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
@@ -14,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StepRow } from '@/components/assistant/AgentTrace'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Ask the graph in a sentence.
@@ -59,6 +61,7 @@ export function AskBox({
   resetKey: number
 }) {
   const { t } = useTranslation('graph')
+  const domain = useDomain()
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
   const [prompt, setPrompt] = useState('')
@@ -244,7 +247,7 @@ export function AskBox({
                 </li>
               ) : entry.kind === 'note' ? (
                 <li key={entry.id} className="px-1 text-xs text-text-3 italic">
-                  {entry.text}
+                  {entry.app === true ? appNoteText(entry.text, domain) : entry.text}
                 </li>
               ) : null,
             )}

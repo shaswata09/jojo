@@ -743,7 +743,7 @@
       "connect": "En connecter un dans les Réglages →",
       "emptyDescription": "Choisissez l’une des suggestions ci-dessous, ou tapez ce que vous voulez. Les réponses sont des exemples écrits — utiles pour travailler, et jamais présentés comme la réponse d’un modèle.",
       "badge": "Réponse d’exemple · aucun modèle connecté",
-      "placeholder": "Posez une question sur une lettre de motivation, un e-mail de relance, un entretien…",
+      "placeholder": "Demandez à l’assistant…",
       "footer": "Avec un modèle connecté, chacune de ces suggestions lit votre profil et vos documents comme contexte. L’inférence étant locale, votre CV et vos notes ne sont jamais envoyés nulle part."
     },
     "thought": {

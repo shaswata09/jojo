@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "페이지 옵션",
     "description": "이 화면의 이번 방문에만 적용돼요."
+  },
+  "rows": {
+    "showMore": "더 보기 ({{total}}개 중 {{shown}}개)"
   }
 }

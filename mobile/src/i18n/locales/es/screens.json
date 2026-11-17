@@ -743,7 +743,7 @@
       "connect": "Conecta uno en Ajustes →",
       "emptyDescription": "Elige una de las sugerencias de abajo o escribe lo que quieras. Las respuestas son ejemplos escritos: útiles para trabajar, y nunca presentados como la respuesta de un modelo.",
       "badge": "Respuesta de ejemplo · sin modelo conectado",
-      "placeholder": "Pregunta por una carta de presentación, un correo de seguimiento, una entrevista…",
+      "placeholder": "Pregunta al asistente…",
       "footer": "Con un modelo conectado, cada una de estas lee tu perfil y tus documentos como contexto. Como la inferencia es local, tu CV y tus notas nunca se suben a ningún sitio."
     },
     "thought": {

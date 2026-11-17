@@ -12,6 +12,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { kindOfFile, mimeOfFile, sizeLabel } from '@/lib/files'
+import { DOCUMENT_TRASH_SUFFIX } from '@/lib/restore-documents'
 import type { FileBucket, FileKind } from '@jojo/service/data/vault'
 
 /**
@@ -249,16 +250,21 @@ export async function documentExists(uri: string | undefined): Promise<boolean> 
  * different question with a different answer — see `trashDocument` below. That
  * delete offers an Undo, and bytes deleted under a restorable record are a
  * record restored to point at nothing, so the single-row path sets the copy
- * aside instead and sweeps it on the next launch.
+ * aside instead, and a launch past the retention window sweeps it.
  */
 export async function forgetDocument(uri: string | undefined): Promise<void> {
   if (!uri) return
-  try {
-    await ReactNativeBlobUtil.fs.unlink(pathOf(uri))
-  } catch {
-    // A copy that cannot be deleted is a few kilobytes in the app's sandbox,
-    // and it goes with the app. Not worth failing the delete the user asked
-    // for — the record is what they were removing.
+  // The set-aside copy as well: a wipe empties the store, that commit can move
+  // the bytes into the trash before this runs (`reconcileTrashedDocuments`),
+  // and "your vault is gone" must not mean "in a month".
+  for (const path of [pathOf(uri), `${pathOf(uri)}${TRASH_SUFFIX}`]) {
+    try {
+      await ReactNativeBlobUtil.fs.unlink(path)
+    } catch {
+      // A copy that cannot be deleted is a few kilobytes in the app's sandbox,
+      // and it goes with the app. Not worth failing the delete the user asked
+      // for — the record is what they were removing.
+    }
   }
 }
 
@@ -284,7 +290,8 @@ export async function forgetDocument(uri: string | undefined): Promise<void> {
  * few kilobytes that leave with the app.
  */
 /**
- * A copy set aside so an Undo can bring it back, and swept on the next launch.
+ * A copy set aside so an Undo can bring it back, and swept at a launch once
+ * it has waited out the retention window.
  *
  * ## Why the single-row delete could not just unlink
  *
@@ -309,38 +316,90 @@ export async function forgetDocument(uri: string | undefined): Promise<void> {
  * Now the trash follows the records (`planTrashedDocuments`). On every commit a
  * trashed copy whose original path a live record names again is moved back,
  * whatever ran the revert. At launch, once the store has hydrated from disk, a
- * trashed copy no record names is deleted — and only then: an in-memory store
- * after a failed boot names nothing, and reading that as "every record is gone"
- * would delete every set-aside document on the phone.
+ * trashed copy no record names is deleted once it has been set aside for
+ * `TRASH_RETENTION_MS` — and only once hydrated: an in-memory store after a
+ * failed boot names nothing, and reading that as "every record is gone" would
+ * delete every set-aside document on the phone.
+ *
+ * ## Why a retention window (review 2026-11-17, follow-up)
+ *
+ * Deleting at the next launch still lost the document for the audit log's
+ * Undo of a delete from an EARLIER launch: the journal outlives the session,
+ * so the record came back and its bytes were already gone. A copy is now kept
+ * for 30 days from when it was set aside (`TrashedDocument.at`) and deleted at
+ * a launch after that, if its record is still gone. Entries written before the
+ * timestamp existed are read as "set aside now", so an upgrade deletes nothing.
+ *
+ * ## Copies whose record went some other way
+ *
+ * Only `FilesTool`'s delete called `trashDocument`. A record that left any
+ * other way — the assistant's `vault.file.delete`, "Undo last" of an upload, a
+ * restore that dropped it — left its bytes in the sandbox for good. Now the
+ * caller (`DocumentTrash` in `App.tsx`) compares each commit with the one
+ * before it, and a path the previous snapshot named and no record names now is
+ * passed to `reconcileTrashedDocuments` as `vanished` and set aside exactly as
+ * the row's delete does — so a revert brings it back the same way, and the
+ * retention sweeps it if nothing does. Already set aside (the row's own delete
+ * got there first) is a no-op, and so is a path that is already gone.
  *
  * ## Why a list rather than a directory
  *
  * `keepLocalCopy` mints its own UUID directory per file, so the app does not
  * know the shape of its own storage — the comment at the top of this file says
  * so. Walking that tree to find trash would make it start depending on a layout
- * it does not own. A list of paths depends on nothing. The same is why a copy
- * whose record went WITHOUT this path — the assistant's `vault.file.delete` —
- * is not found by anything here: nothing lists the copies a record does not
- * name.
+ * it does not own. A list of paths depends on nothing — which is also why a
+ * copy whose record went some other way is found by comparing commits (above)
+ * rather than by looking at the disk.
  */
 const TRASH_KEY = 'jojo/documents/trashed'
-const TRASH_SUFFIX = '.jojo-trashed'
+const TRASH_SUFFIX = DOCUMENT_TRASH_SUFFIX
+
+/**
+ * How long a set-aside document whose record is gone is kept before a launch
+ * deletes it — 30 days from when it was set aside. The web app keeps the same
+ * window under the same name (`web/src/lib/vault-blobs.ts`); see the section
+ * above for why there is one.
+ */
+export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60_000
+
+/** One set-aside copy: its path, and when it was set aside (epoch ms). */
+export type TrashedDocument = { readonly path: string; readonly at: number }
 
 /**
  * The list as last read or written, so the check made on every commit costs no
  * AsyncStorage read. Only this module writes the key, and every write goes
  * through `writeTrashList`, which keeps this current.
  */
-let knownTrash: string[] | null = null
+let knownTrash: TrashedDocument[] | null = null
 
-const trashList = async (): Promise<string[]> => {
+/**
+ * The stored list, read once. A bare string is an entry from before the
+ * timestamp existed: read as set aside now, and written back that way, so the
+ * window starts once rather than at every launch.
+ */
+const trashList = async (): Promise<TrashedDocument[]> => {
   if (knownTrash !== null) return knownTrash
   try {
     const raw = await AsyncStorage.getItem(TRASH_KEY)
     const parsed: unknown = raw === null ? [] : JSON.parse(raw)
-    knownTrash = Array.isArray(parsed)
-      ? parsed.filter((p): p is string => typeof p === 'string')
-      : []
+    const now = Date.now()
+    let migrated = false
+    const list: TrashedDocument[] = []
+    for (const item of Array.isArray(parsed) ? parsed : []) {
+      if (typeof item === 'string') {
+        list.push({ path: item, at: now })
+        migrated = true
+      } else if (
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as TrashedDocument).path === 'string' &&
+        typeof (item as TrashedDocument).at === 'number'
+      ) {
+        list.push({ path: (item as TrashedDocument).path, at: (item as TrashedDocument).at })
+      }
+    }
+    if (migrated) await writeTrashList(list)
+    knownTrash = list
   } catch {
     // Not cached: a read that failed is tried again next time.
     return []
@@ -348,14 +407,53 @@ const trashList = async (): Promise<string[]> => {
   return knownTrash
 }
 
-const writeTrashList = async (paths: readonly string[]): Promise<void> => {
-  knownTrash = [...paths]
+const writeTrashList = async (entries: readonly TrashedDocument[]): Promise<void> => {
+  knownTrash = [...entries]
   try {
-    await AsyncStorage.setItem(TRASH_KEY, JSON.stringify(paths))
+    await AsyncStorage.setItem(TRASH_KEY, JSON.stringify(entries))
   } catch {
     // A trash list that cannot be written means the sweep misses this file —
     // the old behaviour, and a few kilobytes. Not worth failing the delete.
   }
+}
+
+/**
+ * Moves one document's bytes aside and lists them. The one way anything is
+ * trashed, so the row's delete and a vanished record cannot trash twice: a
+ * path already listed, or no longer there to move, is left alone. Runs inside
+ * `serially`. Resolves the trashed path, or null when nothing moved.
+ */
+async function setAside(from: string, now: number): Promise<string | null> {
+  const to = `${from}${TRASH_SUFFIX}`
+  if ((await trashList()).some((entry) => entry.path === to)) return null
+  try {
+    await ReactNativeBlobUtil.fs.mv(from, to)
+  } catch {
+    // Already gone, or unmovable. Either way there is nothing to restore and
+    // nothing to sweep.
+    return null
+  }
+  await writeTrashList([...(await trashList()), { path: to, at: now }])
+  return to
+}
+
+/**
+ * The paths a previous commit's records named that none names now — what a
+ * record that left by any route leaves behind. Pure; `DocumentTrash` feeds it
+ * the uris of two consecutive commits. Deduped, and never a path still named.
+ */
+export function vanishedDocuments(
+  previous: readonly (string | undefined)[],
+  next: readonly (string | undefined)[],
+): string[] {
+  const still = new Set(next.filter((uri): uri is string => Boolean(uri)).map(pathOf))
+  const out = new Set<string>()
+  for (const uri of previous) {
+    if (!uri) continue
+    const path = pathOf(uri)
+    if (!still.has(path)) out.add(path)
+  }
+  return [...out]
 }
 
 /**
@@ -378,10 +476,13 @@ function serially<T>(step: () => Promise<T>): Promise<T> {
 export type TrashPlan = {
   /** Copies a live record names again: moved back from `from` to `to`. */
   readonly restore: readonly { readonly from: string; readonly to: string }[]
-  /** Copies no record names, unlinked. Only in a sweep of a hydrated store. */
+  /**
+   * Copies no record names, set aside for `TRASH_RETENTION_MS`, unlinked. Only
+   * in a sweep of a hydrated store.
+   */
   readonly purge: readonly string[]
   /** Everything else stays set aside. */
-  readonly keep: readonly string[]
+  readonly keep: readonly TrashedDocument[]
 }
 
 /**
@@ -389,24 +490,29 @@ export type TrashPlan = {
  *
  * `livePaths` are the filesystem paths the records name now. Putting a copy
  * back is safe against any store, so it is done whenever its path is named;
- * deleting one needs both `sweep` (launch, when no Undo in this session can be
- * owed) and `hydrated` (the records are the ones on disk).
+ * deleting one needs `sweep` (launch, when no Undo in this session can be
+ * owed), `hydrated` (the records are the ones on disk) and the copy to have
+ * been set aside for the retention window by `now`.
  */
 export function planTrashedDocuments(input: {
-  readonly trashed: readonly string[]
+  readonly trashed: readonly TrashedDocument[]
   readonly livePaths: ReadonlySet<string>
   readonly sweep: boolean
   readonly hydrated: boolean
+  readonly now: number
+  readonly retentionMs?: number
 }): TrashPlan {
   const restore: { from: string; to: string }[] = []
   const purge: string[] = []
-  const keep: string[] = []
+  const keep: TrashedDocument[] = []
   const deleting = input.sweep && input.hydrated
-  for (const from of input.trashed) {
+  const retention = input.retentionMs ?? TRASH_RETENTION_MS
+  for (const entry of input.trashed) {
+    const from = entry.path
     const to = from.endsWith(TRASH_SUFFIX) ? from.slice(0, -TRASH_SUFFIX.length) : null
     if (to !== null && input.livePaths.has(to)) restore.push({ from, to })
-    else if (deleting) purge.push(from)
-    else keep.push(from)
+    else if (deleting && input.now - entry.at >= retention) purge.push(from)
+    else keep.push(entry)
   }
   return { restore, purge, keep }
 }
@@ -430,26 +536,22 @@ export function trashDocument(
 ): Promise<() => Promise<void>> {
   if (!uri || shared) return Promise.resolve(async () => {})
   const from = pathOf(uri)
-  const to = `${from}${TRASH_SUFFIX}`
   return serially(async () => {
-    try {
-      await ReactNativeBlobUtil.fs.mv(from, to)
-    } catch {
-      // Already gone, or unmovable. Either way there is nothing to restore and
-      // nothing to sweep, and the record's own deletion is what was asked for.
-      return async () => {}
-    }
-    await writeTrashList([...(await trashList()), to])
+    // Already gone, unmovable, or already set aside by the commit that removed
+    // the record (`vanished`): nothing for this toast to restore, and the
+    // record's revert brings the bytes back through `reconcileTrashedDocuments`.
+    const to = await setAside(from, Date.now())
+    if (to === null) return async () => {}
     return () =>
       serially(async () => {
-        if (!(await trashList()).includes(to)) return
+        if (!(await trashList()).some((entry) => entry.path === to)) return
         try {
           await ReactNativeBlobUtil.fs.mv(to, from)
         } catch {
           // The Undo restores the record either way; `documentExists` is what
           // the row uses to tell the person the document did not come back.
         }
-        await writeTrashList((await trashList()).filter((p) => p !== to))
+        await writeTrashList((await trashList()).filter((entry) => entry.path !== to))
       })
   })
 }
@@ -459,18 +561,39 @@ export function trashDocument(
  *
  * Called on every change to the records with `sweep: false` — a copy whose
  * record a revert brought back is moved back, whichever Undo ran — and once at
- * launch with `sweep: true`, when copies no record names are deleted. Never
- * rejects: a leaked copy is a few kilobytes, and the caller is an effect.
+ * launch with `sweep: true`, when copies no record names are deleted once past
+ * the retention window. `vanished` are the paths the commit before this one
+ * named and this one does not (`vanishedDocuments`): set aside first, exactly
+ * as the row's delete does, but only over a hydrated store and never a path a
+ * live record still names. `now` is for tests. Never rejects: a leaked copy is
+ * a few kilobytes, and the caller is an effect.
  */
 export function reconcileTrashedDocuments(
   uris: readonly (string | undefined)[],
-  options: { readonly sweep: boolean; readonly hydrated: boolean },
+  options: {
+    readonly sweep: boolean
+    readonly hydrated: boolean
+    readonly vanished?: readonly string[]
+    readonly now?: number
+  },
 ): Promise<void> {
   return serially(async () => {
+    const now = options.now ?? Date.now()
+    const livePaths = new Set(uris.filter((uri): uri is string => Boolean(uri)).map(pathOf))
+    if (options.hydrated) {
+      for (const path of options.vanished ?? []) {
+        if (!livePaths.has(path)) await setAside(path, now)
+      }
+    }
     const trashed = await trashList()
     if (trashed.length === 0) return
-    const livePaths = new Set(uris.filter((uri): uri is string => Boolean(uri)).map(pathOf))
-    const plan = planTrashedDocuments({ trashed, livePaths, ...options })
+    const plan = planTrashedDocuments({
+      trashed,
+      livePaths,
+      sweep: options.sweep,
+      hydrated: options.hydrated,
+      now,
+    })
     if (plan.restore.length === 0 && plan.purge.length === 0) return
     const keep = [...plan.keep]
     for (const { from, to } of plan.restore) {
@@ -481,7 +604,8 @@ export function reconcileTrashedDocuments(
         // original is back already, this one is a leftover and never tried again.
         const there = await ReactNativeBlobUtil.fs.exists(to).catch(() => false)
         const here = await ReactNativeBlobUtil.fs.exists(from).catch(() => false)
-        if (!there && here) keep.push(from)
+        const entry = trashed.find((item) => item.path === from)
+        if (!there && here && entry !== undefined) keep.push(entry)
       }
     }
     await Promise.all(

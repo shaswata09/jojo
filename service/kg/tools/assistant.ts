@@ -18,8 +18,14 @@
  */
 
 import { s } from '../core/schema'
-import type { NodeId, ThreadEntry } from '../core/model'
-import { APPROVAL_MODES, APPROVAL_SAID, APPROVAL_TITLE } from '../core/model'
+import type { NodeId, ThreadEntry, TrimLevel } from '../core/model'
+import {
+  APPROVAL_MODES,
+  APPROVAL_SAID,
+  APPROVAL_TITLE,
+  TRIM_MARKER,
+  trimLevelOf,
+} from '../core/model'
 import { displayOf, nameOf } from './support'
 import { defineTool } from './tool'
 
@@ -30,7 +36,8 @@ import { defineTool } from './tool'
  * has had with a job tracker. It exists because the alternative to a cap is an
  * unbounded prop on a node the whole store is rewritten for, and a bound nobody
  * reaches is cheaper than the day somebody does. The OLDEST go, because a
- * conversation is read from the bottom.
+ * conversation is read from the bottom — and on a summarised thread the
+ * replies among them go before the person's own turns (`capCovered`).
  */
 const TURN_CAP = 200
 
@@ -97,6 +104,49 @@ export const threadCreate = defineTool({
 })
 
 /**
+ * The covered prefix of a summarised thread, cut to fit the cap — or `null`
+ * when the thread is within it and nothing changes.
+ *
+ * WHAT GOES FIRST is everything in the prefix that is not the person's own
+ * words: replies, notes, thoughts, failed attempts, and the tool steps with
+ * their results. `historyFor` sends the model only the `you` turns of the
+ * covered prefix (verbatim, ahead of the tail) and the summary in place of the
+ * rest, so taking the rest changes NOTHING the model is sent — the request is
+ * byte-identical before and after the save. Taking the oldest entries whole,
+ * as this did, took the person's turns along with the replies, and those were
+ * the words the compaction design promises to keep verbatim.
+ *
+ * WHAT GOES LAST is the person's own turns, oldest first, and only when the
+ * prefix holds nothing else and the thread is still over the cap. The store
+ * stays bounded the same as before — at most `TURN_CAP`, or the uncovered
+ * tail and one entry when the tail alone is over it — at the price of words
+ * nobody can re-derive, which is why it is the last resort, the same one
+ * `fitHistory`'s stage 3 takes per request. It is not silent: the marker at
+ * the head moves to `messages`, which the person reads in the transcript and
+ * `historyFor` turns into a line the model reads (`TRIM_SAID_TO_MODEL`).
+ *
+ * The marker is one app note at index 0, inside the covered prefix: it counts
+ * toward the cap, is never itself trimmed, and is never replayed as speech.
+ */
+function capCovered(covered: readonly ThreadEntry[], tail: number): ThreadEntry[] | null {
+  if (covered.length + tail <= TURN_CAP) return null
+  const had = trimLevelOf(covered[0])
+  const body = had === null ? covered : covered.slice(1)
+  if (body.length === 0) return null
+  // The marker counts toward the cap, so make room for it when it is new.
+  let over = body.length + 1 + tail - TURN_CAP
+  const kept: ThreadEntry[] = []
+  for (const entry of body) {
+    if (over > 0 && entry.kind !== 'you') over -= 1
+    else kept.push(entry)
+  }
+  const removeYou = Math.max(0, Math.min(over, kept.length))
+  const level: TrimLevel = removeYou > 0 || had === 'messages' ? 'messages' : 'replies'
+  const marker: ThreadEntry = { kind: 'note', app: true, text: TRIM_MARKER[level] }
+  return [marker, ...kept.slice(removeYou)]
+}
+
+/**
  * Replaces the turns wholesale.
  *
  * Set, not append, and the difference matters for undo. A turn arrives as the
@@ -129,32 +179,36 @@ export const threadSet = defineTool({
     const thread = ctx.require('thread', input.id)
     const all = input.entries as ThreadEntry[]
     /*
-     * The cap, and the summary boundary with it (review 2026-11-17).
+     * The cap, and the summary boundary with it (reviews of 2026-11-17).
      *
      * `contextThrough` is an INDEX into `entries`. Trimming the front without
      * moving it pointed the summary that many entries further on than it had
      * reached, and `historyFor` then sent neither the summary's account of the
-     * exchanges in between nor the exchanges themselves: they were gone from
-     * the model's view with nothing standing in for them, and every save past
-     * the cap shifted the gap again.
-     *
-     * So the boundary moves back by what was trimmed, and on a summarised
-     * thread the trim stops AT the boundary: only entries the summary already
-     * accounts for go. What lies past it is what the last compaction left to
-     * fit in one context window, and the next compaction moves the boundary on
-     * and lets the cap take the rest, so the store stays bounded. A thread with
-     * no summary keeps the plain rule — the oldest go, from the transcript and
-     * the model's view alike.
+     * exchanges in between nor the exchanges themselves. So the boundary moves
+     * with what the cap takes, and on a summarised thread the cap takes only
+     * from the covered prefix: what lies past the boundary is what the last
+     * compaction left to fit in one window, and the next compaction moves the
+     * boundary on and lets the cap take the rest. A thread with no summary keeps
+     * the plain rule — the oldest go, from the transcript and the model's view
+     * alike. See `capCovered` for what the cap takes from the covered prefix,
+     * and in what order.
      */
-    const over = Math.max(0, all.length - TURN_CAP)
     const through = thread.props.contextThrough
     const summarised = thread.props.context !== undefined && through !== undefined && through > 0
-    const trimmed = summarised ? Math.min(over, through) : over
+    if (!summarised) {
+      const over = Math.max(0, all.length - TURN_CAP)
+      const moved = through !== undefined && over > 0
+      ctx.tx.patch<'thread'>(input.id, {
+        entries: all.slice(over),
+        ...(moved ? { contextThrough: Math.max(0, through - over) } : {}),
+      })
+      return
+    }
+    const at = Math.min(through, all.length)
+    const covered = capCovered(all.slice(0, at), all.length - at)
     ctx.tx.patch<'thread'>(input.id, {
-      entries: all.slice(trimmed),
-      ...(through !== undefined && trimmed > 0
-        ? { contextThrough: Math.max(0, through - trimmed) }
-        : {}),
+      entries: covered === null ? all : [...covered, ...all.slice(at)],
+      ...(covered === null ? {} : { contextThrough: covered.length }),
     })
   },
   describe: (input, _output, m) => ({ title: 'Conversation saved', description: nameOf(m, input.id) }),

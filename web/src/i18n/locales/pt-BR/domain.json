@@ -453,5 +453,30 @@
       "phone_many": "Restaurar substitui todos os registros deste celular e todos os documentos, exceto {{count}} registros que chegam sem os seus documentos: as cópias que já estão aqui são mantidas",
       "phone_other": "Restaurar substitui todos os registros deste celular e todos os documentos, exceto {{count}} registros que chegam sem os seus documentos: as cópias que já estão aqui são mantidas"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Respostas anteriores desta conversa foram removidas para mantê-la dentro do limite de tamanho. Todas as suas mensagens foram mantidas, e o assistente tem um resumo do restante.",
+      "messages": "Esta conversa ultrapassou o limite de tamanho, então as mensagens mais antigas foram removidas — as suas e também as respostas. O assistente tem um resumo das respostas e sabe que algumas das suas primeiras mensagens não estão mais aqui."
+    },
+    "summarised_one": "Esta conversa ultrapassou o que o modelo consegue comportar, então a mensagem mais antiga ({{count}}) foi substituída por um breve resumo. O assistente ainda sabe o que aconteceu; só não tem mais as palavras exatas.",
+    "summarised_many": "Esta conversa ultrapassou o que o modelo consegue comportar, então as {{count}} mensagens mais antigas foram substituídas por um breve resumo. O assistente ainda sabe o que aconteceu; só não tem mais as palavras exatas.",
+    "summarised_other": "Esta conversa ultrapassou o que o modelo consegue comportar, então as {{count}} mensagens mais antigas foram substituídas por um breve resumo. O assistente ainda sabe o que aconteceu; só não tem mais as palavras exatas.",
+    "leftOut_one": "Esta conversa ultrapassou o que o modelo consegue comportar, então a mensagem mais antiga ({{count}}) ficou de fora desta solicitação. Seus registros não foram alterados — comece uma nova conversa para recomeçar do zero.",
+    "leftOut_many": "Esta conversa ultrapassou o que o modelo consegue comportar, então as {{count}} mensagens mais antigas ficaram de fora desta solicitação. Seus registros não foram alterados — comece uma nova conversa para recomeçar do zero.",
+    "leftOut_other": "Esta conversa ultrapassou o que o modelo consegue comportar, então as {{count}} mensagens mais antigas ficaram de fora desta solicitação. Seus registros não foram alterados — comece uma nova conversa para recomeçar do zero.",
+    "stubbed_one": "Esta rodada ultrapassou o que o modelo consegue comportar, então {{count}} resultado anterior de ferramenta foi encurtado para uma linha de resumo. Nada se perdeu — os registros continuam salvos e podem ser lidos de novo.",
+    "stubbed_many": "Esta rodada ultrapassou o que o modelo consegue comportar, então {{count}} resultados anteriores de ferramentas foram encurtados para uma linha de resumo. Nada se perdeu — os registros continuam salvos e podem ser lidos de novo.",
+    "stubbed_other": "Esta rodada ultrapassou o que o modelo consegue comportar, então {{count}} resultados anteriores de ferramentas foram encurtados para uma linha de resumo. Nada se perdeu — os registros continuam salvos e podem ser lidos de novo.",
+    "toolsOverflow": "Só a lista de ferramentas já é maior do que este modelo consegue comportar. Restrinja o que o assistente pode usar, ou aumente a janela de contexto em Configurações se o seu servidor permitir.",
+    "cutCall": "A chamada de ferramenta do modelo foi cortada pelo limite de saída antes de ficar completa, então não foi executada. O modelo foi solicitado a enviá-la novamente.",
+    "cutReply": "O modelo parou no meio da resposta porque atingiu o próprio limite de saída. O que vem a seguir pode estar incompleto — uma pergunta mais curta, ou um limite de resposta maior no servidor, costuma resolver.",
+    "verify": {
+      "claimed-write-none-attempted": "O assistente disse que tinha alterado algo, mas nada que grava dados foi chamado e seus registros não mudaram. Ele foi solicitado a verificar antes de terminar.",
+      "claimed-write-none-landed": "O assistente disse que tinha alterado algo, mas todas as gravações que tentou nesta rodada falharam ou foram recusadas, então seus registros não mudaram. Ele foi solicitado a verificar antes de terminar.",
+      "named-unread-record": "O assistente citou um registro que não leu nesta rodada. Ele foi solicitado a consultá-lo antes de responder, em vez de responder de memória.",
+      "bare-acknowledgement": "O assistente concordou em fazer o trabalho sem fazê-lo, então nada aconteceu ainda. Ele foi solicitado a fazer a chamada.",
+      "stopped-mid-task": "O assistente parou no meio do caminho, dizendo o que faria em seguida sem fazê-lo. Ele foi solicitado a continuar."
+    }
   }
 }

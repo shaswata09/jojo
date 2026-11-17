@@ -34,6 +34,7 @@ import {
   isBlockedFailure,
   trashPath,
   type IdbFileStore,
+  type TrashEntry,
 } from '@/kg/storage/idb-file-store'
 import { mimeOfFile } from '@jojo/service/core/files'
 import type { GraphSnapshot } from '@jojo/service/core/snapshot'
@@ -226,12 +227,22 @@ function announce(): void {
  *
  * So the sweep is decided by the records, after they have hydrated
  * (`planSweep`): a trashed copy whose record exists again is PUT BACK, one whose
- * record is gone is purged, and a live document no record names — ⌘Z of an
- * upload, the assistant's `vault.file.delete`, which never touches the bytes —
- * is moved to the trash, to be purged on the load after if its record is still
- * gone. It never runs before `bindRecords` is told the store hydrated: a failed
- * or in-memory boot has no records to ask, and "no record" read off an empty
- * graph would delete every document on the device.
+ * record is gone is purged once it has been in the trash for
+ * `TRASH_RETENTION_MS`, and a live document no record names — ⌘Z of an upload,
+ * the assistant's `vault.file.delete`, which never touches the bytes — is moved
+ * to the trash, where the same retention applies. It never runs before
+ * `bindRecords` is told the store hydrated: a failed or in-memory boot has no
+ * records to ask, and "no record" read off an empty graph would delete every
+ * document on the device.
+ *
+ * ## Why a retention window, and not "the next load"
+ *
+ * "Record gone" is not "record gone for good". The journal outlives the page:
+ * Settings › Audit log can Undo a delete made last week, and the record comes
+ * back — so a copy purged on the load after its delete left that Undo a row
+ * with no document. The copy now waits `TRASH_RETENTION_MS` from when it was
+ * trashed (`TrashEntry.trashedAt`), and goes only when its record is STILL gone
+ * at a load after that.
  */
 let swept: Promise<void> | null = null
 
@@ -251,13 +262,31 @@ const TRASH_DOCS = `${TRASH_PREFIX}${DIR}`
 export const ORPHAN_GRACE_MS = 10 * 60_000
 
 /**
+ * How long a trashed document whose record is gone is kept before the sweep
+ * deletes it for good — 30 days, counted from when it was trashed.
+ *
+ * Long enough for the Undo that is not on screen: an audit-log Undo of a delete
+ * from an earlier session reverts a journal entry that is kept far longer than
+ * a page lives, and the document has to be there when the record returns. Short
+ * enough that a deleted document stops costing quota within the month. The
+ * phone keeps the same window under the same name (`mobile/src/lib/documents.ts`).
+ *
+ * Copies trashed before this existed have no timestamp; `listTrash` stamps them
+ * "trashed now" the first time it sees them, so an upgrade purges nothing.
+ */
+export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60_000
+
+/**
  * `jojo/Trash/Documents/<id>__CV (2).pdf` -> the path it was trashed from.
  *
  * The inverse of `trashPath`, which numbers a second copy of the same path
  * `CV (2).pdf`. A name that already ended ` (2)` before it was ever trashed
- * cannot be told apart from that, so it comes back without the suffix — the id
- * half is never touched, so the record it belongs to is never in doubt. Null for
- * anything not under the trash.
+ * cannot be told apart from that by the key alone, which is why the store now
+ * records the exact path at `trash` (`TrashEntry.from`) and the sweep prefers it
+ * — see `restoreTarget`. This parse is the fallback for a copy trashed before
+ * that was recorded, and it is still what yields the id: the id half is never
+ * touched, so the record a copy belongs to is never in doubt. Null for anything
+ * not under the trash.
  */
 export function untrashed(key: string): { path: string; n: number } | null {
   if (!key.startsWith(TRASH_PREFIX)) return null
@@ -280,6 +309,31 @@ export const idOfTrashed = (key: string): string | null => {
   return from === null ? null : idOfPath(from.path)
 }
 
+/**
+ * Where a trashed copy goes back to: the path the store recorded at `trash`,
+ * when it recorded one for this same record, else the path parsed off the key.
+ */
+export function restoreTarget(entry: {
+  readonly path: string
+  readonly from?: string
+}): { path: string; n: number } | null {
+  const parsed = untrashed(entry.path)
+  if (parsed === null) return null
+  const id = idOfPath(parsed.path)
+  if (entry.from !== undefined && id !== null && idOfPath(entry.from) === id) {
+    return { path: entry.from, n: parsed.n }
+  }
+  return parsed
+}
+
+/** A trashed copy as the sweep reads it. `trashedAt`/`from`: see `TrashEntry`. */
+export type TrashedCopy = {
+  readonly path: string
+  readonly mtime: number
+  readonly trashedAt?: number
+  readonly from?: string
+}
+
 /** What the sweep needs to know about the records, asked at the moment it acts. */
 export type SweepFacts = {
   /** False until the record store has hydrated from disk. Nothing is touched while it is. */
@@ -300,27 +354,38 @@ export type SweepFacts = {
  *
  * Pure, and the single rule both the plan and the purge itself apply, so the
  * purge re-asks at the last moment rather than trusting a list taken before
- * several awaits. Purged: a copy no record names, a copy whose record already
- * has its document (a leftover from an Undo that wrote the bytes back), and
- * anything under the trash that is not a document at all. Kept: a copy whose
- * record exists with no document — `planSweep` puts it back — and a copy this
- * page's own Undo may still read.
+ * several awaits. Purged: a copy no record names that has been in the trash for
+ * the retention window (`TRASH_RETENTION_MS`), a copy whose record already has
+ * its document (a leftover from an Undo that wrote the bytes back — the record
+ * is there with bytes, and a later delete trashes those, not this), and anything
+ * under the trash that is not a document at all. Kept: a copy whose record
+ * exists with no document — `planSweep` puts it back — a copy this page's own
+ * Undo may still read, and a copy whose record is gone but whose window has not
+ * passed, or whose age is not known (`age` absent, or no `trashedAt`).
  */
-export function purgesTrashed(key: string, facts: SweepFacts): boolean {
+export function purgesTrashed(
+  key: string,
+  facts: SweepFacts,
+  age?: { readonly trashedAt?: number; readonly now: number; readonly retentionMs?: number },
+): boolean {
   if (!facts.hydrated) return false
   const id = idOfTrashed(key)
   if (id === null) return true
   if (facts.heldBySession(id)) return false
-  if (!facts.isLive(id)) return true
-  return facts.hasDocument(id)
+  if (facts.isLive(id)) return facts.hasDocument(id)
+  if (age?.trashedAt === undefined) return false
+  return age.now - age.trashedAt >= (age.retentionMs ?? TRASH_RETENTION_MS)
 }
 
 export type SweepPlan = {
   /** Trashed copies whose record exists again and has no document: written back to `to`. */
   readonly restore: readonly { readonly id: string; readonly from: string; readonly to: string }[]
-  /** Trashed copies deleted for good. */
+  /** Trashed copies deleted for good — see `purgesTrashed` for which. */
   readonly purge: readonly string[]
-  /** Documents no record names, past `ORPHAN_GRACE_MS`: moved to the trash. */
+  /**
+   * Documents no record names, past `ORPHAN_GRACE_MS`: moved to the trash, and
+   * from there kept for `TRASH_RETENTION_MS` like any other trashed copy.
+   */
   readonly reclaim: readonly string[]
 }
 
@@ -329,19 +394,22 @@ export type SweepPlan = {
  *
  * Pure so the decisions that lose data, or keep it, are tested without a
  * browser. Nothing at all before the records have hydrated. Of several trashed
- * copies for one record, the newest is put back — newest by when its bytes were
- * written, then by its copy number.
+ * copies for one record, the newest is put back — newest by when it was
+ * trashed, then by when its bytes were written, then by its copy number — to
+ * the path it was trashed from (`restoreTarget`).
  */
 export function planSweep(input: {
   readonly facts: SweepFacts
   readonly documents: readonly { readonly path: string; readonly mtime: number }[]
-  readonly trash: readonly { readonly path: string; readonly mtime: number }[]
+  readonly trash: readonly TrashedCopy[]
   readonly now: number
   readonly graceMs?: number
+  readonly retentionMs?: number
 }): SweepPlan {
   const { facts } = input
   if (!facts.hydrated) return { restore: [], purge: [], reclaim: [] }
   const grace = input.graceMs ?? ORPHAN_GRACE_MS
+  const retentionMs = input.retentionMs ?? TRASH_RETENTION_MS
 
   const reclaim: string[] = []
   for (const entry of input.documents) {
@@ -353,22 +421,28 @@ export function planSweep(input: {
   }
 
   const purge: string[] = []
-  const newest = new Map<string, { key: string; to: string; n: number; mtime: number }>()
+  type Best = { key: string; to: string; n: number; mtime: number; trashedAt: number }
+  const newest = new Map<string, Best>()
   for (const entry of input.trash) {
-    if (purgesTrashed(entry.path, facts)) {
+    const age = { trashedAt: entry.trashedAt, now: input.now, retentionMs }
+    if (purgesTrashed(entry.path, facts, age)) {
       purge.push(entry.path)
       continue
     }
-    const from = untrashed(entry.path)
+    const from = restoreTarget(entry)
     const id = from === null ? null : idOfPath(from.path)
     if (from === null || id === null) continue
     if (!facts.isLive(id) || facts.hasDocument(id) || facts.heldBySession(id)) continue
     const best = newest.get(id)
+    const trashedAt = entry.trashedAt ?? 0
     const newer =
       best === undefined ||
-      entry.mtime > best.mtime ||
-      (entry.mtime === best.mtime && from.n > best.n)
-    if (newer) newest.set(id, { key: entry.path, to: from.path, n: from.n, mtime: entry.mtime })
+      trashedAt > best.trashedAt ||
+      (trashedAt === best.trashedAt &&
+        (entry.mtime > best.mtime || (entry.mtime === best.mtime && from.n > best.n)))
+    if (newer) {
+      newest.set(id, { key: entry.path, to: from.path, n: from.n, mtime: entry.mtime, trashedAt })
+    }
   }
   const restore = [...newest].map(([id, copy]) => ({ id, from: copy.key, to: copy.to }))
   return { restore, purge, reclaim }
@@ -452,7 +526,7 @@ function sweepOnce(records: FileRecords): Promise<void> {
 
 async function sweepNow(records: FileRecords): Promise<void> {
   await hydrate()
-  const [documents, trash] = await Promise.all([store().list(DIR), store().list(TRASH_DOCS)])
+  const [documents, trash] = await Promise.all([store().list(DIR), store().listTrash(TRASH_DOCS)])
   // A store that will not list is a store the sweep knows nothing about.
   if (!documents.ok || !trash.ok) return
   const live = () => liveFileIdsOf(records.getSnapshot())
@@ -489,8 +563,16 @@ async function sweepNow(records: FileRecords): Promise<void> {
   }
 
   // Decided again per key at the moment of the purge, not from `plan.purge`.
+  // A key the listing did not see — one `reclaim` just made — has no known age
+  // and is kept, which is right: it was trashed a moment ago.
   const now = facts()
-  await store().purgeTrash((key) => purgesTrashed(key, now))
+  const at = Date.now()
+  const trashedAt = new Map<string, number>(
+    trash.value.map((entry: TrashEntry) => [entry.path, entry.trashedAt]),
+  )
+  await store().purgeTrash((key) =>
+    purgesTrashed(key, now, { trashedAt: trashedAt.get(key), now: at }),
+  )
 }
 
 /**
@@ -533,7 +615,7 @@ function bringBack(id: string): void {
 async function fromAnyTrash(id: string): Promise<boolean> {
   await hydrate()
   if (current.index.has(id)) return false
-  const listed = await store().list(TRASH_DOCS)
+  const listed = await store().listTrash(TRASH_DOCS)
   if (!listed.ok) return false
   const ids = liveNow()
   const plan = planSweep({
@@ -545,7 +627,7 @@ async function fromAnyTrash(id: string): Promise<boolean> {
     },
     documents: [],
     trash: listed.value.filter((entry) => idOfTrashed(entry.path) === id),
-    now: 0,
+    now: Date.now(),
   })
   const copy = plan.restore[0]
   return copy === undefined ? false : putBack(copy.id, copy.from, copy.to)

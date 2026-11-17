@@ -148,17 +148,32 @@ export async function heldDocuments(
 }
 
 /**
+ * What `documents.ts` appends to a document's path when it sets the bytes
+ * aside for an Undo (`trashDocument`). Declared here rather than there so that
+ * `forgetUris` below can name it without importing the picker.
+ */
+export const DOCUMENT_TRASH_SUFFIX = '.jojo-trashed'
+
+/**
  * Deletes the files behind these uris, quietly — what `forgetDocuments` in
  * `documents.ts` does, kept here so the restore path does not import the
  * picker and React Native, which a node test cannot load.
+ *
+ * The set-aside copy too. The phone moves a document whose record vanished
+ * into the trash on the next commit (`reconcileTrashedDocuments`), and a
+ * restore's commit can land before this runs — so the bytes this was asked to
+ * delete may already sit at `<path>.jojo-trashed`, where they would wait out
+ * the retention window that the restore's confirmation never mentioned.
  */
 export async function forgetUris(uris: readonly string[]): Promise<void> {
   for (const uri of new Set(uris)) {
     const path = uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
-    try {
-      await ReactNativeBlobUtil.fs.unlink(path)
-    } catch {
-      // Already gone, or not ours to delete: a few kilobytes that go with the app.
+    for (const target of [path, `${path}${DOCUMENT_TRASH_SUFFIX}`]) {
+      try {
+        await ReactNativeBlobUtil.fs.unlink(target)
+      } catch {
+        // Already gone, or not ours to delete: a few kilobytes that go with the app.
+      }
     }
   }
 }

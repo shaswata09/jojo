@@ -222,6 +222,10 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
           onPress={onSave}
           disabled={saving || loading}
           blocker={loading ? t('postingBrowser.waitForLoad') : undefined}
+          // Capped, so the reason under it wraps instead of widening it: the
+          // sentence is wider than the button, and while a page loaded it took
+          // the address down to a sliver (Android AVD, 2026-11-17).
+          style={styles.keep}
         />
       </View>
 
@@ -294,5 +298,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   address: { flex: 1, minWidth: 0 },
+  keep: { maxWidth: '45%' },
   loading: { position: 'absolute', alignSelf: 'center' },
 })

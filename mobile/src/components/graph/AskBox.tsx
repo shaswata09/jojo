@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { TextInput, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useAgent } from '@jojo/service/react/use-agent'
+import { appNoteText } from '@jojo/service/react/app-note'
+import { useDomain } from '@/i18n/domain'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { NodeId } from '@jojo/service/core/model'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
@@ -43,6 +45,7 @@ export function AskBox({
   onClear: () => void
 }) {
   const { t } = useTranslation('components')
+  const domain = useDomain()
   const c = useColors()
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
@@ -195,7 +198,7 @@ export function AskBox({
               </Txt>
             ) : entry.kind === 'note' ? (
               <Txt key={entry.id} size="xs" tone="muted" style={{ fontStyle: 'italic' }}>
-                {entry.text}
+                {entry.app === true ? appNoteText(entry.text, domain) : entry.text}
               </Txt>
             ) : null,
           )}

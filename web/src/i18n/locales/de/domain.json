@@ -435,5 +435,27 @@
       "phone_one": "Die Wiederherstellung ersetzt alle Einträge auf diesem Handy und alle Dokumente – außer bei {{count}} Eintrag, der ohne sein Dokument ankommt: Dessen Kopie, die schon hier ist, bleibt erhalten",
       "phone_other": "Die Wiederherstellung ersetzt alle Einträge auf diesem Handy und alle Dokumente – außer bei {{count}} Einträgen, die ohne ihre Dokumente ankommen: Deren Kopien, die schon hier sind, bleiben erhalten"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Frühere Antworten in diesem Gespräch wurden entfernt, damit es innerhalb seiner Größengrenze bleibt. Deine eigenen Nachrichten bleiben alle erhalten, und der Assistent hat eine Zusammenfassung des Rests.",
+      "messages": "Dieses Gespräch ist über seine Größengrenze hinausgewachsen, deshalb wurden seine frühesten Nachrichten entfernt — deine ebenso wie die Antworten. Der Assistent hat eine Zusammenfassung der Antworten und weiß, dass einige deiner frühesten Nachrichten fehlen."
+    },
+    "summarised_one": "Dieses Gespräch ist über das hinausgewachsen, was das Modell fassen kann, deshalb wurde die früheste Nachricht ({{count}}) durch eine kurze Zusammenfassung ersetzt. Der Assistent weiß noch, was passiert ist; den genauen Wortlaut hat er nicht mehr.",
+    "summarised_other": "Dieses Gespräch ist über das hinausgewachsen, was das Modell fassen kann, deshalb wurden die frühesten {{count}} Nachrichten durch eine kurze Zusammenfassung ersetzt. Der Assistent weiß noch, was passiert ist; den genauen Wortlaut hat er nicht mehr.",
+    "leftOut_one": "Dieses Gespräch ist über das hinausgewachsen, was das Modell fassen kann, deshalb wurde die früheste Nachricht ({{count}}) bei dieser Anfrage weggelassen. Deine Einträge sind unberührt — beginne ein neues Gespräch, um neu anzufangen.",
+    "leftOut_other": "Dieses Gespräch ist über das hinausgewachsen, was das Modell fassen kann, deshalb wurden die frühesten {{count}} Nachrichten bei dieser Anfrage weggelassen. Deine Einträge sind unberührt — beginne ein neues Gespräch, um neu anzufangen.",
+    "stubbed_one": "Diese Runde ist über das hinausgewachsen, was das Modell fassen kann, deshalb wurde {{count}} früheres Werkzeugergebnis auf eine Zusammenfassungszeile gekürzt. Nichts ist verloren — die Einträge sind weiterhin gespeichert und können erneut gelesen werden.",
+    "stubbed_other": "Diese Runde ist über das hinausgewachsen, was das Modell fassen kann, deshalb wurden {{count}} frühere Werkzeugergebnisse auf eine Zusammenfassungszeile gekürzt. Nichts ist verloren — die Einträge sind weiterhin gespeichert und können erneut gelesen werden.",
+    "toolsOverflow": "Schon die Werkzeugliste allein ist größer, als dieses Modell fassen kann. Schränke ein, worauf der Assistent zugreifen darf, oder vergrößere das Kontextfenster in den Einstellungen, falls dein Server das zulässt.",
+    "cutCall": "Der Werkzeugaufruf des Modells wurde von seinem Ausgabelimit abgeschnitten, bevor er vollständig war, und deshalb nicht ausgeführt. Das Modell wurde gebeten, ihn erneut zu senden.",
+    "cutReply": "Das Modell hat mitten in der Antwort aufgehört, weil es sein eigenes Ausgabelimit erreicht hat. Alles darunter ist möglicherweise unvollständig — eine kürzere Frage oder ein höheres Antwortlimit auf dem Server behebt das meist.",
+    "verify": {
+      "claimed-write-none-attempted": "Der Assistent hat gesagt, er habe etwas geändert, aber es wurde nichts Schreibendes aufgerufen, und deine Einträge sind unverändert. Er wurde gebeten, das vor dem Abschluss zu prüfen.",
+      "claimed-write-none-landed": "Der Assistent hat gesagt, er habe etwas geändert, aber jeder Schreibversuch in dieser Runde ist fehlgeschlagen oder wurde abgelehnt, deshalb sind deine Einträge unverändert. Er wurde gebeten, das vor dem Abschluss zu prüfen.",
+      "named-unread-record": "Der Assistent hat einen Eintrag genannt, den er in dieser Runde nicht gelesen hat. Er wurde gebeten, ihn nachzuschlagen, bevor er antwortet, statt aus dem Gedächtnis zu antworten.",
+      "bare-acknowledgement": "Der Assistent hat zugesagt, die Arbeit zu erledigen, ohne sie zu tun, deshalb ist noch nichts passiert. Er wurde gebeten, den Aufruf auszuführen.",
+      "stopped-mid-task": "Der Assistent hat auf halbem Weg aufgehört und gesagt, was er als Nächstes tun würde, ohne es zu tun. Er wurde gebeten weiterzumachen."
+    }
   }
 }

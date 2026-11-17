@@ -19,7 +19,7 @@ import { keyboardOverlap } from '@/lib/keyboard-overlap'
  * `mVisibleViewArea.height()` and leaves the status and nav bar heights behind
  * as padding once the keyboard closes, and it reads its own frame relative to
  * its parent, which is wrong by the header's height under a stack header. This
- * measures the view in window coordinates, the same space the keyboard's
+ * measures the view in screen coordinates, the same space the keyboard's
  * `screenY` is in, and goes to zero on hide.
  *
  * Pass `ref` to the view and `onLayout` to its `onLayout`; pad its bottom by
@@ -29,7 +29,7 @@ import { keyboardOverlap } from '@/lib/keyboard-overlap'
 export function useKeyboardOverlap() {
   const ref = useRef<View>(null)
   const [overlap, setOverlap] = useState(0)
-  /** The keyboard's top edge in window coordinates, or null while it is down. */
+  /** The keyboard's top edge in screen coordinates, or null while it is down. */
   const top = useRef<number | null>(null)
 
   const measure = useCallback(() => {
@@ -38,9 +38,24 @@ export function useKeyboardOverlap() {
       setOverlap(0)
       return
     }
-    ref.current?.measureInWindow((_x, y, _width, height) =>
-      setOverlap(keyboardOverlap(y, height, edge)),
-    )
+    const view = ref.current
+    if (!view) return
+    // The keyboard's `screenY` is in SCREEN coordinates. On Android,
+    // `measureInWindow` is not: React Native subtracts the window's visible
+    // frame top — the status bar, 24dp — so under edge-to-edge a screen's
+    // bottom read 24dp short and the Assistant's composer sat that far under
+    // the keyboard (measured on an API 33 AVD: measureInWindow y=56, the view
+    // drawn at y=80). `measure`'s page offset is relative to the root view,
+    // which edge-to-edge puts at the top of the screen — the activity's and a
+    // modal's alike — so it lines up with `screenY`. iOS keeps the window
+    // reading, which already is the screen's.
+    if (Platform.OS === 'android') {
+      view.measure((_x, _y, _width, height, _pageX, pageY) =>
+        setOverlap(keyboardOverlap(pageY, height, edge)),
+      )
+    } else {
+      view.measureInWindow((_x, y, _width, height) => setOverlap(keyboardOverlap(y, height, edge)))
+    }
   }, [])
 
   useEffect(() => {

@@ -40,5 +40,8 @@
   "pageOptions": {
     "title": "Tùy chọn trang",
     "description": "Chỉ áp dụng cho màn hình này, trong lần xem này."
+  },
+  "rows": {
+    "showMore": "Hiển thị thêm ({{shown}}/{{total}})"
   }
 }

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 import type { ChatMessage } from '../core/model-server'
 import type { ApprovalMode, NodeId, StoredNode, ThreadEntry } from '../core/model'
-import { MAX_THOUGHT_STORED, approvalOf } from '../core/model'
+import { MAX_THOUGHT_STORED, TRIM_SAID_TO_MODEL, approvalOf, trimLevelOf } from '../core/model'
 import { toWireName } from '../agent/catalog'
 import type { AgentEntry } from './use-agent'
 import type { GraphSnapshot } from '../core/snapshot'
@@ -374,8 +374,21 @@ export function entriesForMessages(
  * subtract exactly what `historyFor` added: a second, hand-written count that
  * agreed with this one today would disagree the first time either changed.
  */
-const replayHead = (entries: readonly ThreadEntry[], through: number): ChatMessage[] =>
-  toTranscript(entries.slice(0, through).filter((e) => e.kind === 'you'))
+const replayHead = (entries: readonly ThreadEntry[], through: number): ChatMessage[] => {
+  const turns = toTranscript(entries.slice(0, through).filter((e) => e.kind === 'you'))
+  /*
+   * The one exception to "only `you` entries": the cap's marker, once the cap
+   * has had to take some of the person's own turns (`assistant.thread.set`).
+   * Those turns were being sent verbatim and stopped arriving, so the model is
+   * told, in the same bracketed observer's voice as a failed attempt — the
+   * transcript tells the person the same thing. Inside the head, so the loop
+   * carries it like the turns it stands for, and `nextContextThrough` takes it
+   * back out with them.
+   */
+  return through > 0 && trimLevelOf(entries[0]) === 'messages'
+    ? [{ role: 'user', content: TRIM_SAID_TO_MODEL }, ...turns]
+    : turns
+}
 
 /**
  * The history a turn sends, for a thread whose summary covers a prefix.

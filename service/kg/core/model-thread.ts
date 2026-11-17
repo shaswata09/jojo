@@ -63,6 +63,51 @@ export const approvalOf = (props: {
 export const MAX_THOUGHT_STORED = 8000
 
 /**
+ * What the head of a capped conversation says about what the cap took.
+ *
+ * `assistant.thread.set` bounds a thread's stored turns, and on a summarised
+ * thread it takes the covered prefix's replies, steps and notes before it ever
+ * takes a turn the person wrote — those are replayed to the model verbatim
+ * (`historyFor`), so the replies can go without the model's view changing at
+ * all. Only when nothing but the person's own turns is left to take do the
+ * oldest of those go too. Either way the cap leaves ONE app note at the head
+ * of the transcript saying which of the two happened, so the person reading
+ * the conversation is told rather than finding answers missing — and, for the
+ * second, the model is told as well (`TRIM_SAID_TO_MODEL`), because a turn it
+ * was being sent verbatim stopped arriving.
+ *
+ * Recognised by its exact text, which is this app's own and never a model's:
+ * an app note is never replayed as speech, and the texts are constants here.
+ * The marker only ever moves from `replies` to `messages`, never back.
+ */
+export const TRIM_MARKER = {
+  replies:
+    'Earlier replies in this conversation were removed to keep it within its size limit. Your own messages are all kept, and the assistant has a summary of the rest.',
+  messages:
+    'This conversation outgrew its size limit, so its earliest messages were removed — yours as well as the replies. The assistant has a summary of the replies, and is told that some of your earliest messages are gone.',
+} as const
+
+export type TrimLevel = keyof typeof TRIM_MARKER
+
+/**
+ * What the model is sent in place of the person's turns the cap removed.
+ *
+ * A bracketed observation in the person's role, the way a failed attempt is
+ * told back (`toTranscript`'s `error`), so it is never mistaken for the
+ * person's words or for the model's own.
+ */
+export const TRIM_SAID_TO_MODEL =
+  '[Some of the person’s earliest messages in this conversation are no longer kept — removed to bound its size, and not summarised. If something they said earlier matters and is not here, ask them.]'
+
+/** Which trim the entry marks, or `null` when it is not the cap's marker. */
+export const trimLevelOf = (entry: ThreadEntry | undefined): TrimLevel | null => {
+  if (entry?.kind !== 'note' || entry.app !== true) return null
+  if (entry.text === TRIM_MARKER.messages) return 'messages'
+  if (entry.text === TRIM_MARKER.replies) return 'replies'
+  return null
+}
+
+/**
  * One turn of a conversation, as it is kept.
  *
  * The DISPLAY shape, not the model-facing one. `kg/agent/transcript.ts` derives

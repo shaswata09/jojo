@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -56,7 +57,7 @@ const touchedBy = (entry: JournalEntry, t: TFunction<'settings'>): string => {
 /** In the language jojo is showing, not the browser's. */
 const time = (instant: string, locale: string): string => {
   const parsed = new Date(instant)
-  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString(locale)
+  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString(intlLocale(locale))
 }
 
 export function AuditLog() {

@@ -414,5 +414,24 @@
       "computer_other": "Memulihkan akan mengganti semua entri yang Anda miliki sekarang dan semua dokumen, kecuali {{count}} entri yang datang tanpa dokumennya, yang salinannya di sini tetap disimpan",
       "phone_other": "Memulihkan akan mengganti semua entri di ponsel ini dan semua dokumen, kecuali {{count}} entri yang datang tanpa dokumennya, yang salinannya di sini tetap disimpan"
     }
+  },
+  "appNote": {
+    "trimmed": {
+      "replies": "Balasan sebelumnya dalam percakapan ini dihapus agar tetap dalam batas ukurannya. Semua pesan Anda tetap disimpan, dan asisten memiliki ringkasan sisanya.",
+      "messages": "Percakapan ini melampaui batas ukurannya, jadi pesan-pesan paling awalnya dihapus — pesan Anda maupun balasannya. Asisten memiliki ringkasan balasan tersebut, dan diberi tahu bahwa beberapa pesan paling awal Anda sudah tidak ada."
+    },
+    "summarised_other": "Percakapan ini melampaui apa yang dapat ditampung model, jadi {{count}} pesan paling awal diganti dengan ringkasan singkat. Asisten masih tahu apa yang terjadi; hanya saja ia tidak lagi memiliki kata-kata persisnya.",
+    "leftOut_other": "Percakapan ini melampaui apa yang dapat ditampung model, jadi {{count}} pesan paling awal tidak disertakan dalam permintaan ini. Entri Anda tidak tersentuh — mulai percakapan baru untuk memulai dari awal.",
+    "stubbed_other": "Giliran ini melampaui apa yang dapat ditampung model, jadi {{count}} hasil alat sebelumnya dipersingkat menjadi satu baris ringkasan. Tidak ada yang hilang — entri masih tersimpan dan dapat dibaca lagi.",
+    "toolsOverflow": "Daftar alatnya saja sudah lebih besar dari yang dapat ditampung model ini. Persempit apa yang boleh digunakan asisten, atau naikkan jendela konteks di Pengaturan jika server Anda mengizinkannya.",
+    "cutCall": "Panggilan alat dari model terpotong oleh batas keluarannya sebelum selesai, jadi tidak dijalankan. Model telah diminta mengirimkannya lagi.",
+    "cutReply": "Model berhenti di tengah balasan karena mencapai batas keluarannya sendiri. Apa pun di bawah ini mungkin tidak lengkap — pertanyaan yang lebih pendek, atau batas balasan yang lebih besar di server, biasanya mengatasinya.",
+    "verify": {
+      "claimed-write-none-attempted": "Asisten mengatakan telah mengubah sesuatu, tetapi tidak ada yang menulis yang dipanggil dan entri Anda tidak berubah. Asisten telah diminta memeriksa sebelum selesai.",
+      "claimed-write-none-landed": "Asisten mengatakan telah mengubah sesuatu, tetapi setiap penulisan yang dicobanya pada giliran ini gagal atau ditolak, jadi entri Anda tidak berubah. Asisten telah diminta memeriksa sebelum selesai.",
+      "named-unread-record": "Asisten menyebut entri yang tidak dibacanya pada giliran ini. Asisten telah diminta mencarinya sebelum menjawab, bukan menjawab dari ingatan.",
+      "bare-acknowledgement": "Asisten setuju melakukan pekerjaan itu tanpa benar-benar melakukannya, jadi belum ada yang terjadi. Asisten telah diminta melakukan panggilannya.",
+      "stopped-mid-task": "Asisten berhenti di tengah jalan, menyebut apa yang akan dilakukannya selanjutnya tanpa melakukannya. Asisten telah diminta melanjutkan."
+    }
   }
 }

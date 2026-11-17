@@ -2806,3 +2806,21 @@ Guarded by:
 - `service/kg/core/word-match.test.ts` › "ignores accents and case on both sides"
 - `web/src/lib/extension-manifest.test.ts` › "ships the localhost dev ports only in a dev pack (review 2, security-1)"
 Note: Ten reviewers, each followed by an adversarial verifier: 62 findings confirmed, 2 refuted, 1 uncertain (reproduced and fixed). Fixed by five agents with disjoint files. Left open: bytes orphaned on the phone by an assistant delete are not reclaimed; a document whose trash copy was purged in an earlier session cannot be brought back by an audit-log Undo; the hosted app shares its github.io origin (documented in web/extension/README.md); the phone's Today deck and long lists are not yet capped as the web's are.
+
+### Q336 — Fix the remaining review items that can be done.
+`fix` · 2026-11-17 · cross · active
+Must stay true: A deleted document is kept in the trash for 30 days, so an audit-log Undo made sessions later still brings its bytes back; a phone document whose record disappears by any route (the assistant's delete, an undone upload) is set aside the same way, never twice; a restored file keeps a name that ended in " (n)". When a long conversation is trimmed, replies go before the person's own messages, and the model is told when any of those had to go. The assistant's own notes are shown in the viewer's language. The phone's Today deck reads the timeline once and stops at 20 cards, and its long lists mount 100 rows at a time while always keeping the row a search arrived at. Checked on an Android 13 emulator: the Assistant composer and sheets stay above the keyboard (Android measures in screen coordinates), a board drag held at the edge drops in the column under the finger, a row whose action is off keeps its text readable, a sheet holding typed text asks before discarding it, and dates and numbers use the same Latin digits as counts in every language.
+Guarded by:
+- `web/src/lib/vault-blobs-sweep.test.ts` › "brings the bytes back for an audit-log Undo made two reloads after the delete"
+- `web/src/lib/vault-blobs-sweep.test.ts` › "keeps a copy whose record is gone until the window has passed"
+- `mobile/src/lib/documents-trash.test.ts` › "sets aside the bytes of a record the assistant deleted, and a revert puts them back"
+- `mobile/src/lib/documents-trash.test.ts` › "round-trips a name ending in " (2)""
+- `service/kg/tools/tools.test.ts` › "takes the replies from the summarised part before any of the person’s turns"
+- `service/kg/react/use-threads.test.ts` › "sends the model every one of the person’s turns after the cap has trimmed"
+- `service/kg/react/app-note.test.ts` › "renders every fixed app note in English word for word as its producer stored it"
+- `mobile/src/lib/device-check.requests.test.ts` › "pads by what the keyboard covers on screen, not 24dp less"
+- `mobile/src/lib/device-check.requests.test.ts` › "names the column now under a finger held still as the board scrolls on"
+- `mobile/src/lib/device-check.requests.test.ts` › "stacks the explanation over the button, so the reason under it cannot squeeze the text to nothing"
+- `mobile/src/lib/device-check.requests.test.ts` › "ask before the reminder, link, person and stage sheets throw it away"
+- `web/src/lib/intl-locale.requests.test.ts` › "formats Bengali dates and numbers in the digits counts use"
+Note: The hosted app sharing its github.io origin needs a dedicated domain and stays open. Two app notes carry generated English inside them and are shown as stored.

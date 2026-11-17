@@ -6,10 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { TourScrollContext, type Scroller } from '@/components/tour/registry'
 import { IconButton } from '@/components/ui/Button'
-import { FocusScopeContext, useFocusScope } from '@/components/ui/focus-scope'
+import { FocusArrivalContext, FocusScopeContext, useFocusScope } from '@/components/ui/focus-scope'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
 import { useLayout } from '@/lib/use-layout'
+import { useLatchedFocus } from '@/lib/use-row-cap'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -106,6 +107,9 @@ export function Screen({
 
   // Where a search result lands: see `FocusTarget`.
   const focusScope = useFocusScope(focus, onArrived, scrollRef, innerRef)
+  // The arrival, latched for the capped lists below (`FocusArrivalContext`), so
+  // a list's first render already includes the row the scope looks for 120ms on.
+  const arriving = useLatchedFocus(focus)
   const arrived = useRef(onArrived)
   arrived.current = onArrived
   useEffect(() => {
@@ -160,10 +164,12 @@ export function Screen({
 
   const body = (
     <FocusScopeContext.Provider value={focusScope}>
-      <ColumnsContext.Provider value={layout.columns}>
-        {header}
-        {children}
-      </ColumnsContext.Provider>
+      <FocusArrivalContext.Provider value={arriving}>
+        <ColumnsContext.Provider value={layout.columns}>
+          {header}
+          {children}
+        </ColumnsContext.Provider>
+      </FocusArrivalContext.Provider>
     </FocusScopeContext.Provider>
   )
 

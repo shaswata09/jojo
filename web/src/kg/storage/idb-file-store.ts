@@ -51,6 +51,13 @@
  * forty 1 MB documents meant 40 MB read on every page load. Version 2 created
  * `meta` and filled it once from the existing blobs; `list` still backfills a
  * key it finds without one, so a gap costs one read, never a wrong answer.
+ *
+ * A key under `jojo/Trash` carries two more fields in `meta`: `trashedAt`, when
+ * `trash` moved it there, and `from`, the exact path it was moved from. Both
+ * exist for the Vault's retention (`vault-blobs.ts`, `TRASH_RETENTION_MS`). The
+ * copy's own `mtime` is the time its BYTES were written, carried over by the
+ * move, so it cannot say how long a copy has been in the trash; and its key
+ * cannot always say where it came from — see `TrashEntry.from`.
  */
 
 import { openDB, type IDBPDatabase } from 'idb'
@@ -117,8 +124,26 @@ const localLocks = new Set<string>()
 
 /** What a key holds. `mtime` is ours to mint: there is no filesystem to ask. */
 type Record = { data: Uint8Array; mtime: number }
-/** What `list` and `stat` need, without the bytes. */
-type Meta = { bytes: number; mtime: number }
+/**
+ * What `list` and `stat` need, without the bytes — and, for a trashed key, when
+ * it was trashed and from where. See "Two stores" above.
+ */
+type Meta = { bytes: number; mtime: number; trashedAt?: number; from?: string }
+
+/**
+ * One trashed copy, as `listTrash` reports it.
+ *
+ * `trashedAt` is always present: a copy trashed before the field existed is
+ * stamped with the moment it is first listed — "trashed now" — so the oldest
+ * copies on an upgraded device get a full retention window rather than none.
+ *
+ * `from` is the path `trash` moved it from, exactly. The key alone cannot say:
+ * `trashPath` numbers a second copy of `CV.pdf` as `CV (2).pdf`, and a document
+ * that was CALLED `CV (2).pdf` before it was ever trashed has the same key.
+ * Absent on a copy trashed before the field existed — the caller parses the key,
+ * as it always did.
+ */
+export type TrashEntry = FileEntry & { readonly trashedAt: number; readonly from?: string }
 
 export type IdbFileStoreOptions = {
   /**
@@ -157,6 +182,17 @@ export interface IdbFileStore extends FileStore {
    * before.
    */
   purgeTrash(only?: (key: string) => boolean): Promise<number>
+  /**
+   * The copies directly under a folder of `jojo/Trash`, with when each was
+   * trashed and the path it came from. See `TrashEntry`.
+   *
+   * Beyond the port for the same reason as `purgeTrash`: retention is this
+   * store's question, because only here is the trash jojo's own. A copy with no
+   * `trashedAt` — trashed by a build from before it was recorded — is stamped
+   * with `now()` as it is listed, and the stamp is kept, so the window starts
+   * once rather than on every load. Fails for a folder outside `jojo/Trash`.
+   */
+  listTrash(dir: string): Promise<FileResult<readonly TrashEntry[]>>
   /** Whether the browser exempted this data from eviction. See the note above. */
   persisted(): Promise<boolean>
 }
@@ -471,7 +507,10 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
         let n = 1
         while ((await blobs.getKey(trashPath(path, n))) !== undefined) n += 1
         await blobs.put(rec, trashPath(path, n))
-        await meta.put(metaOf(rec), trashPath(path, n))
+        // When and from where, for the Vault's retention and its restore. See
+        // `TrashEntry`.
+        const stamped: Meta = { ...metaOf(rec), trashedAt: options.now(), from: path }
+        await meta.put(stamped, trashPath(path, n))
         await blobs.delete(path)
         await meta.delete(path)
         await tx.done
@@ -533,6 +572,35 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
         return fileFail<T>('files/failed', messageOf(e), { lock: name })
       }
     },
+
+    listTrash: async (dir) =>
+      attempt<readonly TrashEntry[]>('listTrash', dir, async (handle) => {
+        const prefix = `${dir.replace(/\/$/, '')}/`
+        if (!prefix.startsWith(`${TRASH_DIR}/`)) {
+          return fileFail<readonly TrashEntry[]>('files/failed', 'not a trash folder', {
+            path: dir,
+          })
+        }
+        const out: TrashEntry[] = []
+        for (const key of (await handle.getAllKeys(STORE)) as string[]) {
+          if (!key.startsWith(prefix) || key.slice(prefix.length).includes('/')) continue
+          const meta = await metaFor(handle, key)
+          if (meta === undefined) continue
+          let trashedAt = meta.trashedAt
+          if (trashedAt === undefined) {
+            // Trashed before this was recorded: counted from now, and kept, so
+            // the next load does not start the window again.
+            trashedAt = options.now()
+            await handle.put(META, { ...meta, trashedAt }, key)
+          }
+          out.push({
+            ...entryOf(key, meta),
+            trashedAt,
+            ...(meta.from === undefined ? {} : { from: meta.from }),
+          })
+        }
+        return fileOk(out)
+      }),
 
     purgeTrash: async (only) => {
       if (forgotten) return 0

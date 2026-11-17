@@ -36,6 +36,9 @@ import { TourTarget } from '@/components/tour/TourTarget'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
 import { FocusTarget } from '@/components/ui/FocusTarget'
+import { useArrivingFocus } from '@/components/ui/focus-scope'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
 const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
   FileBucket,
@@ -94,6 +97,10 @@ export function FilesTool() {
   }, [pool])
 
   const rows = bucket === 'all' ? pool : pool.filter((f) => f.bucket === bucket)
+  // A page of rows at a time, always including the row a search result or a
+  // Filed panel arrived at (`useRowCap`, `useArrivingFocus`).
+  const arriving = useArrivingFocus()
+  const cap = useRowCap(rows.length, indexOfId(rows, arriving))
 
   const onDelete = (f: VaultFile) => {
     /*
@@ -248,7 +255,7 @@ export function FilesTool() {
               />
             </View>
           ) : (
-            rows.map((f, i) => {
+            rows.slice(0, cap.shown).map((f, i) => {
               return (
                 <FocusTarget key={f.id} id={f.id}>
                   {i > 0 ? <Divider /> : null}
@@ -295,6 +302,7 @@ export function FilesTool() {
               )
             })
           )}
+          <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
         </Panel>
       </TourTarget>
 

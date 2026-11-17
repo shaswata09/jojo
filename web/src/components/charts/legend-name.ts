@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import type { TFunction } from 'i18next'
 
 /**
@@ -17,7 +18,7 @@ export function legendName(
 ): string {
   let formatted: string
   try {
-    formatted = new Intl.NumberFormat(language, {
+    formatted = new Intl.NumberFormat(intlLocale(language), {
       style: 'percent',
       maximumFractionDigits: 0,
     }).format(percent / 100)

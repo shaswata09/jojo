@@ -743,7 +743,7 @@
       "connect": "In den Einstellungen verbinden →",
       "emptyDescription": "Wähle unten einen Vorschlag oder tippe irgendetwas. Die Antworten sind geschriebene Beispiele – nützlich zum Weiterarbeiten und nie als Antwort eines Modells ausgegeben.",
       "badge": "Beispielantwort · kein Modell verbunden",
-      "placeholder": "Frag nach einem Anschreiben, einer Nachfass-E-Mail, einem Vorstellungsgespräch…",
+      "placeholder": "Frag den Assistenten…",
       "footer": "Mit einem verbundenen Modell liest jeder dieser Vorschläge dein Profil und deine Dokumente als Kontext. Weil die Verarbeitung lokal läuft, werden dein Lebenslauf und deine Notizen nirgendwohin hochgeladen."
     },
     "thought": {

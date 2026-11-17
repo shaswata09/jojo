@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
@@ -82,7 +83,7 @@ export function OfferComparison() {
             <View style={{ alignItems: 'flex-end', gap: space[1] }}>
               <Txt size="sm" mono>
                 {p
-                  ? `${annualised(p).toLocaleString(i18n.language)}${p.period === 'year' ? '' : '*'}`
+                  ? `${annualised(p).toLocaleString(intlLocale(i18n.language))}${p.period === 'year' ? '' : '*'}`
                   : '—'}
               </Txt>
               <Chip tone={daysLeft <= 3 ? 'red' : daysLeft <= 7 ? 'amber' : 'gray'} size="sm">

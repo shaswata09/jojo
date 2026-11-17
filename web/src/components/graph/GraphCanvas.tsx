@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Graph } from '@/lib/graph/model'
@@ -413,8 +414,8 @@ export function GraphCanvas({
           className="pointer-events-none absolute start-2 top-2 z-10 rounded-md border border-warning-border bg-warning-soft px-2 py-1 text-xs text-warning"
         >
           {t('canvas.capped', {
-            shown: structure.spec.length.toLocaleString(i18n.language),
-            dropped: structure.dropped.toLocaleString(i18n.language),
+            shown: structure.spec.length.toLocaleString(intlLocale(i18n.language)),
+            dropped: structure.dropped.toLocaleString(intlLocale(i18n.language)),
           })}
         </p>
       ) : null}

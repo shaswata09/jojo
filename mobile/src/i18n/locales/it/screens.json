@@ -775,7 +775,7 @@
       "connect": "Collegane uno in Impostazioni →",
       "emptyDescription": "Scegli uno dei suggerimenti qui sotto, o scrivi qualsiasi cosa. Le risposte sono esempi scritti: utili come base, e mai presentati come la risposta di un modello.",
       "badge": "Risposta di esempio · nessun modello collegato",
-      "placeholder": "Chiedi di una lettera di presentazione, un'email di sollecito, un colloquio…",
+      "placeholder": "Chiedi all'assistente…",
       "footer": "Con un modello collegato, ognuno di questi legge il tuo profilo e i tuoi documenti come contesto. Dato che l'elaborazione è locale, il tuo CV e le tue note non vengono mai caricati da nessuna parte."
     },
     "thought": {

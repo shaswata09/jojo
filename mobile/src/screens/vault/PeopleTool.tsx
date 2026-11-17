@@ -22,6 +22,10 @@ import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
 import { FocusTarget } from '@/components/ui/FocusTarget'
+import { useArrivingFocus } from '@/components/ui/focus-scope'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { useDiscardGuard } from '@/components/ui/discard-guard'
+import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
 /**
  * The people a job search is actually made of, on a phone.
@@ -55,6 +59,10 @@ export function PeopleTool() {
     () => people.filter((p) => matchesQuery(query, p.name, p.role, p.affiliation, p.email, p.note)),
     [people, query],
   )
+  // A page of rows at a time, always including the row a search result or a
+  // Filed panel arrived at (`useRowCap`, `useArrivingFocus`).
+  const arriving = useArrivingFocus()
+  const cap = useRowCap(shown.length, indexOfId(shown, arriving))
 
   const onDelete = (person: Person) => {
     const { restore } = removePerson(person.id)
@@ -93,7 +101,7 @@ export function PeopleTool() {
             }
           />
         ) : (
-          shown.map((p, i) => (
+          shown.slice(0, cap.shown).map((p, i) => (
             <FocusTarget key={p.id} id={p.id}>
               {i > 0 ? <Divider /> : null}
               <View style={styles.row}>
@@ -154,6 +162,7 @@ export function PeopleTool() {
             </FocusTarget>
           ))
         )}
+        <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
       </Panel>
 
       <MenuSheet
@@ -244,12 +253,16 @@ function PersonSheet({
     setDraft((prev) => ({ ...prev, [key]: value }))
   }
   const named = draft.name.trim().length > 0
+  // Anything typed that closing would take with it — see `useDiscardGuard`.
+  const typed = JSON.stringify(draft)
+  const [opened] = useState(typed)
+  const { close, guard } = useDiscardGuard(typed !== opened, onClose)
 
   return (
     <>
       <Sheet
         open
-        onClose={onClose}
+        onClose={close}
         size="tall"
         // Taller than the screen with a field or two open; scrolls rather
         // than clipping the last field and its Save under the footer.
@@ -258,7 +271,7 @@ function PersonSheet({
         description={t('people.editor.description')}
         footer={
           <>
-            <Button label={t('common.cancel')} variant="ghost" size="md" onPress={onClose} />
+            <Button label={t('common.cancel')} variant="ghost" size="md" onPress={close} />
             <Button
               label={person ? t('people.editor.save') : t('people.editor.addTitle')}
               size="md"
@@ -325,6 +338,8 @@ function PersonSheet({
             onChangeText={set('note')}
           />
         </View>
+
+        {guard}
       </Sheet>
 
       <ApplicationPickerSheet

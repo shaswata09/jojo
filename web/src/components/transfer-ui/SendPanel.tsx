@@ -1,3 +1,4 @@
+import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { SettingRow } from '@/components/common/Field'
@@ -49,7 +50,7 @@ export function DetailsPanel({
         description={t('details.recordsHint')}
         control={
           <span className="tabular text-sm text-text-1">
-            {records.toLocaleString(i18n.language)}
+            {records.toLocaleString(intlLocale(i18n.language))}
           </span>
         }
       />

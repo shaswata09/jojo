@@ -37,6 +37,9 @@ import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
 import { useDomain } from '@/i18n/domain'
 import { FocusTarget } from '@/components/ui/FocusTarget'
+import { useArrivingFocus } from '@/components/ui/focus-scope'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
 const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record<SnippetTag, string>
 
@@ -80,6 +83,10 @@ export function SnippetsTool() {
   }, [pool])
 
   const rows = tag === 'all' ? pool : pool.filter((x) => x.tag === tag)
+  // A page of rows at a time, always including the row a search result or a
+  // Filed panel arrived at (`useRowCap`, `useArrivingFocus`).
+  const arriving = useArrivingFocus()
+  const cap = useRowCap(rows.length, indexOfId(rows, arriving))
 
   const onDelete = (snippet: Snippet) => {
     const { restore } = removeSnippet(snippet.id)
@@ -196,7 +203,7 @@ export function SnippetsTool() {
           />
         </Panel>
       ) : (
-        rows.map((snippet) => (
+        rows.slice(0, cap.shown).map((snippet) => (
           <FocusTarget key={snippet.id} id={snippet.id}>
             <Panel>
               <View style={styles.head}>
@@ -245,6 +252,7 @@ export function SnippetsTool() {
           </FocusTarget>
         ))
       )}
+      <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
 
       <ApplicationPickerSheet
         open={filingSnippet !== null}

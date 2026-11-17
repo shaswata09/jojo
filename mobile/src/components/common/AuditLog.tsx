@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { i18next } from '@/i18n/i18n'
 import { Button } from '@/components/ui/Button'
@@ -112,8 +112,15 @@ export function AuditLog() {
         />
       ) : (
         <>
-          <View style={[s.row, { marginBottom: space[3] }]}>
-            <Txt size="xs" tone="muted" style={s.fill}>
+          {/* Stacked while the button is off. Its reason is a full sentence
+              drawn under it, and beside the explanation that sentence's width
+              became the button's: the explanation, `flex: 1` with a zero basis,
+              was squeezed to nothing and wrapped a letter a line — an empty
+              panel a screen tall above a full-width button (seen on an Android
+              AVD, 2026-11-17, with a trimmed row on top, which every assistant
+              chat leaves there). */}
+          <View style={[blocker ? styles.stacked : s.row, { marginBottom: space[3] }]}>
+            <Txt size="xs" tone="muted" style={blocker ? undefined : s.fill}>
               {t('audit.explain')}
             </Txt>
             <Button
@@ -162,3 +169,7 @@ export function AuditLog() {
     </Panel>
   )
 }
+
+const styles = StyleSheet.create({
+  stacked: { gap: space[2] },
+})

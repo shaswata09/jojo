@@ -102,7 +102,7 @@ function toolCallInText(text: string, offered: Set<string> | null): string | nul
  * same claim again has learned not to trust that claim, which is the whole
  * point.
  */
-const VERIFY_NOTE: Record<VerifyReason, string> = {
+export const VERIFY_NOTE: Record<VerifyReason, string> = {
   'claimed-write-none-attempted':
     'The assistant said it had changed something, but nothing that writes was called and the store is unchanged. It has been asked to check before finishing.',
   'claimed-write-none-landed':
