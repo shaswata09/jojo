@@ -117,12 +117,17 @@ export function dashboardPath() {
   return '/'
 }
 
-export function statisticsPath() {
-  return '/statistics'
+/**
+ * Statistics, optionally pointing at one card — the palette's Places rows land
+ * on a card the way a Settings row lands on its row (see `settingsPath`).
+ */
+export function statisticsPath(p?: { focus?: string }) {
+  return withQuery('/statistics', { focus: p?.focus })
 }
 
-export function profilePath() {
-  return '/profile'
+/** My profile, optionally pointing at one section or field — see `settingsPath`. */
+export function profilePath(p?: { focus?: string }) {
+  return withQuery('/profile', { focus: p?.focus })
 }
 
 /**
@@ -180,8 +185,13 @@ export type GuidePage = (typeof GUIDE_PAGES)[number]
 
 export const GUIDE_DEFAULTS = { page: 'overview' } as const
 
-export function guidePath(page: GuidePage = GUIDE_DEFAULTS.page) {
-  return page === GUIDE_DEFAULTS.page ? '/guide' : `/guide/${page}`
+/**
+ * `section` is the id of a panel on that page — the same fragment its "On this
+ * page" pills link to — and the guide's layout scrolls to it on arrival.
+ */
+export function guidePath(page: GuidePage = GUIDE_DEFAULTS.page, section?: string) {
+  const path = page === GUIDE_DEFAULTS.page ? '/guide' : `/guide/${page}`
+  return section ? `${path}#${encodeURIComponent(section)}` : path
 }
 
 /** The knowledge-graph preview. No params — it reads the whole store. */
@@ -381,8 +391,13 @@ export function calendarWire(
  * a match are minted from different collections, and 'stripe' is already the id
  * of six seeded records — so the focus parameter names the list as well as the
  * record: '/scout?focus=match:unt'. `useScoutParams` is the only reader.
+ *
+ * `pipeline` names a pipeline row and `section` one of the page's panels
+ * ('section:matches'); both are found by their `data-focus-id`, which is the
+ * whole token, and lit by `useFocusArrival`.
  */
-export type ScoutFocus = { kind: 'match' | 'posting'; id: string }
+export const SCOUT_FOCUS_KINDS = ['match', 'posting', 'pipeline', 'section'] as const
+export type ScoutFocus = { kind: (typeof SCOUT_FOCUS_KINDS)[number]; id: string }
 
 export function scoutPath(p: { focus?: ScoutFocus } = {}) {
   return withQuery('/scout', {

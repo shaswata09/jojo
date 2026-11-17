@@ -103,6 +103,8 @@ export function VaultScreen() {
     <Screen
       title={t('screen.title')}
       subtitle={subtitle}
+      openOptions={route.params?.options === true}
+      onArrived={() => navigation.setParams({ options: undefined } as never)}
       options={
         <SettingRow
           label={t('screen.showCounts')}

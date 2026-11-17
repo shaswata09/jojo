@@ -8,6 +8,19 @@ import type { Stage } from '@jojo/service/data/seed'
 export const VAULT_TOOLS = ['reminders', 'links', 'files', 'snippets', 'people', 'tools'] as const
 export type VaultTool = (typeof VAULT_TOOLS)[number]
 
+/** The guide's five pages, in order; each is labelled by `screen.pages.<value>` in the guide catalog. */
+export const GUIDE_PAGES = ['overview', 'screens', 'graph', 'tools', 'built'] as const
+export type GuidePage = (typeof GUIDE_PAGES)[number]
+
+/*
+ * Two one-shot arrivals the search screen sends, cleared by the screen once
+ * acted on so a later visit is an ordinary one:
+ *
+ * - `focus` (Settings, Profile) or `section` (Job scout) names a row or panel
+ *   marked with `FocusTarget`; the screen scrolls it into view and lights it.
+ * - `options` opens the page's ⋯ options sheet, where its switches live.
+ */
+
 export type TabParamList = {
   Today: undefined
   /**
@@ -18,10 +31,16 @@ export type TabParamList = {
    * it is a one-shot instruction rather than a filter.
    */
   Applications:
-    { stage?: Stage | 'all'; sort?: 'stage' | 'daysAgo' | 'role'; shared?: string } | undefined
+    | {
+        stage?: Stage | 'all'
+        sort?: 'stage' | 'daysAgo' | 'role'
+        shared?: string
+        options?: boolean
+      }
+    | undefined
   /** `date` opens on a specific day, `focus` lights up one item on it. */
-  Calendar: { date?: string; focus?: string } | undefined
-  Vault: { tool?: VaultTool; focus?: string } | undefined
+  Calendar: { date?: string; focus?: string; options?: boolean } | undefined
+  Vault: { tool?: VaultTool; focus?: string; options?: boolean } | undefined
   More: undefined
 }
 
@@ -31,12 +50,14 @@ export type RootStackParamList = {
   /** `key` is the employer's slug, or a NodeId from an older link. */
   Organisation: { key: string }
   Search: undefined
-  JobScout: { focus?: { kind: 'match' | 'posting'; id: string } } | undefined
-  Statistics: undefined
-  Profile: undefined
+  JobScout:
+    | { focus?: { kind: 'match' | 'posting'; id: string }; section?: string; options?: boolean }
+    | undefined
+  Statistics: { options?: boolean } | undefined
+  Profile: { focus?: string } | undefined
   Assistant: undefined
-  Settings: undefined
-  Guide: undefined
+  Settings: { focus?: string } | undefined
+  Guide: { page?: GuidePage } | undefined
   Graph: undefined
   Transfer: undefined
   /**

@@ -42,7 +42,7 @@ export function MatchesPanel({
 }) {
   const { t } = useTranslation('scout')
   return (
-    <Panel>
+    <Panel focusId="section:matches">
       {/*
         The hint has been wrong twice. It read "last run Oct 11" when nothing had
         ever run, and then "example scores" — honest, and describing fixtures the

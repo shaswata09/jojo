@@ -1,10 +1,23 @@
 import { cn } from '@/lib/utils'
 import type { ComponentProps, ReactNode } from 'react'
 
-/** The app's primary frosted surface. */
-export function Panel({ className, ...props }: ComponentProps<'section'>) {
+/**
+ * The app's primary frosted surface.
+ *
+ * `focusId` is the panel's address for search, as `SettingRow`'s is for a row:
+ * `?focus=<focusId>` on its page scrolls to the panel and lights it.
+ */
+export function Panel({
+  className,
+  focusId,
+  ...props
+}: ComponentProps<'section'> & { focusId?: string }) {
   return (
-    <section className={cn('surface rounded-lg px-4 py-4 sm:px-5 sm:py-5', className)} {...props} />
+    <section
+      data-focus-id={focusId}
+      className={cn('surface rounded-lg px-4 py-4 sm:px-5 sm:py-5', className)}
+      {...props}
+    />
   )
 }
 

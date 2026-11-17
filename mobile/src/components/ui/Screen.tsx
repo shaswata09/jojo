@@ -1,11 +1,12 @@
-import { Children, createContext, useContext, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import { Children, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode, RefObject } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import type { ScrollViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { TourScrollContext, type Scroller } from '@/components/tour/registry'
 import { IconButton } from '@/components/ui/Button'
+import { FocusScopeContext, useFocusScope } from '@/components/ui/focus-scope'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
 import { useLayout } from '@/lib/use-layout'
@@ -43,6 +44,9 @@ export function Screen({
   children,
   wide = false,
   scroll = true,
+  focus,
+  openOptions = false,
+  onArrived,
   contentContainerStyle,
   ...rest
 }: ScrollViewProps & {
@@ -67,6 +71,16 @@ export function Screen({
    */
   wide?: boolean
   scroll?: boolean
+  /**
+   * A `FocusTarget` id to scroll into view and light — a search result
+   * arriving. One-shot: `onArrived` runs once it is taken, so the screen can
+   * clear the route param it came in.
+   */
+  focus?: string
+  /** Opens the ⋯ options sheet — a search result for one of its switches. */
+  openOptions?: boolean
+  /** Called once `focus` or `openOptions` has been acted on. */
+  onArrived?: () => void
 }) {
   const { t } = useTranslation()
   const c = useColors()
@@ -80,6 +94,7 @@ export function Screen({
   // tour asks for. The offset is tracked here because a ScrollView will not
   // say where it is.
   const scrollRef = useRef<ScrollView>(null)
+  const innerRef = useRef<View>(null)
   const offset = useRef(0)
   const scroller = useMemo<Scroller>(
     () => ({
@@ -88,6 +103,20 @@ export function Screen({
     }),
     [],
   )
+
+  // Where a search result lands: see `FocusTarget`.
+  const focusScope = useFocusScope(focus, onArrived, scrollRef, innerRef)
+  const arrived = useRef(onArrived)
+  arrived.current = onArrived
+  useEffect(() => {
+    if (!openOptions) return
+    // Acknowledged even when this render has no options to show (Statistics
+    // offers none on an empty store), so the request stays one-shot.
+    if (options) setOptionsOpen(true)
+    arrived.current?.()
+    // `options` is a fresh element every render; only the request is the trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openOptions])
 
   // Recomputed every render rather than baked into the stylesheet, because both
   // halves of it move: the gutter widens when the phone turns, and `insets`
@@ -130,10 +159,12 @@ export function Screen({
   )
 
   const body = (
-    <ColumnsContext.Provider value={layout.columns}>
-      {header}
-      {children}
-    </ColumnsContext.Provider>
+    <FocusScopeContext.Provider value={focusScope}>
+      <ColumnsContext.Provider value={layout.columns}>
+        {header}
+        {children}
+      </ColumnsContext.Provider>
+    </FocusScopeContext.Provider>
   )
 
   return (
@@ -142,6 +173,9 @@ export function Screen({
         <ScrollView
           {...rest}
           ref={scrollRef}
+          // The prop is typed for a ref that is never empty, which React 19's
+          // `useRef(null)` is not; the ScrollView fills it before any layout.
+          innerViewRef={innerRef as RefObject<View>}
           onScroll={(event) => {
             offset.current = event.nativeEvent.contentOffset.y
             rest.onScroll?.(event)

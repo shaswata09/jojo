@@ -349,15 +349,15 @@
   },
   "search": {
     "title": "Search",
-    "subtitle": "Applications, dates, the vault and the scout, all at once",
+    "subtitle": "Applications, dates, the vault, the scout and every setting, all at once",
     "fieldLabel": "Search everything",
-    "placeholder": "Search applications, reminders, files…",
+    "placeholder": "Search applications, files, settings…",
     "idleTitle": "Type to search",
     "idleDescription": "One field over every collection — because “where did I put the Rice thing” is a question about the record, not about which list it lives in.",
     "create": "Create",
     "createHint": "nothing to find? make it",
     "noneTitle": "Nothing matches “{{query}}”",
-    "noneDescription": "Search reads the title, note and category of every record. Nothing here is fetched from anywhere else.",
+    "noneDescription": "Search reads the title, note and category of every record, and the name of every setting. Nothing here is fetched from anywhere else.",
     "fit": "{{fit}}% fit",
     "results_one": "{{count}} result",
     "results_other": "{{count}} results",
@@ -369,6 +369,8 @@
       "calendar": "Calendar",
       "vault": "Vault",
       "jobScout": "Job scout",
+      "settings": "Settings and options",
+      "places": "Sections",
       "goTo": "Go to"
     }
   },

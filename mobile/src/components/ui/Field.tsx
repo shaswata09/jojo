@@ -5,6 +5,7 @@ import type { StyleProp, TextInputProps, ViewStyle } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/ui/Button'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 import { Txt } from '@/components/ui/Text'
 import { openHref } from '@/lib/urls'
 import { s } from '@/theme/styles'
@@ -81,9 +82,16 @@ export type TextFieldProps = Omit<TextInputProps, 'style'> & {
   required?: boolean
   mono?: boolean
   style?: StyleProp<ViewStyle>
+  /**
+   * Where search lands on this field (`FocusTarget`); listed in
+   * `lib/search-places.ts`. `null` says, on a settings or profile screen, that
+   * the field is deliberately not a search result — one in a sheet, say.
+   */
+  focusId?: string | null
 }
 
 export function TextField({
+  focusId,
   label,
   hint,
   error,
@@ -114,7 +122,7 @@ export function TextField({
   const href =
     rest.keyboardType === 'url' && !multiline ? openHref(String(rest.value ?? '')) : undefined
 
-  return (
+  const field = (
     <FormField label={label} hint={hint} error={error} required={required} style={style}>
       <View>
         <TextInput
@@ -184,6 +192,7 @@ export function TextField({
       </View>
     </FormField>
   )
+  return focusId ? <FocusTarget id={focusId}>{field}</FocusTarget> : field
 }
 
 /**
@@ -194,11 +203,18 @@ export function TextField({
  * implementation, and only the first is a thing a person decides about.
  */
 export function SettingRow({
+  focusId,
   label,
   description,
   control,
   onPress,
 }: {
+  /**
+   * Where search lands on this row (`FocusTarget`); listed in
+   * `lib/search-places.ts`. `null` says the row is deliberately not a search
+   * result. Required in effect on Settings and Profile — a test reads them.
+   */
+  focusId?: string | null
   label: string
   description?: string
   control?: ReactNode
@@ -220,8 +236,9 @@ export function SettingRow({
     </View>
   )
 
-  if (!onPress) return body
-  return (
+  const row = !onPress ? (
+    body
+  ) : (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
@@ -230,6 +247,7 @@ export function SettingRow({
       {body}
     </Pressable>
   )
+  return focusId ? <FocusTarget id={focusId}>{row}</FocusTarget> : row
 }
 
 /** The platform switch, tinted from the palette so it is not iOS green. */

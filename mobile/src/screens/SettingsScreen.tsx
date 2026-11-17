@@ -44,7 +44,8 @@ import { AuditLog } from '@/components/common/AuditLog'
 import { CrashPanel } from '@/components/common/CrashPanel'
 import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
@@ -55,6 +56,7 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
@@ -94,6 +96,8 @@ export function SettingsScreen() {
   const reasoning = REASONING.map((value) => ({ value, label: t(`settings.reasoning.${value}`) }))
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  // A search result arriving: which row to scroll to and light (`FocusTarget`).
+  const route = useRoute<RouteProp<RootStackParamList, 'Settings'>>()
   const { pref, setPref } = useTheme()
 
   /*
@@ -491,11 +495,17 @@ export function SettingsScreen() {
     }
 
   return (
-    <Screen title={t('settings.title')} subtitle={t('settings.subtitle')} wide>
+    <Screen
+      title={t('settings.title')}
+      subtitle={t('settings.subtitle')}
+      wide
+      focus={route.params?.focus}
+      onArrived={() => navigation.setParams({ focus: undefined })}
+    >
       {/* Setting groups. The confirm sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
         <TourTarget id="device">
-          <Panel>
+          <Panel focusId="settings.device">
             {/*
              * WHERE THE BYTES ARE, rather than three switches that did nothing.
              *
@@ -524,7 +534,7 @@ export function SettingsScreen() {
         </TourTarget>
 
         <TourTarget id="model">
-          <Panel>
+          <Panel focusId="settings.model">
             {/* Was "Local model", and that stopped being true the moment this
               panel could reach Claude. A heading that names one of the two
               answers is a heading that is wrong half the time. */}
@@ -554,6 +564,7 @@ export function SettingsScreen() {
               they become a row you have to swipe to discover, which is the one
               thing a picker must not be. */}
             <SettingRow
+              focusId="settings.model.provider"
               label={t('settings.provider.title')}
               description={domain.provider(provider.id)}
               onPress={() => setChoosing(true)}
@@ -565,6 +576,7 @@ export function SettingsScreen() {
                 ignore is a field that can only mislead. */}
               {provider.fixedEndpoint ? null : (
                 <TextField
+                  focusId="settings.model.endpoint"
                   label={t('settings.model.endpoint')}
                   mono
                   autoCapitalize="none"
@@ -606,6 +618,7 @@ export function SettingsScreen() {
                 to the keychain, and a provider key is not the user's password. */}
               {provider.needsKey ? (
                 <TextField
+                  focusId="settings.model.apiKey"
                   label={t('settings.model.apiKey')}
                   mono
                   secureTextEntry
@@ -625,6 +638,7 @@ export function SettingsScreen() {
                 the server's to state, not the user's to guess, and a field
                 offering to take a guess is a field inviting a 404 later. */}
               <TextField
+                focusId="settings.model.id"
                 label={t('settings.model.title')}
                 mono
                 autoCapitalize="none"
@@ -642,6 +656,7 @@ export function SettingsScreen() {
                 label for a connection that does not exist. */}
               {connected ? (
                 <TextField
+                  focusId="settings.model.savedAs"
                   label={t('settings.model.savedAs')}
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -668,6 +683,7 @@ export function SettingsScreen() {
                * number the user guessed.
                */}
               <TextField
+                focusId="settings.model.context"
                 label={t('settings.model.context')}
                 mono
                 keyboardType="number-pad"
@@ -698,6 +714,7 @@ export function SettingsScreen() {
               {sendsThinking(provider.id, 'on') ? (
                 <>
                   <SettingRow
+                    focusId="settings.model.reasoning"
                     label={t('settings.model.reasoning')}
                     description={t('settings.model.reasoningDescription')}
                     control={null}
@@ -725,7 +742,7 @@ export function SettingsScreen() {
               up disagreeing.
             */}
             </View>
-            <View style={styles.testRow}>
+            <FocusTarget id="settings.model.test" style={styles.testRow}>
               <Button
                 label={
                   testing
@@ -748,7 +765,7 @@ export function SettingsScreen() {
               ) : (
                 <Chip tone="gray">{t('settings.test.notConnected')}</Chip>
               )}
-            </View>
+            </FocusTarget>
             {/* The server's own words, not a paraphrase. A wrong port and a path
               missing its /v1 fail differently, and only the endpoint knows
               which happened. */}
@@ -765,7 +782,7 @@ export function SettingsScreen() {
         </TourTarget>
 
         <TourTarget id="reader">
-          <Panel>
+          <Panel focusId="settings.reader">
             <PanelTitle hint={t('settings.reader.hint')}>{t('settings.reader.title')}</PanelTitle>
             {/* The honest split, because the old copy asked for a server before
               anything could be read and that is no longer true. Saying what
@@ -783,6 +800,7 @@ export function SettingsScreen() {
               />
             </Txt>
             <TextField
+              focusId="settings.reader.address"
               label={t('settings.reader.address')}
               mono
               autoCapitalize="none"
@@ -853,9 +871,10 @@ export function SettingsScreen() {
           </Panel>
         </TourTarget>
 
-        <Panel>
+        <Panel focusId="settings.appearance">
           <PanelTitle>{t('settings.appearance.title')}</PanelTitle>
           <SettingRow
+            focusId="settings.appearance.theme"
             label={t('settings.appearance.theme')}
             description={t('settings.appearance.themeDescription')}
             control={null}
@@ -869,9 +888,9 @@ export function SettingsScreen() {
           <LanguageRow />
         </Panel>
 
-        <Panel>
+        <Panel focusId="settings.data">
           <PanelTitle>{t('settings.data.title')}</PanelTitle>
-          <View style={styles.dataRow}>
+          <FocusTarget id="settings.data.backup" style={styles.dataRow}>
             <Button
               label={t('settings.data.export')}
               icon="upload"
@@ -897,7 +916,7 @@ export function SettingsScreen() {
               disabled={restoring}
               onPress={() => void onPasteBackup()}
             />
-          </View>
+          </FocusTarget>
           {/* This paragraph said keywords "live in their own store and are not in
               it yet". They have not lived in their own store since D14 — a
               keyword is a node and tagging is a TAGS edge — and `exportJSON` in
@@ -919,6 +938,7 @@ export function SettingsScreen() {
 
           <View style={{ marginTop: space[3] }}>
             <SettingRow
+              focusId="settings.data.records"
               label={t('settings.data.records')}
               description={
                 isEmpty ? t('settings.data.recordsEmpty') : t('settings.data.recordsDemo')
@@ -937,11 +957,13 @@ export function SettingsScreen() {
             <Divider style={{ marginVertical: space[3] }} />
 
             <SettingRow
+              focusId="settings.data.move"
               label={t('settings.data.move')}
               description={t('settings.data.moveDescription')}
               onPress={() => navigation.navigate('Transfer')}
             />
             <SettingRow
+              focusId="settings.data.reset"
               label={t('settings.data.reset')}
               description={t('settings.data.resetDescription')}
               control={
@@ -1318,7 +1340,7 @@ function KeywordManager() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="settings.keywords">
       <PanelTitle
         hint={t('settings.keywords.hint')}
         right={
@@ -1403,6 +1425,7 @@ function KeywordManager() {
       >
         <View style={{ gap: space[3.5], paddingBottom: space[2] }}>
           <TextField
+            focusId={null}
             label={t('jobScout.editor.name')}
             value={draftName}
             onChangeText={setDraftName}
@@ -1491,6 +1514,7 @@ function KeywordManager() {
       >
         <View style={{ paddingBottom: space[2] }}>
           <TextField
+            focusId={null}
             label={t('jobScout.editor.name')}
             value={newName}
             autoFocus

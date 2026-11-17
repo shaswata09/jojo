@@ -10,15 +10,22 @@ import {
   CircleHelp,
   ClipboardList,
   CornerDownLeft,
+  ExternalLink,
   FileText,
   LayoutDashboard,
+  Link2,
   Pencil,
   Plus,
   Radar,
+  Radio,
   Settings,
   Share2,
+  SlidersHorizontal,
+  Tag,
+  TextQuote,
   Trash2,
   UserRound,
+  Users,
   Waypoints,
   Wrench,
 } from 'lucide-react'
@@ -43,7 +50,9 @@ import { displayName } from '@/data/seed'
 import { bucketOf, partsOf } from '@/data/timeline'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { useScout } from '@jojo/service/react/use-scout'
 import { useTimeline } from '@jojo/service/react/use-timeline'
+import { useVault } from '@jojo/service/react/use-vault'
 import { TOOLS } from '@jojo/service/tools/index'
 import type { ToolName } from '@jojo/service/tools/index'
 import type { AnyTool } from '@jojo/service/tools/tool'
@@ -64,6 +73,9 @@ import {
   vaultPath,
 } from '@/lib/links'
 import type { GuidePage } from '@/lib/links'
+import { useLabels } from '@/lib/labels-context'
+import { PROFILE_PLACES, SEARCH_PLACES, SETTINGS_PLACES, placeById } from '@/lib/search-places'
+import type { Place, PlaceGroup } from '@/lib/search-places'
 import { useDomain } from '@/i18n/domain'
 
 type Result = {
@@ -165,6 +177,46 @@ const pagesFor = (t: (key: string) => string): Result[] => [
     keywords: `guide help documentation how to use manual ${GUIDE_KEYWORDS[page.id]}`,
   })),
 ]
+
+/** The icon a place is drawn with, by where it lives. */
+const PLACE_ICON: Record<PlaceGroup, LucideIcon> = {
+  settings: SlidersHorizontal,
+  profile: UserRound,
+  vault: Archive,
+  scout: Radar,
+  statistics: ChartColumn,
+  guide: CircleHelp,
+}
+
+/**
+ * The registry's places as palette rows, in the reader's language.
+ *
+ * Resolved here, at render, from catalog keys — the registry holds keys, not
+ * words, so a language switch renames every row. The row's panel and its own
+ * description are shown under it ("Model · The base URL, ending in /v1.") and
+ * matched against, so "Test connection" says which of the two it is and a word
+ * from the description finds the row.
+ */
+function placeRows(places: readonly Place[], t: (key: string) => string): Result[] {
+  return places.map((place) => {
+    const label = place.label ? t(place.label) : (place.text ?? place.id)
+    const panel = place.panel ? placeById(place.panel) : undefined
+    const where = panel?.label ? t(panel.label) : undefined
+    const detail = place.detail ? t(place.detail) : undefined
+    return {
+      id: `s-${place.id}`,
+      label,
+      detail: [where, detail].filter(Boolean).join(' · ') || undefined,
+      icon: PLACE_ICON[place.group],
+      to: place.to,
+      ...(place.keywords ? { keywords: place.keywords } : {}),
+    }
+  })
+}
+
+const OTHER_PLACES = SEARCH_PLACES.filter(
+  (place) => place.group !== 'settings' && place.group !== 'profile',
+)
 
 /** What the verb does to your records, at a glance, before you read the row. */
 const EFFECT_ICON: Record<string, LucideIcon> = {
@@ -284,6 +336,11 @@ function PaletteBody({
   const runCreate = useRunCreateAction()
   const createActions = useCreateActions()
   const memory = useGraph()
+  const vault = useVault()
+  const scout = useScout()
+  const { labels } = useLabels()
+  // Any namespace: the registry's keys carry their own ('settings:…').
+  const { t: tAny } = useTranslation()
 
   /**
    * Every registered tool that can be given an honest form, in registry order.
@@ -368,6 +425,116 @@ function PaletteBody({
 
   const pages = useMemo(() => pagesFor(t), [t])
 
+  /*
+   * The Vault's records, each to its own row — the same `focus` the graph and
+   * the reminders badge link with, which every one of these tabs scrolls to and
+   * lights. Matched on what the phone's search matches them on (a link's URL,
+   * a file's bucket, a snippet's body), so the two find the same things.
+   */
+  const { links, files, snippets, people } = vault
+  const vaultRows: Result[] = useMemo(() => {
+    void language
+    const tab = (tool: string) => tAny(`pages:vault.tools.${tool}`)
+    return [
+      ...links.map((l) => ({
+        id: `vl-${l.id}`,
+        label: l.title,
+        detail: `${tab('links')} · ${l.url}`,
+        icon: Link2,
+        to: vaultPath({ tool: 'links', focus: l.id }),
+        keywords: `${l.category} ${l.note ?? ''}`,
+      })),
+      ...files.map((f) => ({
+        id: `vf-${f.id}`,
+        label: f.name,
+        detail: `${tab('files')} · ${f.bucket} · ${f.size}`,
+        icon: FileText,
+        to: vaultPath({ tool: 'files', focus: f.id }),
+        keywords: `${f.kind} ${f.note ?? ''}`,
+      })),
+      ...snippets.map((s) => ({
+        id: `vs-${s.id}`,
+        label: s.title,
+        detail: `${tab('snippets')} · ${s.tag}`,
+        icon: TextQuote,
+        to: vaultPath({ tool: 'snippets', focus: s.id }),
+        // The body, capped: a snippet is found by a phrase in it, and a
+        // ten-paragraph statement is not worth matching every keystroke against.
+        keywords: s.body.slice(0, 400),
+      })),
+      ...people.map((p) => ({
+        id: `vp-${p.id}`,
+        label: p.name,
+        detail: [tab('people'), p.role, p.affiliation].filter(Boolean).join(' · '),
+        icon: Users,
+        to: vaultPath({ tool: 'people', focus: p.id }),
+        keywords: `${p.email ?? ''} ${p.note ?? ''}`,
+      })),
+    ]
+  }, [links, files, snippets, people, tAny, language])
+
+  /*
+   * The scout's records. Matches and saved postings were already linkable
+   * (`ScoutFocus`); a pipeline is now too, by its row's `data-focus-id`.
+   */
+  const { pipelines, matches, postings } = scout
+  const scoutRows: Result[] = useMemo(() => {
+    void language
+    return [
+      ...pipelines.map((p) => ({
+        id: `sp-${p.id}`,
+        label: p.name,
+        detail: `${tAny('scout:pipelines.title')} · ${p.source}`,
+        icon: Radio,
+        to: scoutPath({ focus: { kind: 'pipeline', id: p.id } }),
+        keywords: `${p.filter} ${p.schedule}`,
+      })),
+      ...matches.map((m) => ({
+        id: `sm-${m.id}`,
+        label: m.role,
+        detail: `${tAny('scout:matches.title')} · ${m.detail}`,
+        icon: Radar,
+        to: scoutPath({ focus: { kind: 'match', id: m.id } }),
+      })),
+      ...postings.map((p) => ({
+        id: `sv-${p.id}`,
+        label: p.title,
+        detail: [p.org, p.location, p.url].filter(Boolean).join(' · '),
+        icon: ExternalLink,
+        to: scoutPath({ focus: { kind: 'posting', id: p.id } }),
+        keywords: p.summary?.slice(0, 400) ?? '',
+      })),
+    ]
+  }, [pipelines, matches, postings, tAny, language])
+
+  /*
+   * Every setting, then every keyword — a keyword is a row in Settings with its
+   * own rename, colour and delete, so "research" finds the place to manage it.
+   */
+  const settingRows: Result[] = useMemo(() => {
+    void language
+    const keywordPanel = tAny('settings:keywords.title')
+    return [
+      ...placeRows(SETTINGS_PLACES, tAny),
+      ...labels.map((l) => ({
+        id: `k-${l.id}`,
+        label: l.name,
+        detail: keywordPanel,
+        icon: Tag,
+        to: settingsPath({ focus: `keyword:${l.id}` }),
+        keywords: 'keyword label tag',
+      })),
+    ]
+  }, [labels, tAny, language])
+  const profileRows = useMemo(() => {
+    void language
+    return placeRows(PROFILE_PLACES, tAny)
+  }, [tAny, language])
+  const placesRows = useMemo(() => {
+    void language
+    return placeRows(OTHER_PLACES, tAny)
+  }, [tAny, language])
+
   const go = (to: string) => {
     onOpenChange(false)
     navigate(to)
@@ -426,6 +593,10 @@ function PaletteBody({
         <CommandSeparator />
         <Section heading={t('spotlight.calendar')} items={events} go={go} />
         <CommandSeparator />
+        <Section heading={t('spotlight.pages.vault')} items={vaultRows} go={go} />
+        <CommandSeparator />
+        <Section heading={t('spotlight.pages.jobScout')} items={scoutRows} go={go} />
+        <CommandSeparator />
 
         {/* Below the records, above the pages. A palette is asked for a
           record far more often than for a verb, and the verbs are long
@@ -460,6 +631,17 @@ function PaletteBody({
         <CommandSeparator />
 
         <Section heading={t('spotlight.goTo')} items={pages} go={go} />
+        <CommandSeparator />
+
+        {/* Last, and the longest: every setting, every profile field, and the
+          places inside pages. Below the pages so an empty palette still opens
+          on the short list of where to go; typing is what reaches these, and
+          typing "theme" or "api key" leaves nothing above them. */}
+        <Section heading={t('spotlight.pages.settings')} items={settingRows} go={go} />
+        <CommandSeparator />
+        <Section heading={t('spotlight.pages.profile')} items={profileRows} go={go} />
+        <CommandSeparator />
+        <Section heading={t('spotlight.places')} items={placesRows} go={go} />
       </CommandList>
 
       <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">

@@ -174,7 +174,7 @@ export function SearchHealthBody() {
 export function SearchHealth() {
   const { t } = useTranslation('dashboard')
   return (
-    <Panel className="min-w-0">
+    <Panel className="min-w-0" focusId="stats-search-health">
       <PanelTitle>{t('searchHealth.title')}</PanelTitle>
       <SearchHealthBody />
     </Panel>

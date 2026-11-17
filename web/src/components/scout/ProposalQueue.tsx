@@ -96,7 +96,7 @@ export function ProposalQueue({
   const answeredFrom = onePipeline(answered)
 
   return (
-    <Panel>
+    <Panel focusId="section:proposals">
       <div className="mb-3.5 flex flex-wrap items-baseline justify-between gap-2">
         <PanelTitle className="mb-0" hint={t('proposals.hint')}>
           {t('proposals.title')}

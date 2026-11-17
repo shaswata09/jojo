@@ -11,11 +11,22 @@ import { ConnectionsSection } from '@/components/settings/ConnectionsSection'
 import { DataPanel } from '@/components/settings/DataPanel'
 import { DocumentsPanel } from '@/components/settings/DocumentsPanel'
 import { useTitle } from '@/lib/links'
+import { useFocusParam } from '@/lib/link-params'
+import { focusFallback } from '@/lib/search-places'
 import { isStorageAvailable } from '@/lib/storage'
+import { useArrivalHighlight, useFocusArrival } from '@/lib/use-arrival-highlight'
 
 export function Settings() {
   const { t } = useTranslation('pages')
   useTitle(t('settings.title'))
+
+  // A search result names one row (`?focus=appearance-theme`): this scrolls to
+  // it and lights it, and the parameter goes once the tint has faded. The
+  // Diagnostics panel's own `focus=skipped` arrival predates this and is left
+  // to it — there is no `data-focus-id="skipped"`, so nothing here answers it.
+  const { focus, clearFocus, arrival } = useFocusParam()
+  useArrivalHighlight(focus, clearFocus, arrival)
+  useFocusArrival(focus, { fallbackOf: focusFallback, arrival })
 
   // Reported, not assumed. jojo is local-first, so this is load-bearing.
   const storageOk = isStorageAvailable()

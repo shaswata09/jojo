@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { FileEditor } from '@/components/common/FileEditor'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -12,6 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { SettingRow, TextField, Toggle } from '@/components/ui/Field'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Sheet } from '@/components/ui/Sheet'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import type { ProfileText } from '@jojo/service/data/profile'
@@ -33,6 +35,8 @@ export function ProfileScreen() {
   const domain = useDomain()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  // A search result arriving: which row to scroll to and light (`FocusTarget`).
+  const route = useRoute<RouteProp<RootStackParamList, 'Profile'>>()
 
   /**
    * The saved record lives in the store; only the typing is screen state.
@@ -95,10 +99,16 @@ export function ProfileScreen() {
   }
 
   return (
-    <Screen title={t('profile.title')} subtitle={t('profile.subtitle')} wide>
+    <Screen
+      title={t('profile.title')}
+      subtitle={t('profile.subtitle')}
+      wide
+      focus={route.params?.focus}
+      onArrived={() => navigation.setParams({ focus: undefined })}
+    >
       {/* Profile sections. The edit sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
-        <Panel>
+        <Panel focusId="profile.basics">
           <PanelTitle>{t('profile.basics.title')}</PanelTitle>
           {/* Every field carries a placeholder, which only matters on an empty
               store: with the records cleared this used to render a stranger's name
@@ -107,24 +117,28 @@ export function ProfileScreen() {
               answers one. */}
           <View style={{ gap: space[3] }}>
             <TextField
+              focusId="profile.basics.fullName"
               label={t('profile.basics.fullName')}
               value={draft.fullName}
               placeholder={t('profile.basics.fullNamePlaceholder')}
               onChangeText={set('fullName')}
             />
             <TextField
+              focusId="profile.basics.position"
               label={t('profile.basics.position')}
               value={draft.position}
               placeholder={t('profile.basics.positionPlaceholder')}
               onChangeText={set('position')}
             />
             <TextField
+              focusId="profile.basics.location"
               label={t('profile.basics.location')}
               value={draft.location}
               placeholder={t('profile.basics.locationPlaceholder')}
               onChangeText={set('location')}
             />
             <TextField
+              focusId="profile.basics.email"
               label={t('profile.basics.email')}
               value={draft.email}
               mono
@@ -136,10 +150,11 @@ export function ProfileScreen() {
           </View>
         </Panel>
 
-        <Panel>
+        <Panel focusId="profile.links">
           <PanelTitle>{t('profile.links.title')}</PanelTitle>
           <View style={{ gap: space[3] }}>
             <TextField
+              focusId="profile.links.website"
               label={t('profile.links.website')}
               value={draft.website}
               mono
@@ -149,6 +164,7 @@ export function ProfileScreen() {
               onChangeText={set('website')}
             />
             <TextField
+              focusId="profile.links.scholar"
               label="Google Scholar"
               value={draft.scholar}
               mono
@@ -158,6 +174,7 @@ export function ProfileScreen() {
               onChangeText={set('scholar')}
             />
             <TextField
+              focusId="profile.links.github"
               label="GitHub"
               value={draft.github}
               mono
@@ -167,6 +184,7 @@ export function ProfileScreen() {
               onChangeText={set('github')}
             />
             <TextField
+              focusId="profile.links.linkedin"
               label="LinkedIn"
               value={draft.linkedin}
               mono
@@ -178,83 +196,89 @@ export function ProfileScreen() {
           </View>
         </Panel>
 
-        <Panel>
+        <Panel focusId="profile.interests">
           <PanelTitle hint={t('profile.interests.hint')}>{t('profile.interests.title')}</PanelTitle>
 
           {/* Renamed from "keywords", which is taken. A keyword in this app is
               something you file a record under and filter by; these are the terms
               the scout scores a posting against, and the two lists have never had
               anything to do with each other. */}
-          <Txt size="xs" tone="secondary">
-            {t('profile.interests.matchTerms')}
-          </Txt>
-          <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
-            {t('profile.interests.matchTermsDescription')}
-          </Txt>
+          <FocusTarget id="profile.interests.matchTerms">
+            <Txt size="xs" tone="secondary">
+              {t('profile.interests.matchTerms')}
+            </Txt>
+            <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
+              {t('profile.interests.matchTermsDescription')}
+            </Txt>
 
-          <View style={styles.terms}>
-            {matchTerms.map((term) => (
-              <View key={term} style={styles.termRow}>
-                <Chip tone="teal" shape="capsule">
-                  {term}
-                </Chip>
-                <IconButton
-                  icon="x"
-                  size={30}
-                  label={t('profile.remove', { name: term })}
-                  onPress={() => update({ matchTerms: matchTerms.filter((x) => x !== term) })}
-                />
-              </View>
-            ))}
-            <Button
-              label={t('profile.add')}
-              icon="plus"
-              variant="outline"
-              onPress={() => setAddingTerm(true)}
-            />
-          </View>
+            <View style={styles.terms}>
+              {matchTerms.map((term) => (
+                <View key={term} style={styles.termRow}>
+                  <Chip tone="teal" shape="capsule">
+                    {term}
+                  </Chip>
+                  <IconButton
+                    icon="x"
+                    size={30}
+                    label={t('profile.remove', { name: term })}
+                    onPress={() => update({ matchTerms: matchTerms.filter((x) => x !== term) })}
+                  />
+                </View>
+              ))}
+              <Button
+                label={t('profile.add')}
+                icon="plus"
+                variant="outline"
+                onPress={() => setAddingTerm(true)}
+              />
+            </View>
+          </FocusTarget>
 
           {/* The one required field on every application, and until now a list
               of five this app chose. Removing one here leaves the applications
               carrying it exactly where they are — `roleVocabulary` keeps a tag
               that is in use visible whether or not it is still on the list. */}
-          <Txt size="xs" tone="secondary" weight="medium" style={{ marginTop: space[4] }}>
-            {t('profile.interests.roleTags')}
-          </Txt>
-          <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
-            {t('profile.interests.roleTagsDescription')}
-          </Txt>
+          <FocusTarget id="profile.interests.roleTags" style={{ marginTop: space[4] }}>
+            <Txt size="xs" tone="secondary" weight="medium">
+              {t('profile.interests.roleTags')}
+            </Txt>
+            <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
+              {t('profile.interests.roleTagsDescription')}
+            </Txt>
 
-          <View style={styles.terms}>
-            {roles.map((role) => (
-              <View key={role} style={styles.termRow}>
-                <Chip shape="capsule">
-                  {role} {all.filter((a) => a.roleTag === role).length}
-                </Chip>
-                <IconButton
-                  icon="x"
-                  size={30}
-                  label={t('profile.remove', { name: role })}
-                  onPress={() => update({ roles: roles.filter((x) => x !== role) })}
-                />
-              </View>
-            ))}
-            <Button
-              label={t('profile.add')}
-              icon="plus"
-              variant="outline"
-              onPress={() => setAddingRole(true)}
-            />
-          </View>
+            <View style={styles.terms}>
+              {roles.map((role) => (
+                <View key={role} style={styles.termRow}>
+                  <Chip shape="capsule">
+                    {role} {all.filter((a) => a.roleTag === role).length}
+                  </Chip>
+                  <IconButton
+                    icon="x"
+                    size={30}
+                    label={t('profile.remove', { name: role })}
+                    onPress={() => update({ roles: roles.filter((x) => x !== role) })}
+                  />
+                </View>
+              ))}
+              <Button
+                label={t('profile.add')}
+                icon="plus"
+                variant="outline"
+                onPress={() => setAddingRole(true)}
+              />
+            </View>
+          </FocusTarget>
 
           <View style={{ gap: space[3], marginTop: space[4] }}>
             <TextField
+              focusId="profile.interests.targetRoles"
               label={t('profile.interests.targetRoles')}
               value={draft.targetRoles}
               placeholder={t('profile.interests.targetRolesPlaceholder')}
               onChangeText={set('targetRoles')}
             />
             <TextField
+              focusId="profile.interests.regions"
               label={t('profile.interests.regions')}
               value={draft.regions}
               placeholder={t('profile.interests.regionsPlaceholder')}
@@ -264,6 +288,7 @@ export function ProfileScreen() {
 
           <View style={{ marginTop: space[2] }}>
             <SettingRow
+              focusId="profile.interests.academia"
               label={t('profile.interests.academia')}
               control={
                 <Toggle
@@ -274,6 +299,7 @@ export function ProfileScreen() {
               }
             />
             <SettingRow
+              focusId="profile.interests.industry"
               label={t('profile.interests.industry')}
               control={
                 <Toggle
@@ -291,7 +317,7 @@ export function ProfileScreen() {
             file, not the file. */}
         <BackgroundPanel />
 
-        <Panel>
+        <Panel focusId="profile.documents">
           <PanelTitle
             hint={t('profile.documents.hint', { bucket: DOCUMENTS_BUCKET })}
             right={
@@ -383,7 +409,8 @@ export function ProfileScreen() {
          * bar that is always there stops being read.
          */}
         {dirty ? (
-          <Panel>
+          // Only while there are edits; a search result cannot land on it.
+          <Panel focusId={null}>
             {/* Was "saving keeps them for this visit, not to disk", which was
                 false — the profile is stored — and argued against pressing
                 Save. Web corrected the same line. */}
@@ -437,6 +464,7 @@ export function ProfileScreen() {
       >
         <View style={{ paddingBottom: space[2] }}>
           <TextField
+            focusId={null}
             label={t('profile.termSheet.label')}
             value={termDraft}
             autoFocus
@@ -466,6 +494,7 @@ export function ProfileScreen() {
       >
         <View style={{ paddingBottom: space[2] }}>
           <TextField
+            focusId={null}
             label={t('profile.roleSheet.label')}
             value={roleDraft}
             autoFocus

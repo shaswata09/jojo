@@ -1478,6 +1478,24 @@ html[data-theme='dark'] {
   animation: jojo-arrival-well 2600ms ease-out forwards;
 }
 
+/* And on a whole panel — a search result that names a Settings card, a guide
+   section or a statistics chart lights the card itself (`useFocusArrival`).
+   Ending on `transparent` would strip the panel's own fill for the beat
+   between the animation ending and the class coming off. */
+@keyframes jojo-arrival-panel {
+  0%,
+  55% {
+    background-color: var(--accent-soft);
+  }
+  100% {
+    background-color: var(--panel);
+  }
+}
+
+.surface.arrival-highlight {
+  animation-name: jojo-arrival-panel;
+}
+
 /* ------------------------------------------------------------
    Touch tier.
 

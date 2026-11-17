@@ -199,7 +199,7 @@ export function Vault() {
       {tool === 'files' ? <FilesTool focus={focus} /> : null}
       {tool === 'snippets' ? <SnippetsTool focus={focus} /> : null}
       {tool === 'people' ? <PeopleTool focus={focus} /> : null}
-      {tool === 'tools' ? <InstrumentsTool /> : null}
+      {tool === 'tools' ? <InstrumentsTool focus={focus} /> : null}
     </>
   )
 }

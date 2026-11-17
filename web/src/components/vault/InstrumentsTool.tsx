@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Calculator } from '@/components/vault/Calculator'
 import { Segment } from '@/components/common/Segment'
@@ -29,9 +29,22 @@ const PdfEditor = lazy(() =>
 
 type Instrument = 'calculator' | 'pdf'
 
-export function InstrumentsTool() {
+const isInstrument = (value: string | undefined): value is Instrument =>
+  value === 'calculator' || value === 'pdf'
+
+/**
+ * `focus` names an instrument when a link asked for one — the search palette's
+ * "PDF editor" row is '/vault?tool=tools&focus=pdf'. It picks the instrument and
+ * nothing more: the choice stays when the parameter fades.
+ */
+export function InstrumentsTool({ focus }: { focus?: string } = {}) {
   const { t } = useTranslation('vault')
-  const [instrument, setInstrument] = useState<Instrument>('calculator')
+  const [instrument, setInstrument] = useState<Instrument>(
+    isInstrument(focus) ? focus : 'calculator',
+  )
+  useEffect(() => {
+    if (isInstrument(focus)) setInstrument(focus)
+  }, [focus])
   // Built in the render so the labels follow the language on screen.
   const instruments = [
     { value: 'calculator', label: t('instruments.calculator') },

@@ -67,7 +67,7 @@ export function PipelinesPanel({
 }) {
   const { t } = useTranslation('scout')
   return (
-    <Panel>
+    <Panel focusId="section:pipelines">
       <div className="mb-3.5 flex flex-wrap items-baseline justify-between gap-2">
         <PanelTitle className="mb-0" hint={t('pipelines.hint')}>
           {t('pipelines.title')}
@@ -108,7 +108,12 @@ export function PipelinesPanel({
             const kind = kindOf(p)
 
             return (
-              <Row key={p.id} className="flex-wrap">
+              <Row
+                key={p.id}
+                // A search result's address — see `ScoutFocus` in links.ts.
+                data-focus-id={`pipeline:${p.id}`}
+                className="flex-wrap rounded-md"
+              >
                 <StatusDot status={state.dot} className="mt-1.5" />
                 <div className="min-w-0 flex-1 basis-64">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

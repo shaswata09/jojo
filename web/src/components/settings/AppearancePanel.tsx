@@ -25,9 +25,10 @@ export function AppearancePanel() {
   const [sound, setSound] = useState(isSoundEnabled)
 
   return (
-    <Panel>
+    <Panel focusId="appearance">
       <PanelTitle>{t('appearance.title')}</PanelTitle>
       <SettingRow
+        focusId="appearance-theme"
         label={t('appearance.theme.label')}
         description={t('appearance.theme.description')}
         control={
@@ -41,6 +42,7 @@ export function AppearancePanel() {
       />
       <LanguageRow />
       <SettingRow
+        focusId="appearance-gestures"
         label={t('appearance.gestures.label')}
         description={t('appearance.gestures.description')}
         control={
@@ -76,6 +78,7 @@ export function AppearancePanel() {
       {/* The same strokes the sidebar card reads (lib/gesture-pad.ts), and
           the model's credit, which the card's moves button also shows. */}
       <SettingRow
+        focusId="appearance-draw"
         label={t('appearance.draw.label')}
         description={t('appearance.draw.description')}
         control={
@@ -86,6 +89,7 @@ export function AppearancePanel() {
         <MascotCredit />
       </div>
       <SettingRow
+        focusId="appearance-sounds"
         label={t('appearance.sounds.label')}
         description={t('appearance.sounds.description')}
         control={
@@ -115,6 +119,7 @@ function LanguageRow() {
   const { choice, device, setChoice } = useLocale()
   return (
     <SettingRow
+      focusId="appearance-language"
       label={t('language.label')}
       description={t('language.description')}
       control={

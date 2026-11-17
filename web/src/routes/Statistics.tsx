@@ -16,6 +16,8 @@ import { Switch } from '@/components/ui/switch'
 import { statsFor } from '@/data/statistics'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath, useTitle } from '@/lib/links'
+import { useFocusParam } from '@/lib/link-params'
+import { useArrivalHighlight, useFocusArrival } from '@/lib/use-arrival-highlight'
 import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
 import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
@@ -44,6 +46,10 @@ export function Statistics() {
   const { t } = useTranslation('pages')
   const domain = useDomain()
   useTitle(t('statistics.title'))
+  // A search result naming one card (`?focus=stats-funnel`) — see `Settings`.
+  const { focus, clearFocus, arrival } = useFocusParam()
+  useArrivalHighlight(focus, clearFocus, arrival)
+  useFocusArrival(focus, { arrival })
   // The benchmark is useful, and noisy when you are reading your own numbers.
   const [showTypical, setShowTypical] = useState(true)
   // Every figure on this page counts the roles picked in the top bar, and all
@@ -145,7 +151,7 @@ export function Statistics() {
           reading aid for a page about figures, and the dashboard card has no
           room for a second number under each one. */}
       {sent > 0 ? (
-        <section data-tour="stats">
+        <section data-tour="stats" data-focus-id="stats-headline">
           <h2 className="mb-3.5 text-base font-medium">{t('statistics.headlineRates')}</h2>
           <HeadlineRatesBody showTypical={showTypical} />
         </section>
@@ -165,7 +171,7 @@ export function Statistics() {
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[1fr_1fr]">
         {/* Funnel: one hue, because length already encodes magnitude and the
             percentage carries the meaning. */}
-        <Panel className="min-w-0">
+        <Panel className="min-w-0" focusId="stats-funnel">
           {/* The hint is load-bearing, not decoration. Only the current stage
               is stored, so a record that was rejected after an interview counts
               as far as the dates it carries and no further — the panel says so
@@ -233,7 +239,7 @@ export function Statistics() {
           )}
         </Panel>
 
-        <Panel className="min-w-0">
+        <Panel className="min-w-0" focusId="stats-outcomes">
           {/* Every sent record lands in exactly one band, so these sum to the
               funnel's first step beside it and the offer band is the same 1 of
               9 the headline tile reports. The drafts are named rather than
@@ -361,7 +367,7 @@ export function Statistics() {
           is now the same per-record test the funnel uses, which is what makes
           the columns cross-foot against it rather than merely resemble it. */}
       {roles.length > 0 ? (
-        <Panel className="min-w-0">
+        <Panel className="min-w-0" focusId="stats-roles">
           <PanelTitle hint={t('statistics.asFarAsShown')}>{t('statistics.rolesTitle')}</PanelTitle>
           <PanelScroll axis="x" className="flex-none">
             <table className="w-full min-w-[440px] text-sm">

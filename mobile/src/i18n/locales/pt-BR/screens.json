@@ -349,15 +349,15 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Candidaturas, datas, o cofre e o explorador, tudo de uma vez",
+    "subtitle": "Candidaturas, datas, o cofre, o explorador e cada configuração, tudo de uma vez",
     "fieldLabel": "Buscar em tudo",
-    "placeholder": "Busque candidaturas, lembretes, arquivos…",
+    "placeholder": "Buscar candidaturas, arquivos, configurações…",
     "idleTitle": "Digite para buscar",
     "idleDescription": "Um só campo para todas as coleções — porque \"onde coloquei aquela coisa da Rice\" é uma pergunta sobre o registro, não sobre a lista em que ele está.",
     "create": "Criar",
     "createHint": "nada encontrado? crie",
     "noneTitle": "Nada corresponde a \"{{query}}\"",
-    "noneDescription": "A busca lê o título, a nota e a categoria de cada registro. Nada aqui é buscado em outro lugar.",
+    "noneDescription": "A busca lê o título, a nota e a categoria de cada registro, e o nome de cada configuração. Nada é buscado em outro lugar.",
     "fit": "{{fit}}% de compatibilidade",
     "results_one": "{{count}} resultado",
     "results_other": "{{count}} resultados",
@@ -369,6 +369,8 @@
       "calendar": "Calendário",
       "vault": "Cofre",
       "jobScout": "Explorador de vagas",
+      "settings": "Configurações e opções",
+      "places": "Seções",
       "goTo": "Ir para"
     }
   },

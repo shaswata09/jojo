@@ -349,15 +349,15 @@
   },
   "search": {
     "title": "Ara",
-    "subtitle": "Başvurular, tarihler, kasa ve gözcü, hepsi bir arada",
+    "subtitle": "Başvurular, tarihler, kasa, gözcü ve tüm ayarlar, hepsi bir arada",
     "fieldLabel": "Her şeyde ara",
-    "placeholder": "Başvurularda, hatırlatıcılarda, dosyalarda ara…",
+    "placeholder": "Başvuru, dosya, ayar ara…",
     "idleTitle": "Aramak için yazın",
     "idleDescription": "Tüm koleksiyonlar üzerinde tek bir alan — çünkü “Rice ile ilgili şeyi nereye koymuştum” sorusu kaydın hangi listede durduğuyla değil, kaydın kendisiyle ilgilidir.",
     "create": "Oluştur",
     "createHint": "bulunacak bir şey yok mu? oluşturun",
     "noneTitle": "“{{query}}” ile eşleşen bir şey yok",
-    "noneDescription": "Arama her kaydın başlığını, notunu ve kategorisini okur. Buradaki hiçbir şey başka bir yerden getirilmez.",
+    "noneDescription": "Arama her kaydın başlığını, notunu ve kategorisini ve her ayarın adını okur. Hiçbir şey başka bir yerden alınmaz.",
     "fit": "%{{fit}} uyum",
     "results_one": "{{count}} sonuç",
     "results_other": "{{count}} sonuç",
@@ -369,6 +369,8 @@
       "calendar": "Takvim",
       "vault": "Kasa",
       "jobScout": "İş gözcüsü",
+      "settings": "Ayarlar ve seçenekler",
+      "places": "Bölümler",
       "goTo": "Git"
     }
   },

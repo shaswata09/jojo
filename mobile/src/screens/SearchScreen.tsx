@@ -15,6 +15,7 @@ import { Txt } from '@/components/ui/Text'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { DESTINATIONS } from '@/lib/destinations'
+import { SCREEN_TITLE, SEARCH_PLACES, goToPlace, parentOf } from '@/lib/search-places'
 import { matchesQuery } from '@/lib/search'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
@@ -42,7 +43,15 @@ type Result = {
   title: string
   detail: string
   /** Which section the result is listed under; a key, translated when drawn. */
-  group: 'applications' | 'reminders' | 'calendar' | 'vault' | 'jobScout' | 'goTo'
+  group:
+    | 'applications'
+    | 'reminders'
+    | 'calendar'
+    | 'vault'
+    | 'jobScout'
+    | 'settings'
+    | 'places'
+    | 'goTo'
   onPress: () => void
 }
 
@@ -169,6 +178,31 @@ export function SearchScreen() {
         detail: t('search.fit', { fit: m.fit }),
         group: 'jobScout',
         onPress: () => navigation.navigate('JobScout'),
+      })
+    }
+
+    // Every setting, option and in-screen place (`lib/search-places.ts`): after
+    // the records, for the reason screens come last, and before the screens,
+    // because "theme" means the row, not the page it sits on. Matched on the
+    // label in the language on screen AND in English, the short description,
+    // and English synonyms — "dark mode" finds Theme in any language.
+    for (const p of SEARCH_PLACES) {
+      const title = p.name ?? (p.label ? t(p.label) : '')
+      const english = p.label ? t(p.label, { lng: 'en' }) : undefined
+      const about = p.detail ? t(p.detail) : undefined
+      if (!hit(title, english, about, p.keywords)) continue
+      const parent = parentOf(p)
+      const where = [
+        t(SCREEN_TITLE[p.to.screen]),
+        parent ? (parent.name ?? (parent.label ? t(parent.label) : undefined)) : undefined,
+      ]
+      out.push({
+        id: `place-${p.id}`,
+        icon: p.icon,
+        title,
+        detail: where.filter(Boolean).join(' · '),
+        group: p.group,
+        onPress: () => goToPlace(navigation, p.to),
       })
     }
 

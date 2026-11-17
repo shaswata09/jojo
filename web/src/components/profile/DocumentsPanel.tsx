@@ -60,12 +60,12 @@ export function DocumentsPanel() {
   const viewer = useDocumentViewer(documents)
 
   return (
-    <Panel>
+    <Panel focusId="profile-documents">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <PanelTitle className="mb-0" hint={t('documents.hint', { bucket: DOCUMENTS_BUCKET })}>
           {t('documents.title')}
         </PanelTitle>
-        <div className="flex gap-2">
+        <div className="flex gap-2" data-focus-id="profile-documents-upload">
           {/* The button is the affordance; the input is only the mechanism, so
               it is hidden rather than styled. `hidden` and not `sr-only`:
               there is nothing here for a screen reader to operate that the

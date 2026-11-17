@@ -349,15 +349,15 @@
   },
   "search": {
     "title": "Recherche",
-    "subtitle": "Candidatures, dates, le coffre et l’éclaireur, tout à la fois",
+    "subtitle": "Candidatures, dates, le coffre, l’éclaireur et chaque réglage, d’un seul coup",
     "fieldLabel": "Tout rechercher",
-    "placeholder": "Rechercher candidatures, rappels, fichiers…",
+    "placeholder": "Rechercher candidatures, fichiers, réglages…",
     "idleTitle": "Tapez pour rechercher",
     "idleDescription": "Un seul champ pour toutes les collections — car « où ai-je mis le truc de Rice ? » est une question sur l’enregistrement, pas sur la liste où il se trouve.",
     "create": "Créer",
     "createHint": "rien à trouver ? créez-le",
     "noneTitle": "Rien ne correspond à « {{query}} »",
-    "noneDescription": "La recherche lit le titre, la note et la catégorie de chaque enregistrement. Rien ici n’est récupéré ailleurs.",
+    "noneDescription": "La recherche lit le titre, la note et la catégorie de chaque fiche, et le nom de chaque réglage. Rien n’est récupéré ailleurs.",
     "fit": "{{fit}} % d’adéquation",
     "results_one": "{{count}} résultat",
     "results_other": "{{count}} résultats",
@@ -369,6 +369,8 @@
       "calendar": "Calendrier",
       "vault": "Coffre",
       "jobScout": "Éclaireur d’emploi",
+      "settings": "Réglages et options",
+      "places": "Sections",
       "goTo": "Aller à"
     }
   },

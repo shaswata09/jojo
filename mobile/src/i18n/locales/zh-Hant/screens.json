@@ -329,15 +329,15 @@
   },
   "search": {
     "title": "搜尋",
-    "subtitle": "申請、日期、保管庫和職缺偵察，一次全部搜尋",
+    "subtitle": "申請、日期、保管庫、職缺偵察和每一項設定，一次搜尋全部",
     "fieldLabel": "搜尋所有內容",
-    "placeholder": "搜尋申請、提醒、檔案…",
+    "placeholder": "搜尋申請、檔案、設定…",
     "idleTitle": "輸入文字即可搜尋",
     "idleDescription": "一個欄位涵蓋所有集合——因為「我把 Rice 那個東西放到哪了」是關於紀錄本身的問題，而不是它在哪份清單裡。",
     "create": "建立",
     "createHint": "找不到？那就建立一個",
     "noneTitle": "沒有符合「{{query}}」的內容",
-    "noneDescription": "搜尋會讀取每筆紀錄的標題、備註和分類。這裡的內容都不是從其他地方擷取的。",
+    "noneDescription": "搜尋會讀取每筆紀錄的標題、備註和類別，以及每項設定的名稱。不會從其他任何地方取得內容。",
     "fit": "契合度 {{fit}}%",
     "results_other": "{{count}} 個結果",
     "showAll_other": "顯示全部 {{count}} 個",
@@ -347,6 +347,8 @@
       "calendar": "行事曆",
       "vault": "保管庫",
       "jobScout": "職缺偵察",
+      "settings": "設定和選項",
+      "places": "區塊",
       "goTo": "前往"
     }
   },

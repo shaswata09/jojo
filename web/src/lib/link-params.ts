@@ -6,6 +6,7 @@ import {
   GUIDE_DEFAULTS,
   GUIDE_PAGES,
   SCOUT_DEFAULTS,
+  SCOUT_FOCUS_KINDS,
   VAULT_DEFAULTS,
   VAULT_TOOLS,
   calendarDate,
@@ -36,10 +37,23 @@ import {
  * caller of it is.
  */
 
-/** The row a link is pointing at, if any. Cleared once the highlight fades. */
-export function useSettingsParams() {
+/**
+ * The row a link is pointing at, if any. Cleared once the highlight fades.
+ *
+ * Read the same way on Settings, Profile and Statistics — each a page whose only
+ * parameter is `focus` — hence the general name; `useSettingsParams` is the
+ * name the Diagnostics panel has always called it by.
+ */
+export function useFocusParam() {
   const [params, setParams] = useSearchParams()
   const focus = params.get('focus') ?? undefined
+  /*
+   * Which navigation brought the focus. Picking the same search result twice
+   * inside the highlight's 2.6 seconds lands on an identical URL, so `focus`
+   * alone does not change and the second pick would light nothing; every
+   * navigation mints a new location key, and that is what restarts the cue.
+   */
+  const { key: arrival } = useLocation()
 
   const clearFocus = useCallback(() => {
     setParams(
@@ -54,8 +68,10 @@ export function useSettingsParams() {
     )
   }, [setParams])
 
-  return { focus, clearFocus }
+  return { focus, clearFocus, arrival }
 }
+
+export const useSettingsParams = useFocusParam
 
 /**
  * Which of the six is open.
@@ -151,8 +167,9 @@ export function useScoutParams() {
   const kind = cut > 0 ? raw.slice(0, cut) : null
   // A hand-typed or stale '?focus=' naming no list is dropped whole rather than
   // half-read: lighting up the wrong list is worse than lighting up nothing.
-  const focus: ScoutFocus | undefined =
-    kind === 'match' || kind === 'posting' ? { kind, id: raw.slice(cut + 1) } : undefined
+  const focus: ScoutFocus | undefined = SCOUT_FOCUS_KINDS.includes(kind as ScoutFocus['kind'])
+    ? { kind: kind as ScoutFocus['kind'], id: raw.slice(cut + 1) }
+    : undefined
 
   const set = useCallback(
     (patch: { focus?: ScoutFocus }, opts?: SetOptions) => {

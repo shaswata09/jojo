@@ -4,7 +4,8 @@ import type { TFunction } from 'i18next'
 import { fitOf } from '@jojo/service/core/fit'
 import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip, StatusDot } from '@/components/ui/Chip'
@@ -76,6 +77,9 @@ export function JobScoutScreen() {
   const domain = useDomain()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  // A search result arriving: a panel to light (`section`), or the switch
+  // behind ⋯ (`options`). Both one-shot.
+  const route = useRoute<RouteProp<RootStackParamList, 'JobScout'>>()
   const {
     matches,
     postings,
@@ -185,6 +189,9 @@ export function JobScoutScreen() {
     <Screen
       title={t('jobScout.title')}
       subtitle={t('jobScout.subtitle')}
+      focus={route.params?.section}
+      openOptions={route.params?.options === true}
+      onArrived={() => navigation.setParams({ section: undefined, options: undefined })}
       actions={
         <Button label={t('applications.new')} icon="plus" onPress={() => setEditing('new')} />
       }
@@ -216,7 +223,7 @@ export function JobScoutScreen() {
         </View>
       ) : null}
 
-      <Panel>
+      <Panel focusId="scout.pipelines">
         <PanelTitle hint={t('jobScout.pipelines.hint')}>{t('jobScout.pipelines.title')}</PanelTitle>
 
         {visiblePipelines.length === 0 ? (
@@ -364,7 +371,7 @@ export function JobScoutScreen() {
         onClearAll={engine.clearAll}
       />
 
-      <Panel>
+      <Panel focusId="scout.matches">
         {/* The hint used to read "example scores", because the percentages were
             fixtures. They are computed now — against the match terms, target
             roles and regions on your profile — so the hint says what they are
@@ -454,7 +461,7 @@ export function JobScoutScreen() {
         )}
       </Panel>
 
-      <Panel>
+      <Panel focusId="scout.save">
         <PanelTitle hint={t('jobScout.save.hint')}>{t('jobScout.save.title')}</PanelTitle>
         <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
           {t('jobScout.save.description')}

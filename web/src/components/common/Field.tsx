@@ -120,6 +120,7 @@ export function Field({
   mono,
   className,
   id,
+  focusId,
   ...props
 }: Omit<ComponentProps<typeof Input>, 'id'> & {
   label: string
@@ -142,6 +143,8 @@ export function Field({
   /** Monospace for machine values — endpoints, paths, tokens. */
   mono?: boolean
   id?: string
+  /** The field's address for search — see `SettingRow`'s `focusId`. */
+  focusId?: string
 }) {
   const { t } = useTranslation()
   const generated = useId()
@@ -167,7 +170,7 @@ export function Field({
   const button = href !== undefined || secret
 
   return (
-    <div className={cn('space-y-1.5', className)}>
+    <div data-focus-id={focusId} className={cn('space-y-1.5', className)}>
       <FieldLabel htmlFor={fieldId} label={label} required={required} />
       <div className="relative">
         <Input
@@ -227,6 +230,7 @@ export function TextareaField({
   mono,
   className,
   id,
+  focusId,
   ...props
 }: Omit<ComponentProps<typeof Textarea>, 'id'> & {
   label: string
@@ -237,6 +241,8 @@ export function TextareaField({
   required?: boolean
   mono?: boolean
   id?: string
+  /** The field's address for search — see `SettingRow`'s `focusId`. */
+  focusId?: string
 }) {
   const generated = useId()
   const fieldId = id ?? generated
@@ -244,7 +250,7 @@ export function TextareaField({
   const errorId = `${fieldId}-error`
 
   return (
-    <div className={cn('space-y-1.5', className)}>
+    <div data-focus-id={focusId} className={cn('space-y-1.5', className)}>
       <FieldLabel htmlFor={fieldId} label={label} required={required} />
       <Textarea
         id={fieldId}
@@ -318,13 +324,24 @@ export function SettingRow({
   label,
   description,
   control,
+  focusId,
 }: {
   label: ReactNode
   description?: ReactNode
   control: ReactNode
+  /**
+   * The row's address for search: `?focus=<focusId>` on its page scrolls to it
+   * and lights it (`useFocusArrival`). Every row in Settings and Profile has
+   * one, and each is listed in `lib/search-places.ts` — the guard in
+   * `search-places.requests.test.ts` fails the build when either side is missing.
+   */
+  focusId?: string
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-t border-hairline py-3 first:border-t-0">
+    <div
+      data-focus-id={focusId}
+      className="flex items-start justify-between gap-4 border-t border-hairline py-3 first:border-t-0"
+    >
       <div className="min-w-0">
         <div className="text-sm text-text-1">{label}</div>
         {description ? <div className="mt-0.5 text-xs text-text-3">{description}</div> : null}

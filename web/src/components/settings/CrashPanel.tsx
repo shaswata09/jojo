@@ -42,7 +42,7 @@ export function CrashPanel() {
    */
   if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
     return (
-      <Panel className="min-w-0">
+      <Panel className="min-w-0" focusId="crash">
         <PanelTitle hint={t('shared.thisBrowserOnly')}>{t('crash.title')}</PanelTitle>
         <p className="text-sm text-text-2">
           <Trans
@@ -57,7 +57,7 @@ export function CrashPanel() {
   }
 
   return (
-    <Panel className="min-w-0">
+    <Panel className="min-w-0" focusId="crash">
       <PanelTitle hint={t('shared.thisBrowserOnly')}>{t('crash.title')}</PanelTitle>
       {/* Each half is gated on its OWN capability, and the two are separate
           builds' worth of decision. Gating the whole panel on CRASH_CAPABILITY
@@ -79,6 +79,7 @@ export function CrashPanel() {
           </p>
 
           <SettingRow
+            focusId="crash-keep"
             label={t('crash.keep.label')}
             description={t('crash.keep.description')}
             control={
@@ -102,6 +103,7 @@ export function CrashPanel() {
       {ANALYTICS_CAPABILITY === 'off' ? null : (
         <div className="mt-1">
           <SettingRow
+            focusId="crash-usage"
             label={t('crash.usage.label')}
             description={t('crash.usage.description')}
             control={

@@ -116,11 +116,11 @@ export function McpLinkPanel() {
   const script = new URL(publicUrl('jojo-bridge.mjs'), window.location.origin).href
 
   return (
-    <Panel>
+    <Panel focusId="mcp">
       <PanelTitle hint={t('shared.optional')}>{t('mcp.title')}</PanelTitle>
       <p className="mb-3 text-sm text-text-2">{t('mcp.intro')}</p>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" data-focus-id="mcp-allow">
         <Switch id="mcp-link-switch" checked={link.enabled} onCheckedChange={link.setEnabled} />
         <label htmlFor="mcp-link-switch" className="text-sm text-text-1">
           {t('mcp.allow')}
@@ -156,7 +156,7 @@ export function McpLinkPanel() {
            */}
           <p className="mt-3 text-xs text-text-3">{t('mcp.honesty')}</p>
 
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex items-center gap-3" data-focus-id="mcp-token">
             <Button variant="ghost" size="sm" onClick={link.regenerate}>
               {t('mcp.newToken')}
             </Button>

@@ -64,7 +64,7 @@ export function CrashPanel() {
    */
   if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
     return (
-      <Panel>
+      <Panel focusId="settings.privacy">
         <PanelTitle hint={t('crash.thisPhone')}>{t('crash.title')}</PanelTitle>
         <Txt size="sm" tone="muted">
           {t('crash.notBuilt')}
@@ -74,7 +74,7 @@ export function CrashPanel() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="settings.privacy">
       <PanelTitle hint={t('crash.thisPhone')}>{t('crash.title')}</PanelTitle>
 
       <Txt size="sm" tone="muted" style={styles.para}>
@@ -86,6 +86,7 @@ export function CrashPanel() {
 
       {CRASH_CAPABILITY === 'off' ? null : (
         <SettingRow
+          focusId="settings.privacy.crash"
           label={t('crash.report')}
           description={t('crash.reportHint')}
           control={
@@ -104,6 +105,7 @@ export function CrashPanel() {
       {ANALYTICS_CAPABILITY === 'off' ? null : (
         <View style={styles.usage}>
           <SettingRow
+            focusId="settings.privacy.usage"
             label={t('crash.usage')}
             description={t('crash.usageHint')}
             control={

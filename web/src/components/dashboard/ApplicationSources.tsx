@@ -78,7 +78,7 @@ export function ApplicationSources() {
   const total = slices.filter((s) => !isHidden(s.key)).reduce((sum, s) => sum + s.value, 0)
 
   return (
-    <Panel className="min-w-0">
+    <Panel className="min-w-0" focusId="stats-sources">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <PanelTitle
           className="mb-0"

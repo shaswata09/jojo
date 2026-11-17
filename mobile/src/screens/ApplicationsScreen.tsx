@@ -303,6 +303,8 @@ export function ApplicationsScreen() {
       // scroll out from under the drag, and the floating card — positioned
       // against the board's measured origin — parts company with the finger.
       scrollEnabled={!boardDragging}
+      openOptions={route.params?.options === true}
+      onArrived={() => navigation.setParams({ options: undefined })}
       title={t('applications.title')}
       subtitle={
         empty

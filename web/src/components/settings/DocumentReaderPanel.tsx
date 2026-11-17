@@ -109,7 +109,7 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
   }
 
   return (
-    <Shell bare={bare} tour="reader">
+    <Shell bare={bare} tour="reader" focusId="reader">
       <PanelTitle hint={t('shared.optional')}>{t('reader.title')}</PanelTitle>
       <p className="mb-3 text-sm text-text-2">
         <Trans
@@ -131,6 +131,7 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
 
       <div className="space-y-3">
         <Field
+          focusId="reader-address"
           label={t('reader.address.label')}
           mono
           type="url"
@@ -158,7 +159,7 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
             The commands are also the two lines most likely to be mistyped: a
             lost hyphen in `--http` or a transposed port produces a reader that
             starts, prints a cheerful address, and cannot be reached. */}
-        <div className="rounded-md border border-hairline bg-well p-2.5">
+        <div className="rounded-md border border-hairline bg-well p-2.5" data-focus-id="reader-setup">
           <p className="text-xs text-text-3">{t('reader.notRunning')}</p>
           <div className="mt-1.5 flex items-start gap-2 rounded-md border border-hairline bg-raised py-1.5 ps-2.5 pe-1">
             {/* `min-w-0` on the flex child, or a long command refuses to shrink
@@ -206,7 +207,7 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex items-center gap-3" data-focus-id="reader-test">
         <Button
           variant="outline"
           size="sm"

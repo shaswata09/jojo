@@ -84,7 +84,7 @@ export function AuditLog() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="settings.audit">
       <PanelTitle
         hint={entries.length > 0 ? t('audit.recorded', { count: entries.length }) : undefined}
       >

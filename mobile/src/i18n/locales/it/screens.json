@@ -369,15 +369,15 @@
   },
   "search": {
     "title": "Cerca",
-    "subtitle": "Candidature, date, Cassaforte e scout, tutto insieme",
+    "subtitle": "Candidature, date, cassaforte, scout e ogni impostazione, tutto insieme",
     "fieldLabel": "Cerca ovunque",
-    "placeholder": "Cerca candidature, promemoria, file…",
+    "placeholder": "Cerca candidature, file, impostazioni…",
     "idleTitle": "Scrivi per cercare",
     "idleDescription": "Un unico campo su tutte le raccolte, perché “dove ho messo la cosa di Rice” è una domanda sul record, non su quale elenco lo contiene.",
     "create": "Crea",
     "createHint": "nulla da trovare? crealo",
     "noneTitle": "Nulla corrisponde a “{{query}}”",
-    "noneDescription": "La ricerca legge il titolo, la nota e la categoria di ogni record. Nulla qui viene scaricato da altrove.",
+    "noneDescription": "La ricerca legge titolo, nota e categoria di ogni record, e il nome di ogni impostazione. Niente viene preso da altrove.",
     "fit": "{{fit}}% di compatibilità",
     "results_one": "{{count}} risultato",
     "results_many": "{{count}} di risultati",
@@ -391,6 +391,8 @@
       "calendar": "Calendario",
       "vault": "Cassaforte",
       "jobScout": "Scout offerte",
+      "settings": "Impostazioni e opzioni",
+      "places": "Sezioni",
       "goTo": "Vai a"
     }
   },

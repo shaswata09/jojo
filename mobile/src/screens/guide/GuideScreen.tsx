@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Screen } from '@/components/ui/Screen'
 import { Button } from '@/components/ui/Button'
 import { Segment } from '@/components/ui/Segment'
@@ -9,6 +12,8 @@ import { GuideOverview } from '@/screens/guide/GuideOverview'
 import { GuideScreens } from '@/screens/guide/GuideScreens'
 import { GuideTools } from '@/screens/guide/GuideTools'
 import { startTour } from '@/components/tour/store'
+import { GUIDE_PAGES as PAGES } from '@/navigation/types'
+import type { GuidePage as Page, RootStackParamList } from '@/navigation/types'
 
 /**
  * The guide, as a section rather than a page.
@@ -28,17 +33,24 @@ import { startTour } from '@/components/tour/store'
  * Which page you are on is state, not a route. Deep-linking to a guide page is
  * a thing a URL bar makes worth having and a phone does not — and making it a
  * route would put five more entries in the back stack between a reader and the
- * screen they came from.
+ * screen they came from. Search can still open one: a `page` param picks the
+ * page on arrival and is cleared, so it is a one-shot instruction.
+ *
+ * The pages themselves (`GUIDE_PAGES`) live in `navigation/types.ts`, so a
+ * search result can name one without importing this screen.
  */
-
-/** Each page's label and subtitle are `screen.pages.<value>` in the guide catalog. */
-const PAGES = ['overview', 'screens', 'graph', 'tools', 'built'] as const
-
-type Page = (typeof PAGES)[number]
 
 export function GuideScreen() {
   const { t } = useTranslation('guide')
-  const [page, setPage] = useState<Page>('overview')
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const route = useRoute<RouteProp<RootStackParamList, 'Guide'>>()
+  const [page, setPage] = useState<Page>(route.params?.page ?? 'overview')
+  const linked = route.params?.page
+  useEffect(() => {
+    if (!linked) return
+    setPage(linked)
+    navigation.setParams({ page: undefined })
+  }, [linked, navigation])
   const options = PAGES.map((value) => ({ value, label: t(`screen.pages.${value}.label`) }))
 
   return (

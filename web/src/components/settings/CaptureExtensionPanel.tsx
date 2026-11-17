@@ -80,7 +80,7 @@ export function CaptureExtensionPanel() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="capture">
       <PanelTitle>{t('capture.title')}</PanelTitle>
 
       {/* Full width, matching the numbered steps below it. `max-w-prose` capped
@@ -143,7 +143,7 @@ function Install({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-focus-id="capture-install">
       <Button asChild>
         {/* A plain download. There is no API that could make this an install —
             see the header — so the button says what it does.

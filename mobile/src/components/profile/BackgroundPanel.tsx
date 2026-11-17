@@ -245,6 +245,7 @@ function EntrySheet({
             />
           </FormField>
           <TextField
+            focusId={null}
             label={t('background.title')}
             required
             value={draft.title}
@@ -253,18 +254,21 @@ function EntrySheet({
             onChangeText={(title) => setDraft({ ...draft, title })}
           />
           <TextField
+            focusId={null}
             label={t('background.where')}
             value={draft.where}
             placeholder={t('background.optional')}
             onChangeText={(where) => setDraft({ ...draft, where })}
           />
           <TextField
+            focusId={null}
             label={t('background.when')}
             value={draft.period}
             placeholder={t('background.whenPlaceholder')}
             onChangeText={(period) => setDraft({ ...draft, period })}
           />
           <TextField
+            focusId={null}
             label={t('background.year')}
             value={draft.year}
             placeholder="2024"
@@ -274,6 +278,7 @@ function EntrySheet({
             onChangeText={(year) => setDraft({ ...draft, year })}
           />
           <TextField
+            focusId={null}
             label={t('background.detail')}
             value={draft.detail}
             multiline
@@ -281,6 +286,7 @@ function EntrySheet({
             onChangeText={(detail) => setDraft({ ...draft, detail })}
           />
           <TextField
+            focusId={null}
             label={t('background.highlights')}
             hint={t('background.highlightsHint')}
             value={draft.highlights}
@@ -372,7 +378,7 @@ export function BackgroundPanel() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="profile.background">
       <PanelTitle
         hint={all.length === 0 ? undefined : t('background.recorded', { count: all.length })}
       >

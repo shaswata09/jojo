@@ -102,7 +102,7 @@ export function WhatIsWorking() {
   if (comparisons.length === 0) return null
 
   return (
-    <Panel aria-labelledby="what-is-working">
+    <Panel aria-labelledby="what-is-working" focusId="stats-what-is-working">
       <h2 id="what-is-working" className="mb-1 text-base font-medium">
         {t('whatIsWorking.title')}
       </h2>

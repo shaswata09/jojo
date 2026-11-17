@@ -9,10 +9,17 @@ import { SaveBar } from '@/components/profile/SaveBar'
 import { useProfileForm } from '@/components/profile/use-profile-form'
 import { Switch } from '@/components/ui/switch'
 import { useTitle } from '@/lib/links'
+import { useFocusParam } from '@/lib/link-params'
+import { focusFallback } from '@/lib/search-places'
+import { useArrivalHighlight, useFocusArrival } from '@/lib/use-arrival-highlight'
 
 export function Profile() {
   const { t } = useTranslation('pages')
   useTitle(t('profile.tabTitle'))
+  // A search result naming one section or field — see `Settings`.
+  const { focus, clearFocus, arrival } = useFocusParam()
+  useArrivalHighlight(focus, clearFocus, arrival)
+  useFocusArrival(focus, { fallbackOf: focusFallback, arrival })
   // Page option: the profile drives scoring, so seeing that spelled out helps
   // the first time and is noise thereafter.
   const [showScoringHelp, setShowScoringHelp] = useState(true)

@@ -377,7 +377,7 @@ export function BackgroundPanel() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="profile-background">
       <PanelTitle hint={all.length === 0 ? undefined : t('background.hint', { count: all.length })}>
         {t('background.title')}
       </PanelTitle>
@@ -387,7 +387,7 @@ export function BackgroundPanel() {
           <EntryForm onDone={() => setOpen(null)} />
         </div>
       ) : (
-        <div className="mb-3 flex justify-end gap-2">
+        <div className="mb-3 flex justify-end gap-2" data-focus-id="profile-background-add">
           <ReadDocumentMenu configured={configured} />
           <Button size="sm" variant="outline" onClick={() => setOpen('add')}>
             {t('background.addEntry')}

@@ -38,10 +38,10 @@ export function InterestsPanel({
   }
 
   return (
-    <Panel>
+    <Panel focusId="profile-interests">
       <PanelTitle hint={t('interests.hint')}>{t('interests.title')}</PanelTitle>
 
-      <div className="mb-4">
+      <div className="mb-4" data-focus-id="profile-match-terms">
         {/* Renamed from "keywords", which is taken. A keyword in this app is
             something you file a record under and filter by; these are the
             terms the scout scores a posting against, and the two lists have
@@ -78,12 +78,14 @@ export function InterestsPanel({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field
+          focusId="profile-target-roles"
           label={t('interests.targetRoles.label')}
           value={draft.targetRoles}
           placeholder={t('interests.targetRoles.placeholder')}
           onChange={set('targetRoles')}
         />
         <Field
+          focusId="profile-regions"
           label={t('interests.regions.label')}
           value={draft.regions}
           placeholder={t('interests.regions.placeholder')}
@@ -93,6 +95,7 @@ export function InterestsPanel({
 
       <div className="mt-4">
         <SettingRow
+          focusId="profile-academia"
           label={t('interests.academia')}
           control={
             <Switch
@@ -103,6 +106,7 @@ export function InterestsPanel({
           }
         />
         <SettingRow
+          focusId="profile-industry"
           label={t('interests.industry')}
           control={
             <Switch

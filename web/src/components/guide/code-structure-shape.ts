@@ -237,9 +237,11 @@ export const SHAPE: DirRow[] = [
     // for an answer, so the card shows the employer, role and place, and
     // approving does not open the page a second time.
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
-    files: 214,
-    tests: 97,
-    lines: 35461,
+    // 217 with `search-places.ts` — every setting, profile field and place the
+    // search palette can reach — its completeness guard, and the arrival test.
+    files: 217,
+    tests: 99,
+    lines: 37400,
     what: 'web-only adapters and URL state',
   },
   {
@@ -269,4 +271,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 255
+export const WEB_TEST_FILES = 257

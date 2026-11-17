@@ -33,7 +33,7 @@ export function RoleTags({
   const removeRole = (role: string) => update({ roles: without(roles, role) })
 
   return (
-    <div className="mt-4">
+    <div className="mt-4" data-focus-id="profile-role-tags">
       {/* The one required field on every application, and until now a list
           of five this app chose. `useRoleVocabulary` explains why that was
           not a default so much as a limit on whose search jojo was for. */}

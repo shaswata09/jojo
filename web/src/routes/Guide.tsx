@@ -1,10 +1,14 @@
 import { Suspense } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import { Loader } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Panel } from '@/components/common/Panel'
 import { GuideNav, GuidePager } from '@/components/guide/GuideNav'
 import { useTitle } from '@/lib/links'
+import { useFocusArrival } from '@/lib/use-arrival-highlight'
+
+/** A guide section is found by its own `id` — the fragment its pill links to. */
+const byElementId = (id: string) => document.getElementById(id)
 
 /**
  * The guide's layout: a rail above, a pager below, the open page between.
@@ -27,6 +31,16 @@ import { useTitle } from '@/lib/links'
  */
 export function Guide() {
   useTitle(null)
+  /*
+   * A section named in the URL's fragment ('/guide/screens#vault' — the search
+   * palette's guide rows). A router navigation does not scroll to a fragment
+   * the way a page load does, and the page is a lazy chunk that is not there yet
+   * when the URL changes, so the section is looked for until it renders.
+   */
+  const { hash } = useLocation()
+  useFocusArrival(hash.length > 1 ? decodeURIComponent(hash.slice(1)) : undefined, {
+    find: byElementId,
+  })
 
   return (
     <>

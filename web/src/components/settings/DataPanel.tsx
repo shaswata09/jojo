@@ -368,9 +368,9 @@ export function DataPanel() {
 
   return (
     <>
-      <Panel>
+      <Panel focusId="data">
         <PanelTitle>{t('data.title')}</PanelTitle>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" data-focus-id="data-backup">
           <Button
             variant="outline"
             size="sm"
@@ -432,6 +432,7 @@ export function DataPanel() {
               description, which is the half of a segment that was doing the
               work anyway. */}
           <SettingRow
+            focusId="data-records"
             label={t('data.records.label')}
             /* Three readings, because the old two said "the seeded search" about a
                store the user had spent a month filling — `isEmpty` cannot tell a
@@ -462,6 +463,7 @@ export function DataPanel() {
             }
           />
           <SettingRow
+            focusId="data-clear-records"
             label={t('data.clearRecords.label')}
             description={untouchedDemo ? t('data.clearRecords.demo') : t('data.clearRecords.own')}
             control={
@@ -486,6 +488,7 @@ export function DataPanel() {
               turned out to be a demonstration would be a worse surprise than
               one that says so before you press it. */}
           <SettingRow
+            focusId="data-move"
             label={t('data.move.label')}
             description={t('data.move.description')}
             control={
@@ -501,6 +504,7 @@ export function DataPanel() {
               rows above change what is in the app, this one leaves nothing of
               jojo on the machine at all. */}
           <SettingRow
+            focusId="data-clear-storage"
             label={t('data.clearStorage.label')}
             description={t('data.clearStorage.description')}
             control={

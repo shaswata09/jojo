@@ -329,15 +329,15 @@
   },
   "search": {
     "title": "搜索",
-    "subtitle": "申请、日期、资料库和职位侦察，一次搜遍",
+    "subtitle": "申请、日期、保险库、职位侦察和每一项设置，一次搜索全部",
     "fieldLabel": "搜索全部",
-    "placeholder": "搜索申请、提醒、文件…",
+    "placeholder": "搜索申请、文件、设置…",
     "idleTitle": "输入以搜索",
     "idleDescription": "一个搜索框覆盖所有集合——因为“我把 Rice 那件事放哪儿了”是关于记录本身的问题，而不是它在哪个列表里。",
     "create": "新建",
     "createHint": "找不到？那就创建",
     "noneTitle": "没有与“{{query}}”匹配的内容",
-    "noneDescription": "搜索会读取每条记录的标题、备注和类别。这里的内容都不会从别处获取。",
+    "noneDescription": "搜索会读取每条记录的标题、备注和类别，以及每项设置的名称。不会从其他任何地方获取内容。",
     "fit": "匹配度 {{fit}}%",
     "results_other": "{{count}} 个结果",
     "showAll_other": "显示全部 {{count}} 条",
@@ -347,6 +347,8 @@
       "calendar": "日历",
       "vault": "资料库",
       "jobScout": "职位侦察",
+      "settings": "设置和选项",
+      "places": "版块",
       "goTo": "前往"
     }
   },

@@ -171,6 +171,8 @@ export function CalendarScreen() {
     <Screen
       title={t('calendar.title')}
       subtitle={t('calendar.subtitle')}
+      openOptions={route.params?.options === true}
+      onArrived={() => navigation.setParams({ options: undefined } as never)}
       actions={
         <>
           {/*

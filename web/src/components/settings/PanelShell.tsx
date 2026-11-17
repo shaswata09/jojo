@@ -10,16 +10,21 @@ import { Panel } from '@/components/common/Panel'
 export function Shell({
   bare,
   tour,
+  focusId,
   children,
 }: {
   bare: boolean
   /** The guided tour's mark for the card (components/tour); not on the bare form. */
   tour?: string
+  /** The card's address for search (see `Panel`); not on the bare form either. */
+  focusId?: string
   children: ReactNode
 }) {
   return bare ? (
     <div className="space-y-3">{children}</div>
   ) : (
-    <Panel data-tour={tour}>{children}</Panel>
+    <Panel data-tour={tour} focusId={focusId}>
+      {children}
+    </Panel>
   )
 }

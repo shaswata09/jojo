@@ -329,15 +329,15 @@
   },
   "search": {
     "title": "Tìm kiếm",
-    "subtitle": "Đơn ứng tuyển, ngày tháng, Kho lưu trữ và trình tìm việc, tất cả cùng lúc",
+    "subtitle": "Đơn ứng tuyển, ngày, kho lưu trữ, trình tìm việc và mọi cài đặt, cùng lúc",
     "fieldLabel": "Tìm kiếm mọi thứ",
-    "placeholder": "Tìm đơn ứng tuyển, lời nhắc, tệp…",
+    "placeholder": "Tìm đơn ứng tuyển, tệp, cài đặt…",
     "idleTitle": "Gõ để tìm kiếm",
     "idleDescription": "Một ô nhập cho mọi tập hợp — vì “tôi để cái của Rice ở đâu” là câu hỏi về bản ghi, không phải về danh sách chứa nó.",
     "create": "Tạo",
     "createHint": "không tìm thấy? hãy tạo mới",
     "noneTitle": "Không có gì khớp với “{{query}}”",
-    "noneDescription": "Tìm kiếm đọc tiêu đề, ghi chú và danh mục của mọi bản ghi. Không có gì ở đây được tải từ nơi khác.",
+    "noneDescription": "Tìm kiếm đọc tiêu đề, ghi chú và danh mục của mọi bản ghi, cùng tên của mọi cài đặt. Không có gì được lấy từ nơi khác.",
     "fit": "Phù hợp {{fit}}%",
     "results_other": "{{count}} kết quả",
     "showAll_other": "Hiện tất cả {{count}}",
@@ -347,6 +347,8 @@
       "calendar": "Lịch",
       "vault": "Kho lưu trữ",
       "jobScout": "Trình tìm việc",
+      "settings": "Cài đặt và tùy chọn",
+      "places": "Các mục",
       "goTo": "Đi tới"
     }
   },

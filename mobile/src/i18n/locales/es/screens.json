@@ -349,15 +349,15 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Solicitudes, fechas, la bóveda y el explorador, todo a la vez",
+    "subtitle": "Candidaturas, fechas, la bóveda, el explorador y cada ajuste, todo a la vez",
     "fieldLabel": "Buscar en todo",
-    "placeholder": "Busca solicitudes, recordatorios, archivos…",
+    "placeholder": "Busca candidaturas, archivos, ajustes…",
     "idleTitle": "Escribe para buscar",
     "idleDescription": "Un solo campo para todas las colecciones, porque «¿dónde puse lo de Rice?» es una pregunta sobre el registro, no sobre la lista en la que está.",
     "create": "Crear",
     "createHint": "¿no hay nada? créalo",
     "noneTitle": "Nada coincide con «{{query}}»",
-    "noneDescription": "La búsqueda lee el título, la nota y la categoría de cada registro. Nada de esto se obtiene de ningún otro sitio.",
+    "noneDescription": "La búsqueda lee el título, la nota y la categoría de cada registro, y el nombre de cada ajuste. Nada se obtiene de ningún otro sitio.",
     "fit": "{{fit}} % de encaje",
     "results_one": "{{count}} resultado",
     "results_other": "{{count}} resultados",
@@ -369,6 +369,8 @@
       "calendar": "Calendario",
       "vault": "Bóveda",
       "jobScout": "Explorador de empleo",
+      "settings": "Ajustes y opciones",
+      "places": "Secciones",
       "goTo": "Ir a"
     }
   },

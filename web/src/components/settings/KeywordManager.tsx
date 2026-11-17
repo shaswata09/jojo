@@ -57,6 +57,7 @@ function KeywordRow({
 
   return (
     <SettingRow
+      focusId={`keyword:${label.id}`}
       label={
         editing ? (
           <div className="space-y-1.5">
@@ -181,7 +182,7 @@ export function KeywordManager() {
   }
 
   return (
-    <Panel data-tour="keyword-manager">
+    <Panel data-tour="keyword-manager" focusId="keywords">
       <PanelTitle hint={t('keywords.hint')}>{t('keywords.title')}</PanelTitle>
       <p className="mb-3 text-sm text-text-2">{t('keywords.intro')}</p>
 
@@ -203,6 +204,7 @@ export function KeywordManager() {
       )}
 
       <form
+        data-focus-id="keywords-add"
         className="mt-4 flex flex-wrap items-center gap-2"
         onSubmit={(e) => {
           e.preventDefault()

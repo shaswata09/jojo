@@ -329,15 +329,15 @@
   },
   "search": {
     "title": "Cari",
-    "subtitle": "Lamaran, tanggal, brankas, dan pencari, sekaligus",
+    "subtitle": "Lamaran, tanggal, brankas, pencari lowongan, dan setiap pengaturan, sekaligus",
     "fieldLabel": "Cari semuanya",
-    "placeholder": "Cari lamaran, pengingat, berkas…",
+    "placeholder": "Cari lamaran, berkas, pengaturan…",
     "idleTitle": "Ketik untuk mencari",
     "idleDescription": "Satu kolom untuk semua koleksi — karena “di mana saya menaruh urusan Rice itu” adalah pertanyaan tentang entrinya, bukan tentang daftar tempatnya berada.",
     "create": "Buat",
     "createHint": "tidak ada yang ditemukan? buat saja",
     "noneTitle": "Tidak ada yang cocok dengan “{{query}}”",
-    "noneDescription": "Pencarian membaca judul, catatan, dan kategori setiap entri. Tidak ada yang diambil dari tempat lain.",
+    "noneDescription": "Pencarian membaca judul, catatan, dan kategori setiap entri, serta nama setiap pengaturan. Tidak ada yang diambil dari tempat lain.",
     "fit": "Kecocokan {{fit}}%",
     "results_other": "{{count}} hasil",
     "showAll_other": "Tampilkan semua {{count}}",
@@ -347,6 +347,8 @@
       "calendar": "Kalender",
       "vault": "Brankas",
       "jobScout": "Pencari lowongan",
+      "settings": "Pengaturan dan opsi",
+      "places": "Bagian",
       "goTo": "Buka"
     }
   },

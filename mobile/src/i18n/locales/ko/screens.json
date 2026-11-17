@@ -329,15 +329,15 @@
   },
   "search": {
     "title": "검색",
-    "subtitle": "지원, 날짜, 보관함, 스카우트를 한 번에",
+    "subtitle": "지원, 날짜, 보관함, 채용 스카우트, 모든 설정을 한 번에",
     "fieldLabel": "전체 검색",
-    "placeholder": "지원, 알림, 파일 검색…",
+    "placeholder": "지원, 파일, 설정 검색…",
     "idleTitle": "입력해서 검색하세요",
     "idleDescription": "모든 모음을 검색창 하나로 찾아요. \"Rice 건을 어디에 뒀더라\"는 어느 목록에 있느냐가 아니라 기록 자체에 대한 질문이니까요.",
     "create": "만들기",
     "createHint": "찾는 게 없나요? 만들어 보세요",
     "noneTitle": "'{{query}}'와(과) 일치하는 항목이 없어요",
-    "noneDescription": "검색은 모든 기록의 제목, 메모, 카테고리를 읽어요. 다른 곳에서 가져오는 것은 없어요.",
+    "noneDescription": "검색은 모든 기록의 제목, 메모, 분류와 모든 설정의 이름을 읽습니다. 다른 곳에서 가져오는 것은 없습니다.",
     "fit": "적합도 {{fit}}%",
     "results_other": "결과 {{count}}개",
     "showAll_other": "{{count}}개 모두 보기",
@@ -347,6 +347,8 @@
       "calendar": "캘린더",
       "vault": "보관함",
       "jobScout": "채용 스카우트",
+      "settings": "설정 및 옵션",
+      "places": "섹션",
       "goTo": "바로 가기"
     }
   },

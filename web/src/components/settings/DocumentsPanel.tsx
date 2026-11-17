@@ -127,7 +127,7 @@ export function DocumentsPanel() {
   const mb = (n: number) => `${(n / 1_048_576).toFixed(1)} MB`
 
   return (
-    <Panel>
+    <Panel focusId="documents">
       <PanelTitle hint={t('documents.hint')}>{t('documents.title')}</PanelTitle>
       <p className="mb-3 text-sm text-text-2">{t('documents.intro')}</p>
 
@@ -153,6 +153,7 @@ export function DocumentsPanel() {
         ) : null}
 
         <Button
+          data-focus-id="documents-download"
           variant="outline"
           size="sm"
           disabled={busy || count === 0}

@@ -349,15 +349,15 @@
   },
   "search": {
     "title": "Suche",
-    "subtitle": "Bewerbungen, Termine, der Tresor und der Scout – alles auf einmal",
+    "subtitle": "Bewerbungen, Termine, Tresor, Scout und jede Einstellung – alles auf einmal",
     "fieldLabel": "Alles durchsuchen",
-    "placeholder": "Bewerbungen, Erinnerungen, Dateien suchen…",
+    "placeholder": "Bewerbungen, Dateien, Einstellungen suchen…",
     "idleTitle": "Tippe, um zu suchen",
     "idleDescription": "Ein Feld für alle Sammlungen – denn „wo habe ich das Rice-Ding hingelegt“ ist eine Frage nach dem Eintrag, nicht nach der Liste, in der er steht.",
     "create": "Erstellen",
     "createHint": "nichts gefunden? leg es an",
     "noneTitle": "Nichts passt zu „{{query}}“",
-    "noneDescription": "Die Suche liest Titel, Notiz und Kategorie jedes Eintrags. Nichts hier wird von woanders geladen.",
+    "noneDescription": "Die Suche liest Titel, Notiz und Kategorie jedes Eintrags und den Namen jeder Einstellung. Nichts davon wird von anderswo geladen.",
     "fit": "{{fit}} % Passung",
     "results_one": "{{count}} Ergebnis",
     "results_other": "{{count}} Ergebnisse",
@@ -369,6 +369,8 @@
       "calendar": "Kalender",
       "vault": "Tresor",
       "jobScout": "Job-Scout",
+      "settings": "Einstellungen und Optionen",
+      "places": "Bereiche",
       "goTo": "Gehe zu"
     }
   },

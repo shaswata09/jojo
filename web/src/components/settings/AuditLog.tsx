@@ -106,7 +106,7 @@ export function AuditLog() {
   }
 
   return (
-    <Panel>
+    <Panel focusId="audit">
       <PanelTitle hint={t('audit.kept', { count: entries.length })}>{t('audit.title')}</PanelTitle>
 
       {entries.length === 0 ? (

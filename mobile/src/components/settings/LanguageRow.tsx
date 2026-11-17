@@ -22,6 +22,7 @@ export function LanguageRow() {
   return (
     <>
       <SettingRow
+        focusId="settings.appearance.language"
         label={t('language.label')}
         description={
           restartPending

@@ -2757,3 +2757,34 @@ Guarded by:
 - `mobile/src/i18n/catalogs.test.ts` › "has a folder for every offered language and none for anything else"
 - `mobile/src/lib/plural-rules.test.ts` › "gives i18next the right forms when the engine has no PluralRules"
 Note: Chosen by number of speakers among languages the app did not yet offer, plus Traditional Chinese, whose readers were sent to English. Translated by one agent per language against a shared brief and validator (keys, placeholders, CLDR plural sets, tags, the two setting values); none has been reviewed by a native speaker yet.
+
+### Q333 — Search finds every setting, option and place, not only records and pages.
+`feature` · 2026-11-16 · web · active
+Must stay true: The ⌘K palette lists every Settings panel and row (and the named fields inside them), every Profile section and field, every keyword, the Vault's records (links, files, snippets, people) and tabs and instruments, the Job scout's pipelines, matches and saved postings and its four panels, the Statistics cards and the guide's sections — each by the same catalog key the page shows, so it is found in any of the twenty languages, plus English synonyms ("dark mode", "token"). Picking one opens the page scrolled to that row and lights it, falling back to the row's panel when the row is not drawn. `web/src/lib/search-places.ts` is the list, and a row added to Settings or Profile without a `focusId` in it fails the build.
+Guarded by:
+- `web/src/lib/search-places.requests.test.ts` › "gives every SettingRow in Settings and Profile a focusId"
+- `web/src/lib/search-places.requests.test.ts` › "gives every titled panel in Settings and Profile a focusId"
+- `web/src/lib/search-places.requests.test.ts` › "lists every focusId the Settings and Profile sources draw"
+- `web/src/lib/search-places.requests.test.ts` › "names no setting or profile field the sources no longer draw"
+- `web/src/lib/search-places.requests.test.ts` › "names no scout panel or statistics card the sources no longer draw"
+- `web/src/lib/search-places.requests.test.ts` › "labels every place with a key that exists in the English catalogs"
+- `web/src/lib/search-places.requests.test.ts` › "falls back from a row to a panel that is itself listed"
+- `web/src/lib/search-places.requests.test.ts` › "is listed in the palette, with the vault and scout records"
+- `web/src/lib/use-arrival-highlight.test.ts` › "waits for a late row before settling for its panel"
+- `web/src/lib/use-arrival-highlight.test.ts` › "carries the id in the URL of every page that can be arrived at"
+Note: Not searchable on purpose: fields inside dialogs and per-record sheets (the background entry form, the pipeline editor), the Dashboard's cards (no stable anchors — several render only when they have something to say) and the control-flow guide page's sections (English-only labels written in that page's source). The scroll-and-light was verified in headless Chrome.
+
+### Q334 — The phone's search finds every setting and option too.
+`feature` · 2026-11-16 · mobile · active
+Must stay true: The phone's Search lists, beside records and screens, a "Settings and options" group and a "Sections" group read from `mobile/src/lib/search-places.ts`: every row, field and panel on Settings and Profile, every switch behind a page's ⋯ options sheet, the Job scout's three panels, the Vault's People tool and the Guide's five pages. Each is labelled by the same catalog key the screen draws, translated when drawn, and also found by its English label and English synonyms ("dark mode" finds Theme, "token" finds API key). Choosing a Settings or Profile result opens the screen with a one-shot `focus` param, scrolls that `FocusTarget` into view — measured against the scroll content — and lights it briefly, still under reduced motion; a row not drawn right now lands on its panel. A page option opens that page's options sheet; a guide page opens on that page. Every `SettingRow`, `TextField` and `Panel` on Settings and Profile carries a `focusId` (or `focusId={null}` on purpose), and the registry and the screens list the same ids.
+Guarded by:
+- `mobile/src/lib/search-places.requests.test.ts` › "marks every settings row, field and panel on Settings and Profile with a focus id"
+- `mobile/src/lib/search-places.requests.test.ts` › "names focus ids as plain strings, or null for a row that is deliberately not a result"
+- `mobile/src/lib/search-places.requests.test.ts` › "lists every focus id the screens draw, and draws every focus id it lists"
+- `mobile/src/lib/search-places.requests.test.ts` › "reaches every switch behind a page options sheet"
+- `mobile/src/lib/search-places.requests.test.ts` › "gives every place a label key that is in the English catalog"
+- `mobile/src/lib/search-places.requests.test.ts` › "gives every place its own id and some English words to be found by"
+- `mobile/src/lib/search-places.requests.test.ts` › "lands on the nearest drawn panel when the row itself is not drawn"
+- `mobile/src/lib/search-places.requests.test.ts` › "lists settings and places in search, under a heading in every language"
+- `mobile/src/lib/search-places.requests.test.ts` › "scrolls to the row and lights it once, then clears the param"
+Note: The web half is Q333. Not searchable on purpose: fields inside per-record sheets (an application's stage change, a reminder's all-day switch) and the onboarding's reporting step, which repeats the two Crash reports switches Settings already lists. The scroll-and-light was verified by tests only; no Android emulator was attached.

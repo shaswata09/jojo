@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { StyleSheet, View } from 'react-native'
 import type { ViewProps, ViewStyle } from 'react-native'
+import { FocusTarget } from '@/components/ui/FocusTarget'
 import { Txt } from '@/components/ui/Text'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -17,10 +18,20 @@ export function Panel({
   children,
   style,
   padded = true,
+  focusId,
   ...rest
-}: ViewProps & { children?: ReactNode; padded?: boolean }) {
+}: ViewProps & {
+  children?: ReactNode
+  padded?: boolean
+  /**
+   * Where search lands on this panel (`FocusTarget`); listed in
+   * `lib/search-places.ts`. `null` says the panel is deliberately not a search
+   * result. Required in effect on Settings and Profile — a test reads them.
+   */
+  focusId?: string | null
+}) {
   const c = useColors()
-  return (
+  const panel = (
     <View
       {...rest}
       style={[
@@ -33,6 +44,7 @@ export function Panel({
       {children}
     </View>
   )
+  return focusId ? <FocusTarget id={focusId}>{panel}</FocusTarget> : panel
 }
 /**
  * A panel's heading, with an optional quiet hint beside it.

@@ -270,7 +270,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   }
 
   return (
-    <Shell bare={bare} tour="model">
+    <Shell bare={bare} tour="model" focusId="model">
       <PanelTitle
         hint={t('model.hint')}
         right={
@@ -282,6 +282,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             }}
             disabled={shown.length === 0}
             aria-expanded={listOpen}
+            data-focus-id="model-saved-servers"
             title={shown.length === 0 ? t('model.savedNone') : t('model.savedServers')}
           >
             <Link2 className="size-4" aria-hidden />
@@ -296,7 +297,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       {/* The provider first, because every field under it depends on the answer:
           a local server needs an address, a cloud one needs a key and has its
           address already. */}
-      <div className="mb-3">
+      <div className="mb-3" data-focus-id="model-provider">
         <label className="mb-1.5 block text-sm font-medium" htmlFor={providerId}>
           {t('model.provider')}
         </label>
@@ -357,6 +358,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       <div className="space-y-3">
         {provider.fixedEndpoint ? null : (
           <Field
+            focusId="model-endpoint"
             label={t('model.endpoint.label')}
             mono
             type="url"
@@ -377,6 +379,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
         {provider.needsKey ? (
           <Field
             label={t('model.apiKey.label')}
+            focusId="model-api-key"
             mono
             type="password"
             spellCheck={false}
@@ -442,6 +445,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          * itself.
          */}
         <Field
+          focusId="model-name"
           label={t('model.modelField.label')}
           mono
           spellCheck={false}
@@ -464,6 +468,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             label for a connection that does not exist. */}
         {connected ? (
           <Field
+            focusId="model-saved-as"
             label={t('model.savedAs.label')}
             spellCheck={false}
             value={name}
@@ -492,6 +497,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          * guessed. Typing a number opts into both halves at once.
          */}
         <Field
+          focusId="model-context-window"
           label={t('model.contextWindow.label')}
           mono
           inputMode="numeric"
@@ -527,6 +533,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          */}
         {sendsThinking(provider.id, 'on') ? (
           <SettingRow
+            focusId="model-reasoning"
             label={t('model.reasoning.label')}
             description={t('model.reasoning.description')}
             control={
@@ -554,7 +561,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
         */}
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex items-center gap-3" data-focus-id="model-test">
         <Button
           variant="outline"
           size="sm"

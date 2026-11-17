@@ -20,7 +20,11 @@ import { useScout } from '@jojo/service/react/use-scout'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { useTitle } from '@/lib/links'
 import { useScoutParams } from '@/lib/link-params'
-import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
+import {
+  useArrivalHighlight,
+  useArrivalScroll,
+  useFocusArrival,
+} from '@/lib/use-arrival-highlight'
 import { jobFromApproval } from '@jojo/service/core/proposal'
 
 export function JobScout() {
@@ -62,6 +66,10 @@ export function JobScout() {
   const { focus, token, set } = useScoutParams()
   useArrivalHighlight(token, () => set({ focus: undefined }))
   const focusedRow = useArrivalScroll<HTMLDivElement>(token)
+  // A pipeline or a whole panel, named by search: found by `data-focus-id`,
+  // which is the whole token ('pipeline:p1', 'section:matches'). The two
+  // record lists above keep their own ref and class.
+  useFocusArrival(focus?.kind === 'pipeline' || focus?.kind === 'section' ? token : undefined)
 
   const pages = usePostingPages()
   const [snapshot, setSnapshot] = useState<VaultFile | null>(null)

@@ -66,7 +66,7 @@ export function NextSteps() {
   if (items.length === 0) return null
 
   return (
-    <Panel aria-labelledby="next-steps">
+    <Panel aria-labelledby="next-steps" focusId="stats-next-steps">
       <h2 id="next-steps" className="mb-1 text-base font-medium">
         {t('nextSteps.title')}
       </h2>

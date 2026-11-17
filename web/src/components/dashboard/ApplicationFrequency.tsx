@@ -454,7 +454,7 @@ export function ApplicationFrequencyBody() {
 export function ApplicationFrequency() {
   const { t } = useTranslation('dashboard')
   return (
-    <Panel className="min-w-0">
+    <Panel className="min-w-0" focusId="stats-frequency">
       <PanelTitle>{t('frequency.title')}</PanelTitle>
       <ApplicationFrequencyBody />
     </Panel>

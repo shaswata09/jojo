@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import {
   ChartLegend,
@@ -52,6 +53,12 @@ export function StatisticsScreen() {
   const advice = useAdvice()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  // A search result for the switch behind ⋯ opens the options sheet on arrival.
+  const route = useRoute<RouteProp<RootStackParamList, 'Statistics'>>()
+  const arrival = {
+    openOptions: route.params?.options === true,
+    onArrived: () => navigation.setParams({ options: undefined }),
+  }
   const { all, sourceCounts } = useApplications()
   const { all: timeline } = useTimeline()
   const { open } = useSheets()
@@ -133,7 +140,7 @@ export function StatisticsScreen() {
   // beside a store the user has just emptied.
   if (all.length === 0) {
     return (
-      <Screen title={t('statistics.title')} subtitle={t('statistics.emptySubtitle')}>
+      <Screen title={t('statistics.title')} subtitle={t('statistics.emptySubtitle')} {...arrival}>
         <Panel>
           <EmptyState
             icon="bar-chart-2"
@@ -159,6 +166,7 @@ export function StatisticsScreen() {
   return (
     <Screen
       wide
+      {...arrival}
       title={t('statistics.title')}
       subtitle={sent > 0 ? t('statistics.subtitleSent') : t('statistics.subtitleNone')}
       options={

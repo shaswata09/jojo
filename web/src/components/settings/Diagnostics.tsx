@@ -102,11 +102,19 @@ function at(instant: string | null | undefined, locale: string): string {
  */
 const Line = forwardRef<
   HTMLDivElement,
-  { label: string; value: ReactNode; tone?: 'warning'; className?: string }
->(function Line({ label, value, tone, className }, ref) {
+  {
+    label: string
+    value: ReactNode
+    tone?: 'warning'
+    className?: string
+    /** The line's address for search — see `SettingRow`'s `focusId`. */
+    focusId?: string
+  }
+>(function Line({ label, value, tone, className, focusId }, ref) {
   return (
     <div
       ref={ref}
+      data-focus-id={focusId}
       className={cn(
         'flex items-baseline justify-between gap-4 border-t border-hairline py-1.5 first:border-t-0',
         tone === 'warning' && 'rounded-sm border-t-0 bg-warning-soft px-2',
@@ -138,9 +146,9 @@ export function Diagnostics() {
    * present, because "present" is what it already was when this was reported as
    * missing.
    */
-  const { focus, clearFocus } = useSettingsParams()
+  const { focus, clearFocus, arrival } = useSettingsParams()
   const skippedRef = useRef<HTMLDivElement>(null)
-  useArrivalHighlight(focus, clearFocus)
+  useArrivalHighlight(focus, clearFocus, arrival)
   useEffect(() => {
     if (focus !== 'skipped') return
     skippedRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
@@ -186,17 +194,19 @@ export function Diagnostics() {
   const meta = session?.meta
 
   return (
-    <Panel>
+    <Panel focusId="diagnostics">
       <PanelTitle hint={t('shared.thisBrowserOnly')}>{t('diagnostics.title')}</PanelTitle>
 
       <div className="grid grid-cols-1 gap-x-8 gap-y-5 lg:grid-cols-2">
         <div>
           <h3 className="mb-1.5 text-xs font-medium text-text-2">{t('diagnostics.storage')}</h3>
           <Line
+            focusId="diagnostics-durable"
             label={t('diagnostics.durable.label')}
             value={session?.durable ? t('diagnostics.durable.yes') : t('diagnostics.durable.no')}
           />
           <Line
+            focusId="diagnostics-schema"
             label={t('diagnostics.schema.label')}
             value={t('diagnostics.schema.value', {
               stored: meta?.schemaVersion ?? '—',
@@ -211,6 +221,7 @@ export function Diagnostics() {
            * this code cannot back up.
            */}
           <Line
+            focusId="diagnostics-persisted"
             label={t('diagnostics.persisted.label')}
             value={
               persisted === 'asking'
@@ -231,6 +242,7 @@ export function Diagnostics() {
             }
           />
           <Line
+            focusId="diagnostics-space"
             label={t('diagnostics.space.label')}
             value={
               estimate === 'asking'
@@ -244,6 +256,7 @@ export function Diagnostics() {
             }
           />
           <Line
+            focusId="diagnostics-queue"
             label={t('diagnostics.queue.label')}
             value={
               health.state === 'idle'
@@ -317,6 +330,7 @@ export function Diagnostics() {
            * and should not look like an alert.
            */}
           <Line
+            focusId="diagnostics-skipped"
             ref={skippedRef}
             tone={skippedCount > 0 ? 'warning' : undefined}
             className={focus === 'skipped' ? 'arrival-highlight' : undefined}
@@ -328,6 +342,7 @@ export function Diagnostics() {
             }
           />
           <Line
+            focusId="diagnostics-integrity"
             label={t('diagnostics.integrity.label')}
             value={
               session && session.problems.length > 0

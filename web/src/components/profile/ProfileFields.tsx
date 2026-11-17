@@ -11,7 +11,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
   const { t } = useTranslation('profile')
   return (
     <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
-      <Panel>
+      <Panel focusId="profile-basics">
         <PanelTitle>{t('fields.basics')}</PanelTitle>
         {/* Every field carries a placeholder, which only matters on an empty
             store: with the records cleared this page used to render a
@@ -20,6 +20,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             question; black text answers one. */}
         <div className="space-y-3">
           <Field
+            focusId="profile-full-name"
             label={t('fields.fullName.label')}
             value={draft.fullName}
             autoComplete="name"
@@ -27,6 +28,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             onChange={set('fullName')}
           />
           <Field
+            focusId="profile-position"
             label={t('fields.position.label')}
             autoComplete="organization-title"
             value={draft.position}
@@ -34,6 +36,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             onChange={set('position')}
           />
           <Field
+            focusId="profile-location"
             label={t('fields.location.label')}
             autoComplete="address-level2"
             value={draft.location}
@@ -41,6 +44,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             onChange={set('location')}
           />
           <Field
+            focusId="profile-email"
             label={t('fields.email.label')}
             type="email"
             value={draft.email}
@@ -52,10 +56,11 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
         </div>
       </Panel>
 
-      <Panel>
+      <Panel focusId="profile-links">
         <PanelTitle>{t('fields.links')}</PanelTitle>
         <div className="space-y-3">
           <Field
+            focusId="profile-website"
             label={t('fields.website.label')}
             autoComplete="url"
             type="url"
@@ -65,6 +70,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             onChange={set('website')}
           />
           <Field
+            focusId="profile-scholar"
             label="Google Scholar"
             type="url"
             value={draft.scholar}
@@ -73,6 +79,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             onChange={set('scholar')}
           />
           <Field
+            focusId="profile-github"
             label="GitHub"
             type="url"
             value={draft.github}
@@ -81,6 +88,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             onChange={set('github')}
           />
           <Field
+            focusId="profile-linkedin"
             label="LinkedIn"
             type="url"
             value={draft.linkedin}

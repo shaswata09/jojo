@@ -65,7 +65,7 @@ export function PostingsPanel({
   const { t } = useTranslation('scout')
   const domain = useDomain()
   return (
-    <Panel>
+    <Panel focusId="section:postings">
       <PanelTitle hint={t('postings.hint')}>{t('postings.title')}</PanelTitle>
       <p className="mb-3 text-sm text-text-2">{t('postings.intro')}</p>
 
