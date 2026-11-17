@@ -1,0 +1,152 @@
+{
+  "screen": {
+    "title": "Transfer",
+    "subtitle": "Move everything between this phone and your computer, over your local network. Both need to be on the same network. Nothing goes to the internet and nothing is stored anywhere else.",
+    "direction": "Direction",
+    "roles": {
+      "send": "Send to a computer",
+      "receive": "Receive from a computer"
+    },
+    "onPhone": "What is on this phone now",
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records",
+    "empty": "empty",
+    "sendNote": "Sending copies all of it to your computer, which asks before it replaces what it holds. Nothing on this phone changes.",
+    "receiveNote": "Receiving replaces all of it. Everything above is overwritten by what arrives, and it cannot be undone — export first if you want to keep this."
+  },
+  "groups": {
+    "applications": {
+      "label": "Applications",
+      "hint": "Every stage, note and outcome on each one"
+    },
+    "timeline": {
+      "label": "Reminders and events",
+      "hint": "{{reminders}} remind you, {{events}} are dated events"
+    },
+    "vault": {
+      "label": "Links and snippets",
+      "hint": "{{links}} links · {{snippets}} snippets"
+    },
+    "files": {
+      "label": "Files",
+      "hint": "CVs, statements and anything else saved against an application"
+    },
+    "keywords": {
+      "label": "Keywords",
+      "hint": "Your keyword list and every record it is attached to"
+    },
+    "scout": {
+      "label": "Job scout",
+      "hint": "{{pipelines}} pipelines · {{postings}} saved postings · {{matches}} matches"
+    },
+    "profile": {
+      "label": "Profile",
+      "hint": "Your basics, links, target roles and match terms"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "not available on this device",
+    "noRandom": "This device has no secure random number generator, so jojo will not agree a key on it. Pairing is disabled rather than done weakly.",
+    "scan": "Scan the code",
+    "retry": "Try again",
+    "cancel": "Cancel"
+  },
+  "send": {
+    "title": "Send to a computer",
+    "hint": "point at the code on your computer",
+    "outcome": {
+      "applied": "Your computer now has your records",
+      "declined": "Your computer kept its own records",
+      "failed": "Your computer could not take your records",
+      "handed": "Everything was handed over"
+    },
+    "detail": {
+      "waiting": "Your computer asks before it replaces anything — confirm there to finish. Nothing on this phone has changed.",
+      "unknown": "Your computer did not say whether it took them. Nothing on this phone has changed.",
+      "applied": "Both devices hold the same records now. Nothing on this phone has changed.",
+      "notReplaced": "Nothing was replaced there. Nothing on this phone has changed."
+    },
+    "unreadable_one": "{{count}} document could not be read and stayed behind.",
+    "unreadable_other": "{{count}} documents could not be read and stayed behind.",
+    "again": "Send again",
+    "typeThis": "Type this on your computer",
+    "paired": "Paired. This phone is waiting on your local network for your computer to ask.",
+    "handing": "Handing over your records…",
+    "handingProgress": "Handing over your records — {{served}} of {{chunks}}.",
+    "intro": "On your computer, open Transfer, choose Receive from phone, and scan the code it shows. Both need to be on the same local network.",
+    "gatherFailed": "jojo could not gather the records on this phone, so nothing was sent. Try again."
+  },
+  "receive": {
+    "title": "Receive",
+    "hint": "point at the code on the other device",
+    "complete": "Transfer complete",
+    "done": "Done",
+    "typeThis": "Type this on your other device",
+    "paired": "Paired. This phone is listening on your local network and nowhere else.",
+    "progress": "Receiving — {{size}} so far. Nothing here changes until you agree to it.",
+    "intro": "Open jojo on your computer, choose Transfer, and scan the code it shows.",
+    "confirm": {
+      "title": "Replace everything on this phone?",
+      "description": "{{contents}}. {{replaces}}, and that cannot be undone.",
+      "confirm": "Replace"
+    },
+    "unrestorable": "What arrived cannot be restored: {{reason}}. Nothing on this phone has changed."
+  },
+  "landed": {
+    "plain_one": "{{count}} record is on this phone.",
+    "plain_other": "{{count}} records are on this phone.",
+    "withDocuments_one": "{{count}} record is on this phone, {{documents}}.",
+    "withDocuments_other": "{{count}} records are on this phone, {{documents}}.",
+    "documents_one": "{{count}} document",
+    "documents_other": "{{count}} documents",
+    "skipped_one": "{{count}} could not be read.",
+    "skipped_other": "{{count}} could not be read."
+  },
+  "scanner": {
+    "point": "Point this at the code on your other device’s Transfer page.",
+    "advice": {
+      "denied": "jojo needs the camera to read the code on your other device. Allow it, or type the code by hand instead.",
+      "unsupported": "This phone cannot open the camera for jojo.",
+      "failed": "The camera did not start. Close jojo and open it again."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Read the pairing code",
+      "message": "jojo needs the camera to read the code shown on your other device. Nothing is recorded, and no image leaves this phone.",
+      "allow": "Allow",
+      "notNow": "Not now"
+    },
+    "refused": {
+      "denied": "jojo needs the camera to read the code on your other device.",
+      "blocked": "The camera is turned off for jojo. Turn it on in your phone’s Settings, under Apps, to pair by scanning."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "That code is not a jojo pairing offer. Scan the one on your other device.",
+      "noNetwork": "This phone is not on a local network. jojo transfers over your local network only, so both devices need to be on the same one.",
+      "notLocal": "This phone is on a network jojo will not transfer over. It only connects to a private network address, so your records never cross the internet.",
+      "noSocket": "jojo could not open a connection on this phone. Try again."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "The clipboard is empty. Copy a jojo backup first, then paste it here.",
+    "fileEmpty": "That file is empty. Nothing on this phone has changed.",
+    "notBackup": "it is not a jojo backup",
+    "unrestorable": {
+      "file": "That file cannot be restored: {{reason}}. Nothing on this phone has changed.",
+      "clipboard": "What is on the clipboard cannot be restored: {{reason}}. Nothing on this phone has changed."
+    },
+    "noRecords": {
+      "file": "That file is a backup with no records in it. Nothing on this phone has changed — restoring it would have emptied this phone.",
+      "clipboard": "What is on the clipboard is a backup with no records in it. Nothing on this phone has changed — restoring it would have emptied this phone."
+    },
+    "unreadable": "That file could not be read. Nothing on this phone has changed.",
+    "noPicker": "This phone has nothing that can pick a JSON or text file.",
+    "openFailed": "The file could not be opened: {{detail}}",
+    "failedTitle": "Nothing was imported",
+    "restoredTitle": "Backup restored"
+  }
+}

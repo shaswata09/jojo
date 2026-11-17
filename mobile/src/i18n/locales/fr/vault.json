@@ -1,0 +1,299 @@
+{
+  "common": {
+    "undo": "Annuler",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "remove": "Retirer",
+    "done": "OK",
+    "title": "Titre",
+    "note": "Note",
+    "changeApplications": "Changer de candidatures",
+    "fileUnderApplication": "Rattacher à une candidature",
+    "moreActionsFor": "Plus d’actions pour {{name}}",
+    "openNamed": "Ouvrir {{name}}",
+    "savedAgo": "enregistré {{ago}}",
+    "copyOf": "{{name}} (copie)",
+    "movedTo": "Déplacé vers {{name}}",
+    "titleRequired": "Donnez-lui un nom pour pouvoir le retrouver."
+  },
+  "screen": {
+    "title": "Coffre",
+    "subtitle": "Rappels, liens, fichiers, extraits et personnes",
+    "counts": {
+      "reminders_one": "{{count}} rappel",
+      "reminders_other": "{{count}} rappels",
+      "links_one": "{{count}} lien",
+      "links_other": "{{count}} liens",
+      "files_one": "{{count}} fichier",
+      "files_other": "{{count}} fichiers",
+      "snippets_one": "{{count}} extrait",
+      "snippets_other": "{{count}} extraits",
+      "people_one": "{{count}} personne",
+      "people_other": "{{count}} personnes"
+    },
+    "showCounts": "Afficher les totaux",
+    "showCountsDescription": "Le nombre d’éléments dans le sous-titre, plutôt que ce que contiennent les onglets",
+    "toolLabel": "Outil du coffre",
+    "tools": {
+      "reminders": "Rappels",
+      "links": "Liens",
+      "files": "Fichiers",
+      "snippets": "Extraits",
+      "people": "Personnes",
+      "tools": "Outils"
+    }
+  },
+  "files": {
+    "add": "Enregistrer un document",
+    "filterLabel": "Filtrer les documents",
+    "editLabel": "Modifier le document",
+    "bucket": "Dossier",
+    "search": {
+      "label": "Rechercher des documents",
+      "placeholder": "Rechercher par nom, note ou dossier"
+    },
+    "empty": {
+      "zeroTitle": "Aucun document pour l’instant",
+      "zeroDescription": "Votre CV, vos lettres, vos présentations et vos scans administratifs. Les noms, tailles et types sont enregistrés ; rien ne lit le fichier lui-même.",
+      "search": "Aucun document ne mentionne « {{query}} » dans son nom, sa note ou son dossier.",
+      "both": "Aucun document de {{bucket}} ne porte les mots-clés sélectionnés.",
+      "bucketTitle": "Rien dans {{bucket}}",
+      "bucketDescription_one": "{{count}} document est classé dans les autres dossiers.",
+      "bucketDescription_other": "{{count}} documents sont classés dans les autres dossiers.",
+      "showAll": "Afficher tous les dossiers",
+      "keywordsTitle": "Aucun document ne porte ces mots-clés"
+    },
+    "toast": {
+      "removed": "Document retiré",
+      "duplicated": "Document dupliqué",
+      "updated": "Document mis à jour",
+      "recorded": "Document enregistré",
+      "recordedDescription": "{{name}} · classé dans {{bucket}}. Le nom, la taille et le type sont conservés ; le fichier lui-même n’est pas lu."
+    }
+  },
+  "snippets": {
+    "add": "Nouvel extrait",
+    "filterLabel": "Filtrer les extraits",
+    "tag": "Étiquette",
+    "copyNamed": "Copier {{name}}",
+    "search": {
+      "label": "Rechercher des extraits",
+      "placeholder": "Rechercher par titre ou texte"
+    },
+    "empty": {
+      "zeroTitle": "Aucun extrait pour l’instant",
+      "zeroDescription": "Les réponses que vous retapez dans chaque formulaire : une courte bio, un paragraphe sur l’enseignement, l’e-mail de relance que vous envoyez toujours.",
+      "search": "Aucun extrait ne mentionne « {{query}} » dans son nom, son texte ou son type.",
+      "both": "Aucun extrait de type {{tag}} ne porte les mots-clés sélectionnés.",
+      "bucketTitle": "Aucun extrait de type {{tag}}",
+      "bucketDescription_one": "{{count}} extrait est classé dans les autres types.",
+      "bucketDescription_other": "{{count}} extraits sont classés dans les autres types.",
+      "showAll": "Afficher tous les types",
+      "keywordsTitle": "Aucun extrait ne porte ces mots-clés"
+    },
+    "toast": {
+      "deleted": "Extrait supprimé",
+      "duplicated": "Extrait dupliqué",
+      "filedUnder": "Classé dans {{tag}}",
+      "saved": "Extrait enregistré",
+      "added": "Extrait ajouté",
+      "addedDescription": "{{title}} · classé dans {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Modifier l’extrait",
+      "description": "Tout ce qui est entre [CROCHETS] reste un blanc quand la fiche de brouillon le charge, de sorte que le nom d’une personne n’est jamais rempli à votre place.",
+      "titlePlaceholder": "ex. Relance sans réponse",
+      "applicationHint": "Facultatif. Un extrait écrit pour certains employeurs peut indiquer lesquels.",
+      "body": "Texte",
+      "bodyRequired": "Un extrait sans texte n’a rien à coller.",
+      "bodyPlaceholder": "Bonjour [NAME], …"
+    },
+    "discard": {
+      "title": "Abandonner les modifications non enregistrées ?",
+      "description": "Ce que vous avez saisi ici n’a été enregistré nulle part : en quittant, vous le perdez, et c’est irréversible.",
+      "confirm": "Abandonner"
+    }
+  },
+  "links": {
+    "add": "Enregistrer un lien",
+    "filterLabel": "Filtrer les liens",
+    "category": "Catégorie",
+    "search": {
+      "label": "Rechercher des liens",
+      "placeholder": "Rechercher par titre, URL ou note"
+    },
+    "empty": {
+      "zeroTitle": "Rien d’enregistré pour l’instant",
+      "zeroDescription": "Offres, pages de départements, personnes et guides : tout ce à quoi vous voulez revenir.",
+      "search": "Aucun lien ne mentionne « {{query}} » dans son titre, son adresse, sa note ou sa catégorie.",
+      "both": "Aucun lien de la catégorie {{category}} ne porte les mots-clés sélectionnés.",
+      "bucketTitle": "Aucun lien dans {{category}}",
+      "bucketDescription_one": "{{count}} lien est classé dans les autres catégories.",
+      "bucketDescription_other": "{{count}} liens sont classés dans les autres catégories.",
+      "showAll": "Afficher toutes les catégories",
+      "keywordsTitle": "Aucun lien ne porte ces mots-clés"
+    },
+    "menu": {
+      "open": "Ouvrir le lien",
+      "copy": "Copier l’URL"
+    },
+    "toast": {
+      "removed": "Lien retiré",
+      "duplicated": "Lien dupliqué",
+      "copied": "URL copiée",
+      "updated": "Lien mis à jour",
+      "saved": "Lien enregistré"
+    },
+    "editor": {
+      "editTitle": "Modifier le lien",
+      "description": "Rien n’est téléchargé : sont conservés le titre, l’URL et le jour où vous l’avez enregistré.",
+      "saveLink": "Enregistrer le lien",
+      "titlePlaceholder": "ex. Rice — offre en statistique",
+      "url": "URL",
+      "urlRequired": "Un lien sans URL ne mène nulle part.",
+      "applicationHint": "Relie les deux, pour que chaque candidature compte ceci parmi ce qui lui est rattaché.",
+      "notePlaceholder": "Pourquoi cela vaut la peine d’y revenir"
+    }
+  },
+  "reminders": {
+    "add": "Nouveau rappel",
+    "filterLabel": "Filtrer les rappels",
+    "markDone": "Marquer « {{title}} » comme fait",
+    "markNotDone": "Marquer « {{title}} » comme non fait",
+    "buckets": {
+      "overdue": "En retard",
+      "today": "Aujourd’hui",
+      "upcoming": "À venir",
+      "done": "Terminés"
+    },
+    "search": {
+      "label": "Rechercher des rappels",
+      "placeholder": "Rechercher par titre, note ou type"
+    },
+    "empty": {
+      "zeroTitle": "Aucun rappel pour l’instant",
+      "zeroDescription": "Un rappel est un enregistrement daté avec une alerte activée. Une fois sa date passée, il est dû, et il reste sur Aujourd’hui jusqu’à ce que vous le cochiez.",
+      "search": "Aucun rappel ne mentionne « {{query}} » dans son titre, sa note ou son type.",
+      "both": {
+        "overdue": "Aucun rappel en retard ne porte les mots-clés sélectionnés.",
+        "today": "Aucun rappel du jour ne porte les mots-clés sélectionnés.",
+        "upcoming": "Aucun rappel à venir ne porte les mots-clés sélectionnés.",
+        "done": "Aucun rappel terminé ne porte les mots-clés sélectionnés."
+      },
+      "nothingIn": {
+        "overdue": "Rien en retard",
+        "today": "Rien aujourd’hui",
+        "upcoming": "Rien à venir"
+      },
+      "doneTitle": "Rien de terminé pour l’instant",
+      "doneDescription": "Les rappels que vous cochez s’accumulent ici, pour qu’un rappel coché par erreur reste retrouvable.",
+      "bucketDescription_one": "{{count}} rappel est classé dans les autres groupes.",
+      "bucketDescription_other": "{{count}} rappels sont classés dans les autres groupes.",
+      "showAll": "Afficher tous les rappels",
+      "keywordsTitle": "Aucun rappel ne porte ces mots-clés"
+    }
+  },
+  "people": {
+    "add": "Ajouter",
+    "optionsFor": "Options pour {{name}}",
+    "search": {
+      "label": "Rechercher des personnes",
+      "placeholder": "Rechercher par nom, rôle ou note"
+    },
+    "empty": {
+      "zeroTitle": "Personne pour l’instant",
+      "zeroDescription": "Référents, présidents de comité, recruteurs : toutes les personnes par qui passe votre recherche. Nommez-les sur les postes pour lesquels elles écrivent et elles apparaîtront aussi sur ces fiches.",
+      "noMatchTitle": "Personne ne correspond",
+      "noMatchDescription": "Essayez une partie d’un nom, un rôle ou leur établissement."
+    },
+    "toast": {
+      "removed": "Personne retirée",
+      "saved": "Personne enregistrée"
+    },
+    "editor": {
+      "editTitle": "Modifier la personne",
+      "addTitle": "Ajouter une personne",
+      "save": "Enregistrer la personne",
+      "description": "Seul un nom est nécessaire. Le reste, c’est ce qui finit par compter.",
+      "noApplication": "Aucune candidature",
+      "name": "Nom",
+      "namePlaceholder": "ex. Pr Ngozi Okafor",
+      "role": "Rôle",
+      "rolePlaceholder": "ex. référent, président du comité, recruteur",
+      "affiliation": "Établissement",
+      "affiliationPlaceholder": "ex. Rice",
+      "affiliationHint": "Où elle se trouve. Non lié à un employeur auprès duquel vous avez postulé.",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "namedOn": "Mentionnée sur",
+      "namedOnHint": "Chaque poste pour lequel elle écrit, évalue ou préside.",
+      "notePlaceholder": "Ce qu’elle a dit, ce qu’elle vous doit, quand relancer."
+    }
+  },
+  "calculator": {
+    "title": "Calculatrice",
+    "hint": "fonctionne sans enregistrements ni connexion",
+    "copy": "Copier le résultat",
+    "mode": "Mode",
+    "modes": {
+      "basic": "Standard",
+      "scientific": "Scientifique"
+    },
+    "plusMinus": "plus ou moins",
+    "history": "Historique",
+    "kept": "{{count}} conservés",
+    "clear": "Effacer",
+    "emptyTitle": "Aucun calcul pour l’instant",
+    "emptyDescription": "Les trente derniers résultats restent ici, pour comparer le deuxième nombre au premier. Touchez-en un pour le remettre à l’écran.",
+    "historyEntry": "{{expr}} égale {{value}}. Le remettre à l’écran"
+  },
+  "pageViewer": {
+    "capturedFrom": "Capturé depuis {{host}}",
+    "missingTitle": "Aucune copie enregistrée sur cet appareil",
+    "missingDescription": "Les captures restent là où elles ont été faites ; une capture faite dans l’application web n’est donc pas ici. L’enregistrement a conservé son nom et son adresse."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · classé {{ago}}",
+    "editDetails": "Modifier les détails",
+    "openFailed": "Aucune application de ce téléphone n’a proposé de l’ouvrir.",
+    "facts": {
+      "type": "Type",
+      "size": "Taille",
+      "filed": "Classé",
+      "bucket": "Dossier"
+    },
+    "typed": {
+      "title": "Enregistré, pas stocké",
+      "description": "Celui-ci a été saisi à la main : un nom, un type et une taille pour un document conservé ailleurs. Modifiez-le et choisissez un fichier pour en garder une copie ici."
+    },
+    "checking": {
+      "title": "Recherche de la copie",
+      "description": "Vérification que le fichier visé par cet enregistrement est toujours dans le stockage de l’application."
+    },
+    "kept": {
+      "title": "Conservé sur cet appareil",
+      "pageDescription": "S’ouvre ici, sans scripts ni connexion : la copie de l’offre telle qu’elle était le jour de l’enregistrement.",
+      "read": "Le lire",
+      "fileDescription": "S’ouvre dans l’application de ce téléphone qui gère ce type. Rien n’est envoyé, et rien ici ne lit son contenu.",
+      "open": "Ouvrir"
+    },
+    "gone": {
+      "title": "La copie a disparu",
+      "description": "Cet enregistrement pointe vers un fichier qui n’est plus dans le stockage de l’application, très probablement effacé par le système. L’enregistrement est intact ; choisissez à nouveau le fichier pour le joindre.",
+      "choose": "Le choisir à nouveau"
+    },
+    "attachedTo": "Rattaché à",
+    "change": "Changer",
+    "fileUnderJob": "Le rattacher à un poste",
+    "notFiled": "Rattaché à aucune candidature. Le rattacher l’ajoute à ces fiches et permet au graphe de le retrouver depuis chacune d’elles.",
+    "addNote": "Ajouter une note",
+    "notePlaceholder": "À quoi sert ce document ?",
+    "saveNote": "Enregistrer la note",
+    "noNote": "Rien n’a encore été noté sur celui-ci.",
+    "toast": {
+      "noteSaved": "Note enregistrée"
+    }
+  }
+}

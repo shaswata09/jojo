@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { TONE_ORDER, inkFill, toneFill, toneName } from '@/components/common/label-display'
 import { SpectrumSwatch } from '@/components/common/SpectrumSwatch'
 import type { LabelTone } from '@/data/labels'
@@ -43,12 +44,13 @@ export function ToneSwatches({
   label: string
   className?: string
 }) {
+  const { t } = useTranslation()
   const { theme } = useTheme()
 
   return (
     <div
       role="group"
-      aria-label={`Colour for ${label}`}
+      aria-label={t('tone.colourFor', { label })}
       /*
        * Wraps, and that is what made room for the palette. Nine 24px targets
        * with 6px between them is 264px of a 240px popover before its padding,
@@ -98,7 +100,7 @@ export function ToneSwatches({
         value={ink}
         {...(ink === undefined ? {} : { fill: inkFill(ink, theme) })}
         selected={ink !== undefined}
-        label={`Any colour for ${label}`}
+        label={t('tone.anyColourFor', { label })}
         onPick={(hex) => onChange(value, hex)}
       />
     </div>

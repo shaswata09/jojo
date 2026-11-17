@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { Sheet } from '@/components/ui/Sheet'
@@ -40,17 +41,18 @@ export function LabelChips({ recordId }: { recordId: string }) {
  * the sheets use.
  */
 export function LabelPicker({ recordId, name }: { recordId: string; name: string }) {
+  const { t } = useTranslation('components')
   const { labels, labelIdsOf, toggleOn, addLabel } = useLabels()
   const [open, setOpen] = useState(false)
   const picked = new Set(labelIdsOf(recordId))
 
   return (
     <>
-      <IconButton icon="tag" label={`Keywords on ${name}`} onPress={() => setOpen(true)} />
+      <IconButton icon="tag" label={t('keywords.on', { name })} onPress={() => setOpen(true)} />
       <KeywordSheet
         open={open}
         onClose={() => setOpen(false)}
-        title={`Keywords on ${name}`}
+        title={t('keywords.on', { name })}
         picked={picked}
         labels={labels}
         onToggle={(id) => toggleOn(recordId, id)}
@@ -78,6 +80,7 @@ export function StagedKeywordPicker({
   value: string[]
   onChange: (next: string[]) => void
 }) {
+  const { t } = useTranslation('components')
   const { labels, addLabel } = useLabels()
   const [open, setOpen] = useState(false)
   const picked = useMemo(() => new Set(value), [value])
@@ -87,7 +90,7 @@ export function StagedKeywordPicker({
     <View style={styles.stagedRow}>
       {chosen.length === 0 ? (
         <Txt size="sm" tone="muted">
-          None yet
+          {t('keywords.none')}
         </Txt>
       ) : (
         chosen.map((l) => (
@@ -97,12 +100,18 @@ export function StagedKeywordPicker({
         ))
       )}
 
-      <Button label="Choose" icon="tag" variant="outline" size="sm" onPress={() => setOpen(true)} />
+      <Button
+        label={t('keywords.choose')}
+        icon="tag"
+        variant="outline"
+        size="sm"
+        onPress={() => setOpen(true)}
+      />
 
       <KeywordSheet
         open={open}
         onClose={() => setOpen(false)}
-        title="Keywords"
+        title={t('keywords.title')}
         picked={picked}
         labels={labels}
         onToggle={(id) => onChange(picked.has(id) ? value.filter((v) => v !== id) : [...value, id])}
@@ -134,6 +143,7 @@ function KeywordSheet({
   onToggle: (id: string) => void
   onCreate: (name: string) => void
 }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   const [draft, setDraft] = useState('')
 
@@ -142,7 +152,7 @@ function KeywordSheet({
       open={open}
       onClose={onClose}
       title={title}
-      description="Keywords are yours, and shared by applications, reminders, files and links — filtering by one finds all of them."
+      description={t('keywords.description')}
       // The keyword list scrolls itself.
       scroll={false}
     >
@@ -183,9 +193,9 @@ function KeywordSheet({
         <TextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder="New keyword…"
+          placeholder={t('keywords.newPlaceholder')}
           placeholderTextColor={c.text3}
-          accessibilityLabel="New keyword"
+          accessibilityLabel={t('keywords.new')}
           returnKeyType="done"
           onSubmitEditing={() => {
             const name = draft.trim()
@@ -199,7 +209,7 @@ function KeywordSheet({
           ]}
         />
         <Button
-          label="Add"
+          label={t('keywords.add')}
           size="md"
           disabled={!draft.trim()}
           onPress={() => {
@@ -222,6 +232,7 @@ function KeywordSheet({
  * reminders and vault files do as well.
  */
 export function LabelFilter({ scopeIds }: { scopeIds: string[] }) {
+  const { t } = useTranslation(['components', 'common'])
   const { labels, selected, toggleSelected, clearSelected, countsWithin } = useLabels()
   const c = useColors()
 
@@ -246,7 +257,7 @@ export function LabelFilter({ scopeIds }: { scopeIds: string[] }) {
               key={l.id}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on }}
-              accessibilityLabel={`${l.name}, ${count} here`}
+              accessibilityLabel={t('keywords.countHere', { name: l.name, count })}
               onPress={() => toggleSelected(l.id)}
               style={[
                 styles.filterChip,
@@ -283,7 +294,7 @@ export function LabelFilter({ scopeIds }: { scopeIds: string[] }) {
           >
             <Feather name="x" size={13} color={c.text3} />
             <Txt size="sm" tone="muted">
-              Clear
+              {t('common:actions.clear')}
             </Txt>
           </Pressable>
         ) : null}

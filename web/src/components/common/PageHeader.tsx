@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 /** One option inside a page's settings popover. Compact by design — a popover
@@ -53,14 +54,15 @@ export function PageHeader({
    */
   settings?: ReactNode
 }) {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-wrap items-end justify-between gap-2.5">
       <div className="flex min-w-0 items-center gap-2.5">
         {settings ? (
           <Popover>
             <PopoverTrigger
-              aria-label={`${title} options`}
-              title={`${title} options`}
+              aria-label={t('pageHeader.options', { title })}
+              title={t('pageHeader.options', { title })}
               // `touch-target` because the coarse-pointer rule in `index.css`
               // enumerates `size-6`/`size-7`/`size-8` and stops there: this is
               // the app's one bare `size-9` trigger, so it was the only control
@@ -73,7 +75,7 @@ export function PageHeader({
             </PopoverTrigger>
             <PopoverContent align="start" className="w-64">
               <div className="px-0.5 pb-1 text-xs tracking-wide text-text-3 uppercase">
-                {title} options
+                {t('pageHeader.options', { title })}
               </div>
               {settings}
             </PopoverContent>

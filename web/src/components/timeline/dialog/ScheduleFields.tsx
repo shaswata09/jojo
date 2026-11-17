@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Field, FormField, SettingRow } from '@/components/common/Field'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -6,15 +7,16 @@ import { addDays } from '@/data/timeline'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
+/** The lengths offered, each with the catalog key that names it. */
 const DURATIONS = [
-  { mins: 15, label: '15 min' },
-  { mins: 30, label: '30 min' },
-  { mins: 45, label: '45 min' },
-  { mins: 60, label: '1 hour' },
-  { mins: 90, label: '1.5 hours' },
-  { mins: 120, label: '2 hours' },
-  { mins: 180, label: '3 hours' },
-]
+  { mins: 15, key: 'min15' },
+  { mins: 30, key: 'min30' },
+  { mins: 45, key: 'min45' },
+  { mins: 60, key: 'hour1' },
+  { mins: 90, key: 'hour1_5' },
+  { mins: 120, key: 'hour2' },
+  { mins: 180, key: 'hour3' },
+] as const
 
 /** When it happens: the date, and — with All day off — the hour grid slot. */
 export function ScheduleFields({
@@ -38,6 +40,7 @@ export function ScheduleFields({
   duration: number
   onDurationChange: (next: number) => void
 }) {
+  const { t } = useTranslation('timeline')
   const allDayId = useId()
   const durationId = useId()
 
@@ -71,16 +74,16 @@ export function ScheduleFields({
    * same gap is how "24d left" and "3 weeks ago" got into the old screens.
    */
   const quickDates = [
-    { label: 'Today', iso: TODAY },
-    { label: 'Tomorrow', iso: addDays(TODAY, 1) },
-    { label: 'In 7 days', iso: addDays(TODAY, 7) },
+    { label: t('schedule.quick.today'), iso: TODAY },
+    { label: t('schedule.quick.tomorrow'), iso: addDays(TODAY, 1) },
+    { label: t('schedule.quick.inWeek'), iso: addDays(TODAY, 7) },
   ]
 
   return (
     <>
       <div className="space-y-1.5">
         <Field
-          label="Date"
+          label={t('schedule.date')}
           type="date"
           required
           error={dateError}
@@ -113,20 +116,20 @@ export function ScheduleFields({
       </div>
 
       <SettingRow
-        label={<label htmlFor={allDayId}>All day</label>}
-        description="Off gives it a start time and a length, and puts it on the calendar's hour grid."
+        label={<label htmlFor={allDayId}>{t('schedule.allDay.label')}</label>}
+        description={t('schedule.allDay.description')}
         control={<Switch id={allDayId} checked={allDay} onCheckedChange={onAllDayChange} />}
       />
 
       {allDay ? null : (
         <div className="grid gap-3 sm:grid-cols-2">
           <Field
-            label="Start time"
+            label={t('schedule.startTime')}
             type="time"
             value={time}
             onChange={(event) => onTimeChange(event.target.value)}
           />
-          <FormField label="Length" htmlFor={durationId}>
+          <FormField label={t('schedule.length')} htmlFor={durationId}>
             <select
               id={durationId}
               value={duration}
@@ -135,7 +138,7 @@ export function ScheduleFields({
             >
               {DURATIONS.map((d) => (
                 <option key={d.mins} value={d.mins}>
-                  {d.label}
+                  {t(`schedule.durations.${d.key}`)}
                 </option>
               ))}
             </select>

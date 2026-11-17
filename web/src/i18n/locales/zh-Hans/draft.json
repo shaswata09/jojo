@@ -1,0 +1,56 @@
+{
+  "defaultTitle": "邮件草稿",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "起草消息",
+    "for": "致 {{name}}。",
+    "forItem": "致 {{name}} · {{item}}。",
+    "unlinked": "未关联到申请，因此 [ROLE] 和 [DATE] 保持空白。",
+    "body": "不会生成任何内容，也不会发送任何内容——填好空白，复制到你的邮件客户端，然后标记为已发送。"
+  },
+  "picker": {
+    "hint": "从你的一个邮件片段开始。",
+    "searchLabel": "搜索片段",
+    "searchPlaceholder": "搜索片段…",
+    "noMatch": "没有匹配的片段。",
+    "emailGroup": "邮件片段",
+    "freshGroup": "从头开始",
+    "blank": "空白草稿"
+  },
+  "editor": {
+    "placeholder": "写下消息，或选择一个片段作为开头…",
+    "label": "消息草稿",
+    "nothing": "还没有起草任何内容。",
+    "noBlanks": "没有剩余空白。",
+    "blanksLeft_other": "还剩 {{count}} 处空白 — {{names}}",
+    "nameNote": " · 人名永远不会替你自动填写",
+    "copyBlocked": "浏览器阻止了复制",
+    "copied": "草稿已复制到剪贴板"
+  },
+  "empty": {
+    "title": "还没有邮件片段",
+    "description": "标记为 Email 的片段会作为起点显示在这里。现在没有可加载的内容，但草稿也不一定要从片段开始。",
+    "action": "从空白草稿开始"
+  },
+  "footer": {
+    "writeFirst": "请先写点内容",
+    "saveHint": "将此草稿保存在保险库中，并标记为 Email",
+    "save": "另存为片段",
+    "assistantHint": "助手有自己的页面——请从侧边栏打开",
+    "assistant": "在助手中打开",
+    "copyHint": "将消息复制到剪贴板",
+    "markNoItem": "从提醒中打开它，才能在这里勾选完成",
+    "markDone": "该提醒已勾选完成",
+    "markSent": "标记为已发送"
+  },
+  "toast": {
+    "replaced": "草稿已替换",
+    "loaded": "已载入 {{title}}。",
+    "startedBlank": "已从空白重新开始。",
+    "undo": "撤销",
+    "saved": "已保存到片段",
+    "savedDescription": "{{title}} · 标记为 Email，位于保险库",
+    "markedSent": "已标记为已发送",
+    "markedSentDescription": "{{title}} — 已在提醒中勾选完成"
+  }
+}

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Linking, StyleSheet, View } from 'react-native'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { FiledUnderLinks } from '@/components/common/FiledUnderLinks'
@@ -14,11 +15,12 @@ import { capitalize } from '@/lib/text'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
-import { filedUnderLabel } from '@jojo/service/data/seed'
+import { displayName } from '@jojo/service/data/seed'
 import type { Person } from '@jojo/service/core/model'
 import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The people a job search is actually made of, on a phone.
@@ -40,6 +42,7 @@ import { report } from '@/lib/analytics'
  * cost of the interaction — so they open the mail app and the dialler.
  */
 export function PeopleTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
   const { people, addPerson, updatePerson, removePerson } = useVault()
   const { toast } = useToast()
 
@@ -55,9 +58,9 @@ export function PeopleTool({ focus }: { focus?: string }) {
   const onDelete = (person: Person) => {
     const { restore } = removePerson(person.id)
     toast({
-      title: 'Person removed',
+      title: t('people.toast.removed'),
       description: person.name,
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('common.undo'), onPress: restore },
     })
   }
 
@@ -67,23 +70,25 @@ export function PeopleTool({ focus }: { focus?: string }) {
         <View style={[s.row, { gap: space[2], marginBottom: space[3] }]}>
           <View style={s.fill}>
             <SearchInput
-              label="Search people"
+              label={t('people.search.label')}
               value={query}
               onChange={setQuery}
-              placeholder="Search name, role or note"
+              placeholder={t('people.search.placeholder')}
             />
           </View>
-          <Button label="Add" icon="plus" size="md" onPress={() => setEditing('new')} />
+          <Button label={t('people.add')} icon="plus" size="md" onPress={() => setEditing('new')} />
         </View>
 
         {shown.length === 0 ? (
           <EmptyState
             icon="user"
-            title={people.length === 0 ? 'Nobody yet' : 'No one matches that'}
+            title={
+              people.length === 0 ? t('people.empty.zeroTitle') : t('people.empty.noMatchTitle')
+            }
             description={
               people.length === 0
-                ? 'Referees, search chairs, recruiters — anyone the search runs through. Name them on the jobs they write for and they show up on those records too.'
-                : 'Try part of a name, a role, or where they are.'
+                ? t('people.empty.zeroDescription')
+                : t('people.empty.noMatchDescription')
             }
           />
         ) : (
@@ -146,7 +151,7 @@ export function PeopleTool({ focus }: { focus?: string }) {
 
                 <IconButton
                   icon="more-horizontal"
-                  label={`Options for ${p.name}`}
+                  label={t('people.optionsFor', { name: p.name })}
                   onPress={() => setMenuFor(p)}
                 />
               </View>
@@ -163,10 +168,15 @@ export function PeopleTool({ focus }: { focus?: string }) {
         actions={
           menuFor
             ? [
-                { id: 'edit', label: 'Edit', icon: 'edit-2', onPress: () => setEditing(menuFor) },
+                {
+                  id: 'edit',
+                  label: t('common.edit'),
+                  icon: 'edit-2',
+                  onPress: () => setEditing(menuFor),
+                },
                 {
                   id: 'delete',
-                  label: 'Delete',
+                  label: t('common.delete'),
                   icon: 'trash-2',
                   tone: 'danger',
                   onPress: () => onDelete(menuFor),
@@ -187,7 +197,7 @@ export function PeopleTool({ focus }: { focus?: string }) {
               void report('vault_item_added', { kind: 'person' })
             }
             setEditing(null)
-            toast({ title: 'Person saved', description: draft.name })
+            toast({ title: t('people.toast.saved'), description: draft.name })
           }}
         />
       ) : null}
@@ -221,13 +231,18 @@ function PersonSheet({
     note: person?.note ?? '',
     applicationIds: person?.applicationIds ?? [],
   })
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [picking, setPicking] = useState(false)
   const { byId } = useApplications()
 
   // The same sentence the toasts and the web picker use, so the three cannot
   // disagree about where two names becomes 'three applications'.
   const chosen = draft.applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
-  const pickerLabel = chosen.length === 0 ? 'No application' : capitalize(filedUnderLabel(chosen))
+  const pickerLabel =
+    chosen.length === 0
+      ? t('people.editor.noApplication')
+      : capitalize(domain.filedUnder(chosen.map(displayName)))
 
   const set = (key: keyof Draft) => (value: string) => {
     setDraft((prev) => ({ ...prev, [key]: value }))
@@ -243,13 +258,13 @@ function PersonSheet({
         // Taller than the screen with a field or two open; scrolls rather
         // than clipping the last field and its Save under the footer.
         scroll
-        title={person ? 'Edit person' : 'Add person'}
-        description="A name is the only thing this needs. The rest is what turns out to matter."
+        title={person ? t('people.editor.editTitle') : t('people.editor.addTitle')}
+        description={t('people.editor.description')}
         footer={
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
+            <Button label={t('common.cancel')} variant="ghost" size="md" onPress={onClose} />
             <Button
-              label={person ? 'Save person' : 'Add person'}
+              label={person ? t('people.editor.save') : t('people.editor.addTitle')}
               size="md"
               disabled={!named}
               onPress={() => {
@@ -261,28 +276,28 @@ function PersonSheet({
       >
         <View style={{ gap: space[3], paddingBottom: space[2] }}>
           <TextField
-            label="Name"
+            label={t('people.editor.name')}
             required
             value={draft.name}
             autoComplete="name"
-            placeholder="e.g. Prof. Ngozi Okafor"
+            placeholder={t('people.editor.namePlaceholder')}
             onChangeText={set('name')}
           />
           <TextField
-            label="Role"
+            label={t('people.editor.role')}
             value={draft.role ?? ''}
-            placeholder="e.g. Referee, search chair, recruiter"
+            placeholder={t('people.editor.rolePlaceholder')}
             onChangeText={set('role')}
           />
           <TextField
-            label="Affiliation"
+            label={t('people.editor.affiliation')}
             value={draft.affiliation ?? ''}
-            placeholder="e.g. Rice"
-            hint="Where they are. Not linked to an employer you have applied to."
+            placeholder={t('people.editor.affiliationPlaceholder')}
+            hint={t('people.editor.affiliationHint')}
             onChangeText={set('affiliation')}
           />
           <TextField
-            label="Email"
+            label={t('people.editor.email')}
             mono
             value={draft.email ?? ''}
             autoCapitalize="none"
@@ -291,14 +306,14 @@ function PersonSheet({
             onChangeText={set('email')}
           />
           <TextField
-            label="Phone"
+            label={t('people.editor.phone')}
             mono
             value={draft.phone ?? ''}
             keyboardType="phone-pad"
             placeholder="+1 555 0134"
             onChangeText={set('phone')}
           />
-          <FormField label="Named on" hint="Every job they write for, screen for or chair.">
+          <FormField label={t('people.editor.namedOn')} hint={t('people.editor.namedOnHint')}>
             <Button
               label={pickerLabel}
               variant="outline"
@@ -307,10 +322,10 @@ function PersonSheet({
             />
           </FormField>
           <TextField
-            label="Note"
+            label={t('common.note')}
             multiline
             value={draft.note ?? ''}
-            placeholder="What they said, what they owe you, when to chase."
+            placeholder={t('people.editor.notePlaceholder')}
             onChangeText={set('note')}
           />
         </View>
@@ -319,7 +334,7 @@ function PersonSheet({
       <ApplicationPickerSheet
         open={picking}
         values={draft.applicationIds}
-        title="Named on"
+        title={t('people.editor.namedOn')}
         onClose={() => setPicking(false)}
         onChange={(ids) => setDraft((prev) => ({ ...prev, applicationIds: ids }))}
       />

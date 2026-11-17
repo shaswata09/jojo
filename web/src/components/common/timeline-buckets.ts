@@ -11,15 +11,28 @@
  */
 
 import type { TimelineBucket } from '@/data/timeline'
+import { i18next } from '@/i18n/i18n'
 
 /** Reading order: what is late, what is now, what is coming, what is finished. */
 export const BUCKETS: TimelineBucket[] = ['overdue', 'today', 'upcoming', 'done']
 
+/*
+ * Getters, so each read is looked up in the language jojo is shown in at that
+ * moment rather than frozen at import.
+ */
 export const BUCKET_LABEL: Record<TimelineBucket, string> = {
-  overdue: 'Overdue',
-  today: 'Today',
-  upcoming: 'Upcoming',
-  done: 'Completed',
+  get overdue() {
+    return i18next.t('common:buckets.overdue')
+  },
+  get today() {
+    return i18next.t('common:buckets.today')
+  },
+  get upcoming() {
+    return i18next.t('common:buckets.upcoming')
+  },
+  get done() {
+    return i18next.t('common:buckets.done')
+  },
 }
 
 /**

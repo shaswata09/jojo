@@ -1,0 +1,249 @@
+{
+  "common": {
+    "undo": "Undo",
+    "cancel": "Cancel"
+  },
+  "addFromLink": {
+    "title": "Application from a link",
+    "description": "The model reads the posting and fills the form in, and ticks any of your own keywords the job is plainly about. The page is kept in the Vault under Job postings, and nothing is saved as an application until you say so.",
+    "url": "Job posting URL",
+    "addressOnly": "Use the address only",
+    "reading": "Reading…",
+    "retry": "Try again",
+    "submit": "Read and prefill",
+    "failed": "Reading the posting failed.",
+    "steps": {
+      "reading": "Fetching the page",
+      "asking": "Reading it",
+      "saving": "Saving the posting"
+    },
+    "toast": {
+      "title": "Posting saved and read",
+      "kept": "{{name}} is in the Vault, and is filed under the application when you save it.",
+      "gaps_one": "{{count}} field was not on the page.",
+      "gaps_other": "{{count}} fields were not on the page.",
+      "tags_one": "{{count}} of your keywords is ticked.",
+      "tags_other": "{{count}} of your keywords are ticked."
+    }
+  },
+  "application": {
+    "newTitle": "New application",
+    "editTitle": "Edit {{name}}",
+    "add": "Add application",
+    "save": "Save changes",
+    "checking": "Checking for a duplicate…",
+    "noRecord": "This sheet was opened without a record to edit",
+    "description": {
+      "edit": "Changes replace the current details, and the deadline moves with them.",
+      "prefilledTagged": "Prefilled from what you pasted — check the employer, role and keywords before saving.",
+      "prefilled": "Prefilled from what you pasted — check the employer and role before saving.",
+      "create": "Track a job you are applying for. Starred fields are required."
+    },
+    "errors": {
+      "org": "Name the employer — it is what the record is filed under.",
+      "role": "Name the role, so two applications to the same place stay apart.",
+      "roleTag": "Pick a role tag — the role filter and the charts read it.",
+      "url": "That is not a link a browser can open — include https://."
+    },
+    "fields": {
+      "org": "Organisation",
+      "orgPlaceholder": "Employer or institution",
+      "role": "Role title",
+      "rolePlaceholder": "e.g. Senior data analyst",
+      "roleTag": "Role tag",
+      "pickRoleTag": "Pick a role tag",
+      "roleTagDescription": "The axis the role filter and the charts read.",
+      "stage": "Stage",
+      "deadline": "Deadline",
+      "deadlineHint": "Puts a dated entry on the calendar and in the week ahead.",
+      "source": "Source",
+      "sourceNotSet": "Not set",
+      "location": "Location",
+      "locationPlaceholder": "City, or Remote",
+      "comp": "Comp",
+      "compPlaceholder": "e.g. $96k + equity",
+      "url": "Posting URL",
+      "postingId": "Posting ID",
+      "postingIdHint": "The job or requisition number, if the posting states one.",
+      "postingIdPlaceholder": "e.g. R-2024-0312",
+      "note": "Note",
+      "notePlaceholder": "What still has to happen before this goes out.",
+      "keywords": "Keywords"
+    },
+    "toast": {
+      "draftDiscarded": "Draft discarded",
+      "changesDiscarded": "Changes discarded",
+      "nothingAdded": "Nothing was added. Undo brings the form back as you left it.",
+      "unchanged": "{{name}} is unchanged. Undo brings your edits back.",
+      "recordUnchanged": "The record is unchanged. Undo brings your edits back.",
+      "added": "{{name}} added",
+      "deadlineOnCalendar": "Deadline {{date}} is on the calendar.",
+      "noDeadline": "No deadline yet — add one and it shows up in the week ahead.",
+      "postingFiled": "The posting is filed under it.",
+      "saved": "Changes saved",
+      "deadlineRemoved": "{{name}} — its deadline is off the calendar.",
+      "restoreDeadline": "Restore deadline"
+    },
+    "duplicate": {
+      "title": "This looks like a job you already have",
+      "modelSame": "The model read them as the same vacancy.",
+      "modelReading": " — the model’s reading; check it below.",
+      "existing": "What you already have",
+      "adding": "What you are adding",
+      "untitled": "Untitled",
+      "postingId": "Posting ID {{id}}",
+      "openYours": "Open the one you have",
+      "openExisting": "Open {{name}}, which you already have",
+      "tapToOpen": "Tap to open it, or carry on and add this as a second record.",
+      "editInstead": "Edit instead",
+      "discard": "Discard",
+      "addAnyway": "Add anyway"
+    },
+    "since": {
+      "today": "today",
+      "yesterday": "yesterday",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago"
+    }
+  },
+  "draft": {
+    "title": "Draft a message",
+    "description": {
+      "forApp": "For {{name}}. Nothing is generated and nothing is sent — fill the blanks, copy it into your mail client, then mark it sent.",
+      "forItem": "For {{name}} · {{item}}. Nothing is generated and nothing is sent — fill the blanks, copy it into your mail client, then mark it sent.",
+      "unlinked": "Not linked to an application, so [ROLE] and [DATE] stay blank. Nothing is generated and nothing is sent — fill the blanks, copy it into your mail client, then mark it sent."
+    },
+    "defaultTitle": "Draft email",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Save as snippet",
+    "writeFirst": "Write something first",
+    "copy": "Copy",
+    "copied": "Copied",
+    "markSent": "Mark sent",
+    "openFromReminder": "Open this from a reminder to tick it off",
+    "alreadyTicked": "Already ticked off",
+    "blank": "Blank draft",
+    "startFromSnippet": "Start from one of your email snippets",
+    "placeholder": "Write the message, or pick a snippet to start from…",
+    "editorLabel": "Message draft",
+    "empty": {
+      "title": "No email snippets yet",
+      "description": "Snippets tagged Email show up here as starting points. There is nothing to load, but the draft does not have to start from one.",
+      "startBlank": "Start from a blank draft"
+    },
+    "status": {
+      "empty": "Nothing drafted yet.",
+      "noBlanks": "No blanks left.",
+      "blanksLeft_one": "{{count}} blank left — {{names}}",
+      "blanksLeft_other": "{{count}} blanks left — {{names}}",
+      "nameNever": " · a person's name is never filled in for you"
+    },
+    "picker": {
+      "title": "Start from",
+      "description": "Your own email snippets, with what the records know already filled in."
+    },
+    "toast": {
+      "replaced": "Draft replaced",
+      "loaded": "Loaded {{title}}.",
+      "blank": "Started again from blank.",
+      "saved": "Saved to snippets",
+      "savedDescription": "{{title}} · tagged Email, in the Vault",
+      "sent": "Marked as sent",
+      "sentDescription": "{{title}} — ticked off in reminders"
+    }
+  },
+  "stage": {
+    "moveTo": "Move to {{stage}}",
+    "currently": "{{name}} · currently {{stage}}",
+    "nothingElse": "Nothing else on the record changed.",
+    "moveWithoutDetails": "Move without details",
+    "outcome": "Outcome",
+    "submitted": {
+      "date": "Submitted on",
+      "portal": "Portal URL",
+      "portalHint": "Where the application lives, for when you need to chase it.",
+      "reference": "Confirmation reference",
+      "referencePlaceholder": "e.g. 4471-QZ"
+    },
+    "interview": {
+      "date": "Interview date",
+      "format": "Format",
+      "formatLabel": "Interview format",
+      "mint": "Add it to the timeline",
+      "mintDescription": "Creates an interview entry on that date, with a reminder."
+    },
+    "offer": {
+      "respondBy": "Respond by",
+      "package": "Package",
+      "packagePlaceholder": "e.g. $112k + $15k startup",
+      "note": "Note",
+      "notePlaceholder": "What is still being negotiated",
+      "mint": "Add the deadline to the timeline",
+      "mintDescription": "A respond-by date with nothing watching it is the one deadline you cannot afford to miss."
+    },
+    "keepOffer": {
+      "label": "Keep the offer details",
+      "description": "Respond by {{date}}. Turn this off to clear them.",
+      "descriptionWithComp": "Respond by {{date}} · {{comp}}. Turn this off to clear them."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "New reminder",
+      "editReminder": "Edit reminder",
+      "newEvent": "New event",
+      "editEvent": "Edit event"
+    },
+    "description": "One record either way — it lands on the calendar for the date you give it, and in the Vault's reminders list while the switch is on.",
+    "delete": "Delete",
+    "save": "Save",
+    "addReminder": "Add reminder",
+    "addEvent": "Add event",
+    "reminderFallback": "Reminder",
+    "duration": {
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours"
+    },
+    "fields": {
+      "title": "Title",
+      "reminderPlaceholder": "e.g. Chase the recruiter",
+      "eventPlaceholder": "e.g. Committee Zoom",
+      "remind": "Show in reminders",
+      "remindOn": "Listed in the Vault with a tick box, and on the calendar for its date.",
+      "remindOff": "On the calendar for its date only — no tick box in the Vault.",
+      "date": "Date",
+      "allDay": "All day",
+      "allDayDescription": "Off gives it a start time and a length.",
+      "startTime": "Start time",
+      "length": "Length",
+      "applicationHint": "Links them, so each application lists this and this leads back to any of them.",
+      "kind": "Kind",
+      "kindFollowUp": "A follow-up is also counted as owed on Today, until you tick it off.",
+      "kindHint": "The icon it carries on the calendar and in the reminders list.",
+      "detail": "Detail",
+      "detailHint": "One line of context, shown under the title.",
+      "note": "Note",
+      "noteHint": "Your own scribble. Kept apart from the detail, so an edit never clobbers it.",
+      "keywords": "Keywords",
+      "keywordsHint": "Shared with applications, files and links — filtering by one finds all of them."
+    },
+    "more": {
+      "title": "More details",
+      "note": "note",
+      "keywords": "keywords",
+      "empty": "note, keywords"
+    },
+    "toast": {
+      "added": "{{title}} added",
+      "updated": "{{title}} updated",
+      "inReminders": "in reminders",
+      "calendarOnly": "on the calendar only",
+      "owed": "and owed this week",
+      "deleted": "{{title}} deleted",
+      "goneFromBoth": "Gone from the reminders list and from the calendar.",
+      "goneFromCalendar": "Gone from the calendar."
+    }
+  }
+}

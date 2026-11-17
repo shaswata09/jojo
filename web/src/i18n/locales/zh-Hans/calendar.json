@@ -1,0 +1,59 @@
+{
+  "monthPicker": {
+    "goTo": "跳转到月份",
+    "previousYear": "上一年",
+    "nextYear": "下一年"
+  },
+  "chip": {
+    "allDay": "全天",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}，已完成 —"
+  },
+  "dayCell": {
+    "label_other": "{{label}}，{{count}} 个事件",
+    "add": "在 {{label}} 添加事件",
+    "more_other": "另外 {{count}} 个"
+  },
+  "grid": {
+    "dayLabel": "{{month}}{{day}}日",
+    "previousMonth": "上个月",
+    "nextMonth": "下个月",
+    "today": "今天",
+    "backTo": "回到 {{date}}",
+    "goTo": "转到 {{year}} 年 {{month}}",
+    "hintTouch": "点按某一天，查看当天安排。",
+    "hintPointer": "选择一天，在网格旁列出当天安排。点击事件即可编辑，或将其拖到另一天——拖动需要鼠标等指针设备，使用键盘时请改用事件中的日期字段。",
+    "eventTypes": "事件类型",
+    "showAll": "全部显示",
+    "dateColours": "日期颜色",
+    "marks": {
+      "overdue": "已逾期",
+      "soon": "48 小时内到期",
+      "done": "已完成"
+    }
+  },
+  "rail": {
+    "monthYear": "{{year}} 年 {{month}}",
+    "today": "今天",
+    "selectedDay": "所选日期",
+    "hiddenTitle": "{{date}} 没有显示任何内容",
+    "hiddenDescription_other": "有 {{count}} 个事件属于网格下方已关闭的类型。",
+    "showAllTypes": "显示所有事件类型",
+    "emptyTitle": "{{date}} 没有安排",
+    "emptyDescription": "添加面试、截止日期或准备时间段，它就会显示在这里和网格中。",
+    "addEvent": "添加事件",
+    "backTo": "回到 {{month}}",
+    "delete": "删除事件",
+    "deleteNamed": "删除 {{title}}",
+    "restOf": "{{month}} 剩余安排",
+    "lastDayTitle": "{{date}} 是本月最后一天",
+    "nothingAfterTitle": "{{date}} 之后没有安排",
+    "lastDayDescription": "之后没有安排了。翻到下一页，开始规划 {{month}}。",
+    "nothingAfterDescription": "{{month}} 剩余时间都空着。在这一天之后添加的内容会显示在这里。",
+    "goToMonth": "转到 {{month}}",
+    "goToDay": "转到 {{label}}",
+    "shortDay": "{{month}}{{day}}日",
+    "moreLater_other": "本月稍后还有 {{count}} 项"
+  }
+}

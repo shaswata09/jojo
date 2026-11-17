@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Mail, PenLine, Send, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { CopyFeedback } from '@/components/common/CopyFeedback'
 import { EmptyState } from '@/components/common/EmptyState'
 import { RichTextEditor } from '@/components/common/RichTextEditor'
@@ -123,6 +124,7 @@ function DraftBody({
   applicationId,
   onOpenChange,
 }: Pick<DraftDialogProps, 'itemId' | 'applicationId' | 'onOpenChange'>) {
+  const { t } = useTranslation('draft')
   const { get, update } = useTimeline()
   const { byId } = useApplications()
   const { snippets, addSnippet } = useVault()
@@ -173,10 +175,10 @@ function DraftBody({
 
     if (!dirty || empty) return
     toast({
-      title: 'Draft replaced',
-      description: snippet ? `Loaded ${snippet.title}.` : 'Started again from blank.',
+      title: t('toast.replaced'),
+      description: snippet ? t('toast.loaded', { title: snippet.title }) : t('toast.startedBlank'),
       action: {
-        label: 'Undo',
+        label: t('toast.undo'),
         onClick: () => {
           setHtml(previous.html)
           setChosenId(previous.chosenId)
@@ -204,8 +206,8 @@ function DraftBody({
   const saveAsSnippet = () => {
     // Named after the template it came from and the employer it was aimed at,
     // because a vault full of "Draft" is a vault you cannot search.
-    const base = emailSnippets.find((s) => s.id === chosenId)?.title ?? 'Draft email'
-    const title = app ? `${base} — ${app.org}` : base
+    const base = emailSnippets.find((s) => s.id === chosenId)?.title ?? t('defaultTitle')
+    const title = app ? t('titleForOrg', { base, org: app.org }) : base
     const saved = addSnippet({
       title,
       tag: 'Email',
@@ -213,8 +215,8 @@ function DraftBody({
       applicationIds: app ? [app.id] : [],
     })
     toast({
-      title: 'Saved to snippets',
-      description: `${saved.title} · tagged Email, in the Vault`,
+      title: t('toast.saved'),
+      description: t('toast.savedDescription', { title: saved.title }),
     })
   }
 
@@ -226,20 +228,26 @@ function DraftBody({
     toast({
       // Nothing was sent from here, and the copy says only what happened: the
       // reminder is ticked off, the same as ticking its box in the list.
-      title: 'Marked as sent',
-      description: `${item.title} — ticked off in reminders`,
-      action: { label: 'Undo', onClick: () => update(item.id, { completedOn: before }) },
+      title: t('toast.markedSent'),
+      description: t('toast.markedSentDescription', { title: item.title }),
+      action: {
+        label: t('toast.undo'),
+        onClick: () => update(item.id, { completedOn: before }),
+      },
     })
   }
 
   const picker = (
     <div className="flex min-h-0 flex-col gap-2">
-      <p className={cn(HINT, 'px-0.5')}>Start from one of your email snippets.</p>
-      <Command label="Search snippets" className="min-h-0 rounded-lg border border-hairline bg-well">
-        <CommandInput placeholder="Search snippets…" />
+      <p className={cn(HINT, 'px-0.5')}>{t('picker.hint')}</p>
+      <Command
+        label={t('picker.searchLabel')}
+        className="min-h-0 rounded-lg border border-hairline bg-well"
+      >
+        <CommandInput placeholder={t('picker.searchPlaceholder')} />
         <CommandList>
-          <CommandEmpty>No snippet matches that.</CommandEmpty>
-          <CommandGroup heading="Email snippets">
+          <CommandEmpty>{t('picker.noMatch')}</CommandEmpty>
+          <CommandGroup heading={t('picker.emailGroup')}>
             {emailSnippets.map((s) => (
               <CommandItem
                 key={s.id}
@@ -252,14 +260,14 @@ function DraftBody({
               </CommandItem>
             ))}
           </CommandGroup>
-          <CommandGroup heading="Start fresh">
+          <CommandGroup heading={t('picker.freshGroup')}>
             <CommandItem
-              value="Blank draft"
+              value={t('picker.blank')}
               data-checked={chosenId === null && started}
               onSelect={() => load(undefined)}
             >
               <PenLine className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
-              <span className="truncate">Blank draft</span>
+              <span className="truncate">{t('picker.blank')}</span>
             </CommandItem>
           </CommandGroup>
         </CommandList>
@@ -275,8 +283,8 @@ function DraftBody({
           setHtml(next)
           setDirty(true)
         }}
-        placeholder="Write the message, or pick a snippet to start from…"
-        ariaLabel="Message draft"
+        placeholder={t('editor.placeholder')}
+        ariaLabel={t('editor.label')}
         className="min-h-0 flex-1"
       />
 
@@ -284,19 +292,19 @@ function DraftBody({
           half-filled template and a sent email addressed to [NAME]. */}
       <p aria-live="polite" className={cn(HINT, 'mt-2')}>
         {empty
-          ? 'Nothing drafted yet.'
+          ? t('editor.nothing')
           : blanks.count === 0
-            ? 'No blanks left.'
-            : `${blanks.count} ${blanks.count === 1 ? 'blank' : 'blanks'} left — ${blanks.names.join(', ')}`}
+            ? t('editor.noBlanks')
+            : t('editor.blanksLeft', { count: blanks.count, names: blanks.names.join(', ') })}
         {blanks.names.some((n) => n.includes('NAME') || n.includes('PERSON'))
-          ? " · a person's name is never filled in for you"
+          ? t('editor.nameNote')
           : ''}
       </p>
 
       {/* Announced rather than only shown: the confirmation lands on a button
           the user has just left, and a colour change alone is easy to miss. */}
       <p aria-live="polite" className="sr-only">
-        {copied ? (failed ? 'Copy was blocked by the browser' : 'Draft copied to clipboard') : ''}
+        {copied ? (failed ? t('editor.copyBlocked') : t('editor.copied')) : ''}
       </p>
     </div>
   )
@@ -306,18 +314,14 @@ function DraftBody({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Draft a message</DialogTitle>
+        <DialogTitle>{t('header.title')}</DialogTitle>
         <DialogDescription>
-          {app ? (
-            <>
-              For {displayName(app)}
-              {item ? ` · ${item.title}` : ''}.{' '}
-            </>
-          ) : (
-            'Not linked to an application, so [ROLE] and [DATE] stay blank. '
-          )}
-          Nothing is generated and nothing is sent — fill the blanks, copy it into your mail client,
-          then mark it sent.
+          {app
+            ? item
+              ? t('header.forItem', { name: displayName(app), item: item.title })
+              : t('header.for', { name: displayName(app) })
+            : t('header.unlinked')}{' '}
+          {t('header.body')}
         </DialogDescription>
       </DialogHeader>
 
@@ -325,12 +329,12 @@ function DraftBody({
         <div className="min-h-0 overflow-y-auto">
           <EmptyState
             icon={Mail}
-            title="No email snippets yet"
-            description="Snippets tagged Email show up here as starting points. There is nothing to load, but the draft does not have to start from one."
+            title={t('empty.title')}
+            description={t('empty.description')}
             action={
               <Button size="sm" variant="outline" onClick={() => load(undefined)}>
                 <PenLine className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Start from a blank draft
+                {t('empty.action')}
               </Button>
             }
           />
@@ -353,10 +357,10 @@ function DraftBody({
             type="button"
             variant="outline"
             disabled={empty}
-            title={empty ? 'Write something first' : 'Keep this draft in the Vault, tagged Email'}
+            title={empty ? t('footer.writeFirst') : t('footer.saveHint')}
             onClick={saveAsSnippet}
           >
-            Save as snippet
+            {t('footer.save')}
           </Button>
           {/* Named for the real blocker rather than swallowing the click. That
               blocker used to be "no model is connected", which stopped being
@@ -364,14 +368,9 @@ function DraftBody({
               button explaining a problem the user had already solved. What still
               stops it is the router: DialogHost is mounted outside it, so no
               route may be reached from here, connected or not. */}
-          <Button
-            type="button"
-            variant="ghost"
-            disabled
-            title="The assistant has its own page — open it from the sidebar"
-          >
+          <Button type="button" variant="ghost" disabled title={t('footer.assistantHint')}>
             <Sparkles className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Open in assistant
+            {t('footer.assistant')}
           </Button>
         </div>
 
@@ -382,7 +381,7 @@ function DraftBody({
             type="button"
             variant="outline"
             disabled={empty}
-            title={empty ? 'Write something first' : 'Copy the message to the clipboard'}
+            title={empty ? t('footer.writeFirst') : t('footer.copyHint')}
             onClick={copy}
           >
             <CopyFeedback copied={copied} failed={failed} />
@@ -391,16 +390,12 @@ function DraftBody({
             type="button"
             disabled={!item || Boolean(item.completedOn)}
             title={
-              !item
-                ? 'Open this from a reminder to tick it off here'
-                : item.completedOn
-                  ? 'That reminder is already ticked off'
-                  : undefined
+              !item ? t('footer.markNoItem') : item.completedOn ? t('footer.markDone') : undefined
             }
             onClick={markSent}
           >
             <Send className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Mark sent
+            {t('footer.markSent')}
           </Button>
         </div>
       </DialogFooter>

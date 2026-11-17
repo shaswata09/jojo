@@ -1266,17 +1266,17 @@ Guarded by:
 
 ### Q112 — Transfer page syncs all storage data across devices and platforms: same-network secure transfer, and a different-network route via camera/animated packets.
 `feature` · 2026-08-23 · cross · active
-Must stay true: The Transfer page moves all stored data between devices and platforms: same-network secure transfer, with a camera/animated-packet route for the handshake.
+Must stay true: The Transfer page moves all stored data between devices and platforms: same-network secure transfer, with a camera route for the handshake (a QR code since Q329).
 Guarded by:
 - `service/kg/crypto/end-to-end.test.ts` › "carries a records-sized backup across, byte for byte"
 - `service/kg/crypto/end-to-end.test.ts` › "carries a documents-sized backup across"
 - `service/kg/crypto/end-to-end.test.ts` › "carries in both directions, on different keys"
 - `web/src/components/transfer-ui/groups.test.ts` › "claims every kind of record the seeded graph would actually send"
-- `service/kg/core/pairing.test.ts` › "fits in ten frames of the animation, which is about a second"
+- `service/kg/core/pairing.test.ts` › "fits in one QR code a phone reads at arm’s length"
 
 ### Q114 — Use the animation to hand-shake devices and pass the encryption key; transfer only occurs when both devices share the same wifi/local network.
 `feature` · 2026-08-23 · cross · active
-Must stay true: Transfer only happens after the animated handshake has passed the encryption key and both devices are on the same local network (isPrivateAddress).
+Must stay true: Transfer only happens after the camera handshake (a QR code since Q329) has passed the encryption key and both devices are on the same local network (isPrivateAddress).
 Guarded by:
 - `web/src/lib/handoff-client.requests.test.ts` › "refuses the handshake to %j without touching the network"
 - `web/src/lib/handoff-client.requests.test.ts` › "refuses to send a chunk to %j without touching the network"
@@ -1303,22 +1303,40 @@ Guarded by:
 - `web/src/components/common/BucketFilter.requests.test.ts` › "is the filter the Snippets tab draws its kinds with"
 
 ### Q124 — Animated 3D red-dot glow blob carries the data/key; no QR code or dotted square overlay; custom own encoder/decoder.
-`change` · 2026-08-23 · cross · active
-Must stay true: The transfer animation is the glowing red-dot blob with its own encoder/decoder (core/pulse.ts, pulse-read.ts), with no QR code or dotted square overlay.
-Guarded by:
-- `web/src/routes/Transfer.requests.test.ts` › "ships no QR library in either app"
-- `web/src/routes/Transfer.requests.test.ts` › "encodes the pairing offer into pulse frames, and the scene draws those frames"
-- `service/kg/core/pulse.test.ts` › "round-trips an offer exactly"
-- `service/kg/core/pulse-read.test.ts` › "survives everything at once, which is what a real photograph is"
-- `service/kg/core/pulse-seam.test.ts` › "carries an offer from planPulse all the way to decodeOffer"
+`change` · 2026-08-23 · cross · superseded
+Must stay true: n/a (superseded).
+Note: Superseded by Q329 on 2026-11-16: the owner chose a plain QR code after a patent search found active patents on camera-read animated pairing codes. `core/pulse.ts` and `pulse-read.ts` were removed.
 
 ### Q125 — Camera reading of the animation only on Android/iOS app; the right-hand QR card is replaced with data transfer information and details.
 `change` · 2026-08-23 · web · active
-Must stay true: The animation is read by camera only on the phone app; the web Transfer page's right card shows transfer information instead of a QR code.
+Must stay true: The pairing code is read by camera only on the phone app; the web Transfer page's right-hand column shows transfer information, not a second code (since Q329 the code is the QR on the stage card).
 Guarded by:
-- `web/src/routes/Transfer.requests.test.ts` › "has the phone decode camera frames with jojo’s own reader"
+- `web/src/routes/Transfer.requests.test.ts` › "has the phone read the code out of camera frames"
 - `web/src/routes/Transfer.requests.test.ts` › "never opens a camera in the web app"
-- `web/src/routes/Transfer.requests.test.ts` › "puts transfer details beside the animation on the web page, not a code"
+- `web/src/routes/Transfer.requests.test.ts` › "puts transfer details in the column beside the stage, not a second code"
+
+### Q329 — Pair with a plain QR code instead of the animated pattern, using libraries that are safe in an open-source project.
+`change` · 2026-11-16 · cross · active
+Must stay true: The computer shows the pairing offer (the 83 bytes of `encodeOffer`) as a standard QR code on the Transfer stage card, drawn with `uqr` (MIT), and the phone reads it from camera frames with `jsqr` (Apache-2.0), accepting only a well-formed jojo offer. Both are pinned to exact versions and credited. The WebGPU scene is decoration and carries nothing.
+Guarded by:
+- `web/src/routes/Transfer.requests.test.ts` › "draws it with uqr on the computer and reads it with jsqr on the phone, both pinned"
+- `web/src/routes/Transfer.requests.test.ts` › "draws the pairing offer as a QR code on the stage card, and the scene carries nothing"
+- `mobile/src/lib/pairing-qr.test.ts` › "reads the exact offer back from a code drawn the way the computer draws it"
+- `mobile/src/lib/pairing-qr.test.ts` › "reads it off-centre, blurred and noisy, as a hand-held phone sees it"
+- `mobile/src/lib/pairing-qr.test.ts` › "ignores a stranger’s QR code"
+- `web/src/lib/pairing-qr.test.ts` › "fits an offer into a version-5 code, 37 modules across"
+
+### Q330 — A device records a transfer only once the receiving side has taken the records (fix the remaining transfer findings).
+`fix` · 2026-11-16 · cross · active
+Must stay true: The sending device stamps its handover only after the receiver's person has applied the transfer. Computer→phone: the computer asks the phone `GET /jojo/<token>/outcome` and stamps on `applied`. Phone→computer: the computer tells the phone with a one-byte `POST /jojo/<token>/outcome`, and the phone stamps on `applied`. A declined, failed or unanswered transfer stamps nothing, and both screens say which it was.
+Guarded by:
+- `service/kg/core/handoff.test.ts` › "lets the computer ASK a receiving phone, and only with a GET"
+- `service/kg/core/handoff.test.ts` › "lets the computer TELL a sending phone, in exactly one byte"
+- `web/src/lib/handoff-outcome.test.ts` › "stamps the handover only after the phone says the records were applied"
+- `web/src/lib/handoff-outcome.test.ts` › "says the phone holds the records only once it says it took them"
+- `mobile/src/lib/handoff-receive.test.ts` › "says pending until the person answers, then what they chose"
+- `mobile/src/lib/serve-watch.test.ts` › "reports the answer once when it comes, then closes after the grace"
+- `mobile/src/lib/handoff-serve.test.ts` › "hears no outcome before every chunk has gone"
 
 ### Q129 — PC-to-mobile also via entering the hashed mobile IP code in the PC browser, which sends a handshake request to the phone; the code only visible on the mobile receive screen; same in reverse from phone.
 `feature` · 2026-08-23 · cross · active
@@ -1664,7 +1682,7 @@ Guarded by:
 - `web/src/components/dashboard/RecentApplications.requests.test.ts` › "shows the notes unless this browser last chose the list"
 - `web/src/components/dashboard/RecentApplications.requests.test.ts` › "keeps its notes in the store"
 - `web/src/components/dashboard/RecentApplications.requests.test.ts` › "turns a note into a reminder through the tested rule"
-- `web/src/lib/sticky.test.ts` › "takes the first line as the title and the rest as the detail"
+- `service/kg/core/sticky.test.ts` › "takes the first line as the title and the rest as the detail"
 - `service/test/coverage.test.ts` › "writes, edits and removes one, each undoably"
 
 ### Q293 — Give the stuck sticky note's background shadow matching rounded corners so it looks natural.
@@ -1977,7 +1995,7 @@ Guarded by:
 ### Q328 — Thoroughly review the full codebase to find any missing or broken part, then fix it end to end.
 `fix` · 2026-11-16 · cross · active
 Must stay true: The defects the 2026-11-16 review found and reproduced stay fixed: pay ranges and "pcm" keep their period; dotted memory.list fields come back; record queries read an instant in the local day; Statistics counts custom role tags; a punctuation-only checklist step is refused; a timeout names the real wait; note colours stay apart; calendar links carry a whole date and the today marker moves at midnight; Duplicate and Delete keep the list's filters; a crash is recorded once; the tour neither bounces on Back nor swallows a menu's keys; phone sheets hold and scroll their content; the phone keeps notes, deadlines and event undos honest, follows links into an open tab, asks before discarding a snippet, reads a CV in one undoable write, sends the web's usage events, and the profile's sector switches reach the scout.
-Note: Run as six area reviews (service, web lib/routes, web components, mobile screens/sheets, end-to-end seams; the mobile lib review was refused by the permission system and done by hand). Each finding was reproduced before it was fixed. Transfer, backup and i18n files belong to the parallel session and were reported to it, not edited. Left to the owner: whether the phone should show the web's sticky notes and hand-edited stage dates (Q063 says the phone covers the web's journeys; Q289 and Q264 are scoped web).
+Note: Run as six area reviews (service, web lib/routes, web components, mobile screens/sheets, end-to-end seams; the mobile lib review was refused by the permission system and done by hand). Each finding was reproduced before it was fixed. Transfer, backup and i18n files belong to the parallel session and were reported to it, not edited. Left to the owner, and answered yes in Q331: whether the phone should show the web's sticky notes and hand-edited stage dates.
 Guarded by:
 - `service/kg/core/comp.test.ts` › "reads the period after the top of the range as the whole range's"
 - `service/kg/core/comp.test.ts` › "does not take a period word for a currency code"
@@ -2715,3 +2733,15 @@ Guarded by:
 - `mobile/src/lib/markitdown.requests.test.ts` › "reads a DOCX on the handset with no reader address and no request"
 - `mobile/src/lib/markitdown.requests.test.ts` › "reads a plain text file on the handset too"
 - `mobile/src/lib/markitdown.requests.test.ts` › "sends a PDF to the configured MarkItDown over the phone transport"
+
+### Q331 — Show the web's sticky notes and hand-edited stage dates on the phone too.
+`feature` · 2026-11-16 · mobile · active
+Must stay true: Today's recent card toggles to the sticky-notes board, notes by default and remembered per device, on the same store the web board uses (`useStickyNotes`); a note becomes a reminder through core's `reminderFromNote`. An application's details screen shows `StageDatesPanel`, one row per stage `stagesToDate` picks, each a date that can be picked or cleared through `setStageDate`, with an Undo; the read-only Submitted on fact is gone, as on the web.
+Guarded by:
+- `mobile/src/lib/notes-and-stage-dates.requests.test.ts` › "toggles the recent card to the notes, and shows the notes unless this device chose the list"
+- `mobile/src/lib/notes-and-stage-dates.requests.test.ts` › "keeps its notes in the same store the web board does"
+- `mobile/src/lib/notes-and-stage-dates.requests.test.ts` › "turns a note into a reminder through the shared rule"
+- `mobile/src/lib/notes-and-stage-dates.requests.test.ts` › "shows each stage’s date on the record, submitted included, and once"
+- `mobile/src/lib/notes-and-stage-dates.requests.test.ts` › "writes a picked or cleared date through the rule that overwrites, with an Undo"
+- `service/kg/core/sticky.test.ts` › "takes the first line as the title and the rest as the detail"
+Note: The owner's answer to the question Q328 left open. `reminderFromNote` moved from the web app's lib folder to `service/kg/core/sticky.ts` so both boards share it. Wording is the web's catalog entries copied into the phone's ten locales; the phone drops "(Enter to stick it)" from the placeholder, because Return adds a line on a phone keyboard.

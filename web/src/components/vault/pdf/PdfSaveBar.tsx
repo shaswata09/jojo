@@ -1,5 +1,6 @@
 import { Download, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -24,7 +25,7 @@ export function PdfSaveBar({
   disabled,
   hint,
   icon: Icon,
-  verb,
+  saveLabel,
 }: {
   name: string
   /** What it will be called if the box is left empty. */
@@ -37,8 +38,10 @@ export function PdfSaveBar({
   disabled: boolean
   hint?: string
   icon: LucideIcon
-  verb: string
+  /** The save button's whole label — 'Merge and save'. */
+  saveLabel: string
 }) {
+  const { t } = useTranslation('vault')
   return (
     <div className="flex flex-col gap-2 border-t border-hairline pt-3">
       {error === null ? null : (
@@ -57,23 +60,22 @@ export function PdfSaveBar({
           className="h-8 min-w-0 flex-1 basis-56"
           value={name}
           placeholder={suggested}
-          aria-label="Name for the new file"
+          aria-label={t('pdf.save.nameLabel')}
           onChange={(event) => onName(event.target.value)}
         />
         <Button disabled={disabled || busy} onClick={onSave}>
-          <Icon aria-hidden /> {busy ? 'Working…' : `${verb} and save`}
+          <Icon aria-hidden /> {busy ? t('pdf.save.working') : saveLabel}
         </Button>
         <Button variant="outline" disabled={disabled || busy} onClick={onDownload}>
-          <Download aria-hidden /> Also download
+          <Download aria-hidden /> {t('pdf.save.alsoDownload')}
         </Button>
       </div>
       <p className="text-xs text-text-3">
         {hint ? `${hint} ` : ''}
-        The result is filed as a new document — nothing you started from is changed. It is built
-        here in your browser, and no part of it is uploaded.
+        {t('pdf.save.footnote')}
       </p>
       <span className="sr-only" aria-live="polite">
-        {busy ? 'Working on the document' : ''}
+        {busy ? t('pdf.save.workingSpoken') : ''}
       </span>
     </div>
   )

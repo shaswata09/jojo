@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { i18next } from '@/i18n/i18n'
 import type { PersistenceHealth } from '@jojo/service/repo/repository'
 import { useStoreStatus } from '@jojo/service/react/status-context'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { shortDate } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
@@ -21,10 +22,14 @@ import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
 import { TourTarget } from '@/components/tour/TourTarget'
+import { useDomain } from '@/i18n/domain'
 
 type Entry = {
   screen: keyof RootStackParamList
+  /** The row's stable id, which the guided tour marks; not shown. */
   label: string
+  /** What the row reads as, in the reader's language. */
+  name: string
   hint: string
   icon: FeatherName
   badge?: string
@@ -47,17 +52,21 @@ const storageStatus = (health: PersistenceHealth): 'on' | 'warn' =>
 function storageMeta(health: PersistenceHealth): string {
   switch (health.state) {
     case 'idle':
-      return 'saved'
+      return i18next.t('screens:more.storage.saved')
     case 'writing':
-      return health.pending > 0 ? `saving ${String(health.pending)}` : 'saving'
+      return health.pending > 0
+        ? i18next.t('screens:more.storage.savingCount', { count: health.pending })
+        : i18next.t('screens:more.storage.saving')
     case 'degraded':
-      return `${String(health.unsaved)} unsaved`
+      return i18next.t('screens:more.storage.unsaved', { count: health.unsaved })
     case 'off':
-      return 'not saving'
+      return i18next.t('screens:more.storage.off')
   }
 }
 
 export function MoreScreen() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const { health } = useStoreStatus()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -78,26 +87,30 @@ export function MoreScreen() {
     {
       screen: 'JobScout',
       label: 'Job scout',
-      hint: 'Saved searches, matches and postings you parked',
+      name: t('more.entries.jobScout.label'),
+      hint: t('more.entries.jobScout.hint'),
       icon: 'radio',
-      badge: fresh > 0 ? `${fresh} new` : undefined,
+      badge: fresh > 0 ? t('more.newBadge', { count: fresh }) : undefined,
     },
     {
       screen: 'Statistics',
       label: 'Statistics',
-      hint: 'Rates, a funnel and what to work on next',
+      name: t('more.entries.statistics.label'),
+      hint: t('more.entries.statistics.hint'),
       icon: 'bar-chart-2',
     },
     {
       screen: 'Graph',
       label: 'Graph',
-      hint: 'Your records drawn as the network they are',
+      name: t('more.entries.graph.label'),
+      hint: t('more.entries.graph.hint'),
       icon: 'share-2',
     },
     {
       screen: 'Transfer',
       label: 'Transfer',
-      hint: 'Move everything to or from your computer',
+      name: t('more.entries.transfer.label'),
+      hint: t('more.entries.transfer.hint'),
       icon: 'smartphone',
     },
   ]
@@ -106,25 +119,29 @@ export function MoreScreen() {
     {
       screen: 'Profile',
       label: 'My profile',
-      hint: 'Basics, documents and match terms',
+      name: t('more.entries.profile.label'),
+      hint: t('more.entries.profile.hint'),
       icon: 'user',
     },
     {
       screen: 'Assistant',
       label: 'Assistant',
-      hint: 'Worked examples until a local model is connected',
+      name: t('more.entries.assistant.label'),
+      hint: t('more.entries.assistant.hint'),
       icon: 'message-square',
     },
     {
       screen: 'Settings',
       label: 'Settings',
-      hint: 'Connections, appearance and your data',
+      name: t('more.entries.settings.label'),
+      hint: t('more.entries.settings.hint'),
       icon: 'settings',
     },
     {
       screen: 'Guide',
       label: 'How to use',
-      hint: 'A guided tour, and what each screen is for',
+      name: t('more.entries.guide.label'),
+      hint: t('more.entries.guide.hint'),
       icon: 'help-circle',
     },
   ]
@@ -134,7 +151,11 @@ export function MoreScreen() {
     <TourTarget id={`more:${entry.label}`}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={entry.badge ? `${entry.label}, ${entry.badge}` : entry.label}
+        accessibilityLabel={
+          entry.badge
+            ? t('more.rowWithBadge', { name: entry.name, badge: entry.badge })
+            : entry.name
+        }
         onPress={() => navigation.navigate(entry.screen as never)}
         style={({ pressed }) => [
           styles.row,
@@ -143,7 +164,7 @@ export function MoreScreen() {
       >
         <Feather name={entry.icon} size={18} color={c.text2} />
         <View style={s.fill}>
-          <Txt size="base">{entry.label}</Txt>
+          <Txt size="base">{entry.name}</Txt>
           <Txt size="xs" tone="muted" numberOfLines={1}>
             {entry.hint}
           </Txt>
@@ -161,7 +182,7 @@ export function MoreScreen() {
   )
 
   return (
-    <Screen title="More" subtitle="The rest of jojo" wide>
+    <Screen title={t('more.title')} subtitle={t('more.subtitle')} wide>
       {/* Three panels of navigation rows. Side by side on a tablet, because a
           row stretched to 1200pt puts its chevron a thousand points from its
           label and turns a scannable list into a search. */}
@@ -194,10 +215,11 @@ export function MoreScreen() {
          * is safe. Each states the real state.
          */}
         <Panel>
-          <PanelTitle hint="what is actually running">Runtime</PanelTitle>
+          <PanelTitle hint={t('more.runtime.hint')}>{t('more.runtime.title')}</PanelTitle>
           {[
             {
-              label: 'Device storage',
+              id: 'storage',
+              label: t('more.runtime.storage'),
               // Read from the write queue rather than asserted. A row that says
               // "on this device" while writes are failing is the one lie this
               // panel exists to prevent.
@@ -220,19 +242,26 @@ export function MoreScreen() {
              * probes and can say which.
              */
             {
-              label: 'Model',
-              meta: modelReady ? `${settings.model} — configured` : 'not set up',
+              id: 'model',
+              label: t('more.runtime.model'),
+              meta: modelReady
+                ? t('more.runtime.modelConfigured', { model: settings.model })
+                : t('more.runtime.modelNotSetUp'),
               status: modelReady ? ('on' as const) : ('off' as const),
               icon: 'cpu' as const,
             },
             {
-              label: 'Transfer',
-              meta: handedOverAt === null ? 'never used' : `last used ${shortDate(handedOverAt)}`,
+              id: 'transfer',
+              label: t('more.runtime.transfer'),
+              meta:
+                handedOverAt === null
+                  ? t('more.runtime.transferNever')
+                  : t('more.runtime.transferLast', { date: domain.shortDate(handedOverAt) }),
               status: 'off' as const,
               icon: 'share-2' as const,
             },
           ].map((r, i) => (
-            <View key={r.label}>
+            <View key={r.id}>
               {i > 0 ? <Divider /> : null}
               <View style={styles.runtimeRow}>
                 <Feather name={r.icon} size={16} color={c.text3} />
@@ -270,8 +299,8 @@ export function MoreScreen() {
       </Panel>
 
       <Txt size="xs" tone="muted" center>
-        jojo — Jarvis fOr Job Organization. Everything runs on this device.
-        {overdue > 0 ? ` ${overdue} reminder${overdue === 1 ? '' : 's'} overdue.` : ''}
+        {t('more.footer')}
+        {overdue > 0 ? ` ${t('more.overdue', { count: overdue })}` : ''}
       </Txt>
     </Screen>
   )

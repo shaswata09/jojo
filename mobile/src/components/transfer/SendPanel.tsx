@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { PairingScanner } from '@/components/transfer/PairingScanner'
-import { CAMERA_REFUSED, ensureCamera, type CameraAccess } from '@/lib/camera-permission'
+import { cameraRefused, ensureCamera, type CameraAccess } from '@/lib/camera-permission'
 import { encodeAddress, groupCode } from '@jojo/service/core/dial'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
-import { RECEIVE_ADVICE } from '@/lib/handoff-receive'
+import { receiveAdvice } from '@/lib/handoff-receive'
 import {
   beginServing,
   canServe,
@@ -15,8 +16,9 @@ import {
   type ServeSession,
 } from '@/lib/handoff-serve'
 import { buildSendPayload } from '@/lib/send-payload'
-import { createServeWatch } from '@/lib/serve-watch'
+import { createServeWatch, type ServeOutcome } from '@/lib/serve-watch'
 import { useColors } from '@/theme/theme-context'
+import { i18next } from '@/i18n/i18n'
 import { space } from '@/theme/tokens'
 
 /**
@@ -29,14 +31,14 @@ import { space } from '@/theme/tokens'
  * still true, and it turned out not to matter: the phone already listens for
  * the other direction, and a browser that can connect to it can ask it for its
  * records as easily as it can post its own. So this panel does everything the
- * receive panel does — reads the computer's animation, agrees a key, opens a
+ * receive panel does — scans the computer's QR code, agrees a key, opens a
  * socket, shows its address — and then answers the computer's requests for the
  * phone's backup instead of accepting the computer's.
  *
  * ## Nothing leaves before the computer proves itself
  *
  * The backup is gathered on the first request that carries this session's
- * token AND a proof only the computer that showed the animation can make
+ * token AND a proof only the computer that showed the code can make
  * (`core/handoff-pull.ts`). What goes over the network is sealed under a key
  * the two devices agreed and nothing else holds.
  *
@@ -46,6 +48,7 @@ import { space } from '@/theme/tokens'
  * file. This phone keeps everything it has — sending is a copy.
  */
 export function SendPanel() {
+  const { t } = useTranslation('transfer')
   const c = useColors()
   const graph = useGraph()
   const { repo, now } = useKg()
@@ -58,6 +61,8 @@ export function SendPanel() {
     chunks: null,
   })
   const [finished, setFinished] = useState(false)
+  /** What the computer said its person did, once it says. */
+  const [told, setTold] = useState<ServeOutcome | null>(null)
   /** What the backup held, once gathered — for the closing sentence. */
   const [carried, setCarried] = useState<{ documents: number; unreadable: number } | null>(null)
   const [able] = useState(canServe)
@@ -98,7 +103,7 @@ export function SendPanel() {
         return made.bytes
       })
       if (!started.ok) {
-        setFailed(RECEIVE_ADVICE[started.error])
+        setFailed(receiveAdvice(started.error))
         return
       }
       if (!mounted.current) {
@@ -116,6 +121,7 @@ export function SendPanel() {
     session?.stop()
     setSession(null)
     setFinished(false)
+    setTold(null)
     setCarried(null)
     setFailed(null)
   }, [session])
@@ -128,16 +134,20 @@ export function SendPanel() {
       session,
       {
         onProgress: (n, total) => setServed({ served: n, chunks: total }),
-        onFinished: () => {
-          stampSent(repo, now())
-          setFinished(true)
+        onFinished: () => setFinished(true),
+        // Stamped only when the computer's person took the records: a send
+        // declined there is not a handover, and the stamp is what this phone
+        // later uses to say the computer holds the same records.
+        onOutcome: (outcome) => {
+          if (outcome === 'applied') stampSent(repo, now())
+          setTold(outcome)
         },
         // The session stays until the watcher's grace has passed, so the reply
         // telling the computer why can reach it; the message shows at once.
         onFailed: () => {
-          setFailed(
-            'jojo could not gather the records on this phone, so nothing was sent. Try again.',
-          )
+          // `i18next.t` rather than the hook's `t`: a language change must not
+          // re-run this effect and restart the watch mid-transfer.
+          setFailed(i18next.t('transfer:send.gatherFailed'))
         },
       },
       Date.now,
@@ -158,10 +168,9 @@ export function SendPanel() {
   if (!able) {
     return (
       <Panel>
-        <PanelTitle hint="not available on this device">Send to a computer</PanelTitle>
+        <PanelTitle hint={t('pairing.unavailableHint')}>{t('send.title')}</PanelTitle>
         <Txt size="sm" tone="muted">
-          This device has no secure random number generator, so jojo will not agree a key on it.
-          Pairing is disabled rather than done weakly.
+          {t('pairing.noRandom')}
         </Txt>
       </Panel>
     )
@@ -170,11 +179,11 @@ export function SendPanel() {
   const lost =
     carried === null || carried.unreadable === 0
       ? ''
-      : ` ${String(carried.unreadable)} document${carried.unreadable === 1 ? '' : 's'} could not be read and stayed behind.`
+      : ` ${t('send.unreadable', { count: carried.unreadable })}`
 
   return (
     <Panel>
-      <PanelTitle hint="point at the code on your computer">Send to a computer</PanelTitle>
+      <PanelTitle hint={t('send.hint')}>{t('send.title')}</PanelTitle>
 
       {scanning ? (
         <View style={styles.viewfinder}>
@@ -185,10 +194,24 @@ export function SendPanel() {
           {finished ? (
             <>
               <Txt size="sm" weight="semibold" center>
-                Everything was handed over
+                {told === 'applied'
+                  ? t('send.outcome.applied')
+                  : told === 'declined'
+                    ? t('send.outcome.declined')
+                    : told === 'failed'
+                      ? t('send.outcome.failed')
+                      : t('send.outcome.handed')}
               </Txt>
               <Txt size="sm" tone="muted" center style={{ marginTop: space[2] }}>
-                {`Your computer asks before it replaces anything. Nothing on this phone has changed.${lost}`}
+                {`${
+                  told === null
+                    ? t('send.detail.waiting')
+                    : told === 'unknown'
+                      ? t('send.detail.unknown')
+                      : told === 'applied'
+                        ? t('send.detail.applied')
+                        : t('send.detail.notReplaced')
+                }${lost}`}
               </Txt>
               <Pressable
                 accessibilityRole="button"
@@ -196,24 +219,24 @@ export function SendPanel() {
                 style={[styles.action, { borderColor: c.hairline }]}
               >
                 <Txt size="sm" weight="semibold">
-                  Send again
+                  {t('send.again')}
                 </Txt>
               </Pressable>
             </>
           ) : session !== null && failed === null ? (
             <>
               <Txt size="sm" tone="muted" center>
-                Type this on your computer
+                {t('send.typeThis')}
               </Txt>
               <Txt size="xxl" weight="semibold" mono center style={{ marginTop: space[2] }}>
                 {groupCode(encodeAddress(session.address))}
               </Txt>
               <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
                 {served.served === 0
-                  ? 'Paired. This phone is waiting on your local network for your computer to ask.'
+                  ? t('send.paired')
                   : served.chunks === null
-                    ? 'Handing over your records…'
-                    : `Handing over your records — ${String(served.served)} of ${String(served.chunks)}.`}
+                    ? t('send.handing')
+                    : t('send.handingProgress', { served: served.served, chunks: served.chunks })}
               </Txt>
               {/* Always a way out: the computer may have given up, or this
                   may be the wrong one. Nothing on this phone changes. */}
@@ -223,7 +246,7 @@ export function SendPanel() {
                 style={[styles.action, { borderColor: c.hairline }]}
               >
                 <Txt size="sm" weight="semibold">
-                  Cancel
+                  {t('pairing.cancel')}
                 </Txt>
               </Pressable>
             </>
@@ -232,8 +255,8 @@ export function SendPanel() {
               <Txt size="sm" tone="muted" center>
                 {failed ??
                   (access !== null && access !== 'granted'
-                    ? CAMERA_REFUSED[access]
-                    : 'On your computer, open Transfer, choose Receive from phone, and scan the code it shows. Both need to be on the same local network.')}
+                    ? cameraRefused(access)
+                    : t('send.intro'))}
               </Txt>
               {access === 'blocked' ? null : (
                 <Pressable
@@ -245,7 +268,7 @@ export function SendPanel() {
                   style={[styles.action, { borderColor: c.hairline }]}
                 >
                   <Txt size="sm" weight="semibold">
-                    {failed === null && access === null ? 'Scan the code' : 'Try again'}
+                    {failed === null && access === null ? t('pairing.scan') : t('pairing.retry')}
                   </Txt>
                 </Pressable>
               )}

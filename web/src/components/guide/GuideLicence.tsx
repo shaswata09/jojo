@@ -87,13 +87,12 @@ export function GuideLicence() {
             see the disclaimer below, which is not boilerplate here.
           </p>
           <p>
-            Apache-2.0 rather than MIT for one reason:{' '}
-            <span className="text-text-1">patents</span>. Every contributor grants a patent licence
-            along with their code, and loses it if they sue anyone over this project. MIT never
-            mentions patents at all, which leaves open the case where somebody contributes a
-            patented method and later sues the people using it — a copyright licence would not have
-            stopped them. It covers contributors only: no licence can shield you from a third party
-            who never touched this code.
+            Apache-2.0 rather than MIT for one reason: <span className="text-text-1">patents</span>.
+            Every contributor grants a patent licence along with their code, and loses it if they
+            sue anyone over this project. MIT never mentions patents at all, which leaves open the
+            case where somebody contributes a patented method and later sues the people using it — a
+            copyright licence would not have stopped them. It covers contributors only: no licence
+            can shield you from a third party who never touched this code.
           </p>
         </div>
       </Panel>
@@ -192,8 +191,8 @@ export function GuideLicence() {
                 <span className="text-text-1">your</span> plan with{' '}
                 <span className="text-text-1">your</span> login, under its vendor’s terms — jojo
                 sees neither and sends nothing to Anthropic or anyone else. jojo does not offer a
-                Claude login of its own, which Anthropic does not permit third-party apps to do; this
-                is the reverse, and what MCP is for. The small program that carries the link,{' '}
+                Claude login of its own, which Anthropic does not permit third-party apps to do;
+                this is the reverse, and what MCP is for. The small program that carries the link,{' '}
                 <span className="font-mono text-xs">jojo-bridge</span>, is jojo’s own and listens
                 only on 127.0.0.1. “Claude” and “Claude Code” are Anthropic’s marks; naming a client
                 jojo works with is not a claim of endorsement or affiliation.
@@ -261,7 +260,7 @@ export function GuideLicence() {
           {APACHE_CLAUSES.map((clause) => (
             <div key={clause.heading}>
               <p className="text-xs font-medium text-text-2">{clause.heading}</p>
-              <blockquote className="mt-1 border-l-2 border-hairline pl-3 text-xs wrap-anywhere text-text-3">
+              <blockquote className="mt-1 border-s-2 border-hairline ps-3 text-xs wrap-anywhere text-text-3">
                 {clause.text}
               </blockquote>
             </div>

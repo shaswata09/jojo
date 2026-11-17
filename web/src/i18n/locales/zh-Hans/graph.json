@@ -1,0 +1,112 @@
+{
+  "common": {
+    "connections_other": "{{count}} 个连接",
+    "records_other": "{{count}} 条记录"
+  },
+  "legend": {
+    "show": "显示{{name}}",
+    "hide": "隐藏{{name}}",
+    "allHidden": "所有记录类型都已隐藏。",
+    "showAll": "全部显示",
+    "isA": "是"
+  },
+  "node": {
+    "label": "{{label}}。{{type}}，{{connections}}"
+  },
+  "canvas": {
+    "label": "知识图谱——{{records}}，{{connections}}",
+    "capped": "正在显示连接最多的 {{shown}} 条记录。另有 {{dropped}} 条在存储中但不在此画布上——用筛选器缩小范围即可看到。",
+    "description": "每条记录是一个节点，记录之间的每个引用是一条线。此图旁边的面板以文字形式列出了相同的信息。"
+  },
+  "answer": {
+    "title": "答案",
+    "records_other": "{{count}} 条记录",
+    "prompt": "选一个示例或构建一个模式，答案就会显示在这里，并在上方的图谱中高亮。",
+    "emptyTitle": "没有匹配的记录",
+    "clear": "清除查询",
+    "caption": "匹配该模式的记录",
+    "columns": {
+      "record": "记录",
+      "kind": "类型",
+      "matched": "匹配项"
+    },
+    "open": "打开",
+    "select": "在图谱中选中",
+    "via": "通过 {{rel}}",
+    "more_other": "{{names}} 等另外 {{count}} 项",
+    "showing": "显示前 {{shown}} 条，共 {{total}} 条。它们全部在上方图谱中高亮。"
+  },
+  "examples": {
+    "title": "示例",
+    "nothingToAsk": "本次会话中没有可以这样提问的内容"
+  },
+  "query": {
+    "title": "询问图谱",
+    "hint": "用一句话提问，或手动构建问题",
+    "shape": "问题形式",
+    "pattern": "模式",
+    "path": "路径",
+    "generated": "生成的查询",
+    "clear": "清除",
+    "sqlNote": "问题的结构，用 SQL 的措辞写出以便阅读。实际运行的是上方的结构化查询——没有任何东西会解析这一行。"
+  },
+  "fields": {
+    "records": "记录",
+    "anyRecord": "任意记录",
+    "ofKind": "类型",
+    "anyKind": "任意类型",
+    "reminder": "提醒",
+    "condition": "条件",
+    "quantifier": {
+      "has": "有",
+      "missing": "没有",
+      "atLeast": "至少有"
+    },
+    "howMany": "数量",
+    "orMore_other": "{{count}} 个或更多",
+    "relationship": "关系",
+    "anyRelationship": "任意关系",
+    "connectedTo": "连接到",
+    "anything": "任何内容",
+    "keyword": "包含关键词",
+    "anyKeyword": "任意关键词",
+    "from": "从",
+    "to": "到"
+  },
+  "detail": {
+    "title": "选中的记录",
+    "nothingSelected": "未选择任何内容",
+    "pickHint": "选择一个节点——点击它，或用 Tab 键移到它上面再按 Enter——即可查看它与什么相连以及它在应用中的位置。",
+    "open": "打开{{type}}",
+    "openType": {
+      "application": "打开申请",
+      "organisation": "打开机构",
+      "role": "打开职位",
+      "item": "打开时间线条目",
+      "keyword": "打开关键词",
+      "link": "打开链接",
+      "file": "打开文件",
+      "snippet": "打开片段",
+      "posting": "打开已保存的职位",
+      "match": "打开侦察匹配",
+      "source": "打开来源",
+      "background": "打开关于你",
+      "claim": "打开关系"
+    },
+    "derived": "由你的记录推导而来——没有自己的页面。",
+    "verbs": "你可以对它做什么",
+    "noLinks": "目前还没有任何内容指向这条记录。"
+  },
+  "ask": {
+    "notConnected": "在<settings>设置</settings>中连接本地模型，就可以用一句话来问。下面的构建器无论如何都能用。",
+    "label": "向图谱提问",
+    "stop": "停止",
+    "submit": "提问",
+    "again": "问点别的",
+    "suggestions": {
+      "noFollowUp": "哪些申请没有安排跟进？",
+      "unfiled": "哪些文件没有归档到任何地方？",
+      "busy": "哪些申请的时间线项目超过两个？"
+    }
+  }
+}

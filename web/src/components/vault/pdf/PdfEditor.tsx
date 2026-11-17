@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { FileDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
@@ -9,12 +10,7 @@ import { PdfPagesPanel } from './PdfPagesPanel'
 import { PdfAnnotatePanel } from './PdfAnnotatePanel'
 import type { PdfDelivery } from './use-dropped-pdfs'
 
-const MODES = [
-  { value: 'merge', label: 'Merge' },
-  { value: 'pages', label: 'Pages' },
-  { value: 'annotate', label: 'Annotate' },
-] as const
-type Mode = (typeof MODES)[number]['value']
+type Mode = 'merge' | 'pages' | 'annotate'
 
 /**
  * Basic PDF work, done in the browser.
@@ -35,7 +31,14 @@ type Mode = (typeof MODES)[number]['value']
  * These components choose and wire; they do not compute.
  */
 export function PdfEditor() {
+  const { t } = useTranslation('vault')
   const [mode, setMode] = useState<Mode>('merge')
+  // Built in the render so the labels follow the language on screen.
+  const modes = [
+    { value: 'merge', label: t('pdf.modes.merge') },
+    { value: 'pages', label: t('pdf.modes.pages') },
+    { value: 'annotate', label: t('pdf.modes.annotate') },
+  ] as const
   const [delivery, setDelivery] = useState<PdfDelivery | null>(null)
   const deliveries = useRef(0)
 
@@ -68,11 +71,14 @@ export function PdfEditor() {
       onDragLeave={drop.onDragLeave}
       onDrop={drop.onDrop}
     >
-      <PanelTitle hint="Merge, reorganise and mark up PDFs. Everything runs in this browser — no document is uploaded.">
-        PDF editor
-      </PanelTitle>
+      <PanelTitle hint={t('pdf.editor.hint')}>{t('pdf.editor.title')}</PanelTitle>
       <div className="mt-3 flex flex-col gap-3">
-        <Segment options={MODES} value={mode} onChange={setMode} label="PDF operation" />
+        <Segment
+          options={modes}
+          value={mode}
+          onChange={setMode}
+          label={t('pdf.editor.operation')}
+        />
         {mode === 'merge' ? <PdfMergePanel dropped={delivery} /> : null}
         {mode === 'pages' ? <PdfPagesPanel dropped={delivery} /> : null}
         {mode === 'annotate' ? <PdfAnnotatePanel dropped={delivery} /> : null}
@@ -84,7 +90,7 @@ export function PdfEditor() {
         <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-lg border-2 border-dashed border-accent bg-panel/85">
           <p className="flex items-center gap-2 text-sm font-medium text-text-1">
             <FileDown className="size-4" aria-hidden />
-            {mode === 'merge' ? 'Drop PDFs to add them to the merge' : 'Drop a PDF to open it'}
+            {mode === 'merge' ? t('pdf.editor.dropMerge') : t('pdf.editor.dropOpen')}
           </p>
         </div>
       ) : null}

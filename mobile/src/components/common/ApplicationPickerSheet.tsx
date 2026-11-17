@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
@@ -36,7 +37,7 @@ export function ApplicationPickerSheet({
   values,
   onClose,
   onChange,
-  title = 'Related applications',
+  title,
 }: {
   open: boolean
   values: readonly string[]
@@ -45,6 +46,7 @@ export function ApplicationPickerSheet({
   onChange: (ids: string[]) => void
   title?: string
 }) {
+  const { t } = useTranslation(['components', 'common'])
   const { all } = useApplications()
 
   const toggle = (id: string) => {
@@ -55,17 +57,17 @@ export function ApplicationPickerSheet({
     <MenuSheet
       open={open}
       onClose={onClose}
-      title={title}
-      description="As many jobs as it belongs to. One CV goes to every application you send it to, so this is a list, not a slot."
+      title={title ?? t('picker.title')}
+      description={t('picker.description')}
       footer={
         <>
           <Button
-            label="Not linked"
+            label={t('picker.notLinked')}
             variant="ghost"
             disabled={values.length === 0}
             onPress={() => onChange([])}
           />
-          <Button label="Done" onPress={onClose} />
+          <Button label={t('common:actions.done')} onPress={onClose} />
         </>
       }
       actions={
@@ -73,8 +75,8 @@ export function ApplicationPickerSheet({
           ? [
               {
                 id: 'none',
-                label: 'No applications yet',
-                hint: 'Add one and it becomes a place to file this.',
+                label: t('picker.none'),
+                hint: t('picker.noneHint'),
                 disabled: true,
                 onPress: () => {},
               },
@@ -115,6 +117,7 @@ export function ApplicationField({
   onChange: (ids: string[]) => void
   hint: string
 }) {
+  const { t } = useTranslation('components')
   const { byId } = useApplications()
   const [open, setOpen] = useState(false)
 
@@ -126,9 +129,9 @@ export function ApplicationField({
           Clear beside the trigger would be the same decision in two places —
           and it was the thing that made the field's width jump as you filled
           it in. */}
-      <FormField label="Related applications" hint={hint}>
+      <FormField label={t('picker.title')} hint={hint}>
         <Button
-          label={chosen.length === 0 ? 'Not linked' : applicationsLabel(chosen)}
+          label={chosen.length === 0 ? t('picker.notLinked') : applicationsLabel(chosen)}
           variant="outline"
           size="md"
           full

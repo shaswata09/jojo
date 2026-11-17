@@ -33,10 +33,12 @@
  */
 
 import { useCallback } from 'react'
+import type { DomainText } from '../core/domain-text'
 import { standingFor } from '../repo/journal'
 import type { JournalEntry } from '../repo/journal'
 import { NothingToRevert } from '../repo/repository'
 import type { Repository } from '../repo/repository'
+import type { ToolResult } from '../tools/runtime'
 import { useKg } from './kg-context'
 import { useToast } from './toast'
 import type { ToastOptions } from './toast'
@@ -219,14 +221,11 @@ export function undoableWith<T>(journal: UndoJournal, write: () => T): Undoable<
  * the screen offered no account of it. The wording names the entry rather than
  * the record, because the entry's label is the same sentence the toast the user
  * just pressed was titled with — "Profile saved" — and that is what they think
- * they are undoing.
+ * they are undoing. Said through `text`, in the language on screen; a label the
+ * language cannot say is left out rather than shown in English.
  */
-export function supersededToast(outcome: RestoreOutcome): ToastOptions {
-  return {
-    title: outcome.reverted === 0 ? 'Nothing was undone' : 'Part of that was left as it is',
-    description: `${outcome.superseded.join(', ')} — you have changed those records since, and undoing now would have taken those changes with it.`,
-    tone: 'danger',
-  }
+export function supersededToast(outcome: RestoreOutcome, text: DomainText): ToastOptions {
+  return { ...text.undo.superseded(outcome.reverted, outcome.superseded), tone: 'danger' }
 }
 
 /**
@@ -244,6 +243,7 @@ export function undoableSaying<T>(
   journal: UndoJournal,
   toast: (options: ToastOptions) => void,
   write: () => T,
+  text: DomainText,
 ): Undoable<T> {
   const { value, restore } = undoableWith(journal, write)
   if (!restore) return { value, restore: null }
@@ -252,7 +252,7 @@ export function undoableSaying<T>(
     value,
     restore: () => {
       const outcome = restore()
-      if (outcome.superseded.length > 0) toast(supersededToast(outcome))
+      if (outcome.superseded.length > 0) toast(supersededToast(outcome, text))
       return outcome
     },
   }
@@ -260,11 +260,36 @@ export function undoableSaying<T>(
 
 /** `undoableSaying`, bound to the repository this tree is mounted against. */
 export function useUndoable(): <T>(write: () => T) => Undoable<T> {
-  const { repo } = useKg()
+  const { repo, text } = useKg()
   const { toast } = useToast()
 
   return useCallback(
-    <T>(write: () => T): Undoable<T> => undoableSaying(repo, toast, write),
-    [repo, toast],
+    <T>(write: () => T): Undoable<T> => undoableSaying(repo, toast, write, text),
+    [repo, toast, text],
   )
+}
+
+/**
+ * The toast the ⌘Z / Ctrl+Z shortcut raises (`kg.tsx`), in the app's words.
+ *
+ * The runtime writes English — 'Nothing to undo.', 'Undone', and the entry's
+ * journal label, which is the English title its own toast had — because the
+ * agent reads it. Shown as written, a Japanese screen answered the shortcut
+ * in English. So the refusal and the verb are said again through `text`, and
+ * the label only where `text` can say it (`DomainText.undo.journal`).
+ */
+export function undoShortcutToast(
+  result: ToolResult<void>,
+  direction: 'undo' | 'redo',
+  text: DomainText,
+): ToastOptions {
+  if (!result.ok) return { title: text.undo.refused(direction, result.errors[0]?.message) }
+  const label =
+    result.announcement.description === undefined
+      ? undefined
+      : text.undo.journal(result.announcement.description)
+  return {
+    title: text.undo.done(direction),
+    ...(label === undefined ? {} : { description: label }),
+  }
 }

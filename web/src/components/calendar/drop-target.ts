@@ -1,5 +1,6 @@
 import { closestCenter, pointerWithin, type CollisionDetection } from '@dnd-kit/core'
-import { MONTH_LABELS } from '@/data/calendar'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 
 /** Namespaced so a droppable day can never collide with a timeline item's id. */
 export const DAY_DROP_PREFIX = 'day:'
@@ -13,8 +14,13 @@ export const DAY_DROP_PREFIX = 'day:'
 export function dayDropLabel(id: string): string | undefined {
   if (!id.startsWith(DAY_DROP_PREFIX)) return undefined
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(id.slice(DAY_DROP_PREFIX.length))
-  const month = match ? MONTH_LABELS[Number(match[2]) - 1] : undefined
-  return match && month ? `${month} ${String(Number(match[3]))}` : undefined
+  const month = match ? Number(match[2]) : 0
+  return match && month >= 1 && month <= 12
+    ? i18next.t('calendar:grid.dayLabel', {
+        month: domain.month(month),
+        day: String(Number(match[3])),
+      })
+    : undefined
 }
 
 /** The grid's `gap-1`, in px. How far a release may miss a cell and still count. */

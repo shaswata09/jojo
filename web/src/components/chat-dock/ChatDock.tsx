@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { ChevronDown, ChevronUp, GripVertical, MessageSquarePlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { NodeId } from '@jojo/service/core/model'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useThreads } from '@jojo/service/react/use-threads'
@@ -21,6 +22,7 @@ import {
   dockTravel,
   DRAG_THRESHOLD,
   dragPosition,
+  navBound,
   parsePosition,
   POSITION_KEY,
   dropMissing,
@@ -46,13 +48,12 @@ const dockAttr = { [DOCK_ATTR]: '', 'data-tour': 'chat' }
  * The room the dock has: the window's width, and where the navigation column
  * ends — the sidebar sits above the dock, so the dock keeps clear of it rather
  * than running windows underneath. A sidebar that is a closed drawer (off the
- * left edge) bounds nothing.
+ * edge) bounds nothing. Right to left the sidebar is on the right and the dock
+ * in the bottom-left corner — see `navBound`.
  */
 function useDockBounds() {
   const read = () => {
     const rect = document.querySelector('[data-app-sidebar]')?.getBoundingClientRect()
-    const leftBound =
-      rect && rect.width > 0 && rect.left >= 0 && rect.right > 0 ? Math.round(rect.right) : 0
     /*
      * The LAYOUT width, not `innerWidth`. A `position: fixed` element's `right`
      * is measured from inside the scrollbar, and `innerWidth` includes it — so
@@ -61,21 +62,30 @@ function useDockBounds() {
      * 16 it is meant to keep. `clientWidth` on the root is the width `right` is
      * measured against.
      */
-    return { viewport: document.documentElement.clientWidth || window.innerWidth, leftBound }
+    const viewport = document.documentElement.clientWidth || window.innerWidth
+    const rtl = getComputedStyle(document.documentElement).direction === 'rtl'
+    return { viewport, leftBound: navBound(rect, viewport, rtl), rtl }
   }
   const [bounds, setBounds] = useState(() =>
-    typeof window === 'undefined' ? { viewport: 1280, leftBound: 0 } : read(),
+    typeof window === 'undefined' ? { viewport: 1280, leftBound: 0, rtl: false } : read(),
   )
   useEffect(() => {
     const update = () =>
       setBounds((prev) => {
         const next = read()
-        return next.viewport === prev.viewport && next.leftBound === prev.leftBound ? prev : next
+        return next.viewport === prev.viewport &&
+          next.leftBound === prev.leftBound &&
+          next.rtl === prev.rtl
+          ? prev
+          : next
       })
     update()
     window.addEventListener('resize', update)
     const aside = document.querySelector('[data-app-sidebar]')
     const observer = new ResizeObserver(update)
+    // Switching language to or from Arabic flips the page with no resize.
+    const flip = new MutationObserver(update)
+    flip.observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] })
     // A scrollbar appearing or going — moving to a page that is taller or
     // shorter than the window — changes the layout width without any resize.
     observer.observe(document.documentElement)
@@ -87,6 +97,7 @@ function useDockBounds() {
     return () => {
       window.removeEventListener('resize', update)
       observer.disconnect()
+      flip.disconnect()
       aside?.removeEventListener('transitionend', update)
     }
   }, [])
@@ -120,7 +131,8 @@ export type DockDrag = {
  * remembered, because a person who moved it out of the way once wants it out of
  * the way on every page.
  */
-function useDockPosition(travel: number) {
+function useDockPosition(travel: number, rtl: boolean) {
+  const { t } = useTranslation('chatDock')
   const [position, setPosition] = useState(() => parsePosition(readStored(POSITION_KEY)))
   const [dragging, setDragging] = useState(false)
   useEffect(() => {
@@ -132,6 +144,9 @@ function useDockPosition(travel: number) {
   travelRef.current = travel
   const positionRef = useRef(position)
   positionRef.current = position
+  // Away from the corner is leftward, or rightward on a right-to-left page.
+  const rtlRef = useRef(rtl)
+  rtlRef.current = rtl
   const swallow = useRef(false)
 
   const onPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
@@ -147,7 +162,7 @@ function useDockPosition(travel: number) {
     el.setPointerCapture(event.pointerId)
 
     const move = (e: PointerEvent) => {
-      const leftward = startX - e.clientX
+      const leftward = rtlRef.current ? e.clientX - startX : startX - e.clientX
       if (!moved && Math.abs(leftward) < DRAG_THRESHOLD) return
       if (!moved) {
         moved = true
@@ -175,10 +190,13 @@ function useDockPosition(travel: number) {
 
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const step = 0.1
+    // The arrow pointing away from the corner moves the dock away from it.
+    const away = rtl ? 'ArrowRight' : 'ArrowLeft'
+    const back = rtl ? 'ArrowLeft' : 'ArrowRight'
     const next =
-      event.key === 'ArrowLeft'
+      event.key === away
         ? positionRef.current + step
-        : event.key === 'ArrowRight'
+        : event.key === back
           ? positionRef.current - step
           : event.key === 'Home'
             ? 1
@@ -191,18 +209,27 @@ function useDockPosition(travel: number) {
     setPosition(Math.min(1, Math.max(0, next)))
   }
 
-  const where =
+  // Three whole sentences, not one with a phrase dropped into it: where the
+  // dock sits changes the grammar around it in most languages. Right to left
+  // the dock leaves the bottom-left corner and travels rightward, so the
+  // sentence names that side instead.
+  const percent = Math.round(position * 100)
+  const gripLabel =
     position === 0
-      ? 'in the corner'
+      ? t('grip.labelCorner')
       : position === 1
-        ? 'at the far left'
-        : `${String(Math.round(position * 100))}% of the way left`
+        ? rtl
+          ? t('grip.labelFarRight')
+          : t('grip.labelFarLeft')
+        : rtl
+          ? t('grip.labelPartWayRight', { percent })
+          : t('grip.labelPartWay', { percent })
   const grip = (
     <button
       type="button"
       data-dock-grip=""
-      aria-label={`Move chat sideways — ${where}. Arrow keys move it; double-click returns it to the corner.`}
-      title="Drag to move the chat out of the way · double-click to return it to the corner"
+      aria-label={gripLabel}
+      title={t('grip.title')}
       onClick={(e) => e.stopPropagation()}
       onDoubleClick={(e) => {
         e.stopPropagation()
@@ -245,10 +272,11 @@ function useDockPosition(travel: number) {
  * be removed.
  */
 export function ChatDock() {
+  const { t } = useTranslation('chatDock')
   const { threads } = useThreads()
   const { byId } = useApplications()
   const sheet = useSheetPresence()
-  const { viewport, leftBound } = useDockBounds()
+  const { viewport, leftBound, rtl } = useDockBounds()
   const reducedMotion = useReducedMotion()
 
   const nextKey = useRef(0)
@@ -276,7 +304,7 @@ export function ChatDock() {
      the last one: it kept the dead id, so a question sent there never started a
      new conversation, and the reply was saved to nothing. */
   useEffect(() => {
-    setState((s) => dropMissing(s, new Set(threads.map((t) => t.id))))
+    setState((s) => dropMissing(s, new Set(threads.map((thread) => thread.id))))
   }, [threads])
 
   /* Lift toasts and approval prompts clear of the bar, which now owns the corner. */
@@ -364,7 +392,7 @@ export function ChatDock() {
 
   const travel =
     layout.mode === 'phone' ? 0 : dockTravel(viewport, layout.right, dockWidth, leftBound)
-  const { offset, dragging, drag } = useDockPosition(travel)
+  const { offset, dragging, drag } = useDockPosition(travel, rtl)
 
   const list = (
     <ThreadList
@@ -382,7 +410,7 @@ export function ChatDock() {
   /** The bar every layout starts from: robot, "Chat", new, and the chevron. */
   const bar = (opts: { open: boolean; onToggle: () => void; width?: number | undefined }) => (
     <div
-      className="flex h-12 shrink-0 cursor-pointer touch-none items-center gap-2 px-3 pl-1.5 select-none"
+      className="flex h-12 shrink-0 cursor-pointer touch-none items-center gap-2 ps-1.5 pe-3 select-none"
       style={opts.width === undefined ? undefined : { width: opts.width }}
       onPointerDown={layout.mode === 'phone' ? undefined : drag.onPointerDown}
       onClick={() => {
@@ -392,15 +420,13 @@ export function ChatDock() {
     >
       {layout.mode === 'phone' ? null : drag.grip}
       <RobotIcon className="size-5 shrink-0" aria-hidden />
-      <span className="min-w-0 flex-1 truncate text-sm font-medium">Chat with jojo</span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{t('chatWithJojo')}</span>
       <Button
         variant="ghost"
         size="icon"
         className="size-8 shrink-0 text-text-3"
-        aria-label="New conversation"
-        title={
-          sheet.applicationId ? 'New conversation about the open application' : 'New conversation'
-        }
+        aria-label={t('newConversation')}
+        title={sheet.applicationId ? t('newAboutOpen') : t('newConversation')}
         onClick={(e) => {
           e.stopPropagation()
           startNew()
@@ -412,7 +438,7 @@ export function ChatDock() {
         variant="ghost"
         size="icon"
         className="size-8 shrink-0 text-text-3"
-        aria-label={opts.open ? 'Hide conversations' : 'Show conversations'}
+        aria-label={opts.open ? t('hideConversations') : t('showConversations')}
         aria-expanded={opts.open}
         data-dock-home=""
         onClick={(e) => {
@@ -439,18 +465,18 @@ export function ChatDock() {
    */
   const panel =
     'flex flex-col overflow-hidden border border-hairline bg-page shadow-[var(--shadow-raised)]'
-  const slide = reducedMotion || dragging ? '' : 'transition-[right] duration-200 ease-out'
+  const slide = reducedMotion || dragging ? '' : 'transition-[left,right] duration-200 ease-out'
 
   /* ------------------------------ phone layout ----------------------------- */
   if (layout.mode === 'phone') {
     const expanded = state.listOpen || front !== undefined
     if (!expanded) {
       return (
-        <div {...dockAttr} className="fixed right-4 bottom-4 z-50">
+        <div {...dockAttr} className="fixed end-4 bottom-4 z-50">
           <Button
             size="icon"
             className="size-12 rounded-full shadow-[var(--shadow-raised)]"
-            aria-label="Chat with jojo"
+            aria-label={t('chatWithJojo')}
             data-dock-home=""
             onClick={() => update((s) => setListOpen(s, true))}
           >
@@ -499,7 +525,7 @@ export function ChatDock() {
         {...dockAttr}
         ref={measure}
         className={cn('fixed bottom-0 z-50 flex flex-col items-end', slide)}
-        style={{ right: layout.right + offset, width: layout.width }}
+        style={{ insetInlineEnd: layout.right + offset, width: layout.width }}
       >
         {showWindow ? (
           <ChatWindow
@@ -548,7 +574,7 @@ export function ChatDock() {
       {...dockAttr}
       ref={measure}
       className={cn('fixed bottom-0 z-50 flex flex-row-reverse items-end', slide)}
-      style={{ right: layout.right + offset, gap: GAP }}
+      style={{ insetInlineEnd: layout.right + offset, gap: GAP }}
     >
       <div
         className={cn(
@@ -606,8 +632,12 @@ function Overflow({
   threads: ReturnType<typeof useThreads>['threads']
   onPick: (key: string) => void
 }) {
+  const { t } = useTranslation('chatDock')
   const [open, setOpen] = useState(false)
-  const titles = useMemo(() => new Map(threads.map((t) => [t.id, t.title])), [threads])
+  const titles = useMemo(
+    () => new Map(threads.map((thread) => [thread.id, thread.title])),
+    [threads],
+  )
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -615,7 +645,7 @@ function Overflow({
           variant="outline"
           size="sm"
           className="mb-2 shadow-[var(--shadow-raised)]"
-          aria-label={`${String(hidden.length)} more open conversation${hidden.length === 1 ? '' : 's'}`}
+          aria-label={t('overflow', { count: hidden.length })}
         >
           +{hidden.length}
         </Button>
@@ -625,13 +655,13 @@ function Overflow({
           <button
             key={w.key}
             type="button"
-            className="w-full cursor-pointer truncate rounded-md px-2 py-1.5 text-left text-sm hover:bg-well"
+            className="w-full cursor-pointer truncate rounded-md px-2 py-1.5 text-start text-sm hover:bg-well"
             onClick={() => {
               setOpen(false)
               onPick(w.key)
             }}
           >
-            {(w.threadId && titles.get(w.threadId as NodeId)) ?? 'New conversation'}
+            {(w.threadId && titles.get(w.threadId as NodeId)) ?? t('newConversation')}
           </button>
         ))}
       </PopoverContent>

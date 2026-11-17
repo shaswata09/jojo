@@ -16,6 +16,7 @@
  */
 
 import { TODAY } from '@/lib/today'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * Where a snooze counts from — a mirror of `useTimeline().snooze`, kept here so
@@ -38,6 +39,20 @@ import { TODAY } from '@/lib/today'
  */
 export const snoozeAnchor = (date: string) => (date < TODAY ? TODAY : date)
 
+/** The words for one step, read from the `common` catalog each time they are shown. */
+const snoozeStep = (days: number, key: string) => ({
+  days,
+  get soon() {
+    return i18next.t(`common:snooze.${key}.soon`)
+  },
+  get later() {
+    return i18next.t(`common:snooze.${key}.later`)
+  },
+  get duration() {
+    return i18next.t(`common:snooze.${key}.duration`)
+  },
+})
+
 /**
  * Three steps, spelled three ways, and the reason there are three.
  *
@@ -55,7 +70,7 @@ export const snoozeAnchor = (date: string) => (date < TODAY ? TODAY : date)
  * deliberately so.
  */
 export const SNOOZE_STEPS = [
-  { days: 1, soon: 'Tomorrow', later: 'A day later', duration: 'A day' },
-  { days: 3, soon: 'In 3 days', later: 'Three days later', duration: 'Three days' },
-  { days: 7, soon: 'In 7 days', later: 'A week later', duration: 'A week' },
+  snoozeStep(1, 'day'),
+  snoozeStep(3, 'threeDays'),
+  snoozeStep(7, 'week'),
 ]

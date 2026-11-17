@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pressable, TextInput, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { MenuSheet } from '@/components/ui/Menu'
@@ -9,6 +10,7 @@ import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import type { ChecklistItem } from '@jojo/service/core/model'
 import { supersededToast } from '@jojo/service/react/undo'
+import { useKg } from '@jojo/service/react/kg-context'
 import { useChecklist } from '@/lib/checklist-agent'
 import { useToast } from '@/lib/toast-context'
 import { useColors } from '@/theme/theme-context'
@@ -35,6 +37,8 @@ import { space } from '@/theme/tokens'
  * and this is the one control the card exists for.
  */
 export function ChecklistPanel({ applicationId }: { applicationId: string }) {
+  const { t } = useTranslation(['components', 'common'])
+  const { text } = useKg()
   const c = useColors()
   const list = useChecklist(applicationId)
   const { toast } = useToast()
@@ -53,7 +57,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     if (result.ok) setDraft('')
     else {
       toast({
-        title: 'That step was not added',
+        title: t('checklist.notAdded'),
         description: result.errors[0]?.message ?? '',
         tone: 'danger',
       })
@@ -64,19 +68,19 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     const done = list.remove(item.id)
     if (!done) return
     toast({
-      title: 'Step deleted',
+      title: t('checklist.deleted'),
       description: item.text,
       ...(done.restore
         ? {
             action: {
-              label: 'Undo',
+              label: t('common:actions.undo'),
               onPress: () => {
                 const outcome = done.restore?.()
                 if (outcome && outcome.superseded.length > 0) {
                   // `supersededToast` is written for the web's `onClick`; the
                   // phone's action takes `onPress`, so the fields are carried
                   // across by hand exactly as `TailoredPanel` does.
-                  const said = supersededToast(outcome)
+                  const said = supersededToast(outcome, text)
                   toast({
                     title: said.title,
                     ...(said.description === undefined ? {} : { description: said.description }),
@@ -93,7 +97,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
   const actionsFor = (item: ChecklistItem): MenuAction[] => [
     {
       id: 'edit',
-      label: 'Edit',
+      label: t('common:actions.edit'),
       icon: 'edit-2',
       onPress: () => {
         setEditText(item.text)
@@ -102,7 +106,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     },
     {
       id: 'delete',
-      label: 'Delete',
+      label: t('common:actions.delete'),
       icon: 'trash-2',
       tone: 'danger',
       onPress: () => {
@@ -115,11 +119,17 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     <Panel>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
         <PanelTitle style={{ flex: 1 }}>
-          Checklist
-          {list.items.length > 0 ? ` · ${String(list.open)} open of ${String(list.items.length)}` : ''}
+          {list.items.length > 0
+            ? t('checklist.titleCount', { open: list.open, total: list.items.length })
+            : t('checklist.title')}
         </PanelTitle>
         {list.blocked === null && !busy ? (
-          <Button label={list.items.length === 0 ? 'Draft' : 'Draft more'} variant="outline" icon="zap" onPress={list.draft} />
+          <Button
+            label={list.items.length === 0 ? t('checklist.draft') : t('checklist.draftMore')}
+            variant="outline"
+            icon="zap"
+            onPress={list.draft}
+          />
         ) : null}
       </View>
 
@@ -128,7 +138,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
           <Txt size="sm" tone="secondary" style={{ flex: 1 }}>
             {list.step}…
           </Txt>
-          <Button label="Cancel" variant="ghost" onPress={list.cancel} />
+          <Button label={t('common:actions.cancel')} variant="ghost" onPress={list.cancel} />
         </View>
       ) : null}
 
@@ -183,7 +193,10 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                     size="sm"
                     numberOfLines={2}
                     tone={done ? 'secondary' : undefined}
-                    style={{ flex: 1, ...(done ? { textDecorationLine: 'line-through' as const } : {}) }}
+                    style={{
+                      flex: 1,
+                      ...(done ? { textDecorationLine: 'line-through' as const } : {}),
+                    }}
                   >
                     {item.text}
                   </Txt>
@@ -195,7 +208,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                 </Pressable>
                 <IconButton
                   icon="more-horizontal"
-                  label={`Actions for ${item.text}`}
+                  label={t('checklist.actionsFor', { step: item.text })}
                   onPress={() => {
                     setMenuFor(item)
                   }}
@@ -208,13 +221,13 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         <EmptyState
           compact
           icon="check-square"
-          title="Nothing on the list yet"
+          title={t('checklist.empty.title')}
           description={
             list.blocked === 'no-posting'
-              ? 'There is no saved posting behind this application, so jojo cannot read what it asks you to send. You can still add your own steps.'
+              ? t('checklist.empty.noPosting')
               : list.blocked === 'no-model'
-                ? 'Drafting a checklist needs a model. Connect one in Settings, or add your own steps below.'
-                : 'Ask jojo to read the posting for what you have to send, or add your own steps below.'
+                ? t('checklist.empty.noModel')
+                : t('checklist.empty.ready')
           }
         />
       ) : null}
@@ -234,9 +247,9 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         <TextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder="Add a step"
+          placeholder={t('checklist.addStep')}
           placeholderTextColor={c.text3}
-          accessibilityLabel="Add a step"
+          accessibilityLabel={t('checklist.addStep')}
           returnKeyType="done"
           onSubmitEditing={commit}
           onBlur={commit}
@@ -254,7 +267,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
           <Txt size="sm" color={c.danger}>
             {list.error}
           </Txt>
-          <Button label="Try again" variant="ghost" onPress={list.draft} />
+          <Button label={t('common:actions.tryAgain')} variant="ghost" onPress={list.draft} />
         </View>
       ) : null}
 
@@ -287,7 +300,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
             autoFocus
             value={editText}
             onChangeText={setEditText}
-            accessibilityLabel="Step"
+            accessibilityLabel={t('checklist.step')}
             style={{
               minHeight: 44,
               color: c.text1,

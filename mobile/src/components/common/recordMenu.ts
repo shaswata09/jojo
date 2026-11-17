@@ -1,4 +1,5 @@
 import type { MenuAction } from '@/components/ui/Menu'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * The overflow menu every saved record carries, in one order.
@@ -19,12 +20,12 @@ import type { MenuAction } from '@/components/ui/Menu'
  */
 export function buildRecordMenu<T extends string>({
   onEdit,
-  editLabel = 'Edit',
+  editLabel = i18next.t('common:actions.edit'),
   onDuplicate,
   extra,
   move,
   onDelete,
-  deleteLabel = 'Delete',
+  deleteLabel = i18next.t('common:actions.delete'),
 }: {
   onEdit?: () => void
   /** Where "Edit" is too vague — Files splits it into Rename and Edit note. */
@@ -46,7 +47,14 @@ export function buildRecordMenu<T extends string>({
   return [
     ...(onEdit ? [{ id: 'edit', label: editLabel, icon: 'edit-2' as const, onPress: onEdit }] : []),
     ...(onDuplicate
-      ? [{ id: 'duplicate', label: 'Duplicate', icon: 'copy' as const, onPress: onDuplicate }]
+      ? [
+          {
+            id: 'duplicate',
+            label: i18next.t('common:actions.duplicate'),
+            icon: 'copy' as const,
+            onPress: onDuplicate,
+          },
+        ]
       : []),
     ...(extra ?? []),
     ...(move

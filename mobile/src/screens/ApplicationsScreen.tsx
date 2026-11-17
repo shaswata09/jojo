@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
@@ -20,13 +21,7 @@ import { Txt } from '@/components/ui/Text'
 import { STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import type { Application, RoleTag, Stage } from '@jojo/service/data/seed'
-import {
-  addDays,
-  agoLabel,
-  compareItems,
-  daysBetween,
-  shortDate,
-} from '@jojo/service/data/timeline'
+import { addDays, compareItems, daysBetween } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 // The parser is the shared one. `src/lib/draft-from.ts` held a 349-line copy of
@@ -53,13 +48,12 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { TourTarget } from '@/components/tour/TourTarget'
+import { domain as domainWords, useDomain } from '@/i18n/domain'
 
 type View_ = 'list' | 'board'
 
-const VIEWS = [
-  { value: 'list', label: 'List' },
-  { value: 'board', label: 'Board' },
-] as const
+/** The two layouts; their labels are catalog keys, translated where drawn. */
+const VIEWS = ['list', 'board'] as const
 
 /**
  * The three orderings, each with what its two directions actually mean.
@@ -69,10 +63,10 @@ const VIEWS = [
  * web version says this with an arrow on a column header; without a header row
  * to hang one on, the menu has to say it in words.
  */
-const SORTS: { value: SortKey; label: string; asc: string; desc: string }[] = [
-  { value: 'daysAgo', label: 'Last activity', asc: 'Most recent first', desc: 'Oldest first' },
-  { value: 'stage', label: 'Stage', asc: 'Draft to closed', desc: 'Closed to draft' },
-  { value: 'role', label: 'Position', asc: 'A to Z', desc: 'Z to A' },
+const SORTS: { value: SortKey; key: 'activity' | 'stage' | 'position' }[] = [
+  { value: 'daysAgo', key: 'activity' },
+  { value: 'stage', key: 'stage' },
+  { value: 'role', key: 'position' },
 ]
 
 /**
@@ -82,7 +76,7 @@ const SORTS: { value: SortKey; label: string; asc: string; desc: string }[] = [
  * would say out loud.
  */
 function activityLabel(daysAgo: number) {
-  const ago = agoLabel(addDays(TODAY, -daysAgo), TODAY)
+  const ago = domainWords.ago(addDays(TODAY, -daysAgo), TODAY)
   return ago.charAt(0).toUpperCase() + ago.slice(1)
 }
 
@@ -99,6 +93,8 @@ function nextDateOf(items: TimelineItem[] | undefined) {
 }
 
 export function ApplicationsScreen() {
+  const { t, i18n } = useTranslation('screens')
+  const domain = useDomain()
   const route = useRoute<RouteProp<TabParamList, 'Applications'>>()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -205,10 +201,21 @@ export function ApplicationsScreen() {
       if (!keywordMatches(refKey('app', a.id))) return false
       // Searches what is on screen plus the stage name, so typing "offer" finds
       // the row whose only mention of it is a chip. Accent-folded, so a search
-      // for "Muñoz" typed without the tilde still finds it.
-      return matchesQuery(query, a.org, a.role, a.note, a.roleTag, STAGE_LABEL[a.stage], a.location)
+      // for "Muñoz" typed without the tilde still finds it. The stage both in
+      // the English the record is written in and in the words on the chip.
+      return matchesQuery(
+        query,
+        a.org,
+        a.role,
+        a.note,
+        a.roleTag,
+        STAGE_LABEL[a.stage],
+        domain.stage(a.stage),
+        a.location,
+      )
     })
-  }, [all, query, roleMatches, keywordMatches])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the language is what `domain` reads; a switch must re-run this
+  }, [all, query, roleMatches, keywordMatches, domain, i18n.language])
 
   /**
    * Stage counts over the pool, not over everything. They used to be counted
@@ -251,17 +258,30 @@ export function ApplicationsScreen() {
    */
   const emptyReason = useMemo(() => {
     const on = [
-      query.trim() ? 'that search' : '',
-      stageFilter === 'all' ? '' : `the ${STAGE_LABEL[stageFilter]} stage`,
-      selectedKeywords.size > 0 ? 'the selected keywords' : '',
-      selectedRoles.size > 0 ? 'the selected roles' : '',
+      query.trim() ? t('applications.empty.reasons.search') : '',
+      stageFilter === 'all'
+        ? ''
+        : t('applications.empty.reasons.stage', { stage: domain.stage(stageFilter) }),
+      selectedKeywords.size > 0 ? t('applications.empty.reasons.keywords') : '',
+      selectedRoles.size > 0 ? t('applications.empty.reasons.roles') : '',
     ].filter(Boolean)
-    if (on.length === 0) return 'Nothing here to show.'
-    const joined = on.length === 1 ? on[0] : `${on.slice(0, -1).join(', ')} and ${on.at(-1)}`
-    return `Nothing carries ${joined}.`
-  }, [query, stageFilter, selectedKeywords, selectedRoles])
+    if (on.length === 0) return t('applications.empty.nothing')
+    const joined =
+      on.length === 1
+        ? on[0]
+        : t('shared.list', {
+            items: on.slice(0, -1).join(t('shared.separator')),
+            last: on.at(-1),
+          })
+    return t('applications.empty.carries', { filters: joined })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the language is what `domain` reads; a switch must re-run this
+  }, [query, stageFilter, selectedKeywords, selectedRoles, t, domain, i18n.language])
 
   const activeSort = SORTS.find((option) => option.value === sort) ?? SORTS[0]
+  const sortLabel = t(`applications.sorts.${activeSort.key}.label`)
+  const sortAsc = t(`applications.sorts.${activeSort.key}.asc`)
+  const sortDesc = t(`applications.sorts.${activeSort.key}.desc`)
+  const views = VIEWS.map((value) => ({ value, label: t(`applications.views.${value}`) }))
 
   const clearFilters = () => {
     setQuery('')
@@ -283,18 +303,26 @@ export function ApplicationsScreen() {
       // scroll out from under the drag, and the floating card — positioned
       // against the board's measured origin — parts company with the finger.
       scrollEnabled={!boardDragging}
-      title="Applications"
+      title={t('applications.title')}
       subtitle={
         empty
-          ? 'Nothing tracked yet — everything you add stays on this device.'
-          : `${shown} shown · ${all.length} total`
+          ? t('applications.subtitleEmpty')
+          : t('applications.subtitle', { shown, total: all.length })
       }
-      actions={<Button label="New" icon="plus" onPress={() => open('application')} />}
+      actions={
+        <Button label={t('applications.new')} icon="plus" onPress={() => open('application')} />
+      }
       options={
         <SettingRow
-          label="Show notes"
-          description="The second line under each position"
-          control={<Toggle value={showNotes} onValueChange={setShowNotes} label="Show notes" />}
+          label={t('applications.showNotes')}
+          description={t('applications.showNotesDescription')}
+          control={
+            <Toggle
+              value={showNotes}
+              onValueChange={setShowNotes}
+              label={t('applications.showNotes')}
+            />
+          }
         />
       }
     >
@@ -302,10 +330,14 @@ export function ApplicationsScreen() {
         <Panel>
           <EmptyState
             icon="clipboard"
-            title="No applications yet"
-            description="Track a job you are applying for and it shows up here, on the calendar and in the week ahead."
+            title={t('applications.none.title')}
+            description={t('applications.none.description')}
             action={
-              <Button label="New application" icon="plus" onPress={() => open('application')} />
+              <Button
+                label={t('applications.newApplication')}
+                icon="plus"
+                onPress={() => open('application')}
+              />
             }
           />
         </Panel>
@@ -314,27 +346,35 @@ export function ApplicationsScreen() {
           <PasteUrlRow />
 
           <SearchInput
-            label="Search applications"
+            label={t('applications.searchLabel')}
             value={query}
             onChange={setQuery}
-            placeholder="Search position, note or stage"
+            placeholder={t('applications.searchPlaceholder')}
           />
 
           <View style={s.row}>
             {/* Marked for the guided tour, which asks for the board. */}
             <TourTarget id="layout" state={view} style={s.fill}>
-              <Segment label="Layout" options={VIEWS} value={view} onChange={setView} />
+              <Segment
+                label={t('applications.layout')}
+                options={views}
+                value={view}
+                onChange={setView}
+              />
             </TourTarget>
             <IconButton
               icon="filter"
-              label="Filter by role"
+              label={t('applications.filterByRole')}
               active={selectedRoles.size > 0}
               onPress={() => setRolesOpen(true)}
             />
             {view === 'list' ? (
               <IconButton
                 icon={dir === 'asc' ? 'arrow-down' : 'arrow-up'}
-                label={`Sort: ${activeSort.label}, ${dir === 'asc' ? activeSort.asc : activeSort.desc}`}
+                label={t('applications.sortButton', {
+                  sort: sortLabel,
+                  order: dir === 'asc' ? sortAsc : sortDesc,
+                })}
                 onPress={() => setSortOpen(true)}
               />
             ) : null}
@@ -349,10 +389,13 @@ export function ApplicationsScreen() {
               list. */}
           {view === 'list' ? (
             <BucketFilter
-              label="Filter by stage"
+              label={t('applications.filterByStage')}
               options={STAGES.map((s) => s.id)}
               labels={
-                Object.fromEntries(STAGES.map((s) => [s.id, s.label])) as Record<Stage, string>
+                Object.fromEntries(STAGES.map((s) => [s.id, domain.stage(s.id)])) as Record<
+                  Stage,
+                  string
+                >
               }
               counts={stageCounts}
               value={stageFilter}
@@ -365,20 +408,20 @@ export function ApplicationsScreen() {
             <Panel>
               <EmptyState
                 icon="clipboard"
-                title="No applications match"
+                title={t('applications.empty.title')}
                 description={emptyReason}
                 action={
                   <>
                     {anyFilter ? (
                       <Button
-                        label={`Show all ${all.length}`}
+                        label={t('applications.empty.showAll', { count: all.length })}
                         icon="x"
                         variant="outline"
                         onPress={clearFilters}
                       />
                     ) : null}
                     <Button
-                      label="New application"
+                      label={t('applications.newApplication')}
                       icon="plus"
                       onPress={() =>
                         open('application', {
@@ -423,12 +466,12 @@ export function ApplicationsScreen() {
       <MenuSheet
         open={sortOpen}
         onClose={() => setSortOpen(false)}
-        title="Sort by"
-        description="Pick the column, then which end of it goes on top."
+        title={t('applications.sortMenu.title')}
+        description={t('applications.sortMenu.description')}
         actions={[
           ...SORTS.map((option) => ({
             id: option.value,
-            label: option.label,
+            label: t(`applications.sorts.${option.key}.label`),
             checked: option.value === sort,
             onPress: () => setSort(option.value),
           })),
@@ -436,9 +479,11 @@ export function ApplicationsScreen() {
             id: 'direction',
             // Named for what the list will look like rather than for the
             // direction, and it names the state it is about to move to.
-            label: dir === 'asc' ? activeSort.desc : activeSort.asc,
+            label: dir === 'asc' ? sortDesc : sortAsc,
             icon: dir === 'asc' ? 'arrow-down' : 'arrow-up',
-            hint: `Currently ${dir === 'asc' ? activeSort.asc.toLowerCase() : activeSort.desc.toLowerCase()}`,
+            hint: t('applications.sortMenu.currently', {
+              order: dir === 'asc' ? sortAsc : sortDesc,
+            }),
             onPress: () => setDir((d) => (d === 'asc' ? 'desc' : 'asc')),
           },
         ]}
@@ -454,6 +499,7 @@ export function ApplicationsScreen() {
 /* --------------------------------- rows ---------------------------------- */
 
 function NextDate({ item }: { item?: TimelineItem }) {
+  const domain = useDomain()
   if (!item) {
     return (
       <Txt size="xs" tone="muted">
@@ -467,7 +513,7 @@ function NextDate({ item }: { item?: TimelineItem }) {
   const tone = gap < 0 ? 'danger' : gap <= 1 ? 'warning' : 'muted'
   return (
     <Txt size="xs" tone={tone} mono>
-      {shortDate(item.date)}
+      {domain.shortDate(item.date)}
     </Txt>
   )
 }
@@ -492,6 +538,8 @@ const ApplicationRow = memo(function ApplicationRow({
   actions: RowActions
   onOpen: (id: string) => void
 }) {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -536,7 +584,7 @@ const ApplicationRow = memo(function ApplicationRow({
 
       <IconButton
         icon="more-horizontal"
-        label={`More actions for ${displayName(a)}`}
+        label={t('applications.row.moreActions', { name: displayName(a) })}
         onPress={() => setMenuOpen(true)}
       />
 
@@ -544,25 +592,35 @@ const ApplicationRow = memo(function ApplicationRow({
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         title={displayName(a)}
-        description={`${STAGE_LABEL[a.stage]} · ${a.roleTag}`}
+        description={`${domain.stage(a.stage)} · ${a.roleTag}`}
         actions={[
-          { id: 'open', label: 'Open record', icon: 'arrow-right', onPress: () => onOpen(a.id) },
-          { id: 'edit', label: 'Edit', icon: 'edit-2', onPress: () => actions.onEdit(a) },
+          {
+            id: 'open',
+            label: t('applications.row.open'),
+            icon: 'arrow-right',
+            onPress: () => onOpen(a.id),
+          },
+          {
+            id: 'edit',
+            label: t('applications.row.edit'),
+            icon: 'edit-2',
+            onPress: () => actions.onEdit(a),
+          },
           {
             id: 'flag',
-            label: a.flagged ? 'Clear the follow-up flag' : 'Flag for follow-up',
+            label: a.flagged ? t('applications.row.unflag') : t('applications.row.flag'),
             icon: 'flag',
             onPress: () => actions.onFlag(a),
           },
           {
             id: 'duplicate',
-            label: 'Duplicate',
+            label: t('applications.row.duplicate'),
             icon: 'copy',
             onPress: () => actions.onDuplicate(a),
           },
           {
             id: 'delete',
-            label: 'Delete',
+            label: t('shared.delete'),
             icon: 'trash-2',
             tone: 'danger',
             onPress: () => actions.requestDelete(a),
@@ -583,6 +641,7 @@ const ApplicationRow = memo(function ApplicationRow({
  * whole search.
  */
 function RoleFilterSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation('screens')
   const vocabulary = useRoleVocabulary()
   const { selected, toggle, clear } = useRoles()
   const { all } = useApplications()
@@ -593,18 +652,25 @@ function RoleFilterSheet({ open, onClose }: { open: boolean; onClose: () => void
     <MenuSheet
       open={open}
       onClose={onClose}
-      title="Filter by role"
-      description="Nothing selected means everything — clearing the filter is the same as never having set one."
+      title={t('applications.filterByRole')}
+      description={t('applications.roles.description')}
       actions={[
         ...vocabulary.map((role) => ({
           id: role,
           label: role,
-          hint: `${countOf(role)} tracked`,
+          hint: t('applications.roles.tracked', { count: countOf(role) }),
           checked: selected.has(role),
           onPress: () => toggle(role),
         })),
         ...(selected.size > 0
-          ? [{ id: 'clear', label: 'Show every role', icon: 'x' as const, onPress: clear }]
+          ? [
+              {
+                id: 'clear',
+                label: t('applications.roles.clear'),
+                icon: 'x' as const,
+                onPress: clear,
+              },
+            ]
           : []),
       ]}
     />
@@ -623,6 +689,7 @@ function RoleFilterSheet({ open, onClose }: { open: boolean; onClose: () => void
  * same choice for the same reason; see there.
  */
 function PasteUrlRow() {
+  const { t } = useTranslation('screens')
   const { open } = useSheets()
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
@@ -640,13 +707,18 @@ function PasteUrlRow() {
     <View style={s.row}>
       <View style={s.fill}>
         <SearchInput
-          label="Posting URL"
+          label={t('applications.paste.label')}
           value={url}
           onChange={setUrl}
-          placeholder="Paste a posting URL"
+          placeholder={t('applications.paste.placeholder')}
         />
       </View>
-      <Button label="From link" size="md" disabled={!url.trim()} onPress={submit} />
+      <Button
+        label={t('applications.paste.submit')}
+        size="md"
+        disabled={!url.trim()}
+        onPress={submit}
+      />
     </View>
   )
 }

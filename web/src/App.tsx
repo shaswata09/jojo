@@ -1,15 +1,9 @@
 import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { Loader } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
-import { GuideBuiltWith } from '@/components/guide/GuideBuiltWith'
-import { GuideGraph } from '@/components/guide/GuideGraph'
-import { GuideControlFlow } from '@/components/guide/GuideControlFlow'
-import { GuideLicence } from '@/components/guide/GuideLicence'
-import { GuideOverview } from '@/components/guide/GuideOverview'
-import { GuideScreens } from '@/components/guide/GuideScreens'
-import { GuideTools } from '@/components/guide/GuideTools'
 import { AppShell } from '@/components/layout/AppShell'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath, useTitle } from '@/lib/links'
@@ -45,6 +39,39 @@ const Graph = lazy(async () => ({ default: (await import('@/routes/Graph')).Grap
 const Transfer = lazy(async () => ({ default: (await import('@/routes/Transfer')).Transfer }))
 
 /**
+ * The guide's pages, split out the same way.
+ *
+ * The Tools page carries the agent benchmark — its report JSON and the
+ * scripted conversations behind it, about a third of a megabyte gzipped — and
+ * Control flow carries the build-time code graph. Imported statically, all of
+ * it sat in the entry chunk that the dashboard waits on, for a section most
+ * visits never open. The boundary these suspend into is round the guide's
+ * `<Outlet />` (`routes/Guide.tsx`), so the rail and pager stay put while a
+ * page's chunk arrives.
+ */
+const GuideOverview = lazy(async () => ({
+  default: (await import('@/components/guide/GuideOverview')).GuideOverview,
+}))
+const GuideScreens = lazy(async () => ({
+  default: (await import('@/components/guide/GuideScreens')).GuideScreens,
+}))
+const GuideGraph = lazy(async () => ({
+  default: (await import('@/components/guide/GuideGraph')).GuideGraph,
+}))
+const GuideTools = lazy(async () => ({
+  default: (await import('@/components/guide/GuideTools')).GuideTools,
+}))
+const GuideBuiltWith = lazy(async () => ({
+  default: (await import('@/components/guide/GuideBuiltWith')).GuideBuiltWith,
+}))
+const GuideControlFlow = lazy(async () => ({
+  default: (await import('@/components/guide/GuideControlFlow')).GuideControlFlow,
+}))
+const GuideLicence = lazy(async () => ({
+  default: (await import('@/components/guide/GuideLicence')).GuideLicence,
+}))
+
+/**
  * What stands in while a route's chunk is in flight.
  *
  * The page's real title, so the h1 lands where it is going to land and the tab
@@ -56,7 +83,9 @@ const Transfer = lazy(async () => ({ default: (await import('@/routes/Transfer')
  * cache the transfer chunk is several hundred kilobytes and this is on screen
  * long enough to be read.
  */
-function RouteFallback({ title }: { title: string }) {
+function RouteFallback({ page }: { page: 'graph' | 'transfer' }) {
+  const { t } = useTranslation('pages')
+  const title = t(`${page}.title`)
   useTitle(title)
 
   return (
@@ -69,7 +98,7 @@ function RouteFallback({ title }: { title: string }) {
             strokeWidth={1.8}
             aria-hidden
           />
-          Loading this page — it is fetched separately, so the rest of jojo starts without it.
+          {t('routeFallback.loading')}
         </p>
       </Panel>
     </>
@@ -208,7 +237,7 @@ export default function App() {
           <Route
             path="graph"
             element={
-              <Suspense fallback={<RouteFallback title="Graph" />}>
+              <Suspense fallback={<RouteFallback page="graph" />}>
                 <Graph />
               </Suspense>
             }
@@ -216,7 +245,7 @@ export default function App() {
           <Route
             path="transfer"
             element={
-              <Suspense fallback={<RouteFallback title="Transfer" />}>
+              <Suspense fallback={<RouteFallback page="transfer" />}>
                 <Transfer />
               </Suspense>
             }
@@ -242,10 +271,7 @@ export default function App() {
             <Route path="faq" element={<Navigate to="/guide/control-flow" replace />} />
             <Route path="licence" element={<GuideLicence />} />
           </Route>
-          <Route
-            path="*"
-            element={<Placeholder title="Not found" subtitle="That page does not exist." />}
-          />
+          <Route path="*" element={<Placeholder />} />
         </Route>
       </Routes>
       <DialogNavigation />

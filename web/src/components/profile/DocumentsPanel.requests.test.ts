@@ -39,7 +39,9 @@ describe('Q118 — profile documents preview in the app and accept a drop', () =
 
 describe('Q121 — a file can be removed from the card', () => {
   it('has a delete button on every tile', () => {
-    expect(tile).toMatch(/aria-label=\{`Delete \$\{f\.name\}`\}[\s\S]*?onDelete\(f\)/)
+    expect(tile).toMatch(
+      /aria-label=\{t\('documentTile\.delete', \{ name: f\.name \}\)\}[\s\S]*?onDelete\(f\)/,
+    )
   })
 
   it('deletes through the shared file delete, closing the viewer if it was open', () => {

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
@@ -11,7 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { bucketOf, shortDate, whenLabel } from '@jojo/service/data/timeline'
+import { bucketOf } from '@jojo/service/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
 import { useLabels } from '@/lib/labels-context'
 import { vaultEmptyState } from '@/lib/vault-empty'
@@ -23,15 +24,9 @@ import { useItemActions } from '@/lib/use-item-actions'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 const BUCKETS: TimelineBucket[] = ['overdue', 'today', 'upcoming', 'done']
-
-const BUCKET_LABEL: Record<TimelineBucket, string> = {
-  overdue: 'Overdue',
-  today: 'Today',
-  upcoming: 'Upcoming',
-  done: 'Completed',
-}
 
 const BUCKET_TONE = {
   overdue: 'danger',
@@ -49,6 +44,15 @@ const BUCKET_TONE = {
  * wherever it is pressed.
  */
 export function RemindersTool({ focus }: { focus?: string }) {
+  const { t, i18n } = useTranslation('vault')
+  const domain = useDomain()
+  // Built per render rather than at module scope, so a language change reaches it.
+  const bucketLabel: Record<TimelineBucket, string> = {
+    overdue: t('reminders.buckets.overdue'),
+    today: t('reminders.buckets.today'),
+    upcoming: t('reminders.buckets.upcoming'),
+    done: t('reminders.buckets.done'),
+  }
   const c = useColors()
   const { reminders } = useTimeline()
   const { matches, selected, clearSelected } = useLabels()
@@ -60,12 +64,16 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const [menuFor, setMenuFor] = useState<TimelineItem | null>(null)
   const [snoozing, setSnoozing] = useState<TimelineItem | null>(null)
 
+  // The kind both in core's English and in the words on screen, so either finds it.
   const pool = useMemo(
     () =>
       reminders.filter(
-        (r) => matches(r.id) && matchesQuery(query, r.title, r.detail, r.note, KIND_LABEL[r.kind]),
+        (r) =>
+          matches(r.id) &&
+          matchesQuery(query, r.title, r.detail, r.note, KIND_LABEL[r.kind], domain.kind(r.kind)),
       ),
-    [reminders, query, matches],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the language is what `domain` reads; a switch must re-run this
+    [reminders, query, matches, domain, i18n.language],
   )
 
   const counts = useMemo(() => {
@@ -81,13 +89,11 @@ export function RemindersTool({ focus }: { focus?: string }) {
 
   const addButton = (
     <Button
-      label="New reminder"
+      label={t('reminders.add')}
       icon="plus"
       onPress={() => open('timelineItem', { mode: 'reminder' })}
     />
   )
-
-  const bucketWord = bucket === 'all' ? '' : BUCKET_LABEL[bucket].toLowerCase()
 
   const empty = vaultEmptyState({
     total: reminders.length,
@@ -100,51 +106,51 @@ export function RemindersTool({ focus }: { focus?: string }) {
     copy: {
       icon: 'bell',
       zero: {
-        title: 'No reminders yet',
-        description:
-          'A reminder is a dated record with a nudge switched on. Once its date passes it is owed, and it stays on Today until you tick it off.',
+        title: t('reminders.empty.zeroTitle'),
+        description: t('reminders.empty.zeroDescription'),
       },
-      search: (q) => `No reminder mentions "${q}" in its title, note or kind.`,
-      both: `No ${bucketWord} reminder carries the selected keywords.`,
+      search: (q) => t('reminders.empty.search', { query: q }),
+      // One sentence per group: an adjective dropped into a fixed frame does
+      // not survive translation.
+      both: bucket === 'all' ? '' : t(`reminders.empty.both.${bucket}`),
       // Done is the one bucket that is not a deadline passing: an empty Done
       // list is not a filter hiding work, so it says something else.
       bucket:
         bucket === 'done'
           ? {
               icon: 'check',
-              title: 'Nothing completed yet',
-              description:
-                'Reminders you tick off collect here, so one ticked by mistake is still findable.',
-              clearLabel: 'Show all reminders',
+              title: t('reminders.empty.doneTitle'),
+              description: t('reminders.empty.doneDescription'),
+              clearLabel: t('reminders.empty.showAll'),
             }
           : {
-              title: `Nothing ${bucketWord}`,
-              description: `${String(reminders.length)} reminders are filed under the other groups.`,
-              clearLabel: 'Show all reminders',
+              title: bucket === 'all' ? '' : t(`reminders.empty.nothingIn.${bucket}`),
+              description: t('reminders.empty.bucketDescription', { count: reminders.length }),
+              clearLabel: t('reminders.empty.showAll'),
             },
-      keywords: { title: 'No reminders carry those keywords' },
+      keywords: { title: t('reminders.empty.keywordsTitle') },
     },
   })
 
   return (
     <>
       <SearchInput
-        label="Search reminders"
+        label={t('reminders.search.label')}
         value={query}
         onChange={setQuery}
-        placeholder="Search title, note or kind"
+        placeholder={t('reminders.search.placeholder')}
       />
       <BucketFilter
-        label="Filter reminders"
+        label={t('reminders.filterLabel')}
         options={BUCKETS}
-        labels={BUCKET_LABEL}
+        labels={bucketLabel}
         counts={counts}
         value={bucket}
         onChange={setBucket}
         total={pool.length}
       />
       <Button
-        label="New reminder"
+        label={t('reminders.add')}
         icon="plus"
         onPress={() => open('timelineItem', { mode: 'reminder' })}
       />
@@ -173,8 +179,8 @@ export function RemindersTool({ focus }: { focus?: string }) {
           rows.map((r, i) => {
             const b = bucketOf(r, TODAY)
             const done = Boolean(r.completedOn)
-            const when = whenLabel(r, TODAY)
-            const date = shortDate(r.date)
+            const when = domain.when(r, TODAY)
+            const date = domain.shortDate(r.date)
 
             return (
               <View key={r.id}>
@@ -183,7 +189,11 @@ export function RemindersTool({ focus }: { focus?: string }) {
                   <Pressable
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: done }}
-                    accessibilityLabel={`Mark "${r.title}" ${done ? 'not done' : 'done'}`}
+                    accessibilityLabel={
+                      done
+                        ? t('reminders.markNotDone', { title: r.title })
+                        : t('reminders.markDone', { title: r.title })
+                    }
                     onPress={() => actions.complete(r)}
                     hitSlop={8}
                     style={[
@@ -241,7 +251,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
 
                   <IconButton
                     icon="more-horizontal"
-                    label={`More actions for ${r.title}`}
+                    label={t('common.moreActionsFor', { name: r.title })}
                     onPress={() => setMenuFor(r)}
                   />
                 </View>

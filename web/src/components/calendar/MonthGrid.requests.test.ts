@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import calendarEn from '@/i18n/locales/en/calendar.json'
 
 const sources = import.meta.glob('/src/components/calendar/MonthGrid.tsx', {
   query: '?raw',
@@ -25,13 +26,17 @@ const header = /<h2 className="text-base font-medium">([\s\S]*?)<\/Panel>/.exec(
 
 describe('the calendar month header (Q044)', () => {
   it('was found', () => {
-    expect(header).toContain('{month.label}')
+    // The month and year in the language on screen, in its order ('2026年11月'),
+    // not core's English `month.label` followed by the year.
+    expect(header).toContain('domain.monthYearParts(month.month, month.year)')
   })
 
   it('puts the month picker between the title and the arrows', () => {
     const title = header.indexOf('</h2>')
-    const picker = header.indexOf('<MonthPicker year={month.year} month={month.month} onPick={onGoTo} />')
-    const previous = header.indexOf('aria-label="Previous month"')
+    const picker = header.indexOf(
+      '<MonthPicker year={month.year} month={month.month} onPick={onGoTo} />',
+    )
+    const previous = header.indexOf("aria-label={t('grid.previousMonth')}")
     expect(title).toBeGreaterThan(0)
     expect(picker).toBeGreaterThan(title)
     expect(previous).toBeGreaterThan(picker)
@@ -39,17 +44,21 @@ describe('the calendar month header (Q044)', () => {
 
   it('steps back with the previous arrow and forward with the next', () => {
     expect(header).toMatch(
-      /onClick=\{\(\) => onGoTo\(stepMonth\(month\.year, month\.month, -1\)\)\}\s*aria-label="Previous month"/,
+      /onClick=\{\(\) => onGoTo\(stepMonth\(month\.year, month\.month, -1\)\)\}\s*aria-label=\{t\('grid\.previousMonth'\)\}/,
     )
     expect(header).toMatch(
-      /onClick=\{\(\) => onGoTo\(stepMonth\(month\.year, month\.month, 1\)\)\}\s*aria-label="Next month"/,
+      /onClick=\{\(\) => onGoTo\(stepMonth\(month\.year, month\.month, 1\)\)\}\s*aria-label=\{t\('grid\.nextMonth'\)\}/,
     )
+    expect(calendarEn.grid.previousMonth).toBe('Previous month')
+    expect(calendarEn.grid.nextMonth).toBe('Next month')
   })
 
   it('returns to the current month from the control between the arrows', () => {
-    const previous = header.indexOf('aria-label="Previous month"')
-    const home = header.indexOf('onClick={() => onGoTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}')
-    const next = header.indexOf('aria-label="Next month"')
+    const previous = header.indexOf("aria-label={t('grid.previousMonth')}")
+    const home = header.indexOf(
+      'onClick={() => onGoTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}',
+    )
+    const next = header.indexOf("aria-label={t('grid.nextMonth')}")
     expect(home).toBeGreaterThan(previous)
     expect(next).toBeGreaterThan(home)
   })

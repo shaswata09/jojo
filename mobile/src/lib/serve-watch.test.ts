@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
+import type { HandoffOutcome } from '@jojo/service/core/handoff'
 import type { PullServing } from '@jojo/service/core/handoff-pull'
 import { createServeWatch } from '@/lib/serve-watch'
 
@@ -15,16 +16,22 @@ const serving = (over: Partial<PullServing> = {}): PullServing => ({
   ...over,
 })
 
-function rig(states: PullServing[]) {
+function rig(states: PullServing[], told: () => HandoffOutcome = () => 'applied') {
   let i = 0
   let clock = 0
   const stop = vi.fn()
-  const report = { onProgress: vi.fn(), onFinished: vi.fn(), onFailed: vi.fn() }
+  const report = {
+    onProgress: vi.fn(),
+    onFinished: vi.fn(),
+    onFailed: vi.fn(),
+    onOutcome: vi.fn(),
+  }
   const tick = createServeWatch(
-    { progress: () => states[Math.min(i++, states.length - 1)]!, stop },
+    { progress: () => states[Math.min(i++, states.length - 1)]!, outcome: told, stop },
     report,
     () => clock,
     1000,
+    60_000,
   )
   return { tick, stop, report, advance: (ms: number) => (clock += ms) }
 }
@@ -68,5 +75,45 @@ describe('watching a phone that is sending', () => {
     const r = rig([serving({ served: 1, chunks: 3 })])
     r.tick()
     expect(r.report.onProgress).toHaveBeenLastCalledWith(1, 3)
+  })
+})
+
+describe('waiting for the computer to say what its person did', () => {
+  const done = [serving({ served: 2, chunks: 2, finished: true })]
+
+  it('keeps listening while the computer has not answered, and reports nothing yet', () => {
+    const r = rig(done, () => 'pending')
+    r.tick()
+    r.advance(30_000)
+    r.tick()
+    expect(r.report.onFinished).toHaveBeenCalledOnce()
+    expect(r.report.onOutcome).not.toHaveBeenCalled()
+    expect(r.stop).not.toHaveBeenCalled()
+  })
+
+  it('reports the answer once when it comes, then closes after the grace', () => {
+    let answer: HandoffOutcome = 'pending'
+    const r = rig(done, () => answer)
+    r.tick()
+    answer = 'declined'
+    r.tick()
+    r.tick()
+    expect(r.report.onOutcome).toHaveBeenCalledOnce()
+    expect(r.report.onOutcome).toHaveBeenCalledWith('declined')
+    expect(r.stop).not.toHaveBeenCalled()
+    r.advance(1000)
+    r.tick()
+    expect(r.stop).toHaveBeenCalledOnce()
+  })
+
+  it('gives up on a computer that never answers, as unknown, and closes', () => {
+    const r = rig(done, () => 'pending')
+    r.tick()
+    r.advance(60_000)
+    r.tick()
+    expect(r.report.onOutcome).toHaveBeenCalledWith('unknown')
+    r.advance(1000)
+    r.tick()
+    expect(r.stop).toHaveBeenCalledOnce()
   })
 })

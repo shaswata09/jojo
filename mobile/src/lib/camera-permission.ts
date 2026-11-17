@@ -25,6 +25,7 @@
  */
 
 import { PermissionsAndroid, Platform } from 'react-native'
+import { i18next } from '@/i18n/i18n'
 
 export type CameraAccess =
   /** Usable now. */
@@ -45,11 +46,10 @@ export async function ensureCamera(): Promise<CameraAccess> {
   if (await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.CAMERA)) return 'granted'
 
   const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
-    title: 'Read the pairing code',
-    message:
-      'jojo needs the camera to read the code shown on your other device. Nothing is recorded, and no image leaves this phone.',
-    buttonPositive: 'Allow',
-    buttonNegative: 'Not now',
+    title: i18next.t('transfer:camera.rationale.title'),
+    message: i18next.t('transfer:camera.rationale.message'),
+    buttonPositive: i18next.t('transfer:camera.rationale.allow'),
+    buttonNegative: i18next.t('transfer:camera.rationale.notNow'),
   })
 
   if (result === PermissionsAndroid.RESULTS.GRANTED) return 'granted'
@@ -59,9 +59,9 @@ export async function ensureCamera(): Promise<CameraAccess> {
   return 'denied'
 }
 
-/** What to say, and whether offering a retry would be honest. */
-export const CAMERA_REFUSED: Record<Exclude<CameraAccess, 'granted'>, string> = {
-  denied: 'jojo needs the camera to read the code on your other device.',
-  blocked:
-    'The camera is turned off for jojo. Turn it on in your phone’s Settings, under Apps, to pair by scanning.',
-}
+/**
+ * What to say, and whether offering a retry would be honest — in the
+ * language on screen when it is said (`camera.refused.<access>`).
+ */
+export const cameraRefused = (access: Exclude<CameraAccess, 'granted'>): string =>
+  i18next.t(`transfer:camera.refused.${access}`)

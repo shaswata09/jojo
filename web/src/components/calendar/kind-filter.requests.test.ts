@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import calendarEn from '@/i18n/locales/en/calendar.json'
 import { KIND_LEGEND, kindToReveal, shownKinds } from './kind-filter'
 import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { toggledIn } from '@/lib/use-series-toggle'
@@ -76,18 +77,26 @@ describe('the calendar event-type legend (Q052)', () => {
     expect(grid).toMatch(
       /<ChartLegend items=\{KIND_LEGEND\} isHidden=\{kinds\.isHidden\} onToggle=\{kinds\.toggle\} \/>/,
     )
-    const types = grid.indexOf('>Event types</span>')
-    const colours = grid.indexOf('>Date colours</span>')
+    const types = grid.indexOf(">{t('grid.eventTypes')}</span>")
+    const colours = grid.indexOf(">{t('grid.dateColours')}</span>")
+    expect(calendarEn.grid.eventTypes).toBe('Event types')
+    expect(calendarEn.grid.dateColours).toBe('Date colours')
     expect(types).toBeGreaterThan(0)
     expect(colours).toBeGreaterThan(types)
     // The date key itself is still there, with its three marks.
-    for (const label of ["label: 'Overdue'", "label: 'Due within 48 hours'", "label: 'Done'"])
-      expect(grid).toContain(label)
+    for (const key of ['overdue', 'soon', 'done'] as const)
+      expect(grid).toContain(`label: t('grid.marks.${key}')`)
+    expect(calendarEn.grid.marks).toEqual({
+      overdue: 'Overdue',
+      soon: 'Due within 48 hours',
+      done: 'Done',
+    })
   })
 
   it('says a day is hidden rather than empty when every event on it is switched off', () => {
     expect(rail).toMatch(/events\.length === 0 && hiddenOnDay > 0 \?/)
-    expect(rail).toContain('Show all event types')
+    expect(rail).toContain("t('rail.showAllTypes')")
+    expect(calendarEn.rail.showAllTypes).toBe('Show all event types')
   })
 })
 

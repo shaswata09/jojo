@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Marked } from '@/components/common/Marked'
 import type { Ref } from 'react'
 import { CopyPlus, Pencil, Trash2 } from 'lucide-react'
@@ -46,6 +47,7 @@ export function SnippetCard({
   onMove: (snippet: Snippet, next: SnippetTag) => void
   onDelete: (id: string) => void
 }) {
+  const { t } = useTranslation('vault')
   return (
     <li
       ref={cardRef}
@@ -67,12 +69,12 @@ export function SnippetCard({
           <button
             type="button"
             onClick={onOpen}
-            title="Edit this snippet"
+            title={t('snippets.card.edit')}
             /* `hover:underline` as well as the colour. In the dark theme
                --accent and --text-1 are the same #fafafa (see index.css), so
                the colour change alone painted nothing and the only thing left
                saying this was a control was the cursor. */
-            className="block max-w-full cursor-pointer truncate text-left text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
+            className="block max-w-full cursor-pointer truncate text-start text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
           >
             {s.title}
           </button>
@@ -107,15 +109,15 @@ export function SnippetCard({
         </Button>
         <RowMenu name={s.title}>
           <MenuItem icon={Pencil} onSelect={onOpen}>
-            Edit
+            {t('common.edit')}
           </MenuItem>
           <MenuItem icon={CopyPlus} onSelect={() => onDuplicate(s)}>
-            Duplicate
+            {t('common.duplicate')}
           </MenuItem>
-          <MenuSection title="Move to">
-            {SNIPPET_TAGS.map((t) => (
-              <MenuItem key={t} current={t === s.tag} onSelect={() => onMove(s, t)}>
-                {t}
+          <MenuSection title={t('snippets.card.moveTo')}>
+            {SNIPPET_TAGS.map((tag) => (
+              <MenuItem key={tag} current={tag === s.tag} onSelect={() => onMove(s, tag)}>
+                {tag}
               </MenuItem>
             ))}
           </MenuSection>
@@ -123,7 +125,7 @@ export function SnippetCard({
             {/* Snippets had no delete at all before this — the only
                 way to remove one was to open the editor. */}
             <MenuItem icon={Trash2} danger onSelect={() => onDelete(s.id)}>
-              Delete
+              {t('common.delete')}
             </MenuItem>
           </MenuSection>
         </RowMenu>

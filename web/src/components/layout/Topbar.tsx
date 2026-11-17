@@ -1,5 +1,6 @@
 import type { RefObject } from 'react'
 import { NavLink } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { CircleHelp, Menu, Search, Settings, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
@@ -9,7 +10,13 @@ import { SpotlightSearch } from '@/components/layout/SpotlightSearch'
 import { useSpotlight } from '@/lib/use-spotlight'
 import { cn } from '@/lib/utils'
 
+/**
+ * `label` is the English name, kept as the guided tour's mark (`top:Settings`).
+ * What the reader sees is `layout:topbar.links.<path>`, translated at render.
+ */
 type UtilityLink = { to: string; label: string; icon: LucideIcon }
+
+const textKey = (to: string) => `topbar.links.${to.slice(1)}`
 
 /**
  * Account and support destinations. They live here rather than in the sidebar
@@ -46,6 +53,7 @@ export function Topbar({
   onOpenNav: () => void
   navButtonRef: RefObject<HTMLButtonElement | null>
 }) {
+  const { t } = useTranslation('layout')
   const spotlight = useSpotlight()
 
   return (
@@ -57,7 +65,7 @@ export function Topbar({
         ref={navButtonRef}
         type="button"
         onClick={onOpenNav}
-        aria-label="Open navigation"
+        aria-label={t('topbar.openNav')}
         className={cn(
           iconButton,
           'border-hairline bg-well text-text-2 hover:text-text-1 lg:hidden',
@@ -73,10 +81,10 @@ export function Topbar({
         type="button"
         onClick={() => spotlight.setOpen(true)}
         data-tour="search"
-        className="order-last flex h-8 w-full min-w-0 items-center gap-2 rounded-md border border-hairline bg-well px-2.5 text-left text-sm text-text-3 transition-colors hover:border-hairline-strong hover:text-text-2 sm:order-none sm:w-auto sm:flex-1"
+        className="order-last flex h-8 w-full min-w-0 items-center gap-2 rounded-md border border-hairline bg-well px-2.5 text-start text-sm text-text-3 transition-colors hover:border-hairline-strong hover:text-text-2 sm:order-none sm:w-auto sm:flex-1"
       >
         <Search className="size-4 shrink-0" strokeWidth={1.7} aria-hidden />
-        <span className="min-w-0 flex-1 truncate">Search applications, reminders, events…</span>
+        <span className="min-w-0 flex-1 truncate">{t('topbar.search')}</span>
         <kbd className="hidden shrink-0 rounded-sm border border-hairline bg-panel px-1.5 py-0.5 font-mono text-xs text-text-3 sm:inline">
           ⌘K
         </kbd>
@@ -100,7 +108,7 @@ export function Topbar({
           now read `useScopedApplications`, so they follow the same selection
           the Applications list does. One selection (`RolesProvider`), shown
           once, here. */}
-      <div className="ml-auto flex items-center gap-2 sm:ml-0">
+      <div className="ms-auto flex items-center gap-2 sm:ms-0">
         <RoleFilter />
         <NewMenu />
       </div>
@@ -108,15 +116,15 @@ export function Topbar({
       {/* Three groups, hairline-separated: account and support · assistant ·
           appearance. The rules stop eight adjacent icons reading as one
           undifferentiated strip. */}
-      <nav aria-label="Account and support" className="flex items-center gap-1.5">
+      <nav aria-label={t('topbar.accountNav')} className="flex items-center gap-1.5">
         <Divider />
 
         {ACCOUNT.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
-            title={label}
-            aria-label={label}
+            title={t(textKey(to))}
+            aria-label={t(textKey(to))}
             data-tour={`top:${label}`}
             className={({ isActive }) =>
               cn(
@@ -137,8 +145,8 @@ export function Topbar({
           <NavLink
             key={to}
             to={to}
-            title={label}
-            aria-label={label}
+            title={t(textKey(to))}
+            aria-label={t(textKey(to))}
             data-tour={`top:${label}`}
             className={({ isActive }) =>
               cn(
@@ -159,8 +167,8 @@ export function Topbar({
           <NavLink
             key={to}
             to={to}
-            title={label}
-            aria-label={label}
+            title={t(textKey(to))}
+            aria-label={t(textKey(to))}
             data-tour={`top:${label}`}
             className={({ isActive }) =>
               cn(

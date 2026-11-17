@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FORMATS, OUTCOMES } from '@jojo/service/core/transition-options'
 import type { Format } from '@jojo/service/core/transition-options'
 import { Field, FormField, SettingRow } from '@/components/common/Field'
@@ -6,8 +7,8 @@ import { RichNoteField } from '@/components/common/RichTextEditorField'
 import { Segment } from '@/components/common/Segment'
 import { Switch } from '@/components/ui/switch'
 import type { Application, Outcome } from '@/data/seed'
-import { shortDate } from '@/data/timeline'
 import { TODAY } from '@/lib/today'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The field block each destination carries, one component per stage.
@@ -30,28 +31,29 @@ export function SubmittedFields({
   reference: string
   onReferenceChange: (next: string) => void
 }) {
+  const { t } = useTranslation('applications')
   return (
     <>
       <Field
-        label="Submitted on"
+        label={t('transition.submittedOn')}
         type="date"
         value={date}
         required
         onChange={(e) => onDateChange(e.target.value)}
       />
       <Field
-        label="Portal URL"
+        label={t('transition.portalUrl')}
         type="url"
         mono
         placeholder="https://"
         value={portalUrl}
-        hint="Where the application lives, for when you need to chase it."
+        hint={t('transition.portalHint')}
         onChange={(e) => onPortalUrlChange(e.target.value)}
       />
       <Field
-        label="Confirmation reference"
+        label={t('transition.confirmationRef')}
         mono
-        placeholder="e.g. 4471-QZ"
+        placeholder={t('transition.confirmationPlaceholder')}
         value={reference}
         onChange={(e) => onReferenceChange(e.target.value)}
       />
@@ -74,32 +76,34 @@ export function InterviewFields({
   mintInterview: boolean
   onMintInterviewChange: (next: boolean) => void
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   return (
     <>
       <Field
-        label="Interview date"
+        label={t('transition.interviewDate')}
         type="date"
         value={date}
         required
         onChange={(e) => onDateChange(e.target.value)}
       />
-      <FormField label="Format">
+      <FormField label={t('transition.format')}>
         <Segment
-          label="Interview format"
-          options={FORMATS}
+          label={t('transition.interviewFormat')}
+          options={FORMATS.map((o) => ({ value: o.value, label: domain.format(o.value) }))}
           value={format}
           onChange={onFormatChange}
           className="w-fit"
         />
       </FormField>
       <SettingRow
-        label="Add it to the timeline"
-        description="Creates an interview entry on that date, with a reminder."
+        label={t('transition.addToTimeline')}
+        description={t('transition.addToTimelineHint')}
         control={
           <Switch
             checked={mintInterview}
             onCheckedChange={onMintInterviewChange}
-            aria-label="Add it to the timeline"
+            aria-label={t('transition.addToTimeline')}
           />
         }
       />
@@ -130,38 +134,39 @@ export function OfferFields({
   mintRespondBy: boolean
   onMintRespondByChange: (next: boolean) => void
 }) {
+  const { t } = useTranslation('applications')
   return (
     <>
       <Field
-        label="Respond by"
+        label={t('transition.respondBy')}
         type="date"
         value={respondBy}
         required
         onChange={(e) => onRespondByChange(e.target.value)}
       />
       <Field
-        label="Package"
-        placeholder="e.g. $112k + $15k startup"
+        label={t('transition.package')}
+        placeholder={t('transition.packagePlaceholder')}
         value={offerComp}
         onChange={(e) => onOfferCompChange(e.target.value)}
       />
       {/* The rich text editor, so the offer's note keeps its formatting the
           way the application's own note does (Q268). */}
       <RichNoteField
-        label="Note"
-        placeholder="What is still being negotiated"
+        label={t('transition.note')}
+        placeholder={t('transition.notePlaceholder')}
         text={offerNote}
         format={offerNoteFormat}
         onChange={onOfferNoteChange}
       />
       <SettingRow
-        label="Add the deadline to the timeline"
-        description="A respond-by date with nothing watching it is the one deadline you cannot afford to miss."
+        label={t('transition.addDeadline')}
+        description={t('transition.addDeadlineHint')}
         control={
           <Switch
             checked={mintRespondBy}
             onCheckedChange={onMintRespondByChange}
-            aria-label="Add the deadline to the timeline"
+            aria-label={t('transition.addDeadline')}
           />
         }
       />
@@ -177,9 +182,11 @@ export function ClosedFields({
   onOutcomeChange: (next: Outcome) => void
 }) {
   const outcomeId = useId()
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
 
   return (
-    <FormField label="Outcome" htmlFor={outcomeId} required>
+    <FormField label={t('transition.outcome')} htmlFor={outcomeId} required>
       {/* A native select: five options is past what a segmented control
           can hold without wrapping, and this one is keyboard-complete
           and screen-reader-complete for free. */}
@@ -191,7 +198,7 @@ export function ClosedFields({
       >
         {OUTCOMES.map((o) => (
           <option key={o.value} value={o.value}>
-            {o.label}
+            {domain.outcome(o.value)}
           </option>
         ))}
       </select>
@@ -209,17 +216,22 @@ export function KeepOfferRow({
   keepOffer: boolean
   onKeepOfferChange: (next: boolean) => void
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
+  const date = domain.shortDate(offer?.respondBy ?? TODAY)
   return (
     <SettingRow
-      label="Keep the offer details"
-      description={`Respond by ${shortDate(offer?.respondBy ?? TODAY)}${
-        offer?.comp ? ` · ${offer.comp}` : ''
-      }. Turn this off to clear them.`}
+      label={t('transition.keepOffer')}
+      description={
+        offer?.comp
+          ? t('transition.keepOfferHintComp', { date, comp: offer.comp })
+          : t('transition.keepOfferHint', { date })
+      }
       control={
         <Switch
           checked={keepOffer}
           onCheckedChange={onKeepOfferChange}
-          aria-label="Keep the offer details"
+          aria-label={t('transition.keepOffer')}
         />
       }
     />

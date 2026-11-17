@@ -28,8 +28,20 @@
  * a way around the first one.
  */
 
-import { MAX_BODY_BYTES, chunkPath, pairPath, pullPath } from '@jojo/service/core/handoff'
+import {
+  MAX_BODY_BYTES,
+  chunkPath,
+  openOutcome,
+  outcomePath,
+  pairPath,
+  pullPath,
+  sealOutcome,
+  type HandoffOutcome,
+} from '@jojo/service/core/handoff'
+import type { SessionKeys } from '@jojo/service/core/pairing'
+import type { Secrets } from '@jojo/service/core/secrets'
 import { formatAddress, isPrivateAddress, type DialAddress } from '@jojo/service/core/dial'
+import { i18next } from '@/i18n/i18n'
 
 export type HandoffFailure =
   /** This browser cannot reach a local address at all. */
@@ -300,23 +312,59 @@ export const pullChunk = (
     body: request as BodyInit,
   })
 
-/** What to tell the person, per failure. */
-export const HANDOFF_ADVICE: Record<HandoffFailure, string> = {
-  'handoff/unsupported':
-    'This browser cannot connect to another device on your network — Safari cannot, no browser on an iPhone or iPad can, and Firefox cannot from the published site. Use Chrome or Edge on a computer, or move your records with a backup file instead.',
-  'handoff/not-local':
-    'That address is not on a local network. jojo only connects to a private address, so the transfer never crosses the internet.',
-  'handoff/unreachable':
-    'No answer from that address. Check both devices are on the same local network, and that your browser was allowed to find devices on the local network. Some guest networks block devices from seeing each other.',
-  'handoff/refused':
-    'That device refused the connection. Check the phone is set the other way round — Receive on the phone when this computer sends, Send when it receives — then show a new code and scan it again.',
-  'handoff/oversized':
-    'That device answered with far more than jojo expects, so it stopped reading. Nothing on this computer has changed.',
-  'handoff/timeout':
-    'That device stopped answering. Keep jojo open on the phone with the screen on, then show a new code and try again.',
-  'handoff/blocked':
-    'Your browser has blocked this site from reaching devices on your local network. Allow it in the site settings (the icon left of the address), then try again.',
-  'handoff/cancelled': 'Cancelled.',
-  'handoff/conflict':
-    'Your phone could not gather its records to send. Check the message on the phone — nothing on this computer has changed.',
+/**
+ * Asks a receiving phone what its person did with what this computer sent.
+ *
+ * A GET with no body — the phone received, so it is the one that knows. The
+ * answer is one byte under the phone's proof (`core/handoff.ts`
+ * `sealOutcome`); anything else, a forged answer included, is not an answer.
+ */
+export async function fetchOutcome(
+  address: DialAddress,
+  token: string,
+  secrets: Secrets,
+  keys: SessionKeys,
+  cancel?: AbortSignal,
+): Promise<HandoffResult<HandoffOutcome>> {
+  const got = await call(address, outcomePath(token), { timeoutMs: PAIR_TIMEOUT_MS, cancel })
+  if (!got.ok) return got
+  const outcome = await openOutcome(secrets, keys, got.value, 'push')
+  return outcome === null ? { ok: false, error: 'handoff/refused' } : { ok: true, value: outcome }
 }
+
+/**
+ * Tells a sending phone what this computer's person did with its records, so
+ * the phone stamps a handover only if they were taken. One byte under this
+ * session's proof, so nothing that only saw the URL can say it first; a POST
+ * for the same preflight reason as a chunk.
+ */
+export const tellOutcome = async (
+  address: DialAddress,
+  token: string,
+  secrets: Secrets,
+  keys: SessionKeys,
+  outcome: Exclude<HandoffOutcome, 'pending'>,
+): Promise<HandoffResult<Uint8Array>> =>
+  call(address, outcomePath(token), {
+    timeoutMs: PAIR_TIMEOUT_MS,
+    method: 'POST',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: (await sealOutcome(secrets, keys, outcome, 'pull')) as BodyInit,
+  })
+
+/** Where each failure's sentence sits in the catalog, under `advice.handoff`. */
+const HANDOFF_ADVICE_KEY: Record<HandoffFailure, string> = {
+  'handoff/unsupported': 'unsupported',
+  'handoff/not-local': 'notLocal',
+  'handoff/unreachable': 'unreachable',
+  'handoff/refused': 'refused',
+  'handoff/oversized': 'oversized',
+  'handoff/timeout': 'timeout',
+  'handoff/blocked': 'blocked',
+  'handoff/cancelled': 'cancelled',
+  'handoff/conflict': 'conflict',
+}
+
+/** What to tell the person, per failure — in the language on screen when it is said. */
+export const handoffAdvice = (failure: HandoffFailure): string =>
+  i18next.t(`transfer:advice.handoff.${HANDOFF_ADVICE_KEY[failure]}`)

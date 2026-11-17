@@ -1,0 +1,160 @@
+{
+  "common": {
+    "title": "Assistant",
+    "undo": "Undo",
+    "nothingAsked": "Nothing asked yet",
+    "askLabel": "Ask the assistant",
+    "saveToSnippets": "Save to snippets",
+    "savedToSnippets": "Saved to snippets",
+    "filedUnder": "{{title}} · filed under {{tag}}",
+    "openVault": "Open vault",
+    "copyBlocked": "Copy was blocked by the browser",
+    "copied": "Reply copied",
+    "newConversation": "New conversation"
+  },
+  "header": {
+    "subtitle": "Connected to your model, and able to act on your records. Everything it does is listed as it happens.",
+    "clear": "Clear",
+    "connected_one": "Answers come from <mono>{{model}}</mono> at <mono>{{endpoint}}</mono>, which can call <tools>{{count}} tool</tools> on this device. Nothing is sent anywhere else.",
+    "connected_other": "Answers come from <mono>{{model}}</mono> at <mono>{{endpoint}}</mono>, which can call <tools>{{count}} tools</tools> on this device. Nothing is sent anywhere else."
+  },
+  "composer": {
+    "send": "Send",
+    "typeFirst": "Type a message first",
+    "stop": "Stop",
+    "stopTitle": "Stop the agent"
+  },
+  "approval": {
+    "waiting": "{{title}} — waiting for you",
+    "askedBy": "Asked by {{name}}. Nothing has changed yet.",
+    "askedByUnnamed": "Asked by a conversation. Nothing has changed yet.",
+    "decline": "Don’t",
+    "allow": "Allow"
+  },
+  "scripted": {
+    "subtitle": "Worked examples now. Connect a local model and it both drafts from your own records and acts on them.",
+    "clear": "Clear conversation",
+    "notConnected": "No model is connected, so every reply below is a worked example rather than an answer. Point jojo at a local OpenAI-compatible server — vLLM, Ollama or LM Studio — in <settings>Settings</settings>.",
+    "emptyDescription": "Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model’s answer.",
+    "placeholder": "Ask about a cover letter, a follow-up email, an interview…",
+    "footer": "With a model connected each of these reads your profile and documents as context. Because inference is local, your CV and your notes are never uploaded anywhere.",
+    "badge": "Example response · no model connected",
+    "cleared": "Conversation cleared",
+    "messages_one": "{{count}} message",
+    "messages_other": "{{count}} messages"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Draft a cover letter",
+      "title": "Cover letter — structure",
+      "reply": "Here is the shape I would use for [DEPARTMENT]:\n\nParagraph 1 — what you work on, in one sentence a committee member outside your area can follow.\nParagraph 2 — the two results that make the case, each given with its consequence rather than its method.\nParagraph 3 — why this department: the group you would overlap with, and the course you would teach.\nParagraph 4 — availability, and what the first three years would look like.\n\nKeep it to one page. The committee reads forty of these in an evening."
+    },
+    "tailorCv": {
+      "action": "Tailor my CV to a posting",
+      "title": "Tailoring a CV — three passes",
+      "reply": "Three passes, in this order:\n\n1. Cut what the ad does not ask for. A CV tailored to everything is tailored to nothing.\n2. Move the section the ad leads with to the top of page one — a teaching-heavy ad wants teaching above publications.\n3. Rewrite the headline in the ad's own words, without overstating the scope of the work.\n\nWhat survives untouched: publications, references, dates. Those are the parts a committee checks."
+    },
+    "parsePosting": {
+      "action": "Parse a job posting",
+      "title": "What to pull out of a posting",
+      "reply": "From an ad I would pull out: employer, role, deadline, the documents required, the named contact, and anything phrased as a hard requirement rather than a preference.\n\nThe last one is where applications are lost — \"must hold the degree by the start date\" is a filter, \"experience with large-scale systems desirable\" is not.\n\nJob scout already does the cheap half of this without a model: save the URL there and it keeps the link and guesses the employer from it."
+    },
+    "followUp": {
+      "action": "Draft a follow-up email",
+      "title": "Follow-up after no response",
+      "reply": "Subject: Following up — [ROLE], [DEPARTMENT]\n\nDear [NAME],\n\nI applied for [ROLE] on [DATE] and wanted to check the committee has everything it needs from me. I am happy to send the outstanding reference letter directly if that is easier.\n\nI remain very interested in the position, and I am glad to answer anything by email.\n\nWith thanks,\n[YOUR NAME]"
+    },
+    "interview": {
+      "action": "Prepare me for an interview",
+      "title": "Interview — six questions to have answered",
+      "reply": "Six questions worth having an answer to before the day:\n\n— What is the work about, in ninety seconds, to someone outside your area?\n— What would your first grant be, and to which agency?\n— Which two courses could you teach next semester at no notice?\n— Who here would you collaborate with, and on what?\n— What is the weakness in your own result?\n— What do you need in year one to do the work?\n\nWrite the answers out longhand. The rehearsal is the point, not the notes."
+    },
+    "fallback": {
+      "title": "Assistant — example response",
+      "reply": "No model is connected, so this is a canned answer rather than a reply to what you typed.\n\nWith one connected, this page would read your profile, the documents in your Vault and the application you name, then draft against them on your own machine. Point jojo at a local OpenAI-compatible server in Settings — vLLM, Ollama or LM Studio.\n\nClear the conversation to see the worked examples again."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "What am I waiting on?",
+      "add": "Add an application: ML engineer at Stripe, submitted",
+      "noDeadline": "Which applications have no deadline?",
+      "flag": "Flag my UT Austin application"
+    },
+    "emptyDescription": "Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back.",
+    "placeholder": "Find my UT Austin application, or add one, or move it to interview…"
+  },
+  "threadBar": {
+    "titleLabel": "Conversation title",
+    "saveTitle": "Save the title",
+    "cancel": "Cancel",
+    "rename": "Rename this conversation",
+    "changeJob": "Change job",
+    "fileUnder": "File under a job",
+    "approval": "Approval",
+    "approvalLabel": "How much this conversation may do without asking",
+    "delete": "Delete"
+  },
+  "threads": {
+    "deleted": "Conversation deleted"
+  },
+  "threadList": {
+    "title": "Conversations",
+    "kept_one": "{{count}} kept here",
+    "kept_other": "{{count}} kept here",
+    "noJob": "Not about a job yet",
+    "searchLabel": "Search conversations",
+    "searchPlaceholder": "Search what was said",
+    "clearSearch": "Clear search",
+    "noMention": "No mention of that",
+    "mentionsIn": "{{mentions}} in {{conversations}}",
+    "mentions_one": "{{count}} mention",
+    "mentions_other": "{{count}} mentions",
+    "conversationCount_one": "{{count}} conversation",
+    "conversationCount_other": "{{count}} conversations",
+    "empty": "Nothing yet. Ask something and it is kept here, on this device.",
+    "noResults": "Nothing mentions “{{query}}”. This searches every conversation, not just their names.",
+    "working": "Working…",
+    "matches_one": "{{count}} match",
+    "matches_other": "{{count}} matches",
+    "questions_one": "{{count}} question",
+    "questions_other": "{{count}} questions"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Nothing to undo — it has changed since",
+      "alreadyUndone": "Already undone",
+      "outOfReach": "Too far back to undo from here",
+      "undone": "Undone"
+    },
+    "thinking": "Thinking…",
+    "thought": "Thought"
+  },
+  "trace": {
+    "status": {
+      "running": "Running",
+      "done": "Done",
+      "failed": "Failed",
+      "declined": "Declined"
+    },
+    "effect": {
+      "read": "read",
+      "unknown": "no such tool",
+      "create": "added",
+      "update": "changed",
+      "move": "moved",
+      "delete": "deleted",
+      "admin": "store"
+    },
+    "approvalNeeded": "Approval needed: {{title}}",
+    "asked": "The agent asked to do this. Nothing has changed yet.",
+    "declineAria": "Don’t: {{title}}",
+    "allowAria": "Allow: {{title}}",
+    "arguments": "Arguments",
+    "result": "Result",
+    "undoStep": "Undo this step",
+    "cannotUndo": "This step cannot be undone from here. Settings → Records keeps a log of what changed and can reverse the most recent one.",
+    "truncated": "Cut short — the agent was told to narrow the search to see the rest.",
+    "working": "Working — {{model}} is deciding what to do…"
+  }
+}

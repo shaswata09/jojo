@@ -1,0 +1,157 @@
+{
+  "days_one": "{{count}} dia",
+  "days_many": "{{count}} dias",
+  "days_other": "{{count}} dias",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Coloque mais do seu esforço em {{label}}.",
+      "because": {
+        "source": {
+          "replied_one": "{{count}} de {{of}} teve resposta por esse caminho ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por origem.",
+          "replied_many": "{{count}} de {{of}} tiveram resposta por esse caminho ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por origem.",
+          "replied_other": "{{count}} de {{of}} tiveram resposta por esse caminho ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por origem.",
+          "interview_one": "{{count}} de {{of}} chegou a uma entrevista por esse caminho ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por origem.",
+          "interview_many": "{{count}} de {{of}} chegaram a uma entrevista por esse caminho ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por origem.",
+          "interview_other": "{{count}} de {{of}} chegaram a uma entrevista por esse caminho ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por origem."
+        },
+        "role": {
+          "replied_one": "{{count}} de {{of}} teve resposta nesse tipo de vaga ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por tipo de vaga.",
+          "replied_many": "{{count}} de {{of}} tiveram resposta nesse tipo de vaga ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por tipo de vaga.",
+          "replied_other": "{{count}} de {{of}} tiveram resposta nesse tipo de vaga ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por tipo de vaga.",
+          "interview_one": "{{count}} de {{of}} chegou a uma entrevista nesse tipo de vaga ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por tipo de vaga.",
+          "interview_many": "{{count}} de {{of}} chegaram a uma entrevista nesse tipo de vaga ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por tipo de vaga.",
+          "interview_other": "{{count}} de {{of}} chegaram a uma entrevista nesse tipo de vaga ({{rate}}%, provavelmente entre {{low}}% e {{high}}%), contra {{worstCount}} de {{worstOf}} em {{worst}} ({{worstRate}}%, provavelmente entre {{worstLow}}% e {{worstHigh}}%). Dividido por tipo de vaga."
+        }
+      }
+    },
+    "late": {
+      "headline_one": "Resolva {{count}} acompanhamento atrasado.",
+      "headline_many": "Resolva {{count}} acompanhamentos atrasados.",
+      "headline_other": "Resolva {{count}} acompanhamentos atrasados.",
+      "because": "São cobranças que você já decidiu que valiam a pena, em candidaturas que um empregador já viu. Nada mais nesta lista está tão perto de ser concluído."
+    },
+    "silent": {
+      "headline_one": "Cobre {{count}} candidatura que ficou em silêncio.",
+      "headline_many": "Cobre {{count}} candidaturas que ficaram em silêncio.",
+      "headline_other": "Cobre {{count}} candidaturas que ficaram em silêncio.",
+      "because_one": "As respostas costumam chegar para você em {{days}}, e esta já passou disso sem retorno. É o seu próprio número, não uma regra geral.",
+      "because_many": "As respostas costumam chegar para você em {{days}}, e estas já passaram disso sem retorno. É o seu próprio número, não uma regra geral.",
+      "because_other": "As respostas costumam chegar para você em {{days}}, e estas já passaram disso sem retorno. É o seu próprio número, não uma regra geral."
+    },
+    "stale": {
+      "headline_one": "Registre o que aconteceu com {{count}} candidatura.",
+      "headline_many": "Registre o que aconteceu com {{count}} candidaturas.",
+      "headline_other": "Registre o que aconteceu com {{count}} candidaturas.",
+      "because_one": "Nada foi registrado nela em duas semanas. Cada taxa desta página só é tão boa quanto o que foi anotado.",
+      "because_many": "Nada foi registrado nelas em duas semanas. Cada taxa desta página só é tão boa quanto o que foi anotado.",
+      "because_other": "Nada foi registrado nelas em duas semanas. Cada taxa desta página só é tão boa quanto o que foi anotado."
+    },
+    "drafts": {
+      "headlineSingle": "Termine o rascunho ou descarte-o.",
+      "headline_one": "Termine o mais adiantado dos {{count}} rascunhos, ou descarte-os.",
+      "headline_many": "Termine o mais adiantado dos {{count}} rascunhos, ou descarte-os.",
+      "headline_other": "Termine o mais adiantado dos {{count}} rascunhos, ou descarte-os.",
+      "because_one": "Um rascunho não faz nada até ser enviado. O mais antigo está aberto há {{count}} dia.",
+      "because_many": "Um rascunho não faz nada até ser enviado. O mais antigo está aberto há {{count}} dias.",
+      "because_other": "Um rascunho não faz nada até ser enviado. O mais antigo está aberto há {{count}} dias."
+    },
+    "background": {
+      "headline": "Deixe o jojo ler seu currículo.",
+      "because": "Nada sobre a sua própria trajetória está registrado, então nenhuma candidatura pode ser comparada com o que uma vaga pede. É um documento e uma confirmação."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Reescreva o parágrafo de abertura antes de enviar a próxima.",
+        "because": "As respostas são onde esta busca mais perde para uma típica. {{got}} de {{of}} ({{rate}}%), contra {{typical}}% em uma busca típica — um número redondo que o jojo escolheu para comparar, não medido a partir de ninguém."
+      },
+      "interviews": {
+        "headline": "Deixe a adequação óbvia nas três primeiras linhas.",
+        "because": "Respostas que param antes de uma conversa são a maior lacuna aqui — o interesse existe e o argumento não está convencendo. {{got}} de {{of}} ({{rate}}%), contra {{typical}}% em uma busca típica — um número redondo que o jojo escolheu para comparar, não medido a partir de ninguém."
+      }
+    },
+    "clear": {
+      "headline": "Nada aqui precisa de cobrança.",
+      "because_one": "Todo acompanhamento está em dia, nada ficou em silêncio e não há rascunhos esperando. {{count}} candidatura foi enviada.",
+      "because_many": "Todo acompanhamento está em dia, nada ficou em silêncio e não há rascunhos esperando. {{count}} candidaturas foram enviadas.",
+      "because_other": "Todo acompanhamento está em dia, nada ficou em silêncio e não há rascunhos esperando. {{count}} candidaturas foram enviadas."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Enviadas",
+      "replies": "Respostas",
+      "interviews": "Entrevistas",
+      "referrals": "Indicações",
+      "followUps": "Acompanhamentos",
+      "keptMoving": "Em movimento"
+    },
+    "basis": {
+      "sent_one": "{{count}} de {{of}} saiu do rascunho",
+      "sent_many": "{{count}} de {{of}} saíram do rascunho",
+      "sent_other": "{{count}} de {{of}} saíram do rascunho",
+      "replies_one": "{{count}} de {{of}} respondeu",
+      "replies_many": "{{count}} de {{of}} responderam",
+      "replies_other": "{{count}} de {{of}} responderam",
+      "interviews_one": "{{count}} de {{of}} chegou a uma entrevista",
+      "interviews_many": "{{count}} de {{of}} chegaram a uma entrevista",
+      "interviews_other": "{{count}} de {{of}} chegaram a uma entrevista",
+      "referrals_one": "{{count}} de {{of}} veio por indicação",
+      "referrals_many": "{{count}} de {{of}} vieram por indicação",
+      "referrals_other": "{{count}} de {{of}} vieram por indicação",
+      "followUpsNone": "nada em aberto",
+      "followUps_one": "{{count}} de {{of}} acompanhamentos em aberto está atrasado",
+      "followUps_many": "{{count}} de {{of}} acompanhamentos em aberto estão atrasados",
+      "followUps_other": "{{count}} de {{of}} acompanhamentos em aberto estão atrasados",
+      "keptMovingNone": "nada ativo",
+      "keptMoving_one": "{{count}} de {{of}} com movimento nas últimas duas semanas",
+      "keptMoving_many": "{{count}} de {{of}} com movimento nas últimas duas semanas",
+      "keptMoving_other": "{{count}} de {{of}} com movimento nas últimas duas semanas"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Nada está parado em rascunho. Vale proteger o cuidado em cada uma em vez de acrescentar mais.",
+        "some_one": "{{count}} candidatura ainda está em rascunho. Um rascunho não faz nada até ser enviado, e o mais adiantado é o mais barato de terminar.",
+        "some_many": "{{count}} candidaturas ainda estão em rascunho. Um rascunho não faz nada até ser enviado, e o mais adiantado é o mais barato de terminar.",
+        "some_other": "{{count}} candidaturas ainda estão em rascunho. Um rascunho não faz nada até ser enviado, e o mais adiantado é o mais barato de terminar."
+      },
+      "replies": {
+        "nothingSent": "Nada foi enviado ainda, então não há resposta com que medir.",
+        "none_one": "{{count}} candidatura enviada, e nenhuma resposta. Esse é o passo a trabalhar antes de enviar mais — adaptar o parágrafo de abertura a cada vaga é o que mais o faz avançar.",
+        "none_many": "Nenhuma das {{count}} candidaturas enviadas teve resposta. Esse é o passo a trabalhar antes de enviar mais — adaptar o parágrafo de abertura a cada vaga é o que mais o faz avançar.",
+        "none_other": "Nenhuma das {{count}} candidaturas enviadas teve resposta. Esse é o passo a trabalhar antes de enviar mais — adaptar o parágrafo de abertura a cada vaga é o que mais o faz avançar.",
+        "all": "Toda candidatura enviada teve resposta. O que quer que o parágrafo de abertura esteja fazendo, continue.",
+        "some_one": "{{count}} de {{of}} teve retorno. Adaptar o parágrafo de abertura a cada vaga é o que mais move esse número.",
+        "some_many": "{{count}} de {{of}} tiveram retorno. Adaptar o parágrafo de abertura a cada vaga é o que mais move esse número.",
+        "some_other": "{{count}} de {{of}} tiveram retorno. Adaptar o parágrafo de abertura a cada vaga é o que mais move esse número."
+      },
+      "interviews": {
+        "noReply": "Nenhuma resposta chegou ainda, então nada teve a chance de parar antes de uma conversa.",
+        "none_one": "{{count}} resposta chegou e não virou conversa. Essa lacuna costuma vir de a adequação não estar óbvia no primeiro parágrafo.",
+        "none_many": "{{count}} respostas chegaram e nenhuma virou conversa. Essa lacuna costuma vir de a adequação não estar óbvia no primeiro parágrafo.",
+        "none_other": "{{count}} respostas chegaram e nenhuma virou conversa. Essa lacuna costuma vir de a adequação não estar óbvia no primeiro parágrafo.",
+        "some_one": "Conversas obtidas: {{interviewed}} de {{count}} resposta. Respostas que param antes disso costumam indicar que a adequação não fica óbvia cedo o bastante.",
+        "some_many": "Conversas obtidas: {{interviewed}} de {{count}} respostas. Respostas que param antes disso costumam indicar que a adequação não fica óbvia cedo o bastante.",
+        "some_other": "Conversas obtidas: {{interviewed}} de {{count}} respostas. Respostas que param antes disso costumam indicar que a adequação não fica óbvia cedo o bastante."
+      },
+      "referrals": {
+        "none": "Nenhuma veio por uma apresentação. Uma candidatura indicada tem várias vezes mais chance de resposta, então uma vale vários envios a frio.",
+        "some_one": "{{count}} de {{of}} veio por uma apresentação. É o que mais rende nesta lista e o que pior escala — por isso vale pedir antes do próximo envio a frio, e não depois.",
+        "some_many": "{{count}} de {{of}} vieram por uma apresentação. É o que mais rende nesta lista e o que pior escala — por isso vale pedir antes do próximo envio a frio, e não depois.",
+        "some_other": "{{count}} de {{of}} vieram por uma apresentação. É o que mais rende nesta lista e o que pior escala — por isso vale pedir antes do próximo envio a frio, e não depois."
+      },
+      "followUps": {
+        "none": "Nada está atrasado. Uma cobrança mais ou menos uma semana depois do envio costuma ser a que funciona.",
+        "late_one": "{{count}} acompanhamento está atrasado. Resolvê-lo costuma dar retorno mais rápido do que se candidatar a algo novo.",
+        "late_many": "{{count}} acompanhamentos estão atrasados. Resolvê-los costuma dar retorno mais rápido do que se candidatar a algo novo.",
+        "late_other": "{{count}} acompanhamentos estão atrasados. Resolvê-los costuma dar retorno mais rápido do que se candidatar a algo novo."
+      },
+      "keptMoving": {
+        "none": "Nada ficou em silêncio. Registrar o que acontece à medida que acontece é o que mantém isto honesto.",
+        "stale_one": "{{count}} candidatura ativa não teve movimento em duas semanas. Um lembrete curto custa menos do que começar em outro lugar.",
+        "stale_many": "{{count}} candidaturas ativas não tiveram movimento em duas semanas. Um lembrete curto custa menos do que começar em outro lugar.",
+        "stale_other": "{{count}} candidaturas ativas não tiveram movimento em duas semanas. Um lembrete curto custa menos do que começar em outro lugar."
+      }
+    }
+  }
+}

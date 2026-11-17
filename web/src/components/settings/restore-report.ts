@@ -15,6 +15,8 @@
  * lost are `held - nodes`, and nothing else in the outcome can stand in for it.
  */
 
+import { i18next } from '@/i18n/i18n'
+
 /** What a finished restore did, as the panel needs to describe it. */
 export type RestoreReport = {
   /** Records the file held. `RestorePlan.nodes.length`, counted before the write. */
@@ -34,7 +36,9 @@ export type RestoreSummary = {
   tone?: 'danger'
 }
 
-const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+/** A count with its noun, in the reader's language and plural rules. */
+const count = (key: 'records' | 'documents' | 'links', n: number) =>
+  i18next.t(`settings:restore.count.${key}`, { count: n })
 
 /**
  * The outcome in words, and the honest version is the interesting one.
@@ -56,32 +60,49 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
  */
 export function restoreSummary(r: RestoreReport): RestoreSummary {
   const lost = Math.max(0, r.held - r.nodes)
-  const docs = r.documents === 0 ? '' : ` and ${plural(r.documents, 'document')}`
+  // Two sentences rather than an optional clause spliced in: where "and 3
+  // documents" goes in a sentence is the language's decision, not this code's.
+  const withDocs = r.documents > 0
+  const documents = withDocs ? count('documents', r.documents) : ''
 
   if (lost > 0) {
     return {
-      title: 'Some records could not be restored',
-      description:
-        `That file held ${plural(r.held, 'record')}. ${plural(r.nodes, 'record')}${docs} ` +
-        `are on this device and ${String(lost)} could not be read — those are gone. ` +
-        'The file itself is unchanged, so a build that can read them can still restore it.',
+      title: i18next.t('settings:restore.lost.title'),
+      description: i18next.t(
+        withDocs
+          ? 'settings:restore.lost.descriptionWithDocuments'
+          : 'settings:restore.lost.description',
+        {
+          held: count('records', r.held),
+          kept: count('records', r.nodes),
+          documents,
+          lost: String(lost),
+        },
+      ),
       tone: 'danger',
     }
   }
 
   if (r.skipped > 0) {
     return {
-      title: 'Restored, without some links',
-      description:
-        `All ${plural(r.held, 'record')}${docs} are back. ${plural(r.skipped, 'link')} between them ` +
-        'could not be read, so a few documents, reminders or postings may not be filed under the ' +
-        'job they belonged to. Nothing else is missing.',
+      title: i18next.t('settings:restore.withoutLinks.title'),
+      description: i18next.t(
+        withDocs
+          ? 'settings:restore.withoutLinks.descriptionWithDocuments'
+          : 'settings:restore.withoutLinks.description',
+        { held: count('records', r.held), documents, links: count('links', r.skipped) },
+      ),
       tone: 'danger',
     }
   }
 
   return {
-    title: 'Restored',
-    description: `${plural(r.nodes, 'record')}${docs} are back, exactly as the file held them.`,
+    title: i18next.t('settings:restore.done.title'),
+    description: i18next.t(
+      withDocs
+        ? 'settings:restore.done.descriptionWithDocuments'
+        : 'settings:restore.done.description',
+      { records: count('records', r.nodes), documents },
+    ),
   }
 }

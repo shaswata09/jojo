@@ -65,7 +65,9 @@ function GroupBox({ data }: NodeProps<Node<GroupData>>) {
       title={`${group.id} — ${String(group.files)} files, ${group.lines.toLocaleString()} lines`}
     >
       <Handle type="target" position={Position.Top} className={HANDLE} />
-      <div className="truncate text-[12.5px] leading-tight font-medium text-text-1">{group.label}</div>
+      <div className="truncate text-[12.5px] leading-tight font-medium text-text-1">
+        {group.label}
+      </div>
       <div className="text-[10.5px] text-text-3 tabular-nums">
         {group.files} files · {group.lines.toLocaleString()} lines
       </div>
@@ -87,7 +89,8 @@ const NODE_TYPES = { group: GroupBox, lane: LaneLabel }
  * are set because xyflow picks between them by `disableKeyboardA11y`, the
  * opposite way round to what their names say.
  */
-const DESCRIBE_MODULE = 'Press Enter or Space to show what this module uses, what uses it, and its files.'
+const DESCRIBE_MODULE =
+  'Press Enter or Space to show what this module uses, what uses it, and its files.'
 const ARIA_LABELS = {
   'node.a11yDescription.default': DESCRIBE_MODULE,
   'node.a11yDescription.keyboardDisabled': DESCRIBE_MODULE,
@@ -104,7 +107,9 @@ export function CodeFlowGraph() {
   const { theme } = useTheme()
   const [selected, setSelected] = useState<string | null>(null)
   const [file, setFile] = useState<string | null>(null)
-  const [bands, setBands] = useState<ReadonlySet<string>>(() => new Set(['web', 'service', 'mobile']))
+  const [bands, setBands] = useState<ReadonlySet<string>>(
+    () => new Set(['web', 'service', 'mobile']),
+  )
 
   const layout = useMemo(() => layoutCodeGraph(graph), [])
   const groupById = useMemo(() => new Map(graph.groups.map((g) => [g.id, g])), [])
@@ -175,7 +180,11 @@ export function CodeFlowGraph() {
       target: c.to,
       label: c.label,
       labelStyle: { fontSize: 10 },
-      style: { stroke: 'var(--accent)', strokeDasharray: '5 4', opacity: selected === null ? 0.7 : 0.25 },
+      style: {
+        stroke: 'var(--accent)',
+        strokeDasharray: '5 4',
+        opacity: selected === null ? 0.7 : 0.25,
+      },
     })),
   ]
 
@@ -224,7 +233,9 @@ export function CodeFlowGraph() {
               }
               className={cn(
                 'pressable rounded-full border px-2.5 py-1 text-xs transition-colors',
-                on ? 'border-accent-border bg-accent-soft text-text-1' : 'border-hairline bg-well text-text-3',
+                on
+                  ? 'border-accent-border bg-accent-soft text-text-1'
+                  : 'border-hairline bg-well text-text-3',
               )}
             >
               {band.label}
@@ -232,11 +243,15 @@ export function CodeFlowGraph() {
           )
         })}
         <span className="text-xs text-text-3 tabular-nums">
-          {graph.groups.length} modules · {graph.files.length} files · {graph.edges.length} import paths
+          {graph.groups.length} modules · {graph.files.length} files · {graph.edges.length} import
+          paths
         </span>
       </div>
 
-      <div className="h-[52rem] max-h-[85vh] overflow-hidden rounded-lg border border-hairline bg-well" onKeyDown={onGraphKey}>
+      <div
+        className="h-[52rem] max-h-[85vh] overflow-hidden rounded-lg border border-hairline bg-well"
+        onKeyDown={onGraphKey}
+      >
         <ReactFlow
           // Named, so its description element is its own and not the flowchart's
           // further down the page (xyflow ids both after this; both were "1").
@@ -274,12 +289,19 @@ export function CodeFlowGraph() {
       </div>
 
       {chosen && near ? (
-        <section aria-label={`About ${chosen.label}`} className="rounded-lg border border-hairline bg-well/40 p-3.5">
+        <section
+          aria-label={`About ${chosen.label}`}
+          className="rounded-lg border border-hairline bg-well/40 p-3.5"
+        >
           <div className="flex flex-wrap items-baseline gap-2">
             <h3 className="text-sm font-medium text-text-1">{chosen.label}</h3>
             <code className="font-mono text-xs text-text-2">{chosen.id}</code>
             <Chip size="sm">{TIER_LABEL[chosen.tier]}</Chip>
-            <button type="button" className="ml-auto text-xs text-text-3 underline underline-offset-2" onClick={() => pick(null)}>
+            <button
+              type="button"
+              className="ms-auto text-xs text-text-3 underline underline-offset-2"
+              onClick={() => pick(null)}
+            >
               Clear
             </button>
           </div>
@@ -288,7 +310,7 @@ export function CodeFlowGraph() {
             <LinkList title="Used by" links={near.usedBy} onPick={pick} />
             <div className="min-w-0">
               <h4 className="mb-1.5 text-xs font-medium text-text-2">Files ({files.length})</h4>
-              <ul className="max-h-64 space-y-0.5 overflow-y-auto pr-1">
+              <ul className="max-h-64 space-y-0.5 overflow-y-auto pe-1">
                 {files.map((f) => (
                   <li key={f.path}>
                     <button
@@ -296,7 +318,7 @@ export function CodeFlowGraph() {
                       aria-pressed={file === f.path}
                       onClick={() => setFile(file === f.path ? null : f.path)}
                       className={cn(
-                        'flex w-full items-baseline justify-between gap-2 rounded px-1 text-left font-mono text-[11px] hover:bg-row-hover',
+                        'flex w-full items-baseline justify-between gap-2 rounded px-1 text-start font-mono text-[11px] hover:bg-row-hover',
                         file === f.path ? 'text-text-1' : 'text-text-2',
                       )}
                     >
@@ -317,8 +339,8 @@ export function CodeFlowGraph() {
         </section>
       ) : (
         <p className="text-xs text-text-3">
-          Pick a module to light up its imports and list its files. Arrows point from the code that imports to the code it uses;
-          dashed lines are connections that are not imports.
+          Pick a module to light up its imports and list its files. Arrows point from the code that
+          imports to the code it uses; dashed lines are connections that are not imports.
         </p>
       )}
     </div>
@@ -342,16 +364,19 @@ function LinkList({
       {links.length === 0 ? (
         <p className="text-xs text-text-3">Nothing.</p>
       ) : (
-        <ul className="max-h-64 space-y-0.5 overflow-y-auto pr-1">
+        <ul className="max-h-64 space-y-0.5 overflow-y-auto pe-1">
           {links.map((l) => (
             <li key={l.id}>
               <button
                 type="button"
                 onClick={() => onPick(l.id)}
-                className="flex w-full items-baseline justify-between gap-2 rounded px-1 text-left text-xs text-text-2 hover:bg-row-hover hover:text-text-1"
+                className="flex w-full items-baseline justify-between gap-2 rounded px-1 text-start text-xs text-text-2 hover:bg-row-hover hover:text-text-1"
               >
                 <span className="truncate font-mono text-[11px]">{l.id}</span>
-                <span className="shrink-0 text-text-3 tabular-nums" title={`${String(l.count)} imports`}>
+                <span
+                  className="shrink-0 text-text-3 tabular-nums"
+                  title={`${String(l.count)} imports`}
+                >
                   {l.count}
                 </span>
               </button>
@@ -372,7 +397,7 @@ function PathList({ title, paths }: { title: string; paths: readonly string[] })
       {paths.length === 0 ? (
         <p className="text-xs text-text-3">Nothing.</p>
       ) : (
-        <ul className="max-h-48 space-y-0.5 overflow-y-auto pr-1">
+        <ul className="max-h-48 space-y-0.5 overflow-y-auto pe-1">
           {paths.map((p) => (
             <li key={p} className="truncate font-mono text-[11px] text-text-2" title={p}>
               {p}

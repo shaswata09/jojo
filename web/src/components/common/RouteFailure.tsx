@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { TriangleAlert } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
@@ -20,17 +21,18 @@ import { dashboardPath } from '@/lib/links'
  * What it can say truthfully is that this failure was in the drawing.
  */
 export function RouteFailure() {
+  const { t } = useTranslation()
   return (
     <>
-      <PageHeader title="This page did not load" subtitle="The rest of jojo is still running." />
+      <PageHeader title={t('routeFailure.title')} subtitle={t('routeFailure.subtitle')} />
       <Panel>
         <EmptyState
           icon={TriangleAlert}
-          title="Something in this view broke"
-          description="Going somewhere else and coming back will reload it. If it happens every time, the records this page draws are the place to look — Settings has a backup you can take first."
+          title={t('routeFailure.emptyTitle')}
+          description={t('routeFailure.emptyDescription')}
           action={
             <Button size="sm" asChild>
-              <Link to={dashboardPath()}>Back to the dashboard</Link>
+              <Link to={dashboardPath()}>{t('routeFailure.back')}</Link>
             </Button>
           }
         />

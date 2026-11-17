@@ -22,12 +22,16 @@ import {
   Radar,
 } from 'lucide-react'
 import { NavLink } from 'react-router'
+import { useTranslation } from 'react-i18next'
 
 type Badge = { text: string; tone: 'red' | 'amber' | 'accent'; title: string }
 
 type NavEntry = {
   to: string
+  /** The English name, kept as the guided tour's mark (`nav:Applications`). */
   label: string
+  /** What the reader sees, in their language. */
+  text: string
   icon: LucideIcon
   badge?: Badge
 }
@@ -63,6 +67,7 @@ function useNavEntries(): NavEntry[] {
   const { all } = useApplications()
   const { reminders, thisWeek } = useTimeline()
   const { matches } = useScout()
+  const { t } = useTranslation('layout')
 
   const flagged = all.filter((a) => a.flagged).length
   const overdue = reminders.filter((r) => !r.completedOn && bucketOf(r, TODAY) === 'overdue').length
@@ -72,44 +77,54 @@ function useNavEntries(): NavEntry[] {
   const fresh = matches.filter((m) => !m.applicationId).length
 
   return [
-    { to: dashboardPath(), label: 'Dashboard', icon: LayoutDashboard },
+    { to: dashboardPath(), label: 'Dashboard', text: t('nav.dashboard'), icon: LayoutDashboard },
     {
       to: applicationsPath(),
       label: 'Applications',
+      text: t('nav.applications'),
       icon: ClipboardList,
       badge:
         flagged > 0
-          ? { text: `${flagged} flagged`, tone: 'amber', title: 'Flagged for follow-up' }
+          ? {
+              text: t('nav.flagged', { count: flagged }),
+              tone: 'amber',
+              title: t('nav.flaggedTitle'),
+            }
           : undefined,
     },
     {
       to: calendarPath(),
       label: 'Calendar',
+      text: t('nav.calendar'),
       icon: CalendarDays,
       badge:
-        week > 0
-          ? { text: String(week), tone: 'accent', title: 'Scheduled in the next seven days' }
-          : undefined,
+        week > 0 ? { text: String(week), tone: 'accent', title: t('nav.weekTitle') } : undefined,
     },
     {
       to: vaultPath(),
       label: 'Vault',
+      text: t('nav.vault'),
       icon: Archive,
       badge:
         overdue > 0
-          ? { text: String(overdue), tone: 'red', title: 'Reminders past their date' }
+          ? { text: String(overdue), tone: 'red', title: t('nav.overdueTitle') }
           : undefined,
     },
     {
       to: scoutPath(),
       label: 'Job scout',
+      text: t('nav.jobScout'),
       icon: Radar,
       badge:
         fresh > 0
-          ? { text: `${fresh} new`, tone: 'accent', title: 'Matches not yet added to applications' }
+          ? {
+              text: t('nav.fresh', { count: fresh }),
+              tone: 'accent',
+              title: t('nav.freshTitle'),
+            }
           : undefined,
     },
-    { to: statisticsPath(), label: 'Statistics', icon: ChartColumn },
+    { to: statisticsPath(), label: 'Statistics', text: t('nav.statistics'), icon: ChartColumn },
   ]
 }
 
@@ -128,7 +143,7 @@ export function SidebarNav({ tabIndex }: { tabIndex?: number }) {
 
   return (
     <nav className="contents">
-      {nav.map(({ to, label, icon: Icon, badge }) => (
+      {nav.map(({ to, label, text, icon: Icon, badge }) => (
         <NavLink
           key={to}
           to={to}
@@ -146,7 +161,7 @@ export function SidebarNav({ tabIndex }: { tabIndex?: number }) {
           }
         >
           <Icon className="size-4 shrink-0" strokeWidth={1.7} />
-          {label}
+          {text}
           {badge ? (
             // Inside the link rather than beside it: the destination is the
             // page where the thing it counts is visible, and a second anchor
@@ -156,7 +171,7 @@ export function SidebarNav({ tabIndex }: { tabIndex?: number }) {
             <span
               title={badge.title}
               className={cn(
-                'ml-auto rounded-full px-1.5 py-px text-xs font-semibold',
+                'ms-auto rounded-full px-1.5 py-px text-xs font-semibold',
                 BADGE_TONE[badge.tone],
               )}
             >

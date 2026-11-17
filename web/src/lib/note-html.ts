@@ -23,6 +23,7 @@ import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import type { LabelTone, NoteSize, NoteSpan } from '@jojo/service/core/model'
 import { MAX_NOTE_SPANS } from '@jojo/service/core/model'
 import { normaliseFormat, runsOf } from '@jojo/service/core/note-format'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * The toolbar's sizes, and the only mapping between `execCommand`'s 1–7 scale
@@ -30,10 +31,33 @@ import { normaliseFormat, runsOf } from '@jojo/service/core/note-format'
  * button vocabulary and the storage vocabulary cannot drift.
  */
 export const SIZES: readonly { value: string; label: string; size?: NoteSize }[] = [
-  { value: '2', label: 'Small', size: 'small' },
-  { value: '3', label: 'Normal' },
-  { value: '5', label: 'Large', size: 'large' },
-  { value: '6', label: 'Huge', size: 'huge' },
+  {
+    value: '2',
+    get label() {
+      return i18next.t('messages:noteSize.small')
+    },
+    size: 'small',
+  },
+  {
+    value: '3',
+    get label() {
+      return i18next.t('messages:noteSize.normal')
+    },
+  },
+  {
+    value: '5',
+    get label() {
+      return i18next.t('messages:noteSize.large')
+    },
+    size: 'large',
+  },
+  {
+    value: '6',
+    get label() {
+      return i18next.t('messages:noteSize.huge')
+    },
+    size: 'huge',
+  },
 ]
 
 /**

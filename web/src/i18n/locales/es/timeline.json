@@ -1,0 +1,115 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "Nuevo recordatorio",
+        "event": "Nuevo evento"
+      },
+      "edit": {
+        "reminder": "Editar recordatorio",
+        "event": "Editar evento"
+      }
+    },
+    "description": "Es el mismo registro en ambos casos: aparece en el calendario en la fecha que le pongas y en la lista de recordatorios de la Bóveda mientras el interruptor junto al título esté activado."
+  },
+  "form": {
+    "title": {
+      "label": "Título",
+      "error": "Ponle un título que reconozcas.",
+      "placeholder": {
+        "reminder": "p. ej., Insistir al reclutador",
+        "event": "p. ej., Zoom con el comité"
+      }
+    },
+    "remind": {
+      "label": "Mostrar en recordatorios",
+      "on": "Aparece en la Bóveda con una casilla y en el calendario en su fecha.",
+      "off": "Solo en el calendario en su fecha, sin casilla en la Bóveda."
+    },
+    "kind": {
+      "label": "Tipo",
+      "hintFollowUp": "Un seguimiento también aparece en Seguimientos pendientes del panel hasta que lo marques.",
+      "hint": "El icono que lleva en el calendario y en la lista de recordatorios."
+    },
+    "detail": {
+      "label": "Detalle",
+      "hint": "Una línea de contexto que se muestra bajo el título."
+    },
+    "more": {
+      "label": "Más detalles",
+      "empty": "nota, palabras clave",
+      "filledNote": "nota",
+      "filledKeywords": "palabras clave",
+      "filledBoth": "nota · palabras clave"
+    },
+    "note": {
+      "label": "Nota",
+      "hint": "Tus propios apuntes. Se guardan aparte del detalle, así que una edición nunca los sobrescribe."
+    },
+    "keywords": {
+      "label": "Palabras clave",
+      "hint": "Compartidas con candidaturas, archivos y enlaces: filtrar por una los encuentra todos."
+    },
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "add": {
+      "reminder": "Añadir recordatorio",
+      "event": "Añadir evento"
+    }
+  },
+  "schedule": {
+    "date": "Fecha",
+    "dateError": "Elige una fecha: un elemento sin fecha no tiene dónde aparecer.",
+    "quick": {
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "inWeek": "En 7 días"
+    },
+    "allDay": {
+      "label": "Todo el día",
+      "description": "Desactivado, le da una hora de inicio y una duración, y lo coloca en la cuadrícula horaria del calendario."
+    },
+    "startTime": "Hora de inicio",
+    "length": "Duración",
+    "durations": {
+      "min15": "15 min",
+      "min30": "30 min",
+      "min45": "45 min",
+      "hour1": "1 hora",
+      "hour1_5": "1,5 horas",
+      "hour2": "2 horas",
+      "hour3": "3 horas"
+    }
+  },
+  "application": {
+    "label": "Candidatura relacionada",
+    "hint": "Los vincula, así cada candidatura lo muestra y desde aquí puedes volver a cualquiera de ellas.",
+    "notLinked": "Sin vincular",
+    "count_one": "{{count}} candidatura",
+    "count_many": "{{count}} candidaturas",
+    "count_other": "{{count}} candidaturas",
+    "searchLabel": "Buscar candidaturas para vincular",
+    "searchPlaceholder": "Buscar candidaturas…",
+    "none": "Aún no hay candidaturas.",
+    "noMatch": "Ninguna candidatura coincide.",
+    "clear": "Quitar las candidaturas vinculadas",
+    "open": "Abrir {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} añadido",
+    "updated": "{{title}} actualizado",
+    "inReminders": "{{when}} — en recordatorios como recordatorio",
+    "inRemindersAndFollowUps": "{{when}} — en recordatorios como recordatorio — y en Seguimientos pendientes",
+    "calendarOnly": "{{when}} — solo en el calendario",
+    "undo": "Deshacer",
+    "deleteFailed": "No se pudo eliminar",
+    "stillThere": "{{title}} sigue en el calendario.",
+    "stillThereUnnamed": "El recordatorio sigue en el calendario.",
+    "deleted": "{{title}} eliminado",
+    "deletedUnnamed": "Recordatorio eliminado",
+    "goneBoth": "Eliminado de la lista de recordatorios y del calendario.",
+    "goneCalendar": "Eliminado del calendario."
+  }
+}

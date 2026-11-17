@@ -1,4 +1,5 @@
 import { Copy, Flag, Pencil, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { MenuItem, RowMenu as OverflowMenu } from '@/components/common/RowMenu'
 import type { RowActions } from '@/components/applications/use-row-actions'
 import { displayName, type Application } from '@/data/seed'
@@ -19,16 +20,17 @@ import { cn } from '@/lib/utils'
  * a call site is free to reorder what it spells out.
  */
 export function RowMenu({ app, actions }: { app: Application; actions: RowActions }) {
+  const { t } = useTranslation('applications')
   return (
     <OverflowMenu name={displayName(app)}>
       <MenuItem icon={Pencil} onSelect={() => actions.onEdit(app)}>
-        Edit
+        {t('common.edit')}
       </MenuItem>
       <MenuItem icon={Copy} onSelect={() => actions.onDuplicate(app)}>
-        Duplicate
+        {t('common.duplicate')}
       </MenuItem>
       <MenuItem icon={Trash2} danger onSelect={() => actions.requestDelete(app)}>
-        Delete
+        {t('common.delete')}
       </MenuItem>
     </OverflowMenu>
   )
@@ -41,12 +43,17 @@ export function FlagButton({
   app: Application
   onFlag: (a: Application) => void
 }) {
-  const label = app.flagged ? 'Clear the follow-up flag' : 'Flag for follow-up'
+  const { t } = useTranslation('applications')
+  const label = app.flagged ? t('common.clearFlag') : t('common.flag')
   return (
     <button
       type="button"
       aria-pressed={Boolean(app.flagged)}
-      aria-label={`${label} on ${displayName(app)}`}
+      aria-label={
+        app.flagged
+          ? t('common.clearFlagOn', { name: displayName(app) })
+          : t('common.flagOn', { name: displayName(app) })
+      }
       title={label}
       onClick={() => onFlag(app)}
       className={cn(

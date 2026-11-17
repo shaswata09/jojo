@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ArrowDown, Download, Loader } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
@@ -34,7 +35,7 @@ import { settingsPath } from '@/lib/links'
  *
  * ## The steps, and the one the person does
  *
- * The phone reads the animation on the left, which agrees a key. It then shows
+ * The phone scans the code on the left, which agrees a key. It then shows
  * its address as twelve characters, typed here, because a browser cannot find
  * a device on the network by itself. Everything else is jojo's.
  *
@@ -46,6 +47,7 @@ import { settingsPath } from '@/lib/links'
  * changes until it is answered.
  */
 export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readonly string[] }) {
+  const { t } = useTranslation('transfer')
   const [code, setCode] = useState('')
   const able = canReachLocalNetwork()
   const busy =
@@ -58,21 +60,13 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
   return (
     <>
       <Panel>
-        <PanelTitle hint="from your phone">Receive from phone</PanelTitle>
+        <PanelTitle hint={t('receive.hint')}>{t('receive.title')}</PanelTitle>
 
         {!able ? (
-          <p className="text-sm text-text-2">
-            This browser cannot connect to another device on your network — Safari and every browser
-            on an iPhone or iPad cannot, and nor can Firefox from the published site. Use Chrome or
-            Edge on a computer — or export a backup on your phone and open it under Settings.
-          </p>
+          <p className="text-sm text-text-2">{t('receive.unable')}</p>
         ) : (
           <>
-            <p className="mb-3 text-sm text-text-2">
-              On your phone, open Transfer, choose Send to a computer, and point it at the
-              animation. It then shows a short code — type it here. Both devices need to be on the
-              same local network.
-            </p>
+            <p className="mb-3 text-sm text-text-2">{t('receive.intro')}</p>
 
             <div className="flex gap-2">
               <Input
@@ -83,7 +77,7 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
                 autoCapitalize="characters"
                 autoComplete="off"
                 className="tabular font-mono tracking-[0.12em]"
-                aria-label="The code shown on your phone"
+                aria-label={t('receive.codeLabel')}
                 disabled={busy}
               />
               <Button
@@ -98,7 +92,7 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
                 ) : (
                   <ArrowDown className="size-3.5" strokeWidth={1.8} aria-hidden />
                 )}
-                Receive
+                {t('receive.receive')}
               </Button>
             </div>
 
@@ -109,19 +103,19 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
               <div className="mt-3 flex items-start justify-between gap-2">
                 <p className="text-xs text-text-3" role="status">
                   {pull.stage === 'connecting'
-                    ? 'Reaching your phone…'
-                    : `${sizeLabel(pull.bytes)} received so far. Nothing here changes until you agree to it.`}
+                    ? t('receive.reaching')
+                    : t('receive.progress', { size: sizeLabel(pull.bytes) })}
                 </p>
                 {/* Always a way out — a phone that went quiet used to leave
                     this waiting with nothing to press. */}
                 <Button size="xs" variant="ghost" onClick={pull.cancel}>
-                  Cancel
+                  {t('receive.cancel')}
                 </Button>
               </div>
             ) : null}
             {pull.stage === 'restoring' ? (
               <p className="mt-3 text-xs text-text-3" role="status">
-                Replacing the records on this computer…
+                {t('receive.restoring')}
               </p>
             ) : null}
 
@@ -134,32 +128,27 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
         {/* Before the field's consequences rather than after them. A restore
             replaces the store wholesale and clears the history, so the time
             to keep a copy of what is here is before the phone is dialled. */}
-        <p className="mt-4 text-xs text-text-3">
-          Receiving replaces everything on this computer with what is on your phone, once you agree
-          to it. To keep a copy of what is here, download a backup first.
-        </p>
+        <p className="mt-4 text-xs text-text-3">{t('receive.replaceWarning')}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2.5">
           <Button variant="outline" size="sm" asChild>
             <Link to={settingsPath()}>
               <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Download a backup first
+              {t('receive.downloadFirst')}
             </Link>
           </Button>
         </div>
       </Panel>
 
       <Panel>
-        <PanelTitle hint="between two computers">Two browsers</PanelTitle>
-        <p className="text-sm text-text-2">
-          A web page cannot accept a connection, and neither can the other computer&rsquo;s, so two
-          computers cannot connect to each other. Export a backup from one and open it on the other
-          — it carries every record and every document.
-        </p>
+        <PanelTitle hint={t('receive.twoBrowsers.hint')}>
+          {t('receive.twoBrowsers.title')}
+        </PanelTitle>
+        <p className="text-sm text-text-2">{t('receive.twoBrowsers.body')}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2.5">
           <Button variant="outline" size="sm" asChild>
             <Link to={settingsPath()}>
               <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Export a backup
+              {t('receive.twoBrowsers.export')}
             </Link>
           </Button>
         </div>
@@ -173,7 +162,7 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
         }}
         title={confirmCopy?.title ?? ''}
         description={confirmCopy?.description ?? ''}
-        confirmLabel={confirmCopy?.confirm ?? 'Replace everything'}
+        confirmLabel={confirmCopy?.confirm ?? t('pullConfirm.confirm')}
         tone="danger"
         onConfirm={() => void pull.confirm()}
       />
@@ -200,7 +189,7 @@ export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readon
               <DialogDescription>{restoreSummary(pull.outcome).description}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button onClick={() => window.location.reload()}>Reload jojo</Button>
+              <Button onClick={() => window.location.reload()}>{t('receive.reload')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

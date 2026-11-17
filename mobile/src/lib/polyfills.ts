@@ -2,7 +2,7 @@
  * What the browser has and Hermes does not.
  *
  * Imported first thing in `index.ts`, before `App` — and therefore before
- * anything under `@jojo/service` — can be evaluated. Three entries.
+ * anything under `@jojo/service` — can be evaluated. Four entries.
  *
  * Both were being supplied by Expo until the ejection. `Expo.fx`, the
  * side-effecting module that `registerRootComponent` pulled in, installed a
@@ -98,5 +98,19 @@ import { guardSecureRandom } from '@/lib/secure-random'
  * carries the full reasoning, and a test.
  */
 guardSecureRandom()
+
+/**
+ * **`Intl.PluralRules`** — absent on Hermes, and i18next's silent fallback for
+ * it is English plural rules in every language: "1 reminder" in Japanese,
+ * Arabic without its dual or few, French "0 rappels". Installed here because
+ * `i18n.ts` initialises as soon as `App` is evaluated, and i18next caches the
+ * rule it builds per language. `plural-rules.ts` has the reasoning and the
+ * ten rules; its test holds them to Node's ICU.
+ *
+ * Guarded inside `installPluralRules`: a Hermes that ships the real one keeps it.
+ */
+import { installPluralRules } from '@/lib/plural-rules'
+
+installPluralRules()
 
 export {}

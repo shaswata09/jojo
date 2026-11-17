@@ -105,6 +105,14 @@ const DIRECT: readonly Credit[] = [
     where: 'src/i18n/i18n.ts',
   },
   {
+    name: 'uqr',
+    version: '0.1.3',
+    licence: 'MIT',
+    holder: 'Project Nayuki; 2023 Anthony Fu',
+    what: 'The QR code on the Transfer page that a phone scans to pair. It only lays out the modules; the page draws them. "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.',
+    where: 'src/lib/pairing-qr.ts',
+  },
+  {
     name: 'class-variance-authority',
     version: '0.7.1',
     licence: 'Apache-2.0',
@@ -539,6 +547,13 @@ export const BUNDLED: readonly Credit[] = [
     holder: '2020 Anton Korzunov',
     what: 'Brought in by Radix, under the scroll lock: the nonce for the style tag it writes, when a page sets one.',
   },
+  {
+    name: 'html-parse-stringify',
+    version: '4.0.1',
+    licence: 'MIT',
+    holder: '2025 Henrik Joreteg; 2026-present i18next',
+    what: 'Brought in by react-i18next: reads the <0>…</0> tags inside a translated sentence so a link or bold word keeps its place in any word order.',
+  },
 ]
 
 /** What runs in the app itself: what jojo imports, then what those bring with them. */
@@ -746,6 +761,14 @@ export const PHONE: readonly Credit[] = [
     licence: 'MIT',
     holder: 'Charpeni',
     what: "A `URL` that parses the way the shared layer expects. Hermes's own is partial, and the posting parser reads pathnames.",
+  },
+  {
+    name: 'jsqr',
+    version: '1.4.0',
+    licence: 'Apache-2.0',
+    holder: 'Cosmo Wolfe and jsQR contributors',
+    what: "Reads the computer's pairing QR code out of a camera frame, in plain JavaScript, so the phone needs no native scanner module.",
+    where: 'mobile/src/lib/pairing-qr.ts',
   },
 ]
 

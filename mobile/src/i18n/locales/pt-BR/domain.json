@@ -1,0 +1,417 @@
+{
+  "stage": {
+    "draft": "Rascunho",
+    "submitted": "Enviada",
+    "screen": "Triagem",
+    "interview": "Entrevista",
+    "offer": "Oferta",
+    "closed": "Encerrada"
+  },
+  "kind": {
+    "deadline": "Prazo",
+    "interview": "Entrevista",
+    "visit": "Visita",
+    "call": "Ligação",
+    "prep": "Preparação",
+    "admin": "Administrativo",
+    "follow-up": "Acompanhamento"
+  },
+  "outcome": {
+    "rejected": "Rejeitada",
+    "withdrawn": "Retirada",
+    "accepted": "Aceita",
+    "declined": "Recusada por você",
+    "ghosted": "Ignorada — sem resposta"
+  },
+  "outcomeAction": {
+    "rejected": "Rejeitada",
+    "withdrawn": "Retirada",
+    "accepted": "Oferta aceita",
+    "declined": "Oferta recusada",
+    "ghosted": "Encerrada sem resposta"
+  },
+  "format": {
+    "phone": "Telefone",
+    "video": "Vídeo",
+    "onsite": "Presencial"
+  },
+  "verdict": {
+    "strong": "Encaixe forte",
+    "worth-tailoring": "Vale a pena adaptar",
+    "a-stretch": "Um desafio",
+    "not-measured": "Ainda não avaliada"
+  },
+  "background": {
+    "education": "Formação",
+    "employment": "Emprego",
+    "publication": "Publicações",
+    "patent": "Patentes",
+    "grant": "Bolsas",
+    "leadership": "Liderança",
+    "outreach": "Divulgação",
+    "training": "Desenvolvimento profissional",
+    "other": "Outros",
+    "award": "Prêmios",
+    "teaching": "Docência",
+    "service": "Serviço",
+    "project": "Projetos",
+    "certification": "Certificações",
+    "skill": "Habilidades",
+    "language": "Idiomas",
+    "volunteering": "Voluntariado",
+    "membership": "Associações"
+  },
+  "tone": {
+    "teal": "Azul",
+    "cyan": "Ciano",
+    "green": "Verde",
+    "amber": "Âmbar",
+    "red": "Vermelho",
+    "pink": "Rosa",
+    "violet": "Violeta",
+    "gray": "Cinza"
+  },
+  "mark": {
+    "bold": "novo ou reescrito para esta vaga",
+    "italic": "reformulado",
+    "underline": "movido para cima ou com mais destaque"
+  },
+  "document": {
+    "cv": "currículo",
+    "research-statement": "declaração de pesquisa",
+    "teaching-statement": "declaração de docência",
+    "cover-letter": "carta de apresentação",
+    "other": "documento"
+  },
+  "how": {
+    "filed-under": "arquivada nesta candidatura",
+    "same-url": "identificada pelo endereço web",
+    "via-posting": "da vaga que o explorador encontrou"
+  },
+  "contactRole": {
+    "recommender": "Referência",
+    "contact": "Contato"
+  },
+  "approval": {
+    "manual": "Manual",
+    "semi": "Semiautomático",
+    "auto": "Automático"
+  },
+  "approvalSaid": {
+    "manual": "Você é consultado antes de qualquer coisa ser gravada nesta conversa.",
+    "semi": "As edições acontecem na hora. Você é consultado antes de qualquer exclusão ou limpeza.",
+    "auto": "Tudo acontece na hora, inclusive exclusões. Só esvaziar ou substituir todo o armazenamento pede confirmação."
+  },
+  "funnel": {
+    "0": "Enviadas",
+    "1": "Respondidas",
+    "2": "Triagem",
+    "3": "Entrevista",
+    "4": "Oferta"
+  },
+  "band": {
+    "0": "Em andamento",
+    "1": "Oferta",
+    "2": "Rejeitada",
+    "3": "Retirada",
+    "4": "Sem resposta"
+  },
+  "dimension": {
+    "source": "origem",
+    "role": "tipo de vaga"
+  },
+  "kpi": {
+    "label": {
+      "response": "Taxa de resposta",
+      "interview": "Taxa de entrevista",
+      "offer": "Taxa de oferta",
+      "reply": "Tempo mediano de resposta"
+    },
+    "note": {
+      "response_one": "{{count}} de {{of}} respondeu",
+      "response_many": "{{count}} de {{of}} responderam",
+      "response_other": "{{count}} de {{of}} responderam",
+      "interview_one": "{{count}} de {{of}} chegou a uma entrevista",
+      "interview_many": "{{count}} de {{of}} chegaram a uma entrevista",
+      "interview_other": "{{count}} de {{of}} chegaram a uma entrevista",
+      "offer_one": "{{count}} de {{of}} chegou a uma oferta",
+      "offer_many": "{{count}} de {{of}} chegaram a uma oferta",
+      "offer_other": "{{count}} de {{of}} chegaram a uma oferta",
+      "replyNone": "nenhuma resposta ainda com as duas datas registradas",
+      "reply_one": "em {{count}} resposta",
+      "reply_many": "em {{count}} respostas",
+      "reply_other": "em {{count}} respostas"
+    },
+    "days_one": "{{count}} dia",
+    "days_many": "{{count}} dias",
+    "days_other": "{{count}} dias",
+    "typicalRate": "típico: {{value}}%",
+    "typicalDays": "típico: {{days}}"
+  },
+  "rel": {
+    "AT": "está em",
+    "ABOUT": "trata de",
+    "FILED_UNDER": "está arquivado em",
+    "TAGS": "marca",
+    "FROM": "veio de",
+    "BECAME": "virou",
+    "COPY_OF": "é uma cópia de",
+    "SUBJECT": "trata de",
+    "OBJECT": "aponta para"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "Um servidor local (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) — grátis, com limite de uso"
+  },
+  "month": {
+    "1": "janeiro",
+    "2": "fevereiro",
+    "3": "março",
+    "4": "abril",
+    "5": "maio",
+    "6": "junho",
+    "7": "julho",
+    "8": "agosto",
+    "9": "setembro",
+    "10": "outubro",
+    "11": "novembro",
+    "12": "dezembro"
+  },
+  "monthShort": {
+    "1": "jan.",
+    "2": "fev.",
+    "3": "mar.",
+    "4": "abr.",
+    "5": "mai.",
+    "6": "jun.",
+    "7": "jul.",
+    "8": "ago.",
+    "9": "set.",
+    "10": "out.",
+    "11": "nov.",
+    "12": "dez."
+  },
+  "weekdayShort": {
+    "0": "Seg",
+    "1": "Ter",
+    "2": "Qua",
+    "3": "Qui",
+    "4": "Sex",
+    "5": "Sáb",
+    "6": "Dom"
+  },
+  "weekday": {
+    "0": "domingo",
+    "1": "segunda-feira",
+    "2": "terça-feira",
+    "3": "quarta-feira",
+    "4": "quinta-feira",
+    "5": "sexta-feira",
+    "6": "sábado"
+  },
+  "dayMonth": "{{day}} {{month}}",
+  "monthYear": "{{month}} de {{year}}",
+  "quarter": "T{{quarter}} {{year}}",
+  "weekdayNarrow": {
+    "0": "S",
+    "1": "T",
+    "2": "Q",
+    "3": "Q",
+    "4": "S",
+    "5": "S",
+    "6": "D"
+  },
+  "action": {
+    "detailsEdited": "Detalhes editados",
+    "draftCreated": "Rascunho criado",
+    "offerReceived": "Oferta recebida",
+    "duplicated": "Duplicada",
+    "addedFromScout": "Adicionada pelo Explorador de vagas",
+    "addedFromPosting": "Adicionada a partir de uma vaga salva",
+    "noteEdited": "Nota editada",
+    "offerCleared": "Detalhes da oferta apagados",
+    "flagged": "Marcada para acompanhamento",
+    "flagCleared": "Marcação removida",
+    "movedTo": {
+      "draft": "Movida para Rascunho",
+      "submitted": "Movida para Enviada",
+      "screen": "Movida para Triagem",
+      "interview": "Movida para Entrevista",
+      "offer": "Movida para Oferta",
+      "closed": "Movida para Encerrada"
+    },
+    "addedAt": {
+      "draft": "Adicionada em Rascunho",
+      "submitted": "Adicionada em Enviada",
+      "screen": "Adicionada em Triagem",
+      "interview": "Adicionada em Entrevista",
+      "offer": "Adicionada em Oferta",
+      "closed": "Adicionada em Encerrada"
+    },
+    "interviewScheduled": {
+      "phone": "Entrevista por telefone agendada",
+      "video": "Entrevista por vídeo agendada",
+      "onsite": "Entrevista presencial agendada"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "hoje",
+      "yesterday": "ontem",
+      "days_one": "há {{count}} dia",
+      "days_many": "há {{count}} dias",
+      "days_other": "há {{count}} dias"
+    },
+    "when": {
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "inDays_one": "em {{count}} dia",
+      "inDays_many": "em {{count}} dias",
+      "inDays_other": "em {{count}} dias",
+      "overdue_one": "{{count}} dia de atraso",
+      "overdue_many": "{{count}} dias de atraso",
+      "overdue_other": "{{count}} dias de atraso"
+    },
+    "inline": {
+      "today": "hoje",
+      "tomorrow": "amanhã"
+    },
+    "completed": {
+      "today": "Concluído hoje",
+      "yesterday": "Concluído ontem",
+      "days_one": "Concluído há {{count}} dia",
+      "days_many": "Concluído há {{count}} dias",
+      "days_other": "Concluído há {{count}} dias",
+      "on": "Concluído em {{date}}"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "Oferta",
+      "overdue": "Atrasado",
+      "deadline": "Prazo",
+      "interview": "Entrevista"
+    },
+    "headline": {
+      "reply": "Responder a {{org}}",
+      "submitOrLetGo": "Enviar para {{org}} ou deixar para lá",
+      "recordInterview": "Registrar a entrevista com {{org}}",
+      "recordVisit": "Registrar a visita à {{org}}",
+      "recordCall": "Registrar a ligação com {{org}}",
+      "catchUp": "Pôr em dia {{org}}",
+      "submit": "Enviar para {{org}}",
+      "prepare": "Preparar-se para {{org}}",
+      "dateInterview": "Marcar a data da entrevista com {{org}}"
+    },
+    "timing": {
+      "respondBy": "Responder até {{date}} · {{when}}",
+      "wasDue": "Vencia em {{date}} · {{when}}",
+      "due": "Vence em {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "Sem data"
+    },
+    "button": {
+      "draftReply": "Redigir uma resposta",
+      "recordOutcome": "Registrar o que aconteceu",
+      "acceptOrDecline": "Aceitar ou recusar",
+      "openApplication": "Abrir candidatura",
+      "draftMessage": "Rascunhar uma mensagem"
+    },
+    "undatedInterview": "Na fase de entrevista sem nada datado, então nem a próxima semana nem o calendário conseguem mostrá-la.",
+    "unfiled": "Este prazo não está arquivado em nenhuma candidatura",
+    "unknownOrg": "Desconhecida"
+  },
+  "filed": {
+    "none": "não arquivado",
+    "one": "arquivado em {{a}}",
+    "two": "arquivado em {{a}} e {{b}}",
+    "many_one": "arquivado em {{count}} candidatura",
+    "many_many": "arquivado em {{count}} candidaturas",
+    "many_other": "arquivado em {{count}} candidaturas"
+  },
+  "readBy": "Lido por {{model}} · {{ago}}",
+  "missingSource": "um documento que não está mais no Cofre",
+  "undo": {
+    "nothing": {
+      "undo": "Nada para desfazer.",
+      "redo": "Nada para refazer."
+    },
+    "changed": {
+      "undo": "Nada para desfazer — mudou desde então",
+      "redo": "Nada para refazer — mudou desde então"
+    },
+    "done": {
+      "undo": "Desfeito",
+      "redo": "Refeito"
+    },
+    "journal": "hidden",
+    "action": "Desfazer",
+    "superseded": {
+      "nothing": "Nada foi desfeito",
+      "part": "Parte disso ficou como está",
+      "named": "{{labels}} — você alterou esses registros desde então, e desfazer agora teria levado essas alterações junto.",
+      "unnamed": "Você alterou esses registros desde então, e desfazer agora teria levado essas alterações junto.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "Isso não foi salvo",
+    "didNotFit": "Algo nesse registro não se encaixou."
+  },
+  "announce": {
+    "stickyRemoved": "Nota removida"
+  },
+  "handover": {
+    "never": "Este dispositivo nunca participou de uma transferência, então nada além dele tem uma cópia destes registros.",
+    "clean": {
+      "today": "Última transferência hoje, e nada foi gravado aqui desde então — o outro dispositivo tem os mesmos registros.",
+      "yesterday": "Última transferência ontem, e nada foi gravado aqui desde então — o outro dispositivo tem os mesmos registros.",
+      "daysAgo": "Última transferência {{ago}}, e nada foi gravado aqui desde então — o outro dispositivo tem os mesmos registros."
+    },
+    "drifted": {
+      "today_one": "Última transferência hoje, e uma alteração foi feita aqui desde então. O outro dispositivo está atrasado nisso.",
+      "today_other": "Última transferência hoje, e {{count}} alterações foram feitas aqui desde então. O outro dispositivo está atrasado nisso.",
+      "yesterday_one": "Última transferência ontem, e uma alteração foi feita aqui desde então. O outro dispositivo está atrasado nisso.",
+      "yesterday_other": "Última transferência ontem, e {{count}} alterações foram feitas aqui desde então. O outro dispositivo está atrasado nisso.",
+      "daysAgo_one": "Última transferência {{ago}}, e uma alteração foi feita aqui desde então. O outro dispositivo está atrasado nisso.",
+      "daysAgo_other": "Última transferência {{ago}}, e {{count}} alterações foram feitas aqui desde então. O outro dispositivo está atrasado nisso."
+    }
+  },
+  "backup": {
+    "records_one": "{{count}} registro",
+    "records_many": "{{count}} registros",
+    "records_other": "{{count}} registros",
+    "links_one": "{{count}} vínculo",
+    "links_many": "{{count}} vínculos",
+    "links_other": "{{count}} vínculos",
+    "documents_zero": "nenhum documento",
+    "documents_one": "{{count}} documento",
+    "documents_many": "{{count}} documentos",
+    "documents_other": "{{count}} documentos",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}} — dentre eles, {{loss}}",
+    "both": "{{a}} e {{b}}",
+    "leftOut": "o que não pode ser lido ficará de fora: {{what}}",
+    "changed_one": "{{count}} registro voltará alterado",
+    "changed_many": "{{count}} registros voltarão alterados",
+    "changed_other": "{{count}} registros voltarão alterados",
+    "leftOutAndChanged": "{{leftOut}}, e {{changed}}",
+    "replacesAll": {
+      "computer": "Restaurar substitui todos os registros e todos os documentos que você tem agora",
+      "phone": "Restaurar substitui todos os registros e todos os documentos deste celular"
+    },
+    "replacesKept": {
+      "computer_one": "Restaurar substitui todos os registros que você tem agora e todos os documentos, exceto {{count}} registro que chega sem o seu documento: a cópia que já está aqui é mantida",
+      "computer_many": "Restaurar substitui todos os registros que você tem agora e todos os documentos, exceto {{count}} registros que chegam sem os seus documentos: as cópias que já estão aqui são mantidas",
+      "computer_other": "Restaurar substitui todos os registros que você tem agora e todos os documentos, exceto {{count}} registros que chegam sem os seus documentos: as cópias que já estão aqui são mantidas",
+      "phone_one": "Restaurar substitui todos os registros deste celular e todos os documentos, exceto {{count}} registro que chega sem o seu documento: a cópia que já está aqui é mantida",
+      "phone_many": "Restaurar substitui todos os registros deste celular e todos os documentos, exceto {{count}} registros que chegam sem os seus documentos: as cópias que já estão aqui são mantidas",
+      "phone_other": "Restaurar substitui todos os registros deste celular e todos os documentos, exceto {{count}} registros que chegam sem os seus documentos: as cópias que já estão aqui são mantidas"
+    }
+  }
+}

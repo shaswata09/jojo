@@ -1,0 +1,401 @@
+{
+  "stage": {
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "screen": "Screening call",
+    "interview": "Interview",
+    "offer": "Offer",
+    "closed": "Closed"
+  },
+  "kind": {
+    "deadline": "Deadline",
+    "interview": "Interview",
+    "visit": "Visit",
+    "call": "Call",
+    "prep": "Prep",
+    "admin": "Admin",
+    "follow-up": "Follow-up"
+  },
+  "outcome": {
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "ghosted": "Ghosted — no reply"
+  },
+  "outcomeAction": {
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "accepted": "Offer accepted",
+    "declined": "Offer declined",
+    "ghosted": "Closed with no reply"
+  },
+  "format": {
+    "phone": "Phone",
+    "video": "Video",
+    "onsite": "Onsite"
+  },
+  "verdict": {
+    "strong": "A strong fit",
+    "worth-tailoring": "Worth tailoring",
+    "a-stretch": "A stretch",
+    "not-measured": "Not measured yet"
+  },
+  "background": {
+    "education": "Education",
+    "employment": "Employment",
+    "publication": "Publications",
+    "patent": "Patents",
+    "grant": "Grants",
+    "leadership": "Leadership",
+    "outreach": "Outreach",
+    "training": "Professional development",
+    "other": "Other",
+    "award": "Awards",
+    "teaching": "Teaching",
+    "service": "Service",
+    "project": "Projects",
+    "certification": "Certifications",
+    "skill": "Skills",
+    "language": "Languages",
+    "volunteering": "Volunteering",
+    "membership": "Memberships"
+  },
+  "tone": {
+    "teal": "Blue",
+    "cyan": "Cyan",
+    "green": "Green",
+    "amber": "Amber",
+    "red": "Red",
+    "pink": "Pink",
+    "violet": "Violet",
+    "gray": "Grey"
+  },
+  "mark": {
+    "bold": "new or rewritten for this posting",
+    "italic": "reworded",
+    "underline": "moved up or given more weight"
+  },
+  "document": {
+    "cv": "CV",
+    "research-statement": "research statement",
+    "teaching-statement": "teaching statement",
+    "cover-letter": "cover letter",
+    "other": "document"
+  },
+  "how": {
+    "filed-under": "filed under this application",
+    "same-url": "matched by web address",
+    "via-posting": "from the posting the scout found"
+  },
+  "contactRole": {
+    "recommender": "Recommender",
+    "contact": "Point of contact"
+  },
+  "approval": {
+    "manual": "Manual",
+    "semi": "Semi-auto",
+    "auto": "Auto"
+  },
+  "approvalSaid": {
+    "manual": "You are asked before anything in this conversation is written.",
+    "semi": "Edits happen straight away. You are asked before anything is deleted or cleared.",
+    "auto": "Everything happens straight away, deletions included. Only emptying or replacing the whole store is confirmed."
+  },
+  "funnel": {
+    "0": "Applied",
+    "1": "Replied",
+    "2": "Screening call",
+    "3": "Interview",
+    "4": "Offer"
+  },
+  "band": {
+    "0": "In progress",
+    "1": "Offer",
+    "2": "Rejected",
+    "3": "Withdrawn",
+    "4": "No reply"
+  },
+  "dimension": {
+    "source": "where they came from",
+    "role": "the kind of role"
+  },
+  "kpi": {
+    "label": {
+      "response": "Response rate",
+      "interview": "Interview rate",
+      "offer": "Offer rate",
+      "reply": "Median reply time"
+    },
+    "note": {
+      "response_one": "{{count}} of {{of}} replied",
+      "response_other": "{{count}} of {{of}} replied",
+      "interview_one": "{{count}} of {{of}} reached an interview",
+      "interview_other": "{{count}} of {{of}} reached an interview",
+      "offer_one": "{{count}} of {{of}} reached an offer",
+      "offer_other": "{{count}} of {{of}} reached an offer",
+      "replyNone": "no reply yet with both dates recorded",
+      "reply_one": "across {{count}} reply",
+      "reply_other": "across {{count}} replies"
+    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "typicalRate": "{{value}}% typical",
+    "typicalDays": "{{days}} typical"
+  },
+  "rel": {
+    "AT": "is at",
+    "ABOUT": "is about",
+    "FILED_UNDER": "is filed under",
+    "TAGS": "tags",
+    "FROM": "came from",
+    "BECAME": "became",
+    "COPY_OF": "is a copy of",
+    "SUBJECT": "is about",
+    "OBJECT": "points at"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "A local server (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) — free, rate limited"
+  },
+  "month": {
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
+  "monthShort": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
+  },
+  "weekdayShort": {
+    "0": "Mon",
+    "1": "Tue",
+    "2": "Wed",
+    "3": "Thu",
+    "4": "Fri",
+    "5": "Sat",
+    "6": "Sun"
+  },
+  "weekday": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  },
+  "dayMonth": "{{month}} {{day}}",
+  "monthYear": "{{month}} {{year}}",
+  "quarter": "Q{{quarter}} {{year}}",
+  "weekdayNarrow": {
+    "0": "M",
+    "1": "T",
+    "2": "W",
+    "3": "T",
+    "4": "F",
+    "5": "S",
+    "6": "S"
+  },
+  "action": {
+    "detailsEdited": "Details edited",
+    "draftCreated": "Draft created",
+    "offerReceived": "Offer received",
+    "duplicated": "Duplicated",
+    "addedFromScout": "Added from Job scout",
+    "addedFromPosting": "Added from a saved posting",
+    "noteEdited": "Note edited",
+    "offerCleared": "Offer details cleared",
+    "flagged": "Flagged for follow-up",
+    "flagCleared": "Flag cleared",
+    "movedTo": {
+      "draft": "Moved to Draft",
+      "submitted": "Moved to Submitted",
+      "screen": "Moved to Screening call",
+      "interview": "Moved to Interview",
+      "offer": "Moved to Offer",
+      "closed": "Moved to Closed"
+    },
+    "addedAt": {
+      "draft": "Added at Draft",
+      "submitted": "Added at Submitted",
+      "screen": "Added at Screening call",
+      "interview": "Added at Interview",
+      "offer": "Added at Offer",
+      "closed": "Added at Closed"
+    },
+    "interviewScheduled": {
+      "phone": "Phone interview scheduled",
+      "video": "Video interview scheduled",
+      "onsite": "Onsite interview scheduled"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "today",
+      "yesterday": "yesterday",
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago"
+    },
+    "when": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inDays_one": "in {{count}} day",
+      "inDays_other": "in {{count}} days",
+      "overdue_one": "{{count}} day overdue",
+      "overdue_other": "{{count}} days overdue"
+    },
+    "inline": {
+      "today": "today",
+      "tomorrow": "tomorrow"
+    },
+    "completed": {
+      "today": "Completed today",
+      "yesterday": "Completed yesterday",
+      "days_one": "Completed {{count}} day ago",
+      "days_other": "Completed {{count}} days ago",
+      "on": "Completed {{date}}"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "Offer",
+      "overdue": "Overdue",
+      "deadline": "Deadline",
+      "interview": "Interview"
+    },
+    "headline": {
+      "reply": "Reply to {{org}}",
+      "submitOrLetGo": "Submit to {{org}} or let it go",
+      "recordInterview": "Record the {{org}} interview",
+      "recordVisit": "Record the {{org}} visit",
+      "recordCall": "Record the {{org}} call",
+      "catchUp": "Catch up on {{org}}",
+      "submit": "Submit to {{org}}",
+      "prepare": "Prepare for {{org}}",
+      "dateInterview": "Date the {{org}} interview"
+    },
+    "timing": {
+      "respondBy": "Respond by {{date}} · {{when}}",
+      "wasDue": "Was due {{date}} · {{when}}",
+      "due": "Due {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "No date set"
+    },
+    "button": {
+      "draftReply": "Draft a reply",
+      "recordOutcome": "Record what happened",
+      "acceptOrDecline": "Accept or decline",
+      "openApplication": "Open application",
+      "draftMessage": "Draft a message"
+    },
+    "undatedInterview": "At interview stage with nothing dated against it, so neither the week ahead nor the calendar can show it.",
+    "unfiled": "This deadline is not filed under an application",
+    "unknownOrg": "Unknown"
+  },
+  "filed": {
+    "none": "unfiled",
+    "one": "filed under {{a}}",
+    "two": "filed under {{a}} and {{b}}",
+    "many_one": "filed under {{count}} application",
+    "many_other": "filed under {{count}} applications"
+  },
+  "readBy": "Read by {{model}} · {{ago}}",
+  "missingSource": "a document no longer in the Vault",
+  "undo": {
+    "nothing": {
+      "undo": "Nothing to undo.",
+      "redo": "Nothing to redo."
+    },
+    "changed": {
+      "undo": "Nothing to undo — it has changed since",
+      "redo": "Nothing to redo — it has changed since"
+    },
+    "done": {
+      "undo": "Undone",
+      "redo": "Redone"
+    },
+    "journal": "asWritten",
+    "action": "Undo",
+    "superseded": {
+      "nothing": "Nothing was undone",
+      "part": "Part of that was left as it is",
+      "named": "{{labels}} — you have changed those records since, and undoing now would have taken those changes with it.",
+      "unnamed": "You have changed those records since, and undoing now would have taken those changes with it.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "That did not save",
+    "didNotFit": "Something about that record did not fit."
+  },
+  "announce": {
+    "stickyRemoved": "Note removed"
+  },
+  "handover": {
+    "never": "This device has never been in a transfer, so nothing has a copy of these records but this.",
+    "clean": {
+      "today": "Last transfer today, and nothing has been written here since — the other device is holding the same records.",
+      "yesterday": "Last transfer yesterday, and nothing has been written here since — the other device is holding the same records.",
+      "daysAgo": "Last transfer {{ago}}, and nothing has been written here since — the other device is holding the same records."
+    },
+    "drifted": {
+      "today_one": "Last transfer today, and one change has been made here since. The other device is that far behind.",
+      "today_other": "Last transfer today, and {{count}} changes have been made here since. The other device is that far behind.",
+      "yesterday_one": "Last transfer yesterday, and one change has been made here since. The other device is that far behind.",
+      "yesterday_other": "Last transfer yesterday, and {{count}} changes have been made here since. The other device is that far behind.",
+      "daysAgo_one": "Last transfer {{ago}}, and one change has been made here since. The other device is that far behind.",
+      "daysAgo_other": "Last transfer {{ago}}, and {{count}} changes have been made here since. The other device is that far behind."
+    }
+  },
+  "backup": {
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records",
+    "links_one": "{{count}} link",
+    "links_other": "{{count}} links",
+    "documents_zero": "no documents",
+    "documents_one": "{{count}} document",
+    "documents_other": "{{count}} documents",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}} — of which {{loss}}",
+    "both": "{{a}} and {{b}}",
+    "leftOut": "{{what}} cannot be read and will be left out",
+    "changed_one": "{{count}} record will come back changed",
+    "changed_other": "{{count}} records will come back changed",
+    "leftOutAndChanged": "{{leftOut}}, and {{changed}}",
+    "replacesAll": {
+      "computer": "Restoring replaces every record and every document you have now",
+      "phone": "Restoring replaces every record and every document on this phone"
+    },
+    "replacesKept": {
+      "computer_one": "Restoring replaces every record you have now and every document, except for the {{count}} record arriving without its document, whose copy already here is kept",
+      "computer_other": "Restoring replaces every record you have now and every document, except for the {{count}} records arriving without their documents, whose copies already here are kept",
+      "phone_one": "Restoring replaces every record on this phone and every document, except for the {{count}} record arriving without its document, whose copy already here is kept",
+      "phone_other": "Restoring replaces every record on this phone and every document, except for the {{count}} records arriving without their documents, whose copies already here are kept"
+    }
+  }
+}

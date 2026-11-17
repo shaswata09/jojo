@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { CalendarSearch, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { MONTH_LABELS } from '@/data/calendar'
 import { TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Jump straight to a month.
@@ -22,6 +23,8 @@ export function MonthPicker({
   month: number
   onPick: (next: { year: number; month: number }) => void
 }) {
+  const { t } = useTranslation('calendar')
+  const domain = useDomain()
   const [open, setOpen] = useState(false)
   const [draftYear, setDraftYear] = useState(year)
 
@@ -36,8 +39,8 @@ export function MonthPicker({
       }}
     >
       <PopoverTrigger
-        aria-label="Go to month"
-        title="Go to month"
+        aria-label={t('monthPicker.goTo')}
+        title={t('monthPicker.goTo')}
         className="flex cursor-pointer items-center gap-1.5 rounded-full border border-hairline bg-well px-2.5 py-1 text-xs text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent"
       >
         <CalendarSearch className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -45,7 +48,7 @@ export function MonthPicker({
             month heading, this trigger and a text Today button no longer fit on
             one 321px row, and a wrapped header is a worse trade than an icon
             with a tooltip on the control you press least. */}
-        <span className="hidden sm:inline">Go to month</span>
+        <span className="hidden sm:inline">{t('monthPicker.goTo')}</span>
       </PopoverTrigger>
 
       <PopoverContent align="start" className="w-60">
@@ -53,38 +56,43 @@ export function MonthPicker({
           <button
             type="button"
             onClick={() => setDraftYear((y) => y - 1)}
-            aria-label="Previous year"
+            aria-label={t('monthPicker.previousYear')}
             className="grid size-6 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-well hover:text-text-1"
           >
-            <ChevronLeft className="size-3.5" strokeWidth={2} aria-hidden />
+            <ChevronLeft className="size-3.5 rtl:-scale-x-100" strokeWidth={2} aria-hidden />
           </button>
           <span className="tabular text-sm font-medium">{draftYear}</span>
           <button
             type="button"
             onClick={() => setDraftYear((y) => y + 1)}
-            aria-label="Next year"
+            aria-label={t('monthPicker.nextYear')}
             className="grid size-6 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-well hover:text-text-1"
           >
-            <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden />
+            <ChevronRight className="size-3.5 rtl:-scale-x-100" strokeWidth={2} aria-hidden />
           </button>
         </div>
 
         <div className="grid grid-cols-3 gap-1">
-          {MONTH_LABELS.map((label, i) => {
+          {/* The language's own abbreviation (CLDR's: 'juin', 'juil.',
+              '11月'), never the first three letters — French juin and juillet
+              would both come out "jui". The full name is the accessible one. */}
+          {Array.from({ length: 12 }, (_, i) => {
             const m = i + 1
+            const label = domain.monthShort(m)
             const isCurrent = draftYear === year && m === month
             const isToday = draftYear === TODAY_PARTS.year && m === TODAY_PARTS.month
             return (
               <button
-                key={label}
+                key={m}
                 type="button"
                 onClick={() => {
                   onPick({ year: draftYear, month: m })
                   setOpen(false)
                 }}
                 aria-current={isCurrent ? 'date' : undefined}
+                aria-label={domain.month(m)}
                 className={cn(
-                  'cursor-pointer rounded-sm px-1 py-1.5 text-xs transition-colors',
+                  'cursor-pointer truncate rounded-sm px-1 py-1.5 text-xs transition-colors',
                   isCurrent
                     ? 'bg-accent font-medium text-[color:var(--accent-fg)]'
                     : 'text-text-2 hover:bg-well hover:text-text-1',
@@ -93,7 +101,7 @@ export function MonthPicker({
                   !isCurrent && isToday && 'font-medium text-accent',
                 )}
               >
-                {label.slice(0, 3)}
+                {label}
               </button>
             )
           })}

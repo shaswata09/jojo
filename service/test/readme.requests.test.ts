@@ -96,7 +96,9 @@ describe('Q158 — jojo is described as agentic, not only a tracker', () => {
   it('says so in the README’s opening line, the root manifest and the guide', () => {
     expect(read('README.md')).toMatch(/^\*\*J\*\*arvis .* — an agentic assistant that tracks/m)
     expect((JSON.parse(read('package.json')) as { description: string }).description).toMatch(/^Agentic /)
-    expect(read('web/src/components/guide/overview/Ladder.tsx')).toMatch(/The agentic half: a threaded assistant/)
+    // The ladder's words live in the guide catalog since the i18n extraction;
+    // the English one is what the page shows by default.
+    expect(read('web/src/i18n/locales/en/guide.json')).toMatch(/The agentic half: a threaded assistant/)
   })
 })
 

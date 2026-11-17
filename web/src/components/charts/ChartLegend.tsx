@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,6 +27,7 @@ export function ChartLegend({
   onToggle: (key: string) => void
   className?: string
 }) {
+  const { t } = useTranslation('charts')
   return (
     <ul className={cn('flex flex-wrap items-center gap-x-3 gap-y-1.5', className)}>
       {items.map((item) => {
@@ -36,7 +38,11 @@ export function ChartLegend({
               type="button"
               onClick={() => onToggle(item.key)}
               aria-pressed={!off}
-              title={off ? `Show ${item.label}` : `Hide ${item.label}`}
+              title={
+                off
+                  ? t('legend.show', { label: item.label })
+                  : t('legend.hide', { label: item.label })
+              }
               className={cn(
                 'flex items-center gap-1.5 rounded-sm px-1 py-0.5 text-xs transition-colors',
                 off ? 'text-text-3 hover:text-text-2' : 'text-text-2 hover:text-text-1',
@@ -85,12 +91,11 @@ export function AllHidden({
   onShowAll?: () => void
   className?: string
 }) {
+  const { t } = useTranslation('charts')
   return (
     <div className={cn('flex flex-col items-center gap-2 py-10 text-center', className)}>
       <p className="text-sm text-text-3">
-        {onShowAll
-          ? 'Every series is switched off in the legend.'
-          : 'All series hidden — pick one from the legend to bring it back.'}
+        {onShowAll ? t('allHidden.withReset') : t('allHidden.noReset')}
       </p>
       {onShowAll ? (
         <button
@@ -98,7 +103,7 @@ export function AllHidden({
           onClick={onShowAll}
           className="cursor-pointer rounded-sm border border-hairline bg-well px-2.5 py-1 text-xs text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
         >
-          Show all series
+          {t('allHidden.showAll')}
         </button>
       ) : null}
     </div>

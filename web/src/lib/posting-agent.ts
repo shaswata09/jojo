@@ -17,6 +17,7 @@ import { sizeLabel } from '@jojo/service/core/files'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useVault } from '@jojo/service/react/use-vault'
 import type { VaultFile } from '@jojo/service/data/vault'
+import { i18next } from '@/i18n/i18n'
 import { TODAY } from '@/lib/today'
 import { capturePage } from '@/lib/capture-bridge'
 import { useLabels } from '@/lib/labels-context'
@@ -165,20 +166,17 @@ type Page =
   { via: 'extension'; text: string; capture: CaptureEnvelope } | { via: 'reader'; text: string }
 
 /** Said for an address on this machine or the person's own network. */
-export const LOCAL_TARGET =
-  'That address is on this computer or your own network, not a job board — jojo does not open those.'
+export const localTarget = (): string => i18next.t('messages:posting.localTarget')
 
 /** Said when there is nothing in this browser that can open a page at all. */
-export const NOTHING_TO_READ_WITH =
-  'Reading a posting needs the jojo browser extension, which opens the page the way you would and saves it, or the document reader, which fetches it. Neither is set up in this browser — Settings has both.'
+export const nothingToReadWith = (): string => i18next.t('messages:posting.nothingToReadWith')
 
 /**
  * Said, to the background reader, when this browser has no extension. Not this
  * card's failure: the queue stops until something changes, as it does for
- * `NOTHING_TO_READ_WITH`.
+ * `nothingToReadWith`.
  */
-export const NO_BACKGROUND_ROUTE =
-  'Reading suggestions before you look at them needs the jojo browser extension. The document reader is used only for a posting you open yourself.'
+export const noBackgroundRoute = (): string => i18next.t('messages:posting.noBackgroundRoute')
 
 /**
  * What a read does when the extension is not there: the reader's address, or
@@ -188,8 +186,8 @@ export function withoutExtension(
   reader: string,
   unattended: boolean,
 ): { reader: string } | { reason: string } {
-  if (unattended) return { reason: NO_BACKGROUND_ROUTE }
-  if (reader.trim() === '') return { reason: NOTHING_TO_READ_WITH }
+  if (unattended) return { reason: noBackgroundRoute() }
+  if (reader.trim() === '') return { reason: nothingToReadWith() }
   return { reader }
 }
 
@@ -207,7 +205,7 @@ async function openPage(
 ): Promise<Page | { reason: string }> {
   // Before either route: the extension refuses these for itself, the reader
   // never did, and its fetch runs on the person's own machine (R6).
-  if (isLocalTarget(target)) return { reason: LOCAL_TARGET }
+  if (isLocalTarget(target)) return { reason: localTarget() }
   const captured = await capturePage(target, signal)
   if (captured.ok) {
     return {
@@ -242,14 +240,13 @@ function nameFor(stem: string, url: string): string {
 }
 
 /** Said when the record was written and its bytes were not. */
-const NOT_STORED =
-  'The page was read, but this browser would not store it — it may be out of room for jojo. Nothing was kept; free some space and try again.'
+const notStored = (): string => i18next.t('messages:posting.notStored')
 
 /** Said when the page came back as almost nothing — per route, because the fix differs. */
 function nearlyEmpty(via: PostingRoute): string {
   return via === 'extension'
-    ? 'That page came back nearly empty. It may not have finished loading, or it may want you signed in — open it in a tab, and try again once it shows the posting.'
-    : 'That page came back nearly empty. Boards that render with JavaScript send a blank shell to anything but a browser — install the jojo extension and it will open the page the way you would.'
+    ? i18next.t('messages:posting.nearlyEmptyExtension')
+    : i18next.t('messages:posting.nearlyEmptyReader')
 }
 
 /**
@@ -420,7 +417,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       const source = postingSourceForUrl(graph, target)
       const already = reuseFile ?? reusablePage(source?.fileId, projections.files(graph), blobs.has)
       const file = already ?? (await savePage(page, target, ''))
-      if (file === null) return { ok: false, step: 'saving', reason: NOT_STORED }
+      if (file === null) return { ok: false, step: 'saving', reason: notStored() }
       const created = already === undefined
       // Marked as this suggestion's NOW, before the model is asked: the
       // reading that would say so lands only after the answer, and a reload in
@@ -460,7 +457,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       if (!read.ok) {
         // Said, because otherwise the obvious response to a slow failure is to
         // press the button again — which is the thing that just happened twice.
-        const tried = read.attempts > 1 ? ' Asked twice, with the same result.' : ''
+        const tried = read.attempts > 1 ? ` ${i18next.t('messages:posting.askedTwice')}` : ''
         return { ok: false, step: 'asking', reason: `${read.reason}${tried}`, file, created }
       }
 
@@ -571,7 +568,7 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
       if (!saved) {
         return Promise.resolve({
           ok: false,
-          reason: 'That posting is not saved, so there is no page to keep for it.',
+          reason: i18next.t('messages:posting.notSaved'),
         })
       }
 
@@ -595,7 +592,7 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
         // nothing counts this address as kept and the next ask re-fetches it.
         // Returned (not thrown) inside the in-flight promise, whose `finally`
         // clears the entry — a retry starts a fresh capture.
-        if (file === null) return { ok: false, reason: NOT_STORED }
+        if (file === null) return { ok: false, reason: notStored() }
 
         const graph = repo.getSnapshot()
         const application = applicationForPostingUrl(projections.postings(graph), target)

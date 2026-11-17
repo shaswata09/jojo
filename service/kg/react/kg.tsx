@@ -46,6 +46,8 @@
 
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
+import { domainText, englishT } from '../core/domain-text'
+import type { DomainText } from '../core/domain-text'
 import type { Instant } from '../core/model'
 import type { Repository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
@@ -56,6 +58,7 @@ import { KgContext } from './kg-context'
 import type { KgContextValue } from './kg-context'
 import { createProjections } from './projections'
 import { useToast } from './toast'
+import { undoShortcutToast } from './undo'
 
 export type KgProviderProps = {
   repo: Repository
@@ -70,10 +73,25 @@ export type KgProviderProps = {
    * `webHost` at its single mount point (`src/lib/store.tsx`) instead.
    */
   host?: Host
+  /**
+   * The app's `domainText`, bound to its translator, for the words this layer
+   * says itself (the ⌘Z toast, a shared tool's toast). This layer may not
+   * import i18next. Omitted means English.
+   */
+  text?: DomainText
   children: ReactNode
 }
 
-export function KgProvider({ repo, now, host = headlessHost, children }: KgProviderProps) {
+/** What a provider handed no `text` says: the English the catalogs are generated from. */
+const ENGLISH = domainText(englishT)
+
+export function KgProvider({
+  repo,
+  now,
+  host = headlessHost,
+  text = ENGLISH,
+  children,
+}: KgProviderProps) {
   // The calendar day the whole projection layer is measured against. Read once
   // per provider: `daysAgo` and every bucket label are relative to it, and a
   // value that changed between two projections in the same render would put two
@@ -97,11 +115,11 @@ export function KgProvider({ repo, now, host = headlessHost, children }: KgProvi
   const projections = useMemo(() => createProjections(today), [today])
 
   const value = useMemo<KgContextValue>(
-    () => ({ repo, runtime, now, projections, today }),
-    [repo, runtime, now, projections, today],
+    () => ({ repo, runtime, now, projections, today, text }),
+    [repo, runtime, now, projections, today, text],
   )
 
-  useHostBindings(host, repo, runtime)
+  useHostBindings(host, repo, runtime, text)
 
   return <KgContext value={value}>{children}</KgContext>
 }
@@ -114,27 +132,19 @@ export function KgProvider({ repo, now, host = headlessHost, children }: KgProvi
  * to re-read `host.ts` and ask whether it is really graph state — a port that
  * grows to cover everything is `window` with extra steps.
  */
-function useHostBindings(host: Host, repo: Repository, runtime: ToolRuntime) {
+function useHostBindings(host: Host, repo: Repository, runtime: ToolRuntime, text: DomainText) {
   const { toast } = useToast()
 
+  // Said out loud rather than swallowed, refused or not: a shortcut that does
+  // nothing and reports nothing reads as a shortcut that is not wired up, and
+  // the next thing the user does is press it again. In the app's words — see
+  // `undoShortcutToast`.
   const onUndoRequest = useCallback(
     (direction: UndoDirection) => {
       const result = direction === 'redo' ? runtime.redo() : runtime.undo()
-      if (!result.ok) {
-        // Said out loud rather than swallowed. A shortcut that does nothing and
-        // reports nothing reads as a shortcut that is not wired up, and the next
-        // thing the user does is press it again.
-        toast({ title: result.errors[0]?.message ?? 'Nothing to undo.' })
-        return
-      }
-      toast({
-        title: result.announcement.title,
-        ...(result.announcement.description === undefined
-          ? {}
-          : { description: result.announcement.description }),
-      })
+      toast(undoShortcutToast(result, direction, text))
     },
-    [runtime, toast],
+    [runtime, toast, text],
   )
 
   useEffect(() => host.onUndoRequest(onUndoRequest), [host, onUndoRequest])

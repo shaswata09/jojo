@@ -1,0 +1,556 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "undo": "Rückgängig",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "duplicate": "Duplizieren",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "deleted": "{{title}} gelöscht",
+    "unsaved": "Ungespeicherte Änderungen",
+    "saved": "{{title}} gespeichert",
+    "showIt": "Anzeigen",
+    "copyBlocked": "Der Browser hat das Kopieren blockiert",
+    "updated": "{{title}} aktualisiert",
+    "saveChanges": "Änderungen speichern"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Dateien, die keiner Bewerbung zugeordnet sind",
+      "label": "Nicht zugeordnet"
+    },
+    "inlineEdit": {
+      "needsName": "Eine Datei braucht einen Namen"
+    },
+    "intake": {
+      "tooLarge": "{{name}} war zu groß für eine Prüfung",
+      "tooLargeDescription": "Sie ist abgelegt, und jojo zeigt sie mit allen Webadressen blockiert und deaktivierten Links an – beim Ansehen hier wird also nichts im Netz aufgerufen. Alles, was sie aus dem Web lädt, fehlt aber.",
+      "addresses_one": "{{name}} nennt {{count}} Webadresse",
+      "addresses_other": "{{name}} nennt {{count}} Webadressen",
+      "addressesDescription_one": "Sie ist so abgelegt, wie du sie abgelegt hast, und jojo zeigt sie mit dieser Adresse blockiert und deaktivierten Links an – beim Ansehen hier wird also nichts im Netz aufgerufen. Bilder oder Stile aus dem Web fehlen.",
+      "addressesDescription_other": "Sie ist so abgelegt, wie du sie abgelegt hast, und jojo zeigt sie mit allen diesen Adressen blockiert und deaktivierten Links an – beim Ansehen hier wird also nichts im Netz aufgerufen. Bilder oder Stile aus dem Web fehlen.",
+      "folders_one": "Das sieht nach einem Ordner aus",
+      "folders_other": "Das sieht nach Ordnern aus",
+      "foldersDescription": "jojo legt Dokumente einzeln ab. Öffne den Ordner und zieh die Dateien darin hierher.",
+      "reattached": "{{name}} ist wieder angehängt",
+      "reattachedDescription": "Die Zeile war schon ohne ihr Dokument da. Jetzt hat sie eines.",
+      "stillUnsaved": "{{name}} konnte immer noch nicht gespeichert werden",
+      "stillUnsavedDescription": "Dieser Browser hat das Speichern erneut verweigert – sein Speicher ist vermutlich noch voll.",
+      "unsaved": "{{name}} wurde abgelegt, aber nicht gespeichert",
+      "unsavedDescription": "Die Zeile ist da, aber dieser Browser hat das Speichern des Dokuments verweigert – meist, weil sein Speicher voll ist. Gib etwas Platz frei und zieh dieselbe Datei noch einmal hierher; sie wird an diese Zeile angehängt, statt eine zweite anzulegen.",
+      "alreadyHere_one": "Diese Datei ist schon da",
+      "alreadyHere_other": "Diese Dateien sind schon da",
+      "alreadyHereDescription": "Eine Datei mit demselben Namen ist bereits im Tresor.",
+      "addedOne": "{{name}} hinzugefügt",
+      "addedMany_one": "{{count}} Datei hinzugefügt",
+      "addedMany_other": "{{count}} Dateien hinzugefügt",
+      "addedHidden": "Unter {{bucket}} abgelegt – ausgeblendet, solange der Schlagwortfilter aktiv ist.",
+      "addedHiddenVault": "Im Tresor unter {{bucket}} abgelegt – ausgeblendet, solange der Schlagwortfilter aktiv ist.",
+      "addedDescription": "Unter {{bucket}} abgelegt und in diesem Browser gespeichert. Nichts wurde irgendwohin hochgeladen.",
+      "addedDescriptionVault": "Im Tresor unter {{bucket}} abgelegt und in diesem Browser gespeichert. Nichts wurde irgendwohin hochgeladen.",
+      "skipped_one": "{{count}} übersprungen",
+      "skipped_other": "{{count}} übersprungen",
+      "skippedDescription": "Eine Datei mit demselben Namen war bereits im Tresor.",
+      "foldersSkipped_one": "{{count}} Ordner übersprungen",
+      "foldersSkipped_other": "{{count}} Ordner übersprungen"
+    },
+    "row": {
+      "fileName": "Dateiname",
+      "renameHint": "Diese Datei umbenennen",
+      "onDevice": "auf diesem Gerät",
+      "viewing": "Wird angezeigt",
+      "preview": "Vorschau",
+      "rename": "Umbenennen",
+      "editNote": "Notiz bearbeiten",
+      "addNote": "Notiz hinzufügen",
+      "changeApplications": "Bewerbungen ändern",
+      "fileUnder": "Einer Bewerbung zuordnen",
+      "readIntoProfile": "In dein Profil einlesen"
+    },
+    "add": "Datei hinzufügen",
+    "filterLabel": "Dateien nach Ablage filtern",
+    "searchLabel": "Dateien suchen",
+    "searchPlaceholder": "Name oder Notiz suchen",
+    "toast": {
+      "renamed": "{{name}} umbenannt",
+      "was": "Vorher: {{name}}.",
+      "noteSaved": "Notiz zu {{name}} gespeichert",
+      "noteCleared": "Notiz zu {{name}} gelöscht",
+      "noteClearedDescription": "Die Zeile behält Namen, Ablage und Schlagwörter.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "Sie erscheint bei jeder davon, und der Graph findet sie von jeder aus.",
+      "unfiledDescription": "Sie bleibt im Tresor, keiner Bewerbung zugeordnet."
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Dateien",
+      "zeroDescription": "Zieh eine Stellenanzeige, einen Artikel oder einen Entwurf hierher – oder füge eine Datei von deinem Computer hinzu.",
+      "search": "Keine Datei erwähnt „{{query}}“ in Name, Notiz oder Ablage.",
+      "both": "Keine Datei in {{bucket}} trägt die ausgewählten Schlagwörter.",
+      "bucketTitle": "Nichts in {{bucket}}",
+      "bucketDescription_one": "{{count}} Datei liegt in den anderen Ablagen.",
+      "bucketDescription_other": "{{count}} Dateien liegen in den anderen Ablagen.",
+      "showAll": "Alle Ablagen anzeigen",
+      "keywordsTitle": "Keine Datei trägt diese Schlagwörter",
+      "allFiledTitle": "Jede Datei ist einer Bewerbung zugeordnet",
+      "allFiledDescription_one": "Alle {{count}}. Nichts liegt lose herum.",
+      "allFiledDescription_other": "Alle {{count}}. Nichts liegt lose herum.",
+      "unfiledKeywords": "Keine nicht zugeordnete Datei trägt die ausgewählten Schlagwörter.",
+      "unfiledBucket": "Keine nicht zugeordnete Datei liegt in {{bucket}}."
+    },
+    "drop": {
+      "title": "Ablegen, um zu {{bucket}} hinzuzufügen",
+      "description": "Name, Größe und Typ werden gelesen. Nichts wird hochgeladen.",
+      "hint": "Zieh Dateien irgendwo auf dieses Feld, um sie zu {{bucket}} hinzuzufügen."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Nicht alles Abgelegte wurde verwendet",
+      "nothing": "Nichts zum Öffnen dabei"
+    },
+    "save": {
+      "nameLabel": "Name der neuen Datei",
+      "working": "Wird bearbeitet …",
+      "alsoDownload": "Auch herunterladen",
+      "footnote": "Das Ergebnis wird als neues Dokument abgelegt – am Ausgangsmaterial ändert sich nichts. Es entsteht hier in deinem Browser, und nichts davon wird hochgeladen.",
+      "workingSpoken": "Dokument wird bearbeitet"
+    },
+    "thumb": {
+      "turned": "{{label}}, um {{degrees}} Grad gedreht",
+      "noPreview": "Keine Vorschau"
+    },
+    "source": {
+      "fromVault": "{{label}} aus dem Tresor",
+      "noneInVault": "Noch keine PDFs im Tresor",
+      "choose": "Aus dem Tresor wählen …",
+      "device": "Von diesem Gerät",
+      "fromDevice": "{{label}} von diesem Gerät",
+      "dropHintEmpty": "Oder zieh ein PDF irgendwo auf diese Karte. Hier gespeicherte Dateien erscheinen in dieser Liste.",
+      "dropHint": "Oder zieh ein PDF irgendwo auf diese Karte."
+    },
+    "modes": {
+      "merge": "Zusammenführen",
+      "pages": "Seiten",
+      "annotate": "Markieren"
+    },
+    "editor": {
+      "title": "PDF-Editor",
+      "hint": "PDFs zusammenführen, neu ordnen und markieren. Alles läuft in diesem Browser – kein Dokument wird hochgeladen.",
+      "operation": "PDF-Vorgang",
+      "dropMerge": "PDFs ablegen, um sie zur Zusammenführung hinzuzufügen",
+      "dropOpen": "PDF ablegen, um es zu öffnen"
+    },
+    "errors": {
+      "gone": "{{name}} ist nicht mehr gespeichert und kann daher nicht geöffnet werden.",
+      "noRoom": "{{name}} wurde abgelegt, aber der Inhalt passte nicht in den Speicher dieses Browsers."
+    },
+    "saved": "{{name}} gespeichert",
+    "merge": {
+      "move": "{{name}} verschieben, {{position}} von {{total}}",
+      "dragToReorder": "Zum Neuordnen ziehen",
+      "fromDevice": "· von diesem Gerät",
+      "allPages": "Alle Seiten",
+      "rangeLabel": "Seiten aus {{name}}",
+      "remove": "{{name}} aus der Zusammenführung entfernen",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{pages}} aus {{documents}}, abgelegt unter {{bucket}}. Die Originale bleiben unverändert.",
+      "pages_one": "{{count}} Seite",
+      "pages_other": "{{count}} Seiten",
+      "documents_one": "{{count}} Dokument",
+      "documents_other": "{{count}} Dokumenten",
+      "addLabel": "PDF zum Zusammenführen hinzufügen",
+      "empty": "Füge zwei oder mehr PDFs hinzu oder zieh sie auf diese Karte. Sie werden von oben nach unten zusammengefügt – zieh eine Zeile an ihrem linken Rand, um die Reihenfolge zu ändern –, und die Originale bleiben, wie sie sind.",
+      "position": "Position {{position}} von {{total}}, {{name}}",
+      "hint": "Bereiche wie 1-3, 7, 9- nehmen einen Teil eines Dokuments. Lass ein Feld leer, um alles zu nehmen.",
+      "action": "Zusammenführen und speichern"
+    },
+    "pages": {
+      "savedDescription_one": "{{count}} Seite, abgelegt unter {{bucket}}. {{name}} bleibt unverändert.",
+      "savedDescription_other": "{{count}} Seiten, abgelegt unter {{bucket}}. {{name}} bleibt unverändert.",
+      "chooseLabel": "PDF zum Ordnen wählen",
+      "empty": "Wähle ein PDF. Du kannst Seiten drehen, entfernen, umsortieren und nur einen Teil behalten.",
+      "kept_one": "· {{kept}} von {{count}} Seite behalten",
+      "kept_other": "· {{kept}} von {{count}} Seiten behalten",
+      "startOver": "Von vorn beginnen",
+      "page": "Seite {{number}}",
+      "was": " · vorher {{number}}",
+      "earlier": "Seite {{number}} nach vorn verschieben",
+      "anticlockwise": "Seite {{number}} gegen den Uhrzeigersinn drehen",
+      "clockwise": "Seite {{number}} im Uhrzeigersinn drehen",
+      "remove": "Seite {{number}} entfernen",
+      "later": "Seite {{number}} nach hinten verschieben",
+      "hint": "Dreh, verschieb oder entferne eine Seite, dann wird dies verfügbar.",
+      "action": "Seiten speichern"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Hervorheben",
+        "comment": "Kommentar"
+      },
+      "savedDescription": "{{summary}}, abgelegt unter {{bucket}}. {{name}} bleibt unverändert.",
+      "chooseLabel": "PDF zum Markieren wählen",
+      "empty": "Wähle ein PDF. Markiere Text auf der Seite, um ihn hervorzuheben, oder wechsle zu Kommentar und klicke dorthin, wo die Notiz hingehört.",
+      "toolLabel": "Markierwerkzeug",
+      "colour": "Hervorhebungsfarbe",
+      "previousPage": "Vorherige Seite",
+      "pageOf": "Seite {{page}} von {{total}}",
+      "nextPage": "Nächste Seite",
+      "zoom": "Zoom",
+      "highlightHint": "Wähle Wörter auf der Seite aus – auch über mehrere Zeilen –, und sie werden beim Loslassen markiert.",
+      "commentHint": "Klicke auf die Stelle der Seite, an die der Kommentar gehört.",
+      "commentPlaceholder": "Wie lautet der Kommentar?",
+      "notePlaceholder": "Notiz hinzufügen …",
+      "commentLabel": "Kommentar auf Seite {{number}}",
+      "noteLabel": "Notiz zur Hervorhebung von {{excerpt}}",
+      "removeMark": "Diese Markierung entfernen",
+      "hintEmpty": "Heb zuerst Text hervor oder füge einen Kommentar hinzu.",
+      "hint": "{{summary}} wird eingefügt.",
+      "action": "Mit Markierungen speichern"
+    }
+  },
+  "instruments": {
+    "calculator": "Rechner",
+    "pdf": "PDF-Editor",
+    "label": "Welches Werkzeug",
+    "loading": "PDF-Werkzeuge werden vorbereitet …"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Für diese Stellenanzeige gibt es auf diesem Gerät keine gespeicherte Kopie. Erfassungen bleiben dort, wo sie gemacht wurden – eine vom Handy ist also nicht hier –, und eine aus einer Sicherung wiederhergestellte Zeile enthält den Eintrag ohne die Seite.",
+      "stored": "Browser zeigen PDFs direkt an, aber keine {{kind}}-Dateien. Das Dokument ist gespeichert – Speichern übergibt es an deine eigene Anwendung.",
+      "missing": "Browser zeigen PDFs direkt an, aber keine {{kind}}-Dateien – und hinter dieser Zeile ist kein Dokument gespeichert, das sich weitergeben ließe."
+    },
+    "dialogDescription": "Vorschau von {{name}}, dieser Bewerbung zugeordnet. Drück Esc, um zum Eintrag zurückzukehren.",
+    "noteSaved": "Notiz zu {{name}} gespeichert",
+    "noteSavedDescription": "Sie erscheint bei dieser Datei überall, wo der Tresor sie auflistet.",
+    "noteEmptyDescription": "Die Notiz ist jetzt leer, also erscheint nichts bei dieser Datei.",
+    "captured": "{{name}}, wie erfasst",
+    "previewTitle": "Vorschau von {{name}}",
+    "asText": "{{name}} als Text",
+    "truncated": "Nur das erste Megabyte wird angezeigt. Speichern öffnet die ganze Datei in deiner eigenen Anwendung.",
+    "failedTitle": "Dieser Browser konnte die Vorschau nicht öffnen",
+    "failedDescription": "{{error}}. Der Eintrag der Datei in deinem Tresor ist nicht betroffen – nur die Vorschau konnte nicht erstellt werden.",
+    "noPreviewTitle": "Keine Vorschau für diesen Typ",
+    "capturedFrom": "Erfasst von {{host}}",
+    "fullScreen": "Vorschau im Vollbild öffnen",
+    "fullScreenDescription": "{{name}} im Vollbild, mit Notizbereich. Drück Esc, um zurückzukehren.",
+    "notes": {
+      "title": "Notizen",
+      "hide": "Notizbereich ausblenden",
+      "show": "Notizbereich einblenden",
+      "hint": "Bei {{name}} gespeichert und überall angezeigt, wo diese Datei aufgelistet ist.",
+      "label": "Notizen zu {{name}}",
+      "placeholder": "Was in diesem Dokument wichtig ist – die Frist auf Seite 3, wen du dazu fragen kannst …",
+      "saved": "Gespeichert",
+      "save": "Notiz speichern"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Diese Erinnerung zurückstellen oder verschieben",
+      "label": "„{{title}}“ zurückstellen — {{when}}",
+      "heading": "Zurückstellen",
+      "pickDate": "Datum wählen",
+      "move": "Verschieben"
+    },
+    "row": {
+      "markNotDone": "„{{title}}“ als nicht erledigt markieren",
+      "markDone": "„{{title}}“ als erledigt markieren",
+      "draftReply": "Antwort entwerfen"
+    },
+    "relatedTwo": "{{first}} und {{second}}",
+    "relatedMany_one": "{{count}} Bewerbung",
+    "relatedMany_other": "{{count}} Bewerbungen",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (Kopie)",
+    "add": "Erinnerung hinzufügen",
+    "filterLabel": "Erinnerungen nach Fälligkeit filtern",
+    "searchLabel": "Erinnerungen suchen",
+    "searchPlaceholder": "Titel, Notiz oder Stelle suchen",
+    "toast": {
+      "reopened": "{{title}} wieder geöffnet",
+      "completed": "{{title}} erledigt",
+      "reopenedDescription": "Wieder unter seinem Datum und wieder im Dashboard, falls es ein Follow-up ist.",
+      "completedDescription": "Unter „Erledigt“ abgelegt und aus dem Dashboard entfernt.",
+      "moved": "{{title}} verschoben",
+      "nowDue": "Jetzt fällig am {{date}} · {{when}}",
+      "duplicated": "{{title}} dupliziert",
+      "duplicatedDescription": "Die Kopie ist offen und am {{date}} fällig.",
+      "stillOnList": "{{title}} steht noch auf der Liste.",
+      "deletedDescription": "{{description}} — aus dem Kalender und aus dieser Liste entfernt."
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Erinnerungen",
+      "zeroDescription": "Eine Erinnerung ist ein datierter Anstoß – bei einer Referenzperson nachhaken, ein Portal prüfen, ein Dankeschön senden. Die, die du als Follow-up markierst, erscheinen auch im Dashboard, bis du sie abhakst.",
+      "search": "Keine Erinnerung erwähnt „{{query}}“ in Titel, Notiz, Art oder Bewerbung.",
+      "both": "Keine Erinnerung ({{bucket}}) trägt die ausgewählten Schlagwörter.",
+      "doneTitle": "Noch nichts erledigt",
+      "doneDescription": "Abgehakte Erinnerungen sammeln sich hier, sodass du eine versehentlich abgehakte wiederfindest.",
+      "showAll": "Alle Erinnerungen anzeigen",
+      "bucketTitle": "Nichts: {{bucket}}",
+      "bucketDescription_one": "{{count}} Erinnerung liegt in den anderen Gruppen.",
+      "bucketDescription_other": "{{count}} Erinnerungen liegen in den anderen Gruppen.",
+      "keywordsTitle": "Keine Erinnerung trägt diese Schlagwörter"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "Der Schlagwortfilter oben auf der Seite blendet sie aus.",
+    "searchTitle": "Nichts passt zu dieser Suche",
+    "clearSearch": "Suche löschen",
+    "filtersTitle": "Nichts passt zu diesen Filtern",
+    "clearFilters": "Filter zurücksetzen",
+    "showFiled": "Auch zugeordnete Dateien anzeigen",
+    "bothTitle": "Nichts passt zu beiden Filtern",
+    "clearBoth": "Beide Filter zurücksetzen",
+    "clearKeywords": "Schlagwörter zurücksetzen"
+  },
+  "capture": {
+    "posting": "Stellenanzeige",
+    "savedOne": "{{name}} in deinem Tresor gespeichert",
+    "savedMany_one": "{{count}} Stellenanzeige in deinem Tresor gespeichert",
+    "savedMany_other": "{{count}} Stellenanzeigen in deinem Tresor gespeichert",
+    "suggested": "Keiner Bewerbung zugeordnet. {{name}} scheint zu passen – ordne sie über ihre Zeile im Tresor zu.",
+    "unfiled": "Keiner Bewerbung zugeordnet. Ordne sie jederzeit über ihre Zeile im Tresor zu.",
+    "dropped_one": "{{count}} Ressource konnte nicht behalten werden, daher wirken manche Teile schlicht.",
+    "dropped_other": "{{count}} Ressourcen konnten nicht behalten werden, daher wirken manche Teile schlicht.",
+    "unstored_one": "{{count}} konnte auf diesem Gerät nicht gespeichert werden – der Eintrag ist da, die Seite nicht.",
+    "unstored_other": "{{count}} konnten auf diesem Gerät nicht gespeichert werden – die Einträge sind da, die Seiten nicht.",
+    "refusedOne": "Eine Erfassung konnte nicht behalten werden",
+    "refusedMany_one": "{{count}} Erfassung konnte nicht behalten werden",
+    "refusedMany_other": "{{count}} Erfassungen konnten nicht behalten werden",
+    "waitingOne": "Eine Stellenanzeige wartet darauf, hier gespeichert zu werden.",
+    "waitingMany_one": "{{count}} Stellenanzeige wartet darauf, hier gespeichert zu werden.",
+    "waitingMany_other": "{{count}} Stellenanzeigen warten darauf, hier gespeichert zu werden.",
+    "source": "Mit der jojo-Erweiterung erfasst, noch auf diesem Gerät.",
+    "saving": "Wird gespeichert …",
+    "saveIt": "Speichern",
+    "saveThem": "Alle speichern"
+  },
+  "picker": {
+    "none": "Keine Bewerbung",
+    "label": "Zugehörige Bewerbungen",
+    "searchLabel": "Bewerbungen suchen",
+    "searchPlaceholder": "Bewerbungen suchen …",
+    "noneYet": "Noch keine Bewerbungen.",
+    "noMatch": "Keine Bewerbung passt dazu.",
+    "unfile": {
+      "record": "Zuordnung dieses Eintrags aufheben",
+      "file": "Zuordnung dieser Datei aufheben",
+      "link": "Zuordnung dieses Links aufheben",
+      "snippet": "Zuordnung dieses Textbausteins aufheben",
+      "person": "Zuordnung dieser Person aufheben",
+      "conversation": "Zuordnung dieser Unterhaltung aufheben"
+    }
+  },
+  "snippets": {
+    "openInVault": "Im Tresor öffnen",
+    "card": {
+      "edit": "Diesen Textbaustein bearbeiten",
+      "moveTo": "Verschieben nach"
+    },
+    "editor": {
+      "editTitle": "Textbaustein bearbeiten",
+      "newTitle": "Neuer Textbaustein",
+      "title": {
+        "label": "Titel",
+        "placeholder": "z. B. Warum dieser Fachbereich"
+      },
+      "kind": {
+        "label": "Art",
+        "hint": "Wo er abgelegt wird und welchen Chip die Liste zeigt."
+      },
+      "application": {
+        "label": "Zugehörige Bewerbung",
+        "hint": "Beliebig viele Stellen. Er erscheint dann auf jeder ihrer Seiten."
+      },
+      "text": {
+        "label": "Text",
+        "hint": "Größe, Farbe, Fett, Kursiv, Unterstrichen und Durchgestrichen werden mit dem Text gespeichert. Listen und Tabellen bleiben als einfache Zeilen erhalten.",
+        "placeholder": "Schreib den Absatz, den du ständig neu formulierst …"
+      },
+      "fullScreen": "Im Vollbild schreiben",
+      "keywords": {
+        "label": "Schlagwörter",
+        "hint": "Geteilt mit Bewerbungen, Erinnerungen und Dateien – ein Filter nach einem findet alle."
+      },
+      "savedNote": "In der Datenbank dieses Browsers gespeichert – er ist noch da, wenn du zurückkommst.",
+      "fullScreenDescription": "Textbaustein im Vollbild bearbeiten. Drück Esc, um zurückzukehren."
+    },
+    "errors": {
+      "title": "Gib dem Textbaustein einen Namen.",
+      "body": "Schreib den Text, den du später einfügen möchtest."
+    },
+    "toast": {
+      "filed": "Unter {{tag}} abgelegt, bereit zum Kopieren aus der Liste.",
+      "filedHidden": "Unter {{tag}} abgelegt – durch die Filter über der Liste ausgeblendet.",
+      "duplicated": "Die Kopie liegt unter {{tag}}, bereit zum Umschreiben.",
+      "moved": "Unter {{tag}} abgelegt.",
+      "movedOut": "Unter {{tag}} abgelegt – nicht mehr in der angezeigten Liste {{filter}}.",
+      "stillThere": "{{title}} ist noch im Tresor.",
+      "stillThereUnnamed": "Der Textbaustein ist noch im Tresor.",
+      "deletedUnnamed": "Textbaustein gelöscht",
+      "deletedDescription": "Der Text und seine Schlagwörter verschwinden mit ihm."
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Textbausteine",
+      "zeroDescription": "Speichere die Absätze, die du ständig neu schreibst – die Kurzbio, das „Warum dieser Fachbereich“, die Follow-up-Mail.",
+      "search": "Kein Textbaustein erwähnt „{{query}}“ in Name, Text oder Art.",
+      "both": "Kein Textbaustein ({{tag}}) trägt die ausgewählten Schlagwörter.",
+      "bucketTitle": "Keine Textbausteine: {{tag}}",
+      "bucketDescription_one": "{{count}} Textbaustein liegt bei den anderen Arten.",
+      "bucketDescription_other": "{{count}} Textbausteine liegen bei den anderen Arten.",
+      "showAll": "Alle Arten anzeigen",
+      "keywordsTitle": "Kein Textbaustein trägt diese Schlagwörter"
+    },
+    "filterLabel": "Textbausteine nach Art filtern",
+    "searchLabel": "Textbausteine suchen",
+    "searchPlaceholder": "Name oder Text suchen",
+    "copied": "Textbaustein in die Zwischenablage kopiert",
+    "discard": {
+      "title": "Ungespeicherte Änderungen verwerfen?",
+      "description": "„{{title}}“ hat ungespeicherte Änderungen. Wenn du jetzt gehst, gehen sie verloren – das lässt sich nicht rückgängig machen.",
+      "untitled": "Unbenannter Textbaustein",
+      "confirm": "Änderungen verwerfen"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Standard",
+      "scientific": "Wissenschaftlich"
+    },
+    "mode": "Rechnermodus",
+    "ops": {
+      "plus": "plus",
+      "minus": "minus",
+      "times": "mal",
+      "dividedBy": "geteilt durch",
+      "power": "hoch"
+    },
+    "history": "Verlauf",
+    "plusMinus": "plus oder minus",
+    "backspace": "Rücktaste",
+    "clear": "Löschen",
+    "empty": "Noch nichts. Abgeschlossene Rechnungen erscheinen hier.",
+    "use": "{{value}} verwenden"
+  },
+  "links": {
+    "newTab": "Öffnet in einem neuen Tab",
+    "errors": {
+      "title": "Gib dem Link einen Titel.",
+      "url": "Dafür braucht es einen Host, z. B. jobs.rice.edu/postings.",
+      "empty": "Füge eine URL ein, um sie zu speichern."
+    },
+    "fields": {
+      "title": "Titel",
+      "url": "URL",
+      "category": "Kategorie",
+      "applicationHint": "Ordnet den Link einer Stelle zu, sodass beide Seiten voneinander wissen.",
+      "note": "Notiz",
+      "noteHint": "Eine Zeile dazu, warum er sich lohnt."
+    },
+    "add": "Link hinzufügen",
+    "toast": {
+      "saved": "Unter {{category}} abgelegt, mit einem Titel aus der URL.",
+      "savedHidden": "Unter {{category}} abgelegt – ausgeblendet, solange der Schlagwortfilter aktiv ist.",
+      "duplicated": "Die Kopie liegt unter {{category}}, bereit zum Bearbeiten.",
+      "deletedDescription": "Aus dem Tresor entfernt. Die verlinkte Seite bleibt unberührt."
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Links gespeichert",
+      "zeroDescription": "Speichere eine URL – eine Stellenanzeige, eine Fachbereichsseite, eine Person, die du kontaktieren sollst. Der Titel wird aus der Adresse gelesen.",
+      "search": "Kein Link erwähnt „{{query}}“ in Titel, Adresse, Notiz oder Kategorie.",
+      "both": "Kein Link ({{category}}) trägt die ausgewählten Schlagwörter.",
+      "bucketTitle": "Keine Links unter {{category}}",
+      "bucketDescription_one": "{{count}} Link liegt in den anderen Kategorien.",
+      "bucketDescription_other": "{{count}} Links liegen in den anderen Kategorien.",
+      "showAll": "Alle Kategorien anzeigen",
+      "keywordsTitle": "Kein Link trägt diese Schlagwörter"
+    },
+    "filterLabel": "Links nach Kategorie filtern",
+    "searchLabel": "Links suchen",
+    "searchPlaceholder": "Titel, Adresse oder Notiz suchen",
+    "form": {
+      "label": "Link speichern",
+      "hint": "Unter {{category}} gespeichert, mit einem Titel aus der URL. Bearbeite eine Zeile, um beides zu ändern.",
+      "placeholder": "URL einfügen …",
+      "save": "Link speichern"
+    }
+  },
+  "people": {
+    "add": "Person hinzufügen",
+    "searchLabel": "Personen suchen",
+    "searchPlaceholder": "Name, Rolle oder Notiz suchen",
+    "applicationsList": "Bewerbungsliste",
+    "toast": {
+      "removed": "Person entfernt",
+      "saved": "Person gespeichert"
+    },
+    "empty": {
+      "zeroTitle": "Noch niemand",
+      "zeroDescription": "Referenzpersonen, Kommissionsvorsitzende, Recruiter – alle, über die deine Suche läuft. Ordne sie den Stellen zu, bei denen sie genannt sind, dann erscheinen sie auch dort.",
+      "searchTitle": "Niemand passt dazu",
+      "searchDescription": "Versuch es mit einem Namensteil, einer Rolle oder einem Ort."
+    },
+    "namedOn": {
+      "recommender": "Referenz für {{names}}",
+      "contact": "Ansprechperson bei {{names}}",
+      "named": "Genannt bei {{names}}"
+    },
+    "form": {
+      "name": "Name",
+      "nameError": "Ein Name ist das Einzige, was nötig ist.",
+      "namePlaceholder": "z. B. Prof. Ngozi Okafor",
+      "role": "Rolle",
+      "rolePlaceholder": "z. B. Referenz, Kommissionsvorsitz, Recruiter",
+      "affiliation": "Einrichtung",
+      "affiliationPlaceholder": "z. B. Rice",
+      "affiliationHint": "Wo die Person tätig ist. Nicht mit einem Arbeitgeber verknüpft, bei dem du dich beworben hast.",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "namedOn": "Genannt bei",
+      "namedOnHint": "Jede Stelle, für die die Person schreibt, auswählt oder den Vorsitz hat.",
+      "notePlaceholder": "Was die Person gesagt hat, was sie dir schuldet, wann du nachhaken solltest.",
+      "save": "Person speichern"
+    }
+  },
+  "referee": {
+    "title": "Bewerbungen für {{name}}",
+    "description": "Hak die an, die verschickt werden sollen, und sag, was jedes Schreiben hervorheben soll. Deine Schwerpunkte und Notizen bleiben bei {{name}} für das nächste Mal.",
+    "include": "{{org}}, {{role}} einschließen",
+    "applied": "Beworben am {{date}}",
+    "noMaterials": "Keine Unterlagen abgelegt",
+    "materials_one": "{{count}} Unterlage",
+    "materials_other": "{{count}} Unterlagen",
+    "posting": "Stellenanzeige",
+    "noPosting": "Kein Link zur Stellenanzeige",
+    "highlight": "Schwerpunkte",
+    "highlightPlaceholder": "z. B. Lehre, NSF CAREER, kausale Inferenz",
+    "highlightHint": "Mit Kommas trennen.",
+    "note": "Notiz für die Person",
+    "notePlaceholder": "Alles Weitere: die Frist, an wen es gerichtet wird, worauf der Fachbereich Wert legt.",
+    "format": "Dateiformat",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Meine Unterlagen beifügen",
+    "withMaterialsCount": "Meine Unterlagen beifügen ({{count}})",
+    "tickOne": "Hak mindestens eine Bewerbung an.",
+    "chosen_one": "{{count}} Bewerbung",
+    "chosen_other": "{{count}} Bewerbungen",
+    "chosenZip_one": "{{count}} Bewerbung, als eine .zip",
+    "chosenZip_other": "{{count}} Bewerbungen, als eine .zip",
+    "preparing": "Wird vorbereitet …",
+    "download": "Herunterladen",
+    "toast": {
+      "saved": "Liste für {{name}} gespeichert",
+      "zip_one": "{{file}}: die Tabelle und {{count}} Dokument, in deinem Download-Ordner.",
+      "zip_other": "{{file}}: die Tabelle und {{count}} Dokumente, in deinem Download-Ordner.",
+      "zipMissing_one": "{{file}} liegt in deinem Download-Ordner, ohne {{count}} Dokument, das dieser Browser nicht mehr lesen konnte.",
+      "zipMissing_other": "{{file}} liegt in deinem Download-Ordner, ohne {{count}} Dokumente, die dieser Browser nicht mehr lesen konnte.",
+      "sheet": "{{file}}, in deinem Download-Ordner.",
+      "failed": "Liste konnte nicht erstellt werden",
+      "failedDescription": "Es wurde nichts heruntergeladen. Deine Schwerpunkte und Notizen wurden behalten.",
+      "highlights": "Schwerpunkte gespeichert"
+    }
+  }
+}

@@ -13,6 +13,7 @@
 import { describe, expect, it } from 'vitest'
 import filterSource from './BucketFilter.tsx?raw'
 import snippetsSource from '@/components/vault/SnippetsTool.tsx?raw'
+import vaultEn from '@/i18n/locales/en/vault.json'
 
 const strip = (source: string) =>
   source.replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ')
@@ -30,6 +31,7 @@ describe('a count chip keeps its shape (Q123)', () => {
   })
 
   it('is the filter the Snippets tab draws its kinds with', () => {
-    expect(strip(snippetsSource)).toMatch(/<BucketFilter\s+label="Filter snippets by kind"/)
+    expect(strip(snippetsSource)).toMatch(/<BucketFilter\s+label=\{t\('snippets\.filterLabel'\)\}/)
+    expect(vaultEn.snippets.filterLabel).toBe('Filter snippets by kind')
   })
 })

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LabelFilter } from '@/components/common/LabelFilter'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Segment } from '@/components/common/Segment'
@@ -19,15 +20,16 @@ import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
  * `satisfies` rather than a locally derived type: the URL contract in links.ts
  * owns the list of tools now, and this is where the tab labels live. Checked
  * against `VaultTool` so a tab whose value no route builder understands cannot
- * be added here without the compiler saying so.
+ * be added here without the compiler saying so. Each label is a `pages` catalog
+ * key, translated where the segment is drawn.
  */
 const TOOLS = [
-  { value: 'reminders', label: 'Reminders' },
-  { value: 'links', label: 'Links' },
-  { value: 'files', label: 'Files' },
-  { value: 'snippets', label: 'Snippets' },
-  { value: 'people', label: 'People' },
-  { value: 'tools', label: 'Tools' },
+  { value: 'reminders', label: 'vault.tools.reminders' },
+  { value: 'links', label: 'vault.tools.links' },
+  { value: 'files', label: 'vault.tools.files' },
+  { value: 'snippets', label: 'vault.tools.snippets' },
+  { value: 'people', label: 'vault.tools.people' },
+  { value: 'tools', label: 'vault.tools.tools' },
 ] as const satisfies readonly { value: VaultTool; label: string }[]
 
 /**
@@ -39,7 +41,8 @@ const TOOLS = [
  * the same shape: saved now, needed later. One page, one tool at a time.
  */
 export function Vault() {
-  useTitle('Vault')
+  const { t } = useTranslation('pages')
+  useTitle(t('vault.title'))
   // In the URL rather than in state, so a link can name a tool and a record
   // inside it: the spotlight and the reminders badge both point at
   // '/vault?tool=reminders&focus=…', and with the tab held locally they would
@@ -106,24 +109,30 @@ export function Vault() {
    * can act on it; up here every figure means "records in this tab".
    */
   const subtitle = showCounts
-    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets · ${people.length} people`
-    : 'Everything you set aside to come back to'
+    ? [
+        t('vault.counts.reminders', { count: reminders.length }),
+        t('vault.counts.links', { count: links.length }),
+        t('vault.counts.files', { count: files.length }),
+        t('vault.counts.snippets', { count: snippets.length }),
+        t('vault.counts.people', { count: people.length }),
+      ].join(' · ')
+    : t('vault.subtitle')
 
   return (
     <>
       <PageHeader
-        title="Vault"
+        title={t('vault.title')}
         subtitle={subtitle}
         settings={
           <>
             <PageOption
-              label="Show counts"
-              hint="Item totals in the page subtitle"
+              label={t('vault.showCounts')}
+              hint={t('vault.showCountsHint')}
               control={
                 <Switch
                   checked={showCounts}
                   onCheckedChange={setShowCounts}
-                  aria-label="Show counts"
+                  aria-label={t('vault.showCounts')}
                 />
               }
             />
@@ -160,8 +169,8 @@ export function Vault() {
            */
           <div ref={tabs} className="-mb-1 max-w-[calc(100vw-1.5rem)] min-w-0 overflow-x-auto pb-1">
             <Segment
-              label="Vault tool"
-              options={TOOLS}
+              label={t('vault.toolLabel')}
+              options={TOOLS.map((o) => ({ ...o, label: t(o.label) }))}
               value={tool}
               className="w-max"
               // `focus` is cleared with the tab: a highlighted row in the tool you

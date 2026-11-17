@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { useAgentRuns, useWaitingRuns } from '@jojo/service/react/agent-runs-context'
 import { useThreads } from '@jojo/service/react/use-threads'
@@ -26,6 +27,7 @@ import { report } from '@/lib/analytics'
  * conversation is asking, and offers a way back to it.
  */
 export function ApprovalHost() {
+  const { t } = useTranslation('assistant')
   const waiting = useWaitingRuns()
   const runs = useAgentRuns()
   const { threads } = useThreads()
@@ -39,7 +41,7 @@ export function ApprovalHost() {
      * which matters even though the composer is disabled mid-run, because the
      * openers sit there too and the overlap read as a rendering fault.
      */
-    <div className="pointer-events-none fixed right-0 bottom-[var(--dock-clearance,0px)] z-50 flex flex-col items-end gap-2 p-4">
+    <div className="pointer-events-none fixed end-0 bottom-[var(--dock-clearance,0px)] z-50 flex flex-col items-end gap-2 p-4">
       {waiting.map((run) => {
         const step = run.pending?.step
         if (!step) return null
@@ -70,7 +72,7 @@ export function ApprovalHost() {
              * right here: the run is blocked until this is answered.
              */
             role="alert"
-            aria-label={`${step.title} — waiting for you`}
+            aria-label={t('approval.waiting', { title: step.title })}
             className="pointer-events-auto w-full max-w-md rounded-lg border border-warning-border bg-panel p-3.5 shadow-lg"
           >
             <div className="flex items-start gap-2.5">
@@ -101,7 +103,9 @@ export function ApprovalHost() {
                     that genuinely does kill a run. There is nowhere to go
                     anyway: the question is answerable right here. */}
                 <p className="mt-1 text-xs text-text-2">
-                  Asked by {named?.title ?? 'a conversation'}. Nothing has changed yet.
+                  {named
+                    ? t('approval.askedBy', { name: named.title })
+                    : t('approval.askedByUnnamed')}
                 </p>
               </div>
             </div>
@@ -115,7 +119,7 @@ export function ApprovalHost() {
                   report('assistant_tool_decided', { decision: 'declined', destructive })
                 }}
               >
-                Don’t
+                {t('approval.decline')}
               </Button>
               <Button
                 type="button"
@@ -125,7 +129,7 @@ export function ApprovalHost() {
                   report('assistant_tool_decided', { decision: 'approved', destructive })
                 }}
               >
-                Allow
+                {t('approval.allow')}
               </Button>
             </div>
           </div>

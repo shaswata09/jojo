@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,6 +33,7 @@ export function ShutdownDialog({
   onConfirm: () => void
   onDismiss: () => void
 }) {
+  const { t } = useTranslation('scout')
   return (
     <Dialog
       open={pipeline !== null}
@@ -41,19 +43,15 @@ export function ShutdownDialog({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Switch off {pipeline?.name}?</DialogTitle>
-          <DialogDescription>
-            It has run twice without finding anything to suggest, and there is nothing waiting for
-            you to answer. Switching it off stops it looking; everything it has already found stays
-            where it is. You can turn it back on whenever you like.
-          </DialogDescription>
+          <DialogTitle>{t('shutdown.title', { name: pipeline?.name ?? '' })}</DialogTitle>
+          <DialogDescription>{t('shutdown.description')}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onDismiss}>
-            Keep it running
+            {t('shutdown.keep')}
           </Button>
           <Button type="button" onClick={onConfirm}>
-            Switch it off
+            {t('shutdown.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 const NAV_ROWS = [30, 44, 58, 72, 86, 100]
 
 /**
@@ -16,6 +18,7 @@ const NAV_ROWS = [30, 44, 58, 72, 86, 100]
  * side at 390px would halve both.
  */
 export function Doors() {
+  const { t } = useTranslation('guide')
   return (
     <svg
       viewBox="0 0 340 176"
@@ -23,13 +26,8 @@ export function Doors() {
       aria-labelledby="doors-title doors-desc"
       className="diagram h-auto w-full max-w-[460px]"
     >
-      <title id="doors-title">Where each page is reached from</title>
-      <desc id="doors-desc">
-        The six rows down the sidebar open the Dashboard, Applications, Calendar, Vault, Job scout
-        and Statistics. The four tiles beneath them open the Graph, Transfer and — for the bridge
-        and the model — Settings. The four icons at the right of the top bar open My profile,
-        Settings, the Assistant and this guide. Nothing in the sidebar list leads to those last six.
-      </desc>
+      <title id="doors-title">{t('screens.doorsDiagram.title')}</title>
+      <desc id="doors-desc">{t('screens.doorsDiagram.desc')}</desc>
 
       {/* The two pieces of chrome. */}
       <rect
@@ -54,11 +52,11 @@ export function Doors() {
       <rect x="10" y="10" width="74" height="14" rx="4" style={{ fill: 'var(--well)' }} />
       <rect x="102" y="8" width="94" height="12" rx="4" style={{ fill: 'var(--well)' }} />
       <text x="107" y="17" fontSize="7.5" style={{ fill: 'var(--text-3)' }} className="font-sans">
-        Search…
+        {t('screens.doorsDiagram.search')}
       </text>
       <rect x="204" y="8" width="26" height="12" rx="4" style={{ fill: 'var(--well)' }} />
       <text x="209" y="17" fontSize="7.5" style={{ fill: 'var(--text-3)' }} className="font-sans">
-        New
+        {t('screens.doorsDiagram.new')}
       </text>
 
       {/* Door one: the six nav rows. */}
@@ -114,19 +112,19 @@ export function Doors() {
 
       <g style={{ fill: 'var(--text-2)' }} className="font-sans">
         <text x="332" y="42" fontSize="10" textAnchor="end">
-          My profile · Settings ·
+          {t('screens.doorsDiagram.topBar.line1')}
         </text>
         <text x="332" y="55" fontSize="10" textAnchor="end">
-          Assistant · How to use
+          {t('screens.doorsDiagram.topBar.line2')}
         </text>
         <text x="102" y="76" fontSize="10">
-          Dashboard · Applications · Calendar
+          {t('screens.doorsDiagram.sidebar.line1')}
         </text>
         <text x="102" y="89" fontSize="10">
-          Vault · Job scout · Statistics
+          {t('screens.doorsDiagram.sidebar.line2')}
         </text>
         <text x="102" y="145" fontSize="10">
-          Graph · Transfer · Settings
+          {t('screens.doorsDiagram.tiles')}
         </text>
       </g>
     </svg>

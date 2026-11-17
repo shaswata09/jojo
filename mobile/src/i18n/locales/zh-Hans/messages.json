@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "申请",
+      "org": "雇主",
+      "role": "职位",
+      "item": "日期或提醒",
+      "file": "文件",
+      "link": "链接",
+      "snippet": "片段",
+      "posting": "已保存的招聘信息",
+      "match": "匹配",
+      "keyword": "关键词"
+    },
+    "isA": "是",
+    "fit": "匹配度 {{fit}}%",
+    "query": {
+      "undated": {
+        "question": "没有关联任何日期的申请",
+        "why": "无论多活跃，它们都不会出现在日历和未来一周里。"
+      },
+      "untagged": {
+        "question": "没有任何关键词的申请",
+        "why": "没人归类的记录，任何筛选都找不到。"
+      },
+      "orphanFiles": {
+        "question": "未归到任何申请下的文件",
+        "why": "文档容易散落；这里告诉你哪些没有任何东西指向它们。"
+      },
+      "orphanLinks": {
+        "question": "未归到任何申请下的链接",
+        "why": "同样的问题，针对你存下来准备回头看的招聘信息和网页。"
+      },
+      "busiest": {
+        "question": "你往来最多的雇主",
+        "why": "同时统计所有集合：申请、日期、文件和链接。"
+      },
+      "unpromoted": {
+        "question": "从未变成申请的匹配和招聘信息",
+        "why": "线索会悄悄过期；列表视图从不告诉你是哪些。"
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} 未 {{rel}} {{end}}",
+      "startAny": "任何记录",
+      "relAny": "关联到",
+      "endAny": "任何记录",
+      "startType": {
+        "application": "申请",
+        "org": "雇主",
+        "role": "职位",
+        "item": "日期或提醒",
+        "file": "文件",
+        "link": "链接",
+        "snippet": "片段",
+        "posting": "已保存的招聘信息",
+        "match": "匹配",
+        "keyword": "关键词"
+      },
+      "endType": {
+        "application": "一个申请",
+        "org": "一个雇主",
+        "role": "一个职位",
+        "item": "一个日期或提醒",
+        "file": "一个文件",
+        "link": "一个链接",
+        "snippet": "一个片段",
+        "posting": "一条已保存的招聘信息",
+        "match": "一个匹配",
+        "keyword": "一个关键词"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "今天",
+      "hint": "需要你做决定的事"
+    },
+    "apps": {
+      "label": "申请",
+      "hint": "列表和阶段看板"
+    },
+    "cal": {
+      "label": "日历",
+      "hint": "截止日期、面试和准备"
+    },
+    "reminders": {
+      "label": "提醒",
+      "hint": "资料库 · 你欠下的事和期限"
+    },
+    "links": {
+      "label": "链接",
+      "hint": "资料库 · 招聘信息、人脉和网页"
+    },
+    "files": {
+      "label": "文件",
+      "hint": "资料库 · 你记录的文档"
+    },
+    "snippets": {
+      "label": "片段",
+      "hint": "资料库 · 可重复使用的段落"
+    },
+    "tools": {
+      "label": "工具",
+      "hint": "资料库 · 计算器"
+    },
+    "scout": {
+      "label": "职位侦察",
+      "hint": "已保存的搜索、匹配和招聘信息"
+    },
+    "stats": {
+      "label": "统计",
+      "hint": "比率、漏斗和改进方向"
+    },
+    "graph": {
+      "label": "关系图",
+      "hint": "以网络形式呈现你的记录"
+    },
+    "profile": {
+      "label": "我的资料",
+      "hint": "基本信息、文档和匹配词"
+    },
+    "assistant": {
+      "label": "助手",
+      "hint": "连接模型之前先看示例"
+    },
+    "settings": {
+      "label": "设置",
+      "hint": "连接、外观、关键词和你的数据"
+    },
+    "transfer": {
+      "label": "传输",
+      "hint": "把所有内容传到电脑或从电脑传回"
+    },
+    "guide": {
+      "label": "使用说明",
+      "hint": "三个层次、各个屏幕和关系图"
+    },
+    "more": {
+      "label": "更多",
+      "hint": "jojo 的其余功能"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "新建申请"
+    },
+    "newApplicationFromLink": {
+      "label": "从链接新建申请",
+      "hint": "模型读取招聘信息并填好表单"
+    },
+    "newReminder": {
+      "label": "新建提醒"
+    },
+    "newEvent": {
+      "label": "新建日程"
+    },
+    "draftMessage": {
+      "label": "起草消息",
+      "hint": "来自你的邮件片段——不会生成任何内容"
+    },
+    "saveLink": {
+      "label": "保存链接",
+      "hint": "打开资料库的链接工具"
+    },
+    "recordDocument": {
+      "label": "记录文档",
+      "hint": "打开资料库的文件工具"
+    },
+    "savePosting": {
+      "label": "保存招聘信息",
+      "hint": "打开职位侦察"
+    }
+  },
+  "snooze": {
+    "soon1": "明天",
+    "later1": "推迟一天",
+    "soon3": "3 天后",
+    "later3": "推迟三天",
+    "soon7": "7 天后",
+    "later7": "推迟一周"
+  },
+  "itemActions": {
+    "reopened": "已重新打开 {{title}}",
+    "completed": "已完成 {{title}}",
+    "reopenedBody": "回到未完成列表，并再次计为待办。",
+    "completedBody": "它会离开未完成列表并计入今天——不会删除任何内容。",
+    "rescheduled": "已改期 {{title}}",
+    "nowDue": "现在的到期日是 {{date}}，这里和日历上都已更新。",
+    "movedTo": "已移到 {{date}}",
+    "copyTitle": "{{title}}（副本）",
+    "added": "已添加 {{title}}",
+    "copyBody": "{{date}}——副本带有相同的关键词。",
+    "deleted": "已删除 {{title}}",
+    "deletedReminder": "已从提醒列表和日历中移除。",
+    "deletedEvent": "已从日历中移除。"
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "是列表上方的关键词筛选把它们隐藏了。",
+    "noSearchMatch": "没有符合该搜索的内容",
+    "noBothMatch": "没有同时符合两个筛选的内容",
+    "clearBoth": "清除两个筛选",
+    "clearKeywords": "清除关键词"
+  },
+  "boardScan": {
+    "badAddress": "这个地址我打不开。",
+    "timeout": "该招聘网站响应太慢。",
+    "unreachable": "无法连接该招聘网站。",
+    "status": "该招聘网站返回了 {{status}}。",
+    "browserOnly": "{{host}} 只向真正的浏览器显示职位列表，因此无法在手机上读取。在电脑上，jojo 浏览器扩展可以读取它。"
+  },
+  "timelineForm": {
+    "title": "起一个你认得出的标题。",
+    "date": "选一个日期——没有日期的项目无处显示。",
+    "time": "请使用 14:30 这样的时间格式。"
+  },
+  "reader": {
+    "tooBig": "该文档为 {{size}} MB，而阅读器最多支持 {{max}} MB。",
+    "gone": "该文档的副本已不在此设备上。",
+    "empty": "无法从该文档中读出任何内容——它可能是扫描件。",
+    "noAddress": "还没有地址。请查看设置。",
+    "notConnected": "未连接文档阅读器，因此无法读取此文件的内容。它的地址填写在设置中。",
+    "noCopy": "该记录在此设备上没有存储副本，因此没有可读的内容。"
+  },
+  "jobs": {
+    "ready": "{{label}} 已完成",
+    "readyBody": "已保存到为之撰写的申请下。",
+    "failed": "{{label}} 未能完成"
+  },
+  "boot": {
+    "corrupt": "无法读取已保存的记录（{{detail}}）。",
+    "blocked": "存储被此设备上的其他程序锁定。",
+    "unsupported": "此设备没有本应用可用的存储。",
+    "threw": "完全无法打开存储。",
+    "banner": "未保存到此设备——{{why}}"
+  },
+  "posting": {
+    "needsReader": "这除了模型还需要文档阅读器——由它获取页面。地址在设置里。",
+    "empty": "该页面返回的内容几乎为空。用 JavaScript 渲染的招聘网站对非浏览器只返回空壳——请在这里打开并保存页面。",
+    "note": "由模型读取自 {{url}}",
+    "askedTwice": "问了两次，结果相同。"
+  },
+  "localService": {
+    "stopped": "发送前已停止。"
+  },
+  "clipboard": {
+    "tooBig": "剪贴板放不下",
+    "tooBigBody": "你的记录共 {{size}}，而 Android 剪贴板大约只能容纳 {{max}} 的文本。没有复制任何内容。请使用传输，通过本地网络把所有内容发送到你的电脑。",
+    "copied": "已复制到剪贴板",
+    "copiedBody": "一份可以粘贴到笔记或文件里的备份。你附加的文档会留在这部手机上——恢复时只有它们的记录行，没有内容。"
+  },
+  "documents": {
+    "incomplete": "复制未完成。",
+    "nothingCopied": "没有复制任何内容。"
+  },
+  "weekday": {
+    "sun": "周日",
+    "mon": "周一",
+    "tue": "周二",
+    "wed": "周三",
+    "thu": "周四",
+    "fri": "周五",
+    "sat": "周六"
+  },
+  "owed": {
+    "overdue": "已逾期",
+    "today": "今天",
+    "tomorrow": "明天",
+    "rest": "本周其余时间"
+  },
+  "receive": {
+    "declined": "没有做任何更改。再次扫描二维码即可接收。"
+  }
+}

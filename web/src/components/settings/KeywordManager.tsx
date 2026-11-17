@@ -1,4 +1,6 @@
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Pencil, Plus, Tag, Trash2 } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { DeleteKeywordDialog } from '@/components/common/DeleteKeywordDialog'
@@ -15,8 +17,8 @@ import { isCommitEnter } from '@/components/common/enter-key'
 /** Whether two names are the same keyword. Folded, so case is not a difference. */
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
-function usage(n: number) {
-  return n === 0 ? 'Not on any record yet' : n === 1 ? 'Used on 1 record' : `Used on ${n} records`
+function usage(n: number, t: TFunction<'settings'>) {
+  return n === 0 ? t('keywords.usage.none') : t('keywords.usage.used', { count: n })
 }
 
 /** One keyword: what it is called, what it costs to delete, and its colour. */
@@ -27,6 +29,7 @@ function KeywordRow({
   label: Label
   onRequestDelete: (id: string) => void
 }) {
+  const { t } = useTranslation('settings')
   const { countFor, renameLabel, setTone } = useLabels()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(label.name)
@@ -46,7 +49,7 @@ function KeywordRow({
   const save = () => {
     const next = draft.trim()
     if (next !== label.name && !renameLabel(label.id, next)) {
-      setError(next ? 'Another keyword already has that name.' : 'A keyword needs a name.')
+      setError(next ? t('keywords.errors.taken') : t('keywords.errors.blank'))
       return
     }
     setEditing(false)
@@ -58,7 +61,7 @@ function KeywordRow({
         editing ? (
           <div className="space-y-1.5">
             <label htmlFor={fieldId} className="sr-only">
-              Rename {label.name}
+              {t('keywords.renameNamed', { name: label.name })}
             </label>
             <div className="flex items-center gap-1.5">
               <Input
@@ -82,10 +85,10 @@ function KeywordRow({
                 }}
               />
               <Button size="xs" onClick={save} disabled={!draft.trim()}>
-                Save
+                {t('shared.save')}
               </Button>
               <Button size="xs" variant="ghost" onClick={() => setEditing(false)}>
-                Cancel
+                {t('shared.cancel')}
               </Button>
             </div>
             {error ? (
@@ -100,7 +103,7 @@ function KeywordRow({
           </Chip>
         )
       }
-      description={usage(used)}
+      description={usage(used, t)}
       control={
         <div className="flex items-center gap-1.5">
           <ToneSwatches
@@ -108,7 +111,7 @@ function KeywordRow({
             value={label.tone}
             {...(label.ink === undefined ? {} : { ink: label.ink })}
             onChange={(tone, ink) => setTone(label.id, tone, ink)}
-            className="mr-1"
+            className="me-1"
           />
           {/* Rendered in both states rather than swapped out: SettingRow's
               control cell is shrink-0, so a button appearing and disappearing
@@ -117,8 +120,8 @@ function KeywordRow({
             variant="ghost"
             size="icon-sm"
             aria-pressed={editing}
-            aria-label={`Rename ${label.name}`}
-            title="Rename"
+            aria-label={t('keywords.renameNamed', { name: label.name })}
+            title={t('keywords.rename')}
             onClick={() => (editing ? setEditing(false) : startEditing())}
           >
             <Pencil className="size-3.5" strokeWidth={1.9} aria-hidden />
@@ -126,8 +129,8 @@ function KeywordRow({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={`Delete ${label.name}`}
-            title="Delete"
+            aria-label={t('keywords.deleteNamed', { name: label.name })}
+            title={t('keywords.delete')}
             className="text-text-3 hover:bg-danger-soft hover:text-danger"
             onClick={() => onRequestDelete(label.id)}
           >
@@ -154,6 +157,7 @@ function KeywordRow({
  * them is the place that admits it.
  */
 export function KeywordManager() {
+  const { t } = useTranslation('settings')
   const { labels, addLabel } = useLabels()
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
@@ -168,7 +172,7 @@ export function KeywordManager() {
     // which is right in a picker — it selects what you meant — and wrong here,
     // where the row would not move and nothing would appear to have happened.
     if (labels.some((l) => sameName(l.name, name))) {
-      setError('That keyword already exists.')
+      setError(t('keywords.errors.exists'))
       return
     }
     addLabel(name)
@@ -178,17 +182,14 @@ export function KeywordManager() {
 
   return (
     <Panel data-tour="keyword-manager">
-      <PanelTitle hint="shared by every record">Keywords</PanelTitle>
-      <p className="mb-3 text-sm text-text-2">
-        One set across applications, reminders and the vault. Renaming one carries everywhere it is
-        shown; deleting one takes it off every record that carries it.
-      </p>
+      <PanelTitle hint={t('keywords.hint')}>{t('keywords.title')}</PanelTitle>
+      <p className="mb-3 text-sm text-text-2">{t('keywords.intro')}</p>
 
       {labels.length === 0 ? (
         <EmptyState
           icon={Tag}
-          title="No keywords yet"
-          description="Add one below, or from the keyword filter above any list. Keywords are yours — they are not the fixed role tags in the top bar."
+          title={t('keywords.empty.title')}
+          description={t('keywords.empty.description')}
         />
       ) : (
         // Wrapped, so SettingRow's `first:border-t-0` matches. Left as direct
@@ -209,13 +210,13 @@ export function KeywordManager() {
         }}
       >
         <label htmlFor={newId} className="sr-only">
-          New keyword
+          {t('keywords.newKeyword')}
         </label>
         <Input
           id={newId}
           value={draft}
           autoComplete="off"
-          placeholder="e.g. Referral"
+          placeholder={t('keywords.placeholder')}
           className="w-52"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
@@ -226,7 +227,7 @@ export function KeywordManager() {
         />
         <Button type="submit" size="sm" disabled={!draft.trim()}>
           <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-          Add keyword
+          {t('keywords.add')}
         </Button>
         {error ? (
           <p id={errorId} role="alert" className="w-full text-xs text-danger">

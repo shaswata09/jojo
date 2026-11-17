@@ -1,5 +1,6 @@
 import { BookOpenText, Bug, Puzzle, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -70,6 +71,7 @@ function Step({
   onSkip: () => void
   onDone: () => void
 }) {
+  const { t } = useTranslation()
   return (
     <Dialog
       open
@@ -92,19 +94,17 @@ function Step({
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={onSkip}>
-            Skip for now
+            {t('setup.skip')}
           </Button>
           {/* One button that changes its word rather than two that appear and
               disappear: the panel below reports its own success with a chip, and
               a second success signal in the footer would be saying it twice. */}
           <Button type="button" onClick={onDone}>
-            {done ? doneLabel : 'Continue'}
+            {done ? doneLabel : t('setup.continue')}
           </Button>
         </DialogFooter>
 
-        <p className="text-xs text-text-3">
-          Every one of these is optional and you can set it up later under Settings.
-        </p>
+        <p className="text-xs text-text-3">{t('setup.optional')}</p>
       </DialogContent>
     </Dialog>
   )
@@ -118,21 +118,19 @@ function Step({
  * demo and both pipelines sit paused.
  */
 export function ConnectModelStep({ onSkip, onDone }: { onSkip: () => void; onDone: () => void }) {
+  const { t } = useTranslation()
   const { settings } = useModelSettings()
   return (
     <Step
       icon={<Sparkles className="size-4 text-accent" strokeWidth={1.8} aria-hidden />}
-      title="Connect a model"
+      title={t('setup.model.title')}
       done={isConfigured(settings)}
-      doneLabel="Done"
+      doneLabel={t('setup.done')}
       onSkip={onSkip}
       onDone={onDone}
       body={<LocalModelPanel bare />}
     >
-      This is what makes jojo agentic rather than a filing cabinet: it can then answer questions
-      about your search, write follow-ups and drafts, and run the Job Scout pipelines that keep your
-      records complete and watch for postings. Point it at a model on your own machine and nothing
-      leaves the device.
+      {t('setup.model.body')}
     </Step>
   )
 }
@@ -145,20 +143,19 @@ export function ConnectModelStep({ onSkip, onDone }: { onSkip: () => void; onDon
  * own copy says the same in one line, and `Onboarding` enforces the ordering.
  */
 export function DocumentReaderStep({ onSkip, onDone }: { onSkip: () => void; onDone: () => void }) {
+  const { t } = useTranslation()
   const { reader } = useModelSettings()
   return (
     <Step
       icon={<BookOpenText className="size-4 text-accent" strokeWidth={1.8} aria-hidden />}
-      title="Let it read your documents"
+      title={t('setup.reader.title')}
       done={reader.length > 0}
-      doneLabel="Done"
+      doneLabel={t('setup.done')}
       onSkip={onSkip}
       onDone={onDone}
       body={<DocumentReaderPanel bare />}
     >
-      Without this the assistant can see a document’s name and nothing else. Run MarkItDown on this
-      machine — two commands, below — and it can read what is inside your CVs, cover letters and
-      saved postings when it drafts and answers.
+      {t('setup.reader.body')}
     </Step>
   )
 }
@@ -206,6 +203,7 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
    * reaches this step a second time — a reset, a second browser — sees what is
    * actually set.
    */
+  const { t } = useTranslation()
   const [crashes, setCrashes] = useState(crashEnabled)
   // Not `analyticsEnabled` alone: it reads false until this very question has
   // been answered, which drew the usage switch off under "both on".
@@ -246,13 +244,9 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bug className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-            Crash reports and usage
+            {t('setup.crash.title')}
           </DialogTitle>
-          <DialogDescription>
-            Two separate things, both on — turn off either one here or later in Settings. Neither
-            can carry your records: not an application, a document, a note, a profile or a
-            conversation.
-          </DialogDescription>
+          <DialogDescription>{t('setup.crash.description')}</DialogDescription>
         </DialogHeader>
 
         {/*
@@ -268,54 +262,49 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
          * shown to them on the next screen.
          */}
         <div className="rounded-md border border-hairline bg-well p-3">
-          <p className="text-xs font-medium text-text-1">What is in a report</p>
+          <p className="text-xs font-medium text-text-1">{t('setup.crash.inReport')}</p>
           <ul className="mt-1.5 space-y-1 text-xs text-text-2">
-            <li>· The error message and where in jojo it happened.</li>
-            <li>· The stack trace, which names the code that failed.</li>
+            <li>· {t('setup.crash.inError')}</li>
+            <li>· {t('setup.crash.inStack')}</li>
           </ul>
-          <p className="mt-2.5 text-xs font-medium text-text-1">What is never in one</p>
+          <p className="mt-2.5 text-xs font-medium text-text-1">{t('setup.crash.never')}</p>
           <ul className="mt-1.5 space-y-1 text-xs text-text-2">
-            <li>· Your applications, documents, notes, profile or conversations.</li>
-            <li>
-              · Your API keys, the addresses you use, your home directory, or any email address —
-              these are stripped out before a report is written, not before it is sent.
-            </li>
+            <li>· {t('setup.crash.neverRecords')}</li>
+            <li>· {t('setup.crash.neverSecrets')}</li>
           </ul>
         </div>
 
         <p className="text-sm text-text-2">
-          In this browser and in the jojo extension, crash reports{' '}
-          <span className="text-text-1">stay on this device</span>: nothing is uploaded, and a
-          backup file does not carry them. You read them yourself under Settings. On the jojo phone
-          app the same report is also sent to Google&apos;s Firebase Crashlytics, which adds your
-          device model, its operating system version, and a random id it uses to count how many
-          people hit the same crash — no name, no account, nothing tied to you. Usage counts, the
-          second switch below, go to Google Analytics from every version including this one.
+          <Trans
+            t={t}
+            i18nKey="setup.crash.where"
+            components={{ em: <span className="text-text-1" /> }}
+          />
         </p>
 
         <div className="space-y-1">
           {CRASH_CAPABILITY === 'off' ? null : (
             <SettingRow
-              label="Keep crash reports"
-              description="The error and where it happened. Stays on this device in the browser."
+              label={t('setup.crash.keep')}
+              description={t('setup.crash.keepHint')}
               control={
                 <Switch
                   checked={crashes}
                   onCheckedChange={setCrashes}
-                  aria-label="Keep crash reports"
+                  aria-label={t('setup.crash.keep')}
                 />
               }
             />
           )}
           {ANALYTICS_CAPABILITY === 'off' ? null : (
             <SettingRow
-              label="Share which features I use"
-              description="Counts only — which screens are opened, how often. Never what is in them."
+              label={t('setup.crash.share')}
+              description={t('setup.crash.shareHint')}
               control={
                 <Switch
                   checked={usage}
                   onCheckedChange={setUsage}
-                  aria-label="Share which features I use"
+                  aria-label={t('setup.crash.share')}
                 />
               }
             />
@@ -323,13 +312,7 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         </div>
 
         {ANALYTICS_CAPABILITY === 'off' ? null : (
-          <p className="text-sm text-text-2">
-            The second one is the only thing jojo sends about what you DO, and it can only ever say
-            things from a fixed list — &ldquo;the vault was opened&rdquo;, &ldquo;an application was
-            added&rdquo;, &ldquo;there are 6&ndash;20 of them&rdquo;. It cannot name an employer, a
-            role, a file or anything you typed, because those words are not in the list. It goes to
-            Google Analytics so we can see which parts of jojo are worth more work.
-          </p>
+          <p className="text-sm text-text-2">{t('setup.crash.usageNote')}</p>
         )}
 
         <DialogFooter>
@@ -340,7 +323,7 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
               choose(false, false)
             }}
           >
-            Turn both off
+            {t('setup.crash.bothOff')}
           </Button>
           <Button
             type="button"
@@ -348,14 +331,11 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
               choose(crashes, usage)
             }}
           >
-            {crashes || usage ? 'Save choices' : 'Continue with both off'}
+            {crashes || usage ? t('setup.crash.save') : t('setup.crash.continueOff')}
           </Button>
         </DialogFooter>
 
-        <p className="text-xs text-text-3">
-          You can change either of these at any time under Settings, and turning one off also
-          discards what it kept.
-        </p>
+        <p className="text-xs text-text-3">{t('setup.crash.later')}</p>
       </DialogContent>
     </Dialog>
   )
@@ -371,20 +351,19 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
  * left out.
  */
 export function ExtensionStep({ onSkip, onDone }: { onSkip: () => void; onDone: () => void }) {
+  const { t } = useTranslation()
   const { installed } = useCaptureInbox()
   return (
     <Step
       icon={<Puzzle className="size-4 text-accent" strokeWidth={1.8} aria-hidden />}
-      title="Keep the postings you apply to"
+      title={t('setup.extension.title')}
       done={installed === true}
-      doneLabel="Done"
+      doneLabel={t('setup.done')}
       onSkip={onSkip}
       onDone={onDone}
       body={<CaptureExtensionPanel />}
     >
-      Job adverts come down, often before you hear back. The browser extension saves a posting as it
-      reads today, into your own vault — and it is also how the Job Scout reads the boards you
-      follow.
+      {t('setup.extension.body')}
     </Step>
   )
 }

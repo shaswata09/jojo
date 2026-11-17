@@ -1,0 +1,103 @@
+{
+  "days_other": "{{count}} 天",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "把更多精力放在{{label}}上。",
+      "because": {
+        "source": {
+          "replied_other": "经这个来源，{{of}} 份中有 {{count}} 份得到回复（{{rate}}%，可能在 {{low}}–{{high}}% 之间），而{{worst}}是 {{worstOf}} 份中 {{worstCount}} 份（{{worstRate}}%，可能在 {{worstLow}}–{{worstHigh}}% 之间）。按来源划分。",
+          "interview_other": "经这个来源，{{of}} 份中有 {{count}} 份进入面试（{{rate}}%，可能在 {{low}}–{{high}}% 之间），而{{worst}}是 {{worstOf}} 份中 {{worstCount}} 份（{{worstRate}}%，可能在 {{worstLow}}–{{worstHigh}}% 之间）。按来源划分。"
+        },
+        "role": {
+          "replied_other": "在这类职位中，{{of}} 份中有 {{count}} 份得到回复（{{rate}}%，可能在 {{low}}–{{high}}% 之间），而{{worst}}是 {{worstOf}} 份中 {{worstCount}} 份（{{worstRate}}%，可能在 {{worstLow}}–{{worstHigh}}% 之间）。按职位类型划分。",
+          "interview_other": "在这类职位中，{{of}} 份中有 {{count}} 份进入面试（{{rate}}%，可能在 {{low}}–{{high}}% 之间），而{{worst}}是 {{worstOf}} 份中 {{worstCount}} 份（{{worstRate}}%，可能在 {{worstLow}}–{{worstHigh}}% 之间）。按职位类型划分。"
+        }
+      }
+    },
+    "late": {
+      "headline_other": "处理 {{count}} 条逾期的跟进。",
+      "because": "这些是你已经认定值得做的跟进，针对的是雇主已经看过的申请。这份清单上没有别的事比它更接近完成。"
+    },
+    "silent": {
+      "headline_other": "跟进 {{count}} 份已经没有动静的申请。",
+      "because_other": "你收到回复通常需要 {{days}}，而这些申请已经超过这个时间，仍然没有回音。这是你自己的数据，不是经验法则。"
+    },
+    "stale": {
+      "headline_other": "记录 {{count}} 份申请的进展。",
+      "because_other": "两周内没有为它们记下任何内容。这一页上的每个比率，都只和记下来的内容一样可靠。"
+    },
+    "drafts": {
+      "headlineSingle": "把这份草稿完成，或者放弃它。",
+      "headline_other": "在 {{count}} 份草稿中完成最接近完成的那份，或者放弃它们。",
+      "because_other": "草稿在发出之前不起任何作用。最早的一份已经开着 {{count}} 天了。"
+    },
+    "background": {
+      "headline": "让 jojo 读取你的简历。",
+      "because": "你自己的背景还没有任何记录，所以无法拿任何申请去对照职位的要求。只需要一份文件和一次确认。"
+    },
+    "funnel": {
+      "replies": {
+        "headline": "在发出下一份之前，重写开头一段。",
+        "because": "和典型求职相比，这次求职在回复这一步落后最多。{{of}} 份中 {{got}} 份（{{rate}}%），而典型求职为 {{typical}}%——这是 jojo 选定的一个整数作为对照，并非从任何人身上测得。"
+      },
+      "interviews": {
+        "headline": "在前三行就让匹配度一目了然。",
+        "because": "回复后停在电话面试之前，是这里最大的缺口——对方有兴趣，但你的理由没有打动人。{{of}} 份中 {{got}} 份（{{rate}}%），而典型求职为 {{typical}}%——这是 jojo 选定的一个整数作为对照，并非从任何人身上测得。"
+      }
+    },
+    "clear": {
+      "headline": "这里没有需要跟进的事。",
+      "because_other": "所有跟进都按时，没有申请失去动静，也没有等待中的草稿。已发出 {{count}} 份申请。"
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "已发出",
+      "replies": "回复",
+      "interviews": "面试",
+      "referrals": "内推",
+      "followUps": "跟进",
+      "keptMoving": "保持推进"
+    },
+    "basis": {
+      "sent_other": "{{of}} 份中 {{count}} 份已不再是草稿",
+      "replies_other": "{{of}} 份中 {{count}} 份得到回复",
+      "interviews_other": "{{of}} 份中 {{count}} 份进入面试",
+      "referrals_other": "{{of}} 份中 {{count}} 份来自内推",
+      "followUpsNone": "没有待办",
+      "followUps_other": "{{of}} 条待办跟进中 {{count}} 条已逾期",
+      "keptMovingNone": "没有进行中的申请",
+      "keptMoving_other": "{{of}} 份中 {{count}} 份在最近两周有更新"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "没有停留在草稿里的申请。与其再加更多，不如保持每一份的用心。",
+        "some_other": "还有 {{count}} 份申请停留在草稿中。草稿在发出之前不起作用，最接近完成的那份成本最低。"
+      },
+      "replies": {
+        "nothingSent": "还没有发出任何申请，所以没有可以衡量回复的基础。",
+        "none_other": "已发出的 {{count}} 份申请都还没有回复。这是在发更多之前要先改进的一步——针对每个职位改写开头一段，比什么都管用。",
+        "all": "每一份已发出的申请都得到了回复。开头一段不管在做什么，继续保持。",
+        "some_other": "{{of}} 份中有 {{count}} 份得到回复。针对每个职位改写开头一段，最能提升这个数字。"
+      },
+      "interviews": {
+        "noReply": "还没有收到回复，所以还谈不上在电话面试前停滞。",
+        "none_other": "已收到 {{count}} 条回复，但还没有一条变成电话面试。这个缺口通常是因为第一段没让匹配度显而易见。",
+        "some_other": "{{count}} 条回复中有 {{interviewed}} 条变成了电话面试。回复停在电话面试之前，通常说明匹配度没有尽早显现。"
+      },
+      "referrals": {
+        "none": "这些申请都不是通过引荐来的。被推荐的申请得到回复的可能性要高好几倍，所以一份抵得上好几份冷投。",
+        "some_other": "{{of}} 份中有 {{count}} 份是通过引荐来的。这是清单上回报最高、也最难规模化的一项——所以值得在下一次冷投之前就去问，而不是之后。"
+      },
+      "followUps": {
+        "none": "没有逾期的跟进。发出后大约一周的那次跟进，通常最有效。",
+        "late_other": "{{count}} 条跟进已逾期。先处理这些，通常比去申请新职位见效更快。"
+      },
+      "keptMoving": {
+        "none": "没有失去动静的申请。事情发生时就记录下来，才能让这些数据保持真实。",
+        "stale_other": "{{count}} 份进行中的申请两周内没有任何动静。简短地催一下，比重新开始申请别处成本更低。"
+      }
+    }
+  }
+}

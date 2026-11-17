@@ -1,0 +1,254 @@
+{
+  "screen": {
+    "title": "Cómo usar jojo",
+    "pageLabel": "Página de la guía",
+    "takeTour": "Hacer el recorrido",
+    "pages": {
+      "overview": {
+        "label": "Resumen",
+        "subtitle": "Todo funciona en tu dispositivo. Empieza con lo sencillo y añade potencia cuando la quieras."
+      },
+      "screens": {
+        "label": "Pantallas",
+        "subtitle": "Para qué sirve cada pantalla, y un acceso directo a ella."
+      },
+      "graph": {
+        "label": "Grafo",
+        "subtitle": "El modelo de registros que hay debajo de las siete listas."
+      },
+      "tools": {
+        "label": "Herramientas",
+        "subtitle": "Qué puede hacer el asistente con tus registros, y qué lo detiene."
+      },
+      "built": {
+        "label": "Hecho con",
+        "subtitle": "De qué está hecho esto, y qué sigue siendo provisional."
+      }
+    }
+  },
+  "overview": {
+    "active": "activo",
+    "notConnected": "no conectado",
+    "layers": {
+      "device": {
+        "name": "Solo este dispositivo",
+        "requires": "Nada que configurar",
+        "gives": "Sigue candidaturas, plazos, seguimientos y documentos"
+      },
+      "model": {
+        "name": "+ Modelo local",
+        "requires": "Ollama, vLLM o LM Studio, o una clave gratuita de NVIDIA",
+        "gives": "Un asistente con conversaciones que lee y escribe tus registros (cada cambio se te muestra antes) y «Pregunta al grafo» en una frase"
+      },
+      "reader": {
+        "name": "+ Lector de documentos",
+        "requires": "MarkItDown, en una dirección que escribes tú",
+        "gives": "El asistente lee el contenido de tus CV y ofertas guardadas, y una oferta que añades desde un enlace rellena su propio formulario"
+      },
+      "computer": {
+        "name": "+ Tu ordenador",
+        "requires": "Ambos en la misma red",
+        "gives": "Transferir mueve toda la bóveda entre este teléfono y tu ordenador, sin nada en medio"
+      }
+    },
+    "gettingStarted": "Primeros pasos",
+    "progress": "{{done}} de {{total}} hechos",
+    "allDone": "Todos los pasos están hechos. La lista lee tus registros, así que se actualiza si los borras.",
+    "howItWorks": "Cada paso abre la función real y se marca solo cuando existe un registro. Nada de esto es un tutorial que tengas que aguantar.",
+    "done": "Hecho",
+    "steps": {
+      "application": {
+        "title": "Añade una candidatura",
+        "body": "Un puesto, su etapa y su plazo. Todo lo demás en jojo cuelga de este registro.",
+        "label": "Nueva candidatura"
+      },
+      "dated": {
+        "title": "Ponle fecha a algo",
+        "body": "Los plazos, entrevistas y visitas al campus son un mismo tipo de registro, así que llegan a la vez al calendario, a la semana próxima y a la candidatura.",
+        "label": "Nuevo evento"
+      },
+      "reminder": {
+        "title": "Programa un seguimiento",
+        "body": "Un recordatorio es el mismo registro con un aviso activado. Cuando pasa su fecha, se marca en Hoy hasta que lo completes.",
+        "label": "Nuevo recordatorio"
+      },
+      "posting": {
+        "title": "Guarda una oferta antes de que la retiren",
+        "body": "No se descarga nada ni se guarda ninguna copia: se conservan la URL, el empleador deducido de ella y el día en que la guardaste. Basta para volver a encontrar el anuncio.",
+        "label": "Abrir el explorador de empleo"
+      },
+      "file": {
+        "title": "Archiva tus documentos",
+        "body": "Registra un CV o una carta en la bóveda. Se guardan nombres, tamaños y tipos; el archivo en sí nunca se lee.",
+        "label": "Abrir la bóveda"
+      },
+      "keyword": {
+        "title": "Etiqueta algo con una palabra clave",
+        "body": "Las palabras clave son tuyas y las comparten candidaturas, recordatorios y todo lo de la bóveda, a diferencia de las etiquetas de función fijas. El botón de etiqueta de cualquier fila añade una.",
+        "label": "Gestionar palabras clave"
+      },
+      "draft": {
+        "title": "Redacta un mensaje",
+        "body": "Se construye a partir de tus propios fragmentos de correo, con la función, el empleador y las fechas rellenados desde el registro. El nombre de una persona nunca se rellena por ti. Nada aquí registra que lo enviaste, así que este paso no se marca solo.",
+        "label": "Redactar un mensaje"
+      }
+    },
+    "profile": {
+      "title": "Completa tu perfil",
+      "hint": "el perfil no forma parte de la lista",
+      "body": "Tus datos básicos, enlaces, puestos objetivo y términos de coincidencia están en Mi perfil. Son lo que usaría el explorador para puntuar y el asistente para redactar, así que importan; pero esta versión solo los conserva durante la visita en lugar de escribirlos en algún sitio, por eso la lista de arriba no puede marcarlos.",
+      "open": "Abrir mi perfil"
+    },
+    "database": {
+      "title": "La aplicación es la base de datos",
+      "body": "Tus registros se guardan en este dispositivo y sobreviven a un reinicio. No se envía nada a ningún sitio: sin cuenta, sin sincronización, sin llamadas de red. En Ajustes puedes borrarlos, volver a cargar los datos de demostración o exportar una copia al portapapeles."
+    }
+  },
+  "screens": {
+    "intro": "Cada pantalla de la aplicación, y la frase que dice para qué sirve. Al tocar una fila se abre: esta página es un acceso además de una leyenda.",
+    "open": "Abrir {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "En la barra de pestañas",
+        "hint": "siempre a un toque"
+      },
+      "vault": {
+        "title": "Dentro de la bóveda",
+        "hint": "cinco herramientas, una pestaña"
+      },
+      "more": {
+        "title": "Detrás de Más",
+        "hint": "el resto de jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Cada lista de esta aplicación es una vista de un mismo conjunto de registros. Un registro es un <b>nodo</b>; una conexión entre dos registros es una <b>arista</b> con nombre. Ese es todo el modelo, y es la razón por la que se puede responder a una pregunta que cruza dos listas.",
+    "open": "Abrir el grafo",
+    "kinds_one": "{{count}} tipo",
+    "kinds_other": "{{count}} tipos",
+    "nodes": "Nodos",
+    "nodesIntro": "Un nodo por registro, más tres que solo existen como conexiones: un empleador, una función y una palabra clave son nodos para que todo lo archivado bajo uno se pueda encontrar desde él.",
+    "edges": "Aristas",
+    "edgesIntro": "Cada una tiene una dirección y un nombre. El nombre es lo que el generador de preguntas de la pantalla Grafo pone en su fila central.",
+    "relShape": {
+      "AT": "Candidatura → Empleador",
+      "IS": "Candidatura → Función",
+      "ABOUT": "Fecha o recordatorio → Candidatura",
+      "FILED_UNDER": "Archivo, enlace o fragmento → Candidatura",
+      "TAGS": "Palabra clave → cualquier registro",
+      "BECAME": "Oferta guardada o coincidencia → Candidatura"
+    },
+    "deleteTitle": "Eliminar desvincula, no borra en cascada",
+    "deleteBody": "Quitar una candidatura quita ese nodo y las aristas que lo tocan. Los recordatorios, archivos y ofertas guardadas que estaban archivados bajo ella se quedan: son registros propios y sobreviven sin nada que apunte a ellos. Cada eliminación de la aplicación lo dice, y el generador de preguntas de la pantalla Grafo es donde encuentras lo que se ha quedado suelto: pide los archivos que no tienen vínculo con una candidatura."
+  },
+  "tools": {
+    "inTotal": "{{count}} en total",
+    "canDo": {
+      "title": "Qué puede hacer el asistente",
+      "body_one": "El asistente no toca tus pantallas por ti. Llama a la misma {{count}} operación que llaman los botones: el mismo código, con las mismas comprobaciones. No hay una segunda puerta, y por eso una edición del asistente aparece en tu historial exactamente igual que una hecha por ti.",
+      "body_other": "El asistente no toca tus pantallas por ti. Llama a las mismas {{count}} operaciones que llaman los botones: el mismo código, con las mismas comprobaciones. No hay una segunda puerta, y por eso una edición del asistente aparece en tu historial exactamente igual que una hecha por ti.",
+      "irreversible": "Dos de esas {{count}} no se pueden deshacer en absoluto: las que reemplazan o vacían todo el almacén. Nunca se ofrecen al asistente salvo que tus propias palabras las pidan, e incluso entonces se detienen para pedir confirmación.",
+      "open": "Abrir el asistente"
+    },
+    "stats": {
+      "reads": {
+        "label_one": "forma de consultar",
+        "label_other": "formas de consultar",
+        "hint": "leer nunca cambia nada"
+      },
+      "writes": {
+        "label_one": "forma de cambiar",
+        "label_other": "formas de cambiar",
+        "hint": "todas se pueden deshacer…"
+      },
+      "destructive": {
+        "label": "marcadas como destructivas",
+        "hint": "…salvo dos, que preguntan antes"
+      }
+    },
+    "gate": {
+      "title": "Qué impide que se ejecute la equivocada",
+      "hint": "la parte que de verdad sostiene",
+      "body": "Un modelo de lenguaje puede pedir cualquier cosa. Puede nombrar una herramienta que nunca se le mostró, o inventarse una que no existe; los modelos pequeños lo hacen a menudo, y no es señal de que algo vaya mal. Por eso jojo no depende de que el modelo tenga cuidado.",
+      "distinctionTitle": "La distinción que importa",
+      "distinction": "Elegir qué mostrar al modelo es una pista. Comprobar qué llamó de verdad es una regla, y la regla depende de quién eligió el conjunto. Donde lo fija la pantalla (Pregunta al grafo, un flujo del explorador), una llamada a cualquier cosa fuera de él se rechaza antes de buscar nada, y mucho menos ejecutarlo. En un chat, el conjunto es lo que jojo supone que necesitas, así que una llamada fuera de él no se rechaza: pasa por la misma comprobación de aprobación que cualquier otra llamada, que te pregunta antes salvo que la conversación esté configurada para funcionar sola. La única excepción es borrar tus registros, lo único que no se puede deshacer: se rechaza salvo que hayas pedido borrarlo todo con esas mismas palabras.",
+      "askGraph": "Por eso el cuadro «Pregunta al grafo» de la pantalla Grafo puede ofrecer con seguridad dos herramientas de solo lectura. No confía en que el modelo se quede dentro de ellas."
+    },
+    "pick": {
+      "title": "Cómo elige la correcta",
+      "hint": "para que una petición nunca se quede a medias",
+      "cost_one": "Mostrar a un modelo {{count}} herramienta a la vez cuesta unas quince mil palabras del espacio que tiene para pensar, antes de que hayas escrito nada. En un modelo pequeño que funciona en tu propio equipo, eso puede ser más espacio del que tiene. Por eso jojo reduce la lista a lo que señalan tus palabras.",
+      "cost_other": "Mostrar a un modelo las {{count}} herramientas a la vez cuesta unas quince mil palabras del espacio que tiene para pensar, antes de que hayas escrito nada. En un modelo pequeño que funciona en tu propio equipo, eso puede ser más espacio del que tiene. Por eso jojo reduce la lista a lo que señalan tus palabras.",
+      "careless": "Reducir sin cuidado es peor que no reducir. La mayoría de las operaciones necesitan algo sobre lo que actuar: no puedes asignar una palabra clave sin una palabra clave, ni actualizar un documento sin un documento. Oculta la herramienta que crea esa cosa y el asistente se queda a medias sin nada en pantalla que explique por qué.",
+      "unsureTitle": "Cuando no está seguro, no reduce",
+      "unsure": "«Recuérdame lo de Baylor el jueves» está claro, y jojo ofrece una quinta parte del catálogo. «En realidad era la otra» no aclara nada, así que lo ofrece todo, exactamente como antes de que existiera nada de esto. No estar seguro cuesta un poco de velocidad. Adivinar te costaría tu respuesta.",
+      "onlyGains": "Una conversación solo gana herramientas. Una pregunta posterior nunca te quita nada que ya hayas usado."
+    },
+    "model": {
+      "title": "Qué modelo hace esto",
+      "hint": "tú eliges, y eso cambia adónde van tus palabras",
+      "local": "jojo habla con lo que le indiques en Ajustes. Un modelo que funciona en un equipo que controlas (Ollama, vLLM, LM Studio) es la opción predeterminada, y es la única configuración en la que nada de lo que escribes sale de este dispositivo.",
+      "cloud": "También puedes usar Claude, OpenAI y otros con una clave de API. Es una contrapartida real y la pantalla lo dice claramente: tus registros van a esa empresa y se cobran en tu cuenta. La clave se guarda en este dispositivo, nunca se incluye en una copia de seguridad y nunca se envía a ningún sitio salvo al proveedor que elegiste.",
+      "openSettings": "Abrir Ajustes",
+      "truncatedTitle": "Si parece que el asistente ha dejado de leer",
+      "truncated": "Un modelo local con poco espacio descarta en silencio el principio de lo que se le envió, y luego responde con seguridad a una pregunta que nunca vio entera. jojo compara lo que el servidor dice haber leído con lo que se envió de verdad, y te avisa cuando no coinciden; si no, parecería que el asistente hace mal su trabajo cuando en realidad le falta espacio."
+    },
+    "gateFigure": {
+      "typed": "lo que escribiste",
+      "pick": "elegir las herramientas probables",
+      "pickNote": "¿no está claro? ofrecer las {{count}}",
+      "add": "añadir lo que necesitan esas herramientas",
+      "addNote": "para que ninguna cadena quede en un callejón sin salida",
+      "choose": "el modelo elige una",
+      "offered": "¿se ofreció?",
+      "offeredNote": "¿no? rechazada, no se ejecuta nada",
+      "change": "tus registros cambian",
+      "description": "Seis pasos, de arriba abajo. Uno: lo que escribiste. Dos: jojo elige las herramientas que señalan tus palabras y, si no están claras, ofrece las {{count}} en lugar de adivinar. Tres: añade aquello de lo que dependen esas herramientas, para que ninguna cadena quede en un callejón sin salida. Cuatro: el modelo elige una herramienta. Cinco: jojo comprueba si esa herramienta se ofreció de verdad; si no, la llamada se rechaza y no se ejecuta nada. Seis: solo entonces cambian tus registros. El quinto paso es el único que impone algo; el segundo es solo una pista, porque un modelo puede nombrar una herramienta que nunca se le mostró.",
+      "caption": "El paso dos te ahorra tokens. El paso cinco es el que te protege, y se ejecuta tanto si el paso dos redujo algo como si no."
+    },
+    "graphFigure": {
+      "intro": "Tres ejemplos, sin orden. Cada uno es una herramienta que pidieron tus palabras, lo que necesita para funcionar y la herramienta que jojo ofrece junto a ella para que la cadena pueda terminar.",
+      "description": "Tres ejemplos. Pedir keyword.attach también ofrece keyword.create, porque asignar una palabra clave necesita una palabra clave que ya exista. Pedir vault.file.update también ofrece vault.file.add, porque actualizar un documento necesita un documento. Pedir scout.posting.promote también ofrece scout.posting.save, porque promocionar una oferta guardada necesita una oferta guardada. En todos los casos jojo deduce la dependencia a partir de la propia entrada de la herramienta y ofrece ambas juntas, así que al asistente nunca se le da un primer paso sin forma de llegar al segundo.",
+      "needs": {
+        "keyword": "necesita una palabra clave, así que jojo también ofrece",
+        "file": "necesita un archivo, así que jojo también ofrece",
+        "posting": "necesita una oferta, así que jojo también ofrece"
+      },
+      "without": "Sin esto, al asistente se le podría ofrecer la primera herramienta y no la segunda, y se quedaría a medias sin nada en pantalla que dijera por qué.",
+      "derived": "jojo lee cada requisito de la propia definición de la herramienta, así que una herramienta añadida mañana queda cubierta sin que nadie actualice una lista."
+    }
+  },
+  "builtWith": {
+    "intro": "Un prototipo interactivo del mismo producto que la aplicación web, que comparte cada módulo que contiene una regla —la aritmética de fechas, el embudo de estadísticas, el sistema de palabras clave y los datos de ejemplo—, de modo que las dos no pueden discrepar sobre una fecha, una tasa o una etapa.",
+    "stackTitle": "Hecho con",
+    "stackHint": "lo que de verdad se ejecuta",
+    "unfinishedTitle": "Lo que sigue siendo provisional",
+    "unfinishedHint": "dicho, no escondido",
+    "unfinishedIntro": "Un prototipo que oculta sus límites es un prototipo al que se le cree demasiado. Estos tres son los que conviene conocer antes de juzgar cualquier otra cosa en pantalla.",
+    "placeholder": "provisional",
+    "stack": {
+      "app": "La propia aplicación, en ambas plataformas",
+      "build": "La compilación. Sin Expo: android/ e ios/ son nuestros",
+      "documents": "Adjuntar un archivo y volver a abrirlo",
+      "navigation": "La barra de pestañas y la pila de pantallas",
+      "drag": "El arrastre con pulsación larga del tablero, en el hilo de la interfaz",
+      "charts": "El anillo, el radar y el grafo",
+      "type": "La tipografía, incluida en lugar de descargada"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "El asistente necesita un modelo que aportes tú",
+        "detail": "Conecta uno en Ajustes y el asistente se convierte en un chat agéntico con hilos: llama a las propias herramientas de la aplicación para responder, enumera cada llamada a medida que la hace y guarda cada hilo en este dispositivo. Sin uno, cada respuesta es uno de cinco ejemplos resueltos y lleva una insignia que lo indica."
+      },
+      "scout": {
+        "title": "El explorador no encuentra nada por su cuenta",
+        "detail": "Los porcentajes de encaje son reales: se calculan en este dispositivo con los términos de coincidencia, los puestos objetivo y las regiones de tu perfil, y dicen con qué coincidieron. Lo que falta es el rastreo: nada sale a buscar ofertas, así que el feed solo contiene lo que tú pones en él."
+      },
+      "network": {
+        "title": "Nada sale de este dispositivo salvo adonde tú lo diriges",
+        "detail": "No hay cuenta, ni sincronización, ni subida. Se puede llegar a dos direcciones, ambas tuyas y ambas configuradas en Ajustes: el modelo y el lector de documentos, que además descarga una oferta de empleo cuando añades una candidatura desde un enlace, así que esa URL va a tu lector y no a nosotros. Transferir mueve una copia entre tus dispositivos por la red local: en este teléfono se recibe, y el ordenador es el que envía. Nada más va a ninguna parte."
+      }
+    }
+  }
+}

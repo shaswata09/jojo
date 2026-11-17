@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import Svg, { Circle, Line } from 'react-native-svg'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -38,6 +39,7 @@ import { radius, space } from '@/theme/tokens'
 const PATTERN_SHOWN = 8
 
 export function GraphScreen() {
+  const { t } = useTranslation('screens')
   const c = useColors()
   const { width } = useWindowDimensions()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -170,12 +172,12 @@ export function GraphScreen() {
 
   if (graph.nodes.length === 0) {
     return (
-      <Screen title="Graph" subtitle="Your records, drawn as the network they are">
+      <Screen title={t('graph.title')} subtitle={t('graph.emptySubtitle')}>
         <Panel>
           <EmptyState
             icon="share-2"
-            title="Nothing to draw"
-            description="Every node here is one of your own records. Add an application and the first one appears."
+            title={t('graph.emptyTitle')}
+            description={t('graph.emptyDescription')}
           />
         </Panel>
       </Screen>
@@ -183,10 +185,7 @@ export function GraphScreen() {
   }
 
   return (
-    <Screen
-      title="Graph"
-      subtitle="A preview of what jojo looks like once records stop being seven separate lists"
-    >
+    <Screen title={t('graph.title')} subtitle={t('graph.subtitle')}>
       <Panel>
         <View style={{ alignSelf: 'center' }}>
           <Svg width={size} height={size}>
@@ -239,22 +238,25 @@ export function GraphScreen() {
         </View>
 
         <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
-          {visible.length} of {graph.nodes.length} nodes · {graph.edges.length} edges. Tap a node to
-          read it; tap a type below to hide it.
+          {t('graph.caption', {
+            visible: visible.length,
+            total: graph.nodes.length,
+            edges: graph.edges.length,
+          })}
         </Txt>
       </Panel>
 
       <Panel>
-        <PanelTitle hint="tap to hide a type">Legend</PanelTitle>
+        <PanelTitle hint={t('graph.legendHint')}>{t('graph.legend')}</PanelTitle>
         <View style={styles.legend}>
-          {GRAPH_NODE_TYPES.filter((t) => (counts.get(t) ?? 0) > 0).map((t) => {
-            const off = hidden.has(t)
+          {GRAPH_NODE_TYPES.filter((type) => (counts.get(type) ?? 0) > 0).map((type) => {
+            const off = hidden.has(type)
             return (
               <Pressable
-                key={t}
+                key={type}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: !off }}
-                onPress={() => toggleType(t)}
+                onPress={() => toggleType(type)}
                 style={[
                   styles.legendChip,
                   { backgroundColor: c.well, borderColor: off ? c.hairline : c.hairlineStrong },
@@ -264,8 +266,8 @@ export function GraphScreen() {
                   style={[
                     styles.swatch,
                     {
-                      backgroundColor: off ? 'transparent' : typeColor(t, c),
-                      borderColor: typeColor(t, c),
+                      backgroundColor: off ? 'transparent' : typeColor(type, c),
+                      borderColor: typeColor(type, c),
                     },
                   ]}
                 />
@@ -274,10 +276,10 @@ export function GraphScreen() {
                   tone={off ? 'muted' : 'secondary'}
                   style={off ? s.struck : undefined}
                 >
-                  {NODE_TYPE_LABEL[t]}
+                  {NODE_TYPE_LABEL[type]}
                 </Txt>
                 <Txt size="xs" tone="muted" mono>
-                  {counts.get(t) ?? 0}
+                  {counts.get(type) ?? 0}
                 </Txt>
               </Pressable>
             )
@@ -295,11 +297,11 @@ export function GraphScreen() {
           ) : null}
 
           <Txt size="xs" tone="muted" uppercase style={{ marginBottom: space[2] }}>
-            Joined to
+            {t('graph.joinedTo')}
           </Txt>
           {incidentEdges(graph, selected.id).length === 0 ? (
             <Txt size="sm" tone="muted">
-              Nothing points at this yet.
+              {t('graph.noEdges')}
             </Txt>
           ) : (
             incidentEdges(graph, selected.id).map((e, i) => {
@@ -333,7 +335,7 @@ export function GraphScreen() {
           )}
 
           <Button
-            label="Open the record"
+            label={t('graph.openRecord')}
             variant="outline"
             onPress={() => openRecord(selected)}
             style={{ marginTop: space[3], alignSelf: 'flex-start' }}
@@ -342,7 +344,7 @@ export function GraphScreen() {
       ) : null}
 
       <Panel>
-        <PanelTitle hint="ask in a sentence, or pick one">Ask the graph</PanelTitle>
+        <PanelTitle hint={t('graph.askHint')}>{t('graph.ask')}</PanelTitle>
         <AskBox
           onAnswer={(answer, question) => {
             setAsked({ answer, question })
@@ -382,14 +384,14 @@ export function GraphScreen() {
             ))}
             {askedRows.length > PATTERN_SHOWN ? (
               <Txt size="xs" tone="muted">
-                and {askedRows.length - PATTERN_SHOWN} more
+                {t('graph.andMore', { count: askedRows.length - PATTERN_SHOWN })}
               </Txt>
             ) : null}
           </View>
         ) : null}
 
         <Divider style={{ marginVertical: space[3] }} />
-        <PanelTitle hint="answers a list view cannot give">Questions</PanelTitle>
+        <PanelTitle hint={t('graph.questionsHint')}>{t('graph.questions')}</PanelTitle>
         <View style={{ gap: space[2] }}>
           {QUERY_EXAMPLES.map((q) => (
             <Button
@@ -408,7 +410,7 @@ export function GraphScreen() {
             worth having. A fixed list can only answer questions somebody
             thought of, and "files with no keyword on them" was never on it. */}
         <Divider style={{ marginVertical: space[3] }} />
-        <PanelTitle hint="build your own">Ask something else</PanelTitle>
+        <PanelTitle hint={t('graph.patternHint')}>{t('graph.pattern')}</PanelTitle>
         <PatternBuilder
           value={pattern}
           onChange={(next) => {
@@ -424,8 +426,8 @@ export function GraphScreen() {
         </Txt>
         <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
           {patternRows.length === 0
-            ? 'Nothing matches this one.'
-            : `${patternRows.length} ${patternRows.length === 1 ? 'record' : 'records'}`}
+            ? t('graph.patternNone')
+            : t('graph.records', { count: patternRows.length })}
         </Txt>
         {patternRows.length > 0 ? (
           <View style={{ marginTop: space[2] }}>
@@ -457,7 +459,7 @@ export function GraphScreen() {
             ))}
             {patternRows.length > PATTERN_SHOWN ? (
               <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-                and {patternRows.length - PATTERN_SHOWN} more
+                {t('graph.andMore', { count: patternRows.length - PATTERN_SHOWN })}
               </Txt>
             ) : null}
           </View>
@@ -473,7 +475,7 @@ export function GraphScreen() {
               // A query that matched nothing has to say so next to the picture,
               // or an empty list reads as the query having failed to run.
               <Txt size="sm" tone="secondary">
-                Nothing matches — which is the good answer to this one.
+                {t('graph.exampleNone')}
               </Txt>
             ) : (
               result.map((n) => (

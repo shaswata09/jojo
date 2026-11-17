@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Check, Tag } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ export function KeywordPicker({
   onChange: (next: string[]) => void
 }) {
   const { labels, addLabel } = useLabels()
+  const { t } = useTranslation()
   const [draft, setDraft] = useState('')
 
   const picked = new Set(value)
@@ -58,7 +60,7 @@ export function KeywordPicker({
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {chosen.length === 0 ? (
-        <span className="text-xs text-text-3">None yet</span>
+        <span className="text-xs text-text-3">{t('keywordPicker.none')}</span>
       ) : (
         chosen.map((l) => (
           <Chip key={l.id} tone={l.tone} ink={l.ink} shape="capsule">
@@ -71,11 +73,13 @@ export function KeywordPicker({
         <PopoverTrigger asChild>
           <Button type="button" variant="outline" size="xs">
             <Tag aria-hidden strokeWidth={1.8} />
-            Choose keywords
+            {t('keywordPicker.choose')}
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-56">
-          <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">Keywords</div>
+          <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">
+            {t('keywordPicker.heading')}
+          </div>
           <ul className="flex flex-col">
             {labels.map((l) => {
               const on = picked.has(l.id)
@@ -109,8 +113,8 @@ export function KeywordPicker({
           <Input
             value={draft}
             autoComplete="off"
-            placeholder="New keyword…"
-            aria-label="New keyword"
+            placeholder={t('keywordPicker.newPlaceholder')}
+            aria-label={t('keywordPicker.new')}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
               // Enter has to finish the keyword rather than submit the form

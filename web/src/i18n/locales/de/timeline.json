@@ -1,0 +1,114 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "Neue Erinnerung",
+        "event": "Neuer Termin"
+      },
+      "edit": {
+        "reminder": "Erinnerung bearbeiten",
+        "event": "Termin bearbeiten"
+      }
+    },
+    "description": "So oder so ein einziger Eintrag – er erscheint im Kalender an dem Datum, das du angibst, und in der Erinnerungsliste des Tresors, solange der Schalter neben dem Titel an ist."
+  },
+  "form": {
+    "title": {
+      "label": "Titel",
+      "error": "Gib ihm einen Titel, den du wiedererkennst.",
+      "placeholder": {
+        "reminder": "z. B. Beim Recruiter nachhaken",
+        "event": "z. B. Zoom mit der Kommission"
+      }
+    },
+    "remind": {
+      "label": "In Erinnerungen anzeigen",
+      "on": "Im Tresor mit Kästchen zum Abhaken aufgeführt und im Kalender an seinem Datum.",
+      "off": "Nur im Kalender an seinem Datum – kein Kästchen im Tresor."
+    },
+    "kind": {
+      "label": "Art",
+      "hintFollowUp": "Ein Follow-up erscheint auch unter „Fällige Follow-ups“ im Dashboard, bis du es abhakst.",
+      "hint": "Das Symbol, das es im Kalender und in der Erinnerungsliste trägt."
+    },
+    "detail": {
+      "label": "Detail",
+      "hint": "Eine Zeile Kontext, unter dem Titel angezeigt."
+    },
+    "more": {
+      "label": "Weitere Details",
+      "empty": "Notiz, Schlagwörter",
+      "filledNote": "Notiz",
+      "filledKeywords": "Schlagwörter",
+      "filledBoth": "Notiz · Schlagwörter"
+    },
+    "note": {
+      "label": "Notiz",
+      "hint": "Deine eigenen Notizen. Getrennt vom Detail gespeichert, damit eine Änderung sie nie überschreibt."
+    },
+    "keywords": {
+      "label": "Schlagwörter",
+      "hint": "Geteilt mit Bewerbungen, Dateien und Links – ein Filter nach einem findet alle."
+    },
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "save": "Änderungen speichern",
+    "add": {
+      "reminder": "Erinnerung hinzufügen",
+      "event": "Termin hinzufügen"
+    }
+  },
+  "schedule": {
+    "date": "Datum",
+    "dateError": "Wähle ein Datum – ein Eintrag ohne Datum kann nirgends erscheinen.",
+    "quick": {
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "inWeek": "In 7 Tagen"
+    },
+    "allDay": {
+      "label": "Ganztägig",
+      "description": "Ausgeschaltet bekommt er eine Startzeit und eine Dauer und landet im Stundenraster des Kalenders."
+    },
+    "startTime": "Startzeit",
+    "length": "Dauer",
+    "durations": {
+      "min15": "15 Min.",
+      "min30": "30 Min.",
+      "min45": "45 Min.",
+      "hour1": "1 Stunde",
+      "hour1_5": "1,5 Stunden",
+      "hour2": "2 Stunden",
+      "hour3": "3 Stunden"
+    }
+  },
+  "application": {
+    "label": "Zugehörige Bewerbung",
+    "hint": "Verknüpft sie, sodass jede Bewerbung dies auflistet und du von hier zu jeder zurückkommst.",
+    "notLinked": "Nicht verknüpft",
+    "count_one": "{{count}} Bewerbung",
+    "count_other": "{{count}} Bewerbungen",
+    "searchLabel": "Bewerbungen zum Verknüpfen suchen",
+    "searchPlaceholder": "Bewerbungen suchen …",
+    "none": "Noch keine Bewerbungen.",
+    "noMatch": "Keine Bewerbung passt dazu.",
+    "clear": "Verknüpfte Bewerbungen entfernen",
+    "open": "{{name}} öffnen"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} hinzugefügt",
+    "updated": "{{title}} aktualisiert",
+    "inReminders": "{{when}} — in den Erinnerungen als Erinnerung",
+    "inRemindersAndFollowUps": "{{when}} — in den Erinnerungen als Erinnerung — und unter „Fällige Follow-ups“",
+    "calendarOnly": "{{when}} — nur im Kalender",
+    "undo": "Rückgängig",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "stillThere": "{{title}} ist noch im Kalender.",
+    "stillThereUnnamed": "Die Erinnerung ist noch im Kalender.",
+    "deleted": "{{title}} gelöscht",
+    "deletedUnnamed": "Erinnerung gelöscht",
+    "goneBoth": "Aus der Erinnerungsliste und dem Kalender entfernt.",
+    "goneCalendar": "Aus dem Kalender entfernt."
+  }
+}

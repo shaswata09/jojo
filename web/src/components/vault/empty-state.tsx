@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * Every empty list names the control that emptied it.
@@ -39,7 +40,7 @@ export type VaultEmptyCopy = {
   bucket: { icon?: LucideIcon; title: string; description: string; clearLabel: string }
   /**
    * Only the keyword row is on. Its clear button is always "Clear keywords",
-   * and its description is `KEYWORDS_HID_THEM` in all four tools — the row is a
+   * and its description is `keywordsHidThem()` in all four tools — the row is a
    * page-level control, so the sentence that points at it does not vary by
    * list. It stays overridable rather than hard-coded so a fifth tool with its
    * own keyword control is not forced to lie about where the switch is.
@@ -57,8 +58,8 @@ export type VaultEmptyCopy = {
   unfiled?: { alone: { title: string; description: string }; withOthers: string }
 }
 
-/** Where the keyword filter lives, said once. */
-export const KEYWORDS_HID_THEM = 'The keyword filter at the top of the page is what is hiding them.'
+/** Where the keyword filter lives, said once — in the language on screen when it is asked. */
+export const keywordsHidThem = (): string => i18next.t('vault:empty.keywordsHidThem')
 
 export function emptyStateFor({
   total,
@@ -91,11 +92,11 @@ export function emptyStateFor({
   if (trimmed) {
     return {
       icon: copy.icon,
-      title: 'Nothing matches that search',
+      title: i18next.t('vault:empty.searchTitle'),
       description: copy.search(trimmed),
       action: (
         <Button variant="outline" size="sm" onClick={onClearQuery}>
-          Clear search
+          {i18next.t('vault:empty.clearSearch')}
         </Button>
       ),
     }
@@ -117,11 +118,11 @@ export function emptyStateFor({
     return alsoOthers
       ? {
           icon: copy.icon,
-          title: 'Nothing matches those filters',
+          title: i18next.t('vault:empty.filtersTitle'),
           description: copy.unfiled.withOthers,
           action: (
             <Button variant="outline" size="sm" onClick={clearAll}>
-              Clear filters
+              {i18next.t('vault:empty.clearFilters')}
             </Button>
           ),
         }
@@ -130,7 +131,7 @@ export function emptyStateFor({
           ...copy.unfiled.alone,
           action: (
             <Button variant="outline" size="sm" onClick={() => onClearUnfiled?.()}>
-              Show filed files too
+              {i18next.t('vault:empty.showFiled')}
             </Button>
           ),
         }
@@ -139,7 +140,7 @@ export function emptyStateFor({
   if (filteredByBucket && filteredByKeyword) {
     return {
       icon: copy.icon,
-      title: 'Nothing matches both filters',
+      title: i18next.t('vault:empty.bothTitle'),
       description: copy.both,
       action: (
         <Button
@@ -150,7 +151,7 @@ export function emptyStateFor({
             onClearKeywords()
           }}
         >
-          Clear both filters
+          {i18next.t('vault:empty.clearBoth')}
         </Button>
       ),
     }
@@ -172,10 +173,10 @@ export function emptyStateFor({
   return {
     icon: copy.icon,
     title: copy.keywords.title,
-    description: copy.keywords.description ?? KEYWORDS_HID_THEM,
+    description: copy.keywords.description ?? keywordsHidThem(),
     action: (
       <Button variant="outline" size="sm" onClick={onClearKeywords}>
-        Clear keywords
+        {i18next.t('vault:empty.clearKeywords')}
       </Button>
     ),
   }

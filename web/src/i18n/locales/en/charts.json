@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "Show {{label}}",
+    "hide": "Hide {{label}}"
+  },
+  "allHidden": {
+    "withReset": "Every series is switched off in the legend.",
+    "noReset": "All series hidden — pick one from the legend to bring it back.",
+    "showAll": "Show all series"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "Radar comparing {{series}} across {{axes}}"
+  }
+}

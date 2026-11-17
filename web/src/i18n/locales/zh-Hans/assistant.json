@@ -1,0 +1,153 @@
+{
+  "common": {
+    "title": "助手",
+    "undo": "撤销",
+    "nothingAsked": "还没有提问",
+    "askLabel": "向助手提问",
+    "saveToSnippets": "保存到片段",
+    "savedToSnippets": "已保存到片段",
+    "filedUnder": "{{title}} · 归档于 {{tag}}",
+    "openVault": "打开保险库",
+    "copyBlocked": "浏览器阻止了复制",
+    "copied": "回复已复制",
+    "newConversation": "新对话"
+  },
+  "header": {
+    "subtitle": "已连接到你的模型，能够操作你的记录。它所做的一切都会实时列出。",
+    "clear": "清空",
+    "connected_other": "回答来自 <mono>{{endpoint}}</mono> 上的 <mono>{{model}}</mono>，它可以在本设备上调用 <tools>{{count}} 个工具</tools>。不会向其他任何地方发送内容。"
+  },
+  "composer": {
+    "send": "发送",
+    "typeFirst": "请先输入消息",
+    "stop": "停止",
+    "stopTitle": "停止代理"
+  },
+  "approval": {
+    "waiting": "{{title}}——等待你的决定",
+    "askedBy": "由 {{name}} 发起。目前还没有任何更改。",
+    "askedByUnnamed": "由一个对话发起。目前还没有任何更改。",
+    "decline": "不要",
+    "allow": "允许"
+  },
+  "scripted": {
+    "subtitle": "目前是示例演示。连接本地模型后，它既能根据你自己的记录起草内容，也能直接操作这些记录。",
+    "clear": "清空对话",
+    "notConnected": "没有连接模型，所以下面的每条回复都是示例，而不是真正的回答。在<settings>设置</settings>中把 jojo 指向一个兼容 OpenAI 的本地服务器——vLLM、Ollama 或 LM Studio。",
+    "emptyDescription": "从下面选一个提示，或随便输入点什么。回复都是写好的示例——可以作为参考，但绝不会冒充模型的回答。",
+    "placeholder": "可以问求职信、跟进邮件、面试……",
+    "footer": "连接模型后，这些都会读取你的个人资料和文档作为上下文。由于推理在本地进行，你的简历和笔记永远不会上传到任何地方。",
+    "badge": "示例回复 · 未连接模型",
+    "cleared": "对话已清空",
+    "messages_other": "{{count}} 条消息"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "起草一封求职信",
+      "title": "求职信——结构",
+      "reply": "这是我会为 [院系] 采用的结构：\n\n第 1 段——你研究什么，用一句你所在领域之外的评审委员也能看懂的话说清楚。\n第 2 段——最能支撑你的两项成果，每项都讲它带来的影响，而不是方法。\n第 3 段——为什么是这个院系：你会与哪个团队有交集，你会教哪门课。\n第 4 段——到岗时间，以及前三年会是什么样子。\n\n控制在一页以内。评审委员会一个晚上要读四十封。"
+    },
+    "tailorCv": {
+      "action": "根据职位发布调整我的简历",
+      "title": "调整简历——三轮修改",
+      "reply": "按以下顺序改三轮：\n\n1. 删掉广告没有要求的内容。一份面面俱到的简历等于什么都没针对。\n2. 把广告开头强调的部分移到第一页顶部——侧重教学的广告希望教学排在发表成果之前。\n3. 用广告本身的措辞重写概述，但不要夸大工作的范围。\n\n保持不动的部分：发表成果、推荐人、日期。这些正是评审委员会会核对的内容。"
+    },
+    "parsePosting": {
+      "action": "解析一则职位发布",
+      "title": "从职位发布中提取什么",
+      "reply": "从一则广告中我会提取：雇主、职位、截止日期、要求提交的材料、指定的联系人，以及任何写成硬性要求而非偏好的内容。\n\n最后一项正是申请失败的地方——“入职前必须取得学位”是筛选条件，“有大规模系统经验者优先”则不是。\n\n职位侦察不用模型就已经完成了简单的那一半：把网址保存在那里，它会保留链接并据此推测雇主。"
+    },
+    "followUp": {
+      "action": "起草一封跟进邮件",
+      "title": "未获回复时的跟进",
+      "reply": "主题：跟进——[职位]，[院系]\n\n[姓名] 您好：\n\n我于 [日期] 申请了 [职位]，想确认评审委员会是否已收到所需的全部材料。如果方便的话，我很乐意直接寄送尚缺的推荐信。\n\n我仍然对这个职位非常感兴趣，也乐意通过邮件回答任何问题。\n\n谢谢！\n[你的姓名]"
+    },
+    "interview": {
+      "action": "帮我准备面试",
+      "title": "面试——需要准备好答案的六个问题",
+      "reply": "面试前值得准备好答案的六个问题：\n\n——用九十秒向你领域之外的人讲清楚，你的工作是关于什么的？\n——你的第一份基金申请会是什么，投给哪个机构？\n——下学期如果临时通知，你可以教哪两门课？\n——你会和这里的谁合作，合作什么？\n——你自己成果的弱点是什么？\n——第一年你需要什么才能开展工作？\n\n把答案亲手写出来。重要的是演练，而不是笔记。"
+    },
+    "fallback": {
+      "title": "助手——示例回复",
+      "reply": "没有连接模型，所以这是一条预设的回答，而不是针对你所输入内容的回复。\n\n连接模型后，这个页面会读取你的个人资料、保险库中的文档以及你提到的申请，然后在你自己的电脑上据此起草。在设置中把 jojo 指向一个兼容 OpenAI 的本地服务器——vLLM、Ollama 或 LM Studio。\n\n清空对话即可再次看到示例。"
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "我在等哪些回复？",
+      "add": "添加一份申请：Stripe 的机器学习工程师，已提交",
+      "noDeadline": "哪些申请没有截止日期？",
+      "flag": "标记我的 UT Austin 申请"
+    },
+    "emptyDescription": "让它查找东西、添加申请或推进某份申请。它运行的每个工具都会实时显示在下方，包括它发送了什么、返回了什么。",
+    "placeholder": "找到我的 UT Austin 申请，或添加一份，或把它移到面试阶段……"
+  },
+  "threadBar": {
+    "titleLabel": "对话标题",
+    "saveTitle": "保存标题",
+    "cancel": "取消",
+    "rename": "重命名此对话",
+    "changeJob": "更换职位",
+    "fileUnder": "归档到某个职位",
+    "approval": "审批",
+    "approvalLabel": "此对话无需询问可以做多少事",
+    "delete": "删除"
+  },
+  "threads": {
+    "deleted": "对话已删除"
+  },
+  "threadList": {
+    "title": "对话",
+    "kept_other": "此处保存了 {{count}} 个",
+    "noJob": "尚未关联职位",
+    "searchLabel": "搜索对话",
+    "searchPlaceholder": "搜索说过的内容",
+    "clearSearch": "清除搜索",
+    "noMention": "没有提到这个",
+    "mentionsIn": "{{conversations}}中有 {{mentions}}",
+    "mentions_other": "{{count}} 处提及",
+    "conversationCount_other": "{{count}} 个对话",
+    "empty": "还没有内容。问点什么，它就会保存在这里，保存在本设备上。",
+    "noResults": "没有内容提到“{{query}}”。这里会搜索所有对话，而不只是对话名称。",
+    "working": "处理中……",
+    "matches_other": "{{count}} 处匹配",
+    "questions_other": "{{count}} 个问题"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "没有可撤销的内容——之后已经发生了变化",
+      "alreadyUndone": "已经撤销",
+      "outOfReach": "时间太久，无法在这里撤销",
+      "undone": "已撤销"
+    },
+    "thinking": "思考中……",
+    "thought": "思考过程"
+  },
+  "trace": {
+    "status": {
+      "running": "运行中",
+      "done": "完成",
+      "failed": "失败",
+      "declined": "已拒绝"
+    },
+    "effect": {
+      "read": "读取",
+      "unknown": "无此工具",
+      "create": "已添加",
+      "update": "已更改",
+      "move": "已移动",
+      "delete": "已删除",
+      "admin": "存储"
+    },
+    "approvalNeeded": "需要批准：{{title}}",
+    "asked": "代理请求执行此操作。目前还没有任何更改。",
+    "declineAria": "不要：{{title}}",
+    "allowAria": "允许：{{title}}",
+    "arguments": "参数",
+    "result": "结果",
+    "undoStep": "撤销此步骤",
+    "cannotUndo": "此步骤无法在这里撤销。“设置 → 记录”保存了更改日志，可以撤销最近的一次更改。",
+    "truncated": "已截断——已让代理缩小搜索范围以查看其余内容。",
+    "working": "处理中——{{model}} 正在决定下一步……"
+  }
+}

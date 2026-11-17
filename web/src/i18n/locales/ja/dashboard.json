@@ -1,0 +1,256 @@
+{
+  "common": {
+    "newApplication": "新しい応募",
+    "openBoard": "ボードを開く",
+    "showAll": "すべて表示",
+    "undo": "元に戻す",
+    "pushOut": "「{{title}}」を延期",
+    "pushOutBy": "延期する期間",
+    "completed": "{{title}} を完了しました",
+    "rescheduled": "{{title}} の日程を変更しました"
+  },
+  "headlineRates": {
+    "emptyTitle": "まだ率はありません",
+    "emptyDescription": "返信率・面接率・内定率は、実際に送った応募だけを数えます。応募を下書きから進めると、ここに表示されます。"
+  },
+  "pipeline": {
+    "emptyTitle": "パイプラインは空です",
+    "emptyDescription": "応募はそれぞれどこかの段階にあり、ここではその分布を示します。応募を追加すると最初の扇形が表示されます。",
+    "ariaLabel_other": "段階別の応募 {{count}} 件"
+  },
+  "statsCard": {
+    "control": "統計",
+    "tracked_other": "{{count}} 件を管理中",
+    "views": {
+      "pipeline": "パイプライン",
+      "rates": "率",
+      "when": "時期",
+      "next": "次"
+    },
+    "titles": {
+      "pipeline": "パイプライン",
+      "rates": "主な率",
+      "when": "応募した時期",
+      "next": "次に取り組むこと"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "メモ",
+      "recent": "最近の応募"
+    },
+    "headingNotes": "付箋",
+    "headingRecent": "最近の応募",
+    "control": "このカードに表示",
+    "addReminder": "リマインダーを追加",
+    "viewAll": "すべて表示",
+    "emptyTitle": "まだ応募はありません",
+    "emptyDescription": "管理しているポジションは、操作するたびに新しい順でここに表示されます。",
+    "today": "今日",
+    "daysAgo_other": "{{count}} 日前"
+  },
+  "searchHealth": {
+    "title": "次に取り組むこと",
+    "series": {
+      "you": "あなた",
+      "target": "一般的"
+    },
+    "intro": "一般的な就職活動と比べたあなたの数値",
+    "sample": "サンプル",
+    "sampleTitle": "一般的な値の輪だけが説明用です",
+    "emptyTitle": "まだ比較できるほどのデータがありません",
+    "emptyDescription": "返信、面接、紹介、フォローアップを一般的な就職活動と比べます。実際に送った応募が必要です。",
+    "suggestions": "提案（役立つ順）"
+  },
+  "sources": {
+    "title": "応募の出どころ",
+    "views": {
+      "bars": "棒",
+      "donut": "ドーナツ"
+    },
+    "chartType": "グラフの種類",
+    "unrecorded": "未記録",
+    "hintAll_other": "応募 {{count}} 件",
+    "hintSome": "{{count}} 件中 {{shown}} 件",
+    "emptyTitle": "まだ内訳はありません",
+    "emptyDescription": "応募には、求人サイト、紹介、学科のページなど、どこで見つけたかが記録されます。応募があれば、ここで分類します。",
+    "centerLabel": "件の応募",
+    "show": "{{name}} を表示",
+    "hide": "{{name}} を非表示",
+    "allOff": "すべての出どころがオフになっています。"
+  },
+  "offers": {
+    "title": "内定を並べて比較",
+    "open_other": "{{count}} 件が未回答",
+    "caption": "未回答の内定。入力したとおりの待遇、その年額換算、それぞれの回答期限",
+    "columns": {
+      "job": "職",
+      "package": "待遇",
+      "year": "年額",
+      "respondBy": "回答期限"
+    },
+    "notStated": "記載なし",
+    "noAmount": "待遇から金額を読み取れませんでした",
+    "readFrom": "「{{text}}」から読み取り",
+    "highest": "— この中で最高額",
+    "annualised": "（年額換算）",
+    "passed": "期限切れ",
+    "today": "今日",
+    "daysLeft_other": "{{count}} 日",
+    "ranked": "年額は入力内容から読み取っています。数字にカーソルを合わせると、どの語句から読み取ったかがわかります。",
+    "unranked": "通貨が異なるため順位はつけていません。jojo には為替レートがなく、それを調べるためのネットワーク通信も行いません。",
+    "annualisedNote": "* 12 か月、52 週、または 2,080 時間で年額に換算しています。これは慣例であり、あなたの契約ではありません。"
+  },
+  "sticky": {
+    "newNote": "新しい付箋",
+    "placeholder": "自分用のメモを書く…（Enter で貼る）",
+    "newColour": "新しい付箋の色",
+    "stick": "貼る",
+    "empty": "まだ何も貼られていません。付箋ははがすまでここに残り、日付が決まればリマインダーにできます。",
+    "listLabel": "付箋",
+    "editNote": "付箋を編集",
+    "clickToEdit": "クリックして編集",
+    "editAria": "付箋を編集：{{text}}",
+    "colour": "色",
+    "colourOf": "付箋「{{text}}」の色",
+    "toReminder": "リマインダーにする",
+    "toReminderAria": "リマインダーにする：{{text}}",
+    "takeDown": "この付箋をはがす",
+    "removeAria": "付箋を削除：{{text}}"
+  },
+  "frequency": {
+    "title": "応募した時期",
+    "period": "期間",
+    "periods": {
+      "week": "週",
+      "month": "月",
+      "quarter": "四半期"
+    },
+    "chartType": "グラフの種類",
+    "charts": {
+      "bar": "棒",
+      "line": "折れ線"
+    },
+    "emptyTitle": "まだグラフにするものがありません",
+    "emptyDescription": "送った応募を週ごとに、職種別に数えます。応募を追加すると最初の棒が表示されます。",
+    "noDatesTitle": "まだ送信日が記録されていません",
+    "noDates_other": "{{count}} 件の応募にはまだ日付がありません。記録を「提出済み」に移すと日付が記録されます。",
+    "perPeriod": {
+      "week": "週ごとの送信済み応募（{{series}} 別）",
+      "month": "月ごとの送信済み応募（{{series}} 別）",
+      "quarter": "四半期ごとの送信済み応募（{{series}} 別）"
+    },
+    "caption": {
+      "week": "週ごとの送信済み応募",
+      "month": "月ごとの送信済み応募",
+      "quarter": "四半期ごとの送信済み応募"
+    },
+    "countingUndated_other": "{{total}} 件中 {{inWindow}} 件を集計 — {{count}} 件はまだ日付がありません。",
+    "countingEarlier_other": "{{total}} 件中 {{inWindow}} 件を集計 — {{count}} 件は {{first}} より前です。",
+    "countingBoth": "{{total}} 件中 {{inWindow}} 件を集計 — {{undated}} 件はまだ日付がなく、{{earlier}} 件は {{first}} より前です。"
+  },
+  "glance": {
+    "heading": "ひと目で",
+    "stats": {
+      "active": "進行中",
+      "screens": "選考・面接",
+      "overdue": "期限切れ",
+      "doneToday": "今日完了"
+    },
+    "previousMonth": "前の月",
+    "currentMonth": "今月に移動",
+    "currentMonthTitle": "{{date}} — 今月",
+    "nextMonth": "次の月",
+    "openCalendar": "カレンダーを開く",
+    "dayNone": "{{date}}、予定なし",
+    "day_other": "{{date}}、予定 {{count}} 件",
+    "dayAllDone_other": "{{date}}、予定 {{count}} 件、すべて完了",
+    "today": "今日",
+    "nothingPlanned": "予定はありません。<add>何か追加する</add>。"
+  },
+  "priority": {
+    "title": "判断が必要",
+    "open_other": "{{count}} 件",
+    "completedDescription": "カードの束と今週の一覧から外れます。削除はされません。",
+    "rescheduledDescription": "期限が {{date}} になりました。カレンダーと今後 1 週間に反映されます。",
+    "tickOff": "「{{title}}」を完了にする",
+    "done": "完了",
+    "snooze": "延期",
+    "notConnected": "まだ何もつながっていません",
+    "earlierAria": "前の判断を表示",
+    "earlier": "前へ",
+    "laterAria": "後の判断を表示",
+    "later": "次へ",
+    "listLabel": "判断（古い順）",
+    "emptyTitle": "今日判断することはありません",
+    "emptyDescription": "内定、期限切れの応募、次の確定した締め切り、次の面接がここに表示されます。今はどれも残っていません。"
+  },
+  "firstSteps": {
+    "title": "はじめの一歩",
+    "hint": "{{total}} 件中 {{done}} 件完了",
+    "application": {
+      "title": "応募を追加する",
+      "body": "ポジション、その段階、締め切り。jojo のほかのすべてはこの記録にぶら下がります。"
+    },
+    "dated": {
+      "title": "何かに日付をつける",
+      "body": "締め切り、面接、訪問は同じ種類の記録なので、日付はこのページ、カレンダー、応募に同時に反映されます。",
+      "action": "新しい予定"
+    },
+    "reminder": {
+      "title": "フォローアップを設定する",
+      "body": "リマインダーは、通知をオンにした同じ記録です。日付を過ぎると対応待ちになり、完了にするまでここに残ります。",
+      "action": "新しいリマインダー"
+    },
+    "complete": "3 つとも完了しました。今後追加するものはすべて、このページ、カレンダー、そして該当する応募に反映されます。",
+    "intro": "各ステップは実際の機能を開き、記録ができると自動でチェックが付きます。我慢して見るチュートリアルではありません。",
+    "introBare": "まだ何も管理していません。各ステップは実際の機能を開き、記録ができると自動でチェックが付きます。我慢して見るチュートリアルではありません。",
+    "doneSr": "— 完了",
+    "notDoneSr": "— 未完了",
+    "hideHint": "同じ手順はガイドにも書かれています",
+    "close": "はじめの一歩を閉じる",
+    "hide": "この手順を非表示にする"
+  },
+  "owed": {
+    "title": "今週やること",
+    "add": "追加",
+    "addEvent": "予定を追加",
+    "emptyTitle": "やることはありません",
+    "emptyDescription": "締め切り、面接、フォローアップは日付が決まるとここに表示され、完了にするまで残ります。",
+    "hintOverdue": "期限切れ {{overdue}} 件 · 対応待ち {{due}} 件",
+    "hintDue_other": "対応待ち {{count}} 件",
+    "snoozeAria": "{{title}} を延期",
+    "openAria": {
+      "reminder": "{{title}} を開く：リマインダーを編集するか、その応募に移動します",
+      "event": "{{title}} を開く：予定を編集するか、その応募に移動します"
+    },
+    "edit": {
+      "reminder": "リマインダーを編集",
+      "event": "予定を編集"
+    },
+    "openApplication": "<name>{{name}}</name> を開く",
+    "groups": {
+      "overdue": "期限切れ",
+      "today": "今日",
+      "tomorrow": "明日",
+      "rest": "今週の残り"
+    },
+    "completedDescription": "この一覧から外れ、今日の完了に数えられます。削除はされません。",
+    "rescheduledDescription": "期限が {{date}} になりました。こことカレンダーに反映されます。",
+    "nextSeven": "今後 7 日間",
+    "items_other": "{{count}} 件",
+    "allDone": "すべて完了",
+    "nothingScheduled": "予定なし",
+    "todayClear": "今日は何もありません。",
+    "todayClearDone": "今日は何もありません — {{count}} 件完了。",
+    "markDoneAria": "「{{title}}」を完了にする",
+    "markDone": "完了にする",
+    "draftTitle": "メールのスニペットから書く",
+    "draftAria": "{{title}} の下書きを作成",
+    "later": "あとで",
+    "openTitle": "{{title}} を開く",
+    "more_other": "カレンダーにあと {{count}} 件",
+    "showAll": "すべて表示({{total}} 件)",
+    "showFewer": "表示を減らす"
+  }
+}

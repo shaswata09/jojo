@@ -29,13 +29,14 @@
 
 import { useMemo } from 'react'
 import { offerDaysLeft } from '../core/dates'
-import { daysBetween, shortDate } from '../core/dates'
+import { daysBetween } from '../core/dates'
 import type { Addressable } from '../core/address'
-import { STAGE_LABEL, type Application, type TimelineItem } from '../core/model'
+import type { Application, TimelineItem } from '../core/model'
+import type { DomainText } from '../core/domain-text'
 import { useApplications } from './use-applications'
 import { useTimeline } from './use-timeline'
 import { useKg } from './kg-context'
-import { dateMarkOn, KIND_LABEL } from '../core/timeline-view'
+import { dateMarkOn } from '../core/timeline-view'
 import type { DateMark } from '../core/timeline-view'
 
 export type PriorityAction = {
@@ -128,6 +129,17 @@ export type PriorityOptions = {
    * `Addressable` is the two fields that answer for both.
    */
   appHref: (a: Addressable) => string
+  /**
+   * The deck's words, in the language on screen — each app's `domain`. This
+   * package may not import i18next (no third-party packages below the app),
+   * so the translator arrives the way `appHref` does. Stable per app.
+   */
+  text: DomainText
+  /**
+   * The language the words are in. `text` is one object for the life of the
+   * app, so it cannot tell the memo the language changed; this can.
+   */
+  language: string
 }
 
 /**
@@ -244,12 +256,13 @@ export function overdueApplicationsOn(
  * it late or let it go — so it says so; an appointment that passed is asked to
  * be recorded; anything else is a catch-up.
  */
-function overdueHeadline(application: Application, item: TimelineItem): string {
-  if (item.kind === 'deadline' && application.stage === 'draft') return `Submit to ${application.org} or let it go`
-  if (item.kind === 'interview' || item.kind === 'visit' || item.kind === 'call') {
-    return `Record the ${application.org} ${KIND_LABEL[item.kind].toLowerCase()}`
-  }
-  return `Catch up on ${application.org}`
+function overdueHeadline(text: DomainText, application: Application, item: TimelineItem): string {
+  const { headline } = text.priority
+  if (item.kind === 'deadline' && application.stage === 'draft') return headline('submitOrLetGo', application.org)
+  if (item.kind === 'interview') return headline('recordInterview', application.org)
+  if (item.kind === 'visit') return headline('recordVisit', application.org)
+  if (item.kind === 'call') return headline('recordCall', application.org)
+  return headline('catchUp', application.org)
 }
 
 /**
@@ -294,12 +307,16 @@ export function chronological(actions: readonly PriorityAction[]): PriorityActio
  * on something other than a follow-up (`overdueApplicationsOn`), the next hard
  * deadline, and the next interview.
  */
-export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction[] {
+export function usePriorityActions({ appHref, text, language }: PriorityOptions): PriorityAction[] {
   const { today } = useKg()
   const { all, offers } = useApplications()
   const { all: items, thisWeek } = useTimeline()
 
   return useMemo(() => {
+    // Read for the memo's sake only: `text` is the same object in every
+    // language, so the language is what tells the deck to re-word itself.
+    void language
+    const { priority: say } = text
     // Soonest first, and selected by date rather than by the stored `urgency`
     // flag — a deadline written down as amber is still the next hard date.
     const nextDeadline = thisWeek.find((i) => i.kind === 'deadline')
@@ -315,7 +332,7 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
     // naming none. The panel below it lists them all.
     const appOf = (applicationId?: string) => all.find((a) => a.id === applicationId)
     const orgOf = (applicationIds: readonly string[]) =>
-      appOf(applicationIds[0])?.org ?? 'Unknown'
+      appOf(applicationIds[0])?.org ?? say.unknownOrg()
     const deadlineApp = appOf(nextDeadline?.applicationIds[0])
     const overdue = overdueApplicationsOn(today, all, items, {
       applicationIds: new Set(offers.map((a) => a.id)),
@@ -327,16 +344,16 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
         const daysLeft = offerDaysLeft(a.offer, today)
         return {
           id: `offer-${a.id}`,
-          kindLabel: 'Offer',
-          headline: `Reply to ${a.org}`,
+          kindLabel: say.kind('offer'),
+          headline: say.headline('reply', a.org),
           context: sentence(a.role, a.offer.comp, a.offer.note),
-          timing: `Respond by ${shortDate(a.offer.respondBy)} · ${relativeLabelOn(today, a.offer.respondBy)}`,
+          timing: say.timing('respondBy', today, a.offer.respondBy),
           urgency: dateMarkOn(today, a.offer.respondBy),
           date: a.offer.respondBy,
           actions: [
-            { label: 'Draft a reply', primary: true, draft: { applicationId: a.id } },
+            { label: say.button('draftReply'), primary: true, draft: { applicationId: a.id } },
             {
-              label: daysLeft < 0 ? 'Record what happened' : 'Accept or decline',
+              label: say.button(daysLeft < 0 ? 'recordOutcome' : 'acceptOrDecline'),
               to: appHref(a),
             },
           ],
@@ -348,18 +365,18 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
       ...overdue.map(
         ({ application: a, item }): PriorityAction => ({
           id: `overdue-${a.id}`,
-          kindLabel: 'Overdue',
-          headline: overdueHeadline(a, item),
-          context: sentence(item.title, a.role, STAGE_LABEL[a.stage]),
-          timing: `Was due ${shortDate(item.date)} · ${relativeLabelOn(today, item.date)}`,
+          kindLabel: say.kind('overdue'),
+          headline: overdueHeadline(text, a, item),
+          context: sentence(item.title, a.role, text.stage(a.stage)),
+          timing: say.timing('wasDue', today, item.date),
           urgency: dateMarkOn(today, item.date),
           date: item.date,
           // Done and Snooze both answer it: done means it happened, snooze means
           // it moved. The item is what makes either possible.
           itemId: item.id,
           actions: [
-            { label: 'Open application', primary: true, to: appHref(a) },
-            { label: 'Draft a message', draft: { applicationId: a.id, itemId: item.id } },
+            { label: say.button('openApplication'), primary: true, to: appHref(a) },
+            { label: say.button('draftMessage'), draft: { applicationId: a.id, itemId: item.id } },
           ],
         }),
       ),
@@ -368,22 +385,22 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
         ? [
             {
               id: `deadline-${nextDeadline.id}`,
-              kindLabel: 'Deadline',
-              headline: `Submit to ${orgOf(nextDeadline.applicationIds)}`,
+              kindLabel: say.kind('deadline'),
+              headline: say.headline('submit', orgOf(nextDeadline.applicationIds)),
               context: sentence(nextDeadline.title, nextDeadline.detail ?? nextDeadline.note),
-              timing: `Due ${shortDate(nextDeadline.date)} · ${relativeLabelOn(today, nextDeadline.date)}`,
+              timing: say.timing('due', today, nextDeadline.date),
               urgency: dateMarkOn(today, nextDeadline.date),
               date: nextDeadline.date,
               itemId: nextDeadline.id,
               actions: [
-                { label: 'Draft a message', primary: true, draft: { itemId: nextDeadline.id } },
+                { label: say.button('draftMessage'), primary: true, draft: { itemId: nextDeadline.id } },
                 {
-                  label: 'Open application',
+                  label: say.button('openApplication'),
                   // The deadline knows which application it belongs to; before
                   // this the button went to the list and left you to find it.
                   ...(deadlineApp
                     ? { to: appHref(deadlineApp) }
-                    : { blocker: 'This deadline is not filed under an application' }),
+                    : { blocker: say.unfiled() }),
                 },
               ],
             } satisfies PriorityAction,
@@ -394,16 +411,12 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
         ? [
             {
               id: `interview-${nextInterview.id}`,
-              kindLabel: 'Interview',
-              headline: interviewEvent
-                ? `Prepare for ${nextInterview.org}`
-                : `Date the ${nextInterview.org} interview`,
+              kindLabel: say.kind('interview'),
+              headline: say.headline(interviewEvent ? 'prepare' : 'dateInterview', nextInterview.org),
               context: interviewEvent
                 ? sentence(nextInterview.role, interviewEvent.detail, interviewEvent.location)
-                : 'At interview stage with nothing dated against it, so neither the week ahead nor the calendar can show it.',
-              timing: interviewEvent
-                ? `${shortDate(interviewEvent.date)} · ${relativeLabelOn(today, interviewEvent.date)}`
-                : 'No date set',
+                : say.undatedInterview(),
+              timing: interviewEvent ? say.timing('on', today, interviewEvent.date) : say.noDate(),
               urgency: interviewEvent ? dateMarkOn(today, interviewEvent.date) : 'none',
               // Spread rather than `itemId: interviewEvent?.id`: `kg`
               // compiles with `exactOptionalPropertyTypes`, so an absent item is
@@ -415,18 +428,18 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
               actions: interviewEvent
                 ? [
                     {
-                      label: 'Draft a message',
+                      label: say.button('draftMessage'),
                       primary: true,
                       draft: { applicationId: nextInterview.id, itemId: interviewEvent.id },
                     },
-                    { label: 'Open application', to: appHref(nextInterview) },
+                    { label: say.button('openApplication'), to: appHref(nextInterview) },
                   ]
                 : // Nothing to draft against an interview with no date — the
                   // record is where the date gets added, so it leads instead.
-                  [{ label: 'Open application', primary: true, to: appHref(nextInterview) }],
+                  [{ label: say.button('openApplication'), primary: true, to: appHref(nextInterview) }],
             } satisfies PriorityAction,
           ]
         : []),
     ]
-  }, [all, offers, items, thisWeek, today, appHref])
+  }, [all, offers, items, thisWeek, today, appHref, text, language])
 }

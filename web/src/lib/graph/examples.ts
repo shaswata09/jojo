@@ -10,6 +10,7 @@
 import type { Graph, GraphNodeType } from '@/lib/graph/model'
 import type { GraphQuery } from '@/lib/graph/query'
 import { shortestPath } from '@/lib/graph/traversal'
+import { i18next } from '@/i18n/i18n'
 
 export type QueryExample = {
   id: string
@@ -23,8 +24,12 @@ const firstOfType = (graph: Graph, type: GraphNodeType) => graph.nodes.find((n) 
 export const QUERY_EXAMPLES: QueryExample[] = [
   {
     id: 'no-follow-up',
-    label: 'Applications with no follow-up scheduled',
-    hint: 'The gap that costs people interviews.',
+    get label() {
+      return i18next.t('messages:graph.examples.noFollowUp.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.noFollowUp.hint')
+    },
     build: (graph) =>
       firstOfType(graph, 'application')
         ? {
@@ -39,8 +44,12 @@ export const QUERY_EXAMPLES: QueryExample[] = [
   },
   {
     id: 'tagged',
-    label: 'Everything tagged Referral',
-    hint: 'One keyword, across every kind of record.',
+    get label() {
+      return i18next.t('messages:graph.examples.tagged.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.tagged.hint')
+    },
     build: (graph) => {
       const keyword =
         graph.nodes.find((n) => n.type === 'keyword' && n.label.toLowerCase() === 'referral') ??
@@ -58,8 +67,12 @@ export const QUERY_EXAMPLES: QueryExample[] = [
   },
   {
     id: 'repeat-orgs',
-    label: 'Organisations I applied to more than once',
-    hint: 'Two applications at one employer, from one org node.',
+    get label() {
+      return i18next.t('messages:graph.examples.repeatOrgs.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.repeatOrgs.hint')
+    },
     build: (graph) =>
       firstOfType(graph, 'organisation')
         ? {
@@ -74,8 +87,12 @@ export const QUERY_EXAMPLES: QueryExample[] = [
   },
   {
     id: 'loose-reminders',
-    label: 'Reminders not linked to any application',
-    hint: 'Work you will do without knowing what it was for.',
+    get label() {
+      return i18next.t('messages:graph.examples.looseReminders.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.looseReminders.hint')
+    },
     build: (graph) =>
       graph.nodes.some((n) => n.type === 'item' && n.reminder)
         ? {
@@ -90,8 +107,12 @@ export const QUERY_EXAMPLES: QueryExample[] = [
   },
   {
     id: 'unused-files',
-    label: 'Files not used by any application',
-    hint: 'Documents sitting in the Vault doing nothing.',
+    get label() {
+      return i18next.t('messages:graph.examples.unusedFiles.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.unusedFiles.hint')
+    },
     build: (graph) =>
       firstOfType(graph, 'file')
         ? {
@@ -105,8 +126,12 @@ export const QUERY_EXAMPLES: QueryExample[] = [
   },
   {
     id: 'bare-applications',
-    label: 'Applications with nothing filed in the Vault',
-    hint: 'No link, no file, no snippet — usually an unstarted one.',
+    get label() {
+      return i18next.t('messages:graph.examples.bareApplications.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.bareApplications.hint')
+    },
     build: (graph) =>
       firstOfType(graph, 'application')
         ? {
@@ -120,8 +145,12 @@ export const QUERY_EXAMPLES: QueryExample[] = [
   },
   {
     id: 'path',
-    label: 'Shortest path between two records',
-    hint: 'How a file and a job you applied for are related.',
+    get label() {
+      return i18next.t('messages:graph.examples.path.label')
+    },
+    get hint() {
+      return i18next.t('messages:graph.examples.path.hint')
+    },
     build: (graph) => {
       // Picks a pair that is actually joined, so the example demonstrates a
       // path rather than demonstrating that there is not one.

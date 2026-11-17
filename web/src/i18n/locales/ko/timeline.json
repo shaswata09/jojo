@@ -1,0 +1,113 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "새 리마인더",
+        "event": "새 일정"
+      },
+      "edit": {
+        "reminder": "리마인더 수정",
+        "event": "일정 수정"
+      }
+    },
+    "description": "어느 쪽이든 하나의 기록이에요. 지정한 날짜에 캘린더에 표시되고, 제목 옆 스위치가 켜져 있는 동안 보관함의 리마인더 목록에도 표시돼요."
+  },
+  "form": {
+    "title": {
+      "label": "제목",
+      "error": "알아볼 수 있는 제목을 붙여 주세요.",
+      "placeholder": {
+        "reminder": "예: 채용 담당자에게 다시 연락하기",
+        "event": "예: 위원회 Zoom 미팅"
+      }
+    },
+    "remind": {
+      "label": "리마인더에 표시",
+      "on": "보관함에 체크박스와 함께 표시되고, 해당 날짜의 캘린더에도 표시돼요.",
+      "off": "해당 날짜의 캘린더에만 표시돼요. 보관함에는 체크박스가 없어요."
+    },
+    "kind": {
+      "label": "유형",
+      "hintFollowUp": "후속 연락은 체크할 때까지 대시보드의 ‘해야 할 후속 연락’에도 표시돼요.",
+      "hint": "캘린더와 리마인더 목록에서 표시되는 아이콘이에요."
+    },
+    "detail": {
+      "label": "세부 정보",
+      "hint": "제목 아래에 표시되는 한 줄 설명이에요."
+    },
+    "more": {
+      "label": "추가 정보",
+      "empty": "메모, 키워드",
+      "filledNote": "메모",
+      "filledKeywords": "키워드",
+      "filledBoth": "메모 · 키워드"
+    },
+    "note": {
+      "label": "메모",
+      "hint": "나만의 메모예요. 세부 정보와 따로 저장되어 수정해도 덮어쓰이지 않아요."
+    },
+    "keywords": {
+      "label": "키워드",
+      "hint": "지원서, 파일, 링크와 함께 쓰여요. 하나로 필터링하면 모두 찾을 수 있어요."
+    },
+    "delete": "삭제",
+    "cancel": "취소",
+    "save": "변경 사항 저장",
+    "add": {
+      "reminder": "리마인더 추가",
+      "event": "일정 추가"
+    }
+  },
+  "schedule": {
+    "date": "날짜",
+    "dateError": "날짜를 골라 주세요. 날짜가 없는 항목은 표시될 곳이 없어요.",
+    "quick": {
+      "today": "오늘",
+      "tomorrow": "내일",
+      "inWeek": "7일 후"
+    },
+    "allDay": {
+      "label": "종일",
+      "description": "끄면 시작 시간과 길이를 정할 수 있고, 캘린더의 시간 그리드에 배치돼요."
+    },
+    "startTime": "시작 시간",
+    "length": "길이",
+    "durations": {
+      "min15": "15분",
+      "min30": "30분",
+      "min45": "45분",
+      "hour1": "1시간",
+      "hour1_5": "1.5시간",
+      "hour2": "2시간",
+      "hour3": "3시간"
+    }
+  },
+  "application": {
+    "label": "관련 지원서",
+    "hint": "서로 연결하면 각 지원서에 이 항목이 표시되고, 여기서 어느 지원서로든 돌아갈 수 있어요.",
+    "notLinked": "연결 안 됨",
+    "count_other": "지원서 {{count}}개",
+    "searchLabel": "연결할 지원서 검색",
+    "searchPlaceholder": "지원서 검색…",
+    "none": "아직 지원서가 없어요.",
+    "noMatch": "일치하는 지원서가 없어요.",
+    "clear": "연결된 지원서 해제",
+    "open": "{{name}} 열기"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} 추가됨",
+    "updated": "{{title}} 업데이트됨",
+    "inReminders": "{{when}} — 리마인더로 목록에 추가됨",
+    "inRemindersAndFollowUps": "{{when}} — 리마인더로 목록에 추가됨 — ‘해야 할 후속 연락’에도 표시",
+    "calendarOnly": "{{when}} — 캘린더에만 표시",
+    "undo": "실행 취소",
+    "deleteFailed": "삭제하지 못했어요",
+    "stillThere": "{{title}}은(는) 아직 캘린더에 있어요.",
+    "stillThereUnnamed": "리마인더가 아직 캘린더에 있어요.",
+    "deleted": "{{title}} 삭제됨",
+    "deletedUnnamed": "리마인더 삭제됨",
+    "goneBoth": "리마인더 목록과 캘린더에서 삭제됐어요.",
+    "goneCalendar": "캘린더에서 삭제됐어요."
+  }
+}

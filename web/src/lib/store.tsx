@@ -1,3 +1,4 @@
+import { i18next } from '@/i18n/i18n'
 import { reportError } from '@/lib/report-error'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -7,6 +8,7 @@ import { boot, bootInMemory, resetBoot } from '@jojo/service/repo/boot'
 import type { BootResult, Session } from '@jojo/service/repo/boot'
 import { kgWarn } from '@jojo/service/log'
 import { KgProvider } from '@jojo/service/react/kg'
+import { domain } from '@/i18n/domain'
 import { StoreStatusProvider } from '@jojo/service/react/status'
 import type { StorePhase } from '@jojo/service/react/status-context'
 import { createIdbDriver } from '@/kg/storage/idb-driver'
@@ -200,8 +202,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         // pressed ⌘Z after this and got nothing would reasonably conclude undo
         // is broken rather than that another tab moved the ground.
         toastRef.current({
-          title: 'Updated from another tab',
-          description: 'Your records were reloaded, so undo history in this tab was cleared.',
+          title: i18next.t('messages:store.remoteChangeTitle'),
+          description: i18next.t('messages:store.remoteChangeDescription'),
         })
       },
     })
@@ -324,9 +326,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       driver.close()
       if (destroyed === 'held') {
         toastRef.current({
-          title: 'Another jojo tab has the database open',
-          description:
-            'It will be deleted as soon as that tab is closed. Close the other tabs, then try again.',
+          title: i18next.t('messages:store.heldTitle'),
+          description: i18next.t('messages:store.heldDescription'),
           tone: 'danger',
         })
         setBusy(false)
@@ -334,8 +335,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
       if (!destroyed.ok) {
         toastRef.current({
-          title: 'The database could not be deleted',
-          description: `${destroyed.error.message}. Another tab may still have it open.`,
+          title: i18next.t('messages:store.deleteFailedTitle'),
+          description: i18next.t('messages:store.deleteFailedDescription', {
+            error: destroyed.error.message,
+          }),
           tone: 'danger',
         })
         setBusy(false)
@@ -390,7 +393,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             reportError('storage', written.error)
             toastRef.current({
               title:
-                choice === 'demo' ? 'The demo data was not loaded' : 'The records were not cleared',
+                choice === 'demo'
+                  ? i18next.t('messages:store.demoNotLoaded')
+                  : i18next.t('messages:store.recordsNotCleared'),
               // `.userMessage`, not `.message`: KgError's constructor builds
               // `message` as `${code}: ${text}`, so this sentence rendered as
               // "storage/unavailable: Some of your changes have not reached the
@@ -398,7 +403,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               // unchanged." — the error code shown to the user and a doubled
               // full stop. The user message already ends in one, so nothing is
               // appended here either.
-              description: `${written.error.userMessage} Your records are unchanged.`,
+              description: i18next.t('messages:store.writeFailedDescription', {
+                error: written.error.userMessage,
+              }),
               tone: 'danger',
             })
             return false
@@ -443,7 +450,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 headless host so nothing under `service/kg` has to know a browser
                 exists; this is the web app, so this is where the browser gets
                 supplied — ⌘Z/⇧⌘Z and the flush on pagehide. */}
-            <KgProvider repo={session.repo} now={now} host={webHost}>
+            <KgProvider repo={session.repo} now={now} host={webHost} text={domain}>
               {children}
               {/* Mounted INSIDE the gate, which is what keeps it off the
                   skeleton: `StoreGate` renders nothing but shapes until boot has

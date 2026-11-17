@@ -1,0 +1,115 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "Nouveau rappel",
+        "event": "Nouvel événement"
+      },
+      "edit": {
+        "reminder": "Modifier le rappel",
+        "event": "Modifier l’événement"
+      }
+    },
+    "description": "C’est un seul et même enregistrement : il s’affiche dans le calendrier à la date indiquée, et dans la liste des rappels du Coffre tant que l’interrupteur à côté du titre est activé."
+  },
+  "form": {
+    "title": {
+      "label": "Titre",
+      "error": "Donnez-lui un titre que vous reconnaîtrez.",
+      "placeholder": {
+        "reminder": "ex. Relancer le recruteur",
+        "event": "ex. Zoom avec le comité"
+      }
+    },
+    "remind": {
+      "label": "Afficher dans les rappels",
+      "on": "Listé dans le Coffre avec une case à cocher, et dans le calendrier à sa date.",
+      "off": "Uniquement dans le calendrier à sa date — pas de case à cocher dans le Coffre."
+    },
+    "kind": {
+      "label": "Type",
+      "hintFollowUp": "Une relance apparaît aussi dans « Relances à faire » du tableau de bord, jusqu’à ce que vous la cochiez.",
+      "hint": "L’icône qui l’accompagne dans le calendrier et dans la liste des rappels."
+    },
+    "detail": {
+      "label": "Détail",
+      "hint": "Une ligne de contexte, affichée sous le titre."
+    },
+    "more": {
+      "label": "Plus de détails",
+      "empty": "note, mots-clés",
+      "filledNote": "note",
+      "filledKeywords": "mots-clés",
+      "filledBoth": "note · mots-clés"
+    },
+    "note": {
+      "label": "Note",
+      "hint": "Vos notes personnelles. Gardées à part du détail, pour qu’une modification ne les écrase jamais."
+    },
+    "keywords": {
+      "label": "Mots-clés",
+      "hint": "Partagés avec les candidatures, les fichiers et les liens — filtrer sur l’un les retrouve tous."
+    },
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "save": "Enregistrer les modifications",
+    "add": {
+      "reminder": "Ajouter le rappel",
+      "event": "Ajouter l’événement"
+    }
+  },
+  "schedule": {
+    "date": "Date",
+    "dateError": "Choisissez une date — un élément sans date ne peut apparaître nulle part.",
+    "quick": {
+      "today": "Aujourd’hui",
+      "tomorrow": "Demain",
+      "inWeek": "Dans 7 jours"
+    },
+    "allDay": {
+      "label": "Toute la journée",
+      "description": "Désactivé, il reçoit une heure de début et une durée, et prend place dans la grille horaire du calendrier."
+    },
+    "startTime": "Heure de début",
+    "length": "Durée",
+    "durations": {
+      "min15": "15 min",
+      "min30": "30 min",
+      "min45": "45 min",
+      "hour1": "1 heure",
+      "hour1_5": "1 h 30",
+      "hour2": "2 heures",
+      "hour3": "3 heures"
+    }
+  },
+  "application": {
+    "label": "Candidature liée",
+    "hint": "Les relie : chaque candidature l’affiche, et vous pouvez revenir à n’importe laquelle depuis ici.",
+    "notLinked": "Non liée",
+    "count_one": "{{count}} candidature",
+    "count_many": "{{count}} candidatures",
+    "count_other": "{{count}} candidatures",
+    "searchLabel": "Rechercher des candidatures à lier",
+    "searchPlaceholder": "Rechercher des candidatures…",
+    "none": "Aucune candidature pour l’instant.",
+    "noMatch": "Aucune candidature ne correspond.",
+    "clear": "Retirer les candidatures liées",
+    "open": "Ouvrir {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} ajouté",
+    "updated": "{{title}} mis à jour",
+    "inReminders": "{{when}} — dans les rappels, en tant que rappel",
+    "inRemindersAndFollowUps": "{{when}} — dans les rappels, en tant que rappel — et dans « Relances à faire »",
+    "calendarOnly": "{{when}} — uniquement dans le calendrier",
+    "undo": "Annuler",
+    "deleteFailed": "La suppression a échoué",
+    "stillThere": "{{title}} est toujours dans le calendrier.",
+    "stillThereUnnamed": "Le rappel est toujours dans le calendrier.",
+    "deleted": "{{title}} supprimé",
+    "deletedUnnamed": "Rappel supprimé",
+    "goneBoth": "Retiré de la liste des rappels et du calendrier.",
+    "goneCalendar": "Retiré du calendrier."
+  }
+}

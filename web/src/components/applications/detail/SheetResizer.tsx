@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { cn } from '@/lib/utils'
 import { MIN_SHEET_WIDTH, widthFromPointer } from '@/lib/sheet-width'
@@ -16,6 +17,9 @@ import { widthForKey } from '@/components/applications/detail/resizer-keys'
  * visible line matches the border it replaces; the target is what a pointer
  * actually has to hit, and 4px is well under what anyone can reliably aim at.
  */
+/** The arrow that means the same thing on a right-to-left page. */
+const MIRRORED_ARROW: Record<string, string> = { ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft' }
+
 /** A drag in flight: what to release, and the listener to unbind. */
 type LiveDrag = {
   readonly handle: HTMLDivElement
@@ -65,6 +69,7 @@ export function SheetResizer({
    *    button. Measured: the drag stayed live and the sheet then resized on
    *    plain hover with no button held, 700 -> 760 -> 900.
    */
+  const { t } = useTranslation('applications')
   const drag = useRef<LiveDrag | null>(null)
 
   const endDrag = useCallback(() => {
@@ -98,6 +103,7 @@ export function SheetResizer({
       event.preventDefault()
       endDrag()
       const handle = event.currentTarget
+      const rtl = getComputedStyle(handle).direction === 'rtl'
       /*
        * Pointer capture, so the drag survives the pointer leaving the strip —
        * which it does immediately, because the strip moves with the edge and the
@@ -123,7 +129,10 @@ export function SheetResizer({
           endDrag()
           return
         }
-        onWidth(widthFromPointer(moveEvent.clientX, window.innerWidth))
+        // Right to left the sheet is pinned to the left edge, so its width is
+        // the pointer's distance from that edge rather than from the right.
+        const x = rtl ? window.innerWidth - moveEvent.clientX : moveEvent.clientX
+        onWidth(widthFromPointer(x, window.innerWidth))
       }
 
       drag.current = { handle, pointerId: event.pointerId, handler }
@@ -147,7 +156,11 @@ export function SheetResizer({
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
       // Arrows nudge, Home/End go to the extremes (Home = aria-valuemin, per
       // the APG separator pattern), Enter resets. The mapping is `widthForKey`.
-      const next = widthForKey(event.key, width, window.innerWidth, event.shiftKey)
+      // The handle sits on the sheet's inline start, which is its right edge
+      // right to left: there ArrowRight moves the edge outwards and widens.
+      const rtl = getComputedStyle(event.currentTarget).direction === 'rtl'
+      const key = rtl ? (MIRRORED_ARROW[event.key] ?? event.key) : event.key
+      const next = widthForKey(key, width, window.innerWidth, event.shiftKey)
       if (next === null) return
       event.preventDefault()
       if (next === 'reset') onReset()
@@ -160,12 +173,12 @@ export function SheetResizer({
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize the record panel"
+      aria-label={t('resizer.label')}
       aria-valuenow={width}
       aria-valuemin={MIN_SHEET_WIDTH}
       aria-valuemax={max}
       tabIndex={0}
-      title="Drag to resize — double-click to reset"
+      title={t('resizer.title')}
       onPointerDown={onPointerDown}
       onKeyDown={onKeyDown}
       onDoubleClick={onReset}
@@ -176,13 +189,14 @@ export function SheetResizer({
        * positioned child of a scroll container scrolls with its content — the
        * handle would ride up out of view as soon as a long record was scrolled,
        * which is exactly when somebody wants more width. Fixed pins it to the
-       * viewport, and since the sheet is itself fixed to the right edge, its
-       * left border is always `width` from the right of the window.
+       * viewport, and since the sheet is itself fixed to the inline end, its
+       * inner border is always `width` from that edge of the window — the
+       * right in English, the left in Arabic.
        */
-      style={{ right: width }}
+      style={{ insetInlineEnd: width }}
       className={cn(
         // Centred on the sheet's left border: half of the 12px strip each side.
-        'group fixed top-0 bottom-0 z-50 -mr-1.5 w-3 cursor-col-resize touch-none',
+        'group fixed top-0 bottom-0 z-50 -me-1.5 w-3 cursor-col-resize touch-none',
         /*
          * No focus RING in normal use: a 12px strip the height of the screen
          * outlined in accent is a wall. The line and the grip colour instead,

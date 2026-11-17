@@ -8,6 +8,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import source from './Applications.tsx?raw'
+import pagesCatalog from '@/i18n/locales/en/pages.json?raw'
 
 const code = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 
@@ -17,8 +18,9 @@ describe('Q045 the Applications page has the paste-a-URL box beside New applicat
   })
 
   it('puts it in the header actions, immediately before the New application button', () => {
+    expect(JSON.parse(pagesCatalog).applications.newApplication).toBe('New application')
     expect(code).toMatch(
-      /actions=\{\s*<>\s*\{?\s*\}?\s*<AddByUrl[^>]*\/>\s*<Button size="sm" onClick=\{\(\) => onNew\(\)\}>[\s\S]{0,160}?New application\s*<\/Button>/,
+      /actions=\{\s*<>\s*\{?\s*\}?\s*<AddByUrl[^>]*\/>\s*<Button size="sm" onClick=\{\(\) => onNew\(\)\}>[\s\S]{0,160}?\{t\('applications\.newApplication'\)\}\s*<\/Button>/,
     )
   })
 })

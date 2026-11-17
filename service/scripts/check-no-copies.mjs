@@ -179,6 +179,23 @@ const KNOWN_TWINS = [
   { file: 'lib/roles.tsx', why: 'role filter selection — same argument' },
   { file: 'lib/roles-context.ts', why: 'the context object for the above' },
   {
+    file: 'i18n/domain.ts',
+    // The seam again: `domainText` (the logic and the English) is shared in
+    // `kg/core/domain-text.ts`. This binds it to `@/i18n/i18n`, which is a
+    // different i18next instance in each app, and adds the hook that subscribes
+    // a component to that instance's language changes.
+    why: 'binds the shared kg/core/domain-text to each app\'s own i18next instance',
+    maxLines: 30,
+  },
+  {
+    file: 'i18n/advice.ts',
+    // The same seam as `i18n/domain.ts`, for the Statistics advice: the logic
+    // and the English are `kg/core/advice-text.ts`, bound here to each app's
+    // own i18next instance, with the hook that follows its language changes.
+    why: 'binds the shared kg/core/advice-text to each app\'s own i18next instance',
+    maxLines: 30,
+  },
+  {
     file: 'lib/cv-agent.ts',
     // The 122 lines of extraction that used to be here are in
     // `kg/react/use-read-cv.ts` and shared. What is left is the seam: this file

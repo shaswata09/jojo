@@ -8,6 +8,7 @@ import snippetsSource from '@/components/vault/SnippetsTool.tsx?raw'
 import instrumentsSource from '@/components/vault/InstrumentsTool.tsx?raw'
 import applicationFieldsSource from '@/components/applications/dialog/ApplicationFields.tsx?raw'
 import itemFormSource from '@/components/timeline/dialog/ItemForm.tsx?raw'
+import vaultEn from '@/i18n/locales/en/vault.json'
 
 /**
  * What the Vault page is made of, read as source (D20: nothing here mounts).
@@ -85,8 +86,10 @@ describe('the Tools tab (Q055, Q261)', () => {
   const tools = strip(instrumentsSource)
 
   it('offers the calculator and the PDF editor', () => {
-    expect(tools).toContain("{ value: 'calculator', label: 'Calculator' }")
-    expect(tools).toContain("{ value: 'pdf', label: 'PDF editor' }")
+    expect(tools).toContain("{ value: 'calculator', label: t('instruments.calculator') }")
+    expect(tools).toContain("{ value: 'pdf', label: t('instruments.pdf') }")
+    expect(vaultEn.instruments.calculator).toBe('Calculator')
+    expect(vaultEn.instruments.pdf).toBe('PDF editor')
     expect(tools).toMatch(/<Calculator\s*\/>/)
     expect(tools).toMatch(/<PdfEditor\s*\/>/)
     expect(tools).toContain("import('@/components/vault/pdf/PdfEditor')")

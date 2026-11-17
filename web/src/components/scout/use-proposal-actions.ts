@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import type { useScout } from '@jojo/service/react/use-scout'
 import type { PipelinesState } from '@jojo/service/react/use-pipelines'
 import { appPath } from '@/lib/links'
@@ -29,6 +30,7 @@ export function useProposalActions(
 ) {
   const { updatePosting, promoteToApplication, promotePosting } = scout
   const { settings } = useModelSettings()
+  const { t } = useTranslation('scout')
   const { toast } = useToast()
   const mascot = useMascot()
   const navigate = useNavigate()
@@ -84,9 +86,9 @@ export function useProposalActions(
     mascot.play(CUES.applicationAdded)
     if (!readAlready)
       toast({
-        title: `${application.org} added to your applications as a draft`,
+        title: t('toasts.addedOne', { org: application.org }),
         description: approvedDescription(page !== null, isConfigured(settings)),
-        action: { label: 'Open', onClick: () => navigate(appPath(application)) },
+        action: { label: t('common.open'), onClick: () => navigate(appPath(application)) },
       })
     if (page) void fillDraft(application, page.url, page.title, proposal)
   }

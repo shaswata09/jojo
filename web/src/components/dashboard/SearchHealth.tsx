@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Compass } from 'lucide-react'
 import { AllHidden, ChartLegend } from '@/components/charts/ChartLegend'
 import { Radar } from '@/components/charts/Radar'
@@ -13,6 +14,7 @@ import { applicationsPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { useScopedApplications } from '@/lib/roles-scope'
+import { useAdvice } from '@/i18n/advice'
 
 /**
  * A radar of this search against a typical one, plus the suggestions that fall
@@ -29,8 +31,8 @@ import { useScopedApplications } from '@/lib/roles-scope'
  * a freshly-cleared store did not contain.
  */
 const RADAR_SERIES = [
-  { key: 'you', label: 'Yours', color: 'var(--series-1)' },
-  { key: 'target', label: 'Typical', color: 'var(--text-3)' },
+  { key: 'you', color: 'var(--series-1)' },
+  { key: 'target', color: 'var(--text-3)' },
 ] as const
 
 /**
@@ -40,6 +42,9 @@ const RADAR_SERIES = [
 const MIN_AXES = 3
 
 export function SearchHealthBody() {
+  const { t } = useTranslation('dashboard')
+  const advice = useAdvice()
+  const seriesLabel = (key: (typeof RADAR_SERIES)[number]['key']) => t(`searchHealth.series.${key}`)
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(RADAR_SERIES.map((s) => s.key))
   const { all } = useScopedApplications()
   const { all: timeline } = useTimeline()
@@ -67,9 +72,9 @@ export function SearchHealthBody() {
           it is not. */}
       {measured.length >= MIN_AXES ? (
         <p className="mb-3 text-xs text-text-3">
-          your figures against a typical search{' '}
-          <Chip size="sm" className="font-normal" title="Only the typical ring is illustrative">
-            Sample
+          {t('searchHealth.intro')}{' '}
+          <Chip size="sm" className="font-normal" title={t('searchHealth.sampleTitle')}>
+            {t('searchHealth.sample')}
           </Chip>
         </p>
       ) : null}
@@ -77,11 +82,11 @@ export function SearchHealthBody() {
       {measured.length < MIN_AXES ? (
         <EmptyState
           icon={Compass}
-          title="Not enough to compare yet"
-          description="This weighs your replies, interviews, referrals and follow-ups against a typical search. It needs applications that have actually gone out."
+          title={t('searchHealth.emptyTitle')}
+          description={t('searchHealth.emptyDescription')}
           action={
             <Button variant="outline" size="sm" asChild>
-              <Link to={applicationsPath()}>Open the board</Link>
+              <Link to={applicationsPath()}>{t('common.openBoard')}</Link>
             </Button>
           }
         />
@@ -99,9 +104,9 @@ export function SearchHealthBody() {
               <AllHidden onShowAll={showAll} />
             ) : (
               <Radar
-                axes={measured.map((a) => a.axis)}
+                axes={measured.map((a) => advice.axis(a.id))}
                 series={RADAR_SERIES.filter((s) => !isHidden(s.key)).map((s) => ({
-                  label: s.label,
+                  label: seriesLabel(s.key),
                   color: s.color,
                   values: measured.map((a) => (s.key === 'you' ? (a.score ?? 0) : a.target)),
                 }))}
@@ -109,7 +114,11 @@ export function SearchHealthBody() {
             )}
             <ChartLegend
               className="mt-2 justify-center"
-              items={RADAR_SERIES.map((s) => ({ key: s.key, label: s.label, color: s.color }))}
+              items={RADAR_SERIES.map((s) => ({
+                key: s.key,
+                label: seriesLabel(s.key),
+                color: s.color,
+              }))}
               isHidden={isHidden}
               onToggle={toggle}
             />
@@ -117,31 +126,37 @@ export function SearchHealthBody() {
 
           <div className="min-w-0">
             <h3 className="mb-2 text-xs tracking-wide text-text-3 uppercase">
-              Suggestions, most useful first
+              {t('searchHealth.suggestions')}
             </h3>
 
             <ol className="divide-y divide-hairline">
-              {ranked.map((a, i) => (
-                <li key={a.axis} className="flex items-start gap-3 py-2.5">
-                  {/* The rank, plainly. `aria-hidden` because an <ol> already
+              {ranked.map((a, i) => {
+                // The axis's own figures, said in the language on screen.
+                const said = advice.health(a)
+                return (
+                  <li key={a.id} className="flex items-start gap-3 py-2.5">
+                    {/* The rank, plainly. `aria-hidden` because an <ol> already
                       announces the position and reading both is a stutter. */}
-                  <span
-                    aria-hidden
-                    className="tabular mt-0.5 grid size-5 shrink-0 place-items-center rounded-sm border border-hairline bg-well text-xs text-text-3"
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0">
-                    {/* The basis rides beside the axis name so the score on the
+                    <span
+                      aria-hidden
+                      className="tabular mt-0.5 grid size-5 shrink-0 place-items-center rounded-sm border border-hairline bg-well text-xs text-text-3"
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0">
+                      {/* The basis rides beside the axis name so the score on the
                         chart is never a number with no stated meaning. */}
-                    <div className="text-sm">
-                      {a.axis}
-                      <span className="ml-2 text-xs text-text-3">{a.basis}</span>
+                      <div className="text-sm">
+                        {said.axis}
+                        <span className="ms-2 text-xs text-text-3 [unicode-bidi:isolate]">
+                          {said.basis}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-text-3">{said.suggestion}</p>
                     </div>
-                    <p className="mt-0.5 text-xs text-text-3">{a.suggestion}</p>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                )
+              })}
             </ol>
           </div>
         </div>
@@ -157,9 +172,10 @@ export function SearchHealthBody() {
  * without nesting one Panel inside another.
  */
 export function SearchHealth() {
+  const { t } = useTranslation('dashboard')
   return (
     <Panel className="min-w-0">
-      <PanelTitle>What to work on next</PanelTitle>
+      <PanelTitle>{t('searchHealth.title')}</PanelTitle>
       <SearchHealthBody />
     </Panel>
   )

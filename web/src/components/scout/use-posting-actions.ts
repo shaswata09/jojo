@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { draftFromUrl } from '@/components/applications/draft-from'
 import type { useScout } from '@jojo/service/react/use-scout'
 import { appPath, scoutPath } from '@/lib/links'
@@ -30,6 +31,7 @@ export function usePostingActions(
     promotePosting,
   } = scout
   const { settings } = useModelSettings()
+  const { t } = useTranslation('scout')
   const { toast } = useToast()
   const mascot = useMascot()
   const navigate = useNavigate()
@@ -41,7 +43,7 @@ export function usePostingActions(
   const undoBack = (restore: (() => void) | null, focus: Parameters<typeof scoutPath>[0]) =>
     restore
       ? {
-          label: 'Undo',
+          label: t('common.undo'),
           onClick: () => {
             restore()
             navigate(scoutPath(focus))
@@ -62,8 +64,8 @@ export function usePostingActions(
     if (!application) return
     mascot.play(CUES.applicationAdded)
     toast({
-      title: `${application.org} added as a draft`,
-      description: 'The match stays in this feed, now linked to the application.',
+      title: t('toasts.addedAsDraft', { org: application.org }),
+      description: t('toasts.matchStays'),
       action: undoBack(restore, { focus: { kind: 'match', id: matchId } }),
     })
     navigate(appPath(application))
@@ -80,7 +82,7 @@ export function usePostingActions(
     const title = [guess.org, guess.role].filter(Boolean).join(' — ') || text
     addPosting({ title, url: text, size: '—' })
     setUrl('')
-    toast({ title: 'Posting saved', description: title })
+    toast({ title: t('toasts.postingSaved'), description: title })
     pages.keepAndReport(text, title)
   }
 
@@ -117,10 +119,8 @@ export function usePostingActions(
     else if (posting && !pages.pageFor(posting)) pages.keepAndReport(posting.url, posting.title)
     mascot.play(CUES.applicationAdded)
     toast({
-      title: `${application.org} added as a draft`,
-      description: reading
-        ? 'Reading the posting to check and fill in its details — the draft updates when it is done.'
-        : 'The posting stays saved here, now linked to the application.',
+      title: t('toasts.addedAsDraft', { org: application.org }),
+      description: reading ? t('toasts.postingReading') : t('toasts.postingStays'),
       action: undoBack(restore, { focus: { kind: 'posting', id: postingId } }),
     })
     navigate(appPath(application))
@@ -133,10 +133,10 @@ export function usePostingActions(
   const onRemovePosting = (id: string, title: string) => {
     const { restore } = removePosting(id)
     toast({
-      title: 'Posting removed',
+      title: t('toasts.postingRemoved'),
       description: title,
       tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
+      action: { label: t('common.undo'), onClick: restore },
     })
   }
 

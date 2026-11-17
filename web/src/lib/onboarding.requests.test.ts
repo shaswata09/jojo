@@ -18,7 +18,9 @@ const NONE: Record<OnboardingStage, boolean> = {
   tour: false,
 }
 
-type GateOver = Partial<Omit<SetupGate, 'offered'>> & { offered?: Partial<Record<OnboardingStage, boolean>> }
+type GateOver = Partial<Omit<SetupGate, 'offered'>> & {
+  offered?: Partial<Record<OnboardingStage, boolean>>
+}
 
 const gate = (over: GateOver = {}): SetupGate => ({
   fresh: true,
@@ -32,7 +34,11 @@ const gate = (over: GateOver = {}): SetupGate => ({
 const walk = (start: Omit<SetupGate, 'offered'>) => {
   const offered = { ...NONE }
   const seen: OnboardingStage[] = []
-  for (let stage = nextSetupStage({ ...start, offered }); stage; stage = nextSetupStage({ ...start, offered })) {
+  for (
+    let stage = nextSetupStage({ ...start, offered });
+    stage;
+    stage = nextSetupStage({ ...start, offered })
+  ) {
     seen.push(stage)
     offered[stage] = true
   }
@@ -68,7 +74,10 @@ describe('the order of the first-run steps (Q145, Q159)', () => {
   })
 
   it('has nothing left to ask once every step was offered', () => {
-    const all = Object.fromEntries(Object.keys(NONE).map((k) => [k, true])) as Record<OnboardingStage, boolean>
+    const all = Object.fromEntries(Object.keys(NONE).map((k) => [k, true])) as Record<
+      OnboardingStage,
+      boolean
+    >
     expect(nextSetupStage(gate({ offered: all }))).toBeNull()
   })
 })
@@ -88,7 +97,7 @@ describe('each step can be skipped (Q159)', () => {
       expect(code).toMatch(new RegExp(`<${step} onSkip=\\{\\(\\) => finish\\('\\w+'\\)\\}`))
     }
     // …and the shared step frame draws the button for it.
-    expect(setupSteps).toMatch(/onClick=\{onSkip\}>\s*Skip for now/)
+    expect(setupSteps).toMatch(/onClick=\{onSkip\}>\s*\{t\('setup\.skip'\)\}/)
   })
 })
 

@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Solicitud",
+      "org": "Empleador",
+      "role": "Puesto",
+      "item": "Fecha o recordatorio",
+      "file": "Archivo",
+      "link": "Enlace",
+      "snippet": "Fragmento",
+      "posting": "Oferta guardada",
+      "match": "Coincidencia",
+      "keyword": "Palabra clave"
+    },
+    "isA": "es un",
+    "fit": "{{fit}} % de encaje",
+    "query": {
+      "undated": {
+        "question": "Solicitudes sin ninguna fecha asociada",
+        "why": "No aparecen en el calendario ni en la semana próxima, por muy activas que estén."
+      },
+      "untagged": {
+        "question": "Solicitudes sin ninguna palabra clave",
+        "why": "Un registro que nadie ha clasificado es un registro que ningún filtro mostrará nunca."
+      },
+      "orphanFiles": {
+        "question": "Archivos no asociados a ninguna solicitud",
+        "why": "Los documentos se dispersan; esto te dice a cuáles no apunta nada."
+      },
+      "orphanLinks": {
+        "question": "Enlaces no asociados a ninguna solicitud",
+        "why": "La misma pregunta para las ofertas y páginas que guardaste para volver a ellas."
+      },
+      "busiest": {
+        "question": "Los empleadores con los que más tienes en marcha",
+        "why": "Contado en todas las colecciones a la vez: solicitudes, fechas, archivos y enlaces."
+      },
+      "unpromoted": {
+        "question": "Coincidencias y ofertas que nunca se convirtieron en solicitudes",
+        "why": "Las pistas caducan en silencio; ninguna vista de lista te dice cuáles."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} no {{rel}} {{end}}",
+      "startAny": "Cualquier cosa",
+      "relAny": "enlazado con",
+      "endAny": "cualquier cosa",
+      "startType": {
+        "application": "Solicitudes",
+        "org": "Empleadores",
+        "role": "Puestos",
+        "item": "Fechas o recordatorios",
+        "file": "Archivos",
+        "link": "Enlaces",
+        "snippet": "Fragmentos",
+        "posting": "Ofertas guardadas",
+        "match": "Coincidencias",
+        "keyword": "Palabras clave"
+      },
+      "endType": {
+        "application": "una solicitud",
+        "org": "un empleador",
+        "role": "un puesto",
+        "item": "una fecha o recordatorio",
+        "file": "un archivo",
+        "link": "un enlace",
+        "snippet": "un fragmento",
+        "posting": "una oferta guardada",
+        "match": "una coincidencia",
+        "keyword": "una palabra clave"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Hoy",
+      "hint": "Lo que necesita una decisión"
+    },
+    "apps": {
+      "label": "Solicitudes",
+      "hint": "La lista y el tablero de etapas"
+    },
+    "cal": {
+      "label": "Calendario",
+      "hint": "Plazos, entrevistas y preparación"
+    },
+    "reminders": {
+      "label": "Recordatorios",
+      "hint": "Bóveda · lo que debes y cuándo"
+    },
+    "links": {
+      "label": "Enlaces",
+      "hint": "Bóveda · ofertas, personas y páginas"
+    },
+    "files": {
+      "label": "Archivos",
+      "hint": "Bóveda · documentos que has registrado"
+    },
+    "snippets": {
+      "label": "Fragmentos",
+      "hint": "Bóveda · párrafos reutilizables"
+    },
+    "tools": {
+      "label": "Herramientas",
+      "hint": "Bóveda · la calculadora"
+    },
+    "scout": {
+      "label": "Explorador de empleo",
+      "hint": "Búsquedas guardadas, coincidencias y ofertas"
+    },
+    "stats": {
+      "label": "Estadísticas",
+      "hint": "Tasas, un embudo y en qué trabajar"
+    },
+    "graph": {
+      "label": "Grafo",
+      "hint": "Tus registros como la red que forman"
+    },
+    "profile": {
+      "label": "Mi perfil",
+      "hint": "Datos básicos, documentos y términos de búsqueda"
+    },
+    "assistant": {
+      "label": "Asistente",
+      "hint": "Ejemplos resueltos hasta que conectes un modelo"
+    },
+    "settings": {
+      "label": "Ajustes",
+      "hint": "Conexiones, apariencia, palabras clave y tus datos"
+    },
+    "transfer": {
+      "label": "Transferir",
+      "hint": "Mueve todo a tu ordenador o desde él"
+    },
+    "guide": {
+      "label": "Cómo se usa",
+      "hint": "Las tres capas, las pantallas y el grafo"
+    },
+    "more": {
+      "label": "Más",
+      "hint": "El resto de jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Nueva solicitud"
+    },
+    "newApplicationFromLink": {
+      "label": "Solicitud desde un enlace",
+      "hint": "El modelo lee la oferta y rellena el formulario"
+    },
+    "newReminder": {
+      "label": "Nuevo recordatorio"
+    },
+    "newEvent": {
+      "label": "Nuevo evento"
+    },
+    "draftMessage": {
+      "label": "Redactar un mensaje",
+      "hint": "A partir de tus fragmentos de correo; no se genera nada"
+    },
+    "saveLink": {
+      "label": "Guardar un enlace",
+      "hint": "Abre la Bóveda, herramienta de enlaces"
+    },
+    "recordDocument": {
+      "label": "Registrar un documento",
+      "hint": "Abre la Bóveda, herramienta de archivos"
+    },
+    "savePosting": {
+      "label": "Guardar una oferta",
+      "hint": "Abre el Explorador de empleo"
+    }
+  },
+  "snooze": {
+    "soon1": "Mañana",
+    "later1": "Un día después",
+    "soon3": "En 3 días",
+    "later3": "Tres días después",
+    "soon7": "En 7 días",
+    "later7": "Una semana después"
+  },
+  "itemActions": {
+    "reopened": "{{title}} reabierto",
+    "completed": "{{title}} completado",
+    "reopenedBody": "Vuelve a la lista abierta y cuenta otra vez como pendiente.",
+    "completedBody": "Sale de las listas abiertas y cuenta para hoy; no se elimina nada.",
+    "rescheduled": "{{title}} reprogramado",
+    "nowDue": "Ahora vence el {{date}}, aquí y en el calendario.",
+    "movedTo": "Movido al {{date}}",
+    "copyTitle": "{{title}} (copia)",
+    "added": "{{title}} añadido",
+    "copyBody": "{{date}}: la copia lleva las mismas palabras clave.",
+    "deleted": "{{title}} eliminado",
+    "deletedReminder": "Ya no está en la lista de recordatorios ni en el calendario.",
+    "deletedEvent": "Ya no está en el calendario."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "El filtro de palabras clave sobre la lista es lo que los oculta.",
+    "noSearchMatch": "Nada coincide con esa búsqueda",
+    "noBothMatch": "Nada coincide con ambos filtros",
+    "clearBoth": "Quitar ambos filtros",
+    "clearKeywords": "Quitar palabras clave"
+  },
+  "boardScan": {
+    "badAddress": "No puedo abrir esa dirección.",
+    "timeout": "Ese portal tardó demasiado en responder.",
+    "unreachable": "No se pudo conectar con ese portal.",
+    "status": "Ese portal respondió {{status}}.",
+    "browserOnly": "{{host}} solo muestra sus ofertas a un navegador real, así que no se puede leer desde el teléfono. En una computadora, la extensión de navegador de jojo puede leerlo."
+  },
+  "timelineForm": {
+    "title": "Ponle un título que reconozcas.",
+    "date": "Elige una fecha: un elemento sin fecha no tiene dónde aparecer.",
+    "time": "Usa una hora como 14:30."
+  },
+  "reader": {
+    "tooBig": "Ese documento ocupa {{size}} MB y el lector admite hasta {{max}} MB.",
+    "gone": "La copia de ese documento ya no está en este dispositivo.",
+    "empty": "No se pudo leer nada de ese documento; puede que sea un escaneo.",
+    "noAddress": "Aún no hay dirección. Consulta Ajustes.",
+    "notConnected": "No hay ningún lector de documentos conectado, así que no se puede leer el contenido de este archivo. Su dirección se pone en Ajustes.",
+    "noCopy": "Ese registro no tiene ninguna copia guardada en este dispositivo, así que no hay nada que leer."
+  },
+  "jobs": {
+    "ready": "{{label}} está listo",
+    "readyBody": "Guardado en la solicitud para la que se escribió.",
+    "failed": "{{label}} no terminó"
+  },
+  "boot": {
+    "corrupt": "no se pudieron leer los registros guardados ({{detail}}).",
+    "blocked": "otra cosa de este dispositivo tiene bloqueado el almacenamiento.",
+    "unsupported": "este dispositivo no tiene almacenamiento que esta app pueda usar.",
+    "threw": "no se pudo abrir el almacén.",
+    "banner": "No se guarda en este dispositivo: {{why}}"
+  },
+  "posting": {
+    "needsReader": "Esto necesita el lector de documentos además del modelo: es lo que descarga la página. La dirección está en Ajustes.",
+    "empty": "Esa página llegó casi vacía. Los portales que se dibujan con JavaScript envían una carcasa en blanco a todo lo que no sea un navegador: ábrela aquí y guarda la página.",
+    "note": "Leído por el modelo desde {{url}}",
+    "askedTwice": "Se preguntó dos veces, con el mismo resultado."
+  },
+  "localService": {
+    "stopped": "Se detuvo antes de enviarse."
+  },
+  "clipboard": {
+    "tooBig": "Demasiado grande para el portapapeles",
+    "tooBigBody": "Tus registros ocupan {{size}} y el portapapeles de Android admite unos {{max}} de texto. No se copió nada. Usa Transferir para enviarlo todo a tu ordenador por tu red local.",
+    "copied": "Copiado al portapapeles",
+    "copiedBody": "Una copia de seguridad que puedes pegar en una nota o un archivo. Los documentos que adjuntaste se quedan en este teléfono: sus filas vuelven sin su contenido."
+  },
+  "documents": {
+    "incomplete": "La copia no se completó.",
+    "nothingCopied": "No se copió nada."
+  },
+  "weekday": {
+    "sun": "dom",
+    "mon": "lun",
+    "tue": "mar",
+    "wed": "mié",
+    "thu": "jue",
+    "fri": "vie",
+    "sat": "sáb"
+  },
+  "owed": {
+    "overdue": "Vencido",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "rest": "Resto de la semana"
+  },
+  "receive": {
+    "declined": "No se cambió nada. Vuelve a escanear el código para recibir."
+  }
+}

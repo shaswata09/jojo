@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ArrowUpRight, MousePointerClick } from 'lucide-react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
 import { planToolForm, recordCountOf } from '@/components/common/tool-form'
@@ -34,6 +35,7 @@ export function GraphDetail({
   node: GraphNode | null
   onSelect: (id: string | null) => void
 }) {
+  const { t } = useTranslation('graph')
   const memory = useGraph()
   const { runtime } = useKg()
   const [pending, setPending] = useState<Verb | null>(null)
@@ -107,16 +109,13 @@ export function GraphDetail({
   if (!node) {
     return (
       <Panel className="min-w-0">
-        <PanelTitle>Selected record</PanelTitle>
+        <PanelTitle>{t('detail.title')}</PanelTitle>
         <div className="flex flex-col items-center gap-2 px-2 py-8 text-center">
           <div className="grid size-9 place-items-center rounded-lg border border-hairline bg-well text-text-3">
             <MousePointerClick className="size-4" strokeWidth={1.7} aria-hidden />
           </div>
-          <p className="text-sm text-text-2">Nothing selected</p>
-          <p className="max-w-xs text-xs text-text-3">
-            Pick a node — by clicking it, or by tabbing to it and pressing Enter — to see what it
-            connects to and where it lives in the app.
-          </p>
+          <p className="text-sm text-text-2">{t('detail.nothingSelected')}</p>
+          <p className="max-w-xs text-xs text-text-3">{t('detail.pickHint')}</p>
         </div>
       </Panel>
     )
@@ -125,14 +124,14 @@ export function GraphDetail({
   return (
     <>
       <Panel className="min-w-0">
-        <PanelTitle>Selected record</PanelTitle>
+        <PanelTitle>{t('detail.title')}</PanelTitle>
 
         <div className="flex items-center gap-2 text-xs text-text-3">
           <TypeSwatch type={node.type} />
           {NODE_TYPE_LABEL[node.type]}
           <span aria-hidden>·</span>
           <span className="tabular font-mono">
-            {node.degree} {node.degree === 1 ? 'connection' : 'connections'}
+            {t('common.connections', { count: node.degree })}
           </span>
         </div>
 
@@ -142,7 +141,10 @@ export function GraphDetail({
         {node.href ? (
           <Button asChild size="sm" variant="outline" className="mt-3">
             <Link to={node.href}>
-              Open {NODE_TYPE_LABEL[node.type].toLowerCase()}
+              {/* A whole phrase per type, from the catalog. Lowercasing the
+                  translated type name to fit it into "Open {{type}}" gave
+                  German "bewerbung öffnen" — its nouns are capitalised. */}
+              {t(`detail.openType.${node.type}`)}
               <ArrowUpRight className="size-3.5" strokeWidth={2} aria-hidden />
             </Link>
           </Button>
@@ -150,9 +152,7 @@ export function GraphDetail({
           /* Organisations, roles, keywords and sources are derived from the
            records rather than stored as records, so there is no page to open.
            Saying so beats a button that goes somewhere approximate. */
-          <p className="mt-3 text-xs text-text-3">
-            Derived from your records — it has no page of its own.
-          </p>
+          <p className="mt-3 text-xs text-text-3">{t('detail.derived')}</p>
         )}
 
         {verbs.length > 0 ? (
@@ -161,7 +161,7 @@ export function GraphDetail({
            button here. Nothing on this list is written down twice — add a tool
            and it appears, on every node it touches, with a form of its own. */
           <div className="mt-4">
-            <h3 className="text-xs text-text-3">What you can do with it</h3>
+            <h3 className="text-xs text-text-3">{t('detail.verbs')}</h3>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {verbs.map((verb) => (
                 <Button
@@ -180,7 +180,7 @@ export function GraphDetail({
         ) : null}
 
         {groups.length === 0 ? (
-          <p className="mt-4 text-xs text-text-3">Nothing points at this record yet.</p>
+          <p className="mt-4 text-xs text-text-3">{t('detail.noLinks')}</p>
         ) : (
           <div className="mt-4 space-y-3">
             {groups.map((group) => (
@@ -196,7 +196,7 @@ export function GraphDetail({
                       <button
                         type="button"
                         onClick={() => onSelect(item.node.id)}
-                        className="pressable-row flex w-full items-baseline gap-2 rounded-sm px-1 py-1 text-left text-sm text-text-2 transition-colors hover:bg-row-hover hover:text-text-1"
+                        className="pressable-row flex w-full items-baseline gap-2 rounded-sm px-1 py-1 text-start text-sm text-text-2 transition-colors hover:bg-row-hover hover:text-text-1"
                       >
                         <span className="min-w-0 flex-1 truncate">{item.node.label}</span>
                         <span className="shrink-0 font-mono text-xs text-text-3">

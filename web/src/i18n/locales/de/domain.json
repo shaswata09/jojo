@@ -1,0 +1,401 @@
+{
+  "stage": {
+    "draft": "Entwurf",
+    "submitted": "Abgeschickt",
+    "screen": "Vorgespräch",
+    "interview": "Vorstellungsgespräch",
+    "offer": "Angebot",
+    "closed": "Abgeschlossen"
+  },
+  "kind": {
+    "deadline": "Frist",
+    "interview": "Vorstellungsgespräch",
+    "visit": "Besuch",
+    "call": "Anruf",
+    "prep": "Vorbereitung",
+    "admin": "Verwaltung",
+    "follow-up": "Follow-up"
+  },
+  "outcome": {
+    "rejected": "Absage erhalten",
+    "withdrawn": "Zurückgezogen",
+    "accepted": "Angenommen",
+    "declined": "Abgelehnt",
+    "ghosted": "Ghosting – keine Antwort"
+  },
+  "outcomeAction": {
+    "rejected": "Absage erhalten",
+    "withdrawn": "Zurückgezogen",
+    "accepted": "Angebot angenommen",
+    "declined": "Angebot abgelehnt",
+    "ghosted": "Ohne Antwort geschlossen"
+  },
+  "format": {
+    "phone": "Telefon",
+    "video": "Video",
+    "onsite": "Vor Ort"
+  },
+  "verdict": {
+    "strong": "Passt sehr gut",
+    "worth-tailoring": "Anpassen lohnt sich",
+    "a-stretch": "Etwas hoch gegriffen",
+    "not-measured": "Noch nicht bewertet"
+  },
+  "background": {
+    "education": "Ausbildung",
+    "employment": "Beschäftigung",
+    "publication": "Publikationen",
+    "patent": "Patente",
+    "grant": "Förderungen",
+    "leadership": "Führung",
+    "outreach": "Wissenschaftskommunikation",
+    "training": "Weiterbildung",
+    "other": "Sonstiges",
+    "award": "Auszeichnungen",
+    "teaching": "Lehre",
+    "service": "Engagement",
+    "project": "Projekte",
+    "certification": "Zertifizierungen",
+    "skill": "Fähigkeiten",
+    "language": "Sprachen",
+    "volunteering": "Ehrenamt",
+    "membership": "Mitgliedschaften"
+  },
+  "tone": {
+    "teal": "Blau",
+    "cyan": "Cyan",
+    "green": "Grün",
+    "amber": "Bernstein",
+    "red": "Rot",
+    "pink": "Pink",
+    "violet": "Violett",
+    "gray": "Grau"
+  },
+  "mark": {
+    "bold": "neu oder für diese Anzeige umgeschrieben",
+    "italic": "umformuliert",
+    "underline": "nach oben gerückt oder stärker gewichtet"
+  },
+  "document": {
+    "cv": "Lebenslauf",
+    "research-statement": "Forschungsstatement",
+    "teaching-statement": "Lehrstatement",
+    "cover-letter": "Anschreiben",
+    "other": "Dokument"
+  },
+  "how": {
+    "filed-under": "unter dieser Bewerbung abgelegt",
+    "same-url": "über die Webadresse zugeordnet",
+    "via-posting": "aus der Anzeige, die der Job-Scout gefunden hat"
+  },
+  "contactRole": {
+    "recommender": "Referenz",
+    "contact": "Ansprechperson"
+  },
+  "approval": {
+    "manual": "Manuell",
+    "semi": "Halbautomatisch",
+    "auto": "Automatisch"
+  },
+  "approvalSaid": {
+    "manual": "Du wirst gefragt, bevor in diesem Gespräch irgendetwas geschrieben wird.",
+    "semi": "Änderungen passieren sofort. Du wirst gefragt, bevor etwas gelöscht oder geleert wird.",
+    "auto": "Alles passiert sofort, auch Löschungen. Nur das Leeren oder Ersetzen des gesamten Speichers wird bestätigt."
+  },
+  "funnel": {
+    "0": "Beworben",
+    "1": "Geantwortet",
+    "2": "Vorgespräch",
+    "3": "Vorstellungsgespräch",
+    "4": "Angebot"
+  },
+  "band": {
+    "0": "Läuft",
+    "1": "Angebot",
+    "2": "Absage erhalten",
+    "3": "Zurückgezogen",
+    "4": "Keine Antwort"
+  },
+  "dimension": {
+    "source": "Herkunft",
+    "role": "Art der Stelle"
+  },
+  "kpi": {
+    "label": {
+      "response": "Antwortquote",
+      "interview": "Gesprächsquote",
+      "offer": "Angebotsquote",
+      "reply": "Antwortzeit (Median)"
+    },
+    "note": {
+      "response_one": "{{count}} von {{of}} hat geantwortet",
+      "response_other": "{{count}} von {{of}} haben geantwortet",
+      "interview_one": "{{count}} von {{of}} kam zum Vorstellungsgespräch",
+      "interview_other": "{{count}} von {{of}} kamen zum Vorstellungsgespräch",
+      "offer_one": "{{count}} von {{of}} kam zu einem Angebot",
+      "offer_other": "{{count}} von {{of}} kamen zu einem Angebot",
+      "replyNone": "noch keine Antwort mit beiden Daten erfasst",
+      "reply_one": "über {{count}} Antwort",
+      "reply_other": "über {{count}} Antworten"
+    },
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage",
+    "typicalRate": "typisch: {{value}} %",
+    "typicalDays": "typisch: {{days}}"
+  },
+  "rel": {
+    "AT": "ist bei",
+    "ABOUT": "betrifft",
+    "FILED_UNDER": "ist abgelegt unter",
+    "TAGS": "taggt",
+    "FROM": "stammt aus",
+    "BECAME": "wurde zu",
+    "COPY_OF": "ist eine Kopie von",
+    "SUBJECT": "betrifft",
+    "OBJECT": "verweist auf"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "Ein lokaler Server (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) – kostenlos, mit Ratenlimit"
+  },
+  "month": {
+    "1": "Januar",
+    "2": "Februar",
+    "3": "März",
+    "4": "April",
+    "5": "Mai",
+    "6": "Juni",
+    "7": "Juli",
+    "8": "August",
+    "9": "September",
+    "10": "Oktober",
+    "11": "November",
+    "12": "Dezember"
+  },
+  "monthShort": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mär",
+    "4": "Apr",
+    "5": "Mai",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Okt",
+    "11": "Nov",
+    "12": "Dez"
+  },
+  "weekdayShort": {
+    "0": "Mo",
+    "1": "Di",
+    "2": "Mi",
+    "3": "Do",
+    "4": "Fr",
+    "5": "Sa",
+    "6": "So"
+  },
+  "weekday": {
+    "0": "Sonntag",
+    "1": "Montag",
+    "2": "Dienstag",
+    "3": "Mittwoch",
+    "4": "Donnerstag",
+    "5": "Freitag",
+    "6": "Samstag"
+  },
+  "dayMonth": "{{day}}. {{month}}",
+  "monthYear": "{{month}} {{year}}",
+  "quarter": "Q{{quarter}} {{year}}",
+  "weekdayNarrow": {
+    "0": "M",
+    "1": "D",
+    "2": "M",
+    "3": "D",
+    "4": "F",
+    "5": "S",
+    "6": "S"
+  },
+  "action": {
+    "detailsEdited": "Details bearbeitet",
+    "draftCreated": "Entwurf erstellt",
+    "offerReceived": "Angebot erhalten",
+    "duplicated": "Dupliziert",
+    "addedFromScout": "Über den Job-Scout hinzugefügt",
+    "addedFromPosting": "Aus einer gespeicherten Anzeige hinzugefügt",
+    "noteEdited": "Notiz bearbeitet",
+    "offerCleared": "Angebotsdetails gelöscht",
+    "flagged": "Zum Nachfassen markiert",
+    "flagCleared": "Markierung entfernt",
+    "movedTo": {
+      "draft": "Auf Entwurf gestellt",
+      "submitted": "Auf Abgeschickt gestellt",
+      "screen": "Auf Vorgespräch gestellt",
+      "interview": "Auf Vorstellungsgespräch gestellt",
+      "offer": "Auf Angebot gestellt",
+      "closed": "Auf Abgeschlossen gestellt"
+    },
+    "addedAt": {
+      "draft": "Bei Entwurf hinzugefügt",
+      "submitted": "Bei Abgeschickt hinzugefügt",
+      "screen": "Bei Vorgespräch hinzugefügt",
+      "interview": "Bei Vorstellungsgespräch hinzugefügt",
+      "offer": "Bei Angebot hinzugefügt",
+      "closed": "Bei Abgeschlossen hinzugefügt"
+    },
+    "interviewScheduled": {
+      "phone": "Telefoninterview geplant",
+      "video": "Videointerview geplant",
+      "onsite": "Vorstellungsgespräch vor Ort geplant"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "heute",
+      "yesterday": "gestern",
+      "days_one": "vor {{count}} Tag",
+      "days_other": "vor {{count}} Tagen"
+    },
+    "when": {
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "inDays_one": "in {{count}} Tag",
+      "inDays_other": "in {{count}} Tagen",
+      "overdue_one": "{{count}} Tag überfällig",
+      "overdue_other": "{{count}} Tage überfällig"
+    },
+    "inline": {
+      "today": "heute",
+      "tomorrow": "morgen"
+    },
+    "completed": {
+      "today": "Heute erledigt",
+      "yesterday": "Gestern erledigt",
+      "days_one": "Vor {{count}} Tag erledigt",
+      "days_other": "Vor {{count}} Tagen erledigt",
+      "on": "Erledigt am {{date}}"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "Angebot",
+      "overdue": "Überfällig",
+      "deadline": "Frist",
+      "interview": "Vorstellungsgespräch"
+    },
+    "headline": {
+      "reply": "{{org}} antworten",
+      "submitOrLetGo": "Bei {{org}} einreichen oder es lassen",
+      "recordInterview": "Gespräch bei {{org}} festhalten",
+      "recordVisit": "Besuch bei {{org}} festhalten",
+      "recordCall": "Anruf mit {{org}} festhalten",
+      "catchUp": "Bei {{org}} nachholen",
+      "submit": "Bei {{org}} einreichen",
+      "prepare": "Auf {{org}} vorbereiten",
+      "dateInterview": "Gespräch bei {{org}} terminieren"
+    },
+    "timing": {
+      "respondBy": "Antwort bis {{date}} · {{when}}",
+      "wasDue": "Fällig war {{date}} · {{when}}",
+      "due": "Fällig {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "Kein Datum gesetzt"
+    },
+    "button": {
+      "draftReply": "Antwort entwerfen",
+      "recordOutcome": "Festhalten, was passiert ist",
+      "acceptOrDecline": "Annehmen oder ablehnen",
+      "openApplication": "Bewerbung öffnen",
+      "draftMessage": "Nachricht entwerfen"
+    },
+    "undatedInterview": "In der Gesprächsphase, aber nichts ist datiert – deshalb können weder die kommende Woche noch der Kalender es zeigen.",
+    "unfiled": "Diese Frist ist unter keiner Bewerbung abgelegt",
+    "unknownOrg": "Unbekannt"
+  },
+  "filed": {
+    "none": "nicht abgelegt",
+    "one": "abgelegt unter {{a}}",
+    "two": "abgelegt unter {{a}} und {{b}}",
+    "many_one": "abgelegt unter {{count}} Bewerbung",
+    "many_other": "abgelegt unter {{count}} Bewerbungen"
+  },
+  "readBy": "Gelesen von {{model}} · {{ago}}",
+  "missingSource": "ein Dokument, das nicht mehr im Tresor liegt",
+  "undo": {
+    "nothing": {
+      "undo": "Nichts rückgängig zu machen.",
+      "redo": "Nichts wiederherzustellen."
+    },
+    "changed": {
+      "undo": "Nichts rückgängig zu machen – es hat sich inzwischen geändert",
+      "redo": "Nichts wiederherzustellen – es hat sich inzwischen geändert"
+    },
+    "done": {
+      "undo": "Rückgängig gemacht",
+      "redo": "Wiederhergestellt"
+    },
+    "journal": "hidden",
+    "action": "Rückgängig",
+    "superseded": {
+      "nothing": "Nichts wurde rückgängig gemacht",
+      "part": "Ein Teil davon blieb, wie er ist",
+      "named": "{{labels}} – du hast diese Einträge inzwischen geändert, und Rückgängigmachen hätte diese Änderungen mitgenommen.",
+      "unnamed": "Du hast diese Einträge inzwischen geändert, und Rückgängigmachen hätte diese Änderungen mitgenommen.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "Das wurde nicht gespeichert",
+    "didNotFit": "Etwas an diesem Eintrag hat nicht gepasst."
+  },
+  "announce": {
+    "stickyRemoved": "Notiz entfernt"
+  },
+  "handover": {
+    "never": "Dieses Gerät war noch nie an einer Übertragung beteiligt, also hat außer ihm nichts eine Kopie dieser Einträge.",
+    "clean": {
+      "today": "Letzte Übertragung heute, und seitdem wurde hier nichts geschrieben – das andere Gerät hat dieselben Einträge.",
+      "yesterday": "Letzte Übertragung gestern, und seitdem wurde hier nichts geschrieben – das andere Gerät hat dieselben Einträge.",
+      "daysAgo": "Letzte Übertragung {{ago}}, und seitdem wurde hier nichts geschrieben – das andere Gerät hat dieselben Einträge."
+    },
+    "drifted": {
+      "today_one": "Letzte Übertragung heute, und seitdem wurde hier eine Änderung gemacht. So weit hinkt das andere Gerät hinterher.",
+      "today_other": "Letzte Übertragung heute, und seitdem wurden hier {{count}} Änderungen gemacht. So weit hinkt das andere Gerät hinterher.",
+      "yesterday_one": "Letzte Übertragung gestern, und seitdem wurde hier eine Änderung gemacht. So weit hinkt das andere Gerät hinterher.",
+      "yesterday_other": "Letzte Übertragung gestern, und seitdem wurden hier {{count}} Änderungen gemacht. So weit hinkt das andere Gerät hinterher.",
+      "daysAgo_one": "Letzte Übertragung {{ago}}, und seitdem wurde hier eine Änderung gemacht. So weit hinkt das andere Gerät hinterher.",
+      "daysAgo_other": "Letzte Übertragung {{ago}}, und seitdem wurden hier {{count}} Änderungen gemacht. So weit hinkt das andere Gerät hinterher."
+    }
+  },
+  "backup": {
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge",
+    "links_one": "{{count}} Verknüpfung",
+    "links_other": "{{count}} Verknüpfungen",
+    "documents_zero": "keine Dokumente",
+    "documents_one": "{{count}} Dokument",
+    "documents_other": "{{count}} Dokumente",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}} – davon {{loss}}",
+    "both": "{{a}} und {{b}}",
+    "leftOut": "{{what}} nicht lesbar und daher ausgelassen",
+    "changed_one": "{{count}} Eintrag kommt verändert zurück",
+    "changed_other": "{{count}} Einträge kommen verändert zurück",
+    "leftOutAndChanged": "{{leftOut}}, und {{changed}}",
+    "replacesAll": {
+      "computer": "Die Wiederherstellung ersetzt alle Einträge und alle Dokumente, die du jetzt hast",
+      "phone": "Die Wiederherstellung ersetzt alle Einträge und alle Dokumente auf diesem Handy"
+    },
+    "replacesKept": {
+      "computer_one": "Die Wiederherstellung ersetzt alle Einträge, die du jetzt hast, und alle Dokumente – außer bei {{count}} Eintrag, der ohne sein Dokument ankommt: Dessen Kopie, die schon hier ist, bleibt erhalten",
+      "computer_other": "Die Wiederherstellung ersetzt alle Einträge, die du jetzt hast, und alle Dokumente – außer bei {{count}} Einträgen, die ohne ihre Dokumente ankommen: Deren Kopien, die schon hier sind, bleiben erhalten",
+      "phone_one": "Die Wiederherstellung ersetzt alle Einträge auf diesem Handy und alle Dokumente – außer bei {{count}} Eintrag, der ohne sein Dokument ankommt: Dessen Kopie, die schon hier ist, bleibt erhalten",
+      "phone_other": "Die Wiederherstellung ersetzt alle Einträge auf diesem Handy und alle Dokumente – außer bei {{count}} Einträgen, die ohne ihre Dokumente ankommen: Deren Kopien, die schon hier sind, bleiben erhalten"
+    }
+  }
+}

@@ -1,18 +1,20 @@
 /**
- * Q124 and Q125: the transfer animation is jojo's own glowing-dot code, not a
- * QR code, and only the phone reads it with a camera.
+ * Q329 (superseding Q124) and Q125: the computer shows the pairing key as a
+ * standard QR code, and only the phone reads it with a camera.
  *
- * That the code itself works — encode, survive a real camera, decode — is
- * `service/kg/core/pulse.test.ts`, `pulse-read.test.ts` and `pulse-seam.test.ts`.
- * This pins the decisions around it, as source and manifests (D20): no QR
- * library in either app, the web page draws the pulse frames and never opens a
- * camera, the phone is the one that reads them, and the column beside the
- * animation on the web page is transfer details rather than a code to scan.
+ * That the code itself works — the drawn symbol reads back as the exact offer
+ * bytes, and a stranger's QR code is ignored — is
+ * `mobile/src/lib/pairing-qr.test.ts`, which draws with the web's encoder and
+ * reads with the phone's decoder. This pins the decisions around it, as source
+ * and manifests (D20): which library does each half, where the code is drawn,
+ * that the phone is the one that reads it, and that the column beside the stage
+ * on the web page is transfer details rather than a second code.
  */
 
 import { describe, expect, it } from 'vitest'
 import transferSource from './Transfer.tsx?raw'
 import pairingSource from '@/lib/pairing-session.ts?raw'
+import stageSource from '@/components/transfer-ui/TransferStage.tsx?raw'
 import sceneSource from '@/components/transfer/DataTransferScene.tsx?raw'
 import scannerSource from '../../../mobile/src/components/transfer/PairingScanner.tsx?raw'
 import webManifest from '../../package.json'
@@ -28,29 +30,25 @@ const webSources = import.meta.glob(['/src/**/*.{ts,tsx}', '!/src/**/*.test.ts']
 const strip = (source: string) =>
   source.replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ')
 
-const dependencies = (manifest: { dependencies?: object; devDependencies?: object }) => [
-  ...Object.keys(manifest.dependencies ?? {}),
-  ...Object.keys(manifest.devDependencies ?? {}),
-]
-
-describe('the animation carries its own code (Q124)', () => {
-  it('ships no QR library in either app', () => {
-    for (const manifest of [webManifest, mobileManifest]) {
-      expect(dependencies(manifest).filter((name) => /qr/i.test(name))).toEqual([])
-    }
+describe('the key is a standard QR code (Q329)', () => {
+  it('draws it with uqr on the computer and reads it with jsqr on the phone, both pinned', () => {
+    // Exact versions: a pairing code is the one place two builds must agree.
+    expect(webManifest.dependencies).toHaveProperty('uqr', '0.1.3')
+    expect(mobileManifest.dependencies).toHaveProperty('jsqr', '1.4.0')
   })
 
-  it('encodes the pairing offer into pulse frames, and the scene draws those frames', () => {
-    expect(strip(pairingSource)).toContain('planPulse(encodeOffer(next.offer)).frames')
-    expect(strip(sceneSource)).toMatch(/import \{[^}]*\bPULSE_GRID\b[^}]*\} from '@jojo\/service\/core\/pulse'/)
+  it('draws the pairing offer as a QR code on the stage card, and the scene carries nothing', () => {
+    expect(strip(pairingSource)).toContain('setOffer(encodeOffer(next.offer))')
+    expect(strip(stageSource)).toMatch(/<PairingQrCard offer=\{showing\}/)
+    expect(strip(sceneSource)).not.toMatch(/offer|frames/)
   })
 })
 
 describe('only the phone reads it (Q125)', () => {
-  it('has the phone decode camera frames with jojo’s own reader', () => {
+  it('has the phone read the code out of camera frames', () => {
     const scanner = strip(scannerSource)
-    expect(scanner).toContain("import { readPulse } from '@jojo/service/core/pulse-read'")
-    expect(scanner).toMatch(/readPulse\(gray, SIDE, SIDE\)/)
+    expect(scanner).toContain("import { readPairingQr } from '@/lib/pairing-qr'")
+    expect(scanner).toMatch(/readPairingQr\(gray, SIDE, SIDE\)/)
   })
 
   it('never opens a camera in the web app', () => {
@@ -61,10 +59,10 @@ describe('only the phone reads it (Q125)', () => {
     expect(scanners).toEqual([])
   })
 
-  it('puts transfer details beside the animation on the web page, not a code', () => {
+  it('puts transfer details in the column beside the stage, not a second code', () => {
     const page = strip(transferSource)
     const column = page.slice(page.indexOf('<TransferStage'))
     expect(column).toMatch(/<DetailsPanel\b/)
-    expect(page).not.toMatch(/<QR|qrcode/i)
+    expect(page.match(/<PairingQrCard\b/g)).toBeNull()
   })
 })

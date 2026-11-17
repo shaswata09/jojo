@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { documentExists, openDocument } from '@/lib/documents'
 import { TODAY } from '@/lib/today'
 import { View } from 'react-native'
@@ -10,9 +11,8 @@ import { TextField } from '@/components/ui/Field'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { agoLabel } from '@jojo/service/data/timeline'
 import type { VaultFile } from '@jojo/service/data/vault'
-import { displayName, filedUnderLabel } from '@jojo/service/data/seed'
+import { displayName } from '@jojo/service/data/seed'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { PageViewer } from '@/screens/vault/PageViewer'
 import { FILE_KIND_ICON } from '@/lib/files'
@@ -22,6 +22,7 @@ import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * A document, opened.
@@ -54,6 +55,8 @@ export function FileViewer({
   onClose: () => void
   onEdit: (file: VaultFile) => void
 }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const c = useColors()
   const { byId } = useApplications()
   const { updateFile } = useVault()
@@ -104,17 +107,15 @@ export function FileViewer({
     try {
       await openDocument(file.uri)
     } catch (error) {
-      setOpenError(
-        error instanceof Error ? error.message : 'Nothing on this phone offered to open it.',
-      )
+      setOpenError(error instanceof Error ? error.message : t('fileViewer.openFailed'))
     }
   }
 
   const facts: { label: string; value: string }[] = [
-    { label: 'Type', value: file.kind },
-    { label: 'Size', value: file.size },
-    { label: 'Filed', value: agoLabel(file.savedOn, TODAY) },
-    { label: 'Bucket', value: file.bucket },
+    { label: t('fileViewer.facts.type'), value: file.kind },
+    { label: t('fileViewer.facts.size'), value: file.size },
+    { label: t('fileViewer.facts.filed'), value: domain.ago(file.savedOn, TODAY) },
+    { label: t('fileViewer.facts.bucket'), value: file.bucket },
   ]
 
   /**
@@ -129,9 +130,12 @@ export function FileViewer({
     updateFile(file.id, { applicationIds })
     const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: capitalize(filedUnderLabel(chosen)),
+      title: capitalize(domain.filedUnder(chosen.map(displayName))),
       description: file.name,
-      action: { label: 'Undo', onPress: () => updateFile(file.id, { applicationIds: before }) },
+      action: {
+        label: t('common.undo'),
+        onPress: () => updateFile(file.id, { applicationIds: before }),
+      },
     })
   }
 
@@ -140,9 +144,9 @@ export function FileViewer({
     updateFile(file.id, { note: note.trim() || undefined })
     setEditingNote(false)
     toast({
-      title: 'Note saved',
+      title: t('fileViewer.toast.noteSaved'),
       description: file.name,
-      action: { label: 'Undo', onPress: () => updateFile(file.id, { note: before }) },
+      action: { label: t('common.undo'), onPress: () => updateFile(file.id, { note: before }) },
     })
   }
 
@@ -156,16 +160,19 @@ export function FileViewer({
         // than clipping the last field and its Save under the footer.
         scroll
         title={file.name}
-        description={`${file.bucket} · filed ${agoLabel(file.savedOn, TODAY)}`}
+        description={t('fileViewer.description', {
+          bucket: file.bucket,
+          ago: domain.ago(file.savedOn, TODAY),
+        })}
         footer={
           <>
             <Button
-              label="Edit details"
+              label={t('fileViewer.editDetails')}
               icon="edit-3"
               variant="outline"
               onPress={() => onEdit(file)}
             />
-            <Button label="Done" onPress={onClose} />
+            <Button label={t('common.done')} onPress={onClose} />
           </>
         }
       >
@@ -187,14 +194,14 @@ export function FileViewer({
           {!file.uri ? (
             <EmptyState
               icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
-              title="Recorded, not stored"
-              description="This one was filed by hand — a name, a type and a size for a document kept somewhere else. Edit it and choose a file to keep a copy here."
+              title={t('fileViewer.typed.title')}
+              description={t('fileViewer.typed.description')}
             />
           ) : here === null ? (
             <EmptyState
               icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
-              title="Looking for the copy"
-              description="Checking whether the file this record points at is still in the app's storage."
+              title={t('fileViewer.checking.title')}
+              description={t('fileViewer.checking.description')}
             />
           ) : here ? (
             /* A captured posting is the one kind this app can read itself, so it
@@ -205,27 +212,37 @@ export function FileViewer({
             file.kind === 'page' ? (
               <EmptyState
                 icon="globe"
-                title="Kept on this device"
-                description="Opens here, with scripts off and no connection — the copy as the posting read on the day it was saved."
+                title={t('fileViewer.kept.title')}
+                description={t('fileViewer.kept.pageDescription')}
                 action={
-                  <Button label="Read it" icon="book-open" onPress={() => setReading(true)} />
+                  <Button
+                    label={t('fileViewer.kept.read')}
+                    icon="book-open"
+                    onPress={() => setReading(true)}
+                  />
                 }
               />
             ) : (
               <EmptyState
                 icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
-                title="Kept on this device"
-                description="Opens in whatever app on this phone handles the type. Nothing is uploaded, and nothing here reads what is inside it."
-                action={<Button label="Open" icon="external-link" onPress={onOpen} />}
+                title={t('fileViewer.kept.title')}
+                description={t('fileViewer.kept.fileDescription')}
+                action={
+                  <Button label={t('fileViewer.kept.open')} icon="external-link" onPress={onOpen} />
+                }
               />
             )
           ) : (
             <EmptyState
               icon="alert-triangle"
-              title="The copy has gone"
-              description="This record points at a file that is no longer in the app's storage — most likely cleared by the system. The record is intact; choose the file again to attach it."
+              title={t('fileViewer.gone.title')}
+              description={t('fileViewer.gone.description')}
               action={
-                <Button label="Choose it again" variant="outline" onPress={() => onEdit(file)} />
+                <Button
+                  label={t('fileViewer.gone.choose')}
+                  variant="outline"
+                  onPress={() => onEdit(file)}
+                />
               }
             />
           )}
@@ -257,10 +274,12 @@ export function FileViewer({
           <View style={{ gap: space[2] }}>
             <View style={s.row}>
               <Txt size="xs" tone="secondary" weight="medium" style={s.fill}>
-                Attached to
+                {t('fileViewer.attachedTo')}
               </Txt>
               <Button
-                label={applications.length > 0 ? 'Change' : 'File it under a job'}
+                label={
+                  applications.length > 0 ? t('fileViewer.change') : t('fileViewer.fileUnderJob')
+                }
                 variant="ghost"
                 onPress={() => setFiling(true)}
               />
@@ -278,8 +297,7 @@ export function FileViewer({
               </View>
             ) : (
               <Txt size="sm" tone="muted">
-                Not filed under an application. Filing it puts it on those records and lets the
-                graph find it from any of them.
+                {t('fileViewer.notFiled')}
               </Txt>
             )}
           </View>
@@ -287,11 +305,11 @@ export function FileViewer({
           <View style={{ gap: space[2] }}>
             <View style={s.row}>
               <Txt size="xs" tone="secondary" weight="medium" style={s.fill}>
-                Note
+                {t('common.note')}
               </Txt>
               {!editingNote ? (
                 <Button
-                  label={file.note ? 'Edit' : 'Add a note'}
+                  label={file.note ? t('common.edit') : t('fileViewer.addNote')}
                   variant="ghost"
                   onPress={() => {
                     setNote(file.note ?? '')
@@ -304,15 +322,19 @@ export function FileViewer({
             {editingNote ? (
               <>
                 <TextField
-                  label="Note"
+                  label={t('common.note')}
                   value={note}
                   onChangeText={setNote}
-                  placeholder="What is this document for?"
+                  placeholder={t('fileViewer.notePlaceholder')}
                   multiline
                 />
                 <View style={[s.row, { justifyContent: 'flex-end' }]}>
-                  <Button label="Cancel" variant="ghost" onPress={() => setEditingNote(false)} />
-                  <Button label="Save note" onPress={saveNote} />
+                  <Button
+                    label={t('common.cancel')}
+                    variant="ghost"
+                    onPress={() => setEditingNote(false)}
+                  />
+                  <Button label={t('fileViewer.saveNote')} onPress={saveNote} />
                 </View>
               </>
             ) : file.note ? (
@@ -323,7 +345,7 @@ export function FileViewer({
               <View style={s.row}>
                 <Feather name="edit-3" size={14} color={c.text3} />
                 <Txt size="sm" tone="muted" style={s.fill}>
-                  Nothing written down about this one yet.
+                  {t('fileViewer.noNote')}
                 </Txt>
               </View>
             )}

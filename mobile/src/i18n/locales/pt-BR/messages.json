@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Candidatura",
+      "org": "Empregador",
+      "role": "Cargo",
+      "item": "Data ou lembrete",
+      "file": "Arquivo",
+      "link": "Link",
+      "snippet": "Trecho",
+      "posting": "Vaga salva",
+      "match": "Correspondência",
+      "keyword": "Palavra-chave"
+    },
+    "isA": "é um",
+    "fit": "{{fit}}% de aderência",
+    "query": {
+      "undated": {
+        "question": "Candidaturas sem nenhuma data associada",
+        "why": "Elas não aparecem no calendário nem na semana à frente, por mais ativas que estejam."
+      },
+      "untagged": {
+        "question": "Candidaturas sem nenhuma palavra-chave",
+        "why": "Um registro que ninguém classificou é um registro que nenhum filtro vai mostrar."
+      },
+      "orphanFiles": {
+        "question": "Arquivos sem vínculo com nenhuma candidatura",
+        "why": "Documentos se perdem; isto mostra para quais nada aponta."
+      },
+      "orphanLinks": {
+        "question": "Links sem vínculo com nenhuma candidatura",
+        "why": "A mesma pergunta para as vagas e páginas que você salvou para voltar depois."
+      },
+      "busiest": {
+        "question": "Os empregadores com quem você tem mais coisas em andamento",
+        "why": "Contado em todas as coleções de uma vez: candidaturas, datas, arquivos e links."
+      },
+      "unpromoted": {
+        "question": "Correspondências e vagas que nunca viraram candidaturas",
+        "why": "Oportunidades esfriam em silêncio; nenhuma visualização em lista diz quais."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} não {{rel}} {{end}}",
+      "startAny": "Qualquer coisa",
+      "relAny": "ligado a",
+      "endAny": "qualquer coisa",
+      "startType": {
+        "application": "Candidaturas",
+        "org": "Empregadores",
+        "role": "Cargos",
+        "item": "Datas ou lembretes",
+        "file": "Arquivos",
+        "link": "Links",
+        "snippet": "Trechos",
+        "posting": "Vagas salvas",
+        "match": "Correspondências",
+        "keyword": "Palavras-chave"
+      },
+      "endType": {
+        "application": "uma candidatura",
+        "org": "um empregador",
+        "role": "um cargo",
+        "item": "uma data ou lembrete",
+        "file": "um arquivo",
+        "link": "um link",
+        "snippet": "um trecho",
+        "posting": "uma vaga salva",
+        "match": "uma correspondência",
+        "keyword": "uma palavra-chave"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Hoje",
+      "hint": "O que precisa de uma decisão"
+    },
+    "apps": {
+      "label": "Candidaturas",
+      "hint": "A lista e o quadro de etapas"
+    },
+    "cal": {
+      "label": "Calendário",
+      "hint": "Prazos, entrevistas e preparação"
+    },
+    "reminders": {
+      "label": "Lembretes",
+      "hint": "Cofre · o que você deve e quando"
+    },
+    "links": {
+      "label": "Links",
+      "hint": "Cofre · vagas, pessoas e páginas"
+    },
+    "files": {
+      "label": "Arquivos",
+      "hint": "Cofre · documentos que você registrou"
+    },
+    "snippets": {
+      "label": "Trechos",
+      "hint": "Cofre · parágrafos reutilizáveis"
+    },
+    "tools": {
+      "label": "Ferramentas",
+      "hint": "Cofre · a calculadora"
+    },
+    "scout": {
+      "label": "Explorador de vagas",
+      "hint": "Buscas salvas, correspondências e vagas"
+    },
+    "stats": {
+      "label": "Estatísticas",
+      "hint": "Taxas, um funil e no que trabalhar"
+    },
+    "graph": {
+      "label": "Grafo",
+      "hint": "Seus registros como a rede que eles formam"
+    },
+    "profile": {
+      "label": "Meu perfil",
+      "hint": "Dados básicos, documentos e termos de busca"
+    },
+    "assistant": {
+      "label": "Assistente",
+      "hint": "Exemplos prontos até você conectar um modelo"
+    },
+    "settings": {
+      "label": "Configurações",
+      "hint": "Conexões, aparência, palavras-chave e seus dados"
+    },
+    "transfer": {
+      "label": "Transferir",
+      "hint": "Mova tudo para o seu computador ou a partir dele"
+    },
+    "guide": {
+      "label": "Como usar",
+      "hint": "As três camadas, as telas e o grafo"
+    },
+    "more": {
+      "label": "Mais",
+      "hint": "O resto do jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Nova candidatura"
+    },
+    "newApplicationFromLink": {
+      "label": "Candidatura a partir de um link",
+      "hint": "O modelo lê a vaga e preenche o formulário"
+    },
+    "newReminder": {
+      "label": "Novo lembrete"
+    },
+    "newEvent": {
+      "label": "Novo evento"
+    },
+    "draftMessage": {
+      "label": "Rascunhar uma mensagem",
+      "hint": "A partir dos seus trechos de e-mail — nada é gerado"
+    },
+    "saveLink": {
+      "label": "Salvar um link",
+      "hint": "Abre o Cofre, ferramenta de links"
+    },
+    "recordDocument": {
+      "label": "Registrar um documento",
+      "hint": "Abre o Cofre, ferramenta de arquivos"
+    },
+    "savePosting": {
+      "label": "Salvar uma vaga",
+      "hint": "Abre o Explorador de vagas"
+    }
+  },
+  "snooze": {
+    "soon1": "Amanhã",
+    "later1": "Um dia depois",
+    "soon3": "Em 3 dias",
+    "later3": "Três dias depois",
+    "soon7": "Em 7 dias",
+    "later7": "Uma semana depois"
+  },
+  "itemActions": {
+    "reopened": "{{title}} reaberto",
+    "completed": "{{title}} concluído",
+    "reopenedBody": "De volta à lista em aberto e contando de novo como pendente.",
+    "completedBody": "Sai das listas em aberto e conta para hoje — nada é excluído.",
+    "rescheduled": "{{title}} remarcado",
+    "nowDue": "Agora vence em {{date}}, aqui e no calendário.",
+    "movedTo": "Movido para {{date}}",
+    "copyTitle": "{{title}} (cópia)",
+    "added": "{{title}} adicionado",
+    "copyBody": "{{date}} — a cópia leva as mesmas palavras-chave.",
+    "deleted": "{{title}} excluído",
+    "deletedReminder": "Saiu da lista de lembretes e do calendário.",
+    "deletedEvent": "Saiu do calendário."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "É o filtro de palavras-chave acima da lista que está escondendo esses itens.",
+    "noSearchMatch": "Nada corresponde a essa busca",
+    "noBothMatch": "Nada corresponde aos dois filtros",
+    "clearBoth": "Limpar os dois filtros",
+    "clearKeywords": "Limpar palavras-chave"
+  },
+  "boardScan": {
+    "badAddress": "Não consigo abrir esse endereço.",
+    "timeout": "Esse site de vagas demorou demais para responder.",
+    "unreachable": "Não foi possível acessar esse site de vagas.",
+    "status": "Esse site de vagas respondeu {{status}}.",
+    "browserOnly": "{{host}} só mostra as vagas para um navegador de verdade, então não dá para ler pelo celular. No computador, a extensão de navegador do jojo consegue ler."
+  },
+  "timelineForm": {
+    "title": "Dê um título que você vá reconhecer.",
+    "date": "Escolha uma data — um item sem data não tem onde aparecer.",
+    "time": "Use um horário como 14:30."
+  },
+  "reader": {
+    "tooBig": "Esse documento tem {{size}} MB e o leitor aceita até {{max}} MB.",
+    "gone": "A cópia desse documento não está mais neste dispositivo.",
+    "empty": "Não foi possível ler nada desse documento — pode ser uma digitalização.",
+    "noAddress": "Ainda não há endereço. Veja as Configurações.",
+    "notConnected": "Nenhum leitor de documentos está conectado, então o conteúdo deste arquivo não pode ser lido. O endereço dele vai nas Configurações.",
+    "noCopy": "Esse registro não tem cópia salva neste dispositivo, então não há nada para ler."
+  },
+  "jobs": {
+    "ready": "{{label}} está pronto",
+    "readyBody": "Salvo na candidatura para a qual foi escrito.",
+    "failed": "{{label}} não terminou"
+  },
+  "boot": {
+    "corrupt": "não foi possível ler os registros salvos ({{detail}}).",
+    "blocked": "o armazenamento está bloqueado por outra coisa neste dispositivo.",
+    "unsupported": "este dispositivo não tem armazenamento que este app possa usar.",
+    "threw": "não foi possível abrir o armazenamento.",
+    "banner": "Não está salvando neste dispositivo — {{why}}"
+  },
+  "posting": {
+    "needsReader": "Isto precisa do leitor de documentos além do modelo — é ele que busca a página. O endereço está nas Configurações.",
+    "empty": "Essa página voltou quase vazia. Sites que renderizam com JavaScript mandam uma casca vazia para tudo que não seja um navegador — abra aqui e salve a página.",
+    "note": "Lido pelo modelo a partir de {{url}}",
+    "askedTwice": "Perguntado duas vezes, com o mesmo resultado."
+  },
+  "localService": {
+    "stopped": "Interrompido antes do envio."
+  },
+  "clipboard": {
+    "tooBig": "Grande demais para a área de transferência",
+    "tooBigBody": "Seus registros somam {{size}} e a área de transferência do Android aceita cerca de {{max}} de texto. Nada foi copiado. Use Transferir para enviar tudo ao seu computador pela sua rede local.",
+    "copied": "Copiado para a área de transferência",
+    "copiedBody": "Um backup que você pode colar em uma nota ou arquivo. Os documentos anexados ficam neste celular — as linhas deles voltam sem o conteúdo."
+  },
+  "documents": {
+    "incomplete": "A cópia não foi concluída.",
+    "nothingCopied": "Nada foi copiado."
+  },
+  "weekday": {
+    "sun": "dom",
+    "mon": "seg",
+    "tue": "ter",
+    "wed": "qua",
+    "thu": "qui",
+    "fri": "sex",
+    "sat": "sáb"
+  },
+  "owed": {
+    "overdue": "Atrasado",
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "rest": "Resto da semana"
+  },
+  "receive": {
+    "declined": "Nada foi alterado. Escaneie o código de novo para receber."
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Meet jojo",
+      "body": "Your assistant lives here. It reacts to what you do — a dance when an application goes out, a nod when a task is done — and follows your pointer around the page.",
+      "task": "Tap jojo, or draw a circle on it."
+    },
+    "moves": {
+      "title": "Every move, and how to draw it",
+      "body": "This button lists all of jojo’s moves, each with the stroke that plays it — a swipe up to hop, a Z to doze off — and credits the artist of the 3D model."
+    },
+    "runtime": {
+      "title": "Where your records live",
+      "body": "“Saved here” is browser storage: a database inside this browser, on this machine — nothing is sent anywhere and nothing syncs. The other tiles say whether a model is connected and offer to move everything to another device. Each one opens where it is set up."
+    },
+    "applications": {
+      "title": "Your applications",
+      "body": "One record per job: the position, the employer, its stage and your notes. Deadlines, interviews and documents all hang off it, so nothing is typed twice.",
+      "task": "Open Applications."
+    },
+    "layout": {
+      "title": "A board or a table",
+      "body": "The same records, two ways. The board shows the stages as columns; the table sorts and searches. The choice is in the address, so a link opens the way you left it.",
+      "task": "Switch to Table."
+    },
+    "records": {
+      "title": "Six stages, and jojo cheers each one",
+      "body": "Draft, Submitted, Screen, Interview, Offer, Closed. On the board, drag a card to its next column: jojo dances when a draft goes out, powers up for an interview and leaps for an offer. Every move undoes."
+    },
+    "keywords": {
+      "title": "Keywords are your tags",
+      "body": "One set of tags across applications, reminders and the vault. Tag a record from the tag button on its row, add a new keyword with +, and right-click a chip to rename, recolour or delete it.",
+      "task": "Pick a keyword to filter by it."
+    },
+    "new": {
+      "title": "Make anything",
+      "body": "New makes an application, a reminder, a calendar entry, a drafted message, a saved link or a saved posting. The n key opens it from anywhere you are not typing.",
+      "task": "Open the New menu."
+    },
+    "new-menu": {
+      "title": "Nothing is saved until you save",
+      "body": "Each of these opens its own form. Closing a half-filled form costs nothing but the typing.",
+      "task": "Close the menu — press Esc."
+    },
+    "search": {
+      "title": "The fastest way in",
+      "body": "Search every application, reminder and calendar entry, jump to any page — including the ones the sidebar does not list — or run one of the app’s own operations.",
+      "task": "Press ⌘K (Ctrl K), or click the search bar."
+    },
+    "palette": {
+      "title": "Type to find anything",
+      "body": "A role, an organisation or a stage. The arrow keys pick, Enter goes.",
+      "task": "Close it with Esc when you are done looking."
+    },
+    "calendar": {
+      "title": "Every date in one place",
+      "body": "Deadlines, interviews and follow-ups are one kind of record, so one entry shows on the calendar, on the dashboard and on its application. Drag one to another day to reschedule it.",
+      "task": "Open the Calendar."
+    },
+    "vault": {
+      "title": "The vault",
+      "body": "Everything a job search piles up besides applications: reminders, saved links, files, the snippets you paste into every form, the people you know, and a few tools.",
+      "task": "Open the Vault."
+    },
+    "files": {
+      "title": "Files, previewed in place",
+      "body": "Drop in a CV, a statement or a posting. PDFs, images, text and saved web pages open right here, and each file can carry a note and keywords. Files are stored in this browser, not uploaded.",
+      "task": "Click a file to preview it."
+    },
+    "file-viewer": {
+      "title": "The preview",
+      "body": "Read it without leaving the page. With the document reader connected (Settings), the assistant can read what is inside it too."
+    },
+    "tools": {
+      "title": "Tools",
+      "body": "A calculator, basic or scientific, that keeps a history of its sums — and a PDF editor.",
+      "task": "Open the PDF editor."
+    },
+    "pdf": {
+      "title": "PDF tools",
+      "body": "Merge several PDFs into one, reorder or delete pages, and mark one up — all inside this browser, so no document is ever uploaded. Drop PDFs straight onto this panel."
+    },
+    "scout": {
+      "title": "Job scout",
+      "body": "Saved searches that watch job boards for you.",
+      "task": "Open Job scout."
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "body": "Each pipeline is a search on a board (HigherEdJobs, AcademicCareers and others). It runs on a schedule or when you press Run now; what it finds waits as suggestions you approve or discard, and an approved one becomes a draft application."
+    },
+    "statistics": {
+      "title": "Statistics",
+      "body": "How your search is going, counted from your own records.",
+      "task": "Open Statistics."
+    },
+    "stats": {
+      "title": "Rates, with honest error bars",
+      "body": "Response and interview rates, a funnel and a week-by-week chart — each rate with the range it could really be, since a handful of applications is a small sample. It follows the role filter in the top bar."
+    },
+    "graph": {
+      "title": "The knowledge graph",
+      "body": "Every record — applications, employers, people, dates, files — is a node, and how they connect is the edges. Ask a question in words or build one, and the matching records light up. It is not in the sidebar; ⌘K gets you here."
+    },
+    "chat": {
+      "title": "Chat with jojo",
+      "body": "The assistant can find, add and update your records with the app’s own tools, and asks before it changes anything unless you tell it not to. It needs a model — which is the next step."
+    },
+    "settings": {
+      "title": "Settings",
+      "body": "Models, the document reader, keywords, your data — and every gesture jojo knows.",
+      "task": "Open Settings."
+    },
+    "model": {
+      "title": "Connect a model",
+      "body": "Pick where the assistant’s model runs. A local server — vLLM, LM Studio, llama.cpp, or Ollama — takes its address and keeps your records on this machine. OpenAI, Anthropic (Claude), OpenRouter, Groq or NVIDIA take an API key. Test connection checks it before anything is saved."
+    },
+    "reader": {
+      "title": "Let it read your documents",
+      "body": "MarkItDown turns PDFs, Word files, decks and spreadsheets into text the assistant can read. Copy the two commands here into a terminal — one installs it, one starts it — then press Test connection."
+    },
+    "keyword-manager": {
+      "title": "Manage your keywords",
+      "body": "Add keywords, rename them, give them any colour, or delete them. A rename carries everywhere the keyword is shown."
+    },
+    "backup": {
+      "title": "Keep a backup",
+      "body": "Clearing the browser takes your records with it, so export a backup now and then — one file with everything. jojo flexes when you do."
+    },
+    "done": {
+      "title": "That’s the tour",
+      "body": "Undo is ⌘Z anywhere, and every change is listed in the audit log at the foot of Settings. The guide covers every screen in turn — How to use, in the top bar — and the tour is there to take again."
+    }
+  },
+  "overlay": {
+    "progress": "Step {{n}} of {{total}}",
+    "endLabel": "End the tour (your place is kept)",
+    "end": "End the tour",
+    "nice": "Nice — that’s it.",
+    "tryIt": "Try it: {{task}}",
+    "done": "Done.",
+    "announce": "Step {{n}} of {{total}}: {{title}}.",
+    "announceTask": "Step {{n}} of {{total}}: {{title}}. Try it: {{task}}",
+    "back": "Back",
+    "notNow": "Not now",
+    "finish": "Finish",
+    "skip": "Skip this",
+    "next": "Next"
+  }
+}

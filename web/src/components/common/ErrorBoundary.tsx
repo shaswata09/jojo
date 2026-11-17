@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { reportError } from '@/lib/report-error'
+import { i18next } from '@/i18n/i18n'
 
 type Props = {
   children: ReactNode
@@ -67,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="grid min-h-dvh place-items-center p-5">
         <div className="surface max-w-md rounded-lg px-5 py-5">
-          <h1 className="text-lg font-semibold">Something broke</h1>
+          <h1 className="text-lg font-semibold">{i18next.t('common:errorBoundary.title')}</h1>
           {/*
            * Promised nothing about the records on purpose.
            *
@@ -79,9 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
            * reassurance that turns out to be wrong is worse than no reassurance
            * — the user stops reloading, and loses the work anyway.
            */}
-          <p className="mt-2 text-sm text-text-2">
-            A view failed to render. Try again re-mounts it without reloading the page.
-          </p>
+          <p className="mt-2 text-sm text-text-2">{i18next.t('common:errorBoundary.body')}</p>
           {/*
            * `bg-input-bg` named no token, so Tailwind emitted no rule for it and
            * the trace sat on the panel background with no recess at all — a
@@ -96,7 +95,7 @@ export class ErrorBoundary extends Component<Props, State> {
             onClick={() => this.setState({ error: null })}
             className="mt-4 rounded-sm border border-accent-border bg-accent-soft px-4 py-2 text-sm font-medium text-accent"
           >
-            Try again
+            {i18next.t('common:errorBoundary.retry')}
           </button>
         </div>
       </div>

@@ -1,0 +1,311 @@
+{
+  "readCancelled": "La lecture a été annulée.",
+  "backup": {
+    "prompt": {
+      "never_one": "{{count}} élément de jojo ne figure encore dans aucune sauvegarde. Tout ce qui est ici n’existe que dans ce navigateur : si vous l’effacez ou perdez cet appareil, vous le perdriez — téléchargez une copie et conservez-la ailleurs.",
+      "never_many": "{{count}} éléments de jojo ne figurent encore dans aucune sauvegarde. Tout ce qui est ici n’existe que dans ce navigateur : si vous l’effacez ou perdez cet appareil, vous les perdriez — téléchargez une copie et conservez-la ailleurs.",
+      "never_other": "{{count}} éléments de jojo ne figurent encore dans aucune sauvegarde. Tout ce qui est ici n’existe que dans ce navigateur : si vous l’effacez ou perdez cet appareil, vous les perdriez — téléchargez une copie et conservez-la ailleurs.",
+      "since_one": "{{count}} élément a changé depuis votre dernière sauvegarde du {{day}}. Il n’existe que dans ce navigateur tant que vous n’avez pas téléchargé une copie et ne l’avez pas conservée ailleurs.",
+      "since_many": "{{count}} éléments ont changé depuis votre dernière sauvegarde du {{day}}. Ils n’existent que dans ce navigateur tant que vous n’avez pas téléchargé une copie et ne l’avez pas conservée ailleurs.",
+      "since_other": "{{count}} éléments ont changé depuis votre dernière sauvegarde du {{day}}. Ils n’existent que dans ce navigateur tant que vous n’avez pas téléchargé une copie et ne l’avez pas conservée ailleurs."
+    },
+    "failedTitle": "La sauvegarde n’a pas pu être écrite",
+    "failedDescription": "Vos données sont inchangées et rien n’a été enregistré. Si votre navigateur a bloqué le téléchargement, vérifiez ses paramètres de téléchargement.",
+    "documentsNotReady": "L’index des documents n’avait pas fini de se charger : une sauvegarde faite maintenant indiquerait que vous n’en avez aucun. Rien n’a été écrit.",
+    "documentsUnreadable": "Aucun des documents stockés n’a pu être lu : la sauvegarde n’aurait contenu que les données. Rien n’a été écrit.",
+    "savedTitle": "Sauvegarde enregistrée",
+    "startedTitle": "Sauvegarde lancée",
+    "savedAll": "{{name}} contient vos données et tous les documents que vous avez joints.",
+    "savedSome_one": "{{name}} contient vos données et {{written}} de vos {{total}} documents — {{count}} n’a pas pu être lu et n’y figure pas.",
+    "savedSome_many": "{{name}} contient vos données et {{written}} de vos {{total}} documents — {{count}} n’ont pas pu être lus et n’y figurent pas.",
+    "savedSome_other": "{{name}} contient vos données et {{written}} de vos {{total}} documents — {{count}} n’ont pas pu être lus et n’y figurent pas.",
+    "startedAll": "Cherchez {{name}} dans vos téléchargements. Il contient vos données et tous les documents que vous avez joints.",
+    "startedSome_one": "Cherchez {{name}} dans vos téléchargements. Il contient vos données et {{written}} de vos {{total}} documents — {{count}} n’a pas pu être lu et n’y figure pas.",
+    "startedSome_many": "Cherchez {{name}} dans vos téléchargements. Il contient vos données et {{written}} de vos {{total}} documents — {{count}} n’ont pas pu être lus et n’y figurent pas.",
+    "startedSome_other": "Cherchez {{name}} dans vos téléchargements. Il contient vos données et {{written}} de vos {{total}} documents — {{count}} n’ont pas pu être lus et n’y figurent pas."
+  },
+  "extension": {
+    "stale": "L’extension jojo de ce navigateur est plus ancienne que cette page et ne peut pas transmettre la demande. Mettez-la à jour : cliquez sur Recharger pour jojo dans la page des extensions de votre navigateur — ou, si vous l’avez installée depuis Paramètres, téléchargez-la à nouveau là-bas et chargez le nouveau dossier à la place de l’ancien. Une extension non empaquetée ne se met jamais à jour toute seule.",
+    "oldScanner": "(L’extension jojo de ce navigateur est une ancienne version qui ne peut pas suivre un site d’emploi vers son propre sous-domaine ni cliquer sur « Load more ». Cliquez sur Recharger pour jojo dans la page des extensions de votre navigateur.)",
+    "noAnswerBoard": "L’extension jojo pour navigateur n’a pas répondu : aucun site d’emploi n’a pu être lu. C’est elle qui permet à jojo d’ouvrir une page sur laquelle vous êtes connecté ; l’installateur se trouve dans Paramètres.",
+    "boardUnreadable": "Ce site d’emploi n’a pas pu être lu.",
+    "pageUnsaved": "Cette page n’a pas pu être enregistrée.",
+    "hostDidNotLoad": "{{host}} ne s’est pas chargé — le lien est peut-être erroné, le site peut être en panne, ou vous êtes peut-être hors ligne. Ouvrez-le dans un onglet pour voir ce qu’il affiche.",
+    "noAnswerPage": "L’extension jojo pour navigateur n’a pas répondu : la page n’a pas pu être ouverte. L’installateur se trouve dans Paramètres.",
+    "captureTimeout": "L’extension jojo a ouvert la page mais n’a pas fini de l’enregistrer à temps. Une page très lourde peut prendre plus de temps — réessayez, ou ouvrez-la et utilisez le bouton Capture de l’extension.",
+    "noAnswerReader": "L’extension jojo pour navigateur n’a pas répondu : le lecteur n’a pas pu être joint. C’est elle qui permet à cette page de communiquer avec un lecteur sur votre propre machine ; l’installateur se trouve dans Paramètres.",
+    "linkSwitchedOff": "La liaison a été désactivée.",
+    "noAnswerLink": "L’extension jojo pour navigateur n’a pas répondu. Sur une copie de jojo servie depuis le web, c’est elle qui porte la liaison jusqu’à jojo-bridge ; l’installateur se trouve dans Paramètres.",
+    "noAnswerProvider": "L’extension jojo pour navigateur n’a pas répondu : le fournisseur n’a pas pu être joint. Les fournisseurs qui n’envoient pas d’en-têtes CORS ne peuvent être appelés que par son intermédiaire ; l’installateur se trouve dans Paramètres."
+  },
+  "posting": {
+    "localTarget": "Cette adresse se trouve sur cet ordinateur ou sur votre propre réseau, pas sur un site d’emploi — jojo n’ouvre pas ce genre d’adresse.",
+    "nothingToReadWith": "Pour lire une offre, il faut l’extension jojo pour navigateur, qui ouvre la page comme vous le feriez et l’enregistre, ou le lecteur de documents, qui la récupère. Aucun des deux n’est configuré dans ce navigateur — Paramètres propose les deux.",
+    "noBackgroundRoute": "Pour lire les suggestions avant que vous les consultiez, il faut l’extension jojo pour navigateur. Le lecteur de documents ne sert que pour une offre que vous ouvrez vous-même.",
+    "notStored": "La page a été lue, mais ce navigateur a refusé de la stocker — jojo manque peut-être de place. Rien n’a été conservé ; libérez de l’espace et réessayez.",
+    "nearlyEmptyExtension": "Cette page est revenue presque vide. Elle n’avait peut-être pas fini de se charger, ou elle demande peut-être que vous soyez connecté — ouvrez-la dans un onglet et réessayez une fois que l’offre s’affiche.",
+    "nearlyEmptyReader": "Cette page est revenue presque vide. Les sites d’emploi générés en JavaScript renvoient une coquille vide à tout ce qui n’est pas un navigateur — installez l’extension jojo et elle ouvrira la page comme vous le feriez.",
+    "notSaved": "Cette offre n’est pas enregistrée : il n’y a donc aucune page à conserver pour elle.",
+    "askedTwice": "Demandé deux fois, avec le même résultat."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "Les deux offres portent le même identifiant d’offre.",
+      "url": "Les deux ont la même adresse d’offre.",
+      "name": "Même employeur et même poste."
+    },
+    "deletedBefore": "Le brouillon a été supprimé avant que son offre puisse être lue.",
+    "deletedDuring": "Le brouillon a été supprimé pendant la lecture de son offre.",
+    "updateFailed": "Le brouillon n’a pas pu être mis à jour."
+  },
+  "store": {
+    "remoteChangeTitle": "Mis à jour depuis un autre onglet",
+    "remoteChangeDescription": "Vos données ont été rechargées : l’historique d’annulation de cet onglet a donc été effacé.",
+    "heldTitle": "Un autre onglet jojo a la base de données ouverte",
+    "heldDescription": "Elle sera supprimée dès que cet onglet sera fermé. Fermez les autres onglets, puis réessayez.",
+    "deleteFailedTitle": "La base de données n’a pas pu être supprimée",
+    "deleteFailedDescription": "{{error}}. Un autre onglet l’a peut-être encore ouverte.",
+    "demoNotLoaded": "Les données de démonstration n’ont pas été chargées",
+    "recordsNotCleared": "Les données n’ont pas été effacées",
+    "writeFailedDescription": "{{error}} Vos données sont inchangées."
+  },
+  "fileDelete": {
+    "refusedTitle": "La suppression n’a pas eu lieu",
+    "stillInVault": "{{name}} est toujours dans le Coffre.",
+    "deletedTitle": "{{name}} supprimé",
+    "deletedUnknown": "La ligne, ses mots-clés et toute copie conservée par jojo disparaissent. L’original sur votre ordinateur n’est pas touché.",
+    "deletedWithCopy": "La ligne, ses mots-clés et la copie du document conservée par jojo disparaissent. L’original sur votre ordinateur n’est pas touché.",
+    "deletedNoCopy": "La ligne et ses mots-clés disparaissent. Il n’y avait aucune copie stockée de celui-ci à perdre.",
+    "undo": "Annuler",
+    "lostTitle": "{{name}} est revenu sans son document",
+    "lostDescription": "La ligne et ses mots-clés sont restaurés, mais pas la copie stockée. Déposez à nouveau le fichier pour le joindre."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} est prêt",
+    "readyDescription": "Enregistré sous la candidature pour laquelle il a été rédigé.",
+    "failedTitle": "{{label}} n’a pas abouti"
+  },
+  "pdf": {
+    "passwordNeeded": "Ce PDF nécessite un mot de passe pour s’ouvrir : il ne peut donc pas être modifié ici.",
+    "unreadable": "Ce fichier n’a pas pu être lu comme un PDF. {{detail}}",
+    "chooseOne": "Choisissez au moins un PDF à fusionner.",
+    "pageNotIn_one": "{{name}} compte {{count}} page : la page {{page}} n’en fait donc pas partie.",
+    "pageNotIn_many": "{{name}} compte {{count}} pages : la page {{page}} n’en fait donc pas partie.",
+    "pageNotIn_other": "{{name}} compte {{count}} pages : la page {{page}} n’en fait donc pas partie.",
+    "emptySelection": "Cette sélection ne contient aucune page.",
+    "keepOnePage": "Un document doit conserver au moins une page.",
+    "planOutOfRange_one": "Ce document compte {{count}} page ; le plan demande la page {{page}}.",
+    "planOutOfRange_many": "Ce document compte {{count}} pages ; le plan demande la page {{page}}.",
+    "planOutOfRange_other": "Ce document compte {{count}} pages ; le plan demande la page {{page}}.",
+    "noCanvas": "Ce navigateur n’a pas fourni à la page de canevas sur lequel dessiner.",
+    "range": {
+      "noPages": "Ce document ne contient aucune page.",
+      "emptyPart": "Il y a une plage vide entre deux virgules.",
+      "partNamesNoPages": "« {{part}} » ne désigne aucune page.",
+      "backwards": "« {{part}} » compte à rebours. Écrivez-le sous la forme {{to}}-{{from}}.",
+      "notANumber": "« {{part}} » n’est pas un numéro de page.",
+      "namesNoPages": "Cette plage ne désigne aucune page.",
+      "fromOne": "Les pages sont numérotées à partir de 1.",
+      "pastEnd": "Ce document s’arrête à la page {{count}} : la page {{page}} n’en fait donc pas partie."
+    },
+    "drop": {
+      "notPdf_one": "{{names}} n’est pas un PDF",
+      "notPdf_many": "{{names}} ne sont pas des PDF",
+      "notPdf_other": "{{names}} ne sont pas des PDF",
+      "leftOut_one": "{{names}} a été écarté — cet outil traite un document à la fois",
+      "leftOut_many": "{{names}} ont été écartés — cet outil traite un document à la fois",
+      "leftOut_other": "{{names}} ont été écartés — cet outil traite un document à la fois",
+      "one": "{{part}}.",
+      "both": "{{first}}, et {{second}}.",
+      "two": "{{first}} et {{second}}",
+      "three": "{{first}}, {{second}} et {{third}}",
+      "many": "{{count}} des fichiers"
+    },
+    "colour": {
+      "yellow": "Jaune",
+      "green": "Vert",
+      "blue": "Bleu",
+      "pink": "Rose",
+      "orange": "Orange"
+    }
+  },
+  "noteSize": {
+    "small": "Petit",
+    "normal": "Normal",
+    "large": "Grand",
+    "huge": "Très grand"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Candidature",
+      "organisation": "Organisation",
+      "role": "Poste",
+      "item": "Élément de la chronologie",
+      "keyword": "Mot-clé",
+      "link": "Lien",
+      "file": "Fichier",
+      "snippet": "Extrait",
+      "posting": "Offre enregistrée",
+      "match": "Correspondance de l’éclaireur",
+      "source": "Source",
+      "background": "À propos de vous",
+      "claim": "Relation"
+    },
+    "savedAgo": "Enregistrée {{ago}}",
+    "fit": "Adéquation de {{fit}} %",
+    "count": {
+      "matches": "Correspondances",
+      "connections": "Connexions",
+      "hops": "Sauts",
+      "hop": "Saut"
+    },
+    "empty": {
+      "noMatch": "Rien dans vos données ne correspond à ce motif.",
+      "noneMissing": "Il ne manque cette connexion à aucun élément — chaque élément de ce type l’a.",
+      "noPath": "Aucun chemin — rien dans vos données ne relie ces deux éléments.",
+      "noPathBetween": "Aucun chemin entre ces deux éléments."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Candidatures sans relance prévue",
+        "hint": "Le manque qui coûte des entretiens."
+      },
+      "tagged": {
+        "label": "Tout ce qui porte le mot-clé Referral",
+        "hint": "Un mot-clé, dans tous les types d’éléments."
+      },
+      "repeatOrgs": {
+        "label": "Organisations auxquelles j’ai postulé plus d’une fois",
+        "hint": "Deux candidatures chez un même employeur, depuis un même nœud d’organisation."
+      },
+      "looseReminders": {
+        "label": "Rappels liés à aucune candidature",
+        "hint": "Du travail que vous ferez sans savoir à quoi il servait."
+      },
+      "unusedFiles": {
+        "label": "Fichiers utilisés par aucune candidature",
+        "hint": "Des documents qui dorment dans le Coffre."
+      },
+      "bareApplications": {
+        "label": "Candidatures sans rien de classé dans le Coffre",
+        "hint": "Ni lien, ni fichier, ni extrait — généralement une candidature pas encore commencée."
+      },
+      "path": {
+        "label": "Plus court chemin entre deux éléments",
+        "hint": "Comment un fichier et un poste auquel vous avez postulé sont liés."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Employeur",
+      "position": "Poste",
+      "postingLink": "Lien de l’offre",
+      "location": "Lieu",
+      "appliedOn": "Date de candidature",
+      "stage": "Étape",
+      "highlight": "À souligner",
+      "notes": "Notes pour vous",
+      "materials": "Documents envoyés"
+    },
+    "fileStem": "{{person}} — candidatures {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "Aucune copie de ce document n’est stockée dans ce navigateur : il n’y a donc rien à lire.",
+    "noReader": "Aucun lecteur de documents n’est connecté : le contenu de ce fichier ne peut donc pas être lu. Son adresse se règle dans Paramètres.",
+    "noReaderToTryHarder": "{{reason}} Aucun lecteur de documents n’est connecté pour aller plus loin — son adresse se règle dans Paramètres.",
+    "maybeScan": "Rien n’a pu être extrait de ce document — c’est peut-être une numérisation.",
+    "noAddress": "Pas encore d’adresse. Voir Paramètres.",
+    "tooLarge": "Ce document fait {{size}} Mo et le lecteur accepte jusqu’à {{max}} Mo."
+  },
+  "network": {
+    "mixedPrivate": "Cette page est en https, et les navigateurs lui interdisent d’appeler une simple adresse http — installez l’extension jojo, qui relaie ce saut vers votre propre réseau à votre place. Ou servez jojo en http.",
+    "mixedPublic": "Cette page est en https, et les navigateurs lui interdisent d’appeler une simple adresse http. Servez jojo en http, ou placez le modèle sur cette machine, sur votre propre réseau ou derrière https — l’extension relaie ces adresses, mais pas une simple adresse http sur l’internet public.",
+    "cors": "Cette page et cette adresse sont toutes deux en https : il ne s’agit donc pas d’un blocage de contenu mixte. La cause probable est CORS : le serveur a répondu sans les en-têtes dont un navigateur a besoin pour lire une réponse. Les fournisseurs cloud ne les envoient généralement pas, et c’est à cela que sert l’extension jojo — vérifiez qu’elle est installée et activée.",
+    "unknown": "Le navigateur n’a pas voulu dire pourquoi. Soit rien n’écoute à cette adresse, soit le serveur a répondu sans les en-têtes CORS dont un navigateur a besoin pour lire une réponse — ce que font, dans certains cas, les deux services avec lesquels cette application communique : un serveur qui fonctionne peut donc aussi échouer ainsi."
+  },
+  "mcpLink": {
+    "notBridge": "Autre chose que jojo-bridge (ou une ancienne copie de celui-ci) répond à {{address}}.",
+    "displaced": "Un autre onglet jojo détient la liaison.",
+    "bridgeStatus": "jojo-bridge a répondu {{status}}.",
+    "otherTab": "Un autre onglet jojo de ce navigateur porte la liaison ; celui-ci prendra le relais quand cet onglet sera fermé."
+  },
+  "roleScopeEmpty": {
+    "title": "Aucune candidature pour ces postes",
+    "description": "Le filtre de postes de la barre supérieure masque toutes les candidatures comptées par ce graphique.",
+    "showAll": "Afficher tous les postes"
+  },
+  "create": {
+    "newApplication": "Nouvelle candidature",
+    "fromLink": {
+      "label": "Candidature depuis un lien",
+      "hint": "Le modèle lit l’offre et remplit le formulaire"
+    },
+    "newReminder": "Nouveau rappel",
+    "newEvent": "Nouvel événement",
+    "draftMessage": {
+      "label": "Rédiger un message",
+      "hint": "À partir de vos extraits d’e-mail — rien n’est généré"
+    },
+    "saveLink": {
+      "label": "Enregistrer un lien",
+      "hint": "Ouvre l’outil Liens du Coffre"
+    },
+    "savePosting": {
+      "label": "Enregistrer une offre",
+      "hint": "Ouvre l’Éclaireur d’emplois"
+    }
+  },
+  "stroke": {
+    "tap": "Toucher",
+    "doubleTap": "Double toucher",
+    "hold": "Appui prolongé",
+    "up": "Balayer vers le haut",
+    "down": "Balayer vers le bas",
+    "side": "Balayer sur le côté",
+    "diagonal": "Glisser en diagonale",
+    "backForth": "Aller-retour",
+    "zigzag": "Zigzag horizontal",
+    "scribbleUp": "Gribouiller de haut en bas",
+    "circle": "Cercle",
+    "square": "Carré",
+    "vee": "V (ou une coche)",
+    "peak": "Λ (un sommet)",
+    "zed": "Z",
+    "arc": "Arc (un C)",
+    "ell": "L",
+    "triangle": "Triangle",
+    "other": "Tout autre geste"
+  },
+  "move": {
+    "nod": "Hocher la tête",
+    "shake": "Secouer la tête",
+    "hi": "Saluer",
+    "bow": "Révérence",
+    "leanIn": "Se pencher",
+    "wobble": "Vaciller",
+    "bounce": "Rebondir",
+    "spin": "Tourner",
+    "recoil": "Reculer",
+    "startle": "Sursauter",
+    "dance": "Danser",
+    "shrug": "Hausser les épaules",
+    "lookAround": "Regarder autour",
+    "hopSpin": "Saut tournant",
+    "stretch": "S’étirer",
+    "flex": "Montrer ses muscles",
+    "jab": "Enchaînement de coups",
+    "powerUp": "Recharge d’énergie",
+    "doze": "S’assoupir",
+    "wink": "Faire un clin d’œil",
+    "love": "Amour",
+    "robot": "Danse du robot",
+    "jazz": "Mains jazz",
+    "point": "Pointer du doigt",
+    "hero": "Pose de héros",
+    "handsUp": "Mains en l’air",
+    "disco": "Disco",
+    "typing": "Taper au clavier",
+    "drumroll": "Roulement de tambour"
+  }
+}

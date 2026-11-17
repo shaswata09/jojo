@@ -30,7 +30,7 @@ import { captureScript } from './capture-script'
  */
 
 describe('the injected capture script', () => {
-  const script = captureScript()
+  const script = captureScript('test-nonce')
 
   it('is syntactically valid JavaScript', () => {
     // The check no compiler performs. A stray backtick or an unescaped `${` in
@@ -147,7 +147,7 @@ describe('the injected capture script', () => {
  */
 describe('the injected script’s CSS tokeniser, executed', () => {
   function liftQueueCssUrls() {
-    const script = captureScript()
+    const script = captureScript('test-nonce')
     const region = script.slice(
       script.indexOf('    function queueCssUrls('),
       script.indexOf('    function rulesOf('),

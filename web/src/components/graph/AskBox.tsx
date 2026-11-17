@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { ArrowUp, Sparkles } from 'lucide-react'
 import { useAgent } from '@jojo/service/react/use-agent'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
@@ -43,11 +44,8 @@ const GRAPH_ASK = 'ask:graph' as NodeId
 const TOOLS = ['graph.query', 'memory.search'] as const
 
 /** Questions the builder can express but which take a while to click together. */
-const SUGGESTIONS = [
-  'Which applications have no follow-up scheduled?',
-  'Which files are filed under nothing?',
-  'Which applications have more than two timeline items?',
-]
+/** Catalog keys under `ask.suggestions`; each is shown and sent in the reader's language. */
+const SUGGESTIONS = ['noFollowUp', 'unfiled', 'busy'] as const
 
 export function AskBox({
   onAnswer,
@@ -60,6 +58,7 @@ export function AskBox({
   /** A change means the page cleared the query: drop the trace with it. */
   resetKey: number
 }) {
+  const { t } = useTranslation('graph')
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
   const [prompt, setPrompt] = useState('')
@@ -166,12 +165,14 @@ export function AskBox({
   if (!connected) {
     return (
       <div className="rounded-lg border border-dashed border-hairline px-3 py-2.5 text-xs text-text-3">
-        <Sparkles className="mr-1.5 inline size-3.5" aria-hidden />
-        Connect a local model in{' '}
-        <Link to="/settings" className="underline underline-offset-2">
-          Settings
-        </Link>{' '}
-        and you can ask this in a sentence. The builder below works either way.
+        <Sparkles className="me-1.5 inline size-3.5" aria-hidden />
+        <Trans
+          t={t}
+          i18nKey="ask.notConnected"
+          components={{
+            settings: <Link to="/settings" className="underline underline-offset-2" />,
+          }}
+        />
       </div>
     )
   }
@@ -181,7 +182,7 @@ export function AskBox({
       <form onSubmit={onSubmit} className="flex gap-2">
         <div className="min-w-0 flex-1">
           <Label htmlFor="graph-ask" className="sr-only">
-            Ask the graph a question
+            {t('ask.label')}
           </Label>
           <Input
             id="graph-ask"
@@ -193,16 +194,16 @@ export function AskBox({
             // the top of the page. Typing is still refused while it runs.
             readOnly={busy}
             aria-disabled={busy || undefined}
-            placeholder="Which applications have no follow-up scheduled?"
+            placeholder={t('ask.suggestions.noFollowUp')}
             onChange={(e) => setPrompt(e.target.value)}
           />
         </div>
         {busy ? (
           <Button type="button" variant="outline" size="sm" onClick={stop}>
-            Stop
+            {t('ask.stop')}
           </Button>
         ) : (
-          <Button type="submit" size="icon" aria-label="Ask" disabled={!prompt.trim()}>
+          <Button type="submit" size="icon" aria-label={t('ask.submit')} disabled={!prompt.trim()}>
             <ArrowUp className="size-4" strokeWidth={2} aria-hidden />
           </Button>
         )}
@@ -210,16 +211,16 @@ export function AskBox({
 
       {entries.length === 0 ? (
         <ul className="flex flex-wrap gap-1.5">
-          {SUGGESTIONS.map((s) => (
-            <li key={s}>
+          {SUGGESTIONS.map((key) => (
+            <li key={key}>
               <button
                 type="button"
                 className="pressable cursor-pointer rounded-full border border-hairline bg-well px-2.5 py-1 text-xs text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
                 onClick={() => {
-                  void send(s)
+                  void send(t(`ask.suggestions.${key}`))
                 }}
               >
-                {s}
+                {t(`ask.suggestions.${key}`)}
               </button>
             </li>
           ))}
@@ -256,7 +257,7 @@ export function AskBox({
               onClear()
             }}
           >
-            Ask something else
+            {t('ask.again')}
           </button>
         </>
       )}

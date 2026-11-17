@@ -1,4 +1,7 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
+import { i18next } from '@/i18n/i18n'
 import { useDuplicateCheck } from '@/lib/duplicate-agent'
 import type { DuplicateFound } from '@/lib/duplicate-agent'
 import { TODAY } from '@/lib/today'
@@ -14,7 +17,6 @@ import { Txt } from '@/components/ui/Text'
 import { SOURCES, STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import type { Application, RoleTag, Source, Stage } from '@jojo/service/data/seed'
-import { shortDate } from '@jojo/service/data/timeline'
 // Imported, not redeclared. This sheet used to carry its own `deadlineUrgency`
 // with the 7/21-day thresholds spelled a second time. The tool layer's copy is
 // the one the store writes through, so a drift here would have shown the user
@@ -72,9 +74,9 @@ type FormState = {
 type FieldKey = 'org' | 'role' | 'roleTag' | 'url'
 type Errors = Partial<Record<FieldKey, string>>
 
-const STAGE_OPTIONS = STAGES.map((s) => ({ value: s.id, label: s.label }))
-const SOURCE_OPTIONS: { value: Source | 'none'; label: string }[] = [
-  { value: 'none', label: 'Not set' },
+/** Built at render, so the 'Not set' label follows the language. */
+const sourceOptions = (notSet: string): { value: Source | 'none'; label: string }[] => [
+  { value: 'none', label: notSet },
   ...SOURCES.map((s) => ({ value: s, label: s })),
 ]
 
@@ -96,14 +98,12 @@ function formFrom(initial?: ApplicationInitial): FormState {
 
 function validate(form: FormState): Errors {
   const errors: Errors = {}
-  if (!form.org.trim()) errors.org = 'Name the employer — it is what the record is filed under.'
-  if (!form.role.trim()) {
-    errors.role = 'Name the role, so two applications to the same place stay apart.'
-  }
-  if (!form.roleTag) errors.roleTag = 'Pick a role tag — the role filter and the charts read it.'
-  if (form.url.trim() && !isOpenableUrl(form.url.trim())) {
-    errors.url = 'That is not a link a browser can open — include https://.'
-  }
+  // Read at call time, so the messages are in whatever language is current.
+  const t = (key: string) => i18next.t(`sheets:application.errors.${key}`)
+  if (!form.org.trim()) errors.org = t('org')
+  if (!form.role.trim()) errors.role = t('role')
+  if (!form.roleTag) errors.roleTag = t('roleTag')
+  if (form.url.trim() && !isOpenableUrl(form.url.trim())) errors.url = t('url')
   return errors
 }
 
@@ -129,6 +129,8 @@ export function ApplicationSheet({
   mode: 'create' | 'edit'
   initial?: ApplicationInitial
 }) {
+  const { t } = useTranslation('sheets')
+  const domain = useDomain()
   const applications = useApplications()
   const timeline = useTimeline()
   const graph = useGraph()
@@ -157,8 +159,7 @@ export function ApplicationSheet({
 
   const id = initial?.id
   const record = mode === 'edit' && id ? applications.get(id) : undefined
-  const blocker =
-    mode === 'edit' && !record ? 'This sheet was opened without a record to edit' : undefined
+  const blocker = mode === 'edit' && !record ? t('application.noRecord') : undefined
 
   /** Guessed values need checking; typed ones do not. See `lib/draft-from.ts`. */
   const guessed = mode === 'create' && Boolean(initial?.org || initial?.role || initial?.url)
@@ -235,13 +236,18 @@ export function ApplicationSheet({
 
     const draft = asInitial()
     toast({
-      title: mode === 'create' ? 'Draft discarded' : 'Changes discarded',
+      title:
+        mode === 'create'
+          ? t('application.toast.draftDiscarded')
+          : t('application.toast.changesDiscarded'),
       description:
         mode === 'create'
-          ? 'Nothing was added. Undo brings the form back as you left it.'
-          : `${record ? displayName(record) : 'The record'} is unchanged. Undo brings your edits back.`,
+          ? t('application.toast.nothingAdded')
+          : record
+            ? t('application.toast.unchanged', { name: displayName(record) })
+            : t('application.toast.recordUnchanged'),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => openSheet('application', { mode, id, initial: draft }),
       },
     })
@@ -372,12 +378,12 @@ export function ApplicationSheet({
     prewarmFit()
 
     toast({
-      title: `${displayName(created)} added`,
+      title: t('application.toast.added', { name: displayName(created) }),
       description: [
         form.deadline
-          ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
-          : 'No deadline yet — add one and it shows up in the week ahead.',
-        posting ? 'The posting is filed under it.' : '',
+          ? t('application.toast.deadlineOnCalendar', { date: domain.shortDate(form.deadline) })
+          : t('application.toast.noDeadline'),
+        posting ? t('application.toast.postingFiled') : '',
       ]
         .filter(Boolean)
         .join(' '),
@@ -451,21 +457,25 @@ export function ApplicationSheet({
       const removed = syncDeadline(next, record)
 
       toast({
-        title: 'Changes saved',
+        title: t('application.toast.saved'),
         description: removed
-          ? `${displayName(next)} — its deadline is off the calendar.`
+          ? t('application.toast.deadlineRemoved', { name: displayName(next) })
           : displayName(next),
         // The record's own fields can be typed back; a timeline item deleted as
         // a side effect of clearing one field cannot, so the one destructive
         // part of this save is the part that gets the undo.
-        action: removed ? { label: 'Restore deadline', onPress: removed.restore } : undefined,
+        action: removed
+          ? { label: t('application.toast.restoreDeadline'), onPress: removed.restore }
+          : undefined,
       })
     }
 
     onOpenChange(false)
   }
 
-  const title = record ? `Edit ${displayName(record)}` : 'New application'
+  const title = record
+    ? t('application.editTitle', { name: displayName(record) })
+    : t('application.newTitle')
 
   return (
     <Sheet
@@ -475,38 +485,43 @@ export function ApplicationSheet({
       title={title}
       description={
         mode === 'edit'
-          ? 'Changes replace the current details, and the deadline moves with them.'
+          ? t('application.description.edit')
           : guessed
             ? tagged
-              ? 'Prefilled from what you pasted — check the employer, role and keywords before saving.'
-              : 'Prefilled from what you pasted — check the employer and role before saving.'
-            : 'Track a job you are applying for. Starred fields are required.'
+              ? t('application.description.prefilledTagged')
+              : t('application.description.prefilled')
+            : t('application.description.create')
       }
       footer={
         confirm ? (
           <>
             <Button
-              label="Edit instead"
+              label={t('application.duplicate.editInstead')}
               variant="ghost"
               size="md"
               onPress={() => setConfirm(null)}
             />
-            <Button label="Discard" variant="outline" size="md" onPress={onDismiss} />
-            <Button label="Add anyway" size="md" onPress={createNow} />
+            <Button
+              label={t('application.duplicate.discard')}
+              variant="outline"
+              size="md"
+              onPress={onDismiss}
+            />
+            <Button label={t('application.duplicate.addAnyway')} size="md" onPress={createNow} />
           </>
         ) : (
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={onDismiss} />
+            <Button label={t('common.cancel')} variant="ghost" size="md" onPress={onDismiss} />
             {/* Never disabled for invalid input: a dead button next to an empty
                 form explains nothing, where a tap that surfaces the errors says
                 exactly what is missing. */}
             <Button
               label={
                 checking
-                  ? 'Checking for a duplicate…'
+                  ? t('application.checking')
                   : mode === 'create'
-                    ? 'Add application'
-                    : 'Save changes'
+                    ? t('application.add')
+                    : t('application.save')
               }
               size="md"
               blocker={blocker}
@@ -535,7 +550,9 @@ export function ApplicationSheet({
         {duplicate ? (
           <Pressable
             accessibilityRole="link"
-            accessibilityLabel={`Open ${displayName(duplicate.record)}, which you already have`}
+            accessibilityLabel={t('application.duplicate.openExisting', {
+              name: displayName(duplicate.record),
+            })}
             onPress={() => {
               onDismiss()
               fromOverlay((nav) => nav.navigate('ApplicationDetail', { id: duplicate.record.id }))
@@ -546,14 +563,14 @@ export function ApplicationSheet({
             ]}
           >
             <Txt size="xs" style={{ color: c.warning }}>
-              {duplicateMessage(duplicate.reason, displayName(duplicate.record))} Tap to open it, or
-              carry on and add this as a second record.
+              {duplicateMessage(duplicate.reason, displayName(duplicate.record))}{' '}
+              {t('application.duplicate.tapToOpen')}
             </Txt>
           </Pressable>
         ) : null}
 
         <TextField
-          label="Organisation"
+          label={t('application.fields.org')}
           required
           value={form.org}
           error={errors.org}
@@ -562,21 +579,21 @@ export function ApplicationSheet({
           // The web version once reproduced the Rice record field for field, so
           // the empty create form read as a filled duplicate of a record the
           // user already had — and the only tell was that the text was grey.
-          placeholder="Employer or institution"
+          placeholder={t('application.fields.orgPlaceholder')}
           onChangeText={(v) => set('org', v)}
         />
         <TextField
-          label="Role title"
+          label={t('application.fields.role')}
           required
           value={form.role}
           error={errors.role}
-          placeholder="e.g. Senior data analyst"
+          placeholder={t('application.fields.rolePlaceholder')}
           onChangeText={(v) => set('role', v)}
         />
 
-        <FormField label="Role tag" required error={errors.roleTag}>
+        <FormField label={t('application.fields.roleTag')} required error={errors.roleTag}>
           <Button
-            label={form.roleTag || 'Pick a role tag'}
+            label={form.roleTag || t('application.fields.pickRoleTag')}
             variant="outline"
             size="md"
             icon="chevrons-down"
@@ -585,48 +602,48 @@ export function ApplicationSheet({
           />
         </FormField>
 
-        <FormField label="Stage" required>
+        <FormField label={t('application.fields.stage')} required>
           <Segment
-            label="Stage"
+            label={t('application.fields.stage')}
             scroll
-            options={STAGE_OPTIONS}
+            options={STAGES.map((s) => ({ value: s.id, label: domain.stage(s.id) }))}
             value={form.stage}
             onChange={(s) => set('stage', s)}
           />
         </FormField>
 
         <DateField
-          label="Deadline"
+          label={t('application.fields.deadline')}
           value={form.deadline}
           onChange={(iso) => set('deadline', iso)}
-          hint="Puts a dated entry on the calendar and in the week ahead."
+          hint={t('application.fields.deadlineHint')}
           clearable
         />
 
-        <FormField label="Source">
+        <FormField label={t('application.fields.source')}>
           <Segment
-            label="Source"
+            label={t('application.fields.source')}
             scroll
-            options={SOURCE_OPTIONS}
+            options={sourceOptions(t('application.fields.sourceNotSet'))}
             value={form.source}
             onChange={(s) => set('source', s)}
           />
         </FormField>
 
         <TextField
-          label="Location"
+          label={t('application.fields.location')}
           value={form.location}
-          placeholder="City, or Remote"
+          placeholder={t('application.fields.locationPlaceholder')}
           onChangeText={(v) => set('location', v)}
         />
         <TextField
-          label="Comp"
+          label={t('application.fields.comp')}
           value={form.comp}
-          placeholder="e.g. $96k + equity"
+          placeholder={t('application.fields.compPlaceholder')}
           onChangeText={(v) => set('comp', v)}
         />
         <TextField
-          label="Posting URL"
+          label={t('application.fields.url')}
           value={form.url}
           error={errors.url}
           mono
@@ -636,23 +653,23 @@ export function ApplicationSheet({
           onChangeText={(v) => set('url', v)}
         />
         <TextField
-          label="Posting ID"
-          hint="The job or requisition number, if the posting states one."
+          label={t('application.fields.postingId')}
+          hint={t('application.fields.postingIdHint')}
           value={form.postingId}
           mono
           autoCapitalize="none"
-          placeholder="e.g. R-2024-0312"
+          placeholder={t('application.fields.postingIdPlaceholder')}
           onChangeText={(v) => set('postingId', v)}
         />
         <TextField
-          label="Note"
+          label={t('application.fields.note')}
           value={form.note}
           multiline
-          placeholder="What still has to happen before this goes out."
+          placeholder={t('application.fields.notePlaceholder')}
           onChangeText={(v) => set('note', v)}
         />
 
-        <FormField label="Keywords">
+        <FormField label={t('application.fields.keywords')}>
           <StagedKeywordPicker value={keywords} onChange={setKeywords} />
         </FormField>
 
@@ -662,8 +679,8 @@ export function ApplicationSheet({
       <MenuSheet
         open={rolesOpen}
         onClose={() => setRolesOpen(false)}
-        title="Role tag"
-        description="The axis the role filter and the charts read."
+        title={t('application.fields.roleTag')}
+        description={t('application.fields.roleTagDescription')}
         actions={vocabulary.map((role) => ({
           id: role,
           label: role,
@@ -714,7 +731,11 @@ const styles = StyleSheet.create({
 
 /** "today", "yesterday", "12 days ago" — the projection counts the days. */
 const sinceDays = (days: number): string =>
-  days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${String(days)} days ago`
+  days <= 0
+    ? i18next.t('sheets:application.since.today')
+    : days === 1
+      ? i18next.t('sheets:application.since.yesterday')
+      : i18next.t('sheets:application.since.daysAgo', { count: days })
 
 /**
  * The original beside what is about to be added. The phone's half of web's
@@ -731,11 +752,13 @@ function DuplicateConfirm({
   adding: { org: string; role: string; location: string }
   onOpen: () => void
 }) {
+  const { t } = useTranslation('sheets')
+  const domain = useDomain()
   const c = useColors()
   const original = found.record
   const why =
     found.how === 'model'
-      ? (found.because ?? 'The model read them as the same vacancy.')
+      ? (found.because ?? t('application.duplicate.modelSame'))
       : duplicateMessage(found.reason, displayName(original))
   const card = {
     borderWidth: 1,
@@ -750,23 +773,24 @@ function DuplicateConfirm({
         style={[styles.duplicate, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
       >
         <Txt size="sm" weight="medium" style={{ color: c.warning }}>
-          This looks like a job you already have
+          {t('application.duplicate.title')}
         </Txt>
         <Txt size="xs" style={{ color: c.warning }}>
           {why}
-          {found.how === 'model' ? ' — the model’s reading; check it below.' : ''}
+          {found.how === 'model' ? t('application.duplicate.modelReading') : ''}
         </Txt>
       </View>
 
       <View style={card}>
         <Txt size="xs" tone="muted" uppercase>
-          What you already have
+          {t('application.duplicate.existing')}
         </Txt>
         <Txt size="sm" weight="medium">
           {displayName(original)}
         </Txt>
         <Txt size="sm" tone="secondary">
-          {STAGE_LABEL[original.stage]} · {original.lastAction} {sinceDays(original.daysAgo)}
+          {domain.stage(original.stage)} · {domain.action(original.lastAction)}{' '}
+          {sinceDays(original.daysAgo)}
         </Txt>
         {original.location !== undefined && (
           <Txt size="sm" tone="secondary">
@@ -775,7 +799,7 @@ function DuplicateConfirm({
         )}
         {original.postingId !== undefined && (
           <Txt size="xs" tone="muted">
-            Posting ID {original.postingId}
+            {t('application.duplicate.postingId', { id: original.postingId })}
           </Txt>
         )}
         {original.url !== undefined && (
@@ -789,16 +813,22 @@ function DuplicateConfirm({
           </Txt>
         )}
         <View style={{ alignItems: 'flex-start', marginTop: space[1] }}>
-          <Button label="Open the one you have" variant="outline" size="sm" onPress={onOpen} />
+          <Button
+            label={t('application.duplicate.openYours')}
+            variant="outline"
+            size="sm"
+            onPress={onOpen}
+          />
         </View>
       </View>
 
       <View style={card}>
         <Txt size="xs" tone="muted" uppercase>
-          What you are adding
+          {t('application.duplicate.adding')}
         </Txt>
         <Txt size="sm" weight="medium">
-          {[adding.org.trim(), adding.role.trim()].filter(Boolean).join(' — ') || 'Untitled'}
+          {[adding.org.trim(), adding.role.trim()].filter(Boolean).join(' — ') ||
+            t('application.duplicate.untitled')}
         </Txt>
         {adding.location.trim() !== '' && (
           <Txt size="sm" tone="secondary">

@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 import { Arrow } from '@/components/guide/diagrams/parts'
 
@@ -30,6 +31,7 @@ import { Arrow } from '@/components/guide/diagrams/parts'
 type Step = {
   /** Where the code lives. Mono, because it is a path. */
   where: string
+  /** A catalog key under `diagrams.toolTrace`, translated where it is drawn. */
   what: string
   /** Only used once — the row above the seam is not part of the shared layer. */
   tag?: string
@@ -38,14 +40,14 @@ type Step = {
 const STEPS: Step[] = [
   {
     where: 'src/components/applications',
-    what: 'the form hands the runtime an input object',
-    tag: 'web only',
+    what: 'form',
+    tag: 'webOnly',
   },
-  { where: 'kg/react/use-tool.ts', what: "run('application.create') — nothing is awaited" },
-  { where: 'kg/tools/application.ts', what: 'org.ensure and the deadline join the same call' },
-  { where: 'kg/core/schema.ts · ref.ts', what: 'parses the input, mints the id and the slug' },
-  { where: 'kg/repo/repository.ts', what: 'commit: the snapshot, one journal row, one undo' },
-  { where: 'kg/storage/idb-driver.ts', what: 'four object stores, one IndexedDB transaction' },
+  { where: 'kg/react/use-tool.ts', what: 'run' },
+  { where: 'kg/tools/application.ts', what: 'join' },
+  { where: 'kg/core/schema.ts · ref.ts', what: 'parse' },
+  { where: 'kg/repo/repository.ts', what: 'commit' },
+  { where: 'kg/storage/idb-driver.ts', what: 'stores' },
 ]
 
 const X = 70
@@ -60,6 +62,7 @@ const TX_TO = 4
 const stepTop = (i: number) => TOP + i * PITCH
 
 export function ToolTraceDiagram() {
+  const { t } = useTranslation('guideReference')
   const titleId = useId()
   const descId = useId()
 
@@ -71,19 +74,8 @@ export function ToolTraceDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>Where the code for adding an application lives, layer by layer</title>
-        <desc id={descId}>
-          Six steps, top to bottom. One, in src/components and outside the shared layer, the
-          application form hands the runtime an input object. Two, kg/react/use-tool.ts runs the
-          tool named application.create and awaits nothing. Three, kg/tools/application.ts opens one
-          transaction, and the nested calls to org.ensure and to the deadline tool join it rather
-          than opening their own. Four, kg/core parses the input against the tool&rsquo;s schema and
-          mints the id and the slug. Five, kg/repo commits once: the snapshot is updated, one
-          journal row is appended, and that row is the single undo. Six, kg/storage writes to four
-          IndexedDB object stores in one transaction — and this last step alone is drawn as a dashed
-          arrow, because nothing waits for it. A bracket in the margin marks steps three to five as
-          one transaction and one undo.
-        </desc>
+        <title id={titleId}>{t('diagrams.toolTrace.title')}</title>
+        <desc id={descId}>{t('diagrams.toolTrace.desc')}</desc>
 
         {/* The transaction bracket. Its label is rotated rather than stacked
             because a vertical run of one-word lines is unreadable at 390px. */}
@@ -100,7 +92,7 @@ export function ToolTraceDiagram() {
           fontSize={9.5}
           fill="var(--text-3)"
         >
-          one transaction · one undo
+          {t('diagrams.toolTrace.bracket')}
         </text>
 
         {STEPS.map((step, i) => {
@@ -154,11 +146,11 @@ export function ToolTraceDiagram() {
                   fontSize={9.5}
                   fill="var(--text-3)"
                 >
-                  {step.tag}
+                  {t(`diagrams.toolTrace.${step.tag}`)}
                 </text>
               ) : null}
               <text x={X + 16} y={y + 35} fontSize={10.5} fill="var(--text-2)">
-                {step.what}
+                {t(`diagrams.toolTrace.${step.what}`)}
               </text>
             </g>
           )
@@ -183,7 +175,7 @@ export function ToolTraceDiagram() {
               <Arrow x={225} y={to + 5} dir="down" />
               {last ? (
                 <text x={240} y={to + 2} fontSize={9.5} fill="var(--text-3)">
-                  nothing awaits this
+                  {t('diagrams.toolTrace.nothingAwaits')}
                 </text>
               ) : null}
             </g>
@@ -192,10 +184,11 @@ export function ToolTraceDiagram() {
       </svg>
 
       <figcaption className="mt-3 text-xs text-text-3">
-        Read top to bottom as the order it happens in, not as the order of the stack —{' '}
-        <span className="font-mono">kg/core</span> is L1 and sits below{' '}
-        <span className="font-mono">kg/repo</span> in the diagram above, because a tool calls down
-        into it and comes back before anything is committed.
+        <Trans
+          t={t}
+          i18nKey="diagrams.toolTrace.caption"
+          components={{ code: <span className="font-mono" /> }}
+        />
       </figcaption>
     </figure>
   )

@@ -1,0 +1,167 @@
+{
+  "common": {
+    "title": "Assistant",
+    "undo": "Annuler",
+    "nothingAsked": "Aucune question pour l’instant",
+    "askLabel": "Interroger l’assistant",
+    "saveToSnippets": "Enregistrer dans les extraits",
+    "savedToSnippets": "Enregistré dans les extraits",
+    "filedUnder": "{{title}} · classé sous {{tag}}",
+    "openVault": "Ouvrir le Coffre",
+    "copyBlocked": "Le navigateur a bloqué la copie",
+    "copied": "Réponse copiée",
+    "newConversation": "Nouvelle conversation"
+  },
+  "header": {
+    "subtitle": "Connecté à votre modèle et capable d’agir sur vos dossiers. Tout ce qu’il fait est listé au fur et à mesure.",
+    "clear": "Effacer",
+    "connected_one": "Les réponses viennent de <mono>{{model}}</mono> à <mono>{{endpoint}}</mono>, qui peut appeler <tools>{{count}} outil</tools> sur cet appareil. Rien n’est envoyé ailleurs.",
+    "connected_many": "Les réponses viennent de <mono>{{model}}</mono> à <mono>{{endpoint}}</mono>, qui peut appeler <tools>{{count}} outils</tools> sur cet appareil. Rien n’est envoyé ailleurs.",
+    "connected_other": "Les réponses viennent de <mono>{{model}}</mono> à <mono>{{endpoint}}</mono>, qui peut appeler <tools>{{count}} outils</tools> sur cet appareil. Rien n’est envoyé ailleurs."
+  },
+  "composer": {
+    "send": "Envoyer",
+    "typeFirst": "Saisissez d’abord un message",
+    "stop": "Arrêter",
+    "stopTitle": "Arrêter l’agent"
+  },
+  "approval": {
+    "waiting": "{{title}} — en attente de votre réponse",
+    "askedBy": "Demandé par {{name}}. Rien n’a encore changé.",
+    "askedByUnnamed": "Demandé par une conversation. Rien n’a encore changé.",
+    "decline": "Refuser",
+    "allow": "Autoriser"
+  },
+  "scripted": {
+    "subtitle": "Des exemples commentés pour l’instant. Connectez un modèle local et il rédigera à partir de vos dossiers et agira dessus.",
+    "clear": "Effacer la conversation",
+    "notConnected": "Aucun modèle n’est connecté : chaque réponse ci-dessous est donc un exemple commenté, pas une vraie réponse. Reliez jojo à un serveur local compatible OpenAI — vLLM, Ollama ou LM Studio — dans les <settings>Paramètres</settings>.",
+    "emptyDescription": "Choisissez l’une des propositions ci-dessous, ou écrivez ce que vous voulez. Les réponses sont des exemples rédigés — utiles comme base, et jamais présentés comme la réponse d’un modèle.",
+    "placeholder": "Posez une question sur une lettre de motivation, un e-mail de relance, un entretien…",
+    "footer": "Avec un modèle connecté, chacun d’eux lit votre profil et vos documents comme contexte. Comme l’inférence est locale, votre CV et vos notes ne sont jamais envoyés nulle part.",
+    "badge": "Réponse d’exemple · aucun modèle connecté",
+    "cleared": "Conversation effacée",
+    "messages_one": "{{count}} message",
+    "messages_many": "{{count}} messages",
+    "messages_other": "{{count}} messages"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Rédiger une lettre de motivation",
+      "title": "Lettre de motivation — structure",
+      "reply": "Voici la structure que j’utiliserais pour [DÉPARTEMENT] :\n\nParagraphe 1 — ce sur quoi vous travaillez, en une phrase compréhensible par un membre du comité hors de votre domaine.\nParagraphe 2 — les deux résultats qui plaident en votre faveur, chacun présenté par sa conséquence plutôt que par sa méthode.\nParagraphe 3 — pourquoi ce département : l’équipe avec laquelle vous auriez des points communs, et le cours que vous enseigneriez.\nParagraphe 4 — votre disponibilité, et ce à quoi ressembleraient les trois premières années.\n\nTenez-vous-en à une page. Le comité en lit quarante en une soirée."
+    },
+    "tailorCv": {
+      "action": "Adapter mon CV à une offre",
+      "title": "Adapter un CV — trois passes",
+      "reply": "Trois passes, dans cet ordre :\n\n1. Retirez ce que l’annonce ne demande pas. Un CV adapté à tout n’est adapté à rien.\n2. Placez en haut de la première page la section par laquelle commence l’annonce — une annonce axée sur l’enseignement veut l’enseignement avant les publications.\n3. Réécrivez l’accroche avec les mots de l’annonce, sans exagérer la portée du travail.\n\nCe qui reste intact : publications, références, dates. C’est ce que vérifie un comité."
+    },
+    "parsePosting": {
+      "action": "Analyser une offre d’emploi",
+      "title": "Ce qu’il faut extraire d’une offre",
+      "reply": "D’une annonce, j’extrairais : l’employeur, le poste, l’échéance, les documents demandés, le contact indiqué, et tout ce qui est formulé comme une exigence ferme plutôt qu’une préférence.\n\nC’est sur ce dernier point que des candidatures se perdent — « doit être titulaire du diplôme à la date de prise de poste » est un filtre, « une expérience des systèmes à grande échelle serait appréciée » n’en est pas un.\n\nL’Éclaireur d’emplois fait déjà la partie simple sans modèle : enregistrez-y l’URL, il garde le lien et en déduit l’employeur."
+    },
+    "followUp": {
+      "action": "Rédiger un e-mail de relance",
+      "title": "Relance sans réponse",
+      "reply": "Objet : Relance — [POSTE], [DÉPARTEMENT]\n\nMadame, Monsieur [NOM],\n\nJ’ai postulé au poste de [POSTE] le [DATE] et je souhaitais m’assurer que le comité dispose de tout ce dont il a besoin de ma part. Je peux envoyer directement la lettre de recommandation manquante si cela est plus simple.\n\nCe poste m’intéresse toujours beaucoup, et je reste à votre disposition par e-mail pour toute question.\n\nAvec mes remerciements,\n[VOTRE NOM]"
+    },
+    "interview": {
+      "action": "Me préparer à un entretien",
+      "title": "Entretien — six questions à préparer",
+      "reply": "Six questions auxquelles il vaut la peine d’avoir une réponse avant le jour J :\n\n— De quoi parle votre travail, en quatre-vingt-dix secondes, pour quelqu’un hors de votre domaine ?\n— Quel serait votre premier financement, et auprès de quel organisme ?\n— Quels deux cours pourriez-vous enseigner le semestre prochain au pied levé ?\n— Avec qui collaboreriez-vous ici, et sur quoi ?\n— Quelle est la faiblesse de votre propre résultat ?\n— De quoi avez-vous besoin la première année pour faire le travail ?\n\nRédigez les réponses à la main. C’est la répétition qui compte, pas les notes."
+    },
+    "fallback": {
+      "title": "Assistant — réponse d’exemple",
+      "reply": "Aucun modèle n’est connecté : ceci est une réponse toute faite, pas une réponse à ce que vous avez écrit.\n\nAvec un modèle connecté, cette page lirait votre profil, les documents de votre Coffre et la candidature que vous nommez, puis rédigerait à partir d’eux sur votre propre machine. Reliez jojo à un serveur local compatible OpenAI dans les Paramètres — vLLM, Ollama ou LM Studio.\n\nEffacez la conversation pour revoir les exemples commentés."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "Qu’est-ce que j’attends ?",
+      "add": "Ajoute une candidature : ingénieur ML chez Stripe, envoyée",
+      "noDeadline": "Quelles candidatures n’ont pas d’échéance ?",
+      "flag": "Signale ma candidature à UT Austin"
+    },
+    "emptyDescription": "Demandez-lui de trouver quelque chose, d’ajouter une candidature ou d’en faire avancer une. Chaque outil qu’il utilise apparaît ci-dessous au fur et à mesure, avec ce qu’il a envoyé et ce qui est revenu.",
+    "placeholder": "Trouve ma candidature à UT Austin, ajoutes-en une, ou passe-la en entretien…"
+  },
+  "threadBar": {
+    "titleLabel": "Titre de la conversation",
+    "saveTitle": "Enregistrer le titre",
+    "cancel": "Annuler",
+    "rename": "Renommer cette conversation",
+    "changeJob": "Changer de poste",
+    "fileUnder": "Classer sous un poste",
+    "approval": "Approbation",
+    "approvalLabel": "Ce que cette conversation peut faire sans demander",
+    "delete": "Supprimer"
+  },
+  "threads": {
+    "deleted": "Conversation supprimée"
+  },
+  "threadList": {
+    "title": "Conversations",
+    "kept_one": "{{count}} conservée ici",
+    "kept_many": "{{count}} conservées ici",
+    "kept_other": "{{count}} conservées ici",
+    "noJob": "Pas encore liée à un poste",
+    "searchLabel": "Rechercher dans les conversations",
+    "searchPlaceholder": "Rechercher ce qui a été dit",
+    "clearSearch": "Effacer la recherche",
+    "noMention": "Aucune mention",
+    "mentionsIn": "{{mentions}} dans {{conversations}}",
+    "mentions_one": "{{count}} mention",
+    "mentions_many": "{{count}} mentions",
+    "mentions_other": "{{count}} mentions",
+    "conversationCount_one": "{{count}} conversation",
+    "conversationCount_many": "{{count}} conversations",
+    "conversationCount_other": "{{count}} conversations",
+    "empty": "Rien pour l’instant. Posez une question et elle sera conservée ici, sur cet appareil.",
+    "noResults": "Rien ne mentionne « {{query}} ». La recherche porte sur toutes les conversations, pas seulement leurs titres.",
+    "working": "En cours…",
+    "matches_one": "{{count}} résultat",
+    "matches_many": "{{count}} résultats",
+    "matches_other": "{{count}} résultats",
+    "questions_one": "{{count}} question",
+    "questions_many": "{{count}} questions",
+    "questions_other": "{{count}} questions"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Rien à annuler — cela a changé depuis",
+      "alreadyUndone": "Déjà annulé",
+      "outOfReach": "Trop ancien pour être annulé d’ici",
+      "undone": "Annulé"
+    },
+    "thinking": "Réflexion…",
+    "thought": "Réflexion"
+  },
+  "trace": {
+    "status": {
+      "running": "En cours",
+      "done": "Terminé",
+      "failed": "Échec",
+      "declined": "Refusé"
+    },
+    "effect": {
+      "read": "lecture",
+      "unknown": "outil inconnu",
+      "create": "ajouté",
+      "update": "modifié",
+      "move": "déplacé",
+      "delete": "supprimé",
+      "admin": "stockage"
+    },
+    "approvalNeeded": "Approbation requise : {{title}}",
+    "asked": "L’agent a demandé à faire ceci. Rien n’a encore changé.",
+    "declineAria": "Refuser : {{title}}",
+    "allowAria": "Autoriser : {{title}}",
+    "arguments": "Arguments",
+    "result": "Résultat",
+    "undoStep": "Annuler cette étape",
+    "cannotUndo": "Cette étape ne peut pas être annulée d’ici. Paramètres → Dossiers garde un journal des modifications et peut annuler la plus récente.",
+    "truncated": "Tronqué — l’agent a été invité à affiner la recherche pour voir le reste.",
+    "working": "En cours — {{model}} décide quoi faire…"
+  }
+}

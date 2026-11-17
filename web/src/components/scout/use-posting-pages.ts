@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { SavedPosting } from '@/data/scout'
 import type { VaultFile } from '@/data/vault'
 import { useGraph } from '@jojo/service/react/kg-context'
@@ -21,6 +22,7 @@ import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 export function usePostingPages() {
   const keepPage = useKeepPostingPage()
   const { reader } = useModelSettings()
+  const { t } = useTranslation('scout')
   const { toast } = useToast()
   const graph = useGraph()
   const { files } = useVault()
@@ -51,15 +53,15 @@ export function usePostingPages() {
   /** Says how keeping one page went. Quiet when it was already in the Vault. */
   const reportKept = (kept: KeptPage, title: string) => {
     if (!kept.ok) {
-      toast({ title: 'The posting’s page was not saved', description: kept.reason, tone: 'danger' })
+      toast({ title: t('toasts.pageNotSaved'), description: kept.reason, tone: 'danger' })
       return
     }
     if (kept.via === 'already') return
     toast({
-      title: 'Posting page saved',
+      title: t('toasts.pageSaved'),
       description: kept.filedUnder
-        ? `${title} — filed under its application.`
-        : `${title} — in the Vault under Job postings.`,
+        ? t('toasts.pageSavedFiled', { title })
+        : t('toasts.pageSavedVault', { title }),
     })
   }
 

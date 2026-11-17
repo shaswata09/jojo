@@ -244,12 +244,17 @@ export function DetailSheet({
            * that answers it, the inline number is stale for a frame, and
            * `calc(100vw - 3rem)` is what stops the sheet hanging off the screen
            * in that frame.
+           *
+           * Pinned to the inline END, not the right: in Arabic the sidebar is on
+           * the right, and a right-pinned sheet slid under it — the title, the
+           * stage control and the start of every heading were drawn over by
+           * the sidebar's nav.
            */
           style={{ width }}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-40 flex max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-l border-hairline bg-page px-4 pt-4 pb-5 shadow-[var(--shadow-raised)] outline-none sm:px-5 sm:pt-5',
+            'fixed end-0 top-0 bottom-0 z-40 flex max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-s border-hairline bg-page px-4 pt-4 pb-5 shadow-[var(--shadow-raised)] outline-none sm:px-5 sm:pt-5',
             !reducedMotion &&
-              'duration-[260ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-open:animate-in data-open:slide-in-from-right-16 data-closed:animate-out data-closed:duration-150 data-closed:slide-out-to-right-16',
+              'duration-[260ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-open:animate-in data-open:slide-in-from-end-16 data-closed:animate-out data-closed:duration-150 data-closed:slide-out-to-end-16',
           )}
         >
           <DialogPrimitive.Title className="sr-only">{name}</DialogPrimitive.Title>

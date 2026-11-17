@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
-import { addDays, shortDate } from '@jojo/service/data/timeline'
+import { i18next } from '@/i18n/i18n'
+import { addDays } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 import { useLabels } from '@/lib/labels-context'
 import { useSheets } from '@/lib/sheets-context'
 import { useTimeline } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { domain } from '@/i18n/domain'
 
 /**
  * Where a snooze counts from.
@@ -26,14 +28,14 @@ export const anchorOf = (item: TimelineItem) => (item.date < TODAY ? TODAY : ite
  * write.
  */
 export const SNOOZE_STEPS = [
-  { days: 1, soon: 'Tomorrow', later: 'A day later' },
-  { days: 3, soon: 'In 3 days', later: 'Three days later' },
-  { days: 7, soon: 'In 7 days', later: 'A week later' },
+  { days: 1, soon: 'snooze.soon1', later: 'snooze.later1' },
+  { days: 3, soon: 'snooze.soon3', later: 'snooze.later3' },
+  { days: 7, soon: 'snooze.soon7', later: 'snooze.later7' },
 ] as const
 
 /** What a snooze step should be called for this item. */
 export const snoozeLabel = (item: TimelineItem, step: (typeof SNOOZE_STEPS)[number]) =>
-  anchorOf(item) === TODAY ? step.soon : step.later
+  i18next.t(`messages:${anchorOf(item) === TODAY ? step.soon : step.later}`)
 
 /**
  * Everything a dated row can do to itself, with the toast each one owes.
@@ -60,19 +62,22 @@ export function useItemActions() {
   const { toast } = useToast()
 
   return useMemo(() => {
+    const t = (key: string, options?: Record<string, unknown>) =>
+      i18next.t(`messages:itemActions.${key}`, options)
+    const undo = i18next.t('common:actions.undo')
     /** Ticks or unticks, and says which way it went. */
     const complete = (item: TimelineItem) => {
       const wasDone = Boolean(item.completedOn)
       toggleDone(item.id)
       toast({
-        title: `${item.title} ${wasDone ? 'reopened' : 'completed'}`,
-        description: wasDone
-          ? 'Back on the open list and counted as owed again.'
-          : 'It leaves the open lists and counts towards today — nothing is deleted.',
+        title: wasDone
+          ? t('reopened', { title: item.title })
+          : t('completed', { title: item.title }),
+        description: wasDone ? t('reopenedBody') : t('completedBody'),
         // Not a second toggle: by the time this is pressed the item may have
         // been changed elsewhere, and toggling again would flip the wrong way.
         action: {
-          label: 'Undo',
+          label: undo,
           onPress: () => update(item.id, { completedOn: item.completedOn ?? null }),
         },
       })
@@ -82,10 +87,10 @@ export function useItemActions() {
       const before = item.date
       snooze(item.id, days)
       toast({
-        title: `${item.title} rescheduled`,
-        description: `Now due ${shortDate(addDays(anchorOf(item), days))}, here and on the calendar.`,
+        title: t('rescheduled', { title: item.title }),
+        description: t('nowDue', { date: domain.shortDate(addDays(anchorOf(item), days)) }),
         // The date it came from is the one thing a second snooze cannot recover.
-        action: { label: 'Undo', onPress: () => reschedule(item.id, before) },
+        action: { label: undo, onPress: () => reschedule(item.id, before) },
       })
     }
 
@@ -95,9 +100,9 @@ export function useItemActions() {
       const before = item.date
       reschedule(item.id, iso)
       toast({
-        title: `Moved to ${shortDate(iso)}`,
+        title: t('movedTo', { date: domain.shortDate(iso) }),
         description: item.title,
-        action: { label: 'Undo', onPress: () => reschedule(item.id, before) },
+        action: { label: undo, onPress: () => reschedule(item.id, before) },
       })
     }
 
@@ -110,14 +115,14 @@ export function useItemActions() {
      */
     const duplicate = (item: TimelineItem) => {
       const { id: _id, ...rest } = item
-      const copy = add({ ...rest, title: `${item.title} (copy)`, completedOn: null })
+      const copy = add({ ...rest, title: t('copyTitle', { title: item.title }), completedOn: null })
       const keywords = labelIdsOf(item.id)
       if (keywords.length > 0) setRecord(copy.id, keywords)
       toast({
-        title: `${copy.title} added`,
-        description: `${shortDate(copy.date)} — the copy carries the same keywords.`,
+        title: t('added', { title: copy.title }),
+        description: t('copyBody', { date: domain.shortDate(copy.date) }),
         action: {
-          label: 'Undo',
+          label: undo,
           onPress: () => {
             remove(copy.id)
             removeRecord(copy.id)
@@ -138,13 +143,11 @@ export function useItemActions() {
       const { restore } = remove(item.id)
       removeRecord(item.id)
       toast({
-        title: `${item.title} deleted`,
-        description: item.remind
-          ? 'Gone from the reminders list and from the calendar.'
-          : 'Gone from the calendar.',
+        title: t('deleted', { title: item.title }),
+        description: item.remind ? t('deletedReminder') : t('deletedEvent'),
         tone: 'danger',
         action: {
-          label: 'Undo',
+          label: undo,
           onPress: () => {
             restore()
             // Guarded, because `setRecord` with an empty list would file the

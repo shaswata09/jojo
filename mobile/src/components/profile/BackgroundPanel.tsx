@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -17,7 +18,7 @@ import {
   updateFrom,
 } from '@jojo/service/core/background-form'
 import type { BackgroundDraft } from '@jojo/service/core/background-form'
-import { BACKGROUND_LABEL, BACKGROUND_ORDER } from '@jojo/service/core/model'
+import { BACKGROUND_ORDER } from '@jojo/service/core/model'
 import type { Background, BackgroundKind } from '@jojo/service/core/model'
 import { readableDocuments } from '@jojo/service/core/twin'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
@@ -27,6 +28,7 @@ import { useToast } from '@/lib/toast-context'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * What jojo knows about the person, grouped and listed.
@@ -51,6 +53,7 @@ function Entry({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   const [open, setOpen] = useState(false)
   const bullets = entry.highlights ?? []
@@ -83,7 +86,7 @@ function Entry({
               >
                 <Feather name={open ? 'chevron-up' : 'chevron-down'} size={13} color={c.text3} />
                 <Txt size="xs" tone="muted">
-                  {bullets.length === 1 ? '1 detail' : `${String(bullets.length)} details`}
+                  {t('background.details', { count: bullets.length })}
                 </Txt>
               </Pressable>
               {open && (
@@ -102,7 +105,7 @@ function Entry({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[1] }}>
               <Feather name="file-text" size={11} color={c.text3} />
               <Txt size="xs" tone="muted">
-                read from a document
+                {t('background.fromDocument')}
               </Txt>
             </View>
           )}
@@ -114,7 +117,7 @@ function Entry({
           <Pressable
             onPress={onEdit}
             accessibilityRole="button"
-            accessibilityLabel={`Edit ${entry.title}`}
+            accessibilityLabel={t('background.editNamed', { title: entry.title })}
             hitSlop={10}
           >
             <Feather name="edit-2" size={16} color={c.text3} />
@@ -122,7 +125,7 @@ function Entry({
           <Pressable
             onPress={onDelete}
             accessibilityRole="button"
-            accessibilityLabel={`Remove ${entry.title}`}
+            accessibilityLabel={t('background.removeNamed', { title: entry.title })}
             hitSlop={10}
           >
             <Feather name="trash-2" size={16} color={c.text3} />
@@ -151,6 +154,8 @@ function EntrySheet({
   open: boolean
   onClose: () => void
 }) {
+  const { t } = useTranslation(['components', 'common'])
+  const domain = useDomain()
   const run = useRun()
   const { toast } = useToast()
   const [draft, setDraft] = useState<BackgroundDraft>(() =>
@@ -170,10 +175,10 @@ function EntrySheet({
       const entry = addEntryFrom(draft)
       const result = run('profile.background.add', { background: [entry] })
       toast({
-        title: result.ok ? `${entry.title} added` : 'That did not save',
+        title: result.ok ? t('background.added', { title: entry.title }) : t('background.notSaved'),
         ...(result.ok
           ? result.undo
-            ? { action: { label: 'Undo', onPress: result.undo } }
+            ? { action: { label: t('common:actions.undo'), onPress: result.undo } }
             : {}
           : { description: result.errors[0]?.message, tone: 'danger' as const }),
       })
@@ -186,10 +191,12 @@ function EntrySheet({
     }
     const result = run('profile.background.update', { id: initial.id, ...patch })
     toast({
-      title: result.ok ? `${draft.title.trim() || initial.title} updated` : 'That did not save',
+      title: result.ok
+        ? t('background.updated', { title: draft.title.trim() || initial.title })
+        : t('background.notSaved'),
       ...(result.ok
         ? result.undo
-          ? { action: { label: 'Undo', onPress: result.undo } }
+          ? { action: { label: t('common:actions.undo'), onPress: result.undo } }
           : {}
         : { description: result.errors[0]?.message, tone: 'danger' as const }),
     })
@@ -201,54 +208,64 @@ function EntrySheet({
       <Sheet
         open={open}
         onClose={onClose}
-        title={editing ? 'Edit this entry' : 'Add to your background'}
+        title={editing ? t('background.editTitle') : t('background.addTitle')}
         description={
           editing
             ? initial.source !== undefined
-              ? 'Read from a document. Your edit is kept over the reading.'
-              : 'Nothing is saved until you press Save.'
-            : 'Anything a posting should be weighed against. Nothing here is sent anywhere.'
+              ? t('background.editRead')
+              : t('background.editHint')
+            : t('background.addHint')
         }
         footer={
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
-            <Button label={editing ? 'Save' : 'Add'} size="md" disabled={blocked} onPress={save} />
+            <Button
+              label={t('common:actions.cancel')}
+              variant="ghost"
+              size="md"
+              onPress={onClose}
+            />
+            <Button
+              label={editing ? t('common:actions.save') : t('background.add')}
+              size="md"
+              disabled={blocked}
+              onPress={save}
+            />
           </>
         }
       >
         <View style={{ gap: space[2], paddingBottom: space[2] }}>
           {/* A menu rather than a picker wheel: sixteen kinds is a list to read,
               and `MenuSheet` is what every other choice on this phone uses. */}
-          <FormField label="Kind">
+          <FormField label={t('background.kind')}>
             <Button
-              label={BACKGROUND_LABEL[draft.kind]}
+              label={domain.background(draft.kind)}
               variant="outline"
               size="md"
               onPress={() => setKindOpen(true)}
             />
           </FormField>
           <TextField
-            label="Title"
+            label={t('background.title')}
             required
             value={draft.title}
-            placeholder="What it was"
+            placeholder={t('background.titlePlaceholder')}
             {...(tried && problems.title ? { error: problems.title } : {})}
             onChangeText={(title) => setDraft({ ...draft, title })}
           />
           <TextField
-            label="Where"
+            label={t('background.where')}
             value={draft.where}
-            placeholder="Optional"
+            placeholder={t('background.optional')}
             onChangeText={(where) => setDraft({ ...draft, where })}
           />
           <TextField
-            label="When"
+            label={t('background.when')}
             value={draft.period}
-            placeholder="As written — “2021–2024”"
+            placeholder={t('background.whenPlaceholder')}
             onChangeText={(period) => setDraft({ ...draft, period })}
           />
           <TextField
-            label="Year"
+            label={t('background.year')}
             value={draft.year}
             placeholder="2024"
             keyboardType="number-pad"
@@ -257,18 +274,18 @@ function EntrySheet({
             onChangeText={(year) => setDraft({ ...draft, year })}
           />
           <TextField
-            label="Detail"
+            label={t('background.detail')}
             value={draft.detail}
             multiline
-            placeholder="Optional"
+            placeholder={t('background.optional')}
             onChangeText={(detail) => setDraft({ ...draft, detail })}
           />
           <TextField
-            label="Highlights"
-            hint="One per line — what was built, shipped, taught or found."
+            label={t('background.highlights')}
+            hint={t('background.highlightsHint')}
             value={draft.highlights}
             multiline
-            placeholder="Optional"
+            placeholder={t('background.optional')}
             onChangeText={(highlights) => setDraft({ ...draft, highlights })}
           />
         </View>
@@ -277,11 +294,11 @@ function EntrySheet({
       <MenuSheet
         open={kindOpen}
         onClose={() => setKindOpen(false)}
-        title="Kind"
-        description="Which part of your background this belongs to."
+        title={t('background.kind')}
+        description={t('background.kindHint')}
         actions={BACKGROUND_ORDER.map((kind) => ({
           id: kind,
-          label: BACKGROUND_LABEL[kind],
+          label: domain.background(kind),
           checked: kind === draft.kind,
           onPress: () => setDraft({ ...draft, kind }),
         }))}
@@ -291,6 +308,8 @@ function EntrySheet({
 }
 
 export function BackgroundPanel() {
+  const { t } = useTranslation(['components', 'common'])
+  const domain = useDomain()
   const graph = useGraph()
   const { projections } = useKg()
   const run = useRun()
@@ -335,7 +354,7 @@ export function BackgroundPanel() {
     const result = run('profile.background.delete', { id: entry.id })
     setConfirming(null)
     toast({
-      title: result.ok ? `${entry.title} removed` : 'That did not save',
+      title: result.ok ? t('background.removed', { title: entry.title }) : t('background.notSaved'),
       /*
        * The undo the tool handed back, which was being thrown away.
        *
@@ -346,7 +365,7 @@ export function BackgroundPanel() {
        */
       ...(result.ok
         ? result.undo
-          ? { action: { label: 'Undo', onPress: result.undo } }
+          ? { action: { label: t('common:actions.undo'), onPress: result.undo } }
           : {}
         : { description: result.errors[0]?.message, tone: 'danger' as const }),
     })
@@ -355,13 +374,9 @@ export function BackgroundPanel() {
   return (
     <Panel>
       <PanelTitle
-        hint={
-          all.length === 0
-            ? undefined
-            : `${String(all.length)} recorded · what a posting is weighed against`
-        }
+        hint={all.length === 0 ? undefined : t('background.recorded', { count: all.length })}
       >
-        Your background
+        {t('background.panelTitle')}
       </PanelTitle>
 
       <View
@@ -373,7 +388,7 @@ export function BackgroundPanel() {
         }}
       >
         <Button
-          label="Read a document"
+          label={t('background.read')}
           icon="zap"
           variant="outline"
           size="sm"
@@ -381,7 +396,7 @@ export function BackgroundPanel() {
           onPress={() => setChoosing(true)}
         />
         <Button
-          label="Add an entry"
+          label={t('background.addEntry')}
           icon="plus"
           variant="outline"
           size="sm"
@@ -399,14 +414,14 @@ export function BackgroundPanel() {
       <MenuSheet
         open={choosing}
         onClose={() => setChoosing(false)}
-        title="Read a document into your profile"
+        title={t('background.readTitle')}
         actions={
           documents.length === 0
             ? [
                 {
                   id: 'none',
-                  label: 'Nothing in the Vault can be read yet',
-                  hint: 'Add your CV or a statement and it appears here.',
+                  label: t('background.nothingReadable'),
+                  hint: t('background.nothingReadableHint'),
                   disabled: true,
                   onPress: () => {},
                 },
@@ -414,7 +429,7 @@ export function BackgroundPanel() {
             : documents.map((d) => ({
                 id: d.id,
                 label: d.name,
-                ...(d.read ? { hint: 'Already read', disabled: true } : {}),
+                ...(d.read ? { hint: t('background.alreadyRead'), disabled: true } : {}),
                 onPress: () => requestProfileRead({ fileId: d.id, name: d.name }),
               }))
         }
@@ -423,19 +438,15 @@ export function BackgroundPanel() {
       {all.length === 0 ? (
         <EmptyState
           icon="file-text"
-          title="Nothing recorded yet"
-          description={
-            configured
-              ? 'Put your CV, a research or teaching statement in the Vault and jojo will offer to read it — what it finds is shown to you before anything is saved. Or add an entry by hand.'
-              : 'Reading a document needs a model. Connect one under More → Settings, then put your CV or a statement in the Vault. You can add entries by hand without one.'
-          }
+          title={t('background.empty.title')}
+          description={configured ? t('background.empty.ready') : t('background.empty.noModel')}
         />
       ) : (
         <View style={{ gap: space[5] }}>
           {groups.map(({ kind, rows }) => (
             <View key={kind}>
               <Txt size="xs" tone="muted" uppercase>
-                {BACKGROUND_LABEL[kind]}
+                {domain.background(kind)}
               </Txt>
               {rows.map((entry) => (
                 <Entry
@@ -453,9 +464,9 @@ export function BackgroundPanel() {
       <ConfirmSheet
         open={confirming !== null}
         onClose={() => setConfirming(null)}
-        title={confirming === null ? '' : `Remove ${confirming.title}?`}
-        description="It goes from your background, so postings stop being weighed against it. The document it came from is untouched."
-        confirmLabel="Remove"
+        title={confirming === null ? '' : t('background.removeTitle', { title: confirming.title })}
+        description={t('background.removeBody')}
+        confirmLabel={t('common:actions.remove')}
         tone="danger"
         onConfirm={() => {
           if (confirming !== null) remove(confirming)

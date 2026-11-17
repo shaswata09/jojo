@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ClipboardList, Plus } from 'lucide-react'
 import { Donut } from '@/components/charts/Donut'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -11,18 +12,17 @@ import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
 
-const VIEWS = [
-  { value: 'bars', label: 'Bars' },
-  { value: 'donut', label: 'Donut' },
-] as const
-type View = (typeof VIEWS)[number]['value']
+/** The two readings, labelled where they are rendered — `sources.views.*` in the reader's language. */
+const VIEWS = ['bars', 'donut'] as const
+type View = (typeof VIEWS)[number]
 
 // A sequential ramp, not the categorical series: this is a share-of-total
 // split, and one hue light-to-dark is the correct form for that.
 const RAMP = ['var(--ramp-1)', 'var(--ramp-2)', 'var(--ramp-3)', 'var(--ramp-4)']
 
 /** Not a source, so not a colour from the source ramp — a neutral slice for
- *  the records that have not answered the question. */
+ *  the records that have not answered the question. The key; its label is
+ *  `sources.unrecorded`. */
 const UNRECORDED = 'Not recorded'
 const UNRECORDED_COLOR = 'var(--text-3)'
 
@@ -35,7 +35,9 @@ const UNRECORDED_COLOR = 'var(--text-3)'
  * "where do my applications come from", which is a share, not a magnitude.
  */
 export function ApplicationSources() {
+  const { t } = useTranslation('dashboard')
   const [view, setView] = useState<View>('donut')
+  const views = VIEWS.map((value) => ({ value, label: t(`sources.views.${value}`) }))
   // Scoped to the roles picked in the top bar; everything when none are.
   const { all, sourceCounts, total: tracked } = useScopedApplications()
   const { open } = useDialogs()
@@ -61,10 +63,15 @@ export function ApplicationSources() {
     return unrecorded > 0
       ? [
           ...known,
-          { key: UNRECORDED, label: UNRECORDED, value: unrecorded, color: UNRECORDED_COLOR },
+          {
+            key: UNRECORDED,
+            label: t('sources.unrecorded'),
+            value: unrecorded,
+            color: UNRECORDED_COLOR,
+          },
         ]
       : known
-  }, [all, sourceCounts])
+  }, [all, sourceCounts, t])
 
   // Both views share one hidden-set, so switching bars↔donut keeps your choices.
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(slices.map((s) => s.key))
@@ -79,14 +86,14 @@ export function ApplicationSources() {
           // "1 applications" is the first number a new user reads on this page.
           hint={
             total === all.length
-              ? `${all.length} application${all.length === 1 ? '' : 's'}`
-              : `${total} of ${all.length}`
+              ? t('sources.hintAll', { count: all.length })
+              : t('sources.hintSome', { shown: total, count: all.length })
           }
         >
-          Where they came from
+          {t('sources.title')}
         </PanelTitle>
         {all.length > 0 ? (
-          <Segment label="Chart type" options={VIEWS} value={view} onChange={setView} />
+          <Segment label={t('sources.chartType')} options={views} value={view} onChange={setView} />
         ) : null}
       </div>
 
@@ -99,17 +106,22 @@ export function ApplicationSources() {
       ) : all.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
-          title="Nothing to break down yet"
-          description="Each application records where you found it — a job board, a referral, the department page. This splits them once there are some."
+          title={t('sources.emptyTitle')}
+          description={t('sources.emptyDescription')}
           action={
             <Button size="sm" onClick={() => open('application')}>
               <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-              New application
+              {t('common.newApplication')}
             </Button>
           }
         />
       ) : view === 'donut' ? (
-        <Donut slices={slices} centerLabel="applications" isHidden={isHidden} onToggle={toggle} />
+        <Donut
+          slices={slices}
+          centerLabel={t('sources.centerLabel')}
+          isHidden={isHidden}
+          onToggle={toggle}
+        />
       ) : (
         <ul className="space-y-3">
           {slices.map((s) => {
@@ -120,8 +132,12 @@ export function ApplicationSources() {
                   type="button"
                   onClick={() => toggle(s.key)}
                   aria-pressed={!off}
-                  title={off ? `Show ${s.label}` : `Hide ${s.label}`}
-                  className="w-full rounded-sm text-left"
+                  title={
+                    off
+                      ? t('sources.show', { name: s.label })
+                      : t('sources.hide', { name: s.label })
+                  }
+                  className="w-full rounded-sm text-start"
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <span
@@ -139,7 +155,7 @@ export function ApplicationSources() {
                       )}
                     >
                       {s.value}
-                      <span className="ml-1.5 text-xs text-text-3">
+                      <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
                         {!off && total > 0 ? Math.round((s.value / total) * 100) : 0}%
                       </span>
                     </span>
@@ -170,13 +186,13 @@ export function ApplicationSources() {
           happened, offer the one press, leave the toggles alone. */}
       {all.length > 0 && allHidden ? (
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-text-3">
-          Every source is switched off.
+          {t('sources.allOff')}
           <button
             type="button"
             onClick={showAll}
             className="cursor-pointer rounded-sm border border-hairline bg-well px-2 py-0.5 text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
           >
-            Show all
+            {t('common.showAll')}
           </button>
         </div>
       ) : null}

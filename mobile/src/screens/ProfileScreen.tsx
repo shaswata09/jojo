@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
@@ -15,7 +16,6 @@ import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import type { ProfileText } from '@jojo/service/data/profile'
 import { displayName } from '@jojo/service/data/seed'
-import { agoLabel } from '@jojo/service/data/timeline'
 import { useApplications, useProfile, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
@@ -23,11 +23,14 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { BackgroundPanel } from '@/components/profile/BackgroundPanel'
+import { useDomain } from '@/i18n/domain'
 
 /** The bucket a profile document belongs to, in the Vault's own vocabulary. */
 const DOCUMENTS_BUCKET = 'Applications' as const
 
 export function ProfileScreen() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -72,8 +75,8 @@ export function ProfileScreen() {
   const onSave = () => {
     update({ text: draft })
     toast({
-      title: 'Profile saved',
-      description: 'Saved on this device.',
+      title: t('profile.savedTitle'),
+      description: t('profile.savedDescription'),
     })
   }
 
@@ -92,15 +95,11 @@ export function ProfileScreen() {
   }
 
   return (
-    <Screen
-      title="My profile"
-      subtitle="What the scout and assistant use to match and draft. None of it leaves your device."
-      wide
-    >
+    <Screen title={t('profile.title')} subtitle={t('profile.subtitle')} wide>
       {/* Profile sections. The edit sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
         <Panel>
-          <PanelTitle>Basics</PanelTitle>
+          <PanelTitle>{t('profile.basics.title')}</PanelTitle>
           {/* Every field carries a placeholder, which only matters on an empty
               store: with the records cleared this used to render a stranger's name
               and email as real values, in fields a reader would reasonably take
@@ -108,25 +107,25 @@ export function ProfileScreen() {
               answers one. */}
           <View style={{ gap: space[3] }}>
             <TextField
-              label="Full name"
+              label={t('profile.basics.fullName')}
               value={draft.fullName}
-              placeholder="e.g. Lonardo Jenson"
+              placeholder={t('profile.basics.fullNamePlaceholder')}
               onChangeText={set('fullName')}
             />
             <TextField
-              label="Current position"
+              label={t('profile.basics.position')}
               value={draft.position}
-              placeholder="e.g. PhD candidate, Computer Science"
+              placeholder={t('profile.basics.positionPlaceholder')}
               onChangeText={set('position')}
             />
             <TextField
-              label="Location"
+              label={t('profile.basics.location')}
               value={draft.location}
-              placeholder="e.g. Santa Clara, CA"
+              placeholder={t('profile.basics.locationPlaceholder')}
               onChangeText={set('location')}
             />
             <TextField
-              label="Email"
+              label={t('profile.basics.email')}
               value={draft.email}
               mono
               keyboardType="email-address"
@@ -138,10 +137,10 @@ export function ProfileScreen() {
         </Panel>
 
         <Panel>
-          <PanelTitle>Links</PanelTitle>
+          <PanelTitle>{t('profile.links.title')}</PanelTitle>
           <View style={{ gap: space[3] }}>
             <TextField
-              label="Website"
+              label={t('profile.links.website')}
               value={draft.website}
               mono
               autoCapitalize="none"
@@ -180,18 +179,17 @@ export function ProfileScreen() {
         </Panel>
 
         <Panel>
-          <PanelTitle hint="drives scout matching">Interests and targets</PanelTitle>
+          <PanelTitle hint={t('profile.interests.hint')}>{t('profile.interests.title')}</PanelTitle>
 
           {/* Renamed from "keywords", which is taken. A keyword in this app is
               something you file a record under and filter by; these are the terms
               the scout scores a posting against, and the two lists have never had
               anything to do with each other. */}
           <Txt size="xs" tone="secondary">
-            Match terms
+            {t('profile.interests.matchTerms')}
           </Txt>
           <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
-            Research areas and phrasings the scout looks for. Separate from the keywords you file
-            records under.
+            {t('profile.interests.matchTermsDescription')}
           </Txt>
 
           <View style={styles.terms}>
@@ -203,12 +201,17 @@ export function ProfileScreen() {
                 <IconButton
                   icon="x"
                   size={30}
-                  label={`Remove ${term}`}
+                  label={t('profile.remove', { name: term })}
                   onPress={() => update({ matchTerms: matchTerms.filter((x) => x !== term) })}
                 />
               </View>
             ))}
-            <Button label="Add" icon="plus" variant="outline" onPress={() => setAddingTerm(true)} />
+            <Button
+              label={t('profile.add')}
+              icon="plus"
+              variant="outline"
+              onPress={() => setAddingTerm(true)}
+            />
           </View>
 
           {/* The one required field on every application, and until now a list
@@ -216,11 +219,10 @@ export function ProfileScreen() {
               carrying it exactly where they are — `roleVocabulary` keeps a tag
               that is in use visible whether or not it is still on the list. */}
           <Txt size="xs" tone="secondary" weight="medium" style={{ marginTop: space[4] }}>
-            Role tags
+            {t('profile.interests.roleTags')}
           </Txt>
           <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
-            The kinds of role you are tracking. Every application is filed under one, and the role
-            filter and the per-role figures read it.
+            {t('profile.interests.roleTagsDescription')}
           </Txt>
 
           <View style={styles.terms}>
@@ -232,47 +234,52 @@ export function ProfileScreen() {
                 <IconButton
                   icon="x"
                   size={30}
-                  label={`Remove ${role}`}
+                  label={t('profile.remove', { name: role })}
                   onPress={() => update({ roles: roles.filter((x) => x !== role) })}
                 />
               </View>
             ))}
-            <Button label="Add" icon="plus" variant="outline" onPress={() => setAddingRole(true)} />
+            <Button
+              label={t('profile.add')}
+              icon="plus"
+              variant="outline"
+              onPress={() => setAddingRole(true)}
+            />
           </View>
 
           <View style={{ gap: space[3], marginTop: space[4] }}>
             <TextField
-              label="Target roles"
+              label={t('profile.interests.targetRoles')}
               value={draft.targetRoles}
-              placeholder="e.g. Assistant professor (TT) · Research scientist"
+              placeholder={t('profile.interests.targetRolesPlaceholder')}
               onChangeText={set('targetRoles')}
             />
             <TextField
-              label="Preferred regions"
+              label={t('profile.interests.regions')}
               value={draft.regions}
-              placeholder="e.g. Texas · remote"
+              placeholder={t('profile.interests.regionsPlaceholder')}
               onChangeText={set('regions')}
             />
           </View>
 
           <View style={{ marginTop: space[2] }}>
             <SettingRow
-              label="Include academia postings"
+              label={t('profile.interests.academia')}
               control={
                 <Toggle
                   value={includeAcademia}
                   onValueChange={(v) => update({ includeAcademia: v })}
-                  label="Include academia postings"
+                  label={t('profile.interests.academia')}
                 />
               }
             />
             <SettingRow
-              label="Include industry postings"
+              label={t('profile.interests.industry')}
               control={
                 <Toggle
                   value={includeIndustry}
                   onValueChange={(v) => update({ includeIndustry: v })}
-                  label="Include industry postings"
+                  label={t('profile.interests.industry')}
                 />
               }
             />
@@ -286,24 +293,33 @@ export function ProfileScreen() {
 
         <Panel>
           <PanelTitle
-            hint={`the Vault's ${DOCUMENTS_BUCKET} bucket`}
+            hint={t('profile.documents.hint', { bucket: DOCUMENTS_BUCKET })}
             right={
-              <Button label="Add" icon="plus" variant="outline" onPress={() => setAdding(true)} />
+              <Button
+                label={t('profile.add')}
+                icon="plus"
+                variant="outline"
+                onPress={() => setAdding(true)}
+              />
             }
           >
-            Documents
+            {t('profile.documents.title')}
           </PanelTitle>
 
           {documents.length === 0 ? (
             <EmptyState
               icon="file-text"
-              title="No documents yet"
-              description={`Add your CV and statements — they are filed in the Vault under ${DOCUMENTS_BUCKET}, where the rest of the app can reach them.`}
+              title={t('profile.documents.emptyTitle')}
+              description={t('profile.documents.emptyDescription', { bucket: DOCUMENTS_BUCKET })}
               action={
                 <>
-                  <Button label="Add a document" icon="plus" onPress={() => setAdding(true)} />
                   <Button
-                    label="Open the Vault"
+                    label={t('profile.documents.add')}
+                    icon="plus"
+                    onPress={() => setAdding(true)}
+                  />
+                  <Button
+                    label={t('profile.documents.openVault')}
                     variant="outline"
                     onPress={() =>
                       navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'files' } })
@@ -332,7 +348,10 @@ export function ProfileScreen() {
                       </Txt>
                     </View>
                     <Txt size="xs" tone="muted">
-                      {f.size} · saved {agoLabel(f.savedOn, TODAY)}
+                      {t('profile.documents.meta', {
+                        size: f.size,
+                        ago: domain.ago(f.savedOn, TODAY),
+                      })}
                     </Txt>
                     {f.note ? (
                       <Txt size="xs" tone="muted" numberOfLines={2}>
@@ -355,8 +374,7 @@ export function ProfileScreen() {
           )}
 
           <Txt size="xs" tone="muted" style={{ marginTop: space[3] }}>
-            The same files as the Vault&apos;s Files tool, filtered to {DOCUMENTS_BUCKET}. A record
-            keeps a document&apos;s name, size and type — never its contents.
+            {t('profile.documents.footer', { bucket: DOCUMENTS_BUCKET })}
           </Txt>
         </Panel>
 
@@ -370,11 +388,16 @@ export function ProfileScreen() {
                 false — the profile is stored — and argued against pressing
                 Save. Web corrected the same line. */}
             <Txt size="sm" tone="secondary">
-              Unsaved changes — saving writes them to this phone.
+              {t('profile.unsaved')}
             </Txt>
             <View style={styles.saveRow}>
-              <Button label="Discard" variant="outline" size="md" onPress={() => setDraft(saved)} />
-              <Button label="Save" size="md" onPress={onSave} />
+              <Button
+                label={t('profile.discard')}
+                variant="outline"
+                size="md"
+                onPress={() => setDraft(saved)}
+              />
+              <Button label={t('profile.save')} size="md" onPress={onSave} />
             </View>
           </Panel>
         ) : null}
@@ -387,8 +410,8 @@ export function ProfileScreen() {
               addFile(draft)
               setAdding(false)
               toast({
-                title: 'Document added',
-                description: `Filed in the Vault under ${draft.bucket}. The name, size and type are kept — the file itself is not read.`,
+                title: t('profile.documents.addedTitle'),
+                description: t('profile.documents.addedDescription', { bucket: draft.bucket }),
               })
             }}
           />
@@ -398,21 +421,26 @@ export function ProfileScreen() {
       <Sheet
         open={addingTerm}
         onClose={() => setAddingTerm(false)}
-        title="Add a match term"
-        description="A research area or a phrasing the scout should look for in a posting."
+        title={t('profile.termSheet.title')}
+        description={t('profile.termSheet.description')}
         footer={
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={() => setAddingTerm(false)} />
-            <Button label="Add" size="md" onPress={addTerm} />
+            <Button
+              label={t('shared.cancel')}
+              variant="ghost"
+              size="md"
+              onPress={() => setAddingTerm(false)}
+            />
+            <Button label={t('profile.add')} size="md" onPress={addTerm} />
           </>
         }
       >
         <View style={{ paddingBottom: space[2] }}>
           <TextField
-            label="Match term"
+            label={t('profile.termSheet.label')}
             value={termDraft}
             autoFocus
-            placeholder="e.g. distributed training"
+            placeholder={t('profile.termSheet.placeholder')}
             onChangeText={setTermDraft}
             onSubmitEditing={addTerm}
           />
@@ -422,21 +450,26 @@ export function ProfileScreen() {
       <Sheet
         open={addingRole}
         onClose={() => setAddingRole(false)}
-        title="Add a role tag"
-        description="A kind of role you are tracking. It becomes one of the choices on every application."
+        title={t('profile.roleSheet.title')}
+        description={t('profile.roleSheet.description')}
         footer={
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={() => setAddingRole(false)} />
-            <Button label="Add" size="md" onPress={addRole} />
+            <Button
+              label={t('shared.cancel')}
+              variant="ghost"
+              size="md"
+              onPress={() => setAddingRole(false)}
+            />
+            <Button label={t('profile.add')} size="md" onPress={addRole} />
           </>
         }
       >
         <View style={{ paddingBottom: space[2] }}>
           <TextField
-            label="Role tag"
+            label={t('profile.roleSheet.label')}
             value={roleDraft}
             autoFocus
-            placeholder="e.g. Data scientist"
+            placeholder={t('profile.roleSheet.placeholder')}
             onChangeText={setRoleDraft}
             onSubmitEditing={addRole}
           />

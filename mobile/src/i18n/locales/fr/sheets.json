@@ -1,0 +1,249 @@
+{
+  "common": {
+    "undo": "Annuler",
+    "cancel": "Annuler"
+  },
+  "addFromLink": {
+    "title": "Candidature à partir d’un lien",
+    "description": "Le modèle lit l’offre et remplit le formulaire, et coche ceux de vos mots-clés dont le poste traite clairement. La page est conservée dans le coffre, sous Offres d’emploi, et rien n’est enregistré comme candidature tant que vous ne l’avez pas décidé.",
+    "url": "URL de l’offre d’emploi",
+    "addressOnly": "Utiliser seulement l’adresse",
+    "reading": "Lecture…",
+    "retry": "Réessayer",
+    "submit": "Lire et préremplir",
+    "failed": "La lecture de l’offre a échoué.",
+    "steps": {
+      "reading": "Récupération de la page",
+      "asking": "Lecture",
+      "saving": "Enregistrement de l’offre"
+    },
+    "toast": {
+      "title": "Offre enregistrée et lue",
+      "kept": "{{name}} est dans le coffre et sera rattaché à la candidature quand vous l’enregistrerez.",
+      "gaps_one": "{{count}} champ n’était pas sur la page.",
+      "gaps_other": "{{count}} champs n’étaient pas sur la page.",
+      "tags_one": "{{count}} de vos mots-clés est coché.",
+      "tags_other": "{{count}} de vos mots-clés sont cochés."
+    }
+  },
+  "application": {
+    "newTitle": "Nouvelle candidature",
+    "editTitle": "Modifier {{name}}",
+    "add": "Ajouter la candidature",
+    "save": "Enregistrer les modifications",
+    "checking": "Recherche de doublon…",
+    "noRecord": "Cette fiche a été ouverte sans enregistrement à modifier",
+    "description": {
+      "edit": "Les modifications remplacent les informations actuelles, et l’échéance suit.",
+      "prefilledTagged": "Prérempli à partir de ce que vous avez collé : vérifiez l’employeur, le poste et les mots-clés avant d’enregistrer.",
+      "prefilled": "Prérempli à partir de ce que vous avez collé : vérifiez l’employeur et le poste avant d’enregistrer.",
+      "create": "Suivez un poste auquel vous postulez. Les champs marqués d’un astérisque sont obligatoires."
+    },
+    "errors": {
+      "org": "Indiquez l’employeur : c’est sous lui que l’enregistrement est classé.",
+      "role": "Indiquez le poste, pour que deux candidatures au même endroit restent distinctes.",
+      "roleTag": "Choisissez une étiquette de rôle : le filtre par rôle et les graphiques l’utilisent.",
+      "url": "Ce n’est pas un lien qu’un navigateur peut ouvrir ; ajoutez https://."
+    },
+    "fields": {
+      "org": "Organisation",
+      "orgPlaceholder": "Employeur ou établissement",
+      "role": "Intitulé du poste",
+      "rolePlaceholder": "ex. Analyste de données senior",
+      "roleTag": "Étiquette de rôle",
+      "pickRoleTag": "Choisir une étiquette de rôle",
+      "roleTagDescription": "L’axe qu’utilisent le filtre par rôle et les graphiques.",
+      "stage": "Étape",
+      "deadline": "Échéance",
+      "deadlineHint": "Ajoute une entrée datée au calendrier et à la semaine à venir.",
+      "source": "Source",
+      "sourceNotSet": "Non renseignée",
+      "location": "Lieu",
+      "locationPlaceholder": "Ville, ou À distance",
+      "comp": "Rémunération",
+      "compPlaceholder": "ex. 96 k$ + actions",
+      "url": "URL de l’offre",
+      "postingId": "Référence de l’offre",
+      "postingIdHint": "Le numéro du poste ou de la réquisition, si l’offre en indique un.",
+      "postingIdPlaceholder": "ex. R-2024-0312",
+      "note": "Note",
+      "notePlaceholder": "Ce qu’il reste à faire avant l’envoi.",
+      "keywords": "Mots-clés"
+    },
+    "toast": {
+      "draftDiscarded": "Brouillon abandonné",
+      "changesDiscarded": "Modifications abandonnées",
+      "nothingAdded": "Rien n’a été ajouté. Annuler rétablit le formulaire tel que vous l’avez laissé.",
+      "unchanged": "{{name}} n’a pas changé. Annuler rétablit vos modifications.",
+      "recordUnchanged": "L’enregistrement n’a pas changé. Annuler rétablit vos modifications.",
+      "added": "{{name}} ajoutée",
+      "deadlineOnCalendar": "L’échéance du {{date}} est dans le calendrier.",
+      "noDeadline": "Pas encore d’échéance : ajoutez-en une et elle apparaîtra dans la semaine à venir.",
+      "postingFiled": "L’offre y est rattachée.",
+      "saved": "Modifications enregistrées",
+      "deadlineRemoved": "{{name}} : son échéance a été retirée du calendrier.",
+      "restoreDeadline": "Rétablir l’échéance"
+    },
+    "duplicate": {
+      "title": "Cela ressemble à un poste que vous avez déjà",
+      "modelSame": "Le modèle les a lues comme la même offre.",
+      "modelReading": " (lecture du modèle ; vérifiez ci-dessous).",
+      "existing": "Ce que vous avez déjà",
+      "adding": "Ce que vous ajoutez",
+      "untitled": "Sans titre",
+      "postingId": "Référence de l’offre {{id}}",
+      "openYours": "Ouvrir celle que vous avez",
+      "openExisting": "Ouvrir {{name}}, que vous avez déjà",
+      "tapToOpen": "Touchez pour l’ouvrir, ou continuez et ajoutez celle-ci comme second enregistrement.",
+      "editInstead": "Modifier plutôt",
+      "discard": "Abandonner",
+      "addAnyway": "Ajouter quand même"
+    },
+    "since": {
+      "today": "aujourd’hui",
+      "yesterday": "hier",
+      "daysAgo_one": "il y a {{count}} jour",
+      "daysAgo_other": "il y a {{count}} jours"
+    }
+  },
+  "draft": {
+    "title": "Rédiger un message",
+    "description": {
+      "forApp": "Pour {{name}}. Rien n’est généré ni envoyé : remplissez les blancs, copiez le texte dans votre messagerie, puis marquez-le comme envoyé.",
+      "forItem": "Pour {{name}} · {{item}}. Rien n’est généré ni envoyé : remplissez les blancs, copiez le texte dans votre messagerie, puis marquez-le comme envoyé.",
+      "unlinked": "Lié à aucune candidature : [ROLE] et [DATE] restent vides. Rien n’est généré ni envoyé : remplissez les blancs, copiez le texte dans votre messagerie, puis marquez-le comme envoyé."
+    },
+    "defaultTitle": "Brouillon d’e-mail",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Enregistrer comme extrait",
+    "writeFirst": "Écrivez d’abord quelque chose",
+    "copy": "Copier",
+    "copied": "Copié",
+    "markSent": "Marquer comme envoyé",
+    "openFromReminder": "Ouvrez ceci depuis un rappel pour le cocher",
+    "alreadyTicked": "Déjà coché",
+    "blank": "Brouillon vide",
+    "startFromSnippet": "Partir de l’un de vos extraits d’e-mail",
+    "placeholder": "Écrivez le message, ou choisissez un extrait pour commencer…",
+    "editorLabel": "Brouillon du message",
+    "empty": {
+      "title": "Aucun extrait d’e-mail pour l’instant",
+      "description": "Les extraits étiquetés Email apparaissent ici comme points de départ. Il n’y a rien à charger, mais le brouillon n’a pas besoin d’en partir.",
+      "startBlank": "Partir d’un brouillon vide"
+    },
+    "status": {
+      "empty": "Rien de rédigé pour l’instant.",
+      "noBlanks": "Plus aucun blanc.",
+      "blanksLeft_one": "{{count}} blanc restant : {{names}}",
+      "blanksLeft_other": "{{count}} blancs restants : {{names}}",
+      "nameNever": " · le nom d’une personne n’est jamais rempli à votre place"
+    },
+    "picker": {
+      "title": "Partir de",
+      "description": "Vos propres extraits d’e-mail, avec ce que savent déjà les enregistrements rempli."
+    },
+    "toast": {
+      "replaced": "Brouillon remplacé",
+      "loaded": "{{title}} chargé.",
+      "blank": "Recommencé à partir d’une page vide.",
+      "saved": "Enregistré dans les extraits",
+      "savedDescription": "{{title}} · étiqueté Email, dans le coffre",
+      "sent": "Marqué comme envoyé",
+      "sentDescription": "{{title}} : coché dans les rappels"
+    }
+  },
+  "stage": {
+    "moveTo": "Passer à {{stage}}",
+    "currently": "{{name}} · actuellement {{stage}}",
+    "nothingElse": "Rien d’autre n’a changé dans l’enregistrement.",
+    "moveWithoutDetails": "Déplacer sans détails",
+    "outcome": "Issue",
+    "submitted": {
+      "date": "Envoyée le",
+      "portal": "URL du portail",
+      "portalHint": "Où se trouve la candidature, pour quand vous devrez relancer.",
+      "reference": "Référence de confirmation",
+      "referencePlaceholder": "ex. 4471-QZ"
+    },
+    "interview": {
+      "date": "Date de l’entretien",
+      "format": "Format",
+      "formatLabel": "Format de l’entretien",
+      "mint": "L’ajouter à la chronologie",
+      "mintDescription": "Crée une entrée d’entretien à cette date, avec un rappel."
+    },
+    "offer": {
+      "respondBy": "Répondre avant le",
+      "package": "Package",
+      "packagePlaceholder": "ex. 112 k$ + 15 k$ de démarrage",
+      "note": "Note",
+      "notePlaceholder": "Ce qui est encore en négociation",
+      "mint": "Ajouter l’échéance à la chronologie",
+      "mintDescription": "Une date limite de réponse que rien ne surveille est la seule échéance que vous ne pouvez pas vous permettre de manquer."
+    },
+    "keepOffer": {
+      "label": "Conserver les détails de l’offre",
+      "description": "Répondre avant le {{date}}. Désactivez pour les effacer.",
+      "descriptionWithComp": "Répondre avant le {{date}} · {{comp}}. Désactivez pour les effacer."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Nouveau rappel",
+      "editReminder": "Modifier le rappel",
+      "newEvent": "Nouvel événement",
+      "editEvent": "Modifier l’événement"
+    },
+    "description": "Un seul enregistrement dans les deux cas : il apparaît dans le calendrier à la date indiquée, et dans la liste de rappels du coffre tant que l’interrupteur est activé.",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "addReminder": "Ajouter le rappel",
+    "addEvent": "Ajouter l’événement",
+    "reminderFallback": "Rappel",
+    "duration": {
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} heure",
+      "hours_other": "{{count}} heures"
+    },
+    "fields": {
+      "title": "Titre",
+      "reminderPlaceholder": "ex. Relancer le recruteur",
+      "eventPlaceholder": "ex. Zoom avec le comité",
+      "remind": "Afficher dans les rappels",
+      "remindOn": "Listé dans le coffre avec une case à cocher, et dans le calendrier à sa date.",
+      "remindOff": "Dans le calendrier à sa date uniquement, sans case à cocher dans le coffre.",
+      "date": "Date",
+      "allDay": "Toute la journée",
+      "allDayDescription": "Désactivé, il a une heure de début et une durée.",
+      "startTime": "Heure de début",
+      "length": "Durée",
+      "applicationHint": "Les relie, pour que chaque candidature liste ceci et que ceci renvoie à chacune d’elles.",
+      "kind": "Type",
+      "kindFollowUp": "Une relance compte aussi comme due sur Aujourd’hui, jusqu’à ce que vous la cochiez.",
+      "kindHint": "L’icône qu’il porte dans le calendrier et dans la liste de rappels.",
+      "detail": "Détail",
+      "detailHint": "Une ligne de contexte, affichée sous le titre.",
+      "note": "Note",
+      "noteHint": "Vos notes personnelles. Gardées à part du détail, pour qu’une modification ne les écrase jamais.",
+      "keywords": "Mots-clés",
+      "keywordsHint": "Partagés avec les candidatures, fichiers et liens : filtrer par l’un les retrouve tous."
+    },
+    "more": {
+      "title": "Plus de détails",
+      "note": "note",
+      "keywords": "mots-clés",
+      "empty": "note, mots-clés"
+    },
+    "toast": {
+      "added": "{{title}} ajouté",
+      "updated": "{{title}} mis à jour",
+      "inReminders": "dans les rappels",
+      "calendarOnly": "dans le calendrier uniquement",
+      "owed": "et dû cette semaine",
+      "deleted": "{{title}} supprimé",
+      "goneFromBoth": "Retiré de la liste de rappels et du calendrier.",
+      "goneFromCalendar": "Retiré du calendrier."
+    }
+  }
+}

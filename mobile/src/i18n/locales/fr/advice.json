@@ -1,0 +1,157 @@
+{
+  "days_one": "{{count}} jour",
+  "days_many": "{{count}} jours",
+  "days_other": "{{count}} jours",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Mettez davantage d’efforts sur {{label}}.",
+      "because": {
+        "source": {
+          "replied_one": "{{count}} sur {{of}} a reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "replied_many": "{{count}} sur {{of}} ont reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "replied_other": "{{count}} sur {{of}} ont reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "interview_one": "{{count}} sur {{of}} a obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "interview_many": "{{count}} sur {{of}} ont obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "interview_other": "{{count}} sur {{of}} ont obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance."
+        },
+        "role": {
+          "replied_one": "{{count}} sur {{of}} a reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "replied_many": "{{count}} sur {{of}} ont reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "replied_other": "{{count}} sur {{of}} ont reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "interview_one": "{{count}} sur {{of}} a obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "interview_many": "{{count}} sur {{of}} ont obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "interview_other": "{{count}} sur {{of}} ont obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste."
+        }
+      }
+    },
+    "late": {
+      "headline_one": "Traitez {{count}} relance en retard.",
+      "headline_many": "Traitez {{count}} relances en retard.",
+      "headline_other": "Traitez {{count}} relances en retard.",
+      "because": "Ce sont des relances que vous avez déjà jugées utiles, sur des candidatures qu’un employeur a déjà vues. Rien d’autre dans cette liste n’est aussi près d’être fait."
+    },
+    "silent": {
+      "headline_one": "Relancez {{count}} candidature restée sans nouvelles.",
+      "headline_many": "Relancez {{count}} candidatures restées sans nouvelles.",
+      "headline_other": "Relancez {{count}} candidatures restées sans nouvelles.",
+      "because_one": "Les réponses vous arrivent en général en {{days}}, et celle-ci a dépassé ce délai sans rien en retour. C’est votre propre chiffre, pas une règle générale.",
+      "because_many": "Les réponses vous arrivent en général en {{days}}, et celles-ci ont dépassé ce délai sans rien en retour. C’est votre propre chiffre, pas une règle générale.",
+      "because_other": "Les réponses vous arrivent en général en {{days}}, et celles-ci ont dépassé ce délai sans rien en retour. C’est votre propre chiffre, pas une règle générale."
+    },
+    "stale": {
+      "headline_one": "Notez ce qui s’est passé pour {{count}} candidature.",
+      "headline_many": "Notez ce qui s’est passé pour {{count}} candidatures.",
+      "headline_other": "Notez ce qui s’est passé pour {{count}} candidatures.",
+      "because_one": "Rien n’y a été noté depuis quinze jours. Chaque taux de cette page ne vaut que ce qui a été noté.",
+      "because_many": "Rien n’y a été noté depuis quinze jours. Chaque taux de cette page ne vaut que ce qui a été noté.",
+      "because_other": "Rien n’y a été noté depuis quinze jours. Chaque taux de cette page ne vaut que ce qui a été noté."
+    },
+    "drafts": {
+      "headlineSingle": "Terminez le brouillon ou abandonnez-le.",
+      "headline_one": "Terminez le plus avancé des {{count}} brouillons, ou abandonnez-les.",
+      "headline_many": "Terminez le plus avancé des {{count}} brouillons, ou abandonnez-les.",
+      "headline_other": "Terminez le plus avancé des {{count}} brouillons, ou abandonnez-les.",
+      "because_one": "Un brouillon ne sert à rien tant qu’il n’est pas envoyé. Le plus ancien est ouvert depuis {{count}} jour.",
+      "because_many": "Un brouillon ne sert à rien tant qu’il n’est pas envoyé. Le plus ancien est ouvert depuis {{count}} jours.",
+      "because_other": "Un brouillon ne sert à rien tant qu’il n’est pas envoyé. Le plus ancien est ouvert depuis {{count}} jours."
+    },
+    "background": {
+      "headline": "Laissez jojo lire votre CV.",
+      "because": "Rien n’est enregistré sur votre propre parcours, donc aucune candidature ne peut être comparée à ce que demande une offre. C’est un document et une confirmation."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Retravaillez le premier paragraphe avant d’envoyer la prochaine.",
+        "because": "C’est sur les réponses que cette recherche perd le plus face à une recherche type. {{got}} sur {{of}} ({{rate}} %), contre {{typical}} % pour une recherche type — un chiffre rond choisi par jojo pour comparer, pas mesuré sur qui que ce soit."
+      },
+      "interviews": {
+        "headline": "Rendez l’adéquation évidente dès les trois premières lignes.",
+        "because": "Les réponses qui s’arrêtent avant un entretien sont le plus grand écart ici — l’intérêt est là, mais l’argumentaire ne porte pas. {{got}} sur {{of}} ({{rate}} %), contre {{typical}} % pour une recherche type — un chiffre rond choisi par jojo pour comparer, pas mesuré sur qui que ce soit."
+      }
+    },
+    "clear": {
+      "headline": "Rien à relancer ici.",
+      "because_one": "Toutes les relances sont à jour, rien n’est resté sans nouvelles et aucun brouillon n’attend. {{count}} candidature est envoyée.",
+      "because_many": "Toutes les relances sont à jour, rien n’est resté sans nouvelles et aucun brouillon n’attend. {{count}} candidatures sont envoyées.",
+      "because_other": "Toutes les relances sont à jour, rien n’est resté sans nouvelles et aucun brouillon n’attend. {{count}} candidatures sont envoyées."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Envoyées",
+      "replies": "Réponses",
+      "interviews": "Entretiens",
+      "referrals": "Recommandations",
+      "followUps": "Relances",
+      "keptMoving": "Suivi actif"
+    },
+    "basis": {
+      "sent_one": "{{count}} sur {{of}} sortie du brouillon",
+      "sent_many": "{{count}} sur {{of}} sorties du brouillon",
+      "sent_other": "{{count}} sur {{of}} sorties du brouillon",
+      "replies_one": "{{count}} sur {{of}} a répondu",
+      "replies_many": "{{count}} sur {{of}} ont répondu",
+      "replies_other": "{{count}} sur {{of}} ont répondu",
+      "interviews_one": "{{count}} sur {{of}} a obtenu un entretien",
+      "interviews_many": "{{count}} sur {{of}} ont obtenu un entretien",
+      "interviews_other": "{{count}} sur {{of}} ont obtenu un entretien",
+      "referrals_one": "{{count}} sur {{of}} est venue d’une recommandation",
+      "referrals_many": "{{count}} sur {{of}} sont venues d’une recommandation",
+      "referrals_other": "{{count}} sur {{of}} sont venues d’une recommandation",
+      "followUpsNone": "rien en cours",
+      "followUps_one": "{{count}} relance en retard sur {{of}} en cours",
+      "followUps_many": "{{count}} relances en retard sur {{of}} en cours",
+      "followUps_other": "{{count}} relances en retard sur {{of}} en cours",
+      "keptMovingNone": "rien d’actif",
+      "keptMoving_one": "{{count}} sur {{of}} suivie ces quinze derniers jours",
+      "keptMoving_many": "{{count}} sur {{of}} suivies ces quinze derniers jours",
+      "keptMoving_other": "{{count}} sur {{of}} suivies ces quinze derniers jours"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Rien n’attend en brouillon. Mieux vaut préserver le soin apporté à chacune que d’en ajouter.",
+        "some_one": "{{count}} candidature est encore en brouillon. Un brouillon ne sert à rien tant qu’il n’est pas envoyé, et le plus avancé est le moins coûteux à terminer.",
+        "some_many": "{{count}} candidatures sont encore en brouillon. Un brouillon ne sert à rien tant qu’il n’est pas envoyé, et le plus avancé est le moins coûteux à terminer.",
+        "some_other": "{{count}} candidatures sont encore en brouillon. Un brouillon ne sert à rien tant qu’il n’est pas envoyé, et le plus avancé est le moins coûteux à terminer."
+      },
+      "replies": {
+        "nothingSent": "Rien n’est encore parti, il n’y a donc aucune réponse à mesurer.",
+        "none_one": "{{count}} candidature envoyée, et aucune réponse. C’est l’étape à travailler avant d’en envoyer d’autres — adapter le premier paragraphe à chaque offre est ce qui la fait le plus progresser.",
+        "none_many": "Aucune des {{count}} candidatures envoyées n’a reçu de réponse. C’est l’étape à travailler avant d’en envoyer d’autres — adapter le premier paragraphe à chaque offre est ce qui la fait le plus progresser.",
+        "none_other": "Aucune des {{count}} candidatures envoyées n’a reçu de réponse. C’est l’étape à travailler avant d’en envoyer d’autres — adapter le premier paragraphe à chaque offre est ce qui la fait le plus progresser.",
+        "all": "Chaque candidature envoyée a reçu une réponse. Quoi que fasse le premier paragraphe, continuez ainsi.",
+        "some_one": "{{count}} sur {{of}} a reçu une réponse. Adapter le premier paragraphe à chaque offre est ce qui fait le plus progresser ce chiffre.",
+        "some_many": "{{count}} sur {{of}} ont reçu une réponse. Adapter le premier paragraphe à chaque offre est ce qui fait le plus progresser ce chiffre.",
+        "some_other": "{{count}} sur {{of}} ont reçu une réponse. Adapter le premier paragraphe à chaque offre est ce qui fait le plus progresser ce chiffre."
+      },
+      "interviews": {
+        "noReply": "Aucune réponse n’est encore arrivée, donc rien n’a pu s’arrêter avant un entretien.",
+        "none_one": "{{count}} réponse est arrivée sans devenir un entretien. Cet écart vient souvent d’une adéquation qui n’est pas évidente dès le premier paragraphe.",
+        "none_many": "{{count}} réponses sont arrivées et aucune n’est devenue un entretien. Cet écart vient souvent d’une adéquation qui n’est pas évidente dès le premier paragraphe.",
+        "none_other": "{{count}} réponses sont arrivées et aucune n’est devenue un entretien. Cet écart vient souvent d’une adéquation qui n’est pas évidente dès le premier paragraphe.",
+        "some_one": "Entretiens obtenus : {{interviewed}} sur {{count}} réponse. Des réponses qui s’arrêtent avant signifient souvent que l’adéquation n’apparaît pas assez tôt.",
+        "some_many": "Entretiens obtenus : {{interviewed}} sur {{count}} réponses. Des réponses qui s’arrêtent avant signifient souvent que l’adéquation n’apparaît pas assez tôt.",
+        "some_other": "Entretiens obtenus : {{interviewed}} sur {{count}} réponses. Des réponses qui s’arrêtent avant signifient souvent que l’adéquation n’apparaît pas assez tôt."
+      },
+      "referrals": {
+        "none": "Aucune n’est venue d’une mise en relation. Une candidature recommandée a plusieurs fois plus de chances d’obtenir une réponse : une seule vaut plusieurs envois à froid.",
+        "some_one": "{{count}} sur {{of}} est venue d’une mise en relation. C’est ce qui rapporte le plus dans cette liste, et ce qui se démultiplie le moins — d’où l’intérêt de demander avant le prochain envoi à froid plutôt qu’après.",
+        "some_many": "{{count}} sur {{of}} sont venues d’une mise en relation. C’est ce qui rapporte le plus dans cette liste, et ce qui se démultiplie le moins — d’où l’intérêt de demander avant le prochain envoi à froid plutôt qu’après.",
+        "some_other": "{{count}} sur {{of}} sont venues d’une mise en relation. C’est ce qui rapporte le plus dans cette liste, et ce qui se démultiplie le moins — d’où l’intérêt de demander avant le prochain envoi à froid plutôt qu’après."
+      },
+      "followUps": {
+        "none": "Rien n’est en retard. Une relance une semaine environ après l’envoi est généralement celle qui porte.",
+        "late_one": "{{count}} relance est en retard. La traiter rapporte en général plus vite que de postuler ailleurs.",
+        "late_many": "{{count}} relances sont en retard. Les traiter rapporte en général plus vite que de postuler ailleurs.",
+        "late_other": "{{count}} relances sont en retard. Les traiter rapporte en général plus vite que de postuler ailleurs."
+      },
+      "keptMoving": {
+        "none": "Rien n’est resté sans nouvelles. Noter ce qui se passe au fur et à mesure, c’est ce qui garde ces chiffres honnêtes.",
+        "stale_one": "{{count}} candidature active n’a eu aucune activité depuis quinze jours. Une courte relance coûte moins que de repartir ailleurs.",
+        "stale_many": "{{count}} candidatures actives n’ont eu aucune activité depuis quinze jours. Une courte relance coûte moins que de repartir ailleurs.",
+        "stale_other": "{{count}} candidatures actives n’ont eu aucune activité depuis quinze jours. Une courte relance coûte moins que de repartir ailleurs."
+      }
+    }
+  }
+}

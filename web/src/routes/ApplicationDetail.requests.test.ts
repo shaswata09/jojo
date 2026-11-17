@@ -16,6 +16,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import applicationsEn from '@/i18n/locales/en/applications.json'
 import detail from './ApplicationDetail.tsx?raw'
 import checklist from '@/components/applications/detail/ChecklistPanel.tsx?raw'
 import stageDates from '@/components/applications/detail/StageDatesPanel.tsx?raw'
@@ -40,7 +41,8 @@ describe('Q262 — a checklist card per application', () => {
     expect(checklist).toMatch(/<Button size="sm" variant="outline" onClick=\{c\.draft\}>/)
     expect(checklist).toContain('const result = c.add(text)')
     expect(checklist).toContain('onClick={() => c.tick(item.id, item.doneOn === undefined)}')
-    expect(checklist).toMatch(/onSelect=\{\(\) => onDelete\(item\)\}>\s*Delete/)
+    expect(checklist).toMatch(/onSelect=\{\(\) => onDelete\(item\)\}>\s*\{t\('common\.delete'\)\}/)
+    expect(applicationsEn.common.delete).toBe('Delete')
     expect(checklist).toContain('const done = c.remove(item.id)')
   })
 })
@@ -51,11 +53,17 @@ describe('Q264 — the date of each stage is shown and can be corrected', () => 
   })
 
   it('shows each stage’s date, submitted included', () => {
-    expect(stageDates).toMatch(/const on = stageDateOf\(a, stage\)[\s\S]*?<Input\s+type="date"\s+value=\{on \?\? ''\}/)
+    // Through a draft (web-2): the field shows the stored date until somebody
+    // types, and holds what they type rather than snapping back to it.
+    expect(stageDates).toMatch(
+      /const on = stageDateOf\(a, stage\)[\s\S]*?<StageDateInput\s+stored=\{on\}/,
+    )
+    expect(stageDates).toContain("const [draft, setDraft] = useState(stored ?? '')")
+    expect(stageDates).toMatch(/<Input\s+type="date"\s+value=\{draft\}/)
   })
 
   it('writes a typed date through the rule that overwrites', () => {
-    expect(stageDates).toContain('onChange={(event) => commit(stage, event.target.value)}')
+    expect(stageDates).toContain('onCommit={(typed) => commit(stage, typed)}')
     expect(stageDates).toContain('update(a.id, setStageDate(a, stage, on))')
   })
 })

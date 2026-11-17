@@ -12,6 +12,7 @@ import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { failed, send } from '@/lib/local-service'
 import type { Sent } from '@/lib/local-service'
 import { readDocument } from '@/lib/capture-bridge'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * Reading a document, through MarkItDown running on this machine.
@@ -103,7 +104,7 @@ async function handshake(endpoint: string, signal?: AbortSignal): Promise<Conver
 export async function testReader(endpoint: string): Promise<ConvertResult> {
   shookHands = null
   if (endpoint.trim().length === 0) {
-    return { ok: false, reason: 'No address yet. See Settings.' }
+    return { ok: false, reason: i18next.t('messages:read.noAddress') }
   }
   const opened = await sendToReader(initializeRequest(endpoint), endpoint)
   if (failed(opened)) return { ok: false, reason: opened.failed.reason }
@@ -147,7 +148,10 @@ export async function convertFile(
       ok: false,
       // The number, so the person can see how far over it is rather than
       // guessing at a limit nobody stated.
-      reason: `That document is ${String(Math.round(file.size / 1024 / 1024))} MB and the reader takes up to ${String(MAX_BYTES / 1024 / 1024)} MB.`,
+      reason: i18next.t('messages:read.tooLarge', {
+        size: String(Math.round(file.size / 1024 / 1024)),
+        max: String(MAX_BYTES / 1024 / 1024),
+      }),
     }
   }
   const ready = await handshake(endpoint, signal)
@@ -172,7 +176,7 @@ export async function convertFile(
     return { ok: false, reason: answer.failed.reason }
   }
   const out = readConvertResponse(answer, endpoint)
-    /*
+  /*
    * The WHOLE document, untrimmed. The cut belongs to `vault.file.read`, which
    * is the only caller that can offer a way to read past it — trimming here made
    * the rest unreachable by anything, which is how a three-page CV became one

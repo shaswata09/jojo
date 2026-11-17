@@ -31,12 +31,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { createBackupReader } from '@jojo/service/core/backup-stream'
-import {
-  describeBackup,
-  replacesClause,
-  type BackupRead,
-  type RestorePlan,
-} from '@jojo/service/core/backup'
+import { type BackupRead, type RestorePlan } from '@jojo/service/core/backup'
 import { decodeAddress, formatAddress, type DialAddress } from '@jojo/service/core/dial'
 import { runPull, type PullFailure } from '@jojo/service/core/handoff-pull'
 import type { SessionKeys } from '@jojo/service/core/pairing'
@@ -53,11 +48,14 @@ import { report } from '@/lib/analytics'
 import { reportError } from '@/lib/report-error'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { markRestoredFromBackup } from '@/lib/backup'
-import { DIAL_ADVICE, UNEXPECTED_ADVICE } from '@/lib/handoff-send'
+import { dialAdvice, unexpectedAdvice } from '@/lib/handoff-send'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 import {
-  HANDOFF_ADVICE,
   fetchPairingResponse,
+  handoffAdvice,
   pullChunk,
+  tellOutcome,
   type HandoffFailure,
   type HandoffResult,
 } from '@/lib/handoff-client'
@@ -78,17 +76,18 @@ export type PullStage =
   /** Stopped, with a reason. Nothing on this computer changed. */
   | 'failed'
 
-/** What to say when a pull stops for a reason of its own. */
-export const PULL_ADVICE: Record<Exclude<PullFailure, 'pull/cancelled'>, string> = {
-  'pull/forged':
-    'Part of what arrived did not come from the phone you paired with, so jojo threw all of it away. Nothing on this computer has changed — show a new code and try again.',
-  'pull/oversized':
-    'Your phone sent more than jojo will take in one go, so it stopped reading. Nothing on this computer has changed.',
+/** Where each pull failure's sentence sits in the catalog, under `advice.pull`. */
+const PULL_ADVICE_KEY: Record<Exclude<PullFailure, 'pull/cancelled'>, string> = {
+  'pull/forged': 'forged',
+  'pull/oversized': 'oversized',
 }
 
+/** What to say when a pull stops for a reason of its own. */
+export const pullAdvice = (failure: Exclude<PullFailure, 'pull/cancelled'>): string =>
+  i18next.t(`transfer:advice.pull.${PULL_ADVICE_KEY[failure]}`)
+
 /** Said when the phone's answer does not carry its proof. */
-export const UNPROVEN_ADVICE =
-  'That device could not prove it read the code on this screen. Show a new code and scan it again.'
+export const unprovenAdvice = (): string => i18next.t('transfer:advice.unproven')
 
 /**
  * The phone's bytes as a restore plan, through the reader a backup file uses.
@@ -107,8 +106,11 @@ export function readPulled(payload: Uint8Array, slice = 1024 * 1024): BackupRead
   return reader.end()
 }
 
+/** The phone a pull came from, kept to tell it what the person here decided. */
+export type PulledFrom = { address: DialAddress; token: string; keys: SessionKeys }
+
 export type PullRun =
-  | { ok: true; plan: RestorePlan }
+  | { ok: true; plan: RestorePlan; from: PulledFrom }
   | { ok: false; problem: string; answered: boolean }
   /** The person walked away. There is nothing to say. */
   | null
@@ -134,6 +136,7 @@ export async function pullFromPhone({
   onBytes,
   cancelled = () => false,
   signal,
+  tell = tellOutcome,
 }: {
   code: string
   /** The code on screen, or every path the phone may hold, newest first (`PairingSession.tokens`). */
@@ -157,9 +160,11 @@ export async function pullFromPhone({
   onTarget?: (target: string) => void
   onBytes?: (bytes: number) => void
   cancelled?: () => boolean
+  /** Tells the phone what became of its records — see `tellOutcome`. */
+  tell?: typeof tellOutcome
 }): Promise<PullRun> {
   const read = decodeAddress(code)
-  if (!read.ok) return { ok: false, problem: DIAL_ADVICE[read.error], answered: false }
+  if (!read.ok) return { ok: false, problem: dialAdvice(read.error), answered: false }
   const address = read.value
   onTarget?.(formatAddress(address))
 
@@ -175,12 +180,12 @@ export async function pullFromPhone({
   }
   if (!response.ok) {
     if (response.error === 'handoff/cancelled' || cancelled()) return null
-    return { ok: false, problem: HANDOFF_ADVICE[response.error], answered: false }
+    return { ok: false, problem: handoffAdvice(response.error), answered: false }
   }
 
   // The proof. Nothing below runs for a phone that did not read this screen.
   const keys = await complete(response.value, path)
-  if (keys === null) return { ok: false, problem: UNPROVEN_ADVICE, answered: true }
+  if (keys === null) return { ok: false, problem: unprovenAdvice(), answered: true }
   if (cancelled()) return null
 
   onStage?.('receiving')
@@ -196,8 +201,8 @@ export async function pullFromPhone({
       return null
     const problem =
       pulled.error === 'pull/forged' || pulled.error === 'pull/oversized'
-        ? PULL_ADVICE[pulled.error]
-        : HANDOFF_ADVICE[pulled.error]
+        ? pullAdvice(pulled.error)
+        : handoffAdvice(pulled.error)
     return { ok: false, problem, answered: true }
   }
   // Walked away while the last chunk was in flight: nothing to ask about.
@@ -205,13 +210,15 @@ export async function pullFromPhone({
 
   const plan = readPulled(pulled.payload)
   if (!plan.ok) {
+    // The phone is waiting to hear; nothing was taken, so it stamps nothing.
+    void tell(address, path, secrets, keys, 'failed')
     return {
       ok: false,
-      problem: `What your phone sent cannot be restored: ${plan.error.message}. Nothing on this computer has changed.`,
+      problem: i18next.t('transfer:advice.pull.unrestorable', { reason: plan.error.message }),
       answered: true,
     }
   }
-  return { ok: true, plan: plan.value }
+  return { ok: true, plan: plan.value, from: { address, token: path, keys } }
 }
 
 /**
@@ -229,9 +236,12 @@ export function pullConfirmCopy(plan: RestorePlan): {
   confirm: string
 } {
   return {
-    title: 'Replace everything with what your phone sent?',
-    description: `Your phone sent ${describeBackup(plan)}. ${replacesClause(plan, 'you have now')}, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`,
-    confirm: 'Replace everything',
+    title: i18next.t('transfer:pullConfirm.title'),
+    description: i18next.t('transfer:pullConfirm.description', {
+      contents: domain.backup(plan),
+      replaces: domain.replaces(plan, 'computer'),
+    }),
+    confirm: i18next.t('transfer:pullConfirm.confirm'),
   }
 }
 
@@ -242,8 +252,9 @@ export function pullConfirmCopy(plan: RestorePlan): {
  * file, with the same document store. What is added is the handover stamp,
  * and only on success: this WAS a handover from another device, which a file
  * restore is not, and it is what lets this page say how far the two devices
- * have drifted since. The phone stamps its own when it hands the last chunk
- * over. `restore-received.ts` does the same on the phone, for the same reason.
+ * have drifted since. The phone stamps its own once it is TOLD the records
+ * were taken (`tellOutcome`, from the hook below) — not when the last chunk
+ * goes. `restore-received.ts` does the same on the phone, for the same reason.
  */
 export async function restoreFromPhone(
   repo: Repository,
@@ -318,6 +329,17 @@ export function useHandoffPull({
   const run = useRef<AbortController | null>(null)
   /** The answer to the current plan. A ref: both handlers fire in one event. */
   const decision = useRef(createDecision())
+  /** The phone the plan came from, which is waiting to hear what happens to it. */
+  const from = useRef<PulledFrom | null>(null)
+  /** Tells that phone, once — fire and forget: the restore here does not wait on it. */
+  const tell = useCallback(
+    (outcome: 'applied' | 'declined' | 'failed') => {
+      const phone = from.current
+      from.current = null
+      if (phone !== null) void tellOutcome(phone.address, phone.token, secrets, phone.keys, outcome)
+    },
+    [secrets],
+  )
 
   const start = useCallback(
     async (code: string, tokens: readonly string[]) => {
@@ -353,12 +375,13 @@ export function useHandoffPull({
           return
         }
         decision.current = createDecision()
+        from.current = pulled.from
         setPlan(pulled.plan)
         setStage('confirming')
       } catch (thrown) {
         if (cancelled.current) return
         reportError('transfer', thrown)
-        setProblem(UNEXPECTED_ADVICE)
+        setProblem(unexpectedAdvice())
         setStage('failed')
       }
     },
@@ -371,6 +394,7 @@ export function useHandoffPull({
     setPlan(null)
     setStage('restoring')
     const done = await restoreFromPhone(repo, blobs, staged, new Date().toISOString())
+    tell(done.ok ? 'applied' : 'failed')
     if (!done.ok) {
       setProblem(done.message)
       setStage('failed')
@@ -386,22 +410,25 @@ export function useHandoffPull({
       skipped: done.skipped,
     })
     setStage('done')
-  }, [plan, repo, blobs])
+  }, [plan, repo, blobs, tell])
 
   const decline = useCallback(() => {
     if (!decision.current.take()) return
+    tell('declined')
     setPlan(null)
-    setProblem('Nothing was changed. What your phone sent has been thrown away.')
+    setProblem(i18next.t('transfer:advice.pull.declined'))
     setStage('failed')
-  }, [])
+  }, [tell])
 
   const cancel = useCallback(() => {
+    // Walking away from the confirmation is a no as far as the phone is concerned.
+    tell('declined')
     run.current?.abort()
     run.current = null
     setPlan(null)
     setStage('idle')
     setBytes(0)
-  }, [])
+  }, [tell])
 
   return {
     stage,

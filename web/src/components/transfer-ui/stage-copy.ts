@@ -15,6 +15,7 @@
  * which is the commonest case and not the rule.
  */
 
+import { i18next } from '@/i18n/i18n'
 import type { SendStage } from '@/lib/handoff-send'
 import type { PullStage } from '@/lib/handoff-pull'
 import type { RunStage } from '@/components/transfer-ui/send-cycle'
@@ -24,66 +25,32 @@ export type TransferRole = 'send' | 'receive'
 export type StageCopy = { title: string; body: string }
 
 /** One sentence both directions end their opening card with. */
-export const SAME_NETWORK =
-  'Both devices need to be on the same local network — the records go straight between them, with no server and no relay.'
+export const sameNetwork = (): string => i18next.t('transfer:stage.sameNetwork')
 
-const SEND: Record<SendStage, StageCopy> = {
-  idle: {
-    title: 'Waiting for the other device',
-    body: `Open jojo on your phone, choose Transfer, then Receive from a computer, and point its camera at the pulsing pattern of light here. The key is carried by the light itself — reading it agrees an encryption key between the two devices, and nothing is broadcast to do it. ${SAME_NETWORK}`,
-  },
-  connecting: {
-    title: 'Reaching your phone',
-    body: 'Asking the address you typed for its half of the handshake. Nothing has been sent yet.',
-  },
-  packing: {
-    title: 'Gathering your records',
-    body: 'Reading everything in the list below out of this device. Still nothing on the network.',
-  },
-  sending: {
-    title: 'Moving your records',
-    body: 'Sealed chunks, straight to your phone over the local network. Progress is beside the code you typed.',
-  },
-  done: {
-    title: 'Everything moved',
-    body: 'Your phone now holds the records below. Nothing was removed from this device — a transfer is a copy.',
-  },
-  failed: {
-    title: 'The transfer stopped',
-    body: 'Nothing on this device has changed. What went wrong is written beside the code you typed.',
-  },
-}
+/** The stages each role has words for — the keys under `stage.<role>` in the catalog. */
+const SEND: ReadonlySet<SendStage> = new Set<SendStage>([
+  'idle',
+  'connecting',
+  'packing',
+  'sending',
+  'done',
+  'failed',
+])
 
-const RECEIVE: Record<PullStage, StageCopy> = {
-  idle: {
-    title: 'Waiting for your phone',
-    body: `Open jojo on your phone, choose Transfer, then Send to a computer, and point its camera at the pulsing pattern of light here. Your phone then shows a short code to type on the right. ${SAME_NETWORK}`,
-  },
-  connecting: {
-    title: 'Reaching your phone',
-    body: 'Asking the address you typed for its half of the handshake. Nothing has been received yet.',
-  },
-  receiving: {
-    title: "Receiving your phone's records",
-    body: 'Sealed chunks, straight from your phone over the local network. Nothing on this computer changes until you agree to it.',
-  },
-  confirming: {
-    title: 'Everything arrived',
-    body: "Your phone's records arrived and checked out. Nothing here has changed yet — say whether they should replace what is on this computer.",
-  },
-  restoring: {
-    title: 'Replacing the records here',
-    body: 'Writing what your phone sent over what was on this computer.',
-  },
-  done: {
-    title: 'Everything moved',
-    body: "This computer now holds your phone's records. Nothing was removed from the phone — a transfer is a copy.",
-  },
-  failed: {
-    title: 'The transfer stopped',
-    body: 'Nothing on this computer has changed. What went wrong is written beside the code you typed.',
-  },
-}
+const RECEIVE: ReadonlySet<PullStage> = new Set<PullStage>([
+  'idle',
+  'connecting',
+  'receiving',
+  'confirming',
+  'restoring',
+  'done',
+  'failed',
+])
+
+const copyOf = (role: TransferRole, stage: RunStage): StageCopy => ({
+  title: i18next.t(`transfer:stage.${role}.${stage}.title`),
+  body: i18next.t(`transfer:stage.${role}.${stage}.body`, { sameNetwork: sameNetwork() }),
+})
 
 /**
  * The card's words for a role and a stage.
@@ -93,6 +60,6 @@ const RECEIVE: Record<PullStage, StageCopy> = {
  * back to that role's waiting card rather than to the other direction's words.
  */
 export function stageCopy(role: TransferRole, stage: RunStage): StageCopy {
-  if (role === 'send') return SEND[stage as SendStage] ?? SEND.idle
-  return RECEIVE[stage as PullStage] ?? RECEIVE.idle
+  if (role === 'send') return copyOf('send', SEND.has(stage as SendStage) ? stage : 'idle')
+  return copyOf('receive', RECEIVE.has(stage as PullStage) ? stage : 'idle')
 }

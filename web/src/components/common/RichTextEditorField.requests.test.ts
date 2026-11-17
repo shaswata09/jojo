@@ -6,6 +6,7 @@ import transitionFields from '@/components/applications/dialog/TransitionFields.
 import itemForm from '@/components/timeline/dialog/ItemForm.tsx?raw'
 import peopleTool from '@/components/vault/PeopleTool.tsx?raw'
 import snippetEditor from '@/components/vault/snippets/SnippetEditor.tsx?raw'
+import vaultEn from '@/i18n/locales/en/vault.json'
 
 /**
  * Q268 — anywhere there is a text edit, the person can use size, colour, bold,
@@ -72,8 +73,10 @@ describe('every form’s Note is the rich note field (Q268)', () => {
     ['a person', peopleTool],
   ])('%s', (_name, src) => {
     const code = strip(src)
-    expect(code).not.toMatch(/<TextareaField\s+label="Note"/)
-    expect(code).toMatch(/<RichNoteField\s+label="Note"/)
+    // The label is "Note", in source or as a catalog key with a `note` segment.
+    const note = String.raw`label=(?:"Note"|\{t\('[\w:.]*\bnote\b[\w.]*'\)\})`
+    expect(code).not.toMatch(new RegExp(String.raw`<TextareaField\s+` + note))
+    expect(code).toMatch(new RegExp(String.raw`<RichNoteField\s+` + note))
   })
 })
 
@@ -108,6 +111,9 @@ describe('the snippet editor’s hint (Q268)', () => {
   it('no longer says the formatting is thrown away, because it is saved', () => {
     const code = strip(snippetEditor)
     expect(code).not.toMatch(/the formatting buttons do not/)
-    expect(code).toMatch(/hint="Size, colour, bold, italic, underline and strikethrough are saved with the text\./)
+    expect(code).toMatch(/hint=\{t\('snippets\.editor\.text\.hint'\)\}/)
+    const hint = vaultEn.snippets.editor.text.hint
+    expect(hint).not.toMatch(/the formatting buttons do not/)
+    expect(hint).toMatch(/^Size, colour, bold, italic, underline and strikethrough are saved with the text\./)
   })
 })

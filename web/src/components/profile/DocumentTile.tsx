@@ -1,10 +1,11 @@
 import { FileText, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import type { VaultFile } from '@/data/vault'
 import { displayName } from '@/data/seed'
-import { agoLabel } from '@/data/timeline'
 import type { Application } from '@jojo/service/data/seed'
 import { TODAY } from '@/lib/today'
+import { useDomain } from '@/i18n/domain'
 
 /** One document in the Profile's Documents grid: opens on press, deletes from the corner. */
 export function DocumentTile({
@@ -19,6 +20,8 @@ export function DocumentTile({
   onOpen: (id: string) => void
   onDelete: (file: VaultFile) => void
 }) {
+  const { t } = useTranslation('profile')
+  const domain = useDomain()
   // The edges are cleared, not followed, when an application is
   // deleted — so a file can name ids whose records have gone.
   const applications = f.applicationIds.map((id) => get(id)).filter((app) => app !== undefined)
@@ -37,16 +40,16 @@ export function DocumentTile({
           openable in one place and not the other. */}
       <button
         type="button"
-        title={`Open ${f.name}`}
+        title={t('documentTile.open', { name: f.name })}
         onClick={() => onOpen(f.id)}
-        className="pressable w-full cursor-pointer rounded-lg border border-hairline bg-well p-3 text-left transition-colors hover:border-hairline-strong"
+        className="pressable w-full cursor-pointer rounded-lg border border-hairline bg-well p-3 text-start transition-colors hover:border-hairline-strong"
       >
         <span className="flex items-center gap-2">
           <FileText className="size-4 shrink-0 text-accent" strokeWidth={1.7} aria-hidden />
           <span className="truncate font-mono text-sm">{f.name}</span>
         </span>
         <span className="tabular mt-1.5 block text-xs text-text-3">
-          {f.size} · saved {agoLabel(f.savedOn, TODAY)}
+          {t('documentTile.meta', { size: f.size, ago: domain.ago(f.savedOn, TODAY) })}
         </span>
         {f.note ? (
           <span className="mt-1 line-clamp-2 block text-xs text-text-3">{f.note}</span>
@@ -73,12 +76,12 @@ export function DocumentTile({
           control appears before it is reached. */}
       <button
         type="button"
-        aria-label={`Delete ${f.name}`}
-        title={`Delete ${f.name}`}
+        aria-label={t('documentTile.delete', { name: f.name })}
+        title={t('documentTile.delete', { name: f.name })}
         onClick={() => {
           onDelete(f)
         }}
-        className="pressable absolute top-2 right-2 cursor-pointer rounded-md p-1.5 text-text-3 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="pressable absolute end-2 top-2 cursor-pointer rounded-md p-1.5 text-text-3 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
       </button>

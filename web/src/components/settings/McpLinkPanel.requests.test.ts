@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import source from './McpLinkPanel.tsx?raw'
+import catalog from '@/i18n/locales/en/settings.json'
 
 /**
  * Owner request Q236: the steps for connecting Claude Code to jojo-bridge work
@@ -20,14 +21,19 @@ describe('Q236 — connecting Claude Code', () => {
   })
 
   it('says what to do when the shell cannot find claude', () => {
-    expect(connectStep).toContain('command not found: claude')
+    // The step's note is a catalog key; its English is what is pinned.
+    expect(connectStep).toContain("note={t('mcp.connect.note')}")
+    expect(catalog.mcp.connect.note).toContain('command not found: claude')
     // The concrete way out: the copy VS Code ships, by its path.
-    expect(connectStep).toContain('resources/native-binary/claude')
+    expect(catalog.mcp.connect.note).toContain('resources/native-binary/claude')
   })
 
   it('asks for the extension only from the status that means it is missing', () => {
-    const asks = source.match(/The jojo extension carries the link/g) ?? []
-    expect(asks).toHaveLength(1)
-    expect(source).toMatch(/case 'no-extension':\s*return '[^']*The jojo extension carries the link/)
+    const asks = Object.entries(catalog.mcp.explain).filter(([, text]) =>
+      text.includes('The jojo extension carries the link'),
+    )
+    expect(asks.map(([key]) => key)).toEqual(['noExtension'])
+    expect(source.match(/mcp\.explain\.noExtension/g) ?? []).toHaveLength(1)
+    expect(source).toMatch(/case 'no-extension':\s*return t\('mcp\.explain\.noExtension'\)/)
   })
 })

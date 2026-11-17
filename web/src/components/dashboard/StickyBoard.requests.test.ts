@@ -33,9 +33,9 @@ function shadowReach(value: string): Reach {
   for (const layer of value.split(/,(?![^(]*\))/)) {
     if (/\binset\b/.test(layer)) continue
     const lengths = layer.replace(/[a-z]+\([^)]*\)/gi, '')
-    const [x = 0, y = 0, blur = 0, spread = 0] = [...lengths.matchAll(/(-?\d*\.?\d+)px|\b0\b(?![.\d])/g)].map((m) =>
-      m[1] === undefined ? 0 : Number(m[1]),
-    )
+    const [x = 0, y = 0, blur = 0, spread = 0] = [
+      ...lengths.matchAll(/(-?\d*\.?\d+)px|\b0\b(?![.\d])/g),
+    ].map((m) => (m[1] === undefined ? 0 : Number(m[1])))
     const out = blur + spread
     reach.top = Math.max(reach.top, out - y)
     reach.bottom = Math.max(reach.bottom, out + y)
@@ -52,7 +52,9 @@ const stickyShadows = [...indexCss.matchAll(/--shadow-sticky:\s*([^;]+);/g)].map
 
 describe('shadowReach', () => {
   it('measures each side of a layered shadow', () => {
-    expect(shadowReach('0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 10px -3px rgba(0, 0, 0, 0.14)')).toEqual({
+    expect(
+      shadowReach('0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 10px -3px rgba(0, 0, 0, 0.14)'),
+    ).toEqual({
       top: 3,
       right: 7,
       bottom: 11,
@@ -73,7 +75,10 @@ describe('a sticky note’s shadow (Q293)', () => {
   })
 
   it('fits inside the padding the board leaves around its notes', () => {
-    const list = /<ul\s+aria-label="Sticky notes"\s+className="([^"]*)"/.exec(board)?.[1]?.split(/\s+/) ?? []
+    const list =
+      /<ul\s+aria-label=\{t\('sticky\.listLabel'\)\}\s+className="([^"]*)"/
+        .exec(board)?.[1]
+        ?.split(/\s+/) ?? []
     const pad = (prefix: string) => {
       const step = list.find((c) => c.startsWith(`${prefix}-`))?.slice(prefix.length + 1)
       return step === undefined ? 0 : px(step)

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Download,
   FileQuestion,
@@ -35,6 +36,7 @@ import { useUndoable } from '@/lib/undo'
 import { revokeLater } from '@/lib/save-file'
 import { announceRefusal } from '@/components/common/write-result'
 import { noPreviewText, previewKind, TEXT_PREVIEW_BYTES } from '@/components/vault/file-preview'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Shows a file in the browser's own document viewer.
@@ -64,6 +66,8 @@ export function FileViewer({
   blob?: File
   onClose: () => void
 }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [url, setUrl] = useState<string | null>(null)
   /** Set when the browser refused to mint a blob URL. See the effect below. */
   const [previewError, setPreviewError] = useState<string | null>(null)
@@ -83,8 +87,10 @@ export function FileViewer({
    * list that one drawer draws and every other reader of this file wants the
    * plain string.
    *
-   * Keyed on the file so switching documents in the viewer loads that
-   * document's note rather than carrying the last one across.
+   * The effect below follows the stored note, NOT the file: two documents
+   * with the same note (both empty, most often) give an equal string, and it
+   * would not run between them. Switching documents is handled by the call
+   * sites keying this component on the file's id, which remounts it.
    */
   const storedFormat = graph.node(file.id as NodeId, 'file')?.props.noteFormat
   const storedHtml = useMemo(
@@ -125,11 +131,9 @@ export function FileViewer({
     if (announceRefusal(value, toast)) return
     setNoteSaved(true)
     toast({
-      title: `Note saved on ${file.name}`,
-      description: noteText
-        ? 'It shows against this file wherever the vault lists it.'
-        : 'The note is now empty, so nothing shows against this file.',
-      action: restore ? { label: 'Undo', onClick: restore } : undefined,
+      title: t('viewer.noteSaved', { name: file.name }),
+      description: noteText ? t('viewer.noteSavedDescription') : t('viewer.noteEmptyDescription'),
+      action: restore ? { label: t('common.undo'), onClick: restore } : undefined,
     })
   }
 
@@ -379,29 +383,25 @@ export function FileViewer({
         srcDoc={pageHtml}
         sandbox=""
         referrerPolicy="no-referrer"
-        title={`${file.name}, as it was captured`}
+        title={t('viewer.captured', { name: file.name })}
         className="w-full flex-1 rounded-md border border-hairline bg-white"
       />
     ) : url ? (
       <iframe
         key={url}
         src={url}
-        title={`${file.name} preview`}
+        title={t('viewer.previewTitle', { name: file.name })}
         className="w-full flex-1 rounded-md border border-hairline bg-well"
       />
     ) : text !== null ? (
       <div className="flex min-h-0 flex-1 flex-col gap-1">
         <pre
-          aria-label={`${file.name}, as text`}
+          aria-label={t('viewer.asText', { name: file.name })}
           className="min-h-0 flex-1 overflow-auto rounded-md border border-hairline bg-well p-3 font-mono text-xs break-words whitespace-pre-wrap text-text-1"
         >
           {text.body}
         </pre>
-        {text.cut ? (
-          <p className="text-xs text-text-3">
-            Only the first megabyte is shown. Save opens the whole file in your own application.
-          </p>
-        ) : null}
+        {text.cut ? <p className="text-xs text-text-3">{t('viewer.truncated')}</p> : null}
       </div>
     ) : imageUrl !== null ? (
       <div className="grid min-h-0 flex-1 place-items-center overflow-auto rounded-md border border-hairline bg-well p-3">
@@ -410,15 +410,15 @@ export function FileViewer({
     ) : previewError ? (
       <EmptyState
         icon={FileWarning}
-        title="This browser would not open the preview"
+        title={t('viewer.failedTitle')}
         // Names the record as untouched, because the failure is in the viewer and
         // a user watching a preview fail has no way to know the row is fine.
-        description={`${previewError}. The file's record in your vault is unaffected — only the preview could not be built.`}
+        description={t('viewer.failedDescription', { error: previewError })}
       />
     ) : (
       <EmptyState
         icon={FileQuestion}
-        title="No preview for this type"
+        title={t('viewer.noPreviewTitle')}
         /*
          * Branched on whether the bytes are HERE. It said "there is no stored
          * document behind this row" for every non-PDF, including a .docx the
@@ -443,14 +443,14 @@ export function FileViewer({
               string, not a validated URL. */}
           {file.kind === 'page' && file.sourceUrl && isCaptureSource(file.sourceUrl) ? (
             <p className="mt-0.5 truncate text-xs text-text-3" title={file.sourceUrl}>
-              Captured from {hostOf(file.sourceUrl)}
+              {t('viewer.capturedFrom', { host: hostOf(file.sourceUrl) })}
               {/* `dayOf`, not `.slice(0, 10)`. `capturedAt` is an instant and
                   slicing takes its UTC day, while `TODAY` is the LOCAL day.
                   Measured in America/Chicago at 23:30 local, a capture made
                   seconds earlier sliced to the next day and `agoLabel` printed
                   a FUTURE date on it; east of UTC the same pair reads
                   "yesterday". Same repair as `assistant/ThreadList.tsx`. */}
-              {file.capturedAt ? ` · ${agoLabel(dayOf(file.capturedAt), TODAY)}` : ''}
+              {file.capturedAt ? ` · ${domain.ago(dayOf(file.capturedAt), TODAY)}` : ''}
             </p>
           ) : null}
         </div>
@@ -459,7 +459,7 @@ export function FileViewer({
               no-preview state the button would open a bigger copy of a
               sentence explaining that there is nothing to see. */}
           {url !== null || pageHtml !== null || text !== null || imageUrl !== null ? (
-            <ExpandButton onClick={() => setFull(true)} label="Open the preview full screen" />
+            <ExpandButton onClick={() => setFull(true)} label={t('viewer.fullScreen')} />
           ) : null}
           {/* Offered only for a real document, because the placeholder is
               generated here and saving it would hand the user a PDF explaining
@@ -472,12 +472,12 @@ export function FileViewer({
           {blob ? (
             <Button variant="ghost" size="sm" onClick={onSave}>
               <Download className="size-3.5" strokeWidth={2} aria-hidden />
-              Save
+              {t('common.save')}
             </Button>
           ) : null}
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="size-3.5" strokeWidth={2} aria-hidden />
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>
@@ -488,7 +488,7 @@ export function FileViewer({
         open={full}
         onOpenChange={setFull}
         title={file.name}
-        description={`${file.name}, full screen, with a notes panel. Press Escape to go back.`}
+        description={t('viewer.fullScreenDescription', { name: file.name })}
       >
         {full ? (
           <div className="flex min-h-0 flex-1 gap-3">
@@ -502,14 +502,14 @@ export function FileViewer({
                 it, and the notes are half the reason this view exists. It
                 collapses to that rail when the document needs the width. */}
             {notesOpen ? (
-              <aside className="flex w-[22rem] min-w-0 shrink-0 flex-col gap-2 border-l border-hairline pl-3 xl:w-[26rem]">
+              <aside className="flex w-[22rem] min-w-0 shrink-0 flex-col gap-2 border-s border-hairline ps-3 xl:w-[26rem]">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-medium">Notes</h3>
+                  <h3 className="text-sm font-medium">{t('viewer.notes.title')}</h3>
                   <button
                     type="button"
                     onClick={() => setNotesOpen(false)}
-                    title="Hide the notes panel"
-                    aria-label="Hide the notes panel"
+                    title={t('viewer.notes.hide')}
+                    aria-label={t('viewer.notes.hide')}
                     aria-expanded
                     className="pressable grid size-7 shrink-0 cursor-pointer place-items-center rounded-md border border-transparent text-text-3 transition-colors hover:border-hairline hover:bg-well hover:text-text-1"
                   >
@@ -517,24 +517,22 @@ export function FileViewer({
                   </button>
                 </div>
 
-                <p className="text-xs text-text-3">
-                  Kept against {file.name}, and shown wherever this file is listed.
-                </p>
+                <p className="text-xs text-text-3">{t('viewer.notes.hint', { name: file.name })}</p>
 
                 <RichTextEditor
                   value={noteHtml}
                   onChange={setNoteHtml}
-                  ariaLabel={`Notes on ${file.name}`}
-                  placeholder="What matters in this document — the deadline buried on page 3, who to ask about it…"
+                  ariaLabel={t('viewer.notes.label', { name: file.name })}
+                  placeholder={t('viewer.notes.placeholder')}
                   className="min-h-0 flex-1"
                 />
 
                 <div className="flex items-center justify-between gap-2 pt-1">
                   <span aria-live="polite" className="text-xs text-text-3">
-                    {noteSaved ? 'Saved' : noteDirty ? 'Unsaved changes' : ''}
+                    {noteSaved ? t('viewer.notes.saved') : noteDirty ? t('common.unsaved') : ''}
                   </span>
                   <Button type="button" size="sm" disabled={!noteDirty} onClick={saveNote}>
-                    Save note
+                    {t('viewer.notes.save')}
                   </Button>
                 </div>
               </aside>
@@ -542,8 +540,8 @@ export function FileViewer({
               <button
                 type="button"
                 onClick={() => setNotesOpen(true)}
-                title="Show the notes panel"
-                aria-label="Show the notes panel"
+                title={t('viewer.notes.show')}
+                aria-label={t('viewer.notes.show')}
                 aria-expanded={false}
                 /* `justify-items-center` rather than `place-items-start`, which
                    set BOTH axes and left the icon pinned to the top-left corner

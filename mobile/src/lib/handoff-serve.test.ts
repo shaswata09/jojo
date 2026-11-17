@@ -10,7 +10,14 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readBackup } from '@jojo/service/core/backup'
-import { pathToken, pullPath, readRequest } from '@jojo/service/core/handoff'
+import {
+  outcomeByte,
+  outcomePath,
+  pathToken,
+  pullPath,
+  readRequest,
+  sealOutcome,
+} from '@jojo/service/core/handoff'
 import { encodePullRequest, runPull } from '@jojo/service/core/handoff-pull'
 import {
   beginPairing,
@@ -139,6 +146,33 @@ describe('a phone sending to a computer (Q129)', () => {
     expect(read.ok).toBe(true)
     if (read.ok) expect((read.value.nodes[0]!.props as { note: string }).note).toBe('Zoë')
     expect(result.value.progress().finished).toBe(true)
+
+    // The computer's person agreed; it says so, and the phone hears it once.
+    const say = (outcome: 'applied' | 'declined') =>
+      sealOutcome(secrets, keys.value, outcome, 'pull')
+    expect(result.value.outcome()).toBe('pending')
+    // A bare byte — anything that only saw the URL — is not heard at all.
+    expect((await ask(outcomePath(started.token!), outcomeByte('declined'))).status).toBe(404)
+    const forged = await say('declined')
+    forged[1] = forged[1]! ^ 1
+    expect((await ask(outcomePath(started.token!), forged)).status).toBe(404)
+    expect(result.value.outcome()).toBe('pending')
+    expect((await ask(outcomePath(started.token!), await say('applied'))).status).toBe(204)
+    expect(result.value.outcome()).toBe('applied')
+    await ask(outcomePath(started.token!), await say('declined'))
+    expect(result.value.outcome()).toBe('applied')
+  })
+
+  it('hears no outcome before every chunk has gone', async () => {
+    const state: PairingState = await beginPairing(secrets, Date.now())
+    const result = await beginServing(encodeOffer(state.offer), build)
+    if (!result.ok) throw new Error(result.error)
+    const pair = await started.answer!({ route: 'pair', body: new Uint8Array(0) })
+    const keys = await completePairing(secrets, state, pair.body!, Date.now())
+    if (!keys.ok) throw new Error(keys.error)
+    const told = await sealOutcome(secrets, keys.value, 'applied', 'pull')
+    expect((await ask(outcomePath(started.token!), told)).status).toBe(400)
+    expect(result.value.outcome()).toBe('pending')
   })
 
   it('hands nothing over without the proof, and gathers nothing for it', async () => {

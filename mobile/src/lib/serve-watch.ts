@@ -16,9 +16,13 @@
  * receiving phone gets away with stopping at once because its last response is
  * empty; this one's is up to 64 KiB.
  *
- * So the tick says "finished" at once — the handover is stamped and the screen
- * changes — and stops listening only after a grace period. Leaving the screen
- * stops it sooner, which is the panel's cleanup, not this.
+ * So the tick says "finished" at once — the screen changes — and keeps
+ * listening. The computer still has to ask its person before it replaces
+ * anything, and it tells this phone what they decided (`outcome`). Only
+ * `applied` means the computer holds these records, so only that is a handover
+ * worth stamping; once any answer has come, the socket closes after a short
+ * grace for the reply. A computer that never answers is bounded by `waitMs`.
+ * Leaving the screen stops it sooner, which is the panel's cleanup, not this.
  *
  * ## Said once
  *
@@ -26,15 +30,25 @@
  * handover stamped on every tick would be a store write four times a second.
  */
 
+import type { HandoffOutcome } from '@jojo/service/core/handoff'
 import type { PullServing } from '@jojo/service/core/handoff-pull'
 
-export type ServeSource = { progress: () => PullServing; stop: () => void }
+export type ServeSource = {
+  progress: () => PullServing
+  outcome: () => HandoffOutcome
+  stop: () => void
+}
+
+/** What the computer said, or `unknown` if it never did. */
+export type ServeOutcome = Exclude<HandoffOutcome, 'pending'> | 'unknown'
 
 export type ServeReport = {
   /** Chunks handed over so far, and how many there are once known. */
   onProgress: (served: number, chunks: number | null) => void
   /** The last chunk was handed over. Once. */
   onFinished: () => void
+  /** What the computer's person did with the records, or `unknown`. Once. */
+  onOutcome: (outcome: ServeOutcome) => void
   /** Gathering the backup failed. Once. */
   onFailed: () => void
 }
@@ -42,14 +56,19 @@ export type ServeReport = {
 /** Long enough for a 64 KiB write on a slow network; short enough not to linger. */
 export const SERVE_GRACE_MS = 10_000
 
+/** How long a finished send waits for the computer to say what its person did. */
+export const SERVE_OUTCOME_WAIT_MS = 10 * 60_000
+
 export function createServeWatch(
   session: ServeSource,
   report: ServeReport,
   now: () => number,
   graceMs: number = SERVE_GRACE_MS,
+  waitMs: number = SERVE_OUTCOME_WAIT_MS,
 ): () => void {
   let finishedAt: number | null = null
   let failedAt: number | null = null
+  let answeredAt: number | null = null
   let stopped = false
 
   return () => {
@@ -69,7 +88,19 @@ export function createServeWatch(
       finishedAt = now()
       report.onFinished()
     }
-    const since = finishedAt ?? failedAt
+    if (finishedAt !== null && answeredAt === null) {
+      const told = session.outcome()
+      if (told !== 'pending') {
+        answeredAt = now()
+        report.onOutcome(told)
+      } else if (now() - finishedAt >= waitMs) {
+        answeredAt = now()
+        report.onOutcome('unknown')
+      }
+    }
+    // A failure closes after the grace; a finish only once the computer has
+    // answered (or stopped being waited for), then after the same grace.
+    const since = failedAt ?? answeredAt
     if (since !== null && now() - since >= graceMs) {
       stopped = true
       session.stop()

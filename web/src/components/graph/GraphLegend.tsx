@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { NODE_TYPE_LABEL } from '@/lib/graph/model'
 import type { GraphNodeType } from '@/lib/graph/model'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ export function GraphLegend({
   onToggle: (type: GraphNodeType) => void
   onShowAll: () => void
 }) {
+  const { t } = useTranslation('graph')
   const present = LEGEND_ORDER.filter((type) => (counts.get(type) ?? 0) > 0)
   const allHidden = present.length > 0 && present.every((type) => hidden.has(type))
 
@@ -42,7 +44,11 @@ export function GraphLegend({
                 type="button"
                 onClick={() => onToggle(type)}
                 aria-pressed={!off}
-                title={off ? `Show ${NODE_TYPE_LABEL[type]}` : `Hide ${NODE_TYPE_LABEL[type]}`}
+                title={
+                  off
+                    ? t('legend.show', { name: NODE_TYPE_LABEL[type] })
+                    : t('legend.hide', { name: NODE_TYPE_LABEL[type] })
+                }
                 className={cn(
                   'pressable flex items-center gap-1.5 rounded-sm px-1.5 py-1 text-xs transition-colors hover:bg-row-hover',
                   off ? 'text-text-3' : 'text-text-2',
@@ -65,13 +71,13 @@ export function GraphLegend({
           having broken rather than as a filter being on. */}
       {allHidden ? (
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-text-3">
-          Every kind of record is hidden.
+          {t('legend.allHidden')}
           <button
             type="button"
             onClick={onShowAll}
             className="pressable cursor-pointer rounded-sm border border-hairline bg-well px-2 py-0.5 text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
           >
-            Show all
+            {t('legend.showAll')}
           </button>
         </div>
       ) : null}

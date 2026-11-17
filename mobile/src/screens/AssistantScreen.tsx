@@ -22,6 +22,7 @@ import type { AgentStep } from '@jojo/service/agent/loop'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
 import { Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -33,6 +34,7 @@ import { Txt } from '@/components/ui/Text'
 import type { SnippetTag } from '@jojo/service/data/vault'
 import { useVault } from '@/lib/store-context'
 import { useCopy } from '@/lib/use-copy'
+import { useKeyboardOverlap } from '@/lib/use-keyboard-overlap'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
@@ -50,87 +52,43 @@ import { report } from '@/lib/analytics'
  */
 type Script = {
   id: string
-  /** Doubles as the quick-action label and the message it sends. */
-  action: string
   /** Words in a typed message that pick this script over the fallback. */
   cues: string[]
-  /** Title and tag a snippet made from the reply is filed under. */
-  title: string
+  /** The tag a snippet made from the reply is filed under. */
   tag: SnippetTag
-  reply: string
 }
 
+/*
+ * The words — the quick-action label, the reply, and the title a snippet made
+ * from it is filed under — are in the `screens` catalog under
+ * `assistant.scripts.<id>`, so each worked example reads in the reader's
+ * language. The cues stay here: they are matched against what was typed.
+ */
 const SCRIPTS: Script[] = [
   {
     id: 'cover-letter',
-    action: 'Draft a cover letter',
     cues: ['cover letter', 'letter of application', 'motivation'],
-    title: 'Cover letter — structure',
     tag: 'Cover letter',
-    reply:
-      'Here is the shape I would use for [DEPARTMENT]:\n\n' +
-      'Paragraph 1 — what you work on, in one sentence a committee member outside your area can follow.\n' +
-      'Paragraph 2 — the two results that make the case, each given with its consequence rather than its method.\n' +
-      'Paragraph 3 — why this department: the group you would overlap with, and the course you would teach.\n' +
-      'Paragraph 4 — availability, and what the first three years would look like.\n\n' +
-      'Keep it to one page. The committee reads forty of these in an evening.',
   },
   {
     id: 'tailor-cv',
-    action: 'Tailor my CV to a posting',
     cues: ['cv', 'resume', 'tailor'],
-    title: 'Tailoring a CV — three passes',
     tag: 'Application form',
-    reply:
-      'Three passes, in this order:\n\n' +
-      '1. Cut what the ad does not ask for. A CV tailored to everything is tailored to nothing.\n' +
-      '2. Move the section the ad leads with to the top of page one — a teaching-heavy ad wants teaching above publications.\n' +
-      "3. Rewrite the headline in the ad's own words, without overstating the scope of the work.\n\n" +
-      'What survives untouched: publications, references, dates. Those are the parts a committee checks.',
   },
   {
     id: 'parse-posting',
-    action: 'Parse a job posting',
     cues: ['posting', 'parse', 'job ad', 'advert'],
-    title: 'What to pull out of a posting',
     tag: 'Application form',
-    reply:
-      'From an ad I would pull out: employer, role, deadline, the documents required, the named contact, ' +
-      'and anything phrased as a hard requirement rather than a preference.\n\n' +
-      'The last one is where applications are lost — "must hold the degree by the start date" is a filter, ' +
-      '"experience with large-scale systems desirable" is not.\n\n' +
-      'Job scout already does the cheap half of this without a model: save the URL there and it keeps the link ' +
-      'and guesses the employer from it.',
   },
   {
     id: 'follow-up',
-    action: 'Draft a follow-up email',
     cues: ['follow up', 'follow-up', 'chase', 'nudge', 'email'],
-    title: 'Follow-up after no response',
     tag: 'Email',
-    reply:
-      'Subject: Following up — [ROLE], [DEPARTMENT]\n\n' +
-      'Dear [NAME],\n\n' +
-      'I applied for [ROLE] on [DATE] and wanted to check the committee has everything it needs from me. ' +
-      'I am happy to send the outstanding reference letter directly if that is easier.\n\n' +
-      'I remain very interested in the position, and I am glad to answer anything by email.\n\n' +
-      'With thanks,\n[YOUR NAME]',
   },
   {
     id: 'interview',
-    action: 'Prepare me for an interview',
     cues: ['interview', 'job talk', 'chalk talk', 'campus visit'],
-    title: 'Interview — six questions to have answered',
     tag: 'Application form',
-    reply:
-      'Six questions worth having an answer to before the day:\n\n' +
-      '— What is the work about, in ninety seconds, to someone outside your area?\n' +
-      '— What would your first grant be, and to which agency?\n' +
-      '— Which two courses could you teach next semester at no notice?\n' +
-      '— Who here would you collaborate with, and on what?\n' +
-      '— What is the weakness in your own result?\n' +
-      '— What do you need in year one to do the work?\n\n' +
-      'Write the answers out longhand. The rehearsal is the point, not the notes.',
   },
 ]
 
@@ -143,16 +101,8 @@ const SCRIPTS: Script[] = [
  */
 const FALLBACK: Script = {
   id: 'fallback',
-  action: '',
   cues: [],
-  title: 'Assistant — example response',
   tag: 'Application form',
-  reply:
-    'No model is connected, so this is a canned answer rather than a reply to what you typed.\n\n' +
-    'With one connected, this screen would read your profile, the documents in your Vault and the application ' +
-    'you name, then draft against them on your own device. Point jojo at a local OpenAI-compatible server ' +
-    'in Settings — vLLM, Ollama or LM Studio.\n\n' +
-    'The five prompts below each have a worked example you can use in the meantime.',
 }
 
 /** First script with a cue in the message. Order in SCRIPTS breaks ties. */
@@ -180,9 +130,22 @@ type Message = {
 
 export function AssistantScreen() {
   const { settings } = useModelSettings()
+  // Both composers sit at the foot of a scrolling screen, and on Android the
+  // window is no longer resized for the keyboard (edge-to-edge). Padding the
+  // frame by what the keyboard covers shrinks the scroller, and Android's
+  // ScrollView keeps the focused input in view as it shrinks.
+  const keyboard = useKeyboardOverlap()
   // The split is at the top because the two modes share almost nothing below it:
   // one has a transcript of messages and the other a trace of tool calls.
-  return isConfigured(settings) ? <AgentScreen /> : <ScriptedScreen />
+  return (
+    <View
+      ref={keyboard.ref}
+      onLayout={keyboard.onLayout}
+      style={[styles.keyboard, { paddingBottom: keyboard.overlap }]}
+    >
+      {isConfigured(settings) ? <AgentScreen /> : <ScriptedScreen />}
+    </View>
+  )
 }
 
 /* ---------------------------------- agent --------------------------------- */
@@ -197,6 +160,7 @@ export function AssistantScreen() {
  * render time is one that can be computed wrongly.
  */
 function AgentScreen() {
+  const { t } = useTranslation('screens')
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { settings, reader } = useModelSettings()
@@ -415,7 +379,7 @@ function AgentScreen() {
   const undoStep = (step: AgentStep) => {
     step.undo?.()
     toast({
-      title: 'Undone',
+      title: t('assistant.undone'),
       description: step.announcement?.title ?? step.title,
       tone: 'danger',
     })
@@ -427,7 +391,7 @@ function AgentScreen() {
       const e = entries[i]
       if (e?.kind === 'you') return e.text
     }
-    return 'Assistant'
+    return t('assistant.title')
   }
 
   const saveAnswer = (text: string, asked: string) => {
@@ -439,10 +403,10 @@ function AgentScreen() {
       body: text,
     })
     toast({
-      title: 'Saved to snippets',
-      description: `${snippet.title} · filed under ${snippet.tag}`,
+      title: t('assistant.saved'),
+      description: t('assistant.savedDescription', { title: snippet.title, tag: snippet.tag }),
       action: {
-        label: 'Open vault',
+        label: t('assistant.openVault'),
         onPress: () =>
           navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
       },
@@ -451,12 +415,12 @@ function AgentScreen() {
 
   return (
     <Screen
-      title="Assistant"
-      subtitle="Connected to your model, and able to act on your records. Everything it does is listed as it happens."
+      title={t('assistant.title')}
+      subtitle={t('assistant.agent.subtitle')}
       actions={
         entries.length > 0 ? (
           <Button
-            label="Clear"
+            label={t('assistant.clear')}
             variant="ghost"
             disabled={busy}
             onPress={() => {
@@ -469,9 +433,12 @@ function AgentScreen() {
     >
       <Panel>
         <Txt size="sm" tone="secondary">
-          Answering with <Txt mono>{settings.model}</Txt> at <Txt mono>{settings.endpoint}</Txt>,
-          which can call {CATALOG.length} tools on this device. Nothing is sent anywhere else, and
-          every change can be undone.
+          <Trans
+            t={t}
+            i18nKey="assistant.agent.intro"
+            values={{ model: settings.model, endpoint: settings.endpoint, tools: CATALOG.length }}
+            components={{ code: <Txt mono /> }}
+          />
         </Txt>
       </Panel>
 
@@ -490,7 +457,9 @@ function AgentScreen() {
             if (result.ok) {
               toast({
                 title: result.announcement.title,
-                ...(result.undo ? { action: { label: 'Undo', onPress: result.undo } } : {}),
+                ...(result.undo
+                  ? { action: { label: t('shared.undo'), onPress: result.undo } }
+                  : {}),
               })
             }
           }}
@@ -505,9 +474,9 @@ function AgentScreen() {
             clear()
             openThread(null)
             toast({
-              title: 'Conversation deleted',
+              title: t('assistant.agent.deleted'),
               tone: 'danger',
-              ...(result.undo ? { action: { label: 'Undo', onPress: result.undo } } : {}),
+              ...(result.undo ? { action: { label: t('shared.undo'), onPress: result.undo } } : {}),
             })
           }}
         />
@@ -516,8 +485,8 @@ function AgentScreen() {
         {entries.length === 0 ? (
           <EmptyState
             icon="cpu"
-            title="Nothing asked yet"
-            description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
+            title={t('assistant.emptyTitle')}
+            description={t('assistant.agent.emptyDescription')}
           />
         ) : (
           /*
@@ -577,13 +546,13 @@ function AgentScreen() {
                   <Txt size="sm">{entry.text}</Txt>
                   <View style={styles.replyActions}>
                     <Button
-                      label={isCopied(entry.id) ? 'Copied' : 'Copy'}
+                      label={isCopied(entry.id) ? t('assistant.copied') : t('assistant.copy')}
                       icon={isCopied(entry.id) ? 'check' : 'copy'}
                       variant="ghost"
                       onPress={() => copy(entry.text, entry.id)}
                     />
                     <Button
-                      label="Save to snippets"
+                      label={t('assistant.saveToSnippets')}
                       icon="bookmark"
                       variant="ghost"
                       onPress={() => {
@@ -610,18 +579,21 @@ function AgentScreen() {
             prompts against the last reply and squeezed the conversation. */}
         {entries.length === 0 ? (
           <View style={[styles.prompts, { marginBottom: space[2] }]}>
-            {AGENT_PROMPTS.map((p) => (
-              <Button
-                key={p}
-                label={p}
-                variant="outline"
-                size="sm"
-                disabled={busy}
-                onPress={() => {
-                  send(p)
-                }}
-              />
-            ))}
+            {AGENT_PROMPTS.map((key) => {
+              const p = t(`assistant.agent.prompts.${key}`)
+              return (
+                <Button
+                  key={key}
+                  label={p}
+                  variant="outline"
+                  size="sm"
+                  disabled={busy}
+                  onPress={() => {
+                    send(p)
+                  }}
+                />
+              )
+            })}
           </View>
         ) : null}
 
@@ -629,9 +601,9 @@ function AgentScreen() {
           <TextInput
             value={prompt}
             onChangeText={setPrompt}
-            placeholder="Find my UT Austin application, add one, move it along…"
+            placeholder={t('assistant.agent.placeholder')}
             placeholderTextColor={c.text3}
-            accessibilityLabel="Ask the assistant"
+            accessibilityLabel={t('assistant.ask')}
             returnKeyType="send"
             editable={!busy}
             onSubmitEditing={submit}
@@ -648,16 +620,20 @@ function AgentScreen() {
             // Stop rather than a disabled send: a run that has gone wrong is
             // exactly when a person most needs a control, and the loop checks
             // the flag between every round.
-            <Button label="Stop" variant="outline" onPress={stop} />
+            <Button label={t('assistant.stop')} variant="outline" onPress={stop} />
           ) : (
-            <IconButton icon="arrow-up" label="Send" disabled={!prompt.trim()} onPress={submit} />
+            <IconButton
+              icon="arrow-up"
+              label={t('assistant.send')}
+              disabled={!prompt.trim()}
+              onPress={submit}
+            />
           )}
         </View>
       </Panel>
 
       <Txt size="sm" tone="secondary">
-        It reads before it writes, asks before each change unless you turn that off for a
-        conversation, and everything it does goes through the same undo a button press does.
+        {t('assistant.agent.footer')}
       </Txt>
 
       <ThreadListSheet
@@ -683,12 +659,7 @@ function AgentScreen() {
  * it — which is the shape that actually tests whether a small model can chain
  * `memory.search` into a write instead of inventing an id.
  */
-const AGENT_PROMPTS = [
-  'What am I waiting on?',
-  'Add an application: ML engineer at Stripe, submitted',
-  'Which applications have no deadline?',
-  'Flag my UT Austin application',
-]
+const AGENT_PROMPTS = ['waiting', 'add', 'noDeadline', 'flag'] as const
 
 /* --------------------------------- scripted -------------------------------- */
 
@@ -701,6 +672,7 @@ const AGENT_PROMPTS = [
  * `AssistantScreen` above answered that before rendering it.
  */
 function ScriptedScreen() {
+  const { t } = useTranslation('screens')
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [messages, setMessages] = useState<Message[]>([])
@@ -717,28 +689,39 @@ function ScriptedScreen() {
    * No model, no request, no delay. Every message it produces carries
    * `scriptId`, which is what puts the badge on it.
    */
-  const send = (text: string) => {
+  const send = (text: string, chosen?: Script) => {
     const clean = text.trim()
     if (!clean) return
     const at = nextId.current
     nextId.current += 2
     setPrompt('')
-    const script = scriptFor(clean)
+    // A quick action names its script outright: its label is translated, and
+    // the cues it would otherwise be matched by are not.
+    const script = chosen ?? scriptFor(clean)
     setMessages((prev) => [
       ...prev,
       { id: `m${at}`, role: 'you', text: clean },
-      { id: `m${at + 1}`, role: 'assistant', text: script.reply, scriptId: script.id },
+      {
+        id: `m${at + 1}`,
+        role: 'assistant',
+        text: t(`assistant.scripts.${script.id}.reply`),
+        scriptId: script.id,
+      },
     ])
   }
 
   const saveToSnippets = (message: Message) => {
     const script = SCRIPTS.find((s) => s.id === message.scriptId) ?? FALLBACK
-    const snippet = addSnippet({ title: script.title, tag: script.tag, body: message.text })
+    const snippet = addSnippet({
+      title: t(`assistant.scripts.${script.id}.title`),
+      tag: script.tag,
+      body: message.text,
+    })
     toast({
-      title: 'Saved to snippets',
-      description: `${snippet.title} · filed under ${snippet.tag}`,
+      title: t('assistant.saved'),
+      description: t('assistant.savedDescription', { title: snippet.title, tag: snippet.tag }),
       action: {
-        label: 'Open vault',
+        label: t('assistant.openVault'),
         onPress: () =>
           navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
       },
@@ -750,20 +733,20 @@ function ScriptedScreen() {
     const previous = messages
     setMessages([])
     toast({
-      title: 'Conversation cleared',
-      description: `${previous.length} messages`,
+      title: t('assistant.scripted.cleared'),
+      description: t('assistant.scripted.messages', { count: previous.length }),
       tone: 'danger',
-      action: { label: 'Undo', onPress: () => setMessages(previous) },
+      action: { label: t('shared.undo'), onPress: () => setMessages(previous) },
     })
   }
 
   return (
     <Screen
-      title="Assistant"
-      subtitle="Worked examples now. Connect a local model and it both drafts from your own records and acts on them."
+      title={t('assistant.title')}
+      subtitle={t('assistant.scripted.subtitle')}
       actions={
         messages.length > 0 ? (
-          <Button label="Clear" variant="ghost" onPress={clearConversation} />
+          <Button label={t('assistant.clear')} variant="ghost" onPress={clearConversation} />
         ) : undefined
       }
     >
@@ -777,7 +760,7 @@ function ScriptedScreen() {
        */}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Connect a model in Settings"
+        accessibilityLabel={t('assistant.scripted.connectLabel')}
         onPress={() => navigation.navigate('Settings' as never)}
         style={{
           flexDirection: 'row',
@@ -795,10 +778,10 @@ function ScriptedScreen() {
         <Feather name="alert-triangle" size={16} color={c.warning} style={{ marginTop: 1 }} />
         <View style={{ flex: 1, gap: space[1] }}>
           <Txt size="sm" color={c.warning}>
-            No model is connected, so every reply here is a worked example rather than an answer.
+            {t('assistant.scripted.banner')}
           </Txt>
           <Txt size="sm" color={c.warning} weight="medium">
-            Connect one in Settings →
+            {t('assistant.scripted.connect')}
           </Txt>
         </View>
       </Pressable>
@@ -810,8 +793,8 @@ function ScriptedScreen() {
         {messages.length === 0 ? (
           <EmptyState
             icon="message-square"
-            title="Nothing asked yet"
-            description="Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model’s answer."
+            title={t('assistant.emptyTitle')}
+            description={t('assistant.scripted.emptyDescription')}
           />
         ) : (
           <View style={{ gap: space[3] }}>
@@ -836,20 +819,20 @@ function ScriptedScreen() {
                       request went out and did not come back; neither means it is
                       a model's answer and wears nothing. */}
                   <Chip tone="amber" size="sm">
-                    Example response · no model connected
+                    {t('assistant.scripted.badge')}
                   </Chip>
                   <Txt size="sm" style={{ marginTop: space[2] }}>
                     {m.text}
                   </Txt>
                   <View style={styles.replyActions}>
                     <Button
-                      label={isCopied(m.id) ? 'Copied' : 'Copy'}
+                      label={isCopied(m.id) ? t('assistant.copied') : t('assistant.copy')}
                       icon={isCopied(m.id) ? 'check' : 'copy'}
                       variant="ghost"
                       onPress={() => copy(m.text, m.id)}
                     />
                     <Button
-                      label="Save to snippets"
+                      label={t('assistant.saveToSnippets')}
                       icon="bookmark"
                       variant="ghost"
                       onPress={() => saveToSnippets(m)}
@@ -869,11 +852,11 @@ function ScriptedScreen() {
             {SCRIPTS.map((s) => (
               <Button
                 key={s.id}
-                label={s.action}
+                label={t(`assistant.scripts.${s.id}.action`)}
                 variant="outline"
                 size="sm"
                 onPress={() => {
-                  send(s.action)
+                  send(t(`assistant.scripts.${s.id}.action`), s)
                 }}
               />
             ))}
@@ -884,9 +867,9 @@ function ScriptedScreen() {
           <TextInput
             value={prompt}
             onChangeText={setPrompt}
-            placeholder="Ask about a cover letter, a follow-up email, an interview…"
+            placeholder={t('assistant.scripted.placeholder')}
             placeholderTextColor={c.text3}
-            accessibilityLabel="Ask the assistant"
+            accessibilityLabel={t('assistant.ask')}
             returnKeyType="send"
             onSubmitEditing={() => {
               send(prompt)
@@ -898,7 +881,7 @@ function ScriptedScreen() {
           />
           <IconButton
             icon="arrow-up"
-            label="Send"
+            label={t('assistant.send')}
             disabled={!prompt.trim()}
             onPress={() => {
               send(prompt)
@@ -908,8 +891,7 @@ function ScriptedScreen() {
       </Panel>
 
       <Txt size="sm" tone="secondary">
-        With a model connected each of these reads your profile and documents as context. Because
-        inference is local, your CV and your notes are never uploaded anywhere.
+        {t('assistant.scripted.footer')}
       </Txt>
     </Screen>
   )
@@ -925,6 +907,7 @@ const styles = StyleSheet.create({
   },
   reply: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg, padding: space[3] },
   replyActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2.5] },
+  keyboard: { flex: 1 },
   composer: { flexDirection: 'row', alignItems: 'center', gap: space[2], marginTop: space[4] },
   input: {
     flex: 1,
@@ -944,6 +927,7 @@ const styles = StyleSheet.create({
  * written it says "Thinking…" and shows its latest line.
  */
 function ThoughtRow({ text, live }: { text: string; live: boolean }) {
+  const { t } = useTranslation('screens')
   const [open, setOpen] = useState(false)
   const latest = text.trim().split('\n').filter(Boolean).at(-1) ?? ''
   return (
@@ -951,15 +935,13 @@ function ThoughtRow({ text, live }: { text: string; live: boolean }) {
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={
-          live ? 'Thinking. Show what the model is thinking' : 'Show what the model thought'
-        }
+        accessibilityLabel={live ? t('assistant.thought.liveLabel') : t('assistant.thought.label')}
         onPress={() => setOpen((was) => !was)}
         hitSlop={8}
       >
         <Txt size="xs" tone="muted">
           {open ? '▾ ' : '▸ '}
-          {live ? 'Thinking…' : 'Thought'}
+          {live ? t('assistant.thought.live') : t('assistant.thought.done')}
         </Txt>
       </Pressable>
       {open ? (

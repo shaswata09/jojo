@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Download, RotateCcw, Trash2, TriangleAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import type { Rows } from '@jojo/service/storage/driver'
@@ -52,6 +53,7 @@ const rescueFile = (rows: Rows) =>
   )
 
 export function StoreRecovery({ detail, rescued }: { detail: string; rescued: Rows | null }) {
+  const { t } = useTranslation()
   const { retry, startFresh, busy } = useBoot()
   const [confirming, setConfirming] = useState(false)
 
@@ -89,15 +91,11 @@ export function StoreRecovery({ detail, rescued }: { detail: string; rescued: Ro
             aria-hidden
           />
           <div className="min-w-0">
-            <h1 className="text-lg font-medium">jojo cannot read its database</h1>
+            <h1 className="text-lg font-medium">{t('recovery.title')}</h1>
             {/* Says what has NOT happened, because that is the question. The
                 records are still on disk; nothing here has deleted or replaced
                 anything, and nothing will until a button below is pressed. */}
-            <p className="mt-2 text-sm text-text-2">
-              Your records are still on this machine. jojo has not changed or replaced anything, and
-              it will not load the demo data over them — a store that reseeded itself to look
-              healthy would turn this into permanent data loss.
-            </p>
+            <p className="mt-2 text-sm text-text-2">{t('recovery.body')}</p>
           </div>
         </div>
 
@@ -111,43 +109,37 @@ export function StoreRecovery({ detail, rescued }: { detail: string; rescued: Ro
             size="sm"
             onClick={onDownload}
             disabled={!rescued}
-            title={
-              rescued
-                ? 'Writes the rows that could be read to a file'
-                : 'The database could not be read at all, so there is nothing to write out'
-            }
+            title={rescued ? t('recovery.downloadHint') : t('recovery.downloadNothing')}
           >
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Download what we could read
+            {t('recovery.download')}
           </Button>
           <Button variant="outline" size="sm" onClick={retry} disabled={busy}>
             <RotateCcw className="size-3.5" strokeWidth={1.8} aria-hidden />
-            {busy ? 'Working…' : 'Try again'}
+            {busy ? t('recovery.working') : t('recovery.retry')}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setConfirming(true)}
             disabled={busy}
-            title="Deletes the database and starts jojo as if it were new"
+            title={t('recovery.freshHint')}
           >
             <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Start fresh
+            {t('recovery.fresh')}
           </Button>
         </div>
 
         <p className="mt-3 text-xs text-text-3">
-          {rescued
-            ? `${rescuedCount} rows were readable — download them before anything else, since starting fresh deletes them.`
-            : 'Nothing could be read out of the store, so there is nothing to download. Try again first: a database another tab is holding open fails this way and recovers on its own.'}
+          {rescued ? t('recovery.readable', { count: rescuedCount }) : t('recovery.unreadable')}
         </p>
 
         <ConfirmDialog
           open={confirming}
           onOpenChange={setConfirming}
-          title="Delete the database and start fresh?"
-          description="This deletes jojo's local database and everything still in it, then starts again from nothing — including the question a first run asks about whether to begin with the demo data or empty. It does not repair anything and there is no undo. If you have not downloaded the readable rows yet, cancel and do that first."
-          confirmLabel="Delete and start fresh"
+          title={t('recovery.confirmTitle')}
+          description={t('recovery.confirmBody')}
+          confirmLabel={t('recovery.confirm')}
           tone="danger"
           onConfirm={startFresh}
         />

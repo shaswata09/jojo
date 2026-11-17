@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -42,6 +43,7 @@ import { radius, space } from '@/theme/tokens'
  */
 
 export function GuideTools() {
+  const { t } = useTranslation('guide')
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const reads = CATALOG.filter((e) => e.effect === 'read').length
@@ -51,29 +53,36 @@ export function GuideTools() {
   return (
     <>
       <Panel>
-        <PanelTitle hint={`${String(CATALOG.length)} in total`}>
-          What the assistant can do
+        <PanelTitle hint={t('tools.inTotal', { count: CATALOG.length })}>
+          {t('tools.canDo.title')}
         </PanelTitle>
         <Txt size="sm" tone="secondary">
-          The assistant does not tap your screens for you. It calls the same {CATALOG.length}{' '}
-          operations the buttons call — the identical code path, with the identical checks. There is
-          no second way in, which is why an assistant edit lands in your history looking exactly
-          like one you made yourself.
+          {t('tools.canDo.body', { count: CATALOG.length })}
         </Txt>
 
         <View style={{ marginTop: space[3], gap: space[2] }}>
-          <Stat n={reads} label="ways to look" hint="reading never changes anything" />
-          <Stat n={writes} label="ways to change" hint="every one of them undoable…" />
-          <Stat n={destructive} label="marked destructive" hint="…except two, which ask first" />
+          <Stat
+            n={reads}
+            label={t('tools.stats.reads.label', { count: reads })}
+            hint={t('tools.stats.reads.hint')}
+          />
+          <Stat
+            n={writes}
+            label={t('tools.stats.writes.label', { count: writes })}
+            hint={t('tools.stats.writes.hint')}
+          />
+          <Stat
+            n={destructive}
+            label={t('tools.stats.destructive.label', { count: destructive })}
+            hint={t('tools.stats.destructive.hint')}
+          />
         </View>
 
         <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
-          Two of those {destructive} cannot be undone at all — the ones that replace or empty the
-          whole store. Those are never offered to the assistant unless your own words ask for them,
-          and they stop for a confirmation even then.
+          {t('tools.canDo.irreversible', { count: destructive })}
         </Txt>
         <Button
-          label="Open the assistant"
+          label={t('tools.canDo.open')}
           icon="message-square"
           variant="outline"
           onPress={() => navigation.navigate('Assistant')}
@@ -83,87 +92,56 @@ export function GuideTools() {
 
       <Columns>
         <Panel>
-          <PanelTitle hint="the part that actually holds">
-            What stops the wrong one running
-          </PanelTitle>
+          <PanelTitle hint={t('tools.gate.hint')}>{t('tools.gate.title')}</PanelTitle>
           <Txt size="sm" tone="secondary">
-            A language model can ask for anything. It can name a tool it was never shown, or invent
-            one that does not exist — smaller models do this regularly, and it is not a sign that
-            something has gone wrong. So jojo does not rely on the model being careful.
+            {t('tools.gate.body')}
           </Txt>
 
           <ToolGateFigure total={CATALOG.length} />
 
           <Txt size="sm" weight="medium" style={{ marginTop: space[4] }}>
-            The distinction that matters
+            {t('tools.gate.distinctionTitle')}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[1.5] }}>
-            Choosing what to show the model is a hint. Checking what it actually called is a rule,
-            and the rule depends on who chose the set. Where the screen fixes it — Ask the graph, a
-            scout pipeline — a call to anything outside it is refused before anything is looked up,
-            let alone run. In a chat the set is jojo&apos;s guess at what you need, so a call
-            outside it is not refused: it goes to the same approval check as every other call, which
-            asks you first unless the conversation is set to run on its own. The one exception is
-            clearing your records, the only thing that cannot be undone: it is refused unless you
-            asked to wipe everything in so many words.
+            {t('tools.gate.distinction')}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
-            This is why the Graph screen&apos;s &ldquo;Ask the graph&rdquo; box can safely offer two
-            read-only tools. It is not trusting the model to stay within them.
+            {t('tools.gate.askGraph')}
           </Txt>
         </Panel>
 
         <Panel>
-          <PanelTitle hint="so a request never stops halfway">
-            How it picks the right one
-          </PanelTitle>
+          <PanelTitle hint={t('tools.pick.hint')}>{t('tools.pick.title')}</PanelTitle>
           <Txt size="sm" tone="secondary">
-            Showing a model all {CATALOG.length} tools at once costs about fifteen thousand words of
-            the space it has to think in — before you have typed anything. On a small model running
-            on your own machine, that can be more space than it has. So jojo narrows the list to
-            what your words point at.
+            {t('tools.pick.cost', { count: CATALOG.length })}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
-            Narrowing carelessly is worse than not narrowing. Most operations need something to act
-            on: you cannot attach a keyword without a keyword, or update a document without a
-            document. Hide the tool that makes the thing, and the assistant stops halfway with
-            nothing on screen explaining why.
+            {t('tools.pick.careless')}
           </Txt>
 
           <ToolGraphFigure />
 
           <Txt size="sm" weight="medium" style={{ marginTop: space[4] }}>
-            When it is not sure, it does not narrow
+            {t('tools.pick.unsureTitle')}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[1.5] }}>
-            &ldquo;Remind me about Baylor on Thursday&rdquo; is clear, and jojo offers about a fifth
-            of the catalog. &ldquo;Actually, that was the other one&rdquo; is not clear about
-            anything — so it offers everything, exactly as it would have before any of this existed.
-            Being unsure costs a little speed. Guessing would cost you your answer.
+            {t('tools.pick.unsure')}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
-            A conversation only ever gains tools. Nothing you have already used is taken away by a
-            later question.
+            {t('tools.pick.onlyGains')}
           </Txt>
         </Panel>
 
         <Panel>
-          <PanelTitle hint="your choice, and it changes where your words go">
-            Which model does this
-          </PanelTitle>
+          <PanelTitle hint={t('tools.model.hint')}>{t('tools.model.title')}</PanelTitle>
           <Txt size="sm" tone="secondary">
-            jojo talks to whatever you point it at in Settings. A model running on a machine you
-            control — Ollama, vLLM, LM Studio — is the default, and it is the only arrangement where
-            nothing you write leaves this device.
+            {t('tools.model.local')}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
-            You can also use Claude, OpenAI and others with an API key. That is a real trade and the
-            screen says so plainly: your records go to that company and are billed to your account.
-            The key is kept on this device, is never included in a backup, and is never sent
-            anywhere but the provider you chose.
+            {t('tools.model.cloud')}
           </Txt>
           <Button
-            label="Open Settings"
+            label={t('tools.model.openSettings')}
             icon="settings"
             variant="outline"
             onPress={() => navigation.navigate('Settings')}
@@ -171,14 +149,10 @@ export function GuideTools() {
           />
 
           <Txt size="sm" weight="medium" style={{ marginTop: space[4] }}>
-            If the assistant seems to have stopped reading
+            {t('tools.model.truncatedTitle')}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[1.5] }}>
-            A local model with too little room silently drops the front of what it was sent, and
-            then answers confidently about a question it never fully saw. jojo compares what the
-            server says it read against what was actually sent, and tells you when the two disagree
-            — because the alternative is an assistant that appears to be bad at its job rather than
-            short of room.
+            {t('tools.model.truncated')}
           </Txt>
         </Panel>
       </Columns>
@@ -230,15 +204,20 @@ function Stat({ n, label, hint }: { n: number; label: string; hint: string }) {
 type GateTone = 'plain' | 'gate' | 'stop'
 
 function ToolGateFigure({ total }: { total: number }) {
+  const { t } = useTranslation('guide')
   const c = useColors()
 
   const steps: { label: string; tone: GateTone; note?: string }[] = [
-    { label: 'what you typed', tone: 'plain' },
-    { label: 'pick the likely tools', tone: 'gate', note: `unclear? offer all ${String(total)}` },
-    { label: 'add what those tools need', tone: 'plain', note: 'so no chain dead-ends' },
-    { label: 'the model chooses one', tone: 'plain' },
-    { label: 'was it offered?', tone: 'stop', note: 'no? refused, nothing runs' },
-    { label: 'your records change', tone: 'plain' },
+    { label: t('tools.gateFigure.typed'), tone: 'plain' },
+    {
+      label: t('tools.gateFigure.pick'),
+      tone: 'gate',
+      note: t('tools.gateFigure.pickNote', { count: total }),
+    },
+    { label: t('tools.gateFigure.add'), tone: 'plain', note: t('tools.gateFigure.addNote') },
+    { label: t('tools.gateFigure.choose'), tone: 'plain' },
+    { label: t('tools.gateFigure.offered'), tone: 'stop', note: t('tools.gateFigure.offeredNote') },
+    { label: t('tools.gateFigure.change'), tone: 'plain' },
   ]
 
   const ink: Record<GateTone, string> = {
@@ -257,15 +236,7 @@ function ToolGateFigure({ total }: { total: number }) {
       <View
         accessible
         accessibilityRole="image"
-        accessibilityLabel={
-          'Six steps, top to bottom. One, what you typed. Two, jojo picks the tools your words ' +
-          `point at — and if your words are unclear it offers all ${String(total)} rather than ` +
-          'guessing. Three, it adds whatever those tools depend on, so no chain can dead-end. ' +
-          'Four, the model chooses one tool. Five, jojo checks whether that tool was actually ' +
-          'offered; if it was not, the call is refused and nothing runs. Six, only then do your ' +
-          'records change. The fifth step is the one that enforces anything — the second is only ' +
-          'a hint, because a model can name a tool it was never shown.'
-        }
+        accessibilityLabel={t('tools.gateFigure.description', { count: total })}
       >
         {steps.map((step, i) => (
           <View key={step.label}>
@@ -301,8 +272,7 @@ function ToolGateFigure({ total }: { total: number }) {
       </View>
 
       <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-        Step two saves you tokens. Step five is the one that keeps you safe — and it runs whether or
-        not step two narrowed anything.
+        {t('tools.gateFigure.caption')}
       </Txt>
     </View>
   )
@@ -328,34 +298,27 @@ function ToolGateFigure({ total }: { total: number }) {
  * caption above them instead — each block is one dependency, not step one of
  * three.
  */
+/** Tool names are identifiers and stay as written; `needs` is a key under `tools.graphFigure.needs`. */
 const PULLS: { asked: string; needs: string; pulled: string }[] = [
-  { asked: 'keyword.attach', needs: 'a keyword', pulled: 'keyword.create' },
-  { asked: 'vault.file.update', needs: 'a file', pulled: 'vault.file.add' },
-  { asked: 'scout.posting.promote', needs: 'a posting', pulled: 'scout.posting.save' },
+  { asked: 'keyword.attach', needs: 'keyword', pulled: 'keyword.create' },
+  { asked: 'vault.file.update', needs: 'file', pulled: 'vault.file.add' },
+  { asked: 'scout.posting.promote', needs: 'posting', pulled: 'scout.posting.save' },
 ]
 
 function ToolGraphFigure() {
+  const { t } = useTranslation('guide')
   const c = useColors()
 
   return (
     <View style={{ marginTop: space[4] }}>
       <Txt size="xs" tone="muted">
-        Three examples, in no order. Each is one tool your words asked for, what it cannot run
-        without, and the tool jojo offers alongside it so the chain can finish.
+        {t('tools.graphFigure.intro')}
       </Txt>
 
       <View
         accessible
         accessibilityRole="image"
-        accessibilityLabel={
-          'Three examples. Asking for keyword.attach also offers keyword.create, because ' +
-          'attaching a keyword needs a keyword that already exists. Asking for ' +
-          'vault.file.update also offers vault.file.add, because updating a document needs a ' +
-          'document. Asking for scout.posting.promote also offers scout.posting.save, because ' +
-          'promoting a saved posting needs a saved posting. In every case jojo works the ' +
-          'dependency out from the tool’s own input, and offers both tools together — so the ' +
-          'assistant is never handed a first step with no way to reach the second.'
-        }
+        accessibilityLabel={t('tools.graphFigure.description')}
         style={{ marginTop: space[2] }}
       >
         {PULLS.map((pull, i) => (
@@ -372,7 +335,7 @@ function ToolGraphFigure() {
             <View style={[s.row, styles.gateNote]}>
               <Feather name="corner-down-right" size={14} color={c.hairlineStrong} />
               <Txt size="xs" tone="secondary" style={s.fill}>
-                needs {pull.needs}, so jojo also offers
+                {t(`tools.graphFigure.needs.${pull.needs}`)}
               </Txt>
             </View>
 
@@ -390,12 +353,10 @@ function ToolGraphFigure() {
       {/* The counterfactual, said once rather than drawn as a fourth block: a
           broken chain has no picture, which is the problem. */}
       <Txt size="xs" tone="muted" style={{ marginTop: space[3] }}>
-        Without this, the assistant could be offered the first tool and not the second — and would
-        stop halfway with nothing on screen to say why.
+        {t('tools.graphFigure.without')}
       </Txt>
       <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-        jojo reads each requirement out of the tool&apos;s own definition, so a tool added tomorrow
-        is covered without anybody updating a list.
+        {t('tools.graphFigure.derived')}
       </Txt>
     </View>
   )

@@ -14,7 +14,9 @@ import type { Palette } from '@/theme/tokens'
  */
 
 import { incidentEdges, indexIncident, neighbours, otherEnd } from '@jojo/service/core/algebra'
-import { EDGE_SCHEMA } from '@jojo/service/core/model'
+import { domain } from '@/i18n/domain'
+import { i18next } from '@/i18n/i18n'
+import { localised } from '@/lib/localised'
 import type { Label } from '@jojo/service/data/labels'
 import type { Match, SavedPosting } from '@jojo/service/data/scout'
 import type { Application } from '@jojo/service/data/seed'
@@ -37,18 +39,18 @@ export const GRAPH_NODE_TYPES = [
 
 export type GraphNodeType = (typeof GRAPH_NODE_TYPES)[number]
 
-export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
-  application: 'Application',
-  org: 'Employer',
-  role: 'Role',
-  item: 'Date or reminder',
-  file: 'File',
-  link: 'Link',
-  snippet: 'Snippet',
-  posting: 'Saved posting',
-  match: 'Match',
-  keyword: 'Keyword',
-}
+export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = localised({
+  application: 'messages:graph.type.application',
+  org: 'messages:graph.type.org',
+  role: 'messages:graph.type.role',
+  item: 'messages:graph.type.item',
+  file: 'messages:graph.type.file',
+  link: 'messages:graph.type.link',
+  snippet: 'messages:graph.type.snippet',
+  posting: 'messages:graph.type.posting',
+  match: 'messages:graph.type.match',
+  keyword: 'messages:graph.type.keyword',
+})
 
 /**
  * How one node is joined to another. Read as `<from> —REL→ <to>`.
@@ -81,14 +83,30 @@ export type GraphRel = (typeof GRAPH_RELS)[number]
  * strings instead, which is how one of them came to read 'came from' for an
  * edge the model calls 'became'. `IS` is the one line this file owns, because
  * it is the one edge the model does not have.
+ *
+ * Getters, not values: the stored five read `EDGE_SCHEMA`'s English through
+ * the `domain` namespace (`domain.rel`), so each is looked up in the language
+ * on screen when it is shown, not frozen in English at import.
  */
 export const REL_LABEL: Record<GraphRel, string> = {
-  AT: EDGE_SCHEMA.AT.label,
-  IS: 'is a',
-  ABOUT: EDGE_SCHEMA.ABOUT.label,
-  FILED_UNDER: EDGE_SCHEMA.FILED_UNDER.label,
-  TAGS: EDGE_SCHEMA.TAGS.label,
-  BECAME: EDGE_SCHEMA.BECAME.label,
+  get AT() {
+    return domain.rel('AT')
+  },
+  get IS() {
+    return i18next.t('messages:graph.isA')
+  },
+  get ABOUT() {
+    return domain.rel('ABOUT')
+  },
+  get FILED_UNDER() {
+    return domain.rel('FILED_UNDER')
+  },
+  get TAGS() {
+    return domain.rel('TAGS')
+  },
+  get BECAME() {
+    return domain.rel('BECAME')
+  },
 }
 
 export type GraphNode = {
@@ -221,7 +239,7 @@ export function buildGraph(input: GraphInput): Graph {
   }
 
   for (const m of input.matches) {
-    const id = add('match', m.id, m.role, `${m.fit}% fit`)
+    const id = add('match', m.id, m.role, i18next.t('messages:graph.fit', { fit: m.fit }))
     if (m.applicationId) join(id, graphNodeId('application', m.applicationId), 'BECAME')
   }
 
@@ -310,38 +328,62 @@ const hasNeighbourOfType = (graph: Graph, node: GraphNode, type: GraphNodeType) 
 export const QUERY_EXAMPLES: QueryExample[] = [
   {
     id: 'undated',
-    question: 'Applications with nothing dated against them',
-    why: 'These are invisible on the calendar and in the week ahead, however live they are.',
+    get question() {
+      return i18next.t('messages:graph.query.undated.question')
+    },
+    get why() {
+      return i18next.t('messages:graph.query.undated.why')
+    },
     run: (g) => typed(g, 'application').filter((n) => !hasNeighbourOfType(g, n, 'item')),
   },
   {
     id: 'untagged',
-    question: 'Applications carrying no keyword',
-    why: 'A record nobody has filed is a record no filter will ever surface.',
+    get question() {
+      return i18next.t('messages:graph.query.untagged.question')
+    },
+    get why() {
+      return i18next.t('messages:graph.query.untagged.why')
+    },
     run: (g) => typed(g, 'application').filter((n) => !hasNeighbourOfType(g, n, 'keyword')),
   },
   {
     id: 'orphan-files',
-    question: 'Files not filed under any application',
-    why: 'Documents drift; this is what says which ones nothing is pointing at.',
+    get question() {
+      return i18next.t('messages:graph.query.orphanFiles.question')
+    },
+    get why() {
+      return i18next.t('messages:graph.query.orphanFiles.why')
+    },
     run: (g) => typed(g, 'file').filter((n) => !hasNeighbourOfType(g, n, 'application')),
   },
   {
     id: 'orphan-links',
-    question: 'Links not filed under any application',
-    why: 'The same question for the postings and pages you saved to come back to.',
+    get question() {
+      return i18next.t('messages:graph.query.orphanLinks.question')
+    },
+    get why() {
+      return i18next.t('messages:graph.query.orphanLinks.why')
+    },
     run: (g) => typed(g, 'link').filter((n) => !hasNeighbourOfType(g, n, 'application')),
   },
   {
     id: 'busiest',
-    question: 'The employers you have the most going on with',
-    why: 'Counted across every collection at once — applications, dates, files and links.',
+    get question() {
+      return i18next.t('messages:graph.query.busiest.question')
+    },
+    get why() {
+      return i18next.t('messages:graph.query.busiest.why')
+    },
     run: (g) => [...typed(g, 'org')].sort((a, b) => b.degree - a.degree).slice(0, 5),
   },
   {
     id: 'unpromoted',
-    question: 'Matches and postings that never became applications',
-    why: 'Leads go stale silently; nothing in the list views ever says which.',
+    get question() {
+      return i18next.t('messages:graph.query.unpromoted.question')
+    },
+    get why() {
+      return i18next.t('messages:graph.query.unpromoted.why')
+    },
     run: (g) =>
       [...typed(g, 'match'), ...typed(g, 'posting')].filter(
         (n) => !hasNeighbourOfType(g, n, 'application'),
@@ -394,10 +436,14 @@ export const DEFAULT_PATTERN: PatternQuery = {
  * was to teach the shape to someone who already reads query languages.
  */
 export function describePattern(q: PatternQuery): string {
-  const start = q.start === 'any' ? 'Anything' : `${NODE_TYPE_LABEL[q.start]}s`
-  const rel = q.rel === 'any' ? 'linked to' : REL_LABEL[q.rel]
-  const end = q.end === 'any' ? 'anything' : `a ${NODE_TYPE_LABEL[q.end].toLowerCase()}`
-  return q.quantifier === 'has' ? `${start} ${rel} ${end}` : `${start} not ${rel} ${end}`
+  const t = (key: string) => i18next.t(`messages:graph.pattern.${key}`)
+  const start = q.start === 'any' ? t('startAny') : t(`startType.${q.start}`)
+  const rel = q.rel === 'any' ? t('relAny') : REL_LABEL[q.rel]
+  const end = q.end === 'any' ? t('endAny') : t(`endType.${q.end}`)
+  return i18next.t(
+    q.quantifier === 'has' ? 'messages:graph.pattern.has' : 'messages:graph.pattern.missing',
+    { start, rel, end },
+  )
 }
 
 /** Runs the pattern over the graph. Pure, and cheap enough to run per keystroke. */

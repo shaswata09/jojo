@@ -4,5 +4,40 @@
     "description": "Die Sprache, in der jojo angezeigt wird. Deine Einträge bleiben in der Sprache, in der du sie geschrieben hast.",
     "system": "Wie dieses Gerät ({{name}})",
     "restartForDirection": "Arabisch wird nach einem Neustart von jojo von rechts nach links angezeigt."
+  },
+  "actions": {
+    "undo": "Rückgängig",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "tryAgain": "Erneut versuchen",
+    "preview": "Vorschau",
+    "moreFor": "Weitere Aktionen für {{name}}",
+    "save": "Speichern",
+    "done": "Fertig",
+    "openNamed": "{{name}} öffnen",
+    "clear": "Leeren",
+    "clearNamed": "{{name}} leeren",
+    "notNow": "Nicht jetzt",
+    "duplicate": "Duplizieren",
+    "remove": "Entfernen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "close": "Schließen",
+    "clearSearch": "Suche leeren",
+    "copy": "Kopieren",
+    "copied": "Kopiert"
+  },
+  "discard": {
+    "title": "Ungespeicherte Änderungen verwerfen?",
+    "description": "Was du hier eingegeben hast, ist nirgends gespeichert. Wenn du gehst, ist es weg – und das lässt sich nicht rückgängig machen.",
+    "confirm": "Verwerfen"
+  },
+  "filter": {
+    "all": "Alle"
+  },
+  "pageOptions": {
+    "title": "Seitenoptionen",
+    "description": "Sie gelten nur für diesen Bildschirm und nur für diesen Besuch."
   }
 }

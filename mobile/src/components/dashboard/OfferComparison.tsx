@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Chip } from '@/components/ui/Chip'
@@ -6,13 +7,14 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { annualised, comparable, parseComp } from '@jojo/service/core/comp'
 import type { ParsedComp } from '@jojo/service/core/comp'
-import { offerDaysLeft, shortDate } from '@jojo/service/core/dates'
+import { offerDaysLeft } from '@jojo/service/core/dates'
 import { displayName } from '@jojo/service/data/seed'
 import { useApplications } from '@/lib/store-context'
 import { TODAY } from '@/lib/today'
 import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Two offers, compared, on the screen a phone opens on.
@@ -28,6 +30,8 @@ import { space } from '@/theme/tokens'
  * and inventing one would be worse than declining to sort.
  */
 export function OfferComparison() {
+  const { t, i18n } = useTranslation('components')
+  const domain = useDomain()
   const { offers } = useApplications()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -49,7 +53,7 @@ export function OfferComparison() {
 
   return (
     <Panel>
-      <PanelTitle hint={`${offers.length} open`}>Offers, side by side</PanelTitle>
+      <PanelTitle hint={t('offers.open', { count: offers.length })}>{t('offers.title')}</PanelTitle>
 
       {ordered.map(({ application, parsed: p, daysLeft }, i) => (
         <View key={application.id}>
@@ -68,23 +72,25 @@ export function OfferComparison() {
               {/* The user's own words. The figure on the right is a reading of
                   this, never a replacement for it. */}
               <Txt size="xs" tone="muted">
-                {application.offer.comp || 'Package not stated'}
+                {application.offer.comp || t('offers.noPackage')}
               </Txt>
               <Txt size="xs" tone="muted">
-                Respond by {shortDate(application.offer.respondBy)}
+                {t('offers.respondBy', { date: domain.shortDate(application.offer.respondBy) })}
               </Txt>
             </View>
 
             <View style={{ alignItems: 'flex-end', gap: space[1] }}>
               <Txt size="sm" mono>
-                {p ? `${annualised(p).toLocaleString()}${p.period === 'year' ? '' : '*'}` : '—'}
+                {p
+                  ? `${annualised(p).toLocaleString(i18n.language)}${p.period === 'year' ? '' : '*'}`
+                  : '—'}
               </Txt>
               <Chip tone={daysLeft <= 3 ? 'red' : daysLeft <= 7 ? 'amber' : 'gray'} size="sm">
                 {daysLeft < 0
-                  ? 'passed'
+                  ? t('offers.passed')
                   : daysLeft === 0
-                    ? 'today'
-                    : `${String(daysLeft)} day${daysLeft === 1 ? '' : 's'}`}
+                    ? t('offers.today')
+                    : t('offers.days', { count: daysLeft })}
               </Chip>
             </View>
           </View>
@@ -92,12 +98,8 @@ export function OfferComparison() {
       ))}
 
       <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
-        {rankable
-          ? 'Yearly figures, read from what you typed.'
-          : 'Not ranked — the packages are in different currencies, and jojo has no exchange rate.'}
-        {parsed.some((p) => p.period !== 'year')
-          ? ' * annualised at 12 months, 52 weeks or 2,080 hours.'
-          : ''}
+        {rankable ? t('offers.ranked') : t('offers.notRanked')}
+        {parsed.some((p) => p.period !== 'year') ? t('offers.annualised') : ''}
       </Txt>
     </Panel>
   )

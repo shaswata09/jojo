@@ -60,11 +60,11 @@ export function ToolEvalTable() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[34rem] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-hairline text-left text-xs text-text-3">
-              <th className="py-1.5 pr-3 font-medium">Model</th>
-              <th className="py-1.5 pr-3 font-medium">Tools offered</th>
-              <th className="py-1.5 pr-3 font-medium">Correct</th>
-              <th className="py-1.5 pr-3 font-medium">Prompt size</th>
+            <tr className="border-b border-hairline text-start text-xs text-text-3">
+              <th className="py-1.5 pe-3 font-medium">Model</th>
+              <th className="py-1.5 pe-3 font-medium">Tools offered</th>
+              <th className="py-1.5 pe-3 font-medium">Correct</th>
+              <th className="py-1.5 pe-3 font-medium">Prompt size</th>
               <th className="py-1.5 font-medium">Median</th>
             </tr>
           </thead>
@@ -77,19 +77,21 @@ export function ToolEvalTable() {
                     key={`${s.model}-${s.condition}`}
                     className={i === 0 ? 'border-t border-hairline' : ''}
                   >
-                    <td className="py-1.5 pr-3">
+                    <td className="py-1.5 pe-3">
                       {i === 0 ? <span className="text-text-1">{s.label}</span> : null}
                     </td>
-                    <td className="py-1.5 pr-3 text-text-2">
+                    <td className="py-1.5 pe-3 text-text-2">
                       {s.condition === 'full' ? 'all of them' : 'narrowed'}
-                      <span className="tabular ml-1.5 text-xs text-text-3">{s.meanTools} avg</span>
+                      <span className="tabular ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
+                        {s.meanTools} avg
+                      </span>
                     </td>
-                    <td className="tabular py-1.5 pr-3">
+                    <td className="tabular py-1.5 pe-3">
                       <span className={s.passed === s.total ? 'text-text-1' : 'text-warning'}>
                         {s.passed}/{s.total}
                       </span>
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-2">
+                    <td className="tabular py-1.5 pe-3 text-text-2">
                       {s.meanPromptTokens.toLocaleString()}
                     </td>
                     <td className="tabular py-1.5 text-text-3">

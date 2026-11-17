@@ -1,0 +1,382 @@
+{
+  "stage": {
+    "draft": "下書き",
+    "submitted": "提出済み",
+    "screen": "書類選考後の電話",
+    "interview": "面接",
+    "offer": "内定",
+    "closed": "終了"
+  },
+  "kind": {
+    "deadline": "締め切り",
+    "interview": "面接",
+    "visit": "訪問",
+    "call": "電話",
+    "prep": "準備",
+    "admin": "事務",
+    "follow-up": "フォローアップ"
+  },
+  "outcome": {
+    "rejected": "不採用",
+    "withdrawn": "取り下げ済み",
+    "accepted": "承諾済み",
+    "declined": "辞退済み",
+    "ghosted": "音信不通 — 返事なし"
+  },
+  "outcomeAction": {
+    "rejected": "不採用",
+    "withdrawn": "取り下げ済み",
+    "accepted": "内定を承諾",
+    "declined": "内定を辞退",
+    "ghosted": "返事がないまま終了"
+  },
+  "format": {
+    "phone": "電話",
+    "video": "ビデオ",
+    "onsite": "対面"
+  },
+  "verdict": {
+    "strong": "よく合っている",
+    "worth-tailoring": "調整する価値あり",
+    "a-stretch": "少し背伸び",
+    "not-measured": "まだ評価していません"
+  },
+  "background": {
+    "education": "学歴",
+    "employment": "職歴",
+    "publication": "出版物",
+    "patent": "特許",
+    "grant": "助成金",
+    "leadership": "リーダーシップ",
+    "outreach": "アウトリーチ",
+    "training": "能力開発",
+    "other": "その他",
+    "award": "受賞",
+    "teaching": "教育",
+    "service": "社会貢献",
+    "project": "プロジェクト",
+    "certification": "資格",
+    "skill": "スキル",
+    "language": "言語",
+    "volunteering": "ボランティア",
+    "membership": "所属団体"
+  },
+  "tone": {
+    "teal": "青",
+    "cyan": "シアン",
+    "green": "緑",
+    "amber": "琥珀",
+    "red": "赤",
+    "pink": "ピンク",
+    "violet": "紫",
+    "gray": "グレー"
+  },
+  "mark": {
+    "bold": "この求人向けに新しく書いた、または書き直した",
+    "italic": "言い回しを変えた",
+    "underline": "上に移した、または比重を上げた"
+  },
+  "document": {
+    "cv": "履歴書",
+    "research-statement": "研究ステートメント",
+    "teaching-statement": "教育ステートメント",
+    "cover-letter": "カバーレター",
+    "other": "書類"
+  },
+  "how": {
+    "filed-under": "この応募に整理済み",
+    "same-url": "ウェブアドレスで一致",
+    "via-posting": "スカウトが見つけた求人から"
+  },
+  "contactRole": {
+    "recommender": "推薦者",
+    "contact": "窓口"
+  },
+  "approval": {
+    "manual": "手動",
+    "semi": "半自動",
+    "auto": "自動"
+  },
+  "approvalSaid": {
+    "manual": "この会話で何かを書き込む前に、毎回確認します。",
+    "semi": "編集はすぐに反映されます。削除や消去の前には確認します。",
+    "auto": "削除も含め、すべてすぐに実行されます。確認するのは、ストア全体を空にするか置き換えるときだけです。"
+  },
+  "funnel": {
+    "0": "応募",
+    "1": "返信",
+    "2": "書類選考後の電話",
+    "3": "面接",
+    "4": "内定"
+  },
+  "band": {
+    "0": "進行中",
+    "1": "内定",
+    "2": "不採用",
+    "3": "取り下げ済み",
+    "4": "返事なし"
+  },
+  "dimension": {
+    "source": "応募経路",
+    "role": "職種"
+  },
+  "kpi": {
+    "label": {
+      "response": "返信率",
+      "interview": "面接率",
+      "offer": "内定率",
+      "reply": "返信までの日数（中央値）"
+    },
+    "note": {
+      "response_other": "{{of}} 件中 {{count}} 件に返信あり",
+      "interview_other": "{{of}} 件中 {{count}} 件が面接に進んだ",
+      "offer_other": "{{of}} 件中 {{count}} 件が内定に至った",
+      "replyNone": "両方の日付が記録された返信はまだありません",
+      "reply_other": "{{count}} 件の返信にもとづく"
+    },
+    "days_other": "{{count}} 日",
+    "typicalRate": "一般的には {{value}}%",
+    "typicalDays": "一般的には {{days}}"
+  },
+  "rel": {
+    "AT": "所属先",
+    "ABOUT": "対象",
+    "FILED_UNDER": "整理先",
+    "TAGS": "タグ付け先",
+    "FROM": "出どころ",
+    "BECAME": "変換先",
+    "COPY_OF": "コピー元",
+    "SUBJECT": "対象",
+    "OBJECT": "指す先"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "ローカルサーバー（vLLM, LM Studio, llama.cpp）",
+    "anthropic": "Anthropic（Claude）",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA（build.nvidia.com） — 無料、レート制限あり"
+  },
+  "month": {
+    "1": "1月",
+    "2": "2月",
+    "3": "3月",
+    "4": "4月",
+    "5": "5月",
+    "6": "6月",
+    "7": "7月",
+    "8": "8月",
+    "9": "9月",
+    "10": "10月",
+    "11": "11月",
+    "12": "12月"
+  },
+  "monthShort": {
+    "1": "1月",
+    "2": "2月",
+    "3": "3月",
+    "4": "4月",
+    "5": "5月",
+    "6": "6月",
+    "7": "7月",
+    "8": "8月",
+    "9": "9月",
+    "10": "10月",
+    "11": "11月",
+    "12": "12月"
+  },
+  "weekdayShort": {
+    "0": "月",
+    "1": "火",
+    "2": "水",
+    "3": "木",
+    "4": "金",
+    "5": "土",
+    "6": "日"
+  },
+  "weekday": {
+    "0": "日曜日",
+    "1": "月曜日",
+    "2": "火曜日",
+    "3": "水曜日",
+    "4": "木曜日",
+    "5": "金曜日",
+    "6": "土曜日"
+  },
+  "dayMonth": "{{month}}{{day}}日",
+  "monthYear": "{{year}}年{{month}}",
+  "quarter": "{{year}}年第{{quarter}}四半期",
+  "weekdayNarrow": {
+    "0": "月",
+    "1": "火",
+    "2": "水",
+    "3": "木",
+    "4": "金",
+    "5": "土",
+    "6": "日"
+  },
+  "action": {
+    "detailsEdited": "詳細を編集",
+    "draftCreated": "下書きを作成",
+    "offerReceived": "内定を獲得",
+    "duplicated": "複製",
+    "addedFromScout": "求人スカウトから追加",
+    "addedFromPosting": "保存した求人から追加",
+    "noteEdited": "メモを編集",
+    "offerCleared": "内定の詳細を消去",
+    "flagged": "フォローアップ用にフラグ付け",
+    "flagCleared": "フラグを解除",
+    "movedTo": {
+      "draft": "「下書き」に移動",
+      "submitted": "「提出済み」に移動",
+      "screen": "「書類選考後の電話」に移動",
+      "interview": "「面接」に移動",
+      "offer": "「内定」に移動",
+      "closed": "「終了」に移動"
+    },
+    "addedAt": {
+      "draft": "「下書き」で追加",
+      "submitted": "「提出済み」で追加",
+      "screen": "「書類選考後の電話」で追加",
+      "interview": "「面接」で追加",
+      "offer": "「内定」で追加",
+      "closed": "「終了」で追加"
+    },
+    "interviewScheduled": {
+      "phone": "電話面接を設定",
+      "video": "ビデオ面接を設定",
+      "onsite": "対面面接を設定"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "今日",
+      "yesterday": "昨日",
+      "days_other": "{{count}} 日前"
+    },
+    "when": {
+      "today": "今日",
+      "tomorrow": "明日",
+      "inDays_other": "{{count}} 日後",
+      "overdue_other": "{{count}} 日超過"
+    },
+    "inline": {
+      "today": "今日",
+      "tomorrow": "明日"
+    },
+    "completed": {
+      "today": "今日完了",
+      "yesterday": "昨日完了",
+      "days_other": "{{count}} 日前に完了",
+      "on": "{{date}} に完了"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "内定",
+      "overdue": "期限切れ",
+      "deadline": "締め切り",
+      "interview": "面接"
+    },
+    "headline": {
+      "reply": "{{org}} に返信",
+      "submitOrLetGo": "{{org}} に提出するか見送る",
+      "recordInterview": "{{org}} の面接を記録",
+      "recordVisit": "{{org}} の訪問を記録",
+      "recordCall": "{{org}} との電話を記録",
+      "catchUp": "{{org}} の遅れを取り戻す",
+      "submit": "{{org}} に提出",
+      "prepare": "{{org}} の準備をする",
+      "dateInterview": "{{org}} の面接日を入れる"
+    },
+    "timing": {
+      "respondBy": "回答期限 {{date}} · {{when}}",
+      "wasDue": "期限は {{date}} でした · {{when}}",
+      "due": "期限 {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "日付未設定"
+    },
+    "button": {
+      "draftReply": "返信を下書き",
+      "recordOutcome": "結果を記録",
+      "acceptOrDecline": "承諾または辞退",
+      "openApplication": "応募を開く",
+      "draftMessage": "メッセージを下書き"
+    },
+    "undatedInterview": "面接段階ですが日付が何も入っていないため、今週の予定にもカレンダーにも表示できません。",
+    "unfiled": "この締め切りはどの応募にも整理されていません",
+    "unknownOrg": "不明"
+  },
+  "filed": {
+    "none": "未整理",
+    "one": "{{a}} に整理済み",
+    "two": "{{a}} と {{b}} に整理済み",
+    "many_other": "{{count}} 件の応募に整理済み"
+  },
+  "readBy": "{{model}} が読み取り · {{ago}}",
+  "missingSource": "保管庫にもう存在しない文書",
+  "undo": {
+    "nothing": {
+      "undo": "元に戻すものはありません。",
+      "redo": "やり直すものはありません。"
+    },
+    "changed": {
+      "undo": "元に戻すものはありません。その後変更されています",
+      "redo": "やり直すものはありません。その後変更されています"
+    },
+    "done": {
+      "undo": "元に戻しました",
+      "redo": "やり直しました"
+    },
+    "journal": "hidden",
+    "action": "元に戻す",
+    "superseded": {
+      "nothing": "何も元に戻していません",
+      "part": "一部はそのままにしました",
+      "named": "{{labels}} — その後これらの記録を変更しているため、今元に戻すとその変更も失われていました。",
+      "unnamed": "その後これらの記録を変更しているため、今元に戻すとその変更も失われていました。",
+      "separator": "、"
+    }
+  },
+  "write": {
+    "refused": "保存されませんでした",
+    "didNotFit": "この記録に合わない内容がありました。"
+  },
+  "announce": {
+    "stickyRemoved": "メモを削除しました"
+  },
+  "handover": {
+    "never": "このデバイスは一度も転送に使われていないため、これらの記録のコピーはここにしかありません。",
+    "clean": {
+      "today": "最後の転送は今日で、それ以降ここには何も書き込まれていません。もう一方のデバイスも同じ記録を持っています。",
+      "yesterday": "最後の転送は昨日で、それ以降ここには何も書き込まれていません。もう一方のデバイスも同じ記録を持っています。",
+      "daysAgo": "最後の転送は {{ago}}で、それ以降ここには何も書き込まれていません。もう一方のデバイスも同じ記録を持っています。"
+    },
+    "drifted": {
+      "today_other": "最後の転送は今日で、それ以降ここで {{count}} 件の変更がありました。もう一方のデバイスはその分遅れています。",
+      "yesterday_other": "最後の転送は昨日で、それ以降ここで {{count}} 件の変更がありました。もう一方のデバイスはその分遅れています。",
+      "daysAgo_other": "最後の転送は {{ago}}で、それ以降ここで {{count}} 件の変更がありました。もう一方のデバイスはその分遅れています。"
+    }
+  },
+  "backup": {
+    "records_other": "{{count}} 件の記録",
+    "links_other": "{{count}} 件のリンク",
+    "documents_zero": "ドキュメントなし",
+    "documents_other": "{{count}} 件のドキュメント",
+    "summary": "{{records}}、{{links}}、{{documents}}",
+    "summaryLoss": "{{records}}、{{links}}、{{documents}}（うち {{loss}}）",
+    "both": "{{a}} と {{b}}",
+    "leftOut": "{{what}}は読み込めないため除外されます",
+    "changed_other": "{{count}} 件の記録は変更された状態で戻ります",
+    "leftOutAndChanged": "{{leftOut}}。また、{{changed}}",
+    "replacesAll": {
+      "computer": "復元すると、現在あるすべての記録とすべてのドキュメントが置き換えられます",
+      "phone": "復元すると、このスマートフォンのすべての記録とすべてのドキュメントが置き換えられます"
+    },
+    "replacesKept": {
+      "computer_other": "復元すると、現在あるすべての記録とすべてのドキュメントが置き換えられます。ただし、ドキュメントなしで届く {{count}} 件の記録については、ここにある既存のコピーが保持されます",
+      "phone_other": "復元すると、このスマートフォンのすべての記録とすべてのドキュメントが置き換えられます。ただし、ドキュメントなしで届く {{count}} 件の記録については、ここにある既存のコピーが保持されます"
+    }
+  }
+}

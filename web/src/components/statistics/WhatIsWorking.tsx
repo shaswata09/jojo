@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Panel } from '@/components/common/Panel'
 import { comparisonsFor, MIN_ARM, rangeLabel } from '@jojo/service/core/segments'
 import type { Arm, Comparison } from '@jojo/service/core/segments'
 import { useScopedApplications } from '@/lib/roles-scope'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Which parts of the search are doing better, and whether that means anything.
@@ -31,6 +33,7 @@ import { useScopedApplications } from '@/lib/roles-scope'
  */
 
 function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
+  const { t } = useTranslation('statistics')
   const low = arm.interval.low * 100
   const width = Math.max(arm.interval.high * 100 - low, 1)
   return (
@@ -51,10 +54,10 @@ function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
         />
       </span>
 
-      <span className="whitespace-nowrap tabular-nums text-text-2">
-        {arm.count} of {arm.of}
-        <span className="ml-2 text-text-3">
-          {arm.rate}% · likely {rangeLabel(arm)}
+      <span className="whitespace-nowrap text-text-2 tabular-nums">
+        {t('whatIsWorking.countOf', { count: arm.count, of: arm.of })}
+        <span className="ms-2 text-text-3 [unicode-bidi:isolate]">
+          {t('whatIsWorking.rate', { rate: arm.rate, range: rangeLabel(arm) })}
         </span>
       </span>
     </li>
@@ -62,10 +65,14 @@ function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
 }
 
 function Group({ c }: { c: Comparison }) {
+  const { t } = useTranslation('statistics')
+  const domain = useDomain()
   return (
     <section>
       <h3 className="mb-2 text-sm font-medium">
-        {c.measure === 'replied' ? 'Replies' : 'Interviews'}, by {c.dimension}
+        {c.measure === 'replied'
+          ? t('whatIsWorking.groupReplied', { dimension: domain.dimension(c.dimension) })
+          : t('whatIsWorking.groupInterviews', { dimension: domain.dimension(c.dimension) })}
       </h3>
       <ul className="flex flex-col gap-2">
         {c.arms.map((arm) => (
@@ -73,17 +80,19 @@ function Group({ c }: { c: Comparison }) {
         ))}
       </ul>
       <p className="mt-2 text-xs text-text-3">
+        {/* The arm as written — a source or role tag the person named. Not
+            lowercased: that broke names ("LinkedIn") and German nouns. */}
         {c.confident
-          ? `The ranges do not overlap, so this is a real difference — ${c.best.label.toLowerCase()} is worth more of your effort.`
-          : 'The ranges overlap, so this is two numbers rather than a difference. More records will separate them or close the gap.'}
-        {c.tooFew > 0 &&
-          ` ${String(c.tooFew)} other ${c.tooFew === 1 ? 'group has' : 'groups have'} fewer than ${String(MIN_ARM)} records and ${c.tooFew === 1 ? 'is' : 'are'} not compared.`}
+          ? t('whatIsWorking.confident', { best: c.best.label })
+          : t('whatIsWorking.unconfident')}
+        {c.tooFew > 0 && ` ${t('whatIsWorking.tooFew', { count: c.tooFew, min: MIN_ARM })}`}
       </p>
     </section>
   )
 }
 
 export function WhatIsWorking() {
+  const { t } = useTranslation('statistics')
   // The roles picked in the top bar, like every other figure on this page.
   const { all } = useScopedApplications()
   const comparisons = useMemo(() => comparisonsFor(all), [all])
@@ -95,12 +104,9 @@ export function WhatIsWorking() {
   return (
     <Panel aria-labelledby="what-is-working">
       <h2 id="what-is-working" className="mb-1 text-base font-medium">
-        What is working
+        {t('whatIsWorking.title')}
       </h2>
-      <p className="mb-4 text-xs text-text-3">
-        The bar is where the true rate plausibly sits; the line is what you have measured. A wide
-        band means too few records to be sure yet.
-      </p>
+      <p className="mb-4 text-xs text-text-3">{t('whatIsWorking.intro')}</p>
       <div className="flex flex-col gap-5">
         {comparisons.map((c) => (
           <Group key={`${c.dimension}:${c.measure}`} c={c} />

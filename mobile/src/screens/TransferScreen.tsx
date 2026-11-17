@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/ui/Chip'
 import { Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
@@ -15,12 +16,10 @@ import { space } from '@/theme/tokens'
 
 type Role = 'send' | 'receive'
 
-const ROLES = [
-  { value: 'send', label: 'Send to a computer' },
-  { value: 'receive', label: 'Receive from a computer' },
-] as const satisfies readonly { value: Role; label: string }[]
+/** The two directions; each label is `screen.roles.<value>` in the catalog. */
+const ROLES = ['send', 'receive'] as const satisfies readonly Role[]
 
-type Group = { id: string; label: string; unit: string; hint: string; count: number }
+type Group = { id: string; label: string; hint: string; count: number }
 
 /**
  * Moving your jojo data between this phone and a computer, either way.
@@ -50,15 +49,14 @@ type Group = { id: string; label: string; unit: string; hint: string; count: num
  * this phone for its backup, chunk by chunk, instead of posting its own
  * (`lib/handoff-serve.ts`, `core/handoff-pull.ts`).
  *
- * Two phones still cannot pair — neither can show the other an animation to
- * read, because the scene is WebGPU and this app has no browser in it — and
- * two computers cannot either. Both sides of every transfer are this phone and
+ * Two phones still cannot pair — only the computer draws a pairing code, and
+ * only the phone scans one — and two computers cannot either. Both sides of every transfer are this phone and
  * a computer, on the same local network.
  *
  * ## What is real
  *
- * Both directions, all of it. The camera reads the key off the computer's
- * animation, `core/pairing.ts` agrees a session, and the phone opens a socket
+ * Both directions, all of it. The camera reads the key off the computer's QR
+ * code, `core/pairing.ts` agrees a session, and the phone opens a socket
  * on the local network. Receiving decrypts, authenticates and writes what
  * arrives with the same `repo/restore.ts` the browser uses for a backup file
  * (`lib/restore-received.ts`). Sending hands over this phone's backup in the
@@ -72,6 +70,7 @@ type Group = { id: string; label: string; unit: string; hint: string; count: num
  * point of showing them: what you are about to receive replaces exactly this.
  */
 export function TransferScreen() {
+  const { t } = useTranslation('transfer')
   const { all: applications } = useApplications()
   const { all: items, reminders } = useTimeline()
   const { links, files, snippets } = useVault()
@@ -87,23 +86,23 @@ export function TransferScreen() {
     () => [
       {
         id: 'applications',
-        label: 'Applications',
-        unit: 'applications',
-        hint: 'Every stage, note and outcome on each one',
+        label: t('groups.applications.label'),
+        hint: t('groups.applications.hint'),
         count: applications.length,
       },
       {
         id: 'timeline',
-        label: 'Reminders and events',
-        unit: 'reminders and events',
-        hint: `${reminders.length} remind you, ${items.length - reminders.length} are dated events`,
+        label: t('groups.timeline.label'),
+        hint: t('groups.timeline.hint', {
+          reminders: reminders.length,
+          events: items.length - reminders.length,
+        }),
         count: items.length,
       },
       {
         id: 'vault',
-        label: 'Links and snippets',
-        unit: 'links and snippets',
-        hint: `${links.length} links · ${snippets.length} snippets`,
+        label: t('groups.vault.label'),
+        hint: t('groups.vault.hint', { links: links.length, snippets: snippets.length }),
         count: links.length + snippets.length,
       },
       // Its own group rather than part of the vault, because it is the one the
@@ -111,30 +110,30 @@ export function TransferScreen() {
       // separable from its neighbours.
       {
         id: 'files',
-        label: 'Files',
-        unit: 'files',
-        hint: 'CVs, statements and anything else saved against an application',
+        label: t('groups.files.label'),
+        hint: t('groups.files.hint'),
         count: files.length,
       },
       {
         id: 'keywords',
-        label: 'Keywords',
-        unit: 'keywords',
-        hint: 'Your keyword list and every record it is attached to',
+        label: t('groups.keywords.label'),
+        hint: t('groups.keywords.hint'),
         count: labels.length,
       },
       {
         id: 'scout',
-        label: 'Job scout',
-        unit: 'job scout records',
-        hint: `${pipelines.length} pipelines · ${postings.length} saved postings · ${matches.length} matches`,
+        label: t('groups.scout.label'),
+        hint: t('groups.scout.hint', {
+          pipelines: pipelines.length,
+          postings: postings.length,
+          matches: matches.length,
+        }),
         count: pipelines.length + postings.length + matches.length,
       },
       {
         id: 'profile',
-        label: 'Profile',
-        unit: 'profile',
-        hint: 'Your basics, links, target roles and match terms',
+        label: t('groups.profile.label'),
+        hint: t('groups.profile.hint'),
         count: profileIsBlank ? 0 : 1,
       },
     ],
@@ -150,26 +149,25 @@ export function TransferScreen() {
       postings,
       matches,
       profileIsBlank,
+      t,
     ],
   )
 
   const total = groups.reduce((n, g) => n + g.count, 0)
+  const roles = ROLES.map((value) => ({ value, label: t(`screen.roles.${value}`) }))
 
   return (
-    <Screen
-      title="Transfer"
-      subtitle="Move everything between this phone and your computer, over your local network. Both need to be on the same network. Nothing goes to the internet and nothing is stored anywhere else."
-    >
+    <Screen title={t('screen.title')} subtitle={t('screen.subtitle')}>
       {/* Above the direction switch: it is true of the whole screen, and on
           this device it is the answer to "how old is what I am holding". */}
       <HandoverStatus />
 
-      <Segment label="Direction" options={ROLES} value={role} onChange={setRole} />
+      <Segment label={t('screen.direction')} options={roles} value={role} onChange={setRole} />
 
       {role === 'send' ? <SendPanel /> : <ReceivePanel />}
 
       <Panel>
-        <PanelTitle hint={`${total} records`}>What is on this phone now</PanelTitle>
+        <PanelTitle hint={t('screen.records', { count: total })}>{t('screen.onPhone')}</PanelTitle>
 
         {groups.map((g, i) => (
           <View key={g.id}>
@@ -185,7 +183,7 @@ export function TransferScreen() {
               </View>
               {g.count === 0 ? (
                 <Chip size="sm" tone="gray">
-                  empty
+                  {t('screen.empty')}
                 </Chip>
               ) : (
                 <Txt size="base" weight="semibold" mono>
@@ -204,9 +202,7 @@ export function TransferScreen() {
             anything that happened before one. Somebody deciding whether to
             start needs that before they point the camera, not after. */}
         <Txt size="xs" tone="muted">
-          {role === 'send'
-            ? 'Sending copies all of it to your computer, which asks before it replaces what it holds. Nothing on this phone changes.'
-            : 'Receiving replaces all of it. Everything above is overwritten by what arrives, and it cannot be undone — export first if you want to keep this.'}
+          {role === 'send' ? t('screen.sendNote') : t('screen.receiveNote')}
         </Txt>
       </Panel>
     </Screen>

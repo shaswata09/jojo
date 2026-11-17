@@ -1,0 +1,130 @@
+{
+  "days_one": "{{count}} Tag",
+  "days_other": "{{count}} Tagen",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Steck mehr Einsatz in {{label}}.",
+      "because": {
+        "source": {
+          "replied_one": "{{count}} von {{of}} hat über diesen Weg eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
+          "replied_other": "{{count}} von {{of}} haben über diesen Weg eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
+          "interview_one": "{{count}} von {{of}} kam über diesen Weg zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
+          "interview_other": "{{count}} von {{of}} kamen über diesen Weg zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft."
+        },
+        "role": {
+          "replied_one": "{{count}} von {{of}} hat bei dieser Art von Stelle eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
+          "replied_other": "{{count}} von {{of}} haben bei dieser Art von Stelle eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
+          "interview_one": "{{count}} von {{of}} kam bei dieser Art von Stelle zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
+          "interview_other": "{{count}} von {{of}} kamen bei dieser Art von Stelle zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle."
+        }
+      }
+    },
+    "late": {
+      "headline_one": "Erledige {{count}} überfällige Nachfrage.",
+      "headline_other": "Erledige {{count}} überfällige Nachfragen.",
+      "because": "Das sind Nachfragen, die du schon für lohnend gehalten hast, bei Bewerbungen, die ein Arbeitgeber bereits gesehen hat. Nichts sonst auf dieser Liste ist so nah dran, erledigt zu sein."
+    },
+    "silent": {
+      "headline_one": "Hak bei {{count}} Bewerbung nach, die verstummt ist.",
+      "headline_other": "Hak bei {{count}} Bewerbungen nach, die verstummt sind.",
+      "because_one": "Antworten kommen bei dir typischerweise nach {{days}}, und diese hier hat das ohne Rückmeldung überschritten. Das ist deine eigene Zahl, keine Faustregel.",
+      "because_other": "Antworten kommen bei dir typischerweise nach {{days}}, und diese hier haben das ohne Rückmeldung überschritten. Das ist deine eigene Zahl, keine Faustregel."
+    },
+    "stale": {
+      "headline_one": "Halte fest, was bei {{count}} Bewerbung passiert ist.",
+      "headline_other": "Halte fest, was bei {{count}} Bewerbungen passiert ist.",
+      "because_one": "Seit zwei Wochen wurde bei ihr nichts eingetragen. Jede Quote auf dieser Seite ist nur so gut wie das, was aufgeschrieben wurde.",
+      "because_other": "Seit zwei Wochen wurde bei ihnen nichts eingetragen. Jede Quote auf dieser Seite ist nur so gut wie das, was aufgeschrieben wurde."
+    },
+    "drafts": {
+      "headlineSingle": "Stell den Entwurf fertig oder verwirf ihn.",
+      "headline_one": "Stell den weitesten der {{count}} Entwürfe fertig oder verwirf sie.",
+      "headline_other": "Stell den weitesten der {{count}} Entwürfe fertig oder verwirf sie.",
+      "because_one": "Ein Entwurf bewirkt nichts, bis er rausgeht. Der älteste ist seit {{count}} Tag offen.",
+      "because_other": "Ein Entwurf bewirkt nichts, bis er rausgeht. Der älteste ist seit {{count}} Tagen offen."
+    },
+    "background": {
+      "headline": "Lass jojo deinen Lebenslauf lesen.",
+      "because": "Über deinen eigenen Werdegang ist nichts erfasst, also lässt sich keine Bewerbung mit dem abgleichen, was eine Anzeige verlangt. Es ist ein Dokument und eine Bestätigung."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Überarbeite den Einstiegsabsatz, bevor du die nächste abschickst.",
+        "because": "Bei den Antworten verliert diese Suche am meisten gegenüber einer typischen. {{got}} von {{of}} ({{rate}} %), gegenüber {{typical}} % bei einer typischen Suche – eine runde Vergleichszahl, die jojo gewählt hat, nicht an irgendwem gemessen."
+      },
+      "interviews": {
+        "headline": "Mach die Passung in den ersten drei Zeilen offensichtlich.",
+        "because": "Antworten, die vor einem Gespräch versanden, sind hier die größte Lücke – das Interesse ist da, aber das Argument kommt nicht an. {{got}} von {{of}} ({{rate}} %), gegenüber {{typical}} % bei einer typischen Suche – eine runde Vergleichszahl, die jojo gewählt hat, nicht an irgendwem gemessen."
+      }
+    },
+    "clear": {
+      "headline": "Hier muss nichts nachgefasst werden.",
+      "because_one": "Jede Nachfrage liegt im Plan, nichts ist verstummt, und es warten keine Entwürfe. {{count}} Bewerbung ist draußen.",
+      "because_other": "Jede Nachfrage liegt im Plan, nichts ist verstummt, und es warten keine Entwürfe. {{count}} Bewerbungen sind draußen."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Abgeschickt",
+      "replies": "Antworten",
+      "interviews": "Gespräche",
+      "referrals": "Empfehlungen",
+      "followUps": "Nachfragen",
+      "keptMoving": "In Bewegung"
+    },
+    "basis": {
+      "sent_one": "{{count}} von {{of}} aus dem Entwurf heraus",
+      "sent_other": "{{count}} von {{of}} aus dem Entwurf heraus",
+      "replies_one": "{{count}} von {{of}} hat geantwortet",
+      "replies_other": "{{count}} von {{of}} haben geantwortet",
+      "interviews_one": "{{count}} von {{of}} kam zum Vorstellungsgespräch",
+      "interviews_other": "{{count}} von {{of}} kamen zum Vorstellungsgespräch",
+      "referrals_one": "{{count}} von {{of}} kam über eine Empfehlung",
+      "referrals_other": "{{count}} von {{of}} kamen über eine Empfehlung",
+      "followUpsNone": "nichts offen",
+      "followUps_one": "{{count}} von {{of}} offenen Nachfragen ist überfällig",
+      "followUps_other": "{{count}} von {{of}} offenen Nachfragen sind überfällig",
+      "keptMovingNone": "nichts aktiv",
+      "keptMoving_one": "{{count}} von {{of}} in den letzten zwei Wochen bearbeitet",
+      "keptMoving_other": "{{count}} von {{of}} in den letzten zwei Wochen bearbeitet"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Nichts liegt im Entwurf. Lieber die Sorgfalt bei jeder einzelnen bewahren, als mehr hinzuzufügen.",
+        "some_one": "{{count}} Bewerbung ist noch im Entwurf. Ein Entwurf bewirkt nichts, bis er rausgeht, und der am weitesten gediehene ist am günstigsten fertigzustellen.",
+        "some_other": "{{count}} Bewerbungen sind noch im Entwurf. Ein Entwurf bewirkt nichts, bis er rausgeht, und der am weitesten gediehene ist am günstigsten fertigzustellen."
+      },
+      "replies": {
+        "nothingSent": "Noch ist nichts rausgegangen, also gibt es nichts, woran sich eine Antwort messen ließe.",
+        "none_one": "{{count}} Bewerbung verschickt, noch ohne Antwort. Das ist der Schritt, an dem du arbeiten solltest, bevor du mehr verschickst – den Einstiegsabsatz auf jede Anzeige zuzuschneiden bewegt ihn mehr als alles andere.",
+        "none_other": "Keine der {{count}} verschickten Bewerbungen hat eine Antwort bekommen. Das ist der Schritt, an dem du arbeiten solltest, bevor du mehr verschickst – den Einstiegsabsatz auf jede Anzeige zuzuschneiden bewegt ihn mehr als alles andere.",
+        "all": "Jede verschickte Bewerbung hat eine Antwort bekommen. Was auch immer der Einstiegsabsatz tut – mach weiter so.",
+        "some_one": "{{count}} von {{of}} kam zurück. Den Einstiegsabsatz auf jede Anzeige zuzuschneiden bewegt diese Zahl mehr als alles andere.",
+        "some_other": "{{count}} von {{of}} kamen zurück. Den Einstiegsabsatz auf jede Anzeige zuzuschneiden bewegt diese Zahl mehr als alles andere."
+      },
+      "interviews": {
+        "noReply": "Noch ist keine Antwort eingegangen, also konnte noch nichts vor einem Gespräch versanden.",
+        "none_one": "{{count}} Antwort ist eingegangen, aber daraus wurde kein Gespräch. Diese Lücke liegt meist daran, dass die Passung im ersten Absatz nicht offensichtlich ist.",
+        "none_other": "{{count}} Antworten sind eingegangen, und keine wurde zu einem Gespräch. Diese Lücke liegt meist daran, dass die Passung im ersten Absatz nicht offensichtlich ist.",
+        "some_one": "Gespräche daraus: {{interviewed}} von {{count}} Antwort. Antworten, die vorher versanden, heißen meist, dass die Passung nicht früh genug offensichtlich ist.",
+        "some_other": "Gespräche daraus: {{interviewed}} von {{count}} Antworten. Antworten, die vorher versanden, heißen meist, dass die Passung nicht früh genug offensichtlich ist."
+      },
+      "referrals": {
+        "none": "Keine davon kam über eine Vermittlung. Eine empfohlene Bewerbung bekommt um ein Vielfaches eher eine Antwort, also ist eine so viel wert wie mehrere Kaltbewerbungen.",
+        "some_one": "{{count}} von {{of}} kam über eine Vermittlung. Das bringt auf dieser Liste am meisten und lässt sich am schlechtesten vervielfachen – deshalb lohnt es sich, vor der nächsten Kaltbewerbung zu fragen statt danach.",
+        "some_other": "{{count}} von {{of}} kamen über eine Vermittlung. Das bringt auf dieser Liste am meisten und lässt sich am schlechtesten vervielfachen – deshalb lohnt es sich, vor der nächsten Kaltbewerbung zu fragen statt danach."
+      },
+      "followUps": {
+        "none": "Nichts ist überfällig. Eine Nachfrage etwa eine Woche nach dem Abschicken ist meist die, die ankommt.",
+        "late_one": "{{count}} Nachfrage ist überfällig. Sie zu erledigen zahlt sich meist schneller aus, als sich woanders neu zu bewerben.",
+        "late_other": "{{count}} Nachfragen sind überfällig. Sie zu erledigen zahlt sich meist schneller aus, als sich woanders neu zu bewerben."
+      },
+      "keptMoving": {
+        "none": "Nichts ist verstummt. Festzuhalten, was passiert, sobald es passiert, hält diese Zahlen ehrlich.",
+        "stale_one": "{{count}} aktive Bewerbung hatte seit zwei Wochen keine Bewegung. Ein kurzes Nachhaken kostet weniger, als woanders neu anzufangen.",
+        "stale_other": "{{count}} aktive Bewerbungen hatten seit zwei Wochen keine Bewegung. Ein kurzes Nachhaken kostet weniger, als woanders neu anzufangen."
+      }
+    }
+  }
+}

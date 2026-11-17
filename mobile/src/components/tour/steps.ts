@@ -1,3 +1,4 @@
+import { i18next } from '@/i18n/i18n'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
 
 /**
@@ -43,187 +44,350 @@ export type TourStep = {
   task?: { say: string; done: TourCheck }
 }
 
+/** Read at the moment a step is drawn, so the tour speaks the language jojo is in. */
+const text = (step: string, field: 'title' | 'body' | 'say') =>
+  i18next.t(`components:tour.steps.${step}.${field}`)
+
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'A tour of jojo, hands on',
-    body: 'It points at the real screens and asks you to try each thing as you go. It never types, saves or changes anything for you. Close it whenever you like — your place is kept, and How to use will pick it up again.',
+    get title() {
+      return text('welcome', 'title')
+    },
+    get body() {
+      return text('welcome', 'body')
+    },
   },
   {
     id: 'today',
     route: 'Today',
     target: 'tab:Today',
-    title: 'Today',
-    body: 'What is owed now: what is overdue, what is due, and the decisions waiting on you. The screen to open first.',
+    get title() {
+      return text('today', 'title')
+    },
+    get body() {
+      return text('today', 'body')
+    },
   },
   {
     id: 'applications',
     target: 'tab:Applications',
-    title: 'Your applications',
-    body: 'One record per job: the employer, the role, its stage and your notes. Its dates, documents and conversations all hang off it, so nothing is typed twice.',
-    task: { say: 'Open Applications.', done: { kind: 'route', route: 'Applications' } },
+    get title() {
+      return text('applications', 'title')
+    },
+    get body() {
+      return text('applications', 'body')
+    },
+    task: {
+      get say() {
+        return text('applications', 'say')
+      },
+      done: { kind: 'route', route: 'Applications' },
+    },
   },
   {
     id: 'layout',
     route: 'Applications',
     target: 'layout',
-    title: 'A list or a board',
-    body: 'The same records, two ways. The list sorts and searches; the board shows the stages as columns.',
-    task: { say: 'Switch to Board.', done: { kind: 'state', target: 'layout', value: 'board' } },
+    get title() {
+      return text('layout', 'title')
+    },
+    get body() {
+      return text('layout', 'body')
+    },
+    task: {
+      get say() {
+        return text('layout', 'say')
+      },
+      done: { kind: 'state', target: 'layout', value: 'board' },
+    },
   },
   {
     id: 'records',
     route: 'Applications',
     target: 'records',
-    title: 'Six stages',
-    body: 'Draft, Submitted, Screening call, Interview, Offer, Closed. On the board, press and hold a card, then drag it to its next column; each card also has a stage menu. Every move can be undone.',
+    get title() {
+      return text('records', 'title')
+    },
+    get body() {
+      return text('records', 'body')
+    },
   },
   {
     id: 'search',
     route: 'Applications',
     target: 'header:search',
-    title: 'Search everything',
-    body: 'Applications, reminders and calendar entries, from any tab.',
-    task: { say: 'Open search.', done: { kind: 'route', route: 'Search' } },
+    get title() {
+      return text('search', 'title')
+    },
+    get body() {
+      return text('search', 'body')
+    },
+    task: {
+      get say() {
+        return text('search', 'say')
+      },
+      done: { kind: 'route', route: 'Search' },
+    },
   },
   {
     id: 'search-screen',
     route: 'Search',
     target: 'search-field',
-    title: 'Type to find anything',
-    body: 'A role, an employer or a stage. Tap a result to open it, or go back when you are done looking.',
+    get title() {
+      return text('searchScreen', 'title')
+    },
+    get body() {
+      return text('searchScreen', 'body')
+    },
   },
   {
     id: 'new',
     route: 'Applications',
     target: 'header:new',
-    title: 'Make anything',
-    body: 'The + makes an application, a reminder, a calendar entry, a drafted message, a saved link or a saved posting. Nothing is saved until you save, and closing a half-filled form costs nothing.',
+    get title() {
+      return text('new', 'title')
+    },
+    get body() {
+      return text('new', 'body')
+    },
   },
   {
     id: 'calendar',
     target: 'tab:Calendar',
-    title: 'Every date in one place',
-    body: 'Deadlines, interviews and follow-ups are one kind of record, so one entry shows on the calendar, on Today and on its application.',
-    task: { say: 'Open the Calendar.', done: { kind: 'route', route: 'Calendar' } },
+    get title() {
+      return text('calendar', 'title')
+    },
+    get body() {
+      return text('calendar', 'body')
+    },
+    task: {
+      get say() {
+        return text('calendar', 'say')
+      },
+      done: { kind: 'route', route: 'Calendar' },
+    },
   },
   {
     id: 'vault',
     target: 'tab:Vault',
-    title: 'The vault',
-    body: 'Everything that is not an application: reminders, links, files, the snippets you paste into every form, the people you know, and a calculator.',
-    task: { say: 'Open the Vault.', done: { kind: 'route', route: 'Vault' } },
+    get title() {
+      return text('vault', 'title')
+    },
+    get body() {
+      return text('vault', 'body')
+    },
+    task: {
+      get say() {
+        return text('vault', 'say')
+      },
+      done: { kind: 'route', route: 'Vault' },
+    },
   },
   {
     id: 'vault-tools',
     route: 'Vault',
     target: 'vault-tools',
-    title: 'One tool at a time',
-    body: 'Each of these is its own list, and a keyword means the same thing in all of them.',
-    task: { say: 'Pick Files.', done: { kind: 'state', target: 'vault-tools', value: 'files' } },
+    get title() {
+      return text('vaultTools', 'title')
+    },
+    get body() {
+      return text('vaultTools', 'body')
+    },
+    task: {
+      get say() {
+        return text('vaultTools', 'say')
+      },
+      done: { kind: 'state', target: 'vault-tools', value: 'files' },
+    },
   },
   {
     id: 'files',
     route: 'Vault',
     target: 'files',
-    title: 'Files, kept on the phone',
-    body: 'A CV, a statement, a posting — copied into jojo’s own folder, so they survive the original being moved. Tap one to read it here; file it under as many applications as it belongs to.',
+    get title() {
+      return text('files', 'title')
+    },
+    get body() {
+      return text('files', 'body')
+    },
   },
   {
     id: 'more',
     target: 'tab:More',
-    title: 'More',
-    body: 'Everything else: Job scout, Statistics, the graph, Transfer, your profile, the assistant, Settings and this guide.',
-    task: { say: 'Open More.', done: { kind: 'route', route: 'More' } },
+    get title() {
+      return text('more', 'title')
+    },
+    get body() {
+      return text('more', 'body')
+    },
+    task: {
+      get say() {
+        return text('more', 'say')
+      },
+      done: { kind: 'route', route: 'More' },
+    },
   },
   {
     id: 'scout',
     route: 'More',
     target: 'more:Job scout',
-    title: 'Job scout',
-    body: 'Saved searches that watch job boards for you.',
-    task: { say: 'Open Job scout.', done: { kind: 'route', route: 'JobScout' } },
+    get title() {
+      return text('scout', 'title')
+    },
+    get body() {
+      return text('scout', 'body')
+    },
+    task: {
+      get say() {
+        return text('scout', 'say')
+      },
+      done: { kind: 'route', route: 'JobScout' },
+    },
   },
   {
     id: 'scout-screen',
     route: 'JobScout',
-    title: 'Pipelines and suggestions',
-    body: 'Each pipeline is a search on a board, run on a schedule or when you ask. What it finds waits as a suggestion you approve or discard, and an approved one becomes a draft application.',
+    get title() {
+      return text('scoutScreen', 'title')
+    },
+    get body() {
+      return text('scoutScreen', 'body')
+    },
   },
   {
     id: 'statistics',
     route: 'More',
     target: 'more:Statistics',
-    title: 'Statistics',
-    body: 'How your search is going, counted from your own records.',
-    task: { say: 'Open Statistics.', done: { kind: 'route', route: 'Statistics' } },
+    get title() {
+      return text('statistics', 'title')
+    },
+    get body() {
+      return text('statistics', 'body')
+    },
+    task: {
+      get say() {
+        return text('statistics', 'say')
+      },
+      done: { kind: 'route', route: 'Statistics' },
+    },
   },
   {
     id: 'statistics-screen',
     route: 'Statistics',
-    title: 'Rates, with honest ranges',
-    body: 'Response and interview rates, a funnel and what to work on next — each rate with the range it could really be, since a handful of applications is a small sample.',
+    get title() {
+      return text('statisticsScreen', 'title')
+    },
+    get body() {
+      return text('statisticsScreen', 'body')
+    },
   },
   {
     id: 'graph',
     route: 'More',
     target: 'more:Graph',
-    title: 'The knowledge graph',
-    body: 'Every record — applications, employers, people, dates, files — drawn as the network it is.',
-    task: { say: 'Open the Graph.', done: { kind: 'route', route: 'Graph' } },
+    get title() {
+      return text('graph', 'title')
+    },
+    get body() {
+      return text('graph', 'body')
+    },
+    task: {
+      get say() {
+        return text('graph', 'say')
+      },
+      done: { kind: 'route', route: 'Graph' },
+    },
   },
   {
     id: 'graph-screen',
     route: 'Graph',
-    title: 'Everything, connected',
-    body: 'Tap a node to see what it connects to, and ask a question to light up the records that match.',
+    get title() {
+      return text('graphScreen', 'title')
+    },
+    get body() {
+      return text('graphScreen', 'body')
+    },
   },
   {
     id: 'assistant',
     route: 'More',
     target: 'more:Assistant',
-    title: 'The assistant',
-    body: 'Chat with jojo: it finds, adds and updates your records with the app’s own tools, and asks before it changes anything. Until a model is connected it shows worked examples.',
+    get title() {
+      return text('assistant', 'title')
+    },
+    get body() {
+      return text('assistant', 'body')
+    },
   },
   {
     id: 'transfer',
     route: 'More',
     target: 'more:Transfer',
-    title: 'Phone and computer',
-    body: 'Transfer moves everything between this phone and jojo on your computer over your local network, without going through anyone else.',
+    get title() {
+      return text('transfer', 'title')
+    },
+    get body() {
+      return text('transfer', 'body')
+    },
   },
   {
     id: 'settings',
     route: 'More',
     target: 'more:Settings',
-    title: 'Settings',
-    body: 'Connections, appearance and your data.',
-    task: { say: 'Open Settings.', done: { kind: 'route', route: 'Settings' } },
+    get title() {
+      return text('settings', 'title')
+    },
+    get body() {
+      return text('settings', 'body')
+    },
+    task: {
+      get say() {
+        return text('settings', 'say')
+      },
+      done: { kind: 'route', route: 'Settings' },
+    },
   },
   {
     id: 'device',
     route: 'Settings',
     target: 'device',
-    title: 'Your records live on this phone',
-    body: 'Written straight to the phone’s own storage as you work — no account, no sync, nothing uploaded. Export a copy, or Transfer it to your computer.',
+    get title() {
+      return text('device', 'title')
+    },
+    get body() {
+      return text('device', 'body')
+    },
   },
   {
     id: 'model',
     route: 'Settings',
     target: 'model',
-    title: 'Connect a model',
-    body: 'Where the assistant’s model runs. A server on your own machine — vLLM, Ollama or LM Studio — takes its address and keeps your records on your devices. OpenAI, Anthropic (Claude) and the other cloud providers take an API key. Test connection checks it before anything is saved.',
+    get title() {
+      return text('model', 'title')
+    },
+    get body() {
+      return text('model', 'body')
+    },
   },
   {
     id: 'reader',
     route: 'Settings',
     target: 'reader',
-    title: 'Let it read your documents',
-    body: 'The phone reads Word files, decks, saved pages and text on its own. PDFs need MarkItDown on your computer: start it with the two commands above, then Test connection.',
+    get title() {
+      return text('reader', 'title')
+    },
+    get body() {
+      return text('reader', 'body')
+    },
   },
   {
     id: 'done',
-    title: 'That’s the tour',
-    body: 'Every change can be undone, and How to use, under More, covers every screen in turn. The tour is there to take again.',
+    get title() {
+      return text('done', 'title')
+    },
+    get body() {
+      return text('done', 'body')
+    },
   },
 ]

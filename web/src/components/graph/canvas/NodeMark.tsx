@@ -7,6 +7,7 @@
  * position passed as a prop would be clobbered by the next re-render for hover.
  */
 
+import { useTranslation } from 'react-i18next'
 import { NodeGlyph } from '@/components/graph/NodeGlyph'
 import { nodeRadius } from '@/components/graph/visuals'
 import { NODE_TYPE_LABEL } from '@/lib/graph/model'
@@ -41,6 +42,7 @@ export function NodeMark({
   groupRef: (el: SVGGElement | null) => void
   labelRef: (el: SVGTextElement | null) => void
 }) {
+  const { t } = useTranslation('graph')
   const r = nodeRadius(node.degree)
   const selected = selectedId === node.id
   const dim = lit !== null && !lit.nodes.has(node.id)
@@ -57,9 +59,11 @@ export function NodeMark({
       tabIndex={0}
       role="button"
       aria-pressed={selected}
-      aria-label={`${node.label}. ${NODE_TYPE_LABEL[node.type]}, ${node.degree} ${
-        node.degree === 1 ? 'connection' : 'connections'
-      }`}
+      aria-label={t('node.label', {
+        label: node.label,
+        type: NODE_TYPE_LABEL[node.type],
+        connections: t('common.connections', { count: node.degree }),
+      })}
       className="cursor-pointer"
       opacity={dim ? 0.25 : 1}
       onPointerDown={(event) => drag.onPointerDown(event, node.id)}

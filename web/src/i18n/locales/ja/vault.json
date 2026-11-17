@@ -1,0 +1,529 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "undo": "元に戻す",
+    "delete": "削除",
+    "edit": "編集",
+    "close": "閉じる",
+    "duplicate": "複製",
+    "deleteFailed": "削除できませんでした",
+    "deleted": "{{title}} を削除しました",
+    "unsaved": "未保存の変更があります",
+    "saved": "{{title}} を保存しました",
+    "showIt": "表示する",
+    "copyBlocked": "ブラウザーがコピーをブロックしました",
+    "updated": "{{title}} を更新しました",
+    "saveChanges": "変更を保存"
+  },
+  "files": {
+    "unfiled": {
+      "title": "どの応募にも分類されていないファイル",
+      "label": "未分類"
+    },
+    "inlineEdit": {
+      "needsName": "ファイルには名前が必要です"
+    },
+    "intake": {
+      "tooLarge": "{{name}} は大きすぎて確認できませんでした",
+      "tooLargeDescription": "ファイルは保存済みです。jojo はすべての Web アドレスをブロックし、リンクを無効にして表示するため、ここで閲覧してもネットワークにはアクセスしません。ただし、Web から読み込む内容は表示されません。",
+      "addresses_other": "{{name}} には {{count}} 件の Web アドレスが含まれています",
+      "addressesDescription_other": "ドロップしたままの状態で保存されています。jojo はそれらをすべてブロックし、リンクを無効にして表示するため、ここで閲覧してもネットワークにはアクセスしません。Web から読み込んでいた画像やスタイルは表示されません。",
+      "folders_other": "フォルダーのようです",
+      "foldersDescription": "jojo はドキュメントを1つずつ保存します。フォルダーを開き、中のファイルをドロップしてください。",
+      "reattached": "{{name}} を再び添付しました",
+      "reattachedDescription": "この行はドキュメントなしで存在していましたが、今はドキュメントがあります。",
+      "stillUnsaved": "{{name}} はまだ保存できません",
+      "stillUnsavedDescription": "このブラウザーは再び保存を拒否しました。ストレージがまだいっぱいの可能性があります。",
+      "unsaved": "{{name}} は登録されましたが、保存されていません",
+      "unsavedDescription": "行は追加されましたが、このブラウザーがドキュメントの保存を拒否しました。通常はストレージがいっぱいなことが原因です。空き容量を増やして同じファイルをもう一度ドロップすると、新しい行を作らずにこの行に添付されます。",
+      "alreadyHere_other": "そのファイルはすでにあります",
+      "alreadyHereDescription": "同じ名前のファイルがすでに保管庫にあります。",
+      "addedOne": "{{name}} を追加しました",
+      "addedMany_other": "{{count}} 件のファイルを追加しました",
+      "addedHidden": "「{{bucket}}」に保存しました。キーワードフィルターがオンの間は表示されません。",
+      "addedHiddenVault": "保管庫の {{bucket}} に保存しました。キーワードフィルターがオンの間は表示されません。",
+      "addedDescription": "「{{bucket}}」に登録し、このブラウザーに保存しました。どこにもアップロードしていません。",
+      "addedDescriptionVault": "保管庫の {{bucket}} に登録し、このブラウザーに保存しました。どこにもアップロードしていません。",
+      "skipped_other": "{{count}} 件をスキップしました",
+      "skippedDescription": "同じ名前のファイルがすでに保管庫にありました。",
+      "foldersSkipped_other": "{{count}} 個のフォルダーをスキップしました"
+    },
+    "row": {
+      "fileName": "ファイル名",
+      "renameHint": "このファイルの名前を変更",
+      "onDevice": "このデバイス上",
+      "viewing": "表示中",
+      "preview": "プレビュー",
+      "rename": "名前を変更",
+      "editNote": "メモを編集",
+      "addNote": "メモを追加",
+      "changeApplications": "応募を変更",
+      "fileUnder": "応募に分類",
+      "readIntoProfile": "プロフィールに読み込む"
+    },
+    "add": "ファイルを追加",
+    "filterLabel": "分類でファイルを絞り込む",
+    "searchLabel": "ファイルを検索",
+    "searchPlaceholder": "名前やメモを検索",
+    "toast": {
+      "renamed": "名前を {{name}} に変更しました",
+      "was": "変更前：{{name}}。",
+      "noteSaved": "{{name}} のメモを保存しました",
+      "noteCleared": "{{name}} のメモを消去しました",
+      "noteClearedDescription": "行の名前、分類、キーワードはそのままです。",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "それぞれの応募に表示され、グラフからはどの応募からでも見つけられます。",
+      "unfiledDescription": "どこにも分類されずに保管庫に残ります。"
+    },
+    "empty": {
+      "zeroTitle": "まだファイルがありません",
+      "zeroDescription": "求人情報、論文、下書きをここにドロップするか、パソコンから追加してください。",
+      "search": "名前、メモ、分類に「{{query}}」を含むファイルはありません。",
+      "both": "「{{bucket}}」に選択したキーワードの付いたファイルはありません。",
+      "bucketTitle": "「{{bucket}}」には何もありません",
+      "bucketDescription_other": "{{count}} 件のファイルが他の分類にあります。",
+      "showAll": "すべての分類を表示",
+      "keywordsTitle": "それらのキーワードの付いたファイルはありません",
+      "allFiledTitle": "すべてのファイルが応募に分類されています",
+      "allFiledDescription_other": "{{count}} 件すべてです。未分類のものはありません。",
+      "unfiledKeywords": "選択したキーワードの付いた未分類ファイルはありません。",
+      "unfiledBucket": "「{{bucket}}」に未分類のファイルはありません。"
+    },
+    "drop": {
+      "title": "ドロップして「{{bucket}}」に追加",
+      "description": "名前、サイズ、種類を読み取ります。アップロードはしません。",
+      "hint": "このパネルのどこにでもファイルをドロップすると「{{bucket}}」に追加されます。"
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "ドロップしたものの一部は使用されませんでした",
+      "nothing": "開けるものがありません"
+    },
+    "save": {
+      "nameLabel": "新しいファイルの名前",
+      "working": "処理中…",
+      "alsoDownload": "ダウンロードもする",
+      "footnote": "結果は新しいドキュメントとして保存され、元のファイルは変更されません。このブラウザー内で作成され、どの部分もアップロードされません。",
+      "workingSpoken": "ドキュメントを処理しています"
+    },
+    "thumb": {
+      "turned": "{{label}}、{{degrees}} 度回転",
+      "noPreview": "プレビューなし"
+    },
+    "source": {
+      "fromVault": "保管庫から{{label}}",
+      "noneInVault": "保管庫にまだ PDF がありません",
+      "choose": "保管庫から選択…",
+      "device": "このデバイスから",
+      "fromDevice": "このデバイスから{{label}}",
+      "dropHintEmpty": "または、このカードのどこにでも PDF をドロップしてください。ここで保存したファイルはこの一覧に表示されます。",
+      "dropHint": "または、このカードのどこにでも PDF をドロップしてください。"
+    },
+    "modes": {
+      "merge": "結合",
+      "pages": "ページ",
+      "annotate": "注釈"
+    },
+    "editor": {
+      "title": "PDF エディター",
+      "hint": "PDF の結合、並べ替え、注釈付けができます。すべてこのブラウザー内で実行され、ドキュメントはアップロードされません。",
+      "operation": "PDF の操作",
+      "dropMerge": "PDF をドロップして結合に追加",
+      "dropOpen": "PDF をドロップして開く"
+    },
+    "errors": {
+      "gone": "{{name}} は保存されていないため、開けません。",
+      "noRoom": "{{name}} は登録されましたが、内容がこのブラウザーのストレージに収まりませんでした。"
+    },
+    "saved": "{{name}} を保存しました",
+    "merge": {
+      "move": "{{name}} を移動（{{total}} 件中 {{position}} 件目）",
+      "dragToReorder": "ドラッグして並べ替え",
+      "fromDevice": "· このデバイスから",
+      "allPages": "全ページ",
+      "rangeLabel": "{{name}} から使うページ",
+      "remove": "{{name}} を結合から外す",
+      "rangeError": "{{name}}：{{reason}}",
+      "savedDescription": "{{documents}}から {{pages}}、「{{bucket}}」に保存しました。元のファイルはそのままです。",
+      "pages_other": "{{count}} ページ",
+      "documents_other": "{{count}} 件のドキュメント",
+      "addLabel": "結合する PDF を追加",
+      "empty": "PDF を2つ以上追加するか、このカードにドロップしてください。上から順に結合されます（行の左端をドラッグすると順番を変えられます）。元のファイルはそのまま残ります。",
+      "position": "{{total}} 件中 {{position}} 件目、{{name}}",
+      "hint": "1-3、7、9- のような範囲を指定すると、ドキュメントの一部だけを使います。空欄にすると全体を使います。",
+      "action": "結合して保存"
+    },
+    "pages": {
+      "savedDescription_other": "{{count}} ページ、「{{bucket}}」に保存しました。{{name}} は変更されていません。",
+      "chooseLabel": "整理する PDF を選択",
+      "empty": "PDF を1つ選んでください。ページの回転、削除、並べ替えや、一部だけを残すことができます。",
+      "kept_other": "· {{count}} ページ中 {{kept}} ページを保持",
+      "startOver": "最初からやり直す",
+      "page": "{{number}} ページ",
+      "was": " · 元は {{number}}",
+      "earlier": "{{number}} ページを前へ移動",
+      "anticlockwise": "{{number}} ページを左に回転",
+      "clockwise": "{{number}} ページを右に回転",
+      "remove": "{{number}} ページを削除",
+      "later": "{{number}} ページを後ろへ移動",
+      "hint": "ページを回転、移動、削除すると使えるようになります。",
+      "action": "ページを保存"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "ハイライト",
+        "comment": "コメント"
+      },
+      "savedDescription": "{{summary}}、「{{bucket}}」に保存しました。{{name}} は変更されていません。",
+      "chooseLabel": "注釈を付ける PDF を選択",
+      "empty": "PDF を1つ選んでください。ページ上のテキストを選択するとハイライトでき、「コメント」に切り替えてメモを置きたい場所をクリックすることもできます。",
+      "toolLabel": "マーキングツール",
+      "colour": "ハイライトの色",
+      "previousPage": "前のページ",
+      "pageOf": "{{total}} ページ中 {{page}} ページ",
+      "nextPage": "次のページ",
+      "zoom": "ズーム",
+      "highlightHint": "ページ上の語句を選択すると（複数行にまたがっても大丈夫です）、離したときにマークされます。",
+      "commentHint": "コメントを置く場所をページ上でクリックしてください。",
+      "commentPlaceholder": "コメントの内容は？",
+      "notePlaceholder": "メモを追加…",
+      "commentLabel": "{{number}} ページのコメント",
+      "noteLabel": "「{{excerpt}}」のハイライトへのメモ",
+      "removeMark": "このマークを削除",
+      "hintEmpty": "先にテキストをハイライトするか、コメントを追加してください。",
+      "hint": "{{summary}}が書き込まれます。",
+      "action": "注釈付きで保存"
+    }
+  },
+  "instruments": {
+    "calculator": "電卓",
+    "pdf": "PDF エディター",
+    "label": "使うツール",
+    "loading": "PDF ツールを準備しています…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "この求人情報のコピーはこのデバイスに保存されていません。取り込みは取り込んだデバイスに保存されるため、スマートフォンで取り込んだものはここにはありません。また、バックアップから復元した行には記録だけがあり、ページはありません。",
+      "stored": "ブラウザーは PDF を直接表示できますが、{{kind}} ファイルは表示できません。ドキュメントは保存されているので、「保存」でお使いのアプリに渡せます。",
+      "missing": "ブラウザーは PDF を直接表示できますが、{{kind}} ファイルは表示できません。また、この行には他のアプリに渡せる保存済みドキュメントがありません。"
+    },
+    "dialogDescription": "この応募に分類された {{name}} のプレビューです。Esc キーで記録に戻ります。",
+    "noteSaved": "{{name}} にメモを保存しました",
+    "noteSavedDescription": "保管庫でこのファイルが表示される場所すべてにメモが表示されます。",
+    "noteEmptyDescription": "メモが空になったため、このファイルには何も表示されません。",
+    "captured": "{{name}}（取り込み時の状態）",
+    "previewTitle": "{{name}} のプレビュー",
+    "asText": "{{name}}（テキスト）",
+    "truncated": "最初の 1 MB だけを表示しています。「保存」でファイル全体をお使いのアプリで開けます。",
+    "failedTitle": "このブラウザーではプレビューを開けませんでした",
+    "failedDescription": "{{error}}。保管庫にあるファイルの記録は影響を受けていません。プレビューを作成できなかっただけです。",
+    "noPreviewTitle": "この種類はプレビューできません",
+    "capturedFrom": "{{host}} から取り込み",
+    "fullScreen": "プレビューを全画面で開く",
+    "fullScreenDescription": "{{name}} をメモパネル付きの全画面で表示しています。Esc キーで戻ります。",
+    "notes": {
+      "title": "メモ",
+      "hide": "メモパネルを隠す",
+      "show": "メモパネルを表示",
+      "hint": "{{name}} に保存され、このファイルが表示される場所すべてに表示されます。",
+      "label": "{{name}} のメモ",
+      "placeholder": "このドキュメントで大事なこと：3ページ目に埋もれた締め切り、誰に聞けばいいか…",
+      "saved": "保存しました",
+      "save": "メモを保存"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "このリマインダーを延期または移動",
+      "label": "「{{title}}」を延期 — {{when}}",
+      "heading": "延期",
+      "pickDate": "日付を選ぶ",
+      "move": "移動"
+    },
+    "row": {
+      "markNotDone": "「{{title}}」を未完了にする",
+      "markDone": "「{{title}}」を完了にする",
+      "draftReply": "返信を下書き"
+    },
+    "relatedTwo": "{{first}} と {{second}}",
+    "relatedMany_other": "{{count}} 件の応募",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}}（コピー）",
+    "add": "リマインダーを追加",
+    "filterLabel": "期限でリマインダーを絞り込む",
+    "searchLabel": "リマインダーを検索",
+    "searchPlaceholder": "タイトル、メモ、職を検索",
+    "toast": {
+      "reopened": "{{title}} を再開しました",
+      "completed": "{{title}} を完了しました",
+      "reopenedDescription": "元の日付に戻りました。フォローアップならダッシュボードにも戻ります。",
+      "completedDescription": "「完了」に移動し、ダッシュボードから外しました。",
+      "moved": "{{title}} を移動しました",
+      "nowDue": "期限は {{date}} になりました · {{when}}",
+      "duplicated": "{{title}} を複製しました",
+      "duplicatedDescription": "コピーは未完了で、期限は {{date}} です。",
+      "stillOnList": "{{title}} はまだ一覧にあります。",
+      "deletedDescription": "{{description}} — カレンダーとこの一覧から削除しました。"
+    },
+    "empty": {
+      "zeroTitle": "まだリマインダーがありません",
+      "zeroDescription": "リマインダーは日付付きのメモです。推薦者への催促、ポータルの確認、お礼の送信など。フォローアップとしてマークしたものは、チェックを入れるまでダッシュボードにも表示されます。",
+      "search": "タイトル、メモ、種類、応募に「{{query}}」を含むリマインダーはありません。",
+      "both": "選択したキーワードの付いた「{{bucket}}」のリマインダーはありません。",
+      "doneTitle": "まだ完了したものはありません",
+      "doneDescription": "チェックを入れたリマインダーはここに集まるので、誤ってチェックしたものも見つけられます。",
+      "showAll": "すべてのリマインダーを表示",
+      "bucketTitle": "「{{bucket}}」には何もありません",
+      "bucketDescription_other": "{{count}} 件のリマインダーが他のグループにあります。",
+      "keywordsTitle": "それらのキーワードの付いたリマインダーはありません"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "ページ上部のキーワードフィルターで非表示になっています。",
+    "searchTitle": "その検索に一致するものはありません",
+    "clearSearch": "検索をクリア",
+    "filtersTitle": "それらのフィルターに一致するものはありません",
+    "clearFilters": "フィルターをクリア",
+    "showFiled": "分類済みのファイルも表示",
+    "bothTitle": "両方のフィルターに一致するものはありません",
+    "clearBoth": "両方のフィルターをクリア",
+    "clearKeywords": "キーワードをクリア"
+  },
+  "capture": {
+    "posting": "求人情報",
+    "savedOne": "{{name}} を保管庫に保存しました",
+    "savedMany_other": "{{count}} 件の求人情報を保管庫に保存しました",
+    "suggested": "どの応募にも分類されていません。{{name}} が一致しそうです。保管庫の該当行から分類してください。",
+    "unfiled": "どの応募にも分類されていません。いつでも保管庫の該当行から分類できます。",
+    "dropped_other": "{{count}} 件のリソースを保持できなかったため、一部が簡素に見えることがあります。",
+    "unstored_other": "{{count}} 件をこのデバイスに保存できませんでした。記録はありますが、ページはありません。",
+    "refusedOne": "1件の取り込みを保持できませんでした",
+    "refusedMany_other": "{{count}} 件の取り込みを保持できませんでした",
+    "waitingOne": "1件の求人情報がここへの保存を待っています。",
+    "waitingMany_other": "{{count}} 件の求人情報がここへの保存を待っています。",
+    "source": "jojo 拡張機能で取り込み済みで、まだこのデバイス上にあります。",
+    "saving": "保存中…",
+    "saveIt": "保存する",
+    "saveThem": "すべて保存"
+  },
+  "picker": {
+    "none": "応募なし",
+    "label": "関連する応募",
+    "searchLabel": "応募を検索",
+    "searchPlaceholder": "応募を検索…",
+    "noneYet": "まだ応募がありません。",
+    "noMatch": "一致する応募はありません。",
+    "unfile": {
+      "record": "この記録の分類を解除",
+      "file": "このファイルの分類を解除",
+      "link": "このリンクの分類を解除",
+      "snippet": "このスニペットの分類を解除",
+      "person": "この人物の分類を解除",
+      "conversation": "この会話の分類を解除"
+    }
+  },
+  "snippets": {
+    "openInVault": "保管庫で開く",
+    "card": {
+      "edit": "このスニペットを編集",
+      "moveTo": "移動先"
+    },
+    "editor": {
+      "editTitle": "スニペットを編集",
+      "newTitle": "新しいスニペット",
+      "title": {
+        "label": "タイトル",
+        "placeholder": "例：この学科を選んだ理由"
+      },
+      "kind": {
+        "label": "種類",
+        "hint": "保存先と、一覧に表示されるラベルです。"
+      },
+      "application": {
+        "label": "関連する応募",
+        "hint": "いくつでも選べます。選んだ各職のページに表示されます。"
+      },
+      "text": {
+        "label": "本文",
+        "hint": "サイズ、色、太字、斜体、下線、取り消し線は本文と一緒に保存されます。リストや表は普通の行として保持されます。",
+        "placeholder": "何度も書き直している段落を書いてください…"
+      },
+      "fullScreen": "全画面で書く",
+      "keywords": {
+        "label": "キーワード",
+        "hint": "応募、リマインダー、ファイルと共通です。1つで絞り込むと、すべてが見つかります。"
+      },
+      "savedNote": "このブラウザーのデータベースに保存されます。次に来たときもここにあります。",
+      "fullScreenDescription": "スニペットを全画面で編集しています。Esc キーで戻ります。"
+    },
+    "errors": {
+      "title": "スニペットに名前を付けてください。",
+      "body": "後で貼り付けたいテキストを書いてください。"
+    },
+    "toast": {
+      "filed": "「{{tag}}」に保存しました。一覧からコピーできます。",
+      "filedHidden": "「{{tag}}」に保存しました。一覧の上のフィルターで非表示になっています。",
+      "duplicated": "コピーは「{{tag}}」に保存されました。書き直せます。",
+      "moved": "「{{tag}}」に移動しました。",
+      "movedOut": "「{{tag}}」に移動しました。表示中の「{{filter}}」一覧からは外れます。",
+      "stillThere": "{{title}} はまだ保管庫にあります。",
+      "stillThereUnnamed": "スニペットはまだ保管庫にあります。",
+      "deletedUnnamed": "スニペットを削除しました",
+      "deletedDescription": "本文とキーワードも一緒に削除されます。"
+    },
+    "empty": {
+      "zeroTitle": "まだスニペットがありません",
+      "zeroDescription": "何度も書き直している段落を保存しましょう。略歴、この学科を選んだ理由、フォローアップのメールなど。",
+      "search": "名前、本文、種類に「{{query}}」を含むスニペットはありません。",
+      "both": "選択したキーワードの付いた「{{tag}}」のスニペットはありません。",
+      "bucketTitle": "「{{tag}}」のスニペットはありません",
+      "bucketDescription_other": "{{count}} 件のスニペットが他の種類にあります。",
+      "showAll": "すべての種類を表示",
+      "keywordsTitle": "それらのキーワードの付いたスニペットはありません"
+    },
+    "filterLabel": "種類でスニペットを絞り込む",
+    "searchLabel": "スニペットを検索",
+    "searchPlaceholder": "名前や本文を検索",
+    "copied": "スニペットをクリップボードにコピーしました",
+    "discard": {
+      "title": "未保存の変更を破棄しますか？",
+      "description": "「{{title}}」には保存されていない編集があります。今離れると破棄され、元に戻せません。",
+      "untitled": "無題のスニペット",
+      "confirm": "変更を破棄"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "標準",
+      "scientific": "関数"
+    },
+    "mode": "電卓モード",
+    "ops": {
+      "plus": "足す",
+      "minus": "引く",
+      "times": "掛ける",
+      "dividedBy": "割る",
+      "power": "の累乗"
+    },
+    "history": "履歴",
+    "plusMinus": "プラスマイナス",
+    "backspace": "バックスペース",
+    "clear": "クリア",
+    "empty": "まだありません。計算が終わるとここに表示されます。",
+    "use": "{{value}} を使う"
+  },
+  "links": {
+    "newTab": "新しいタブで開きます",
+    "errors": {
+      "title": "リンクにタイトルを付けてください。",
+      "url": "jobs.rice.edu/postings のようにホスト名が必要です。",
+      "empty": "保存するには URL を貼り付けてください。"
+    },
+    "fields": {
+      "title": "タイトル",
+      "url": "URL",
+      "category": "カテゴリー",
+      "applicationHint": "リンクを職に分類し、互いに参照できるようにします。",
+      "note": "メモ",
+      "noteHint": "保存しておく理由を1行で。"
+    },
+    "add": "リンクを追加",
+    "toast": {
+      "saved": "「{{category}}」に保存しました。タイトルは URL から読み取りました。",
+      "savedHidden": "「{{category}}」に保存しました。キーワードフィルターがオンの間は表示されません。",
+      "duplicated": "コピーは「{{category}}」に保存されました。編集できます。",
+      "deletedDescription": "保管庫から削除しました。リンク先のページには影響しません。"
+    },
+    "empty": {
+      "zeroTitle": "まだ保存したリンクがありません",
+      "zeroDescription": "URL を保存しましょう。求人情報、学科のページ、連絡するよう言われた人など。タイトルはアドレスから読み取ります。",
+      "search": "タイトル、アドレス、メモ、カテゴリーに「{{query}}」を含むリンクはありません。",
+      "both": "選択したキーワードの付いた「{{category}}」のリンクはありません。",
+      "bucketTitle": "「{{category}}」にリンクはありません",
+      "bucketDescription_other": "{{count}} 件のリンクが他のカテゴリーにあります。",
+      "showAll": "すべてのカテゴリーを表示",
+      "keywordsTitle": "それらのキーワードの付いたリンクはありません"
+    },
+    "filterLabel": "カテゴリーでリンクを絞り込む",
+    "searchLabel": "リンクを検索",
+    "searchPlaceholder": "タイトル、アドレス、メモを検索",
+    "form": {
+      "label": "リンクを保存",
+      "hint": "「{{category}}」に保存され、タイトルは URL から読み取られます。どちらも行を編集すれば変更できます。",
+      "placeholder": "URL を貼り付け…",
+      "save": "リンクを保存"
+    }
+  },
+  "people": {
+    "add": "人物を追加",
+    "searchLabel": "人物を検索",
+    "searchPlaceholder": "名前、役割、メモを検索",
+    "applicationsList": "応募リスト",
+    "toast": {
+      "removed": "人物を削除しました",
+      "saved": "人物を保存しました"
+    },
+    "empty": {
+      "zeroTitle": "まだ誰もいません",
+      "zeroDescription": "推薦者、選考委員長、採用担当者など、就職活動で関わる人です。名前が挙がっている職に分類すると、それらの記録にも表示されます。",
+      "searchTitle": "一致する人はいません",
+      "searchDescription": "名前の一部、役割、所属先で試してください。"
+    },
+    "namedOn": {
+      "recommender": "{{names}} の推薦者",
+      "contact": "{{names}} の窓口",
+      "named": "{{names}} に記載"
+    },
+    "form": {
+      "name": "名前",
+      "nameError": "必要なのは名前だけです。",
+      "namePlaceholder": "例：Ngozi Okafor 教授",
+      "role": "役割",
+      "rolePlaceholder": "例：推薦者、選考委員長、採用担当者",
+      "affiliation": "所属",
+      "affiliationPlaceholder": "例：Rice",
+      "affiliationHint": "所属先です。応募した雇用主とは関連付けられません。",
+      "email": "メール",
+      "phone": "電話",
+      "namedOn": "記載されている職",
+      "namedOnHint": "その人が推薦状を書く、選考する、または委員長を務めるすべての職です。",
+      "notePlaceholder": "言われたこと、してもらう約束、いつ催促するか。",
+      "save": "人物を保存"
+    }
+  },
+  "referee": {
+    "title": "{{name}} 向けの応募",
+    "description": "送るものにチェックを入れ、それぞれの推薦状で強調してほしい点を書いてください。強調点とメモは次回のために {{name}} に保存されます。",
+    "include": "{{org}}、{{role}} を含める",
+    "applied": "{{date}} に応募",
+    "noMaterials": "分類された資料なし",
+    "materials_other": "資料 {{count}} 件",
+    "posting": "求人情報",
+    "noPosting": "求人情報のリンクなし",
+    "highlight": "強調点",
+    "highlightPlaceholder": "例：教育、NSF CAREER、因果推論",
+    "highlightHint": "カンマで区切ってください。",
+    "note": "相手へのメモ",
+    "notePlaceholder": "その他：締め切り、宛名、学科が重視していることなど。",
+    "format": "ファイル形式",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "自分の資料を含める",
+    "withMaterialsCount": "自分の資料を含める（{{count}}）",
+    "tickOne": "少なくとも1件の応募にチェックを入れてください。",
+    "chosen_other": "{{count}} 件の応募",
+    "chosenZip_other": "{{count}} 件の応募（1つの .zip）",
+    "preparing": "準備中…",
+    "download": "ダウンロード",
+    "toast": {
+      "saved": "{{name}} 向けのリストを保存しました",
+      "zip_other": "{{file}}：シートとドキュメント {{count}} 件をダウンロードフォルダーに保存しました。",
+      "zipMissing_other": "{{file}} をダウンロードフォルダーに保存しましたが、このブラウザーで読み取れなくなったドキュメント {{count}} 件は含まれていません。",
+      "sheet": "{{file}} をダウンロードフォルダーに保存しました。",
+      "failed": "リストを作成できませんでした",
+      "failedDescription": "何もダウンロードされていません。強調点とメモは保持されています。",
+      "highlights": "強調点を保存しました"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { RichTextEditor } from '@/components/common/RichTextEditor'
 import { displayName } from '@/data/seed'
@@ -45,6 +46,7 @@ import { announceRefusal } from '@/components/common/write-result'
  * needs no element at all.
  */
 export function NotePanel({ application: a }: { application: Application }) {
+  const { t } = useTranslation('applications')
   const { setNote } = useApplications()
   const graph = useGraph()
   const { toast } = useToast()
@@ -110,11 +112,8 @@ export function NotePanel({ application: a }: { application: Application }) {
      */
     if (dropped.colour > 0 || dropped.size > 0 || dropped.overflow > 0) {
       toast({
-        title: 'Note saved, with some formatting dropped',
-        description:
-          dropped.overflow > 0
-            ? 'This note carries more formatting than jojo stores; the rest was kept as plain text.'
-            : 'Colours and sizes jojo does not have were kept as plain text.',
+        title: t('note.droppedTitle'),
+        description: dropped.overflow > 0 ? t('note.droppedOverflow') : t('note.droppedStyle'),
       })
     }
   }
@@ -132,11 +131,11 @@ export function NotePanel({ application: a }: { application: Application }) {
   latest.current = commit
   useEffect(() => () => latest.current(), [])
 
-  const label = useMemo(() => `Note on ${displayName(a)}`, [a])
+  const label = useMemo(() => t('note.label', { name: displayName(a) }), [a, t])
 
   return (
     <Panel className="min-w-0">
-      <PanelTitle hint="Saves when you click away">Note</PanelTitle>
+      <PanelTitle hint={t('note.hint')}>{t('note.title')}</PanelTitle>
       <RichTextEditor
         value={html}
         onChange={(next) => {
@@ -151,12 +150,12 @@ export function NotePanel({ application: a }: { application: Application }) {
         }}
         onBlur={commit}
         inlineOnly
-        placeholder="What is still outstanding, who you spoke to, what to ask next"
+        placeholder={t('note.placeholder')}
         ariaLabel={label}
         className="min-h-[7.5rem]"
       />
       <p role="status" className="mt-1.5 text-xs text-text-3">
-        {saved ? 'Note saved' : null}
+        {saved ? t('note.saved') : null}
       </p>
     </Panel>
   )

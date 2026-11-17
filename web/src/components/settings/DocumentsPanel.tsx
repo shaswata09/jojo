@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, HardDrive, TriangleAlert } from 'lucide-react'
 import { dayOf } from '@jojo/service/core/project'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -30,6 +31,7 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
  * place they would look. A warning with no button is just bad news.
  */
 export function DocumentsPanel() {
+  const { t } = useTranslation('settings')
   const blobs = useVaultBlobs()
   const { toast } = useToast()
   const [count, setCount] = useState(0)
@@ -78,8 +80,8 @@ export function DocumentsPanel() {
       )
       if (files.length === 0) {
         toast({
-          title: 'No documents could be read',
-          description: 'This browser no longer holds the bytes for any of them.',
+          title: t('documents.noneReadable.title'),
+          description: t('documents.noneReadable.description'),
           tone: 'danger',
         })
         return
@@ -96,20 +98,25 @@ export function DocumentsPanel() {
       saveFile(buildArchive(entries), name, 'application/zip')
 
       const missing = list.length - files.length
-      const noun = (n: number) => `${n} document${n === 1 ? '' : 's'}`
       toast({
-        title: missing === 0 ? `${noun(files.length)} saved` : `${files.length} of ${list.length} saved`,
+        title:
+          missing === 0
+            ? t('documents.savedAll', { count: files.length })
+            : t('documents.savedSome', { saved: files.length, total: list.length }),
         description:
           missing === 0
-            ? `One file, ${name}, in your downloads folder. These are the originals, not copies of the records.`
-            : `${name} is in your downloads folder, without ${noun(missing)} this browser could no longer read.`,
+            ? t('documents.savedAllDescription', { name })
+            : t('documents.savedSomeDescription', {
+                name,
+                missing: t('documents.count', { count: missing }),
+              }),
         ...(missing === 0 ? {} : { tone: 'danger' as const }),
       })
     } catch (error) {
       reportError('backup', error)
       toast({
-        title: 'Could not build the download',
-        description: 'Nothing was saved. Try again, or open a document and download it on its own.',
+        title: t('documents.failed.title'),
+        description: t('documents.failed.description'),
         tone: 'danger',
       })
     } finally {
@@ -121,23 +128,18 @@ export function DocumentsPanel() {
 
   return (
     <Panel>
-      <PanelTitle hint="on this device">Your documents</PanelTitle>
-      <p className="mb-3 text-sm text-text-2">
-        The CVs, cover letters and statements you attach are saved in this browser, on this
-        machine. Nothing is uploaded anywhere.
-      </p>
+      <PanelTitle hint={t('documents.hint')}>{t('documents.title')}</PanelTitle>
+      <p className="mb-3 text-sm text-text-2">{t('documents.intro')}</p>
 
       <div className="space-y-2.5">
         <div className="flex items-center gap-2.5 rounded-lg border border-hairline bg-well px-3 py-2.5 text-sm">
           <HardDrive className="size-4 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
           <span className="text-text-1">
-            {count === 0
-              ? 'No documents yet'
-              : `${count} document${count === 1 ? '' : 's'} stored`}
+            {count === 0 ? t('documents.none') : t('documents.stored', { count })}
           </span>
           {usage ? (
-            <span className="ml-auto text-xs text-text-3">
-              {mb(usage.used)} of {mb(usage.quota)} used
+            <span className="ms-auto text-xs text-text-3">
+              {t('documents.usage', { used: mb(usage.used), quota: mb(usage.quota) })}
             </span>
           ) : null}
         </div>
@@ -146,12 +148,7 @@ export function DocumentsPanel() {
         {safe === false ? (
           <div className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-3 py-2.5 text-xs text-warning">
             <TriangleAlert className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
-            <p>
-              This browser has not marked jojo&rsquo;s storage as permanent, so it may clear these
-              documents if the disk fills up — and &ldquo;Clear browsing data&rdquo; will remove
-              them whatever it says. Keep your own copies of anything you would not want to
-              rewrite.
-            </p>
+            <p>{t('documents.notPermanent')}</p>
           </div>
         ) : null}
 
@@ -162,7 +159,7 @@ export function DocumentsPanel() {
           onClick={() => void downloadAll()}
         >
           <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-          {busy ? 'Saving…' : 'Download every document'}
+          {busy ? t('documents.saving') : t('documents.downloadAll')}
         </Button>
       </div>
     </Panel>

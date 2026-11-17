@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Screen } from '@/components/ui/Screen'
 import { Button } from '@/components/ui/Button'
 import { Segment } from '@/components/ui/Segment'
@@ -30,30 +31,25 @@ import { startTour } from '@/components/tour/store'
  * screen they came from.
  */
 
-const PAGES = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'screens', label: 'Screens' },
-  { value: 'graph', label: 'Graph' },
-  { value: 'tools', label: 'Tools' },
-  { value: 'built', label: 'Built with' },
-] as const
+/** Each page's label and subtitle are `screen.pages.<value>` in the guide catalog. */
+const PAGES = ['overview', 'screens', 'graph', 'tools', 'built'] as const
 
-type Page = (typeof PAGES)[number]['value']
-
-const SUBTITLE: Record<Page, string> = {
-  overview: 'Everything runs on your device. Start simple, add power when you want it.',
-  screens: 'What each screen is for, and a way straight into it.',
-  graph: 'The record model underneath the seven lists.',
-  tools: 'What the assistant can do to your records, and what stops it.',
-  built: 'What this is made of, and what is still a placeholder.',
-}
+type Page = (typeof PAGES)[number]
 
 export function GuideScreen() {
+  const { t } = useTranslation('guide')
   const [page, setPage] = useState<Page>('overview')
+  const options = PAGES.map((value) => ({ value, label: t(`screen.pages.${value}.label`) }))
 
   return (
-    <Screen title="How to use jojo" subtitle={SUBTITLE[page]}>
-      <Segment label="Guide page" scroll options={PAGES} value={page} onChange={setPage} />
+    <Screen title={t('screen.title')} subtitle={t(`screen.pages.${page}.subtitle`)}>
+      <Segment
+        label={t('screen.pageLabel')}
+        scroll
+        options={options}
+        value={page}
+        onChange={setPage}
+      />
 
       {/* Above the pages, and on every one of them.
           The tour is offered once during onboarding and then has to live
@@ -61,7 +57,7 @@ export function GuideScreen() {
           app does not keep. This is where someone looks for it: the screen
           called How to use. */}
       <Button
-        label="Take the tour"
+        label={t('screen.takeTour')}
         icon="compass"
         variant="outline"
         full

@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Check, Download, ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { stripMarks } from '@jojo/service/core/marks'
 import {
-  CONTACT_ROLE_LABEL,
   MAX_BRIEF_NOTE_TEXT,
-  STAGE_LABEL,
   type Application,
   type ContactRole,
   type Person,
@@ -48,6 +47,7 @@ import { CSV_MIME, toCsv, toXlsx, XLSX_MIME } from '@/lib/spreadsheet'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The list a recommender is sent: the applications they are writing for, with
@@ -110,6 +110,8 @@ export function RefereePackDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const { byId } = useApplications()
   const { forApplication, updatePerson } = useVault()
   const blobs = useVaultBlobs()
@@ -128,7 +130,10 @@ export function RefereePackDialog({
    */
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() =>
     Object.fromEntries(
-      applications.map((a) => [a.id, draftFor(a, briefFor(person.briefs, a.id), person.roles?.[a.id])]),
+      applications.map((a) => [
+        a.id,
+        draftFor(a, briefFor(person.briefs, a.id), person.roles?.[a.id]),
+      ]),
     ),
   )
   const [format, setFormat] = useState<Format>('xlsx')
@@ -197,7 +202,8 @@ export function RefereePackDialog({
         } else {
           // Listed by name only, so the sheet still says what each employer got.
           for (const file of files) documents.push({ name: file.name, bytes: new Uint8Array() })
-          for (const snippet of snippets) documents.push({ name: `${snippet.title}.txt`, bytes: new Uint8Array() })
+          for (const snippet of snippets)
+            documents.push({ name: `${snippet.title}.txt`, bytes: new Uint8Array() })
         }
         groups.push({ folder: folders[i] ?? application.org, documents })
       }
@@ -211,29 +217,37 @@ export function RefereePackDialog({
         })),
       )
       const sheetName = sheetFileName(person.name, day, format)
-      const sheet = format === 'xlsx' ? toXlsx(table, 'Applications') : new TextEncoder().encode(toCsv(table))
+      const sheet =
+        format === 'xlsx' ? toXlsx(table, 'Applications') : new TextEncoder().encode(toCsv(table))
 
       if (withMaterials && entries.length > 0) {
         const zipName = packFileName(person.name, day)
-        saveFile(buildArchive([{ name: sheetName, bytes: sheet }, ...entries]), zipName, 'application/zip')
+        saveFile(
+          buildArchive([{ name: sheetName, bytes: sheet }, ...entries]),
+          zipName,
+          'application/zip',
+        )
         toast({
-          title: `List for ${person.name} saved`,
+          title: t('referee.toast.saved', { name: person.name }),
           description:
             unreadable === 0
-              ? `${zipName}: the sheet and ${entries.length} document${entries.length === 1 ? '' : 's'}, in your downloads folder.`
-              : `${zipName} is in your downloads folder, without ${unreadable} document${unreadable === 1 ? '' : 's'} this browser could no longer read.`,
+              ? t('referee.toast.zip', { file: zipName, count: entries.length })
+              : t('referee.toast.zipMissing', { file: zipName, count: unreadable }),
           ...(unreadable === 0 ? {} : { tone: 'danger' as const }),
         })
       } else {
         saveFile(sheet, sheetName, format === 'xlsx' ? XLSX_MIME : CSV_MIME)
-        toast({ title: `List for ${person.name} saved`, description: `${sheetName}, in your downloads folder.` })
+        toast({
+          title: t('referee.toast.saved', { name: person.name }),
+          description: t('referee.toast.sheet', { file: sheetName }),
+        })
       }
       onOpenChange(false)
     } catch (error) {
       reportError('backup', error)
       toast({
-        title: 'Could not build the list',
-        description: 'Nothing was downloaded. Your highlights and notes were kept.',
+        title: t('referee.toast.failed'),
+        description: t('referee.toast.failedDescription'),
         tone: 'danger',
       })
     } finally {
@@ -250,11 +264,8 @@ export function RefereePackDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(contentModal, 'sm:max-w-2xl')}>
         <DialogHeader>
-          <DialogTitle>Applications for {person.name}</DialogTitle>
-          <DialogDescription>
-            Tick the ones to send and say what you want each letter to highlight. Your highlights and
-            notes are kept on {person.name} for next time.
-          </DialogDescription>
+          <DialogTitle>{t('referee.title', { name: person.name })}</DialogTitle>
+          <DialogDescription>{t('referee.description', { name: person.name })}</DialogDescription>
         </DialogHeader>
 
         <ul className="-mx-4 flex max-h-[55vh] flex-col overflow-y-auto px-4">
@@ -272,7 +283,7 @@ export function RefereePackDialog({
                     type="button"
                     role="checkbox"
                     aria-checked={d.include}
-                    aria-label={`Include ${a.org}, ${a.role}`}
+                    aria-label={t('referee.include', { org: a.org, role: a.role })}
                     onClick={() => set(a.id, { include: !d.include })}
                     className="touch-target mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded border border-hairline text-transparent transition-colors hover:border-accent aria-checked:border-accent aria-checked:bg-accent aria-checked:text-primary-foreground"
                   >
@@ -283,11 +294,13 @@ export function RefereePackDialog({
                       {a.org} <span className="text-text-3">·</span> {a.role}
                     </div>
                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-text-3">
-                      {role ? <span className="text-text-2">{CONTACT_ROLE_LABEL[role]}</span> : null}
-                      <span>{STAGE_LABEL[a.stage]}</span>
-                      {date ? <span>Applied {date}</span> : null}
+                      {role ? (
+                        <span className="text-text-2">{domain.contactRole(role)}</span>
+                      ) : null}
+                      <span>{domain.stage(a.stage)}</span>
+                      {date ? <span>{t('referee.applied', { date })}</span> : null}
                       <span>
-                        {count === 0 ? 'No materials filed' : `${count} material${count === 1 ? '' : 's'}`}
+                        {count === 0 ? t('referee.noMaterials') : t('referee.materials', { count })}
                       </span>
                       {a.url ? (
                         <a
@@ -296,11 +309,11 @@ export function RefereePackDialog({
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-accent hover:underline"
                         >
-                          Posting
+                          {t('referee.posting')}
                           <ExternalLink className="size-3" strokeWidth={1.8} aria-hidden />
                         </a>
                       ) : (
-                        <span>No posting link</span>
+                        <span>{t('referee.noPosting')}</span>
                       )}
                     </div>
                   </div>
@@ -310,20 +323,20 @@ export function RefereePackDialog({
                     six empty fields under it would be noise. What was typed is
                     kept while it is unticked. */}
                 {d.include ? (
-                  <div className="mt-2.5 grid gap-2.5 pl-[28px]">
+                  <div className="mt-2.5 grid gap-2.5 ps-[28px]">
                     <Field
-                      label="Highlight"
+                      label={t('referee.highlight')}
                       value={d.highlights}
-                      placeholder="e.g. teaching, NSF CAREER, causal inference"
-                      hint="Separate with commas."
+                      placeholder={t('referee.highlightPlaceholder')}
+                      hint={t('referee.highlightHint')}
                       onChange={(e) => set(a.id, { highlights: e.target.value })}
                     />
                     <TextareaField
-                      label="Note for them"
+                      label={t('referee.note')}
                       rows={2}
                       maxLength={MAX_BRIEF_NOTE_TEXT}
                       value={d.note}
-                      placeholder="Anything else: the deadline, who to address it to, what the department cares about."
+                      placeholder={t('referee.notePlaceholder')}
                       onChange={(e) => set(a.id, { note: e.target.value })}
                     />
                   </div>
@@ -335,13 +348,15 @@ export function RefereePackDialog({
 
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
           <fieldset className="flex items-center gap-1.5">
-            <legend className="sr-only">File format</legend>
+            <legend className="sr-only">{t('referee.format')}</legend>
             {(['xlsx', 'csv'] as const).map((f) => (
               <label
                 key={f}
                 className={cn(
                   'cursor-pointer rounded-md border px-2.5 py-1 text-xs transition-colors',
-                  format === f ? 'border-accent text-text-1' : 'border-hairline text-text-3 hover:text-text-2',
+                  format === f
+                    ? 'border-accent text-text-1'
+                    : 'border-hairline text-text-3 hover:text-text-2',
                 )}
               >
                 <input
@@ -352,7 +367,7 @@ export function RefereePackDialog({
                   onChange={() => setFormat(f)}
                   className="sr-only"
                 />
-                {f === 'xlsx' ? 'Excel (.xlsx)' : 'CSV'}
+                {f === 'xlsx' ? t('referee.excel') : 'CSV'}
               </label>
             ))}
           </fieldset>
@@ -363,21 +378,23 @@ export function RefereePackDialog({
               onChange={(e) => setWithMaterials(e.target.checked)}
               className="accent-[var(--accent)]"
             />
-            Include my materials{documentCount > 0 ? ` (${documentCount})` : ''}
+            {documentCount > 0
+              ? t('referee.withMaterialsCount', { count: documentCount })
+              : t('referee.withMaterials')}
           </label>
         </div>
 
         <DialogFooter className="mt-4">
-          <p className="text-xs text-text-3 sm:mr-auto sm:self-center">
+          <p className="text-xs text-text-3 sm:me-auto sm:self-center">
             {chosen.length === 0
-              ? 'Tick at least one application.'
-              : `${chosen.length} application${chosen.length === 1 ? '' : 's'}${
-                  withMaterials && documentCount > 0 ? ', as one .zip' : ''
-                }`}
+              ? t('referee.tickOne')
+              : withMaterials && documentCount > 0
+                ? t('referee.chosenZip', { count: chosen.length })
+                : t('referee.chosen', { count: chosen.length })}
           </p>
           <DialogClose asChild>
             <Button variant="ghost" size="sm" disabled={busy}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </DialogClose>
           <Button
@@ -387,14 +404,14 @@ export function RefereePackDialog({
             onClick={() => {
               saveBriefs()
               onOpenChange(false)
-              toast({ title: 'Highlights saved', description: person.name })
+              toast({ title: t('referee.toast.highlights'), description: person.name })
             }}
           >
-            Save
+            {t('common.save')}
           </Button>
           <Button size="sm" disabled={busy || chosen.length === 0} onClick={() => void download()}>
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            {busy ? 'Preparing…' : 'Download'}
+            {busy ? t('referee.preparing') : t('referee.download')}
           </Button>
         </DialogFooter>
       </DialogContent>

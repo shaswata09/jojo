@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Plus, Tag, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DeleteKeywordDialog } from '@/components/common/DeleteKeywordDialog'
 import { KeywordChip } from '@/components/common/KeywordChip'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,7 @@ export function LabelFilter({
 }) {
   const { labels, selected, toggleSelected, clearSelected, addLabel, countFor, countsWithin } =
     useLabels()
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
@@ -85,7 +87,7 @@ export function LabelFilter({
      */
     <div
       role="group"
-      aria-label="Filter by keyword"
+      aria-label={t('labelFilter.label')}
       data-tour="keywords"
       // Read by the guided tour's "pick a keyword" step; a filter, not a write.
       data-selected={selected.size > 0 ? '' : undefined}
@@ -97,7 +99,7 @@ export function LabelFilter({
           the row as a bare tag icon beside an unlabelled plus — an affordance
           with nothing to say what it adds. */}
       {labels.length === 0 ? (
-        <span className="text-xs text-text-3">No keywords yet — add one to filter by it.</span>
+        <span className="text-xs text-text-3">{t('labelFilter.none')}</span>
       ) : null}
 
       {labels.map((l) => (
@@ -113,21 +115,21 @@ export function LabelFilter({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
-          aria-label="New keyword"
-          title="New keyword"
+          aria-label={t('keywordPicker.new')}
+          title={t('keywordPicker.new')}
           className="grid size-6 cursor-pointer place-items-center rounded-full border border-dashed border-hairline-strong text-text-3 transition-colors hover:text-text-1"
         >
           <Plus className="size-3.5" strokeWidth={2} aria-hidden />
         </PopoverTrigger>
         <PopoverContent align="start" className="w-56">
           <label htmlFor="new-keyword" className="text-xs text-text-2">
-            New keyword
+            {t('keywordPicker.new')}
           </label>
           <Input
             id="new-keyword"
             value={draft}
             autoComplete="off"
-            placeholder="e.g. Developer"
+            placeholder={t('labelFilter.example')}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
               // Enter is how anyone types a tag; requiring the mouse for the
@@ -139,7 +141,7 @@ export function LabelFilter({
             }}
           />
           <Button size="sm" onClick={create} disabled={!draft.trim()}>
-            Add keyword
+            {t('labelFilter.add')}
           </Button>
         </PopoverContent>
       </Popover>
@@ -151,7 +153,7 @@ export function LabelFilter({
           className="flex cursor-pointer items-center gap-1 rounded-full px-1.5 py-1 text-xs text-text-3 transition-colors hover:text-text-1"
         >
           <X className="size-3" strokeWidth={2} aria-hidden />
-          Clear
+          {t('labelFilter.clear')}
         </button>
       ) : null}
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { CalendarClock, Check, ChevronLeft, ChevronRight, CircleCheckBig } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -9,7 +10,7 @@ import { checklistClosed, checklistOpened, closeChecklist, openChecklist } from 
 import { snoozeAnchor } from '@/components/common/snooze'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { addDays, shortDate } from '@/data/timeline'
+import { addDays } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
@@ -24,6 +25,7 @@ import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
 import { useMascot } from '@/lib/mascot-context'
 import { CUES } from '@/lib/mascot-cues'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The card's only colour, and it comes off the date.
@@ -47,6 +49,8 @@ const URGENCY_BORDER: Record<DateMark, string> = {
  * nothing to write to.
  */
 function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | 'xs' }) {
+  const { t } = useTranslation('dashboard')
+  const domain = useDomain()
   const { get, toggleDone, update, snooze, reschedule } = useTimeline()
   const { toast } = useToast()
   const mascot = useMascot()
@@ -62,11 +66,11 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
     if (announceRefusal(toggleDone(item.id), toast)) return
     mascot.play(CUES.taskDone)
     toast({
-      title: `${item.title} completed`,
-      description: 'It leaves the deck and this week — nothing is deleted.',
+      title: t('common.completed', { title: item.title }),
+      description: t('priority.completedDescription'),
       // Not a second toggleDone: by the time this is pressed the item may have
       // been unticked elsewhere, and toggling again would re-tick it.
-      action: { label: 'Undo', onClick: () => update(item.id, { completedOn: null }) },
+      action: { label: t('common.undo'), onClick: () => update(item.id, { completedOn: null }) },
     })
   }
 
@@ -75,28 +79,37 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
     setOpen(false)
     if (announceRefusal(snooze(item.id, days), toast)) return
     toast({
-      title: `${item.title} rescheduled`,
-      description: `Now due ${shortDate(addDays(anchor, days))}, on the calendar and the week ahead.`,
-      action: { label: 'Undo', onClick: () => reschedule(item.id, before) },
+      title: t('common.rescheduled', { title: item.title }),
+      description: t('priority.rescheduledDescription', {
+        date: domain.shortDate(addDays(anchor, days)),
+      }),
+      action: { label: t('common.undo'), onClick: () => reschedule(item.id, before) },
     })
   }
 
   return (
     <>
-      <Button variant="ghost" size={size} title={`Tick "${item.title}" off`} onClick={done}>
+      <Button
+        variant="ghost"
+        size={size}
+        title={t('priority.tickOff', { title: item.title })}
+        onClick={done}
+      >
         <Check className="size-3.5" strokeWidth={2} aria-hidden />
-        Done
+        {t('priority.done')}
       </Button>
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size={size} title={`Push "${item.title}" out`}>
+          <Button variant="ghost" size={size} title={t('common.pushOut', { title: item.title })}>
             <CalendarClock className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Snooze
+            {t('priority.snooze')}
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-48 gap-1 p-1.5">
-          <div className="px-1 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Push out by</div>
+          <div className="px-1 pb-0.5 text-xs tracking-wide text-text-3 uppercase">
+            {t('common.pushOutBy')}
+          </div>
           <SnoozeSteps date={item.date} spell="duration" onPick={push} />
         </PopoverContent>
       </Popover>
@@ -105,6 +118,7 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
 }
 
 function ActionButton({ action }: { action: PriorityAction['actions'][number] }) {
+  const { t } = useTranslation('dashboard')
   const { open } = useDialogs()
 
   if (action.to) {
@@ -123,7 +137,7 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
       // added without one of the first two greys out with the reason on it
       // rather than shipping as a button that swallows the click.
       disabled={!action.draft}
-      title={action.blocker ?? (action.draft ? undefined : 'Nothing is connected to this yet')}
+      title={action.blocker ?? (action.draft ? undefined : t('priority.notConnected'))}
       onClick={action.draft ? () => open('draft', action.draft) : undefined}
     >
       {action.label}
@@ -199,18 +213,25 @@ const FALLBACK_STEP = 0.8
  * overdue is what you see first, and the later ones are a swipe away.
  */
 function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: string }) {
+  const { t } = useTranslation('dashboard')
   const track = useRef<HTMLUListElement>(null)
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)')
-  /** Whether there is more to scroll to on each side. */
-  const [more, setMore] = useState({ before: false, after: false })
+  /** Whether there is more to scroll to on each side, and which way the track runs. */
+  const [more, setMore] = useState({ before: false, after: false, rtl: false })
 
   const measure = useCallback(() => {
     const el = track.current
     if (!el) return
+    // Right to left, `scrollLeft` starts at 0 and runs NEGATIVE towards the
+    // end, so the distance travelled is its magnitude. Read as LTR, Earlier
+    // never lit and Later scrolled past the start and did nothing.
+    const rtl = getComputedStyle(el).direction === 'rtl'
+    const travelled = Math.abs(el.scrollLeft)
     // A pixel of slack: subpixel layouts stop a pixel short of the end.
     setMore({
-      before: el.scrollLeft > 1,
-      after: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+      before: travelled > 1,
+      after: travelled + el.clientWidth < el.scrollWidth - 1,
+      rtl,
     })
   }, [])
 
@@ -230,21 +251,26 @@ function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: 
     const first = el.firstElementChild
     const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 0
     const by = first ? first.getBoundingClientRect().width + gap : el.clientWidth * FALLBACK_STEP
-    el.scrollBy({ left: direction * by, behavior: reduced ? 'auto' : 'smooth' })
+    // Later is leftward on a right-to-left page.
+    const sign = getComputedStyle(el).direction === 'rtl' ? -1 : 1
+    el.scrollBy({ left: sign * direction * by, behavior: reduced ? 'auto' : 'smooth' })
   }
 
   const overflows = more.before || more.after
   // A soft fade on whichever side has more, so a cut-off card reads as "keeps
   // going" rather than as a layout bug. Masked rather than overlaid, so nothing
   // sits on top of the cards' buttons.
+  // The gradients run start to end, which is leftward right to left.
   const fade = 'transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%'
+  const toEnd = more.rtl ? 'to left' : 'to right'
+  const toStart = more.rtl ? 'to right' : 'to left'
   const mask =
     more.before && more.after
-      ? `linear-gradient(to right, ${fade})`
+      ? `linear-gradient(${toEnd}, ${fade})`
       : more.after
-        ? 'linear-gradient(to right, black calc(100% - 1.5rem), transparent 100%)'
+        ? `linear-gradient(${toEnd}, black calc(100% - 1.5rem), transparent 100%)`
         : more.before
-          ? 'linear-gradient(to left, black calc(100% - 1.5rem), transparent 100%)'
+          ? `linear-gradient(${toStart}, black calc(100% - 1.5rem), transparent 100%)`
           : undefined
 
   return (
@@ -258,34 +284,34 @@ function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: 
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                aria-label="Show earlier decisions"
-                title="Earlier"
+                aria-label={t('priority.earlierAria')}
+                title={t('priority.earlier')}
                 disabled={!more.before}
                 onClick={() => step(-1)}
               >
-                <ChevronLeft className="size-4" strokeWidth={1.8} aria-hidden />
+                <ChevronLeft className="size-4 rtl:-scale-x-100" strokeWidth={1.8} aria-hidden />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                aria-label="Show later decisions"
-                title="Later"
+                aria-label={t('priority.laterAria')}
+                title={t('priority.later')}
                 disabled={!more.after}
                 onClick={() => step(1)}
               >
-                <ChevronRight className="size-4" strokeWidth={1.8} aria-hidden />
+                <ChevronRight className="size-4 rtl:-scale-x-100" strokeWidth={1.8} aria-hidden />
               </Button>
             </div>
           ) : undefined
         }
       >
-        Needs a decision
+        {t('priority.title')}
       </PanelTitle>
 
       <ul
         ref={track}
-        aria-label="Decisions, earliest first"
+        aria-label={t('priority.listLabel')}
         onScroll={measure}
         /*
          * Bled out to the panel's edges, `PanelScroll`'s treatment: the negative
@@ -360,32 +386,33 @@ type FirstStepsProgress = ReturnType<typeof useFirstStepsProgress>
  * stay in step, lifting `StepList` into `components/common/` is the fix.
  */
 function FirstSteps({ progress, onClose }: { progress: FirstStepsProgress; onClose: () => void }) {
+  const { t } = useTranslation('dashboard')
   const { open } = useDialogs()
 
   const steps = [
     {
       id: 'application',
-      title: 'Add an application',
-      body: 'A position, its stage and its deadline. Everything else in jojo hangs off this record.',
+      title: t('firstSteps.application.title'),
+      body: t('firstSteps.application.body'),
       done: progress.application,
       onClick: () => open('application'),
-      label: 'New application',
+      label: t('common.newApplication'),
     },
     {
       id: 'dated',
-      title: 'Give something a date',
-      body: 'Deadlines, interviews and visits are one kind of record, so a date reaches this page, the calendar and the application at once.',
+      title: t('firstSteps.dated.title'),
+      body: t('firstSteps.dated.body'),
       done: progress.dated,
       onClick: () => open('timelineItem', { mode: 'event', initial: { date: TODAY } }),
-      label: 'New event',
+      label: t('firstSteps.dated.action'),
     },
     {
       id: 'reminder',
-      title: 'Set a follow-up',
-      body: 'A reminder is the same record with a nudge switched on. Once its date passes it is owed, and it stays here until you tick it off.',
+      title: t('firstSteps.reminder.title'),
+      body: t('firstSteps.reminder.body'),
       done: progress.reminder,
       onClick: () => open('timelineItem', { mode: 'reminder' }),
-      label: 'New reminder',
+      label: t('firstSteps.reminder.action'),
     },
   ]
 
@@ -394,13 +421,17 @@ function FirstSteps({ progress, onClose }: { progress: FirstStepsProgress; onClo
 
   return (
     <Panel className="min-w-0">
-      <PanelTitle hint={`${done} of ${steps.length} done`}>First steps</PanelTitle>
+      <PanelTitle hint={t('firstSteps.hint', { done, total: steps.length })}>
+        {t('firstSteps.title')}
+      </PanelTitle>
       {/* "Nothing is tracked yet" was true only until the first step landed,
           and the panel now outlives that. The line states what is true now. */}
       <p className="mb-3 text-sm text-text-2">
         {complete
-          ? 'All three are done. Anything you add from here reaches this page, the calendar and the application it belongs to.'
-          : `${done === 0 ? 'Nothing is tracked yet. ' : ''}Each step opens the real thing and ticks itself once a record exists — none of it is a tutorial you have to sit through.`}
+          ? t('firstSteps.complete')
+          : done === 0
+            ? t('firstSteps.introBare')
+            : t('firstSteps.intro')}
       </p>
 
       <ol className="divide-y divide-hairline">
@@ -421,7 +452,10 @@ function FirstSteps({ progress, onClose }: { progress: FirstStepsProgress; onClo
             <div className="min-w-0 flex-1 basis-56">
               <p className="text-sm font-medium">
                 {s.title}
-                <span className="sr-only">{s.done ? ' — done' : ' — not done yet'}</span>
+                <span className="sr-only">
+                  {' '}
+                  {s.done ? t('firstSteps.doneSr') : t('firstSteps.notDoneSr')}
+                </span>
               </p>
               <p className="mt-1 text-sm text-text-2">{s.body}</p>
             </div>
@@ -444,9 +478,9 @@ function FirstSteps({ progress, onClose }: { progress: FirstStepsProgress; onClo
           variant={complete ? 'outline' : 'ghost'}
           size="sm"
           onClick={onClose}
-          title={complete ? undefined : 'The same steps are written out in the guide'}
+          title={complete ? undefined : t('firstSteps.hideHint')}
         >
-          {complete ? 'Close first steps' : 'Hide these steps'}
+          {complete ? t('firstSteps.close') : t('firstSteps.hide')}
         </Button>
       </div>
     </Panel>
@@ -454,6 +488,7 @@ function FirstSteps({ progress, onClose }: { progress: FirstStepsProgress; onClo
 }
 
 export function PriorityActions() {
+  const { t } = useTranslation('dashboard')
   const actions = usePriorityActions()
   const progress = useFirstStepsProgress()
 
@@ -508,14 +543,14 @@ export function PriorityActions() {
   if (actions.length === 0) {
     return (
       <Panel className="min-w-0">
-        <PanelTitle>Needs a decision</PanelTitle>
+        <PanelTitle>{t('priority.title')}</PanelTitle>
         <EmptyState
           icon={CircleCheckBig}
-          title="Nothing needs deciding today"
-          description="Offers, applications that are overdue, the next hard deadline and your next interview surface here. None of them is outstanding."
+          title={t('priority.emptyTitle')}
+          description={t('priority.emptyDescription')}
           action={
             <Button variant="outline" size="sm" asChild>
-              <Link to={applicationsPath()}>Open the board</Link>
+              <Link to={applicationsPath()}>{t('common.openBoard')}</Link>
             </Button>
           }
         />
@@ -529,7 +564,7 @@ export function PriorityActions() {
     <Panel className="flex min-w-0 flex-col">
       <DecisionTimeline
         actions={chronological(actions)}
-        hint={actions.length === 1 ? '1 open' : `${actions.length} open`}
+        hint={t('priority.open', { count: actions.length })}
       />
     </Panel>
   )

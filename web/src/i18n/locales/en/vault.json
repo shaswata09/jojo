@@ -1,0 +1,556 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "undo": "Undo",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "duplicate": "Duplicate",
+    "deleteFailed": "That did not delete",
+    "deleted": "{{title}} deleted",
+    "unsaved": "Unsaved changes",
+    "saved": "{{title}} saved",
+    "showIt": "Show it",
+    "copyBlocked": "Copy was blocked by the browser",
+    "updated": "{{title}} updated",
+    "saveChanges": "Save changes"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Files not filed under any application",
+      "label": "Unfiled"
+    },
+    "inlineEdit": {
+      "needsName": "A file needs a name"
+    },
+    "intake": {
+      "tooLarge": "{{name}} was too large to check",
+      "tooLargeDescription": "It is filed, and jojo shows it with every web address in it blocked and its links switched off, so viewing it here reaches nothing on the network — but anything it loads from the web will be missing.",
+      "addresses_one": "{{name}} names {{count}} web address",
+      "addresses_other": "{{name}} names {{count}} web addresses",
+      "addressesDescription_one": "It is filed as you dropped it, and jojo shows it with that address blocked and its links switched off, so viewing it here reaches nothing on the network. Pictures or styles it loaded from the web will be missing.",
+      "addressesDescription_other": "It is filed as you dropped it, and jojo shows it with every one of them blocked and its links switched off, so viewing it here reaches nothing on the network. Pictures or styles it loaded from the web will be missing.",
+      "folders_one": "That looks like a folder",
+      "folders_other": "Those look like folders",
+      "foldersDescription": "jojo files documents one at a time. Open the folder and drop the files in it.",
+      "reattached": "{{name}} is attached again",
+      "reattachedDescription": "The row was already here without its document. It has one now.",
+      "stillUnsaved": "{{name}} still could not be saved",
+      "stillUnsavedDescription": "This browser refused to store it again — its storage is probably still full.",
+      "unsaved": "{{name}} was filed, but not saved",
+      "unsavedDescription": "The row is here, but this browser refused to store the document — usually because its storage is full. Free some space and drop the same file in again; it will attach to this row rather than making a second one.",
+      "alreadyHere_one": "That file is already here",
+      "alreadyHere_other": "Those files are already here",
+      "alreadyHereDescription": "A file of the same name is already in the vault.",
+      "addedOne": "{{name}} added",
+      "addedMany_one": "{{count}} file added",
+      "addedMany_other": "{{count}} files added",
+      "addedHidden": "Filed under {{bucket}} — hidden while the keyword filter is on.",
+      "addedHiddenVault": "Filed in the Vault under {{bucket}} — hidden while the keyword filter is on.",
+      "addedDescription": "Filed under {{bucket}} and saved in this browser. Nothing was uploaded anywhere.",
+      "addedDescriptionVault": "Filed in the Vault under {{bucket}} and saved in this browser. Nothing was uploaded anywhere.",
+      "skipped_one": "{{count}} skipped",
+      "skipped_other": "{{count}} skipped",
+      "skippedDescription": "A file of the same name was already in the vault.",
+      "foldersSkipped_one": "{{count}} folder skipped",
+      "foldersSkipped_other": "{{count}} folders skipped"
+    },
+    "row": {
+      "fileName": "File name",
+      "renameHint": "Rename this file",
+      "onDevice": "on this device",
+      "viewing": "Viewing",
+      "preview": "Preview",
+      "rename": "Rename",
+      "editNote": "Edit note",
+      "addNote": "Add note",
+      "changeApplications": "Change applications",
+      "fileUnder": "File under an application",
+      "readIntoProfile": "Read into your profile"
+    },
+    "add": "Add file",
+    "filterLabel": "Filter files by bucket",
+    "searchLabel": "Search files",
+    "searchPlaceholder": "Search name or note",
+    "toast": {
+      "renamed": "{{name}} renamed",
+      "was": "Was {{name}}.",
+      "noteSaved": "{{name}} note saved",
+      "noteCleared": "{{name}} note cleared",
+      "noteClearedDescription": "The row keeps its name, bucket and keywords.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "It shows on each of them, and the graph can find it from any.",
+      "unfiledDescription": "It stays in the Vault, filed under nothing."
+    },
+    "empty": {
+      "zeroTitle": "No files yet",
+      "zeroDescription": "Drop a posting, a paper or a draft here — or add one from your computer.",
+      "search": "No file mentions \"{{query}}\" in its name, note or bucket.",
+      "both": "No file in {{bucket}} carries the selected keywords.",
+      "bucketTitle": "Nothing in {{bucket}}",
+      "bucketDescription_one": "{{count}} file is filed under the other buckets.",
+      "bucketDescription_other": "{{count}} files are filed under the other buckets.",
+      "showAll": "Show all buckets",
+      "keywordsTitle": "No files carry those keywords",
+      "allFiledTitle": "Every file is filed under an application",
+      "allFiledDescription_one": "All {{count}} of them. Nothing is sitting loose.",
+      "allFiledDescription_other": "All {{count}} of them. Nothing is sitting loose.",
+      "unfiledKeywords": "No unfiled file is in the selected keywords.",
+      "unfiledBucket": "No unfiled file is in {{bucket}}."
+    },
+    "drop": {
+      "title": "Drop to add to {{bucket}}",
+      "description": "Name, size and type are read. Nothing is uploaded.",
+      "hint": "Drop files anywhere on this panel to add them to {{bucket}}."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Not everything in that drop was used",
+      "nothing": "Nothing there to open"
+    },
+    "save": {
+      "nameLabel": "Name for the new file",
+      "working": "Working…",
+      "alsoDownload": "Also download",
+      "footnote": "The result is filed as a new document — nothing you started from is changed. It is built here in your browser, and no part of it is uploaded.",
+      "workingSpoken": "Working on the document"
+    },
+    "thumb": {
+      "turned": "{{label}}, turned {{degrees}} degrees",
+      "noPreview": "No preview"
+    },
+    "source": {
+      "fromVault": "{{label}} from the vault",
+      "noneInVault": "No PDFs in the vault yet",
+      "choose": "Choose from the vault…",
+      "device": "From this device",
+      "fromDevice": "{{label}} from this device",
+      "dropHintEmpty": "Or drop a PDF anywhere on this card. Files you save here show up in this list.",
+      "dropHint": "Or drop a PDF anywhere on this card."
+    },
+    "modes": {
+      "merge": "Merge",
+      "pages": "Pages",
+      "annotate": "Annotate"
+    },
+    "editor": {
+      "title": "PDF editor",
+      "hint": "Merge, reorganise and mark up PDFs. Everything runs in this browser — no document is uploaded.",
+      "operation": "PDF operation",
+      "dropMerge": "Drop PDFs to add them to the merge",
+      "dropOpen": "Drop a PDF to open it"
+    },
+    "errors": {
+      "gone": "{{name}} is no longer stored, so it cannot be opened.",
+      "noRoom": "{{name}} was filed, but its bytes would not fit in this browser's storage."
+    },
+    "saved": "{{name}} saved",
+    "merge": {
+      "move": "Move {{name}}, {{position}} of {{total}}",
+      "dragToReorder": "Drag to reorder",
+      "fromDevice": "· from this device",
+      "allPages": "All pages",
+      "rangeLabel": "Pages to take from {{name}}",
+      "remove": "Take {{name}} out of the merge",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{pages}} from {{documents}}, filed under {{bucket}}. The originals are untouched.",
+      "pages_one": "{{count}} page",
+      "pages_other": "{{count}} pages",
+      "documents_one": "{{count}} document",
+      "documents_other": "{{count}} documents",
+      "addLabel": "Add a PDF to merge",
+      "empty": "Add two or more PDFs, or drop them onto this card. They are joined top to bottom — drag a row by its left edge to change the order — and the originals are left as they are.",
+      "position": "position {{position}} of {{total}}, {{name}}",
+      "hint": "Ranges like 1-3, 7, 9- take part of a document. Leave a box empty for all of it.",
+      "action": "Merge and save"
+    },
+    "pages": {
+      "savedDescription_one": "{{count}} page, filed under {{bucket}}. {{name}} is unchanged.",
+      "savedDescription_other": "{{count}} pages, filed under {{bucket}}. {{name}} is unchanged.",
+      "chooseLabel": "Choose a PDF to organise",
+      "empty": "Choose one PDF. You can turn pages, drop them, put them in a different order, and keep only part of it.",
+      "kept_one": "· {{kept}} of {{count}} page kept",
+      "kept_other": "· {{kept}} of {{count}} pages kept",
+      "startOver": "Start over",
+      "page": "Page {{number}}",
+      "was": " · was {{number}}",
+      "earlier": "Move page {{number}} earlier",
+      "anticlockwise": "Turn page {{number}} anticlockwise",
+      "clockwise": "Turn page {{number}} clockwise",
+      "remove": "Remove page {{number}}",
+      "later": "Move page {{number}} later",
+      "hint": "Turn, move or remove a page and this becomes available.",
+      "action": "Save pages and save"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Highlight",
+        "comment": "Comment"
+      },
+      "savedDescription": "{{summary}}, filed under {{bucket}}. {{name}} is unchanged.",
+      "chooseLabel": "Choose a PDF to mark up",
+      "empty": "Choose one PDF. Select text on the page to highlight it, or switch to Comment and click where the note belongs.",
+      "toolLabel": "Marking tool",
+      "colour": "Highlight colour",
+      "previousPage": "Previous page",
+      "pageOf": "Page {{page}} of {{total}}",
+      "nextPage": "Next page",
+      "zoom": "Zoom",
+      "highlightHint": "Select words on the page — across lines is fine — and they are marked when you let go.",
+      "commentHint": "Click the page where the comment belongs.",
+      "commentPlaceholder": "What is the comment?",
+      "notePlaceholder": "Add a note to this…",
+      "commentLabel": "Comment on page {{number}}",
+      "noteLabel": "Note on the highlight of {{excerpt}}",
+      "removeMark": "Remove this mark",
+      "hintEmpty": "Highlight some text or add a comment first.",
+      "hint": "{{summary}} will be written in.",
+      "action": "Save marked up and save"
+    }
+  },
+  "instruments": {
+    "calculator": "Calculator",
+    "pdf": "PDF editor",
+    "label": "Which tool",
+    "loading": "Getting the PDF tools ready…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "This posting has no saved copy on this device. Captures are kept where they were taken, so one made on your phone is not here — and a row restored from a backup carries the record without the page.",
+      "stored": "Browsers render PDFs natively but not {{kind}} files. The document is stored — Save hands it to your own application.",
+      "missing": "Browsers render PDFs natively but not {{kind}} files — and there is no stored document behind this row to hand to anything else."
+    },
+    "dialogDescription": "A preview of {{name}}, filed under this application. Press Escape to go back to the record.",
+    "noteSaved": "Note saved on {{name}}",
+    "noteSavedDescription": "It shows against this file wherever the vault lists it.",
+    "noteEmptyDescription": "The note is now empty, so nothing shows against this file.",
+    "captured": "{{name}}, as it was captured",
+    "previewTitle": "{{name}} preview",
+    "asText": "{{name}}, as text",
+    "truncated": "Only the first megabyte is shown. Save opens the whole file in your own application.",
+    "failedTitle": "This browser would not open the preview",
+    "failedDescription": "{{error}}. The file's record in your vault is unaffected — only the preview could not be built.",
+    "noPreviewTitle": "No preview for this type",
+    "capturedFrom": "Captured from {{host}}",
+    "fullScreen": "Open the preview full screen",
+    "fullScreenDescription": "{{name}}, full screen, with a notes panel. Press Escape to go back.",
+    "notes": {
+      "title": "Notes",
+      "hide": "Hide the notes panel",
+      "show": "Show the notes panel",
+      "hint": "Kept against {{name}}, and shown wherever this file is listed.",
+      "label": "Notes on {{name}}",
+      "placeholder": "What matters in this document — the deadline buried on page 3, who to ask about it…",
+      "saved": "Saved",
+      "save": "Save note"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Snooze or move this reminder",
+      "label": "Snooze \"{{title}}\" — {{when}}",
+      "heading": "Snooze",
+      "pickDate": "Pick a date",
+      "move": "Move"
+    },
+    "row": {
+      "markNotDone": "Mark \"{{title}}\" as not done",
+      "markDone": "Mark \"{{title}}\" done",
+      "draftReply": "Draft a reply"
+    },
+    "relatedTwo": "{{first}} and {{second}}",
+    "relatedMany_one": "{{count}} application",
+    "relatedMany_other": "{{count}} applications",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (copy)",
+    "add": "Add reminder",
+    "filterLabel": "Filter reminders by when they are due",
+    "searchLabel": "Search reminders",
+    "searchPlaceholder": "Search title, note or job",
+    "toast": {
+      "reopened": "{{title}} reopened",
+      "completed": "{{title}} completed",
+      "reopenedDescription": "Back under its own date, and back on the dashboard if it is a follow-up.",
+      "completedDescription": "Filed under Completed, and off the dashboard.",
+      "moved": "{{title}} moved",
+      "nowDue": "Now due {{date}} · {{when}}",
+      "duplicated": "{{title}} duplicated",
+      "duplicatedDescription": "The copy is open and due {{date}}.",
+      "stillOnList": "{{title}} is still on the list.",
+      "deletedDescription": "{{description}} — gone from the calendar as well as this list."
+    },
+    "empty": {
+      "zeroTitle": "No reminders yet",
+      "zeroDescription": "A reminder is a dated nudge — chase a referee, check a portal, send a thank-you. Ones you mark as follow-ups also show on the dashboard until you tick them off.",
+      "search": "No reminder mentions \"{{query}}\" in its title, note, kind or application.",
+      "both": "No {{bucket}} reminder carries the selected keywords.",
+      "doneTitle": "Nothing completed yet",
+      "doneDescription": "Reminders you tick off collect here, so one ticked by mistake is still findable.",
+      "showAll": "Show all reminders",
+      "bucketTitle": "Nothing {{bucket}}",
+      "bucketDescription_one": "{{count}} reminder is filed under the other groups.",
+      "bucketDescription_other": "{{count}} reminders are filed under the other groups.",
+      "keywordsTitle": "No reminders carry those keywords"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "The keyword filter at the top of the page is what is hiding them.",
+    "searchTitle": "Nothing matches that search",
+    "clearSearch": "Clear search",
+    "filtersTitle": "Nothing matches those filters",
+    "clearFilters": "Clear filters",
+    "showFiled": "Show filed files too",
+    "bothTitle": "Nothing matches both filters",
+    "clearBoth": "Clear both filters",
+    "clearKeywords": "Clear keywords"
+  },
+  "capture": {
+    "posting": "Posting",
+    "savedOne": "{{name}} saved to your vault",
+    "savedMany_one": "{{count}} posting saved to your vault",
+    "savedMany_other": "{{count}} postings saved to your vault",
+    "suggested": "Not filed under any application. {{name}} looks like a match — file it from the row in your Vault.",
+    "unfiled": "Not filed under any application. File it from the row in your Vault whenever you want to.",
+    "dropped_one": "{{count}} asset could not be kept, so parts may look plain.",
+    "dropped_other": "{{count}} assets could not be kept, so parts may look plain.",
+    "unstored_one": "{{count}} could not be stored on this device — the record is there, the page is not.",
+    "unstored_other": "{{count}} could not be stored on this device — the record is there, the page is not.",
+    "refusedOne": "One capture could not be kept",
+    "refusedMany_one": "{{count}} capture could not be kept",
+    "refusedMany_other": "{{count}} captures could not be kept",
+    "waitingOne": "One posting is waiting to be saved here.",
+    "waitingMany_one": "{{count}} posting is waiting to be saved here.",
+    "waitingMany_other": "{{count}} postings are waiting to be saved here.",
+    "source": "Captured with the jojo extension, still on this device.",
+    "saving": "Saving…",
+    "saveIt": "Save it",
+    "saveThem": "Save them"
+  },
+  "picker": {
+    "none": "No application",
+    "label": "Related applications",
+    "searchLabel": "Search applications",
+    "searchPlaceholder": "Search applications…",
+    "noneYet": "No applications yet.",
+    "noMatch": "No application matches that.",
+    "unfile": {
+      "record": "Unfile this record",
+      "file": "Unfile this file",
+      "link": "Unfile this link",
+      "snippet": "Unfile this snippet",
+      "person": "Unfile this person",
+      "conversation": "Unfile this conversation"
+    }
+  },
+  "snippets": {
+    "openInVault": "Open in the Vault",
+    "card": {
+      "edit": "Edit this snippet",
+      "moveTo": "Move to"
+    },
+    "editor": {
+      "editTitle": "Edit snippet",
+      "newTitle": "New snippet",
+      "title": {
+        "label": "Title",
+        "placeholder": "e.g. Why this department"
+      },
+      "kind": {
+        "label": "Kind",
+        "hint": "Where it files, and which chip the list shows."
+      },
+      "application": {
+        "label": "Related application",
+        "hint": "Any number of jobs. It then shows on each of their pages."
+      },
+      "text": {
+        "label": "Text",
+        "hint": "Size, colour, bold, italic, underline and strikethrough are saved with the text. Lists and tables are kept as plain lines.",
+        "placeholder": "Write the paragraph you keep rewriting…"
+      },
+      "fullScreen": "Write full screen",
+      "keywords": {
+        "label": "Keywords",
+        "hint": "Shared with applications, reminders and files — filtering by one finds all of them."
+      },
+      "savedNote": "Saved to the database in this browser — it is here when you come back.",
+      "fullScreenDescription": "Editing the snippet full screen. Press Escape to go back."
+    },
+    "errors": {
+      "title": "Give the snippet a name.",
+      "body": "Write the text you want to paste later."
+    },
+    "toast": {
+      "filed": "Filed under {{tag}}, ready to copy from the list.",
+      "filedHidden": "Filed under {{tag}} — hidden by the filters above the list.",
+      "duplicated": "The copy is filed under {{tag}}, ready to be rewritten.",
+      "moved": "Filed under {{tag}}.",
+      "movedOut": "Filed under {{tag}} — out of the {{filter}} list you are looking at.",
+      "stillThere": "{{title}} is still in the Vault.",
+      "stillThereUnnamed": "The snippet is still in the Vault.",
+      "deletedUnnamed": "Snippet deleted",
+      "deletedDescription": "The text and its keywords go with it."
+    },
+    "empty": {
+      "zeroTitle": "No snippets yet",
+      "zeroDescription": "Save the paragraphs you keep rewriting — the bio, the why-this-department, the follow-up email.",
+      "search": "No snippet mentions \"{{query}}\" in its name, text or kind.",
+      "both": "No {{tag}} snippet carries the selected keywords.",
+      "bucketTitle": "No {{tag}} snippets",
+      "bucketDescription_one": "{{count}} snippet is filed under the other kinds.",
+      "bucketDescription_other": "{{count}} snippets are filed under the other kinds.",
+      "showAll": "Show all kinds",
+      "keywordsTitle": "No snippets carry those keywords"
+    },
+    "filterLabel": "Filter snippets by kind",
+    "searchLabel": "Search snippets",
+    "searchPlaceholder": "Search name or text",
+    "copied": "Snippet copied to clipboard",
+    "discard": {
+      "title": "Discard unsaved changes?",
+      "description": "\"{{title}}\" has edits that have not been saved. Leaving now throws them away, and that cannot be undone.",
+      "untitled": "Untitled snippet",
+      "confirm": "Discard changes"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Basic",
+      "scientific": "Scientific"
+    },
+    "mode": "Calculator mode",
+    "ops": {
+      "plus": "plus",
+      "minus": "minus",
+      "times": "times",
+      "dividedBy": "divided by",
+      "power": "to the power of"
+    },
+    "history": "History",
+    "plusMinus": "plus or minus",
+    "backspace": "Backspace",
+    "clear": "Clear",
+    "empty": "Nothing yet. Finished calculations land here.",
+    "use": "Use {{value}}"
+  },
+  "links": {
+    "newTab": "Opens in a new tab",
+    "errors": {
+      "title": "Give the link a title.",
+      "url": "That needs a host, like jobs.rice.edu/postings.",
+      "empty": "Paste a URL to save it."
+    },
+    "fields": {
+      "title": "Title",
+      "url": "URL",
+      "category": "Category",
+      "applicationHint": "Files the link under a job, so both ends know about the other.",
+      "note": "Note",
+      "noteHint": "One line about why this is worth keeping."
+    },
+    "add": "Add link",
+    "toast": {
+      "saved": "Filed under {{category}}, with a title read off the URL.",
+      "savedHidden": "Filed under {{category}} — hidden while the keyword filter is on.",
+      "duplicated": "The copy is filed under {{category}}, ready to be edited.",
+      "deletedDescription": "Gone from the vault. The page it points at is untouched."
+    },
+    "empty": {
+      "zeroTitle": "No links saved yet",
+      "zeroDescription": "Save a URL — a posting, a department page, a person you were told to contact. The title is read off the address.",
+      "search": "No link mentions \"{{query}}\" in its title, address, note or category.",
+      "both": "No {{category}} link carries the selected keywords.",
+      "bucketTitle": "No links under {{category}}",
+      "bucketDescription_one": "{{count}} link is filed under the other categories.",
+      "bucketDescription_other": "{{count}} links are filed under the other categories.",
+      "showAll": "Show all categories",
+      "keywordsTitle": "No links carry those keywords"
+    },
+    "filterLabel": "Filter links by category",
+    "searchLabel": "Search links",
+    "searchPlaceholder": "Search title, address or note",
+    "form": {
+      "label": "Save a link",
+      "hint": "Saved under {{category}}, with a title read off the URL. Edit any row to change either.",
+      "placeholder": "Paste a URL…",
+      "save": "Save link"
+    }
+  },
+  "people": {
+    "add": "Add person",
+    "searchLabel": "Search people",
+    "searchPlaceholder": "Search name, role or note",
+    "applicationsList": "Applications list",
+    "toast": {
+      "removed": "Person removed",
+      "saved": "Person saved"
+    },
+    "empty": {
+      "zeroTitle": "Nobody yet",
+      "zeroDescription": "Referees, search chairs, recruiters — anyone the search runs through. File them under the jobs they are named on and they show up on those records too.",
+      "searchTitle": "No one matches that",
+      "searchDescription": "Try part of a name, a role, or where they are."
+    },
+    "namedOn": {
+      "recommender": "Recommender for {{names}}",
+      "contact": "Point of contact at {{names}}",
+      "named": "Named on {{names}}"
+    },
+    "form": {
+      "name": "Name",
+      "nameError": "A name is the one thing this needs.",
+      "namePlaceholder": "e.g. Prof. Ngozi Okafor",
+      "role": "Role",
+      "rolePlaceholder": "e.g. Referee, search chair, recruiter",
+      "affiliation": "Affiliation",
+      "affiliationPlaceholder": "e.g. Rice",
+      "affiliationHint": "Where they are. Not linked to an employer you have applied to.",
+      "email": "Email",
+      "phone": "Phone",
+      "namedOn": "Named on",
+      "namedOnHint": "Every job they write for, screen for or chair.",
+      "notePlaceholder": "What they said, what they owe you, when to chase.",
+      "save": "Save person"
+    }
+  },
+  "referee": {
+    "title": "Applications for {{name}}",
+    "description": "Tick the ones to send and say what you want each letter to highlight. Your highlights and notes are kept on {{name}} for next time.",
+    "include": "Include {{org}}, {{role}}",
+    "applied": "Applied {{date}}",
+    "noMaterials": "No materials filed",
+    "materials_one": "{{count}} material",
+    "materials_other": "{{count}} materials",
+    "posting": "Posting",
+    "noPosting": "No posting link",
+    "highlight": "Highlight",
+    "highlightPlaceholder": "e.g. teaching, NSF CAREER, causal inference",
+    "highlightHint": "Separate with commas.",
+    "note": "Note for them",
+    "notePlaceholder": "Anything else: the deadline, who to address it to, what the department cares about.",
+    "format": "File format",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Include my materials",
+    "withMaterialsCount": "Include my materials ({{count}})",
+    "tickOne": "Tick at least one application.",
+    "chosen_one": "{{count}} application",
+    "chosen_other": "{{count}} applications",
+    "chosenZip_one": "{{count}} application, as one .zip",
+    "chosenZip_other": "{{count}} applications, as one .zip",
+    "preparing": "Preparing…",
+    "download": "Download",
+    "toast": {
+      "saved": "List for {{name}} saved",
+      "zip_one": "{{file}}: the sheet and {{count}} document, in your downloads folder.",
+      "zip_other": "{{file}}: the sheet and {{count}} documents, in your downloads folder.",
+      "zipMissing_one": "{{file}} is in your downloads folder, without {{count}} document this browser could no longer read.",
+      "zipMissing_other": "{{file}} is in your downloads folder, without {{count}} documents this browser could no longer read.",
+      "sheet": "{{file}}, in your downloads folder.",
+      "failed": "Could not build the list",
+      "failedDescription": "Nothing was downloaded. Your highlights and notes were kept.",
+      "highlights": "Highlights saved"
+    }
+  }
+}

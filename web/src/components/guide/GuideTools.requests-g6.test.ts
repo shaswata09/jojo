@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import guideTools from '@/components/guide/GuideTools.tsx?raw'
+import en from '@/i18n/locales/en/guideReference.json'
 
 /**
  * The guide's Tools page (G6). Source reads, because D20 forbids mounting;
@@ -15,7 +16,9 @@ const code = strip(guideTools)
 
 describe('the Tools page (Q148)', () => {
   it('is titled as the tools page', () => {
-    expect(code).toMatch(/<PageHeader\s+title="The tools"/)
+    // The words live in the catalog; the page reads them by key.
+    expect(en.tools.pageTitle).toBe('The tools')
+    expect(code).toMatch(/<PageHeader\s+title=\{t\('tools\.pageTitle'\)\}/)
   })
 
   it('explains the tools with diagrams', () => {
@@ -26,10 +29,19 @@ describe('the Tools page (Q148)', () => {
 })
 
 describe('the workflow engine, as the guide explains it (Q202)', () => {
-  /** The panel titled "Work that takes several steps", up to the next panel. */
+  /**
+   * The panel titled "Work that takes several steps": its English words, read
+   * from the catalog, and only if the page still renders that panel's title
+   * and every one of its paragraphs.
+   */
   const panel = (() => {
-    const start = code.indexOf('Work that takes several steps')
-    return start < 0 ? '' : code.slice(start, code.indexOf('</Panel>', start))
+    const { workflow } = en.tools
+    if (workflow.title !== 'Work that takes several steps') return ''
+    const start = code.indexOf("t('tools.workflow.title')")
+    if (start < 0) return ''
+    const jsx = code.slice(start, code.indexOf('</Panel>', start))
+    const rendered = ['p1', 'p2', 'p3', 'p4'].every((k) => jsx.includes(`tools.workflow.${k}`))
+    return rendered ? Object.values(workflow).join(' ') : ''
   })()
 
   it('has a section on it', () => {

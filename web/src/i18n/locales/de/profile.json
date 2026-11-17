@@ -1,0 +1,175 @@
+{
+  "shared": {
+    "undo": "Rückgängig",
+    "cancel": "Abbrechen",
+    "add": "Hinzufügen",
+    "discard": "Verwerfen",
+    "save": "Speichern",
+    "didNotSave": "Das wurde nicht gespeichert"
+  },
+  "saveBar": {
+    "unsaved": "Ungespeicherte Änderungen – Speichern schreibt sie in diesen Browser."
+  },
+  "form": {
+    "saved": {
+      "title": "Profil gespeichert",
+      "description": "In diesen Browser geschrieben und behalten."
+    }
+  },
+  "fields": {
+    "basics": "Grunddaten",
+    "fullName": {
+      "label": "Vollständiger Name",
+      "placeholder": "z. B. Lonardo Jenson"
+    },
+    "position": {
+      "label": "Aktuelle Position",
+      "placeholder": "z. B. Doktorand, Informatik"
+    },
+    "location": {
+      "label": "Ort",
+      "placeholder": "z. B. Santa Clara, CA"
+    },
+    "email": {
+      "label": "E-Mail"
+    },
+    "links": "Links",
+    "website": {
+      "label": "Website"
+    }
+  },
+  "interests": {
+    "title": "Interessen und Ziele",
+    "hint": "steuert den Scout-Abgleich",
+    "matchTerms": {
+      "title": "Suchbegriffe",
+      "description": "Forschungsgebiete und Formulierungen, nach denen der Scout sucht. Getrennt von den Schlagwörtern, unter denen du Einträge ablegst.",
+      "remove": "{{term}} entfernen",
+      "newLabel": "Neuer Suchbegriff",
+      "placeholder": "Suchbegriff hinzufügen"
+    },
+    "targetRoles": {
+      "label": "Zielpositionen",
+      "placeholder": "z. B. Assistant Professor (TT) · Research Scientist"
+    },
+    "regions": {
+      "label": "Bevorzugte Regionen",
+      "placeholder": "z. B. Texas · remote"
+    },
+    "academia": "Stellen aus der Wissenschaft einbeziehen",
+    "industry": "Stellen aus der Industrie einbeziehen"
+  },
+  "roleTags": {
+    "title": "Rollen-Tags",
+    "description": "Die Arten von Stellen, die du verfolgst. Jede Bewerbung wird unter einer abgelegt, und sowohl der Rollenfilter als auch die Zahlen pro Rolle in der Statistik lesen sie. Wenn du hier eine entfernst, bleiben die Bewerbungen, die sie tragen, genau dort, wo sie sind.",
+    "remove_one": "{{role}} entfernen, verwendet bei {{count}} Bewerbung",
+    "remove_other": "{{role}} entfernen, verwendet bei {{count}} Bewerbungen",
+    "newLabel": "Neues Rollen-Tag",
+    "placeholder": "z. B. Data Scientist"
+  },
+  "documents": {
+    "title": "Dokumente",
+    "hint": "der Bereich {{bucket}} im Tresor",
+    "upload": "Hochladen",
+    "exportInSettings": "In den Einstellungen exportieren",
+    "empty": {
+      "title": "Noch keine Dokumente",
+      "description": "Zieh deinen Lebenslauf und deine Statements hierher oder wähle sie aus – sie werden im Tresor unter {{bucket}} abgelegt, wo der Rest der App sie erreicht.",
+      "upload": "Ein Dokument hochladen"
+    },
+    "footer": "Dieselben Dateien wie im <anchor>Dateien-Werkzeug</anchor> des Tresors, gefiltert auf {{bucket}}. Zieh ein Dokument hierher oder wähle eines aus, und die Datei selbst bleibt in diesem Browser – nichts wird irgendwohin hochgeladen. Klicke eines an, um es zu lesen."
+  },
+  "documentTile": {
+    "open": "{{name}} öffnen",
+    "meta": "{{size}} · gespeichert {{ago}}",
+    "delete": "{{name}} löschen"
+  },
+  "background": {
+    "title": "Dein Werdegang",
+    "hint_one": "{{count}} erfasst · woran eine Stellenanzeige gemessen wird",
+    "hint_other": "{{count}} erfasst · woran eine Stellenanzeige gemessen wird",
+    "details_one": "{{count}} Detail",
+    "details_other": "{{count}} Details",
+    "readFromDocument": "aus einem Dokument gelesen",
+    "edit": "{{title}} bearbeiten",
+    "remove": "{{title}} entfernen",
+    "added": "{{title}} hinzugefügt",
+    "updated": "{{title}} aktualisiert",
+    "removed": "{{title}} entfernt",
+    "addEntry": "Eintrag hinzufügen",
+    "form": {
+      "kind": "Art",
+      "title": "Titel",
+      "titlePlaceholder": "Was es war",
+      "where": "Wo",
+      "optional": "Optional",
+      "when": "Wann",
+      "whenPlaceholder": "Wie geschrieben – „2021–2024“",
+      "year": "Jahr",
+      "detail": "Detail",
+      "detailPlaceholder": "Alles, woran man eine Stellenanzeige messen sollte (optional)",
+      "highlights": "Highlights",
+      "highlightsHint": "Eins pro Zeile – was gebaut, veröffentlicht, gelehrt oder herausgefunden wurde.",
+      "readKept": "aus einem Dokument gelesen – deine Änderung hat Vorrang vor dem Gelesenen",
+      "saveChanges": "Änderungen speichern"
+    },
+    "empty": {
+      "title": "Noch nichts erfasst",
+      "configured": "Leg deinen Lebenslauf, ein Forschungs- oder Lehrstatement in den Tresor, und jojo bietet an, es zu lesen – was es findet, wird dir gezeigt, bevor irgendetwas gespeichert wird. Oder füge einen Eintrag von Hand hinzu.",
+      "unconfigured": "Zum Lesen eines Dokuments braucht es ein Modell. Verbinde eines in den Einstellungen, leg dann deinen Lebenslauf oder ein Statement in den Tresor, und jojo bietet an, es zu lesen. Einträge von Hand kannst du auch ohne hinzufügen."
+    },
+    "readMenu": {
+      "needsModel": "Zum Lesen eines Dokuments braucht es ein Modell. Verbinde eines in den Einstellungen.",
+      "button": "Ein Dokument lesen",
+      "nothing": "Im Tresor ist noch nichts lesbar. Leg deinen Lebenslauf oder ein Statement hinein, dann erscheint es hier.",
+      "allRead": "Alles Lesbare im Tresor wurde gelesen.",
+      "read": "gelesen"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Ausbildung",
+      "employment": "Beschäftigung",
+      "publication": "Publikation",
+      "skill": "Fähigkeit",
+      "teaching": "Lehre",
+      "award": "Auszeichnung",
+      "service": "Engagement",
+      "certification": "Zertifizierung",
+      "language": "Sprache",
+      "project": "Projekt",
+      "volunteering": "Ehrenamt",
+      "membership": "Mitgliedschaft",
+      "grant": "Förderung",
+      "patent": "Patent"
+    },
+    "skipped_one": "{{count}} Eintrag wurde übersprungen",
+    "skipped_other": "{{count}} Einträge wurden übersprungen",
+    "readIt": "Lesen",
+    "readFailed": "Das Lesen des Dokuments ist fehlgeschlagen.",
+    "notNow": "Nicht jetzt",
+    "discardEntries": "Diese Einträge verwerfen",
+    "review": {
+      "single": "1 Eintrag aus diesem Dokument gelesen",
+      "some": "{{kept}} von {{total}} Einträgen werden hinzugefügt",
+      "untick": "Entferne das Häkchen bei allem, was falsch ist.",
+      "add": "{{title}} hinzufügen",
+      "connections_one": "{{count}} Verbindung zwischen ihnen",
+      "connections_other": "{{count}} Verbindungen zwischen ihnen",
+      "addOne": "Zu meinem Profil hinzufügen",
+      "addMany": "{{total}} zu meinem Profil hinzufügen"
+    },
+    "toast": {
+      "already": "Schon in deinem Profil",
+      "added_one": "{{count}} zu deinem Profil hinzugefügt",
+      "added_other": "{{count}} zu deinem Profil hinzugefügt",
+      "nothing": "Nichts konnte hinzugefügt werden",
+      "readFrom": "Aus {{name}} gelesen.",
+      "known": "{{known}} von {{total}} waren schon bekannt.",
+      "related_one": "{{count}} Verbindung zwischen ihnen erfasst.",
+      "related_other": "{{count}} Verbindungen zwischen ihnen erfasst.",
+      "weigh": "jojo kann eine Stellenanzeige jetzt an dem messen, was du gemacht hast.",
+      "refused": "Die Einträge wurden abgelehnt."
+    }
+  }
+}

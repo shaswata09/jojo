@@ -1,0 +1,59 @@
+{
+  "monthPicker": {
+    "goTo": "월로 이동",
+    "previousYear": "이전 연도",
+    "nextYear": "다음 연도"
+  },
+  "chip": {
+    "allDay": "종일",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, 완료 —"
+  },
+  "dayCell": {
+    "label_other": "{{label}}, 일정 {{count}}개",
+    "add": "{{label}}에 일정 추가",
+    "more_other": "+{{count}}개 더"
+  },
+  "grid": {
+    "dayLabel": "{{month}} {{day}}일",
+    "previousMonth": "이전 달",
+    "nextMonth": "다음 달",
+    "today": "오늘",
+    "backTo": "{{date}}(으)로 돌아가기",
+    "goTo": "{{year}}년 {{month}}(으)로 이동",
+    "hintTouch": "날짜를 탭하면 그날의 일정을 볼 수 있어요.",
+    "hintPointer": "날짜를 고르면 그리드 옆에 그날의 일정이 표시돼요. 일정을 클릭해 수정하거나 다른 날로 끌어다 놓을 수 있어요. 끌어 놓기에는 포인터가 필요하니, 키보드로는 일정 안의 날짜 입력란을 사용하세요.",
+    "eventTypes": "일정 유형",
+    "showAll": "모두 보기",
+    "dateColours": "날짜 색상",
+    "marks": {
+      "overdue": "기한 지남",
+      "soon": "48시간 안에 마감",
+      "done": "완료"
+    }
+  },
+  "rail": {
+    "monthYear": "{{year}}년 {{month}}",
+    "today": "오늘",
+    "selectedDay": "선택한 날",
+    "hiddenTitle": "{{date}}에 표시된 일정이 없어요",
+    "hiddenDescription_other": "일정 {{count}}개가 그리드 아래에서 꺼 둔 유형이에요.",
+    "showAllTypes": "모든 일정 유형 보기",
+    "emptyTitle": "{{date}}에 일정이 없어요",
+    "emptyDescription": "면접, 마감일, 준비 시간을 추가하면 여기와 그리드에 표시돼요.",
+    "addEvent": "일정 추가",
+    "backTo": "{{month}}(으)로 돌아가기",
+    "delete": "일정 삭제",
+    "deleteNamed": "{{title}} 삭제",
+    "restOf": "{{month}} 남은 일정",
+    "lastDayTitle": "{{date}}은(는) 이달의 마지막 날이에요",
+    "nothingAfterTitle": "{{date}} 이후 일정이 없어요",
+    "lastDayDescription": "이후에는 일정이 없어요. 다음 달로 넘겨 {{month}} 계획을 세워 보세요.",
+    "nothingAfterDescription": "{{month}}의 남은 기간은 비어 있어요. 이날 이후에 추가하는 일정은 여기에 표시돼요.",
+    "goToMonth": "{{month}}(으)로 이동",
+    "goToDay": "{{label}}(으)로 이동",
+    "shortDay": "{{month}} {{day}}일",
+    "moreLater_other": "이번 달에 {{count}}개 더 있어요"
+  }
+}

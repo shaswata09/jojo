@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 export type DonutSlice = { key: string; label: string; value: number; color: string }
@@ -29,6 +30,7 @@ export function Donut({
   onToggle: (key: string) => void
   className?: string
 }) {
+  const { t } = useTranslation('charts')
   const [hover, setHover] = useState<number | null>(null)
   // Arcs and the centre figure both follow what's visible, so the ring always
   // closes and the total always matches the slices you can actually see.
@@ -45,7 +47,7 @@ export function Donut({
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="h-auto w-[168px]"
           role="img"
-          aria-label={`${total} ${centerLabel}`}
+          aria-label={t('donut.aria', { total, label: centerLabel })}
         >
           {/* Track, so the ring still reads when a slice is tiny. */}
           <circle
@@ -102,7 +104,9 @@ export function Donut({
                 type="button"
                 onClick={() => onToggle(s.key)}
                 aria-pressed={!off}
-                title={off ? `Show ${s.label}` : `Hide ${s.label}`}
+                title={
+                  off ? t('legend.show', { label: s.label }) : t('legend.hide', { label: s.label })
+                }
                 onMouseEnter={() => setHover(vi === -1 ? null : vi)}
                 onMouseLeave={() => setHover(null)}
                 className="flex w-full items-center gap-2 rounded-sm px-1 py-1 text-sm transition-colors hover:bg-row-hover"
@@ -114,7 +118,7 @@ export function Donut({
                 />
                 <span
                   className={cn(
-                    'min-w-0 flex-1 truncate text-left',
+                    'min-w-0 flex-1 truncate text-start',
                     off ? 'text-text-3 line-through decoration-1' : 'text-text-2',
                   )}
                 >
@@ -124,7 +128,7 @@ export function Donut({
                   className={cn('tabular shrink-0 font-mono', off ? 'text-text-3' : 'text-text-1')}
                 >
                   {s.value}
-                  <span className="ml-1.5 text-xs text-text-3">
+                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
                     {!off && total > 0 ? Math.round((s.value / total) * 100) : 0}%
                   </span>
                 </span>

@@ -1,0 +1,946 @@
+{
+  "shared": {
+    "undo": "Rückgängig",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "list": "{{items}} und {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "Heute",
+    "subtitleEmpty": "{{date}} · noch nichts erfasst – alles, was du hinzufügst, bleibt auf diesem Gerät.",
+    "subtitle_one": "{{date}} · {{count}} Bewerbung, alles auf diesem Gerät.",
+    "subtitle_other": "{{date}} · {{count}} Bewerbungen, alles auf diesem Gerät.",
+    "decision": {
+      "title": "Entscheidung nötig",
+      "done": "Erledigt",
+      "snooze": "Später",
+      "notConnected": "Damit ist noch nichts verbunden",
+      "emptyTitle": "Heute ist nichts zu entscheiden",
+      "emptyDescription": "Hier erscheinen Angebote, überfällige Bewerbungen, die nächste feste Frist und dein nächstes Vorstellungsgespräch. Nichts davon ist offen.",
+      "open_one": "{{count}} offen",
+      "open_other": "{{count}} offen"
+    },
+    "firstSteps": {
+      "title": "Erste Schritte",
+      "progress": "{{done}} von {{total}} erledigt",
+      "complete": "Alle drei sind erledigt. Alles, was du ab jetzt hinzufügst, erscheint auf diesem Bildschirm, im Kalender und bei der zugehörigen Bewerbung.",
+      "intro": "Jeder Schritt öffnet die echte Funktion und hakt sich selbst ab, sobald ein Eintrag existiert – nichts davon ist ein Tutorial, das du absitzen musst.",
+      "introEmpty": "Noch ist nichts erfasst. Jeder Schritt öffnet die echte Funktion und hakt sich selbst ab, sobald ein Eintrag existiert – nichts davon ist ein Tutorial, das du absitzen musst.",
+      "close": "Erste Schritte schließen",
+      "hide": "Diese Schritte ausblenden",
+      "application": {
+        "title": "Füge eine Bewerbung hinzu",
+        "body": "Eine Stelle, ihre Phase und ihre Frist. Alles andere in jojo hängt an diesem Eintrag."
+      },
+      "dated": {
+        "title": "Gib etwas ein Datum",
+        "body": "Fristen, Gespräche und Besuche sind eine Art von Eintrag, daher erscheint ein Datum gleichzeitig hier, im Kalender und bei der Bewerbung.",
+        "label": "Neuer Termin"
+      },
+      "reminder": {
+        "title": "Plane eine Nachfrage",
+        "body": "Eine Erinnerung ist derselbe Eintrag mit eingeschaltetem Hinweis. Ist ihr Datum vorbei, ist sie fällig und bleibt hier, bis du sie abhakst.",
+        "label": "Neue Erinnerung"
+      }
+    },
+    "glance": {
+      "active": "Aktiv",
+      "interviews": "Vorauswahl & Gespräche",
+      "overdue": "Überfällig",
+      "doneToday": "Heute erledigt",
+      "a11y": "{{value}} {{label}}"
+    },
+    "owed": {
+      "title": "Diese Woche fällig",
+      "hintOverdue": "{{overdue}} überfällig · {{due}} fällig",
+      "hintDue": "{{due}} fällig",
+      "emptyTitle": "Nichts ist fällig",
+      "emptyDescription": "Fristen, Gespräche und Nachfragen landen hier, sobald sie ein Datum haben, und bleiben, bis du sie abhakst.",
+      "addEvent": "Termin hinzufügen",
+      "dayLabel_one": "{{day}} {{date}}, {{count}} Eintrag",
+      "dayLabel_other": "{{day}} {{date}}, {{count}} Einträge",
+      "clear": "Heute ist frei.",
+      "clearDone_one": "Heute ist frei – {{count}} erledigt.",
+      "clearDone_other": "Heute ist frei – {{count}} erledigt.",
+      "later": "Später",
+      "moreOnCalendar_one": "{{count}} weiterer im Kalender",
+      "moreOnCalendar_other": "{{count}} weitere im Kalender"
+    },
+    "recent": {
+      "title": "Letzte Bewerbungen",
+      "hint": "neueste Aktivität",
+      "viewAll": "Alle anzeigen",
+      "emptyDescription": "Jede Stelle, die du verfolgst, erscheint hier, sobald du sie bearbeitest – die neueste zuerst.",
+      "daysAgo_one": "vor {{count}} Tag",
+      "daysAgo_other": "vor {{count}} Tagen",
+      "views": {
+        "notes": "Notizen",
+        "recent": "Letzte Bewerbungen"
+      },
+      "control": "Auf dieser Karte anzeigen",
+      "addReminder": "Erinnerung hinzufügen",
+      "headingNotes": "Haftnotizen"
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "emptyTitle": "Nichts in der Pipeline",
+      "emptyDescription": "Jede Bewerbung steht in einer Phase, und das hier zeigt, wie sie sich verteilen. Füge eine hinzu, und das erste Segment erscheint."
+    },
+    "sticky": {
+      "newNote": "Neue Haftnotiz",
+      "placeholder": "Notiere dir etwas …",
+      "newColour": "Farbe der neuen Notiz",
+      "stick": "Anheften",
+      "empty": "Noch nichts angeheftet. Notizen bleiben hier, bis du sie abnimmst, und jede kann zur Erinnerung werden, sobald sie ein Datum hat.",
+      "listLabel": "Haftnotizen",
+      "editNote": "Notiz bearbeiten",
+      "editAria": "Notiz bearbeiten: {{text}}",
+      "colour": "Farbe",
+      "colourOf": "Farbe der Notiz „{{text}}“",
+      "toReminderAria": "In Erinnerung umwandeln: {{text}}",
+      "removeAria": "Notiz entfernen: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "Bewerbungen",
+    "subtitleEmpty": "Noch nichts erfasst – alles, was du hinzufügst, bleibt auf diesem Gerät.",
+    "subtitle": "{{shown}} angezeigt · {{total}} insgesamt",
+    "new": "Neu",
+    "newApplication": "Neue Bewerbung",
+    "showNotes": "Notizen anzeigen",
+    "showNotesDescription": "Die zweite Zeile unter jeder Stelle",
+    "none": {
+      "title": "Noch keine Bewerbungen",
+      "description": "Erfasse eine Stelle, auf die du dich bewirbst, und sie erscheint hier, im Kalender und in der kommenden Woche."
+    },
+    "searchLabel": "Bewerbungen durchsuchen",
+    "searchPlaceholder": "Nach Stelle, Notiz oder Phase suchen",
+    "layout": "Ansicht",
+    "views": {
+      "list": "Liste",
+      "board": "Board"
+    },
+    "filterByRole": "Nach Rolle filtern",
+    "filterByStage": "Nach Phase filtern",
+    "sortButton": "Sortierung: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "Letzte Aktivität",
+        "asc": "Neueste zuerst",
+        "desc": "Älteste zuerst"
+      },
+      "stage": {
+        "label": "Phase",
+        "asc": "Entwurf bis abgeschlossen",
+        "desc": "Abgeschlossen bis Entwurf"
+      },
+      "position": {
+        "label": "Stelle",
+        "asc": "A bis Z",
+        "desc": "Z bis A"
+      }
+    },
+    "sortMenu": {
+      "title": "Sortieren nach",
+      "description": "Wähle die Spalte und dann, welches Ende oben steht.",
+      "currently": "Aktuell: {{order}}"
+    },
+    "empty": {
+      "title": "Keine passenden Bewerbungen",
+      "nothing": "Hier gibt es nichts anzuzeigen.",
+      "carries": "Nichts passt zu {{filters}}.",
+      "reasons": {
+        "search": "dieser Suche",
+        "stage": "der Phase {{stage}}",
+        "keywords": "den gewählten Schlagwörtern",
+        "roles": "den gewählten Rollen"
+      },
+      "showAll_one": "Alle {{count}} anzeigen",
+      "showAll_other": "Alle {{count}} anzeigen"
+    },
+    "row": {
+      "moreActions": "Weitere Aktionen für {{name}}",
+      "open": "Eintrag öffnen",
+      "edit": "Bearbeiten",
+      "flag": "Zum Nachfassen markieren",
+      "unflag": "Nachfass-Markierung entfernen",
+      "duplicate": "Duplizieren"
+    },
+    "roles": {
+      "description": "Nichts ausgewählt heißt alles – den Filter zu leeren ist dasselbe, wie nie einen gesetzt zu haben.",
+      "tracked_one": "{{count}} erfasst",
+      "tracked_other": "{{count}} erfasst",
+      "clear": "Alle Rollen anzeigen"
+    },
+    "paste": {
+      "label": "URL der Stellenanzeige",
+      "placeholder": "URL einer Stellenanzeige einfügen",
+      "submit": "Aus Link"
+    }
+  },
+  "board": {
+    "cardHint": "Gedrückt halten, um sie in eine andere Phase zu verschieben",
+    "addAt": "Bewerbung in {{stage}} hinzufügen",
+    "addHere": "Hier hinzufügen"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} dupliziert",
+    "duplicatedDescription": "Die Kopie beginnt als Entwurf – die ursprüngliche Phase, die Daten und das Angebot bleiben zurück.",
+    "movedTitle": "{{name}} nach {{stage}} verschoben",
+    "movedDescription": "Sie war in {{from}}. Pipeline und Trichter zählen sie ab jetzt unter {{stage}}.",
+    "deletedTitle": "{{name}} gelöscht",
+    "deletedDescription": "Erinnerungen, Dateien und gespeicherte Anzeigen darunter wurden behalten, ohne Verknüpfung.",
+    "confirmTitle": "{{name}} löschen?",
+    "confirmTitleGeneric": "Bewerbung löschen?",
+    "confirmDescription": "Die Bewerbung und ihre Notiz werden gelöscht. Alles darunter Abgelegte – Erinnerungen, Dateien, gespeicherte Anzeigen – bleibt erhalten, aber ohne Verknüpfung."
+  },
+  "detail": {
+    "missing": {
+      "title": "Bewerbung",
+      "emptyTitle": "Diese Bewerbung gibt es nicht mehr",
+      "emptyDescription": "Sie wurde gelöscht, oder der Link verweist auf eine ID, die es nie gab. Nichts anderes wurde mit ihr entfernt.",
+      "back": "Zurück"
+    },
+    "kept": {
+      "reminders_one": "{{count}} Erinnerung",
+      "reminders_other": "{{count}} Erinnerungen",
+      "events_one": "{{count}} Termin",
+      "events_other": "{{count}} Termine",
+      "saved_one": "{{count}} gespeichertes Element",
+      "saved_other": "{{count}} gespeicherte Elemente"
+    },
+    "closedTitle": "{{name}} abgeschlossen",
+    "closedDescription": "Erfasst als {{outcome}}. Die Angebotsdetails und ihre Erinnerungen wurden behalten.",
+    "outcomes": {
+      "rejected": "abgelehnt",
+      "withdrawn": "zurückgezogen",
+      "accepted": "angenommen",
+      "declined": "ausgeschlagen",
+      "ghosted": "ohne Antwort"
+    },
+    "duplicatedDescription": "Die Kopie beginnt als Entwurf, mit übernommener Notiz und Details.",
+    "deletedKept": "{{kept}} wurden behalten, ohne Verknüpfung.",
+    "facts": {
+      "employer": "Arbeitgeber",
+      "employerJobs_one": "{{name}} · {{count}} Stelle hier",
+      "employerJobs_other": "{{name}} · {{count}} Stellen hier",
+      "source": "Quelle",
+      "location": "Ort",
+      "compensation": "Vergütung",
+      "posting": "Anzeige",
+      "postingId": "Anzeigen-ID",
+      "appliedOn": "Beworben am",
+      "confirmationRef": "Bestätigungsnummer",
+      "outcome": "Ergebnis"
+    },
+    "moreActions": "Weitere Aktionen",
+    "details": "Details",
+    "postingHint": "Öffnet die Anzeige in jojo, wo du eine Kopie davon behalten kannst",
+    "dates": {
+      "title": "Termine und Erinnerungen",
+      "hint": "{{open}} offen · {{total}} insgesamt",
+      "add": "Datum hinzufügen",
+      "emptyTitle": "Nichts geplant",
+      "emptyDescription": "Fristen, Gespräche und Nachfragen zu dieser Bewerbung erscheinen hier."
+    },
+    "note": {
+      "title": "Notiz",
+      "hint": "Wird gespeichert, wenn du woanders tippst",
+      "edit": "Diese Notiz bearbeiten",
+      "placeholder": "Was noch offen ist, mit wem du gesprochen hast, was du als Nächstes fragst",
+      "label": "Notiz zu {{name}}",
+      "formatKept": "Die Formatierung bleibt bei den Wörtern erhalten, die du nicht änderst.",
+      "saved": "Notiz gespeichert"
+    },
+    "draftMessage": "Nachricht entwerfen",
+    "confirmDeleteKept": "Die Bewerbung und ihre Notiz werden gelöscht. {{kept}} bleiben erhalten, aber ohne Verknüpfung – nichts, was du darunter abgelegt hast, wird gelöscht.",
+    "confirmDeleteAlone": "Die Bewerbung und ihre Notiz werden gelöscht. Nichts anderes verweist darauf.",
+    "offer": {
+      "title": "Angebot",
+      "settled": "Abgeschlossen · erfasst als {{outcome}}",
+      "pastDeadline_one": "{{count}} Tag nach der Frist",
+      "pastDeadline_other": "{{count}} Tage nach der Frist",
+      "daysLeft_one": "noch {{count}} Tag",
+      "daysLeft_other": "noch {{count}} Tage",
+      "respondBy": "Antworten bis {{date}}",
+      "accept": "Annehmen",
+      "decline": "Ablehnen"
+    },
+    "stageDates": {
+      "dated": "{{stage}} auf {{date}} datiert",
+      "undated": "{{stage}} hat jetzt kein Datum",
+      "datedBody": "{{name}} – laut Eintrag der Tag, an dem sie {{stage}} erreicht hat.",
+      "undatedBody": "{{name}} – die Phase bleibt im Eintrag; nur ihr Datum ist weg.",
+      "hint": "{{dated}} von {{total}} datiert",
+      "title": "Phasendaten",
+      "now": "aktuell",
+      "explain": "Wenn du diese Bewerbung in eine andere Phase verschiebst, wird sie automatisch datiert. Was sie vor heute erreicht hat, kannst du hier nachtragen."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "Arbeitgeber",
+      "subtitle": "Unter dieser Adresse ist nichts zu finden",
+      "emptyTitle": "Kein Arbeitgeber unter dieser Adresse",
+      "emptyDescription": "Eine Arbeitgeberseite existiert, solange eine Bewerbung ihn nennt. Wurden alle Bewerbungen bei ihm gelöscht, ist auch diese Seite weg."
+    },
+    "subtitleOne": "Eine Bewerbung hier",
+    "subtitleMany_one": "{{count}} Bewerbung hier, {{open}} noch offen",
+    "subtitleMany_other": "{{count}} Bewerbungen hier, {{open}} noch offen",
+    "applications": "Bewerbungen",
+    "dates": "Termine",
+    "datesHint_one": "{{count}} über diese Stellen",
+    "datesHint_other": "{{count}} über diese Stellen",
+    "datesEmptyTitle": "Hier ist nichts datiert",
+    "datesEmptyDescription": "Fristen, Gespräche und Erinnerungen zu einer dieser Stellen sammeln sich auf diesem Bildschirm.",
+    "people": "Personen",
+    "peopleHint_one": "{{count}} genannt",
+    "peopleHint_other": "{{count}} genannt",
+    "peopleEmptyTitle": "Noch niemand genannt",
+    "peopleEmptyDescription": "Referenzgeber, Kommissionsvorsitzende und Recruiter, die bei einer dieser Stellen genannt sind, erscheinen hier."
+  },
+  "calendar": {
+    "title": "Kalender",
+    "subtitle": "Fristen, Gespräche und Vorbereitung in einer Ansicht",
+    "key": {
+      "overdue": "Überfällig",
+      "soon": "Fällig in 48 Stunden",
+      "done": "Erledigt"
+    },
+    "export": {
+      "label": "In meinen Kalender exportieren",
+      "done_one": "{{count}} Datum exportiert",
+      "done_other": "{{count}} Daten exportiert",
+      "doneDescription": "Dein Kalender bietet an, sie zu importieren – jeweils mit einer Erinnerung.",
+      "failed": "Hier öffnet nichts eine Kalenderdatei",
+      "failedDescription": "Die Datei ist auf diesem Telefon gespeichert. Eine Kalender-App, die .ics akzeptiert, kann sie öffnen."
+    },
+    "add": "Hinzufügen",
+    "addEvent": "Termin hinzufügen",
+    "tallCells": "Hohe Tageszellen",
+    "tallCellsDescription": "Mehr Platz pro Tag im Raster",
+    "jump": "{{month}} {{year}}. Zu einem anderen Monat wechseln",
+    "previous": "Vorheriger Monat",
+    "next": "Nächster Monat",
+    "backTo": "Zurück zu {{date}}",
+    "goTo": "Zu {{target}}",
+    "goToDay": "Zu {{day}}. {{month}}",
+    "today": "Heute",
+    "selectedDay": "Gewählter Tag",
+    "hint": "Tippe auf einen Tag, um zu sehen, was ansteht. Tippe auf einen Termin, um ihn zu bearbeiten oder zu verschieben.",
+    "dayLabel_one": "{{day}}. {{month}}, {{count}} Termin",
+    "dayLabel_other": "{{day}}. {{month}}, {{count}} Termine",
+    "nothingOn": "Nichts am {{date}}",
+    "nothingOnDescription": "Füge ein Gespräch, eine Frist oder einen Vorbereitungsblock hinzu, und er erscheint hier und im Raster.",
+    "allDay": "Ganztägig",
+    "reopen": "{{title}} wieder öffnen",
+    "markDone": "„{{title}}“ als erledigt markieren",
+    "moreActions": "Weitere Aktionen für {{title}}",
+    "rest": {
+      "title": "Rest des {{month}}",
+      "lastDay": "{{date}} ist der letzte Tag des Monats",
+      "nothingAfter": "Nichts nach dem {{date}}",
+      "lastDayDescription": "Danach kommt nichts mehr. Blättere weiter, um im {{month}} zu planen.",
+      "clearDescription": "Der Rest des {{month}} ist frei. Alles, was du nach diesem Tag hinzufügst, erscheint hier.",
+      "more_one": "+{{count}} weiterer später in diesem Monat",
+      "more_other": "+{{count}} weitere später in diesem Monat"
+    }
+  },
+  "search": {
+    "title": "Suche",
+    "subtitle": "Bewerbungen, Termine, der Tresor und der Scout – alles auf einmal",
+    "fieldLabel": "Alles durchsuchen",
+    "placeholder": "Bewerbungen, Erinnerungen, Dateien suchen…",
+    "idleTitle": "Tippe, um zu suchen",
+    "idleDescription": "Ein Feld für alle Sammlungen – denn „wo habe ich das Rice-Ding hingelegt“ ist eine Frage nach dem Eintrag, nicht nach der Liste, in der er steht.",
+    "create": "Erstellen",
+    "createHint": "nichts gefunden? leg es an",
+    "noneTitle": "Nichts passt zu „{{query}}“",
+    "noneDescription": "Die Suche liest Titel, Notiz und Kategorie jedes Eintrags. Nichts hier wird von woanders geladen.",
+    "fit": "{{fit}} % Passung",
+    "results_one": "{{count}} Ergebnis",
+    "results_other": "{{count}} Ergebnisse",
+    "showAll_one": "Alle {{count}} anzeigen",
+    "showAll_other": "Alle {{count}} anzeigen",
+    "groups": {
+      "applications": "Bewerbungen",
+      "reminders": "Erinnerungen",
+      "calendar": "Kalender",
+      "vault": "Tresor",
+      "jobScout": "Job-Scout",
+      "goTo": "Gehe zu"
+    }
+  },
+  "more": {
+    "title": "Mehr",
+    "subtitle": "Der Rest von jojo",
+    "newBadge_one": "{{count}} neu",
+    "newBadge_other": "{{count}} neu",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "Job-Scout",
+        "hint": "Gespeicherte Suchen, Treffer und zurückgelegte Anzeigen"
+      },
+      "statistics": {
+        "label": "Statistik",
+        "hint": "Quoten, ein Trichter und woran du als Nächstes arbeitest"
+      },
+      "graph": {
+        "label": "Graph",
+        "hint": "Deine Einträge als das Netz, das sie sind"
+      },
+      "transfer": {
+        "label": "Übertragen",
+        "hint": "Alles auf deinen Computer oder von dort verschieben"
+      },
+      "profile": {
+        "label": "Mein Profil",
+        "hint": "Grunddaten, Dokumente und Suchbegriffe"
+      },
+      "assistant": {
+        "label": "Assistent",
+        "hint": "Ausgearbeitete Beispiele, bis ein lokales Modell verbunden ist"
+      },
+      "settings": {
+        "label": "Einstellungen",
+        "hint": "Verbindungen, Darstellung und deine Daten"
+      },
+      "guide": {
+        "label": "Anleitung",
+        "hint": "Eine geführte Tour und wofür jeder Bildschirm da ist"
+      }
+    },
+    "storage": {
+      "saved": "gespeichert",
+      "saving": "speichert",
+      "savingCount": "speichert {{count}}",
+      "unsaved_one": "{{count}} nicht gespeichert",
+      "unsaved_other": "{{count}} nicht gespeichert",
+      "off": "speichert nicht"
+    },
+    "runtime": {
+      "title": "Laufzeit",
+      "hint": "was tatsächlich läuft",
+      "storage": "Gerätespeicher",
+      "model": "Modell",
+      "modelConfigured": "{{model}} – eingerichtet",
+      "modelNotSetUp": "nicht eingerichtet",
+      "transfer": "Übertragen",
+      "transferNever": "nie genutzt",
+      "transferLast": "zuletzt genutzt am {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. Alles läuft auf diesem Gerät.",
+    "overdue_one": "{{count}} Erinnerung überfällig.",
+    "overdue_other": "{{count}} Erinnerungen überfällig."
+  },
+  "statistics": {
+    "title": "Statistik",
+    "emptySubtitle": "Noch nichts zu messen – dieser Bildschirm füllt sich, während du Bewerbungen hinzufügst.",
+    "emptyTitle": "Keine Bewerbungen zum Auswerten",
+    "emptyDescription": "Antwortquoten, ein Trichter und ein Wochendiagramm brauchen Einträge zum Zählen. Füge den ersten hinzu, und das hier füllt sich.",
+    "subtitleSent": "Aus deinen eigenen Einträgen gezählt. Als typisch markierte Werte stammen aus einer Beispielsuche, zum Vergleich.",
+    "subtitleNone": "Aus deinen eigenen Einträgen gezählt. Es füllt sich, sobald Bewerbungen rausgehen.",
+    "compare": "Mit einer typischen Suche vergleichen",
+    "compareDescription": "Ein Beispielwert neben jeder Kennzahl",
+    "overTime": {
+      "title": "Bewerbungen im Zeitverlauf",
+      "hint": "nach der Rolle, für die sie war",
+      "period": "Zeitraum",
+      "note": "Jeder Zeitraum ist ein eigenes Fenster, daher unterscheiden sich die Summen – ein Quartal umfasst frühere Suchen, eine Woche nur diese Saison."
+    },
+    "sources": {
+      "title": "Woher sie kamen",
+      "hint_one": "{{count}} erfasst",
+      "hint_other": "{{count}} erfasst",
+      "center": "erfasst"
+    },
+    "asFarAsShown": "soweit jeder Eintrag es zeigt",
+    "openApplications": "Bewerbungen öffnen",
+    "showAll": "Alle anzeigen",
+    "funnel": {
+      "title": "Wie weit die Bewerbungen kamen",
+      "emptyTitle": "Noch nichts verschickt",
+      "emptyDescription": "Antwort-, Gesprächs- und Angebotsquoten zählen Bewerbungen, die wirklich rausgegangen sind. Hol eine aus dem Entwurf, und das hier füllt sich.",
+      "carried": "{{pct}} % kamen weiter"
+    },
+    "outcomes": {
+      "title": "Ergebnisse",
+      "count_one": "{{count}} Bewerbung",
+      "count_other": "{{count}} Bewerbungen",
+      "partial": "{{shown}} von {{total}}",
+      "allOff": "Alle Ergebnisse sind ausgeblendet."
+    },
+    "health": {
+      "title": "Woran du als Nächstes arbeitest",
+      "hint": "deine Werte im Vergleich zu einer typischen Suche",
+      "sample": "Beispiel",
+      "emptyTitle": "Noch nicht genug zum Vergleichen",
+      "emptyDescription": "Hier werden deine Antworten, Gespräche, Empfehlungen und Nachfragen mit einer typischen Suche verglichen. Dafür braucht es Bewerbungen, die wirklich rausgegangen sind.",
+      "allOff": "Beide Reihen sind ausgeblendet.",
+      "yours": "Deine",
+      "typical": "Typisch",
+      "suggestions": "Vorschläge, die nützlichsten zuerst"
+    },
+    "roles": {
+      "title": "Wie es je Rollentyp läuft",
+      "roles": "Rollen",
+      "applied": "Beworben",
+      "replied": "Antworten",
+      "interviews": "Gespräche",
+      "offers": "Angebote"
+    }
+  },
+  "graph": {
+    "title": "Graph",
+    "emptySubtitle": "Deine Einträge, als das Netz gezeichnet, das sie sind",
+    "emptyTitle": "Nichts zu zeichnen",
+    "emptyDescription": "Jeder Knoten hier ist einer deiner Einträge. Füge eine Bewerbung hinzu, und der erste erscheint.",
+    "subtitle": "Ein Ausblick darauf, wie jojo aussieht, wenn Einträge keine sieben getrennten Listen mehr sind",
+    "caption": "{{visible}} von {{total}} Knoten · {{edges}} Kanten. Tippe auf einen Knoten, um ihn zu lesen; tippe unten auf einen Typ, um ihn auszublenden.",
+    "legend": "Legende",
+    "legendHint": "tippen, um einen Typ auszublenden",
+    "joinedTo": "Verbunden mit",
+    "noEdges": "Noch verweist nichts hierher.",
+    "openRecord": "Eintrag öffnen",
+    "ask": "Den Graphen fragen",
+    "askHint": "frag in einem Satz oder wähle eine Frage",
+    "andMore_one": "und {{count}} weiterer",
+    "andMore_other": "und {{count}} weitere",
+    "questions": "Fragen",
+    "questionsHint": "Antworten, die eine Liste nicht geben kann",
+    "pattern": "Etwas anderes fragen",
+    "patternHint": "stell deine eigene zusammen",
+    "patternNone": "Hierzu passt nichts.",
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge",
+    "exampleNone": "Nichts passt – genau die gute Antwort auf diese Frage."
+  },
+  "jobScout": {
+    "title": "Job-Scout",
+    "subtitle": "Gespeicherte Suchen, die Jobbörsen für dich beobachten – und ein Ort, um Anzeigen schon heute abzulegen",
+    "onlyActive": "Nur aktive Pipelines",
+    "onlyActiveDescription": "Ausgeschaltete ausblenden",
+    "paused": "Kein lokales Modell verbunden, daher sind die Pipelines pausiert. Du kannst sie trotzdem anlegen und unten Anzeigen speichern – sie starten, sobald ein Modell erreichbar ist.",
+    "status": {
+      "off": "aus",
+      "paused": "pausiert",
+      "running": "läuft",
+      "watching": "beobachtet"
+    },
+    "kinds": {
+      "twin": "Einträge vollständig halten",
+      "scout": "Anzeigen finden"
+    },
+    "kindLabel": {
+      "twin": "Digitaler Zwilling",
+      "scout": "Job-Scout"
+    },
+    "schedules": {
+      "hourly": "Stündlich",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich"
+    },
+    "toast": {
+      "updated": "Pipeline aktualisiert",
+      "created": "Pipeline erstellt",
+      "createdPaused": "{{name}} – pausiert, bis ein Modell verbunden ist.",
+      "createdRunning": "{{name}} – beginnt in Kürze mit der Suche.",
+      "deleted": "Pipeline gelöscht",
+      "deletedDescription": "{{name}} beobachtet {{source}} nicht mehr.",
+      "addedDraft": "{{org}} als Entwurf hinzugefügt",
+      "matchLinked": "Der Treffer bleibt in dieser Liste, jetzt mit der Bewerbung verknüpft.",
+      "postingSaved": "Anzeige gespeichert",
+      "postingLinked": "Die Anzeige bleibt hier gespeichert, jetzt mit der Bewerbung verknüpft.",
+      "postingRemoved": "Anzeige entfernt"
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "hint": "laufen lokal nach Zeitplan",
+      "none": "Keine Pipelines",
+      "noneOn": "Nichts eingeschaltet",
+      "noneDescription": "Eine Pipeline ist eine gespeicherte Suche – eine Börse zum Beobachten, die wichtigen Begriffe und wie oft geschaut wird.",
+      "noneOnDescription": "Alle deine Pipelines sind ausgeschaltet. Schalte eine ein oder entferne den Filter in den Seitenoptionen.",
+      "showAll": "Alle Pipelines anzeigen",
+      "toReview_one": "{{count}} zu prüfen",
+      "toReview_other": "{{count}} zu prüfen",
+      "auto": "auto",
+      "autoLabel": "Ohne Nachfrage ausführen",
+      "autoDescription": "Übernimmt, was sie findet, und sagt dir danach Bescheid.",
+      "autoToggle": "{{name}} ohne Nachfrage ausführen",
+      "enable": "{{name}} aktivieren",
+      "runNow": "{{name}} jetzt ausführen",
+      "edit": "{{name}} bearbeiten",
+      "delete": "{{name}} löschen"
+    },
+    "matches": {
+      "title": "Treffer",
+      "hint": "anhand deines Profils bewertet",
+      "emptyTitle": "Keine Treffer",
+      "emptyDescription": "Pipelines legen hier bewertete Anzeigen ab, sobald ein Modell verbunden ist. Bis dahin sind die Anzeigen, die du unten speicherst, der Einstieg.",
+      "matched": "passt zu {{terms}}",
+      "notScored": "nicht bewertet",
+      "added": "hinzugefügt"
+    },
+    "inApplications": "In den Bewerbungen als {{name}}",
+    "save": {
+      "title": "Anzeige speichern",
+      "hint": "funktioniert ohne Modell",
+      "description": "Hier wird die Seite nicht abgerufen, gespeichert werden also die URL, der daraus erratene Arbeitgeber und der Tag des Speicherns – genug, um die Anzeige wiederzufinden und sich darauf zu bewerben.",
+      "urlLabel": "URL der Stellenanzeige",
+      "button": "Anzeige speichern",
+      "blocker": "Füge zuerst eine URL ein",
+      "emptyTitle": "Keine Anzeigen gespeichert",
+      "emptyDescription": "Füge die URL einer Anzeige ein, zu der du zurückkehren willst. Anzeigen verschwinden; Link und Datum gehören dir.",
+      "meta": "{{url}} · gespeichert {{ago}}",
+      "linked": "mit Bewerbung verknüpft",
+      "unscored": "unbewertet"
+    },
+    "footer": "Pipelines laufen auf deinem Gerät, solange jojo geöffnet ist. Nichts wird an Dritte gesendet.",
+    "shutdown": {
+      "title": "{{name}} ausschalten?",
+      "description": "Sie lief zweimal, ohne etwas vorzuschlagen, und nichts wartet auf deine Antwort. Ausschalten beendet die Suche; alles bereits Gefundene bleibt, wo es ist.",
+      "keep": "Weiterlaufen lassen",
+      "off": "Ausschalten"
+    },
+    "editor": {
+      "newTitle": "Neue Pipeline",
+      "editTitle": "Pipeline bearbeiten",
+      "description": "Eine Pipeline ist ein Dauerauftrag für den Assistenten. Sie läuft auf diesem Gerät, solange jojo geöffnet ist, und alles, was sie ändern will, wird dir zuerst gezeigt.",
+      "create": "Erstellen",
+      "kind": "Was sie tut",
+      "kindTwinHint": "Liest, was du hast, und schlägt vor, was fehlt – Notizen, Erinnerungen, Schlagwörter, Ablage.",
+      "kindScoutHint": "Sucht Anzeigen, die deine Aufmerksamkeit verdienen, und legt sie zur Prüfung vor.",
+      "name": "Name",
+      "nameError": "Benenne sie nach dem, was sie beobachtet.",
+      "namePlaceholderTwin": "z. B. Meine Bewerbungen ordentlich halten",
+      "namePlaceholderScout": "z. B. CRA-Jobbörse für Professuren",
+      "sources": "Quellen",
+      "sourcesError": "Ein Scout ohne Quelle hat nichts zu lesen.",
+      "sourcesHint": "Die Börse oder Karriereseite, die sie beobachtet. Mehrere mit Kommas trennen.",
+      "focus": "Worauf achten",
+      "focusHint": "Alles, worauf sie besonders achten soll. Leer lassen, damit sie überall schaut.",
+      "termsHint": "Woran eine Anzeige gemessen wird. Leer lassen, um alles zu behalten, was die Quelle listet.",
+      "focusPlaceholder": "Nachfragen und Fristen",
+      "termsPlaceholder": "Assistant Professor, CS/ECE",
+      "often": "Wie oft",
+      "oftenHint": "Wie lange sie zwischen zwei Durchläufen wartet."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "Diese Seite konnte nicht gespeichert werden",
+    "noAnswer": "Die Seite hat nicht geantwortet.",
+    "savedTitle": "{{name}} gespeichert",
+    "savedDropped_one": "Im Tresor abgelegt. {{count}} Ressource konnte nicht gespeichert werden, daher sehen manche Teile vielleicht schlicht aus.",
+    "savedDropped_other": "Im Tresor abgelegt. {{count}} Ressourcen konnten nicht gespeichert werden, daher sehen manche Teile vielleicht schlicht aus.",
+    "savedOffline": "Im Tresor abgelegt und ohne Verbindung lesbar.",
+    "keep": "Kopie behalten",
+    "keeping": "Wird gespeichert…",
+    "waitForLoad": "Warte, bis die Seite fertig geladen ist"
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "subtitle": "Was der Scout und der Assistent zum Abgleichen und Entwerfen nutzen. Nichts davon verlässt dein Gerät.",
+    "savedTitle": "Profil gespeichert",
+    "savedDescription": "Auf diesem Gerät gespeichert.",
+    "basics": {
+      "title": "Grunddaten",
+      "fullName": "Vollständiger Name",
+      "fullNamePlaceholder": "z. B. Lonardo Jenson",
+      "position": "Aktuelle Position",
+      "positionPlaceholder": "z. B. Doktorand, Informatik",
+      "location": "Ort",
+      "locationPlaceholder": "z. B. Santa Clara, CA",
+      "email": "E-Mail"
+    },
+    "links": {
+      "title": "Links",
+      "website": "Website"
+    },
+    "interests": {
+      "title": "Interessen und Ziele",
+      "hint": "steuert den Scout-Abgleich",
+      "matchTerms": "Suchbegriffe",
+      "matchTermsDescription": "Forschungsgebiete und Formulierungen, nach denen der Scout sucht. Getrennt von den Schlagwörtern, unter denen du Einträge ablegst.",
+      "roleTags": "Rollen-Tags",
+      "roleTagsDescription": "Die Arten von Rollen, die du verfolgst. Jede Bewerbung ist unter einer abgelegt, und der Rollenfilter sowie die Werte je Rolle lesen sie.",
+      "targetRoles": "Zielrollen",
+      "targetRolesPlaceholder": "z. B. Assistant Professor (TT) · Research Scientist",
+      "regions": "Bevorzugte Regionen",
+      "regionsPlaceholder": "z. B. Texas · remote",
+      "academia": "Anzeigen aus der Wissenschaft einbeziehen",
+      "industry": "Anzeigen aus der Industrie einbeziehen"
+    },
+    "remove": "{{name}} entfernen",
+    "add": "Hinzufügen",
+    "documents": {
+      "title": "Dokumente",
+      "hint": "der Bereich {{bucket}} im Tresor",
+      "emptyTitle": "Noch keine Dokumente",
+      "emptyDescription": "Füge deinen Lebenslauf und deine Anschreiben hinzu – sie werden im Tresor unter {{bucket}} abgelegt, wo der Rest der App sie erreicht.",
+      "add": "Dokument hinzufügen",
+      "openVault": "Tresor öffnen",
+      "meta": "{{size}} · gespeichert {{ago}}",
+      "footer": "Dieselben Dateien wie im Dateien-Werkzeug des Tresors, gefiltert auf {{bucket}}. Ein Eintrag speichert Name, Größe und Typ eines Dokuments – nie seinen Inhalt.",
+      "addedTitle": "Dokument hinzugefügt",
+      "addedDescription": "Im Tresor unter {{bucket}} abgelegt. Name, Größe und Typ werden gespeichert – die Datei selbst wird nicht gelesen."
+    },
+    "unsaved": "Ungespeicherte Änderungen – beim Speichern werden sie auf dieses Telefon geschrieben.",
+    "discard": "Verwerfen",
+    "save": "Speichern",
+    "termSheet": {
+      "title": "Suchbegriff hinzufügen",
+      "description": "Ein Forschungsgebiet oder eine Formulierung, nach der der Scout in einer Anzeige suchen soll.",
+      "label": "Suchbegriff",
+      "placeholder": "z. B. verteiltes Training"
+    },
+    "roleSheet": {
+      "title": "Rollen-Tag hinzufügen",
+      "description": "Eine Art von Rolle, die du verfolgst. Sie wird zu einer der Auswahlmöglichkeiten bei jeder Bewerbung.",
+      "label": "Rollen-Tag",
+      "placeholder": "z. B. Data Scientist"
+    }
+  },
+  "assistant": {
+    "title": "Assistent",
+    "undone": "Rückgängig gemacht",
+    "saved": "In Textbausteinen gespeichert",
+    "savedDescription": "{{title}} · abgelegt unter {{tag}}",
+    "openVault": "Tresor öffnen",
+    "clear": "Leeren",
+    "emptyTitle": "Noch nichts gefragt",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "saveToSnippets": "In Textbausteinen speichern",
+    "ask": "Den Assistenten fragen",
+    "send": "Senden",
+    "stop": "Stopp",
+    "agent": {
+      "subtitle": "Mit deinem Modell verbunden und in der Lage, mit deinen Einträgen zu arbeiten. Alles, was er tut, wird fortlaufend aufgelistet.",
+      "intro": "Antwortet mit <code>{{model}}</code> unter <code>{{endpoint}}</code> und kann {{tools}} Werkzeuge auf diesem Gerät aufrufen. Nichts wird woandershin gesendet, und jede Änderung lässt sich rückgängig machen.",
+      "deleted": "Unterhaltung gelöscht",
+      "emptyDescription": "Bitte ihn, etwas zu finden, eine Bewerbung hinzuzufügen oder eine voranzubringen. Jedes Werkzeug, das er nutzt, erscheint unten, sobald es läuft – mit dem, was es gesendet und zurückbekommen hat.",
+      "placeholder": "Finde meine Bewerbung bei UT Austin, füge eine hinzu, bring sie voran…",
+      "footer": "Er liest, bevor er schreibt, fragt vor jeder Änderung, sofern du das für eine Unterhaltung nicht abschaltest, und alles läuft über dasselbe Rückgängig wie ein Tastendruck.",
+      "prompts": {
+        "waiting": "Worauf warte ich gerade?",
+        "add": "Füge eine Bewerbung hinzu: ML Engineer bei Stripe, eingereicht",
+        "noDeadline": "Welche Bewerbungen haben keine Frist?",
+        "flag": "Markiere meine Bewerbung bei UT Austin"
+      }
+    },
+    "scripted": {
+      "subtitle": "Vorerst ausgearbeitete Beispiele. Verbinde ein lokales Modell, und es entwirft aus deinen eigenen Einträgen und arbeitet mit ihnen.",
+      "cleared": "Unterhaltung geleert",
+      "messages_one": "{{count}} Nachricht",
+      "messages_other": "{{count}} Nachrichten",
+      "connectLabel": "In den Einstellungen ein Modell verbinden",
+      "banner": "Kein Modell verbunden, daher ist jede Antwort hier ein ausgearbeitetes Beispiel und keine echte Antwort.",
+      "connect": "In den Einstellungen verbinden →",
+      "emptyDescription": "Wähle unten einen Vorschlag oder tippe irgendetwas. Die Antworten sind geschriebene Beispiele – nützlich zum Weiterarbeiten und nie als Antwort eines Modells ausgegeben.",
+      "badge": "Beispielantwort · kein Modell verbunden",
+      "placeholder": "Frag nach einem Anschreiben, einer Nachfass-E-Mail, einem Vorstellungsgespräch…",
+      "footer": "Mit einem verbundenen Modell liest jeder dieser Vorschläge dein Profil und deine Dokumente als Kontext. Weil die Verarbeitung lokal läuft, werden dein Lebenslauf und deine Notizen nirgendwohin hochgeladen."
+    },
+    "thought": {
+      "live": "Denkt nach…",
+      "done": "Gedanken",
+      "liveLabel": "Denkt nach. Zeigen, was das Modell denkt",
+      "label": "Zeigen, was das Modell gedacht hat"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "Ein Anschreiben entwerfen",
+        "title": "Anschreiben – Aufbau",
+        "reply": "So würde ich es für [FACHBEREICH] aufbauen:\n\nAbsatz 1 – woran du arbeitest, in einem Satz, dem auch ein Kommissionsmitglied aus einem anderen Fach folgen kann.\nAbsatz 2 – die zwei Ergebnisse, die dich tragen, jeweils mit ihrer Wirkung statt ihrer Methode.\nAbsatz 3 – warum dieser Fachbereich: die Gruppe, mit der du dich überschneiden würdest, und die Lehrveranstaltung, die du übernehmen würdest.\nAbsatz 4 – Verfügbarkeit und wie die ersten drei Jahre aussehen würden.\n\nHalte es bei einer Seite. Die Kommission liest vierzig davon an einem Abend."
+      },
+      "tailor-cv": {
+        "action": "Meinen Lebenslauf an eine Anzeige anpassen",
+        "title": "Lebenslauf anpassen – drei Durchgänge",
+        "reply": "Drei Durchgänge, in dieser Reihenfolge:\n\n1. Streiche, wonach die Anzeige nicht fragt. Ein Lebenslauf, der auf alles zugeschnitten ist, passt zu nichts.\n2. Setze den Abschnitt, mit dem die Anzeige beginnt, an den Anfang der ersten Seite – eine lehrorientierte Anzeige will die Lehre vor den Publikationen.\n3. Formuliere die Überschrift mit den Worten der Anzeige um, ohne den Umfang der Arbeit zu übertreiben.\n\nUnangetastet bleiben: Publikationen, Referenzen, Daten. Das sind die Teile, die eine Kommission prüft."
+      },
+      "parse-posting": {
+        "action": "Eine Stellenanzeige auswerten",
+        "title": "Was man aus einer Anzeige herausholt",
+        "reply": "Aus einer Anzeige würde ich herausziehen: Arbeitgeber, Rolle, Frist, die verlangten Unterlagen, die genannte Kontaktperson und alles, was als harte Anforderung statt als Wunsch formuliert ist.\n\nBeim Letzten gehen Bewerbungen verloren – „muss den Abschluss bis zum Dienstantritt haben“ ist ein Filter, „Erfahrung mit großen Systemen wünschenswert“ nicht.\n\nDer Job-Scout erledigt die einfache Hälfte schon ohne Modell: Speichere dort die URL, dann behält er den Link und errät daraus den Arbeitgeber."
+      },
+      "follow-up": {
+        "action": "Eine Nachfass-E-Mail entwerfen",
+        "title": "Nachfassen ohne Rückmeldung",
+        "reply": "Betreff: Nachfrage – [STELLE], [FACHBEREICH]\n\nSehr geehrte/r [NAME],\n\nich habe mich am [DATUM] auf die Stelle [STELLE] beworben und wollte nachfragen, ob der Kommission alle Unterlagen von mir vorliegen. Gern schicke ich das noch ausstehende Empfehlungsschreiben direkt, falls das einfacher ist.\n\nIch bin weiterhin sehr an der Stelle interessiert und beantworte gern jede Frage per E-Mail.\n\nMit herzlichem Dank\n[DEIN NAME]"
+      },
+      "interview": {
+        "action": "Bereite mich auf ein Vorstellungsgespräch vor",
+        "title": "Vorstellungsgespräch – sechs Fragen, die du beantworten können solltest",
+        "reply": "Sechs Fragen, auf die du vor dem Termin eine Antwort haben solltest:\n\n– Worum geht es in deiner Arbeit, in neunzig Sekunden, für jemanden aus einem anderen Fach?\n– Was wäre dein erster Drittmittelantrag, und bei welcher Stelle?\n– Welche zwei Lehrveranstaltungen könntest du nächstes Semester ohne Vorlauf übernehmen?\n– Mit wem hier würdest du zusammenarbeiten, und woran?\n– Wo liegt die Schwäche deines eigenen Ergebnisses?\n– Was brauchst du im ersten Jahr, um die Arbeit zu machen?\n\nSchreib die Antworten von Hand auf. Das Üben ist der Punkt, nicht die Notizen."
+      },
+      "fallback": {
+        "title": "Assistent – Beispielantwort",
+        "reply": "Es ist kein Modell verbunden, daher ist das eine vorgefertigte Antwort und keine Antwort auf das, was du getippt hast.\n\nMit einem verbundenen Modell würde dieser Bildschirm dein Profil, die Dokumente in deinem Tresor und die genannte Bewerbung lesen und daraus auf deinem eigenen Gerät einen Entwurf erstellen. Verbinde jojo in den Einstellungen mit einem lokalen OpenAI-kompatiblen Server – vLLM, Ollama oder LM Studio.\n\nZu jedem der fünf Vorschläge unten gibt es ein ausgearbeitetes Beispiel, das du in der Zwischenzeit nutzen kannst."
+      }
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Verbindungen, Synchronisierung und deine Daten",
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "dataSets": {
+      "demo": "Demodaten",
+      "empty": "Leer"
+    },
+    "reasoning": {
+      "on": "An",
+      "low": "Leicht",
+      "off": "Aus"
+    },
+    "import": {
+      "refused": "Es wurde nichts importiert",
+      "fileFailed": "Die Datei konnte nicht geöffnet werden: {{reason}}",
+      "clipboardFailed": "Die Zwischenablage konnte nicht gelesen werden: {{reason}}",
+      "unfinished": "Der Import wurde nicht abgeschlossen",
+      "replaceTitle": "Alles auf diesem Telefon ersetzen?",
+      "replaceDescription": "{{described}}. {{replaces}}, und das lässt sich nicht rückgängig machen.",
+      "replace": "Ersetzen"
+    },
+    "device": {
+      "title": "Auf diesem Gerät",
+      "hint": "wo deine Einträge wirklich liegen",
+      "body": "Alles, was du hinzufügst, wird beim Arbeiten direkt in den Speicher dieses Telefons geschrieben – nichts einzuschalten, und nichts verlässt das Gerät. Angehängte Dokumente werden in jojos eigenen Ordner kopiert und überstehen es daher, wenn das Original verschoben oder gelöscht wird.",
+      "copyOut": "Für eine Kopie nutze unten Exportieren oder Übertragen, um alles über dein lokales Netzwerk an deinen Computer zu senden."
+    },
+    "model": {
+      "title": "Modell",
+      "intro": "Ein Modell auf einem Rechner, den du erreichst, oder eines, für das du bezahlst. Lokal ist Standard, weil nur dann deine Einträge dieses Gerät nie verlassen.",
+      "endpoint": "Endpunkt",
+      "loopback": "Diese Adresse bedeutet „dieses Gerät“ – auf einem Telefon zeigt sie also auf das Telefon. Nutze stattdessen die Adresse des Computers in deinem Netzwerk, etwa 192.168.1.20, oder seinen .local-Namen.",
+      "endpointOllama": "Host und Port. Ohne /v1 – jojo nutzt Ollamas eigenen Endpunkt, um es bitten zu können, nicht zu kürzen.",
+      "endpointHint": "Die Basis-URL, endet auf /v1.",
+      "apiKey": "API-Schlüssel",
+      "apiKeyHint": "Nur auf diesem Gerät gespeichert. Er kommt nie in ein Backup und wird nur an den Anbieter gesendet.",
+      "modelPlaceholder": "Wird beim Testen der Verbindung ermittelt",
+      "modelHint": "Was der Server gemeldet hat. Ändere es, wenn du mehrere bereitstellst.",
+      "savedAs": "Gespeichert als",
+      "savedAsHint": "Wie dieser Server in der Liste heißt. Standardmäßig das Modell.",
+      "context": "Kontextfenster",
+      "contextOllama": "Tokens. Leer nutzt {{tokens}} und lässt Ollama selbst dimensionieren; eine Zahl hier wird auch als num_ctx gesendet.",
+      "contextHint": "Tokens, die dein Deployment fassen kann. Leer nutzt {{tokens}}.",
+      "reasoning": "Schlussfolgern",
+      "reasoningDescription": "Lässt Modelle, die denken können – gpt-oss, Gemma 4, Qwen3 –, vor der Antwort nachdenken. Schalte es aus, wenn Antworten bei einem kleinen Modell leer zurückkommen.",
+      "endpointFirst": "Gib zuerst einen Endpunkt ein.",
+      "kept": "Auf diesem Gerät gespeichert. Der Assistent nutzt dieses Modell."
+    },
+    "test": {
+      "testing": "Teste…",
+      "again": "Erneut testen",
+      "test": "Verbindung testen",
+      "connected": "Verbunden",
+      "noAnswer": "Keine Antwort",
+      "notConnected": "Nicht verbunden"
+    },
+    "reader": {
+      "title": "Meine Dokumente lesen",
+      "hint": "nur PDFs",
+      "already": "Dieses Telefon liest Word-Dateien, OpenDocument-Dateien, Präsentationen, gespeicherte Seiten und reinen Text bereits selbst – nichts einzurichten und nichts wird irgendwohin gesendet.",
+      "pdf": "<strong>PDFs sind die Ausnahme.</strong> Um eines wieder in Text zu verwandeln, braucht man die Schrifttabellen darin, und die bringt diese App nicht mit. Starte dafür {{name}} auf einem Rechner, den dieses Telefon erreicht, und gib unten dessen Adresse an.",
+      "address": "Adresse",
+      "addressHint": "Wo markitdown-mcp lauscht. Der Pfad endet auf /mcp.",
+      "notRunning": "Läuft es noch nicht?",
+      "addressFirst": "Gib zuerst eine Adresse ein.",
+      "ok": "Dokumente werden an diese Adresse gesendet und nirgendwohin sonst. Nichts wird hochgeladen.",
+      "notice": "{{name}} ist ein eigenständiges Programm und kein Teil von jojo. {{copyright}} {{licence}}. jojo ist nicht mit Microsoft verbunden."
+    },
+    "appearance": {
+      "title": "Darstellung",
+      "theme": "Design",
+      "themeDescription": "System folgt der Einstellung deines Geräts"
+    },
+    "data": {
+      "title": "Deine Daten",
+      "export": "Als JSON exportieren",
+      "import": "Importieren",
+      "paste": "Backup einfügen",
+      "exportNote": "Der Export umfasst Bewerbungen, die Zeitleiste, den Tresor, gespeicherte Anzeigen, deine Schlagwörter samt Zuordnungen und dein Profil. Es ist ein Backup, das diese App wieder einlesen kann – aber angehängte Dokumente bleiben auf diesem Telefon, ihre Zeilen kommen also ohne Inhalt zurück. Übertragen unter Mehr bringt alles samt Dokumenten auf einen Computer.",
+      "records": "Einträge",
+      "recordsEmpty": "Alle Listen sind leer, daher zeigt jeder Bildschirm seinen Startzustand.",
+      "recordsDemo": "Die Beispielsuche – zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor.",
+      "move": "Auf ein anderes Gerät umziehen",
+      "moveDescription": "Mit deinem Computer über dein lokales Netzwerk koppeln und alles verschieben, Dokumente inklusive.",
+      "reset": "Demodaten zurücksetzen",
+      "resetDescription": "Stellt alles wie ausgeliefert wieder her und verwirft die Änderungen dieser Sitzung.",
+      "resetButton": "Zurücksetzen",
+      "resetBlocker": "Stell Einträge zuerst wieder auf Demodaten",
+      "warning": "Deine Einträge sind auf diesem Gerät gespeichert und überstehen das Schließen der App. Es gibt kein Konto und keine Synchronisierung, und kein Eintrag verlässt je das Telefon – weder über das Modell noch über einen Absturzbericht. Exportieren schreibt eine Kopie in die Zwischenablage, falls du sie woanders haben willst.",
+      "cleared": "Alles gelöscht",
+      "clearedDescription": "Alle Einträge sind weg, dein Profil eingeschlossen, und angehängte Dokumente wurden von diesem Gerät gelöscht. Lade die Demodaten bei Bedarf hier neu.",
+      "resetDone": "Demodaten zurückgesetzt",
+      "loaded": "Demodaten geladen",
+      "loadedDescription": "Die Beispiel-Bewerbungen, Zeitleiste, Tresor, Anzeigen und das Profil sind wieder wie ausgeliefert."
+    },
+    "confirm": {
+      "fallbackTitle": "Daten ändern?",
+      "continue": "Weiter",
+      "empty": {
+        "title": "Alle Einträge löschen?",
+        "description": "Bewerbungen, Zeitleiste, Tresor, gespeicherte Anzeigen und dein Profil werden gelöscht, einschließlich allem, was du in dieser Sitzung hinzugefügt hast, und angehängte Dokumente werden mit ihnen von diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen – exportiere zuerst, wenn du sie zurückhaben willst. Deine Schlagwörter bleiben, aber nichts trägt sie mehr.",
+        "confirm": "Alles löschen"
+      },
+      "demo": {
+        "title": "Demodaten laden?",
+        "description": "Die Beispieleinträge kommen zurück, mit ihren ursprünglichen Schlagwörtern. Alles, was du in dieser Sitzung hinzugefügt hast, wird ersetzt, nicht zusammengeführt, und angehängte Dokumente werden von diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.",
+        "confirm": "Demodaten laden"
+      },
+      "reset": {
+        "title": "Auf die Demodaten zurücksetzen?",
+        "description": "Alle Änderungen, Ergänzungen und Löschungen dieser Sitzung werden verworfen und die Beispieleinträge kommen genau wie ausgeliefert zurück; angehängte Dokumente werden daher von diesem Gerät gelöscht. Deine Schlagwortliste selbst bleibt unverändert. Das lässt sich nicht rückgängig machen.",
+        "confirm": "Daten zurücksetzen"
+      }
+    },
+    "provider": {
+      "title": "Anbieter",
+      "description": "Mit der Wahl wird seine Adresse für dich eingestellt. Cloud-Anbieter brauchen einen Schlüssel, und deine Einträge gehen an sie.",
+      "cloud": "Deine Texte gehen an dieses Unternehmen und werden dir berechnet",
+      "localKey": "Auf einem Rechner, den du kontrollierst. Braucht einen Schlüssel.",
+      "local": "Auf einem Rechner, den du kontrollierst. Nichts verlässt ihn."
+    },
+    "cloud": {
+      "terms": "Bedingungen von {{name}}",
+      "privacy": "Datenschutzerklärung"
+    },
+    "servers": {
+      "title": "Gespeicherte Server",
+      "description": "Adressen, die auf diesem Gerät geantwortet haben.",
+      "done": "Fertig",
+      "empty": "Noch nichts gespeichert. Teste eine Verbindung, dann wird die Adresse hier behalten.",
+      "load": "{{name}} laden",
+      "inUse": "In Verwendung",
+      "forget": "{{name}} vergessen"
+    },
+    "keywords": {
+      "title": "Schlagwörter",
+      "hint": "gemeinsam für Bewerbungen, Erinnerungen und den Tresor",
+      "takenOff_one": "Von {{count}} Eintrag entfernt.",
+      "takenOff_other": "Von {{count}} Einträgen entfernt.",
+      "usedOn_one": "Bei {{count}} Eintrag verwendet",
+      "usedOn_other": "Bei {{count}} Einträgen verwendet",
+      "rename": "{{name}} umbenennen",
+      "editTitle": "{{name}} bearbeiten",
+      "editGeneric": "Schlagwort bearbeiten",
+      "editDescription": "Umbenennen ändert die ID nicht, daher folgt jeder Eintrag mit diesem Schlagwort.",
+      "taken": "Dieser Name ist vergeben",
+      "takenDescription": "Ein anderes Schlagwort heißt bereits so.",
+      "colour": "Farbe",
+      "newTitle": "Neues Schlagwort",
+      "newDescription": "Schlagwörter gehören dir. Dasselbe funktioniert bei einer Bewerbung, einer Erinnerung, einer Datei und einem Link.",
+      "added": "{{name}} hinzugefügt",
+      "placeholder": "z. B. Warte auf Antwort",
+      "confirmUsed_one": "Es wird von {{count}} Eintrag entfernt. Der Eintrag bleibt; nur das Schlagwort verschwindet.",
+      "confirmUsed_other": "Es wird von {{count}} Einträgen entfernt. Die Einträge bleiben; nur das Schlagwort verschwindet.",
+      "confirmUnused": "Nichts ist damit markiert, daher ändert sich sonst nichts."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import {
   Archive,
   ArrowLeftRight,
@@ -39,7 +40,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { displayName } from '@/data/seed'
-import { bucketOf, partsOf, shortDate } from '@/data/timeline'
+import { bucketOf, partsOf } from '@/data/timeline'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
@@ -63,6 +64,7 @@ import {
   vaultPath,
 } from '@/lib/links'
 import type { GuidePage } from '@/lib/links'
+import { useDomain } from '@/i18n/domain'
 
 type Result = {
   id: string
@@ -88,28 +90,44 @@ const GUIDE_KEYWORDS: Record<GuidePage, string> = {
     'licence license mit free open source copyright terms disclaimer warranty nvidia microsoft markitdown legal cost commercial',
 }
 
-const PAGES: Result[] = [
+/**
+ * The pages, named in the reader's language. A function of `t` rather than a
+ * module constant, so the names follow a language change. The keywords stay
+ * English: they are extra search terms, and the translated label is searched
+ * as well.
+ */
+const pagesFor = (t: (key: string) => string): Result[] => [
   {
     id: 'p-dash',
-    label: 'Dashboard',
+    label: t('spotlight.pages.dashboard'),
     icon: LayoutDashboard,
     to: dashboardPath(),
     keywords: 'home overview',
   },
-  { id: 'p-apps', label: 'Applications', icon: ClipboardList, to: applicationsPath() },
-  { id: 'p-cal', label: 'Calendar', icon: CalendarDays, to: calendarPath() },
-  { id: 'p-vault', label: 'Vault', icon: Archive, to: vaultPath() },
+  {
+    id: 'p-apps',
+    label: t('spotlight.pages.applications'),
+    icon: ClipboardList,
+    to: applicationsPath(),
+  },
+  { id: 'p-cal', label: t('spotlight.pages.calendar'), icon: CalendarDays, to: calendarPath() },
+  { id: 'p-vault', label: t('spotlight.pages.vault'), icon: Archive, to: vaultPath() },
   {
     id: 'p-scout',
-    label: 'Job scout',
+    label: t('spotlight.pages.jobScout'),
     icon: Radar,
     to: scoutPath(),
     keywords: 'pipelines matches',
   },
-  { id: 'p-stats', label: 'Statistics', icon: ChartColumn, to: statisticsPath() },
+  {
+    id: 'p-stats',
+    label: t('spotlight.pages.statistics'),
+    icon: ChartColumn,
+    to: statisticsPath(),
+  },
   {
     id: 'p-graph',
-    label: 'Graph',
+    label: t('spotlight.pages.graph'),
     icon: Waypoints,
     to: graphPath(),
     // 'connections' and 'network' are what someone types when they remember
@@ -118,20 +136,20 @@ const PAGES: Result[] = [
   },
   {
     id: 'p-transfer',
-    label: 'Transfer',
-    detail: 'Move your records to another device',
+    label: t('spotlight.pages.transfer'),
+    detail: t('spotlight.pages.transferDetail'),
     icon: Share2,
     to: transferPath(),
     keywords: 'move device pair phone laptop migrate handoff',
   },
-  { id: 'p-profile', label: 'My profile', icon: UserRound, to: profilePath() },
+  { id: 'p-profile', label: t('spotlight.pages.profile'), icon: UserRound, to: profilePath() },
   {
     id: 'p-assist',
-    label: 'Assistant',
+    label: t('spotlight.pages.assistant'),
     icon: RobotIcon as unknown as LucideIcon,
     to: assistantPath(),
   },
-  { id: 'p-set', label: 'Settings', icon: Settings, to: settingsPath() },
+  { id: 'p-set', label: t('spotlight.pages.settings'), icon: Settings, to: settingsPath() },
   // The guide's four pages, each its own row rather than one row for the
   // section. Outside the palette it is reachable from a single unlabelled
   // question mark in the topbar, so this is where someone who has never found
@@ -257,6 +275,9 @@ function PaletteBody({
   /** A tool row was chosen: its form opens once the palette has closed. */
   onPickTool: (row: ToolRow) => void
 }) {
+  const { t, i18n } = useTranslation('layout')
+  const language = i18n.language
+  const domain = useDomain()
   const navigate = useNavigate()
   const { all: applications, byId } = useApplications()
   const { all: dated, reminders } = useTimeline()
@@ -310,41 +331,42 @@ function PaletteBody({
     [applications],
   )
 
-  const rems: Result[] = useMemo(
-    () =>
-      reminders.map((r) => {
-        const app = r.applicationIds[0] ? byId.get(r.applicationIds[0]) : undefined
-        return {
-          id: `r-${r.id}`,
-          label: r.title,
-          detail: app ? displayName(app) : r.detail,
-          icon: BellRing,
-          to: vaultPath({ tool: 'reminders', focus: r.id }),
-          keywords: `${r.kind} ${bucketOf(r, TODAY)} ${shortDate(r.date)}`,
-        }
-      }),
-    [reminders, byId],
-  )
+  // Both lists word a date, so both are rebuilt when the language changes.
+  const rems: Result[] = useMemo(() => {
+    void language
+    return reminders.map((r) => {
+      const app = r.applicationIds[0] ? byId.get(r.applicationIds[0]) : undefined
+      return {
+        id: `r-${r.id}`,
+        label: r.title,
+        detail: app ? displayName(app) : r.detail,
+        icon: BellRing,
+        to: vaultPath({ tool: 'reminders', focus: r.id }),
+        keywords: `${r.kind} ${bucketOf(r, TODAY)} ${domain.shortDate(r.date)}`,
+      }
+    })
+  }, [reminders, byId, domain, language])
 
   // Everything dated that is not already listed above as a reminder — the two
   // sections read from one timeline now, so without the split the same row
   // would appear twice under two headings.
-  const events: Result[] = useMemo(
-    () =>
-      dated
-        .filter((i) => !i.remind)
-        .map((e) => ({
-          id: `e-${e.id}`,
-          label: e.title,
-          detail: `${shortDate(e.date)} · ${e.detail ?? ''}`,
-          icon: CalendarDays,
-          // The month AND the day, so the calendar opens with the item's own
-          // date selected rather than on whatever month it happens to show.
-          to: calendarPath({ ...partsOf(e.date), focus: e.id }),
-          keywords: e.kind,
-        })),
-    [dated],
-  )
+  const events: Result[] = useMemo(() => {
+    void language
+    return dated
+      .filter((i) => !i.remind)
+      .map((e) => ({
+        id: `e-${e.id}`,
+        label: e.title,
+        detail: `${domain.shortDate(e.date)} · ${e.detail ?? ''}`,
+        icon: CalendarDays,
+        // The month AND the day, so the calendar opens with the item's own
+        // date selected rather than on whatever month it happens to show.
+        to: calendarPath({ ...partsOf(e.date), focus: e.id }),
+        keywords: e.kind,
+      }))
+  }, [dated, domain, language])
+
+  const pages = useMemo(() => pagesFor(t), [t])
 
   const go = (to: string) => {
     onOpenChange(false)
@@ -355,18 +377,14 @@ function PaletteBody({
   // no cmdk root, so the Command provider has to be supplied here — without it
   // CommandInput has no store and throws on mount.
   return (
-    <Command
-      label="Search applications, reminders, events and pages"
-      filter={matchesQuery}
-      data-tour="palette"
-    >
-      <CommandInput placeholder="Search applications, reminders, events…" />
+    <Command label={t('spotlight.label')} filter={matchesQuery} data-tour="palette">
+      <CommandInput placeholder={t('spotlight.placeholder')} />
       <CommandList className="max-h-[62vh]">
         <CommandEmpty>
           <div className="py-6 text-center">
             <FileText className="mx-auto size-5 text-text-3" strokeWidth={1.6} aria-hidden />
-            <p className="mt-2 text-sm text-text-2">Nothing matches that.</p>
-            <p className="mt-0.5 text-xs text-text-3">Try a role, an organisation or a stage.</p>
+            <p className="mt-2 text-sm text-text-2">{t('spotlight.emptyTitle')}</p>
+            <p className="mt-0.5 text-xs text-text-3">{t('spotlight.emptyHint')}</p>
           </div>
         </CommandEmpty>
 
@@ -376,7 +394,7 @@ function PaletteBody({
           same array the topbar's menu renders, run through the same hook —
           so a row that became a link cannot still be fired as a dialog
           here. */}
-        <CommandGroup heading="Actions">
+        <CommandGroup heading={t('spotlight.actions')}>
           {createActions.map((action) => (
             <CommandItem
               key={action.id}
@@ -402,11 +420,11 @@ function PaletteBody({
         </CommandGroup>
         <CommandSeparator />
 
-        <Section heading="Applications" items={apps} go={go} />
+        <Section heading={t('spotlight.applications')} items={apps} go={go} />
         <CommandSeparator />
-        <Section heading="Reminders" items={rems} go={go} />
+        <Section heading={t('spotlight.reminders')} items={rems} go={go} />
         <CommandSeparator />
-        <Section heading="Calendar" items={events} go={go} />
+        <Section heading={t('spotlight.calendar')} items={events} go={go} />
         <CommandSeparator />
 
         {/* Below the records, above the pages. A palette is asked for a
@@ -414,7 +432,7 @@ function PaletteBody({
           enough a list to push everything under them off the screen — but
           they are what someone types "delete" or "snooze" hoping to find,
           and typing is what this group is reached by. */}
-        <CommandGroup heading="Tools">
+        <CommandGroup heading={t('spotlight.tools')}>
           {tools.map((row) => (
             <CommandItem
               key={row.name}
@@ -441,14 +459,14 @@ function PaletteBody({
         </CommandGroup>
         <CommandSeparator />
 
-        <Section heading="Go to" items={PAGES} go={go} />
+        <Section heading={t('spotlight.goTo')} items={pages} go={go} />
       </CommandList>
 
       <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">
         <span className="flex items-center gap-1">
-          <CornerDownLeft className="size-3" aria-hidden /> to open
+          <CornerDownLeft className="size-3" aria-hidden /> {t('spotlight.toOpen')}
         </span>
-        <span>esc to close</span>
+        <span>{t('spotlight.toClose')}</span>
       </div>
     </Command>
   )
@@ -462,6 +480,7 @@ export function SpotlightSearch({
   onOpenChange: (open: boolean) => void
 }) {
   /** The tool whose generated form is open, with the plan the row was offered on. */
+  const { t } = useTranslation('layout')
   const [pending, setPending] = useState<ToolRow | null>(null)
 
   return (
@@ -469,8 +488,8 @@ export function SpotlightSearch({
       <CommandDialog
         open={open}
         onOpenChange={onOpenChange}
-        title="Search"
-        description="Search applications, reminders, events and pages"
+        title={t('spotlight.title')}
+        description={t('spotlight.label')}
         className="top-[15%] w-[min(92vw,44rem)] max-w-none sm:max-w-none"
       >
         <PaletteBody onOpenChange={onOpenChange} onPickTool={setPending} />

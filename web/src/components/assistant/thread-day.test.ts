@@ -88,13 +88,18 @@ const withoutComments = (code: string) =>
 describe('every row that dates an instant against TODAY', () => {
   it('derives the day through dayOf and never by slicing the instant', () => {
     /*
-     * `agoLabel(x.slice(0, 10), TODAY)` is the exact shape, not a bare
+     * `agoLabel(x.slice(0, 10), TODAY)` — or `domain.ago(…)`, its translated
+     * twin — is the exact shape, not a bare
      * `.slice(0, 10)` — slicing an instant is fine when what it is compared
      * against is also a UTC day, and several places legitimately do that. What
      * is never right is mixing the two calendars in one call.
      */
     const offenders = Object.entries(sources)
-      .filter(([, code]) => /agoLabel\(\s*[^)]*\.slice\(\s*0\s*,\s*10\s*\)[^)]*,\s*TODAY/.test(withoutComments(code)))
+      .filter(([, code]) =>
+        /(?:agoLabel|\.ago)\(\s*[^)]*\.slice\(\s*0\s*,\s*10\s*\)[^)]*,\s*TODAY/.test(
+          withoutComments(code),
+        ),
+      )
       .map(([path]) => path)
     expect(offenders, offenders.join('\n')).toEqual([])
   })
@@ -104,7 +109,7 @@ describe('every row that dates an instant against TODAY', () => {
     // above vacuous, and this file has already been a one-file guard once.
     expect(Object.keys(sources).length).toBeGreaterThan(50)
     expect(withoutComments(sources['/src/components/assistant/ThreadList.tsx'] ?? '')).toContain(
-      'agoLabel(dayOf(t.updatedAt), TODAY)',
+      'domain.ago(dayOf(t.updatedAt), TODAY)',
     )
   })
 })

@@ -1,0 +1,529 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "undo": "撤销",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "duplicate": "创建副本",
+    "deleteFailed": "删除失败",
+    "deleted": "已删除 {{title}}",
+    "unsaved": "有未保存的更改",
+    "saved": "已保存 {{title}}",
+    "showIt": "显示",
+    "copyBlocked": "浏览器阻止了复制",
+    "updated": "已更新 {{title}}",
+    "saveChanges": "保存更改"
+  },
+  "files": {
+    "unfiled": {
+      "title": "未归入任何申请的文件",
+      "label": "未归档"
+    },
+    "inlineEdit": {
+      "needsName": "文件需要有名称"
+    },
+    "intake": {
+      "tooLarge": "{{name}} 太大，无法检查",
+      "tooLargeDescription": "它已归档，jojo 显示它时会屏蔽其中所有网址并停用链接，因此在这里查看不会访问网络——但它从网上加载的内容都会缺失。",
+      "addresses_other": "{{name}} 包含 {{count}} 个网址",
+      "addressesDescription_other": "它已按你拖入时的样子归档，jojo 显示它时会屏蔽这些网址并停用链接，因此在这里查看不会访问网络。它从网上加载的图片或样式会缺失。",
+      "folders_other": "这看起来是文件夹",
+      "foldersDescription": "jojo 一次归档一个文档。请打开文件夹，把里面的文件拖进来。",
+      "reattached": "{{name}} 已重新附加",
+      "reattachedDescription": "这一行之前没有对应的文档，现在有了。",
+      "stillUnsaved": "{{name}} 仍无法保存",
+      "stillUnsavedDescription": "此浏览器再次拒绝存储它——存储空间可能仍然已满。",
+      "unsaved": "{{name}} 已归档，但未保存",
+      "unsavedDescription": "这一行已在列表中，但此浏览器拒绝存储该文档——通常是因为存储空间已满。请释放一些空间后再次拖入同一个文件；它会附加到这一行，而不会新建一行。",
+      "alreadyHere_other": "这些文件已经在这里了",
+      "alreadyHereDescription": "保险库中已有同名文件。",
+      "addedOne": "已添加 {{name}}",
+      "addedMany_other": "已添加 {{count}} 个文件",
+      "addedHidden": "已归档到“{{bucket}}”——关键词筛选开启时会被隐藏。",
+      "addedHiddenVault": "已归档在资料库的 {{bucket}} 下——关键词筛选开启时会被隐藏。",
+      "addedDescription": "已归档到“{{bucket}}”并保存在此浏览器中。没有上传任何内容。",
+      "addedDescriptionVault": "已归档在资料库的 {{bucket}} 下并保存在此浏览器中。没有上传任何内容。",
+      "skipped_other": "已跳过 {{count}} 个",
+      "skippedDescription": "保险库中已有同名文件。",
+      "foldersSkipped_other": "已跳过 {{count}} 个文件夹"
+    },
+    "row": {
+      "fileName": "文件名",
+      "renameHint": "重命名此文件",
+      "onDevice": "在此设备上",
+      "viewing": "正在查看",
+      "preview": "预览",
+      "rename": "重命名",
+      "editNote": "编辑备注",
+      "addNote": "添加备注",
+      "changeApplications": "更改申请",
+      "fileUnder": "归入申请",
+      "readIntoProfile": "读入你的个人资料"
+    },
+    "add": "添加文件",
+    "filterLabel": "按分组筛选文件",
+    "searchLabel": "搜索文件",
+    "searchPlaceholder": "搜索名称或备注",
+    "toast": {
+      "renamed": "已重命名为 {{name}}",
+      "was": "原名：{{name}}。",
+      "noteSaved": "已保存 {{name}} 的备注",
+      "noteCleared": "已清除 {{name}} 的备注",
+      "noteClearedDescription": "这一行保留名称、分组和关键词。",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "它会显示在每个申请中，图谱也能从任意一个找到它。",
+      "unfiledDescription": "它仍在保险库中，未归入任何申请。"
+    },
+    "empty": {
+      "zeroTitle": "还没有文件",
+      "zeroDescription": "把招聘信息、论文或草稿拖到这里——或从电脑中添加。",
+      "search": "没有文件的名称、备注或分组中提到“{{query}}”。",
+      "both": "“{{bucket}}”中没有带所选关键词的文件。",
+      "bucketTitle": "“{{bucket}}”中没有内容",
+      "bucketDescription_other": "有 {{count}} 个文件在其他分组中。",
+      "showAll": "显示所有分组",
+      "keywordsTitle": "没有文件带这些关键词",
+      "allFiledTitle": "每个文件都已归入申请",
+      "allFiledDescription_other": "全部 {{count}} 个都已归档，没有零散文件。",
+      "unfiledKeywords": "所选关键词中没有未归档的文件。",
+      "unfiledBucket": "“{{bucket}}”中没有未归档的文件。"
+    },
+    "drop": {
+      "title": "拖放以添加到“{{bucket}}”",
+      "description": "只读取名称、大小和类型。不会上传任何内容。",
+      "hint": "将文件拖到此面板任意位置，即可添加到“{{bucket}}”。"
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "拖入的内容并未全部使用",
+      "nothing": "没有可打开的内容"
+    },
+    "save": {
+      "nameLabel": "新文件名称",
+      "working": "处理中…",
+      "alsoDownload": "同时下载",
+      "footnote": "结果会归档为一个新文档——原始文件不会有任何改动。它在你的浏览器中生成，任何部分都不会上传。",
+      "workingSpoken": "正在处理文档"
+    },
+    "thumb": {
+      "turned": "{{label}}，已旋转 {{degrees}} 度",
+      "noPreview": "无预览"
+    },
+    "source": {
+      "fromVault": "从保险库{{label}}",
+      "noneInVault": "保险库中还没有 PDF",
+      "choose": "从保险库中选择…",
+      "device": "从此设备",
+      "fromDevice": "从此设备{{label}}",
+      "dropHintEmpty": "也可以把 PDF 拖到此卡片的任意位置。你在这里保存的文件会出现在此列表中。",
+      "dropHint": "也可以把 PDF 拖到此卡片的任意位置。"
+    },
+    "modes": {
+      "merge": "合并",
+      "pages": "页面",
+      "annotate": "批注"
+    },
+    "editor": {
+      "title": "PDF 编辑器",
+      "hint": "合并、重新整理和批注 PDF。一切都在此浏览器中运行——不会上传任何文档。",
+      "operation": "PDF 操作",
+      "dropMerge": "拖放 PDF 以添加到合并中",
+      "dropOpen": "拖放一个 PDF 以打开"
+    },
+    "errors": {
+      "gone": "{{name}} 已不再存储，因此无法打开。",
+      "noRoom": "{{name}} 已归档，但其内容超出了此浏览器的存储空间。"
+    },
+    "saved": "已保存 {{name}}",
+    "merge": {
+      "move": "移动 {{name}}，第 {{position}} 个，共 {{total}} 个",
+      "dragToReorder": "拖动以重新排序",
+      "fromDevice": "· 来自此设备",
+      "allPages": "所有页面",
+      "rangeLabel": "要从 {{name}} 中取用的页面",
+      "remove": "将 {{name}} 移出合并",
+      "rangeError": "{{name}}：{{reason}}",
+      "savedDescription": "{{documents}}中的 {{pages}}，已归档到“{{bucket}}”。原始文件保持不变。",
+      "pages_other": "{{count}} 页",
+      "documents_other": "{{count}} 个文档",
+      "addLabel": "添加要合并的 PDF",
+      "empty": "添加两个或更多 PDF，或将它们拖到此卡片上。它们会按从上到下的顺序拼接——拖动某一行的左边缘可调整顺序——原始文件保持不变。",
+      "position": "第 {{position}} 个，共 {{total}} 个，{{name}}",
+      "hint": "如 1-3、7、9- 这样的范围只取文档的一部分。留空则取全部。",
+      "action": "合并并保存"
+    },
+    "pages": {
+      "savedDescription_other": "{{count}} 页，已归档到“{{bucket}}”。{{name}} 保持不变。",
+      "chooseLabel": "选择要整理的 PDF",
+      "empty": "选择一个 PDF。你可以旋转页面、删除页面、调整顺序，或只保留其中一部分。",
+      "kept_other": "· 保留 {{kept}} 页，共 {{count}} 页",
+      "startOver": "重新开始",
+      "page": "第 {{number}} 页",
+      "was": " · 原第 {{number}} 页",
+      "earlier": "将第 {{number}} 页前移",
+      "anticlockwise": "将第 {{number}} 页逆时针旋转",
+      "clockwise": "将第 {{number}} 页顺时针旋转",
+      "remove": "删除第 {{number}} 页",
+      "later": "将第 {{number}} 页后移",
+      "hint": "旋转、移动或删除某一页后即可使用。",
+      "action": "保存页面"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "高亮",
+        "comment": "评论"
+      },
+      "savedDescription": "{{summary}}，已归档到“{{bucket}}”。{{name}} 保持不变。",
+      "chooseLabel": "选择要批注的 PDF",
+      "empty": "选择一个 PDF。选中页面上的文字即可高亮，或切换到“评论”并点击备注要放的位置。",
+      "toolLabel": "批注工具",
+      "colour": "高亮颜色",
+      "previousPage": "上一页",
+      "pageOf": "第 {{page}} 页，共 {{total}} 页",
+      "nextPage": "下一页",
+      "zoom": "缩放",
+      "highlightHint": "选中页面上的文字——跨行也可以——松开鼠标后即会标记。",
+      "commentHint": "点击页面上评论所在的位置。",
+      "commentPlaceholder": "评论内容是什么？",
+      "notePlaceholder": "为此添加备注…",
+      "commentLabel": "第 {{number}} 页的评论",
+      "noteLabel": "关于高亮“{{excerpt}}”的备注",
+      "removeMark": "移除此标记",
+      "hintEmpty": "请先高亮一些文字或添加评论。",
+      "hint": "{{summary}}将写入文档。",
+      "action": "保存批注"
+    }
+  },
+  "instruments": {
+    "calculator": "计算器",
+    "pdf": "PDF 编辑器",
+    "label": "选择工具",
+    "loading": "正在准备 PDF 工具…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "此招聘信息在本设备上没有保存副本。抓取内容保存在抓取时所用的设备上，因此你在手机上抓取的不在这里——从备份恢复的行只包含记录，不含页面。",
+      "stored": "浏览器可以直接显示 PDF，但不能显示 {{kind}} 文件。文档已存储——点击“保存”即可交给你自己的应用打开。",
+      "missing": "浏览器可以直接显示 PDF，但不能显示 {{kind}} 文件——而且这一行背后没有存储的文档可交给其他应用。"
+    },
+    "dialogDescription": "{{name}} 的预览，已归入此申请。按 Esc 返回记录。",
+    "noteSaved": "已保存 {{name}} 的备注",
+    "noteSavedDescription": "在保险库列出此文件的地方，都会显示这条备注。",
+    "noteEmptyDescription": "备注现已为空，因此此文件旁不会显示任何内容。",
+    "captured": "{{name}}（抓取时的样子）",
+    "previewTitle": "{{name}} 预览",
+    "asText": "{{name}}（纯文本）",
+    "truncated": "只显示前 1 MB。点击“保存”可在你自己的应用中打开完整文件。",
+    "failedTitle": "此浏览器无法打开预览",
+    "failedDescription": "{{error}}。你保险库中该文件的记录不受影响——只是无法生成预览。",
+    "noPreviewTitle": "此类型无法预览",
+    "capturedFrom": "抓取自 {{host}}",
+    "fullScreen": "全屏打开预览",
+    "fullScreenDescription": "{{name}}，全屏显示，附带备注面板。按 Esc 返回。",
+    "notes": {
+      "title": "备注",
+      "hide": "隐藏备注面板",
+      "show": "显示备注面板",
+      "hint": "与 {{name}} 一起保存，并在列出此文件的地方显示。",
+      "label": "关于 {{name}} 的备注",
+      "placeholder": "这份文档的要点——藏在第 3 页的截止日期、该向谁询问…",
+      "saved": "已保存",
+      "save": "保存备注"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "推迟或移动此提醒",
+      "label": "推迟“{{title}}”— {{when}}",
+      "heading": "推迟",
+      "pickDate": "选择日期",
+      "move": "移动"
+    },
+    "row": {
+      "markNotDone": "将“{{title}}”标记为未完成",
+      "markDone": "将“{{title}}”标记为已完成",
+      "draftReply": "起草回复"
+    },
+    "relatedTwo": "{{first}} 和 {{second}}",
+    "relatedMany_other": "{{count}} 个申请",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}}（副本）",
+    "add": "添加提醒",
+    "filterLabel": "按到期时间筛选提醒",
+    "searchLabel": "搜索提醒",
+    "searchPlaceholder": "搜索标题、备注或职位",
+    "toast": {
+      "reopened": "已重新打开 {{title}}",
+      "completed": "已完成 {{title}}",
+      "reopenedDescription": "已回到原日期下；如果是跟进事项，也会回到仪表板。",
+      "completedDescription": "已归入“已完成”，并从仪表板移除。",
+      "moved": "已移动 {{title}}",
+      "nowDue": "现在于 {{date}} 到期 · {{when}}",
+      "duplicated": "已为 {{title}} 创建副本",
+      "duplicatedDescription": "副本未完成，于 {{date}} 到期。",
+      "stillOnList": "{{title}} 仍在列表中。",
+      "deletedDescription": "{{description}} — 已从日历和此列表中移除。"
+    },
+    "empty": {
+      "zeroTitle": "还没有提醒",
+      "zeroDescription": "提醒是带日期的小提示——催推荐人、查看申请门户、发送感谢信。标记为跟进的提醒也会显示在仪表板上，直到你勾选完成。",
+      "search": "没有提醒的标题、备注、类型或申请中提到“{{query}}”。",
+      "both": "没有“{{bucket}}”的提醒带所选关键词。",
+      "doneTitle": "还没有已完成的事项",
+      "doneDescription": "你勾选完成的提醒会集中在这里，误勾的也能找回。",
+      "showAll": "显示所有提醒",
+      "bucketTitle": "“{{bucket}}”中没有内容",
+      "bucketDescription_other": "有 {{count}} 个提醒在其他分组中。",
+      "keywordsTitle": "没有提醒带这些关键词"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "是页面顶部的关键词筛选隐藏了它们。",
+    "searchTitle": "没有符合该搜索的内容",
+    "clearSearch": "清除搜索",
+    "filtersTitle": "没有符合这些筛选条件的内容",
+    "clearFilters": "清除筛选",
+    "showFiled": "也显示已归档的文件",
+    "bothTitle": "没有同时符合两个筛选条件的内容",
+    "clearBoth": "清除两个筛选条件",
+    "clearKeywords": "清除关键词"
+  },
+  "capture": {
+    "posting": "招聘信息",
+    "savedOne": "{{name}} 已保存到你的保险库",
+    "savedMany_other": "{{count}} 条招聘信息已保存到你的保险库",
+    "suggested": "未归入任何申请。{{name}} 看起来匹配——可在保险库中该行进行归档。",
+    "unfiled": "未归入任何申请。随时可在保险库中该行进行归档。",
+    "dropped_other": "有 {{count}} 个资源无法保留，部分内容可能显示得较简单。",
+    "unstored_other": "有 {{count}} 条无法存储在此设备上——记录在，页面不在。",
+    "refusedOne": "有一项抓取无法保留",
+    "refusedMany_other": "有 {{count}} 项抓取无法保留",
+    "waitingOne": "有一条招聘信息等待保存到这里。",
+    "waitingMany_other": "有 {{count}} 条招聘信息等待保存到这里。",
+    "source": "通过 jojo 扩展抓取，仍在此设备上。",
+    "saving": "正在保存…",
+    "saveIt": "保存",
+    "saveThem": "全部保存"
+  },
+  "picker": {
+    "none": "无申请",
+    "label": "相关申请",
+    "searchLabel": "搜索申请",
+    "searchPlaceholder": "搜索申请…",
+    "noneYet": "还没有申请。",
+    "noMatch": "没有匹配的申请。",
+    "unfile": {
+      "record": "取消此记录的归档",
+      "file": "取消此文件的归档",
+      "link": "取消此链接的归档",
+      "snippet": "取消此片段的归档",
+      "person": "取消此人的归档",
+      "conversation": "取消此对话的归档"
+    }
+  },
+  "snippets": {
+    "openInVault": "在保险库中打开",
+    "card": {
+      "edit": "编辑此片段",
+      "moveTo": "移动到"
+    },
+    "editor": {
+      "editTitle": "编辑片段",
+      "newTitle": "新建片段",
+      "title": {
+        "label": "标题",
+        "placeholder": "例如：为什么选择这个院系"
+      },
+      "kind": {
+        "label": "类型",
+        "hint": "它归入哪里，以及列表显示哪个标签。"
+      },
+      "application": {
+        "label": "相关申请",
+        "hint": "可以关联任意数量的职位，之后会显示在每个职位的页面上。"
+      },
+      "text": {
+        "label": "正文",
+        "hint": "字号、颜色、粗体、斜体、下划线和删除线都会随正文保存。列表和表格会保留为普通行。",
+        "placeholder": "写下你总在反复改写的那段话…"
+      },
+      "fullScreen": "全屏写作",
+      "keywords": {
+        "label": "关键词",
+        "hint": "与申请、提醒和文件共用——按某个关键词筛选可以找到所有相关内容。"
+      },
+      "savedNote": "已保存到此浏览器的数据库中——你回来时它还在。",
+      "fullScreenDescription": "正在全屏编辑片段。按 Esc 返回。"
+    },
+    "errors": {
+      "title": "请为片段命名。",
+      "body": "请写下你之后要粘贴的文字。"
+    },
+    "toast": {
+      "filed": "已归入“{{tag}}”，可从列表中复制。",
+      "filedHidden": "已归入“{{tag}}”——被列表上方的筛选条件隐藏。",
+      "duplicated": "副本已归入“{{tag}}”，可以改写了。",
+      "moved": "已归入“{{tag}}”。",
+      "movedOut": "已归入“{{tag}}”——不在你正在查看的“{{filter}}”列表中。",
+      "stillThere": "{{title}} 仍在保险库中。",
+      "stillThereUnnamed": "该片段仍在保险库中。",
+      "deletedUnnamed": "片段已删除",
+      "deletedDescription": "正文和它的关键词会一并删除。"
+    },
+    "empty": {
+      "zeroTitle": "还没有片段",
+      "zeroDescription": "保存你总在反复改写的段落——个人简介、为什么选择这个院系、跟进邮件。",
+      "search": "没有片段的名称、正文或类型中提到“{{query}}”。",
+      "both": "没有“{{tag}}”片段带所选关键词。",
+      "bucketTitle": "没有“{{tag}}”片段",
+      "bucketDescription_other": "有 {{count}} 个片段在其他类型中。",
+      "showAll": "显示所有类型",
+      "keywordsTitle": "没有片段带这些关键词"
+    },
+    "filterLabel": "按类型筛选片段",
+    "searchLabel": "搜索片段",
+    "searchPlaceholder": "搜索名称或正文",
+    "copied": "片段已复制到剪贴板",
+    "discard": {
+      "title": "放弃未保存的更改？",
+      "description": "“{{title}}”有尚未保存的修改。现在离开会丢弃这些修改，且无法撤销。",
+      "untitled": "无标题片段",
+      "confirm": "放弃更改"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "基础",
+      "scientific": "科学"
+    },
+    "mode": "计算器模式",
+    "ops": {
+      "plus": "加",
+      "minus": "减",
+      "times": "乘",
+      "dividedBy": "除以",
+      "power": "的乘方"
+    },
+    "history": "历史记录",
+    "plusMinus": "正负号",
+    "backspace": "退格",
+    "clear": "清除",
+    "empty": "暂无内容。完成的计算会显示在这里。",
+    "use": "使用 {{value}}"
+  },
+  "links": {
+    "newTab": "在新标签页中打开",
+    "errors": {
+      "title": "请为链接添加标题。",
+      "url": "需要包含主机名，例如 jobs.rice.edu/postings。",
+      "empty": "粘贴网址即可保存。"
+    },
+    "fields": {
+      "title": "标题",
+      "url": "网址",
+      "category": "类别",
+      "applicationHint": "将链接归入某个职位，让两边互相知道。",
+      "note": "备注",
+      "noteHint": "用一行说明为什么值得保留。"
+    },
+    "add": "添加链接",
+    "toast": {
+      "saved": "已归入“{{category}}”，标题取自网址。",
+      "savedHidden": "已归入“{{category}}”——关键词筛选开启时会被隐藏。",
+      "duplicated": "副本已归入“{{category}}”，可以编辑了。",
+      "deletedDescription": "已从保险库移除。它指向的页面不受影响。"
+    },
+    "empty": {
+      "zeroTitle": "还没有保存链接",
+      "zeroDescription": "保存一个网址——招聘信息、院系页面、别人让你联系的人。标题会从地址中读取。",
+      "search": "没有链接的标题、地址、备注或类别中提到“{{query}}”。",
+      "both": "没有“{{category}}”链接带所选关键词。",
+      "bucketTitle": "“{{category}}”下没有链接",
+      "bucketDescription_other": "有 {{count}} 个链接在其他类别中。",
+      "showAll": "显示所有类别",
+      "keywordsTitle": "没有链接带这些关键词"
+    },
+    "filterLabel": "按类别筛选链接",
+    "searchLabel": "搜索链接",
+    "searchPlaceholder": "搜索标题、地址或备注",
+    "form": {
+      "label": "保存链接",
+      "hint": "保存到“{{category}}”，标题取自网址。编辑任意一行即可修改。",
+      "placeholder": "粘贴网址…",
+      "save": "保存链接"
+    }
+  },
+  "people": {
+    "add": "添加人员",
+    "searchLabel": "搜索人员",
+    "searchPlaceholder": "搜索姓名、角色或备注",
+    "applicationsList": "申请列表",
+    "toast": {
+      "removed": "已移除人员",
+      "saved": "已保存人员"
+    },
+    "empty": {
+      "zeroTitle": "还没有人员",
+      "zeroDescription": "推荐人、遴选委员会主席、招聘人员——求职过程中经过的任何人。把他们归入提到他们的职位，他们也会显示在这些记录中。",
+      "searchTitle": "没有匹配的人",
+      "searchDescription": "试试输入姓名的一部分、角色或所在机构。"
+    },
+    "namedOn": {
+      "recommender": "{{names}} 的推荐人",
+      "contact": "{{names}} 的联系人",
+      "named": "出现在 {{names}}"
+    },
+    "form": {
+      "name": "姓名",
+      "nameError": "只需要填写姓名。",
+      "namePlaceholder": "例如：Ngozi Okafor 教授",
+      "role": "角色",
+      "rolePlaceholder": "例如：推荐人、委员会主席、招聘人员",
+      "affiliation": "所属机构",
+      "affiliationPlaceholder": "例如：Rice",
+      "affiliationHint": "对方所在的机构。不会关联到你申请过的雇主。",
+      "email": "电子邮件",
+      "phone": "电话",
+      "namedOn": "出现在",
+      "namedOnHint": "对方为其写推荐、参与筛选或担任主席的每个职位。",
+      "notePlaceholder": "对方说了什么、欠你什么、什么时候催。",
+      "save": "保存人员"
+    }
+  },
+  "referee": {
+    "title": "{{name}} 的申请",
+    "description": "勾选要发送的申请，并说明你希望每封推荐信突出什么。你的重点和备注会保存在 {{name}} 名下，供下次使用。",
+    "include": "包括 {{org}}，{{role}}",
+    "applied": "申请于 {{date}}",
+    "noMaterials": "未归入材料",
+    "materials_other": "{{count}} 份材料",
+    "posting": "招聘信息",
+    "noPosting": "没有招聘信息链接",
+    "highlight": "重点",
+    "highlightPlaceholder": "例如：教学、NSF CAREER、因果推断",
+    "highlightHint": "用逗号分隔。",
+    "note": "给对方的备注",
+    "notePlaceholder": "其他任何信息：截止日期、写给谁、院系关心什么。",
+    "format": "文件格式",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "包括我的材料",
+    "withMaterialsCount": "包括我的材料（{{count}}）",
+    "tickOne": "请至少勾选一个申请。",
+    "chosen_other": "{{count}} 个申请",
+    "chosenZip_other": "{{count}} 个申请，打包为一个 .zip",
+    "preparing": "正在准备…",
+    "download": "下载",
+    "toast": {
+      "saved": "已保存 {{name}} 的列表",
+      "zip_other": "{{file}}：表格和 {{count}} 份文档，位于你的下载文件夹中。",
+      "zipMissing_other": "{{file}} 已在你的下载文件夹中，但缺少 {{count}} 份此浏览器已无法读取的文档。",
+      "sheet": "{{file}}，位于你的下载文件夹中。",
+      "failed": "无法生成列表",
+      "failedDescription": "没有下载任何内容。你的重点和备注已保留。",
+      "highlights": "重点已保存"
+    }
+  }
+}

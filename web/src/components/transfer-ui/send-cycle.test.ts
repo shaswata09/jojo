@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest'
 import type { SendStage } from '@/lib/handoff-send'
 import { replacesOffer, showsOffer } from './send-cycle'
-import { SAME_NETWORK, stageCopy } from './stage-copy'
+import { sameNetwork, stageCopy } from './stage-copy'
 
 const STAGES: readonly SendStage[] = ['idle', 'connecting', 'packing', 'sending', 'done', 'failed']
 
@@ -83,9 +83,19 @@ describe('the same rule, receiving from the phone', () => {
 
 describe('what the stage card says (Q129)', () => {
   it('no longer says this computer cannot receive, at any stage', () => {
-    for (const stage of ['idle', 'connecting', 'receiving', 'confirming', 'restoring', 'done', 'failed'] as const) {
+    for (const stage of [
+      'idle',
+      'connecting',
+      'receiving',
+      'confirming',
+      'restoring',
+      'done',
+      'failed',
+    ] as const) {
       const copy = stageCopy('receive', stage)
-      expect(`${copy.title} ${copy.body}`, stage).not.toMatch(/cannot receive|not allowed to accept/i)
+      expect(`${copy.title} ${copy.body}`, stage).not.toMatch(
+        /cannot receive|not allowed to accept/i,
+      )
     }
   })
 
@@ -95,13 +105,15 @@ describe('what the stage card says (Q129)', () => {
   })
 
   it('says plainly that both devices must be on the same network', () => {
-    expect(SAME_NETWORK).toMatch(/same local network/)
-    expect(stageCopy('receive', 'idle').body).toContain(SAME_NETWORK)
-    expect(stageCopy('send', 'idle').body).toContain(SAME_NETWORK)
+    expect(sameNetwork()).toMatch(/same local network/)
+    expect(stageCopy('receive', 'idle').body).toContain(sameNetwork())
+    expect(stageCopy('send', 'idle').body).toContain(sameNetwork())
   })
 
   it('promises nothing here changes until the person agrees', () => {
-    expect(stageCopy('receive', 'receiving').body).toMatch(/Nothing on this computer changes until you agree/)
+    expect(stageCopy('receive', 'receiving').body).toMatch(
+      /Nothing on this computer changes until you agree/,
+    )
     expect(stageCopy('receive', 'failed').body).toMatch(/Nothing on this computer has changed/)
   })
 })

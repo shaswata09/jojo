@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest'
 import sendSource from './handoff-send.ts?raw'
 import connectSource from '@/components/transfer-ui/ConnectPanel.tsx?raw'
 import receiveSource from '../../../mobile/src/components/transfer/ReceivePanel.tsx?raw'
+import transferCatalog from '@/i18n/locales/en/transfer.json'
 
 const strip = (source: string) =>
   source
@@ -40,7 +41,8 @@ describe('starting a transfer from the code the phone shows (Q129)', () => {
 
   it('takes the typed code on the computer and starts the send with it', () => {
     const connect = strip(connectSource)
-    expect(connect).toContain('aria-label="The code shown on your phone"')
+    expect(connect).toContain("aria-label={t('connect.codeLabel')}")
+    expect(transferCatalog.connect.codeLabel).toBe('The code shown on your phone')
     expect(connect).toContain('void send.start(code, tokens)')
   })
 

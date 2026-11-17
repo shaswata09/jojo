@@ -1,4 +1,5 @@
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
+import { i18next } from '@/i18n/i18n'
 import type { Graph, GraphNode, GraphRel } from '@/lib/graph/model'
 import type { QueryResult, QueryRow } from '@/lib/graph/query'
 
@@ -48,7 +49,7 @@ export function toQueryResult(graph: Graph, answer: GraphQueryResult): QueryResu
     rows,
     nodes,
     edges,
-    countLabel: 'Matches',
+    countLabel: i18next.t('messages:graph.count.matches'),
     // The engine's own sentence, which already says what was asked in the terms
     // it was asked in. A generic "nothing matched" here would throw that away.
     emptyNote: answer.summary,

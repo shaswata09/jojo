@@ -1,0 +1,299 @@
+{
+  "common": {
+    "undo": "Undo",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove",
+    "done": "Done",
+    "title": "Title",
+    "note": "Note",
+    "changeApplications": "Change applications",
+    "fileUnderApplication": "File under an application",
+    "moreActionsFor": "More actions for {{name}}",
+    "openNamed": "Open {{name}}",
+    "savedAgo": "saved {{ago}}",
+    "copyOf": "{{name}} (copy)",
+    "movedTo": "Moved to {{name}}",
+    "titleRequired": "Name it so you can find it again."
+  },
+  "screen": {
+    "title": "Vault",
+    "subtitle": "Reminders, links, files, snippets and people",
+    "counts": {
+      "reminders_one": "{{count}} reminder",
+      "reminders_other": "{{count}} reminders",
+      "links_one": "{{count}} link",
+      "links_other": "{{count}} links",
+      "files_one": "{{count}} file",
+      "files_other": "{{count}} files",
+      "snippets_one": "{{count}} snippet",
+      "snippets_other": "{{count}} snippets",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people"
+    },
+    "showCounts": "Show counts",
+    "showCountsDescription": "Item totals in the subtitle, rather than what the tabs hold",
+    "toolLabel": "Vault tool",
+    "tools": {
+      "reminders": "Reminders",
+      "links": "Links",
+      "files": "Files",
+      "snippets": "Snippets",
+      "people": "People",
+      "tools": "Tools"
+    }
+  },
+  "files": {
+    "add": "Record a document",
+    "filterLabel": "Filter documents",
+    "editLabel": "Edit document",
+    "bucket": "Bucket",
+    "search": {
+      "label": "Search documents",
+      "placeholder": "Search name, note or bucket"
+    },
+    "empty": {
+      "zeroTitle": "No documents yet",
+      "zeroDescription": "Your CV, statements, talks and admin scans. Names, sizes and types are recorded — nothing reads the file itself.",
+      "search": "No document mentions \"{{query}}\" in its name, note or bucket.",
+      "both": "No document in {{bucket}} carries the selected keywords.",
+      "bucketTitle": "Nothing in {{bucket}}",
+      "bucketDescription_one": "{{count}} document is filed under the other buckets.",
+      "bucketDescription_other": "{{count}} documents are filed under the other buckets.",
+      "showAll": "Show all buckets",
+      "keywordsTitle": "No documents carry those keywords"
+    },
+    "toast": {
+      "removed": "Document removed",
+      "duplicated": "Document duplicated",
+      "updated": "Document updated",
+      "recorded": "Document recorded",
+      "recordedDescription": "{{name}} · filed under {{bucket}}. The name, size and type are kept — the file itself is not read."
+    }
+  },
+  "snippets": {
+    "add": "New snippet",
+    "filterLabel": "Filter snippets",
+    "tag": "Tag",
+    "copyNamed": "Copy {{name}}",
+    "search": {
+      "label": "Search snippets",
+      "placeholder": "Search title or body"
+    },
+    "empty": {
+      "zeroTitle": "No snippets yet",
+      "zeroDescription": "The answers you retype on every form — a short bio, a teaching paragraph, the follow-up email you always send.",
+      "search": "No snippet mentions \"{{query}}\" in its name, text or kind.",
+      "both": "No {{tag}} snippet carries the selected keywords.",
+      "bucketTitle": "No {{tag}} snippets",
+      "bucketDescription_one": "{{count}} snippet is filed under the other kinds.",
+      "bucketDescription_other": "{{count}} snippets are filed under the other kinds.",
+      "showAll": "Show all kinds",
+      "keywordsTitle": "No snippets carry those keywords"
+    },
+    "toast": {
+      "deleted": "Snippet deleted",
+      "duplicated": "Snippet duplicated",
+      "filedUnder": "Filed under {{tag}}",
+      "saved": "Snippet saved",
+      "added": "Snippet added",
+      "addedDescription": "{{title}} · filed under {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Edit snippet",
+      "description": "Anything in [BRACKETS] stays a blank when the draft sheet loads this, so a person's name is never filled in for you.",
+      "titlePlaceholder": "e.g. Follow-up after no response",
+      "applicationHint": "Optional. A snippet written for particular employers can say which.",
+      "body": "Body",
+      "bodyRequired": "A snippet with no text has nothing to paste.",
+      "bodyPlaceholder": "Dear [NAME], …"
+    },
+    "discard": {
+      "title": "Discard unsaved changes?",
+      "description": "What you have typed here has not been saved anywhere, so leaving throws it away — and that cannot be undone.",
+      "confirm": "Discard"
+    }
+  },
+  "links": {
+    "add": "Save a link",
+    "filterLabel": "Filter links",
+    "category": "Category",
+    "search": {
+      "label": "Search links",
+      "placeholder": "Search title, URL or note"
+    },
+    "empty": {
+      "zeroTitle": "Nothing saved yet",
+      "zeroDescription": "Postings, department pages, people and guides — anything you want to come back to.",
+      "search": "No link mentions \"{{query}}\" in its title, address, note or category.",
+      "both": "No {{category}} link carries the selected keywords.",
+      "bucketTitle": "No links under {{category}}",
+      "bucketDescription_one": "{{count}} link is filed under the other categories.",
+      "bucketDescription_other": "{{count}} links are filed under the other categories.",
+      "showAll": "Show all categories",
+      "keywordsTitle": "No links carry those keywords"
+    },
+    "menu": {
+      "open": "Open link",
+      "copy": "Copy URL"
+    },
+    "toast": {
+      "removed": "Link removed",
+      "duplicated": "Link duplicated",
+      "copied": "URL copied",
+      "updated": "Link updated",
+      "saved": "Link saved"
+    },
+    "editor": {
+      "editTitle": "Edit link",
+      "description": "Nothing is fetched — what is kept is the title, the URL and the day you saved it.",
+      "saveLink": "Save link",
+      "titlePlaceholder": "e.g. Rice — Statistics posting",
+      "url": "URL",
+      "urlRequired": "A link with no URL goes nowhere.",
+      "applicationHint": "Links the two, so each application counts this among what is filed under it.",
+      "notePlaceholder": "Why this is worth coming back to"
+    }
+  },
+  "reminders": {
+    "add": "New reminder",
+    "filterLabel": "Filter reminders",
+    "markDone": "Mark \"{{title}}\" done",
+    "markNotDone": "Mark \"{{title}}\" not done",
+    "buckets": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "done": "Completed"
+    },
+    "search": {
+      "label": "Search reminders",
+      "placeholder": "Search title, note or kind"
+    },
+    "empty": {
+      "zeroTitle": "No reminders yet",
+      "zeroDescription": "A reminder is a dated record with a nudge switched on. Once its date passes it is owed, and it stays on Today until you tick it off.",
+      "search": "No reminder mentions \"{{query}}\" in its title, note or kind.",
+      "both": {
+        "overdue": "No overdue reminder carries the selected keywords.",
+        "today": "No reminder due today carries the selected keywords.",
+        "upcoming": "No upcoming reminder carries the selected keywords.",
+        "done": "No completed reminder carries the selected keywords."
+      },
+      "nothingIn": {
+        "overdue": "Nothing overdue",
+        "today": "Nothing today",
+        "upcoming": "Nothing upcoming"
+      },
+      "doneTitle": "Nothing completed yet",
+      "doneDescription": "Reminders you tick off collect here, so one ticked by mistake is still findable.",
+      "bucketDescription_one": "{{count}} reminder is filed under the other groups.",
+      "bucketDescription_other": "{{count}} reminders are filed under the other groups.",
+      "showAll": "Show all reminders",
+      "keywordsTitle": "No reminders carry those keywords"
+    }
+  },
+  "people": {
+    "add": "Add",
+    "optionsFor": "Options for {{name}}",
+    "search": {
+      "label": "Search people",
+      "placeholder": "Search name, role or note"
+    },
+    "empty": {
+      "zeroTitle": "Nobody yet",
+      "zeroDescription": "Referees, search chairs, recruiters — anyone the search runs through. Name them on the jobs they write for and they show up on those records too.",
+      "noMatchTitle": "No one matches that",
+      "noMatchDescription": "Try part of a name, a role, or where they are."
+    },
+    "toast": {
+      "removed": "Person removed",
+      "saved": "Person saved"
+    },
+    "editor": {
+      "editTitle": "Edit person",
+      "addTitle": "Add person",
+      "save": "Save person",
+      "description": "A name is the only thing this needs. The rest is what turns out to matter.",
+      "noApplication": "No application",
+      "name": "Name",
+      "namePlaceholder": "e.g. Prof. Ngozi Okafor",
+      "role": "Role",
+      "rolePlaceholder": "e.g. Referee, search chair, recruiter",
+      "affiliation": "Affiliation",
+      "affiliationPlaceholder": "e.g. Rice",
+      "affiliationHint": "Where they are. Not linked to an employer you have applied to.",
+      "email": "Email",
+      "phone": "Phone",
+      "namedOn": "Named on",
+      "namedOnHint": "Every job they write for, screen for or chair.",
+      "notePlaceholder": "What they said, what they owe you, when to chase."
+    }
+  },
+  "calculator": {
+    "title": "Calculator",
+    "hint": "works with no records and no connection",
+    "copy": "Copy the result",
+    "mode": "Mode",
+    "modes": {
+      "basic": "Basic",
+      "scientific": "Scientific"
+    },
+    "plusMinus": "plus or minus",
+    "history": "History",
+    "kept": "{{count}} kept",
+    "clear": "Clear",
+    "emptyTitle": "Nothing worked out yet",
+    "emptyDescription": "The last thirty results stay here, so the second number can be compared against the first. Tap one to put it back on the display.",
+    "historyEntry": "{{expr}} equals {{value}}. Put it back on the display"
+  },
+  "pageViewer": {
+    "capturedFrom": "Captured from {{host}}",
+    "missingTitle": "No saved copy on this device",
+    "missingDescription": "Captures are kept where they were taken, so one made in the web app is not here. The record kept its name and its address."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · filed {{ago}}",
+    "editDetails": "Edit details",
+    "openFailed": "Nothing on this phone offered to open it.",
+    "facts": {
+      "type": "Type",
+      "size": "Size",
+      "filed": "Filed",
+      "bucket": "Bucket"
+    },
+    "typed": {
+      "title": "Recorded, not stored",
+      "description": "This one was filed by hand — a name, a type and a size for a document kept somewhere else. Edit it and choose a file to keep a copy here."
+    },
+    "checking": {
+      "title": "Looking for the copy",
+      "description": "Checking whether the file this record points at is still in the app's storage."
+    },
+    "kept": {
+      "title": "Kept on this device",
+      "pageDescription": "Opens here, with scripts off and no connection — the copy as the posting read on the day it was saved.",
+      "read": "Read it",
+      "fileDescription": "Opens in whatever app on this phone handles the type. Nothing is uploaded, and nothing here reads what is inside it.",
+      "open": "Open"
+    },
+    "gone": {
+      "title": "The copy has gone",
+      "description": "This record points at a file that is no longer in the app's storage — most likely cleared by the system. The record is intact; choose the file again to attach it.",
+      "choose": "Choose it again"
+    },
+    "attachedTo": "Attached to",
+    "change": "Change",
+    "fileUnderJob": "File it under a job",
+    "notFiled": "Not filed under an application. Filing it puts it on those records and lets the graph find it from any of them.",
+    "addNote": "Add a note",
+    "notePlaceholder": "What is this document for?",
+    "saveNote": "Save note",
+    "noNote": "Nothing written down about this one yet.",
+    "toast": {
+      "noteSaved": "Note saved"
+    }
+  }
+}

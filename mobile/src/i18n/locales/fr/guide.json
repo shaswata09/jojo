@@ -1,0 +1,254 @@
+{
+  "screen": {
+    "title": "Utiliser jojo",
+    "pageLabel": "Page du guide",
+    "takeTour": "Faire la visite guidée",
+    "pages": {
+      "overview": {
+        "label": "Vue d’ensemble",
+        "subtitle": "Tout fonctionne sur votre appareil. Commencez simplement, ajoutez de la puissance quand vous le souhaitez."
+      },
+      "screens": {
+        "label": "Écrans",
+        "subtitle": "À quoi sert chaque écran, et un accès direct."
+      },
+      "graph": {
+        "label": "Graphe",
+        "subtitle": "Le modèle d’enregistrements sous les sept listes."
+      },
+      "tools": {
+        "label": "Outils",
+        "subtitle": "Ce que l’assistant peut faire à vos enregistrements, et ce qui l’arrête."
+      },
+      "built": {
+        "label": "Conçu avec",
+        "subtitle": "De quoi c’est fait, et ce qui reste provisoire."
+      }
+    }
+  },
+  "overview": {
+    "active": "actif",
+    "notConnected": "non connecté",
+    "layers": {
+      "device": {
+        "name": "Cet appareil uniquement",
+        "requires": "Rien à configurer",
+        "gives": "Suivez candidatures, échéances, relances et documents"
+      },
+      "model": {
+        "name": "+ Modèle local",
+        "requires": "Ollama, vLLM ou LM Studio, ou une clé NVIDIA gratuite",
+        "gives": "Un assistant à fils de discussion qui lit et écrit vos enregistrements (chaque modification vous est montrée d’abord) et « Interroger le graphe » en une phrase"
+      },
+      "reader": {
+        "name": "+ Lecteur de documents",
+        "requires": "MarkItDown, à une adresse que vous saisissez",
+        "gives": "L’assistant lit le contenu de vos CV et offres enregistrées, et une offre ajoutée depuis un lien remplit elle-même son formulaire"
+      },
+      "computer": {
+        "name": "+ Votre ordinateur",
+        "requires": "Les deux sur le même réseau",
+        "gives": "Le transfert déplace tout le coffre entre ce téléphone et votre ordinateur, sans intermédiaire"
+      }
+    },
+    "gettingStarted": "Premiers pas",
+    "progress": "{{done}} sur {{total}} faites",
+    "allDone": "Toutes les étapes sont faites. La liste lit vos enregistrements : elle suit si vous les effacez.",
+    "howItWorks": "Chaque étape ouvre la vraie fonction et se coche toute seule dès qu’un enregistrement existe. Rien ici n’est un tutoriel à subir.",
+    "done": "Fait",
+    "steps": {
+      "application": {
+        "title": "Ajouter une candidature",
+        "body": "Un poste, son étape et son échéance. Tout le reste dans jojo se rattache à cet enregistrement.",
+        "label": "Nouvelle candidature"
+      },
+      "dated": {
+        "title": "Donner une date à quelque chose",
+        "body": "Échéances, entretiens et visites de campus sont un même type d’enregistrement : ils apparaissent à la fois dans le calendrier, la semaine à venir et la candidature.",
+        "label": "Nouvel événement"
+      },
+      "reminder": {
+        "title": "Programmer une relance",
+        "body": "Un rappel est le même enregistrement avec une alerte activée. Une fois sa date passée, il est signalé sur Aujourd’hui jusqu’à ce que vous le cochiez.",
+        "label": "Nouveau rappel"
+      },
+      "posting": {
+        "title": "Garder une offre avant qu’elle ne disparaisse",
+        "body": "Rien n’est téléchargé et aucune copie n’est stockée : sont conservés l’URL, l’employeur déduit de celle-ci et le jour de l’enregistrement. C’est suffisant pour retrouver l’annonce.",
+        "label": "Ouvrir l’éclaireur d’offres"
+      },
+      "file": {
+        "title": "Classer vos documents",
+        "body": "Enregistrez un CV ou une lettre dans le coffre. Les noms, tailles et types sont conservés ; le fichier lui-même n’est jamais lu.",
+        "label": "Ouvrir le coffre"
+      },
+      "keyword": {
+        "title": "Étiqueter quelque chose avec un mot-clé",
+        "body": "Les mots-clés sont les vôtres, partagés par les candidatures, les rappels et tout le contenu du coffre, contrairement aux étiquettes de rôle fixes. Le bouton d’étiquette de chaque ligne en ajoute un.",
+        "label": "Gérer les mots-clés"
+      },
+      "draft": {
+        "title": "Rédiger un message",
+        "body": "Construit à partir de vos propres extraits d’e-mails, avec le rôle, l’employeur et les dates repris de l’enregistrement. Le nom d’une personne n’est jamais rempli à votre place. Rien ici n’enregistre que vous l’avez envoyé : cette étape ne se coche donc pas toute seule.",
+        "label": "Rédiger un message"
+      }
+    },
+    "profile": {
+      "title": "Compléter votre profil",
+      "hint": "le profil ne fait pas partie de la liste",
+      "body": "Vos informations de base, liens, postes visés et termes de correspondance se trouvent dans Mon profil. C’est sur eux que l’éclaireur noterait les offres et à partir d’eux que l’assistant rédigerait : ils comptent. Mais cette version ne les conserve que pendant la visite au lieu de les écrire quelque part, c’est pourquoi la liste ci-dessus ne peut pas les cocher.",
+      "open": "Ouvrir mon profil"
+    },
+    "database": {
+      "title": "L’application est la base de données",
+      "body": "Vos enregistrements sont stockés sur cet appareil et survivent à un redémarrage. Rien n’est envoyé nulle part : pas de compte, pas de synchronisation, aucun appel réseau. C’est dans Paramètres que vous les effacez, rechargez les données de démonstration ou exportez une copie dans le presse-papiers."
+    }
+  },
+  "screens": {
+    "intro": "Chaque écran de l’application, et la phrase qui dit à quoi il sert. Toucher une ligne l’ouvre : cette page est un accès autant qu’une légende.",
+    "open": "Ouvrir {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "Dans la barre d’onglets",
+        "hint": "toujours à portée de doigt"
+      },
+      "vault": {
+        "title": "Dans le coffre",
+        "hint": "cinq outils, un onglet"
+      },
+      "more": {
+        "title": "Derrière Plus",
+        "hint": "le reste de jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Chaque liste de cette application est une vue sur un même ensemble d’enregistrements. Un enregistrement est un <b>nœud</b> ; une connexion entre deux enregistrements est une <b>arête</b> qui porte un nom. C’est tout le modèle, et c’est ce qui permet de répondre à une question qui croise deux listes.",
+    "open": "Ouvrir le graphe",
+    "kinds_one": "{{count}} type",
+    "kinds_other": "{{count}} types",
+    "nodes": "Nœuds",
+    "nodesIntro": "Un nœud par enregistrement, plus trois qui n’existent que comme connexions : un employeur, un rôle et un mot-clé sont chacun un nœud pour que tout ce qui y est rattaché puisse être retrouvé à partir d’eux.",
+    "edges": "Arêtes",
+    "edgesIntro": "Chacune a un sens et un nom. Ce nom est ce que le générateur de questions de l’écran Graphe place dans sa ligne du milieu.",
+    "relShape": {
+      "AT": "Candidature → Employeur",
+      "IS": "Candidature → Rôle",
+      "ABOUT": "Date ou rappel → Candidature",
+      "FILED_UNDER": "Fichier, lien ou extrait → Candidature",
+      "TAGS": "Mot-clé → n’importe quel enregistrement",
+      "BECAME": "Offre enregistrée ou correspondance → Candidature"
+    },
+    "deleteTitle": "Supprimer détache, sans effet en cascade",
+    "deleteBody": "Retirer une candidature retire ce nœud et les arêtes qui le touchent. Les rappels, fichiers et offres enregistrées qui y étaient rattachés restent : ce sont des enregistrements à part entière, qui survivent sans rien qui pointe vers eux. Chaque suppression dans l’application le précise, et le générateur de questions de l’écran Graphe vous permet de retrouver ce qui s’est détaché : demandez les fichiers qui n’ont aucun lien avec une candidature."
+  },
+  "tools": {
+    "inTotal": "{{count}} au total",
+    "canDo": {
+      "title": "Ce que l’assistant peut faire",
+      "body_one": "L’assistant ne touche pas vos écrans à votre place. Il appelle la même {{count}} opération que les boutons : le même code, avec les mêmes vérifications. Il n’y a pas de seconde porte d’entrée, c’est pourquoi une modification de l’assistant apparaît dans votre historique exactement comme une modification faite par vous.",
+      "body_other": "L’assistant ne touche pas vos écrans à votre place. Il appelle les mêmes {{count}} opérations que les boutons : le même code, avec les mêmes vérifications. Il n’y a pas de seconde porte d’entrée, c’est pourquoi une modification de l’assistant apparaît dans votre historique exactement comme une modification faite par vous.",
+      "irreversible": "Deux de ces {{count}} sont totalement irréversibles : celles qui remplacent ou vident tout le stockage. Elles ne sont jamais proposées à l’assistant sauf si vos propres mots les demandent, et même alors elles s’arrêtent pour une confirmation.",
+      "open": "Ouvrir l’assistant"
+    },
+    "stats": {
+      "reads": {
+        "label_one": "façon de consulter",
+        "label_other": "façons de consulter",
+        "hint": "lire ne change jamais rien"
+      },
+      "writes": {
+        "label_one": "façon de modifier",
+        "label_other": "façons de modifier",
+        "hint": "toutes annulables…"
+      },
+      "destructive": {
+        "label": "marquées destructives",
+        "hint": "…sauf deux, qui demandent d’abord"
+      }
+    },
+    "gate": {
+      "title": "Ce qui empêche la mauvaise de s’exécuter",
+      "hint": "la partie qui tient vraiment",
+      "body": "Un modèle de langage peut demander n’importe quoi. Il peut nommer un outil qu’on ne lui a jamais montré, ou en inventer un qui n’existe pas ; les petits modèles le font souvent, et ce n’est pas le signe que quelque chose ne va pas. jojo ne compte donc pas sur la prudence du modèle.",
+      "distinctionTitle": "La distinction qui compte",
+      "distinction": "Choisir quoi montrer au modèle est une indication. Vérifier ce qu’il a réellement appelé est une règle, et la règle dépend de qui a choisi l’ensemble. Là où l’écran le fixe (Interroger le graphe, un pipeline de l’éclaireur), un appel à tout ce qui est hors de l’ensemble est refusé avant même d’être recherché, encore moins exécuté. Dans une discussion, l’ensemble est l’estimation de jojo de ce dont vous avez besoin : un appel hors de l’ensemble n’est donc pas refusé, il passe par la même vérification d’approbation que tout autre appel, qui vous demande d’abord sauf si la conversation est réglée pour fonctionner seule. La seule exception est l’effacement de vos enregistrements, la seule chose irréversible : il est refusé à moins que vous ayez demandé explicitement de tout effacer.",
+      "askGraph": "C’est pourquoi la zone « Interroger le graphe » de l’écran Graphe peut proposer sans risque deux outils en lecture seule. Elle ne compte pas sur le modèle pour s’y tenir."
+    },
+    "pick": {
+      "title": "Comment il choisit le bon",
+      "hint": "pour qu’une demande ne s’arrête jamais à mi-chemin",
+      "cost_one": "Montrer {{count}} outil à la fois à un modèle coûte environ quinze mille mots de l’espace dont il dispose pour réfléchir, avant même que vous ayez tapé quoi que ce soit. Sur un petit modèle tournant sur votre propre machine, cela peut dépasser l’espace dont il dispose. jojo réduit donc la liste à ce que désignent vos mots.",
+      "cost_other": "Montrer les {{count}} outils à la fois à un modèle coûte environ quinze mille mots de l’espace dont il dispose pour réfléchir, avant même que vous ayez tapé quoi que ce soit. Sur un petit modèle tournant sur votre propre machine, cela peut dépasser l’espace dont il dispose. jojo réduit donc la liste à ce que désignent vos mots.",
+      "careless": "Réduire sans soin est pire que ne pas réduire. La plupart des opérations ont besoin de quelque chose sur quoi agir : vous ne pouvez pas associer un mot-clé sans mot-clé, ni mettre à jour un document sans document. Cachez l’outil qui crée cette chose, et l’assistant s’arrête à mi-chemin sans rien à l’écran pour expliquer pourquoi.",
+      "unsureTitle": "Quand il n’est pas sûr, il ne réduit pas",
+      "unsure": "« Rappelle-moi Baylor jeudi » est clair, et jojo propose environ un cinquième du catalogue. « En fait, c’était l’autre » ne dit rien de clair : il propose donc tout, exactement comme avant que tout cela existe. L’incertitude coûte un peu de vitesse. Deviner vous coûterait votre réponse.",
+      "onlyGains": "Une conversation ne fait que gagner des outils. Rien de ce que vous avez déjà utilisé ne vous est retiré par une question ultérieure."
+    },
+    "model": {
+      "title": "Quel modèle s’en charge",
+      "hint": "votre choix, et il change où vont vos mots",
+      "local": "jojo parle à ce que vous lui indiquez dans Paramètres. Un modèle tournant sur une machine que vous contrôlez (Ollama, vLLM, LM Studio) est l’option par défaut, et c’est la seule configuration où rien de ce que vous écrivez ne quitte cet appareil.",
+      "cloud": "Vous pouvez aussi utiliser Claude, OpenAI et d’autres avec une clé d’API. C’est un vrai compromis et l’écran le dit clairement : vos enregistrements vont à cette entreprise et sont facturés sur votre compte. La clé est conservée sur cet appareil, n’est jamais incluse dans une sauvegarde et n’est jamais envoyée ailleurs qu’au fournisseur choisi.",
+      "openSettings": "Ouvrir Paramètres",
+      "truncatedTitle": "Si l’assistant semble avoir cessé de lire",
+      "truncated": "Un modèle local qui manque de place abandonne en silence le début de ce qu’on lui a envoyé, puis répond avec assurance à une question qu’il n’a jamais vue en entier. jojo compare ce que le serveur dit avoir lu à ce qui a réellement été envoyé, et vous prévient quand les deux diffèrent ; sinon, l’assistant semblerait mauvais dans son travail alors qu’il manque simplement de place."
+    },
+    "gateFigure": {
+      "typed": "ce que vous avez tapé",
+      "pick": "choisir les outils probables",
+      "pickNote": "pas clair ? proposer les {{count}}",
+      "add": "ajouter ce dont ces outils ont besoin",
+      "addNote": "pour qu’aucune chaîne ne tombe dans une impasse",
+      "choose": "le modèle en choisit un",
+      "offered": "était-il proposé ?",
+      "offeredNote": "non ? refusé, rien ne s’exécute",
+      "change": "vos enregistrements changent",
+      "description": "Six étapes, de haut en bas. Un : ce que vous avez tapé. Deux : jojo choisit les outils que désignent vos mots, et s’ils ne sont pas clairs, il propose les {{count}} au lieu de deviner. Trois : il ajoute tout ce dont ces outils dépendent, pour qu’aucune chaîne ne tombe dans une impasse. Quatre : le modèle choisit un outil. Cinq : jojo vérifie que cet outil a bien été proposé ; sinon, l’appel est refusé et rien ne s’exécute. Six : alors seulement vos enregistrements changent. La cinquième étape est la seule qui impose quoi que ce soit ; la deuxième n’est qu’une indication, car un modèle peut nommer un outil qu’on ne lui a jamais montré.",
+      "caption": "L’étape deux vous fait économiser des tokens. L’étape cinq est celle qui vous protège, et elle s’exécute que l’étape deux ait réduit quelque chose ou non."
+    },
+    "graphFigure": {
+      "intro": "Trois exemples, sans ordre. Chacun est un outil demandé par vos mots, ce sans quoi il ne peut pas fonctionner, et l’outil que jojo propose à côté pour que la chaîne puisse aboutir.",
+      "description": "Trois exemples. Demander keyword.attach propose aussi keyword.create, car associer un mot-clé nécessite un mot-clé qui existe déjà. Demander vault.file.update propose aussi vault.file.add, car mettre à jour un document nécessite un document. Demander scout.posting.promote propose aussi scout.posting.save, car promouvoir une offre enregistrée nécessite une offre enregistrée. Dans chaque cas, jojo déduit la dépendance de l’entrée même de l’outil et propose les deux ensemble, de sorte que l’assistant ne reçoit jamais une première étape sans moyen d’atteindre la seconde.",
+      "needs": {
+        "keyword": "nécessite un mot-clé, donc jojo propose aussi",
+        "file": "nécessite un fichier, donc jojo propose aussi",
+        "posting": "nécessite une offre, donc jojo propose aussi"
+      },
+      "without": "Sans cela, l’assistant pourrait se voir proposer le premier outil et pas le second, et s’arrêterait à mi-chemin sans rien à l’écran pour dire pourquoi.",
+      "derived": "jojo lit chaque prérequis dans la définition même de l’outil : un outil ajouté demain est couvert sans que personne ne mette à jour une liste."
+    }
+  },
+  "builtWith": {
+    "intro": "Un prototype interactif du même produit que l’application web, qui partage chaque module contenant une règle — l’arithmétique des dates, l’entonnoir des statistiques, le système de mots-clés et les données d’exemple — pour que les deux ne puissent pas diverger sur une date, un taux ou une étape.",
+    "stackTitle": "Conçu avec",
+    "stackHint": "ce qui tourne réellement",
+    "unfinishedTitle": "Ce qui reste provisoire",
+    "unfinishedHint": "dit, pas caché",
+    "unfinishedIntro": "Un prototype qui cache ses limites est un prototype qu’on croit sur parole. Ces trois-là sont ceux qu’il vaut la peine de connaître avant de juger quoi que ce soit d’autre à l’écran.",
+    "placeholder": "provisoire",
+    "stack": {
+      "app": "L’application elle-même, sur les deux plateformes",
+      "build": "La compilation. Pas d’Expo : android/ et ios/ sont à nous",
+      "documents": "Joindre un fichier, et le rouvrir",
+      "navigation": "La barre d’onglets et la pile d’écrans",
+      "drag": "Le glisser par appui long du tableau, sur le fil de l’interface",
+      "charts": "L’anneau, le radar et le graphe",
+      "type": "La typographie, embarquée plutôt que téléchargée"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "L’assistant a besoin d’un modèle que vous fournissez",
+        "detail": "Connectez-en un dans Réglages et l’assistant devient une conversation agentique par fils : il appelle les outils de l’application pour répondre, liste chaque appel au moment où il le fait et enregistre chaque fil sur cet appareil. Sans modèle, chaque réponse est l’un de cinq exemples rédigés d’avance et porte un badge qui le signale."
+      },
+      "scout": {
+        "title": "L’éclaireur ne trouve rien tout seul",
+        "detail": "Les pourcentages d’adéquation sont réels : calculés sur cet appareil à partir des termes de correspondance, des postes visés et des régions de votre profil, et ils disent ce qu’ils ont trouvé. Ce qui manque, c’est l’exploration : rien ne part chercher des offres, donc le fil ne contient que ce que vous y mettez."
+      },
+      "network": {
+        "title": "Rien ne quitte cet appareil, sauf là où vous le dirigez",
+        "detail": "Pas de compte, pas de synchronisation, pas d’envoi. Deux adresses peuvent être jointes, toutes deux à vous et toutes deux réglées dans Réglages : le modèle, et le lecteur de documents — qui récupère aussi une offre d’emploi quand vous ajoutez une candidature depuis un lien, si bien que cette URL va à votre lecteur et non à nous. Le transfert déplace une copie entre vos appareils sur le réseau local — sur ce téléphone, il reçoit, et c’est l’ordinateur qui envoie. Rien d’autre ne va nulle part."
+      }
+    }
+  }
+}

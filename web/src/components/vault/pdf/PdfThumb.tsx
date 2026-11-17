@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { OpenPdf } from '@/lib/pdf/render'
 
 /**
@@ -24,6 +25,7 @@ export function PdfThumb({
   label: string
   width?: number
 }) {
+  const { t } = useTranslation('vault')
   const canvas = useRef<HTMLCanvasElement>(null)
   const [failed, setFailed] = useState(false)
 
@@ -59,10 +61,10 @@ export function PdfThumb({
       className="grid place-items-center overflow-hidden rounded-sm bg-white"
       style={{ height: width * 1.3 }}
       role="img"
-      aria-label={`${label}${rotation === 0 ? '' : `, turned ${rotation} degrees`}`}
+      aria-label={rotation === 0 ? label : t('pdf.thumb.turned', { label, degrees: rotation })}
     >
       {failed ? (
-        <span className="text-xs text-text-3">No preview</span>
+        <span className="text-xs text-text-3">{t('pdf.thumb.noPreview')}</span>
       ) : (
         <canvas
           ref={canvas}

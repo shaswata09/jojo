@@ -1,0 +1,58 @@
+{
+  "defaultTitle": "Brouillon d’e-mail",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Rédiger un message",
+    "for": "Pour {{name}}.",
+    "forItem": "Pour {{name}} · {{item}}.",
+    "unlinked": "Non lié à une candidature : [ROLE] et [DATE] restent vides.",
+    "body": "Rien n’est généré ni envoyé — remplissez les blancs, copiez le texte dans votre messagerie, puis marquez-le comme envoyé."
+  },
+  "picker": {
+    "hint": "Partez de l’un de vos extraits d’e-mail.",
+    "searchLabel": "Rechercher des extraits",
+    "searchPlaceholder": "Rechercher des extraits…",
+    "noMatch": "Aucun extrait ne correspond.",
+    "emailGroup": "Extraits d’e-mail",
+    "freshGroup": "Partir de zéro",
+    "blank": "Brouillon vide"
+  },
+  "editor": {
+    "placeholder": "Écrivez le message, ou choisissez un extrait pour commencer…",
+    "label": "Brouillon du message",
+    "nothing": "Rien n’est encore rédigé.",
+    "noBlanks": "Plus aucun blanc.",
+    "blanksLeft_one": "{{count}} blanc restant — {{names}}",
+    "blanksLeft_many": "{{count}} blancs restants — {{names}}",
+    "blanksLeft_other": "{{count}} blancs restants — {{names}}",
+    "nameNote": " · le nom d’une personne n’est jamais rempli à votre place",
+    "copyBlocked": "Le navigateur a bloqué la copie",
+    "copied": "Brouillon copié dans le presse-papiers"
+  },
+  "empty": {
+    "title": "Aucun extrait d’e-mail pour l’instant",
+    "description": "Les extraits étiquetés Email apparaissent ici comme points de départ. Il n’y a rien à charger, mais le brouillon n’a pas besoin de partir d’un extrait.",
+    "action": "Partir d’un brouillon vide"
+  },
+  "footer": {
+    "writeFirst": "Écrivez d’abord quelque chose",
+    "saveHint": "Garder ce brouillon dans le Coffre, étiqueté Email",
+    "save": "Enregistrer comme extrait",
+    "assistantHint": "L’assistant a sa propre page — ouvrez-la depuis la barre latérale",
+    "assistant": "Ouvrir dans l’assistant",
+    "copyHint": "Copier le message dans le presse-papiers",
+    "markNoItem": "Ouvrez ceci depuis un rappel pour le cocher ici",
+    "markDone": "Ce rappel est déjà coché",
+    "markSent": "Marquer comme envoyé"
+  },
+  "toast": {
+    "replaced": "Brouillon remplacé",
+    "loaded": "{{title}} chargé.",
+    "startedBlank": "Reparti d’un brouillon vide.",
+    "undo": "Annuler",
+    "saved": "Enregistré dans les extraits",
+    "savedDescription": "{{title}} · étiqueté Email, dans le Coffre",
+    "markedSent": "Marqué comme envoyé",
+    "markedSentDescription": "{{title}} — coché dans les rappels"
+  }
+}

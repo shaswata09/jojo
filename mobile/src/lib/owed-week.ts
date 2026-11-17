@@ -24,10 +24,11 @@
  */
 
 import { addDays, partsOf } from '@jojo/service/data/timeline'
+import { i18next } from '@/i18n/i18n'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import type { ISODate } from '@jojo/service/core/model'
 
-const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAY_SHORT = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 /** One cell of the seven-day strip. */
 export type WeekCell = { iso: ISODate; day: number; label: string }
@@ -64,7 +65,13 @@ export function weekStrip(day: ISODate): WeekCell[] {
     const { y, m, d } = partsOf(iso)
     // `new Date(y, m - 1, d)` is arithmetic over parts already in hand, not a
     // clock read: local midnight of a date this function was given.
-    return { iso, day: d, label: WEEKDAY_SHORT[new Date(y, m - 1, d).getDay()] ?? '' }
+    return {
+      iso,
+      day: d,
+      label: i18next.t(
+        `messages:weekday.${WEEKDAY_SHORT[new Date(y, m - 1, d).getDay()] ?? 'sun'}`,
+      ),
+    }
   })
 }
 
@@ -85,10 +92,10 @@ export function owedWeek(all: readonly TimelineItem[], day: ISODate): OwedWeek {
 
   return {
     groups: [
-      { id: 'overdue', label: 'Overdue', items: overdue },
-      { id: 'today', label: 'Today', items: today },
-      { id: 'tomorrow', label: 'Tomorrow', items: tomorrowItems },
-      { id: 'rest', label: 'Rest of the week', items: rest },
+      { id: 'overdue', label: i18next.t('messages:owed.overdue'), items: overdue },
+      { id: 'today', label: i18next.t('messages:owed.today'), items: today },
+      { id: 'tomorrow', label: i18next.t('messages:owed.tomorrow'), items: tomorrowItems },
+      { id: 'rest', label: i18next.t('messages:owed.rest'), items: rest },
     ],
     later: openItems.filter((i) => i.date > endOfWeek),
     doneToday: all.filter((i) => i.completedOn === day).length,

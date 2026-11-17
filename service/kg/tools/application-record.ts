@@ -10,6 +10,7 @@
  * the two fields a card writes without opening the dialog at all.
  */
 
+import { ACTION_PHRASES } from '../core/domain-text'
 import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
 import { decodeFormat, normaliseFormat, retextFormat } from '../core/note-format'
@@ -168,7 +169,7 @@ export const applicationNoteSet = defineTool({
           ? retextFormat(current.props.note, note, current.props.noteFormat)
           : normaliseFormat(note, decodeFormat(input.format)),
     })
-    touch(ctx, input.id, 'Note edited')
+    touch(ctx, input.id, ACTION_PHRASES.noteEdited)
   },
 
   describe: (input, _output, m) => ({

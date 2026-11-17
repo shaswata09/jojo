@@ -1,0 +1,115 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "Novo lembrete",
+        "event": "Novo evento"
+      },
+      "edit": {
+        "reminder": "Editar lembrete",
+        "event": "Editar evento"
+      }
+    },
+    "description": "É o mesmo registro de qualquer forma: ele aparece no calendário na data que você definir e na lista de lembretes do Cofre enquanto o botão ao lado do título estiver ativado."
+  },
+  "form": {
+    "title": {
+      "label": "Título",
+      "error": "Dê a ele um título que você vá reconhecer.",
+      "placeholder": {
+        "reminder": "ex.: Cobrar o recrutador",
+        "event": "ex.: Zoom com o comitê"
+      }
+    },
+    "remind": {
+      "label": "Mostrar nos lembretes",
+      "on": "Listado no Cofre com uma caixa de seleção e no calendário na sua data.",
+      "off": "Só no calendário na sua data — sem caixa de seleção no Cofre."
+    },
+    "kind": {
+      "label": "Tipo",
+      "hintFollowUp": "Um acompanhamento também aparece em Acompanhamentos pendentes no painel, até você marcá-lo.",
+      "hint": "O ícone que ele exibe no calendário e na lista de lembretes."
+    },
+    "detail": {
+      "label": "Detalhe",
+      "hint": "Uma linha de contexto, exibida abaixo do título."
+    },
+    "more": {
+      "label": "Mais detalhes",
+      "empty": "nota, palavras-chave",
+      "filledNote": "nota",
+      "filledKeywords": "palavras-chave",
+      "filledBoth": "nota · palavras-chave"
+    },
+    "note": {
+      "label": "Nota",
+      "hint": "Suas próprias anotações. Ficam separadas do detalhe, então uma edição nunca as sobrescreve."
+    },
+    "keywords": {
+      "label": "Palavras-chave",
+      "hint": "Compartilhadas com candidaturas, arquivos e links — filtrar por uma encontra todos eles."
+    },
+    "delete": "Excluir",
+    "cancel": "Cancelar",
+    "save": "Salvar alterações",
+    "add": {
+      "reminder": "Adicionar lembrete",
+      "event": "Adicionar evento"
+    }
+  },
+  "schedule": {
+    "date": "Data",
+    "dateError": "Escolha uma data — um item sem data não tem onde aparecer.",
+    "quick": {
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "inWeek": "Em 7 dias"
+    },
+    "allDay": {
+      "label": "Dia inteiro",
+      "description": "Desativado, ele recebe um horário de início e uma duração e entra na grade de horas do calendário."
+    },
+    "startTime": "Horário de início",
+    "length": "Duração",
+    "durations": {
+      "min15": "15 min",
+      "min30": "30 min",
+      "min45": "45 min",
+      "hour1": "1 hora",
+      "hour1_5": "1,5 hora",
+      "hour2": "2 horas",
+      "hour3": "3 horas"
+    }
+  },
+  "application": {
+    "label": "Candidatura relacionada",
+    "hint": "Vincula os dois, para que cada candidatura mostre este item e daqui você volte a qualquer uma delas.",
+    "notLinked": "Sem vínculo",
+    "count_one": "{{count}} candidatura",
+    "count_many": "{{count}} candidaturas",
+    "count_other": "{{count}} candidaturas",
+    "searchLabel": "Buscar candidaturas para vincular",
+    "searchPlaceholder": "Buscar candidaturas…",
+    "none": "Ainda não há candidaturas.",
+    "noMatch": "Nenhuma candidatura corresponde.",
+    "clear": "Remover as candidaturas vinculadas",
+    "open": "Abrir {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} adicionado",
+    "updated": "{{title}} atualizado",
+    "inReminders": "{{when}} — nos lembretes como lembrete",
+    "inRemindersAndFollowUps": "{{when}} — nos lembretes como lembrete — e em Acompanhamentos pendentes",
+    "calendarOnly": "{{when}} — só no calendário",
+    "undo": "Desfazer",
+    "deleteFailed": "Não foi possível excluir",
+    "stillThere": "{{title}} ainda está no calendário.",
+    "stillThereUnnamed": "O lembrete ainda está no calendário.",
+    "deleted": "{{title}} excluído",
+    "deletedUnnamed": "Lembrete excluído",
+    "goneBoth": "Removido da lista de lembretes e do calendário.",
+    "goneCalendar": "Removido do calendário."
+  }
+}

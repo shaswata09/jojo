@@ -3,6 +3,11 @@ import { graphPath, settingsPath, transferPath } from '@/lib/links'
 import type { StoreStatus } from '@jojo/service/react/status-context'
 import type { LucideIcon } from 'lucide-react'
 import { Cpu, PlugZap, Share, Waypoints } from 'lucide-react'
+import { i18next } from '@/i18n/i18n'
+
+/** Words are looked up when a tile is built, so they follow the language. */
+const t = (key: string, options?: Record<string, unknown>) =>
+  i18next.t(`layout:runtime.${key}`, options)
 
 /*
  * What the sidebar's runtime tiles say, as plain functions of the state they
@@ -45,24 +50,24 @@ export function storageTile(status: StoreStatus, interrupted: boolean): RuntimeT
   // this used to carry. The tile opens the GRAPH, and the graph is what it is
   // reporting on: a database drum says "a table somewhere", which is neither
   // what jojo stores nor where the click lands.
-  const tile = { label: 'Browser storage', icon: Waypoints, to: graphPath() }
+  const tile = { label: t('storage.label'), icon: Waypoints, to: graphPath() }
 
   if (interrupted || status.boot.phase === 'unavailable' || status.health.state === 'off') {
     return {
       ...tile,
-      meta: 'not saving',
+      meta: t('storage.notSaving'),
       status: 'warn',
-      detail: 'your records are not being saved — the banner above the page says why',
+      detail: t('storage.notSavingDetail'),
     }
   }
 
   if (status.health.state === 'degraded') {
     return {
       ...tile,
-      meta: 'retrying',
+      meta: t('storage.retrying'),
       status: 'warn',
       // The user's actions, not the rows they touched — see `unsavedIn`.
-      detail: `${status.health.unsaved} change${status.health.unsaved === 1 ? '' : 's'} could not be saved yet, and jojo is still retrying`,
+      detail: t('storage.retryingDetail', { count: status.health.unsaved }),
     }
   }
 
@@ -74,9 +79,9 @@ export function storageTile(status: StoreStatus, interrupted: boolean): RuntimeT
   // state worth flickering the sidebar for.
   return {
     ...tile,
-    meta: 'saved here',
+    meta: t('storage.saved'),
     status: 'on',
-    detail: "your records are written to this browser's database as you work",
+    detail: t('storage.savedDetail'),
   }
 }
 
@@ -93,41 +98,41 @@ export function storageTile(status: StoreStatus, interrupted: boolean): RuntimeT
 export type ModelState = 'unset' | 'probing' | 'connected' | 'unreachable'
 
 export function modelTile(state: ModelState): RuntimeTile {
-  const tile = { label: 'Local model', to: settingsPath() }
+  const tile = { label: t('model.label'), to: settingsPath() }
   switch (state) {
     case 'connected':
       return {
         ...tile,
-        meta: 'connected',
+        meta: t('model.connected'),
         status: 'on',
         // The one tile that changes its icon as well as its dot. A plug with
         // current in it reads at 50px where a second processor chip does not.
         icon: PlugZap,
-        detail: 'a local model answered — the assistant and scout scoring can use it',
+        detail: t('model.connectedDetail'),
       }
     case 'unreachable':
       return {
         ...tile,
-        meta: 'no answer',
+        meta: t('model.noAnswer'),
         status: 'warn',
         icon: Cpu,
-        detail: 'a model is configured but did not answer — check it is running',
+        detail: t('model.noAnswerDetail'),
       }
     case 'probing':
       return {
         ...tile,
-        meta: 'checking',
+        meta: t('model.checking'),
         status: 'off',
         icon: Cpu,
-        detail: 'asking the model whether it is there',
+        detail: t('model.checkingDetail'),
       }
     default:
       return {
         ...tile,
-        meta: 'not set up',
+        meta: t('model.unset'),
         status: 'off',
         icon: Cpu,
-        detail: 'no model endpoint yet — Settings is where one goes',
+        detail: t('model.unsetDetail'),
       }
   }
 }
@@ -167,12 +172,12 @@ export function runtimeTiles(
     // `Upload` were not available to borrow: DataPanel already spends both on
     // backup and restore, and a third meaning would blunt those.
     {
-      label: 'Transfer',
-      meta: 'Sync with Other Device',
+      label: t('transfer.label'),
+      meta: t('transfer.meta'),
       status: 'off',
       icon: Share,
       to: transferPath(),
-      detail: 'no device is paired yet — Transfer is where one is added',
+      detail: t('transfer.detail'),
     },
   ]
 }

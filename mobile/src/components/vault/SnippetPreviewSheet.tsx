@@ -1,4 +1,5 @@
 import { ScrollView, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Marked, MarksLegend } from '@/components/ui/Marked'
 import { Sheet } from '@/components/ui/Sheet'
@@ -35,6 +36,7 @@ export function SnippetPreviewSheet({
   snippet: PreviewSnippet | null
   onClose: () => void
 }) {
+  const { t } = useTranslation()
   const { copy, isCopied } = useCopy()
   if (snippet === null) return null
 
@@ -49,7 +51,7 @@ export function SnippetPreviewSheet({
         <View style={{ gap: space[2] }}>
           {snippet.marked ? <MarksLegend /> : null}
           <Button
-            label={isCopied(snippet.id) ? 'Copied' : 'Copy'}
+            label={isCopied(snippet.id) ? t('actions.copied') : t('actions.copy')}
             icon={isCopied(snippet.id) ? 'check' : 'copy'}
             variant="outline"
             full

@@ -1,7 +1,8 @@
 import { SNOOZE_STEPS, snoozeAnchor } from '@/components/common/snooze'
 import { menuItemClass } from '@/components/common/RowMenu'
-import { addDays, shortDate } from '@/data/timeline'
+import { addDays } from '@/data/timeline'
 import { TODAY } from '@/lib/today'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The step rows themselves: label on the left, the date it writes on the right.
@@ -22,6 +23,7 @@ export function SnoozeSteps({
   onPick: (days: number) => void
 }) {
   const anchor = snoozeAnchor(date)
+  const domain = useDomain()
   const soon = anchor === TODAY
 
   return (
@@ -33,10 +35,12 @@ export function SnoozeSteps({
           className={menuItemClass}
           onClick={() => onPick(step.days)}
         >
-          <span className="flex-1 text-left">
+          <span className="flex-1 text-start">
             {spell === 'duration' ? step.duration : soon ? step.soon : step.later}
           </span>
-          <span className="font-mono text-text-3">{shortDate(addDays(anchor, step.days))}</span>
+          <span className="font-mono text-text-3">
+            {domain.shortDate(addDays(anchor, step.days))}
+          </span>
         </button>
       ))}
     </>

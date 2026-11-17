@@ -1,0 +1,331 @@
+{
+  "common": {
+    "newApplication": "طلب جديد",
+    "openBoard": "فتح اللوحة",
+    "showAll": "إظهار الكل",
+    "undo": "تراجع",
+    "pushOut": "تأجيل «{{title}}»",
+    "pushOutBy": "التأجيل لمدة",
+    "completed": "اكتمل {{title}}",
+    "rescheduled": "أُعيدت جدولة {{title}}"
+  },
+  "headlineRates": {
+    "emptyTitle": "لا توجد معدلات بعد",
+    "emptyDescription": "معدلات الرد والمقابلة والعرض لا تحسب إلا الطلبات التي أُرسلت فعلًا. انقل طلبًا من المسودة وستمتلئ هذه البطاقة."
+  },
+  "pipeline": {
+    "emptyTitle": "لا شيء في المسار",
+    "emptyDescription": "كل طلب في مرحلة واحدة، وهنا ترى كيف تتوزع الطلبات على المراحل. أضف طلبًا وستظهر أول شريحة.",
+    "ariaLabel_zero": "{{count}} طلب حسب المرحلة",
+    "ariaLabel_one": "{{count}} طلب حسب المرحلة",
+    "ariaLabel_two": "{{count}} طلبان حسب المرحلة",
+    "ariaLabel_few": "{{count}} طلبات حسب المرحلة",
+    "ariaLabel_many": "{{count}} طلبًا حسب المرحلة",
+    "ariaLabel_other": "{{count}} طلب حسب المرحلة"
+  },
+  "statsCard": {
+    "control": "الإحصائية",
+    "tracked_zero": "قيد المتابعة: {{count}}",
+    "tracked_one": "قيد المتابعة: {{count}}",
+    "tracked_two": "قيد المتابعة: {{count}}",
+    "tracked_few": "قيد المتابعة: {{count}}",
+    "tracked_many": "قيد المتابعة: {{count}}",
+    "tracked_other": "قيد المتابعة: {{count}}",
+    "views": {
+      "pipeline": "المسار",
+      "rates": "المعدلات",
+      "when": "التوقيت",
+      "next": "التالي"
+    },
+    "titles": {
+      "pipeline": "المسار",
+      "rates": "المعدلات الرئيسية",
+      "when": "متى قدّمت",
+      "next": "ما الذي تعمل عليه بعد ذلك"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "الملاحظات",
+      "recent": "أحدث الطلبات"
+    },
+    "headingNotes": "الملاحظات اللاصقة",
+    "headingRecent": "أحدث الطلبات",
+    "control": "المعروض في هذه البطاقة",
+    "addReminder": "إضافة تذكير",
+    "viewAll": "عرض الكل",
+    "emptyTitle": "لا توجد طلبات بعد",
+    "emptyDescription": "كل وظيفة تتابعها تظهر هنا بمجرد أن تتعامل معها، الأحدث أولًا.",
+    "today": "اليوم",
+    "daysAgo_zero": "منذ {{count}} يوم",
+    "daysAgo_one": "منذ {{count}} يوم",
+    "daysAgo_two": "منذ {{count}} يومين",
+    "daysAgo_few": "منذ {{count}} أيام",
+    "daysAgo_many": "منذ {{count}} يومًا",
+    "daysAgo_other": "منذ {{count}} يوم"
+  },
+  "searchHealth": {
+    "title": "ما الذي تعمل عليه بعد ذلك",
+    "series": {
+      "you": "أرقامك",
+      "target": "المعتاد"
+    },
+    "intro": "أرقامك مقارنةً ببحث معتاد عن عمل",
+    "sample": "عيّنة",
+    "sampleTitle": "الحلقة المعتادة وحدها توضيحية",
+    "emptyTitle": "لا يكفي ما لديك للمقارنة بعد",
+    "emptyDescription": "يقارن هذا الردود والمقابلات والتوصيات والمتابعات لديك ببحث معتاد عن عمل. يحتاج إلى طلبات أُرسلت فعلًا.",
+    "suggestions": "اقتراحات، الأنفع أولًا"
+  },
+  "sources": {
+    "title": "من أين جاءت",
+    "views": {
+      "bars": "أعمدة",
+      "donut": "حلقة"
+    },
+    "chartType": "نوع المخطط",
+    "unrecorded": "غير مسجّل",
+    "hintAll_zero": "{{count}} طلب",
+    "hintAll_one": "{{count}} طلب",
+    "hintAll_two": "{{count}} طلبان",
+    "hintAll_few": "{{count}} طلبات",
+    "hintAll_many": "{{count}} طلبًا",
+    "hintAll_other": "{{count}} طلب",
+    "hintSome": "{{shown}} من {{count}}",
+    "emptyTitle": "لا شيء لتفصيله بعد",
+    "emptyDescription": "يسجّل كل طلب المكان الذي وجدته فيه — موقع وظائف، أو توصية، أو صفحة القسم. يقسّمها هذا بمجرد وجود بعضها.",
+    "centerLabel": "طلبات",
+    "show": "إظهار {{name}}",
+    "hide": "إخفاء {{name}}",
+    "allOff": "كل المصادر مطفأة."
+  },
+  "offers": {
+    "title": "العروض جنبًا إلى جنب",
+    "open_zero": "مفتوحة: {{count}}",
+    "open_one": "مفتوحة: {{count}}",
+    "open_two": "مفتوحة: {{count}}",
+    "open_few": "مفتوحة: {{count}}",
+    "open_many": "مفتوحة: {{count}}",
+    "open_other": "مفتوحة: {{count}}",
+    "caption": "عروضك المفتوحة، مع الحزمة كما كتبتها، وقراءتها السنوية، والتاريخ الذي يجب الرد على كل منها قبله",
+    "columns": {
+      "job": "الوظيفة",
+      "package": "الحزمة",
+      "year": "سنويًا",
+      "respondBy": "الرد قبل"
+    },
+    "notStated": "غير مذكور",
+    "noAmount": "تعذّرت قراءة أي مبلغ من الحزمة",
+    "readFrom": "مقروء من «{{text}}»",
+    "highest": "— الأعلى هنا",
+    "annualised": "(محسوب سنويًا)",
+    "passed": "انقضى",
+    "today": "اليوم",
+    "daysLeft_zero": "{{count}} يوم",
+    "daysLeft_one": "{{count}} يوم",
+    "daysLeft_two": "{{count}} يومان",
+    "daysLeft_few": "{{count}} أيام",
+    "daysLeft_many": "{{count}} يومًا",
+    "daysLeft_other": "{{count}} يوم",
+    "ranked": "يُقرأ الرقم السنوي مما كتبته — مرّر المؤشر فوق أحدها لترى الكلمات التي جاء منها.",
+    "unranked": "هذه غير مرتبة: الحزم بعملات مختلفة، وليس لدى jojo سعر صرف ولا يُجري أي اتصال بالشبكة للعثور على واحد.",
+    "annualisedNote": "* محسوب سنويًا على أساس 12 شهرًا أو 52 أسبوعًا أو 2,080 ساعة، وهذا عُرف وليس عقدك."
+  },
+  "sticky": {
+    "newNote": "ملاحظة لاصقة جديدة",
+    "placeholder": "دوّن ملاحظة لنفسك… (Enter للصقها)",
+    "newColour": "لون الملاحظة الجديدة",
+    "stick": "ألصقها",
+    "empty": "لم يُلصق شيء بعد. تبقى الملاحظات هنا حتى تزيلها، ويمكن أن تصبح أي منها تذكيرًا بمجرد أن يكون لها تاريخ.",
+    "listLabel": "الملاحظات اللاصقة",
+    "editNote": "تعديل الملاحظة",
+    "clickToEdit": "انقر للتعديل",
+    "editAria": "تعديل الملاحظة: {{text}}",
+    "colour": "اللون",
+    "colourOf": "لون الملاحظة «{{text}}»",
+    "toReminder": "تحويلها إلى تذكير",
+    "toReminderAria": "تحويلها إلى تذكير: {{text}}",
+    "takeDown": "إزالة هذه الملاحظة",
+    "removeAria": "إزالة الملاحظة: {{text}}"
+  },
+  "frequency": {
+    "title": "متى قدّمت",
+    "period": "الفترة",
+    "periods": {
+      "week": "أسبوع",
+      "month": "شهر",
+      "quarter": "ربع سنة"
+    },
+    "chartType": "نوع المخطط",
+    "charts": {
+      "bar": "أعمدة",
+      "line": "خط"
+    },
+    "emptyTitle": "لا شيء لرسمه بعد",
+    "emptyDescription": "يحصي هذا الطلبات التي ترسلها أسبوعًا بأسبوع، مقسّمة حسب نوع الوظيفة. أضف طلبًا وسيظهر أول عمود.",
+    "noDatesTitle": "لم تُسجّل تواريخ إرسال بعد",
+    "noDates_zero": "لا يحمل أي من طلباتك البالغ عددها {{count}} تاريخًا بعد. يُختم التاريخ عندما تنقل سجلًا إلى «مُرسل».",
+    "noDates_one": "طلبك الوحيد لا يحمل تاريخًا بعد. يُختم التاريخ عندما تنقل سجلًا إلى «مُرسل».",
+    "noDates_two": "لا يحمل أي من طلباتك البالغ عددها {{count}} تاريخًا بعد. يُختم التاريخ عندما تنقل سجلًا إلى «مُرسل».",
+    "noDates_few": "لا يحمل أي من طلباتك البالغ عددها {{count}} تاريخًا بعد. يُختم التاريخ عندما تنقل سجلًا إلى «مُرسل».",
+    "noDates_many": "لا يحمل أي من طلباتك البالغ عددها {{count}} تاريخًا بعد. يُختم التاريخ عندما تنقل سجلًا إلى «مُرسل».",
+    "noDates_other": "لا يحمل أي من طلباتك البالغ عددها {{count}} تاريخًا بعد. يُختم التاريخ عندما تنقل سجلًا إلى «مُرسل».",
+    "perPeriod": {
+      "week": "الطلبات المرسلة أسبوعيًا، مقسّمة حسب {{series}}",
+      "month": "الطلبات المرسلة شهريًا، مقسّمة حسب {{series}}",
+      "quarter": "الطلبات المرسلة في كل ربع سنة، مقسّمة حسب {{series}}"
+    },
+    "caption": {
+      "week": "الطلبات المرسلة أسبوعيًا",
+      "month": "الطلبات المرسلة شهريًا",
+      "quarter": "الطلبات المرسلة في كل ربع سنة"
+    },
+    "countingUndated_zero": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها بلا تاريخ بعد.",
+    "countingUndated_one": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها بلا تاريخ بعد.",
+    "countingUndated_two": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها بلا تاريخ بعد.",
+    "countingUndated_few": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها بلا تاريخ بعد.",
+    "countingUndated_many": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها بلا تاريخ بعد.",
+    "countingUndated_other": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها بلا تاريخ بعد.",
+    "countingEarlier_zero": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها تسبق {{first}}.",
+    "countingEarlier_one": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها يسبق {{first}}.",
+    "countingEarlier_two": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها تسبق {{first}}.",
+    "countingEarlier_few": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها تسبق {{first}}.",
+    "countingEarlier_many": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها تسبق {{first}}.",
+    "countingEarlier_other": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{count}} منها تسبق {{first}}.",
+    "countingBoth": "يُحتسب {{inWindow}} من أصل {{total}} طلبًا — {{undated}} بلا تاريخ بعد، و{{earlier}} تسبق {{first}}."
+  },
+  "glance": {
+    "heading": "نظرة سريعة",
+    "stats": {
+      "active": "نشطة",
+      "screens": "فرز ومقابلات",
+      "overdue": "متأخرة",
+      "doneToday": "أُنجز اليوم"
+    },
+    "previousMonth": "الشهر السابق",
+    "currentMonth": "الانتقال إلى الشهر الحالي",
+    "currentMonthTitle": "{{date}} — الشهر الحالي",
+    "nextMonth": "الشهر التالي",
+    "openCalendar": "فتح التقويم",
+    "dayNone": "{{date}}، لا أحداث",
+    "day_zero": "{{date}}، {{count}} حدث",
+    "day_one": "{{date}}، {{count}} حدث",
+    "day_two": "{{date}}، {{count}} حدثان",
+    "day_few": "{{date}}، {{count}} أحداث",
+    "day_many": "{{date}}، {{count}} حدثًا",
+    "day_other": "{{date}}، {{count}} حدث",
+    "dayAllDone_zero": "{{date}}، {{count}} حدث، أُنجزت كلها",
+    "dayAllDone_one": "{{date}}، {{count}} حدث، أُنجز كله",
+    "dayAllDone_two": "{{date}}، {{count}} حدثان، أُنجزا كلاهما",
+    "dayAllDone_few": "{{date}}، {{count}} أحداث، أُنجزت كلها",
+    "dayAllDone_many": "{{date}}، {{count}} حدثًا، أُنجزت كلها",
+    "dayAllDone_other": "{{date}}، {{count}} حدث، أُنجزت كلها",
+    "today": "اليوم",
+    "nothingPlanned": "لا شيء مخطط. <add>أضف شيئًا</add>."
+  },
+  "priority": {
+    "title": "يحتاج إلى قرار",
+    "open_zero": "مفتوحة: {{count}}",
+    "open_one": "مفتوحة: {{count}}",
+    "open_two": "مفتوحة: {{count}}",
+    "open_few": "مفتوحة: {{count}}",
+    "open_many": "مفتوحة: {{count}}",
+    "open_other": "مفتوحة: {{count}}",
+    "completedDescription": "يخرج من المجموعة ومن هذا الأسبوع — لا يُحذف شيء.",
+    "rescheduledDescription": "موعده الآن {{date}}، في التقويم والأسبوع القادم.",
+    "tickOff": "وضع علامة إنجاز على «{{title}}»",
+    "done": "تم",
+    "snooze": "تأجيل",
+    "notConnected": "لا شيء مرتبط بهذا بعد",
+    "earlierAria": "إظهار القرارات الأقدم",
+    "earlier": "الأقدم",
+    "laterAria": "إظهار القرارات الأحدث",
+    "later": "الأحدث",
+    "listLabel": "القرارات، الأقدم أولًا",
+    "emptyTitle": "لا شيء يحتاج إلى قرار اليوم",
+    "emptyDescription": "تظهر هنا العروض، والطلبات المتأخرة، والموعد النهائي الثابت التالي، ومقابلتك التالية. لا شيء منها معلّق."
+  },
+  "firstSteps": {
+    "title": "الخطوات الأولى",
+    "hint": "أُنجز {{done}} من {{total}}",
+    "application": {
+      "title": "أضف طلبًا",
+      "body": "وظيفة ومرحلتها وموعدها النهائي. كل شيء آخر في jojo يتفرع من هذا السجل."
+    },
+    "dated": {
+      "title": "حدّد تاريخًا لشيء ما",
+      "body": "المواعيد النهائية والمقابلات والزيارات نوع واحد من السجلات، لذا يصل التاريخ إلى هذه الصفحة والتقويم والطلب في آن واحد.",
+      "action": "حدث جديد"
+    },
+    "reminder": {
+      "title": "حدّد متابعة",
+      "body": "التذكير هو السجل نفسه مع تفعيل التنبيه. بعد مرور تاريخه يصبح مستحقًا، ويبقى هنا حتى تضع عليه علامة الإنجاز.",
+      "action": "تذكير جديد"
+    },
+    "complete": "أُنجزت الخطوات الثلاث. كل ما تضيفه من الآن يصل إلى هذه الصفحة والتقويم والطلب الذي ينتمي إليه.",
+    "intro": "كل خطوة تفتح الميزة الحقيقية وتُعلَّم تلقائيًا بمجرد وجود سجل — لا شيء منها درس تعليمي عليك تحمّله.",
+    "introBare": "لا شيء قيد المتابعة بعد. كل خطوة تفتح الميزة الحقيقية وتُعلَّم تلقائيًا بمجرد وجود سجل — لا شيء منها درس تعليمي عليك تحمّله.",
+    "doneSr": "— مُنجزة",
+    "notDoneSr": "— لم تُنجز بعد",
+    "hideHint": "الخطوات نفسها مكتوبة في الدليل",
+    "close": "إغلاق الخطوات الأولى",
+    "hide": "إخفاء هذه الخطوات"
+  },
+  "owed": {
+    "title": "المستحق هذا الأسبوع",
+    "add": "إضافة",
+    "addEvent": "إضافة حدث",
+    "emptyTitle": "لا شيء مستحق",
+    "emptyDescription": "المواعيد النهائية والمقابلات والمتابعات تصل إلى هنا بمجرد أن يكون لها تاريخ، وتبقى حتى تضع عليها علامة الإنجاز.",
+    "hintOverdue": "متأخرة: {{overdue}} · مستحقة: {{due}}",
+    "hintDue_zero": "مستحقة: {{count}}",
+    "hintDue_one": "مستحقة: {{count}}",
+    "hintDue_two": "مستحقة: {{count}}",
+    "hintDue_few": "مستحقة: {{count}}",
+    "hintDue_many": "مستحقة: {{count}}",
+    "hintDue_other": "مستحقة: {{count}}",
+    "snoozeAria": "تأجيل {{title}}",
+    "openAria": {
+      "reminder": "فتح {{title}}: تعديل التذكير أو الانتقال إلى طلبه",
+      "event": "فتح {{title}}: تعديل الحدث أو الانتقال إلى طلبه"
+    },
+    "edit": {
+      "reminder": "تعديل التذكير",
+      "event": "تعديل الحدث"
+    },
+    "openApplication": "فتح <name>{{name}}</name>",
+    "groups": {
+      "overdue": "متأخرة",
+      "today": "اليوم",
+      "tomorrow": "غدًا",
+      "rest": "بقية الأسبوع"
+    },
+    "completedDescription": "يخرج من هذه القائمة ويُحتسب لليوم — لا يُحذف شيء.",
+    "rescheduledDescription": "موعده الآن {{date}}، هنا وفي التقويم.",
+    "nextSeven": "الأيام السبعة القادمة",
+    "items_zero": "{{count}} عنصر",
+    "items_one": "{{count}} عنصر",
+    "items_two": "{{count}} عنصران",
+    "items_few": "{{count}} عناصر",
+    "items_many": "{{count}} عنصرًا",
+    "items_other": "{{count}} عنصر",
+    "allDone": "أُنجز كله",
+    "nothingScheduled": "لا شيء مجدول",
+    "todayClear": "اليوم خالٍ.",
+    "todayClearDone": "اليوم خالٍ — أُنجز {{count}}.",
+    "markDoneAria": "وضع علامة إنجاز على «{{title}}»",
+    "markDone": "وضع علامة إنجاز",
+    "draftTitle": "اكتبه من أحد مقتطفات بريدك الإلكتروني",
+    "draftAria": "صياغة {{title}}",
+    "later": "لاحقًا",
+    "openTitle": "فتح {{title}}",
+    "more_zero": "{{count}} عنصر آخر في التقويم",
+    "more_one": "{{count}} عنصر آخر في التقويم",
+    "more_two": "{{count}} عنصران آخران في التقويم",
+    "more_few": "{{count}} عناصر أخرى في التقويم",
+    "more_many": "{{count}} عنصرًا آخر في التقويم",
+    "more_other": "{{count}} عنصر آخر في التقويم",
+    "showAll": "عرض الكل ({{total}})",
+    "showFewer": "عرض أقل"
+  }
+}

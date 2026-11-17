@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { MAX_HISTORY, withEntry, type HistoryEntry } from './calculator-history'
 import calculatorSource from './Calculator.tsx?raw'
+import vaultEn from '@/i18n/locales/en/vault.json'
 
 /**
  * Q055: the Vault calculator keeps a history and switches between a basic and
@@ -44,7 +45,9 @@ describe('the calculator history (Q055)', () => {
 })
 
 describe('the calculator pad (Q055)', () => {
-  const code = calculatorSource.replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ')
+  const code = calculatorSource
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
 
   it('records each finished calculation through the history step', () => {
     expect(code).toContain('setHistory((prev) => withEntry(prev, expr, value))')
@@ -52,9 +55,13 @@ describe('the calculator pad (Q055)', () => {
   })
 
   it('offers a basic and a scientific mode, and shows the scientific keys only in the second', () => {
-    expect(code).toContain("{ value: 'basic', label: 'Basic' }")
-    expect(code).toContain("{ value: 'scientific', label: 'Scientific' }")
-    expect(code).toMatch(/<Segment label="Calculator mode" options=\{MODES\} value=\{mode\} onChange=\{setMode\}/)
+    expect(code).toContain("{ value: 'basic', label: t('calculator.modes.basic') }")
+    expect(code).toContain("{ value: 'scientific', label: t('calculator.modes.scientific') }")
+    expect(vaultEn.calculator.modes).toEqual({ basic: 'Basic', scientific: 'Scientific' })
+    expect(vaultEn.calculator.mode).toBe('Calculator mode')
+    expect(code).toMatch(
+      /<Segment\s+label=\{t\('calculator\.mode'\)\}\s+options=\{modes\}\s+value=\{mode\}\s+onChange=\{setMode\}/,
+    )
     expect(code).toMatch(/mode === 'scientific' \? \(\s*<div[^>]*>\s*\{UNARY\.map\(/)
   })
 

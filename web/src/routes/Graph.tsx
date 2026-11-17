@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Network, Plus, RotateCcw, Shuffle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -31,7 +32,8 @@ import { useTitle } from '@/lib/links'
  * board is gone from this canvas before you get back to it.
  */
 export function Graph() {
-  useTitle('Graph')
+  const { t, i18n } = useTranslation('pages')
+  useTitle(t('graph.title'))
 
   // The snapshot itself, not eight projections of it. The page used to rebuild
   // ~400 nodes and edges whenever any record OR any keyword changed, because it
@@ -40,7 +42,13 @@ export function Graph() {
   const memory = useGraph()
   const { open } = useDialogs()
 
-  const graph = useMemo(() => buildGraph(memory), [memory])
+  // Rebuilt when the language changes too: a node's detail line ("Saved 3 days
+  // ago") and every count label downstream are worded when the graph is built.
+  const language = i18n.language
+  const graph = useMemo(() => {
+    void language
+    return buildGraph(memory)
+  }, [memory, language])
 
   const [hidden, setHidden] = useState<ReadonlySet<GraphNodeType>>(() => new Set())
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -136,19 +144,16 @@ export function Graph() {
   if (graph.nodes.length === 0) {
     return (
       <>
-        <PageHeader
-          title="Graph"
-          subtitle="Nothing to draw yet — the graph is built from the records in your store."
-        />
+        <PageHeader title={t('graph.title')} subtitle={t('graph.emptySubtitle')} />
         <Panel>
           <EmptyState
             icon={Network}
-            title="No records to connect"
-            description="Applications, reminders, files and keywords become nodes here, and the pointers between them become edges. Add the first application and the graph starts drawing itself."
+            title={t('graph.emptyTitle')}
+            description={t('graph.emptyDescription')}
             action={
               <Button size="sm" onClick={() => open('application')}>
                 <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                New application
+                {t('graph.newApplication')}
               </Button>
             }
           />
@@ -165,33 +170,33 @@ export function Graph() {
           now the wrong way round in both halves. This is not a preview of the
           store; it is the store, drawn. */}
       <PageHeader
-        title="Graph"
-        subtitle="The knowledge graph your records are stored in, drawn. Every node is a record in this browser and every edge is a pointer between two of them."
+        title={t('graph.title')}
+        subtitle={t('graph.subtitle')}
         settings={
           <>
             <PageOption
-              label="Label every record"
+              label={t('graph.labelEvery')}
               // The old hint ended "— the rest collide", which was a fair
               // warning while they did. The canvas now drops any label that
               // would land on another one, so the honest trade is the opposite:
               // this switch is how you get a name onto a node the crowd hid.
-              hint="Off, hubs and whatever you are pointing at are named, and anything that would overlap is dropped"
+              hint={t('graph.labelEveryHint')}
               control={
                 <Switch
                   checked={showAllLabels}
                   onCheckedChange={setShowAllLabels}
-                  aria-label="Label every record"
+                  aria-label={t('graph.labelEvery')}
                 />
               }
             />
             <PageOption
-              label="Hide unconnected records"
-              hint="Drops anything with no edges — usually a file or link filed under nothing"
+              label={t('graph.hideLoners')}
+              hint={t('graph.hideLonersHint')}
               control={
                 <Switch
                   checked={hideLoners}
                   onCheckedChange={setHideLoners}
-                  aria-label="Hide unconnected records"
+                  aria-label={t('graph.hideLoners')}
                 />
               }
             />
@@ -203,10 +208,10 @@ export function Graph() {
               variant="outline"
               size="sm"
               onClick={() => setLayoutSeed((seed) => seed + 1)}
-              title="Arrange the same records a different way"
+              title={t('graph.reorganizeHint')}
             >
               <Shuffle className="size-3.5" strokeWidth={2} aria-hidden />
-              Reorganize
+              {t('graph.reorganize')}
             </Button>
             <Button
               variant="outline"
@@ -220,10 +225,10 @@ export function Graph() {
                 setLayoutSeed(0)
                 setLayoutNonce((n) => n + 1)
               }}
-              title="Put the records back in their usual arrangement"
+              title={t('graph.resetHint')}
             >
               <RotateCcw className="size-3.5" strokeWidth={2} aria-hidden />
-              Reset layout
+              {t('graph.reset')}
             </Button>
           </>
         }
@@ -238,7 +243,7 @@ export function Graph() {
             hint={
               noMatches ? (
                 <>
-                  No records match this question ·{' '}
+                  {t('graph.noMatches')} ·{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -251,15 +256,19 @@ export function Graph() {
                     }}
                     className="cursor-pointer underline underline-offset-2 transition-colors hover:text-text-1"
                   >
-                    clear the query
+                    {t('graph.clearQuery')}
                   </button>
                 </>
               ) : (
-                `${view.nodes.length} of ${graph.nodes.length} records · ${view.edges.length} connections`
+                t('graph.counts', {
+                  shown: view.nodes.length,
+                  count: graph.nodes.length,
+                  edges: view.edges.length,
+                })
               )
             }
           >
-            Everything, connected
+            {t('graph.panelTitle')}
           </PanelTitle>
 
           <div className="well h-[380px] overflow-hidden rounded-md sm:h-[460px] lg:h-[560px]">
@@ -274,10 +283,7 @@ export function Graph() {
             />
           </div>
 
-          <p className="mt-2 text-xs text-text-3">
-            Hover or tab to a node to trace its neighbourhood, press to select it, drag to move it.
-            Node colour is its kind, size is how much points at it.
-          </p>
+          <p className="mt-2 text-xs text-text-3">{t('graph.help')}</p>
 
           <GraphLegend
             counts={counts}

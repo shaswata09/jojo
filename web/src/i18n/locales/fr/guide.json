@@ -1,0 +1,604 @@
+{
+  "nav": {
+    "rail": "Pages du guide",
+    "contents": "Sommaire du guide",
+    "pager": "Autres pages du guide",
+    "youAreHere": "vous êtes ici",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "pageOf": "Page {{current}} sur {{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "Mode d’emploi",
+      "blurb": "Ce qu’est un enregistrement, où il est conservé, ce que cela vous coûte, et les quelques raccourcis à connaître avant de lui confier votre recherche d’emploi."
+    },
+    "screens": {
+      "label": "Chaque écran",
+      "blurb": "Chaque page tour à tour : à quoi elle sert, les mécanismes qui ne se voient pas au premier coup d’œil et ce qui n’est pas encore connecté."
+    },
+    "tools": {
+      "label": "Les outils",
+      "blurb": "Ce que l’assistant peut réellement faire, comment on l’empêche de faire autre chose, et comment il choisit le bon outil dans tout le catalogue."
+    },
+    "graph": {
+      "label": "Le graphe",
+      "blurb": "Ce que dessine la page Graphe, comment une question devient une requête, et le modèle d’enregistrements dans lequel toute l’application est stockée."
+    },
+    "builtWith": {
+      "label": "Conçu avec",
+      "blurb": "Les travaux open source dont jojo est fait, les licences qui les couvrent et l’organisation du code."
+    },
+    "controlFlow": {
+      "label": "Graphe de flux de contrôle",
+      "blurb": "Chaque module et chaque import sous forme de graphe, la façon dont le contrôle circule à travers six parcours, et où placer une modification."
+    },
+    "licence": {
+      "label": "Licence",
+      "blurb": "Ce que coûte jojo, ce que vous pouvez en faire, et les conditions des services auxquels vous pouvez le relier."
+    }
+  },
+  "onThisPage": "Sur cette page",
+  "tour": {
+    "start": "Faire la visite",
+    "resume": "Reprendre la visite — étape {{step}} sur {{total}}"
+  },
+  "gettingStarted": {
+    "title": "Premiers pas",
+    "progress": "{{done}} sur {{total}} faites",
+    "allDone": "Toutes les étapes sont faites. La liste lit vos enregistrements, elle suit donc si vous les effacez.",
+    "intro": "Chaque étape ouvre la vraie fonction et se coche toute seule dès qu’un enregistrement existe. Rien ici n’est un tutoriel à subir.",
+    "done": "Fait",
+    "srDone": " — fait",
+    "srNotDone": " — pas encore fait",
+    "steps": {
+      "application": {
+        "title": "Ajoutez une candidature",
+        "body": "Un poste, son étape et sa date limite. Tout le reste dans jojo se rattache à cet enregistrement.",
+        "action": "Nouvelle candidature"
+      },
+      "dated": {
+        "title": "Donnez une date à quelque chose",
+        "body": "Les dates limites, les entretiens et les visites sur site sont un seul type d’enregistrement : ils apparaissent donc à la fois dans le calendrier, dans la semaine à venir et dans la candidature.",
+        "action": "Nouvel événement"
+      },
+      "reminder": {
+        "title": "Programmez une relance",
+        "body": "Un rappel est le même enregistrement avec une alerte activée. Une fois sa date passée, il reste signalé sur le tableau de bord jusqu’à ce que vous le cochiez.",
+        "action": "Nouveau rappel"
+      },
+      "posting": {
+        "title": "Conservez une annonce avant qu’elle soit retirée",
+        "body": "Rien n’est téléchargé et aucune copie n’est stockée : ce qui est conservé, c’est l’URL, l’employeur déduit de celle-ci et le jour où vous l’avez enregistrée. C’est suffisant pour retrouver l’annonce.",
+        "action": "Ouvrir Job scout"
+      },
+      "file": {
+        "title": "Classez vos documents",
+        "body": "Déposez un CV ou une lettre de motivation dans le Coffre. Les noms, tailles et types sont enregistrés ; un fichier déposé pendant cette session peut aussi être prévisualisé.",
+        "action": "Ouvrir le Coffre"
+      },
+      "keyword": {
+        "title": "Étiquetez quelque chose avec un mot-clé",
+        "body": "Les mots-clés sont les vôtres, partagés par les candidatures, les rappels et tout ce qui se trouve dans le Coffre — contrairement aux étiquettes de poste fixes de la barre supérieure. Le bouton d’étiquette de n’importe quelle ligne en ajoute un.",
+        "action": "Gérer les mots-clés"
+      },
+      "draft": {
+        "title": "Rédigez un message",
+        "body": "Construit à partir de vos propres extraits d’e-mails, avec le poste, l’employeur et les dates repris de l’enregistrement. Le nom d’une personne n’est jamais rempli à votre place. Rien ici n’enregistre que vous l’avez envoyé, cette étape ne se coche donc pas toute seule.",
+        "action": "Rédiger un message"
+      }
+    }
+  },
+  "overview": {
+    "title": "Comment utiliser jojo",
+    "subtitle": "Tout fonctionne sur votre machine. Commencez simplement, ajoutez de la puissance quand vous le souhaitez.",
+    "tourIntro": "Ou laissez-vous guider, en pratique : un projecteur sur les vraies pages, et vous essayez chaque chose au fur et à mesure. La visite ne tape jamais rien à votre place, n’enregistre jamais rien et ne modifie jamais aucun réglage.",
+    "sections": {
+      "application": "Suivre une candidature",
+      "dates": "Dates et relances",
+      "vault": "Le Coffre",
+      "profile": "Votre profil",
+      "keys": "Raccourcis et annulation",
+      "keywords": "Mots-clés",
+      "graph": "Interroger le graphe",
+      "data": "Vos données",
+      "ladder": "Pas encore connecté"
+    },
+    "track": {
+      "hint": "l’enregistrement auquel tout le reste se rattache",
+      "title": "Suivez une candidature de l’envoi jusqu’à l’offre",
+      "intro": "Une candidature, c’est un poste chez un employeur. Les dates, les notes, les documents, les mots-clés et chaque chiffre de la page <stats>statistiques</stats> renvoient à l’une d’elles : c’est donc le premier enregistrement à créer. Elles se trouvent sur <board>le tableau</board> ; pour en ajouter une, appuyez sur <kbd>n</kbd> n’importe où dans l’application, ou utilisez la liste ci-dessus.",
+      "movesTitle": "Ce que demande chaque déplacement",
+      "movesIntro": "L’endroit d’où vous la déplacez détermine ce qui vous est demandé. Sur le tableau ou dans le tableau de liste — un glisser, la pastille d’une carte, la puce d’une ligne — le déplacement se fait tout simplement, avec un Annuler dans la notification. Depuis l’enregistrement, quatre des six destinations ouvrent d’abord un court formulaire ; les deux autres se font directement, car une boîte de dialogue dont le seul contenu est un bouton Confirmer est un ralentisseur plutôt qu’une étape.",
+      "asks": {
+        "submitted": "Le jour de l’envoi, le lien du portail et une référence de confirmation si vous en avez une.",
+        "interview": "La date, et s’il s’agit d’un entretien par téléphone, en visio ou sur place. Il propose d’ajouter l’entretien à votre calendrier avec un rappel.",
+        "offer": "Une date de réponse, la rémunération et des notes éventuelles. Il propose d’ajouter la date limite de décision à votre calendrier.",
+        "closed": "Comment cela s’est terminé : refusée, retirée, acceptée, déclinée, ou restée sans réponse. C’est ce que comptent les statistiques."
+      },
+      "asksNothing": "Rien — le déplacement se fait au moment où vous le faites.",
+      "offerQuestion": "Une question de plus, quelle que soit la destination : déplacer une candidature qui a déjà une offre vous demande s’il faut conserver ou effacer les détails de l’offre. Une offre appartient à l’étape qui l’a produite ; l’abandonner est donc une décision, pas un effet secondaire.",
+      "onceTitle": "Une fois l’enregistrement créé",
+      "once": {
+        "open": "En ouvrir une laisse la liste là où elle était : l’enregistrement s’ouvre par-dessus, et Retour le referme sans perdre vos filtres. L’adresse est un nom plutôt qu’un numéro, donc un lien vers une candidature survit à un rechargement.",
+        "note": "La note s’enregistre quand vous cliquez ailleurs, et l’indique en dessous. Il n’y a pas de bouton Enregistrer à oublier.",
+        "duplicate": "<lead>Dupliquer</lead> sert à postuler à nouveau : la copie repart au stade Brouillon avec le poste, la note, le lieu et le lien, et volontairement sans l’offre, l’issue ni les dates. jojo enregistre que les deux sont des copies l’une de l’autre.",
+        "delete": "Supprimer une candidature supprime la candidature et sa note. Tout ce que vous avez classé dessous — rappels, documents, mots-clés — est détaché, pas supprimé, et la confirmation indique quoi.",
+        "address": "La vue, le champ de recherche, le filtre d’étape et le tri sont tous dans la barre d’adresse : une vue que vous configurez est donc un lien que vous pouvez garder. <bystage>Le tableau de liste, trié par étape</bystage> et <atoffer>tout ce qui est au stade de l’offre</atoffer> ne sont que des URL. Les deux nomment volontairement le tableau de liste : les puces d’étape et le tri par colonne sont ses propres contrôles, et le tableau n’a pas de filtre d’étape puisqu’il est déjà composé de six colonnes d’étapes — une étape dans l’adresse ne fait donc rien tant que l’adresse ne précise pas aussi le tableau de liste. Le champ de recherche fonctionne dans les deux. Le filtre de poste et les puces de mots-clés à côté ne sont dans aucun des deux : ils constituent la sélection de cet onglet plutôt qu’une partie de l’adresse, et se réinitialisent au rechargement."
+      }
+    },
+    "stageRail": {
+      "title": "Les six étapes que traverse une candidature",
+      "desc": "Brouillon, Envoyée, Entretien de présélection, Entretien, Offre et Close, dans l’ordre, sur une seule piste. Passer à Envoyée, Entretien, Offre ou Close ouvre un court formulaire ; passer à Brouillon ou Entretien de présélection se fait immédiatement. La liste en dessous indique ce que demande chaque formulaire.",
+      "asks": "demande"
+    },
+    "dates": {
+      "hint": "un type d’enregistrement, trois noms",
+      "title": "Dates, échéances et relances",
+      "intro": "Une date limite de dépôt, un entretien, une visite sur site et une note pour relancer quelqu’un sont le même type d’enregistrement avec une étiquette différente, et un rappel est cet enregistrement avec une alerte activée. C’est la seule chose à savoir sur jojo avant de l’utiliser : ajoutez quelque chose une fois et cela apparaît en même temps dans le <calendar>calendrier</calendar>, dans la semaine à venir sur <today>Aujourd’hui</today> et dans la candidature concernée, car il n’y a rien à synchroniser.",
+      "items": {
+        "grid": "La grille du mois et la liste du jour forment une seule page. Faire glisser un élément sur un autre jour le reprogramme et propose un Annuler dans la notification.",
+        "colour": "La couleur dépend de la date et de rien d’autre — en retard, dû sous 48 heures, fait — donc rien ne devient obsolète en restant là. La légende est sur la page.",
+        "url": "Le mois affiché, le jour sélectionné et l’élément ouvert sont tous dans l’URL : on peut donc créer un lien vers un jour précis.",
+        "reminders": "Les rappels ont aussi leur propre liste dans le <reminders>Coffre</reminders>, où les cocher est tout le travail. Un rappel en retard reste signalé sur Aujourd’hui jusqu’à ce qu’il soit coché.",
+        "mint": "Passer une candidature à Entretien ou Offre propose de créer la date pour vous, pour ne pas avoir à saisir deux fois l’entretien que vous venez de programmer."
+      }
+    },
+    "vault": {
+      "hint": "cinq outils, une étagère",
+      "title": "Classez ce dont vous aurez encore besoin",
+      "reminders": {
+        "name": "Rappels",
+        "body": "Tout ce qui porte une alerte, dans une seule liste, les rappels en retard en premier."
+      },
+      "links": {
+        "name": "Liens",
+        "body": "Portails, pages de financement, personnes à retenir. Chacun va dans une catégorie, et vous pouvez le déplacer dans une autre plus tard."
+      },
+      "files": {
+        "name": "Fichiers",
+        "body": "Le nom, la taille et le type d’un document sont enregistrés. <strong>Le document lui-même ne l’est pas</strong> — jojo n’a nulle part où le mettre sur votre disque. Un fichier choisi pendant cette visite peut être prévisualisé jusqu’au rechargement ; ensuite, la ligne atteste que le document existe, ce qui suffit pour savoir ce que vous avez envoyé et quand."
+      },
+      "snippets": {
+        "name": "Extraits",
+        "body": "Les paragraphes que vous réécrivez sans cesse. La boîte de dialogue <strong>Rédiger un message</strong> est construite à partir d’eux, avec le poste, l’employeur et les dates repris de l’enregistrement — le nom d’une personne n’est jamais rempli à votre place, car le deviner, c’est ainsi qu’un message part adressé à la mauvaise personne."
+      },
+      "tools": {
+        "name": "Outils",
+        "body": "Une calculatrice, pour les calculs de salaire que finit par imposer chaque offre. Son historique ne dure que le temps de cette visite."
+      }
+    },
+    "profile": {
+      "hint": "le profil ne fait pas partie de la liste",
+      "title": "Complétez votre profil",
+      "body": "Vos informations de base, liens, postes visés et termes de correspondance se trouvent dans <profile>Mon profil</profile>. C’est ce sur quoi le scout calculerait ses scores et ce à partir de quoi l’assistant rédigerait : ils comptent donc. L’enregistrement les écrit dans ce navigateur et les conserve, exactement comme tout autre enregistrement — la liste ci-dessus les laisse de côté parce qu’il y a un profil de toute façon, et une étape déjà faite dès votre arrivée n’est pas une étape.",
+      "documents": "Les documents listés sur le profil sont classés dans la catégorie documents du Coffre plutôt qu’à un second endroit qui pourrait le contredire, et tout le profil s’enregistre en une seule modification : un seul Annuler le rétablit."
+    },
+    "keys": {
+      "hint": "trois raccourcis, et deux Annuler différents",
+      "title": "Agir sans la souris",
+      "find": "<lead>Trouvez n’importe quoi, et lancez-le.</lead> Tapez quelques mots et la liste se réduit à vos candidatures, rappels et événements du calendrier — des mots entiers dans n’importe quel ordre, donc « rice stat » trouve le poste en statistiques à Rice. Sous les enregistrements se trouve un groupe <strong>Outils</strong> : les opérations nommées dont jojo est fait, chacune avec un formulaire généré à partir de ce que l’opération attend réellement. En choisir une agit vraiment sur vos vrais enregistrements : elle affiche une notification, apparaît dans le journal d’audit et propose exactement le même Annuler que lorsque vous y accédez depuis une carte. En dessous, <strong>Aller à</strong> mène à toutes les pages, y compris les six que la barre latérale ne liste pas.",
+      "make": "<lead>Créez quelque chose.</lead> Les mêmes six lignes que le bouton Nouveau : candidature, rappel, événement, rédiger un message, enregistrer un lien, enregistrer une annonce. Ignoré quand une boîte de dialogue est déjà ouverte, et pendant que vous tapez : la lettre n reste une lettre.",
+      "undo": "<lead>Annuler et rétablir, partout.</lead> Pas page par page — le raccourci appartient à l’application, et il annulera le changement d’étape fait sur un autre écran il y a deux minutes. Volontairement ignoré quand le curseur est dans un champ de texte : dans une note à moitié tapée, c’est l’annulation de votre navigateur qui l’emporte, et un ⌘Z égaré ne peut pas rétablir en silence un autre enregistrement derrière la boîte de dialogue.",
+      "twoUndosTitle": "Deux Annuler, qui ne font pas la même chose",
+      "twoUndos": "<kbd>⌘Z</kbd> annule ce qui se trouve en haut de la pile au moment où vous appuyez. Le bouton <strong>Annuler</strong> d’une notification annule <strong>ce</strong> changement-là, même si vous avez fait trois choses depuis son apparition — c’est tout l’intérêt, car une notification ne dure que quelques secondes et vous continuez à travailler. Une action de l’utilisateur correspond à une annulation, quel que soit le nombre d’enregistrements touchés : créer une candidature écrit la candidature, ses mots-clés et la date limite créée par le formulaire, et l’annuler retire les trois au lieu de laisser une date limite pointant vers rien.",
+      "pile": "La pile garde les cinquante derniers changements et repart vide à chaque visite — une pile d’annulation qui survivrait à un rechargement vous proposerait d’annuler mardi dernier. Si jojo est ouvert dans deux onglets, celui auquel vous revenez relit la base de données et repart de zéro pour la même raison : il ne peut pas annuler ce qu’a fait l’autre onglet. Tout reste listé dans <settings>Réglages → Journal d’audit</settings>, du plus récent au plus ancien, et la ligne la plus récente peut y être annulée."
+    },
+    "keywords": {
+      "hint": "les vôtres, et partagés par tout",
+      "title": "Les mots-clés, et les étiquettes de poste qu’ils ne sont pas",
+      "intro": "Deux choses dans jojo ressemblent à des étiquettes et ne se comportent pas du tout pareil. Les confondre est la façon la plus courante de se retrouver avec un filtre qui ne trouve pas ce que vous savez être là.",
+      "yoursTitle": "Les mots-clés sont les vôtres",
+      "yours": "Vous les créez, les nommez, les colorez et les placez sur n’importe quoi — une candidature, un rappel, un lien, un fichier, un extrait. Ils traversent tous les types d’enregistrements, et c’est ce qui fait de « montre-moi tout ce qui concerne la recommandation » une question à laquelle jojo peut répondre.",
+      "record": "Un mot-clé est un enregistrement à part entière, pas un bout de texte recopié sur des lignes : renommez-le et toutes les lignes qui le portent suivent, et effacer tous les enregistrements laisse vos mots-clés en place avec un compteur à zéro. <settings>Réglages → Mots-clés</settings> les renomme, change leur couleur et les supprime, et vous indique sur combien d’enregistrements chacun figure avant de le supprimer.",
+      "rolesTitle": "Les étiquettes de poste sont votre liste",
+      "roles": "Une nouvelle base commence avec cinq étiquettes — Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer — et <profile>Profil</profile> permet de les modifier. Elles étaient autrefois fixes, au motif que les statistiques comparent entre elles ; en pratique, quiconque hors de l’informatique universitaire rangeait toute sa recherche sous une étiquette fausse, que les graphiques relisaient ensuite comme si elle était vraie. En supprimer une laisse chaque candidature qui la porte exactement où elle est.",
+      "roleFilter": "Seules les candidatures en portent une, et le filtre de poste se trouve dans la barre d’outils de <applications>Candidatures</applications>, à côté de la seule liste qu’il filtre — il était autrefois épinglé dans la barre supérieure, ce qui rendait ambigu tout chiffre ailleurs : comptait-il toute votre recherche ? En règle générale : l’étiquette de poste dit ce qu’est le travail, le mot-clé dit pourquoi il vous intéresse."
+    },
+    "graph": {
+      "hint": "aucun langage de requête à apprendre",
+      "title": "Posez une question au graphe",
+      "intro": "Chaque enregistrement dans jojo est un nœud, et chaque lien entre deux enregistrements est une véritable arête entre eux — ce n’est pas une image du fonctionnement, c’est la façon dont c’est stocké. La page <graph>Graphe</graph> le dessine, et son panneau de requêtes vous permet de poser à la base les questions auxquelles une liste ne peut pas répondre. On y accède par la tuile <strong>Stockage du navigateur</strong> de la barre latérale, qui n’est pas une porte évidente.",
+      "pickers": "Une question, ce sont trois sélecteurs : ce que vous cherchez, s’il <strong>possède</strong> ou s’il lui <strong>manque</strong> une relation, et ce qui se trouve à l’autre bout. La réponse se met à jour à mesure que vous les changez — il n’y a pas de bouton Exécuter, donc le tableau et les contrôles au-dessus ne peuvent jamais se contredire.",
+      "examplesTitle": "Les exemples à essayer en premier",
+      "examples": {
+        "noFollowUp": "Les candidatures sans relance programmée — le trou qui coûte des entretiens.",
+        "keyword": "Tout ce qui porte un même mot-clé, dans tous les types d’enregistrements.",
+        "twice": "Les organisations auxquelles vous avez postulé plus d’une fois.",
+        "unlinked": "Les rappels liés à aucune candidature — du travail que vous ferez sans savoir pourquoi.",
+        "unusedFiles": "Les fichiers utilisés par aucune candidature."
+      },
+      "path": "Chacun est construit à partir des enregistrements que vous avez réellement, et un exemple sur lequel votre base n’a rien à demander est désactivé plutôt que de répondre par un tableau vide. La seconde forme, <strong>Chemin</strong>, répond à « comment ces deux-là sont-ils reliés » — et répond « ils ne le sont pas » quand ils ne le sont pas, ce qui est un vrai résultat et non un échec.",
+      "illustrative": "La ligne de requête sous les sélecteurs, celle qui ressemble à du code, est marquée <strong>illustrative</strong> sur la page, et c’est vrai : rien ne l’analyse ; elle est là pour que voir la forme à côté des mots rende les sélecteurs lisibles. La page <guide>Le graphe</guide> de ce guide explique ce qui est dessiné et pourquoi."
+    },
+    "data": {
+      "hint": "où elles sont, et ce qui peut mal tourner",
+      "title": "Vos données",
+      "askedTitle": "La question que jojo a posée une fois",
+      "asked": "Au premier lancement, jojo demande s’il faut commencer avec des données de démonstration ou à vide, et ne vous laisse pas ignorer la question — quelqu’un qui voit douze candidatures auprès d’employeurs qu’il n’a jamais contactés ne peut pas savoir si l’application les a inventées ou a restauré celles de quelqu’un d’autre. Elle n’est posée qu’une fois parce que la réponse est enregistrée, et aucune réponse n’est définitive : <settings>Réglages → Vos données</settings> propose les deux, et effacer les données de démonstration ne fait pas revenir la question.",
+      "diskTitle": "Rien n’attend le disque",
+      "disk": "Un changement apparaît à l’écran à l’instant où vous le faites, et il est écrit dans la base de données du navigateur un instant plus tard, en arrière-plan. C’est pourquoi il n’y a pas d’indicateur de chargement à l’enregistrement, et pourquoi fermer l’onglet est sans risque — jojo écrit ce qu’il a en attente quand l’onglet est masqué ou fermé, y compris sur un téléphone qui ferme l’onglet sans prévenir. C’est aussi pourquoi le bandeau « plus d’espace » ci-dessous n’a pas de bouton Recharger : votre changement non enregistré attend dans cette file, et recharger est précisément ce qui le ferait disparaître.",
+      "stripsTitle": "Si un bandeau apparaît au-dessus de la page",
+      "strips": "Aucun de ces bandeaux n’empêche jojo de fonctionner — ce qui est à l’écran est réel, et peut toujours être lu et exporté. Un bandeau plutôt qu’une notification, parce qu’un message disant que vos changements ne sont pas enregistrés ne doit pas disparaître au bout de quatre secondes.",
+      "quoted": "« {{text}} »",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo n’a pas pu ouvrir sa base de données",
+          "means": "Un autre onglet jojo est ouvert sur une version différente de l’application. Vos enregistrements sont toujours sur le disque — cet onglet n’a pas pu les lire, il n’affiche donc rien plutôt que de deviner. Fermez les autres onglets et rechargez."
+        },
+        "blocked": {
+          "says": "Ce navigateur ne laisse pas jojo ouvrir son stockage",
+          "means": "Une fenêtre de navigation privée, ou un navigateur géré par votre organisation. jojo fonctionne toujours, mais comme un espace vierge : ce qui est déjà enregistré sur cet appareil n’est pas affiché, et tout ce que vous saisissez disparaît à la fermeture de l’onglet. Exportez avant de partir si vous ajoutez quelque chose qui vaut la peine d’être gardé."
+        },
+        "updated": {
+          "says": "jojo a été mis à jour dans un autre onglet",
+          "means": "Une nouvelle version s’est chargée ailleurs et cet onglet a fermé sa base de données pour laisser passer la mise à jour. Rien de ce que vous modifiez ici n’est enregistré. Rechargez."
+        },
+        "full": {
+          "says": "Ce navigateur n’a plus d’espace",
+          "means": "L’enregistrement s’est arrêté, et le bandeau compte les changements affichés mais non écrits. Celui-ci n’a volontairement pas de bouton Recharger — recharger est exactement ce qui les ferait perdre. Exportez d’abord, libérez de l’espace, puis rechargez."
+        },
+        "unsaved": {
+          "says": "N changements n’ont pas pu être enregistrés",
+          "means": "jojo réessaie toujours et la file se vide dans l’ordre : ce nombre peut donc baisser tout seul. Exportez si vous avez besoin d’une copie maintenant."
+        },
+        "unreadable": {
+          "says": "N enregistrements n’ont pas pu être lus",
+          "means": "Quelque chose sur le disque ne correspondait pas à ce qu’attend jojo, cela est donc laissé de côté plutôt qu’affiché à moitié lu. Rien n’a été supprimé, et Réglages → Diagnostics nomme les enregistrements par leur identifiant."
+        }
+      },
+      "recovery": "Il en existe un autre que vous ne devriez pas avoir à voir. Si la base de données est là mais illisible, jojo affiche un écran de récupération <strong>à la place de</strong> l’application — rien n’est chargé qui pourrait écraser ce qui reste sur le disque, et il ne repart jamais de zéro en silence. Il propose trois choses, dans l’ordre de ce qu’elles vous coûtent : télécharger les lignes qu’il a réussi à lire, réessayer, ou repartir de zéro, la seule qui demande confirmation.",
+      "controlsTitle": "Les contrôles dans Réglages",
+      "controls": {
+        "export": {
+          "name": "Exporter une sauvegarde",
+          "body": "Tout, dans un seul fichier versionné : candidatures, chronologie, coffre, annonces enregistrées, vos mots-clés et leurs étiquettes, et votre profil. Il est écrit sous le nom <strong>{{file}}</strong>, daté pour qu’un second export n’écrase pas le premier. C’est une copie prise au moment où vous appuyez — elle ne suit pas ce que vous faites ensuite, et c’est la seule copie de vos données qui ne se trouve pas sur cette machine. Exporter vers Excel et Importer sont désactivés et expliquent pourquoi au survol."
+        },
+        "demo": {
+          "name": "Charger les données de démonstration",
+          "body": "Remplace ce qui s’y trouve au lieu de s’y ajouter. Utile sur une base vide pour voir à quoi ressemble une base remplie ; sinon, exportez d’abord."
+        },
+        "clear": {
+          "name": "Effacer tous les enregistrements",
+          "body": "Candidatures, chronologie, coffre, annonces enregistrées et votre profil. <strong>Vos mots-clés sont conservés</strong> — ce sont des enregistrements à part entière et c’est vous qui les avez nommés — donc chaque compteur du panneau des mots-clés passe à zéro au lieu que la liste se vide."
+        },
+        "clearStorage": {
+          "name": "Effacer le stockage du navigateur",
+          "body": "Tout ce que ce site a mis dans votre navigateur — les enregistrements et leur base de données, vos réglages de thème et de son, les caches et les cookies — puis un rechargement. jojo revient comme sur une nouvelle machine, question du premier lancement comprise. Aucun serveur n’en garde de copie : c’est donc vraiment tout."
+        }
+      },
+      "lastThree": "Ces trois dernières sont les seules écritures que <kbd>⌘Z</kbd> n’annulera pas, c’est pourquoi chacune demande confirmation et indique exactement ce qu’elle touche. Elles apparaissent tout de même dans le journal d’audit. <strong>Diagnostics</strong>, sur la même page, compte ce que contient votre base, indique l’espace que le navigateur accorde à jojo et nomme tout ce qu’il a refusé de lire.",
+      "moveTitle": "Passer à une autre machine",
+      "move": "<transfer>Transfert</transfer> est l’écran qui permet de confier vos enregistrements à un second appareil : choisissez un sens, lisez le code d’appairage, voyez exactement ce qui partirait et en quelle quantité, et choisissez si les documents suivent. <strong>Rien n’est transmis dans cette version — elle n’ouvre aucune connexion et n’écrit rien.</strong> Elle vaut la peine d’être parcourue parce qu’elle a la forme du vrai transfert et que ses compteurs sont lus dans votre base réelle, mais aujourd’hui, pour déplacer vos données, il faut passer par l’export ci-dessus."
+    },
+    "browserDb": {
+      "title": "Votre navigateur est la base de données",
+      "body": "Chaque enregistrement est écrit dans la base de données de ce navigateur pendant que vous travaillez : fermer l’onglet est donc sans risque. Rien ne quitte cette machine et rien n’est synchronisé — effacez les données de votre navigateur, changez de navigateur ou perdez le disque, et tout part avec. Exportez une sauvegarde <kbd>.json</kbd> depuis <settings>Réglages</settings> pour tout ce que vous voulez garder ailleurs."
+    },
+    "savePath": {
+      "title": "Ce qui se passe quand vous enregistrez",
+      "desc": "Appuyer sur Enregistrer modifie immédiatement ce qui est à l’écran, et l’écriture est mise en file puis faite dans la base de données du navigateur un instant plus tard. Si cette écriture échoue, le changement reste dans la file et est signalé dans un bandeau au-dessus de la page au lieu d’être perdu.",
+      "press": { "line1": "Vous appuyez", "line2": "sur Enregistrer" },
+      "screen": { "line1": "À l’écran,", "line2": "aussitôt" },
+      "saved": { "line1": "Enregistré dans", "line2": "ce navigateur" },
+      "fail": {
+        "line1": "Une écriture échouée est gardée",
+        "line2": "et signalée, pas abandonnée."
+      }
+    },
+    "ladder": {
+      "title": "Ce que fait jojo avec plus de choses sur la machine",
+      "aside": "chaque échelon est réel ; chacun est facultatif",
+      "intro": "Les deux premiers échelons forment un outil de suivi qui ne vous demande jamais rien. À partir du troisième, il devient un assistant qui travaille sur la recherche avec vous — et chaque échelon au-dessus reste facultatif.",
+      "layers": {
+        "browser": {
+          "name": "Navigateur seul",
+          "requires": "Rien à configurer",
+          "gives": "Suivez candidatures et échéances, et conservez les documents que vous joignez"
+        },
+        "backup": {
+          "name": "+ Une sauvegarde à vous",
+          "requires": "Un endroit où mettre un fichier",
+          "gives": "Un seul fichier contenant tous les enregistrements et tous les documents, restaurable en un clic"
+        },
+        "model": {
+          "name": "+ Modèle local",
+          "requires": "Ollama, vLLM ou LM Studio — ou une clé NVIDIA gratuite",
+          "gives": "La moitié agentique : un assistant à fils de discussion qui lit et écrit vos enregistrements avec votre accord, des pipelines Job Scout qui complètent votre profil et surveillent les annonces, « Interroger le graphe » en une phrase, et un vrai scoring du scout"
+        },
+        "reader": {
+          "name": "+ Lecteur de documents",
+          "requires": "MarkItDown, exécuté en local",
+          "gives": "Le modèle lit vos PDF, fichiers Word et présentations — et une offre d’emploi, si bien que Nouveau → Candidature depuis un lien remplit le formulaire"
+        },
+        "extension": {
+          "name": "+ L’extension",
+          "requires": "Chrome, Edge, Brave ou Arc",
+          "gives": "Conservez une annonce exactement telle qu’elle était rédigée. C’est aussi la seule partie de jojo qui n’est pas une page — ce qui permet à un pipeline de parcourir un site d’emploi, et à une copie hébergée d’atteindre un lecteur de documents sur votre propre machine"
+        }
+      },
+      "built": "disponible",
+      "notBuilt": "non disponible",
+      "outro": "Chaque page indique elle-même à quel échelon elle se trouve, au lieu de vous obliger à revenir ici. L’<assistant>Assistant</assistant> est un chat agentique à fils de discussion quand un modèle est connecté, et cinq exemples rédigés sans modèle, avec un badge dans les deux cas, et <scout>Job scout</scout> calcule de vrais scores par rapport à votre profil en indiquant sur quoi il s’est basé. <screens>Chaque écran</screens> passe en revue le reste, page par page.",
+      "backup": {
+        "hint": "intégré",
+        "title": "Gardez une sauvegarde",
+        "storedTitle": "Vos documents sont stockés ici",
+        "stored": "Les CV et lettres de motivation que vous joignez sont enregistrés dans ce navigateur et survivent à la fermeture de l’onglet. Rien n’est envoyé nulle part — et rien ne quitte cette machine à moins que vous ne le téléchargiez vous-même.",
+        "oneFileTitle": "Un seul fichier contient tout",
+        "oneFile": "<settings>Réglages</settings> écrit une sauvegarde contenant chaque enregistrement, chaque lien entre eux et chaque document, dans un seul fichier. La restaurer remet les trois en place.",
+        "whyTitle": "Pourquoi c’est important",
+        "why": "Un navigateur peut vider son propre stockage quand un disque est plein, et <kbd>Effacer les données de navigation</kbd> le fera toujours. Une sauvegarde que vous avez gardée est la seule copie à l’abri des deux."
+      },
+      "model": {
+        "hint": "non connecté",
+        "title": "Ajoutez un modèle local",
+        "connectTitle": "Connectez-le",
+        "connect": "Lancez vLLM, Ollama ou LM Studio et saisissez l’adresse du point de terminaison dans <settings>Réglages</settings>. N’importe quel serveur compatible OpenAI fonctionne. Pas de GPU ? Une clé gratuite de build.nvidia.com fait tourner le même agent depuis le même écran — avec un débit limité plutôt qu’une facturation, et le seul prix à payer est que vos enregistrements quittent l’appareil.",
+        "changesTitle": "Ce qui change",
+        "changes": "La rédaction cesse d’être un modèle à trous et commence à lire votre profil et vos documents. D’ici là, la page <assistant>Assistant</assistant> montre les exemples rédigés avec lesquels il répond.",
+        "scoringTitle": "Les pipelines du scout commencent à noter",
+        "scoring": "Un pipeline est une recherche enregistrée que vous pouvez écrire dès aujourd’hui. Le scoring est la moitié qui attend le modèle, et le bandeau de cette page le dit au lieu d’afficher des chiffres que rien n’a produits."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Chaque écran",
+    "title": "Chaque écran, ce qu’il fait et ce qu’il ne fait pas",
+    "subtitle": "Une section par page — à quoi elle sert, ce qui n’est pas évident, et ce qui n’est pas encore connecté.",
+    "caption": "Treize sections — allez directement à celle qui vous intéresse",
+    "sections": {
+      "doors": "Où se trouve chaque page",
+      "dashboard": "Aujourd’hui",
+      "applications": "Candidatures",
+      "calendar": "Calendrier",
+      "vault": "Coffre",
+      "scout": "Éclaireur d’emplois",
+      "statistics": "Statistiques",
+      "graph": "Graphe",
+      "transfer": "Transfert",
+      "profile": "Mon profil",
+      "assistant": "Assistant",
+      "settings": "Réglages",
+      "guide": "Ce guide"
+    },
+    "parts": {
+      "notObvious": "Ce qui n’est pas évident",
+      "whatIsReal": "Ce qui est réel",
+      "addressNothing": "<lead>La barre d’adresse</lead> ne contient rien."
+    },
+    "doors": {
+      "hint": "six pages sont dans la barre latérale ; six n’y sont pas",
+      "title": "Où se trouve chaque page",
+      "intro": "La barre latérale liste six pages. Six autres s’ouvrent depuis un tout autre endroit : une icône de la barre supérieure, ou l’une des quatre tuiles d’état au pied de la barre latérale, qui ressemblent à des indicateurs et sont aussi des boutons. En dessous de la largeur d’un ordinateur portable, la barre latérale est un tiroir derrière le bouton de menu en haut à gauche ; la barre supérieure est présente sur tous les écrans, à toutes les tailles.",
+      "listTitle": "Chaque route, et le contrôle qui l’ouvre",
+      "where": {
+        "dashboard": "Barre latérale, première ligne. C’est aussi là que jojo s’ouvre.",
+        "applications": "Barre latérale. Son badge compte les enregistrements que vous avez marqués pour une relance.",
+        "calendar": "Barre latérale. Son badge compte ce qui est prévu dans les sept prochains jours.",
+        "vault": "Barre latérale. Son badge compte les rappels dont la date est passée. <code>/reminders</code> redirige ici, car c’est là que cette page a été déplacée.",
+        "scout": "Barre latérale. Son badge compte les correspondances que personne n’a encore transformées en candidature.",
+        "statistics": "Barre latérale, dernière ligne.",
+        "graph": "La tuile <strong>Stockage du navigateur</strong>, au pied de la barre latérale. Rien d’autre dans l’application ne l’appelle Graphe, c’est pourquoi c’est la page de jojo la plus difficile à trouver par hasard.",
+        "transfer": "La tuile <strong>Transfert</strong>, et <settings>Réglages → Vos données</settings>.",
+        "profile": "L’icône de personne dans la barre supérieure.",
+        "assistant": "L’icône de robot dans la barre supérieure.",
+        "settings": "L’icône d’engrenage dans la barre supérieure. La tuile <strong>Modèle local</strong> y mène aussi — c’est là qu’il se configure.",
+        "guide": "Le point d’interrogation, dernière icône de la barre supérieure. Il n’est pas dans la barre latérale."
+      },
+      "palette": "Une seule porte mène à toutes, et c’est pour cela que les six pages cachées sont un désagrément plutôt qu’un problème : <kbd>⌘K</kbd> se termine par un groupe <strong>Aller à</strong> qui liste chaque page, y compris séparément chacune des quatre pages de ce guide. <overview>Comment utiliser jojo</overview> explique ce que fait d’autre cette palette.",
+      "everyTitle": "Deux choses vraies sur chaque page",
+      "switches": "Les interrupteurs derrière l’engrenage à côté du titre d’une page — afficher les notes, lignes compactes, points au lieu des titres, afficher les compteurs — changent ce que la page dessine et ne durent que le temps de cette visite. Ils ne sont pas dans la barre d’adresse et ne sont pas enregistrés ; le thème et l’interrupteur de son dans Réglages, eux, le sont, et ce sont les exceptions.",
+      "defaults": "Quand une page garde un état dans l’adresse, une valeur égale à ce que la page affiche de toute façon en est omise. C’est pourquoi <code>/applications</code> et <code>/applications?view=board&stage=all&sort=daysAgo</code> sont le même écran, et pourquoi la plus courte des deux est celle que vous obtenez en supprimant un filtre."
+    },
+    "doorsDiagram": {
+      "title": "D’où l’on accède à chaque page",
+      "desc": "Les six lignes de la barre latérale ouvrent le Tableau de bord, Candidatures, Calendrier, Coffre, Job scout et Statistiques. Les quatre tuiles en dessous ouvrent le Graphe, Transfert et — pour la passerelle et le modèle — Réglages. Les quatre icônes à droite de la barre supérieure ouvrent Mon profil, Réglages, l’Assistant et ce guide. Rien dans la liste de la barre latérale ne mène à ces six dernières.",
+      "search": "Rechercher…",
+      "new": "Nouveau",
+      "topBar": { "line1": "Mon profil · Réglages ·", "line2": "Assistant · Mode d’emploi" },
+      "sidebar": {
+        "line1": "Tableau de bord · Candidatures · Calendrier",
+        "line2": "Coffre · Job scout · Statistiques"
+      },
+      "tiles": "Graphe · Transfert · Réglages"
+    },
+    "applications": {
+      "where": "barre latérale · tableau, liste et un enregistrement",
+      "open": "Ouvrir le tableau",
+      "intro": "Chaque poste que vous suivez, dans l’une de deux dispositions sur les mêmes enregistrements, plus l’enregistrement lui-même à sa propre adresse. Les six étapes et ce que demande le passage de l’une à l’autre sont dans <overview>Comment utiliser jojo</overview> ; c’est ici que cela se passe.",
+      "boardTitle": "Le tableau et la liste ne sont pas deux fois la même vue",
+      "board": {
+        "columns": "Le tableau a une colonne par étape, avec un compteur dans chaque en-tête. <strong>Ajouter ici</strong>, au pied d’une colonne, ouvre un nouvel enregistrement déjà à cette étape — noter un poste pour lequel vous avez déjà passé un entretien ne devrait pas obliger à créer un brouillon et à le faire glisser sur quatre colonnes.",
+        "sort": "La liste se trie par Poste, Étape et Dernière activité ; cliquer à nouveau sur le même en-tête inverse l’ordre. Rôle et Prochaine date sont des colonnes, pas des clés de tri.",
+        "chips": "Les puces de filtre d’étape n’existent que dans la liste. Le tableau est déjà groupé par étape : le filtrer viderait cinq colonnes au lieu de raccourcir une liste — passer au Tableau efface ce filtre plutôt que de le cacher en le laissant actif.",
+        "search": "Le champ de recherche porte sur l’employeur, le poste, la note, l’étiquette de poste et le nom de l’étape : taper « offre » trouve donc un enregistrement dont la seule mention est une puce. Les compteurs des puces d’étape portent sur ce qu’ont laissé la recherche et les puces de mots-clés, pas sur l’ensemble.",
+        "empty": "Quand la liste revient vide, elle nomme les filtres qui la vident et propose de tous les retirer d’un coup."
+      },
+      "moveTitle": "Déplacer une carte d’une étape à l’autre",
+      "move": "La poignée se trouve sur le bord gauche d’une carte. Faites-la glisser et la carte sort de sa colonne — la colonne survolée prend la bordure d’accent et ouvre un emplacement en pointillés là où la carte atterrira. Le glisser n’est pas le seul moyen, et au clavier c’est le plus lent — traverser deux colonnes demande un Espace et vingt pressions de flèche. Chaque carte porte un menu d’étape sous sa propre pastille d’étape, et dans la liste, la puce d’étape d’une ligne est ce même menu ; dans les deux cas, deux pressions suffisent.",
+      "fromBoard": {
+        "name": "Depuis le tableau ou la liste",
+        "body": "Le déplacement se fait au moment où vous le faites, et la notification indique l’étape d’origine et propose Annuler. Un glisser et un choix dans un menu sont la même écriture : un mauvais lâcher se rattrape aussi bien qu’un mauvais clic — ce qui n’était pas le cas avant que le glisser passe par le même chemin que tout le reste."
+      },
+      "fromRecord": {
+        "name": "Depuis l’enregistrement",
+        "body": "Le menu d’étape dans l’en-tête de l’enregistrement est celui qui peut d’abord ouvrir un court formulaire, et il ne s’ouvre que si le déplacement a quelque chose à demander : Envoyée, Entretien, Offre et Close oui ; Brouillon et Entretien de présélection non. Quitter un enregistrement qui a déjà une offre demande toujours, quelle que soit la destination, car l’offre doit être conservée ou abandonnée délibérément."
+      },
+      "exits": "Le formulaire a trois sorties et aucune n’est un piège : <strong>Annuler</strong> n’écrit rien, <strong>Déplacer sans détails</strong> change l’étape sans rien toucher d’autre, et la dernière applique ce que vous avez rempli. Quand il proposait d’ajouter une date à votre calendrier, la notification qui suit indique qu’il l’a fait.",
+      "recordTitle": "L’enregistrement lui-même",
+      "record": {
+        "opens": "Il s’ouvre par-dessus la liste plutôt qu’à sa place. Sur un ordinateur portable, c’est un panneau sur la droite du tableau, fermé par Échap, par l’arrière-plan ou par le X de son propre en-tête ; en dessous de cette largeur, il occupe toute la page. Dans les deux cas, Retour ferme l’enregistrement et laisse votre vue, votre recherche, votre étape et votre tri exactement comme ils étaient.",
+        "address": "Son adresse est un nom — <code>/applications/rice</code> — car les identifiants d’enregistrement sont générés par base et un identifiant mis en favori ne fonctionnerait plus après un nouveau chargement des données de démonstration. Un lien construit à partir d’un identifiant fonctionne toujours.",
+        "note": "La note s’enregistre quand vous cliquez ailleurs et affiche « Note enregistrée » en dessous. Il n’y a pas de bouton Enregistrer à oublier.",
+        "delete": "La suppression compte ce qui survit avant de demander — les rappels, événements et éléments enregistrés classés sous l’enregistrement sont conservés et détachés, jamais supprimés — et l’Annuler de la notification rétablit aussi ces liens, que vous ne pourriez pas reconstruire en ajoutant à nouveau la candidature.",
+        "deleted": "Un lien vers un enregistrement supprimé mène à un panneau qui l’indique, plutôt qu’à une erreur. Rien d’autre n’a été retiré avec lui."
+      },
+      "address": "<lead>La barre d’adresse</lead> contient la disposition, le texte de recherche et — puisque ce sont les propres contrôles de la liste — le filtre d’étape et la clé de tri : <bystage>la liste triée par étape</bystage> et <atoffer>tout ce qui est au stade de l’offre</atoffer> sont donc des liens que vous pouvez garder. Une étape dans l’adresse ne fait rien tant que l’adresse ne précise pas aussi la liste. Le filtre de poste et les puces de mots-clés à côté n’y figurent pas du tout : ils constituent la sélection de cet onglet et se réinitialisent au rechargement."
+    },
+    "today": {
+      "where": "barre latérale, première ligne",
+      "open": "Ouvrir Aujourd’hui",
+      "intro": "Ce que la journée attend de vous, et rien d’autre. Cinq panneaux, tous calculés à partir de vos enregistrements tels qu’ils sont : <strong>Décision requise</strong> — une offre, une candidature en retard, la prochaine échéance ou le prochain entretien avec un compte à rebours — à côté d’une bande mensuelle et d’un ensemble de compteurs, puis <strong>À faire cette semaine</strong>, <strong>Candidatures récentes</strong> et la répartition du <strong>Pipeline</strong>.",
+      "items": {
+        "checklist": "Tant que rien n’est suivi, le bloc de décisions est remplacé par une liste en trois étapes qui ouvre les vraies boîtes de dialogue et se coche d’après la base. Effacer tous les enregistrements dans Réglages la fait revenir, car elle lit la base au lieu de se souvenir que vous l’aviez terminée.",
+        "colour": "Sur cette page, la couleur dépend de la date et de rien d’autre : rouge, c’est en retard ; orange, dû sous 48 heures ; et tout ce qui est plus lointain reste neutre, quelle que soit son importance. Ce que vous avez terminé devient gris plutôt que vert — rien ici n’est une récompense.",
+        "rows": "Les lignes peuvent être cochées, reportées d’un jour, de trois jours ou d’une semaine, ou ouvertes, sans quitter la page. Chacune de ces actions est une vraie écriture avec un Annuler dans la notification.",
+        "strip": "La bande mensuelle est un petit calendrier à elle seule — elle change de mois sans déplacer la page <calendar>Calendrier</calendar>, et cliquer sur un jour l’ouvre là-bas."
+      },
+      "address": "<lead>La barre d’adresse</lead> ne contient rien. Cette page est <code>/</code>, et chacun de ses contrôles est soit un lien vers ailleurs, soit une écriture."
+    },
+    "calendar": {
+      "where": "barre latérale, troisième ligne",
+      "open": "Ouvrir Calendrier",
+      "intro": "Une grille du mois avec la liste du jour sélectionné en dessous, sur une seule page. Dates limites, entretiens, visites sur site et rappels sont tous ici parce qu’ils sont le même type d’enregistrement — la raison pour laquelle c’est utile à savoir se trouve dans <overview>Comment utiliser jojo</overview>.",
+      "items": {
+        "drag": "Faire glisser une entrée sur un autre jour la reprogramme, avec un Annuler dans la notification. La reposer sur son jour d’origine n’écrit rien et ne dit rien — une notification annonçant un déplacement qui n’a pas eu lieu est pire que le silence.",
+        "types": "Les types d’événements sous la grille sont des interrupteurs, comme la légende d’un graphique : désactivez-en un et ses entrées quittent la grille et les deux listes du jour, pour cette visite. Un jour dont toutes les entrées sont désactivées l’indique au lieu de prétendre être vide, et un lien vers une entrée d’un type masqué réactive ce type pour avoir où atterrir.",
+        "key": "La légende sous la grille est construite à partir de ce que contient réellement ce mois. Un mois sans rien en retard n’affiche pas de couleur « en retard », car une légende promettant une marque absente de la grille vous envoie la chercher.",
+        "goTo": "<strong>Aller au mois</strong> parcourt les années sans déplacer le calendrier derrière tant que vous n’en avez pas choisi une, et signale le vrai mois en cours pendant que vous êtes dans une autre année. <strong>Aujourd’hui</strong> revient à aujourd’hui, et reste en apparence enfoncé tant que vous y êtes déjà.",
+        "paging": "Passer d’un mois à l’autre conserve le jour que vous regardiez, ramené au mois d’arrivée : partez du 31 janvier et vous arrivez au dernier jour de février plutôt qu’à une date qui n’existe pas. La même correction s’applique à une adresse tapée à la main : <code>?m=2&d=31</code> répond par un vrai jour au lieu d’une grille vide.",
+        "add": "<strong>Ajouter un événement</strong> est prérempli avec le jour affiché, qui, dans un calendrier, est presque toujours le jour voulu.",
+        "export": "<strong>Exporter vers mon calendrier</strong> écrit toutes les dates que détient jojo dans un fichier <code>.ics</code>, avec un rappel pour chacune. C’est ici parce que jojo n’envoie aucune notification de lui-même : le calendrier qui vous envoie déjà des alertes est le seul moyen d’être prévenu d’une échéance quand cette application est fermée. Le fichier inclut la date de réponse de chaque offre, qui est stockée sur la candidature plutôt que dans la chronologie et n’est donc jamais apparue sur cette grille. Le fichier est une copie prise maintenant — si vous changez une date, exportez à nouveau."
+      },
+      "address": "<lead>La barre d’adresse</lead> contient l’année, le mois, le jour et l’entrée par laquelle vous êtes arrivé — l’année et le mois en cours étant omis quand c’est là que vous êtes, si bien qu’un lien vers le mois prochain est <code>/calendar?m=11&d=3</code>. Le dernier des quatre, <code>focus</code>, met une ligne en évidence pendant quelques secondes puis se retire de l’adresse, afin qu’une URL copiée ensuite désigne le jour plutôt qu’une ligne que plus personne ne regarde."
+    },
+    "vault": {
+      "where": "barre latérale · six outils, une page",
+      "open": "Ouvrir Coffre",
+      "intro": "Tout ce que vous mettez de côté pour y revenir. Le contrôle segmenté de l’en-tête bascule entre six outils et un seul est affiché à la fois — c’est ce qui échappe à la plupart des gens : le Coffre n’est pas une liste, et cinq de ses six outils sont derrière un onglet.",
+      "rows": {
+        "reminders": {
+          "name": "Rappels",
+          "body": "Groupés en En retard, Aujourd’hui, À venir et Terminés. Les cocher est tout le travail, et chaque ligne propose les mêmes reports que le tableau de bord."
+        },
+        "links": {
+          "name": "Liens",
+          "body": "Classés en Annonce, Institution, Personne ou Guide, et déplaçables de l’un à l’autre ensuite."
+        },
+        "files": {
+          "name": "Fichiers",
+          "body": "Catégories À lire, Candidatures, Présentations et Administratif. Déposez un fichier sur la liste ou choisissez-en un — voir plus bas ce qui est réellement conservé."
+        },
+        "snippets": {
+          "name": "Extraits",
+          "body": "Étiquetés Lettre de motivation, Formulaire de candidature, E-mail ou Bio. C’est à partir d’eux qu’est construite la boîte de dialogue <strong>Rédiger un message</strong>, et c’est là que l’Assistant classe une réponse que vous enregistrez."
+        },
+        "people": {
+          "name": "Personnes",
+          "body": "Référents, présidents de comité de recrutement, recruteurs — toute personne par qui passe réellement la recherche. Elles se classent sous un poste exactement comme un CV, et pour la même raison il s’agit d’une liste plutôt que d’un seul identifiant : un référent écrit pour chaque poste où vous le citez. Avant cela, elles vivaient dans le texte d’un rappel, et c’est pourquoi rien ne pouvait répondre à « quelle lettre attend-on encore ? »."
+        },
+        "tools": {
+          "name": "Outils",
+          "body": "Une calculatrice, simple ou scientifique, pour les calculs que finit par imposer chaque offre. Elle garde les trente dernières lignes pendant cette visite, et rien après la fermeture de l’onglet."
+        }
+      },
+      "items": {
+        "filter": "Le filtre de mots-clés au-dessus de la liste appartient à l’outil ouvert : le compteur à côté d’un mot-clé décrit donc cet onglet plutôt que tout le Coffre. Il n’est pas affiché sur Outils, qui ne contient aucun enregistrement, ni sur un onglet vide.",
+        "search": "Chacune des quatre listes a son propre champ de recherche et son propre filtre de catégorie, et aucun n’est dans l’adresse — l’onglet ouvert et l’enregistrement d’arrivée, eux, y sont.",
+        "redirect": "<code>/reminders</code> redirige ici. Les rappels avaient leur propre page avant de devenir un outil, et les liens créés à l’époque fonctionnent toujours."
+      },
+      "notConnectedTitle": "Les fichiers sont référencés, pas stockés",
+      "notConnected": "Un fichier livre son nom, sa taille et son type, et c’est tout ce que garde jojo — il n’a nulle part où mettre le document lui-même sur votre disque. Un fichier choisi ou déposé pendant cette visite est vraiment prévisualisé, à partir des octets fournis par le navigateur, tant que l’onglet reste ouvert ; les lignes fournies avec les données de démonstration n’ont aucun octet derrière elles et affichent à la place un aperçu générique étiqueté. Rien n’est envoyé et aucun contenu n’est lu.",
+      "address": "<lead>La barre d’adresse</lead> contient l’outil ouvert et, brièvement, l’enregistrement visé par un lien : <code>/vault?tool=snippets</code>. Changer d’onglet fait disparaître la mise en évidence."
+    },
+    "scout": {
+      "where": "barre latérale, cinquième ligne",
+      "open": "Ouvrir Job scout",
+      "intro": "Trois panneaux : les recherches enregistrées que vous aimeriez lancer, les correspondances qu’une telle recherche produirait, et un champ qui enregistre une annonce trouvée par vous-même. Le bandeau en haut de la page indique lequel attend quelque chose, et c’est pour cette raison qu’il s’affiche en premier.",
+      "items": {
+        "pipelines": "Les <strong>pipelines</strong> sont des enregistrements comme les autres — un site à surveiller, les termes qui comptent et la fréquence de consultation. Les créer, les modifier et les supprimer fonctionne et survit à un rechargement. Un pipeline que vous activez affiche <strong>en pause</strong> plutôt qu’en cours, ce qui est le mot honnête.",
+        "save": "<strong>Enregistrer une annonce</strong> fonctionne sans rien de connecté. Ce qui est conservé, c’est l’URL, l’employeur déduit de celle-ci et le jour de l’enregistrement — de quoi retrouver l’annonce et postuler. Rien ne télécharge la page.",
+        "add": "<strong>Ajouter aux candidatures</strong>, sur une correspondance ou une annonce enregistrée, crée la candidature et relie les deux au lieu de déplacer la ligne. La ligne indique ensuite où elle est allée, donc vous ne pouvez pas faire le trajet deux fois."
+      },
+      "notConnectedTitle": "Les captures attendent un modèle local. Les scores, non.",
+      "notConnected": "Les correspondances sont toujours celles fournies avec les données de démonstration — rien n’a parcouru de site d’emploi — mais le pourcentage de chacune est calculé ici, sur cet appareil, par rapport aux termes de correspondance, postes visés et régions de votre profil, et chaque ligne indique sur quoi elle a correspondu. Un profil vide affiche <strong>non noté</strong> plutôt qu’un chiffre assuré sur du vide. <strong>Ouvrir la capture</strong> est la partie qui attend vraiment : ce bouton est désactivé sur chaque annonce enregistrée et explique pourquoi au survol, car aucune page n’a jamais été téléchargée et en afficher une reviendrait à prétendre détenir un fichier que jojo n’a pas.",
+      "address": "<lead>La barre d’adresse</lead> contient la ligne visée par un lien, nommée d’après la liste où elle se trouve — <code>/scout?focus=match:unt</code> ou <code>focus=posting:…</code>. Les deux listes génèrent leurs identifiants séparément : la liste doit donc faire partie du paramètre pour que la bonne ligne s’allume."
+    },
+    "statistics": {
+      "where": "barre latérale, dernière ligne",
+      "open": "Ouvrir Statistiques",
+      "intro": "Taux principaux, moment des candidatures, origine de chacune, jusqu’où elles sont allées, comment elles se sont terminées, sur quoi travailler ensuite, et candidatures, réponses, entretiens et offres répartis par type de poste. Chaque chiffre est calculé à partir de vos candidatures au moment où vous regardez.",
+      "items": {
+        "funnel": "Seule l’étape actuelle d’un enregistrement est stockée, donc l’entonnoir compte chaque candidature aussi loin qu’elle le montre. Un enregistrement refusé après un entretien est compté d’après les dates qu’il porte et pas au-delà, et les deux panneaux concernés l’indiquent par <strong>aussi loin que chaque enregistrement le montre</strong> dans leur titre plutôt que d’afficher discrètement un chiffre qu’ils ne peuvent pas assumer.",
+        "typical": "Les chiffres marqués <strong>typiques</strong> sont une recherche type à laquelle vous comparer, pas votre propre historique — l’interrupteur derrière l’engrenage les masque. jojo ne garde aucun historique de ses propres chiffres, c’est pourquoi rien ici n’indique d’évolution dans le temps.",
+        "legend": "La légende sous la barre des issues permet de désactiver des segments, et le titre indique alors combien du total restent affichés. Les pourcentages sont recalculés sur ce qui reste au lieu de rester figés.",
+        "holds": "La page se retient plutôt que d’inventer un dénominateur. Sans rien d’envoyé, il n’y a ni taux principaux ni entonnoir — un taux de réponse sur zéro candidature est un chiffre inventé — et sans aucun enregistrement, toute la page n’est qu’un état vide."
+      },
+      "address": "<lead>La barre d’adresse</lead> ne contient rien. Les interrupteurs et la légende ne valent que pour cette visite."
+    },
+    "graph": {
+      "where": "la tuile Stockage du navigateur de la barre latérale",
+      "open": "Ouvrir le graphe",
+      "intro": "Vos enregistrements dessinés tels qu’ils sont stockés : un nœud pour chacun, une arête pour chaque référence entre deux d’entre eux. La couleur indique le type d’enregistrement, et la taille, combien d’éléments pointent vers lui. Sous le dessin, un panneau de requêtes répond aux questions qu’une liste ne peut pas traiter, comme savoir quelles candidatures n’ont aucune relance programmée. <guide>Le graphe</guide> explique tout cela — cette section est seulement là pour dire où se trouve la page et ce qu’elle ne fait pas.",
+      "items": {
+        "legend": "Les lignes de la légende masquent un type d’enregistrement du dessin. Les questions portent toujours sur tout le graphe — une réponse qui changerait parce que vous avez masqué quelque chose serait pire que pas de réponse.",
+        "illustrative": "La ligne sous les sélecteurs qui ressemble à du code est marquée <strong>illustrative</strong>, et c’est vrai. Rien ne l’analyse ; elle est là pour que voir la forme à côté des mots rende les sélecteurs lisibles.",
+        "fetched": "Cette page et Transfert sont chargées séparément du reste de jojo : lors d’un premier chargement, vous verrez peut-être un panneau nommé pendant un instant, le temps que le code arrive. Il l’indique au lieu d’afficher une roue qui tourne."
+      },
+      "address": "<lead>La barre d’adresse</lead> ne contient rien — ni le nœud sélectionné, ni la question, ni les types que vous avez masqués. Une vue configurée ici ne peut être envoyée à personne ; les exemples de requêtes du panneau en sont la version partageable."
+    },
+    "transfer": {
+      "where": "la tuile Transfert de la barre latérale, et Réglages",
+      "open": "Ouvrir Transfert",
+      "intro": "Confier le tout à un second appareil : choisissez de quel côté se trouve cette machine, lisez le code d’appairage, voyez exactement ce qui partirait et en quelle quantité, et décidez si les documents suivent. Les compteurs sont lus dans votre propre base, groupe par groupe, et c’est tout l’intérêt de le parcourir : ce qu’il annonce déplacer, c’est ce que vous avez réellement.",
+      "notConnectedTitle": "Rien n’est transmis",
+      "notConnected": "Cette version n’ouvre aucune connexion, ne demande pas la caméra et n’écrit dans aucune base. Le code d’appairage est généré à chaque visite et ne s’appaire avec rien ; la progression affichée est une démonstration de la forme que prendrait le vrai transfert, et la page l’indique sous le code plutôt que dans un bandeau que vous feriez défiler sans le voir. Aujourd’hui, pour déplacer vos enregistrements vers une autre machine, il faut passer par l’export de <settings>Réglages → Vos données</settings>.",
+      "items": {
+        "files": "Les fichiers sont le seul groupe désactivé par défaut — c’est la partie lourde d’un transfert, et celle que vous avez très probablement déjà sur l’autre appareil. L’appareil qui reçoit n’a pas son mot à dire, car un appareil qui abandonnerait discrètement la moitié de ce qui est arrivé serait la pire des surprises.",
+        "animation": "L’animation est une scène WebGPU redessinée à chaque image. Un interrupteur derrière l’engrenage permet de la masquer, ce qui vaut la peine sur batterie.",
+        "empty": "Avec une base vide, la page indique qu’il n’y a rien à déplacer et renvoie vers les données de démonstration, plutôt que de proposer d’envoyer zéro de tout."
+      }
+    },
+    "profile": {
+      "where": "l’icône de personne, barre supérieure",
+      "open": "Ouvrir votre profil",
+      "intro": "Quatre panneaux : vos informations de base, vos liens, vos centres d’intérêt et objectifs, et vos documents. Le profil est écrit dans ce navigateur et conservé, exactement comme tout autre enregistrement — <overview>Comment utiliser jojo</overview> explique pourquoi il ne fait toujours pas partie des premiers pas.",
+      "items": {
+        "match": "Les <strong>termes de correspondance</strong> ne sont pas des mots-clés, et le panneau le dit là où vous les saisissez. Un mot-clé sert à classer des enregistrements et à filtrer ; un terme de correspondance est une formulation par rapport à laquelle le scout noterait une annonce. Les deux listes n’ont jamais rien eu à voir l’une avec l’autre.",
+        "documents": "Le panneau des documents est une vue de la catégorie Candidatures du <vault>Coffre</vault> plutôt qu’une seconde liste à part — un CV ajouté à l’un ou l’autre endroit apparaît dans les deux, car il n’y a qu’un seul endroit. Un envoi ici enregistre le nom, la taille et le type, dans les mêmes conditions que le Coffre.",
+        "save": "Toute la page s’enregistre en une seule modification, donc un seul Annuler rétablit tout. Appuyer sur Enregistrer sans rien avoir modifié n’écrit rien et ne propose pas d’Annuler, plutôt que de consigner un changement qui n’a pas eu lieu.",
+        "example": "Chaque champ porte un exemple en gris. Sur une base vide, cela compte : cette page affichait autrefois le nom et l’e-mail d’un inconnu comme de vraies valeurs, dans des champs qu’on pouvait raisonnablement prendre pour ses propres réponses."
+      }
+    },
+    "assistant": {
+      "where": "l’icône de robot, barre supérieure",
+      "open": "Ouvrir l’assistant",
+      "intro": "Un chat à fils de discussion avec le modèle local que vous avez connecté dans <settings>Réglages</settings>, et une page d’exemples rédigés en attendant. Ce que vous obtenez dépend de la présence d’un point de terminaison enregistré — rien n’est caché et il n’y a pas d’interrupteur.",
+      "connectedTitle": "Avec un modèle connecté",
+      "connected": {
+        "agentic": "Il est <strong>agentique</strong> : le modèle reçoit les propres outils de l’application et peut lire et écrire des enregistrements pour vous répondre. Chaque appel qu’il fait est listé dans la réponse au moment où il se produit — l’outil, ses arguments et ce qui est revenu — donc une écriture est quelque chose que vous voyez se faire plutôt que de la découvrir.",
+        "threads": "Les conversations sont des <strong>fils, et elles sont enregistrées</strong>. Elles vivent dans l’IndexedDB de ce navigateur à côté de tout le reste, donc fermer l’onglet les conserve ; la barre des fils permet de passer de l’un à l’autre, et chacun peut être classé sous une candidature pour que deux recherches ne se mélangent pas en un seul historique.",
+        "documents": "Si le lecteur de documents est aussi configuré, il peut <strong>lire vos documents</strong> — un PDF, un fichier Word, une présentation — et répondre à partir de leur contenu."
+      },
+      "notConnectedTitle": "Sans modèle, les réponses sont rédigées et non générées",
+      "notConnected": "Cinq demandes qui se posent vraiment dans une recherche d’emploi — une lettre de motivation, l’adaptation d’un CV, la lecture d’une annonce, un e-mail de relance, la préparation d’un entretien — chacune avec un exemple rédigé en entier. Un message qui ne correspond à aucune renvoie une réponse qui commence par dire qu’elle est préenregistrée, plutôt qu’un paragraphe plausible sur ce que vous avez demandé, et chaque réponse porte le même badge — <strong>Exemple de réponse · aucun modèle connecté</strong>.",
+      "items": {
+        "save": "<strong>Enregistrer dans les extraits</strong> classe une réponse dans le <vault>Coffre</vault> sous l’étiquette qui lui correspond, et la notification propose de l’y ouvrir.",
+        "copy": "Un navigateur peut refuser la copie purement et simplement : le bouton signale alors l’échec au lieu de confirmer quelque chose qui n’a pas eu lieu.",
+        "delete": "Supprimer un fil propose un Annuler plutôt qu’une confirmation."
+      }
+    },
+    "settings": {
+      "where": "l’icône d’engrenage, barre supérieure",
+      "open": "Ouvrir Réglages",
+      "intro": "Sept panneaux : vos documents, un modèle local, l’apparence, vos données, vos mots-clés, les diagnostics et le journal d’audit. La tuile d’environnement au pied de la barre latérale mène ici, c’est à cela qu’elle sert.",
+      "items": {
+        "export": "<strong>Exporter une sauvegarde</strong> écrit une sauvegarde complète et versionnée dans <strong>{{file}}</strong> : candidatures, chronologie, coffre, annonces enregistrées, vos mots-clés et leurs étiquettes, et votre profil. C’est une copie prise au moment où vous appuyez, qui ne suit pas ce que vous faites ensuite.",
+        "clear": "<strong>Charger les données de démonstration</strong>, <strong>Effacer les enregistrements</strong> et <strong>Effacer le stockage</strong> demandent chacun confirmation et disent exactement ce qu’ils touchent. Effacer les enregistrements conserve les mots-clés que vous avez nommés — sauf si la base contient encore les données de démonstration intactes, auquel cas les mots-clés fournis partent avec, et la confirmation indique lequel des deux elle s’apprête à faire.",
+        "keywords": "<strong>Mots-clés</strong> les renomme, change leur couleur et les supprime, et vous indique sur combien d’enregistrements chacun figure avant de le supprimer.",
+        "diagnostics": "<strong>Diagnostics</strong> transforme « vos enregistrements sont sauvegardés » en quelque chose de vérifiable : combien il y en a de chaque type dans la base, quelle version du schéma est sur le disque, combien d’espace le navigateur accorde à jojo, et l’identifiant de tout ce qu’il a refusé de lire.",
+        "audit": "<strong>Journal d’audit</strong> liste chaque écriture, de la plus récente à la plus ancienne, jusqu’à deux cents. Seule la ligne la plus récente propose un Annuler, car une entrée d’il y a trois heures décrit des enregistrements modifiés une douzaine de fois depuis. Charger les données de démonstration et Effacer les enregistrements y apparaissent comme tout le reste et sont les deux que le journal n’annulera pas — ils l’avaient dit avant que vous appuyiez."
+      },
+      "notConnectedTitle": "Un panneau et un bouton sont désactivés",
+      "notConnected": "Le point de terminaison du modèle local est un champ, avec un bouton Tester qui explique pourquoi il ne peut pas s’exécuter. Le panneau qui se trouvait à côté — une adresse de passerelle, un code d’appairage, un chemin d’enregistrement et trois interrupteurs, qui acceptaient tous ce que vous tapiez sans rien atteindre — a disparu ; les documents sont désormais vraiment stockés, et <strong>Vos documents</strong> indique où. <strong>Exporter vers Excel</strong> et <strong>Importer</strong> sont désactivés et donnent leur raison au survol — aucun générateur de tableur n’est inclus, et relire une sauvegarde nécessite un validateur capable de refuser un fichier qu’il ne comprend pas. Ce que chacun vous apporterait est expliqué dans <overview>Comment utiliser jojo</overview>."
+    },
+    "guide": {
+      "where": "le point d’interrogation, barre supérieure",
+      "open": "Ouvrir la première page",
+      "intro": "Quatre pages sous une même adresse, avec la barre de pages au-dessus et la pagination en dessous sur chacune. Sa seule entrée dans l’interface est l’icône d’aide : nommée au survol et pour un lecteur d’écran, mais sans texte visible ni ligne dans la barre latérale — une porte bien discrète pour la page qu’on cherche quand quelque chose n’est pas clair. <kbd>⌘K</kbd> est le moyen fiable d’y revenir, et liste les quatre pages séparément plutôt qu’une seule ligne pour la section.",
+      "order": "L’ordre est un choix réfléchi plutôt qu’un hasard : chacun peut s’arrêter après la première page et utiliser l’application, et chacun peut aller directement à la dernière.",
+      "address": "<lead>La barre d’adresse</lead> est la page elle-même. La première page est <code>/guide</code> plutôt que <code>/guide/overview</code>, afin que chaque lien et chaque favori créés avant qu’il y en ait quatre mènent toujours quelque part."
+    }
+  }
+}

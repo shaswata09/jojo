@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { colourById, onPage, type Annotation } from '@/lib/pdf/annotations'
 import {
@@ -224,11 +225,12 @@ function NoteMark({
   at: { x: number; y: number }
   drawn: DrawnPage
 }) {
+  const { t } = useTranslation('vault')
   const [x0, y0, x1, y1] = noteRect(at, NOTE_SIZE)
   const box = viewRectFrom([x0, y1, x1, y1, x0, y0, x1, y0] as Quad, drawn.toViewPoint)
   return (
     <span
-      title={body || 'Comment'}
+      title={body || t('pdf.annotate.tools.comment')}
       className="absolute flex items-center justify-center rounded-sm border border-amber-700/60 bg-amber-300 text-[10px] leading-none text-amber-950 shadow-sm"
       style={{
         left: box.left,

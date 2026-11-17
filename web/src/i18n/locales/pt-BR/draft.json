@@ -1,0 +1,58 @@
+{
+  "defaultTitle": "Rascunho de e-mail",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Redigir uma mensagem",
+    "for": "Para {{name}}.",
+    "forItem": "Para {{name}} · {{item}}.",
+    "unlinked": "Não está vinculado a uma candidatura, então [ROLE] e [DATE] ficam em branco.",
+    "body": "Nada é gerado e nada é enviado — preencha as lacunas, copie para o seu cliente de e-mail e depois marque como enviado."
+  },
+  "picker": {
+    "hint": "Comece com um dos seus trechos de e-mail.",
+    "searchLabel": "Buscar trechos",
+    "searchPlaceholder": "Buscar trechos…",
+    "noMatch": "Nenhum trecho corresponde.",
+    "emailGroup": "Trechos de e-mail",
+    "freshGroup": "Começar do zero",
+    "blank": "Rascunho em branco"
+  },
+  "editor": {
+    "placeholder": "Escreva a mensagem ou escolha um trecho para começar…",
+    "label": "Rascunho da mensagem",
+    "nothing": "Nada redigido ainda.",
+    "noBlanks": "Nenhuma lacuna restante.",
+    "blanksLeft_one": "{{count}} lacuna restante — {{names}}",
+    "blanksLeft_many": "{{count}} lacunas restantes — {{names}}",
+    "blanksLeft_other": "{{count}} lacunas restantes — {{names}}",
+    "nameNote": " · o nome de uma pessoa nunca é preenchido automaticamente",
+    "copyBlocked": "O navegador bloqueou a cópia",
+    "copied": "Rascunho copiado para a área de transferência"
+  },
+  "empty": {
+    "title": "Ainda não há trechos de e-mail",
+    "description": "Trechos com a etiqueta Email aparecem aqui como ponto de partida. Não há nada para carregar, mas o rascunho não precisa começar de um.",
+    "action": "Começar com um rascunho em branco"
+  },
+  "footer": {
+    "writeFirst": "Escreva algo primeiro",
+    "saveHint": "Guardar este rascunho no Cofre, com a etiqueta Email",
+    "save": "Salvar como trecho",
+    "assistantHint": "O assistente tem uma página própria — abra-a pela barra lateral",
+    "assistant": "Abrir no assistente",
+    "copyHint": "Copiar a mensagem para a área de transferência",
+    "markNoItem": "Abra isto a partir de um lembrete para marcá-lo aqui",
+    "markDone": "Esse lembrete já está marcado",
+    "markSent": "Marcar como enviado"
+  },
+  "toast": {
+    "replaced": "Rascunho substituído",
+    "loaded": "{{title}} carregado.",
+    "startedBlank": "Recomeçado em branco.",
+    "undo": "Desfazer",
+    "saved": "Salvo nos trechos",
+    "savedDescription": "{{title}} · com a etiqueta Email, no Cofre",
+    "markedSent": "Marcado como enviado",
+    "markedSentDescription": "{{title}} — marcado nos lembretes"
+  }
+}

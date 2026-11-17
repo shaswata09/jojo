@@ -1,4 +1,5 @@
 import { useDraggable, type DraggableAttributes } from '@dnd-kit/core'
+import { useTranslation } from 'react-i18next'
 import { MARK_CHIP, startLabel } from '@/components/calendar/marks'
 import type { TimelineItem } from '@/data/timeline'
 import { markOf } from '@/lib/timeline-visuals'
@@ -63,9 +64,10 @@ export function EventChip({
   }
   className?: string
 }) {
+  const { t } = useTranslation('calendar')
   const mark = markOf(item)
   const done = mark === 'done'
-  const start = startLabel(item)
+  const start = startLabel(item) ?? t('chip.allDay')
 
   return (
     <button
@@ -74,7 +76,7 @@ export function EventChip({
       tabIndex={handle ? undefined : -1}
       aria-hidden={handle ? undefined : true}
       onClick={handle?.onOpen}
-      title={handle ? `${start ?? 'All day'} — ${item.title}` : undefined}
+      title={handle ? t('chip.tooltip', { start, title: item.title }) : undefined}
       {...draggableAria(handle?.attributes)}
       {...handle?.listeners}
       className={cn(
@@ -84,17 +86,14 @@ export function EventChip({
         // settled by stacking order rather than by stopping propagation.
         // `touch-none` is what lets a finger drag the chip instead of scrolling
         // the page — chips only exist from `sm` up, so no scroll is lost below.
-        'relative z-[1] block w-full min-w-0 cursor-pointer touch-none rounded-sm px-1 py-px text-left text-xs transition-colors hover:underline hover:decoration-1 hover:underline-offset-2 active:cursor-grabbing',
+        'relative z-[1] block w-full min-w-0 cursor-pointer touch-none rounded-sm px-1 py-px text-start text-xs transition-colors hover:underline hover:decoration-1 hover:underline-offset-2 active:cursor-grabbing',
         MARK_CHIP[mark],
         className,
       )}
     >
       {/* The time and the done-ness are in the tooltip and the day list, not in
           the 135px the title needs. They still have to be spoken. */}
-      <span className="sr-only">
-        {start ?? 'All day'}
-        {done ? ', done' : ''} —{' '}
-      </span>
+      <span className="sr-only">{t(done ? 'chip.spokenDone' : 'chip.spoken', { start })} </span>
       {/* Still a character-level ellipsis, and deliberately so. `line-clamp-1`
           was tried here to cut at a word boundary instead: Chrome blockifies it
           to `flow-root`, wraps the text, and then ellipsises the clamped line

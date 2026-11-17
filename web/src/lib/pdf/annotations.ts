@@ -11,6 +11,7 @@
  * not move when the page is re-rendered at a different zoom.
  */
 import type { Point, Quad } from './geometry'
+import { i18next } from '@/i18n/i18n'
 
 export type HighlightColour = {
   readonly id: string
@@ -28,11 +29,41 @@ export type HighlightColour = {
  * them at the 0.4 alpha `/CA` is written with.
  */
 export const HIGHLIGHT_COLOURS: readonly HighlightColour[] = [
-  { id: 'yellow', label: 'Yellow', hex: '#ffe14d' },
-  { id: 'green', label: 'Green', hex: '#8ce99a' },
-  { id: 'blue', label: 'Blue', hex: '#74c0fc' },
-  { id: 'pink', label: 'Pink', hex: '#ffa8c5' },
-  { id: 'orange', label: 'Orange', hex: '#ffc078' },
+  {
+    id: 'yellow',
+    get label() {
+      return i18next.t('messages:pdf.colour.yellow')
+    },
+    hex: '#ffe14d',
+  },
+  {
+    id: 'green',
+    get label() {
+      return i18next.t('messages:pdf.colour.green')
+    },
+    hex: '#8ce99a',
+  },
+  {
+    id: 'blue',
+    get label() {
+      return i18next.t('messages:pdf.colour.blue')
+    },
+    hex: '#74c0fc',
+  },
+  {
+    id: 'pink',
+    get label() {
+      return i18next.t('messages:pdf.colour.pink')
+    },
+    hex: '#ffa8c5',
+  },
+  {
+    id: 'orange',
+    get label() {
+      return i18next.t('messages:pdf.colour.orange')
+    },
+    hex: '#ffc078',
+  },
 ]
 
 export const DEFAULT_COLOUR = HIGHLIGHT_COLOURS[0] as HighlightColour

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DismissableLayer } from 'radix-ui/internal'
 import { CircleAlertIcon, XIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   TOAST_ACTION_DURATION_MS,
@@ -57,6 +58,7 @@ export function ToastViewport({
   toasts: readonly Toast[]
   onDismiss: (id: string) => void
 }) {
+  const { t } = useTranslation()
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY)
 
   return (
@@ -78,7 +80,7 @@ export function ToastViewport({
     <DismissableLayer.Branch asChild>
       <ol
         data-slot="toast-viewport"
-        aria-label="Notifications"
+        aria-label={t('toast.notifications')}
         aria-live={toasts.some((t) => t.tone === 'danger') ? 'assertive' : 'polite'}
         // Only the toast that arrived should be read, not the whole stack again.
         aria-atomic="false"
@@ -86,7 +88,7 @@ export function ToastViewport({
         // clicks through to whatever is underneath it.
         // `--dock-clearance` lifts the stack above the chat dock's bar, which
         // owns the bottom-right corner on every page but the Assistant's.
-        className="pointer-events-none fixed right-0 bottom-[var(--dock-clearance,0px)] z-[100] flex w-full flex-col gap-2 p-3 sm:max-w-sm sm:p-4"
+        className="pointer-events-none fixed end-0 bottom-[var(--dock-clearance,0px)] z-[100] flex w-full flex-col gap-2 p-3 sm:max-w-sm sm:p-4"
       >
         {toasts.map((toast) => (
           <ToastItem
@@ -110,6 +112,7 @@ function ToastItem({
   onDismiss: (id: string) => void
   reducedMotion: boolean
 }) {
+  const { t } = useTranslation()
   const { id, title, description, tone = 'default', action } = toast
   const [leaving, setLeaving] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -247,10 +250,10 @@ function ToastItem({
         if (event.key === 'Escape') setLeaving(true)
       }}
       className={cn(
-        'pointer-events-auto flex items-start gap-2.5 rounded-xl p-3 pr-2 shadow-[var(--shadow-raised)] ring-1',
+        'pointer-events-auto flex items-start gap-2.5 rounded-xl p-3 pe-2 shadow-[var(--shadow-raised)] ring-1',
         danger ? 'bg-danger-soft ring-danger-border' : 'bg-popover ring-foreground/10',
         leaving
-          ? 'animate-out duration-150 fade-out-0 slide-out-to-right-4'
+          ? 'animate-out duration-150 fade-out-0 slide-out-to-end-4'
           : 'animate-in duration-150 fade-in-0 slide-in-from-bottom-3',
       )}
     >
@@ -278,7 +281,7 @@ function ToastItem({
       <Button variant="ghost" size="icon-xs" className="shrink-0" onClick={() => setLeaving(true)}>
         <XIcon />
         {/* Named, because three stacked "Dismiss" buttons name nothing. */}
-        <span className="sr-only">Dismiss — {title}</span>
+        <span className="sr-only">{t('toast.dismiss', { title })}</span>
       </Button>
     </li>
   )

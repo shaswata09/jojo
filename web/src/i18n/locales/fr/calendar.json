@@ -1,0 +1,67 @@
+{
+  "monthPicker": {
+    "goTo": "Aller au mois",
+    "previousYear": "Année précédente",
+    "nextYear": "Année suivante"
+  },
+  "chip": {
+    "allDay": "Toute la journée",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, terminé —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} événement",
+    "label_many": "{{label}}, {{count}} événements",
+    "label_other": "{{label}}, {{count}} événements",
+    "add": "Ajouter un événement le {{label}}",
+    "more_one": "+{{count}} autre",
+    "more_many": "+{{count}} autres",
+    "more_other": "+{{count}} autres"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "today": "Aujourd’hui",
+    "backTo": "Revenir au {{date}}",
+    "goTo": "Aller à {{month}} {{year}}",
+    "hintTouch": "Touchez un jour pour voir ce qui y est prévu.",
+    "hintPointer": "Choisissez un jour pour l’afficher à côté de la grille. Cliquez sur un événement pour le modifier, ou faites-le glisser sur un autre jour — le glisser-déposer nécessite un pointeur ; au clavier, utilisez le champ de date dans l’événement.",
+    "eventTypes": "Types d’événement",
+    "showAll": "Tout afficher",
+    "dateColours": "Couleurs des dates",
+    "marks": {
+      "overdue": "En retard",
+      "soon": "Échéance sous 48 heures",
+      "done": "Terminé"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Aujourd’hui",
+    "selectedDay": "Jour sélectionné",
+    "hiddenTitle": "Rien d’affiché le {{date}}",
+    "hiddenDescription_one": "{{count}} événement est d’un type désactivé sous la grille.",
+    "hiddenDescription_many": "{{count}} événements sont d’un type désactivé sous la grille.",
+    "hiddenDescription_other": "{{count}} événements sont d’un type désactivé sous la grille.",
+    "showAllTypes": "Afficher tous les types d’événement",
+    "emptyTitle": "Rien le {{date}}",
+    "emptyDescription": "Ajoutez un entretien, une échéance ou un créneau de préparation : il apparaîtra ici et sur la grille.",
+    "addEvent": "Ajouter un événement",
+    "backTo": "Revenir à {{month}}",
+    "delete": "Supprimer l’événement",
+    "deleteNamed": "Supprimer {{title}}",
+    "restOf": "Reste de {{month}}",
+    "lastDayTitle": "Le {{date}} est le dernier jour du mois",
+    "nothingAfterTitle": "Rien après le {{date}}",
+    "lastDayDescription": "Rien n’est prévu ensuite. Passez au mois suivant pour planifier {{month}}.",
+    "nothingAfterDescription": "Le reste de {{month}} est libre. Tout ce que vous ajouterez après ce jour apparaîtra ici.",
+    "goToMonth": "Aller à {{month}}",
+    "goToDay": "Aller au {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "+{{count}} autre plus tard ce mois-ci",
+    "moreLater_many": "+{{count}} autres plus tard ce mois-ci",
+    "moreLater_other": "+{{count}} autres plus tard ce mois-ci"
+  }
+}

@@ -1,4 +1,5 @@
 import { KeyRound, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { ModelServer } from '@jojo/service/core/model-server'
 import { Chip } from '@/components/common/Chip'
 import { providerMeta } from '@jojo/service/core/provider'
@@ -30,18 +31,18 @@ export function SavedServers({
   onLoad: (server: ModelServer) => void
   onForget: (id: string) => void
 }) {
+  const { t } = useTranslation('settings')
   return (
     <div className="mb-4 overflow-hidden rounded-lg border border-hairline">
       <p className="border-b border-hairline bg-well px-3 py-2 text-xs text-text-3">
-        Saved connections — everything that has answered here, ready to load back whole. A key is
-        kept beside the address on this device; it never enters a backup.
+        {t('savedServers.intro')}
       </p>
       <ul className="divide-y divide-hairline">
         {servers.map((server) => (
           <li key={server.id} className="flex items-center gap-2 px-3 py-2">
             <button
               type="button"
-              className="min-w-0 flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="min-w-0 flex-1 text-start focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               onClick={() => {
                 onLoad(server)
               }}
@@ -53,7 +54,7 @@ export function SavedServers({
                     URLs with nothing marked is a list you read character by
                     character. */}
                 {server.endpoint === current.endpoint && server.model === current.model ? (
-                  <Chip tone="green">In use</Chip>
+                  <Chip tone="green">{t('savedServers.inUse')}</Chip>
                 ) : null}
               </span>
               <span className="block truncate font-mono text-xs text-text-3">
@@ -71,13 +72,14 @@ export function SavedServers({
                 {server.apiKey ? (
                   <span className="flex items-center gap-1 text-text-3">
                     <KeyRound className="size-3" strokeWidth={1.8} aria-hidden />
-                    key kept
+                    {t('savedServers.keyKept')}
                   </span>
                 ) : null}
               </span>
               <span className="sr-only">
-                Load {server.name}
-                {server.apiKey ? ', including its key' : ''}
+                {server.apiKey
+                  ? t('savedServers.loadWithKey', { name: server.name })
+                  : t('savedServers.load', { name: server.name })}
               </span>
             </button>
             <button
@@ -88,7 +90,7 @@ export function SavedServers({
               }}
             >
               <Trash2 className="size-4" aria-hidden />
-              <span className="sr-only">Forget {server.name}</span>
+              <span className="sr-only">{t('savedServers.forget', { name: server.name })}</span>
             </button>
           </li>
         ))}

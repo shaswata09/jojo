@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Die Werkzeuge",
+    "subtitle": "Was der Assistent tatsächlich tun kann, woran er gehindert wird und wie er das richtige Werkzeug findet.",
+    "can": {
+      "hint": "{{total}} insgesamt",
+      "title": "Was der Assistent tun kann",
+      "intro": "Der <go>Assistent</go> tippt nicht in deine Bildschirme. Er ruft dieselben {{total}} Operationen auf wie die Schaltflächen – derselbe Codepfad, mit denselben Prüfungen. Es gibt keinen zweiten Zugang, und deshalb landet eine Änderung des Assistenten in deinem Verlauf genau so, als hättest du sie selbst gemacht.",
+      "stats": {
+        "readsLabel": "Wege zum Nachsehen",
+        "readsHint": "Lesen ändert nie etwas",
+        "writesLabel": "Wege zum Ändern",
+        "writesHint": "jeder davon rückgängig zu machen …",
+        "destructiveLabel": "als destruktiv markiert",
+        "destructiveHint": "… außer zwei, die vorher fragen"
+      },
+      "irreversibleOne": "Von diesen {{destructive}} lässt sich eine überhaupt nicht rückgängig machen – die, die den ganzen Datenbestand ersetzen oder leeren.",
+      "irreversibleTwo": "Von diesen {{destructive}} lassen sich zwei überhaupt nicht rückgängig machen – die, die den ganzen Datenbestand ersetzen oder leeren.",
+      "irreversibleMany": "Von diesen {{destructive}} lassen sich {{irreversible}} überhaupt nicht rückgängig machen – die, die den ganzen Datenbestand ersetzen oder leeren.",
+      "neverOffered": "Sie werden dem Assistenten nie angeboten, es sei denn, deine eigenen Worte verlangen danach, und selbst dann halten sie für eine Bestätigung an, egal in welchem Freigabemodus die Unterhaltung ist. Der Automatikmodus handelt bei allem, was sich rückgängig machen lässt, ohne zu fragen; vor diesen fragt er trotzdem.",
+      "ownWords": "„Deine eigenen Worte verlangen danach“ ist ein konkreter Test, keine Ermessensfrage: Der Satz muss etwas enthalten, das löschen bedeutet, etwas, das den ganzen Datenbestand bedeutet, und keine Erwähnung einer bestimmten Art von Eintrag. „Lösch alles“ erfüllt das. „Entfern die Tags von der Baylor-Bewerbung“ nicht, und „lösch alles, was ich in diese Notiz geschrieben habe“ auch nicht – beide nennen eine Sache, also geht es in beiden um diese Sache.",
+      "errs": "Im Zweifel bietet er es nicht an. Wenn du es ernst meinst und ungewöhnlich formulierst, sagt der Assistent, dass er es nicht kann, statt zu raten – und in den Einstellungen gibt es die Schaltfläche weiterhin."
+    },
+    "gates": {
+      "hint": "der Teil, der wirklich hält",
+      "title": "Was verhindert, dass das falsche Werkzeug läuft",
+      "intro": "Ein Sprachmodell kann um alles bitten. Es kann ein Werkzeug nennen, das ihm nie gezeigt wurde, oder eines erfinden, das es nicht gibt – kleinere Modelle tun das regelmäßig, und es ist kein Zeichen, dass etwas schiefgelaufen ist. Deshalb verlässt sich jojo nicht darauf, dass das Modell vorsichtig ist.",
+      "distinctionTitle": "Die Unterscheidung, auf die es ankommt",
+      "distinction": "Auszuwählen, was dem Modell <em>gezeigt</em> wird, ist ein Hinweis. Zu prüfen, was es tatsächlich <em>aufgerufen</em> hat, ist eine Regel, und die Regel hängt davon ab, wer die Auswahl getroffen hat. Wo der Bildschirm sie festlegt – „Frag den Graphen“, eine Scout-Pipeline –, wird ein Aufruf von etwas außerhalb davon abgelehnt, bevor überhaupt etwas nachgeschlagen, geschweige denn ausgeführt wird. In einem Chat ist die Auswahl jojos Vermutung darüber, was du brauchst, also wird ein Aufruf außerhalb davon nicht abgelehnt: Er durchläuft dieselbe Freigabeprüfung wie jeder andere Aufruf, die dich zuerst fragt, außer die Unterhaltung ist so eingestellt, dass sie selbstständig handelt. Die einzige Ausnahme ist das Löschen deiner Einträge, das Einzige, was sich nicht rückgängig machen lässt: Es wird abgelehnt, es sei denn, du hast ausdrücklich darum gebeten, alles zu löschen.",
+      "askGraph": "Deshalb kann die Karte „Frag den Graphen“ gefahrlos zwei schreibgeschützte Werkzeuge anbieten. Sie verlässt sich nicht darauf, dass das Modell bei ihnen bleibt."
+    },
+    "workflow": {
+      "hint": "Schritte, nicht ein langer try",
+      "title": "Arbeit, die mehrere Schritte braucht",
+      "p1": "Einen Lebenslauf zu lesen ist nicht eine einzige Frage. jojo teilt das Dokument an seinen eigenen Überschriften auf, fragt nach jedem Abschnitt einzeln, fragt noch einmal, was übersehen wurde, und schließlich, wie die Fakten zusammenhängen – fünf oder sechs Modellaufrufe für einen Upload. Als ein einziger Codeblock geschrieben wäre das ein <code>try</code> um das Ganze, und eine schlechte Antwort irgendwo darin würde alles kosten.",
+      "p2": "Deshalb wird so eine Aufgabe als <strong>Schritte mit Kanten dazwischen</strong> deklariert. Jeder Schritt gibt an, wie oft sich ein erneuter Versuch lohnt und ob die Aufgabe ohne ihn weiterlaufen kann; der Weg von einem Schritt zum nächsten wird davon bestimmt, was passiert ist, nie dadurch, dass das Modell gefragt wird, wohin es gehen soll. Ein fehlgeschlagener Schritt wird im Ergebnis genannt, statt in einem „Dein Lebenslauf konnte nicht gelesen werden“ zu verschwinden.",
+      "p3": "Am wichtigsten ist das bei einem kleinen Modell. Ein 7B scheitert meist nicht daran, über viele Schritte schlecht zu schlussfolgern – es scheitert daran, bei einem von sechs Schritten etwas Fehlerhaftes zurückzugeben. Die sinnvolle Antwort ist, diesen Schritt zu wiederholen und die anderen fünf in Ruhe zu lassen.",
+      "p4": "Ein Schritt, der das Ergebnis nur verbessert, etwa herauszufinden, wie deine Fakten zusammenhängen, ist als optional markiert: Wenn er scheitert, bekommst du trotzdem alles, was die früheren Schritte gefunden haben. Schleifen sind erlaubt – ein Schritt kann zurückführen –, und es gibt eine harte Obergrenze für die Gesamtzahl der Schritte, damit ein Routingfehler mit einer lesbaren Spur stoppt, statt deine GPU endlos zu beschäftigen."
+    },
+    "badReply": {
+      "hint": "eine schlechte Antwort kostet einen Durchgang, nicht das Dokument",
+      "title": "Wenn ein kleines Modell schlecht antwortet",
+      "p1": "Einem kleineren Modell geht mitten im Satz der Platz aus. Beim Lesen eines Lebenslaufs wird eine Liste von Fakten verlangt, und eine Antwort, die mitten in dieser Liste abbricht, hat keine schließende Klammer – sie ist also kein JSON, und das Naheliegende wäre, sie wegzuwerfen. jojo behält stattdessen alles bis zum letzten <strong>vollständigen</strong> Eintrag und sagt dir, wie viel verloren ging. Es kommen zwanzig Fakten an statt keiner.",
+      "p2": "Es hört absichtlich bei einem vollständigen Eintrag auf. Eine halbe Stellenbezeichnung ist schlimmer als gar keine: Sie landet vor dir und sieht vollständig aus, und du bestätigst sie.",
+      "p3": "Dieselbe Sorgfalt gilt beim Suchen. Wird ein Modell gebeten, „meine Rice-Bewerbung auf Vorstellungsgespräch zu setzen“, und es gibt zwei, dann hätte ein Modell, das nach einem Treffer sucht und einen bekommt, keine Möglichkeit zu wissen, dass es einen zweiten gibt – es würde also selbstsicher den falschen Eintrag verschieben. Jede Suche meldet, wie viele Treffer es gab, und nicht nur, was sie anzeigt – und genau das erlaubt dem Assistenten, zurückzukommen und dich zu fragen, welchen du meintest."
+    },
+    "picks": {
+      "hint": "damit eine Anfrage nie auf halbem Weg stehen bleibt",
+      "title": "Wie er das richtige auswählt",
+      "p1": "Einem Modell alle {{total}} Werkzeuge auf einmal zu zeigen, kostet deutlich mehr als fünfzehntausend Wörter des Raums, den es zum Denken hat – bevor du überhaupt etwas getippt hast. Bei einem kleinen Modell auf deinem eigenen Rechner kann das mehr Platz sein, als es hat. Deshalb grenzt jojo die Liste auf das ein, worauf deine Worte zeigen.",
+      "p2": "Unvorsichtig einzugrenzen ist schlimmer, als gar nicht einzugrenzen. Die meisten Operationen brauchen etwas, worauf sie wirken: Du kannst kein Schlagwort zuordnen ohne ein Schlagwort und kein Dokument aktualisieren ohne ein Dokument. Versteck das Werkzeug, das die Sache erzeugt, und der Assistent bleibt auf halbem Weg stehen, ohne dass auf dem Bildschirm etwas erklärt, warum.",
+      "unsureTitle": "Wenn er unsicher ist, grenzt er nicht ein",
+      "unsure": "„Erinnere mich am Donnerstag an Baylor“ ist klar, und jojo bietet etwa ein Fünftel des Katalogs an. „Eigentlich war es die andere“ ist über nichts klar – also bietet es alles an, genau wie bevor es das alles gab. Unsicherheit kostet ein wenig Tempo. Raten würde dich deine Antwort kosten.",
+      "secondTitle": "Ein zweiter Assistent übernimmt die Auswahl",
+      "second1": "Deine Worte mit einer Liste abzugleichen ist schnell und kostenlos, kann aber keine Absicht erkennen. „Rice hat sich gemeldet“ nennt kein Werkzeug und kein Verb, bedeutet aber offensichtlich, dass sich eine Phase geändert hat. Wenn ein Modell verbunden ist, läuft deshalb zuerst eine zweite, viel kleinere Aufgabe: Sie liest deine Anfrage – nicht die Unterhaltung, nicht die Ergebnisse, nur das, was du gefragt hast – und antwortet mit den Werkzeugen, die sie für nötig hält.",
+      "second2": "Sie ist günstig, weil sie nicht die vollständigen Anweisungen zu jedem Werkzeug braucht, nur einen Namen und eine Zeile: etwa ein Sechstel dessen, was die Übergabe des ganzen Katalogs kosten würde, und diese Ersparnis gibt es bei jedem Schritt, nicht nur einmal. Gemessen über zehn Fragen hintereinander senkte sie die erste Nachricht von rund 8.000 Wörtern Kontext auf 2.900.",
+      "second3": "Sie kann nur eingrenzen. Was sie auswählt, durchläuft dieselben Prüfungen wie vorher – die Werkzeuge, die etwas erzeugen, kommen mit denen, die es ändern, und die beiden, die deinen Datenbestand leeren, sind nie dabei, außer du hast mit deinen eigenen Worten danach gefragt. Ist sie langsam oder nicht verfügbar, läuft stattdessen der Wortabgleich, und es geht nur ein Moment verloren.",
+      "longTitle": "Lange Unterhaltungen",
+      "long1": "Ein Modell kann nur so viel auf einmal fassen, und eine Unterhaltung, die darüber hinauswächst, wird gekürzt – vom Server, von vorne, und genau dort stehen die Regeln. jojo kürzt stattdessen selbst, vom ältesten Ende her, und rührt weder seine eigenen Anweisungen noch deine aktuelle Frage an.",
+      "long2": "Was es entfernt, ersetzt es zuerst durch eine kurze Zusammenfassung dessen, was dort passiert ist, damit der Assistent weiterhin weiß, dass du ihm schon gesagt hast, welche Rice-Bewerbung du meintest. Du wirst informiert, wenn das passiert. Deine Einträge sind nie betroffen – es geht nur darum, was in eine Nachricht passt.",
+      "long3": "Eine Unterhaltung behält die Werkzeuge, die sie tatsächlich benutzt hat. Die, die ihr nur angeboten und nie angerührt wurden, fallen weg, damit sich ein langer Chat nicht langsam mit allem füllt."
+    },
+    "evidence": {
+      "hint": "an echten Modellen getestet, nicht behauptet",
+      "title": "Funktioniert es wirklich?",
+      "p1": "Alles oben ist ein Entwurf. Ob ein bestimmtes Modell tatsächlich das richtige Werkzeug aus jojos Katalog wählen kann, ist eine Frage über dieses Modell, und der einzige Weg, sie zu beantworten, ist, es zu fragen. Deshalb gibt es eine Reihe von Szenarien – Lesen, Schreiben, Ketten, die erst ein Nachschlagen brauchen, und Fälle, in denen die richtige Antwort ist, nichts zu tun –, die gegen echte Server laufen.",
+      "p2": "Jedes Szenario läuft zweimal: einmal mit dem ganzen Katalog und einmal mit der eingegrenzten Auswahl. Der zweite Durchlauf ist der entscheidende. Eingrenzen soll einem kleineren Modell helfen, indem es weniger Namen zum Verwechseln bekommt – es könnte aber genauso gut schaden, indem etwas Nötiges fehlt, und so eine Behauptung ist nichts wert ohne die Kontrollgruppe daneben.",
+      "suiteTitle": "Wonach die Testreihe sucht",
+      "suite": "Nicht danach, ob ein Modell klug ist. Sondern ob es zu einem Dokumentwerkzeug greift, wenn du ihm eine URL gegeben hast, eine zweite Bewerbung anlegt, statt die genannte zu aktualisieren, eine ID erfindet, statt eine nachzuschlagen, oder – der wichtigste Fall – „lösch die Frist“ hört und zu der Operation greift, die deinen ganzen Datenbestand leert."
+    },
+    "conversation": {
+      "hint": "ein echter Datenbestand, und wie er danach aussah",
+      "title": "Kann es eine Unterhaltung führen?",
+      "p1": "Die Testreihe oben stellt einem Modell eine Frage und prüft, ob es ein sinnvolles Werkzeug genannt hat. Das ist die leichte Hälfte, und sie schmeichelt allen. Echte Arbeit ist nicht eine Frage: Du fragst, in welcher Phase etwas ist, und sagst dann „setz sie auf Vorstellungsgespräch“ – und der Eintrag, den du meinst, steht in der vorigen Antwort, nicht im Satz.",
+      "p2": "Deshalb gibt es einen zweiten Benchmark. Er baut einen echten Datenbestand auf – sechs Bewerbungen, einen Kalender, einen Tresor, Schlagwörter –, gibt dem Assistenten ein Skript mit {{conversations}} Unterhaltungen aus {{groups}} Arten von Arbeit und lässt die Werkzeugaufrufe tatsächlich laufen. Danach sieht er nach, was im Datenbestand steht. Vier Dinge werden getrennt bewertet, weil ein Modell das eine bestehen und das andere verfehlen kann:",
+      "called": "<lead>Was es aufgerufen hat</lead> – war jeder Zug vertretbar.",
+      "route": "<lead>Wie es dorthin kam</lead> – hat es einen Eintrag nachgeschlagen, bevor es ihn änderte, oder allein aus dem Satz geschrieben.",
+      "shape": "<lead>Die Form der Arbeit</lead> – jeder Fall hat einen Referenzgraphen der nötigen Aufrufe und ihrer Abhängigkeiten, und der Lauf wird daran gemessen. Zwei Aufrufe, die der Graph unabhängig lässt, dürfen in beliebiger Reihenfolge passieren; ein Schreibvorgang vor dem Lesen, das herausfindet, wohin geschrieben werden soll, nicht.",
+      "left": "<lead>Was es hinterlassen hat</lead> – stimmt der Datenbestand, und hat sich etwas geändert, das sich nicht hätte ändern sollen.",
+      "p3": "Das Dritte ist das, was Benchmarks meist auslassen, und es ist der Grund, warum ein Modell hier gut abschneiden und im Alltag enttäuschen kann: Bei einem so kleinen Datenbestand trifft Raten oft den richtigen Eintrag. Der Graph zeigt, ob es schlussgefolgert oder Glück gehabt hat. Er wird neben dem Hauptergebnis berichtet, statt darin aufzugehen – die richtige Antwort auf einem Weg zu erreichen, den niemand vorhergesehen hat, ist trotzdem die richtige Antwort."
+    },
+    "reasoning": {
+      "hint": "gemessen, samt dem, was es an Zeit kostet",
+      "title": "Hilft Reasoning?",
+      "p1": "Man kann ein Modell bitten, nachzudenken, bevor es antwortet – die Einstellung „Reasoning“ in den <go>Einstellungen</go>. Ob es dadurch bei jojos Arbeit besser wird, ist eine Frage über das Modell, deshalb lief der Unterhaltungs-Benchmark oben zweimal mit eingeschaltetem und zweimal mit ausgeschaltetem Reasoning, auf denselben Servern und mit demselben Code.",
+      "numbersTitle": "Was die Zahlen sagen",
+      "gemma": "<lead>Bei Gemma kostet Reasoning Genauigkeit und viel Zeit.</lead> Im Schnitt schaffte es zwei bis drei Unterhaltungen weniger, und die mittlere Unterhaltung dauerte etwa dreimal so lange. Die Langsamkeit ist das Nachdenken selbst: Gemma erzeugt etwa 31 Tokens pro Sekunde und denkt vor einer Antwort ein paar hundert Tokens lang nach, sodass eine Runde im Schnitt etwa sechs Sekunden länger dauert und eine lange fünfzehn oder mehr. Über beide Durchgänge hinweg hat es zuverlässig drei Unterhaltungen verbessert und zuverlässig drei bis vier verschlechtert – darunter das Ablegen eines neuen Dokuments und das Ablehnen eines Vorschlags, was es ohne Reasoning jedes Mal richtig macht.",
+      "gptOss": "<lead>Bei GPT-OSS ändert die Einstellung nichts</lead> – und das ist erwartet, keine Erkenntnis. GPT-OSS denkt immer nach; „aus“ kann es nur um weniger bitten, und beide Einstellungen liefen mit seinem üblichen Aufwand. Außerdem erzeugt es etwa siebenmal schneller als Gemma, sodass sein Nachdenken weniger als eine Sekunde pro Antwort kostet.",
+      "advice": "Wenn sich Antworten bei einem Modell wie Gemma langsam anfühlen, schalte Reasoning aus: In diesem Benchmark verlierst du dadurch nichts. So oder so denken die beiden Helfer – der, der auswählt, welche Werkzeuge ein Zug nutzen darf, und der, der eine lange Unterhaltung zusammenfasst – nie nach, weil keine der beiden Aufgaben dadurch besser wird und eine Zusammenfassung einmal fast zwei Minuten dauerte, als sie es taten.",
+      "firstToken": "Die Spalte zum ersten Token macht bei einer langen Unterhaltung den Großteil der Wartezeit aus: Eine Antwort kann erst beginnen, wenn der Server alles gelesen hat, was ihm geschickt wurde. Ein Prompt, der sich wiederholt, ist viel günstiger, weil der Server dessen Anfang vom letzten Mal behält – deshalb antwortet der zweite Zug einer Unterhaltung meist schneller als der erste."
+    },
+    "previewer": {
+      "hint": "jeder Fall, wörtlich",
+      "title": "Woran es gemessen wurde",
+      "p1": "Eine Punktzahl ist nur so viel wert wie ihre Fälle, und jemand hat den Nenner gewählt. Deshalb kannst du hier den ganzen Benchmark lesen: den Datenbestand, gegen den er lief, jeden Satz, der an den Assistenten ging, und was danach über deine Einträge wahr sein musste.",
+      "p2": "Das wird aus derselben Liste gelesen, die der Benchmark ausführt, nicht aus einer Beschreibung davon – ein morgen hinzugefügter Fall erscheint hier mit seinen Prompts, und einer, der stillschweigend gestrichen wird, verschwindet.",
+      "p3": "Wähle einen Fall, um zu sehen, was gesagt wurde, den erwarteten Ablauf als echten Abhängigkeitsgraphen gezeichnet, was jeder Zug aufrufen darf und was nicht, und was jedes Modell tatsächlich damit gemacht hat – einschließlich dessen, was es zurückgeschrieben hat; dort verrät sich ein Modell, das nichts getan und Erfolg gemeldet hat."
+    },
+    "ambiguity": {
+      "hint": "der Grund, warum es den Benchmark gibt",
+      "title": "Wenn zwei Einträge passen",
+      "p1": "Der Datenbestand enthält absichtlich zwei Rice-Bewerbungen und zwei UT-Standorte, weil eine echte Jobsuche nach ein paar Monaten genau so aussieht – und es ist die Situation, in der ein Assistent echten Schaden anrichten kann, während er scheinbar perfekt funktioniert.",
+      "p2": "Deshalb ist jojo so gebaut, wie es der Rest dieser Seite beschreibt. Man kann sich nicht darauf verlassen, dass ein Modell anhält, also wird, was sich nicht rückgängig machen lässt, nie angeboten, außer du verlangst es ausdrücklich; jeder Schreibvorgang wird gegen das geprüft, was tatsächlich angeboten wurde, und jede Änderung landet in deinem Verlauf, wo du sie rückgängig machen kannst.",
+      "p3": "Es lohnt sich auch, es klar zu sagen: Ein einzelner Benchmark-Durchgang ordnet Modelle bestenfalls grob ein. Die Punktzahlen schwankten zwischen Läufen auf derselben Hardware mit denselben Einstellungen. Was sich nicht verändert, ist die Form des Fehlers – und genau dagegen lohnt es sich zu entwerfen."
+    },
+    "model": {
+      "hint": "deine Wahl, und sie ändert, wohin deine Worte gehen",
+      "title": "Welches Modell das macht",
+      "p1": "jojo spricht mit dem, was du in den <go>Einstellungen</go> angibst. Ein Modell auf deinem eigenen Rechner – Ollama, vLLM, LM Studio – ist die Standardeinstellung, und es ist die einzige Anordnung, bei der nichts, was du schreibst, das Gerät verlässt.",
+      "p2": "Du kannst auch Claude, OpenAI und andere mit einem API-Schlüssel nutzen. Das ist ein echter Kompromiss, und der Bildschirm sagt das deutlich: Deine Einträge gehen an dieses Unternehmen und werden deinem Konto in Rechnung gestellt. Der Schlüssel wird in diesem Browser gespeichert, ist nie Teil eines Backups und wird nirgendwohin gesendet außer an den Anbieter, den du gewählt hast.",
+      "stoppedTitle": "Wenn der Assistent scheinbar aufgehört hat zu lesen",
+      "stopped": "Ein lokales Modell mit zu wenig Platz verwirft stillschweigend den Anfang dessen, was ihm geschickt wurde, und antwortet dann selbstsicher auf eine Frage, die es nie ganz gesehen hat. jojo vergleicht jetzt, was der Server gelesen zu haben angibt, mit dem, was tatsächlich gesendet wurde, und sagt dir, wenn beides nicht übereinstimmt – denn die Alternative ist ein Assistent, der schlecht in seiner Arbeit zu sein scheint, statt dass ihm der Platz fehlt."
+    },
+    "next": "Weiter: <go>womit jojo gebaut ist</go>."
+  },
+  "graph": {
+    "pageTitle": "Der Graph darunter",
+    "subtitle": "Jeder Eintrag ist ein Knoten und jede Verbindung zwischen ihnen eine Kante. Die Seite „Graph“ zeichnet genau das.",
+    "picture": {
+      "hint": "keine Illustration des Datenbestands – der Datenbestand selbst",
+      "title": "Was das Bild zeigt",
+      "body": "Die Seite <go>Graph</go> geht bei jedem Rendern dieselben Einträge durch, die auch das Board und der Kalender lesen, und zeichnet eine Markierung pro Eintrag und eine Linie pro Zeiger. Nichts auf dieser Fläche ist eine zweite Kopie deiner Daten, und nichts darauf ist ein Mock-up: Lösch eine Bewerbung auf dem Board, und sie ist von der Fläche verschwunden, bevor du zurückkommst.",
+      "markTitle": "Was eine Markierung bedeutet",
+      "colourTerm": "Farbe",
+      "colour": "Die Art des Eintrags. Nichts auf dieser Seite ist je rot oder bernsteinfarben – diese beiden Farben sind in der ganzen App für Überfälliges und bald Fälliges reserviert, und ein roter Punkt hier würde als Frist gelesen statt als Art.",
+      "shapeTerm": "Form",
+      "shape": "Die Familie. Kreise sind die lebendigen Einträge einer Suche – Bewerbungen, datierte Einträge, Stellenanzeigen, Treffer. Abgerundete Quadrate sind, was du im Tresor abgelegt hast: Links, Dateien, Textbausteine. Rauten sind das, was viele Einträge gemeinsam haben. Zwei der vier Rauten sind Einträge mit eigener ID, eine Organisation und ein Schlagwort, die anderen beiden nicht – siehe unten.",
+      "sizeTerm": "Größe",
+      "size": "Wie viele Kanten ihn berühren, als Quadratwurzel und gedeckelt. Ein Knotenpunkt mit zwanzig Verbindungen ist deutlich größer als einer mit vier, aber nicht fünfmal so groß – das kam heraus, als die Größe direkt aus der Anzahl berechnet wurde: Die Bewerbungen wurden zu Planeten und alles andere zu Staub.",
+      "lineTerm": "Eine Linie",
+      "line": "Ein Zeiger zwischen zwei Einträgen, ohne Pfeilspitze gezeichnet. Die Richtung wird gespeichert, und jede Traversierung auf dieser Seite ignoriert sie – wer fragt, was eine Datei mit einer Stelle verbindet, hat keine Richtung im Kopf.",
+      "notDoTitle": "Zwei Dinge, die die Fläche nicht tut",
+      "notDo1": "Ein Klick auf eine Zeile der Legende blendet diese Art von Eintrag aus, und dabei ändert kein Knoten seine Größe. Die Größe ist eine Tatsache über den Eintrag, nicht darüber, was du gerade ansiehst, und ein Knoten, der schrumpft, weil du eine Legendenzeile ausgeblendet hast, würde dir etwas über deinen Filter erzählen statt über deine Daten.",
+      "notDo2": "Und nicht alles in deinem Datenbestand ist auf der Fläche. Gespeicherte Suchen im Job-Scout und dein Profil sind Einträge, und keines davon wird gezeichnet: Eine gespeicherte Suche nennt hier keinen Eintrag, und das Profil ist eine einzige Zeile, die allein in einer Ecke jedes Bildes säße. Im Export und in der Eintragszählung in den <go>Einstellungen</go> sind sie so oder so enthalten."
+    },
+    "question": {
+      "hint": "drei Bereiche, und einer davon führt nichts aus",
+      "title": "Ihm eine Frage stellen",
+      "intro": "Das Feld unter der Fläche hat drei Teile, und es lohnt sich zu wissen, welcher welcher ist, bevor du einer Antwort daraus vertraust.",
+      "pickers": "<lead>Die Auswahlfelder sind echt.</lead> Wonach du suchst, ob es zwei einer Beziehung <hi>hat</hi>, <hi>nicht hat</hi> oder <hi>mindestens hat</hi>, was am anderen Ende sitzt, und optional ein Schlagwort, das alles tragen muss. Zeitleisteneinträge bekommen ein zweites Auswahlfeld, das sonst nichts hat – eine Art oder die Erinnerungsmarkierung –, weil „Bewerbungen ohne Nachfassen“ und „Erinnerungen, die mit nichts verknüpft sind“ die zwei Fragen sind, die Leute tatsächlich stellen, und keine davon sich allein mit Eintragsarten ausdrücken lässt.",
+      "queryLine": "<lead>Die Abfragezeile ist es nicht.</lead> Der codeähnliche Textblock unter den Auswahlfeldern wird aus ihnen erzeugt und von nichts ausgewertet. Er ist auf der Seite selbst als illustrativ gekennzeichnet, und diese Seite wird das nicht abschwächen: jojo hat keine Abfragesprache, in dieses Feld zu tippen ist keine kommende Funktion, und keine Eingabe irgendwo akzeptiert eine.",
+      "answer": "<lead>Die Antwort ist echt.</lead> Die Tabelle listet die passenden Einträge und öffnet sie, und dieselben Einträge leuchten auf der Fläche darüber auf. Lange Antworten werden in der Tabelle auf vierzig Zeilen gekürzt und sagen das auch – jeder Treffer bleibt im Graphen trotzdem hervorgehoben.",
+      "whyTitle": "Warum die nicht ausgewertete Zeile überhaupt da ist",
+      "why": "Weil sie der kürzeste Weg ist, die Auswahlfelder verständlich zu machen. <code>{{query}}</code> neben den Worten „Bewerbungen ohne Nachfassen“ zu sehen, macht aus drei Dropdowns einen Satz, den man lesen kann, und vermittelt die Form der Frage statt einer Syntax, die du dann nirgends eintippen könntest. Die Regel, an die sie sich halten muss: Sie tut nie so als ob. Sie trägt ihre eigene Kennzeichnung, hat keine Ausführen-Schaltfläche und steht unter den Steuerelementen, die die Arbeit machen, nicht darüber.",
+      "answersTitle": "Drei Dinge, die man über die Antworten wissen sollte",
+      "answers1": "Eine Frage läuft gegen deinen ganzen Datenbestand, nie nur gegen das, was gerade sichtbar ist. Eine Antwort, die sich ändert, wenn du auf eine Legendenzeile klickst, wäre schlimmer als gar keine.",
+      "answers2": "Es gibt keine Ausführen-Schaltfläche. Jede Änderung wird sofort neu ausgeführt, sodass die Tabelle und die Steuerelemente darüber nie zwei verschiedene Fragen beschreiben können.",
+      "answers3": "Ein leeres Ergebnis wird in den Worten der Frage formuliert. Frag, welchen Bewerbungen ein Nachfassen fehlt, bekomm nichts zurück, und es sagt, dass jede eines hat – das ist eine Antwort, kein Fehler."
+    },
+    "model": {
+      "hint": "die Regel, was einen verdient",
+      "title": "Elf Arten von Einträgen",
+      "intro": "Ein Wert wird zu einem eigenen Eintrag, wenn du ihn umbenennen oder kommentieren kannst, und bleibt sonst ein Feld. Ein Arbeitgeber besteht den Test: Du kannst ihn anders schreiben, Bewerbungen sammeln sich unter ihm, und es lohnt sich, dass er eine Sache ist statt zwölf Zeichenketten. Dieser eine Test hat die elf unten hervorgebracht und alles andere verworfen.",
+      "manyTitle": "Ein Zeiger oder viele",
+      "many": "Drei der sieben sind Mehrfachbeziehungen: das Taggen, worum es bei einem datierten Eintrag geht (<code>ABOUT</code>), und worunter ein Tresor-Eintrag abgelegt ist (<code>FILED_UNDER</code>). Ein Lebenslauf geht an jede Bewerbung, an die du ihn schickst, und eine Referenzfrist gilt für jede Stelle, für die sie gilt, also sind diese zwei Listen statt fester Plätze. Die anderen vier gibt es höchstens einmal pro Eintrag, und erneutes Verknüpfen ersetzt im selben Schreibvorgang, was vorher da war. Die Identität eines Zeigers ist das Tripel, das er verbindet, also ergibt zweimaliges Anlegen denselben Zeiger, und es gibt keinen Weg, zwei identische Linien zwischen denselben zwei Einträgen zu bekommen – deshalb bewirkt das Ablegen eines Dokuments unter einer Stelle, unter der es schon liegt, überhaupt nichts.",
+      "elevensTitle": "Zweimal elf und zweimal sieben, und es sind nicht dieselben",
+      "elevensIntro": "Die Seite „Graph“ hat ebenfalls elf Arten von Knoten und sieben Arten von Linien – ein Zufall, den man auseinandernehmen sollte, weil er schon Leute in die Irre geführt hat, die nachgesehen haben:",
+      "nineTerm": "Neun von elf überschneiden sich",
+      "nine": "Zwei gespeicherte Arten werden nie gezeichnet – die gespeicherte Suche und das Profil –, und zwei gezeichnete Arten werden nie gespeichert; darum geht es im nächsten Abschnitt.",
+      "fiveTerm": "Fünf von sieben überschneiden sich",
+      "five": "Zwei gespeicherte Beziehungen werden ebenfalls nie gezeichnet. Die eine sagt, dass eine Bewerbung eine Kopie einer anderen ist, und wird beim Duplizieren geschrieben; die andere verbindet eine gespeicherte Stellenanzeige oder einen Treffer mit der Suche, aus der er stammt, und wird nicht gezeichnet, weil das, was an ihrem anderen Ende steht, nicht gezeichnet wird. Zwei gezeichnete Beziehungen werden nie gespeichert.",
+      "oneNameTerm": "Ein Name, zwei Bedeutungen",
+      "oneName": "Das Beziehungs-Auswahlfeld bietet <code>stammt aus</code> an, und auf der Fläche ist das die Linie von einer Bewerbung dorthin, wo du sie gefunden hast – eine Linie, die der Datenbestand nie enthalten hat. Die gespeicherte Beziehung gleichen Namens verbindet eine Stellenanzeige mit einer gespeicherten Suche und erscheint auf keinem Bild."
+    },
+    "drawn": {
+      "hint": "Rolle und Quelle",
+      "title": "Zwei gezeichnete Dinge, die nie gespeichert wurden",
+      "p1": "Eine Bewerbung trägt ein Rollen-Tag aus einer festen Liste von fünf und optional, wo du sie gefunden hast, aus einer festen Liste von vier. Keines davon ist ein Eintrag. Es sind geschlossene Listen, die einen Filter und eine Legendenreihenfolge steuern; man kann sie nicht umbenennen oder kommentieren, und sie zu Einträgen zu machen, würde jede Projektion in der App um ein Nachschlagen erweitern, ohne dass du danach irgendetwas mehr tun könntest.",
+      "p2": "Gezeichnet werden sie trotzdem, weil ein Bild davon, welche davon über eine Empfehlung kamen, sich lohnt, und ein Filter-Chip nicht dasselbe Bild ist. Die Seite „Graph“ erzeugt sie aus den Eigenschaften, die sie ohnehin zur Hand hat, in dem Moment, in dem sie sie hat, und schreibt nichts.",
+      "tellTitle": "Wie man sie im Bild unterscheidet",
+      "tell": "Es sind die beiden Rauten, hinter denen weder ein Arbeitgeber noch ein Schlagwort steht, und der entscheidende Test ist, dass sie nicht länger leben können als das, woraus sie gelesen wurden. Lösch die letzte Bewerbung mit dem Tag <hi>Postdoc</hi>, und dieser Knoten verschwindet mit ihr – es gibt in jojo keinen anderen Ort, an dem dieser Wert als Sache existiert. Lösch die letzte Bewerbung bei einem Arbeitgeber, und der Organisationseintrag bleibt, weil er ein Eintrag ist; dasselbe gilt für ein Schlagwort, und deshalb bleiben deine Schlagwörter erhalten, wenn du in den <go>Einstellungen</go> alle Bewerbungen löschst.",
+      "source": "Ein Quellknoten erscheint außerdem nur, wenn du angegeben hast, woher etwas kam. Es ist ein optionales Feld, und eine Bewerbung, bei der es nicht gesetzt ist, hat einfach keine Linie in diese Richtung."
+    },
+    "delete": {
+      "hint": "die eine Tatsache, die man mitnehmen sollte",
+      "title": "Löschen trennt Verknüpfungen, es kaskadiert nie",
+      "intro": "Lösch eine Bewerbung, und jojo entfernt diesen Eintrag und die Zeiger darauf und rührt nichts am anderen Ende eines dieser Zeiger an. Ein Dialog, der „Rice löschen“ sagt, kann fairerweise nicht als Zustimmung gelesen werden, die vier Dateien zu löschen, an denen jemand einen ganzen Abend gesessen hat.",
+      "afterTitle": "Was du danach tatsächlich siehst",
+      "after": "Die Datei ist weiterhin im Tresor, unter nichts abgelegt. Die Erinnerung ist weiterhin im Kalender, über nichts. Deine Schlagwörter bleiben unberührt – sie werden von allem geteilt und haben dieser Bewerbung nie gehört. Auf der Seite „Graph“ werden diese Einträge zu unverbundenen Knoten, und genau dafür ist der Schalter <hi>Unverbundene Einträge ausblenden</hi> da, sobald du ein paar tote Suchen aufgeräumt hast.",
+      "halfTitle": "Und kein Eintrag wird je halb gelöscht",
+      "half": "Es gibt keine versteckte Markierung, die einen Eintrag als entfernt kennzeichnet. Dieser Ansatz kostet einen Filter, den man nie vergessen darf, bei jedem Lesen, jeder Zählung, jeder Projektion und beim Export – und eine Stelle, die ihn vergisst, ist ein gelöschter Eintrag, der wieder auf deinem Board erscheint. Weg heißt, die Zeile ist nicht da – und Rückgängig stellt sie mit ihren Zeigern wieder her, weil der Schreibvorgang festgehalten hat, wie jeder Eintrag vorher aussah, statt einer Notiz, wie er sich umkehren lässt."
+    },
+    "source": {
+      "hint": "für alle, die das Repository öffnen",
+      "title": "Eine Aktion, ein Commit, eine Journalzeile, ein Rückgängig",
+      "p1": "Jeder Schreibvorgang in jojo ist eine benannte Operation, außerhalb von React definiert, gegen ihr eigenes Schema validiert und synchron in einer einzigen Transaktion ausgeführt. Operationen rufen einander auf, und ein verschachtelter Aufruf tritt der Transaktion bei, aus der er aufgerufen wurde, statt eine eigene zu öffnen. Das ist die ganze Invariante, und der Rest dieser Seite folgt daraus.",
+      "p2": "Eine Bewerbung hinzuzufügen sind drei Schreibvorgänge: der Eintrag, der Arbeitgeber, falls es die erste Bewerbung dort ist, und die Frist, falls du eine angegeben hast. Sie landen als ein Commit und ergeben daher eine Zeile im Protokoll, eine Benachrichtigung und einen Klick auf Rückgängig. Eine zu löschen hat dieselbe Form, rückwärts gelesen – die Transaktion hat festgehalten, wie jeder berührte Eintrag vorher und nachher aussah, also verknüpft das Umkehren die Erinnerung und die Datei wieder, ohne dass jemand eine Funktion geschrieben hat, die weiß, dass eine Erinnerung und eine Datei beteiligt waren. Deshalb lässt sich das Trennen oben überhaupt rückgängig machen, und deshalb war der vorherige Ansatz – eine handgeschriebene Umkehrung pro Operation – der Ort, an dem diese Art von Fehler früher lebte: Jemand musste sich merken, was ein Schreibvorgang berührte, und der Schreibvorgang, der fünf Sammlungen berührte, war als einer in Erinnerung, der vier berührte.",
+      "p3": "Das Protokoll wird aufbewahrt. Die <go>Einstellungen</go> listen jeden Schreibvorgang auf, den neuesten zuerst, begrenzt auf die letzten zweihundert und beim Öffnen des Datenbestands bereinigt, und bieten Rückgängig für die neueste Zeile an. Der Rückgängig-<em>Stapel</em> ist etwas anderes: auf die Sitzung beschränkt und fünfzig tief, weil ein Stapel, der ein Neuladen überlebt, dazu einladen würde, etwas vom letzten Dienstag rückgängig zu machen, und das bräuchte Konfliktregeln, die diese App nicht hat.",
+      "p4": "Wo die Operationen leben, welche Schicht welche importieren darf, und derselbe Ablauf „Bewerbung hinzufügen“ quer durch alle fünf gezeichnet, steht unter <go>Gebaut mit</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "Die zwei Schranken zwischen einer Frage und einer Änderung an deinen Einträgen",
+      "desc": "Sechs Schritte, von oben nach unten. Eins: was du getippt hast. Zwei: jojo wählt die Werkzeuge, auf die deine Worte zeigen – und wenn deine Worte unklar sind, bietet es alle an, statt zu raten. Drei: Es fügt hinzu, wovon diese Werkzeuge abhängen, damit keine Kette in einer Sackgasse endet. Vier: Das Modell wählt ein Werkzeug. Fünf: jojo prüft, ob dieses Werkzeug tatsächlich angeboten wurde; wenn nicht, wird der Aufruf abgelehnt und nichts läuft. Sechs: Erst dann ändern sich deine Einträge. Der fünfte Schritt ist der, der etwas durchsetzt – der zweite ist nur ein Hinweis, weil ein Modell ein Werkzeug nennen kann, das ihm nie gezeigt wurde.",
+      "typed": "was du getippt hast",
+      "pick": "wahrscheinliche Werkzeuge wählen",
+      "pickNote": "unklar? alle {{total}} anbieten",
+      "needs": "hinzufügen, was sie brauchen",
+      "needsNote": "damit keine Kette hängen bleibt",
+      "chooses": "das Modell wählt eines",
+      "offered": "wurde es angeboten?",
+      "offeredNote": "nein? abgelehnt, nichts läuft",
+      "change": "deine Einträge ändern sich",
+      "caption": "Schritt zwei spart dir Tokens. Schritt fünf ist der, der dich schützt – und er läuft unabhängig davon, ob Schritt zwei etwas eingegrenzt hat."
+    },
+    "toolGraph": {
+      "title": "Wie ein Werkzeug das Werkzeug mitbringt, das es versorgt",
+      "desc": "Drei Zeilen, jede von links nach rechts zu lesen. In der ersten zieht eine Anfrage nach keyword.attach keyword.create mit, weil das Zuordnen eines Schlagworts ein bereits existierendes Schlagwort braucht. In der zweiten zieht vault.file.update vault.file.add mit, weil das Aktualisieren eines Dokuments ein Dokument braucht. In der dritten zieht scout.posting.promote scout.posting.save mit, weil das Übernehmen einer gespeicherten Stellenanzeige eine gespeicherte Stellenanzeige braucht. In jedem Fall leitet jojo die Abhängigkeit aus der Eingabe des Werkzeugs selbst ab und bietet beide Werkzeuge zusammen an – damit der Assistent nie einen ersten Schritt bekommt, ohne den zweiten erreichen zu können.",
+      "asked": "was du verlangt hast",
+      "needsHeader": "was es braucht",
+      "offered": "mit angeboten",
+      "needsKeyword": "ein Schlagwort",
+      "needsFile": "eine Datei",
+      "needsPosting": "eine Anzeige",
+      "without": "Ohne das könnte der Assistent das erste Feld angeboten bekommen und nicht das zweite –\nund würde auf halbem Weg stehen bleiben, ohne dass der Bildschirm sagt, warum.",
+      "caption": "jojo liest jede Anforderung aus der Definition des Werkzeugs selbst, sodass ein morgen hinzugefügtes Werkzeug abgedeckt ist, ohne dass jemand eine Liste aktualisiert."
+    },
+    "benchAmbiguity": {
+      "title": "Ein Satz, zwei Einträge, und der falsche wurde geändert",
+      "desc": "Oben die Anfrage: Schließ die UT-Bewerbung, sie haben mir abgesagt. Darunter zwei Einträge, die beide passen – UT Austin, noch eingereicht und aktiv, und UT Dallas, bereits geschlossen. Nichts im Satz unterscheidet sie. Die richtige Reaktion ist, nachzufragen, welche gemeint ist; vier von sechs Benchmark-Läufen schlossen stattdessen UT Austin, die aktive Bewerbung. Das gewählte Werkzeug war das richtige. Der Eintrag, auf den es angewendet wurde, nicht.",
+      "quote": "„Schließ die UT-Bewerbung – sie haben mir abgesagt.“",
+      "matchesBoth": "passt auf beide",
+      "austinState": "eingereicht – noch aktiv",
+      "austinRuns": "von 4 von 6 Läufen geschlossen",
+      "dallasState": "bereits geschlossen",
+      "dallasMeant": "die gemeinte",
+      "footer": "Das Werkzeug war richtig. Der Eintrag nicht – und keine Werkzeugwahl-Wertung kann den Unterschied sehen.",
+      "caption": "jojos eigene Anweisung sagt dem Modell, nachzufragen, wenn eine Anfrage mehr als einen Eintrag meinen könnte. Zwei der drei Modelle haben trotzdem geschrieben."
+    },
+    "benchAxes": {
+      "title": "Genauigkeit pro Zug im Vergleich zum Erfolg der ganzen Unterhaltung",
+      "desc": "Drei Balken, gemessen über dieselben Benchmark-Läufe. Züge, die etwas Vertretbares aufgerufen haben: {{turnsGot}} von {{turnsOf}}, {{turnsPct}} Prozent. Einzelne Aussagen über den Datenbestand, die zutrafen: {{claimsGot}} von {{claimsOf}}, {{claimsPct}} Prozent. Ganze Unterhaltungen ohne jeden Fehler: {{wholeGot}} von {{wholeOf}}, {{wholePct}} Prozent. Der dritte ist niedriger als die anderen beiden, weil eine Unterhaltung nur dann fehlerfrei ist, wenn jeder Zug und jede Aussage gemeinsam bestanden haben – die zwei hohen Zahlen ergeben zusammen die niedrige.",
+      "turnsLabel": "Züge mit vertretbarem Aufruf",
+      "turnsNote": "die leichte Frage",
+      "claimsLabel": "Aussagen über den Datenbestand, die zutrafen",
+      "claimsNote": "einzeln geprüft",
+      "wholeLabel": "Ganze Unterhaltungen ohne Fehler",
+      "wholeNote": "jeder Zug und jede Aussage, zusammen",
+      "count": "{{got}} von {{of}} – {{note}}",
+      "bracket": "beide müssen\ngleichzeitig gelten",
+      "caption": "Ein Benchmark, der nur den ersten Balken meldet, würde diese Modelle fast perfekt nennen. Der dritte ist der, der beantwortet, ob die Aufgabe erledigt wurde."
+    },
+    "toolTrace": {
+      "title": "Wo der Code zum Hinzufügen einer Bewerbung liegt, Schicht für Schicht",
+      "desc": "Sechs Schritte, von oben nach unten. Eins: In src/components und außerhalb der gemeinsamen Schicht übergibt das Bewerbungsformular der Laufzeit ein Eingabeobjekt. Zwei: kg/react/use-tool.ts führt das Werkzeug application.create aus und wartet auf nichts. Drei: kg/tools/application.ts öffnet eine Transaktion, und die verschachtelten Aufrufe von org.ensure und des Fristwerkzeugs treten ihr bei, statt eigene zu öffnen. Vier: kg/core validiert die Eingabe gegen das Schema des Werkzeugs und erzeugt ID und Slug. Fünf: kg/repo committet einmal: Der Snapshot wird aktualisiert, eine Journalzeile angehängt, und diese Zeile ist das einzige Rückgängig. Sechs: kg/storage schreibt in einer Transaktion in vier IndexedDB-Objektspeicher – und nur dieser letzte Schritt ist als gestrichelter Pfeil gezeichnet, weil nichts auf ihn wartet. Eine Klammer am Rand kennzeichnet die Schritte drei bis fünf als eine Transaktion und ein Rückgängig.",
+      "webOnly": "nur Web",
+      "form": "das Formular übergibt ein Eingabeobjekt",
+      "run": "run('application.create') – nichts wird erwartet",
+      "join": "org.ensure und die Frist treten dem Aufruf bei",
+      "parse": "validiert die Eingabe, erzeugt ID und Slug",
+      "commit": "Commit: Snapshot, eine Zeile, ein Rückgängig",
+      "stores": "vier Speicher, eine IndexedDB-Transaktion",
+      "bracket": "eine Transaktion · ein Rückgängig",
+      "nothingAwaits": "nichts wartet darauf",
+      "caption": "Von oben nach unten in der Reihenfolge zu lesen, in der es passiert, nicht in der Reihenfolge des Stapels – <code>kg/core</code> ist L1 und liegt im Diagramm oben unter <code>kg/repo</code>, weil ein Werkzeug nach unten hinein ruft und zurückkommt, bevor irgendetwas committet wird."
+    },
+    "stack": {
+      "title": "Wie jojos Code in Schichten aufgebaut ist",
+      "desc": "Oben drei Dinge: die Browsererweiterung, die Web-App und die Handy-App. Die Erweiterung spricht über weitergeleitete Nachrichten mit der Web-App und importiert nichts. Die Web-App schickt Daten über das lokale Netzwerk ans Handy. Beide Apps rufen den gemeinsamen Dienst über dessen React-Hooks auf. Der Dienst hat sechs Schichten, von denen jede nur die darunter nutzt: react, agent, tools, repo, core und storage. Tools ist hervorgehoben: Jede Änderung an den Einträgen läuft darüber. Ganz unten implementieren ein IndexedDB-Treiber im Web und ein AsyncStorage-Treiber auf dem Handy jeweils den Speicher-Port.",
+      "extension": "Erweiterung",
+      "webApp": "Web-App",
+      "phoneApp": "Handy-App",
+      "relay": "Relay",
+      "lan": "LAN",
+      "hooks": "Hooks",
+      "reactNote": "Hooks, die beide Apps teilen",
+      "agentNote": "Modellschleife · Katalog · MCP",
+      "toolsNote": "jeder Schreibvorgang · ein Rückgängig",
+      "repoNote": "Commit · Journal · Schreibwarteschlange",
+      "coreNote": "reine Regeln · heute ist ein Parameter",
+      "storageNote": "Driver- und FileStore-Ports",
+      "idbDriver": "IndexedDB-Treiber · Web",
+      "asyncDriver": "AsyncStorage-Treiber · Handy",
+      "caption": "Durchgezogene Pfeile zeigen, in welche Richtung Code abhängen darf: nur nach unten. Gestrichelte Linien sind keine Importe – die Erweiterung leitet Nachrichten weiter, die Web-App übergibt Daten über das lokale Netzwerk ans Handy, und jeder Speichertreiber implementiert den untersten Port. Die Apps dürfen die reinen Hilfsfunktionen von core auch direkt nutzen; unterhalb der Werkzeugschicht sollten sie nie schreiben."
+    },
+    "recordModel": {
+      "title": "Die elf Arten von Einträgen, die jojo speichert, und die sieben Arten, wie einer auf einen anderen zeigen kann",
+      "desc": "Die Bewerbung steht in der Mitte, und fast alles zeigt auf sie. Ein Zeitleisteneintrag ist ABOUT (über) eine Bewerbung und kann mehrere gleichzeitig betreffen. Ein Link, eine Datei und ein Textbaustein sind jeweils FILED_UNDER (abgelegt unter) einer Bewerbung und können unter mehreren abgelegt sein. Eine gespeicherte Stellenanzeige oder ein Scout-Treffer BECAME (wurde zu) einer. Eine Bewerbung ist AT (bei) einer Organisation und kann COPY_OF (Kopie von) einer anderen Bewerbung sein. Ein Schlagwort TAGS (taggt) fünf Arten von Einträgen – Bewerbungen, Zeitleisteneinträge, Links, Dateien und Textbausteine. Drei der sieben Beziehungen können mehrfach vorkommen – ABOUT, FILED_UNDER und TAGS; die anderen vier höchstens einmal pro Eintrag, sodass erneutes Verknüpfen die bestehende Verknüpfung ersetzt. Zwei gespeicherte Arten werden auf der Seite „Graph“ gar nicht gezeichnet: pipeline, aus der (FROM) eine gespeicherte Stellenanzeige oder ein Treffer stammt, und profile, das durch keine Beziehung mit irgendetwas verbunden ist. COPY_OF und dieses FROM werden gespeichert, aber ebenfalls nie gezeichnet und sind hier deshalb gepunktet. Unter der Linie stehen die zwei Dinge, die die Seite „Graph“ zeichnet, die der Datenbestand aber nie enthalten hat: Rolle und Quelle. Es sind Eigenschaften einer Bewerbung – ihr roleTag und ihre source –, dargestellt als Knoten, verbunden durch eine IS-Kante und eine zweite Kante, die ebenfalls FROM heißt; keine davon ist irgendwo festgehalten.",
+      "storedNotDrawn": "gespeichert, aber nicht\nauf der Graph-Seite gezeichnet",
+      "drawnNeverStored": "auf der Graph-Seite gezeichnet, nie gespeichert",
+      "roleTagProp": "die Eigenschaft roleTag",
+      "sourceProp": "die Eigenschaft source",
+      "caption": "Elf Arten von Einträgen und sieben Beziehungen, die sie verbinden. <code>ABOUT</code>, <code>FILED_UNDER</code> und <code>TAGS</code> können jeweils mehrfach vorkommen – ein Lebenslauf geht an jede Bewerbung, an die du ihn schickst –, während die anderen vier höchstens einmal pro Eintrag vorkommen, sodass erneutes Verknüpfen die Verknüpfung ersetzt, statt eine zweite hinzuzufügen. Zwei gespeicherte Arten werden auf der Seite „Graph“ nie gezeichnet: <code>pipeline</code>, aus der eine gespeicherte Stellenanzeige oder ein Treffer stammt, und <code>profile</code>, das durch keine Beziehung mit irgendetwas verbunden ist. Unter der Linie stehen die zwei Dinge, die die Seite „Graph“ zeichnet, die aber nie gespeichert wurden: <code>role</code> und <code>source</code> sind Eigenschaften einer Bewerbung, für das Bild zu Knoten gemacht und nirgends festgehalten."
+    },
+    "unlink": {
+      "title": "Das Löschen einer Bewerbung entfernt die Zeiger darauf und lässt jeden Eintrag bestehen, der einen trug",
+      "desc": "Zwei Zustände, übereinander. Vorher: eine Bewerbung, auf die ein Zeitleisteneintrag über eine ABOUT-Kante zeigt, ein Schlagwort über eine TAGS-Kante und eine Datei über eine FILED_UNDER-Kante. Das Werkzeug application.delete läuft. Nachher: Der Zeitleisteneintrag, das Schlagwort und die Datei sind alle noch da, an denselben Stellen, ohne Verknüpfung – der Zeitleisteneintrag betrifft nichts, das Schlagwort taggt nichts, die Datei ist unter nichts abgelegt. Nur die Bewerbung und die drei Kanten sind weg. Kein Eintrag am anderen Ende einer Kante wird angerührt.",
+      "before": "Vorher",
+      "after": "Nachher",
+      "gone": "weg",
+      "aboutNothing": "über nichts",
+      "taggingNothing": "taggt nichts",
+      "filedNothing": "unter nichts abgelegt",
+      "caption": "Die Bewerbung und die drei Zeiger darauf sind weg. Der Zeitleisteneintrag, das Schlagwort und die Datei nicht – sie sind an denselben Stellen, ohne Verknüpfung, und jeder davon gehört weiterhin dir und lässt sich öffnen. Rückgängig stellt die Kanten wieder her, weil der Schreibvorgang festgehalten hat, wie jeder Eintrag vorher aussah, statt einer Notiz, wie er sich umkehren lässt."
+    }
+  }
+}

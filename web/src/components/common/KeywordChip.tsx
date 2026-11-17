@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toneClass, usage } from '@/components/common/label-display'
 import { ToneSwatches } from '@/components/common/ToneSwatches'
 import { inkStyle } from '@/components/common/label-display'
@@ -22,6 +23,7 @@ function KeywordMenu({
   onClose: () => void
   onRequestDelete: (id: string) => void
 }) {
+  const { t } = useTranslation()
   const { renameLabel, setTone, countFor } = useLabels()
   const [draft, setDraft] = useState(label.name)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +40,7 @@ function KeywordMenu({
     // Left open on failure with the reason in place. Closing would look like it
     // worked, and the chip behind the popover would still read the old name.
     if (!renameLabel(label.id, next)) {
-      setError(next ? 'Another keyword already has that name.' : 'A keyword needs a name.')
+      setError(next ? t('keywordChip.taken') : t('keywordChip.needsName'))
       return
     }
     onClose()
@@ -48,7 +50,7 @@ function KeywordMenu({
     <>
       <div className="space-y-1.5">
         <label htmlFor={nameId} className="text-xs text-text-2">
-          Rename
+          {t('keywordChip.rename')}
         </label>
         <div className="flex items-center gap-1.5">
           <Input
@@ -69,7 +71,7 @@ function KeywordMenu({
             }}
           />
           <Button size="sm" onClick={save} disabled={!draft.trim()}>
-            Save
+            {t('actions.save')}
           </Button>
         </div>
         {error ? (
@@ -80,7 +82,7 @@ function KeywordMenu({
       </div>
 
       <div className="space-y-1.5">
-        <span className="text-xs text-text-2">Colour</span>
+        <span className="text-xs text-text-2">{t('keywordChip.colour')}</span>
         <ToneSwatches
           label={label.name}
           value={label.tone}
@@ -100,8 +102,8 @@ function KeywordMenu({
         className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1 py-1.5 text-xs text-danger transition-colors hover:bg-danger-soft"
       >
         <Trash2 className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-        Delete keyword
-        <span className="tabular ml-auto">{usage(used)}</span>
+        {t('deleteKeyword.confirm')}
+        <span className="tabular ms-auto">{usage(used)}</span>
       </button>
     </>
   )
@@ -128,6 +130,7 @@ export function KeywordChip({
   onToggle: () => void
   onRequestDelete: (id: string) => void
 }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const { theme } = useTheme()
   // Only while the filter is ON: an unselected chip is deliberately neutral, so
@@ -159,16 +162,20 @@ export function KeywordChip({
           type="button"
           aria-pressed={on}
           onClick={onToggle}
-          title={on ? `Stop filtering by ${label.name}` : `Filter by ${label.name}`}
-          className="flex cursor-pointer items-center gap-1.5 rounded-l-full py-1 pr-1 pl-2.5"
+          title={
+            on
+              ? t('keywordChip.stopFiltering', { name: label.name })
+              : t('keywordChip.filterBy', { name: label.name })
+          }
+          className="flex cursor-pointer items-center gap-1.5 rounded-s-full py-1 ps-2.5 pe-1"
         >
           {label.name}
           <span className="tabular text-text-3">{count}</span>
         </button>
 
         <PopoverTrigger
-          aria-label={`Edit the keyword ${label.name}`}
-          title="Rename, recolour or delete"
+          aria-label={t('keywordChip.edit', { name: label.name })}
+          title={t('keywordChip.editHint')}
           // Full colour rather than dimmed until hover: it is a control, so the
           // glyph owes 3:1, and --text-3 has no headroom left to spend on
           // opacity — 60% of it lands at 2.3:1 on the chip's own background.
@@ -180,7 +187,7 @@ export function KeywordChip({
           // app gets. Growing the chevron itself is not available — it is
           // stretched to the pill's height, and the pill's height is the
           // keyword's type size — so the catch area is the only lever.
-          className="touch-target grid cursor-pointer place-items-center self-stretch rounded-r-full pr-1.5 pl-0.5"
+          className="touch-target grid cursor-pointer place-items-center self-stretch rounded-e-full ps-0.5 pe-1.5"
         >
           <ChevronDown className="size-3" strokeWidth={2} aria-hidden />
         </PopoverTrigger>

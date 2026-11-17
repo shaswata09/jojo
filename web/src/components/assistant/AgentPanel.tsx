@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -24,12 +25,7 @@ import { useThreadActions } from './use-thread-actions'
  * it — which is the shape that actually tests whether a small model can chain
  * `memory.search` into a write instead of inventing an id.
  */
-const AGENT_PROMPTS = [
-  'What am I waiting on?',
-  'Add an application: ML engineer at Stripe, submitted',
-  'Which applications have no deadline?',
-  'Flag my UT Austin application',
-].map((p) => ({ key: p, label: p }))
+const AGENT_PROMPTS = ['waiting', 'add', 'noDeadline', 'flag'] as const
 
 /**
  * The assistant with a model behind it, acting on the records.
@@ -41,6 +37,9 @@ const AGENT_PROMPTS = [
  * one that can be computed wrongly.
  */
 export function AgentPanel() {
+  const { t } = useTranslation('assistant')
+  // Labelled per render, so they follow the language; each is sent as typed.
+  const openers = AGENT_PROMPTS.map((key) => ({ key, label: t(`agent.prompts.${key}`) }))
   const { settings } = useModelSettings()
   const { all: applications, byId } = useApplications()
   const threadStore = useThreads()
@@ -146,8 +145,8 @@ export function AgentPanel() {
             {c.entries.length === 0 ? (
               <EmptyState
                 icon={RobotIcon as unknown as LucideIcon}
-                title="Nothing asked yet"
-                description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
+                title={t('common.nothingAsked')}
+                description={t('agent.emptyDescription')}
               />
             ) : (
               <Transcript
@@ -167,19 +166,19 @@ export function AgentPanel() {
             squeezed the conversation the person actually came to read. An
             opener has no job in a conversation already under way. */}
           {c.entries.length === 0 ? (
-            <OpenerList openers={AGENT_PROMPTS} disabled={c.busy} onPick={c.ask} />
+            <OpenerList openers={openers} disabled={c.busy} onPick={c.ask} />
           ) : null}
 
           <div className="mt-2">
             <Composer
               id="assistant-prompt"
-              label="Ask the assistant"
+              label={t('common.askLabel')}
               value={prompt}
               onChange={setPrompt}
               onSend={c.onSend}
               busy={c.busy}
               onStop={c.stop}
-              placeholder="Find my UT Austin application, or add one, or move it to interview…"
+              placeholder={t('agent.placeholder')}
             />
           </div>
         </Panel>

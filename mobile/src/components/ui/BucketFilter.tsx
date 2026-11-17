@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Txt } from '@/components/ui/Text'
+import { useTranslation } from 'react-i18next'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 
@@ -30,6 +31,7 @@ export function BucketFilter<T extends string>({
   total: number
   hideEmpty?: boolean
 }) {
+  const { t } = useTranslation()
   const c = useColors()
   const shown = hideEmpty ? options.filter((o) => (counts[o] ?? 0) > 0) : options
 
@@ -73,7 +75,7 @@ export function BucketFilter<T extends string>({
       accessibilityLabel={label}
     >
       <View style={styles.row}>
-        <Pill id="all" text="All" count={total} />
+        <Pill id="all" text={t('filter.all')} count={total} />
         {shown.map((o) => (
           <Pill key={o} id={o} text={labels[o]} count={counts[o] ?? 0} />
         ))}

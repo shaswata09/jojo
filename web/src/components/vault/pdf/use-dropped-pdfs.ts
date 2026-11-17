@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useToast } from '@/lib/toast-context'
 import { dropMessage, sortDroppedPdfs } from '@/lib/pdf/dropped-files'
 
@@ -24,6 +25,7 @@ export function useDroppedPdfs(
   limit: number,
   onPdfs: (files: readonly File[]) => void,
 ): void {
+  const { t } = useTranslation('vault')
   const { toast } = useToast()
   /*
    * The last delivery acted on. A ref rather than a dependency, because the
@@ -46,8 +48,8 @@ export function useDroppedPdfs(
     // where the person cannot see what they handed over until afterwards.
     toast(
       sorted.pdfs.length > 0
-        ? { title: 'Not everything in that drop was used', description: message }
-        : { title: 'Nothing there to open', description: message, tone: 'danger' },
+        ? { title: t('pdf.drop.partial'), description: message }
+        : { title: t('pdf.drop.nothing'), description: message, tone: 'danger' },
     )
-  }, [dropped, limit, onPdfs, toast])
+  }, [dropped, limit, onPdfs, toast, t])
 }

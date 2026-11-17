@@ -24,18 +24,19 @@ export const S = {
   guide: 'guide',
 } as const
 
-export const SECTIONS: { id: string; label: string }[] = [
-  { id: S.doors, label: 'Where each page is' },
-  { id: S.dashboard, label: 'Today' },
-  { id: S.applications, label: 'Applications' },
-  { id: S.calendar, label: 'Calendar' },
-  { id: S.vault, label: 'Vault' },
-  { id: S.scout, label: 'Job scout' },
-  { id: S.statistics, label: 'Statistics' },
-  { id: S.graph, label: 'Graph' },
-  { id: S.transfer, label: 'Transfer' },
-  { id: S.profile, label: 'My profile' },
-  { id: S.assistant, label: 'Assistant' },
-  { id: S.settings, label: 'Settings' },
-  { id: S.guide, label: 'This guide' },
+/** The jump list, in page order. Each label is `guide:screens.sections.<id>`. */
+export const SECTIONS: readonly { id: string }[] = [
+  { id: S.doors },
+  { id: S.dashboard },
+  { id: S.applications },
+  { id: S.calendar },
+  { id: S.vault },
+  { id: S.scout },
+  { id: S.statistics },
+  { id: S.graph },
+  { id: S.transfer },
+  { id: S.profile },
+  { id: S.assistant },
+  { id: S.settings },
+  { id: S.guide },
 ]

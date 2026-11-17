@@ -1,0 +1,29 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Medido",
+        "hint": "Contado a partir dos seus próprios registros"
+      },
+      "suggested": {
+        "label": "Sugerido",
+        "hint": "Geral, ou medido em relação a uma busca típica, e não à sua"
+      }
+    },
+    "title": "O que fazer agora",
+    "intro": "Ordenado pelo que seus registros sustentam e, depois, pelo que custa menos."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} de {{of}}",
+    "rate": "{{rate}}% · provavelmente {{range}}",
+    "groupReplied": "Respostas, por {{dimension}}",
+    "groupInterviews": "Entrevistas, por {{dimension}}",
+    "confident": "Os intervalos não se sobrepõem, então a diferença é real: {{best}} merece mais do seu esforço.",
+    "unconfident": "Os intervalos se sobrepõem, então são dois números, não uma diferença. Mais registros vão separá-los ou fechar a distância.",
+    "tooFew_one": "{{count}} outro grupo tem menos de {{min}} registros e não é comparado.",
+    "tooFew_many": "{{count}} outros grupos têm menos de {{min}} registros e não são comparados.",
+    "tooFew_other": "{{count}} outros grupos têm menos de {{min}} registros e não são comparados.",
+    "title": "O que está funcionando",
+    "intro": "A barra mostra onde a taxa real provavelmente está; a linha é o que você mediu. Uma faixa larga significa que ainda há poucos registros para ter certeza."
+  }
+}

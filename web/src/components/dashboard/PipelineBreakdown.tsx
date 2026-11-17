@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { ClipboardList, Plus } from 'lucide-react'
 import type { Stage } from '@jojo/service/data/seed'
 import { Pie } from '@/components/charts/Pie'
@@ -8,6 +9,7 @@ import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath } from '@/lib/links'
 import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
 import { useScopedApplications } from '@/lib/roles-scope'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Where everything currently sits. The single most informative thing a job
@@ -54,6 +56,8 @@ const STAGE_FILL: Record<Stage, string> = {
  * bar, or of everything when none are.
  */
 export function PipelineBody() {
+  const { t } = useTranslation('dashboard')
+  const domain = useDomain()
   const { all, stageCounts, total } = useScopedApplications()
   const { open } = useDialogs()
   const navigate = useNavigate()
@@ -69,22 +73,22 @@ export function PipelineBody() {
       ) : all.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
-          title="Nothing in the pipeline"
-          description="Each application sits in one stage, and this shows how they are spread across them. Add one and the first slice appears."
+          title={t('pipeline.emptyTitle')}
+          description={t('pipeline.emptyDescription')}
           action={
             <Button size="sm" onClick={() => open('application')}>
               <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-              New application
+              {t('common.newApplication')}
             </Button>
           }
         />
       ) : (
         <Pie
           className="flex-1 content-center"
-          ariaLabel={`${all.length} applications by stage`}
+          ariaLabel={t('pipeline.ariaLabel', { count: all.length })}
           data={stageCounts.map((s) => ({
             key: s.id,
-            label: s.label,
+            label: domain.stage(s.id),
             value: s.count,
             color: STAGE_FILL[s.id],
           }))}

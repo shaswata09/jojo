@@ -1,0 +1,295 @@
+{
+  "readCancelled": "读取已取消。",
+  "backup": {
+    "prompt": {
+      "never_other": "jojo 中有 {{count}} 条记录尚未进入任何备份。这里的一切都只保存在此浏览器中，清除浏览器数据或丢失这台设备就会丢失它们——请下载一份副本并存放在其他地方。",
+      "since_other": "自 {{day}} 的上次备份以来，有 {{count}} 条记录发生了变化。在你下载副本并存放到其他地方之前，它们只保存在此浏览器中。"
+    },
+    "failedTitle": "无法写入备份",
+    "failedDescription": "你的记录没有变化，也没有保存任何内容。如果浏览器拦截了下载，请检查它的下载设置。",
+    "documentsNotReady": "文档索引尚未加载完成，此时备份会显示你没有任何文档。未写入任何内容。",
+    "documentsUnreadable": "无法读取任何已存储的文档，备份将只包含记录。未写入任何内容。",
+    "savedTitle": "备份已保存",
+    "startedTitle": "备份已开始",
+    "savedAll": "{{name}} 包含你的记录以及你附加的所有文档。",
+    "savedSome_other": "{{name}} 包含你的记录以及 {{total}} 个文档中的 {{written}} 个——有 {{count}} 个无法读取，未包含在内。",
+    "startedAll": "请在下载内容中查找 {{name}}。它包含你的记录以及你附加的所有文档。",
+    "startedSome_other": "请在下载内容中查找 {{name}}。它包含你的记录以及 {{total}} 个文档中的 {{written}} 个——有 {{count}} 个无法读取，未包含在内。"
+  },
+  "extension": {
+    "stale": "此浏览器中的 jojo 扩展比本页面旧，无法传递该请求。请更新它：在浏览器的扩展页面中点击 jojo 的“重新加载”——如果你是从“设置”安装的，请在那里重新下载，并用新文件夹替换旧文件夹加载。未打包的扩展永远不会自动更新。",
+    "oldScanner": "（此浏览器中的 jojo 扩展是旧版本，无法跟随招聘网站跳转到其自身的子域名，也无法点击“Load more”。请在浏览器的扩展页面中点击 jojo 的“重新加载”。）",
+    "noAnswerBoard": "jojo 浏览器扩展没有响应，因此无法读取任何招聘网站。它让 jojo 能打开你已登录的页面；安装程序在“设置”中。",
+    "boardUnreadable": "无法读取该招聘网站。",
+    "pageUnsaved": "无法保存该页面。",
+    "hostDidNotLoad": "{{host}} 未能加载——链接可能有误、网站可能已宕机，或者你可能处于离线状态。请在标签页中打开它，看看显示了什么。",
+    "noAnswerPage": "jojo 浏览器扩展没有响应，因此无法打开该页面。安装程序在“设置”中。",
+    "captureTimeout": "jojo 扩展已打开该页面，但未能及时保存完毕。内容很多的页面可能需要更长时间——请重试，或者打开页面后使用扩展的 Capture 按钮。",
+    "noAnswerReader": "jojo 浏览器扩展没有响应，因此无法连接到阅读器。它让本页面能与你自己电脑上的阅读器通信；安装程序在“设置”中。",
+    "linkSwitchedOff": "连接已关闭。",
+    "noAnswerLink": "jojo 浏览器扩展没有响应。对于从网络提供的 jojo 副本，是它把连接传到 jojo-bridge；安装程序在“设置”中。",
+    "noAnswerProvider": "jojo 浏览器扩展没有响应，因此无法连接到服务提供商。不发送 CORS 标头的提供商只能通过它调用；安装程序在“设置”中。"
+  },
+  "posting": {
+    "localTarget": "该地址位于这台电脑或你自己的网络中，不是招聘网站——jojo 不会打开这类地址。",
+    "nothingToReadWith": "读取职位需要 jojo 浏览器扩展（它像你一样打开页面并保存），或文档阅读器（它负责获取页面）。此浏览器中两者都未设置——可在“设置”中找到它们。",
+    "noBackgroundRoute": "要在你查看建议之前读取它们，需要 jojo 浏览器扩展。文档阅读器只用于你自己打开的职位。",
+    "notStored": "页面已读取，但此浏览器拒绝存储它——jojo 的存储空间可能已满。未保留任何内容；请释放一些空间后重试。",
+    "nearlyEmptyExtension": "该页面返回的内容几乎为空。它可能尚未加载完成，或者要求你登录——请在标签页中打开它，等显示出职位后再试一次。",
+    "nearlyEmptyReader": "该页面返回的内容几乎为空。用 JavaScript 渲染的招聘网站会向浏览器以外的一切发送空白外壳——安装 jojo 扩展后，它会像你一样打开页面。",
+    "notSaved": "该职位未保存，因此没有可为它保留的页面。",
+    "askedTwice": "已询问两次，结果相同。"
+  },
+  "fill": {
+    "duplicate": {
+      "id": "两个职位的职位 ID 相同。",
+      "url": "两者的职位地址相同。",
+      "name": "雇主和职位都相同。"
+    },
+    "deletedBefore": "在读取其职位之前，草稿已被删除。",
+    "deletedDuring": "在读取其职位期间，草稿被删除了。",
+    "updateFailed": "无法更新草稿。"
+  },
+  "store": {
+    "remoteChangeTitle": "已从另一个标签页更新",
+    "remoteChangeDescription": "你的记录已重新加载，因此此标签页中的撤销历史已清除。",
+    "heldTitle": "另一个 jojo 标签页打开了数据库",
+    "heldDescription": "该标签页关闭后，数据库会立即被删除。请关闭其他标签页，然后重试。",
+    "deleteFailedTitle": "无法删除数据库",
+    "deleteFailedDescription": "{{error}}。另一个标签页可能仍打开着它。",
+    "demoNotLoaded": "演示数据未加载",
+    "recordsNotCleared": "记录未清除",
+    "writeFailedDescription": "{{error}} 你的记录没有变化。"
+  },
+  "fileDelete": {
+    "refusedTitle": "未能删除",
+    "stillInVault": "{{name}} 仍在保险库中。",
+    "deletedTitle": "已删除 {{name}}",
+    "deletedUnknown": "该行、其关键词以及 jojo 保留的任何副本都会被移除。你电脑上的原件不受影响。",
+    "deletedWithCopy": "该行、其关键词以及 jojo 保存的文档副本都会被移除。你电脑上的原件不受影响。",
+    "deletedNoCopy": "该行及其关键词会被移除。此项没有已存储的副本，不会有损失。",
+    "undo": "撤销",
+    "lostTitle": "{{name}} 已恢复，但缺少其文档",
+    "lostDescription": "该行及其关键词已恢复，但已存储的副本无法恢复。请重新拖入该文件以附加它。"
+  },
+  "jobs": {
+    "readyTitle": "{{label}} 已就绪",
+    "readyDescription": "已保存在其所针对的申请下。",
+    "failedTitle": "{{label}} 未完成"
+  },
+  "pdf": {
+    "passwordNeeded": "该 PDF 需要密码才能打开，因此无法在此编辑。",
+    "unreadable": "无法将该文件作为 PDF 读取。{{detail}}",
+    "chooseOne": "请至少选择一个要合并的 PDF。",
+    "pageNotIn_other": "{{name}} 共有 {{count}} 页，因此不包含第 {{page}} 页。",
+    "emptySelection": "所选内容中没有任何页面。",
+    "keepOnePage": "文档必须至少保留一页。",
+    "planOutOfRange_other": "此文档共有 {{count}} 页；计划要求第 {{page}} 页。",
+    "noCanvas": "此浏览器没有为页面提供可绘制的画布。",
+    "range": {
+      "noPages": "该文档没有页面。",
+      "emptyPart": "两个逗号之间有一个空范围。",
+      "partNamesNoPages": "“{{part}}”没有指定任何页面。",
+      "backwards": "“{{part}}”是倒序的。请写成 {{to}}-{{from}}。",
+      "notANumber": "“{{part}}”不是页码。",
+      "namesNoPages": "该范围没有指定任何页面。",
+      "fromOne": "页码从 1 开始。",
+      "pastEnd": "此文档到第 {{count}} 页结束，因此不包含第 {{page}} 页。"
+    },
+    "drop": {
+      "notPdf_other": "{{names}} 不是 PDF",
+      "leftOut_other": "{{names}} 未被使用——此功能一次只处理一个文档",
+      "one": "{{part}}。",
+      "both": "{{first}}；{{second}}。",
+      "two": "{{first}} 和 {{second}}",
+      "three": "{{first}}、{{second}} 和 {{third}}",
+      "many": "其中 {{count}} 个文件"
+    },
+    "colour": {
+      "yellow": "黄色",
+      "green": "绿色",
+      "blue": "蓝色",
+      "pink": "粉色",
+      "orange": "橙色"
+    }
+  },
+  "noteSize": {
+    "small": "小",
+    "normal": "正常",
+    "large": "大",
+    "huge": "特大"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "申请",
+      "organisation": "机构",
+      "role": "职位",
+      "item": "时间线条目",
+      "keyword": "关键词",
+      "link": "链接",
+      "file": "文件",
+      "snippet": "片段",
+      "posting": "已保存的职位",
+      "match": "侦察匹配",
+      "source": "来源",
+      "background": "关于你",
+      "claim": "关系"
+    },
+    "savedAgo": "保存于 {{ago}}",
+    "fit": "{{fit}}% 匹配",
+    "count": {
+      "matches": "匹配数",
+      "connections": "连接数",
+      "hops": "跳数",
+      "hop": "跳"
+    },
+    "empty": {
+      "noMatch": "你的记录中没有符合该模式的内容。",
+      "noneMissing": "没有缺少该连接的记录——此类记录都有该连接。",
+      "noPath": "没有路径——你存储的内容中没有任何东西连接这两条记录。",
+      "noPathBetween": "这两条记录之间没有路径。"
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "未安排跟进的申请",
+        "hint": "让人错失面试的空白。"
+      },
+      "tagged": {
+        "label": "所有标记为 Referral 的内容",
+        "hint": "一个关键词，跨越所有类型的记录。"
+      },
+      "repeatOrgs": {
+        "label": "我申请过不止一次的机构",
+        "hint": "同一雇主的两份申请，来自同一个机构节点。"
+      },
+      "looseReminders": {
+        "label": "未关联任何申请的提醒",
+        "hint": "你会去做却不知道为何而做的工作。"
+      },
+      "unusedFiles": {
+        "label": "没有任何申请使用的文件",
+        "hint": "闲置在保险库中的文档。"
+      },
+      "bareApplications": {
+        "label": "保险库中没有归档任何内容的申请",
+        "hint": "没有链接、没有文件、没有片段——通常是尚未开始的申请。"
+      },
+      "path": {
+        "label": "两条记录之间的最短路径",
+        "hint": "一个文件与你申请过的一份工作有何关联。"
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "雇主",
+      "position": "职位",
+      "postingLink": "职位链接",
+      "location": "地点",
+      "appliedOn": "申请日期",
+      "stage": "阶段",
+      "highlight": "重点",
+      "notes": "给你的备注",
+      "materials": "已发送材料"
+    },
+    "fileStem": "{{person}} — 申请 {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "此浏览器中没有存储该文档的副本，因此没有可读取的内容。",
+    "noReader": "未连接文档阅读器，因此无法读取此文件的内容。可在“设置”中填写它的地址。",
+    "noReaderToTryHarder": "{{reason}} 没有连接文档阅读器来进一步尝试——可在“设置”中填写它的地址。",
+    "maybeScan": "无法从该文档中读取任何内容——它可能是扫描件。",
+    "noAddress": "尚未设置地址。请查看“设置”。",
+    "tooLarge": "该文档大小为 {{size}} MB，而阅读器最多支持 {{max}} MB。"
+  },
+  "network": {
+    "mixedPrivate": "本页面使用 https，浏览器禁止它调用普通的 http 地址——请安装 jojo 扩展，它会替你将这一跳转发到你自己的网络。或者通过 http 提供 jojo。",
+    "mixedPublic": "本页面使用 https，浏览器禁止它调用普通的 http 地址。请通过 http 提供 jojo，或将模型放在这台电脑上、你自己的网络中或 https 之后——扩展会转发这些地址，但不会转发公共互联网上的普通 http 地址。",
+    "cors": "本页面和该地址都使用 https，所以这不是混合内容拦截。可能的原因是 CORS：服务器的响应中缺少浏览器读取回复所需的标头。云服务提供商通常不会发送这些标头，而这正是 jojo 扩展的用途——请检查它是否已安装并启用。",
+    "unknown": "浏览器没有说明原因。要么那里没有任何服务在监听，要么服务器的响应缺少浏览器读取回复所需的 CORS 标头——本应用连接的两个服务在某些情况下都会这样，所以正在运行的服务器也可能以这种方式失败。"
+  },
+  "mcpLink": {
+    "notBridge": "在 {{address}} 响应的不是 jojo-bridge（或是它的旧版本）。",
+    "displaced": "另一个 jojo 标签页正占用该连接。",
+    "bridgeStatus": "jojo-bridge 返回了 {{status}}。",
+    "otherTab": "此浏览器中的另一个 jojo 标签页正承载该连接；那个标签页关闭后，这个标签页会接管。"
+  },
+  "roleScopeEmpty": {
+    "title": "这些职位没有申请",
+    "description": "顶部栏中的职位筛选隐藏了此图表统计的所有申请。",
+    "showAll": "显示所有职位"
+  },
+  "create": {
+    "newApplication": "新建申请",
+    "fromLink": {
+      "label": "从链接创建申请",
+      "hint": "模型会读取职位并填写表单"
+    },
+    "newReminder": "新建提醒",
+    "newEvent": "新建事件",
+    "draftMessage": {
+      "label": "起草消息",
+      "hint": "基于你的邮件片段——不生成任何内容"
+    },
+    "saveLink": {
+      "label": "保存链接",
+      "hint": "打开保险库的链接工具"
+    },
+    "savePosting": {
+      "label": "保存职位",
+      "hint": "打开职位侦察"
+    }
+  },
+  "stroke": {
+    "tap": "轻点",
+    "doubleTap": "双击",
+    "hold": "长按",
+    "up": "向上滑动",
+    "down": "向下滑动",
+    "side": "横向滑动",
+    "diagonal": "斜向轻扫",
+    "backForth": "来回滑动",
+    "zigzag": "横向之字形",
+    "scribbleUp": "上下涂画",
+    "circle": "圆形",
+    "square": "正方形",
+    "vee": "V（或对勾）",
+    "peak": "Λ（山峰）",
+    "zed": "Z",
+    "arc": "弧形（C 字形）",
+    "ell": "L",
+    "triangle": "三角形",
+    "other": "其他任何手势"
+  },
+  "move": {
+    "nod": "点头",
+    "shake": "摇头",
+    "hi": "打招呼",
+    "bow": "鞠躬",
+    "leanIn": "前倾",
+    "wobble": "摇晃",
+    "bounce": "弹跳",
+    "spin": "旋转",
+    "recoil": "后缩",
+    "startle": "受惊",
+    "dance": "跳舞",
+    "shrug": "耸肩",
+    "lookAround": "环顾四周",
+    "hopSpin": "跳跃旋转",
+    "stretch": "伸展",
+    "flex": "秀肌肉",
+    "jab": "组合拳",
+    "powerUp": "充能",
+    "doze": "打瞌睡",
+    "wink": "眨眼",
+    "love": "比心",
+    "robot": "机器人舞",
+    "jazz": "爵士手",
+    "point": "指向",
+    "hero": "英雄姿势",
+    "handsUp": "举手",
+    "disco": "迪斯科",
+    "typing": "打字",
+    "drumroll": "击鼓"
+  }
+}

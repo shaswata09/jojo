@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "The tools",
+    "subtitle": "What the assistant can actually do, what it is stopped from doing, and how it finds the right one.",
+    "can": {
+      "hint": "{{total}} in total",
+      "title": "What the assistant can do",
+      "intro": "The <go>Assistant</go> does not type into your screens. It calls the same {{total}} operations the buttons call — the identical code path, with the identical checks. There is no second way in, which is why an assistant edit lands in your history looking exactly like one you made yourself.",
+      "stats": {
+        "readsLabel": "ways to look",
+        "readsHint": "reading never changes anything",
+        "writesLabel": "ways to change",
+        "writesHint": "every one of them undoable…",
+        "destructiveLabel": "marked destructive",
+        "destructiveHint": "…except two, which ask first"
+      },
+      "irreversibleOne": "One of those {{destructive}} cannot be undone at all — the ones that replace or empty the whole store.",
+      "irreversibleTwo": "Two of those {{destructive}} cannot be undone at all — the ones that replace or empty the whole store.",
+      "irreversibleMany": "{{irreversible}} of those {{destructive}} cannot be undone at all — the ones that replace or empty the whole store.",
+      "neverOffered": "Those are never offered to the assistant unless your own words ask for them, and they stop for a confirmation even then, whichever approval mode the conversation is in. Auto acts without asking on everything that can be undone; it still asks before these.",
+      "ownWords": "“Your own words ask for them” is a specific test, not a judgement call: the sentence has to contain something that means erase, something that means the whole store, and no mention of a particular kind of record. “Clear everything” qualifies. “Clear the tags off the Baylor application” does not, and neither does “delete everything I wrote in that note” — both name a thing, so both are about that thing.",
+      "errs": "It errs towards not offering. If you mean it and phrase it unusually, the assistant says it cannot rather than guessing, and Settings still has the button."
+    },
+    "gates": {
+      "hint": "the part that actually holds",
+      "title": "What stops the wrong one running",
+      "intro": "A language model can ask for anything. It can name a tool it was never shown, or invent one that does not exist — smaller models do this regularly, and it is not a sign that something has gone wrong. So jojo does not rely on the model being careful.",
+      "distinctionTitle": "The distinction that matters",
+      "distinction": "Choosing what to <em>show</em> the model is a hint. Checking what it actually <em>called</em> is a rule, and the rule depends on who chose the set. Where the screen fixes it — Ask the graph, a scout pipeline — a call to anything outside it is refused before anything is looked up, let alone run. In a chat the set is jojo’s guess at what you need, so a call outside it is not refused: it goes to the same approval check as every other call, which asks you first unless the conversation is set to run on its own. The one exception is clearing your records, the only thing that cannot be undone: it is refused unless you asked to wipe everything in so many words.",
+      "askGraph": "This is why the “Ask the graph” card can safely offer two read-only tools. It is not trusting the model to stay within them."
+    },
+    "workflow": {
+      "hint": "steps, not one long try",
+      "title": "Work that takes several steps",
+      "p1": "Reading a CV is not one question. jojo splits the document on its own headings, asks for each section separately, asks once more what was missed, and finally asks how the facts relate — five or six model calls for one upload. Written as a single block of code that would be one <code>try</code> around the lot, and one bad reply anywhere in it would lose the whole thing.",
+      "p2": "So a job like that is declared as <strong>steps with edges between them</strong>. Each step says how many times it is worth retrying and whether the job can carry on without it; the route from one step to the next is decided by what happened, never by asking the model where to go. A step that fails is named in the result rather than disappearing into “reading your CV failed”.",
+      "p3": "This matters most on a small model. A 7B does not usually fail by reasoning badly over many steps — it fails by returning something malformed on one step out of six. The useful answer is to try that step again and leave the other five alone.",
+      "p4": "A step that only improves the result, like working out how your facts connect, is marked optional: if it fails you still get everything the earlier steps found. Loops are allowed — a step may route backwards — and there is a hard cap on total steps so a routing mistake stops with a readable trace instead of spinning against your GPU."
+    },
+    "badReply": {
+      "hint": "a bad reply costs a pass, not the document",
+      "title": "When a small model answers badly",
+      "p1": "A smaller model runs out of room mid-sentence. Reading a CV asks for a list of facts, and a reply cut off in the middle of that list has no closing bracket — so it is not JSON, and the obvious thing to do with it is throw it away. jojo keeps everything up to the last <strong>finished</strong> entry instead, and says how much was lost. Twenty facts arrive instead of none.",
+      "p2": "It stops at a finished entry on purpose. Half of a job title is worse than no job title: it goes in front of you looking complete, and you approve it.",
+      "p3": "The same care applies to searching. Asked to “move my Rice application to interview” when there are two, a model that searched for one match and got one would have no way to know there was a second — so it would move the wrong record confidently. Every search reports how many matched as well as what it is showing, which is what lets the assistant come back and ask you which you meant."
+    },
+    "picks": {
+      "hint": "so a request never stops halfway",
+      "title": "How it picks the right one",
+      "p1": "Showing a model all {{total}} tools at once costs well over fifteen thousand words of the space it has to think in — before you have typed anything. On a small model running on your own machine, that can be more space than it has. So jojo narrows the list to what your words point at.",
+      "p2": "Narrowing carelessly is worse than not narrowing. Most operations need something to act on: you cannot attach a keyword without a keyword, or update a document without a document. Hide the tool that makes the thing, and the assistant stops halfway with nothing on screen explaining why.",
+      "unsureTitle": "When it is not sure, it does not narrow",
+      "unsure": "“Remind me about Baylor on Thursday” is clear, and jojo offers about a fifth of the catalog. “Actually, that was the other one” is not clear about anything — so it offers everything, exactly as it would have before any of this existed. Being unsure costs a little speed. Guessing would cost you your answer.",
+      "secondTitle": "A second assistant does the choosing",
+      "second1": "Matching your words against a list is fast and free and cannot read intent. “I heard back from Rice” names no tool and no verb, but it plainly means a stage changed. So when a model is connected, a second and much smaller job runs first: it reads your request — not the conversation, not the results, just what you asked — and answers with the tools it thinks are needed.",
+      "second2": "It is cheap because it does not need the full instructions for each tool, only a name and a line: about a sixth of what handing over the whole catalog would cost, and it saves that on every step rather than once. Measured over ten questions in a row, it took the first message from roughly 8,000 words of context down to 2,900.",
+      "second3": "It can only narrow. Whatever it picks goes through the same checks as before — the tools that make a thing come along with the tools that change it, and the two that empty your store are never included unless you asked for them in your own words. If it is slow or unavailable, the word-matching runs instead and nothing is lost but a moment.",
+      "longTitle": "Long conversations",
+      "long1": "A model can only hold so much at once, and a conversation that outgrows it gets cut — by the server, from the beginning, which is where the rules live. jojo does the cutting itself instead, from the oldest end, and never touches its own instructions or your current question.",
+      "long2": "What it removes it first replaces with a short summary of what happened there, so the assistant still knows you already told it which Rice application you meant. You are told when this happens. Your records are never involved — this is only about what fits in one message.",
+      "long3": "A conversation keeps the tools it has actually used. Ones it was merely offered and never touched fall away, so a long chat does not slowly fill up with everything."
+    },
+    "evidence": {
+      "hint": "run against real models, not asserted",
+      "title": "Does it actually work?",
+      "p1": "Everything above is a design. Whether a given model can actually pick the right tool out of jojo’s catalog is a question about that model, and the only way to answer it is to ask. So there is a suite of scenarios — reading, writing, chains that need a lookup first, and cases where the right answer is to do nothing — and it runs against real servers.",
+      "p2": "Each scenario runs twice: once with the whole catalog, and once with the narrowed set. That second run is the one that matters. Narrowing is meant to help a smaller model by giving it fewer names to confuse — but it could just as easily hurt by removing something needed, and a claim like that is worth nothing without the control beside it.",
+      "suiteTitle": "What the suite is looking for",
+      "suite": "Not whether a model is clever. Whether it reaches for a document tool when you gave it a URL, files a second application instead of updating the one you named, invents an id rather than looking one up, or — the case that matters most — hears “clear the deadline” and reaches for the operation that empties your whole store."
+    },
+    "conversation": {
+      "hint": "a real store, and what it looked like afterwards",
+      "title": "Can it hold a conversation?",
+      "p1": "The suite above asks a model one question and checks whether it named a sensible tool. That is the easy half, and it flatters everyone. Real work is not one question: you ask what stage something is at, then say “move it to interview” — and the record you mean is in the previous answer, not in the sentence.",
+      "p2": "So there is a second benchmark. It builds a real store — six applications, a calendar, a vault, keywords — hands the assistant a script of {{conversations}} conversations across {{groups}} kinds of work, and lets the tool calls actually run. Then it looks at what is in the store afterwards. Four things are scored separately, because a model can pass one and fail another:",
+      "called": "<lead>What it called</lead> — was each turn defensible.",
+      "route": "<lead>How it got there</lead> — did it look a record up before changing it, or write from the sentence alone.",
+      "shape": "<lead>The shape of the work</lead> — every case carries a gold graph of the calls it takes and which of them depend on which, and the run is scored against it. Two calls the graph left independent may happen in either order; a write before the read that finds what to write to may not.",
+      "left": "<lead>What it left behind</lead> — is the store right, and did anything change that should not have.",
+      "p3": "The third of those is the one benchmarks usually skip, and it is the reason a model can score well here and disappoint in use: on a store this small, guessing often lands on the right record. The graph says whether it was reasoning or whether it was lucky. It is reported beside the headline rather than folded into it — reaching the right answer by a route nobody anticipated is still the right answer."
+    },
+    "reasoning": {
+      "hint": "measured, with what it costs in time",
+      "title": "Does reasoning help?",
+      "p1": "A model can be asked to think before it answers — the Reasoning setting in <go>Settings</go>. Whether that makes it better at jojo’s work is a question about the model, so the conversation benchmark above was run twice with reasoning on and twice with it off, on the same servers and the same code.",
+      "numbersTitle": "What the numbers say",
+      "gemma": "<lead>On Gemma, reasoning costs accuracy and a lot of time.</lead> It scored two to three conversations lower on average, and the median conversation took about three times as long. The slowness is the thinking itself: Gemma generates about 31 tokens a second and thinks for a few hundred tokens before a reply, so a round takes around six seconds longer on average and a long one fifteen or more. Across both passes it reliably fixed three conversations and reliably broke three to four — among the broken, filing a new document and declining a suggestion, which it gets right every time with reasoning off.",
+      "gptOss": "<lead>On GPT-OSS, the setting changes nothing</lead> — and that is expected rather than a finding. GPT-OSS always reasons; “off” can only ask it for less, and both settings ran at its usual effort. It also generates about seven times faster than Gemma, so its thinking costs under a second per reply.",
+      "advice": "If replies feel slow on a model like Gemma, turn reasoning off: on this benchmark you lose nothing for it. Either way, the two helpers — the one that picks which tools a turn may use and the one that summarises a long conversation — never reason, because neither job is improved by it and one summary once took nearly two minutes when they did.",
+      "firstToken": "The first-token column is most of the wait on a long conversation: a reply cannot start until the server has read everything it was sent. A prompt that repeats is far cheaper, because the server keeps the start of it from last time — which is why the second turn of a conversation usually answers faster than the first."
+    },
+    "previewer": {
+      "hint": "every case, verbatim",
+      "title": "What it was evaluated against",
+      "p1": "A score is only worth what its cases are worth, and somebody chose the denominator. So the whole benchmark is here to read: the store it ran against, every sentence the assistant was sent, and what had to be true of your records afterwards.",
+      "p2": "This is read from the same list the benchmark runs, not a description of it — so a case added tomorrow appears here with its prompts, and one that is quietly dropped disappears.",
+      "p3": "Pick a case to see what was said, the workflow it expects drawn as a real dependency graph, what each turn may and may not call, and what each model actually did with it — including what it wrote back, which is where a model that did nothing and announced success gives itself away."
+    },
+    "ambiguity": {
+      "hint": "the reason the benchmark exists",
+      "title": "When two records match",
+      "p1": "The store deliberately holds two Rice applications and two UT campuses, because that is what a real job search looks like after a few months — and it is the situation where an assistant can do real damage while appearing to work perfectly.",
+      "p2": "This is why jojo is built the way the rest of this page describes. A model cannot be relied on to stop, so the things that cannot be undone are never offered unless you ask for them by name, every write is checked against what was actually offered, and every change lands in your history where you can undo it.",
+      "p3": "It is also worth saying plainly: one pass of a benchmark ranks models loosely at best. Scores moved between runs on the same hardware with the same settings. What does not move is the shape of the failure — and that is the part worth designing against."
+    },
+    "model": {
+      "hint": "your choice, and it changes where your words go",
+      "title": "Which model does this",
+      "p1": "jojo talks to whatever you point it at in <go>Settings</go>. A model running on your own machine — Ollama, vLLM, LM Studio — is the default, and it is the only arrangement where nothing you write leaves the device.",
+      "p2": "You can also use Claude, OpenAI and others with an API key. That is a real trade and the screen says so plainly: your records go to that company and are billed to your account. The key is kept in this browser, is never included in a backup, and is never sent anywhere but the provider you chose.",
+      "stoppedTitle": "If the assistant seems to have stopped reading",
+      "stopped": "A local model with too little room silently drops the front of what it was sent, and then answers confidently about a question it never fully saw. jojo now compares what the server says it read against what was actually sent, and tells you when the two disagree — because the alternative is an assistant that appears to be bad at its job rather than short of room."
+    },
+    "next": "Next: <go>what jojo is built with</go>."
+  },
+  "graph": {
+    "pageTitle": "The graph underneath",
+    "subtitle": "Every record is a node and every link between them is an edge. The Graph page draws exactly that.",
+    "picture": {
+      "hint": "not an illustration of the store — the store",
+      "title": "What the picture is showing",
+      "body": "The <go>Graph</go> page walks the same records the board and the calendar read, on every render, and draws one mark per record and one line per pointer. Nothing on that canvas is a second copy of your data and nothing on it is a mock-up: delete an application on the board and it is off the canvas before you get back to it.",
+      "markTitle": "What a mark means",
+      "colourTerm": "Colour",
+      "colour": "The kind of record. Nothing on this page is ever red or amber — those two are reserved across the whole app for overdue and due-soon, and a red dot here would read as a deadline rather than as a type.",
+      "shapeTerm": "Shape",
+      "shape": "The family. Circles are the live records of a search — applications, dated items, postings, matches. Rounded squares are what you filed in the Vault: links, files, snippets. Diamonds are the things many records share. Two of the four diamonds are records with ids of their own, an organisation and a keyword, and the other two are not — see below.",
+      "sizeTerm": "Size",
+      "size": "How many edges touch it, on a square root and capped. A hub with twenty connections is legibly bigger than one with four rather than five times the area, which is what sizing straight off the count produced: the applications became planets and everything else became dust.",
+      "lineTerm": "A line",
+      "line": "One pointer between two records, drawn without an arrowhead. Direction is stored, and every traversal on this page ignores it — someone asking what connects a file to a job does not hold a direction in their head.",
+      "notDoTitle": "Two things the canvas does not do",
+      "notDo1": "Pressing a row in the legend hides that kind of record, and no node changes size when you do. Size is a fact about the record, not about what you are currently looking at, and a node that shrank because you hid a legend row would be telling you about your filter rather than about your data.",
+      "notDo2": "And not everything in your store is on the canvas. Saved searches in Job scout and your profile are records, and neither is drawn: a saved search names no record here, and the profile is one row that would sit alone in a corner of every picture. They are in the export and in the record counts in <go>Settings</go> either way."
+    },
+    "question": {
+      "hint": "three panes, and one of them runs nothing",
+      "title": "Asking it a question",
+      "intro": "The panel under the canvas has three parts, and it is worth knowing which is which before you trust an answer from it.",
+      "pickers": "<lead>The pickers are real.</lead> What you are looking for, whether it <hi>has</hi>, <hi>has no</hi> or <hi>has at least</hi> two of a relationship, what sits on the other end, and optionally one keyword everything must carry. Timeline items get a second picker nothing else has — a kind, or the reminder flag — because “applications with no follow-up” and “reminders not linked to anything” are the two questions people actually ask and neither is expressible in record types alone.",
+      "queryLine": "<lead>The query line is not.</lead> The block of code-looking text under the pickers is generated from them and parsed by nothing. It is labelled illustrative on the page itself, and this page will not soften that: there is no query language in jojo, typing into that box is not a feature that is coming, and no input anywhere accepts one.",
+      "answer": "<lead>The answer is real.</lead> The table lists the records that matched and opens them, and the same records light up in the canvas above. Long answers are cut to forty rows in the table and say so — every match stays lit in the graph regardless.",
+      "whyTitle": "Why the unparsed line is there at all",
+      "why": "Because it is the shortest way to make the pickers legible. Seeing <code>{{query}}</code> sitting beside the words “applications with no follow-up” is what turns three dropdowns into a sentence you can read, and it teaches the shape of the question rather than a syntax you would then have nowhere to type. The rule it has to obey is that it never pretends: it carries its own label, it has no run button, and it sits below the controls that do the work rather than above them.",
+      "answersTitle": "Three things worth knowing about the answers",
+      "answers1": "A question runs against your whole store, never against what is left visible. An answer that changed when you pressed a legend row would be worse than no answer.",
+      "answers2": "There is no Run button. Every change re-runs immediately, so the table and the controls above it can never be describing two different questions.",
+      "answers3": "An empty result is phrased in the question’s own words. Ask which applications are missing a follow-up and get nothing back, and it says every one of them has one — which is an answer, not a failure."
+    },
+    "model": {
+      "hint": "the rule for what earns one",
+      "title": "Eleven kinds of record",
+      "intro": "A value becomes a record of its own when you can rename it or annotate it, and stays a field otherwise. An employer passes: you can spell it differently, applications accumulate under it, and it is worth being one thing rather than twelve strings. That single test is what produced the eleven below and rejected everything else.",
+      "manyTitle": "One pointer, or many",
+      "many": "Three of the seven are many-relations: tagging, what a dated thing is <code>ABOUT</code>, and what a vault record is <code>FILED_UNDER</code>. One CV goes to every application you send it to and one reference deadline covers every job it covers, so those two are lists rather than slots. The other four are at most one per record, and linking again replaces what was there in the same write. The identity of a pointer is the triple it joins, so creating one twice is the same pointer and there is no way to end up with two identical lines between the same two records — which is what makes filing a document under a job it is already filed under do nothing at all.",
+      "elevensTitle": "Two elevens and two sevens, and they are not the same",
+      "elevensIntro": "The Graph page also has eleven kinds of node and seven kinds of line, which is a coincidence worth taking apart because it has misled people who went looking:",
+      "nineTerm": "Nine of eleven overlap",
+      "nine": "Two stored types are never drawn — the saved search and the profile — and two drawn types are never stored, which is the next section.",
+      "fiveTerm": "Five of seven overlap",
+      "five": "Two stored relations are never drawn either. One says an application is a copy of another, written when you duplicate one; the other joins a saved posting or a match to the search it came from, and it is not drawn because the thing at its far end is not drawn. Two drawn relations are never stored.",
+      "oneNameTerm": "One name means two things",
+      "oneName": "The relationship picker offers <code>came from</code>, and on the canvas it is the line from an application to where you found it — a line the store has never held. The stored relation of the same name joins a posting to a saved search and appears on no picture at all."
+    },
+    "drawn": {
+      "hint": "role, and source",
+      "title": "Two things drawn that were never stored",
+      "p1": "An application carries a role tag from a fixed list of five, and optionally where you found it from a fixed list of four. Neither is a record. They are closed lists that drive one filter and one legend order, they are not things you can rename or annotate, and promoting them would put a lookup on every projection in the app in exchange for nothing you could then do.",
+      "p2": "They are drawn anyway, because a picture of which of these came from a referral is worth having and a filter chip is not the same picture. The Graph page mints them from the properties it already has in hand, at the moment it has them, and writes nothing.",
+      "tellTitle": "How to tell them apart in the picture",
+      "tell": "They are the two diamonds with no employer and no keyword behind them, and the test that settles it is that they cannot outlive what they were read from. Delete the last application tagged <hi>Postdoc</hi> and that node is gone with it — there is nowhere else in jojo where the value exists as a thing. Delete the last application at an employer and the organisation record stays, because it is a record; the same is true of a keyword, which is why clearing every application in <go>Settings</go> leaves your keywords behind.",
+      "source": "A source node also only appears at all when you have said where something came from. It is an optional field, and an application with it unset simply has no line going that way."
+    },
+    "delete": {
+      "hint": "the one fact worth taking away",
+      "title": "Deleting unlinks, it never cascades",
+      "intro": "Delete an application and jojo removes that record and the pointers to it, and touches nothing at the far end of any of them. A dialog saying “delete Rice” cannot fairly be read as consent to delete the four files someone spent an evening on.",
+      "afterTitle": "What you will actually see afterwards",
+      "after": "The file is still in the Vault, filed under nothing. The reminder is still on the calendar, about nothing. Your keywords are untouched — they are shared by everything and were never owned by that application in the first place. On the Graph page those records become unconnected nodes, which is exactly what the <hi>Hide unconnected records</hi> switch is for once you have cleared out a few dead searches.",
+      "halfTitle": "And no record is ever half-deleted",
+      "half": "There is no hidden flag marking a record as removed. That approach costs a must-never-forget filter on every read, every count, every projection and the export, and one place that forgets it is a deleted record rendering back onto your board. Gone means the row is not there — and undo puts it back with its pointers, because the write recorded what each record looked like before it ran rather than a note about how to reverse itself."
+    },
+    "source": {
+      "hint": "for anyone opening the repository",
+      "title": "One action, one commit, one journal row, one undo",
+      "p1": "Every write in jojo is a named operation defined outside React, validated against its own schema, and run synchronously inside a single transaction. Operations call each other, and a nested call joins the transaction it was called from rather than opening its own. That is the whole invariant, and the rest of this page falls out of it.",
+      "p2": "Adding an application is three writes: the record, the employer if this is the first application there, and the deadline if you gave one. They land as one commit, so they produce one row in the log, one toast, and one press of undo. Deleting one is the same shape read backwards — the transaction captured what every record it touched looked like before and after, so reversing it relinks the reminder and the file without anyone having written a function that knows a reminder and a file were involved. That is why the unlinking above has an undo at all, and why the previous approach — a hand-written reversal per operation — was where this kind of bug used to live: a person had to remember what a write touched, and the write that touched five collections was remembered as touching four.",
+      "p3": "The log is kept. <go>Settings</go> lists every write, newest first, capped at the most recent two hundred and pruned when the store opens, and offers undo on the newest row. The undo <em>stack</em> is a different thing: session-scoped and fifty deep, because a stack that survived a reload would invite undoing something from last Tuesday, and that needs conflict rules this app does not have.",
+      "p4": "Where the operations live, which layer may import which, and the same add-an-application trace drawn across the five of them is on <go>Built with</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "The two gates between a question and a change to your records",
+      "desc": "Six steps, top to bottom. One, what you typed. Two, jojo picks the tools your words point at — and if your words are unclear it offers all of them rather than guessing. Three, it adds whatever those tools depend on, so no chain can dead-end. Four, the model chooses one tool. Five, jojo checks whether that tool was actually offered; if it was not, the call is refused and nothing runs. Six, only then do your records change. The fifth step is the one that enforces anything — the second is only a hint, because a model can name a tool it was never shown.",
+      "typed": "what you typed",
+      "pick": "pick the likely tools",
+      "pickNote": "unclear? offer all {{total}}",
+      "needs": "add what those tools need",
+      "needsNote": "so no chain dead-ends",
+      "chooses": "the model chooses one",
+      "offered": "was it offered?",
+      "offeredNote": "no? refused, nothing runs",
+      "change": "your records change",
+      "caption": "Step two saves you tokens. Step five is the one that keeps you safe — and it runs whether or not step two narrowed anything."
+    },
+    "toolGraph": {
+      "title": "How one tool pulls in the tool that feeds it",
+      "desc": "Three rows, each read left to right. In the first, asking for keyword.attach pulls in keyword.create, because attaching a keyword needs a keyword that already exists. In the second, vault.file.update pulls in vault.file.add, because updating a document needs a document. In the third, scout.posting.promote pulls in scout.posting.save, because promoting a saved posting needs a saved posting. In every case jojo works the dependency out from the tool’s own input, and offers both tools together — so the assistant is never handed a first step with no way to reach the second.",
+      "asked": "what you asked for",
+      "needsHeader": "what it needs",
+      "offered": "offered with it",
+      "needsKeyword": "a keyword",
+      "needsFile": "a file",
+      "needsPosting": "a posting",
+      "without": "Without this, the assistant could be offered the first box and not the second —\nand would stop halfway with nothing on screen to say why.",
+      "caption": "jojo reads each requirement out of the tool’s own definition, so a tool added tomorrow is covered without anybody updating a list."
+    },
+    "benchAmbiguity": {
+      "title": "One sentence, two records, and the wrong one changed",
+      "desc": "At the top, the request: close the UT application, they turned me down. Below it, two records that both match — UT Austin, still submitted and live, and UT Dallas, already closed. Nothing in the sentence distinguishes them. The correct response is to ask which one; four of six benchmark runs instead closed UT Austin, the live application. The tool they chose was the right tool. The record they applied it to was not.",
+      "quote": "“Close the UT application — they turned me down.”",
+      "matchesBoth": "matches both",
+      "austinState": "submitted — still live",
+      "austinRuns": "closed by 4 of 6 runs",
+      "dallasState": "already closed",
+      "dallasMeant": "the one they meant",
+      "footer": "The tool was right. The record was not — and no tool-choice score can see the difference.",
+      "caption": "jojo’s own instruction tells the model to ask when a request could mean more than one record. Two of the three models wrote anyway."
+    },
+    "benchAxes": {
+      "title": "Per-turn accuracy against whole-conversation success",
+      "desc": "Three bars, measured over the same benchmark runs. Turns that called something defensible: {{turnsGot}} of {{turnsOf}}, {{turnsPct}} per cent. Individual claims about the store that held: {{claimsGot}} of {{claimsOf}}, {{claimsPct}} per cent. Whole conversations with nothing wrong in them: {{wholeGot}} of {{wholeOf}}, {{wholePct}} per cent. The third is lower than the other two because a conversation is only clean when every turn and every claim passed together, so the two high numbers compound into the low one.",
+      "turnsLabel": "Turns called something defensible",
+      "turnsNote": "the easy question",
+      "claimsLabel": "Claims about the store that held",
+      "claimsNote": "checked one at a time",
+      "wholeLabel": "Whole conversations with nothing wrong",
+      "wholeNote": "every turn and every claim, together",
+      "count": "{{got}} of {{of}} — {{note}}",
+      "bracket": "both must\nhold at once",
+      "caption": "A benchmark that reported only the first bar would call these models nearly perfect. The third is the one that answers whether the job got done."
+    },
+    "toolTrace": {
+      "title": "Where the code for adding an application lives, layer by layer",
+      "desc": "Six steps, top to bottom. One, in src/components and outside the shared layer, the application form hands the runtime an input object. Two, kg/react/use-tool.ts runs the tool named application.create and awaits nothing. Three, kg/tools/application.ts opens one transaction, and the nested calls to org.ensure and to the deadline tool join it rather than opening their own. Four, kg/core parses the input against the tool’s schema and mints the id and the slug. Five, kg/repo commits once: the snapshot is updated, one journal row is appended, and that row is the single undo. Six, kg/storage writes to four IndexedDB object stores in one transaction — and this last step alone is drawn as a dashed arrow, because nothing waits for it. A bracket in the margin marks steps three to five as one transaction and one undo.",
+      "webOnly": "web only",
+      "form": "the form hands the runtime an input object",
+      "run": "run('application.create') — nothing is awaited",
+      "join": "org.ensure and the deadline join the same call",
+      "parse": "parses the input, mints the id and the slug",
+      "commit": "commit: the snapshot, one journal row, one undo",
+      "stores": "four object stores, one IndexedDB transaction",
+      "bracket": "one transaction · one undo",
+      "nothingAwaits": "nothing awaits this",
+      "caption": "Read top to bottom as the order it happens in, not as the order of the stack — <code>kg/core</code> is L1 and sits below <code>kg/repo</code> in the diagram above, because a tool calls down into it and comes back before anything is committed."
+    },
+    "stack": {
+      "title": "How jojo’s code is layered",
+      "desc": "Three things on top: the browser extension, the web app and the phone app. The extension talks to the web app by relayed messages and imports nothing. The web app sends data to the phone over the local network. Both apps call into the shared service through its React hooks. The service is six layers, each using only the layers below it: react, agent, tools, repo, core and storage. Tools is highlighted: every change to the records goes through it. At the bottom, an IndexedDB driver on the web and an AsyncStorage driver on the phone each implement the storage port.",
+      "extension": "extension",
+      "webApp": "web app",
+      "phoneApp": "phone app",
+      "relay": "relay",
+      "lan": "LAN",
+      "hooks": "hooks",
+      "reactNote": "hooks both apps share",
+      "agentNote": "model loop · catalog · MCP",
+      "toolsNote": "every write · one undo entry",
+      "repoNote": "commit · journal · write queue",
+      "coreNote": "pure rules · today is a parameter",
+      "storageNote": "Driver and FileStore ports",
+      "idbDriver": "IndexedDB driver · web",
+      "asyncDriver": "AsyncStorage driver · phone",
+      "caption": "Solid arrows point the way code may depend: down only. Dashed lines are not imports — the extension relays messages, the web app hands data to the phone over the local network, and each storage driver implements the bottom port. The apps may also use core’s pure helpers directly; they should never write below the tools layer."
+    },
+    "recordModel": {
+      "title": "The eleven kinds of record jojo stores and the seven ways one can point at another",
+      "desc": "The application sits at the centre and almost everything points at it. A timeline item is ABOUT an application, and may be about several at once. A link, a file and a snippet are each FILED_UNDER an application, and may be filed under several. A saved posting or a scout match BECAME one. An application is AT an organisation, and may be a COPY_OF another application. A keyword TAGS five kinds of record — applications, timeline items, links, files and snippets. Three of the seven relations may be carried more than once — ABOUT, FILED_UNDER and TAGS; the other four are at most one per record, so linking again replaces the link that was there. Two stored types are not drawn on the Graph page at all: pipeline, which a saved posting or a match came FROM, and profile, which no relation joins to anything. COPY_OF and that FROM are stored but likewise never drawn, and are dotted here for it. Below the rule are the two things the Graph page draws that the store has never held: role and source. They are properties of an application — its roleTag and its source — shown as nodes joined by an IS edge and a second edge also called FROM, neither of which is written down anywhere.",
+      "storedNotDrawn": "stored, but not\ndrawn on the Graph page",
+      "drawnNeverStored": "drawn on the Graph page, never written down",
+      "roleTagProp": "the roleTag prop",
+      "sourceProp": "the source prop",
+      "caption": "Eleven kinds of record, and seven relations joining them. <code>ABOUT</code>, <code>FILED_UNDER</code> and <code>TAGS</code> may each be carried more than once — one CV goes to every application you send it to — while the other four are at most one per record, so linking again replaces the link rather than adding a second. Two stored types are never drawn on the Graph page: <code>pipeline</code>, which a saved posting or a match came from, and <code>profile</code>, which no relation joins to anything at all. Below the rule are the two things the Graph page draws that were never stored: <code>role</code> and <code>source</code> are properties of an application, promoted to nodes for the picture and written down nowhere."
+    },
+    "unlink": {
+      "title": "Deleting an application removes the pointers to it and leaves every record that carried one",
+      "desc": "Two states, one above the other. Before: an application, with a timeline item pointing at it along an ABOUT edge, a keyword along a TAGS edge and a file along a FILED_UNDER edge. The tool application.delete runs. After: the timeline item, the keyword and the file are all still there, in the same places, carrying nothing — the timeline item is about nothing, the keyword tags nothing, the file is filed under nothing. Only the application and the three edges are gone. No record at the far end of an edge is touched.",
+      "before": "Before",
+      "after": "After",
+      "gone": "gone",
+      "aboutNothing": "about nothing",
+      "taggingNothing": "tagging nothing",
+      "filedNothing": "filed under nothing",
+      "caption": "The application and the three pointers at it are gone. The timeline item, the keyword and the file are not — they are in the same places, carrying nothing, and every one of them is still yours to open. Undo puts the edges back, because the write captured what each record looked like before it ran rather than a note about how to reverse itself."
+    }
+  }
+}

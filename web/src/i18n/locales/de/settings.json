@@ -1,0 +1,486 @@
+{
+  "shared": {
+    "thisBrowserOnly": "nur dieser Browser",
+    "optional": "optional",
+    "undo": "Rückgängig",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "testing": "Wird getestet…",
+    "testAgain": "Erneut testen",
+    "testConnection": "Verbindung testen",
+    "connected": "Verbunden",
+    "noAnswer": "Keine Antwort",
+    "notConnected": "Nicht verbunden"
+  },
+  "appearance": {
+    "title": "Darstellung",
+    "theme": {
+      "label": "Design",
+      "description": "„System“ folgt der Einstellung deines Betriebssystems",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "gestures": {
+      "label": "Maskottchen-Gesten",
+      "description": "jojo reagiert, während du arbeitest. Probier eine aus."
+    },
+    "draw": {
+      "label": "Eine Bewegung zeichnen",
+      "description": "Zeichne auf den Roboter in der Seitenleisten-Karte. Der Roboter-Button in ihrer Ecke listet diese ebenfalls auf."
+    },
+    "sounds": {
+      "label": "Oberflächenklänge",
+      "description": "Ein kurzes Klicken, wenn du einen Schalter umlegst"
+    }
+  },
+  "savedServers": {
+    "intro": "Gespeicherte Verbindungen – alles, was hier schon geantwortet hat, bereit, vollständig wieder geladen zu werden. Ein Schlüssel wird auf diesem Gerät neben der Adresse aufbewahrt; er landet nie in einem Backup.",
+    "inUse": "In Verwendung",
+    "keyKept": "Schlüssel gespeichert",
+    "load": "{{name}} laden",
+    "loadWithKey": "{{name}} laden, einschließlich Schlüssel",
+    "forget": "{{name}} vergessen"
+  },
+  "model": {
+    "title": "Modell",
+    "hint": "OpenAI-kompatibel",
+    "savedNone": "Noch nichts gespeichert – teste eine Verbindung, dann wird die Adresse behalten",
+    "savedServers": "Gespeicherte Server",
+    "intro": "Ein Modell auf diesem Rechner oder eines, für das du bezahlst. Lokal ist die Voreinstellung, weil nur so deine Einträge das Gerät nie verlassen.",
+    "provider": "Anbieter",
+    "reasoningOptions": {
+      "on": "An",
+      "light": "Leicht",
+      "off": "Aus"
+    },
+    "endpoint": {
+      "label": "Endpunkt",
+      "hintOllama": "Host und Port. Kein /v1 – jojo nutzt Ollamas eigenen Endpunkt, um es bitten zu können, nicht zu kürzen.",
+      "hint": "Die Basis-URL, endend auf /v1."
+    },
+    "apiKey": {
+      "label": "API-Schlüssel",
+      "hint": "Nur in diesem Browser gespeichert. Er kommt nie in ein Backup und wird nirgendwohin gesendet außer an den Anbieter."
+    },
+    "getKeyLink": "<anchor>Schlüssel bei {{provider}} holen</anchor>",
+    "getKeyFree": "<anchor>Schlüssel bei {{provider}} holen</anchor> – kostenlos, ohne Karte.",
+    "modelField": {
+      "label": "Modell",
+      "placeholder": "Die Modell-ID von deinem Anbieter",
+      "hintConnected": "Was der Server gemeldet hat. Ändere es, wenn du mehr als eines bereitstellst.",
+      "hint": "Teste die Verbindung, um das vom Server ausfüllen zu lassen, oder gib die ID selbst ein."
+    },
+    "savedAs": {
+      "label": "Gespeichert als",
+      "hint": "Wie dieser Server in der Liste heißt. Standardmäßig das Modell."
+    },
+    "contextWindow": {
+      "label": "Kontextfenster",
+      "hintOllama": "Tokens. Leer lassen, um {{tokens}} zu verwenden und Ollama die Größe selbst wählen zu lassen; eine Zahl hier wird auch als num_ctx gesendet.",
+      "hint": "Tokens, die dein Deployment fassen kann. Leer lassen für {{tokens}}."
+    },
+    "reasoning": {
+      "label": "Denken",
+      "description": "Lässt Modelle, die denken können – gpt-oss, Gemma 4, Qwen3 –, vor der Antwort nachdenken. Schalte es aus, wenn bei einem kleinen Modell leere Antworten kommen."
+    },
+    "fillEndpoint": "Gib zuerst einen Endpunkt ein",
+    "connectedNote": "In diesem Browser gespeichert. Der Assistent verwendet dieses Modell."
+  },
+  "cloudTerms": {
+    "providerTerms": "Bedingungen von {{provider}}",
+    "privacy": "Datenschutzerklärung",
+    "licence": "Lizenzseite von jojo"
+  },
+  "mcp": {
+    "title": "Von einem MCP-Client aus verbinden",
+    "intro": "Lass einen Assistenten, den du schon nutzt – etwa Claude Code mit deinem eigenen Abo –, deine Einträge hier lesen und bearbeiten, mit denselben Werkzeugen wie jojos eigener Assistent. Er erreicht diesen Tab über ein kleines Programm auf deinem Computer, und jede Änderung erscheint hier mit „Rückgängig“.",
+    "allow": "Einem MCP-Client auf diesem Computer erlauben, jojo zu nutzen",
+    "chip": {
+      "off": "Aus",
+      "searching": "Warte auf jojo-bridge",
+      "ready": "Verbunden",
+      "badToken": "Token abgelehnt",
+      "noExtension": "Erweiterung nötig",
+      "staleExtension": "Erweiterung neu laden"
+    },
+    "explain": {
+      "searching": "Unter 127.0.0.1:3002 antwortet noch nichts. Starte jojo-bridge mit dem ersten Befehl – jojo sucht weiter.",
+      "served_one": "{{count}} Anfrage deines Clients in dieser Sitzung beantwortet, zuletzt {{method}}.",
+      "served_other": "{{count}} Anfragen deines Clients in dieser Sitzung beantwortet, zuletzt {{method}}.",
+      "servedNoMethod_one": "{{count}} Anfrage deines Clients in dieser Sitzung beantwortet.",
+      "servedNoMethod_other": "{{count}} Anfragen deines Clients in dieser Sitzung beantwortet.",
+      "ready": "jojo-bridge läuft. Verbinde deinen Client mit dem zweiten Befehl.",
+      "badToken": "jojo-bridge läuft mit einem anderen Token. Beende es mit Strg+C und starte es mit dem ersten Befehl neu.",
+      "noExtension": "Diese Kopie von jojo wird aus dem Web geladen, und Chrome hält Webseiten von 127.0.0.1 fern. Die jojo-Erweiterung trägt die Verbindung – ihr Installer ist auf dieser Seite unter „Stellenanzeigen sichern“.",
+      "staleExtension": "Die jojo-Erweiterung in diesem Browser ist älter als diese Seite. Öffne chrome://extensions und klicke bei jojo auf „Neu laden“."
+    },
+    "start": {
+      "title": "jojo-bridge starten und laufen lassen",
+      "copy": "Den Befehl kopieren, der jojo-bridge startet",
+      "notePowershell": "Benötigt Node 18 oder neuer. Füge ihn in Windows PowerShell ein. Das Token wird über die Umgebung übergeben und erscheint daher nie in der Prozessliste. Eine jojo-bridge, die vor dieser Version heruntergeladen wurde, muss neu heruntergeladen werden – der Befehl erledigt das.",
+      "note": "Benötigt Node 18 oder neuer. Das Token wird über die Umgebung übergeben und erscheint daher nie in der Prozessliste. Eine jojo-bridge, die vor dieser Version heruntergeladen wurde, muss neu heruntergeladen werden – der Befehl erledigt das."
+    },
+    "connect": {
+      "title": "Claude Code einmalig damit verbinden",
+      "copy": "Den Befehl kopieren, der Claude Code verbindet",
+      "note": "Frag es dann etwa: „Welche meiner Bewerbungen warten auf mich?“. Wenn dein Terminal „command not found: claude“ meldet, nutzt du Claude Code in VS Code, das eine eigene Kopie mitbringt – führe dieselbe Zeile mit dem vollständigen Pfad dieser Kopie aus (im VS-Code-Erweiterungsordner, unter anthropic.claude-code-…/resources/native-binary/claude), oder installiere die Claude Code CLI. Jeder Client, der MCP über HTTP spricht, kann dieselbe Adresse und dasselbe Token nutzen."
+    },
+    "honesty": "Dein Client läuft mit deinem eigenen Abo und deinem eigenen Login – jojo sieht beides nie und sendet nichts an Anthropic oder sonst jemanden. Er kann jedes Werkzeug von jojos Assistent nutzen, außer den zwei, die sich nicht rückgängig machen lassen: Reset und Clear. Claude Code fragt, bevor es ein Werkzeug nutzt, sofern du es nicht anders eingestellt hast, und jojo markiert jedes Löschen als destruktiv. Lass diesen Tab offen, solange du es nutzt: Die Einträge liegen hier, und auch das andere Ende der Verbindung.",
+    "newToken": "Neues Token",
+    "newTokenNote": "Die alten Befehle funktionieren dann nicht mehr – führe beide mit dem neuen erneut aus."
+  },
+  "reader": {
+    "title": "Meine Dokumente lesen",
+    "intro": "Der Assistent sieht von einem Dokument nur den Namen, bis etwas es in Text umwandelt. Führe <anchor>{{name}}</anchor> auf diesem Rechner aus, dann kann er lesen, was in deinen PDFs, Word-Dateien, Präsentationen und Tabellen steht.",
+    "address": {
+      "label": "Adresse",
+      "hint": "Ein Pfad auf dieser Website in der Entwicklung oder die eigene Adresse des Readers bei installierter Erweiterung. Siehe unten."
+    },
+    "notRunning": "Läuft es noch nicht?",
+    "copySetup": "Die Einrichtungsbefehle kopieren",
+    "cors": "Es lauscht auf <mono>{{endpoint}}</mono>, sendet aber keine CORS-Header – deshalb lässt ein Browser diese Seite es nicht portübergreifend aufrufen. jojos Entwicklungsserver leitet <mono>{{path}}</mono> dorthin weiter, darum ist die Adresse oben ein Pfad und keine URL. Die Handy-App spricht direkt damit und braucht nichts davon.",
+    "hosted": "<em>Installiere bei einer gehosteten Kopie die Erweiterung.</em> Eine aus dem Web geladene Seite kann <mono>127.0.0.1</mono> nicht aufrufen – es gibt keinen Proxy, der einen Pfad weiterleitet, und https://-Seiten ist das lokale Netzwerk verwehrt. Die Erweiterung ist keine Seite: Sie erreicht den Reader direkt, und jojo bittet sie darum. Trag oben die eigene Adresse des Readers ein, dann leitet sie jede Anfrage weiter; sie leitet nur an diesen Rechner weiter.",
+    "fillAddress": "Gib zuerst eine Adresse ein",
+    "connectedNote": "Dokumente werden an diese Adresse gesendet und nirgendwo sonst hin. Nichts wird hochgeladen.",
+    "separate": "{{name}} ist ein eigenständiges Programm und kein Teil von jojo.",
+    "notAffiliated": "jojo steht in keiner Verbindung zu Microsoft."
+  },
+  "capture": {
+    "title": "Stellenanzeigen sichern",
+    "intro": "Eine Stellenanzeige ist das einzige Dokument deiner Suche, das jemand anderem gehört. Die Anzeige verschwindet in der Woche nach dem Vorstellungsgespräch und nimmt die Anforderungen mit. Die jojo-Erweiterung speichert eine Kopie – die Seite so, wie sie am Tag des Ablegens aussah, mit allen Bildern und Stylesheets eingebettet, sodass sie auch ein Jahr später ohne Verbindung aufgeht.",
+    "checking": "Dieser Browser wird geprüft…",
+    "installed": "Installiert und verbunden.",
+    "installedHint": "Öffne eine Stellenanzeige und klicke in der Symbolleiste auf den jojo-Button – falls du ihn nicht siehst, steckt er im Puzzleteil-Menü und muss angeheftet werden. Komm dann zurück in den Tresor.",
+    "version": "Version {{version}}.",
+    "safari": {
+      "title": "Safari kann diese Erweiterung nicht ausführen.",
+      "body": "Safari lädt nur Erweiterungen, die in einer signierten Mac-App stecken, daher gibt es hier nichts zu installieren. Nutze Chrome, Edge, Brave oder Firefox zum Sichern; alles andere in jojo funktioniert in Safari genauso."
+    },
+    "download": "Erweiterung herunterladen",
+    "firefox": {
+      "title": "Firefox braucht eine signierte Kopie.",
+      "body": "Firefox ist der einzige Browser, bei dem das ein einziger Klick sein könnte – ein von Mozilla signiertes Add-on lässt sich direkt über einen Link hier installieren, ohne Store-Eintrag. jojo erzeugt noch keine signierte Version, also lade es vorerst vorübergehend über <code>about:debugging</code> → Dieser Firefox → Temporäres Add-on laden und wähle <code>manifest.json</code>. Firefox vergisst es beim Neustart."
+    },
+    "steps": {
+      "unzip": "Entpacke es an einem dauerhaften Ort – nicht in Downloads. <muted>Der Browser liest die Erweiterung bei jedem Start aus diesem Ordner, daher deinstalliert Löschen oder Verschieben die Erweiterung.</muted>",
+      "open": "Öffne die Erweiterungsseite.",
+      "copied": "Kopiert",
+      "copy": "Kopieren",
+      "paste": "Füge es in die Adressleiste ein.",
+      "developer": "Schalte oben rechts den <strong>Entwicklermodus</strong> ein. <muted>Lass ihn an – ausschalten deaktiviert so geladene Erweiterungen, ohne Bescheid zu sagen.</muted>",
+      "load": "Klicke auf <strong>Entpackte Erweiterung laden</strong> und wähle den entpackten Ordner.",
+      "pin": "<strong>Anheften.</strong> Klicke in der Symbolleiste auf den Puzzleteil-Button und hefte jojo an. <muted>Chromium-Browser verstecken standardmäßig jede Erweiterung in diesem Menü; der Button existiert also, ist aber nicht in der Symbolleiste – diesen Schritt übersehen viele, und es sieht genau so aus, als wäre die Installation fehlgeschlagen.</muted>",
+      "back": "Komm hierher zurück. <muted>Dieses Feld bemerkt es von selbst und wird grün.</muted>"
+    },
+    "yourBrowser": "deinen Browser",
+    "noOneClick": "Für {{browser}} gibt es keine Ein-Klick-Installation, und das ist eine Entscheidung des Browsers, keine fehlende Funktion hier: Die API dafür wurde 2018 entfernt, und ein signiertes Paket müsste trotzdem aus dem Chrome Web Store kommen. Nichts an dieser Erweiterung spricht mit einem Server – sie liest die Seite, die du ansiehst, und übergibt das Ergebnis an diesen Tab."
+  },
+  "crash": {
+    "title": "Absturzberichte",
+    "builtWithout": "Diese Kopie von jojo wurde ohne Absturzberichte und Nutzungsstatistik gebaut, daher wird nichts aufgezeichnet und es gibt nichts einzuschalten. Ein Build legt das mit <mono>{{crashFlag}}</mono> und <mono>{{analyticsFlag}}</mono> fest.",
+    "intro": "Wenn etwas kaputtgeht, kann jojo den Fehler aufbewahren, damit du ihn nachlesen kannst – praktisch, wenn das, was fehlschlug, schon weggescrollt ist. Ein Bericht enthält die Fehlermeldung, wo in jojo es passiert ist, und den Stacktrace. Er enthält nie deine Bewerbungen, Dokumente, Notizen, dein Profil oder Unterhaltungen, und API-Schlüssel, Adressen, dein Home-Verzeichnis und E-Mail-Adressen werden entfernt, bevor ein Bericht geschrieben wird.",
+    "where": "In diesem Browser und in der Erweiterung <em>bleiben Absturzberichte auf diesem Gerät</em> – nichts wird hochgeladen, und eine Backup-Datei enthält sie nicht. Die Handy-App sendet sie außerdem an Firebase Crashlytics, das das Gerätemodell, die Betriebssystemversion und eine zufällige ID hinzufügt, um zu zählen, wie viele Leute denselben Absturz haben. Absturzberichte betreffen nur Abstürze – was du in jojo tust, ist die separate Frage unten, getrennt beantwortet.",
+    "keep": {
+      "label": "Absturzberichte behalten",
+      "description": "An, damit ein Absturz, den du erlebst, für uns sichtbar ist. Schalte es aus, und nichts wird aufgezeichnet."
+    },
+    "usage": {
+      "label": "Teilen, welche Funktionen ich nutze",
+      "description": "Nur Zählungen aus einer festen Liste – nie, was in deinen Einträgen steht.",
+      "note": "Es kann nur Dinge aus einer festen Liste sagen – welcher Bildschirm geöffnet wurde, dass eine Bewerbung hinzugefügt wurde, ungefähr wie viele es gibt. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen. Geht an Google Analytics."
+    },
+    "kept_one": "{{count}} Bericht gespeichert",
+    "kept_other": "{{count}} Berichte gespeichert",
+    "clear": "Leeren",
+    "stack": "Stack",
+    "emptyOn": "Seit du das eingeschaltet hast, ist nichts kaputtgegangen.",
+    "emptyOff": "Es wird nichts aufgezeichnet."
+  },
+  "audit": {
+    "title": "Was jojo getan hat",
+    "kept_one": "{{count}} gespeichert",
+    "kept_other": "{{count}} gespeichert",
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge",
+    "connections_one": "{{count}} Verbindung",
+    "connections_other": "{{count}} Verbindungen",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "keine Änderung",
+    "undoTitle": {
+      "can": "Stellt die Einträge so wieder her, wie sie vor dieser Änderung waren",
+      "wholeStore": "Dies hat den gesamten Speicher ersetzt, daher gibt es nichts wiederherzustellen",
+      "trimmed": "jojo hat diese Änderung protokolliert, aber nicht genug, um sie rückgängig zu machen – es war ein Schreibvorgang im Hintergrund (eine Passungsbewertung, die Bytes einer Datei) oder sie liegt zu weit zurück"
+    },
+    "undoFailed": {
+      "title": "Diese Änderung ließ sich nicht mehr rückgängig machen",
+      "description": "Sie ist nicht mehr im Journal."
+    },
+    "empty": "In diesen Speicher wurde noch nichts geschrieben. Jede Änderung, die du machst, wird hier festgehalten, und die Aufzeichnung übersteht ein Neuladen.",
+    "showFewer": "Weniger anzeigen",
+    "showAll": "Alle {{total}} anzeigen",
+    "footer": "Die letzten 200 Änderungen werden behalten, die ältesten fallen zuerst weg. Rückgängig machen ist hier selbst eine neue Änderung – sie wird oben in dieser Liste ergänzt, statt die Zeile zu entfernen, die sie umkehrt."
+  },
+  "keywords": {
+    "title": "Schlagwörter",
+    "hint": "von allen Einträgen geteilt",
+    "intro": "Ein gemeinsamer Satz für Bewerbungen, Erinnerungen und den Tresor. Umbenennen wirkt überall, wo es angezeigt wird; Löschen entfernt es von jedem Eintrag, der es trägt.",
+    "usage": {
+      "none": "Noch an keinem Eintrag",
+      "used_one": "An {{count}} Eintrag verwendet",
+      "used_other": "An {{count}} Einträgen verwendet"
+    },
+    "errors": {
+      "taken": "Ein anderes Schlagwort hat bereits diesen Namen.",
+      "blank": "Ein Schlagwort braucht einen Namen.",
+      "exists": "Dieses Schlagwort gibt es bereits."
+    },
+    "renameNamed": "{{name}} umbenennen",
+    "rename": "Umbenennen",
+    "deleteNamed": "{{name}} löschen",
+    "delete": "Löschen",
+    "empty": {
+      "title": "Noch keine Schlagwörter",
+      "description": "Füge unten eines hinzu oder über den Schlagwort-Filter über jeder Liste. Schlagwörter gehören dir – sie sind nicht die festen Rollen-Tags in der oberen Leiste."
+    },
+    "newKeyword": "Neues Schlagwort",
+    "placeholder": "z. B. Empfehlung",
+    "add": "Schlagwort hinzufügen"
+  },
+  "documents": {
+    "title": "Deine Dokumente",
+    "hint": "auf diesem Gerät",
+    "intro": "Die Lebensläufe, Anschreiben und Statements, die du anhängst, werden in diesem Browser auf diesem Rechner gespeichert. Nichts wird irgendwohin hochgeladen.",
+    "count_one": "{{count}} Dokument",
+    "count_other": "{{count}} Dokumente",
+    "noneReadable": {
+      "title": "Keine Dokumente konnten gelesen werden",
+      "description": "Dieser Browser hat für keines davon noch die Bytes."
+    },
+    "savedAll_one": "{{count}} Dokument gespeichert",
+    "savedAll_other": "{{count}} Dokumente gespeichert",
+    "savedSome": "{{saved}} von {{total}} gespeichert",
+    "savedAllDescription": "Eine Datei, {{name}}, in deinem Download-Ordner. Das sind die Originale, keine Kopien der Einträge.",
+    "savedSomeDescription": "{{name}} liegt in deinem Download-Ordner, ohne {{missing}}, die dieser Browser nicht mehr lesen konnte.",
+    "failed": {
+      "title": "Der Download konnte nicht erstellt werden",
+      "description": "Nichts wurde gespeichert. Versuch es noch einmal, oder öffne ein Dokument und lade es einzeln herunter."
+    },
+    "none": "Noch keine Dokumente",
+    "stored_one": "{{count}} Dokument gespeichert",
+    "stored_other": "{{count}} Dokumente gespeichert",
+    "usage": "{{used}} von {{quota}} belegt",
+    "notPermanent": "Dieser Browser hat jojos Speicher nicht als dauerhaft markiert, daher kann er diese Dokumente löschen, wenn die Festplatte voll wird – und „Browserdaten löschen“ entfernt sie in jedem Fall. Behalte eigene Kopien von allem, was du nicht neu schreiben möchtest.",
+    "saving": "Wird gespeichert…",
+    "downloadAll": "Alle Dokumente herunterladen"
+  },
+  "diagnostics": {
+    "title": "Diagnose",
+    "types": {
+      "application": "Bewerbungen",
+      "background": "Werdegang-Fakten",
+      "claim": "Beziehungen",
+      "thread": "Unterhaltungen",
+      "proposal": "Vorschläge",
+      "organisation": "Organisationen",
+      "timelineItem": "Zeitleisten-Einträge",
+      "keyword": "Schlagwörter",
+      "link": "Links",
+      "file": "Dateien",
+      "snippet": "Schnipsel",
+      "person": "Personen",
+      "stickyNote": "Haftnotizen",
+      "posting": "Gespeicherte Stellenanzeigen",
+      "match": "Scout-Treffer",
+      "pipeline": "Scout-Pipelines",
+      "profile": "Profil"
+    },
+    "dataSet": {
+      "demo": "die Demo-Einträge, unverändert",
+      "empty": "absichtlich geleert, nie befüllt",
+      "user": "seit der Einrichtung beschrieben"
+    },
+    "notReported": "nicht gemeldet",
+    "checking": "wird geprüft…",
+    "storage": "Speicher",
+    "durable": {
+      "label": "Einträge werden auf die Festplatte geschrieben",
+      "yes": "ja – IndexedDB",
+      "no": "nein – nur dieser Tab"
+    },
+    "schema": {
+      "label": "Datenbankschema",
+      "value": "v{{stored}} (App erwartet v{{expected}})"
+    },
+    "persisted": {
+      "label": "Browser verspricht, ihn zu behalten",
+      "unknown": "dieser Browser sagt es nicht",
+      "yes": "ja",
+      "no": "nein – der Browser kann ihn jederzeit löschen, und ein privates Fenster tut es beim Schließen"
+    },
+    "space": {
+      "label": "Belegter Platz",
+      "value": "{{used}} von {{quota}}"
+    },
+    "queue": {
+      "label": "Schreibwarteschlange",
+      "idle": "leer – alles ist gespeichert",
+      "writing_one": "speichere {{count}} Änderung",
+      "writing_other": "speichere {{count}} Änderungen",
+      "degraded": "erneuter Versuch für {{unsaved}} Änderung(en), {{pending}} Zeile(n) (Versuch {{attempts}}): {{error}}",
+      "stopped": "angehalten – {{reason}}"
+    },
+    "store": "Dieser Speicher",
+    "contents": "Inhalt",
+    "created": "Erstellt",
+    "seeded": "Befüllt",
+    "never": "nie",
+    "lastOpened": "Zuletzt geöffnet",
+    "lastWrite": "Letzter Schreibvorgang",
+    "nothingYet": "noch nichts",
+    "skipped": {
+      "label": "Einträge, die nicht gelesen werden konnten",
+      "none": "keine"
+    },
+    "integrity": {
+      "label": "Integritätsprüfungen",
+      "failed": "{{total}} fehlgeschlagen",
+      "passed": "alle bestanden"
+    },
+    "records": "Einträge ({{total}})",
+    "connections": "Verbindungen ({{total}})",
+    "none": "Keine"
+  },
+  "data": {
+    "title": "Deine Daten",
+    "export": {
+      "idle": "Backup herunterladen",
+      "progress": "Backup wird vorbereitet… {{done}} von {{total}} Dokumenten",
+      "preparing": "Backup wird vorbereitet…"
+    },
+    "restoreButton": "Backup wiederherstellen",
+    "excel": {
+      "label": "Nach Excel exportieren",
+      "title": "Es ist kein Tabellen-Writer enthalten – der JSON-Export enthält dieselben Einträge"
+    },
+    "import": {
+      "label": "Importieren",
+      "title": "Ein Backup wieder einzulesen braucht einen Validator, der eine Datei ablehnen kann, die er nicht versteht – solange es den nicht gibt, könnte ein Import nur raten"
+    },
+    "about": "Ein vollständiges Backup: jede Bewerbung, die Zeitleiste, der Tresor, gespeicherte Stellenanzeigen, deine Schlagwörter mit ihren Zuordnungen und dein Profil, in einer versionierten Datei. Es ist eine Momentaufnahme – es hält mit späteren Änderungen nicht Schritt, und es ist die einzige Kopie, die nicht auf diesem Rechner liegt.",
+    "records": {
+      "label": "Einträge",
+      "empty": "Jede Liste ist leer, daher zeigt jede Seite ihren Erststart-Zustand.",
+      "emptyStays": "Sie bleibt leer, wenn du zurückkommst.",
+      "emptyKeywords": "Deine Schlagwörter sind noch da, und das Laden der Demodaten ersetzt sie durch eigene.",
+      "demo": "Die Demo-Suche, mit der jojo ausgeliefert wird – zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor. Nichts davon gehört schon dir.",
+      "own": "Deine eigenen Einträge. Das Laden der Demodaten ersetzt sie, also exportiere vorher ein Backup, wenn du sie behalten willst.",
+      "loadDemo": "Demodaten laden"
+    },
+    "clearRecords": {
+      "label": "Alle Einträge löschen",
+      "demo": "Entfernt die Demodaten und lässt jojo leer zurück. Nichts hier gehört schon dir, daher verschwinden auch die mitgelieferten Schlagwörter.",
+      "own": "Entfernt jede Bewerbung, jeden Zeitleisten-Eintrag, Tresor-Eintrag, jede gespeicherte Stellenanzeige, jeden Kontakt, jede Notiz, Unterhaltung und jeden Lebenslauf-Fakt und leert dein Profil. Deine Schlagwörter bleiben erhalten.",
+      "nothingLeft": "Es gibt nichts mehr zu löschen",
+      "deletes": "Löscht alle Einträge",
+      "button": "Einträge löschen"
+    },
+    "move": {
+      "label": "Auf ein anderes Gerät umziehen",
+      "description": "Kopple ein zweites Gerät und übergib alles. In dieser Version eine Demonstration – es wird nichts übertragen.",
+      "open": "Übertragung öffnen"
+    },
+    "clearStorage": {
+      "label": "Browserspeicher leeren",
+      "description": "Leert alles, was diese Website in deinem Browser gespeichert hat – deine Einträge und ihre Datenbank, jedes angehängte Dokument, Einstellungen, Caches und Cookies – und lädt jojo dann neu, als wäre es neu. Dokumente gibt es nur hier; lade sie vorher herunter, wenn du sie behalten willst.",
+      "clearing": "Wird geleert…",
+      "button": "Speicher leeren"
+    },
+    "footer": {
+      "durable": "Deine Einträge werden beim Arbeiten in die Datenbank dieses Browsers geschrieben, daher kannst du den Tab bedenkenlos schließen. Diese Datenbank liegt aber nur auf diesem einen Rechner: Ein Browser kann sie löschen und eine Festplatte kann ausfallen, daher ist eine exportierte Datei, die woanders liegt, das einzige echte Backup.",
+      "memory": "Deine Einträge werden gerade nicht gespeichert – das Banner oben auf der Seite sagt, warum. Exportiere eine Kopie, bevor du den Tab schließt."
+    },
+    "confirm": {
+      "fallbackTitle": "Daten ändern?",
+      "continue": "Weiter"
+    },
+    "restoreConfirm": {
+      "title": "Alles durch dieses Backup ersetzen?",
+      "description": "Diese Datei enthält {{contents}}. {{replaces}}, und das lässt sich nicht rückgängig machen – der Verlauf geht mit. Lade vorher ein Backup herunter, wenn du dir nicht sicher bist.",
+      "confirm": "Alles ersetzen"
+    },
+    "restoreFailed": "Die Wiederherstellung ist fehlgeschlagen",
+    "reload": "jojo neu laden",
+    "demoLoaded": {
+      "title": "Demodaten geladen",
+      "durable": "Zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor und ein Profil, so wie ausgeliefert in deine Datenbank geschrieben.",
+      "memory": "Zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor und ein Profil, so wie ausgeliefert. Gerade wird nichts gespeichert, daher halten sie nur so lange wie dieser Tab."
+    },
+    "cleared": {
+      "title": "Alles gelöscht",
+      "demoDurable": "Alle Demo-Einträge sind weg, Schlagwörter eingeschlossen, und das bleibt auch nach einem Neuladen so.",
+      "demoMemory": "Alle Demo-Einträge sind weg, Schlagwörter eingeschlossen, aber gerade wird nichts gespeichert, daher beginnt ein Neuladen wieder mit den Demodaten.",
+      "ownDurable": "Alle Einträge sind weg, dein Profil eingeschlossen, und das bleibt auch nach einem Neuladen so. Deine Schlagwörter sind noch da.",
+      "ownMemory": "Alle Einträge sind weg, dein Profil eingeschlossen, aber gerade wird nichts gespeichert, daher beginnt ein Neuladen wieder mit den Demodaten. Deine Schlagwörter sind noch da."
+    }
+  },
+  "pending": {
+    "exportFirst": "Zuerst ein Backup exportieren",
+    "empty": {
+      "title": "Alle Einträge löschen?",
+      "demoDurable": "Die Demo-Bewerbungen, die Zeitleiste, der Tresor, gespeicherte Stellenanzeigen, Schlagwörter und das Profil verschwinden alle, und das bleibt auch nach einem Neuladen so. Nichts davon gehörte dir – in diesen Speicher wurde seit dem Laden der Demodaten nichts geschrieben.",
+      "demoMemory": "Die Demo-Bewerbungen, die Zeitleiste, der Tresor, gespeicherte Stellenanzeigen, Schlagwörter und das Profil verschwinden alle, aber gerade wird nichts gespeichert, daher beginnt ein Neuladen wieder mit den Demodaten. Nichts davon gehörte dir – in diesen Speicher wurde seit dem Laden der Demodaten nichts geschrieben.",
+      "ownDurable": "Bewerbungen, die Zeitleiste, der Tresor, gespeicherte Stellenanzeigen, Kontakte, Notizen, Unterhaltungen, Lebenslauf-Fakten und dein Profil verschwinden alle, auch alles, was du in dieser Sitzung hinzugefügt hast, und das bleibt auch nach einem Neuladen so. Rückgängig machen ist nicht möglich. Deine Schlagwörter bleiben – sie sind eigene Einträge –, aber nichts trägt sie mehr, daher fällt jede Zahl im Schlagwort-Feld auf null.",
+      "ownMemory": "Bewerbungen, die Zeitleiste, der Tresor, gespeicherte Stellenanzeigen, Kontakte, Notizen, Unterhaltungen, Lebenslauf-Fakten und dein Profil verschwinden alle, auch alles, was du in dieser Sitzung hinzugefügt hast, aber gerade wird nichts gespeichert, daher beginnt ein Neuladen wieder mit den Demodaten. Rückgängig machen ist nicht möglich. Deine Schlagwörter bleiben – sie sind eigene Einträge –, aber nichts trägt sie mehr, daher fällt jede Zahl im Schlagwort-Feld auf null.",
+      "confirm": "Alles löschen"
+    },
+    "demo": {
+      "title": "Demodaten laden?",
+      "fillDurable": "Zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor und ein Profil werden in deine Datenbank geschrieben, versehen mit den mitgelieferten Schlagwörtern. Sie wieder zu löschen ist ein Klick.",
+      "fillMemory": "Zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor und ein Profil werden geladen, versehen mit den mitgelieferten Schlagwörtern. Sie wieder zu löschen ist ein Klick.",
+      "replace": "Alles in jojo wird durch die Demo-Einträge ersetzt – deine Bewerbungen, Zeitleiste, dein Tresor, gespeicherte Stellenanzeigen, Kontakte, Notizen, Unterhaltungen, Lebenslauf-Fakten, Schlagwörter und dein Profil, alles davon, ersetzt statt zusammengeführt. Rückgängig machen ist nicht möglich.",
+      "confirm": "Demodaten laden"
+    },
+    "storage": {
+      "title": "Alles löschen, was diese Website gespeichert hat?",
+      "description": "Entfernt aus diesem Browser alles, was jojo darin abgelegt hat – deine Einträge und ihre Datenbank, deine Design- und Klangeinstellungen, alle Caches und Cookies – und lädt dann neu. Es gibt keinen Server mit einer Kopie, und nichts hier hat diesen Rechner je verlassen, das ist also alles. jojo startet wie auf einem neuen Rechner: mit dem System-Design und der Frage beim ersten Start, ob du mit den Demodaten oder leer beginnen willst. Rückgängig machen ist nicht möglich.",
+      "confirm": "Speicher leeren"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_one": "{{count}} Eintrag",
+      "records_other": "{{count}} Einträge",
+      "documents_one": "{{count}} Dokument",
+      "documents_other": "{{count}} Dokumente",
+      "links_one": "{{count}} Verknüpfung",
+      "links_other": "{{count}} Verknüpfungen"
+    },
+    "lost": {
+      "title": "Einige Einträge konnten nicht wiederhergestellt werden",
+      "description": "Diese Datei enthielt {{held}}. {{kept}} sind auf diesem Gerät, und {{lost}} konnten nicht gelesen werden – die sind verloren. Die Datei selbst ist unverändert, eine Version, die sie lesen kann, kann sie also noch wiederherstellen.",
+      "descriptionWithDocuments": "Diese Datei enthielt {{held}}. {{kept}} und {{documents}} sind auf diesem Gerät, und {{lost}} konnten nicht gelesen werden – die sind verloren. Die Datei selbst ist unverändert, eine Version, die sie lesen kann, kann sie also noch wiederherstellen."
+    },
+    "withoutLinks": {
+      "title": "Wiederhergestellt, ohne einige Verknüpfungen",
+      "description": "Alle {{held}} sind zurück. {{links}} zwischen ihnen konnten nicht gelesen werden, daher sind einige Dokumente, Erinnerungen oder Stellenanzeigen vielleicht nicht mehr der Stelle zugeordnet, zu der sie gehörten. Sonst fehlt nichts.",
+      "descriptionWithDocuments": "Alle {{held}} und {{documents}} sind zurück. {{links}} zwischen ihnen konnten nicht gelesen werden, daher sind einige Dokumente, Erinnerungen oder Stellenanzeigen vielleicht nicht mehr der Stelle zugeordnet, zu der sie gehörten. Sonst fehlt nichts."
+    },
+    "done": {
+      "title": "Wiederhergestellt",
+      "description": "{{records}} sind zurück, genau so, wie die Datei sie enthielt.",
+      "descriptionWithDocuments": "{{records}} und {{documents}} sind zurück, genau so, wie die Datei sie enthielt."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "Diese Datei konnte nicht gelesen werden",
+      "description": "Dein Browser konnte diese Datei nicht lesen – sie wurde vielleicht verschoben, umbenannt oder getrennt, seit du sie ausgewählt hast. Nichts wurde geändert; wähle sie erneut, sobald sie wieder da ist."
+    },
+    "refused": {
+      "title": "Diese Datei kann nicht wiederhergestellt werden",
+      "notBackup": "Diese Datei ist kein jojo-Backup. Nichts wurde geändert.",
+      "reason": "{{reason}}. Nichts wurde geändert."
+    }
+  }
+}

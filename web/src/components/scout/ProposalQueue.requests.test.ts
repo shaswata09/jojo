@@ -14,6 +14,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import source from './ProposalQueue.tsx?raw'
+import en from '@/i18n/locales/en/scout.json'
 
 /** Comments removed, so prose about a class or a prop does not count as one. */
 const code = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
@@ -30,11 +31,12 @@ describe('Q287 a scout suggestion shows a summary, its link, and an open button'
   })
 
   it('puts an Open posting button, also a new tab, in the right-hand column', () => {
-    const right = code.indexOf('<div className="ml-auto flex shrink-0')
+    const right = code.indexOf('<div className="ms-auto flex shrink-0')
     expect(right).toBeGreaterThan(-1)
     const button = code.slice(right, right + 700)
     expect(button).toMatch(/<a\s+href=\{posting\.href\}\s+target="_blank"/)
-    expect(button).toMatch(/<ExternalLink [^>]*\/>\s*Open posting\s*<\/a>/)
+    expect(button).toMatch(/<ExternalLink [^>]*\/>\s*\{t\('proposals\.openPosting'\)\}\s*<\/a>/)
+    expect(en.proposals.openPosting).toBe('Open posting')
   })
 })
 

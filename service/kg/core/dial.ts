@@ -2,7 +2,7 @@
  * Where to connect, in a form a person can read off one screen and type into
  * another — and the rule for which addresses jojo will connect to at all.
  *
- * Two devices with cameras do not need this: the animation carries everything.
+ * The pairing key travels by camera (the QR code); this carries the address.
  * A desktop and a laptop have no cameras between them, so the same facts have to
  * survive being read aloud, written on paper, or typed with one hand.
  *

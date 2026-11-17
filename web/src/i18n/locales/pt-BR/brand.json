@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "Os movimentos do jojo",
+    "hint": "Escolha um ou desenhe o traço dele no robô.",
+    "trigger": "Movimentos do jojo",
+    "triggerAria": "Movimentos e créditos do jojo",
+    "plays": "executa",
+    "modelCredit": "Modelo do robô:"
+  },
+  "theme": {
+    "toggle": "Alternar tema",
+    "toLight": "Mudar para o tema claro",
+    "toDark": "Mudar para o tema escuro"
+  },
+  "poke": "Cutucar o jojo"
+}

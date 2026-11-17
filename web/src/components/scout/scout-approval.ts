@@ -5,9 +5,13 @@
  * `use-posting-actions.ts`, `use-fill-draft.ts`) do the writes; everything here
  * is a function of its arguments, so it is tested in `scout-approval.test.ts`.
  */
+import { i18next } from '@/i18n/i18n'
 import type { FillOutcome } from '@/lib/fill-from-posting'
 import { scoutReading } from '@jojo/service/core/proposal'
 import type { JobIdentity } from '@jojo/service/core/same-job'
+
+/** The words are looked up when a toast is made, so they follow the language picked at the time. */
+const t = (key: string, options?: Record<string, unknown>) => i18next.t(`scout:${key}`, options)
 
 /** What a scout suggestion says the job is. */
 export function identityOf(input: string, reading?: string): JobIdentity {
@@ -36,7 +40,9 @@ export function withScheme(typed: string): string {
 
 /** Said once a job turned out to be one already in the applications. */
 export function alreadyHaveDescription(existing: { org: string; role: string }): string {
-  return `This is ${existing.role ? `${existing.org} — ${existing.role}` : existing.org}, reposted on another board. The posting is linked to it, and its page is filed under it.`
+  return t('toasts.alreadyHaveDescription', {
+    name: existing.role ? `${existing.org} — ${existing.role}` : existing.org,
+  })
 }
 
 /** The toast for a posting that could not be read into its draft. */
@@ -45,10 +51,10 @@ export function fillFailedToast(
   out: Extract<FillOutcome, { ok: false }>,
 ): { title: string; description: string } {
   return {
-    title: `${org}: the posting could not be read`,
+    title: t('toasts.fillFailedTitle', { org }),
     description: out.kept
-      ? `${out.reason} The page itself was saved and filed under the draft — open it to fill in the rest.`
-      : `${out.reason} The draft keeps what its link says — open it to fill in the rest.`,
+      ? t('toasts.fillFailedKept', { reason: out.reason })
+      : t('toasts.fillFailed', { reason: out.reason }),
   }
 }
 
@@ -61,17 +67,17 @@ export function fillDoneToast(out: Extract<FillOutcome, { ok: true }>): {
   return {
     title:
       out.filled.length > 0
-        ? `${name} filled from the posting`
-        : `${name} checked against the posting`,
+        ? t('toasts.filledTitle', { name })
+        : t('toasts.checkedTitle', { name }),
+    // Whole sentences, each one translated on its own; the field names in the
+    // lists are the record's own and stay as they are.
     description: [
-      out.filled.length > 0 ? `Filled in: ${out.filled.join(', ')}.` : '',
-      out.confirmed.length > 0 ? `Checked against the page: ${out.confirmed.join(', ')}.` : '',
-      out.keptYours.length > 0 ? `Kept your edits to: ${out.keptYours.join(', ')}.` : '',
-      out.filled.length === 0 && out.confirmed.length === 0
-        ? 'The page added nothing the draft did not have.'
-        : '',
-      out.missing.length > 0 ? `Not on the page: ${out.missing.join(', ')}.` : '',
-      'The page is filed under it.',
+      out.filled.length > 0 ? t('toasts.filledIn', { list: out.filled.join(', ') }) : '',
+      out.confirmed.length > 0 ? t('toasts.checked', { list: out.confirmed.join(', ') }) : '',
+      out.keptYours.length > 0 ? t('toasts.keptYours', { list: out.keptYours.join(', ') }) : '',
+      out.filled.length === 0 && out.confirmed.length === 0 ? t('toasts.addedNothing') : '',
+      out.missing.length > 0 ? t('toasts.missing', { list: out.missing.join(', ') }) : '',
+      t('toasts.filedUnder'),
     ]
       .filter(Boolean)
       .join(' '),
@@ -82,9 +88,9 @@ export function fillDoneToast(out: Extract<FillOutcome, { ok: true }>): {
 export function approvedDescription(hasPage: boolean, configured: boolean): string {
   return hasPage
     ? configured
-      ? 'Reading the posting to fill in its details — the draft updates when it is done.'
-      : 'Filled from its link. Connect a model in Settings to have the posting itself read in.'
-    : 'Open it to fill in the rest.'
+      ? t('toasts.approvedReading')
+      : t('toasts.approvedFromLink')
+    : t('toasts.approvedOpen')
 }
 
 /**
@@ -98,15 +104,16 @@ export function approveAllToast(
 ): { title: string; description: string } | null {
   if (done === 0 && repeats > 0) {
     return {
-      title: `Already in your applications — nothing new added`,
-      description: `${String(repeats)} ${repeats === 1 ? 'is a job' : 'are jobs'} you already have, reposted on another board. ${repeats === 1 ? 'It is' : 'They are'} linked to the application${repeats === 1 ? '' : 's'} you have.`,
+      title: t('toasts.allRepeatsTitle'),
+      description: t('toasts.allRepeats', { count: repeats }),
     }
   }
   if (done === 0) return null
   return {
-    title: `${String(done)} added to your applications as drafts${repeats > 0 ? ` · ${String(repeats)} already there` : ''}`,
-    description: configured
-      ? 'Reading each posting in turn to fill in its details.'
-      : 'Filled from their links. Connect a model in Settings to have the postings themselves read in.',
+    title:
+      repeats > 0
+        ? t('toasts.addedWithRepeats', { count: done, repeats })
+        : t('toasts.added', { count: done }),
+    description: configured ? t('toasts.addedReading') : t('toasts.addedFromLinks'),
   }
 }

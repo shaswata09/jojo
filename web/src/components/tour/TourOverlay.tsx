@@ -2,6 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router'
 import { Check, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { STEPS } from '@/components/tour/steps'
 import { isDone, mark, needsRoute, padded, placeCard, type Box } from '@/components/tour/tour-logic'
@@ -58,7 +59,10 @@ export function TourOverlay({
   onLeave: () => void
   onFinish: () => void
 }) {
+  const { t } = useTranslation('tour')
   const step = STEPS[index] ?? STEPS[0]!
+  const title = t(`steps.${step.id}.title`)
+  const task = step.task ? t(`steps.${step.id}.task`) : ''
   const last = index === STEPS.length - 1
   const { pathname, search } = useLocation()
   const navigate = useNavigate()
@@ -274,13 +278,13 @@ export function TourOverlay({
         <div key={step.id} className={reduced ? undefined : 'tour-card-in'}>
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-medium text-text-3">
-              Step {index + 1} of {STEPS.length}
+              {t('overlay.progress', { n: index + 1, total: STEPS.length })}
             </span>
             <button
               type="button"
               onClick={onLeave}
-              aria-label="End the tour (your place is kept)"
-              title="End the tour"
+              aria-label={t('overlay.endLabel')}
+              title={t('overlay.end')}
               className="-m-1 grid size-7 place-items-center rounded-md text-text-3 hover:bg-foreground/5 hover:text-text-1"
             >
               <X className="size-4" />
@@ -297,9 +301,9 @@ export function TourOverlay({
           </div>
 
           <h2 id={titleId} className="mt-3 text-base font-semibold text-text-1">
-            {step.title}
+            {title}
           </h2>
-          <p className="mt-1.5 leading-relaxed text-text-2">{step.body}</p>
+          <p className="mt-1.5 leading-relaxed text-text-2">{t(`steps.${step.id}.body`)}</p>
 
           {step.task ? (
             <div
@@ -314,7 +318,7 @@ export function TourOverlay({
                 <span aria-hidden className="tour-dot size-2 shrink-0 rounded-full" />
               )}
               <span className="font-medium">
-                {done ? 'Nice — that’s it.' : `Try it: ${step.task.say}`}
+                {done ? t('overlay.nice') : t('overlay.tryIt', { task })}
               </span>
             </div>
           ) : null}
@@ -322,22 +326,28 @@ export function TourOverlay({
           {/* Step changes are announced: the title only reads out on open. */}
           <p aria-live="polite" className="sr-only">
             {done
-              ? 'Done.'
-              : `Step ${index + 1} of ${STEPS.length}: ${step.title}. ${step.task ? `Try it: ${step.task.say}` : ''}`}
+              ? t('overlay.done')
+              : step.task
+                ? t('overlay.announceTask', { n: index + 1, total: STEPS.length, title, task })
+                : t('overlay.announce', { n: index + 1, total: STEPS.length, title })}
           </p>
 
           <div className="mt-4 flex items-center gap-2">
             {index > 0 ? (
               <Button variant="ghost" size="sm" onClick={() => onGo(index - 1)}>
-                Back
+                {t('overlay.back')}
               </Button>
             ) : (
               <Button variant="ghost" size="sm" onClick={onLeave}>
-                Not now
+                {t('overlay.notNow')}
               </Button>
             )}
-            <Button size="sm" className="ml-auto" onClick={next}>
-              {last ? 'Finish' : step.task && !done ? 'Skip this' : 'Next'}
+            <Button size="sm" className="ms-auto" onClick={next}>
+              {last
+                ? t('overlay.finish')
+                : step.task && !done
+                  ? t('overlay.skip')
+                  : t('overlay.next')}
             </Button>
           </div>
         </div>

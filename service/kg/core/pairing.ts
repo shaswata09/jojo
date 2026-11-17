@@ -7,8 +7,8 @@
  * something no attacker on the network can see, and everything below is built on
  * that one asymmetry.
  *
- * `pulse.ts` puts the offer on the screen and `convoy.ts` carries the transfer
- * itself. This file decides what those bytes are and what they prove.
+ * The screen shows the offer as a QR code (`web/src/lib/pairing-qr.ts`, read by
+ * `mobile/src/lib/pairing-qr.ts`) and `convoy.ts` carries the transfer itself. This file decides what those bytes are and what they prove.
  *
  * ## Why the code carries a secret and not only a public key
  *
@@ -309,7 +309,7 @@ async function agree(
 /* --- the three steps ------------------------------------------------------- */
 
 /**
- * Step one, on the device showing the animation.
+ * Step one, on the device showing the code.
  *
  * `now` is passed rather than read: `core` has no clock, for the same reason it
  * has no randomness. The returned state holds a private key and must not be
@@ -353,7 +353,7 @@ export async function acceptPairing(
 }
 
 /**
- * Step three, back on the device that showed the animation.
+ * Step three, back on the device that showed the code.
  *
  * The confirmation is the whole point: it can only be produced by something that
  * read the secret off this screen, so a device that answers with its own key and

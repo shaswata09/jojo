@@ -21,9 +21,10 @@ const sources = import.meta.glob('/src/components/dashboard/StatsCard.tsx', {
 const source = sources['/src/components/dashboard/StatsCard.tsx'] ?? ''
 
 /** The header row: everything from its opening div to the Segment's close. */
-const header = /<div className="([^"]*)">\s*\{\/\*[\s\S]*?\*\/\}\s*<PanelTitle([\s\S]*?)<\/PanelTitle>\s*<Segment([\s\S]*?)\/>/.exec(
-  source,
-)
+const header =
+  /<div className="([^"]*)">\s*\{\/\*[\s\S]*?\*\/\}\s*<PanelTitle([\s\S]*?)<\/PanelTitle>\s*<Segment([\s\S]*?)\/>/.exec(
+    source,
+  )
 
 describe('the statistics card toggle (Q108)', () => {
   it('offers the four views', () => {
@@ -48,7 +49,7 @@ describe('the statistics card toggle (Q108)', () => {
   })
 
   it('is a control on the card that sets the view', () => {
-    expect(header?.[3]).toMatch(/options=\{VIEWS\}\s+value=\{view\}\s+onChange=\{setView\}/)
+    expect(header?.[3]).toMatch(/options=\{views\}\s+value=\{view\}\s+onChange=\{setView\}/)
   })
 })
 
@@ -58,14 +59,18 @@ describe('where the toggle sits (Q122)', () => {
   })
 
   it('shares one unwrapping row with the title, at its right end', () => {
+    // One row from a 24rem card up. Narrower, the switch alone is wider than
+    // the card, so it takes a row of its own — chosen by the card's width
+    // (a container query), never by the title, so switching views moves nothing.
     const row = (header?.[1] ?? '').split(/\s+/)
     expect(row).toContain('flex')
-    expect(row).toContain('justify-between')
-    expect(row).not.toContain('flex-wrap')
+    expect(row).toContain('@sm:flex-row')
+    expect(row).toContain('@sm:justify-between')
+    expect(row.some((c) => c.includes('flex-wrap'))).toBe(false)
   })
 
   it('keeps its width while the title gives way', () => {
     expect(header?.[2]).toMatch(/className="[^"]*\bmin-w-0\b[^"]*\btruncate\b/)
-    expect(header?.[3]).toMatch(/className="shrink-0"/)
+    expect(header?.[3]).toMatch(/className="shrink-0[ "]/)
   })
 })

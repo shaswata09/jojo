@@ -1,0 +1,57 @@
+{
+  "defaultTitle": "Draft email",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Draft a message",
+    "for": "For {{name}}.",
+    "forItem": "For {{name}} · {{item}}.",
+    "unlinked": "Not linked to an application, so [ROLE] and [DATE] stay blank.",
+    "body": "Nothing is generated and nothing is sent — fill the blanks, copy it into your mail client, then mark it sent."
+  },
+  "picker": {
+    "hint": "Start from one of your email snippets.",
+    "searchLabel": "Search snippets",
+    "searchPlaceholder": "Search snippets…",
+    "noMatch": "No snippet matches that.",
+    "emailGroup": "Email snippets",
+    "freshGroup": "Start fresh",
+    "blank": "Blank draft"
+  },
+  "editor": {
+    "placeholder": "Write the message, or pick a snippet to start from…",
+    "label": "Message draft",
+    "nothing": "Nothing drafted yet.",
+    "noBlanks": "No blanks left.",
+    "blanksLeft_one": "{{count}} blank left — {{names}}",
+    "blanksLeft_other": "{{count}} blanks left — {{names}}",
+    "nameNote": " · a person's name is never filled in for you",
+    "copyBlocked": "Copy was blocked by the browser",
+    "copied": "Draft copied to clipboard"
+  },
+  "empty": {
+    "title": "No email snippets yet",
+    "description": "Snippets tagged Email show up here as starting points. There is nothing to load, but the draft does not have to start from one.",
+    "action": "Start from a blank draft"
+  },
+  "footer": {
+    "writeFirst": "Write something first",
+    "saveHint": "Keep this draft in the Vault, tagged Email",
+    "save": "Save as snippet",
+    "assistantHint": "The assistant has its own page — open it from the sidebar",
+    "assistant": "Open in assistant",
+    "copyHint": "Copy the message to the clipboard",
+    "markNoItem": "Open this from a reminder to tick it off here",
+    "markDone": "That reminder is already ticked off",
+    "markSent": "Mark sent"
+  },
+  "toast": {
+    "replaced": "Draft replaced",
+    "loaded": "Loaded {{title}}.",
+    "startedBlank": "Started again from blank.",
+    "undo": "Undo",
+    "saved": "Saved to snippets",
+    "savedDescription": "{{title}} · tagged Email, in the Vault",
+    "markedSent": "Marked as sent",
+    "markedSentDescription": "{{title}} — ticked off in reminders"
+  }
+}

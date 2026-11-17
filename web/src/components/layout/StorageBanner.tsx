@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Download, RefreshCw, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { useStoreStatus } from '@jojo/service/react/status-context'
 import { estimateStorage } from '@/kg/storage/probe'
@@ -78,12 +79,15 @@ function Banner({
 
 const reload = () => window.location.reload()
 
-const ReloadButton = () => (
-  <Button variant="outline" size="sm" onClick={reload}>
-    <RefreshCw className="size-3.5" strokeWidth={1.8} aria-hidden />
-    Reload
-  </Button>
-)
+function ReloadButton() {
+  const { t } = useTranslation('layout')
+  return (
+    <Button variant="outline" size="sm" onClick={reload}>
+      <RefreshCw className="size-3.5" strokeWidth={1.8} aria-hidden />
+      {t('banner.reload')}
+    </Button>
+  )
+}
 
 /**
  * The share of the origin's quota in use, or null if the browser will not say.
@@ -130,6 +134,7 @@ function useStoragePressure(writing: boolean): number | null {
 }
 
 export function StorageBanner() {
+  const { t } = useTranslation('layout')
   const { state, interrupted } = useBoot()
   const { health } = useStoreStatus()
   const pressure = useStoragePressure(health.state === 'writing')
@@ -138,8 +143,7 @@ export function StorageBanner() {
   if (interrupted) {
     return (
       <Banner tone="danger" action={<ReloadButton />}>
-        jojo was updated in another tab, so this one closed its database to let that update through.
-        Nothing you change here is being saved. Reload to continue.
+        {t('banner.interrupted')}
       </Banner>
     )
   }
@@ -164,18 +168,14 @@ export function StorageBanner() {
              * to be told their records are still there before they conclude
              * jojo has eaten them.
              */}
-            jojo could not open its database — another jojo tab is open on a different version of
-            the app. <strong className="font-medium">Your records are still on disk</strong>, but
-            this tab could not read them, so it is showing nothing rather than guessing. Close the
-            other tabs and reload to get them back.
+            <Trans
+              t={t}
+              i18nKey="banner.versionBlocked"
+              components={{ strong: <strong className="font-medium" /> }}
+            />
           </>
         ) : (
-          <>
-            This browser is not letting jojo open its storage, so this tab is a blank workspace:
-            anything already saved on this device is not being shown, and anything you type here
-            goes when you close the tab. Private windows and some managed browsers do this. Export
-            from Settings before you leave if you add anything worth keeping.
-          </>
+          <>{t('banner.noStorage')}</>
         )}
       </Banner>
     )
@@ -191,10 +191,7 @@ export function StorageBanner() {
      * it read the moment saving stopped, so a user who carried on working for
      * ten minutes was told one change was at risk.
      */
-    const atRisk =
-      health.unsaved === 0
-        ? null
-        : `${health.unsaved} change${health.unsaved === 1 ? '' : 's'} ${health.unsaved === 1 ? 'is' : 'are'} on screen but not saved — export from Settings to keep ${health.unsaved === 1 ? 'it' : 'them'}, because reloading or closing this tab will lose ${health.unsaved === 1 ? 'it' : 'them'}.`
+    const atRisk = health.unsaved === 0 ? null : t('banner.atRisk', { count: health.unsaved })
 
     /*
      * The arm that used to be a retry loop.
@@ -210,10 +207,7 @@ export function StorageBanner() {
     if (health.reason === 'corrupt') {
       return (
         <Banner tone="danger">
-          jojo has stopped saving: this browser refused a change to your records and retrying will
-          not help. {atRisk ?? 'Everything you changed before that is on disk.'} Export from
-          Settings now — Settings → Diagnostics has the details, and reloading before you export
-          loses whatever is only on screen.
+          {t('banner.corrupt', { atRisk: atRisk ?? t('banner.safeBefore') })}
         </Banner>
       )
     }
@@ -221,17 +215,9 @@ export function StorageBanner() {
     return (
       <Banner tone="danger">
         {health.reason === 'quota' ? (
-          <>
-            This browser has no room left, so jojo has stopped saving.{' '}
-            {atRisk ?? 'Everything you changed before that is on disk.'} Free some space, then
-            reload.
-          </>
+          <>{t('banner.quota', { atRisk: atRisk ?? t('banner.safeBefore') })}</>
         ) : (
-          <>
-            jojo has stopped saving because another tab has the database. Close the other tabs, then
-            export from Settings if anything on screen has not been saved — reloading this tab loses
-            it.
-          </>
+          <>{t('banner.otherTab')}</>
         )}
       </Banner>
     )
@@ -244,8 +230,7 @@ export function StorageBanner() {
             and drains in order if a later retry succeeds, so this is a number
             that goes down on its own — which is the difference between a
             warning someone can wait out and one they can only guess at. */}
-        {health.unsaved === 1 ? '1 change' : `${health.unsaved} changes`} could not be saved and
-        jojo is still retrying. Export from Settings if you need a copy now. ({health.lastError})
+        {t('banner.degraded', { count: health.unsaved, error: health.lastError })}
       </Banner>
     )
   }
@@ -260,12 +245,7 @@ export function StorageBanner() {
    * and the index retries on its own (`vault-blobs.ts`) and this clears.
    */
   if (documentsBlocked) {
-    return (
-      <Banner tone="warning">
-        Your documents are still on this device, but another jojo tab, open on an older version of
-        the app, is holding them. Close the other jojo tabs — this one picks them up by itself.
-      </Banner>
-    )
+    return <Banner tone="warning">{t('banner.documentsBlocked')}</Banner>
   }
 
   /*
@@ -295,17 +275,19 @@ export function StorageBanner() {
   if (skipped.length > 0) {
     return (
       <Banner tone="warning">
-        {skipped.length === 1 ? '1 record' : `${skipped.length} records`} on this device could not
-        be read and {skipped.length === 1 ? 'is' : 'are'} not being shown. Nothing has been deleted
-        —{' '}
-        <Link
-          to={settingsPath({ focus: 'skipped' })}
-          className="underline underline-offset-2 hover:text-text-1"
-        >
-          Diagnostics
-        </Link>{' '}
-        {skipped.length === 1 ? 'names it' : 'names them'}, and an export from there includes
-        everything jojo could read.
+        <Trans
+          t={t}
+          i18nKey="banner.skipped"
+          count={skipped.length}
+          components={{
+            anchor: (
+              <Link
+                to={settingsPath({ focus: 'skipped' })}
+                className="underline underline-offset-2 hover:text-text-1"
+              />
+            ),
+          }}
+        />
       </Banner>
     )
   }
@@ -315,9 +297,7 @@ export function StorageBanner() {
   if (pressure !== null && pressure >= NEARLY_FULL) {
     return (
       <Banner tone="warning">
-        This browser is nearly out of room for jojo — about {Math.round(pressure * 100)}% of what it
-        allows is in use. Saving stops working when it fills, so it is worth exporting from Settings
-        and clearing space now, while your records can still be written.
+        {t('banner.nearlyFull', { percent: Math.round(pressure * 100) })}
       </Banner>
     )
   }
@@ -342,6 +322,7 @@ export function StorageBanner() {
  * which every `useBackup` is subscribed to, so the prompt goes away on its own.
  */
 function BackupPrompt() {
+  const { t } = useTranslation('layout')
   const { exportJSON } = useStoreAdmin()
   const backup = useBackup(exportJSON)
   const { toast } = useToast()
@@ -374,10 +355,10 @@ function BackupPrompt() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" disabled={busy} onClick={onDownload}>
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            {busy ? 'Backing up…' : 'Download a backup'}
+            {busy ? t('banner.backup.busy') : t('banner.backup.download')}
           </Button>
           <Button variant="ghost" size="sm" disabled={busy} onClick={backup.dismiss}>
-            Not now
+            {t('banner.backup.notNow')}
           </Button>
         </div>
       }

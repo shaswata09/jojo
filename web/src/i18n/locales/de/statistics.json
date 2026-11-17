@@ -1,0 +1,28 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Gemessen",
+        "hint": "Aus deinen eigenen Einträgen gezählt"
+      },
+      "suggested": {
+        "label": "Vorgeschlagen",
+        "hint": "Allgemein oder an einer typischen Suche gemessen statt an deiner"
+      }
+    },
+    "title": "Was als Nächstes zu tun ist",
+    "intro": "Sortiert danach, was deine Einträge belegen, dann nach dem geringsten Aufwand."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} von {{of}}",
+    "rate": "{{rate}} % · wahrscheinlich {{range}}",
+    "groupReplied": "Antworten nach {{dimension}}",
+    "groupInterviews": "Vorstellungsgespräche nach {{dimension}}",
+    "confident": "Die Bereiche überschneiden sich nicht, der Unterschied ist also echt – {{best}} verdient mehr von deinem Einsatz.",
+    "unconfident": "Die Bereiche überschneiden sich, das sind also zwei Zahlen und kein Unterschied. Mehr Einträge trennen sie oder schließen die Lücke.",
+    "tooFew_one": "{{count}} weitere Gruppe hat weniger als {{min}} Einträge und wird nicht verglichen.",
+    "tooFew_other": "{{count}} weitere Gruppen haben weniger als {{min}} Einträge und werden nicht verglichen.",
+    "title": "Was funktioniert",
+    "intro": "Der Balken zeigt, wo die tatsächliche Quote vermutlich liegt; die Linie ist dein Messwert. Ein breites Band heißt: noch zu wenige Einträge, um sicher zu sein."
+  }
+}

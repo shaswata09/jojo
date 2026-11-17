@@ -20,6 +20,8 @@
  */
 
 import { listJoin } from '@/components/common/text'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 import { STAGES, STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
 
@@ -63,7 +65,9 @@ export function filterApplications({
     // Statistics" because the query is allowed to span the gap between two
     // fields. The Vault's `matchesQuery` does NOT do this, and folds accents,
     // which this does not — see the note at the top of `vault/search.ts`.
-    return [a.org, a.role, a.note, a.roleTag, STAGE_LABEL[a.stage]]
+    // The stage in the language on screen, and in English too, so a query
+    // typed either way finds it.
+    return [a.org, a.role, a.note, a.roleTag, domain.stage(a.stage), STAGE_LABEL[a.stage]]
       .join(' ')
       .toLowerCase()
       .includes(q)
@@ -125,12 +129,25 @@ export function emptyReason({
   keywordCount: number
   roleCount: number
 }): string {
+  const t = i18next.t.bind(i18next)
   const on = [
-    query.trim() ? 'that search' : '',
-    stageFilter === 'all' ? '' : `the ${STAGE_LABEL[stageFilter]} stage`,
-    keywordCount > 0 ? 'the selected keywords' : '',
-    roleCount > 0 ? 'the roles selected in the top bar' : '',
+    query.trim() ? t('applications:emptyReason.search') : '',
+    stageFilter === 'all'
+      ? ''
+      : t('applications:emptyReason.stage', { stage: domain.stage(stageFilter) }),
+    keywordCount > 0 ? t('applications:emptyReason.keywords') : '',
+    roleCount > 0 ? t('applications:emptyReason.roles') : '',
   ].filter(Boolean)
-  if (on.length === 0) return 'Nothing here to show.'
-  return `Nothing carries ${listJoin(on)}.`
+  if (on.length === 0) return t('applications:emptyReason.none')
+  return t('applications:emptyReason.some', { filters: joinList(on) })
+}
+
+/**
+ * "a, b and c" in English — `listJoin`, which has no serial comma — and the
+ * reader's own language's list everywhere else.
+ */
+function joinList(parts: string[]) {
+  const lang = i18next.language
+  if (!lang || lang === 'en') return listJoin(parts)
+  return new Intl.ListFormat(lang, { type: 'conjunction' }).format(parts)
 }

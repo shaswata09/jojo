@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 import { Box, Connector } from '@/components/guide/diagrams/parts'
 
@@ -10,6 +11,9 @@ import { Box, Connector } from '@/components/guide/diagrams/parts'
  * The tools layer is the one drawn in the accent, because it is the claim the
  * rest of the picture hangs on: every change to the records passes through it,
  * from either app, the assistant or MCP.
+ *
+ * Layer names are module names and stay as written; every `note` and client
+ * `label` below is a catalog key under `diagrams.stack`, translated at render.
  */
 
 const W = 420
@@ -19,19 +23,19 @@ const STACK_Y = 74
 const PITCH = 48
 
 const SERVICE = [
-  { label: 'L4 react', note: 'hooks both apps share', accent: false },
-  { label: 'L3.5 agent', note: 'model loop · catalog · MCP', accent: false },
-  { label: 'L3 tools', note: 'every write · one undo entry', accent: true },
-  { label: 'L2 repo', note: 'commit · journal · write queue', accent: false },
-  { label: 'L1 core', note: 'pure rules · today is a parameter', accent: false },
-  { label: 'L0 storage', note: 'Driver and FileStore ports', accent: false },
+  { label: 'L4 react', note: 'reactNote', accent: false },
+  { label: 'L3.5 agent', note: 'agentNote', accent: false },
+  { label: 'L3 tools', note: 'toolsNote', accent: true },
+  { label: 'L2 repo', note: 'repoNote', accent: false },
+  { label: 'L1 core', note: 'coreNote', accent: false },
+  { label: 'L0 storage', note: 'storageNote', accent: false },
 ] as const
 
 const CLIENT_W = 116
 const CLIENTS = [
   { label: 'extension', x: 4 },
-  { label: 'web app', x: 152 },
-  { label: 'phone app', x: 300 },
+  { label: 'webApp', x: 152 },
+  { label: 'phoneApp', x: 300 },
 ] as const
 
 const ADAPTER_Y = STACK_Y + SERVICE.length * PITCH + 4
@@ -39,6 +43,7 @@ const STORAGE_BOTTOM = STACK_Y + (SERVICE.length - 1) * PITCH + BOX_H
 const HEIGHT = ADAPTER_Y + BOX_H + 6
 
 export function StackDiagram() {
+  const { t } = useTranslation('guideReference')
   const titleId = useId()
   const descId = useId()
   const center = (x: number) => x + CLIENT_W / 2
@@ -53,16 +58,8 @@ export function StackDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>How jojo’s code is layered</title>
-        <desc id={descId}>
-          Three things on top: the browser extension, the web app and the phone app. The extension
-          talks to the web app by relayed messages and imports nothing. The web app sends data to
-          the phone over the local network. Both apps call into the shared service through its
-          React hooks. The service is six layers, each using only the layers below it: react,
-          agent, tools, repo, core and storage. Tools is highlighted: every change to the records
-          goes through it. At the bottom, an IndexedDB driver on the web and an AsyncStorage driver
-          on the phone each implement the storage port.
-        </desc>
+        <title id={titleId}>{t('diagrams.stack.title')}</title>
+        <desc id={descId}>{t('diagrams.stack.desc')}</desc>
 
         {CLIENTS.map((client) => (
           <g key={client.label}>
@@ -74,7 +71,7 @@ export function StackDiagram() {
               textAnchor="middle"
               fill="var(--text-1)"
             >
-              {client.label}
+              {t(`diagrams.stack.${client.label}`)}
             </text>
           </g>
         ))}
@@ -86,8 +83,14 @@ export function StackDiagram() {
           dir="right"
           dash={DASH.soft}
         />
-        <text x={(CLIENTS[0].x + CLIENT_W + web.x) / 2} y={TOP_Y - 3} fontSize={9} textAnchor="middle" fill="var(--text-2)">
-          relay
+        <text
+          x={(CLIENTS[0].x + CLIENT_W + web.x) / 2}
+          y={TOP_Y - 3}
+          fontSize={9}
+          textAnchor="middle"
+          fill="var(--text-2)"
+        >
+          {t('diagrams.stack.relay')}
         </text>
         <Connector
           from={[web.x + CLIENT_W, TOP_Y + BOX_H / 2]}
@@ -95,8 +98,14 @@ export function StackDiagram() {
           dir="right"
           dash={DASH.soft}
         />
-        <text x={(web.x + CLIENT_W + phone.x) / 2} y={TOP_Y - 3} fontSize={9} textAnchor="middle" fill="var(--text-2)">
-          LAN
+        <text
+          x={(web.x + CLIENT_W + phone.x) / 2}
+          y={TOP_Y - 3}
+          fontSize={9}
+          textAnchor="middle"
+          fill="var(--text-2)"
+        >
+          {t('diagrams.stack.lan')}
         </text>
 
         {[web, phone].map((client) => (
@@ -107,7 +116,7 @@ export function StackDiagram() {
               dir="down"
             />
             <text x={center(client.x) + 6} y={TOP_Y + BOX_H + 17} fontSize={9} fill="var(--text-2)">
-              hooks
+              {t('diagrams.stack.hooks')}
             </text>
           </g>
         ))}
@@ -127,8 +136,14 @@ export function StackDiagram() {
               <text x={14} y={y + BOX_H / 2 + 4} fontSize={11} fill="var(--text-1)">
                 {layer.label}
               </text>
-              <text x={W - 14} y={y + BOX_H / 2 + 4} fontSize={10} textAnchor="end" fill="var(--text-2)">
-                {layer.note}
+              <text
+                x={W - 14}
+                y={y + BOX_H / 2 + 4}
+                fontSize={10}
+                textAnchor="end"
+                fill="var(--text-2)"
+              >
+                {t(`diagrams.stack.${layer.note}`)}
               </text>
               {i < SERVICE.length - 1 ? (
                 <Connector from={[W / 2, y + BOX_H]} to={[W / 2, y + PITCH]} dir="down" />
@@ -138,8 +153,8 @@ export function StackDiagram() {
         })}
 
         {[
-          { label: 'IndexedDB driver · web', x: 4 },
-          { label: 'AsyncStorage driver · phone', x: W / 2 + 4 },
+          { label: 'idbDriver', x: 4 },
+          { label: 'asyncDriver', x: W / 2 + 4 },
         ].map((adapter) => {
           const w = W / 2 - 8
           return (
@@ -152,7 +167,7 @@ export function StackDiagram() {
                 textAnchor="middle"
                 fill="var(--text-1)"
               >
-                {adapter.label}
+                {t(`diagrams.stack.${adapter.label}`)}
               </text>
               <Connector
                 from={[adapter.x + w / 2, ADAPTER_Y]}
@@ -164,12 +179,7 @@ export function StackDiagram() {
           )
         })}
       </svg>
-      <figcaption className="mt-2 text-xs text-text-3">
-        Solid arrows point the way code may depend: down only. Dashed lines are not imports — the
-        extension relays messages, the web app hands data to the phone over the local network, and
-        each storage driver implements the bottom port. The apps may also use core’s pure helpers
-        directly; they should never write below the tools layer.
-      </figcaption>
+      <figcaption className="mt-2 text-xs text-text-3">{t('diagrams.stack.caption')}</figcaption>
     </figure>
   )
 }

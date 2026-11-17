@@ -1,6 +1,8 @@
 import { usePriorityActions as usePriorityDeck } from '@jojo/service/react/use-priority'
 import type { PriorityAction } from '@jojo/service/react/use-priority'
 import type { Addressable } from '@jojo/service/core/address'
+import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The phone's import path for the priority deck.
@@ -41,6 +43,9 @@ export type { DateMark as PriorityUrgency } from '@jojo/service/core/timeline-vi
  */
 const appTarget = (a: Addressable) => a.id
 
+/** The deck, in the language on screen: re-read when the language changes. */
 export function usePriorityActions(): PriorityAction[] {
-  return usePriorityDeck({ appHref: appTarget })
+  const text = useDomain()
+  const { i18n } = useTranslation('domain')
+  return usePriorityDeck({ appHref: appTarget, text, language: i18n.language })
 }

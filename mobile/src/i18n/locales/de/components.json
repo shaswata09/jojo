@@ -1,0 +1,641 @@
+{
+  "checklist": {
+    "title": "Checkliste",
+    "titleCount": "Checkliste · {{open}} von {{total}} offen",
+    "notAdded": "Dieser Schritt wurde nicht hinzugefügt",
+    "deleted": "Schritt gelöscht",
+    "draft": "Entwerfen",
+    "draftMore": "Mehr entwerfen",
+    "actionsFor": "Aktionen für {{step}}",
+    "empty": {
+      "title": "Noch nichts auf der Liste",
+      "noPosting": "Zu dieser Bewerbung ist keine Ausschreibung gespeichert, daher kann jojo nicht lesen, was du einreichen sollst. Eigene Schritte kannst du trotzdem hinzufügen.",
+      "noModel": "Für eine Checkliste braucht es ein Modell. Verbinde eines in den Einstellungen oder füge unten eigene Schritte hinzu.",
+      "ready": "Lass jojo in der Ausschreibung nachlesen, was du einreichen musst, oder füge unten eigene Schritte hinzu."
+    },
+    "addStep": "Schritt hinzufügen",
+    "step": "Schritt"
+  },
+  "fit": {
+    "title": "Wie du passt",
+    "step": {
+      "reading": "Ausschreibung wird geöffnet…",
+      "asking": "Anforderungen werden gelesen…"
+    },
+    "measure": "Diese Ausschreibung bewerten",
+    "rerun": "Erneut ausführen",
+    "rerunHint": "Ausschreibung neu lesen und neu bewerten",
+    "clear": "Diese Auswertung löschen",
+    "clearHint": "jojo bewertet diese Ausschreibung erst wieder, wenn du darum bittest",
+    "cleared": "Passungsauswertung gelöscht",
+    "notCleared": "Löschen hat nicht geklappt",
+    "clearedBody": "jojo liest diese Ausschreibung nicht noch einmal, außer du bittest darum.",
+    "options": "Passungsoptionen",
+    "blocked": {
+      "noPosting": "Zu dieser Bewerbung ist keine Ausschreibung gespeichert, also gibt es nichts, womit du verglichen werden kannst. Erfasse die Anzeige oder füge die Bewerbung über ihren Link hinzu, dann füllt sich das hier.",
+      "noModel": "Um zu lesen, was eine Ausschreibung verlangt, braucht es ein Modell. Verbinde eines unter Mehr → Einstellungen.",
+      "noBackground": "jojo hat noch nichts über deinen Werdegang gelesen und kann diese Ausschreibung daher nicht damit vergleichen. Lege deinen Lebenslauf in den Tresor und sag Ja, wenn jojo anbietet, ihn zu lesen."
+    },
+    "clearedNote": "Du hast diese Auswertung gelöscht, deshalb lässt jojo diese Ausschreibung in Ruhe.",
+    "queued": "In der Warteschlange…",
+    "leadWith": "Stell das in den Vordergrund",
+    "answers": "beantwortet „{{requirement}}“",
+    "beReadyFor": "Sei vorbereitet auf",
+    "required": " – erforderlich",
+    "skipped_one": " · {{count}} Zeile übersprungen",
+    "skipped_other": " · {{count}} Zeilen übersprungen"
+  },
+  "tailored": {
+    "title": "Angepasste Unterlagen",
+    "hint": "Für diese Ausschreibung umgeschrieben, Änderungen markiert.",
+    "tailor": "Anpassen",
+    "tailoredBefore": "{{label}} · schon angepasst",
+    "blocked": {
+      "noPosting": "Zu dieser Bewerbung ist keine Ausschreibung gespeichert, also gibt es nichts, worauf deine Unterlagen zugeschnitten werden könnten. Füge die Bewerbung über ihren Link hinzu oder erfasse die Anzeige, dann bietet sich das hier an.",
+      "noModel": "Zum Anpassen eines Dokuments braucht es ein Modell. Verbinde eines unter Mehr → Einstellungen.",
+      "noDocuments": "Noch nichts zum Anpassen. Anpassen schreibt die Unterlagen um, die du mit einer Bewerbung schickst – füge deinen Lebenslauf, Statements oder ein Anschreiben unter Mehr → Mein Profil hinzu oder lege sie im Tresor unter Bewerbungen ab, dann erscheinen sie hier."
+    },
+    "queued": "In der Warteschlange…",
+    "working": "In Arbeit…",
+    "empty": "Noch nichts angepasst. Tippe auf Anpassen, wähle ein Dokument, und jojo schreibt eine Fassung für diese Ausschreibung und markiert, was es geändert hat.",
+    "deleted": "{{title}} gelöscht",
+    "notDeleted": "Löschen hat nicht geklappt",
+    "deletedBody": "Aus dieser Bewerbung und aus dem Tresor entfernt.",
+    "provenance": "{{tag}} · aus {{from}} · {{model}}",
+    "chooseTitle": "Dokument anpassen",
+    "chooseHint": "Dauert mit einem lokalen Modell ein bis zwei Minuten.",
+    "openInVault": "Im Tresor öffnen",
+    "previewNamed": "Vorschau von {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "Läuft",
+      "done": "Fertig",
+      "failed": "Fehlgeschlagen",
+      "declined": "Abgelehnt"
+    },
+    "effect": {
+      "read": "gelesen",
+      "unknown": "kein solches Werkzeug",
+      "create": "hinzugefügt",
+      "update": "geändert",
+      "move": "verschoben",
+      "delete": "gelöscht",
+      "admin": "Speicher"
+    },
+    "asked": "Der Agent möchte das tun. Noch hat sich nichts geändert.",
+    "dont": "Nicht erlauben",
+    "allow": "Erlauben",
+    "arguments": "Argumente",
+    "result": "Ergebnis",
+    "undoStep": "Diesen Schritt rückgängig machen",
+    "cannotUndo": "Dieser Schritt lässt sich hier nicht rückgängig machen. Mehr → Einstellungen → Einträge führt ein Protokoll der Änderungen und kann die letzte zurücknehmen.",
+    "truncated": "Gekürzt – der Agent wurde gebeten, die Suche einzugrenzen, um den Rest zu sehen.",
+    "thinking": "In Arbeit – {{model}} entscheidet, was zu tun ist…"
+  },
+  "approval": {
+    "askedBy": "Angefragt von {{name}}. Noch hat sich nichts geändert.",
+    "askedByUnnamed": "Angefragt von einer Unterhaltung. Noch hat sich nichts geändert."
+  },
+  "threads": {
+    "conversations": "Unterhaltungen",
+    "new": "Neue Unterhaltung",
+    "kept_one": "{{count}} gespeichert",
+    "kept_other": "{{count}} gespeichert",
+    "titleField": "Titel der Unterhaltung",
+    "approvalLabel": "Wie viel diese Unterhaltung ohne Nachfrage tun darf",
+    "rename": "Diese Unterhaltung umbenennen",
+    "changeJob": "Den zugehörigen Job ändern",
+    "fileUnder": "Einem Job zuordnen",
+    "delete": "Diese Unterhaltung löschen",
+    "noJob": "Noch keinem Job zugeordnet",
+    "listEmpty": "Noch nichts – stell eine Frage, dann wird sie hier auf diesem Gerät gespeichert.",
+    "keptOnDevice_one": "{{count}} auf diesem Gerät gespeichert.",
+    "keptOnDevice_other": "{{count}} auf diesem Gerät gespeichert.",
+    "filter": "Filtern",
+    "filterPlaceholder": "Nach Name oder Job",
+    "noMatch": "Keine Unterhaltung passt dazu.",
+    "working": "In Arbeit…",
+    "questions_one": "{{count}} Frage",
+    "questions_other": "{{count}} Fragen"
+  },
+  "picker": {
+    "title": "Zugehörige Bewerbungen",
+    "description": "So viele Jobs, wie dazugehören. Ein Lebenslauf geht an jede Bewerbung, an die du ihn schickst – das ist also eine Liste, kein einzelner Platz.",
+    "notLinked": "Nicht verknüpft",
+    "none": "Noch keine Bewerbungen",
+    "noneHint": "Füge eine hinzu, dann kannst du das hier dort ablegen."
+  },
+  "audit": {
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge",
+    "links_one": "{{count}} Verknüpfung",
+    "links_other": "{{count}} Verknüpfungen",
+    "undoFailed": "Diese Änderung ließ sich nicht mehr rückgängig machen",
+    "notInJournal": "Sie ist nicht mehr im Protokoll.",
+    "recorded_one": "{{count}} erfasst",
+    "recorded_other": "{{count}} erfasst",
+    "title": "Was sich geändert hat",
+    "empty": {
+      "title": "Noch nichts geschrieben",
+      "description": "Jedes Hinzufügen, Bearbeiten und Löschen landet hier, sobald du es tust – das Neueste zuerst, und das Letzte lässt sich rückgängig machen."
+    },
+    "explain": "Die neueste Änderung lässt sich zurücknehmen. Ältere sind ein Protokoll, keine Zeitmaschine.",
+    "undoLast": "Letzte rückgängig machen",
+    "cannotUndo": "Laden oder Leeren des Datenbestands lässt sich nicht rückgängig machen.",
+    "showAll_one": "Alle {{count}} anzeigen",
+    "showAll_other": "Alle {{count}} anzeigen"
+  },
+  "crash": {
+    "title": "Absturzberichte",
+    "thisPhone": "dieses Handy",
+    "notBuilt": "Diese jojo-Version wurde ohne Absturzberichte und Nutzungsanalyse gebaut, daher wird nichts erfasst und es gibt nichts einzuschalten.",
+    "what": "Wenn etwas kaputtgeht, kann jojo den Fehler aufbewahren, damit du ihn nachlesen kannst – praktisch, wenn das, was fehlschlug, schon verschwunden ist. Ein Bericht enthält die Fehlermeldung, die Stelle in jojo und den Stacktrace. Er enthält nie deine Bewerbungen, Dokumente, Notizen, dein Profil oder deine Unterhaltungen, und API-Schlüssel, Adressen und E-Mail-Adressen werden entfernt, bevor ein Bericht geschrieben wird.",
+    "where": "Berichte bleiben auf diesem Handy und gehen außerdem an Firebase Crashlytics, das dein Gerätemodell, die Betriebssystemversion und eine zufällige ID hinzufügt, mit der gezählt wird, wie viele Menschen denselben Absturz haben. Google bewahrt sie 90 Tage auf. Keiner deiner Einträge geht mit.",
+    "report": "Abstürze melden",
+    "reportHint": "Eingeschaltet, damit wir Abstürze sehen, die dich treffen. Schalte es aus, dann wird nichts erfasst.",
+    "usage": "Teilen, welche Funktionen ich nutze",
+    "usageHint": "Nur Zählungen aus einer festen Liste – nie, was in deinen Einträgen steht.",
+    "usageDetail": "Es kann nur Dinge aus einer festen Liste sagen – welcher Bildschirm geöffnet wurde, dass eine Bewerbung hinzugefügt wurde, ungefähr wie viele es gibt. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen. Geht an Google Analytics. Ist das aus, schaltet jojo auch die Bildschirmaufrufe und Sitzungszählungen ab, die Firebase sonst selbst sammeln würde.",
+    "kept_one": "{{count}} Bericht gespeichert",
+    "kept_other": "{{count}} Berichte gespeichert",
+    "nothingBroken": "Seit du das eingeschaltet hast, ist nichts kaputtgegangen.",
+    "notRecording": "Es wird nichts erfasst."
+  },
+  "date": {
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "inSevenDays": "In 7 Tagen",
+    "triggerLabel": "{{label}}: {{value}}. Datum wählen",
+    "notSet": "nicht gesetzt",
+    "pick": "Datum wählen",
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "backTo": "Zurück zu {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Etwas ist kaputtgegangen",
+    "body": "Ein Bildschirm konnte nicht gezeichnet werden. Deine Einträge sind auf diesem Gerät und nichts wurde verschickt, aber jojo kann nicht sagen, ob deine laufende Änderung fertig wurde.",
+    "noMessage": "Der Fehler enthielt keine Meldung.",
+    "hint": "Wenn es wieder passiert, schließe jojo über den App-Umschalter und öffne es neu."
+  },
+  "fileEditor": {
+    "editTitle": "Dokument bearbeiten",
+    "newTitle": "Dokument erfassen",
+    "keptHere": "Auf diesem Gerät in dieser App gespeichert. Nichts wird hochgeladen und nichts liest den Inhalt.",
+    "chooseOrType": "Wähle eine Datei, um eine Kopie zu behalten, oder fülle das von Hand aus, um ein Dokument zu erfassen, das du anderswo aufbewahrst.",
+    "record": "Erfassen",
+    "choosing": "Wird ausgewählt…",
+    "chooseDifferent": "Andere Datei wählen",
+    "choose": "Datei wählen",
+    "copyKept": "Eine Kopie bleibt in dieser App. Sie verschwindet, wenn die App deinstalliert wird.",
+    "fileName": "Dateiname",
+    "nameRequired": "Gib einen Namen mit Dateiendung an.",
+    "nameHint": "Die Endung bestimmt das Symbol – .pdf, .doc, .pptx, .md.",
+    "size": "Größe",
+    "sizePlaceholder": "z. B. 212 KB",
+    "sizeHint": "Optional – leer gelassen gilt sie als unbekannt statt als null.",
+    "bucket": "Kategorie",
+    "applicationsHint": "Was das Dokumente-Panel im Profil und der Graph lesen, um zu zeigen, was wo abgelegt ist. So viele Jobs, wie das Dokument erhalten haben.",
+    "note": "Notiz"
+  },
+  "filed": {
+    "sections": {
+      "files": "Dateien",
+      "links": "Links",
+      "snippets": "Textbausteine",
+      "people": "Personen"
+    },
+    "count_one": "{{count}} hier abgelegt",
+    "count_other": "{{count}} hier abgelegt",
+    "title": "Aus dem Tresor",
+    "empty": {
+      "title": "Hier ist noch nichts abgelegt",
+      "description": "Dokumente, Links, Textbausteine und Personen lassen sich jeweils so vielen Jobs zuordnen, wie nötig. Ordne einen davon diesem Job zu – über sein Menü im Tresor – und er erscheint hier."
+    },
+    "conversations": "Unterhaltungen",
+    "openInAssistant": "{{name}} im Assistenten öffnen",
+    "openInVault": "{{name}} im Tresor öffnen"
+  },
+  "firstRun": {
+    "title": "Wie möchtest du starten?",
+    "description": "So oder so bleibt alles auf diesem Gerät und nichts wird verschickt.",
+    "demo": {
+      "title": "Mit Beispieldaten erkunden",
+      "detail": "Zwölf Bewerbungen, ein gefüllter Kalender und ein bestückter Tresor, damit jeder Bildschirm etwas zeigt. Du kannst sie später in den Einstellungen löschen.",
+      "action": "Beispieldaten verwenden"
+    },
+    "empty": {
+      "title": "Leer starten",
+      "detail": "Nur deine eigenen Einträge. Bildschirme, die Daten brauchen, sagen, was fehlt, statt ein Beispiel zu zeigen."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Verschieben um",
+    "currently": "{{title}} · derzeit {{date}}",
+    "pickDate": "Datum wählen…",
+    "duplicate": "Duplizieren",
+    "duplicateHint": "Gleiches Datum und gleiche Schlagwörter, als zweite Zeile",
+    "draft": "Nachricht entwerfen",
+    "draftHint": "Aus deinen E-Mail-Bausteinen – nichts wird generiert",
+    "reschedule": "Verschieben"
+  },
+  "keywords": {
+    "on": "Schlagwörter für {{name}}",
+    "none": "Noch keine",
+    "choose": "Wählen",
+    "title": "Schlagwörter",
+    "description": "Schlagwörter gehören dir und gelten für Bewerbungen, Erinnerungen, Dateien und Links – wer nach einem filtert, findet sie alle.",
+    "newPlaceholder": "Neues Schlagwort…",
+    "new": "Neues Schlagwort",
+    "add": "Hinzufügen",
+    "countHere_one": "{{name}}, {{count}} hier",
+    "countHere_other": "{{name}}, {{count}} hier"
+  },
+  "onboarding": {
+    "model": {
+      "title": "Ein Modell verbinden?",
+      "description": "Das macht jojo zu einem Agenten statt zu einem Aktenschrank. Mit einem verbundenen Modell beantwortet es Fragen zu deiner Suche, entwirft Nachfassmails anhand deiner eigenen Einträge und liest Dokumente, die du hinzufügst.",
+      "action": "Eins einrichten",
+      "local": "Richte es auf einen Server auf deinem eigenen Rechner – vLLM, Ollama oder LM Studio –, dann verlässt nichts das Gerät.",
+      "later": "Alles andere funktioniert auch ohne. Du findest es jederzeit unter Mehr → Einstellungen."
+    },
+    "tour": {
+      "title": "Lust auf eine Tour zum Mitmachen?",
+      "description": "Ein Rundgang zum Mitmachen durch die echten Bildschirme – wofür jeder Teil da ist, mit einem Spotlight darauf, und du probierst alles direkt aus.",
+      "action": "Tour starten",
+      "safe": "Sie ändert nichts – kein Eintrag wird geschrieben und keine Einstellung berührt.",
+      "later": "Sie ist immer unter Mehr → So geht’s zu finden, Nein sagen kostet also nichts."
+    }
+  },
+  "pattern": {
+    "has": "die haben",
+    "hasHint": "Mindestens eine solche Verknüpfung",
+    "missing": "die nicht haben",
+    "missingHint": "Gar keine solche Verknüpfung",
+    "anything": "Alles",
+    "lookFor": "Suchen nach",
+    "records": "Einträge",
+    "aLink": "Eine Verknüpfung",
+    "anyKind": "Beliebiger Art",
+    "to": "Zu",
+    "lookForHint": "Die Art von Eintrag, aus der die Antwortliste besteht.",
+    "quantifierTitle": "Mit oder ohne",
+    "quantifierHint": "Ob die Verknüpfung unten vorhanden sein oder fehlen muss.",
+    "relTitle": "Welche Verknüpfung",
+    "relHint": "Wie die beiden Enden verbunden sind. „Beliebiger Art“ fragt alle sechs auf einmal ab.",
+    "endTitle": "Am anderen Ende",
+    "endHint": "Worauf die Verknüpfung zeigen muss."
+  },
+  "reporting": {
+    "title": "Absturzberichte und Nutzung",
+    "description": "Zwei getrennte Dinge, beide eingeschaltet. Schalte eins davon hier oder später in den Einstellungen aus. Keins davon kann deine Einträge mitnehmen: keine Bewerbung, kein Dokument, keine Notiz, kein Profil und keine Unterhaltung.",
+    "bothOff": "Beide ausschalten",
+    "save": "Auswahl speichern",
+    "inReport": "Was in einem Absturzbericht steht",
+    "in": {
+      "message": "· Die Fehlermeldung und wo in jojo es passiert ist.",
+      "stack": "· Der Stacktrace, der den fehlgeschlagenen Code benennt.",
+      "device": "· Dein Gerätemodell, die Betriebssystemversion und eine zufällige ID, mit der gezählt wird, wie viele Menschen denselben Absturz haben – kein Name, kein Konto."
+    },
+    "notInReport": "Was nie darin steht",
+    "notIn": {
+      "records": "· Deine Bewerbungen, Dokumente, Notizen, dein Profil oder deine Unterhaltungen.",
+      "secrets": "· Deine API-Schlüssel, die Adressen, die du nutzt, oder E-Mail-Adressen – entfernt, bevor ein Bericht geschrieben wird, nicht erst vor dem Senden."
+    },
+    "crashHint": "Der Fehler und wo er passiert ist. Geht an Firebase Crashlytics.",
+    "usageHint": "Nur Zählungen – welche Bildschirme geöffnet werden und wie oft. Nie, was darin steht.",
+    "usageDetail": "Das Zweite ist das Einzige, was jojo darüber sendet, was du TUST, und es kann nur Dinge aus einer festen Liste sagen – „der Tresor wurde geöffnet“, „eine Bewerbung wurde hinzugefügt“, „es sind 6–20“. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen, weil diese Wörter nicht in der Liste stehen. Ausschalten stoppt auch die Bildschirmaufrufe, die Firebase sonst selbst sammeln würde.",
+    "later": "Beides findest du jederzeit in den Einstellungen, und wenn du eins ausschaltest, wird verworfen, was es gespeichert hat."
+  },
+  "stagePicker": {
+    "label": "Phase von {{name}}: {{stage}}. Phase ändern",
+    "title": "Verschieben nach"
+  },
+  "welcome": {
+    "title": "Ein bisschen über dich",
+    "description": "Entwürfe werden mit deinem Namen unterschrieben, und der Scout bewertet nach dem, was du suchst. Alles bleibt auf diesem Gerät und alles ist optional – im Profil steht der Rest.",
+    "skip": "Vorerst überspringen",
+    "save": "Speichern und weiter",
+    "fullName": "Vollständiger Name",
+    "fullNamePlaceholder": "z. B. Lonardo Jenson",
+    "position": "Aktuelle Position",
+    "positionPlaceholder": "z. B. Doktorand, Informatik",
+    "location": "Ort",
+    "locationPlaceholder": "z. B. Santa Clara, CA",
+    "email": "E-Mail",
+    "rest": "Der Rest – Links, Zielpositionen, die Begriffe, nach denen der Scout sucht – steht im Profil unter dem Tab Mehr."
+  },
+  "offers": {
+    "open_one": "{{count}} offen",
+    "open_other": "{{count}} offen",
+    "title": "Angebote im Vergleich",
+    "noPackage": "Vergütung nicht angegeben",
+    "respondBy": "Antwort bis {{date}}",
+    "passed": "abgelaufen",
+    "today": "heute",
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage",
+    "ranked": "Jahreswerte, aus deinen Angaben gelesen.",
+    "notRanked": "Nicht gereiht – die Angebote sind in verschiedenen Währungen und jojo hat keinen Wechselkurs.",
+    "annualised": " * hochgerechnet auf 12 Monate, 52 Wochen oder 2.080 Stunden."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "Welche Bewerbungen haben kein geplantes Nachfassen?",
+      "unfiled": "Welche Dateien sind nirgends zugeordnet?"
+    },
+    "notConnected": "Verbinde in den Einstellungen ein lokales Modell, dann kannst du das in einem Satz fragen. Die Fragen unten funktionieren so oder so.",
+    "placeholder": "Welche Bewerbungen haben kein Nachfassen?",
+    "label": "Dem Graphen eine Frage stellen",
+    "stop": "Stopp",
+    "ask": "Fragen",
+    "again": "Etwas anderes fragen"
+  },
+  "background": {
+    "details_one": "{{count}} Detail",
+    "details_other": "{{count}} Details",
+    "fromDocument": "aus einem Dokument gelesen",
+    "editNamed": "{{title}} bearbeiten",
+    "removeNamed": "{{title}} entfernen",
+    "added": "{{title}} hinzugefügt",
+    "updated": "{{title}} aktualisiert",
+    "removed": "{{title}} entfernt",
+    "notSaved": "Das wurde nicht gespeichert",
+    "editTitle": "Diesen Eintrag bearbeiten",
+    "addTitle": "Zu deinem Werdegang hinzufügen",
+    "editRead": "Aus einem Dokument gelesen. Deine Bearbeitung hat Vorrang vor der Auswertung.",
+    "editHint": "Nichts wird gespeichert, bis du auf Speichern tippst.",
+    "addHint": "Alles, womit eine Ausschreibung verglichen werden sollte. Nichts davon wird irgendwohin gesendet.",
+    "add": "Hinzufügen",
+    "kind": "Art",
+    "title": "Titel",
+    "titlePlaceholder": "Was es war",
+    "where": "Wo",
+    "optional": "Optional",
+    "when": "Wann",
+    "whenPlaceholder": "Wie geschrieben – „2021–2024“",
+    "year": "Jahr",
+    "detail": "Detail",
+    "highlights": "Highlights",
+    "highlightsHint": "Eins pro Zeile – was gebaut, veröffentlicht, gelehrt oder herausgefunden wurde.",
+    "kindHint": "Zu welchem Teil deines Werdegangs das gehört.",
+    "recorded_one": "{{count}} erfasst · womit eine Ausschreibung verglichen wird",
+    "recorded_other": "{{count}} erfasst · womit eine Ausschreibung verglichen wird",
+    "panelTitle": "Dein Werdegang",
+    "read": "Dokument lesen",
+    "addEntry": "Eintrag hinzufügen",
+    "readTitle": "Ein Dokument in dein Profil lesen",
+    "nothingReadable": "Im Tresor ist noch nichts lesbar",
+    "nothingReadableHint": "Füge deinen Lebenslauf oder ein Statement hinzu, dann erscheint es hier.",
+    "alreadyRead": "Schon gelesen",
+    "empty": {
+      "title": "Noch nichts erfasst",
+      "ready": "Lege deinen Lebenslauf oder ein Forschungs- oder Lehrstatement in den Tresor, dann bietet jojo an, es zu lesen – was es findet, wird dir gezeigt, bevor etwas gespeichert wird. Oder füge einen Eintrag von Hand hinzu.",
+      "noModel": "Zum Lesen eines Dokuments braucht es ein Modell. Verbinde eines unter Mehr → Einstellungen und lege dann deinen Lebenslauf oder ein Statement in den Tresor. Einträge von Hand gehen auch ohne."
+    },
+    "removeTitle": "{{title}} entfernen?",
+    "removeBody": "Es verschwindet aus deinem Werdegang, Ausschreibungen werden also nicht mehr damit verglichen. Das Dokument, aus dem es stammt, bleibt unberührt."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Ausbildung",
+      "employment": "Beschäftigung",
+      "publication": "Veröffentlichung",
+      "skill": "Fähigkeit",
+      "teaching": "Lehre",
+      "award": "Auszeichnung",
+      "service": "Engagement",
+      "certification": "Zertifizierung",
+      "language": "Sprache",
+      "project": "Projekt",
+      "volunteering": "Ehrenamt",
+      "membership": "Mitgliedschaft",
+      "grant": "Förderung",
+      "patent": "Patent"
+    },
+    "skipped_one": "{{count}} Eintrag wurde übersprungen",
+    "skipped_other": "{{count}} Einträge wurden übersprungen",
+    "alreadyThere": "Schon in deinem Profil",
+    "added_one": "{{count}} zu deinem Profil hinzugefügt",
+    "added_other": "{{count}} zu deinem Profil hinzugefügt",
+    "nothingAdded": "Nichts konnte hinzugefügt werden",
+    "readFrom": "Aus {{name}} gelesen.",
+    "alreadyKnown_one": "{{known}} von {{count}} war schon bekannt.",
+    "alreadyKnown_other": "{{known}} von {{count}} waren schon bekannt.",
+    "connectionsRecorded_one": "{{count}} Verbindung erfasst.",
+    "connectionsRecorded_other": "{{count}} Verbindungen erfasst.",
+    "refused": "Die Einträge wurden abgelehnt.",
+    "readIt": "Lesen",
+    "readFailed": "Das Dokument konnte nicht gelesen werden.",
+    "entriesRead_one": "{{count}} Eintrag aus diesem Dokument gelesen",
+    "entriesRead_other": "{{count}} Einträge aus diesem Dokument gelesen",
+    "addNamed": "{{title}} hinzufügen",
+    "connections_one": "{{count}} Verbindung zwischen ihnen",
+    "connections_other": "{{count}} Verbindungen zwischen ihnen",
+    "addCount_one": "Hinzufügen",
+    "addCount_other": "{{count}} hinzufügen"
+  },
+  "proposals": {
+    "aPipeline": "einer Pipeline",
+    "hint": "nichts passiert, bevor du zustimmst",
+    "title": "Vorschläge",
+    "empty": {
+      "title": "Nichts zu prüfen",
+      "description": "Wenn eine Pipeline läuft, erscheint alles, was sie ändern will, zuerst hier. Sie rührt deine Einträge erst an, wenn du zustimmst."
+    },
+    "applied": "übernommen",
+    "discarded": "verworfen",
+    "failed": "konnte nicht übernommen werden",
+    "from": "{{tool}} · von {{pipeline}}",
+    "approve": "Zustimmen",
+    "discardNamed": "Verwerfen: {{title}}",
+    "clearAnswered": "Beantwortete entfernen",
+    "clearAll": "Alle entfernen",
+    "confirmTitle": "Alle Vorschläge entfernen?",
+    "confirmPending_one": "{{count}} Vorschlag wartet noch und wird abgelehnt. An deinen Einträgen ändert sich nichts, und die Pipelines laufen weiter – sie bieten ihn aber nicht noch einmal an.",
+    "confirmPending_other": "{{count}} Vorschläge warten noch und werden abgelehnt. An deinen Einträgen ändert sich nichts, und die Pipelines laufen weiter – sie bieten sie aber nicht noch einmal an.",
+    "confirmAnswered": "Die beantworteten Karten verschwinden aus der Liste. An deinen Einträgen ändert sich nichts."
+  },
+  "nextSteps": {
+    "measured": "Gemessen",
+    "suggested": "Vorgeschlagen",
+    "hint": "was deine Einträge belegen, dann was am wenigsten kostet",
+    "title": "Was als Nächstes"
+  },
+  "working": {
+    "arm": "{{count}} von {{of}} · {{rate}} % · wahrscheinlich {{range}}",
+    "repliesBy": "Antworten, nach {{dimension}}",
+    "interviewsBy": "Gespräche, nach {{dimension}}",
+    "confident": "Die Spannen überschneiden sich nicht, das ist also ein echter Unterschied – {{best}} verdient mehr deiner Mühe.",
+    "overlap": "Die Spannen überschneiden sich, das sind also zwei Zahlen statt eines Unterschieds. Mehr Einträge trennen sie oder schließen die Lücke.",
+    "tooFew_one": "{{count}} weitere Gruppe hat weniger als {{min}} Einträge und wird nicht verglichen.",
+    "tooFew_other": "{{count}} weitere Gruppen haben weniger als {{min}} Einträge und werden nicht verglichen.",
+    "hint": "das Band zeigt, wo die echte Quote plausibel liegt",
+    "title": "Was funktioniert"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "Eine Tour durch jojo zum Mitmachen",
+        "body": "Sie zeigt auf die echten Bildschirme und bittet dich, alles direkt auszuprobieren. Sie tippt, speichert oder ändert nie etwas für dich. Schließ sie, wann du willst – deine Stelle bleibt gespeichert, und So geht’s macht dort weiter."
+      },
+      "today": {
+        "title": "Heute",
+        "body": "Was jetzt ansteht: was überfällig ist, was fällig ist und welche Entscheidungen auf dich warten. Der Bildschirm, den du zuerst öffnest."
+      },
+      "applications": {
+        "title": "Deine Bewerbungen",
+        "body": "Ein Eintrag pro Job: der Arbeitgeber, die Stelle, ihre Phase und deine Notizen. Termine, Dokumente und Unterhaltungen hängen alle daran, also tippst du nichts doppelt.",
+        "say": "Öffne Bewerbungen."
+      },
+      "layout": {
+        "title": "Liste oder Board",
+        "body": "Dieselben Einträge, zwei Ansichten. Die Liste sortiert und sucht; das Board zeigt die Phasen als Spalten.",
+        "say": "Wechsle zum Board."
+      },
+      "records": {
+        "title": "Sechs Phasen",
+        "body": "Entwurf, Eingereicht, Vorgespräch, Vorstellungsgespräch, Angebot, Abgeschlossen. Halte auf dem Board eine Karte gedrückt und zieh sie in die nächste Spalte; jede Karte hat außerdem ein Phasenmenü. Jeder Schritt lässt sich rückgängig machen."
+      },
+      "search": {
+        "title": "Alles durchsuchen",
+        "body": "Bewerbungen, Erinnerungen und Kalendereinträge, von jedem Tab aus.",
+        "say": "Öffne die Suche."
+      },
+      "searchScreen": {
+        "title": "Tippen, um alles zu finden",
+        "body": "Eine Stelle, ein Arbeitgeber oder eine Phase. Tippe auf ein Ergebnis, um es zu öffnen, oder geh zurück, wenn du fertig bist."
+      },
+      "new": {
+        "title": "Alles anlegen",
+        "body": "Das + legt eine Bewerbung, eine Erinnerung, einen Kalendereintrag, eine entworfene Nachricht, einen gespeicherten Link oder eine gespeicherte Ausschreibung an. Gespeichert wird erst, wenn du speicherst, und ein halb ausgefülltes Formular zu schließen kostet nichts."
+      },
+      "calendar": {
+        "title": "Jedes Datum an einem Ort",
+        "body": "Fristen, Gespräche und Nachfassen sind dieselbe Art Eintrag, deshalb erscheint ein Eintrag im Kalender, unter Heute und bei seiner Bewerbung.",
+        "say": "Öffne den Kalender."
+      },
+      "vault": {
+        "title": "Der Tresor",
+        "body": "Alles, was keine Bewerbung ist: Erinnerungen, Links, Dateien, die Textbausteine, die du in jedes Formular einfügst, die Menschen, die du kennst, und ein Rechner.",
+        "say": "Öffne den Tresor."
+      },
+      "vaultTools": {
+        "title": "Ein Werkzeug nach dem anderen",
+        "body": "Jedes davon ist eine eigene Liste, und ein Schlagwort bedeutet in allen dasselbe.",
+        "say": "Wähle Dateien."
+      },
+      "files": {
+        "title": "Dateien, auf dem Handy gespeichert",
+        "body": "Ein Lebenslauf, ein Statement, eine Ausschreibung – in jojos eigenen Ordner kopiert, damit sie es überstehen, wenn das Original verschoben wird. Tippe auf eine, um sie hier zu lesen; ordne sie so vielen Bewerbungen zu, wie dazugehören."
+      },
+      "more": {
+        "title": "Mehr",
+        "body": "Alles Übrige: Job-Scout, Statistik, der Graph, Übertragen, dein Profil, der Assistent, Einstellungen und diese Anleitung.",
+        "say": "Öffne Mehr."
+      },
+      "scout": {
+        "title": "Job-Scout",
+        "body": "Gespeicherte Suchen, die Jobbörsen für dich beobachten.",
+        "say": "Öffne den Job-Scout."
+      },
+      "scoutScreen": {
+        "title": "Pipelines und Vorschläge",
+        "body": "Jede Pipeline ist eine Suche auf einer Jobbörse, die nach Zeitplan oder auf Anfrage läuft. Was sie findet, wartet als Vorschlag, dem du zustimmst oder den du verwirfst, und ein angenommener Vorschlag wird zum Bewerbungsentwurf."
+      },
+      "statistics": {
+        "title": "Statistik",
+        "body": "Wie deine Suche läuft, gezählt aus deinen eigenen Einträgen.",
+        "say": "Öffne die Statistik."
+      },
+      "statisticsScreen": {
+        "title": "Quoten mit ehrlichen Spannen",
+        "body": "Antwort- und Gesprächsquoten, ein Trichter und woran du als Nächstes arbeiten solltest – jede Quote mit der Spanne, in der sie wirklich liegen könnte, denn eine Handvoll Bewerbungen ist eine kleine Stichprobe."
+      },
+      "graph": {
+        "title": "Der Wissensgraph",
+        "body": "Jeder Eintrag – Bewerbungen, Arbeitgeber, Personen, Termine, Dateien – gezeichnet als das Netz, das er bildet.",
+        "say": "Öffne den Graphen."
+      },
+      "graphScreen": {
+        "title": "Alles verbunden",
+        "body": "Tippe auf einen Knoten, um zu sehen, womit er verbunden ist, und stell eine Frage, um die passenden Einträge hervorzuheben."
+      },
+      "assistant": {
+        "title": "Der Assistent",
+        "body": "Chatte mit jojo: Es findet, ergänzt und aktualisiert deine Einträge mit den Werkzeugen der App und fragt, bevor es etwas ändert. Solange kein Modell verbunden ist, zeigt es durchgespielte Beispiele."
+      },
+      "transfer": {
+        "title": "Handy und Computer",
+        "body": "Übertragen bewegt alles zwischen diesem Handy und jojo auf deinem Computer über dein lokales Netzwerk, ohne Umweg über Dritte."
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "body": "Verbindungen, Darstellung und deine Daten.",
+        "say": "Öffne die Einstellungen."
+      },
+      "device": {
+        "title": "Deine Einträge leben auf diesem Handy",
+        "body": "Während du arbeitest, direkt in den Speicher des Handys geschrieben – kein Konto, keine Synchronisierung, nichts hochgeladen. Exportiere eine Kopie oder übertrage sie auf deinen Computer."
+      },
+      "model": {
+        "title": "Ein Modell verbinden",
+        "body": "Wo das Modell des Assistenten läuft. Ein Server auf deinem eigenen Rechner – vLLM, Ollama oder LM Studio – braucht nur seine Adresse und hält deine Einträge auf deinen Geräten. OpenAI, Anthropic (Claude) und die anderen Cloud-Anbieter brauchen einen API-Schlüssel. Verbindung testen prüft das, bevor etwas gespeichert wird."
+      },
+      "reader": {
+        "title": "Lass es deine Dokumente lesen",
+        "body": "Das Handy liest Word-Dateien, Präsentationen, gespeicherte Seiten und Text selbst. PDFs brauchen MarkItDown auf deinem Computer: Starte es mit den beiden Befehlen oben und tippe dann auf Verbindung testen."
+      },
+      "done": {
+        "title": "Das war die Tour",
+        "body": "Jede Änderung lässt sich rückgängig machen, und So geht’s unter Mehr erklärt jeden Bildschirm der Reihe nach. Die Tour kannst du jederzeit wiederholen."
+      }
+    },
+    "stepOf": "Schritt {{step}} von {{total}}",
+    "end": "Tour beenden",
+    "nice": "Super – genau so.",
+    "tryIt": "Probier’s aus: {{task}}",
+    "finish": "Fertig",
+    "skip": "Überspringen"
+  },
+  "marks": {
+    "bold": "fett",
+    "italic": "kursiv",
+    "underlined": "unterstrichen"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Heute",
+      "applications": "Bewerbungen",
+      "calendar": "Kalender",
+      "vault": "Tresor",
+      "more": "Mehr"
+    },
+    "badge": {
+      "applications_one": "Bewerbungen, {{count}} zum Nachfassen markiert",
+      "applications_other": "Bewerbungen, {{count}} zum Nachfassen markiert",
+      "calendar_one": "Kalender, {{count}} in den nächsten sieben Tagen",
+      "calendar_other": "Kalender, {{count}} in den nächsten sieben Tagen",
+      "vault_one": "Tresor, {{count}} überfällige Erinnerung",
+      "vault_other": "Tresor, {{count}} überfällige Erinnerungen",
+      "more_one": "Mehr, {{count}} Treffer noch nicht als Bewerbung angelegt",
+      "more_other": "Mehr, {{count}} Treffer noch nicht als Bewerbung angelegt"
+    },
+    "create": "Erstellen",
+    "search": "Suchen",
+    "titles": {
+      "application": "Bewerbung",
+      "employer": "Arbeitgeber",
+      "search": "Suche",
+      "jobScout": "Job-Scout",
+      "statistics": "Statistik",
+      "profile": "Mein Profil",
+      "assistant": "Assistent",
+      "settings": "Einstellungen",
+      "guide": "So geht’s",
+      "graph": "Graph",
+      "transfer": "Übertragen"
+    }
+  }
+}

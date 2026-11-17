@@ -1,0 +1,79 @@
+{
+  "monthPicker": {
+    "goTo": "الانتقال إلى شهر",
+    "previousYear": "السنة السابقة",
+    "nextYear": "السنة التالية"
+  },
+  "chip": {
+    "allDay": "طوال اليوم",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}، مكتمل —"
+  },
+  "dayCell": {
+    "label_zero": "{{label}}، {{count}} حدث",
+    "label_one": "{{label}}، حدث واحد ({{count}})",
+    "label_two": "{{label}}، حدثان ({{count}})",
+    "label_few": "{{label}}، {{count}} أحداث",
+    "label_many": "{{label}}، {{count}} حدثًا",
+    "label_other": "{{label}}، {{count}} حدث",
+    "add": "إضافة حدث في {{label}}",
+    "more_zero": "+{{count}} أخرى",
+    "more_one": "+{{count}} آخر",
+    "more_two": "+{{count}} أخرى",
+    "more_few": "+{{count}} أخرى",
+    "more_many": "+{{count}} أخرى",
+    "more_other": "+{{count}} أخرى"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "الشهر السابق",
+    "nextMonth": "الشهر التالي",
+    "today": "اليوم",
+    "backTo": "العودة إلى {{date}}",
+    "goTo": "الانتقال إلى {{month}} {{year}}",
+    "hintTouch": "انقر على يوم لترى ما فيه.",
+    "hintPointer": "اختر يومًا لعرض قائمته بجانب الشبكة. انقر على حدث لتعديله، أو اسحبه إلى يوم آخر — السحب يتطلب مؤشرًا، لذا استخدم حقل التاريخ داخل الحدث عند العمل بلوحة المفاتيح.",
+    "eventTypes": "أنواع الأحداث",
+    "showAll": "إظهار الكل",
+    "dateColours": "ألوان التواريخ",
+    "marks": {
+      "overdue": "متأخر",
+      "soon": "مستحق خلال 48 ساعة",
+      "done": "مكتمل"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "اليوم",
+    "selectedDay": "اليوم المحدد",
+    "hiddenTitle": "لا شيء معروض في {{date}}",
+    "hiddenDescription_zero": "{{count}} حدث من نوع تم إيقافه أسفل الشبكة.",
+    "hiddenDescription_one": "{{count}} حدث من نوع تم إيقافه أسفل الشبكة.",
+    "hiddenDescription_two": "{{count}} حدثان من نوع تم إيقافه أسفل الشبكة.",
+    "hiddenDescription_few": "{{count}} أحداث من نوع تم إيقافه أسفل الشبكة.",
+    "hiddenDescription_many": "{{count}} حدثًا من نوع تم إيقافه أسفل الشبكة.",
+    "hiddenDescription_other": "{{count}} حدث من نوع تم إيقافه أسفل الشبكة.",
+    "showAllTypes": "إظهار كل أنواع الأحداث",
+    "emptyTitle": "لا شيء في {{date}}",
+    "emptyDescription": "أضف مقابلة أو موعدًا نهائيًا أو وقتًا للتحضير، وسيظهر هنا وعلى الشبكة.",
+    "addEvent": "إضافة حدث",
+    "backTo": "العودة إلى {{month}}",
+    "delete": "حذف الحدث",
+    "deleteNamed": "حذف {{title}}",
+    "restOf": "بقية {{month}}",
+    "lastDayTitle": "{{date}} هو آخر يوم في الشهر",
+    "nothingAfterTitle": "لا شيء بعد {{date}}",
+    "lastDayDescription": "لا شيء بعده. انتقل إلى الصفحة التالية للتخطيط لشهر {{month}}.",
+    "nothingAfterDescription": "بقية {{month}} فارغة. أي شيء تضيفه بعد هذا اليوم سيظهر هنا.",
+    "goToMonth": "الانتقال إلى {{month}}",
+    "goToDay": "الانتقال إلى {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_zero": "+{{count}} أخرى لاحقًا هذا الشهر",
+    "moreLater_one": "+{{count}} آخر لاحقًا هذا الشهر",
+    "moreLater_two": "+{{count}} أخرى لاحقًا هذا الشهر",
+    "moreLater_few": "+{{count}} أخرى لاحقًا هذا الشهر",
+    "moreLater_many": "+{{count}} أخرى لاحقًا هذا الشهر",
+    "moreLater_other": "+{{count}} أخرى لاحقًا هذا الشهر"
+  }
+}

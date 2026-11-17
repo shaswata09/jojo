@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Brain, ChevronRight, Quote } from 'lucide-react'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
@@ -24,16 +26,20 @@ export const COPIED_MS = 1600
  * the ⌘Z path's: "Nothing to undo — it has changed since" is
  * `NothingToRevert`'s message.
  */
-function undoToast(outcome: ReturnType<NonNullable<AgentStep['undo']>>, label: string) {
+function undoToast(
+  outcome: ReturnType<NonNullable<AgentStep['undo']>>,
+  label: string,
+  t: TFunction<'assistant'>,
+) {
   switch (outcome) {
     case 'nothing':
-      return { title: 'Nothing to undo — it has changed since', description: label }
+      return { title: t('transcript.undo.nothing'), description: label }
     case 'already-undone':
-      return { title: 'Already undone', description: label }
+      return { title: t('transcript.undo.alreadyUndone'), description: label }
     case 'out-of-reach':
-      return { title: 'Too far back to undo from here', description: label }
+      return { title: t('transcript.undo.outOfReach'), description: label }
     case 'undone':
-      return { title: 'Undone', description: label, tone: 'danger' as const }
+      return { title: t('transcript.undo.undone'), description: label, tone: 'danger' as const }
   }
 }
 
@@ -67,6 +73,7 @@ export function Transcript({
   /** Tighter type for a dock window. */
   compact?: boolean
 }) {
+  const { t } = useTranslation('assistant')
   const { addSnippet } = useVault()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -102,7 +109,7 @@ export function Transcript({
    */
   const undoStep = (step: AgentStep) => {
     if (!step.undo) return
-    toast(undoToast(step.undo(), step.announcement?.title ?? step.title))
+    toast(undoToast(step.undo(), step.announcement?.title ?? step.title, t))
   }
 
   /** The question that produced a given answer, for the snippet's title. */
@@ -111,7 +118,7 @@ export function Transcript({
       const e = entries[i]
       if (e?.kind === 'you') return e.text
     }
-    return 'Assistant'
+    return t('common.title')
   }
 
   const saveAnswer = (text: string, asked: string) => {
@@ -123,9 +130,12 @@ export function Transcript({
       body: text,
     })
     toast({
-      title: 'Saved to snippets',
-      description: `${snippet.title} · filed under ${snippet.tag}`,
-      action: { label: 'Open vault', onClick: () => navigate(vaultPath({ tool: 'snippets' })) },
+      title: t('common.savedToSnippets'),
+      description: t('common.filedUnder', { title: snippet.title, tag: snippet.tag }),
+      action: {
+        label: t('common.openVault'),
+        onClick: () => navigate(vaultPath({ tool: 'snippets' })),
+      },
     })
   }
 
@@ -220,7 +230,7 @@ export function Transcript({
                   }}
                 >
                   <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
-                  Save to snippets
+                  {t('common.saveToSnippets')}
                 </Button>
               </div>
             </li>
@@ -235,7 +245,7 @@ export function Transcript({
 
       {/* Outside the list: an announcement, not part of the conversation. */}
       <p aria-live="polite" className="sr-only">
-        {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
+        {copiedId ? (copyFailed ? t('common.copyBlocked') : t('common.copied')) : ''}
       </p>
     </>
   )
@@ -251,6 +261,7 @@ export function Transcript({
  * Quieter than narration on purpose — it is the model talking to itself.
  */
 function ThoughtRow({ text, live, compact }: { text: string; live: boolean; compact: boolean }) {
+  const { t } = useTranslation('assistant')
   const [open, setOpen] = useState(false)
   const latest = text.trim().split('\n').filter(Boolean).at(-1) ?? ''
   return (
@@ -266,9 +277,12 @@ function ThoughtRow({ text, live, compact }: { text: string; live: boolean; comp
           strokeWidth={1.8}
           aria-hidden
         />
-        {live ? 'Thinking…' : 'Thought'}
+        {live ? t('transcript.thinking') : t('transcript.thought')}
         <ChevronRight
-          className={cn('size-3 shrink-0 transition-transform', open && 'rotate-90')}
+          className={cn(
+            'size-3 shrink-0 transition-transform',
+            open ? 'rotate-90' : 'rtl:-scale-x-100',
+          )}
           strokeWidth={2}
           aria-hidden
         />
@@ -276,14 +290,14 @@ function ThoughtRow({ text, live, compact }: { text: string; live: boolean; comp
       {open ? (
         <p
           className={cn(
-            'mt-1.5 overflow-y-auto border-l-2 border-hairline pl-3 text-xs leading-relaxed wrap-anywhere whitespace-pre-wrap text-text-3',
+            'mt-1.5 overflow-y-auto border-s-2 border-hairline ps-3 text-xs leading-relaxed wrap-anywhere whitespace-pre-wrap text-text-3',
             compact ? 'max-h-48' : 'max-h-72',
           )}
         >
           {text}
         </p>
       ) : live && latest ? (
-        <p className="mt-1 truncate pl-5 text-xs text-text-3 italic">{latest}</p>
+        <p className="mt-1 truncate ps-5 text-xs text-text-3 italic">{latest}</p>
       ) : null}
     </li>
   )

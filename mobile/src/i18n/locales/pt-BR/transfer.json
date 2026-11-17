@@ -1,0 +1,152 @@
+{
+  "screen": {
+    "title": "Transferir",
+    "subtitle": "Mova tudo entre este celular e o seu computador, pela sua rede local. Os dois precisam estar na mesma rede. Nada vai para a internet e nada fica guardado em outro lugar.",
+    "direction": "Sentido",
+    "roles": {
+      "send": "Enviar para um computador",
+      "receive": "Receber de um computador"
+    },
+    "onPhone": "O que está neste celular agora",
+    "records_one": "{{count}} registro",
+    "records_other": "{{count}} registros",
+    "empty": "vazio",
+    "sendNote": "Enviar copia tudo isso para o seu computador, que pergunta antes de substituir o que tem. Nada muda neste celular.",
+    "receiveNote": "Receber substitui tudo isso. Tudo acima é sobrescrito pelo que chegar, e isso não pode ser desfeito — exporte antes se quiser manter."
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidaturas",
+      "hint": "Cada etapa, nota e resultado de cada uma"
+    },
+    "timeline": {
+      "label": "Lembretes e eventos",
+      "hint": "{{reminders}} lembram você, {{events}} são eventos com data"
+    },
+    "vault": {
+      "label": "Links e trechos",
+      "hint": "{{links}} links · {{snippets}} trechos"
+    },
+    "files": {
+      "label": "Arquivos",
+      "hint": "CVs, cartas de apresentação e tudo o mais salvo em uma candidatura"
+    },
+    "keywords": {
+      "label": "Palavras-chave",
+      "hint": "Sua lista de palavras-chave e todos os registros a que estão ligadas"
+    },
+    "scout": {
+      "label": "Busca de vagas",
+      "hint": "{{pipelines}} buscas · {{postings}} vagas salvas · {{matches}} correspondências"
+    },
+    "profile": {
+      "label": "Perfil",
+      "hint": "Seus dados básicos, links, cargos desejados e termos de correspondência"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "não disponível neste dispositivo",
+    "noRandom": "Este dispositivo não tem um gerador seguro de números aleatórios, então o jojo não combina uma chave nele. O pareamento fica desativado em vez de ser feito de forma fraca.",
+    "scan": "Escanear o código",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar"
+  },
+  "send": {
+    "title": "Enviar para um computador",
+    "hint": "aponte para o código no seu computador",
+    "outcome": {
+      "applied": "Seu computador agora tem seus registros",
+      "declined": "Seu computador manteve os próprios registros",
+      "failed": "Seu computador não conseguiu receber seus registros",
+      "handed": "Tudo foi entregue"
+    },
+    "detail": {
+      "waiting": "Seu computador pergunta antes de substituir qualquer coisa — confirme lá para concluir. Nada mudou neste celular.",
+      "unknown": "Seu computador não disse se aceitou os registros. Nada mudou neste celular.",
+      "applied": "Os dois dispositivos têm os mesmos registros agora. Nada mudou neste celular.",
+      "notReplaced": "Nada foi substituído lá. Nada mudou neste celular."
+    },
+    "unreadable_one": "{{count}} documento não pôde ser lido e ficou para trás.",
+    "unreadable_other": "{{count}} documentos não puderam ser lidos e ficaram para trás.",
+    "again": "Enviar novamente",
+    "typeThis": "Digite isto no seu computador",
+    "paired": "Pareado. Este celular está aguardando na sua rede local o pedido do seu computador.",
+    "handing": "Entregando seus registros…",
+    "handingProgress": "Entregando seus registros — {{served}} de {{chunks}}.",
+    "intro": "No seu computador, abra Transferir, escolha Receber do celular e escaneie o código que ele mostrar. Os dois precisam estar na mesma rede local.",
+    "gatherFailed": "O jojo não conseguiu reunir os registros neste celular, então nada foi enviado. Tente novamente."
+  },
+  "receive": {
+    "title": "Receber",
+    "hint": "aponte para o código no outro dispositivo",
+    "complete": "Transferência concluída",
+    "done": "Concluído",
+    "typeThis": "Digite isto no seu outro dispositivo",
+    "paired": "Pareado. Este celular está escutando na sua rede local e em nenhum outro lugar.",
+    "progress": "Recebendo — {{size}} até agora. Nada aqui muda até você concordar.",
+    "intro": "Abra o jojo no seu computador, escolha Transferir e escaneie o código que ele mostrar.",
+    "confirm": {
+      "title": "Substituir tudo neste celular?",
+      "description": "{{contents}}. {{replaces}}, e isso não pode ser desfeito.",
+      "confirm": "Substituir"
+    },
+    "unrestorable": "O que chegou não pode ser restaurado: {{reason}}. Nada mudou neste celular."
+  },
+  "landed": {
+    "plain_one": "{{count}} registro está neste celular.",
+    "plain_other": "{{count}} registros estão neste celular.",
+    "withDocuments_one": "{{count}} registro está neste celular, {{documents}}.",
+    "withDocuments_other": "{{count}} registros estão neste celular, {{documents}}.",
+    "documents_one": "{{count}} documento",
+    "documents_other": "{{count}} documentos",
+    "skipped_one": "{{count}} não pôde ser lido.",
+    "skipped_other": "{{count}} não puderam ser lidos."
+  },
+  "scanner": {
+    "point": "Aponte para o código na página Transferir do seu outro dispositivo.",
+    "advice": {
+      "denied": "O jojo precisa da câmera para ler o código no seu outro dispositivo. Permita o acesso ou digite o código manualmente.",
+      "unsupported": "Este celular não consegue abrir a câmera para o jojo.",
+      "failed": "A câmera não iniciou. Feche o jojo e abra novamente."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Ler o código de pareamento",
+      "message": "O jojo precisa da câmera para ler o código mostrado no seu outro dispositivo. Nada é gravado, e nenhuma imagem sai deste celular.",
+      "allow": "Permitir",
+      "notNow": "Agora não"
+    },
+    "refused": {
+      "denied": "O jojo precisa da câmera para ler o código no seu outro dispositivo.",
+      "blocked": "A câmera está desativada para o jojo. Ative-a nas Configurações do celular, em Apps, para parear escaneando."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Esse código não é uma oferta de pareamento do jojo. Escaneie o que aparece no seu outro dispositivo.",
+      "noNetwork": "Este celular não está em uma rede local. O jojo transfere apenas pela sua rede local, então os dois dispositivos precisam estar na mesma.",
+      "notLocal": "Este celular está em uma rede pela qual o jojo não transfere. Ele só se conecta a um endereço de rede privada, então seus registros nunca passam pela internet.",
+      "noSocket": "O jojo não conseguiu abrir uma conexão neste celular. Tente novamente."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "A área de transferência está vazia. Copie um backup do jojo primeiro e cole aqui.",
+    "fileEmpty": "Esse arquivo está vazio. Nada mudou neste celular.",
+    "notBackup": "não é um backup do jojo",
+    "unrestorable": {
+      "file": "Esse arquivo não pode ser restaurado: {{reason}}. Nada mudou neste celular.",
+      "clipboard": "O conteúdo da área de transferência não pode ser restaurado: {{reason}}. Nada mudou neste celular."
+    },
+    "noRecords": {
+      "file": "Esse arquivo é um backup sem nenhum registro. Nada mudou neste celular — restaurá-lo teria esvaziado este celular.",
+      "clipboard": "O conteúdo da área de transferência é um backup sem nenhum registro. Nada mudou neste celular — restaurá-lo teria esvaziado este celular."
+    },
+    "unreadable": "Não foi possível ler esse arquivo. Nada mudou neste celular.",
+    "noPicker": "Este celular não tem nada que possa escolher um arquivo JSON ou de texto.",
+    "openFailed": "Não foi possível abrir o arquivo: {{detail}}",
+    "failedTitle": "Nada foi importado",
+    "restoredTitle": "Backup restaurado"
+  }
+}

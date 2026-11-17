@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Graph } from '@/lib/graph/model'
 import type { QueryResult } from '@/lib/graph/query'
 import { neighbourhood } from '@/lib/graph/traversal'
@@ -111,6 +112,7 @@ export function GraphCanvas({
   showAllLabels = false,
   className,
 }: Props) {
+  const { t, i18n } = useTranslation('graph')
   const reduced = useReducedMotion()
   const svgRef = useRef<SVGSVGElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
@@ -408,11 +410,12 @@ export function GraphCanvas({
       {structure.dropped > 0 ? (
         <p
           role="status"
-          className="pointer-events-none absolute left-2 top-2 z-10 rounded-md border border-warning-border bg-warning-soft px-2 py-1 text-xs text-warning"
+          className="pointer-events-none absolute start-2 top-2 z-10 rounded-md border border-warning-border bg-warning-soft px-2 py-1 text-xs text-warning"
         >
-          Showing the {structure.spec.length.toLocaleString()} most connected records.{' '}
-          {structure.dropped.toLocaleString()} more are in the store but not on this canvas — narrow
-          it with the filters to see them.
+          {t('canvas.capped', {
+            shown: structure.spec.length.toLocaleString(i18n.language),
+            dropped: structure.dropped.toLocaleString(i18n.language),
+          })}
         </p>
       ) : null}
 
@@ -420,7 +423,10 @@ export function GraphCanvas({
         ref={svgRef}
         viewBox={`0 0 ${width} ${HEIGHT}`}
         role="group"
-        aria-label={`Knowledge graph — ${graph.nodes.length} records, ${graph.edges.length} connections`}
+        aria-label={t('canvas.label', {
+          records: t('common.records', { count: graph.nodes.length }),
+          connections: t('common.connections', { count: graph.edges.length }),
+        })}
         className="h-full w-full touch-none select-none"
         onPointerDown={(event) => {
           // A press on the background clears the selection; a press on a node is
@@ -428,10 +434,7 @@ export function GraphCanvas({
           if (event.target === event.currentTarget) onSelect(null)
         }}
       >
-        <desc>
-          Each record is a node and each pointer between records is a line. The panels beside this
-          graph list the same information as text.
-        </desc>
+        <desc>{t('canvas.description')}</desc>
 
         <g>
           {graph.edges.map((edge) => {

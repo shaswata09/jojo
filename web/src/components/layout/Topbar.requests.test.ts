@@ -14,7 +14,7 @@ const strip = (src: string) =>
 const code = strip(topbarSource)
 
 /** The `<nav>` that holds the icon buttons. */
-const nav = /<nav aria-label="Account and support"[\s\S]*?<\/nav>/.exec(code)?.[0] ?? ''
+const nav = /<nav aria-label=\{t\('topbar\.accountNav'\)\}[\s\S]*?<\/nav>/.exec(code)?.[0] ?? ''
 
 describe('the topbar icons (Q013)', () => {
   it('are separate links, not a dropdown', () => {

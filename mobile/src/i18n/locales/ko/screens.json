@@ -1,0 +1,911 @@
+{
+  "shared": {
+    "undo": "실행 취소",
+    "delete": "삭제",
+    "cancel": "취소",
+    "list": "{{items}} 및 {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "오늘",
+    "subtitleEmpty": "{{date}} · 아직 추적 중인 항목이 없어요. 추가하는 모든 내용은 이 기기에 저장돼요.",
+    "subtitle_other": "{{date}} · 지원 {{count}}건, 모두 이 기기에 있어요.",
+    "decision": {
+      "title": "결정이 필요해요",
+      "done": "완료",
+      "snooze": "다시 알림",
+      "notConnected": "아직 여기에 연결된 것이 없어요",
+      "emptyTitle": "오늘은 결정할 일이 없어요",
+      "emptyDescription": "제안, 기한이 지난 지원, 다음 확정 마감일, 다음 면접이 여기에 표시돼요. 지금은 처리할 항목이 없어요.",
+      "open_other": "{{count}}건 진행 중"
+    },
+    "firstSteps": {
+      "title": "시작하기",
+      "progress": "{{total}}개 중 {{done}}개 완료",
+      "complete": "세 단계를 모두 마쳤어요. 이제부터 추가하는 내용은 이 화면, 캘린더, 해당 지원에 표시돼요.",
+      "intro": "각 단계는 실제 기능을 열고, 기록이 생기면 자동으로 체크돼요. 억지로 봐야 하는 튜토리얼이 아니에요.",
+      "introEmpty": "아직 추적 중인 항목이 없어요. 각 단계는 실제 기능을 열고, 기록이 생기면 자동으로 체크돼요. 억지로 봐야 하는 튜토리얼이 아니에요.",
+      "close": "시작하기 닫기",
+      "hide": "이 단계 숨기기",
+      "application": {
+        "title": "지원 추가하기",
+        "body": "직책, 진행 단계, 마감일이에요. jojo의 나머지 모든 것은 이 기록에 연결돼요."
+      },
+      "dated": {
+        "title": "날짜 지정하기",
+        "body": "마감일, 면접, 방문은 같은 종류의 기록이라서 날짜 하나가 이 화면, 캘린더, 지원에 동시에 반영돼요.",
+        "label": "새 일정"
+      },
+      "reminder": {
+        "title": "후속 연락 설정하기",
+        "body": "알림은 알림 기능을 켠 같은 기록이에요. 날짜가 지나면 처리할 항목이 되고, 체크할 때까지 여기에 남아요.",
+        "label": "새 알림"
+      }
+    },
+    "glance": {
+      "active": "진행 중",
+      "interviews": "서류 심사·면접",
+      "overdue": "기한 지남",
+      "doneToday": "오늘 완료",
+      "a11y": "{{label}} {{value}}"
+    },
+    "owed": {
+      "title": "이번 주 할 일",
+      "hintOverdue": "{{overdue}}건 기한 지남 · {{due}}건 예정",
+      "hintDue": "{{due}}건 예정",
+      "emptyTitle": "할 일이 없어요",
+      "emptyDescription": "마감일, 면접, 후속 연락은 날짜가 생기면 바로 여기에 나타나고, 체크할 때까지 남아 있어요.",
+      "addEvent": "일정 추가",
+      "dayLabel_other": "{{day}} {{date}}, {{count}}개 항목",
+      "clear": "오늘은 일정이 없어요.",
+      "clearDone_other": "오늘은 일정이 없어요. {{count}}건 완료했어요.",
+      "later": "나중에",
+      "moreOnCalendar_other": "캘린더에 {{count}}건 더 있어요"
+    },
+    "recent": {
+      "title": "최근 지원",
+      "hint": "최근 활동",
+      "viewAll": "모두 보기",
+      "emptyDescription": "추적하는 모든 직책은 손댈 때마다 최신순으로 여기에 표시돼요.",
+      "daysAgo_other": "{{count}}일 전",
+      "views": {
+        "notes": "메모",
+        "recent": "최근 지원"
+      },
+      "control": "이 카드에 표시",
+      "addReminder": "리마인더 추가",
+      "headingNotes": "스티커 메모"
+    },
+    "pipeline": {
+      "title": "파이프라인",
+      "emptyTitle": "파이프라인이 비어 있어요",
+      "emptyDescription": "각 지원은 한 단계에 있고, 여기서는 단계별 분포를 보여줘요. 하나를 추가하면 첫 번째 조각이 나타나요."
+    },
+    "sticky": {
+      "newNote": "새 스티커 메모",
+      "placeholder": "나에게 메모 남기기…",
+      "newColour": "새 메모 색상",
+      "stick": "붙이기",
+      "empty": "아직 붙인 메모가 없어요. 메모는 뗄 때까지 여기 남아 있고, 날짜가 생기면 리마인더로 바꿀 수 있어요.",
+      "listLabel": "스티커 메모",
+      "editNote": "메모 편집",
+      "editAria": "메모 편집: {{text}}",
+      "colour": "색상",
+      "colourOf": "'{{text}}' 메모 색상",
+      "toReminderAria": "리마인더로 바꾸기: {{text}}",
+      "removeAria": "메모 삭제: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "지원",
+    "subtitleEmpty": "아직 추적 중인 항목이 없어요. 추가하는 모든 내용은 이 기기에 저장돼요.",
+    "subtitle": "{{shown}}건 표시 · 전체 {{total}}건",
+    "new": "새로 만들기",
+    "newApplication": "새 지원",
+    "showNotes": "메모 표시",
+    "showNotesDescription": "각 직책 아래 두 번째 줄",
+    "none": {
+      "title": "아직 지원이 없어요",
+      "description": "지원 중인 일자리를 추적하면 여기, 캘린더, 다가오는 한 주에 표시돼요."
+    },
+    "searchLabel": "지원 검색",
+    "searchPlaceholder": "직책, 메모, 단계로 검색",
+    "layout": "레이아웃",
+    "views": {
+      "list": "목록",
+      "board": "보드"
+    },
+    "filterByRole": "역할로 필터",
+    "filterByStage": "단계로 필터",
+    "sortButton": "정렬: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "최근 활동",
+        "asc": "최신순",
+        "desc": "오래된순"
+      },
+      "stage": {
+        "label": "단계",
+        "asc": "초안에서 종료 순",
+        "desc": "종료에서 초안 순"
+      },
+      "position": {
+        "label": "직책",
+        "asc": "A부터 Z",
+        "desc": "Z부터 A"
+      }
+    },
+    "sortMenu": {
+      "title": "정렬 기준",
+      "description": "열을 고른 다음, 어느 쪽 끝을 위로 올릴지 고르세요.",
+      "currently": "현재: {{order}}"
+    },
+    "empty": {
+      "title": "일치하는 지원이 없어요",
+      "nothing": "표시할 내용이 없어요.",
+      "carries": "{{filters}}에 해당하는 항목이 없어요.",
+      "reasons": {
+        "search": "해당 검색어",
+        "stage": "'{{stage}}' 단계",
+        "keywords": "선택한 키워드",
+        "roles": "선택한 역할"
+      },
+      "showAll_other": "{{count}}건 모두 표시"
+    },
+    "row": {
+      "moreActions": "{{name}} 추가 작업",
+      "open": "기록 열기",
+      "edit": "편집",
+      "flag": "후속 조치 표시",
+      "unflag": "후속 조치 표시 해제",
+      "duplicate": "복제"
+    },
+    "roles": {
+      "description": "아무것도 선택하지 않으면 전체를 뜻해요. 필터를 지우는 것은 처음부터 설정하지 않은 것과 같아요.",
+      "tracked_other": "{{count}}건 추적 중",
+      "clear": "모든 역할 표시"
+    },
+    "paste": {
+      "label": "채용 공고 URL",
+      "placeholder": "채용 공고 URL 붙여넣기",
+      "submit": "링크로 추가"
+    }
+  },
+  "board": {
+    "cardHint": "길게 눌러 다른 단계로 옮기세요",
+    "addAt": "'{{stage}}' 단계에 지원 추가",
+    "addHere": "여기에 추가"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} 복제됨",
+    "duplicatedDescription": "복사본은 초안으로 시작해요. 원래 단계, 날짜, 제안은 가져오지 않아요.",
+    "movedTitle": "{{name}}을(를) {{stage}}(으)로 옮겼어요",
+    "movedDescription": "이전 단계는 {{from}}이었어요. 이제부터 파이프라인과 퍼널에서 {{stage}}(으)로 집계돼요.",
+    "deletedTitle": "{{name}} 삭제됨",
+    "deletedDescription": "여기에 정리된 알림, 파일, 저장된 공고는 연결만 해제하고 유지했어요.",
+    "confirmTitle": "{{name}}을(를) 삭제할까요?",
+    "confirmTitleGeneric": "지원을 삭제할까요?",
+    "confirmDescription": "지원과 메모가 삭제돼요. 여기에 정리된 알림, 파일, 저장된 공고는 남지만 연결은 해제돼요."
+  },
+  "detail": {
+    "missing": {
+      "title": "지원",
+      "emptyTitle": "이 지원은 더 이상 존재하지 않아요",
+      "emptyDescription": "삭제되었거나, 존재한 적 없는 ID를 가리키는 링크예요. 함께 삭제된 다른 항목은 없어요.",
+      "back": "뒤로"
+    },
+    "kept": {
+      "reminders_other": "알림 {{count}}개",
+      "events_other": "일정 {{count}}개",
+      "saved_other": "저장된 항목 {{count}}개"
+    },
+    "closedTitle": "{{name}} 종료됨",
+    "closedDescription": "{{outcome}}(으)로 기록했어요. 제안 세부 정보와 알림은 유지했어요.",
+    "outcomes": {
+      "rejected": "불합격",
+      "withdrawn": "지원 철회",
+      "accepted": "수락",
+      "declined": "거절",
+      "ghosted": "응답 없음"
+    },
+    "duplicatedDescription": "복사본은 초안 단계에서 시작하며, 메모와 세부 정보를 그대로 가져와요.",
+    "deletedKept": "{{kept}}은(는) 연결만 해제하고 유지했어요.",
+    "facts": {
+      "employer": "고용주",
+      "employerJobs_other": "{{name}} · 이곳의 일자리 {{count}}개",
+      "source": "출처",
+      "location": "위치",
+      "compensation": "보수",
+      "posting": "채용 공고",
+      "postingId": "공고 ID",
+      "appliedOn": "지원일",
+      "confirmationRef": "확인 번호",
+      "outcome": "결과"
+    },
+    "moreActions": "추가 작업",
+    "details": "세부 정보",
+    "postingHint": "jojo 안에서 공고를 열어요. 거기서 사본을 보관할 수 있어요",
+    "dates": {
+      "title": "날짜 및 알림",
+      "hint": "{{open}}건 진행 중 · 전체 {{total}}건",
+      "add": "날짜 추가",
+      "emptyTitle": "예정된 일정이 없어요",
+      "emptyDescription": "이 지원에 등록된 마감일, 면접, 후속 연락이 여기에 표시돼요."
+    },
+    "note": {
+      "title": "메모",
+      "hint": "다른 곳을 탭하면 저장돼요",
+      "edit": "이 메모 편집",
+      "placeholder": "아직 남은 일, 이야기한 사람, 다음에 물어볼 것",
+      "label": "{{name}} 메모",
+      "formatKept": "바꾸지 않은 단어에는 서식이 그대로 유지돼요.",
+      "saved": "메모 저장됨"
+    },
+    "draftMessage": "메시지 초안 작성",
+    "confirmDeleteKept": "지원과 메모가 삭제돼요. {{kept}}은(는) 남지만 연결은 해제돼요. 여기에 정리한 것은 삭제되지 않아요.",
+    "confirmDeleteAlone": "지원과 메모가 삭제돼요. 이 지원을 가리키는 다른 항목은 없어요.",
+    "offer": {
+      "title": "제안",
+      "settled": "종료 · {{outcome}}(으)로 기록됨",
+      "pastDeadline_other": "마감일이 {{count}}일 지났어요",
+      "daysLeft_other": "{{count}}일 남음",
+      "respondBy": "{{date}}까지 답변",
+      "accept": "수락",
+      "decline": "거절"
+    },
+    "stageDates": {
+      "dated": "{{stage}} 날짜를 {{date}}(으)로 정했어요",
+      "undated": "이제 {{stage}}에 날짜가 없어요",
+      "datedBody": "{{name}} — 기록상 {{stage}} 단계에 도달한 날이에요.",
+      "undatedBody": "{{name}} — 단계는 기록에 남아 있고, 날짜만 지워졌어요.",
+      "hint": "{{total}}개 중 {{dated}}개 날짜 있음",
+      "title": "단계별 날짜",
+      "now": "현재",
+      "explain": "이 지원을 다른 단계로 옮기면 날짜가 자동으로 기록돼요. 오늘 이전에 거친 단계는 여기서 채울 수 있어요."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "고용주",
+      "subtitle": "이 주소에 해당하는 항목이 없어요",
+      "emptyTitle": "이 주소에 고용주가 없어요",
+      "emptyDescription": "고용주 페이지는 해당 고용주를 언급하는 지원이 있는 동안만 존재해요. 이 고용주에 대한 지원이 모두 삭제되어 이 페이지도 삭제됐어요."
+    },
+    "subtitleOne": "이곳에 지원 1건",
+    "subtitleMany_other": "이곳에 지원 {{count}}건, {{open}}건 진행 중",
+    "applications": "지원",
+    "dates": "날짜",
+    "datesHint_other": "이 일자리들에서 {{count}}건",
+    "datesEmptyTitle": "날짜가 있는 항목이 없어요",
+    "datesEmptyDescription": "이 일자리들과 관련된 마감일, 면접, 알림이 이 화면에 모여요.",
+    "people": "사람",
+    "peopleHint_other": "{{count}}명",
+    "peopleEmptyTitle": "아직 등록된 사람이 없어요",
+    "peopleEmptyDescription": "이 일자리들에 언급된 추천인, 심사위원장, 채용 담당자가 여기에 표시돼요."
+  },
+  "calendar": {
+    "title": "캘린더",
+    "subtitle": "마감일, 면접, 준비를 한눈에",
+    "key": {
+      "overdue": "기한 지남",
+      "soon": "48시간 이내 마감",
+      "done": "완료"
+    },
+    "export": {
+      "label": "내 캘린더로 내보내기",
+      "done_other": "날짜 {{count}}개를 내보냈어요",
+      "doneDescription": "캘린더에서 가져오기를 제안하고, 각 항목에 알림이 붙어요.",
+      "failed": "캘린더 파일을 열 수 있는 앱이 없어요",
+      "failedDescription": "파일은 이 휴대폰에 저장됐어요. .ics를 지원하는 캘린더 앱으로 열 수 있어요."
+    },
+    "add": "추가",
+    "addEvent": "일정 추가",
+    "tallCells": "날짜 칸 높게",
+    "tallCellsDescription": "그리드에서 하루당 공간을 넓혀요",
+    "jump": "{{year}}년 {{month}}. 다른 달로 이동",
+    "previous": "이전 달",
+    "next": "다음 달",
+    "backTo": "{{date}}(으)로 돌아가기",
+    "goTo": "{{target}}(으)로 이동",
+    "goToDay": "{{month}} {{day}}일로 이동",
+    "today": "오늘",
+    "selectedDay": "선택한 날",
+    "hint": "날짜를 탭하면 그날의 일정이 표시돼요. 일정을 탭하면 편집하거나 일정을 바꿀 수 있어요.",
+    "dayLabel_other": "{{month}} {{day}}일, 일정 {{count}}개",
+    "nothingOn": "{{date}}에 일정 없음",
+    "nothingOnDescription": "면접, 마감일, 준비 시간을 추가하면 여기와 그리드에 표시돼요.",
+    "allDay": "종일",
+    "reopen": "{{title}} 다시 열기",
+    "markDone": "'{{title}}' 완료로 표시",
+    "moreActions": "{{title}} 추가 작업",
+    "rest": {
+      "title": "{{month}} 남은 기간",
+      "lastDay": "{{date}}은(는) 이달의 마지막 날이에요",
+      "nothingAfter": "{{date}} 이후 일정 없음",
+      "lastDayDescription": "이후에는 아무것도 없어요. 다음 달로 넘겨 {{month}} 계획을 세워 보세요.",
+      "clearDescription": "{{month}}의 남은 기간은 비어 있어요. 이날 이후에 추가하는 항목은 여기에 표시돼요.",
+      "more_other": "이번 달 나중에 {{count}}건 더"
+    }
+  },
+  "search": {
+    "title": "검색",
+    "subtitle": "지원, 날짜, 보관함, 스카우트를 한 번에",
+    "fieldLabel": "전체 검색",
+    "placeholder": "지원, 알림, 파일 검색…",
+    "idleTitle": "입력해서 검색하세요",
+    "idleDescription": "모든 모음을 검색창 하나로 찾아요. \"Rice 건을 어디에 뒀더라\"는 어느 목록에 있느냐가 아니라 기록 자체에 대한 질문이니까요.",
+    "create": "만들기",
+    "createHint": "찾는 게 없나요? 만들어 보세요",
+    "noneTitle": "'{{query}}'와(과) 일치하는 항목이 없어요",
+    "noneDescription": "검색은 모든 기록의 제목, 메모, 카테고리를 읽어요. 다른 곳에서 가져오는 것은 없어요.",
+    "fit": "적합도 {{fit}}%",
+    "results_other": "결과 {{count}}개",
+    "showAll_other": "{{count}}개 모두 보기",
+    "groups": {
+      "applications": "지원",
+      "reminders": "알림",
+      "calendar": "캘린더",
+      "vault": "보관함",
+      "jobScout": "채용 스카우트",
+      "goTo": "바로 가기"
+    }
+  },
+  "more": {
+    "title": "더보기",
+    "subtitle": "jojo의 나머지 기능",
+    "newBadge_other": "새 항목 {{count}}개",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "채용 스카우트",
+        "hint": "저장한 검색, 매칭 결과, 보관해 둔 공고"
+      },
+      "statistics": {
+        "label": "통계",
+        "hint": "비율, 퍼널, 다음에 개선할 점"
+      },
+      "graph": {
+        "label": "그래프",
+        "hint": "기록을 서로 연결된 네트워크로 그려요"
+      },
+      "transfer": {
+        "label": "전송",
+        "hint": "컴퓨터와 모든 데이터를 주고받아요"
+      },
+      "profile": {
+        "label": "내 프로필",
+        "hint": "기본 정보, 문서, 매칭 키워드"
+      },
+      "assistant": {
+        "label": "어시스턴트",
+        "hint": "로컬 모델을 연결하기 전까지는 예시를 보여줘요"
+      },
+      "settings": {
+        "label": "설정",
+        "hint": "연결, 화면 모드, 내 데이터"
+      },
+      "guide": {
+        "label": "사용 방법",
+        "hint": "가이드 투어와 각 화면의 용도"
+      }
+    },
+    "storage": {
+      "saved": "저장됨",
+      "saving": "저장 중",
+      "savingCount": "{{count}}개 저장 중",
+      "unsaved_other": "{{count}}개 저장 안 됨",
+      "off": "저장 안 함"
+    },
+    "runtime": {
+      "title": "실행 상태",
+      "hint": "실제로 실행 중인 것",
+      "storage": "기기 저장소",
+      "model": "모델",
+      "modelConfigured": "{{model}} — 설정됨",
+      "modelNotSetUp": "설정 안 됨",
+      "transfer": "전송",
+      "transferNever": "사용한 적 없음",
+      "transferLast": "마지막 사용 {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. 모든 것이 이 기기에서 실행돼요.",
+    "overdue_other": "기한이 지난 알림 {{count}}개."
+  },
+  "statistics": {
+    "title": "통계",
+    "emptySubtitle": "아직 측정할 것이 없어요. 지원을 추가하면 이 화면이 채워져요.",
+    "emptyTitle": "측정할 지원이 없어요",
+    "emptyDescription": "응답률, 퍼널, 주간 차트에는 셀 수 있는 기록이 필요해요. 첫 기록을 추가하면 채워지기 시작해요.",
+    "subtitleSent": "내 기록으로 집계했어요. '일반적'으로 표시된 수치는 비교용 샘플 구직 활동의 값이에요.",
+    "subtitleNone": "내 기록으로 집계했어요. 지원서를 보내면 채워져요.",
+    "compare": "일반적인 구직 활동과 비교",
+    "compareDescription": "주요 수치 옆에 샘플 값을 표시해요",
+    "overTime": {
+      "title": "기간별 지원",
+      "hint": "각 지원의 역할별",
+      "period": "기간",
+      "note": "기간마다 집계 범위가 달라서 합계도 달라요. 분기는 이전 구직 활동까지, 주는 이번 시즌만 포함해요."
+    },
+    "sources": {
+      "title": "지원 경로",
+      "hint_other": "{{count}}건 추적 중",
+      "center": "추적 중"
+    },
+    "asFarAsShown": "각 기록에 나타난 범위까지",
+    "openApplications": "지원 열기",
+    "showAll": "모두 표시",
+    "funnel": {
+      "title": "지원이 어디까지 진행됐나요",
+      "emptyTitle": "아직 보낸 지원이 없어요",
+      "emptyDescription": "응답률, 면접률, 제안률은 실제로 보낸 지원만 세요. 하나를 초안에서 옮기면 채워져요.",
+      "carried": "{{pct}}%가 다음 단계로 진행"
+    },
+    "outcomes": {
+      "title": "결과",
+      "count_other": "지원 {{count}}건",
+      "partial": "{{total}}건 중 {{shown}}건",
+      "allOff": "모든 결과가 꺼져 있어요."
+    },
+    "health": {
+      "title": "다음에 개선할 점",
+      "hint": "일반적인 구직 활동과 비교한 내 수치",
+      "sample": "샘플",
+      "emptyTitle": "아직 비교할 만큼 데이터가 없어요",
+      "emptyDescription": "응답, 면접, 추천, 후속 연락을 일반적인 구직 활동과 비교해요. 실제로 보낸 지원이 필요해요.",
+      "allOff": "두 계열이 모두 꺼져 있어요.",
+      "yours": "내 수치",
+      "typical": "일반적",
+      "suggestions": "제안 (유용한 순)"
+    },
+    "roles": {
+      "title": "역할 유형별 진행 상황",
+      "roles": "역할",
+      "applied": "지원",
+      "replied": "응답",
+      "interviews": "면접",
+      "offers": "제안"
+    }
+  },
+  "graph": {
+    "title": "그래프",
+    "emptySubtitle": "기록을 서로 연결된 네트워크로 그려요",
+    "emptyTitle": "그릴 것이 없어요",
+    "emptyDescription": "여기 있는 모든 노드는 내 기록이에요. 지원을 추가하면 첫 노드가 나타나요.",
+    "subtitle": "기록이 일곱 개의 따로 떨어진 목록이 아닐 때 jojo가 어떤 모습인지 미리 보기",
+    "caption": "노드 {{total}}개 중 {{visible}}개 · 엣지 {{edges}}개. 노드를 탭하면 내용을 보고, 아래 유형을 탭하면 숨길 수 있어요.",
+    "legend": "범례",
+    "legendHint": "탭해서 유형 숨기기",
+    "joinedTo": "연결 대상",
+    "noEdges": "아직 이 항목을 가리키는 것이 없어요.",
+    "openRecord": "기록 열기",
+    "ask": "그래프에 질문하기",
+    "askHint": "문장으로 묻거나 하나를 고르세요",
+    "andMore_other": "외 {{count}}개",
+    "questions": "질문",
+    "questionsHint": "목록 보기로는 얻을 수 없는 답",
+    "pattern": "다른 것 묻기",
+    "patternHint": "직접 만들기",
+    "patternNone": "이 조건에 맞는 항목이 없어요.",
+    "records_other": "기록 {{count}}개",
+    "exampleNone": "일치하는 항목이 없어요. 이 질문에는 그게 좋은 답이에요."
+  },
+  "jobScout": {
+    "title": "채용 스카우트",
+    "subtitle": "채용 사이트를 대신 지켜볼 저장된 검색, 그리고 오늘 공고를 보관해 둘 곳",
+    "onlyActive": "활성 파이프라인만",
+    "onlyActiveDescription": "꺼진 항목 숨기기",
+    "paused": "로컬 모델이 연결되지 않아 파이프라인이 일시 중지됐어요. 그래도 파이프라인을 작성하고 아래에서 공고를 저장할 수 있어요. 모델에 연결되면 실행되기 시작해요.",
+    "status": {
+      "off": "꺼짐",
+      "paused": "일시 중지",
+      "running": "실행 중",
+      "watching": "감시 중"
+    },
+    "kinds": {
+      "twin": "기록을 빠짐없이 유지",
+      "scout": "공고 찾기"
+    },
+    "kindLabel": {
+      "twin": "디지털 트윈",
+      "scout": "채용 스카우트"
+    },
+    "schedules": {
+      "hourly": "매시간",
+      "daily": "매일",
+      "weekly": "매주"
+    },
+    "toast": {
+      "updated": "파이프라인을 업데이트했어요",
+      "created": "파이프라인을 만들었어요",
+      "createdPaused": "{{name}} — 모델이 연결될 때까지 일시 중지돼요.",
+      "createdRunning": "{{name}} — 곧 찾기 시작해요.",
+      "deleted": "파이프라인을 삭제했어요",
+      "deletedDescription": "{{name}}이(가) 더 이상 {{source}}을(를) 감시하지 않아요.",
+      "addedDraft": "{{org}}을(를) 초안으로 추가했어요",
+      "matchLinked": "매칭 결과는 이 목록에 남고, 이제 지원과 연결돼요.",
+      "postingSaved": "공고를 저장했어요",
+      "postingLinked": "공고는 여기에 저장된 채로 이제 지원과 연결돼요.",
+      "postingRemoved": "공고를 삭제했어요"
+    },
+    "pipelines": {
+      "title": "파이프라인",
+      "hint": "일정에 따라 로컬에서 실행",
+      "none": "파이프라인이 없어요",
+      "noneOn": "켜진 항목이 없어요",
+      "noneDescription": "파이프라인은 저장된 검색이에요. 감시할 사이트, 중요한 키워드, 확인 빈도를 정해요.",
+      "noneOnDescription": "모든 파이프라인이 꺼져 있어요. 하나를 켜거나 페이지 옵션에서 필터를 해제하세요.",
+      "showAll": "모든 파이프라인 표시",
+      "toReview_other": "검토할 항목 {{count}}개",
+      "auto": "자동",
+      "autoLabel": "묻지 않고 실행",
+      "autoDescription": "찾은 내용을 적용하고 나중에 알려줘요.",
+      "autoToggle": "{{name}} 묻지 않고 실행",
+      "enable": "{{name}} 사용",
+      "runNow": "{{name}} 지금 실행",
+      "edit": "{{name}} 편집",
+      "delete": "{{name}} 삭제"
+    },
+    "matches": {
+      "title": "매칭 결과",
+      "hint": "프로필 기준으로 점수 매김",
+      "emptyTitle": "매칭 결과가 없어요",
+      "emptyDescription": "모델이 연결되면 파이프라인이 점수를 매긴 공고를 여기에 넣어요. 그전까지는 아래에서 저장하는 공고가 시작점이에요.",
+      "matched": "일치: {{terms}}",
+      "notScored": "점수 없음",
+      "added": "추가됨"
+    },
+    "inApplications": "지원에 '{{name}}'(으)로 등록됨",
+    "save": {
+      "title": "공고 저장",
+      "hint": "모델 없이도 작동",
+      "description": "여기서는 페이지를 가져오지 않으므로 URL, 거기서 추정한 고용주, 저장한 날짜만 보관해요. 공고를 다시 찾고 지원하기에는 충분해요.",
+      "urlLabel": "채용 공고 URL",
+      "button": "공고 저장",
+      "blocker": "먼저 URL을 붙여넣으세요",
+      "emptyTitle": "저장한 공고가 없어요",
+      "emptyDescription": "다시 보고 싶은 공고의 URL을 붙여넣으세요. 공고는 내려가지만 링크와 날짜는 남아요.",
+      "meta": "{{url}} · {{ago}} 저장",
+      "linked": "지원에 연결됨",
+      "unscored": "점수 없음"
+    },
+    "footer": "파이프라인은 jojo가 열려 있는 동안 내 기기에서 실행돼요. 제3자에게는 아무것도 보내지 않아요.",
+    "shutdown": {
+      "title": "{{name}}을(를) 끌까요?",
+      "description": "두 번 실행했지만 제안할 것을 찾지 못했고, 답변을 기다리는 항목도 없어요. 끄면 찾기를 멈추고, 이미 찾은 것은 그대로 남아요.",
+      "keep": "계속 실행",
+      "off": "끄기"
+    },
+    "editor": {
+      "newTitle": "새 파이프라인",
+      "editTitle": "파이프라인 편집",
+      "description": "파이프라인은 어시스턴트에게 맡기는 지속적인 작업이에요. jojo가 열려 있는 동안 이 기기에서 실행되고, 바꾸려는 내용은 모두 먼저 보여줘요.",
+      "create": "만들기",
+      "kind": "하는 일",
+      "kindTwinHint": "가진 기록을 읽고 빠진 것을 제안해요 — 메모, 알림, 태그, 정리.",
+      "kindScoutHint": "눈여겨볼 만한 공고를 찾아 검토하도록 올려요.",
+      "name": "이름",
+      "nameError": "감시하는 대상을 따서 이름을 지으세요.",
+      "namePlaceholderTwin": "예: 내 지원 깔끔하게 정리하기",
+      "namePlaceholderScout": "예: CRA 교수 채용 게시판",
+      "sources": "소스",
+      "sourcesError": "소스가 없는 스카우트는 읽을 것이 없어요.",
+      "sourcesHint": "감시할 채용 사이트나 채용 페이지예요. 여러 개는 쉼표로 구분하세요.",
+      "focus": "집중할 부분",
+      "focusHint": "특히 주의해서 봐야 할 것. 비워 두면 전체를 살펴봐요.",
+      "termsHint": "공고에 점수를 매기는 기준. 비워 두면 소스에 올라온 모든 것을 유지해요.",
+      "focusPlaceholder": "후속 연락과 마감일",
+      "termsPlaceholder": "조교수, CS/ECE",
+      "often": "빈도",
+      "oftenHint": "회차 사이에 기다리는 시간이에요."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "이 페이지를 보관할 수 없어요",
+    "noAnswer": "페이지가 응답하지 않았어요.",
+    "savedTitle": "{{name}} 저장됨",
+    "savedDropped_other": "보관함에 저장했어요. 리소스 {{count}}개를 저장하지 못해 일부가 단순하게 보일 수 있어요.",
+    "savedOffline": "보관함에 저장했어요. 연결 없이도 읽을 수 있어요.",
+    "keep": "사본 보관",
+    "keeping": "보관 중…",
+    "waitForLoad": "페이지가 다 로드될 때까지 기다려 주세요"
+  },
+  "profile": {
+    "title": "내 프로필",
+    "subtitle": "스카우트와 어시스턴트가 매칭과 초안 작성에 쓰는 정보예요. 기기 밖으로 나가지 않아요.",
+    "savedTitle": "프로필을 저장했어요",
+    "savedDescription": "이 기기에 저장했어요.",
+    "basics": {
+      "title": "기본 정보",
+      "fullName": "이름",
+      "fullNamePlaceholder": "예: Lonardo Jenson",
+      "position": "현재 직책",
+      "positionPlaceholder": "예: 컴퓨터과학 박사 과정",
+      "location": "위치",
+      "locationPlaceholder": "예: Santa Clara, CA",
+      "email": "이메일"
+    },
+    "links": {
+      "title": "링크",
+      "website": "웹사이트"
+    },
+    "interests": {
+      "title": "관심사와 목표",
+      "hint": "스카우트 매칭에 사용",
+      "matchTerms": "매칭 키워드",
+      "matchTermsDescription": "스카우트가 찾는 연구 분야와 표현이에요. 기록을 정리할 때 쓰는 키워드와는 별개예요.",
+      "roleTags": "역할 태그",
+      "roleTagsDescription": "추적 중인 역할의 종류예요. 모든 지원은 그중 하나로 분류되며, 역할 필터와 역할별 수치에 쓰여요.",
+      "targetRoles": "목표 역할",
+      "targetRolesPlaceholder": "예: 조교수(테뉴어 트랙) · 연구원",
+      "regions": "선호 지역",
+      "regionsPlaceholder": "예: 텍사스 · 원격",
+      "academia": "학계 공고 포함",
+      "industry": "산업계 공고 포함"
+    },
+    "remove": "{{name}} 제거",
+    "add": "추가",
+    "documents": {
+      "title": "문서",
+      "hint": "보관함의 '{{bucket}}' 분류",
+      "emptyTitle": "아직 문서가 없어요",
+      "emptyDescription": "이력서와 자기소개서를 추가하세요. 보관함의 '{{bucket}}'에 정리되어 앱의 다른 부분에서도 쓸 수 있어요.",
+      "add": "문서 추가",
+      "openVault": "보관함 열기",
+      "meta": "{{size}} · {{ago}} 저장",
+      "footer": "보관함 '파일' 도구의 파일을 '{{bucket}}'(으)로 필터링한 것과 같아요. 기록에는 문서의 이름, 크기, 형식만 남고 내용은 저장되지 않아요.",
+      "addedTitle": "문서를 추가했어요",
+      "addedDescription": "보관함의 '{{bucket}}'에 정리했어요. 이름, 크기, 형식만 보관하고 파일 자체는 읽지 않아요."
+    },
+    "unsaved": "저장하지 않은 변경 사항이 있어요. 저장하면 이 휴대폰에 기록돼요.",
+    "discard": "취소",
+    "save": "저장",
+    "termSheet": {
+      "title": "매칭 키워드 추가",
+      "description": "스카우트가 공고에서 찾아야 할 연구 분야나 표현이에요.",
+      "label": "매칭 키워드",
+      "placeholder": "예: 분산 학습"
+    },
+    "roleSheet": {
+      "title": "역할 태그 추가",
+      "description": "추적 중인 역할의 종류예요. 모든 지원의 선택지 중 하나가 돼요.",
+      "label": "역할 태그",
+      "placeholder": "예: 데이터 과학자"
+    }
+  },
+  "assistant": {
+    "title": "어시스턴트",
+    "undone": "실행 취소됨",
+    "saved": "스니펫에 저장했어요",
+    "savedDescription": "{{title}} · {{tag}}에 분류",
+    "openVault": "보관함 열기",
+    "clear": "지우기",
+    "emptyTitle": "아직 질문하지 않았어요",
+    "copy": "복사",
+    "copied": "복사됨",
+    "saveToSnippets": "스니펫에 저장",
+    "ask": "어시스턴트에게 질문",
+    "send": "보내기",
+    "stop": "중지",
+    "agent": {
+      "subtitle": "모델에 연결되어 기록을 직접 다룰 수 있어요. 하는 일은 모두 실시간으로 목록에 표시돼요.",
+      "intro": "<code>{{endpoint}}</code>의 <code>{{model}}</code>(으)로 답변하며, 이 기기의 도구 {{tools}}개를 호출할 수 있어요. 다른 곳으로는 아무것도 보내지 않고, 모든 변경은 되돌릴 수 있어요.",
+      "deleted": "대화를 삭제했어요",
+      "emptyDescription": "무언가를 찾거나, 지원을 추가하거나, 진행시켜 달라고 해 보세요. 실행하는 도구마다 보낸 것과 받은 것이 아래에 실시간으로 표시돼요.",
+      "placeholder": "UT Austin 지원 찾아 줘, 하나 추가해 줘, 진행시켜 줘…",
+      "footer": "쓰기 전에 먼저 읽고, 대화에서 끄지 않는 한 변경할 때마다 물어봐요. 하는 일은 모두 버튼을 누를 때와 같은 실행 취소를 거쳐요.",
+      "prompts": {
+        "waiting": "내가 기다리고 있는 게 뭐야?",
+        "add": "지원 추가: Stripe의 ML 엔지니어, 제출함",
+        "noDeadline": "마감일이 없는 지원은 뭐야?",
+        "flag": "UT Austin 지원에 표시해 줘"
+      }
+    },
+    "scripted": {
+      "subtitle": "지금은 예시만 보여줘요. 로컬 모델을 연결하면 내 기록을 바탕으로 초안을 쓰고 기록도 직접 다뤄요.",
+      "cleared": "대화를 지웠어요",
+      "messages_other": "메시지 {{count}}개",
+      "connectLabel": "설정에서 모델 연결",
+      "banner": "모델이 연결되지 않아 여기의 모든 답변은 실제 답이 아니라 예시예요.",
+      "connect": "설정에서 연결하기 →",
+      "emptyDescription": "아래 제안 중 하나를 고르거나 아무거나 입력하세요. 답변은 미리 써 둔 예시라 작업에 참고할 수 있지만, 모델의 답으로 제시되지는 않아요.",
+      "badge": "예시 답변 · 모델 연결 안 됨",
+      "placeholder": "자기소개서, 후속 이메일, 면접에 대해 물어보세요…",
+      "footer": "모델을 연결하면 이 제안들은 내 프로필과 문서를 맥락으로 읽어요. 추론이 로컬에서 이뤄지므로 이력서와 메모는 어디에도 업로드되지 않아요."
+    },
+    "thought": {
+      "live": "생각 중…",
+      "done": "생각",
+      "liveLabel": "생각 중. 모델이 생각하는 내용 보기",
+      "label": "모델이 생각한 내용 보기"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "자기소개서 초안 쓰기",
+        "title": "자기소개서 — 구성",
+        "reply": "[학과]에 낸다면 이렇게 구성할 거예요.\n\n1문단 — 무엇을 연구하는지, 분야 밖의 심사위원도 따라올 수 있는 한 문장으로.\n2문단 — 지원을 뒷받침하는 두 가지 성과. 각각 방법이 아니라 그 결과로 설명하세요.\n3문단 — 왜 이 학과인지. 겹치는 연구 그룹과 맡을 수 있는 강의.\n4문단 — 부임 가능 시기와 첫 3년의 모습.\n\n한 페이지로 맞추세요. 심사위원회는 하룻저녁에 이런 글을 마흔 통씩 읽어요."
+      },
+      "tailor-cv": {
+        "action": "공고에 맞게 이력서 다듬기",
+        "title": "이력서 다듬기 — 세 번의 수정",
+        "reply": "이 순서로 세 번 수정하세요.\n\n1. 공고가 요구하지 않는 것은 빼세요. 모든 것에 맞춘 이력서는 어디에도 맞지 않아요.\n2. 공고가 가장 먼저 내세우는 부분을 첫 페이지 맨 위로 옮기세요. 강의 중심 공고라면 논문보다 강의를 먼저 두세요.\n3. 제목을 공고에서 쓰는 말로 다시 쓰되, 일의 범위를 부풀리지 마세요.\n\n그대로 두는 부분: 논문, 추천인, 날짜. 심사위원회가 확인하는 부분이에요."
+      },
+      "parse-posting": {
+        "action": "채용 공고 분석하기",
+        "title": "공고에서 뽑아낼 것",
+        "reply": "공고에서 뽑아낼 것: 고용주, 역할, 마감일, 필요한 서류, 명시된 담당자, 그리고 선호가 아니라 필수 조건으로 쓰인 모든 것.\n\n지원서가 떨어지는 곳은 바로 마지막 항목이에요. \"부임일까지 학위를 취득해야 함\"은 걸러내는 조건이지만, \"대규모 시스템 경험 우대\"는 아니에요.\n\n채용 스카우트는 모델 없이도 이 중 쉬운 절반을 이미 해요. 거기에 URL을 저장하면 링크를 보관하고 고용주를 추정해요."
+      },
+      "follow-up": {
+        "action": "후속 이메일 초안 쓰기",
+        "title": "답변이 없을 때의 후속 연락",
+        "reply": "제목: 지원 관련 문의 — [직책], [학과]\n\n[이름] 님께\n\n[날짜]에 [직책]에 지원했는데, 심사위원회에 제가 보낸 자료가 모두 갖춰졌는지 확인하고 싶어 연락드립니다. 더 편하시다면 아직 제출되지 않은 추천서를 제가 직접 보내 드리겠습니다.\n\n여전히 이 자리에 큰 관심을 갖고 있으며, 궁금하신 점은 이메일로 언제든 답변드리겠습니다.\n\n감사합니다.\n[내 이름]"
+      },
+      "interview": {
+        "action": "면접 준비 도와줘",
+        "title": "면접 — 답을 준비해 둘 여섯 가지 질문",
+        "reply": "면접 전에 답을 준비해 두면 좋은 여섯 가지 질문:\n\n— 분야 밖의 사람에게 내 연구를 90초 안에 설명한다면?\n— 첫 연구비는 무엇이고, 어느 기관에 신청할 건가요?\n— 다음 학기에 갑자기 맡게 되어도 가르칠 수 있는 강의 두 개는?\n— 이곳의 누구와 무엇을 함께 연구할 건가요?\n— 내 연구 결과의 약점은 무엇인가요?\n— 첫해에 연구를 하려면 무엇이 필요한가요?\n\n답은 손으로 직접 써 보세요. 중요한 건 메모가 아니라 연습 그 자체예요."
+      },
+      "fallback": {
+        "title": "어시스턴트 — 예시 답변",
+        "reply": "모델이 연결되지 않아 입력한 내용에 대한 답이 아니라 미리 준비된 답변이에요.\n\n모델을 연결하면 이 화면은 내 프로필, 보관함의 문서, 언급한 지원을 읽고 내 기기에서 그것을 바탕으로 초안을 써요. 설정에서 jojo를 OpenAI 호환 로컬 서버(vLLM, Ollama, LM Studio)에 연결하세요.\n\n아래 다섯 가지 제안에는 그동안 쓸 수 있는 예시가 각각 준비돼 있어요."
+      }
+    }
+  },
+  "settings": {
+    "title": "설정",
+    "subtitle": "연결, 동기화, 내 데이터",
+    "themes": {
+      "light": "라이트",
+      "dark": "다크",
+      "system": "시스템"
+    },
+    "dataSets": {
+      "demo": "데모 데이터",
+      "empty": "비어 있음"
+    },
+    "reasoning": {
+      "on": "켜기",
+      "low": "가볍게",
+      "off": "끄기"
+    },
+    "import": {
+      "refused": "가져온 항목이 없어요",
+      "fileFailed": "파일을 열 수 없어요: {{reason}}",
+      "clipboardFailed": "클립보드를 읽을 수 없어요: {{reason}}",
+      "unfinished": "가져오기를 완료하지 못했어요",
+      "replaceTitle": "이 휴대폰의 모든 데이터를 바꿀까요?",
+      "replaceDescription": "{{described}}. {{replaces}}, 되돌릴 수 없어요.",
+      "replace": "바꾸기"
+    },
+    "device": {
+      "title": "이 기기에서",
+      "hint": "기록이 실제로 저장되는 곳",
+      "body": "추가하는 모든 내용은 작업하는 동안 이 휴대폰 저장소에 바로 기록돼요. 켤 설정도 없고, 기기 밖으로 나가는 것도 없어요. 첨부한 문서는 jojo 전용 폴더로 복사되므로 원본을 옮기거나 지워도 남아 있어요.",
+      "copyOut": "사본을 꺼내려면 아래의 '내보내기'를 쓰거나, '전송'으로 로컬 네트워크를 통해 컴퓨터에 모두 보내세요."
+    },
+    "model": {
+      "title": "모델",
+      "intro": "접속할 수 있는 컴퓨터의 모델이나 유료 모델을 쓸 수 있어요. 기록이 이 기기 밖으로 절대 나가지 않는 유일한 방식이라 로컬이 기본값이에요.",
+      "endpoint": "엔드포인트",
+      "loopback": "이 주소는 '이 기기'를 뜻하므로 휴대폰에서는 휴대폰 자신을 가리켜요. 대신 네트워크에서의 컴퓨터 주소(예: 192.168.1.20)나 .local 이름을 쓰세요.",
+      "endpointOllama": "호스트와 포트예요. /v1은 붙이지 마세요. jojo는 잘라내지 말라고 요청할 수 있도록 Ollama 고유의 엔드포인트를 써요.",
+      "endpointHint": "/v1로 끝나는 기본 URL이에요.",
+      "apiKey": "API 키",
+      "apiKeyHint": "이 기기에만 보관돼요. 백업에 포함되지 않으며, 제공업체 외에는 어디에도 보내지 않아요.",
+      "modelPlaceholder": "연결을 테스트하면 자동으로 찾아요",
+      "modelHint": "서버가 알려준 모델이에요. 여러 개를 제공한다면 바꾸세요.",
+      "savedAs": "저장 이름",
+      "savedAsHint": "목록에서 이 서버의 이름이에요. 기본값은 모델 이름이에요.",
+      "context": "컨텍스트 창",
+      "contextOllama": "토큰 수예요. 비워 두면 {{tokens}}을(를) 쓰고 Ollama가 알아서 크기를 정해요. 여기에 숫자를 넣으면 num_ctx로도 보내요.",
+      "contextHint": "배포 환경이 담을 수 있는 토큰 수예요. 비워 두면 {{tokens}}을(를) 써요.",
+      "reasoning": "추론",
+      "reasoningDescription": "생각할 수 있는 모델(gpt-oss, Gemma 4, Qwen3)이 답하기 전에 추론하게 해요. 작은 모델에서 답이 비어 있다면 끄세요.",
+      "endpointFirst": "먼저 엔드포인트를 입력하세요.",
+      "kept": "이 기기에 저장했어요. 어시스턴트가 이 모델을 사용해요."
+    },
+    "test": {
+      "testing": "테스트 중…",
+      "again": "다시 테스트",
+      "test": "연결 테스트",
+      "connected": "연결됨",
+      "noAnswer": "응답 없음",
+      "notConnected": "연결 안 됨"
+    },
+    "reader": {
+      "title": "내 문서 읽기",
+      "hint": "PDF만 해당",
+      "already": "이 휴대폰은 Word 파일, OpenDocument 파일, 프레젠테이션, 저장한 페이지, 일반 텍스트를 이미 스스로 읽어요. 설정할 것도 없고 어디에도 보내지 않아요.",
+      "pdf": "<strong>PDF는 예외예요.</strong> PDF를 다시 텍스트로 바꾸려면 안에 든 글꼴 테이블이 필요한데, 이 앱에는 그 기능이 없어요. PDF는 이 휴대폰이 접속할 수 있는 컴퓨터에서 {{name}}을(를) 실행하고 아래에 그 주소를 입력하세요.",
+      "address": "주소",
+      "addressHint": "markitdown-mcp가 수신 대기 중인 곳이에요. 경로는 /mcp로 끝나요.",
+      "notRunning": "아직 실행하지 않았나요?",
+      "addressFirst": "먼저 주소를 입력하세요.",
+      "ok": "문서는 그 주소로만 보내지고 다른 곳으로는 가지 않아요. 업로드되는 것은 없어요.",
+      "notice": "{{name}}은(는) jojo의 일부가 아닌 별도 프로그램이에요. {{copyright}} {{licence}}. jojo는 Microsoft와 관련이 없어요."
+    },
+    "appearance": {
+      "title": "화면 모드",
+      "theme": "테마",
+      "themeDescription": "'시스템'은 기기 설정을 따라요"
+    },
+    "data": {
+      "title": "내 데이터",
+      "export": "JSON으로 내보내기",
+      "import": "가져오기",
+      "paste": "백업 붙여넣기",
+      "exportNote": "내보내기에는 지원, 타임라인, 보관함, 저장한 공고, 키워드와 그 태그 대상, 프로필이 포함돼요. 이 앱이 다시 읽을 수 있는 백업이지만, 첨부한 문서는 이 휴대폰에 남으므로 해당 항목은 내용 없이 돌아와요. '더보기'의 '전송'은 문서까지 포함해 모든 것을 컴퓨터로 옮겨요.",
+      "records": "기록",
+      "recordsEmpty": "모든 목록이 비어 있어서 각 화면이 첫 실행 상태를 보여줘요.",
+      "recordsDemo": "샘플 구직 활동 — 지원 12건, 타임라인, 채워진 보관함.",
+      "move": "다른 기기로 옮기기",
+      "moveDescription": "로컬 네트워크로 컴퓨터와 페어링하고 문서를 포함해 모든 것을 옮겨요.",
+      "reset": "데모 데이터 초기화",
+      "resetDescription": "이번 세션의 편집을 버리고 모든 것을 처음 상태로 되돌려요.",
+      "resetButton": "초기화",
+      "resetBlocker": "먼저 '기록'을 '데모 데이터'로 다시 바꾸세요",
+      "warning": "기록은 이 기기에 저장되며 앱을 닫아도 남아요. 계정도 동기화도 없고, 어떤 기록도 휴대폰 밖으로 나가지 않아요. 모델을 통해서도, 오류 보고를 통해서도요. 다른 곳에도 사본을 두고 싶다면 '내보내기'로 클립보드에 복사하세요.",
+      "cleared": "모두 지웠어요",
+      "clearedDescription": "프로필을 포함한 모든 기록이 사라졌고, 첨부한 문서도 이 기기에서 삭제됐어요. 여기서 데모 데이터를 다시 불러올 수 있어요.",
+      "resetDone": "데모 데이터를 초기화했어요",
+      "loaded": "데모 데이터를 불러왔어요",
+      "loadedDescription": "샘플 지원, 타임라인, 보관함, 공고, 프로필이 처음 상태로 돌아왔어요."
+    },
+    "confirm": {
+      "fallbackTitle": "데이터를 바꿀까요?",
+      "continue": "계속",
+      "empty": {
+        "title": "모든 기록을 지울까요?",
+        "description": "이번 세션에 추가한 것을 포함해 지원, 타임라인, 보관함, 저장한 공고, 프로필이 모두 사라지고, 첨부한 문서도 함께 이 기기에서 삭제돼요. 되돌릴 수 없어요. 다시 쓰고 싶다면 먼저 내보내세요. 키워드는 남지만 그 키워드가 붙은 항목은 더 이상 없어요.",
+        "confirm": "모두 지우기"
+      },
+      "demo": {
+        "title": "데모 데이터를 불러올까요?",
+        "description": "샘플 기록이 원래 키워드와 함께 돌아와요. 이번 세션에 추가한 것은 합쳐지지 않고 대체되며, 첨부한 문서는 이 기기에서 삭제돼요. 되돌릴 수 없어요.",
+        "confirm": "데모 데이터 불러오기"
+      },
+      "reset": {
+        "title": "데모 데이터로 초기화할까요?",
+        "description": "이번 세션의 모든 편집, 추가, 삭제가 버려지고 샘플 기록이 처음 그대로 돌아와요. 그래서 첨부한 문서는 이 기기에서 삭제돼요. 키워드 목록 자체는 그대로예요. 되돌릴 수 없어요.",
+        "confirm": "데이터 초기화"
+      }
+    },
+    "provider": {
+      "title": "제공업체",
+      "description": "선택하면 주소가 자동으로 설정돼요. 클라우드 제공업체는 키가 필요하며, 기록이 그곳으로 전송돼요.",
+      "cloud": "입력한 내용이 이 회사로 전송되며 요금이 청구돼요",
+      "localKey": "내가 관리하는 컴퓨터에서 실행돼요. 키가 필요해요.",
+      "local": "내가 관리하는 컴퓨터에서 실행돼요. 밖으로 나가는 것이 없어요."
+    },
+    "cloud": {
+      "terms": "{{name}} 약관",
+      "privacy": "개인정보처리방침"
+    },
+    "servers": {
+      "title": "저장된 서버",
+      "description": "이 기기에서 응답한 주소예요.",
+      "done": "완료",
+      "empty": "아직 저장된 것이 없어요. 연결을 테스트하면 주소가 여기에 저장돼요.",
+      "load": "{{name}} 불러오기",
+      "inUse": "사용 중",
+      "forget": "{{name}} 삭제"
+    },
+    "keywords": {
+      "title": "키워드",
+      "hint": "지원, 알림, 보관함에서 함께 사용",
+      "takenOff_other": "기록 {{count}}개에서 제거했어요.",
+      "usedOn_other": "기록 {{count}}개에 사용됨",
+      "rename": "{{name}} 이름 바꾸기",
+      "editTitle": "{{name}} 편집",
+      "editGeneric": "키워드 편집",
+      "editDescription": "이름을 바꿔도 ID는 그대로라서 이 키워드가 붙은 모든 기록에 반영돼요.",
+      "taken": "이미 사용 중인 이름이에요",
+      "takenDescription": "다른 키워드가 이미 이 이름을 쓰고 있어요.",
+      "colour": "색상",
+      "newTitle": "새 키워드",
+      "newDescription": "키워드는 내가 정해요. 같은 키워드를 지원, 알림, 파일, 링크에 모두 쓸 수 있어요.",
+      "added": "{{name}} 추가됨",
+      "placeholder": "예: 답변 기다리는 중",
+      "confirmUsed_other": "기록 {{count}}개에서 제거돼요. 기록은 남고 키워드만 사라져요.",
+      "confirmUnused": "이 키워드가 붙은 항목이 없어서 달라지는 것은 없어요."
+    }
+  }
+}

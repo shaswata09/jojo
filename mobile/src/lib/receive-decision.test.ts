@@ -15,7 +15,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { RestorePlan } from '@jojo/service/core/backup'
-import { DECLINED_MESSAGE, actionFor, recordAnswer } from './receive-decision'
+import { actionFor, declinedMessage, recordAnswer } from './receive-decision'
 import type { SheetAnswer } from './receive-decision'
 
 const PLAN = {
@@ -55,7 +55,7 @@ describe('the Cancel button, which fires one', () => {
   it('declines with the sentence the panel shows, and writes nothing', () => {
     const action = actionFor(after('closed'), PLAN)
 
-    expect(action).toEqual({ kind: 'decline', message: DECLINED_MESSAGE })
+    expect(action).toEqual({ kind: 'decline', message: declinedMessage() })
   })
 
   it('is what a backdrop tap and the Android back button do too', () => {

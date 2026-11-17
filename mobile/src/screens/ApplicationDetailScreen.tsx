@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
@@ -10,6 +11,7 @@ import { FiledPanel } from '@/components/common/FiledPanel'
 import { FitPanel } from '@/components/applications/FitPanel'
 import { ChecklistPanel } from '@/components/applications/ChecklistPanel'
 import { TailoredPanel } from '@/components/applications/TailoredPanel'
+import { StageDatesPanel } from '@/components/applications/StageDatesPanel'
 import { StagePicker } from '@/components/common/StagePicker'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
@@ -21,33 +23,27 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { NoteText } from '@/components/ui/NoteText'
 import { useGraph } from '@jojo/service/react/kg-context'
+import { ACTION_PHRASES } from '@jojo/service/core/domain-text'
 import type { NodeId } from '@jojo/service/core/model'
-import { OUTCOME_LABEL } from '@jojo/service/core/transition-options'
 import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
-import {
-  bucketOf,
-  compareItems,
-  shortDate,
-  timeLabel,
-  whenLabel,
-} from '@jojo/service/data/timeline'
+import { bucketOf, compareItems, timeLabel } from '@jojo/service/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
 import { refKey } from '@/lib/ids'
 import { stageNeedsDetails } from '@/lib/stage-transition'
-import { listJoin, plural } from '@/lib/text'
 import { hostOf } from '@/lib/urls'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
 import { useOrganisations } from '@jojo/service/react/use-organisations'
 import type { TimelineDraft } from '@/lib/store-context'
-import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
+import { KIND_ICON } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { StageTransitionSheet } from '@/sheets/StageTransitionSheet'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space, type } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * One application, at its own address.
@@ -57,6 +53,7 @@ import { fonts, radius, space, type } from '@/theme/tokens'
  * existed every one of them pointed at nothing.
  */
 export function ApplicationDetailScreen() {
+  const { t } = useTranslation('screens')
   const route = useRoute<RouteProp<RootStackParamList, 'ApplicationDetail'>>()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { get } = useApplications()
@@ -66,13 +63,19 @@ export function ApplicationDetailScreen() {
   // error: a stale link, or the back button after a delete, both arrive here.
   if (!application) {
     return (
-      <Screen title="Application">
+      <Screen title={t('detail.missing.title')}>
         <Panel>
           <EmptyState
             icon="help-circle"
-            title="This application no longer exists"
-            description="It was deleted, or the link points at an id that never existed. Nothing else was removed with it."
-            action={<Button label="Back" variant="outline" onPress={() => navigation.goBack()} />}
+            title={t('detail.missing.emptyTitle')}
+            description={t('detail.missing.emptyDescription')}
+            action={
+              <Button
+                label={t('detail.missing.back')}
+                variant="outline"
+                onPress={() => navigation.goBack()}
+              />
+            }
           />
         </Panel>
       </Screen>
@@ -85,6 +88,8 @@ export function ApplicationDetailScreen() {
 }
 
 function Detail({ application: a }: { application: Application }) {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const { byName: orgByName } = useOrganisations()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -135,13 +140,20 @@ function Detail({ application: a }: { application: Application }) {
    * "delete Rice" cannot fairly be read as consent to delete the four files
    * someone spent an evening on.
    */
-  const kept = listJoin(
-    [
-      reminderCount > 0 ? plural(reminderCount, 'reminder') : '',
-      items.length - reminderCount > 0 ? plural(items.length - reminderCount, 'event') : '',
-      savedCount > 0 ? plural(savedCount, 'saved item') : '',
-    ].filter(Boolean),
-  )
+  const keptParts = [
+    reminderCount > 0 ? t('detail.kept.reminders', { count: reminderCount }) : '',
+    items.length - reminderCount > 0
+      ? t('detail.kept.events', { count: items.length - reminderCount })
+      : '',
+    savedCount > 0 ? t('detail.kept.saved', { count: savedCount }) : '',
+  ].filter(Boolean)
+  const kept =
+    keptParts.length <= 1
+      ? (keptParts[0] ?? '')
+      : t('shared.list', {
+          items: keptParts.slice(0, -1).join(t('shared.separator')),
+          last: keptParts.at(-1),
+        })
 
   /**
    * The note's TEXT is plain, and the field here is too. Its formatting lives
@@ -197,10 +209,10 @@ function Detail({ application: a }: { application: Application }) {
     const minted = extraItem ? addItem(extraItem) : undefined
 
     toast({
-      title: `${displayName(a)} moved to ${STAGE_LABEL[to]}`,
+      title: t('rowActions.movedTitle', { name: displayName(a), stage: domain.stage(to) }),
       description: consequences.length > 0 ? consequences.join(' ') : undefined,
       action: {
-        label: 'Undo',
+        label: t('shared.undo'),
         onPress: () => {
           update(before.id, revertOf(before, patch))
           if (minted) removeItem(minted.id)
@@ -226,9 +238,14 @@ function Detail({ application: a }: { application: Application }) {
     }
     update(a.id, patch)
     toast({
-      title: `${displayName(a)} closed`,
-      description: `Recorded as ${decision}. The offer details and its reminders were kept.`,
-      action: { label: 'Undo', onPress: () => update(before.id, revertOf(before, patch)) },
+      title: t('detail.closedTitle', { name: displayName(a) }),
+      description: t('detail.closedDescription', {
+        outcome: t(`detail.outcomes.${decision}`),
+      }),
+      action: {
+        label: t('shared.undo'),
+        onPress: () => update(before.id, revertOf(before, patch)),
+      },
     })
   }
 
@@ -236,10 +253,10 @@ function Detail({ application: a }: { application: Application }) {
     const copy = duplicate(a.id)
     if (!copy) return
     toast({
-      title: `${displayName(copy)} duplicated`,
-      description: 'The copy starts at Draft, with the note and details carried over.',
+      title: t('rowActions.duplicatedTitle', { name: displayName(copy) }),
+      description: t('detail.duplicatedDescription'),
       action: {
-        label: 'Undo',
+        label: t('shared.undo'),
         onPress: () => {
           remove(copy.id)
           navigation.navigate('ApplicationDetail', { id: a.id })
@@ -256,17 +273,17 @@ function Detail({ application: a }: { application: Application }) {
     // every edge the delete unlinked, which the user could not rebuild by
     // simply adding the application again.
     toast({
-      title: `${displayName(a)} deleted`,
-      description: kept ? `${kept} were kept, unlinked.` : undefined,
+      title: t('rowActions.deletedTitle', { name: displayName(a) }),
+      description: kept ? t('detail.deletedKept', { kept }) : undefined,
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('shared.undo'), onPress: restore },
     })
     navigation.goBack()
   }
 
   const employer = orgByName(a.org)
 
-  const facts: { label: string; value?: string; url?: string; go?: () => void }[] = [
+  const facts: { id: string; label: string; value?: string; url?: string; go?: () => void }[] = [
     /*
      * The way in to the employer's own screen, and the only one there is.
      *
@@ -276,59 +293,82 @@ function Detail({ application: a }: { application: Application }) {
      * title, because the title is the JOB and only half of it is the employer.
      */
     {
-      label: 'Employer',
+      id: 'employer',
+      label: t('detail.facts.employer'),
       value: employer
         ? employer.applicationIds.length > 1
-          ? `${employer.name} · ${String(employer.applicationIds.length)} jobs here`
+          ? t('detail.facts.employerJobs', {
+              name: employer.name,
+              count: employer.applicationIds.length,
+            })
           : employer.name
         : a.org,
       ...(employer
         ? { go: () => navigation.navigate('Organisation', { key: employer.slug }) }
         : {}),
     },
-    { label: 'Source', value: a.source },
-    { label: 'Location', value: a.location },
+    { id: 'source', label: t('detail.facts.source'), value: a.source },
+    { id: 'location', label: t('detail.facts.location'), value: a.location },
     // Falls through to the offer: Baylor states "$112k + $15k startup" in its
     // offer block, and printed "Compensation —" underneath it, because the
     // number was typed into the stage form and `a.comp` was never the field it
     // landed in.
-    { label: 'Compensation', value: a.comp ?? a.offer?.comp },
-    { label: 'Posting', value: a.url ? hostOf(a.url) : undefined, url: a.url },
+    { id: 'comp', label: t('detail.facts.compensation'), value: a.comp ?? a.offer?.comp },
+    {
+      id: 'posting',
+      label: t('detail.facts.posting'),
+      value: a.url ? hostOf(a.url) : undefined,
+      url: a.url,
+    },
     // The same three the web record gained, for the same reason: each is typed
     // into a form and was stored without being shown anywhere.
-    { label: 'Posting ID', value: a.postingId },
-    { label: 'Applied on', value: a.appliedOn ? shortDate(a.appliedOn) : undefined },
-    { label: 'Submitted on', value: a.submittedOn ? shortDate(a.submittedOn) : undefined },
+    { id: 'postingId', label: t('detail.facts.postingId'), value: a.postingId },
+    {
+      id: 'appliedOn',
+      label: t('detail.facts.appliedOn'),
+      value: a.appliedOn ? domain.shortDate(a.appliedOn) : undefined,
+    },
+    // No 'Submitted on' row: it is the Submitted row of the stage dates just
+    // below, where it can be corrected. Two copies of one date on one screen
+    // invite the question of which is real, as the web's DetailFacts says.
     ...(a.confirmationRef !== undefined || a.stage !== 'draft'
-      ? [{ label: 'Confirmation reference', value: a.confirmationRef }]
+      ? [
+          {
+            id: 'confirmationRef',
+            label: t('detail.facts.confirmationRef'),
+            value: a.confirmationRef,
+          },
+        ]
       : []),
     // An offer states its own outcome in the offer block; this is for the rest.
     ...(a.outcome !== undefined && a.offer === undefined
-      ? [{ label: 'Outcome', value: OUTCOME_LABEL[a.outcome] }]
+      ? [{ id: 'outcome', label: t('detail.facts.outcome'), value: domain.outcome(a.outcome) }]
       : []),
   ]
 
   return (
     <Screen
       title={displayName(a)}
-      subtitle={`${a.lastAction} · ${a.daysAgo === 0 ? 'Today' : `${plural(a.daysAgo, 'day')} ago`}`}
+      subtitle={`${domain.action(a.lastAction)} · ${
+        a.daysAgo === 0 ? t('calendar.today') : t('today.recent.daysAgo', { count: a.daysAgo })
+      }`}
       actions={
         <>
           <IconButton
             icon="flag"
-            label={a.flagged ? 'Clear the follow-up flag' : 'Flag for follow-up'}
+            label={a.flagged ? t('applications.row.unflag') : t('applications.row.flag')}
             tone={a.flagged ? 'danger' : undefined}
             active={a.flagged}
             onPress={() =>
               update(a.id, {
                 flagged: !a.flagged,
-                lastAction: a.flagged ? 'Flag cleared' : 'Flagged for follow-up',
+                lastAction: a.flagged ? ACTION_PHRASES.flagCleared : ACTION_PHRASES.flagged,
               })
             }
           />
           <IconButton
             icon="more-horizontal"
-            label="More actions"
+            label={t('detail.moreActions')}
             onPress={() => setMenuOpen(true)}
           />
         </>
@@ -361,10 +401,10 @@ function Detail({ application: a }: { application: Application }) {
       ) : null}
 
       <Panel>
-        <PanelTitle>Details</PanelTitle>
+        <PanelTitle>{t('detail.details')}</PanelTitle>
         <View style={{ gap: space[3] }}>
           {facts.map((f) => (
-            <View key={f.label}>
+            <View key={f.id}>
               <Txt size="xs" tone="muted">
                 {f.label}
               </Txt>
@@ -375,7 +415,7 @@ function Detail({ application: a }: { application: Application }) {
               ) : f.url ? (
                 <Pressable
                   accessibilityRole="link"
-                  accessibilityHint="Opens the posting inside jojo, where you can keep a copy of it"
+                  accessibilityHint={t('detail.postingHint')}
                   /*
                    * Inside the app rather than out to the system browser, and
                    * the change is the whole feature rather than a preference.
@@ -421,15 +461,23 @@ function Detail({ application: a }: { application: Application }) {
         </View>
       </Panel>
 
+      {/* Under the facts, as on the web: when it reached each stage, and the
+          place to correct a stamp that caught up with reality late. */}
+      <StageDatesPanel application={a} />
+
       {/* Second, not last. The record's dates and the only Add button used to
           sit below an empty editor and its eight-button toolbar — so the one
           thing this screen is opened to check was the one you had to scroll for. */}
       <Panel>
         <PanelTitle
-          hint={items.length > 0 ? `${openCount} open · ${items.length} total` : undefined}
+          hint={
+            items.length > 0
+              ? t('detail.dates.hint', { open: openCount, total: items.length })
+              : undefined
+          }
           right={
             <Button
-              label="Add a date"
+              label={t('detail.dates.add')}
               icon="calendar"
               variant="outline"
               onPress={() =>
@@ -444,14 +492,14 @@ function Detail({ application: a }: { application: Application }) {
           {/* Not "Upcoming": this list holds overdue and completed rows too, and
               a heading that promised the future while showing a thing you missed
               last week was the least trustworthy word on the screen. */}
-          Dates and reminders
+          {t('detail.dates.title')}
         </PanelTitle>
 
         {items.length === 0 ? (
           <EmptyState
             compact
-            title="Nothing scheduled"
-            description="Deadlines, interviews and follow-ups filed against this application show up here."
+            title={t('detail.dates.emptyTitle')}
+            description={t('detail.dates.emptyDescription')}
           />
         ) : (
           items.map((item, i) => (
@@ -474,16 +522,13 @@ function Detail({ application: a }: { application: Application }) {
 
       <Panel>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
-          <PanelTitle
-            style={{ flex: 1 }}
-            hint={editingNote ? 'Saves when you tap away' : undefined}
-          >
-            Note
+          <PanelTitle style={{ flex: 1 }} hint={editingNote ? t('detail.note.hint') : undefined}>
+            {t('detail.note.title')}
           </PanelTitle>
           {!editingNote && a.note !== '' ? (
             <IconButton
               icon="edit-2"
-              label="Edit this note"
+              label={t('detail.note.edit')}
               onPress={() => {
                 setEditingNote(true)
               }}
@@ -506,9 +551,9 @@ function Detail({ application: a }: { application: Application }) {
                 setNoteSaved(false)
               }}
               onBlur={commitNote}
-              placeholder="What is still outstanding, who you spoke to, what to ask next"
+              placeholder={t('detail.note.placeholder')}
               placeholderTextColor={c.text3}
-              accessibilityLabel={`Note on ${displayName(a)}`}
+              accessibilityLabel={t('detail.note.label', { name: displayName(a) })}
               style={[
                 styles.note,
                 { color: c.text1, backgroundColor: c.well, borderColor: c.hairline },
@@ -516,7 +561,7 @@ function Detail({ application: a }: { application: Application }) {
             />
             {noteFormat !== undefined ? (
               <Txt size="xs" tone="muted" style={{ marginTop: space[1.5] }}>
-                Formatting is kept on the words you don’t change.
+                {t('detail.note.formatKept')}
               </Txt>
             ) : null}
           </>
@@ -526,7 +571,7 @@ function Detail({ application: a }: { application: Application }) {
 
         {noteSaved ? (
           <Txt size="xs" tone="muted" style={{ marginTop: space[1.5] }}>
-            Note saved
+            {t('detail.note.saved')}
           </Txt>
         ) : null}
       </Panel>
@@ -552,7 +597,7 @@ function Detail({ application: a }: { application: Application }) {
         actions={[
           {
             id: 'edit',
-            label: 'Edit',
+            label: t('applications.row.edit'),
             icon: 'edit-2',
             onPress: () => openSheet('application', { mode: 'edit', id: a.id }),
           },
@@ -561,14 +606,19 @@ function Detail({ application: a }: { application: Application }) {
             // route to a filled thank-you was: add a reminder, open the Vault,
             // find its row, press Draft on it.
             id: 'draft',
-            label: 'Draft a message',
+            label: t('detail.draftMessage'),
             icon: 'mail',
             onPress: () => openSheet('draft', { applicationId: a.id }),
           },
-          { id: 'duplicate', label: 'Duplicate', icon: 'copy', onPress: onDuplicate },
+          {
+            id: 'duplicate',
+            label: t('applications.row.duplicate'),
+            icon: 'copy',
+            onPress: onDuplicate,
+          },
           {
             id: 'delete',
-            label: 'Delete',
+            label: t('shared.delete'),
             icon: 'trash-2',
             tone: 'danger',
             onPress: () => setConfirmDelete(true),
@@ -591,13 +641,11 @@ function Detail({ application: a }: { application: Application }) {
       <ConfirmSheet
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title={`Delete ${displayName(a)}?`}
+        title={t('rowActions.confirmTitle', { name: displayName(a) })}
         description={
-          kept
-            ? `The application and its note go. ${kept} will be kept but unlinked — nothing you filed under it is deleted.`
-            : 'The application and its note go. Nothing else points at it.'
+          kept ? t('detail.confirmDeleteKept', { kept }) : t('detail.confirmDeleteAlone')
         }
-        confirmLabel="Delete"
+        confirmLabel={t('shared.delete')}
         tone="danger"
         onConfirm={onDelete}
       />
@@ -617,6 +665,7 @@ function OfferBlock({
   /** Set once the record is closed — the block becomes a record of what happened. */
   settled?: Outcome
 }) {
+  const { t } = useTranslation('screens')
   const c = useColors()
   const offer = a.offer!
   // Second argument required, and see the note in `lib/priority.ts`.
@@ -632,17 +681,17 @@ function OfferBlock({
       <PanelTitle
         hint={
           settled
-            ? `Closed · recorded as ${settled}`
+            ? t('detail.offer.settled', { outcome: t(`detail.outcomes.${settled}`) })
             : daysLeft < 0
-              ? `${-daysLeft} days past the deadline`
-              : `${daysLeft} days left`
+              ? t('detail.offer.pastDeadline', { count: -daysLeft })
+              : t('detail.offer.daysLeft', { count: daysLeft })
         }
       >
-        Offer
+        {t('detail.offer.title')}
       </PanelTitle>
 
       <Txt size="xl" weight="semibold" tone={tone}>
-        Respond by {respondByLabel(offer)}
+        {t('detail.offer.respondBy', { date: respondByLabel(offer) })}
       </Txt>
       {offer.comp ? (
         <Txt size="base" tone="secondary" style={{ marginTop: space[1] }}>
@@ -657,8 +706,16 @@ function OfferBlock({
 
       {settled ? null : (
         <View style={styles.offerActions}>
-          <Button label="Accept" icon="check" onPress={() => onDecide('accepted')} />
-          <Button label="Decline" variant="outline" onPress={() => onDecide('declined')} />
+          <Button
+            label={t('detail.offer.accept')}
+            icon="check"
+            onPress={() => onDecide('accepted')}
+          />
+          <Button
+            label={t('detail.offer.decline')}
+            variant="outline"
+            onPress={() => onDecide('declined')}
+          />
         </View>
       )}
     </Panel>
@@ -679,6 +736,8 @@ function UpcomingRow({
   onEdit: () => void
   onDraft: () => void
 }) {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const bucket = bucketOf(item, TODAY)
   const done = Boolean(item.completedOn)
@@ -699,12 +758,12 @@ function UpcomingRow({
           {item.title}
         </Txt>
         <Txt size="xs" tone="muted" numberOfLines={1}>
-          {KIND_LABEL[item.kind]}
+          {domain.kind(item.kind)}
           {item.detail ? ` · ${item.detail}` : ''}
         </Txt>
         {draftable ? (
           <Button
-            label="Draft a message"
+            label={t('detail.draftMessage')}
             icon="mail"
             variant="outline"
             onPress={onDraft}
@@ -714,10 +773,10 @@ function UpcomingRow({
       </Pressable>
       <View style={styles.dateRight}>
         <Txt size="xs" weight="medium" tone={bucketTone[bucket]}>
-          {whenLabel(item, TODAY)}
+          {domain.when(item, TODAY)}
         </Txt>
         <Txt size="xs" tone="muted" mono>
-          {timeLabel(item) ?? shortDate(item.date)}
+          {timeLabel(item) ?? domain.shortDate(item.date)}
         </Txt>
       </View>
     </View>

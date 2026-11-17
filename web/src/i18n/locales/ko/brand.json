@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojo의 동작",
+    "hint": "하나를 고르거나 로봇 위에 동작의 획을 그려 보세요.",
+    "trigger": "jojo의 동작",
+    "triggerAria": "jojo의 동작과 크레딧",
+    "plays": "재생",
+    "modelCredit": "로봇 모델:"
+  },
+  "theme": {
+    "toggle": "테마 전환",
+    "toLight": "밝은 테마로 전환",
+    "toDark": "어두운 테마로 전환"
+  },
+  "poke": "jojo 콕 찌르기"
+}

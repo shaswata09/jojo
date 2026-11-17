@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/common/PageHeader'
 import { ApplicationsScreen } from '@/components/guide/screens/ApplicationsScreen'
 import { DoorsSection } from '@/components/guide/screens/DoorsSection'
@@ -42,16 +43,17 @@ import { useTitle } from '@/lib/links'
  * list reads.
  */
 export function GuideScreens() {
-  useTitle('Every screen')
+  const { t } = useTranslation('guide')
+  useTitle(t('screens.docTitle'))
 
   return (
     <>
-      <PageHeader
-        title="Every screen, and what it will and will not do"
-        subtitle="One section per page — what it is for, what is not obvious, and what is not connected yet."
-      />
+      <PageHeader title={t('screens.title')} subtitle={t('screens.subtitle')} />
 
-      <OnThisPage sections={SECTIONS} caption="Thirteen sections — jump to the one you came for" />
+      <OnThisPage
+        sections={SECTIONS.map(({ id }) => ({ id, label: t(`screens.sections.${id}`) }))}
+        caption={t('screens.caption')}
+      />
 
       <DoorsSection />
 

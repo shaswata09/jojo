@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import appSource from '../App.tsx?raw'
 import graphSource from './Graph.tsx?raw'
+import pagesCatalog from '@/i18n/locales/en/pages.json?raw'
 import queryPanelSource from '../components/graph/QueryPanel.tsx?raw'
 
 /**
@@ -36,10 +37,14 @@ describe('Q059 — the graph page', () => {
 describe('Q246 — reorganising the preview', () => {
   /** The `<Button …>…</Button>` whose label is the given word. */
   const buttonLabelled = (label: string) =>
-    new RegExp(`<Button\\b(?:(?!<\\/Button>)[\\s\\S])*?${label}\\s*<\\/Button>`).exec(graphSource)?.[0] ?? ''
+    new RegExp(`<Button\\b(?:(?!<\\/Button>)[\\s\\S])*?${label}\\s*<\\/Button>`).exec(
+      graphSource,
+    )?.[0] ?? ''
 
   it('has a Reorganize button that moves the layout seed on', () => {
-    const button = buttonLabelled('Reorganize')
+    // The label is a catalog key now; English still reads Reorganize.
+    expect(JSON.parse(pagesCatalog).graph.reorganize).toBe('Reorganize')
+    const button = buttonLabelled("\\{t\\('graph\\.reorganize'\\)\\}")
     expect(button).not.toBe('')
     expect(button).toMatch(/onClick=\{\(\) => setLayoutSeed\(\(seed\) => seed \+ 1\)\}/)
   })

@@ -24,6 +24,7 @@
  * that can be stored and cannot be named now fails to compile.
  */
 import type { NodeType } from '@jojo/service/core/model'
+import { i18next } from '@/i18n/i18n'
 
 export type GroupId =
   | 'applications'
@@ -116,17 +117,21 @@ export type TransferGroup = {
   /** The breakdown behind the count, so the number is checkable. */
   hint: string
   count: number
-  /** How the group reads in a sentence — "26 vault records", not "26 vault". */
-  unit: string
 }
 
 export const totalOf = (groups: readonly TransferGroup[]) =>
   groups.reduce((sum, group) => sum + group.count, 0)
 
-/** "12 applications · 24 reminders and events" — the one-line form. */
+/**
+ * "12 applications · 24 reminders and events" — the one-line form. Each
+ * group reads in a sentence through its own plural, `groups.<id>.summary` —
+ * "26 links and snippets", not "26 vault".
+ */
 export function summarise(groups: readonly TransferGroup[]) {
-  if (groups.length === 0) return 'nothing'
-  return groups.map((group) => `${group.count} ${group.unit}`).join(' · ')
+  if (groups.length === 0) return i18next.t('transfer:groups.nothing')
+  return groups
+    .map((group) => i18next.t(`transfer:groups.${group.id}.summary`, { count: group.count }))
+    .join(' · ')
 }
 
 /**

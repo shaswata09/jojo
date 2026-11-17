@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Linking, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native'
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
 import { openHref } from '@/lib/urls'
@@ -92,6 +93,7 @@ export function TextField({
   multiline,
   ...rest
 }: TextFieldProps) {
+  const { t } = useTranslation()
   const c = useColors()
   const [focused, setFocused] = useState(false)
 
@@ -171,7 +173,7 @@ export function TextField({
         {href ? (
           <IconButton
             icon="external-link"
-            label={`Open ${label}`}
+            label={t('actions.openNamed', { name: label })}
             size={36}
             style={styles.open}
             onPress={() => {

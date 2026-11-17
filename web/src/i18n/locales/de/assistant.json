@@ -1,0 +1,160 @@
+{
+  "common": {
+    "title": "Assistent",
+    "undo": "Rückgängig",
+    "nothingAsked": "Noch nichts gefragt",
+    "askLabel": "Den Assistenten fragen",
+    "saveToSnippets": "In Textbausteinen speichern",
+    "savedToSnippets": "In Textbausteinen gespeichert",
+    "filedUnder": "{{title}} · abgelegt unter {{tag}}",
+    "openVault": "Tresor öffnen",
+    "copyBlocked": "Der Browser hat das Kopieren blockiert",
+    "copied": "Antwort kopiert",
+    "newConversation": "Neue Unterhaltung"
+  },
+  "header": {
+    "subtitle": "Mit deinem Modell verbunden und in der Lage, mit deinen Einträgen zu arbeiten. Alles, was er tut, wird aufgelistet, während es passiert.",
+    "clear": "Leeren",
+    "connected_one": "Antworten kommen von <mono>{{model}}</mono> unter <mono>{{endpoint}}</mono>, das auf diesem Gerät <tools>{{count}} Werkzeug</tools> aufrufen kann. Nichts wird anderswohin gesendet.",
+    "connected_other": "Antworten kommen von <mono>{{model}}</mono> unter <mono>{{endpoint}}</mono>, das auf diesem Gerät <tools>{{count}} Werkzeuge</tools> aufrufen kann. Nichts wird anderswohin gesendet."
+  },
+  "composer": {
+    "send": "Senden",
+    "typeFirst": "Schreib zuerst eine Nachricht",
+    "stop": "Stopp",
+    "stopTitle": "Den Agenten stoppen"
+  },
+  "approval": {
+    "waiting": "{{title}} – wartet auf dich",
+    "askedBy": "Angefragt von {{name}}. Noch hat sich nichts geändert.",
+    "askedByUnnamed": "Angefragt von einer Unterhaltung. Noch hat sich nichts geändert.",
+    "decline": "Nicht erlauben",
+    "allow": "Erlauben"
+  },
+  "scripted": {
+    "subtitle": "Vorerst durchgespielte Beispiele. Verbinde ein lokales Modell, dann entwirft es aus deinen eigenen Einträgen und arbeitet mit ihnen.",
+    "clear": "Unterhaltung leeren",
+    "notConnected": "Es ist kein Modell verbunden, deshalb ist jede Antwort unten ein durchgespieltes Beispiel und keine echte Antwort. Verbinde jojo in den <settings>Einstellungen</settings> mit einem lokalen OpenAI-kompatiblen Server – vLLM, Ollama oder LM Studio.",
+    "emptyDescription": "Wähle unten einen der Vorschläge oder schreib, was du willst. Die Antworten sind geschriebene Beispiele – nützlich als Ausgangspunkt und nie als Antwort eines Modells ausgegeben.",
+    "placeholder": "Frag nach einem Anschreiben, einer Nachfass-E-Mail, einem Gespräch …",
+    "footer": "Mit einem verbundenen Modell liest jedes davon dein Profil und deine Dokumente als Kontext. Weil die Inferenz lokal läuft, werden dein Lebenslauf und deine Notizen nirgendwohin hochgeladen.",
+    "badge": "Beispielantwort · kein Modell verbunden",
+    "cleared": "Unterhaltung geleert",
+    "messages_one": "{{count}} Nachricht",
+    "messages_other": "{{count}} Nachrichten"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Ein Anschreiben entwerfen",
+      "title": "Anschreiben – Aufbau",
+      "reply": "So würde ich es für [INSTITUT] aufbauen:\n\nAbsatz 1 – woran du arbeitest, in einem Satz, dem auch ein Kommissionsmitglied aus einem anderen Fach folgen kann.\nAbsatz 2 – die zwei Ergebnisse, die für dich sprechen, jeweils mit ihrer Wirkung statt ihrer Methode.\nAbsatz 3 – warum dieses Institut: die Gruppe, mit der du Überschneidungen hättest, und die Lehrveranstaltung, die du anbieten würdest.\nAbsatz 4 – Verfügbarkeit und wie die ersten drei Jahre aussehen würden.\n\nBleib bei einer Seite. Die Kommission liest vierzig davon an einem Abend."
+    },
+    "tailorCv": {
+      "action": "Meinen Lebenslauf an eine Anzeige anpassen",
+      "title": "Lebenslauf anpassen – drei Durchgänge",
+      "reply": "Drei Durchgänge, in dieser Reihenfolge:\n\n1. Streich, wonach die Anzeige nicht fragt. Ein Lebenslauf, der auf alles zugeschnitten ist, ist auf nichts zugeschnitten.\n2. Setz den Abschnitt, mit dem die Anzeige beginnt, an den Anfang der ersten Seite – eine lehrlastige Anzeige will die Lehre vor den Publikationen.\n3. Formuliere die Überschrift mit den Worten der Anzeige neu, ohne den Umfang der Arbeit zu übertreiben.\n\nUnverändert bleiben: Publikationen, Referenzen, Daten. Genau das prüft eine Kommission."
+    },
+    "parsePosting": {
+      "action": "Eine Stellenanzeige auswerten",
+      "title": "Was man aus einer Anzeige herausholt",
+      "reply": "Aus einer Anzeige würde ich herausziehen: Arbeitgeber, Stelle, Frist, die verlangten Unterlagen, die genannte Kontaktperson und alles, was als harte Anforderung statt als Wunsch formuliert ist.\n\nGenau beim Letzten gehen Bewerbungen verloren – „muss den Abschluss bis zum Dienstantritt haben“ ist ein Filter, „Erfahrung mit großen Systemen wünschenswert“ nicht.\n\nDer Job-Scout erledigt den einfachen Teil schon ohne Modell: Speichere dort die URL, dann behält er den Link und errät daraus den Arbeitgeber."
+    },
+    "followUp": {
+      "action": "Eine Nachfass-E-Mail entwerfen",
+      "title": "Nachfassen ohne Antwort",
+      "reply": "Betreff: Nachfrage – [STELLE], [INSTITUT]\n\nSehr geehrte/r [NAME],\n\nich habe mich am [DATUM] auf die Stelle [STELLE] beworben und wollte nachfragen, ob der Kommission alles vorliegt, was sie von mir braucht. Gern schicke ich das noch ausstehende Empfehlungsschreiben direkt, falls das einfacher ist.\n\nIch bin weiterhin sehr an der Stelle interessiert und beantworte gern jede Frage per E-Mail.\n\nMit bestem Dank\n[DEIN NAME]"
+    },
+    "interview": {
+      "action": "Mich auf ein Gespräch vorbereiten",
+      "title": "Gespräch – sechs Fragen, die du beantworten können solltest",
+      "reply": "Sechs Fragen, auf die du vor dem Tag eine Antwort haben solltest:\n\n– Worum geht es in deiner Arbeit, in neunzig Sekunden, für jemanden außerhalb deines Fachs?\n– Was wäre dein erster Drittmittelantrag, und bei welcher Förderstelle?\n– Welche zwei Lehrveranstaltungen könntest du nächstes Semester ohne Vorlauf übernehmen?\n– Mit wem würdest du hier zusammenarbeiten, und woran?\n– Was ist die Schwäche deines eigenen Ergebnisses?\n– Was brauchst du im ersten Jahr, um die Arbeit zu machen?\n\nSchreib die Antworten von Hand auf. Es geht ums Üben, nicht um die Notizen."
+    },
+    "fallback": {
+      "title": "Assistent – Beispielantwort",
+      "reply": "Es ist kein Modell verbunden, deshalb ist das eine vorgefertigte Antwort und keine Antwort auf das, was du geschrieben hast.\n\nMit einem verbundenen Modell würde diese Seite dein Profil, die Dokumente in deinem Tresor und die Bewerbung lesen, die du nennst, und dann auf deinem eigenen Rechner daraus entwerfen. Verbinde jojo in den Einstellungen mit einem lokalen OpenAI-kompatiblen Server – vLLM, Ollama oder LM Studio.\n\nLeere die Unterhaltung, um die Beispiele wieder zu sehen."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "Worauf warte ich gerade?",
+      "add": "Füge eine Bewerbung hinzu: ML Engineer bei Stripe, eingereicht",
+      "noDeadline": "Welche Bewerbungen haben keine Frist?",
+      "flag": "Markiere meine Bewerbung bei UT Austin"
+    },
+    "emptyDescription": "Bitte ihn, etwas zu finden, eine Bewerbung hinzuzufügen oder eine voranzubringen. Jedes Werkzeug, das er nutzt, erscheint unten, während es passiert – mit dem, was er gesendet hat, und dem, was zurückkam.",
+    "placeholder": "Finde meine Bewerbung bei UT Austin, füge eine hinzu oder setz sie auf Gespräch …"
+  },
+  "threadBar": {
+    "titleLabel": "Titel der Unterhaltung",
+    "saveTitle": "Titel speichern",
+    "cancel": "Abbrechen",
+    "rename": "Diese Unterhaltung umbenennen",
+    "changeJob": "Stelle ändern",
+    "fileUnder": "Einer Stelle zuordnen",
+    "approval": "Freigabe",
+    "approvalLabel": "Wie viel diese Unterhaltung ohne Nachfrage tun darf",
+    "delete": "Löschen"
+  },
+  "threads": {
+    "deleted": "Unterhaltung gelöscht"
+  },
+  "threadList": {
+    "title": "Unterhaltungen",
+    "kept_one": "{{count}} hier gespeichert",
+    "kept_other": "{{count}} hier gespeichert",
+    "noJob": "Noch keiner Stelle zugeordnet",
+    "searchLabel": "Unterhaltungen durchsuchen",
+    "searchPlaceholder": "Suche im Gesagten",
+    "clearSearch": "Suche leeren",
+    "noMention": "Keine Erwähnung",
+    "mentionsIn": "{{mentions}} in {{conversations}}",
+    "mentions_one": "{{count}} Erwähnung",
+    "mentions_other": "{{count}} Erwähnungen",
+    "conversationCount_one": "{{count}} Unterhaltung",
+    "conversationCount_other": "{{count}} Unterhaltungen",
+    "empty": "Noch nichts. Frag etwas, und es wird hier gespeichert, auf diesem Gerät.",
+    "noResults": "Nichts erwähnt „{{query}}“. Durchsucht werden alle Unterhaltungen, nicht nur ihre Titel.",
+    "working": "Arbeitet …",
+    "matches_one": "{{count}} Treffer",
+    "matches_other": "{{count}} Treffer",
+    "questions_one": "{{count}} Frage",
+    "questions_other": "{{count}} Fragen"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Nichts rückgängig zu machen – es hat sich inzwischen geändert",
+      "alreadyUndone": "Bereits rückgängig gemacht",
+      "outOfReach": "Zu weit zurück, um es hier rückgängig zu machen",
+      "undone": "Rückgängig gemacht"
+    },
+    "thinking": "Denkt nach …",
+    "thought": "Gedanke"
+  },
+  "trace": {
+    "status": {
+      "running": "Läuft",
+      "done": "Erledigt",
+      "failed": "Fehlgeschlagen",
+      "declined": "Abgelehnt"
+    },
+    "effect": {
+      "read": "gelesen",
+      "unknown": "unbekanntes Werkzeug",
+      "create": "hinzugefügt",
+      "update": "geändert",
+      "move": "verschoben",
+      "delete": "gelöscht",
+      "admin": "Speicher"
+    },
+    "approvalNeeded": "Freigabe nötig: {{title}}",
+    "asked": "Der Agent möchte das tun. Noch hat sich nichts geändert.",
+    "declineAria": "Nicht erlauben: {{title}}",
+    "allowAria": "Erlauben: {{title}}",
+    "arguments": "Argumente",
+    "result": "Ergebnis",
+    "undoStep": "Diesen Schritt rückgängig machen",
+    "cannotUndo": "Dieser Schritt kann hier nicht rückgängig gemacht werden. Einstellungen → Einträge führt ein Protokoll der Änderungen und kann die letzte rückgängig machen.",
+    "truncated": "Gekürzt – der Agent wurde gebeten, die Suche einzugrenzen, um den Rest zu sehen.",
+    "working": "Arbeitet – {{model}} entscheidet, was zu tun ist …"
+  }
+}

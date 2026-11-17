@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { Field } from '@/components/common/Field'
 import { PanelTitle } from '@/components/common/Panel'
@@ -85,6 +86,7 @@ const SETUP_COMMANDS = `${MARKITDOWN.install}\n${MARKITDOWN.serve}`
 
 /** Exported for the first run, on the same terms as `LocalModelPanel`. */
 export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
+  const { t } = useTranslation('settings')
   const { reader, setReader } = useModelSettings()
   const [endpoint, setEndpoint] = useState(reader || defaultReaderAddress())
   const [testing, setTesting] = useState(false)
@@ -108,30 +110,34 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
 
   return (
     <Shell bare={bare} tour="reader">
-      <PanelTitle hint="optional">Read my documents</PanelTitle>
+      <PanelTitle hint={t('shared.optional')}>{t('reader.title')}</PanelTitle>
       <p className="mb-3 text-sm text-text-2">
-        The assistant can only see a document&apos;s name until something turns it into text. Run{' '}
-        <a
-          href={MARKITDOWN.url}
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-2"
-        >
-          {MARKITDOWN.name}
-        </a>{' '}
-        on this machine and it can read what is inside your PDFs, Word files, decks and
-        spreadsheets.
+        <Trans
+          t={t}
+          i18nKey="reader.intro"
+          values={{ name: MARKITDOWN.name }}
+          components={{
+            anchor: (
+              <a
+                href={MARKITDOWN.url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-2"
+              />
+            ),
+          }}
+        />
       </p>
 
       <div className="space-y-3">
         <Field
-          label="Address"
+          label={t('reader.address.label')}
           mono
           type="url"
           spellCheck={false}
           value={endpoint}
           placeholder={defaultReaderAddress()}
-          hint="A path on this site in development, or the reader’s own address with the extension installed. See below."
+          hint={t('reader.address.hint')}
           onChange={(e) => {
             setEndpoint(e.target.value)
             setConnected(false)
@@ -153,24 +159,25 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
             lost hyphen in `--http` or a transposed port produces a reader that
             starts, prints a cheerful address, and cannot be reached. */}
         <div className="rounded-md border border-hairline bg-well p-2.5">
-          <p className="text-xs text-text-3">Not running it yet?</p>
-          <div className="mt-1.5 flex items-start gap-2 rounded-md border border-hairline bg-raised py-1.5 pr-1 pl-2.5">
+          <p className="text-xs text-text-3">{t('reader.notRunning')}</p>
+          <div className="mt-1.5 flex items-start gap-2 rounded-md border border-hairline bg-raised py-1.5 ps-2.5 pe-1">
             {/* `min-w-0` on the flex child, or a long command refuses to shrink
                 and pushes the button off the edge of the card. */}
             <pre className="min-w-0 flex-1 overflow-x-auto py-0.5 font-mono text-xs whitespace-pre text-text-1">
               {SETUP_COMMANDS}
             </pre>
-            <CopyButton text={SETUP_COMMANDS} label="Copy the setup commands" />
+            <CopyButton text={SETUP_COMMANDS} label={t('reader.copySetup')} />
           </div>
           {/* Not a footnote. Someone who types the address it prints on startup
               gets an unexplainable failure, so the explanation goes where they
               would type it. */}
           <p className="mt-2 text-xs text-text-3">
-            It listens on <span className="font-mono">{MARKITDOWN.defaultEndpoint}</span>, but it
-            sends no CORS headers — so a browser will not let this page call it across ports.
-            jojo&apos;s dev server forwards <span className="font-mono">{PROXY_PATH}</span> to it,
-            which is why the address above is a path rather than a URL. The phone app talks to it
-            directly and needs none of this.
+            <Trans
+              t={t}
+              i18nKey="reader.cors"
+              values={{ endpoint: MARKITDOWN.defaultEndpoint, path: PROXY_PATH }}
+              components={{ mono: <span className="font-mono" /> }}
+            />
           </p>
           {/*
            * Said plainly, because "a hosted copy needs the same forwarding" was
@@ -187,12 +194,14 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
            * there.
            */}
           <p className="mt-2 text-xs text-text-3">
-            <span className="text-text-2">On a hosted copy, install the extension.</span> A page
-            served from the web cannot call <span className="font-mono">127.0.0.1</span> — there is
-            no proxy to forward a path, and https:// pages are barred from the local network. The
-            extension is not a page: it reaches the reader directly, and jojo asks it to. Put the
-            reader&apos;s own address above and it relays each request; it will only ever relay to
-            this machine.
+            <Trans
+              t={t}
+              i18nKey="reader.hosted"
+              components={{
+                em: <span className="text-text-2" />,
+                mono: <span className="font-mono" />,
+              }}
+            />
           </p>
         </div>
       </div>
@@ -202,34 +211,37 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
           variant="outline"
           size="sm"
           disabled={testing || endpoint.trim().length === 0}
-          title={endpoint.trim().length === 0 ? 'Fill in an address first' : undefined}
+          title={endpoint.trim().length === 0 ? t('reader.fillAddress') : undefined}
           onClick={() => {
             void onTest()
           }}
         >
-          {testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
+          {testing
+            ? t('shared.testing')
+            : connected
+              ? t('shared.testAgain')
+              : t('shared.testConnection')}
         </Button>
         {connected ? (
-          <Chip tone="green">Connected</Chip>
+          <Chip tone="green">{t('shared.connected')}</Chip>
         ) : failure ? (
-          <Chip tone="red">No answer</Chip>
+          <Chip tone="red">{t('shared.noAnswer')}</Chip>
         ) : (
-          <Chip tone="gray">Not connected</Chip>
+          <Chip tone="gray">{t('shared.notConnected')}</Chip>
         )}
       </div>
 
       {failure ? (
         <p className="mt-2 text-xs text-danger">{failure}</p>
       ) : connected ? (
-        <p className="mt-2 text-xs text-text-3">
-          Documents are sent to that address and nowhere else. Nothing is uploaded.
-        </p>
+        <p className="mt-2 text-xs text-text-3">{t('reader.connectedNote')}</p>
       ) : null}
 
       {/* The notice the licence asks for, where the choice is made. */}
       <p className="mt-3 border-t border-hairline pt-3 text-xs text-text-3">
-        {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
-        {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
+        {/* The copyright and licence lines are legal text and stay as written. */}
+        {t('reader.separate', { name: MARKITDOWN.name })} {MARKITDOWN.copyright}{' '}
+        {MARKITDOWN.licence}. {t('reader.notAffiliated')}
       </p>
     </Shell>
   )

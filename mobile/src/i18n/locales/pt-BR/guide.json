@@ -1,0 +1,254 @@
+{
+  "screen": {
+    "title": "Como usar o jojo",
+    "pageLabel": "Página do guia",
+    "takeTour": "Fazer o tour",
+    "pages": {
+      "overview": {
+        "label": "Visão geral",
+        "subtitle": "Tudo roda no seu dispositivo. Comece simples e adicione recursos quando quiser."
+      },
+      "screens": {
+        "label": "Telas",
+        "subtitle": "Para que serve cada tela, e um caminho direto até ela."
+      },
+      "graph": {
+        "label": "Grafo",
+        "subtitle": "O modelo de registros por baixo das sete listas."
+      },
+      "tools": {
+        "label": "Ferramentas",
+        "subtitle": "O que o assistente pode fazer com seus registros, e o que o impede."
+      },
+      "built": {
+        "label": "Feito com",
+        "subtitle": "Do que isto é feito, e o que ainda é provisório."
+      }
+    }
+  },
+  "overview": {
+    "active": "ativo",
+    "notConnected": "não conectado",
+    "layers": {
+      "device": {
+        "name": "Só este dispositivo",
+        "requires": "Nada para configurar",
+        "gives": "Acompanhe candidaturas, prazos, acompanhamentos e documentos"
+      },
+      "model": {
+        "name": "+ Modelo local",
+        "requires": "Ollama, vLLM ou LM Studio — ou uma chave gratuita da NVIDIA",
+        "gives": "Um assistente com conversas que lê e escreve seus registros — cada mudança é mostrada a você antes — e \"Pergunte ao grafo\" em uma frase"
+      },
+      "reader": {
+        "name": "+ Leitor de documentos",
+        "requires": "MarkItDown, em um endereço que você digita",
+        "gives": "O assistente lê o conteúdo dos seus currículos e vagas salvas, e uma vaga que você adiciona por link preenche o próprio formulário"
+      },
+      "computer": {
+        "name": "+ Seu computador",
+        "requires": "Os dois na mesma rede",
+        "gives": "A transferência move o cofre inteiro entre este celular e seu computador, sem nada no meio"
+      }
+    },
+    "gettingStarted": "Primeiros passos",
+    "progress": "{{done}} de {{total}} feitos",
+    "allDone": "Todos os passos estão feitos. A lista lê seus registros, então acompanha se você os apagar.",
+    "howItWorks": "Cada passo abre o recurso real e se marca sozinho quando existe um registro. Nada aqui é um tutorial que você precisa aguentar.",
+    "done": "Feito",
+    "steps": {
+      "application": {
+        "title": "Adicione uma candidatura",
+        "body": "Uma vaga, sua etapa e seu prazo. Todo o resto no jojo se liga a este registro.",
+        "label": "Nova candidatura"
+      },
+      "dated": {
+        "title": "Dê uma data a algo",
+        "body": "Prazos, entrevistas e visitas ao campus são um só tipo de registro, então chegam ao mesmo tempo ao calendário, à próxima semana e à candidatura.",
+        "label": "Novo evento"
+      },
+      "reminder": {
+        "title": "Programe um acompanhamento",
+        "body": "Um lembrete é o mesmo registro com um aviso ativado. Quando a data passa, ele é sinalizado em Hoje até você marcá-lo.",
+        "label": "Novo lembrete"
+      },
+      "posting": {
+        "title": "Guarde uma vaga antes que ela saia do ar",
+        "body": "Nada é baixado e nenhuma cópia é armazenada — o que fica é a URL, o empregador deduzido dela e o dia em que você salvou. Isso basta para encontrar o anúncio de novo.",
+        "label": "Abrir o explorador de vagas"
+      },
+      "file": {
+        "title": "Guarde seus documentos",
+        "body": "Registre um currículo ou uma carta no cofre. Nomes, tamanhos e tipos são mantidos; o arquivo em si nunca é lido.",
+        "label": "Abrir o cofre"
+      },
+      "keyword": {
+        "title": "Marque algo com uma palavra-chave",
+        "body": "As palavras-chave são suas, compartilhadas por candidaturas, lembretes e tudo no cofre — ao contrário das etiquetas de função fixas. O botão de etiqueta em qualquer linha adiciona uma.",
+        "label": "Gerenciar palavras-chave"
+      },
+      "draft": {
+        "title": "Escreva uma mensagem",
+        "body": "Montada a partir dos seus próprios trechos de e-mail, com a função, o empregador e as datas preenchidos a partir do registro. O nome de uma pessoa nunca é preenchido por você. Nada aqui registra que você a enviou, então este passo não se marca sozinho.",
+        "label": "Escrever uma mensagem"
+      }
+    },
+    "profile": {
+      "title": "Preencha seu perfil",
+      "hint": "o perfil não faz parte da lista",
+      "body": "Seus dados básicos, links, funções-alvo e termos de correspondência ficam em Meu perfil. São eles que o explorador usaria para pontuar e o assistente para redigir, então importam — mas esta versão os mantém só durante a visita, sem gravá-los em lugar nenhum, e é por isso que a lista acima não pode marcá-los.",
+      "open": "Abrir meu perfil"
+    },
+    "database": {
+      "title": "O app é o banco de dados",
+      "body": "Seus registros ficam salvos neste dispositivo e sobrevivem a uma reinicialização. Nada é enviado a lugar nenhum — sem conta, sem sincronização, sem chamada de rede. Em Configurações você os apaga, recarrega os dados de demonstração ou exporta uma cópia para a área de transferência."
+    }
+  },
+  "screens": {
+    "intro": "Cada tela do app, e a frase que diz para que ela serve. Tocar em uma linha a abre — esta página é um caminho de entrada, além de uma legenda.",
+    "open": "Abrir {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "Na barra de abas",
+        "hint": "sempre a um toque"
+      },
+      "vault": {
+        "title": "Dentro do cofre",
+        "hint": "cinco ferramentas, uma aba"
+      },
+      "more": {
+        "title": "Em Mais",
+        "hint": "o resto do jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Cada lista deste app é uma visão de um mesmo conjunto de registros. Um registro é um <b>nó</b>; uma conexão entre dois registros é uma <b>aresta</b> com um nome. Esse é o modelo inteiro, e é por isso que uma pergunta que cruza duas listas pode ser respondida.",
+    "open": "Abrir o grafo",
+    "kinds_one": "{{count}} tipo",
+    "kinds_other": "{{count}} tipos",
+    "nodes": "Nós",
+    "nodesIntro": "Um nó por registro, mais três que existem só como conexões — um empregador, uma função e uma palavra-chave são nós para que tudo o que está guardado em um deles possa ser encontrado a partir dele.",
+    "edges": "Arestas",
+    "edgesIntro": "Cada uma tem uma direção e um nome. O nome é o que o construtor de perguntas da tela Grafo coloca na linha do meio.",
+    "relShape": {
+      "AT": "Candidatura → Empregador",
+      "IS": "Candidatura → Função",
+      "ABOUT": "Data ou lembrete → Candidatura",
+      "FILED_UNDER": "Arquivo, link ou trecho → Candidatura",
+      "TAGS": "Palavra-chave → qualquer registro",
+      "BECAME": "Vaga salva ou correspondência → Candidatura"
+    },
+    "deleteTitle": "Excluir desvincula, não apaga em cascata",
+    "deleteBody": "Remover uma candidatura remove esse nó e as arestas ligadas a ele. Os lembretes, arquivos e vagas salvas que estavam guardados nela continuam — são registros próprios e sobrevivem sem nada apontando para eles. Toda exclusão no app diz isso, e o construtor de perguntas da tela Grafo é onde você encontra o que ficou solto: peça os arquivos que não têm vínculo com uma candidatura."
+  },
+  "tools": {
+    "inTotal": "{{count}} no total",
+    "canDo": {
+      "title": "O que o assistente pode fazer",
+      "body_one": "O assistente não toca nas suas telas por você. Ele chama a mesma {{count}} operação que os botões chamam — o mesmo código, com as mesmas verificações. Não há uma segunda entrada, e é por isso que uma edição do assistente aparece no seu histórico exatamente como uma feita por você.",
+      "body_other": "O assistente não toca nas suas telas por você. Ele chama as mesmas {{count}} operações que os botões chamam — o mesmo código, com as mesmas verificações. Não há uma segunda entrada, e é por isso que uma edição do assistente aparece no seu histórico exatamente como uma feita por você.",
+      "irreversible": "Duas dessas {{count}} não podem ser desfeitas de jeito nenhum — as que substituem ou esvaziam todo o armazenamento. Elas nunca são oferecidas ao assistente a menos que suas próprias palavras peçam, e mesmo assim param para pedir confirmação.",
+      "open": "Abrir o assistente"
+    },
+    "stats": {
+      "reads": {
+        "label_one": "forma de consultar",
+        "label_other": "formas de consultar",
+        "hint": "ler nunca muda nada"
+      },
+      "writes": {
+        "label_one": "forma de alterar",
+        "label_other": "formas de alterar",
+        "hint": "todas podem ser desfeitas…"
+      },
+      "destructive": {
+        "label": "marcadas como destrutivas",
+        "hint": "…exceto duas, que perguntam antes"
+      }
+    },
+    "gate": {
+      "title": "O que impede a errada de rodar",
+      "hint": "a parte que realmente segura",
+      "body": "Um modelo de linguagem pode pedir qualquer coisa. Pode citar uma ferramenta que nunca lhe foi mostrada, ou inventar uma que não existe — modelos menores fazem isso com frequência, e não é sinal de que algo deu errado. Por isso o jojo não depende de o modelo ser cuidadoso.",
+      "distinctionTitle": "A distinção que importa",
+      "distinction": "Escolher o que mostrar ao modelo é uma dica. Verificar o que ele de fato chamou é uma regra, e a regra depende de quem escolheu o conjunto. Onde a tela o define — Pergunte ao grafo, um pipeline do explorador —, uma chamada a qualquer coisa fora dele é recusada antes de qualquer consulta, quanto mais execução. Em um chat, o conjunto é o palpite do jojo sobre o que você precisa, então uma chamada fora dele não é recusada: passa pela mesma verificação de aprovação de qualquer outra chamada, que pergunta a você antes, a menos que a conversa esteja configurada para rodar sozinha. A única exceção é apagar seus registros, a única coisa que não pode ser desfeita: é recusada a menos que você tenha pedido com todas as letras para apagar tudo.",
+      "askGraph": "É por isso que a caixa \"Pergunte ao grafo\" da tela Grafo pode oferecer com segurança duas ferramentas somente leitura. Ela não confia que o modelo vá ficar dentro delas."
+    },
+    "pick": {
+      "title": "Como ele escolhe a certa",
+      "hint": "para que um pedido nunca pare no meio",
+      "cost_one": "Mostrar {{count}} ferramenta de uma vez a um modelo custa cerca de quinze mil palavras do espaço que ele tem para pensar — antes de você digitar qualquer coisa. Em um modelo pequeno rodando na sua própria máquina, isso pode ser mais espaço do que ele tem. Por isso o jojo reduz a lista ao que suas palavras indicam.",
+      "cost_other": "Mostrar as {{count}} ferramentas de uma vez a um modelo custa cerca de quinze mil palavras do espaço que ele tem para pensar — antes de você digitar qualquer coisa. Em um modelo pequeno rodando na sua própria máquina, isso pode ser mais espaço do que ele tem. Por isso o jojo reduz a lista ao que suas palavras indicam.",
+      "careless": "Reduzir sem cuidado é pior do que não reduzir. A maioria das operações precisa de algo sobre o qual agir: não dá para atribuir uma palavra-chave sem uma palavra-chave, nem atualizar um documento sem um documento. Esconda a ferramenta que cria essa coisa e o assistente para no meio, sem nada na tela explicando por quê.",
+      "unsureTitle": "Quando não tem certeza, ele não reduz",
+      "unsure": "\"Me lembre da Baylor na quinta\" é claro, e o jojo oferece cerca de um quinto do catálogo. \"Na verdade, era a outra\" não é claro sobre nada — então ele oferece tudo, exatamente como antes de nada disso existir. A dúvida custa um pouco de velocidade. Adivinhar custaria a sua resposta.",
+      "onlyGains": "Uma conversa só ganha ferramentas. Nada que você já usou é tirado por uma pergunta posterior."
+    },
+    "model": {
+      "title": "Qual modelo faz isso",
+      "hint": "a escolha é sua, e ela muda para onde suas palavras vão",
+      "local": "O jojo conversa com o que você indicar em Configurações. Um modelo rodando em uma máquina que você controla — Ollama, vLLM, LM Studio — é o padrão, e é a única configuração em que nada do que você escreve sai deste dispositivo.",
+      "cloud": "Você também pode usar Claude, OpenAI e outros com uma chave de API. É uma troca real e a tela diz isso claramente: seus registros vão para essa empresa e são cobrados na sua conta. A chave fica neste dispositivo, nunca entra em um backup e nunca é enviada a lugar nenhum além do provedor que você escolheu.",
+      "openSettings": "Abrir Configurações",
+      "truncatedTitle": "Se o assistente parecer ter parado de ler",
+      "truncated": "Um modelo local com pouco espaço descarta em silêncio o começo do que recebeu e depois responde com confiança a uma pergunta que nunca viu inteira. O jojo compara o que o servidor diz ter lido com o que foi realmente enviado, e avisa quando os dois não batem — senão o assistente pareceria ruim no que faz, quando na verdade só falta espaço."
+    },
+    "gateFigure": {
+      "typed": "o que você digitou",
+      "pick": "escolher as ferramentas prováveis",
+      "pickNote": "não está claro? oferecer as {{count}}",
+      "add": "adicionar o que essas ferramentas precisam",
+      "addNote": "para que nenhuma cadeia fique sem saída",
+      "choose": "o modelo escolhe uma",
+      "offered": "ela foi oferecida?",
+      "offeredNote": "não? recusada, nada roda",
+      "change": "seus registros mudam",
+      "description": "Seis passos, de cima para baixo. Um: o que você digitou. Dois: o jojo escolhe as ferramentas que suas palavras indicam — e, se não estiverem claras, oferece as {{count}} em vez de adivinhar. Três: adiciona aquilo de que essas ferramentas dependem, para que nenhuma cadeia fique sem saída. Quatro: o modelo escolhe uma ferramenta. Cinco: o jojo verifica se essa ferramenta foi de fato oferecida; se não foi, a chamada é recusada e nada roda. Seis: só então seus registros mudam. O quinto passo é o único que impõe alguma coisa — o segundo é só uma dica, porque um modelo pode citar uma ferramenta que nunca lhe foi mostrada.",
+      "caption": "O passo dois economiza tokens. O passo cinco é o que mantém você seguro — e ele roda quer o passo dois tenha reduzido algo ou não."
+    },
+    "graphFigure": {
+      "intro": "Três exemplos, sem ordem. Cada um é uma ferramenta que suas palavras pediram, aquilo sem o qual ela não roda, e a ferramenta que o jojo oferece junto para que a cadeia possa terminar.",
+      "description": "Três exemplos. Pedir keyword.attach também oferece keyword.create, porque atribuir uma palavra-chave exige uma palavra-chave que já exista. Pedir vault.file.update também oferece vault.file.add, porque atualizar um documento exige um documento. Pedir scout.posting.promote também oferece scout.posting.save, porque promover uma vaga salva exige uma vaga salva. Em todos os casos o jojo deduz a dependência a partir da própria entrada da ferramenta e oferece as duas juntas — assim o assistente nunca recebe um primeiro passo sem caminho para o segundo.",
+      "needs": {
+        "keyword": "precisa de uma palavra-chave, então o jojo também oferece",
+        "file": "precisa de um arquivo, então o jojo também oferece",
+        "posting": "precisa de uma vaga, então o jojo também oferece"
+      },
+      "without": "Sem isso, o assistente poderia receber a primeira ferramenta e não a segunda — e pararia no meio sem nada na tela para dizer por quê.",
+      "derived": "O jojo lê cada requisito da própria definição da ferramenta, então uma ferramenta adicionada amanhã já está coberta sem ninguém atualizar uma lista."
+    }
+  },
+  "builtWith": {
+    "intro": "Um protótipo interativo do mesmo produto que o app web, que compartilha todo módulo que contém uma regra — a aritmética de datas, o funil das estatísticas, o sistema de palavras-chave e os dados de exemplo —, para que os dois não possam discordar sobre uma data, uma taxa ou uma etapa.",
+    "stackTitle": "Feito com",
+    "stackHint": "o que de fato está rodando",
+    "unfinishedTitle": "O que ainda é provisório",
+    "unfinishedHint": "dito, não escondido",
+    "unfinishedIntro": "Um protótipo que esconde seus limites é um protótipo em que se acredita demais. Estes três são os que vale a pena conhecer antes de julgar qualquer outra coisa na tela.",
+    "placeholder": "provisório",
+    "stack": {
+      "app": "O próprio app, nas duas plataformas",
+      "build": "A compilação. Sem Expo — android/ e ios/ são nossos",
+      "documents": "Anexar um arquivo e abri-lo de novo",
+      "navigation": "A barra de abas e a pilha de telas",
+      "drag": "O arrastar com toque longo do quadro, na thread da interface",
+      "charts": "A rosca, o radar e o grafo",
+      "type": "A tipografia, incluída em vez de baixada"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "O assistente precisa de um modelo fornecido por você",
+        "detail": "Conecte um em Configurações e o assistente vira um chat agêntico com conversas: ele chama as próprias ferramentas do app para responder, lista cada chamada enquanto a faz e salva cada conversa neste dispositivo. Sem um modelo, cada resposta é um de cinco exemplos prontos e traz um selo que diz isso."
+      },
+      "scout": {
+        "title": "O explorador não encontra nada sozinho",
+        "detail": "As porcentagens de compatibilidade são reais — calculadas neste dispositivo com os termos de correspondência, os cargos-alvo e as regiões do seu perfil, e dizem com o que combinaram. O que falta é a varredura: nada sai procurando vagas, então o feed só contém o que você coloca nele."
+      },
+      "network": {
+        "title": "Nada sai deste dispositivo, exceto para onde você aponta",
+        "detail": "Não há conta, sincronização nem envio. Dois endereços podem ser acessados, ambos seus e ambos definidos em Configurações: o modelo e o leitor de documentos — que também busca uma vaga quando você adiciona uma candidatura a partir de um link, então essa URL vai para o seu leitor, e não para nós. A transferência move uma cópia entre os seus dispositivos pela rede local — neste celular, ela recebe, e o computador é o lado que envia. Nada mais vai a lugar nenhum."
+      }
+    }
+  }
+}

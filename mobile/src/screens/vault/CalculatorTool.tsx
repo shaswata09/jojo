@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -12,11 +13,9 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space } from '@/theme/tokens'
 
-const MODES = [
-  { value: 'basic', label: 'Basic' },
-  { value: 'scientific', label: 'Scientific' },
-] as const
-type Mode = (typeof MODES)[number]['value']
+/** Labelled by `calculator.modes.<value>` in the vault catalog. */
+const MODES = ['basic', 'scientific'] as const
+type Mode = (typeof MODES)[number]
 
 /** History is a short memory, not an audit log. */
 const MAX_HISTORY = 30
@@ -37,6 +36,7 @@ type Entry = { id: number; expr: string; value: string }
  * is the keypad.
  */
 export function CalculatorTool() {
+  const { t } = useTranslation('vault')
   const c = useColors()
   const { copy, isCopied } = useCopy()
 
@@ -153,20 +153,25 @@ export function CalculatorTool() {
     <>
       <Panel>
         <PanelTitle
-          hint="works with no records and no connection"
+          hint={t('calculator.hint')}
           right={
             <IconButton
               icon={isCopied('display') ? 'check' : 'copy'}
-              label="Copy the result"
+              label={t('calculator.copy')}
               active={isCopied('display')}
               onPress={() => copy(display, 'display')}
             />
           }
         >
-          Calculator
+          {t('calculator.title')}
         </PanelTitle>
 
-        <Segment label="Mode" options={MODES} value={mode} onChange={setMode} />
+        <Segment
+          label={t('calculator.mode')}
+          options={MODES.map((value) => ({ value, label: t(`calculator.modes.${value}`) }))}
+          value={mode}
+          onChange={setMode}
+        />
 
         {/* The pending operation is shown above the display rather than
             inferred: without it, pressing 5 after "2 +" looks identical to
@@ -212,7 +217,7 @@ export function CalculatorTool() {
                 the history with sign flips. See `core/calculator.ts`. */}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="plus or minus"
+              accessibilityLabel={t('calculator.plusMinus')}
               onPress={() => setDisplay(toggleSign)}
               style={({ pressed }) => [
                 styles.sciKey,
@@ -255,22 +260,26 @@ export function CalculatorTool() {
 
       <Panel>
         <PanelTitle
-          hint={history.length > 0 ? `${history.length} kept` : undefined}
+          hint={history.length > 0 ? t('calculator.kept', { count: history.length }) : undefined}
           right={
             history.length > 0 ? (
-              <Button label="Clear" variant="ghost" onPress={() => setHistory([])} />
+              <Button
+                label={t('calculator.clear')}
+                variant="ghost"
+                onPress={() => setHistory([])}
+              />
             ) : undefined
           }
         >
-          History
+          {t('calculator.history')}
         </PanelTitle>
 
         {history.length === 0 ? (
           <EmptyState
             compact
             icon="clock"
-            title="Nothing worked out yet"
-            description="The last thirty results stay here, so the second number can be compared against the first. Tap one to put it back on the display."
+            title={t('calculator.emptyTitle')}
+            description={t('calculator.emptyDescription')}
           />
         ) : (
           <ScrollView style={styles.history} bounces={false}>
@@ -279,7 +288,10 @@ export function CalculatorTool() {
                 {i > 0 ? <Divider /> : null}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`${entry.expr} equals ${entry.value}. Put it back on the display`}
+                  accessibilityLabel={t('calculator.historyEntry', {
+                    expr: entry.expr,
+                    value: entry.value,
+                  })}
                   onPress={() => {
                     setDisplay(entry.value)
                     setFresh(true)

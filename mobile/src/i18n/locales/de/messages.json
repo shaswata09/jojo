@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Bewerbung",
+      "org": "Arbeitgeber",
+      "role": "Stelle",
+      "item": "Termin oder Erinnerung",
+      "file": "Datei",
+      "link": "Link",
+      "snippet": "Textbaustein",
+      "posting": "Gespeicherte Ausschreibung",
+      "match": "Treffer",
+      "keyword": "Schlagwort"
+    },
+    "isA": "ist ein",
+    "fit": "{{fit}} % Passung",
+    "query": {
+      "undated": {
+        "question": "Bewerbungen ohne jeden Termin",
+        "why": "Sie tauchen weder im Kalender noch in der kommenden Woche auf, egal wie aktiv sie sind."
+      },
+      "untagged": {
+        "question": "Bewerbungen ohne Schlagwort",
+        "why": "Ein Eintrag, den niemand eingeordnet hat, wird von keinem Filter je gefunden."
+      },
+      "orphanFiles": {
+        "question": "Dateien, die keiner Bewerbung zugeordnet sind",
+        "why": "Dokumente geraten aus dem Blick; das hier zeigt, auf welche nichts verweist."
+      },
+      "orphanLinks": {
+        "question": "Links, die keiner Bewerbung zugeordnet sind",
+        "why": "Dieselbe Frage für die Ausschreibungen und Seiten, die du für später gespeichert hast."
+      },
+      "busiest": {
+        "question": "Die Arbeitgeber, mit denen du am meisten am Laufen hast",
+        "why": "Über alle Sammlungen zugleich gezählt: Bewerbungen, Termine, Dateien und Links."
+      },
+      "unpromoted": {
+        "question": "Treffer und Ausschreibungen, aus denen nie eine Bewerbung wurde",
+        "why": "Spuren veralten still; keine Listenansicht sagt dir, welche."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} nicht {{rel}} {{end}}",
+      "startAny": "Alles",
+      "relAny": "verknüpft mit",
+      "endAny": "irgendetwas",
+      "startType": {
+        "application": "Bewerbungen",
+        "org": "Arbeitgeber",
+        "role": "Stellen",
+        "item": "Termine oder Erinnerungen",
+        "file": "Dateien",
+        "link": "Links",
+        "snippet": "Textbausteine",
+        "posting": "Gespeicherte Ausschreibungen",
+        "match": "Treffer",
+        "keyword": "Schlagwörter"
+      },
+      "endType": {
+        "application": "eine Bewerbung",
+        "org": "einen Arbeitgeber",
+        "role": "eine Stelle",
+        "item": "einen Termin oder eine Erinnerung",
+        "file": "eine Datei",
+        "link": "einen Link",
+        "snippet": "einen Textbaustein",
+        "posting": "eine gespeicherte Ausschreibung",
+        "match": "einen Treffer",
+        "keyword": "ein Schlagwort"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Heute",
+      "hint": "Was eine Entscheidung braucht"
+    },
+    "apps": {
+      "label": "Bewerbungen",
+      "hint": "Die Liste und das Phasen-Board"
+    },
+    "cal": {
+      "label": "Kalender",
+      "hint": "Fristen, Gespräche und Vorbereitung"
+    },
+    "reminders": {
+      "label": "Erinnerungen",
+      "hint": "Tresor · was du schuldest und wann"
+    },
+    "links": {
+      "label": "Links",
+      "hint": "Tresor · Ausschreibungen, Personen und Seiten"
+    },
+    "files": {
+      "label": "Dateien",
+      "hint": "Tresor · Dokumente, die du erfasst hast"
+    },
+    "snippets": {
+      "label": "Textbausteine",
+      "hint": "Tresor · wiederverwendbare Absätze"
+    },
+    "tools": {
+      "label": "Werkzeuge",
+      "hint": "Tresor · der Rechner"
+    },
+    "scout": {
+      "label": "Job-Scout",
+      "hint": "Gespeicherte Suchen, Treffer und Ausschreibungen"
+    },
+    "stats": {
+      "label": "Statistik",
+      "hint": "Quoten, ein Trichter und woran du arbeiten solltest"
+    },
+    "graph": {
+      "label": "Graph",
+      "hint": "Deine Einträge als das Netz, das sie sind"
+    },
+    "profile": {
+      "label": "Mein Profil",
+      "hint": "Basisdaten, Dokumente und Suchbegriffe"
+    },
+    "assistant": {
+      "label": "Assistent",
+      "hint": "Durchgespielte Beispiele, bis ein Modell verbunden ist"
+    },
+    "settings": {
+      "label": "Einstellungen",
+      "hint": "Verbindungen, Darstellung, Schlagwörter und deine Daten"
+    },
+    "transfer": {
+      "label": "Übertragen",
+      "hint": "Alles auf deinen Computer oder von dort holen"
+    },
+    "guide": {
+      "label": "So geht’s",
+      "hint": "Die drei Ebenen, die Bildschirme und der Graph"
+    },
+    "more": {
+      "label": "Mehr",
+      "hint": "Der Rest von jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Neue Bewerbung"
+    },
+    "newApplicationFromLink": {
+      "label": "Bewerbung aus einem Link",
+      "hint": "Das Modell liest die Ausschreibung und füllt das Formular aus"
+    },
+    "newReminder": {
+      "label": "Neue Erinnerung"
+    },
+    "newEvent": {
+      "label": "Neuer Termin"
+    },
+    "draftMessage": {
+      "label": "Nachricht entwerfen",
+      "hint": "Aus deinen E-Mail-Bausteinen – nichts wird generiert"
+    },
+    "saveLink": {
+      "label": "Link speichern",
+      "hint": "Öffnet den Tresor, Werkzeug Links"
+    },
+    "recordDocument": {
+      "label": "Dokument erfassen",
+      "hint": "Öffnet den Tresor, Werkzeug Dateien"
+    },
+    "savePosting": {
+      "label": "Ausschreibung speichern",
+      "hint": "Öffnet den Job-Scout"
+    }
+  },
+  "snooze": {
+    "soon1": "Morgen",
+    "later1": "Einen Tag später",
+    "soon3": "In 3 Tagen",
+    "later3": "Drei Tage später",
+    "soon7": "In 7 Tagen",
+    "later7": "Eine Woche später"
+  },
+  "itemActions": {
+    "reopened": "{{title}} wieder geöffnet",
+    "completed": "{{title}} erledigt",
+    "reopenedBody": "Wieder in der offenen Liste und zählt erneut als fällig.",
+    "completedBody": "Verschwindet aus den offenen Listen und zählt für heute – gelöscht wird nichts.",
+    "rescheduled": "{{title}} verschoben",
+    "nowDue": "Jetzt fällig am {{date}}, hier und im Kalender.",
+    "movedTo": "Verschoben auf {{date}}",
+    "copyTitle": "{{title}} (Kopie)",
+    "added": "{{title}} hinzugefügt",
+    "copyBody": "{{date}} – die Kopie trägt dieselben Schlagwörter.",
+    "deleted": "{{title}} gelöscht",
+    "deletedReminder": "Aus der Erinnerungsliste und dem Kalender entfernt.",
+    "deletedEvent": "Aus dem Kalender entfernt."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "Der Schlagwortfilter über der Liste blendet sie aus.",
+    "noSearchMatch": "Nichts passt zu dieser Suche",
+    "noBothMatch": "Nichts passt zu beiden Filtern",
+    "clearBoth": "Beide Filter entfernen",
+    "clearKeywords": "Schlagwörter entfernen"
+  },
+  "boardScan": {
+    "badAddress": "Diese Adresse kann ich nicht öffnen.",
+    "timeout": "Diese Jobbörse hat zu lange gebraucht.",
+    "unreachable": "Diese Jobbörse war nicht erreichbar.",
+    "status": "Diese Jobbörse hat mit {{status}} geantwortet.",
+    "browserOnly": "{{host}} zeigt seine Stellenanzeigen nur einem echten Browser, daher kann es nicht vom Handy aus gelesen werden. Auf einem Computer kann die jojo-Browsererweiterung es lesen."
+  },
+  "timelineForm": {
+    "title": "Gib ihm einen Titel, den du wiedererkennst.",
+    "date": "Wähle ein Datum – ein Eintrag ohne Datum kann nirgends erscheinen.",
+    "time": "Gib eine Uhrzeit wie 14:30 an."
+  },
+  "reader": {
+    "tooBig": "Dieses Dokument ist {{size}} MB groß, der Leser nimmt bis zu {{max}} MB.",
+    "gone": "Die Kopie dieses Dokuments ist nicht mehr auf diesem Gerät.",
+    "empty": "Aus diesem Dokument ließ sich nichts lesen – vielleicht ist es ein Scan.",
+    "noAddress": "Noch keine Adresse. Siehe Einstellungen.",
+    "notConnected": "Kein Dokumentleser verbunden, daher lässt sich der Inhalt dieser Datei nicht lesen. Seine Adresse gehört in die Einstellungen.",
+    "noCopy": "Zu diesem Eintrag ist keine Kopie auf dem Gerät gespeichert, also gibt es nichts zu lesen."
+  },
+  "jobs": {
+    "ready": "{{label}} ist fertig",
+    "readyBody": "Unter der Bewerbung gespeichert, für die es geschrieben wurde.",
+    "failed": "{{label}} wurde nicht fertig"
+  },
+  "boot": {
+    "corrupt": "die gespeicherten Einträge konnten nicht gelesen werden ({{detail}}).",
+    "blocked": "der Speicher ist durch etwas anderes auf diesem Gerät gesperrt.",
+    "unsupported": "dieses Gerät hat keinen Speicher, den diese App nutzen kann.",
+    "threw": "der Speicher konnte gar nicht geöffnet werden.",
+    "banner": "Es wird nicht auf diesem Gerät gespeichert – {{why}}"
+  },
+  "posting": {
+    "needsReader": "Dafür braucht es neben dem Modell auch den Dokumentleser – er holt die Seite. Die Adresse steht in den Einstellungen.",
+    "empty": "Diese Seite kam fast leer zurück. Jobbörsen, die mit JavaScript rendern, schicken allem außer einem Browser eine leere Hülle – öffne sie hier und speichere stattdessen die Seite.",
+    "note": "Vom Modell gelesen von {{url}}",
+    "askedTwice": "Zweimal gefragt, mit demselben Ergebnis."
+  },
+  "localService": {
+    "stopped": "Gestoppt, bevor es gesendet wurde."
+  },
+  "clipboard": {
+    "tooBig": "Zu groß für die Zwischenablage",
+    "tooBigBody": "Deine Einträge umfassen {{size}}, die Zwischenablage von Android nimmt etwa {{max}} Text. Nichts wurde kopiert. Nutze Übertragen, um alles über dein lokales Netzwerk an deinen Computer zu senden.",
+    "copied": "In die Zwischenablage kopiert",
+    "copiedBody": "Eine Sicherung, die du in eine Notiz oder Datei einfügen kannst. Angehängte Dokumente bleiben auf diesem Handy – ihre Zeilen kommen ohne Inhalt zurück."
+  },
+  "documents": {
+    "incomplete": "Die Kopie wurde nicht abgeschlossen.",
+    "nothingCopied": "Nichts wurde kopiert."
+  },
+  "weekday": {
+    "sun": "So",
+    "mon": "Mo",
+    "tue": "Di",
+    "wed": "Mi",
+    "thu": "Do",
+    "fri": "Fr",
+    "sat": "Sa"
+  },
+  "owed": {
+    "overdue": "Überfällig",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "rest": "Rest der Woche"
+  },
+  "receive": {
+    "declined": "Nichts wurde geändert. Scanne den Code erneut, um zu empfangen."
+  }
+}

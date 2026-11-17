@@ -9,9 +9,7 @@
  * ## What the channel is assumed to do, and what it is not trusted to do
  *
  * ASSUMED: ordered and reliable. TCP and a WebRTC data channel both are, and
- * rebuilding retransmission on top of one would be inventing a problem. That is
- * the difference between this and `pulse.ts`, whose indexed frames cycle forever
- * because a camera drops them and cannot ask again.
+ * rebuilding retransmission on top of one would be inventing a problem.
  *
  * NOT TRUSTED: anything else. The channel runs across somebody's wifi, so every
  * chunk is sealed under a key only the two paired devices hold, and every chunk

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Highlighter, MessageSquarePlus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Segment } from '@/components/common/Segment'
@@ -24,11 +25,7 @@ import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import type { Quad } from '@/lib/pdf/geometry'
 import type { FileBucket } from '@/data/vault'
 
-const TOOLS = [
-  { value: 'highlight', label: 'Highlight' },
-  { value: 'comment', label: 'Comment' },
-] as const
-type Tool = (typeof TOOLS)[number]['value']
+type Tool = 'highlight' | 'comment'
 
 const ZOOMS = [0.75, 1, 1.25, 1.5, 2]
 
@@ -41,6 +38,12 @@ const ZOOMS = [0.75, 1, 1.25, 1.5, 2]
  * what makes removing one a matter of forgetting it.
  */
 export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) {
+  const { t } = useTranslation('vault')
+  // Built in the render so the labels follow the language on screen.
+  const tools = [
+    { value: 'highlight', label: t('pdf.annotate.tools.highlight') },
+    { value: 'comment', label: t('pdf.annotate.tools.comment') },
+  ] as const
   const { available, bytesOf, saveResult, download } = usePdfFiles()
   const { toast } = useToast()
   const [choice, setChoice] = useState<PdfChoice | null>(null)
@@ -139,8 +142,12 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
       const record = await saveResult(name.trim() || suggested, out, bucket)
       if (then === 'download') await download(record.id)
       toast({
-        title: `${record.name} saved`,
-        description: `${summarise(marks)}, filed under ${bucket}. ${choice.name} is unchanged.`,
+        title: t('pdf.saved', { name: record.name }),
+        description: t('pdf.annotate.savedDescription', {
+          summary: summarise(marks),
+          bucket,
+          name: choice.name,
+        }),
       })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
@@ -157,24 +164,26 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
           const first = choices[0]
           if (first) void open(first)
         }}
-        label="Choose a PDF to mark up"
+        label={t('pdf.annotate.chooseLabel')}
       />
 
       {choice === null || document_ === null ? (
-        <p className="text-sm text-text-3">
-          Choose one PDF. Select text on the page to highlight it, or switch to Comment and click
-          where the note belongs.
-        </p>
+        <p className="text-sm text-text-3">{t('pdf.annotate.empty')}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2">
-            <Segment options={TOOLS} value={tool} onChange={setTool} label="Marking tool" />
+            <Segment
+              options={tools}
+              value={tool}
+              onChange={setTool}
+              label={t('pdf.annotate.toolLabel')}
+            />
 
             {tool === 'highlight' ? (
               <div
                 className="flex items-center gap-1"
                 role="radiogroup"
-                aria-label="Highlight colour"
+                aria-label={t('pdf.annotate.colour')}
               >
                 {HIGHLIGHT_COLOURS.map((option) => (
                   <button
@@ -197,31 +206,31 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
               </div>
             ) : null}
 
-            <div className="ml-auto flex items-center gap-1">
+            <div className="ms-auto flex items-center gap-1">
               <Button
                 variant="outline"
                 size="icon-sm"
-                aria-label="Previous page"
+                aria-label={t('pdf.annotate.previousPage')}
                 disabled={page === 0}
                 onClick={() => setPage((current) => Math.max(0, current - 1))}
               >
-                <ChevronLeft aria-hidden />
+                <ChevronLeft className="rtl:-scale-x-100" aria-hidden />
               </Button>
               <span className="min-w-20 text-center text-xs text-text-3 tabular-nums">
-                Page {page + 1} of {document_.pageCount}
+                {t('pdf.annotate.pageOf', { page: page + 1, total: document_.pageCount })}
               </span>
               <Button
                 variant="outline"
                 size="icon-sm"
-                aria-label="Next page"
+                aria-label={t('pdf.annotate.nextPage')}
                 disabled={page >= document_.pageCount - 1}
                 onClick={() => setPage((current) => Math.min(document_.pageCount - 1, current + 1))}
               >
-                <ChevronRight aria-hidden />
+                <ChevronRight className="rtl:-scale-x-100" aria-hidden />
               </Button>
               <select
                 className="h-7 cursor-pointer rounded-lg border border-input bg-transparent px-1.5 text-xs text-text-1 outline-none focus-visible:border-ring"
-                aria-label="Zoom"
+                aria-label={t('pdf.annotate.zoom')}
                 value={zoom}
                 onChange={(event) => setZoom(Number(event.target.value))}
               >
@@ -237,14 +246,13 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
           <p className="text-xs text-text-3">
             {tool === 'highlight' ? (
               <>
-                <Highlighter className="mr-1 inline size-3.5" aria-hidden />
-                Select words on the page — across lines is fine — and they are marked when you let
-                go.
+                <Highlighter className="me-1 inline size-3.5" aria-hidden />
+                {t('pdf.annotate.highlightHint')}
               </>
             ) : (
               <>
-                <MessageSquarePlus className="mr-1 inline size-3.5" aria-hidden />
-                Click the page where the comment belongs.
+                <MessageSquarePlus className="me-1 inline size-3.5" aria-hidden />
+                {t('pdf.annotate.commentHint')}
               </>
             )}
           </p>
@@ -275,7 +283,9 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
                   ) : (
                     <MessageSquarePlus className="size-3.5 shrink-0 text-text-3" aria-hidden />
                   )}
-                  <span className="w-14 shrink-0 text-xs text-text-3">Page {mark.page + 1}</span>
+                  <span className="w-14 shrink-0 text-xs text-text-3">
+                    {t('pdf.pages.page', { number: mark.page + 1 })}
+                  </span>
                   {mark.kind === 'highlight' ? (
                     <span className="min-w-0 flex-1 truncate" title={mark.text}>
                       {excerpt(mark.text)}
@@ -284,13 +294,15 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
                   <Input
                     className={cn('h-7 shrink-0', mark.kind === 'note' ? 'min-w-0 flex-1' : 'w-40')}
                     placeholder={
-                      mark.kind === 'note' ? 'What is the comment?' : 'Add a note to this…'
+                      mark.kind === 'note'
+                        ? t('pdf.annotate.commentPlaceholder')
+                        : t('pdf.annotate.notePlaceholder')
                     }
                     value={mark.kind === 'note' ? mark.body : mark.note}
                     aria-label={
                       mark.kind === 'note'
-                        ? `Comment on page ${mark.page + 1}`
-                        : `Note on the highlight of ${excerpt(mark.text, 30)}`
+                        ? t('pdf.annotate.commentLabel', { number: mark.page + 1 })
+                        : t('pdf.annotate.noteLabel', { excerpt: excerpt(mark.text, 30) })
                     }
                     ref={(element) => {
                       // Focus once, when the pin has just been placed: a plain
@@ -316,7 +328,7 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
                   <Button
                     variant="outline"
                     size="icon-sm"
-                    aria-label="Remove this mark"
+                    aria-label={t('pdf.annotate.removeMark')}
                     onClick={() => setMarks((current) => without(current, mark.id))}
                   >
                     <Trash2 aria-hidden />
@@ -335,13 +347,13 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
             disabled={marks.length === 0}
             hint={
               marks.length === 0
-                ? 'Highlight some text or add a comment first.'
-                : `${summarise(marks)} will be written in.`
+                ? t('pdf.annotate.hintEmpty')
+                : t('pdf.annotate.hint', { summary: summarise(marks) })
             }
             onSave={() => void save('save')}
             onDownload={() => void save('download')}
             icon={Highlighter}
-            verb="Save marked up"
+            saveLabel={t('pdf.annotate.action')}
           />
         </>
       )}

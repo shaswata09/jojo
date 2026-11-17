@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -11,12 +12,14 @@ import { Txt } from '@/components/ui/Text'
 import { SnippetPreviewSheet } from '@/components/vault/SnippetPreviewSheet'
 import type { TailorCandidate } from '@jojo/service/core/tailoring'
 import { supersededToast } from '@jojo/service/react/undo'
+import { useKg } from '@jojo/service/react/kg-context'
 import { useTailoring } from '@/lib/tailor-agent'
 import type { TailoredSnippet } from '@/lib/tailor-agent'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { domain } from '@/i18n/domain'
 
 /**
  * The person's own documents, rewritten for this posting.
@@ -40,6 +43,8 @@ import { space } from '@/theme/tokens'
 const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 export function TailoredPanel({ applicationId }: { applicationId: string }) {
+  const { t: tr } = useTranslation(['components', 'common'])
+  const { text } = useKg()
   const c = useColors()
   const t = useTailoring(applicationId)
   const { toast } = useToast()
@@ -62,7 +67,9 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
 
   const chooser: MenuAction[] = t.candidates.map((cand) => ({
     id: cand.id,
-    label: `${capitalise(cand.label)}${cand.already ? ' · tailored before' : ''}`,
+    label: cand.already
+      ? tr('tailored.tailoredBefore', { label: capitalise(cand.label) })
+      : capitalise(cand.label),
     hint: cand.name,
     icon: 'edit-3',
     onPress: () => {
@@ -73,16 +80,14 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
   return (
     <Panel>
       <PanelTitle
-        hint={
-          t.blocked === null ? 'Rewritten for this posting, with the changes marked.' : undefined
-        }
+        hint={t.blocked === null ? tr('tailored.hint') : undefined}
         right={
           t.blocked === null && t.candidates.length > 0 && !busy ? (
             <Button
               size="sm"
               variant="outline"
               icon="edit-3"
-              label="Tailor"
+              label={tr('tailored.tailor')}
               onPress={() => {
                 setChoosing(true)
               }}
@@ -90,19 +95,17 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           ) : undefined
         }
       >
-        Tailored materials
+        {tr('tailored.title')}
       </PanelTitle>
 
       {t.blocked === 'no-posting' && (
         <Txt size="sm" tone="secondary">
-          There is no saved posting behind this application, so there is nothing to tailor your
-          documents for. Add the application from its link, or capture the listing, and this offers
-          to.
+          {tr('tailored.blocked.noPosting')}
         </Txt>
       )}
       {t.blocked === 'no-model' && (
         <Txt size="sm" tone="secondary">
-          Tailoring a document needs a model. Connect one under More → Settings.
+          {tr('tailored.blocked.noModel')}
         </Txt>
       )}
       {/* The bucket is named: only profile documents are offered here, so a CV
@@ -110,9 +113,7 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           the person had done what it asked. */}
       {t.blocked === 'no-documents' && (
         <Txt size="sm" tone="secondary">
-          Nothing to tailor yet. Tailoring rewrites the documents you send with an application —
-          add your CV, statements or a cover letter under More → My profile, or file them in the
-          Vault under Applications, and they appear here.
+          {tr('tailored.blocked.noDocuments')}
         </Txt>
       )}
 
@@ -121,10 +122,19 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           {/* The job's own step, so this line reads the same on every screen —
               and is still here when the person comes back to the record. */}
           <Txt size="sm" tone="secondary">
-            {t.running?.state === 'queued' ? 'Queued' : (t.running?.step ?? 'Working')}…
+            {t.running?.state === 'queued'
+              ? tr('tailored.queued')
+              : t.running?.step !== undefined
+                ? `${t.running.step}…`
+                : tr('tailored.working')}
           </Txt>
           <View style={{ alignItems: 'flex-start' }}>
-            <Button size="sm" variant="ghost" label="Cancel" onPress={t.cancel} />
+            <Button
+              size="sm"
+              variant="ghost"
+              label={tr('common:actions.cancel')}
+              onPress={t.cancel}
+            />
           </View>
         </View>
       )}
@@ -152,8 +162,7 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
         !busy &&
         t.error === null && (
           <Txt size="sm" tone="secondary">
-            Nothing tailored yet. Press Tailor, choose a document, and jojo writes a version for
-            this posting with what it changed marked.
+            {tr('tailored.empty')}
           </Txt>
         )}
 
@@ -171,19 +180,21 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
                 if (!gone) return
                 const { result, restore } = gone
                 toast({
-                  title: result.ok ? `${s.title} deleted` : 'That did not delete',
+                  title: result.ok
+                    ? tr('tailored.deleted', { title: s.title })
+                    : tr('tailored.notDeleted'),
                   ...(result.ok
                     ? {
-                        description: 'Gone from this application and from the Vault.',
+                        description: tr('tailored.deletedBody'),
                         tone: 'danger' as const,
                         ...(restore
                           ? {
                               action: {
-                                label: 'Undo',
+                                label: tr('common:actions.undo'),
                                 onPress: () => {
                                   const done = restore()
                                   if (done.superseded.length > 0) {
-                                    const said = supersededToast(done)
+                                    const said = supersededToast(done, text)
                                     toast({
                                       title: said.title,
                                       ...(said.description === undefined
@@ -213,7 +224,7 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
                 id: preview.id,
                 title: preview.title,
                 body: preview.body,
-                subtitle: `${preview.tag} · from ${preview.from} · ${preview.model}${preview.when ? ` · ${preview.when}` : ''}`,
+                subtitle: `${tr('tailored.provenance', { tag: preview.tag, from: preview.fromName ?? domain.missingSource(), model: preview.model })}${preview.whenAt ? ` · ${domain.ago(preview.whenAt.day, preview.whenAt.today)}` : ''}`,
                 // Everything this panel lists was written by a model, by
                 // construction: `tailoredFor` filters on the record's stamp.
                 marked: true,
@@ -229,8 +240,8 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
         onClose={() => {
           setChoosing(false)
         }}
-        title="Tailor a document"
-        description="Takes a minute or two on a local model."
+        title={tr('tailored.chooseTitle')}
+        description={tr('tailored.chooseHint')}
         actions={chooser}
       />
     </Panel>
@@ -246,20 +257,27 @@ function TailoredCard({
   onPreview: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation(['components', 'common'])
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [menu, setMenu] = useState(false)
 
   const actions: MenuAction[] = [
-    { id: 'preview', label: 'Preview', icon: 'eye', onPress: onPreview },
+    { id: 'preview', label: t('common:actions.preview'), icon: 'eye', onPress: onPreview },
     {
       id: 'open',
-      label: 'Open in the Vault',
+      label: t('tailored.openInVault'),
       icon: 'external-link',
       onPress: () =>
         navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets', focus: s.id } }),
     },
-    { id: 'delete', label: 'Delete', icon: 'trash-2', tone: 'danger', onPress: onDelete },
+    {
+      id: 'delete',
+      label: t('common:actions.delete'),
+      icon: 'trash-2',
+      tone: 'danger',
+      onPress: onDelete,
+    },
   ]
 
   return (
@@ -283,7 +301,7 @@ function TailoredCard({
        */}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Preview ${s.title}`}
+        accessibilityLabel={t('tailored.previewNamed', { title: s.title })}
         onPress={onPreview}
         style={{ gap: 2 }}
       >
@@ -301,7 +319,7 @@ function TailoredCard({
           </Txt>
           <IconButton
             icon="more-horizontal"
-            label={`More actions for ${s.title}`}
+            label={t('common:actions.moreFor', { name: s.title })}
             onPress={() => {
               setMenu(true)
             }}
@@ -309,8 +327,12 @@ function TailoredCard({
         </View>
         {/* One line, because it reads as one sentence and now has the room. */}
         <Txt size="xs" tone="muted" numberOfLines={1}>
-          {s.tag} · from {s.from} · {s.model}
-          {s.when ? ` · ${s.when}` : ''}
+          {t('tailored.provenance', {
+            tag: s.tag,
+            from: s.fromName ?? domain.missingSource(),
+            model: s.model,
+          })}
+          {s.whenAt ? ` · ${domain.ago(s.whenAt.day, s.whenAt.today)}` : ''}
         </Txt>
       </Pressable>
 

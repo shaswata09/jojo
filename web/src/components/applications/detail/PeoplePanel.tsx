@@ -1,12 +1,8 @@
 import { type ReactNode, useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Plus, UserPlus, UserRound, X } from 'lucide-react'
-import {
-  CONTACT_ROLE_LABEL,
-  CONTACT_ROLE_VALUES,
-  type ContactRole,
-  type Person,
-} from '@jojo/service/core/model'
+import { CONTACT_ROLE_VALUES, type ContactRole, type Person } from '@jojo/service/core/model'
 import { useVault } from '@jojo/service/react/use-vault'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -23,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Who is on this application: the people writing for it and the people you
@@ -73,6 +70,8 @@ function NameThenPlace({
 }
 
 export function PeoplePanel({ applicationId }: { applicationId: string }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const { people, forApplication, addPerson, filePerson, unfilePerson, removePerson } = useVault()
   const { toast } = useToast()
   const here = forApplication(applicationId).people
@@ -86,8 +85,6 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
   const [role, setRole] = useState<ContactRole>('recommender')
 
   const roleOf = (p: Person) => p.roles?.[applicationId]
-  const asRole = (r: ContactRole | undefined) =>
-    r === undefined ? 'named' : `named as ${CONTACT_ROLE_LABEL[r].toLowerCase()}`
 
   const close = () => {
     setOpen(false)
@@ -98,10 +95,13 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
     const { ok, restore } = filePerson(p.id, applicationId, role)
     close()
     if (!ok) {
-      toast({ title: 'Could not add them', description: p.name, tone: 'danger' })
+      toast({ title: t('people.couldNotAdd'), description: p.name, tone: 'danger' })
       return
     }
-    toast({ title: `${p.name} ${asRole(role)}`, action: { label: 'Undo', onClick: restore } })
+    toast({
+      title: t('people.filedAs', { name: p.name, role: domain.contactRole(role) }),
+      action: { label: t('common.undo'), onClick: restore },
+    })
   }
 
   const addNew = (name: string) => {
@@ -115,13 +115,16 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
         roles: { [applicationId]: role },
       })
       toast({
-        title: `${trimmed} added and ${asRole(role)}`,
-        description: 'Their details can be filled in from the Vault.',
+        title: t('people.addedAs', {
+          name: trimmed,
+          role: domain.contactRole(role),
+        }),
+        description: t('people.addedBody'),
         // Removing the person they just created is exactly the gesture undone.
-        action: { label: 'Undo', onClick: () => removePerson(created.id) },
+        action: { label: t('common.undo'), onClick: () => removePerson(created.id) },
       })
     } catch {
-      toast({ title: 'Could not add them', description: trimmed, tone: 'danger' })
+      toast({ title: t('people.couldNotAdd'), description: trimmed, tone: 'danger' })
     }
   }
 
@@ -129,7 +132,7 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
     const changed = filePerson(p.id, applicationId, next)
     if (!changed.ok) {
       toast({
-        title: 'That did not save',
+        title: t('common.didNotSave'),
         description: changed.refusal ?? p.name,
         tone: 'danger',
       })
@@ -139,9 +142,9 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
     toast({
       title:
         next === null
-          ? `${p.name}: no role`
-          : `${p.name} is now ${CONTACT_ROLE_LABEL[next].toLowerCase()}`,
-      action: { label: 'Undo', onClick: restore },
+          ? t('people.noRole', { name: p.name })
+          : t('people.nowRole', { name: p.name, role: domain.contactRole(next) }),
+      action: { label: t('common.undo'), onClick: restore },
     })
   }
 
@@ -149,17 +152,17 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
     const removed = unfilePerson(p.id, applicationId)
     if (!removed.ok) {
       toast({
-        title: 'That did not save',
-        description: removed.refusal ?? `${p.name} is still on this application.`,
+        title: t('common.didNotSave'),
+        description: removed.refusal ?? t('people.stillOn', { name: p.name }),
         tone: 'danger',
       })
       return
     }
     const { restore } = removed
     toast({
-      title: `${p.name} taken off this application`,
-      description: 'They are still in the Vault, and on their other applications.',
-      action: { label: 'Undo', onClick: restore },
+      title: t('people.takenOff', { name: p.name }),
+      description: t('people.takenOffBody'),
+      action: { label: t('common.undo'), onClick: restore },
     })
   }
 
@@ -170,15 +173,15 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
 
   return (
     <Panel>
-      <PanelTitle hint={here.length > 0 ? `${here.length} on this application` : undefined}>
-        People
+      <PanelTitle hint={here.length > 0 ? t('people.hint', { count: here.length }) : undefined}>
+        {t('people.title')}
       </PanelTitle>
 
       {here.length === 0 ? (
         <EmptyState
           icon={UserRound}
-          title="Nobody on this yet"
-          description="Name the people writing your letters and the people you deal with there. Recommenders show up on the list you can send them from the Vault."
+          title={t('people.emptyTitle')}
+          description={t('people.emptyBody')}
         />
       ) : (
         <ul className="flex flex-col">
@@ -213,7 +216,7 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
                     as one group under the name, never with the × on its own. */}
                 <div className="flex shrink-0 items-center gap-1">
                   <label className="sr-only" htmlFor={`role-${p.id}`}>
-                    {`${p.name}'s role on this application`}
+                    {t('people.roleLabel', { name: p.name })}
                   </label>
                   <select
                     id={`role-${p.id}`}
@@ -228,17 +231,17 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
                   >
                     {CONTACT_ROLE_VALUES.map((v) => (
                       <option key={v} value={v}>
-                        {CONTACT_ROLE_LABEL[v]}
+                        {domain.contactRole(v)}
                       </option>
                     ))}
-                    <option value="">No role</option>
+                    <option value="">{t('people.noRoleOption')}</option>
                   </select>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="size-8 shrink-0 text-text-3"
-                    aria-label={`Take ${p.name} off this application`}
-                    title="Take off this application"
+                    aria-label={t('people.takeOff', { name: p.name })}
+                    title={t('people.takeOffTitle')}
                     onClick={() => takeOff(p)}
                   >
                     <X className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -260,14 +263,14 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="mt-3">
             <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            Add person
+            {t('people.add')}
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-80 p-0">
           {/* The role first, because it is the one thing a name does not say. */}
           <div
             role="radiogroup"
-            aria-label="Add them as"
+            aria-label={t('people.addAs')}
             className="flex gap-1 border-b border-hairline p-2"
           >
             {CONTACT_ROLE_VALUES.map((v) => (
@@ -284,22 +287,20 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
                     : 'border-transparent text-text-3 hover:text-text-2',
                 )}
               >
-                {CONTACT_ROLE_LABEL[v]}
+                {domain.contactRole(v)}
               </button>
             ))}
           </div>
-          <Command label="Search people">
+          <Command label={t('people.search')}>
             <CommandInput
-              placeholder="Search people, or type a new name…"
+              placeholder={t('people.searchPlaceholder')}
               value={query}
               onValueChange={setQuery}
             />
             <CommandList>
-              <CommandEmpty>
-                {offerNew ? null : 'Nobody else in the Vault matches that.'}
-              </CommandEmpty>
+              <CommandEmpty>{offerNew ? null : t('people.noMatch')}</CommandEmpty>
               {others.length > 0 ? (
-                <CommandGroup heading="In the Vault">
+                <CommandGroup heading={t('people.inVault')}>
                   {others.map((p) => (
                     <CommandItem
                       key={p.id}
@@ -322,7 +323,7 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
                 </CommandGroup>
               ) : null}
               {offerNew ? (
-                <CommandGroup heading="New">
+                <CommandGroup heading={t('people.new')}>
                   {/* `value` is the typed text itself, so cmdk always matches it. */}
                   <CommandItem value={`${typed} __new`} onSelect={() => addNew(typed)}>
                     <UserPlus
@@ -330,7 +331,7 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
                       strokeWidth={1.8}
                       aria-hidden
                     />
-                    <span className="truncate">Add “{typed}” as a new person</span>
+                    <span className="truncate">{t('people.addNew', { name: typed })}</span>
                   </CommandItem>
                 </CommandGroup>
               ) : null}

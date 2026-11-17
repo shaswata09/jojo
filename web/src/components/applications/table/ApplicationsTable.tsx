@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useLocation } from 'react-router'
 import { ArrowDown, ArrowUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { openRail } from '@/components/applications/open-rail'
 import { StageMenu } from '@/components/applications/StageMenu'
 import { FlagButton, RowMenu } from '@/components/applications/table/RowControls'
@@ -8,14 +9,15 @@ import type { RowActions } from '@/components/applications/use-row-actions'
 import { Chip } from '@/components/common/Chip'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { PanelScroll } from '@/components/common/Panel'
-import { STAGE_LABEL, displayName, type Application } from '@/data/seed'
-import { addDays, agoLabel, compareItems, daysBetween, shortDate, whenLabel } from '@/data/timeline'
+import { displayName, type Application } from '@/data/seed'
+import { addDays, compareItems, daysBetween } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { refKey } from '@/lib/ids'
 import { appPath, listStateOf, type ApplicationsSortKey } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { domain as domainText, useDomain } from '@/i18n/domain'
 
 /**
  * The words come from `agoLabel`, so this column speaks the same past tense as
@@ -28,7 +30,7 @@ import { cn } from '@/lib/utils'
  * as a cell value.
  */
 function activityLabel(daysAgo: number) {
-  const ago = agoLabel(addDays(TODAY, -daysAgo), TODAY)
+  const ago = domainText.ago(addDays(TODAY, -daysAgo), TODAY)
   return ago.charAt(0).toUpperCase() + ago.slice(1)
 }
 
@@ -45,9 +47,11 @@ function nextDateOf(items: TimelineItem[] | undefined) {
 }
 
 function NextDateCell({ item }: { item?: TimelineItem }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   if (!item) {
     return (
-      <span className="text-text-3" aria-label="No date">
+      <span className="text-text-3" aria-label={t('common.noDate')}>
         —
       </span>
     )
@@ -60,10 +64,10 @@ function NextDateCell({ item }: { item?: TimelineItem }) {
 
   return (
     <span className={tone}>
-      {shortDate(item.date)}
+      {domain.shortDate(item.date)}
       {/* The colour carries this for anyone who can see it; the gap itself is
           only spoken, so the cell stays one date wide. */}
-      <span className="sr-only"> — {whenLabel(item, TODAY).toLowerCase()}</span>
+      <span className="sr-only"> — {domain.when(item, TODAY, { inline: true })}</span>
     </span>
   )
 }
@@ -88,6 +92,8 @@ export function ApplicationsTable({
   compact: boolean
   actions: RowActions
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const keep = listStateOf(useLocation().search)
   const { all: timelineItems } = useTimeline()
 
@@ -125,7 +131,7 @@ export function ApplicationsTable({
       // aria-sort belongs to the column, not to the control inside it — on the
       // button it described a button rather than a column of data.
       aria-sort={sort.key === k ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-      className={cn('py-2 pr-3 font-medium', align === 'right' && 'text-right')}
+      className={cn('py-2 pe-3 font-medium', align === 'right' && 'text-end')}
     >
       <button
         type="button"
@@ -147,7 +153,7 @@ export function ApplicationsTable({
   return (
     <PanelScroll>
       <table className="w-full min-w-[780px] text-sm">
-        <caption className="sr-only">Applications, sortable</caption>
+        <caption className="sr-only">{t('table.caption')}</caption>
         {/* Fixed widths for the four short columns, so Position keeps
             every pixel neither of them needs. */}
         <colgroup>
@@ -161,18 +167,18 @@ export function ApplicationsTable({
         <thead>
           {/* Sticky so the column labels survive scrolling. Needs its own
               background or rows show through as they pass under it. */}
-          <tr className="sticky top-0 z-[1] border-b border-hairline bg-panel text-left text-xs">
-            <SortHeader label="Position" k="role" />
-            <th scope="col" className="py-2 pr-3 font-medium text-text-3">
-              Role
+          <tr className="sticky top-0 z-[1] border-b border-hairline bg-panel text-start text-xs">
+            <SortHeader label={t('table.position')} k="role" />
+            <th scope="col" className="py-2 pe-3 font-medium text-text-3">
+              {t('table.role')}
             </th>
-            <SortHeader label="Stage" k="stage" />
-            <th scope="col" className="py-2 pr-3 font-medium text-text-3">
-              Next date
+            <SortHeader label={t('table.stage')} k="stage" />
+            <th scope="col" className="py-2 pe-3 font-medium text-text-3">
+              {t('table.nextDate')}
             </th>
-            <SortHeader label="Last activity" k="daysAgo" align="right" />
-            <th scope="col" className="py-2 text-right font-medium">
-              <span className="sr-only">Actions</span>
+            <SortHeader label={t('table.lastActivity')} k="daysAgo" align="right" />
+            <th scope="col" className="py-2 text-end font-medium">
+              <span className="sr-only">{t('table.actions')}</span>
             </th>
           </tr>
         </thead>
@@ -188,7 +194,7 @@ export function ApplicationsTable({
                 <th
                   scope="row"
                   className={cn(
-                    'relative pr-3 pl-2 text-left font-normal',
+                    'relative ps-2 pe-3 text-start font-normal',
                     compact ? 'py-1.5' : 'py-2.5',
                     isOpen && openRail,
                   )}
@@ -210,10 +216,10 @@ export function ApplicationsTable({
                       an untagged row costs no extra height. */}
                   <LabelChips recordId={refKey('app', a.id)} className="mt-1" />
                 </th>
-                <td className={cn('pr-3', compact ? 'py-1.5' : 'py-2.5')}>
+                <td className={cn('pe-3', compact ? 'py-1.5' : 'py-2.5')}>
                   <Chip className="font-normal">{a.roleTag}</Chip>
                 </td>
-                <td className={cn('pr-3', compact ? 'py-1.5' : 'py-2.5')}>
+                <td className={cn('pe-3', compact ? 'py-1.5' : 'py-2.5')}>
                   {/* The chip was only ever a label; it is the control
                       now, so the stage can be changed without a drag. */}
                   <StageMenu
@@ -222,22 +228,25 @@ export function ApplicationsTable({
                     trigger={
                       <button
                         type="button"
-                        aria-label={`Stage of ${displayName(a)}: ${STAGE_LABEL[a.stage]}. Change stage`}
+                        aria-label={t('table.stageOf', {
+                          name: displayName(a),
+                          stage: domain.stage(a.stage),
+                        })}
                         className="cursor-pointer rounded-sm"
                       >
                         <Chip stage={a.stage} className="font-normal">
-                          {STAGE_LABEL[a.stage]}
+                          {domain.stage(a.stage)}
                         </Chip>
                       </button>
                     }
                   />
                 </td>
-                <td className={cn('pr-3 text-xs whitespace-nowrap', compact ? 'py-1.5' : 'py-2.5')}>
+                <td className={cn('pe-3 text-xs whitespace-nowrap', compact ? 'py-1.5' : 'py-2.5')}>
                   <NextDateCell item={nextDates.get(a.id)} />
                 </td>
                 <td
                   className={cn(
-                    'tabular pr-3 text-right text-xs whitespace-nowrap text-text-3',
+                    'tabular pe-3 text-end text-xs whitespace-nowrap text-text-3',
                     compact ? 'py-1.5' : 'py-2.5',
                   )}
                 >

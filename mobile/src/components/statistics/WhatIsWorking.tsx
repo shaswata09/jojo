@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { comparisonsFor, MIN_ARM, rangeLabel } from '@jojo/service/core/segments'
@@ -7,6 +8,7 @@ import type { Arm, Comparison } from '@jojo/service/core/segments'
 import { useApplications } from '@/lib/store-context'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Which parts of the search are doing better, and whether that means anything.
@@ -32,6 +34,7 @@ import { space } from '@/theme/tokens'
 const pct = (n: number): `${number}%` => `${n}%`
 
 function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   const low = arm.interval.low * 100
   const width = Math.max(arm.interval.high * 100 - low, 1)
@@ -43,13 +46,16 @@ function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
           {arm.label}
         </Txt>
         <Txt size="xs" tone="secondary">
-          {arm.count} of {arm.of} · {arm.rate}% · likely {rangeLabel(arm)}
+          {t('working.arm', {
+            count: arm.count,
+            of: arm.of,
+            rate: arm.rate,
+            range: rangeLabel(arm),
+          })}
         </Txt>
       </View>
 
-      <View
-        style={{ height: 10, borderRadius: 5, backgroundColor: c.well, overflow: 'hidden' }}
-      >
+      <View style={{ height: 10, borderRadius: 5, backgroundColor: c.well, overflow: 'hidden' }}>
         {/* Where the true rate plausibly sits. */}
         <View
           style={{
@@ -81,10 +87,14 @@ function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
 }
 
 function Group({ c }: { c: Comparison }) {
+  const { t } = useTranslation('components')
+  const domain = useDomain()
   return (
     <View style={{ gap: space[2] }}>
       <Txt size="sm" weight="medium">
-        {c.measure === 'replied' ? 'Replies' : 'Interviews'}, by {c.dimension}
+        {c.measure === 'replied'
+          ? t('working.repliesBy', { dimension: domain.dimension(c.dimension) })
+          : t('working.interviewsBy', { dimension: domain.dimension(c.dimension) })}
       </Txt>
       <View style={{ gap: space[2.5] }}>
         {c.arms.map((arm) => (
@@ -93,17 +103,18 @@ function Group({ c }: { c: Comparison }) {
       </View>
       <Txt size="xs" tone="muted">
         {c.confident
-          ? `The ranges do not overlap, so this is a real difference — ${c.best.label.toLowerCase()} is worth more of your effort.`
-          : 'The ranges overlap, so this is two numbers rather than a difference. More records will separate them or close the gap.'}
-        {c.tooFew > 0
-          ? ` ${String(c.tooFew)} other ${c.tooFew === 1 ? 'group has' : 'groups have'} fewer than ${String(MIN_ARM)} records and ${c.tooFew === 1 ? 'is' : 'are'} not compared.`
-          : ''}
+          ? // As stored, not lowercased: an arm is a source or a role tag, a name
+            // the person wrote, and lowercasing it breaks a German noun.
+            t('working.confident', { best: c.best.label })
+          : t('working.overlap')}
+        {c.tooFew > 0 ? ` ${t('working.tooFew', { count: c.tooFew, min: MIN_ARM })}` : ''}
       </Txt>
     </View>
   )
 }
 
 export function WhatIsWorking() {
+  const { t } = useTranslation('components')
   const { all } = useApplications()
   const comparisons = useMemo(() => comparisonsFor(all), [all])
 
@@ -112,7 +123,7 @@ export function WhatIsWorking() {
 
   return (
     <Panel>
-      <PanelTitle hint="the band is where the true rate plausibly sits">What is working</PanelTitle>
+      <PanelTitle hint={t('working.hint')}>{t('working.title')}</PanelTitle>
       <View style={{ gap: space[5] }}>
         {comparisons.map((c) => (
           <Group key={`${c.dimension}:${c.measure}`} c={c} />

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import type { ReactElement } from 'react'
 import { publicUrl } from '@/lib/public-url'
 import { Check, Copy, Download, Loader2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -43,8 +45,12 @@ import { cn } from '@/lib/utils'
 
 type Family = 'chromium' | 'firefox' | 'safari'
 
-/** Which browser, and what its extensions page is called. */
-function detect(): { family: Family; name: string; scheme: string } {
+/**
+ * Which browser, and what its extensions page is called. `name` is null where
+ * the browser is not named, and the panel says "your browser" in the reader's
+ * language instead.
+ */
+function detect(): { family: Family; name: string | null; scheme: string } {
   const ua = navigator.userAgent
   if (ua.includes('Firefox/')) return { family: 'firefox', name: 'Firefox', scheme: 'about:addons' }
   // Order matters: Edge, Brave and Opera all carry 'Chrome' in the UA.
@@ -52,12 +58,13 @@ function detect(): { family: Family; name: string; scheme: string } {
   if (ua.includes('OPR/'))
     return { family: 'chromium', name: 'Opera', scheme: 'opera://extensions' }
   if (ua.includes('Chrome/'))
-    return { family: 'chromium', name: 'your browser', scheme: 'chrome://extensions' }
+    return { family: 'chromium', name: null, scheme: 'chrome://extensions' }
   if (ua.includes('Safari/')) return { family: 'safari', name: 'Safari', scheme: '' }
-  return { family: 'chromium', name: 'your browser', scheme: 'chrome://extensions' }
+  return { family: 'chromium', name: null, scheme: 'chrome://extensions' }
 }
 
 export function CaptureExtensionPanel() {
+  const { t } = useTranslation('settings')
   const { installed, version } = useCaptureInbox()
   const [copied, setCopied] = useState(false)
   const browser = detect()
@@ -74,18 +81,13 @@ export function CaptureExtensionPanel() {
 
   return (
     <Panel>
-      <PanelTitle>Keeping postings</PanelTitle>
+      <PanelTitle>{t('capture.title')}</PanelTitle>
 
       {/* Full width, matching the numbered steps below it. `max-w-prose` capped
           this at about sixty characters inside a card twice that wide, so the
           right half of the card was empty above a list that already spanned it —
           the paragraph read as a mistake rather than as a measure. */}
-      <p className="mb-4 text-sm text-text-2">
-        A job posting is the one document in your search that belongs to somebody else. The listing
-        comes down the week after the interview and takes the requirements with it. The jojo
-        extension saves a copy — the page as it read the day you filed it, with every image and
-        stylesheet folded in, so opening it a year later reaches nothing and needs no connection.
-      </p>
+      <p className="mb-4 text-sm text-text-2">{t('capture.intro')}</p>
 
       {/* Three states, and they are genuinely different: still asking, present,
           absent. A panel that renders "not installed" while it is still asking
@@ -93,7 +95,7 @@ export function CaptureExtensionPanel() {
       {installed === null ? (
         <div className="flex items-center gap-2 rounded-md border border-hairline bg-well px-3 py-2.5 text-sm text-text-3">
           <Loader2 className="size-4 animate-spin" strokeWidth={1.9} aria-hidden />
-          Checking this browser…
+          {t('capture.checking')}
         </div>
       ) : installed ? (
         <div
@@ -101,24 +103,19 @@ export function CaptureExtensionPanel() {
           role="status"
         >
           <Check className="size-4 shrink-0 text-success" strokeWidth={2.2} aria-hidden />
-          <span className="text-text-1">Installed and connected.</span>
+          <span className="text-text-1">{t('capture.installed')}</span>
           <span className="text-text-3">
-            Open a posting and click the jojo button in the toolbar — if you cannot see it, it is
-            behind the jigsaw-piece menu and needs pinning. Then come back to the Vault.
-            {version !== null ? ` Version ${version}.` : ''}
+            {t('capture.installedHint')}
+            {version !== null ? ` ${t('capture.version', { version })}` : ''}
           </span>
         </div>
       ) : browser.family === 'safari' ? (
         <div className="rounded-md border border-hairline bg-well px-3 py-2.5 text-sm text-text-2">
-          <p className="mb-1 font-medium text-text-1">Safari cannot run this extension.</p>
+          <p className="mb-1 font-medium text-text-1">{t('capture.safari.title')}</p>
           {/* Said plainly rather than left as a broken download. Safari
               extensions have to ship inside a signed Mac app — there is no
               standalone package format — so this is not a step jojo can shorten. */}
-          <p>
-            Safari only loads extensions that ship inside a signed Mac app, so there is nothing to
-            install here. Use Chrome, Edge, Brave or Firefox for capturing; everything else in jojo
-            works the same in Safari.
-          </p>
+          <p>{t('capture.safari.body')}</p>
         </div>
       ) : (
         <Install browser={browser} copied={copied} onCopy={copyScheme} />
@@ -132,11 +129,18 @@ function Install({
   copied,
   onCopy,
 }: {
-  browser: { family: Family; name: string; scheme: string }
+  browser: { family: Family; name: string | null; scheme: string }
   copied: boolean
   onCopy: () => void
 }) {
+  const { t } = useTranslation('settings')
   const firefox = browser.family === 'firefox'
+  /** The inline marks the steps use, named in the catalog strings. */
+  const marks: Record<string, ReactElement> = {
+    strong: <strong className="font-medium text-text-1" />,
+    muted: <span className="text-text-3" />,
+    code: <code className="rounded-sm bg-panel px-1 py-0.5 font-mono text-xs" />,
+  }
 
   return (
     <div className="space-y-4">
@@ -152,37 +156,25 @@ function Install({
             mistake. */}
         <a href={publicUrl('jojo-extension.zip')} download="jojo-extension.zip">
           <Download className="size-3.5" strokeWidth={2} aria-hidden />
-          Download the extension
+          {t('capture.download')}
         </a>
       </Button>
 
       {firefox ? (
         <div className="rounded-md border border-info-border bg-info-soft px-3 py-2.5 text-sm text-text-2">
-          <p className="mb-1 font-medium text-text-1">Firefox needs a signed copy.</p>
+          <p className="mb-1 font-medium text-text-1">{t('capture.firefox.title')}</p>
           <p>
-            Firefox is the one browser where this could be a single click — a Mozilla-signed add-on
-            can be installed straight from a link here, with no store listing. jojo does not produce
-            a signed build yet, so for now load it temporarily from{' '}
-            <code className="rounded-sm bg-panel px-1 py-0.5 font-mono text-xs">
-              about:debugging
-            </code>{' '}
-            → This Firefox → Load Temporary Add-on, and pick{' '}
-            <code className="rounded-sm bg-panel px-1 py-0.5 font-mono text-xs">manifest.json</code>
-            . Firefox forgets it when it restarts.
+            <Trans t={t} i18nKey="capture.firefox.body" components={marks} />
           </p>
         </div>
       ) : (
         <ol className="space-y-3 text-sm text-text-2">
           <Step n={1}>
-            Unzip it somewhere permanent — not Downloads.{' '}
-            <span className="text-text-3">
-              The browser reads the extension from that folder every time it starts, so deleting or
-              moving it uninstalls the extension.
-            </span>
+            <Trans t={t} i18nKey="capture.steps.unzip" components={marks} />
           </Step>
 
           <Step n={2}>
-            Open the extensions page.{' '}
+            {t('capture.steps.open')}{' '}
             {/* Deliberately NOT a link: a web page is
                 not allowed to navigate to a chrome:// URL, so an anchor here
                 would do nothing and read as jojo's bug. */}
@@ -196,37 +188,26 @@ function Install({
                 ) : (
                   <Copy className="size-3.5" strokeWidth={2} aria-hidden />
                 )}
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? t('capture.steps.copied') : t('capture.steps.copy')}
               </Button>
-              <span className="text-xs text-text-3">Paste it into the address bar.</span>
+              <span className="text-xs text-text-3">{t('capture.steps.paste')}</span>
             </span>
           </Step>
 
           <Step n={3}>
-            Turn on <strong className="font-medium text-text-1">Developer mode</strong>, top right.{' '}
-            <span className="text-text-3">
-              Leave it on — turning it off disables extensions loaded this way, without saying so.
-            </span>
+            <Trans t={t} i18nKey="capture.steps.developer" components={marks} />
           </Step>
 
           <Step n={4}>
-            Click <strong className="font-medium text-text-1">Load unpacked</strong> and choose the
-            folder you unzipped.
+            <Trans t={t} i18nKey="capture.steps.load" components={marks} />
           </Step>
 
           <Step n={5}>
-            <strong className="font-medium text-text-1">Pin it.</strong> Click the jigsaw-piece
-            button in the toolbar and pin jojo.{' '}
-            <span className="text-text-3">
-              Chromium browsers hide every extension behind that menu by default, so the button
-              exists but is not on the toolbar — this is the step people miss, and it looks exactly
-              like the extension failing to install.
-            </span>
+            <Trans t={t} i18nKey="capture.steps.pin" components={marks} />
           </Step>
 
           <Step n={6}>
-            Come back here.{' '}
-            <span className="text-text-3">This panel notices on its own and turns green.</span>
+            <Trans t={t} i18nKey="capture.steps.back" components={marks} />
           </Step>
         </ol>
       )}
@@ -234,10 +215,7 @@ function Install({
       {/* Spans too, for the same reason the paragraph above it does: one card
           with two different measures reads as two cards that failed to align. */}
       <p className="text-xs text-text-3">
-        There is no one-click install for {browser.name}, and that is a browser decision rather than
-        a missing feature here: the API that allowed it was removed in 2018, and a signed package
-        would still have to come from the Chrome Web Store. Nothing about this extension talks to a
-        server — it reads the page you are looking at and hands the result to this tab.
+        {t('capture.noOneClick', { browser: browser.name ?? t('capture.yourBrowser') })}
       </p>
     </div>
   )

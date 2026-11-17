@@ -1,5 +1,6 @@
 import { MODEL_TIMEOUT_MS, stalled, unreachable } from '@jojo/service/core/model-server'
 import type { ModelRequest, ModelResponse } from '@jojo/service/core/model-server'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * One request to a service running on this machine, sent.
@@ -105,13 +106,13 @@ const browserBlocked = (target?: string) => {
      * rather than sending somebody to install something that will not help.
      */
     return isPrivate(target)
-      ? ' This page is on https, which browsers forbid from calling a plain http address — install the jojo extension, which relays that one hop to your own network for you. Or serve jojo over http.'
-      : ' This page is on https, which browsers forbid from calling a plain http address. Serve jojo over http, or put the model on this machine, on your own network, or behind https — the extension relays those, but not a plain http address on the public internet.'
+      ? ` ${i18next.t('messages:network.mixedPrivate')}`
+      : ` ${i18next.t('messages:network.mixedPublic')}`
   }
   if (pageIsHttps) {
-    return ' Both this page and that address are https, so this is not a mixed-content block. The likely cause is CORS: the server answered without the headers a browser needs to read a reply. Cloud providers generally do not send them, which is what the jojo extension is for — check it is installed and enabled.'
+    return ` ${i18next.t('messages:network.cors')}`
   }
-  return ' The browser would not say why. Either nothing is listening there, or the server answered without the CORS headers a browser needs to read a reply — which both of the services this app talks to do in some cases, so a server that is running can fail this way too.'
+  return ` ${i18next.t('messages:network.unknown')}`
 }
 
 /**

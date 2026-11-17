@@ -1,0 +1,311 @@
+{
+  "readCancelled": "A leitura foi cancelada.",
+  "backup": {
+    "prompt": {
+      "never_one": "{{count}} registro no jojo ainda não está em nenhum backup. Tudo aqui existe só neste navegador, então limpá-lo ou perder este computador faria você perdê-lo — baixe uma cópia e guarde em outro lugar.",
+      "never_many": "{{count}} registros no jojo ainda não estão em nenhum backup. Tudo aqui existe só neste navegador, então limpá-lo ou perder este computador faria você perdê-los — baixe uma cópia e guarde em outro lugar.",
+      "never_other": "{{count}} registros no jojo ainda não estão em nenhum backup. Tudo aqui existe só neste navegador, então limpá-lo ou perder este computador faria você perdê-los — baixe uma cópia e guarde em outro lugar.",
+      "since_one": "{{count}} registro mudou desde o seu último backup em {{day}}. Ele existe só neste navegador até você baixar uma cópia e guardá-la em outro lugar.",
+      "since_many": "{{count}} registros mudaram desde o seu último backup em {{day}}. Eles existem só neste navegador até você baixar uma cópia e guardá-la em outro lugar.",
+      "since_other": "{{count}} registros mudaram desde o seu último backup em {{day}}. Eles existem só neste navegador até você baixar uma cópia e guardá-la em outro lugar."
+    },
+    "failedTitle": "Não foi possível gravar o backup",
+    "failedDescription": "Seus registros não mudaram e nada foi salvo. Se o navegador bloqueou o download, confira as configurações de download dele.",
+    "documentsNotReady": "O índice de documentos ainda não tinha terminado de carregar, então um backup feito agora diria que você não tem nenhum. Nada foi gravado.",
+    "documentsUnreadable": "Nenhum dos documentos armazenados pôde ser lido, então o backup teria só os registros. Nada foi gravado.",
+    "savedTitle": "Backup salvo",
+    "startedTitle": "Backup iniciado",
+    "savedAll": "{{name}} contém seus registros e todos os documentos que você anexou.",
+    "savedSome_one": "{{name}} contém seus registros e {{written}} dos seus {{total}} documentos — {{count}} não pôde ser lido e não está incluído.",
+    "savedSome_many": "{{name}} contém seus registros e {{written}} dos seus {{total}} documentos — {{count}} não puderam ser lidos e não estão incluídos.",
+    "savedSome_other": "{{name}} contém seus registros e {{written}} dos seus {{total}} documentos — {{count}} não puderam ser lidos e não estão incluídos.",
+    "startedAll": "Procure {{name}} nos seus downloads. Ele contém seus registros e todos os documentos que você anexou.",
+    "startedSome_one": "Procure {{name}} nos seus downloads. Ele contém seus registros e {{written}} dos seus {{total}} documentos — {{count}} não pôde ser lido e não está incluído.",
+    "startedSome_many": "Procure {{name}} nos seus downloads. Ele contém seus registros e {{written}} dos seus {{total}} documentos — {{count}} não puderam ser lidos e não estão incluídos.",
+    "startedSome_other": "Procure {{name}} nos seus downloads. Ele contém seus registros e {{written}} dos seus {{total}} documentos — {{count}} não puderam ser lidos e não estão incluídos."
+  },
+  "extension": {
+    "stale": "A extensão do jojo neste navegador é mais antiga que esta página e não consegue levar a solicitação. Atualize-a: clique em Recarregar no jojo na página de extensões do navegador — ou, se você a instalou pelas Configurações, baixe-a de novo lá e carregue a pasta nova no lugar da antiga. Uma extensão descompactada nunca se atualiza sozinha.",
+    "oldScanner": "(A extensão do jojo neste navegador é uma versão antiga que não consegue seguir um site de vagas até o próprio subdomínio nem clicar em “Load more”. Clique em Recarregar no jojo na página de extensões do navegador.)",
+    "noAnswerBoard": "A extensão do jojo para o navegador não respondeu, então nenhum site de vagas pôde ser lido. É ela que permite ao jojo abrir uma página em que você está conectado; o instalador está nas Configurações.",
+    "boardUnreadable": "Não foi possível ler esse site de vagas.",
+    "pageUnsaved": "Não foi possível salvar essa página.",
+    "hostDidNotLoad": "{{host}} não carregou — o link pode estar errado, o site pode estar fora do ar ou você pode estar sem conexão. Abra-o em uma aba para ver o que ele mostra.",
+    "noAnswerPage": "A extensão do jojo para o navegador não respondeu, então a página não pôde ser aberta. O instalador está nas Configurações.",
+    "captureTimeout": "A extensão do jojo abriu a página, mas não terminou de salvá-la a tempo. Uma página muito pesada pode demorar mais — tente de novo, ou abra-a e use o botão Capture da extensão.",
+    "noAnswerReader": "A extensão do jojo para o navegador não respondeu, então não foi possível alcançar o leitor. É ela que permite a esta página falar com um leitor no seu próprio computador; o instalador está nas Configurações.",
+    "linkSwitchedOff": "A conexão foi desligada.",
+    "noAnswerLink": "A extensão do jojo para o navegador não respondeu. Em uma cópia do jojo servida pela web, é ela que leva a conexão até o jojo-bridge; o instalador está nas Configurações.",
+    "noAnswerProvider": "A extensão do jojo para o navegador não respondeu, então não foi possível alcançar o provedor. Provedores que não enviam cabeçalhos CORS só podem ser chamados por meio dela; o instalador está nas Configurações."
+  },
+  "posting": {
+    "localTarget": "Esse endereço está neste computador ou na sua própria rede, não em um site de vagas — o jojo não abre esse tipo de endereço.",
+    "nothingToReadWith": "Para ler uma vaga, é preciso a extensão do jojo para o navegador, que abre a página como você faria e a salva, ou o leitor de documentos, que a busca. Nenhum dos dois está configurado neste navegador — as Configurações têm os dois.",
+    "noBackgroundRoute": "Para ler sugestões antes de você olhá-las, é preciso a extensão do jojo para o navegador. O leitor de documentos só é usado para uma vaga que você mesmo abre.",
+    "notStored": "A página foi lida, mas este navegador não quis armazená-la — talvez o jojo esteja sem espaço. Nada foi guardado; libere um pouco de espaço e tente de novo.",
+    "nearlyEmptyExtension": "Essa página voltou quase vazia. Talvez ela não tenha terminado de carregar, ou talvez peça que você entre na conta — abra-a em uma aba e tente de novo quando ela mostrar a vaga.",
+    "nearlyEmptyReader": "Essa página voltou quase vazia. Sites de vagas que renderizam com JavaScript enviam uma página em branco para tudo que não seja um navegador — instale a extensão do jojo e ela abrirá a página como você faria.",
+    "notSaved": "Essa vaga não está salva, então não há nenhuma página para guardar para ela.",
+    "askedTwice": "Perguntado duas vezes, com o mesmo resultado."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "As duas vagas têm o mesmo ID de vaga.",
+      "url": "As duas têm o mesmo endereço de vaga.",
+      "name": "Mesmo empregador e mesmo cargo."
+    },
+    "deletedBefore": "O rascunho foi excluído antes que sua vaga pudesse ser lida.",
+    "deletedDuring": "O rascunho foi excluído enquanto sua vaga estava sendo lida.",
+    "updateFailed": "Não foi possível atualizar o rascunho."
+  },
+  "store": {
+    "remoteChangeTitle": "Atualizado em outra aba",
+    "remoteChangeDescription": "Seus registros foram recarregados, então o histórico de desfazer desta aba foi apagado.",
+    "heldTitle": "Outra aba do jojo está com o banco de dados aberto",
+    "heldDescription": "Ele será excluído assim que essa aba for fechada. Feche as outras abas e tente de novo.",
+    "deleteFailedTitle": "Não foi possível excluir o banco de dados",
+    "deleteFailedDescription": "{{error}}. Talvez outra aba ainda esteja com ele aberto.",
+    "demoNotLoaded": "Os dados de demonstração não foram carregados",
+    "recordsNotCleared": "Os registros não foram apagados",
+    "writeFailedDescription": "{{error}} Seus registros não mudaram."
+  },
+  "fileDelete": {
+    "refusedTitle": "Isso não foi excluído",
+    "stillInVault": "{{name}} ainda está no Cofre.",
+    "deletedTitle": "{{name}} excluído",
+    "deletedUnknown": "A linha, suas palavras-chave e qualquer cópia que o jojo guardou são removidas. O original no seu computador não é afetado.",
+    "deletedWithCopy": "A linha, suas palavras-chave e a cópia do documento guardada pelo jojo são removidas. O original no seu computador não é afetado.",
+    "deletedNoCopy": "A linha e suas palavras-chave são removidas. Não havia nenhuma cópia armazenada deste para perder.",
+    "undo": "Desfazer",
+    "lostTitle": "{{name}} voltou sem o documento",
+    "lostDescription": "A linha e suas palavras-chave foram restauradas, mas a cópia armazenada não. Solte o arquivo de novo para anexá-lo."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} está pronto",
+    "readyDescription": "Salvo na candidatura para a qual foi escrito.",
+    "failedTitle": "{{label}} não terminou"
+  },
+  "pdf": {
+    "passwordNeeded": "Esse PDF precisa de uma senha para abrir, então não pode ser editado aqui.",
+    "unreadable": "Não foi possível ler esse arquivo como PDF. {{detail}}",
+    "chooseOne": "Escolha pelo menos um PDF para mesclar.",
+    "pageNotIn_one": "{{name}} tem {{count}} página, então a página {{page}} não faz parte dele.",
+    "pageNotIn_many": "{{name}} tem {{count}} páginas, então a página {{page}} não faz parte dele.",
+    "pageNotIn_other": "{{name}} tem {{count}} páginas, então a página {{page}} não faz parte dele.",
+    "emptySelection": "Essa seleção não tem nenhuma página.",
+    "keepOnePage": "Um documento precisa manter pelo menos uma página.",
+    "planOutOfRange_one": "Este documento tem {{count}} página; o plano pede a página {{page}}.",
+    "planOutOfRange_many": "Este documento tem {{count}} páginas; o plano pede a página {{page}}.",
+    "planOutOfRange_other": "Este documento tem {{count}} páginas; o plano pede a página {{page}}.",
+    "noCanvas": "Este navegador não deu à página uma tela onde desenhar.",
+    "range": {
+      "noPages": "Esse documento não tem páginas.",
+      "emptyPart": "Há um intervalo vazio entre duas vírgulas.",
+      "partNamesNoPages": "'{{part}}' não indica nenhuma página.",
+      "backwards": "'{{part}}' está em ordem decrescente. Escreva como {{to}}-{{from}}.",
+      "notANumber": "'{{part}}' não é um número de página.",
+      "namesNoPages": "Esse intervalo não indica nenhuma página.",
+      "fromOne": "As páginas são numeradas a partir de 1.",
+      "pastEnd": "Este documento termina na página {{count}}, então a página {{page}} não faz parte dele."
+    },
+    "drop": {
+      "notPdf_one": "{{names}} não é um PDF",
+      "notPdf_many": "{{names}} não são PDFs",
+      "notPdf_other": "{{names}} não são PDFs",
+      "leftOut_one": "{{names}} ficou de fora — isto funciona com um documento por vez",
+      "leftOut_many": "{{names}} ficaram de fora — isto funciona com um documento por vez",
+      "leftOut_other": "{{names}} ficaram de fora — isto funciona com um documento por vez",
+      "one": "{{part}}.",
+      "both": "{{first}}, e {{second}}.",
+      "two": "{{first}} e {{second}}",
+      "three": "{{first}}, {{second}} e {{third}}",
+      "many": "{{count}} dos arquivos"
+    },
+    "colour": {
+      "yellow": "Amarelo",
+      "green": "Verde",
+      "blue": "Azul",
+      "pink": "Rosa",
+      "orange": "Laranja"
+    }
+  },
+  "noteSize": {
+    "small": "Pequeno",
+    "normal": "Normal",
+    "large": "Grande",
+    "huge": "Enorme"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Candidatura",
+      "organisation": "Organização",
+      "role": "Cargo",
+      "item": "Item da linha do tempo",
+      "keyword": "Palavra-chave",
+      "link": "Link",
+      "file": "Arquivo",
+      "snippet": "Trecho",
+      "posting": "Vaga salva",
+      "match": "Resultado do explorador",
+      "source": "Fonte",
+      "background": "Sobre você",
+      "claim": "Relação"
+    },
+    "savedAgo": "Salva {{ago}}",
+    "fit": "{{fit}}% de compatibilidade",
+    "count": {
+      "matches": "Correspondências",
+      "connections": "Conexões",
+      "hops": "Saltos",
+      "hop": "Salto"
+    },
+    "empty": {
+      "noMatch": "Nada nos seus registros corresponde a esse padrão.",
+      "noneMissing": "Nada está sem essa conexão — todo registro desse tipo tem uma.",
+      "noPath": "Nenhum caminho — nada nos seus dados liga esses dois registros.",
+      "noPathBetween": "Nenhum caminho entre esses dois registros."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Candidaturas sem acompanhamento agendado",
+        "hint": "A lacuna que custa entrevistas às pessoas."
+      },
+      "tagged": {
+        "label": "Tudo marcado com Referral",
+        "hint": "Uma palavra-chave, em todos os tipos de registro."
+      },
+      "repeatOrgs": {
+        "label": "Organizações às quais me candidatei mais de uma vez",
+        "hint": "Duas candidaturas no mesmo empregador, a partir de um mesmo nó de organização."
+      },
+      "looseReminders": {
+        "label": "Lembretes não vinculados a nenhuma candidatura",
+        "hint": "Trabalho que você vai fazer sem saber para que era."
+      },
+      "unusedFiles": {
+        "label": "Arquivos não usados por nenhuma candidatura",
+        "hint": "Documentos parados no Cofre sem servir para nada."
+      },
+      "bareApplications": {
+        "label": "Candidaturas sem nada arquivado no Cofre",
+        "hint": "Sem link, sem arquivo, sem trecho — geralmente uma que ainda não começou."
+      },
+      "path": {
+        "label": "Caminho mais curto entre dois registros",
+        "hint": "Como um arquivo e uma vaga à qual você se candidatou estão relacionados."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Empregador",
+      "position": "Cargo",
+      "postingLink": "Link da vaga",
+      "location": "Local",
+      "appliedOn": "Data da candidatura",
+      "stage": "Etapa",
+      "highlight": "Destacar",
+      "notes": "Observações para você",
+      "materials": "Materiais enviados"
+    },
+    "fileStem": "{{person}} — candidaturas {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "Nenhuma cópia desse documento está armazenada neste navegador, então não há nada para ler.",
+    "noReader": "Nenhum leitor de documentos está conectado, então o conteúdo deste arquivo não pode ser lido. O endereço dele fica nas Configurações.",
+    "noReaderToTryHarder": "{{reason}} Nenhum leitor de documentos está conectado para tentar com mais afinco — o endereço dele fica nas Configurações.",
+    "maybeScan": "Não foi possível extrair nada desse documento — talvez seja uma digitalização.",
+    "noAddress": "Ainda não há endereço. Veja as Configurações.",
+    "tooLarge": "Esse documento tem {{size}} MB e o leitor aceita até {{max}} MB."
+  },
+  "network": {
+    "mixedPrivate": "Esta página está em https, e os navegadores a proíbem de chamar um endereço http simples — instale a extensão do jojo, que faz esse salto até a sua própria rede por você. Ou sirva o jojo por http.",
+    "mixedPublic": "Esta página está em https, e os navegadores a proíbem de chamar um endereço http simples. Sirva o jojo por http, ou coloque o modelo neste computador, na sua própria rede ou atrás de https — a extensão encaminha esses, mas não um endereço http simples na internet pública.",
+    "cors": "Tanto esta página quanto esse endereço são https, então não é um bloqueio de conteúdo misto. A causa provável é CORS: o servidor respondeu sem os cabeçalhos de que um navegador precisa para ler uma resposta. Provedores de nuvem geralmente não os enviam, e é para isso que serve a extensão do jojo — verifique se ela está instalada e ativada.",
+    "unknown": "O navegador não disse o motivo. Ou não há nada escutando ali, ou o servidor respondeu sem os cabeçalhos CORS de que um navegador precisa para ler uma resposta — o que os dois serviços com que este app fala fazem em alguns casos, então um servidor que está funcionando também pode falhar assim."
+  },
+  "mcpLink": {
+    "notBridge": "Algo que não é o jojo-bridge (ou uma cópia antiga dele) está respondendo em {{address}}.",
+    "displaced": "Outra aba do jojo está com a conexão.",
+    "bridgeStatus": "O jojo-bridge respondeu {{status}}.",
+    "otherTab": "Outra aba do jojo neste navegador está com a conexão; esta assume quando aquela aba for fechada."
+  },
+  "roleScopeEmpty": {
+    "title": "Nenhuma candidatura para estes cargos",
+    "description": "O filtro de cargos na barra superior está ocultando todas as candidaturas que este gráfico conta.",
+    "showAll": "Mostrar todos os cargos"
+  },
+  "create": {
+    "newApplication": "Nova candidatura",
+    "fromLink": {
+      "label": "Candidatura a partir de um link",
+      "hint": "O modelo lê a vaga e preenche o formulário"
+    },
+    "newReminder": "Novo lembrete",
+    "newEvent": "Novo evento",
+    "draftMessage": {
+      "label": "Escrever uma mensagem",
+      "hint": "A partir dos seus trechos de e-mail — nada é gerado"
+    },
+    "saveLink": {
+      "label": "Salvar um link",
+      "hint": "Abre a ferramenta de links do Cofre"
+    },
+    "savePosting": {
+      "label": "Salvar uma vaga",
+      "hint": "Abre o Explorador de vagas"
+    }
+  },
+  "stroke": {
+    "tap": "Toque",
+    "doubleTap": "Toque duplo",
+    "hold": "Tocar e segurar",
+    "up": "Deslizar para cima",
+    "down": "Deslizar para baixo",
+    "side": "Deslizar para o lado",
+    "diagonal": "Movimento na diagonal",
+    "backForth": "Vai e volta",
+    "zigzag": "Zigue-zague lateral",
+    "scribbleUp": "Rabiscar para cima e para baixo",
+    "circle": "Círculo",
+    "square": "Quadrado",
+    "vee": "V (ou um visto)",
+    "peak": "Λ (um pico)",
+    "zed": "Z",
+    "arc": "Arco (um C)",
+    "ell": "L",
+    "triangle": "Triângulo",
+    "other": "Qualquer outra coisa"
+  },
+  "move": {
+    "nod": "Acenar com a cabeça",
+    "shake": "Balançar a cabeça",
+    "hi": "Oi",
+    "bow": "Reverência",
+    "leanIn": "Inclinar-se",
+    "wobble": "Cambalear",
+    "bounce": "Quicar",
+    "spin": "Girar",
+    "recoil": "Recuar",
+    "startle": "Susto",
+    "dance": "Dançar",
+    "shrug": "Dar de ombros",
+    "lookAround": "Olhar em volta",
+    "hopSpin": "Pulo com giro",
+    "stretch": "Alongar",
+    "flex": "Mostrar os músculos",
+    "jab": "Sequência de socos",
+    "powerUp": "Carregar energia",
+    "doze": "Cochilar",
+    "wink": "Piscar",
+    "love": "Amor",
+    "robot": "Dança do robô",
+    "jazz": "Mãos de jazz",
+    "point": "Apontar",
+    "hero": "Pose de herói",
+    "handsUp": "Mãos para cima",
+    "disco": "Disco",
+    "typing": "Digitando",
+    "drumroll": "Rufar de tambores"
+  }
+}

@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 import { Arrow, Elbow, Rule } from '@/components/guide/diagrams/parts'
 
@@ -60,6 +61,8 @@ const APP_CX = APP_X + APP_W / 2
 const centre = (x: number, w: number) => x + w / 2
 
 export function RecordModelDiagram() {
+  const { t } = useTranslation('guideReference')
+  const [storedFirst, storedSecond] = t('diagrams.recordModel.storedNotDrawn').split('\n')
   const id = useId()
   const titleId = `${id}-title`
   const descId = `${id}-desc`
@@ -72,25 +75,8 @@ export function RecordModelDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>
-          The eleven kinds of record jojo stores and the seven ways one can point at another
-        </title>
-        <desc id={descId}>
-          The application sits at the centre and almost everything points at it. A timeline item is
-          ABOUT an application, and may be about several at once. A link, a file and a snippet are
-          each FILED_UNDER an application, and may be filed under several. A saved posting or a
-          scout match BECAME one. An application is AT an organisation, and may be a COPY_OF another
-          application. A keyword TAGS five kinds of record — applications, timeline items, links,
-          files and snippets. Three of the seven relations may be carried more than once — ABOUT,
-          FILED_UNDER and TAGS; the other four are at most one per record, so linking again replaces
-          the link that was there. Two stored types are not drawn on the Graph page at all:
-          pipeline, which a saved posting or a match came FROM, and profile, which no relation joins
-          to anything. COPY_OF and that FROM are stored but likewise never drawn, and are dotted
-          here for it. Below the rule are the two things the Graph page draws that the store has
-          never held: role and source. They are properties of an application — its roleTag and its
-          source — shown as nodes joined by an IS edge and a second edge also called FROM, neither
-          of which is written down anywhere.
-        </desc>
+        <title id={titleId}>{t('diagrams.recordModel.title')}</title>
+        <desc id={descId}>{t('diagrams.recordModel.desc')}</desc>
 
         {/* ------------------------------ TAGS ------------------------------ */}
         {/* A bracket rather than five arrows. Drawing the fan out honestly put
@@ -233,7 +219,12 @@ export function RecordModelDiagram() {
         <Box x={96} y={BAND_4} w={76} h={BOX_H} label="pipeline" />
         <Box x={178} y={BAND_4} w={76} h={BOX_H} label="profile" />
 
-        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none" strokeDasharray={DASH.derived}>
+        <g
+          stroke="var(--hairline-strong)"
+          strokeWidth={1}
+          fill="none"
+          strokeDasharray={DASH.derived}
+        >
           <line x1={134} y1={BAND_3 + BOX_H} x2={134} y2={BAND_4 - 5} />
           <line x1={216} y1={BAND_3 + BOX_H} x2={160} y2={BAND_4 - 5} />
         </g>
@@ -243,10 +234,10 @@ export function RecordModelDiagram() {
           FROM
         </text>
         <text x={270} y={270} fontSize={9} fill="var(--text-2)">
-          stored, but not
+          {storedFirst}
         </text>
         <text x={270} y={282} fontSize={9} fill="var(--text-2)">
-          drawn on the Graph page
+          {storedSecond}
         </text>
 
         {/* ----------------- drawn, and never stored, below ------------------ */}
@@ -260,7 +251,7 @@ export function RecordModelDiagram() {
           strokeDasharray={DASH.soft}
         />
         <text x={6} y={326} fontSize={9.5} fill="var(--text-2)">
-          drawn on the Graph page, never written down
+          {t('diagrams.recordModel.drawnNeverStored')}
         </text>
 
         <Box x={6} y={344} w={96} h={BOX_H} label="application" />
@@ -280,10 +271,10 @@ export function RecordModelDiagram() {
           FROM
         </text>
         <text x={248} y={352} fontSize={9} fill="var(--text-3)">
-          the roleTag prop
+          {t('diagrams.recordModel.roleTagProp')}
         </text>
         <text x={248} y={388} fontSize={9} fill="var(--text-3)">
-          the source prop
+          {t('diagrams.recordModel.sourceProp')}
         </text>
       </svg>
 
@@ -291,19 +282,11 @@ export function RecordModelDiagram() {
           description. A drawing whose only text equivalent is an alt attribute
           is decoration with a compliance note attached. */}
       <figcaption className="mt-3 text-sm text-text-2">
-        Eleven kinds of record, and seven relations joining them.{' '}
-        <span className="font-mono text-xs text-text-1">ABOUT</span>,{' '}
-        <span className="font-mono text-xs text-text-1">FILED_UNDER</span> and{' '}
-        <span className="font-mono text-xs text-text-1">TAGS</span> may each be carried more than
-        once — one CV goes to every application you send it to — while the other four are at most
-        one per record, so linking again replaces the link rather than adding a second. Two stored
-        types are never drawn on the Graph page:{' '}
-        <span className="font-mono text-xs text-text-1">pipeline</span>, which a saved posting or a
-        match came from, and <span className="font-mono text-xs text-text-1">profile</span>, which
-        no relation joins to anything at all. Below the rule are the two things the Graph page draws
-        that were never stored: <span className="font-mono text-xs text-text-1">role</span> and{' '}
-        <span className="font-mono text-xs text-text-1">source</span> are properties of an
-        application, promoted to nodes for the picture and written down nowhere.
+        <Trans
+          t={t}
+          i18nKey="diagrams.recordModel.caption"
+          components={{ code: <span className="font-mono text-xs text-text-1" /> }}
+        />
       </figcaption>
     </figure>
   )
@@ -358,5 +341,3 @@ function Box({
     </>
   )
 }
-
-

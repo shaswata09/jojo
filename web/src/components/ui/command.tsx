@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Command as CommandPrimitive } from 'cmdk'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '@/lib/utils'
 import {
@@ -31,8 +32,8 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
 }
 
 function CommandDialog({
-  title = 'Command Palette',
-  description = 'Search for a command to run...',
+  title,
+  description,
   children,
   className,
   showCloseButton = false,
@@ -43,6 +44,7 @@ function CommandDialog({
   className?: string
   showCloseButton?: boolean
 }) {
+  const { t } = useTranslation()
   // Same guarantee ConfirmDialog makes: a closed palette is not mounted at all,
   // so closing it tears the portal, the focus trap and the `aria-hidden` Radix
   // stamps on the app shell down in one commit rather than leaving them to an
@@ -63,8 +65,8 @@ function CommandDialog({
             title Radix points `aria-labelledby` at lived in a different tree
             from the dialog it names. */}
         <DialogHeader className="sr-only">
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{title ?? t('command.title')}</DialogTitle>
+          <DialogDescription>{description ?? t('command.description')}</DialogDescription>
         </DialogHeader>
         {children}
       </DialogContent>
@@ -78,7 +80,7 @@ function CommandInput({
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
-      <InputGroup className="h-8! rounded-lg! border-input/30 bg-input/30 shadow-none! *:data-[slot=input-group-addon]:pl-2!">
+      <InputGroup className="h-8! rounded-lg! border-input/30 bg-input/30 shadow-none! *:data-[slot=input-group-addon]:ps-2!">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
@@ -165,7 +167,7 @@ function CommandItem({
       {...props}
     >
       {children}
-      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+      <CheckIcon className="ms-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
   )
 }
@@ -175,7 +177,7 @@ function CommandShortcut({ className, ...props }: React.ComponentProps<'span'>) 
     <span
       data-slot="command-shortcut"
       className={cn(
-        'ml-auto text-xs tracking-widest text-muted-foreground group-data-selected/command-item:text-foreground',
+        'ms-auto text-xs tracking-widest text-muted-foreground group-data-selected/command-item:text-foreground',
         className,
       )}
       {...props}

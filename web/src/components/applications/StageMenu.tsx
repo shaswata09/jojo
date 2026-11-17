@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { STAGES, STAGE_DOT, STAGE_LABEL } from '@/data/seed'
+import { STAGES, STAGE_DOT } from '@/data/seed'
 import type { Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * `STAGE_LABEL` and `STAGE_DOT` used to be declared here and imported from
@@ -52,6 +54,8 @@ export function StageMenu({
   /** Replaces the default stage pill. Must be a single element — it is `asChild`. */
   trigger?: ReactElement
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const [uncontrolled, setUncontrolled] = useState(false)
   const isOpen = open ?? uncontrolled
 
@@ -66,21 +70,23 @@ export function StageMenu({
         {trigger ?? (
           <button
             type="button"
-            aria-label={`Stage: ${STAGE_LABEL[value]}. Change stage`}
+            aria-label={t('stageMenu.trigger', { stage: domain.stage(value) })}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-sm border border-hairline bg-well px-1.5 py-0.5 text-xs font-medium text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent',
               className,
             )}
           >
             <span className={cn('size-1.5 shrink-0 rounded-full', STAGE_DOT[value])} aria-hidden />
-            {STAGE_LABEL[value]}
+            {domain.stage(value)}
             <ChevronDown className="size-3 text-text-3" strokeWidth={2} aria-hidden />
           </button>
         )}
       </PopoverTrigger>
 
       <PopoverContent align={align} className="w-48 gap-1 p-1.5">
-        <div className="px-1 text-xs tracking-wide text-text-3 uppercase">Move to</div>
+        <div className="px-1 text-xs tracking-wide text-text-3 uppercase">
+          {t('stageMenu.moveTo')}
+        </div>
         {/*
           Plain buttons rather than role="radio": the radiogroup pattern owes a
           roving tabindex and arrow-key selection, and claiming the role without
@@ -97,7 +103,11 @@ export function StageMenu({
                   // Selecting the stage it is already in would be a button that
                   // does nothing, so it says why instead.
                   disabled={current}
-                  title={current ? `Already in ${stage.label}` : undefined}
+                  title={
+                    current
+                      ? t('stageMenu.alreadyIn', { stage: domain.stage(stage.id) })
+                      : undefined
+                  }
                   aria-current={current ? 'true' : undefined}
                   onClick={() => {
                     onSelect(stage.id)
@@ -111,11 +121,11 @@ export function StageMenu({
                   )}
                 >
                   <span className={cn('size-1.5 shrink-0 rounded-full', stage.dot)} aria-hidden />
-                  {stage.label}
+                  {domain.stage(stage.id)}
                   {current ? (
                     <>
-                      <Check className="ml-auto size-3.5 shrink-0 text-accent" aria-hidden />
-                      <span className="sr-only">Current stage</span>
+                      <Check className="ms-auto size-3.5 shrink-0 text-accent" aria-hidden />
+                      <span className="sr-only">{t('stageMenu.current')}</span>
                     </>
                   ) : null}
                 </button>

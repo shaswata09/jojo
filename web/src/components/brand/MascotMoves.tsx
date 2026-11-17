@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { GESTURES, type MascotPose } from '@/lib/mascot-context'
 import { PAD_STROKES, strokesFor } from '@/lib/gesture-pad'
 import { cn } from '@/lib/utils'
@@ -28,13 +29,18 @@ function StrokeIcon({ path, className }: { path: string; className?: string }) {
   )
 }
 
-const LABEL = Object.fromEntries(GESTURES.map((g) => [g.pose, g.label])) as Record<
-  Exclude<MascotPose, 'idle'>,
-  string
->
+/**
+ * A move's name, in the language on screen. Read at render through the
+ * `GESTURES` getters — a table built from them at module scope was sampled once
+ * at import, which is how Settings listed "Wobble" and "Robot dance" in English
+ * under a translated heading.
+ */
+const labelOf = (pose: MascotPose) => GESTURES.find((g) => g.pose === pose)?.label ?? pose
 
 /** Every move as a button that plays it, with the stroke(s) that also do. */
 export function MoveList({ onPlay }: { onPlay: (pose: MascotPose) => void }) {
+  // Subscribes the list to a language change; the labels are i18next getters.
+  useTranslation('messages')
   return (
     <ul className="flex flex-col">
       {GESTURES.map(({ pose, label }) => {
@@ -44,7 +50,7 @@ export function MoveList({ onPlay }: { onPlay: (pose: MascotPose) => void }) {
             <button
               type="button"
               onClick={() => onPlay(pose)}
-              className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-foreground/5 focus-visible:bg-foreground/5 focus-visible:outline-none"
+              className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-start text-sm hover:bg-foreground/5 focus-visible:bg-foreground/5 focus-visible:outline-none"
             >
               <span>{label}</span>
               {strokes.length ? (
@@ -67,17 +73,24 @@ export function MoveList({ onPlay }: { onPlay: (pose: MascotPose) => void }) {
 
 /** The strokes alone, each with the move it plays — for Settings. */
 export function StrokeLegend({ className }: { className?: string }) {
+  const { t } = useTranslation('brand')
   return (
     <ul className={cn('grid gap-x-4 gap-y-1.5 text-xs', className)}>
       {PAD_STROKES.map((s) => (
-        <li key={s.id} className="flex items-center gap-1.5 sm:whitespace-nowrap">
+        // Wraps below `sm`, and the move's name may break inside a word: in
+        // the narrow column a phone gives it, one long German word
+        // ("Schlagkombination") ran past the card and scrolled the page.
+        <li
+          key={s.id}
+          className="flex flex-wrap items-center gap-x-1.5 sm:flex-nowrap sm:whitespace-nowrap"
+        >
           <StrokeIcon path={s.icon} className="size-3.5 text-text-3" />
           <span className="text-text-2">{s.label}</span>
-          <span aria-hidden className="text-text-3">
+          <span aria-hidden className="inline-block text-text-3 rtl:-scale-x-100">
             →
           </span>
-          <span className="sr-only">plays</span>
-          <span className="text-text-1">{LABEL[s.pose]}</span>
+          <span className="sr-only">{t('moves.plays')}</span>
+          <span className="min-w-0 wrap-anywhere hyphens-auto text-text-1">{labelOf(s.pose)}</span>
         </li>
       ))}
     </ul>
@@ -97,9 +110,10 @@ const link = 'underline decoration-foreground/30 underline-offset-2 hover:decora
  * in THIRD-PARTY-NOTICES.md.
  */
 export function MascotCredit({ className }: { className?: string }) {
+  const { t } = useTranslation('brand')
   return (
     <p className={cn('text-xs leading-relaxed text-text-3', className)}>
-      Robot model:{' '}
+      {t('moves.modelCredit')}{' '}
       <a href={MODEL_URL} target="_blank" rel="noreferrer noopener" className={link}>
         &ldquo;Sci-fi O.B. Robot Unit TH-ICC02 (animated)&rdquo;
       </a>{' '}

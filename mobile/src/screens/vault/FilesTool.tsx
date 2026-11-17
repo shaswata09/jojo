@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { i18next } from '@/i18n/i18n'
 import { TODAY } from '@/lib/today'
 import { trashDocument } from '@/lib/documents'
 import { Pressable, StyleSheet, View } from 'react-native'
@@ -16,8 +18,7 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { filedUnderLabel } from '@jojo/service/data/seed'
-import { agoLabel } from '@jojo/service/data/timeline'
+import { displayName } from '@jojo/service/data/seed'
 import { FILE_BUCKETS } from '@jojo/service/data/vault'
 import type { FileBucket, VaultFile } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
@@ -33,6 +34,7 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { TourTarget } from '@/components/tour/TourTarget'
 import { report } from '@/lib/analytics'
+import { useDomain } from '@/i18n/domain'
 
 const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
   FileBucket,
@@ -53,6 +55,8 @@ const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Rec
  * two kinds apart rather than treating the second as a failure of the first.
  */
 export function FilesTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const c = useColors()
   const { files, addFile, updateFile, removeFile } = useVault()
   const { byId } = useApplications()
@@ -113,11 +117,11 @@ export function FilesTool({ focus }: { focus?: string }) {
     })
 
     toast({
-      title: 'Document removed',
+      title: t('files.toast.removed'),
       description: f.name,
       tone: 'danger',
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => {
           restore()
           void restoreBytes?.()
@@ -130,9 +134,9 @@ export function FilesTool({ focus }: { focus?: string }) {
     const { id: _id, savedOn: _savedOn, ...rest } = f
     const copy = addFile({ ...rest, name: copyName(f.name) })
     toast({
-      title: 'Document duplicated',
+      title: t('files.toast.duplicated'),
       description: copy.name,
-      action: { label: 'Undo', onPress: () => removeFile(copy.id) },
+      action: { label: t('common.undo'), onPress: () => removeFile(copy.id) },
     })
   }
 
@@ -154,10 +158,10 @@ export function FilesTool({ focus }: { focus?: string }) {
     updateFile(f.id, { applicationIds })
     const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: capitalize(filedUnderLabel(chosen)),
+      title: capitalize(domain.filedUnder(chosen.map(displayName))),
       description: f.name,
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => updateFile(f.id, { applicationIds: before }),
       },
     })
@@ -167,15 +171,13 @@ export function FilesTool({ focus }: { focus?: string }) {
     const before = f.bucket
     updateFile(f.id, { bucket: next })
     toast({
-      title: `Moved to ${next}`,
+      title: t('common.movedTo', { name: next }),
       description: f.name,
-      action: { label: 'Undo', onPress: () => updateFile(f.id, { bucket: before }) },
+      action: { label: t('common.undo'), onPress: () => updateFile(f.id, { bucket: before }) },
     })
   }
 
-  const addButton = (
-    <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
-  )
+  const addButton = <Button label={t('files.add')} icon="plus" onPress={() => setEditing('new')} />
 
   const empty = vaultEmptyState({
     total: files.length,
@@ -188,31 +190,30 @@ export function FilesTool({ focus }: { focus?: string }) {
     copy: {
       icon: 'file-text',
       zero: {
-        title: 'No documents yet',
-        description:
-          'Your CV, statements, talks and admin scans. Names, sizes and types are recorded — nothing reads the file itself.',
+        title: t('files.empty.zeroTitle'),
+        description: t('files.empty.zeroDescription'),
       },
-      search: (q) => `No document mentions "${q}" in its name, note or bucket.`,
-      both: `No document in ${bucket} carries the selected keywords.`,
+      search: (q) => t('files.empty.search', { query: q }),
+      both: t('files.empty.both', { bucket }),
       bucket: {
-        title: `Nothing in ${bucket}`,
-        description: `${String(files.length)} documents are filed under the other buckets.`,
-        clearLabel: 'Show all buckets',
+        title: t('files.empty.bucketTitle', { bucket }),
+        description: t('files.empty.bucketDescription', { count: files.length }),
+        clearLabel: t('files.empty.showAll'),
       },
-      keywords: { title: 'No documents carry those keywords' },
+      keywords: { title: t('files.empty.keywordsTitle') },
     },
   })
 
   return (
     <>
       <SearchInput
-        label="Search documents"
+        label={t('files.search.label')}
         value={query}
         onChange={setQuery}
-        placeholder="Search name, note or bucket"
+        placeholder={t('files.search.placeholder')}
       />
       <BucketFilter
-        label="Filter documents"
+        label={t('files.filterLabel')}
         options={FILE_BUCKETS}
         labels={BUCKET_LABELS}
         counts={counts}
@@ -220,7 +221,7 @@ export function FilesTool({ focus }: { focus?: string }) {
         onChange={setBucket}
         total={pool.length}
       />
-      <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
+      <Button label={t('files.add')} icon="plus" onPress={() => setEditing('new')} />
 
       {/* Marked for the guided tour, which points at the list. */}
       <TourTarget id="files">
@@ -258,7 +259,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                     />
                     <Pressable
                       accessibilityRole="button"
-                      accessibilityLabel={`Open ${f.name}`}
+                      accessibilityLabel={t('common.openNamed', { name: f.name })}
                       onPress={() => setViewing(f)}
                       style={s.fill}
                     >
@@ -266,7 +267,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                         {f.name}
                       </Txt>
                       <Txt size="xs" tone="muted">
-                        {f.size} · saved {agoLabel(f.savedOn, TODAY)}
+                        {f.size} · {t('common.savedAgo', { ago: domain.ago(f.savedOn, TODAY) })}
                       </Txt>
                       {f.note ? (
                         <Txt size="xs" tone="muted" numberOfLines={2}>
@@ -284,7 +285,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                     <LabelPicker recordId={f.id} name={f.name} />
                     <IconButton
                       icon="more-horizontal"
-                      label={`More actions for ${f.name}`}
+                      label={t('common.moreActionsFor', { name: f.name })}
                       onPress={() => setMenuFor(f)}
                     />
                   </View>
@@ -309,27 +310,27 @@ export function FilesTool({ focus }: { focus?: string }) {
                 // when those were the only two — the bucket and the related
                 // application are edited in there too, and a menu that does not
                 // mention the application is a menu nobody finds it in.
-                editLabel: 'Edit document',
+                editLabel: t('files.editLabel'),
                 onDuplicate: () => onDuplicate(menuFor),
                 extra: [
                   {
                     id: 'file-under',
                     label:
                       menuFor.applicationIds.length > 0
-                        ? 'Change applications'
-                        : 'File under an application',
+                        ? t('common.changeApplications')
+                        : t('common.fileUnderApplication'),
                     icon: 'briefcase',
                     onPress: () => setFiling(menuFor.id),
                   },
                 ],
                 move: {
-                  label: 'Bucket',
+                  label: t('files.bucket'),
                   options: FILE_BUCKETS,
                   current: menuFor.bucket,
                   onMove: (next) => onMove(menuFor, next),
                 },
                 onDelete: () => onDelete(menuFor),
-                deleteLabel: 'Remove',
+                deleteLabel: t('common.remove'),
               })
             : []
         }
@@ -361,13 +362,16 @@ export function FilesTool({ focus }: { focus?: string }) {
           onSave={(draft) => {
             if (editing !== 'new') {
               updateFile(editing.id, draft)
-              toast({ title: 'Document updated', description: draft.name })
+              toast({ title: t('files.toast.updated'), description: draft.name })
             } else {
               addFile(draft)
               void report('vault_item_added', { kind: 'file' })
               toast({
-                title: 'Document recorded',
-                description: `${draft.name} · filed under ${draft.bucket}. The name, size and type are kept — the file itself is not read.`,
+                title: t('files.toast.recorded'),
+                description: t('files.toast.recordedDescription', {
+                  name: draft.name,
+                  bucket: draft.bucket,
+                }),
               })
             }
             setEditing(null)
@@ -380,9 +384,10 @@ export function FilesTool({ focus }: { focus?: string }) {
 
 /** `CV-2026.pdf` → `CV-2026 (copy).pdf`, so the extension survives. */
 function copyName(name: string) {
+  const copyOf = (base: string) => i18next.t('vault:common.copyOf', { name: base })
   const dot = name.lastIndexOf('.')
-  if (dot <= 0) return `${name} (copy)`
-  return `${name.slice(0, dot)} (copy)${name.slice(dot)}`
+  if (dot <= 0) return copyOf(name)
+  return `${copyOf(name.slice(0, dot))}${name.slice(dot)}`
 }
 
 const styles = StyleSheet.create({

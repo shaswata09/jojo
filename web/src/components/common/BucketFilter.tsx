@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 /**
@@ -28,6 +29,7 @@ export function BucketFilter<T extends string>({
   onChange: (next: T | 'all') => void
   total: number
 }) {
+  const { t } = useTranslation()
   const chip = (key: T | 'all', text: string, count: number) => (
     <button
       key={key}
@@ -68,7 +70,7 @@ export function BucketFilter<T extends string>({
 
   return (
     <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
-      {chip('all', 'All', total)}
+      {chip('all', t('bucketFilter.all'), total)}
       {options.map((o) => chip(o, labels?.[o] ?? o, counts[o] ?? 0))}
     </div>
   )

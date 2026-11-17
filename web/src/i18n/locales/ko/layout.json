@@ -1,0 +1,134 @@
+{
+  "sidebar": {
+    "navigation": "탐색",
+    "close": "탐색 닫기"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "applications": "지원 현황",
+    "calendar": "캘린더",
+    "vault": "보관함",
+    "jobScout": "채용 스카우트",
+    "statistics": "통계",
+    "flagged_other": "표시됨 {{count}}",
+    "flaggedTitle": "후속 조치로 표시됨",
+    "weekTitle": "앞으로 7일 안의 일정",
+    "overdueTitle": "날짜가 지난 리마인더",
+    "fresh_other": "새 항목 {{count}}",
+    "freshTitle": "아직 지원 현황에 추가하지 않은 매칭"
+  },
+  "newMenu": {
+    "trigger": "새로 만들기",
+    "find": "추가할 항목 찾기",
+    "findPlaceholder": "추가할 항목 찾기…",
+    "empty": "일치하는 추가 항목이 없어요."
+  },
+  "roleFilter": {
+    "label": "직무로 필터링",
+    "all": "모든 직무",
+    "selected_other": "{{count}}개 선택됨",
+    "find": "직무 찾기",
+    "findPlaceholder": "직무 찾기…",
+    "empty": "일치하는 직무가 없어요.",
+    "selectAll": "모두 선택",
+    "clear": "필터 지우기",
+    "remove": "{{role}} 제거"
+  },
+  "topbar": {
+    "openNav": "탐색 열기",
+    "search": "지원서, 리마인더, 일정 검색…",
+    "accountNav": "계정 및 지원",
+    "links": {
+      "profile": "내 프로필",
+      "settings": "설정",
+      "assistant": "어시스턴트",
+      "guide": "사용 방법"
+    }
+  },
+  "runtime": {
+    "heading": "런타임",
+    "tileTitle": "{{label}} — {{detail}}. {{destination}} 열기",
+    "dest": {
+      "graph": "그래프",
+      "transfer": "전송",
+      "settings": "설정"
+    },
+    "storage": {
+      "label": "브라우저 저장소",
+      "notSaving": "저장 안 됨",
+      "notSavingDetail": "기록이 저장되지 않고 있어요. 이유는 페이지 위 배너에 있어요",
+      "retrying": "재시도 중",
+      "retryingDetail_other": "변경 {{count}}건을 아직 저장하지 못했고, jojo가 계속 재시도하고 있어요",
+      "saved": "여기에 저장됨",
+      "savedDetail": "작업하는 동안 기록이 이 브라우저의 데이터베이스에 저장돼요"
+    },
+    "model": {
+      "label": "로컬 모델",
+      "connected": "연결됨",
+      "connectedDetail": "로컬 모델이 응답했어요. 어시스턴트와 스카우트 점수 매기기에 쓸 수 있어요",
+      "noAnswer": "응답 없음",
+      "noAnswerDetail": "모델이 설정되어 있지만 응답하지 않았어요. 실행 중인지 확인하세요",
+      "checking": "확인 중",
+      "checkingDetail": "모델이 있는지 물어보는 중이에요",
+      "unset": "설정 안 됨",
+      "unsetDetail": "아직 모델 엔드포인트가 없어요. 설정에서 지정해요"
+    },
+    "transfer": {
+      "label": "전송",
+      "meta": "다른 기기와 동기화",
+      "detail": "아직 페어링된 기기가 없어요. 전송에서 추가해요"
+    }
+  },
+  "banner": {
+    "reload": "새로 고침",
+    "interrupted": "다른 탭에서 jojo가 업데이트되어, 이 탭은 업데이트가 진행되도록 데이터베이스를 닫았어요. 여기서 바꾸는 내용은 저장되지 않아요. 계속하려면 새로 고치세요.",
+    "versionBlocked": "jojo가 데이터베이스를 열지 못했어요. 다른 jojo 탭이 다른 버전의 앱으로 열려 있어요. <strong>기록은 아직 디스크에 있어요</strong>. 하지만 이 탭에서는 읽지 못해서, 추측하는 대신 아무것도 보여 주지 않고 있어요. 다른 탭을 닫고 새로 고치면 돌아와요.",
+    "noStorage": "이 브라우저가 jojo의 저장소를 열지 못하게 해서, 이 탭은 빈 작업 공간이에요. 이 기기에 이미 저장된 내용은 보이지 않고, 여기서 입력한 내용은 탭을 닫으면 사라져요. 시크릿 창이나 일부 관리형 브라우저가 이렇게 해요. 남길 만한 것을 추가했다면 떠나기 전에 설정에서 내보내세요.",
+    "atRisk_other": "변경 {{count}}건이 화면에는 있지만 저장되지 않았어요. 이 탭을 새로 고치거나 닫으면 사라지니, 남기려면 설정에서 내보내세요.",
+    "safeBefore": "그전에 바꾼 내용은 모두 디스크에 있어요.",
+    "corrupt": "jojo가 저장을 멈췄어요. 이 브라우저가 기록 변경을 거부했고, 다시 시도해도 소용없어요. {{atRisk}} 지금 설정에서 내보내세요. 자세한 내용은 설정 → 진단에 있고, 내보내기 전에 새로 고치면 화면에만 있는 내용은 사라져요.",
+    "quota": "이 브라우저에 남은 공간이 없어서 jojo가 저장을 멈췄어요. {{atRisk}} 공간을 확보한 다음 새로 고치세요.",
+    "otherTab": "다른 탭이 데이터베이스를 쓰고 있어서 jojo가 저장을 멈췄어요. 다른 탭을 닫고, 화면에 저장되지 않은 내용이 있으면 설정에서 내보내세요. 이 탭을 새로 고치면 사라져요.",
+    "degraded_other": "변경 {{count}}건을 저장하지 못했고 jojo가 계속 재시도하고 있어요. 지금 사본이 필요하면 설정에서 내보내세요. ({{error}})",
+    "documentsBlocked": "문서는 아직 이 기기에 있지만, 이전 버전의 앱으로 열린 다른 jojo 탭이 붙잡고 있어요. 다른 jojo 탭을 닫으면 이 탭이 알아서 가져와요.",
+    "skipped_other": "이 기기의 기록 {{count}}개를 읽지 못해서 표시하지 않고 있어요. 삭제된 것은 없어요. <anchor>진단</anchor>에서 어떤 기록인지 알 수 있고, 거기서 내보내면 jojo가 읽을 수 있었던 모든 내용이 들어가요.",
+    "nearlyFull": "이 브라우저에서 jojo가 쓸 공간이 거의 없어요. 허용량의 약 {{percent}}%를 쓰고 있어요. 가득 차면 저장이 안 되니, 기록을 아직 쓸 수 있을 때 설정에서 내보내고 공간을 비워 두세요.",
+    "backup": {
+      "busy": "백업 중…",
+      "download": "백업 다운로드",
+      "notNow": "나중에"
+    }
+  },
+  "shell": {
+    "skipToMain": "본문으로 건너뛰기"
+  },
+  "spotlight": {
+    "title": "검색",
+    "label": "지원서, 리마인더, 일정, 페이지 검색",
+    "placeholder": "지원서, 리마인더, 일정 검색…",
+    "emptyTitle": "일치하는 항목이 없어요.",
+    "emptyHint": "직무, 기관 이름, 단계로 검색해 보세요.",
+    "actions": "작업",
+    "applications": "지원서",
+    "reminders": "리마인더",
+    "calendar": "캘린더",
+    "tools": "도구",
+    "goTo": "이동",
+    "toOpen": "열기",
+    "toClose": "esc로 닫기",
+    "pages": {
+      "dashboard": "대시보드",
+      "applications": "지원 현황",
+      "calendar": "캘린더",
+      "vault": "보관함",
+      "jobScout": "채용 스카우트",
+      "statistics": "통계",
+      "graph": "그래프",
+      "transfer": "전송",
+      "transferDetail": "기록을 다른 기기로 옮기기",
+      "profile": "내 프로필",
+      "assistant": "어시스턴트",
+      "settings": "설정"
+    }
+  }
+}

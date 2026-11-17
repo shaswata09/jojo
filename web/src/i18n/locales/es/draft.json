@@ -1,0 +1,58 @@
+{
+  "defaultTitle": "Borrador de correo",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Redactar un mensaje",
+    "for": "Para {{name}}.",
+    "forItem": "Para {{name}} · {{item}}.",
+    "unlinked": "No está vinculado a una candidatura, así que [ROLE] y [DATE] quedan en blanco.",
+    "body": "No se genera ni se envía nada: rellena los espacios, cópialo en tu cliente de correo y márcalo como enviado."
+  },
+  "picker": {
+    "hint": "Empieza con uno de tus fragmentos de correo.",
+    "searchLabel": "Buscar fragmentos",
+    "searchPlaceholder": "Buscar fragmentos…",
+    "noMatch": "Ningún fragmento coincide.",
+    "emailGroup": "Fragmentos de correo",
+    "freshGroup": "Empezar de cero",
+    "blank": "Borrador en blanco"
+  },
+  "editor": {
+    "placeholder": "Escribe el mensaje o elige un fragmento para empezar…",
+    "label": "Borrador del mensaje",
+    "nothing": "Aún no hay nada redactado.",
+    "noBlanks": "No quedan espacios en blanco.",
+    "blanksLeft_one": "Queda {{count}} espacio en blanco — {{names}}",
+    "blanksLeft_many": "Quedan {{count}} espacios en blanco — {{names}}",
+    "blanksLeft_other": "Quedan {{count}} espacios en blanco — {{names}}",
+    "nameNote": " · el nombre de una persona nunca se rellena por ti",
+    "copyBlocked": "El navegador bloqueó la copia",
+    "copied": "Borrador copiado al portapapeles"
+  },
+  "empty": {
+    "title": "Aún no hay fragmentos de correo",
+    "description": "Los fragmentos etiquetados como Email aparecen aquí como punto de partida. No hay nada que cargar, pero el borrador no tiene por qué empezar desde uno.",
+    "action": "Empezar con un borrador en blanco"
+  },
+  "footer": {
+    "writeFirst": "Escribe algo primero",
+    "saveHint": "Guarda este borrador en la Bóveda, etiquetado como Email",
+    "save": "Guardar como fragmento",
+    "assistantHint": "El asistente tiene su propia página: ábrela desde la barra lateral",
+    "assistant": "Abrir en el asistente",
+    "copyHint": "Copia el mensaje al portapapeles",
+    "markNoItem": "Ábrelo desde un recordatorio para marcarlo aquí",
+    "markDone": "Ese recordatorio ya está marcado",
+    "markSent": "Marcar como enviado"
+  },
+  "toast": {
+    "replaced": "Borrador reemplazado",
+    "loaded": "Se cargó {{title}}.",
+    "startedBlank": "Se empezó de nuevo en blanco.",
+    "undo": "Deshacer",
+    "saved": "Guardado en fragmentos",
+    "savedDescription": "{{title}} · etiquetado como Email, en la Bóveda",
+    "markedSent": "Marcado como enviado",
+    "markedSentDescription": "{{title}} — marcado en recordatorios"
+  }
+}

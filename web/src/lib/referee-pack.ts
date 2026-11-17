@@ -1,7 +1,9 @@
-import { STAGE_LABEL, type Application, type ISODate, type RefereeBrief } from '@jojo/service/core/model'
+import { type Application, type ISODate, type RefereeBrief } from '@jojo/service/core/model'
 import { sentOn } from '@jojo/service/core/sent-on'
 import { type ArchiveEntry, uniqueEntryNames } from '@/lib/document-archive'
 import { type Cell, safeLink, type Table } from '@/lib/spreadsheet'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 
 /**
  * What a recommender is sent: every application they are writing for, with
@@ -14,17 +16,25 @@ import { type Cell, safeLink, type Table } from '@/lib/spreadsheet'
  */
 
 /** The columns, in the order a recommender reads them: who, what, where, when, then what to say. */
-export const REFEREE_COLUMNS = [
-  { header: 'Employer', width: 24 },
-  { header: 'Position', width: 30 },
-  { header: 'Posting link', width: 34 },
-  { header: 'Location', width: 16 },
-  { header: 'Applied on', width: 12 },
-  { header: 'Stage', width: 14 },
-  { header: 'Highlight', width: 30 },
-  { header: 'Notes for you', width: 44 },
-  { header: 'Materials sent', width: 30 },
-] as const
+export const REFEREE_COLUMNS = (
+  [
+    { key: 'employer', width: 24 },
+    { key: 'position', width: 30 },
+    { key: 'postingLink', width: 34 },
+    { key: 'location', width: 16 },
+    { key: 'appliedOn', width: 12 },
+    { key: 'stage', width: 14 },
+    { key: 'highlight', width: 30 },
+    { key: 'notes', width: 44 },
+    { key: 'materials', width: 30 },
+  ] as const
+).map(({ key, width }) => ({
+  /** In the reader's language, looked up each time the sheet is built. */
+  get header() {
+    return i18next.t(`messages:refereePack.column.${key}`)
+  },
+  width,
+}))
 
 /** One application on its way into the sheet. */
 export type PackItem = {
@@ -42,7 +52,8 @@ export type PackItem = {
 export const appliedDate = (application: Application) => sentOn(application) ?? ''
 
 /** One per line, with a bullet, so a cell of several reads as a list in Excel. */
-const lines = (items: readonly string[] | undefined) => (items ?? []).map((item) => `• ${item}`).join('\n')
+const lines = (items: readonly string[] | undefined) =>
+  (items ?? []).map((item) => `• ${item}`).join('\n')
 
 /**
  * The posting as a cell: a link when the URL is one a spreadsheet may follow,
@@ -64,7 +75,7 @@ export function refereeTable(items: readonly PackItem[]): Table {
       postingCell(a.url),
       a.location ?? '',
       appliedDate(a),
-      STAGE_LABEL[a.stage],
+      domain.stage(a.stage),
       lines(brief?.highlights),
       brief?.note ?? '',
       materials.join('\n'),
@@ -115,8 +126,8 @@ export function packEntries(
 
 /** `Ngozi Okafor — applications 2026-10-03.xlsx`. The name makes the file findable in their inbox. */
 export const sheetFileName = (person: string, day: ISODate, ext: 'xlsx' | 'csv') =>
-  `${uniqueEntryNames([`${person} — applications ${day}`])[0]}.${ext}`
+  `${uniqueEntryNames([i18next.t('messages:refereePack.fileStem', { person, day })])[0]}.${ext}`
 
 /** `Ngozi Okafor — applications 2026-10-03.zip`. */
 export const packFileName = (person: string, day: ISODate) =>
-  `${uniqueEntryNames([`${person} — applications ${day}`])[0]}.zip`
+  `${uniqueEntryNames([i18next.t('messages:refereePack.fileStem', { person, day })])[0]}.zip`

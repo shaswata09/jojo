@@ -12,6 +12,7 @@ import {
   type KeyboardCoordinateGetter,
 } from '@dnd-kit/core'
 import { Combine } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useToast } from '@/lib/toast-context'
 import { mergePdfs, pageCount } from '@/lib/pdf/document'
 import { moveItem } from '@/lib/pdf/page-plan'
@@ -24,7 +25,7 @@ import { PdfMergeRow, PdfMergeRowGhost, type MergeRow } from './PdfMergeRow'
 import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
 import type { FileBucket } from '@/data/vault'
-import { dragAnnouncements } from '@/components/common/drag-announcements'
+import { dragAnnouncements, dragInstructions } from '@/components/common/drag-announcements'
 
 /**
  * One arrow press, one position.
@@ -61,6 +62,7 @@ const byRow: KeyboardCoordinateGetter = (event, { active, currentCoordinates, co
  * document, so the simple case needs nothing typed.
  */
 export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
+  const { t } = useTranslation('vault')
   const { available, bytesOf, saveResult, download } = usePdfFiles()
   const { toast } = useToast()
   const [rows, setRows] = useState<readonly MergeRow[]>([])
@@ -131,7 +133,10 @@ export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
         // until the bytes are read, and a range cannot be checked without it.
         const total = await pageCount(bytes)
         const range = parsePageRange(row.range, total)
-        if (!range.ok) throw new Error(`${row.choice.name}: ${range.reason}`)
+        if (!range.ok)
+          throw new Error(
+            t('pdf.merge.rangeError', { name: row.choice.name, reason: range.reason }),
+          )
         sources.push({ name: row.choice.name, bytes, pages: range.pages })
       }
       const merged = await mergePdfs(sources)
@@ -140,8 +145,14 @@ export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
       const record = await saveResult(name.trim() || suggested, merged, bucket)
       if (then === 'download') await download(record.id)
       toast({
-        title: `${record.name} saved`,
-        description: `${sources.reduce((n, source) => n + source.pages.length, 0)} pages from ${sources.length} documents, filed under ${bucket}. The originals are untouched.`,
+        title: t('pdf.saved', { name: record.name }),
+        description: t('pdf.merge.savedDescription', {
+          pages: t('pdf.merge.pages', {
+            count: sources.reduce((n, source) => n + source.pages.length, 0),
+          }),
+          documents: t('pdf.merge.documents', { count: sources.length }),
+          bucket,
+        }),
       })
       setRows([])
       setName('')
@@ -154,26 +165,28 @@ export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <PdfSourceAdd available={available} onAdd={add} label="Add a PDF to merge" multiple />
+      <PdfSourceAdd available={available} onAdd={add} label={t('pdf.merge.addLabel')} multiple />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-text-3">
-          Add two or more PDFs, or drop them onto this card. They are joined top to bottom — drag a
-          row by its left edge to change the order — and the originals are left as they are.
-        </p>
+        <p className="text-sm text-text-3">{t('pdf.merge.empty')}</p>
       ) : (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           // File names and positions; the row keys are minted ids.
           accessibility={{
+            screenReaderInstructions: dragInstructions(),
             announcements: dragAnnouncements({
               item: (key) => rows.find((row) => row.key === key)?.choice.name,
               target: (key) => {
                 const at = rows.findIndex((row) => row.key === key)
                 return at < 0
                   ? undefined
-                  : `position ${String(at + 1)} of ${String(rows.length)}, ${rows[at]?.choice.name ?? ''}`
+                  : t('pdf.merge.position', {
+                      position: at + 1,
+                      total: rows.length,
+                      name: rows[at]?.choice.name ?? '',
+                    })
               },
             }),
           }}
@@ -216,11 +229,11 @@ export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
         busy={busy}
         error={error}
         disabled={rows.length < 1}
-        hint="Ranges like 1-3, 7, 9- take part of a document. Leave a box empty for all of it."
+        hint={t('pdf.merge.hint')}
         onSave={() => void merge('save')}
         onDownload={() => void merge('download')}
         icon={Combine}
-        verb="Merge"
+        saveLabel={t('pdf.merge.action')}
       />
     </div>
   )

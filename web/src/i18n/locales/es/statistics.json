@@ -1,0 +1,29 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Medido",
+        "hint": "Contado a partir de tus propios registros"
+      },
+      "suggested": {
+        "label": "Sugerido",
+        "hint": "General, o medido frente a una búsqueda típica en lugar de la tuya"
+      }
+    },
+    "title": "Qué hacer ahora",
+    "intro": "Ordenado según lo que respaldan tus registros y, después, según lo que menos cuesta."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} de {{of}}",
+    "rate": "{{rate}} % · probablemente {{range}}",
+    "groupReplied": "Respuestas, por {{dimension}}",
+    "groupInterviews": "Entrevistas, por {{dimension}}",
+    "confident": "Los rangos no se solapan, así que la diferencia es real: {{best}} merece más de tu esfuerzo.",
+    "unconfident": "Los rangos se solapan, así que son dos cifras, no una diferencia. Más registros las separarán o cerrarán la brecha.",
+    "tooFew_one": "{{count}} grupo más tiene menos de {{min}} registros y no se compara.",
+    "tooFew_many": "{{count}} grupos más tienen menos de {{min}} registros y no se comparan.",
+    "tooFew_other": "{{count}} grupos más tienen menos de {{min}} registros y no se comparan.",
+    "title": "Qué está funcionando",
+    "intro": "La barra es donde probablemente está la tasa real; la línea es lo que has medido. Una banda ancha significa que aún hay muy pocos registros para estar seguros."
+  }
+}

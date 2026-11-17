@@ -34,8 +34,11 @@ import type { SessionKeys } from '@jojo/service/core/pairing'
 import { report } from '@/lib/analytics'
 import { reportError } from '@/lib/report-error'
 import { bucket } from '@jojo/service/core/analytics'
+import type { HandoffOutcome } from '@jojo/service/core/handoff'
+import { i18next } from '@/i18n/i18n'
 import {
-  HANDOFF_ADVICE,
+  fetchOutcome,
+  handoffAdvice,
   fetchPairingResponse,
   sendChunk,
   type HandoffFailure,
@@ -55,8 +58,18 @@ export type SendStage =
   /** Stopped, with a reason. */
   | 'failed'
 
+/**
+ * What the phone's person did with what was sent, once `stage` is 'done'.
+ *
+ * `waiting` while the phone shows its confirmation; `unknown` when the phone
+ * stopped answering, or is a build that cannot say.
+ */
+export type SendOutcome = Exclude<HandoffOutcome, 'pending'> | 'waiting' | 'unknown'
+
 export type SendState = {
   stage: SendStage
+  /** Set once every chunk is in — see `SendOutcome`. */
+  outcome: SendOutcome | null
   /** 0 to 1 while sending. */
   progress: number
   /** Where it is going, once the address has been read. */
@@ -71,14 +84,16 @@ export type SendState = {
   cancel: () => void
 }
 
-/** What to say when the twelve characters do not parse. */
-export const DIAL_ADVICE: Record<DialFailure, string> = {
-  'dial/unreadable':
-    'That code has characters jojo does not use. Check it against the other screen.',
-  'dial/length': 'That code is the wrong length. It is twelve characters, in three groups of four.',
-  'dial/mistyped':
-    'That code does not check out — a character is wrong somewhere. Try typing it again.',
+/** Where each parse failure's sentence sits in the catalog, under `advice.dial`. */
+const DIAL_ADVICE_KEY: Record<DialFailure, string> = {
+  'dial/unreadable': 'unreadable',
+  'dial/length': 'length',
+  'dial/mistyped': 'mistyped',
 }
+
+/** What to say when the twelve characters do not parse. */
+export const dialAdvice = (failure: DialFailure): string =>
+  i18next.t(`transfer:advice.dial.${DIAL_ADVICE_KEY[failure]}`)
 
 /**
  * What to say when a step THROWS instead of returning a failure.
@@ -95,8 +110,7 @@ export const DIAL_ADVICE: Record<DialFailure, string> = {
  * only on a chunk flagged final, and the phone acts on nothing before that —
  * see `receive-landing.ts`. A transfer that stops halfway leaves it untouched.
  */
-export const UNEXPECTED_ADVICE =
-  'Something went wrong on this computer and the transfer stopped. Nothing was left behind on the other device — try again, or move your records with a backup file from Settings.'
+export const unexpectedAdvice = (): string => i18next.t('transfer:advice.unexpected')
 
 /**
  * Runs the transfer and answers with the sentence to show, or null if it got
@@ -115,9 +129,71 @@ export async function guardedTransfer(run: () => Promise<void>): Promise<string 
     // sentence above cannot name a quota wall or a document that would not
     // read, and somebody debugging their own machine needs the one it was.
     reportError('transfer', thrown)
-    return UNEXPECTED_ADVICE
+    return unexpectedAdvice()
   }
 }
+
+/** How often a finished send asks the phone what its person decided. */
+export const OUTCOME_POLL_MS = 2_000
+/** How long it keeps asking — the person may read the confirmation slowly. */
+export const OUTCOME_WAIT_MS = 10 * 60_000
+
+/**
+ * Asks, until the phone's person has answered — or the phone stops answering.
+ *
+ * Exported, and the clock injected, because D20 rules out mounting: the rule
+ * worth testing is that only a real answer ends the wait with one, and that a
+ * phone which cannot say (an older build refuses the path) is `unknown` at
+ * once rather than after ten minutes.
+ */
+export async function awaitOutcome({
+  ask,
+  sleep,
+  now,
+  cancelled,
+  intervalMs = OUTCOME_POLL_MS,
+  limitMs = OUTCOME_WAIT_MS,
+}: {
+  ask: () => Promise<{ ok: true; value: HandoffOutcome } | { ok: false; error: HandoffFailure }>
+  sleep: (ms: number) => Promise<void>
+  now: () => number
+  cancelled: () => boolean
+  intervalMs?: number
+  limitMs?: number
+}): Promise<Exclude<SendOutcome, 'waiting'> | null> {
+  const started = now()
+  let misses = 0
+  for (;;) {
+    if (cancelled()) return null
+    const got = await ask()
+    if (cancelled()) return null
+    if (got.ok) {
+      if (got.value !== 'pending') return got.value
+      misses = 0
+    } else {
+      // A phone that refuses the path cannot say; one that has gone quiet
+      // for several asks in a row has closed its socket.
+      if (got.error === 'handoff/refused') return 'unknown'
+      misses += 1
+      if (misses >= 5) return 'unknown'
+    }
+    if (now() - started >= limitMs) return 'unknown'
+    await sleep(intervalMs)
+  }
+}
+
+const sleepFor = (ms: number, signal: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    const id = setTimeout(resolve, ms)
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(id)
+        resolve()
+      },
+      { once: true },
+    )
+  })
 
 export function useHandoffSend({
   complete,
@@ -133,6 +209,7 @@ export function useHandoffSend({
   // object identity on every render would churn the callbacks below.
   const secrets = useMemo(() => createSecrets(), [])
   const [stage, setStage] = useState<SendStage>('idle')
+  const [outcome, setOutcome] = useState<SendOutcome | null>(null)
   const [progress, setProgress] = useState(0)
   const [target, setTarget] = useState<string | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
@@ -167,11 +244,12 @@ export function useHandoffSend({
       }
       const stop = (failure: HandoffFailure) => {
         if (cancelled.current || failure === 'handoff/cancelled') return
-        setProblem(HANDOFF_ADVICE[failure])
+        setProblem(handoffAdvice(failure))
         setStage('failed')
       }
       setProblem(null)
       setProgress(0)
+      setOutcome(null)
 
       // Every await below is inside the guard, not just the two that are known
       // to throw: a step that stops the run without a word on screen is the
@@ -179,7 +257,7 @@ export function useHandoffSend({
       const advice = await guardedTransfer(async () => {
         const read = decodeAddress(code)
         if (!read.ok) {
-          setProblem(DIAL_ADVICE[read.error])
+          setProblem(dialAdvice(read.error))
           setStage('failed')
           return
         }
@@ -204,9 +282,7 @@ export function useHandoffSend({
           // The device answered and could not prove it read this screen. That is
           // either a stale code or something in the middle of the network, and
           // jojo cannot tell which — so it says the part it is sure of.
-          setProblem(
-            'That device could not prove it read the code on this screen. Show a new code and scan it again.',
-          )
+          setProblem(i18next.t('transfer:advice.unproven'))
           setStage('failed')
           return
         }
@@ -232,22 +308,34 @@ export function useHandoffSend({
           setProgress((seq + 1) / plan.chunks)
         }
 
+        setStage('done')
+        setOutcome('waiting')
+
+        // The bytes are there; the records are not yet. The phone asks its
+        // person before it replaces anything, so this asks the phone what they
+        // decided.
+        const answer = await awaitOutcome({
+          ask: () => fetchOutcome(address, token, secrets, keys, mine.signal),
+          sleep: (ms) => sleepFor(ms, mine.signal),
+          now: Date.now,
+          cancelled: () => cancelled.current,
+        })
+        if (answer === null || cancelled.current) return
+        setOutcome(answer)
+        if (answer !== 'applied') return
+
         /*
-         * Recorded on this device, not sent with the bytes.
-         *
-         * `handoverAt` is a fact about THIS store — when it last agreed with
-         * another one — so it belongs to the sender as much as to the receiver,
-         * and each keeps its own. It is what lets the Transfer page say how far
-         * this device has drifted since, which is the one thing a whole-store,
-         * replace-not-merge transfer never told anybody.
+         * Recorded on this device, not sent with the bytes — and only once the
+         * phone's person took them. `handoverAt` is a fact about THIS store:
+         * when it last agreed with another one. Stamped at the last chunk, a
+         * transfer declined on the phone left this page saying the phone held
+         * the same records.
          */
         repo.setMeta(handedOver(repo.meta, new Date().toISOString() as Instant))
-        setStage('done')
         /*
-         * Only from the SENDER, and only once the bytes have landed. The receiving
-         * device reports nothing — one transfer is one event, and counting both
-         * ends would double every figure while making it look like transfers are
-         * twice as common as they are.
+         * Only from the SENDER, and only once the records have landed. The
+         * receiving device reports nothing — one transfer is one event, and
+         * counting both ends would double every figure.
          */
         report('transfer_completed', { records: bucket(repo.getSnapshot().nodes().length) })
       })
@@ -262,8 +350,9 @@ export function useHandoffSend({
     run.current?.abort()
     run.current = null
     setStage('idle')
+    setOutcome(null)
     setProgress(0)
   }, [])
 
-  return { stage, progress, target, problem, start, cancel }
+  return { stage, outcome, progress, target, problem, start, cancel }
 }

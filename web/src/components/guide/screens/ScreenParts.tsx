@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Unplug } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 
 /**
@@ -11,16 +12,22 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
  * separately, and a shared one-line component is the kind of thing that grows a
  * `variant` prop the first time one of them wants a different underline.
  */
-export function Go({ to, children }: { to: string; children: ReactNode }) {
+export function Go({ to, children }: { to: string; children?: ReactNode }) {
   return (
-    <Link to={to} className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2">
+    <Link
+      to={to}
+      className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2"
+    >
       {children}
     </Link>
   )
 }
 
-/** A parameter, a path or a file name, set as one. */
-export function Code({ children }: { children: string }) {
+/**
+ * A parameter, a path or a file name, set as one. `children` is optional for
+ * the same reason as `Go`'s: inside a translated sentence `<Trans>` fills it in.
+ */
+export function Code({ children }: { children?: string }) {
   return (
     <code className="rounded-sm border border-hairline bg-well px-1 py-px font-mono break-all">
       {children}
@@ -50,8 +57,8 @@ export function Screen({
   /** Where the page is reached from, in three or four words. */
   where: string
   to: string
-  /** What the link says. Defaults to the title. */
-  open?: string
+  /** What the link says, whole — "Open the board" — so a language can order it. */
+  open: string
   children: ReactNode
 }) {
   return (
@@ -61,7 +68,7 @@ export function Screen({
           {title}
         </PanelTitle>
         <p className="shrink-0 text-sm">
-          <Go to={to}>Open {open ?? title}</Go>
+          <Go to={to}>{open}</Go>
         </p>
       </div>
       {children}
@@ -89,11 +96,29 @@ export function NotConnected({ title, children }: { title: string; children: Rea
   )
 }
 
-/** What a copied link off this page carries. Absent where the answer is nothing. */
-export function Address({ children }: { children: ReactNode }) {
+/**
+ * What a copied link off this page carries. Absent where the answer is nothing.
+ *
+ * Takes a catalog key rather than children, because the lead-in ("In the address
+ * bar") and the rest are one sentence: rendered as two pieces, a language that
+ * puts its verb last could not say it. The key's `<lead>` tag marks the lead-in;
+ * `components` adds whatever else the sentence links to.
+ */
+export function Address({
+  i18nKey,
+  components,
+}: {
+  i18nKey: string
+  components?: Record<string, ReactElement>
+}) {
+  const { t } = useTranslation('guide')
   return (
     <p className="mt-3.5 border-t border-hairline pt-3 text-xs text-text-3">
-      <span className="font-medium text-text-2">In the address bar</span> {children}
+      <Trans
+        t={t}
+        i18nKey={i18nKey}
+        components={{ lead: <span className="font-medium text-text-2" />, ...components }}
+      />
     </p>
   )
 }

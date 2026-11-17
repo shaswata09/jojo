@@ -9,4 +9,4 @@
  * row header — and a copy in each would drift the moment one of them moved.
  */
 export const openRail =
-  'before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-r-full before:bg-accent before:content-[""]'
+  'before:absolute before:inset-y-1.5 before:start-0 before:w-[3px] before:rounded-e-full before:bg-accent before:content-[""]'

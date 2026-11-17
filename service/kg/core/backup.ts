@@ -379,8 +379,8 @@ export function describeBackup(plan: RestorePlan): string {
   const loss =
     plan.loss ?? lossOf(plan.nodes, plan.edges, validateRows(plan.nodes, plan.edges, { salvage: true }))
   return (
-    `${plan.nodes.length} records, ${plan.edges.length} links` +
-    (docs === 0 ? ', no documents' : `, ${docs} document${docs === 1 ? '' : 's'}`) +
+    `${count(plan.nodes.length, 'record')}, ${count(plan.edges.length, 'link')}` +
+    (docs === 0 ? ', no documents' : `, ${count(docs, 'document')}`) +
     lossClause(loss)
   )
 }

@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojo の動き",
+    "hint": "1つ選ぶか、ロボットの上にジェスチャーを描いてください。",
+    "trigger": "jojo の動き",
+    "triggerAria": "jojo の動きとクレジット",
+    "plays": "再生",
+    "modelCredit": "ロボットのモデル："
+  },
+  "theme": {
+    "toggle": "テーマを切り替え",
+    "toLight": "ライトテーマに切り替え",
+    "toDark": "ダークテーマに切り替え"
+  },
+  "poke": "jojo をつつく"
+}

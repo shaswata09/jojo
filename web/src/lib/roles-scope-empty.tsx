@@ -1,4 +1,5 @@
 import { ListFilter, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/button'
 import { useRoles } from '@/lib/roles-context'
@@ -11,15 +12,16 @@ import { useRoles } from '@/lib/roles-context'
  */
 export function RoleScopeEmpty() {
   const { clear } = useRoles()
+  const { t } = useTranslation('messages')
   return (
     <EmptyState
       icon={ListFilter}
-      title="No applications for these roles"
-      description="The role filter in the top bar is hiding every application this chart counts."
+      title={t('roleScopeEmpty.title')}
+      description={t('roleScopeEmpty.description')}
       action={
         <Button variant="outline" size="sm" onClick={clear}>
           <X className="size-3.5" strokeWidth={2} aria-hidden />
-          Show all roles
+          {t('roleScopeEmpty.showAll')}
         </Button>
       }
     />

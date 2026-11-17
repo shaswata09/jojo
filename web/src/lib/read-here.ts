@@ -1,5 +1,6 @@
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { isArchive, readableHere, textFrom } from '@jojo/service/agent/documents'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * Text from a stored document, read in this tab, or null if it is not one we
@@ -36,7 +37,7 @@ export async function readHere(file: File): Promise<ConvertResult | null> {
   }
   const markdown = textFrom(kind, new Map([['', text]]))
   if (markdown.trim() === '') {
-    return { ok: false, reason: 'Nothing could be read out of that document — it may be a scan.' }
+    return { ok: false, reason: i18next.t('messages:read.maybeScan') }
   }
   return { ok: true, markdown }
 }

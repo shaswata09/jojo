@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { CopyFeedback } from '@/components/common/CopyFeedback'
 import { Marked, MarksLegend } from '@/components/common/Marked'
 import {
@@ -60,6 +61,7 @@ export function SnippetPreviewDialog({
    * null would cut both short. `FilePreviewDialog` keeps its file for the same
    * reason and says so at greater length.
    */
+  const { t } = useTranslation('vault')
   const last = useRef<PreviewSnippet | null>(null)
   if (snippet !== null) last.current = snippet
   const shown = snippet ?? last.current
@@ -111,13 +113,13 @@ export function SnippetPreviewDialog({
           </div>
 
           <DialogFooter className="sm:justify-between">
-            {shown.marked ? <MarksLegend className="sm:mr-auto" /> : <span />}
+            {shown.marked ? <MarksLegend className="sm:me-auto" /> : <span />}
             <div className="flex items-center gap-2">
               <Link
                 to={vaultPath({ tool: 'snippets', focus: shown.id })}
                 className="text-xs text-text-2 underline underline-offset-2 hover:text-text-1"
               >
-                Open in the Vault
+                {t('snippets.openInVault')}
               </Link>
               <Button variant="outline" size="sm" onClick={() => void copy()}>
                 <CopyFeedback copied={copied} failed={failed} />

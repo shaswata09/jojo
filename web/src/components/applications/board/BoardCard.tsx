@@ -2,14 +2,16 @@ import type { Ref } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useDraggable, type DraggableAttributes } from '@dnd-kit/core'
 import { Flag } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { openRail } from '@/components/applications/open-rail'
 import { StageMenu } from '@/components/applications/StageMenu'
 import { Chip } from '@/components/common/Chip'
 import { LabelChips } from '@/components/common/LabelPicker'
-import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
+import { displayName, type Application, type Stage } from '@/data/seed'
 import { refKey } from '@/lib/ids'
 import { appPath, listStateOf } from '@/lib/links'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The card itself, with no drag wiring.
@@ -43,6 +45,8 @@ export function BoardCardBody({
   className?: string
   ref?: Ref<HTMLDivElement>
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const keep = listStateOf(useLocation().search)
   return (
     // `relative`, because the title's link stretches across the whole card.
@@ -51,7 +55,7 @@ export function BoardCardBody({
     <div
       ref={ref}
       className={cn(
-        'surface group relative rounded-md py-2.5 pr-2.5 pl-5',
+        'surface group relative rounded-md py-2.5 ps-5 pe-2.5',
         open && openRail,
         className,
       )}
@@ -87,14 +91,14 @@ export function BoardCardBody({
           // No background, deliberately. `openRail` marks the open record with
           // a 3px accent bar at this same left edge, and anything painted here
           // would cover it.
-          'touch-target absolute inset-y-0 left-0 z-[1] w-5 cursor-grab touch-none rounded-l-md py-1.5 text-text-3 transition-opacity active:cursor-grabbing',
+          'touch-target absolute inset-y-0 start-0 z-[1] w-5 cursor-grab touch-none rounded-s-md py-1.5 text-text-3 transition-opacity active:cursor-grabbing',
           // It was `opacity-0` until hover: the board's core gesture had no
           // visible affordance at all, and on touch there is no hover to
           // reveal it with.
           handle ? 'opacity-40 group-hover:opacity-100 focus-visible:opacity-100' : 'opacity-100',
         )}
-        aria-label={handle ? `Move ${displayName(app)} to another stage` : undefined}
-        title={handle ? 'Drag to another stage' : undefined}
+        aria-label={handle ? t('board.moveCard', { name: displayName(app) }) : undefined}
+        title={handle ? t('board.dragHint') : undefined}
         {...handle?.attributes}
         {...handle?.listeners}
       >
@@ -132,25 +136,25 @@ export function BoardCardBody({
             <div className="truncate text-sm font-semibold">{displayName(app)}</div>
           )}
           {/*
-            * No note here, and that is a size decision rather than a tidiness
-            * one.
-            *
-            * It was printed unclamped, so a card was as tall as whatever
-            * somebody had typed into the record — a paragraph about a phone
-            * screen turned one card into six lines and pushed the rest of its
-            * column off the screen. A board is a shape you read at a glance:
-            * every card the same height, and how many are in each stage
-            * legible without scrolling. One long note costs that for the whole
-            * column.
-            *
-            * Clamping it to a line was the other option and is what the table
-            * does. On a 224px card a line of a note is about four words, which
-            * is not a note — it is a ragged grey strip that makes every card
-            * taller to say nothing. The table has the room for it and the
-            * switch to turn it off; the record itself has all of it; search
-            * reads it either way (`list-query.ts`). Nothing here is lost, and
-            * the cards go back to one height.
-            */}
+           * No note here, and that is a size decision rather than a tidiness
+           * one.
+           *
+           * It was printed unclamped, so a card was as tall as whatever
+           * somebody had typed into the record — a paragraph about a phone
+           * screen turned one card into six lines and pushed the rest of its
+           * column off the screen. A board is a shape you read at a glance:
+           * every card the same height, and how many are in each stage
+           * legible without scrolling. One long note costs that for the whole
+           * column.
+           *
+           * Clamping it to a line was the other option and is what the table
+           * does. On a 224px card a line of a note is about four words, which
+           * is not a note — it is a ragged grey strip that makes every card
+           * taller to say nothing. The table has the room for it and the
+           * switch to turn it off; the record itself has all of it; search
+           * reads it either way (`list-query.ts`). Nothing here is lost, and
+           * the cards go back to one height.
+           */}
         </div>
         {/* Amber, not red: red is this app's word for past due, so a flag the
             user set themselves read as a missed date, and the icon fought the
@@ -159,7 +163,7 @@ export function BoardCardBody({
           <Flag
             className="mt-0.5 size-3.5 shrink-0 text-warning"
             strokeWidth={1.9}
-            aria-label="Flagged for follow-up"
+            aria-label={t('common.flagged')}
           />
         ) : null}
       </div>
@@ -176,7 +180,7 @@ export function BoardCardBody({
           />
         ) : (
           <Chip stage={app.stage} className="font-normal">
-            {STAGE_LABEL[app.stage]}
+            {domain.stage(app.stage)}
           </Chip>
         )}
         {/* Neutral, per colour law: the role is a category, not a status, and

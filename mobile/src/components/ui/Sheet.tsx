@@ -1,18 +1,11 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
-import {
-  Animated,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native'
+import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { IconButton } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
+import { useKeyboardOverlap } from '@/lib/use-keyboard-overlap'
 import { useLayout } from '@/lib/use-layout'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -58,10 +51,12 @@ export function Sheet({
    */
   scroll?: boolean
 }) {
+  const { t } = useTranslation()
   const c = useColors()
   const insets = useSafeAreaInsets()
   const { landscape } = useLayout()
   const enter = useRef(new Animated.Value(0)).current
+  const keyboard = useKeyboardOverlap()
 
   useEffect(() => {
     if (!open) {
@@ -88,14 +83,22 @@ export function Sheet({
       <View style={[styles.root, landscape && styles.rootCentred]}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel={t('actions.close')}
           onPress={onClose}
           style={[StyleSheet.absoluteFill, { backgroundColor: c.scrim }]}
         />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={[styles.keyboard, landscape && styles.cardWrap]}
+        {/* Lifted by the keyboard on both platforms. Android no longer resizes
+            the dialog window for it (edge-to-edge), so without this the lower
+            fields and the Save/Cancel footer sat under the IME. */}
+        <View
+          ref={keyboard.ref}
+          onLayout={keyboard.onLayout}
+          style={[
+            styles.keyboard,
+            landscape && styles.cardWrap,
+            { paddingBottom: keyboard.overlap },
+          ]}
           pointerEvents="box-none"
         >
           <Animated.View
@@ -134,7 +137,7 @@ export function Sheet({
                     </Txt>
                   ) : null}
                 </View>
-                <IconButton icon="x" label="Close" onPress={onClose} />
+                <IconButton icon="x" label={t('actions.close')} onPress={onClose} />
               </View>
             ) : null}
 
@@ -162,7 +165,7 @@ export function Sheet({
               <View style={[styles.footer, { borderTopColor: c.hairline }]}>{footer}</View>
             ) : null}
           </Animated.View>
-        </KeyboardAvoidingView>
+        </View>
       </View>
     </Modal>
   )

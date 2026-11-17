@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Das ist jojo",
+      "body": "Hier wohnt dein Assistent. Er reagiert auf das, was du tust – ein Tanz, wenn eine Bewerbung rausgeht, ein Nicken, wenn eine Aufgabe erledigt ist – und folgt deinem Mauszeiger über die Seite.",
+      "task": "Tippe jojo an oder zeichne einen Kreis auf ihn."
+    },
+    "moves": {
+      "title": "Jede Bewegung und wie man sie zeichnet",
+      "body": "Diese Schaltfläche listet alle Bewegungen von jojo, jeweils mit dem Strich, der sie auslöst – nach oben wischen zum Hüpfen, ein Z zum Einnicken – und nennt den Künstler des 3D-Modells."
+    },
+    "runtime": {
+      "title": "Wo deine Einträge liegen",
+      "body": "„Hier gespeichert“ ist der Browserspeicher: eine Datenbank in diesem Browser, auf diesem Rechner – nichts wird irgendwohin gesendet, nichts wird synchronisiert. Die anderen Kacheln zeigen, ob ein Modell verbunden ist, und bieten an, alles auf ein anderes Gerät zu bringen. Jede öffnet die Stelle, an der sie eingerichtet wird."
+    },
+    "applications": {
+      "title": "Deine Bewerbungen",
+      "body": "Ein Eintrag pro Stelle: die Position, der Arbeitgeber, die Phase und deine Notizen. Fristen, Gespräche und Dokumente hängen daran, sodass nichts doppelt getippt wird.",
+      "task": "Öffne Bewerbungen."
+    },
+    "layout": {
+      "title": "Board oder Tabelle",
+      "body": "Dieselben Einträge, auf zwei Arten. Das Board zeigt die Phasen als Spalten; die Tabelle sortiert und durchsucht. Die Wahl steckt in der Adresse, also öffnet sich ein Link so, wie du ihn verlassen hast.",
+      "task": "Wechsle zur Tabelle."
+    },
+    "records": {
+      "title": "Sechs Phasen, und jojo feiert jede",
+      "body": "Entwurf, Eingereicht, Vorauswahl, Gespräch, Angebot, Abgeschlossen. Ziehe auf dem Board eine Karte in die nächste Spalte: jojo tanzt, wenn ein Entwurf rausgeht, lädt sich für ein Gespräch auf und springt bei einem Angebot. Jeder Schritt lässt sich rückgängig machen."
+    },
+    "keywords": {
+      "title": "Stichwörter sind deine Tags",
+      "body": "Ein gemeinsamer Satz Tags für Bewerbungen, Erinnerungen und den Tresor. Tagge einen Eintrag über die Tag-Schaltfläche in seiner Zeile, füge mit + ein neues Stichwort hinzu und klicke mit rechts auf einen Chip, um ihn umzubenennen, umzufärben oder zu löschen.",
+      "task": "Wähle ein Stichwort, um danach zu filtern."
+    },
+    "new": {
+      "title": "Alles erstellen",
+      "body": "Neu erstellt eine Bewerbung, eine Erinnerung, einen Kalendereintrag, einen Nachrichtenentwurf, einen gespeicherten Link oder eine gespeicherte Stelle. Die Taste n öffnet es überall, wo du gerade nicht tippst.",
+      "task": "Öffne das Menü Neu."
+    },
+    "new-menu": {
+      "title": "Nichts ist gespeichert, bis du speicherst",
+      "body": "Jeder Eintrag öffnet sein eigenes Formular. Ein halb ausgefülltes Formular zu schließen, kostet nur das Getippte.",
+      "task": "Schließe das Menü – drücke Esc."
+    },
+    "search": {
+      "title": "Der schnellste Weg hinein",
+      "body": "Durchsuche jede Bewerbung, Erinnerung und jeden Kalendereintrag, springe zu jeder Seite – auch zu denen, die die Seitenleiste nicht auflistet – oder führe eine der Operationen der App aus.",
+      "task": "Drücke ⌘K (Strg K) oder klicke auf die Suchleiste."
+    },
+    "palette": {
+      "title": "Tippen, um alles zu finden",
+      "body": "Eine Rolle, eine Organisation oder eine Phase. Die Pfeiltasten wählen aus, Enter öffnet.",
+      "task": "Schließe sie mit Esc, wenn du fertig bist."
+    },
+    "calendar": {
+      "title": "Alle Termine an einem Ort",
+      "body": "Fristen, Gespräche und Nachfassaktionen sind eine Art von Eintrag, also erscheint ein Eintrag im Kalender, auf dem Dashboard und bei seiner Bewerbung. Ziehe ihn auf einen anderen Tag, um ihn zu verschieben.",
+      "task": "Öffne den Kalender."
+    },
+    "vault": {
+      "title": "Der Tresor",
+      "body": "Alles, was sich bei einer Jobsuche neben den Bewerbungen ansammelt: Erinnerungen, gespeicherte Links, Dateien, die Bausteine, die du in jedes Formular einfügst, die Menschen, die du kennst, und ein paar Werkzeuge.",
+      "task": "Öffne den Tresor."
+    },
+    "files": {
+      "title": "Dateien, direkt in der Vorschau",
+      "body": "Lege einen Lebenslauf, ein Anschreiben oder eine Stelle ab. PDFs, Bilder, Text und gespeicherte Webseiten öffnen sich gleich hier, und jede Datei kann eine Notiz und Stichwörter tragen. Dateien werden in diesem Browser gespeichert, nicht hochgeladen.",
+      "task": "Klicke auf eine Datei für die Vorschau."
+    },
+    "file-viewer": {
+      "title": "Die Vorschau",
+      "body": "Lies sie, ohne die Seite zu verlassen. Mit verbundenem Dokumentenleser (Einstellungen) kann auch der Assistent lesen, was darin steht."
+    },
+    "tools": {
+      "title": "Werkzeuge",
+      "body": "Ein Taschenrechner, einfach oder wissenschaftlich, der einen Verlauf seiner Rechnungen führt – und ein PDF-Editor.",
+      "task": "Öffne den PDF-Editor."
+    },
+    "pdf": {
+      "title": "PDF-Werkzeuge",
+      "body": "Füge mehrere PDFs zu einem zusammen, ordne Seiten neu oder lösche sie und versieh eines mit Markierungen – alles in diesem Browser, sodass kein Dokument je hochgeladen wird. Lege PDFs direkt auf diesem Bereich ab."
+    },
+    "scout": {
+      "title": "Job-Scout",
+      "body": "Gespeicherte Suchen, die Jobbörsen für dich im Blick behalten.",
+      "task": "Öffne den Job-Scout."
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "body": "Jede Pipeline ist eine Suche auf einer Jobbörse (HigherEdJobs, AcademicCareers und andere). Sie läuft nach Zeitplan oder wenn du Jetzt ausführen drückst; was sie findet, wartet als Vorschläge, die du annimmst oder verwirfst, und ein angenommener wird zu einem Bewerbungsentwurf."
+    },
+    "statistics": {
+      "title": "Statistiken",
+      "body": "Wie deine Suche läuft, gezählt aus deinen eigenen Einträgen.",
+      "task": "Öffne Statistiken."
+    },
+    "stats": {
+      "title": "Quoten mit ehrlichen Fehlerbalken",
+      "body": "Antwort- und Gesprächsquoten, ein Trichter und ein Wochendiagramm – jede Quote mit dem Bereich, in dem sie wirklich liegen könnte, denn eine Handvoll Bewerbungen ist eine kleine Stichprobe. Es folgt dem Rollenfilter in der oberen Leiste."
+    },
+    "graph": {
+      "title": "Der Wissensgraph",
+      "body": "Jeder Eintrag – Bewerbungen, Arbeitgeber, Personen, Termine, Dateien – ist ein Knoten, und ihre Verbindungen sind die Kanten. Stell eine Frage in Worten oder baue sie zusammen, und die passenden Einträge leuchten auf. Er ist nicht in der Seitenleiste; ⌘K bringt dich hierher."
+    },
+    "chat": {
+      "title": "Chatte mit jojo",
+      "body": "Der Assistent kann deine Einträge mit den Werkzeugen der App finden, hinzufügen und aktualisieren, und er fragt, bevor er etwas ändert, außer du sagst ihm, dass er es lassen soll. Er braucht ein Modell – das ist der nächste Schritt."
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "body": "Modelle, der Dokumentenleser, Stichwörter, deine Daten – und jede Geste, die jojo kennt.",
+      "task": "Öffne die Einstellungen."
+    },
+    "model": {
+      "title": "Ein Modell verbinden",
+      "body": "Wähle, wo das Modell des Assistenten läuft. Ein lokaler Server – vLLM, LM Studio, llama.cpp oder Ollama – braucht seine Adresse und hält deine Einträge auf diesem Rechner. OpenAI, Anthropic (Claude), OpenRouter, Groq oder NVIDIA brauchen einen API-Schlüssel. Verbindung testen prüft alles, bevor etwas gespeichert wird."
+    },
+    "reader": {
+      "title": "Lass es deine Dokumente lesen",
+      "body": "MarkItDown macht aus PDFs, Word-Dateien, Präsentationen und Tabellen Text, den der Assistent lesen kann. Kopiere die beiden Befehle hier in ein Terminal – einer installiert es, einer startet es – und drücke dann Verbindung testen."
+    },
+    "keyword-manager": {
+      "title": "Stichwörter verwalten",
+      "body": "Füge Stichwörter hinzu, benenne sie um, gib ihnen eine beliebige Farbe oder lösche sie. Eine Umbenennung gilt überall, wo das Stichwort angezeigt wird."
+    },
+    "backup": {
+      "title": "Mach ein Backup",
+      "body": "Wenn du die Browserdaten löschst, sind deine Einträge mit weg, also exportiere ab und zu ein Backup – eine Datei mit allem. jojo lässt die Muskeln spielen, wenn du das tust."
+    },
+    "done": {
+      "title": "Das war die Tour",
+      "body": "Rückgängig ist überall ⌘Z, und jede Änderung steht im Änderungsprotokoll unten in den Einstellungen. Die Anleitung geht jeden Bildschirm der Reihe nach durch – Anleitung, in der oberen Leiste – und die Tour kannst du jederzeit wiederholen."
+    }
+  },
+  "overlay": {
+    "progress": "Schritt {{n}} von {{total}}",
+    "endLabel": "Tour beenden (deine Position bleibt gespeichert)",
+    "end": "Tour beenden",
+    "nice": "Gut – genau so.",
+    "tryIt": "Probier es: {{task}}",
+    "done": "Erledigt.",
+    "announce": "Schritt {{n}} von {{total}}: {{title}}.",
+    "announceTask": "Schritt {{n}} von {{total}}: {{title}}. Probier es: {{task}}",
+    "back": "Zurück",
+    "notNow": "Jetzt nicht",
+    "finish": "Fertig",
+    "skip": "Überspringen",
+    "next": "Weiter"
+  }
+}

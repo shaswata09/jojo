@@ -1,0 +1,112 @@
+{
+  "common": {
+    "connections_other": "{{count}} 件のつながり",
+    "records_other": "{{count}} 件の記録"
+  },
+  "legend": {
+    "show": "{{name}} を表示",
+    "hide": "{{name}} を非表示",
+    "allHidden": "すべての種類の記録が非表示です。",
+    "showAll": "すべて表示",
+    "isA": "種類"
+  },
+  "node": {
+    "label": "{{label}}。{{type}}、{{connections}}"
+  },
+  "canvas": {
+    "label": "ナレッジグラフ — {{records}}、{{connections}}",
+    "capped": "つながりの多い記録 {{shown}} 件を表示しています。ほかに {{dropped}} 件がストアにありますが、このキャンバスにはありません。フィルターで絞り込むと表示できます。",
+    "description": "記録はそれぞれノード、記録どうしの参照はそれぞれ線です。このグラフの横のパネルには、同じ情報がテキストで表示されます。"
+  },
+  "answer": {
+    "title": "回答",
+    "records_other": "{{count}} 件の記録",
+    "prompt": "例を選ぶかパターンを組み立てると、回答がここに表示され、上のグラフで強調されます。",
+    "emptyTitle": "一致する記録はありません",
+    "clear": "クエリをクリア",
+    "caption": "パターンに一致する記録",
+    "columns": {
+      "record": "記録",
+      "kind": "種類",
+      "matched": "一致"
+    },
+    "open": "開く",
+    "select": "グラフで選択",
+    "via": "{{rel}} 経由",
+    "more_other": "{{names}} ほか {{count}} 件",
+    "showing": "{{total}} 件中、最初の {{shown}} 件を表示しています。すべて上のグラフで強調されています。"
+  },
+  "examples": {
+    "title": "作例",
+    "nothingToAsk": "このセッションには、その質問の対象がありません"
+  },
+  "query": {
+    "title": "グラフに質問",
+    "hint": "文で質問するか、手作業で質問を組み立てます",
+    "shape": "質問の形",
+    "pattern": "パターン",
+    "path": "経路",
+    "generated": "生成されたクエリ",
+    "clear": "クリア",
+    "sqlNote": "読みやすさのため、質問の形を SQL の言葉で表したものです。実際に実行されるのは上の構造化されたクエリで、この行は解析されません。"
+  },
+  "fields": {
+    "records": "記録",
+    "anyRecord": "すべての記録",
+    "ofKind": "種類",
+    "anyKind": "すべての種類",
+    "reminder": "リマインダー",
+    "condition": "条件",
+    "quantifier": {
+      "has": "あり",
+      "missing": "なし",
+      "atLeast": "最低"
+    },
+    "howMany": "件数",
+    "orMore_other": "{{count}} 件以上",
+    "relationship": "関係",
+    "anyRelationship": "すべての関係",
+    "connectedTo": "つながり先",
+    "anything": "何でも",
+    "keyword": "キーワード",
+    "anyKeyword": "すべてのキーワード",
+    "from": "始点",
+    "to": "終点"
+  },
+  "detail": {
+    "title": "選択した記録",
+    "nothingSelected": "何も選択されていません",
+    "pickHint": "ノードを選ぶと（クリックするか、Tab で移動して Enter を押す）、何とつながっていて、アプリのどこにあるかがわかります。",
+    "open": "{{type}}を開く",
+    "openType": {
+      "application": "応募を開く",
+      "organisation": "組織を開く",
+      "role": "職種を開く",
+      "item": "タイムラインの項目を開く",
+      "keyword": "キーワードを開く",
+      "link": "リンクを開く",
+      "file": "ファイルを開く",
+      "snippet": "スニペットを開く",
+      "posting": "保存した求人を開く",
+      "match": "スカウトの候補を開く",
+      "source": "応募経路を開く",
+      "background": "あなたについてを開く",
+      "claim": "関係を開く"
+    },
+    "derived": "あなたの記録から導き出されたもので、専用のページはありません。",
+    "verbs": "これでできること",
+    "noLinks": "まだこの記録を指しているものはありません。"
+  },
+  "ask": {
+    "notConnected": "<settings>設定</settings>でローカルモデルを接続すると、これを文で質問できます。下のビルダーはどちらでも使えます。",
+    "label": "グラフに質問する",
+    "stop": "停止",
+    "submit": "質問",
+    "again": "別のことを質問",
+    "suggestions": {
+      "noFollowUp": "フォローアップが予定されていない応募はどれ？",
+      "unfiled": "どこにも整理されていないファイルはどれ？",
+      "busy": "タイムラインの項目が 3 つ以上ある応募はどれ？"
+    }
+  }
+}

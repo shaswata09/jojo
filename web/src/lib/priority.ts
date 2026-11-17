@@ -26,6 +26,8 @@ import {
 } from '@jojo/service/react/use-priority'
 
 export { chronological } from '@jojo/service/react/use-priority'
+import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { appPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 
@@ -34,6 +36,9 @@ export type { PriorityAction } from '@jojo/service/react/use-priority'
 /** `relativeLabelOn`, measured against the app's today. */
 export const relativeLabel = (iso: string) => relativeLabelOn(TODAY, iso)
 
+/** The deck, in the language on screen: re-read when the language changes. */
 export function usePriorityActions() {
-  return usePriorityDeck({ appHref: appPath })
+  const text = useDomain()
+  const { i18n } = useTranslation('domain')
+  return usePriorityDeck({ appHref: appPath, text, language: i18n.language })
 }

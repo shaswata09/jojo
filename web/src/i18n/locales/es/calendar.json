@@ -1,0 +1,67 @@
+{
+  "monthPicker": {
+    "goTo": "Ir al mes",
+    "previousYear": "Año anterior",
+    "nextYear": "Año siguiente"
+  },
+  "chip": {
+    "allDay": "Todo el día",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, hecho —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} evento",
+    "label_many": "{{label}}, {{count}} eventos",
+    "label_other": "{{label}}, {{count}} eventos",
+    "add": "Añadir un evento el {{label}}",
+    "more_one": "+{{count}} más",
+    "more_many": "+{{count}} más",
+    "more_other": "+{{count}} más"
+  },
+  "grid": {
+    "dayLabel": "{{day}} de {{month}}",
+    "previousMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "today": "Hoy",
+    "backTo": "Volver al {{date}}",
+    "goTo": "Ir a {{month}} de {{year}}",
+    "hintTouch": "Toca un día para ver lo que tiene.",
+    "hintPointer": "Elige un día para verlo listado junto a la cuadrícula. Haz clic en un evento para editarlo, o arrástralo a otro día; arrastrar requiere un puntero, así que con el teclado se usa el campo de fecha dentro del evento.",
+    "eventTypes": "Tipos de evento",
+    "showAll": "Mostrar todo",
+    "dateColours": "Colores de fecha",
+    "marks": {
+      "overdue": "Vencido",
+      "soon": "Vence en menos de 48 horas",
+      "done": "Hecho"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} de {{year}}",
+    "today": "Hoy",
+    "selectedDay": "Día seleccionado",
+    "hiddenTitle": "No se muestra nada el {{date}}",
+    "hiddenDescription_one": "{{count}} evento es de un tipo desactivado bajo la cuadrícula.",
+    "hiddenDescription_many": "{{count}} eventos son de un tipo desactivado bajo la cuadrícula.",
+    "hiddenDescription_other": "{{count}} eventos son de un tipo desactivado bajo la cuadrícula.",
+    "showAllTypes": "Mostrar todos los tipos de evento",
+    "emptyTitle": "Nada el {{date}}",
+    "emptyDescription": "Añade una entrevista, una fecha límite o un bloque de preparación y aparecerá aquí y en la cuadrícula.",
+    "addEvent": "Añadir evento",
+    "backTo": "Volver a {{month}}",
+    "delete": "Eliminar evento",
+    "deleteNamed": "Eliminar {{title}}",
+    "restOf": "Resto de {{month}}",
+    "lastDayTitle": "El {{date}} es el último día del mes",
+    "nothingAfterTitle": "Nada después del {{date}}",
+    "lastDayDescription": "No hay nada después. Avanza para planificar en {{month}}.",
+    "nothingAfterDescription": "El resto de {{month}} está libre. Lo que añadas después de este día aparecerá aquí.",
+    "goToMonth": "Ir a {{month}}",
+    "goToDay": "Ir al {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "+{{count}} más este mes",
+    "moreLater_many": "+{{count}} más este mes",
+    "moreLater_other": "+{{count}} más este mes"
+  }
+}

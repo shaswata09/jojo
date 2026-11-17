@@ -1,0 +1,303 @@
+{
+  "readCancelled": "The read was cancelled.",
+  "backup": {
+    "prompt": {
+      "never_one": "{{count}} record in jojo is not in any backup yet. Everything here lives only in this browser, so clearing it or losing this machine would lose it — download a copy and keep it somewhere else.",
+      "never_other": "{{count}} records in jojo are not in any backup yet. Everything here lives only in this browser, so clearing it or losing this machine would lose them — download a copy and keep it somewhere else.",
+      "since_one": "{{count}} record has changed since your last backup on {{day}}. It lives only in this browser until you download a copy and keep it somewhere else.",
+      "since_other": "{{count}} records have changed since your last backup on {{day}}. They live only in this browser until you download a copy and keep it somewhere else."
+    },
+    "failedTitle": "The backup could not be written",
+    "failedDescription": "Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.",
+    "documentsNotReady": "The document index had not finished loading, so a backup taken now would say you have none. Nothing was written.",
+    "documentsUnreadable": "None of the stored documents could be read, so the backup would have held records only. Nothing was written.",
+    "savedTitle": "Backup saved",
+    "startedTitle": "Backup started",
+    "savedAll": "{{name}} holds your records and every document you have attached.",
+    "savedSome_one": "{{name}} holds your records and {{written}} of your {{total}} documents — {{count}} could not be read and is not in it.",
+    "savedSome_other": "{{name}} holds your records and {{written}} of your {{total}} documents — {{count}} could not be read and are not in it.",
+    "startedAll": "Look for {{name}} in your downloads. It holds your records and every document you have attached.",
+    "startedSome_one": "Look for {{name}} in your downloads. It holds your records and {{written}} of your {{total}} documents — {{count}} could not be read and is not in it.",
+    "startedSome_other": "Look for {{name}} in your downloads. It holds your records and {{written}} of your {{total}} documents — {{count}} could not be read and are not in it."
+  },
+  "extension": {
+    "stale": "The jojo extension in this browser is older than this page and cannot carry the request. Update it: press Reload on jojo in your browser’s extensions page — or, if you installed it from Settings, download it again there and load the new folder in place of the old one. An unpacked extension never updates itself.",
+    "oldScanner": "(The jojo extension in this browser is an older version that cannot follow a board to its own subdomain or press “Load more”. Press Reload on jojo in your browser’s extensions page.)",
+    "noAnswerBoard": "The jojo browser extension did not answer, so no board could be read. It is what lets jojo open a page you are signed into; Settings has the installer.",
+    "boardUnreadable": "That board could not be read.",
+    "pageUnsaved": "That page could not be saved.",
+    "hostDidNotLoad": "{{host}} did not load — the link may be wrong, the site may be down, or you may be offline. Open it in a tab to see what it says.",
+    "noAnswerPage": "The jojo browser extension did not answer, so the page could not be opened. Settings has the installer.",
+    "captureTimeout": "The jojo extension opened the page but did not finish saving it in time. A very heavy page can take longer — try again, or open it and use the extension’s Capture button.",
+    "noAnswerReader": "The jojo browser extension did not answer, so the reader could not be reached. It is what lets this page talk to a reader on your own machine; Settings has the installer.",
+    "linkSwitchedOff": "The link was switched off.",
+    "noAnswerLink": "The jojo browser extension did not answer. On a copy of jojo served from the web it is what carries the link to jojo-bridge; Settings has the installer.",
+    "noAnswerProvider": "The jojo browser extension did not answer, so the provider could not be reached. Providers that send no CORS headers can only be called through it; Settings has the installer."
+  },
+  "posting": {
+    "localTarget": "That address is on this computer or your own network, not a job board — jojo does not open those.",
+    "nothingToReadWith": "Reading a posting needs the jojo browser extension, which opens the page the way you would and saves it, or the document reader, which fetches it. Neither is set up in this browser — Settings has both.",
+    "noBackgroundRoute": "Reading suggestions before you look at them needs the jojo browser extension. The document reader is used only for a posting you open yourself.",
+    "notStored": "The page was read, but this browser would not store it — it may be out of room for jojo. Nothing was kept; free some space and try again.",
+    "nearlyEmptyExtension": "That page came back nearly empty. It may not have finished loading, or it may want you signed in — open it in a tab, and try again once it shows the posting.",
+    "nearlyEmptyReader": "That page came back nearly empty. Boards that render with JavaScript send a blank shell to anything but a browser — install the jojo extension and it will open the page the way you would.",
+    "notSaved": "That posting is not saved, so there is no page to keep for it.",
+    "askedTwice": "Asked twice, with the same result."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "Both postings carry the same posting ID.",
+      "url": "Both are the same posting address.",
+      "name": "Same employer and role."
+    },
+    "deletedBefore": "The draft was deleted before its posting could be read.",
+    "deletedDuring": "The draft was deleted while its posting was being read.",
+    "updateFailed": "The draft could not be updated."
+  },
+  "store": {
+    "remoteChangeTitle": "Updated from another tab",
+    "remoteChangeDescription": "Your records were reloaded, so undo history in this tab was cleared.",
+    "heldTitle": "Another jojo tab has the database open",
+    "heldDescription": "It will be deleted as soon as that tab is closed. Close the other tabs, then try again.",
+    "deleteFailedTitle": "The database could not be deleted",
+    "deleteFailedDescription": "{{error}}. Another tab may still have it open.",
+    "demoNotLoaded": "The demo data was not loaded",
+    "recordsNotCleared": "The records were not cleared",
+    "writeFailedDescription": "{{error}} Your records are unchanged."
+  },
+  "fileDelete": {
+    "refusedTitle": "That did not delete",
+    "stillInVault": "{{name}} is still in the Vault.",
+    "deletedTitle": "{{name}} deleted",
+    "deletedUnknown": "The row, its keywords and any copy jojo kept all go. The original on your computer is untouched.",
+    "deletedWithCopy": "The row, its keywords and jojo’s copy of the document all go. The original on your computer is untouched.",
+    "deletedNoCopy": "The row and its keywords go. There was no stored copy of this one to lose.",
+    "undo": "Undo",
+    "lostTitle": "{{name}} came back without its document",
+    "lostDescription": "The row and its keywords are restored, but the stored copy could not be. Drop the file in again to attach it."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} is ready",
+    "readyDescription": "Saved under the application it was written for.",
+    "failedTitle": "{{label}} did not finish"
+  },
+  "pdf": {
+    "passwordNeeded": "That PDF needs a password to open, so it cannot be edited here.",
+    "unreadable": "That file could not be read as a PDF. {{detail}}",
+    "chooseOne": "Choose at least one PDF to merge.",
+    "pageNotIn_one": "{{name}} has {{count}} page, so page {{page}} is not in it.",
+    "pageNotIn_other": "{{name}} has {{count}} pages, so page {{page}} is not in it.",
+    "emptySelection": "That selection has no pages in it.",
+    "keepOnePage": "A document must keep at least one page.",
+    "planOutOfRange_one": "This document has {{count}} page; the plan asks for page {{page}}.",
+    "planOutOfRange_other": "This document has {{count}} pages; the plan asks for page {{page}}.",
+    "noCanvas": "This browser would not give the page a canvas to draw on.",
+    "range": {
+      "noPages": "That document has no pages.",
+      "emptyPart": "There is an empty range between two commas.",
+      "partNamesNoPages": "'{{part}}' names no pages.",
+      "backwards": "'{{part}}' counts backwards. Write it as {{to}}-{{from}}.",
+      "notANumber": "'{{part}}' is not a page number.",
+      "namesNoPages": "That range names no pages.",
+      "fromOne": "Pages are numbered from 1.",
+      "pastEnd": "This document ends at page {{count}}, so page {{page}} is not in it."
+    },
+    "drop": {
+      "notPdf_one": "{{names}} is not a PDF",
+      "notPdf_other": "{{names}} are not PDFs",
+      "leftOut_one": "{{names}} was left out — this works on one document at a time",
+      "leftOut_other": "{{names}} were left out — this works on one document at a time",
+      "one": "{{part}}.",
+      "both": "{{first}}, and {{second}}.",
+      "two": "{{first}} and {{second}}",
+      "three": "{{first}}, {{second}} and {{third}}",
+      "many": "{{count}} of the files"
+    },
+    "colour": {
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "pink": "Pink",
+      "orange": "Orange"
+    }
+  },
+  "noteSize": {
+    "small": "Small",
+    "normal": "Normal",
+    "large": "Large",
+    "huge": "Huge"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Application",
+      "organisation": "Organisation",
+      "role": "Role",
+      "item": "Timeline item",
+      "keyword": "Keyword",
+      "link": "Link",
+      "file": "File",
+      "snippet": "Snippet",
+      "posting": "Saved posting",
+      "match": "Scout match",
+      "source": "Source",
+      "background": "About you",
+      "claim": "Relation"
+    },
+    "savedAgo": "Saved {{ago}}",
+    "fit": "{{fit}}% fit",
+    "count": {
+      "matches": "Matches",
+      "connections": "Connections",
+      "hops": "Hops",
+      "hop": "Hop"
+    },
+    "empty": {
+      "noMatch": "Nothing in your records matches that pattern.",
+      "noneMissing": "Nothing is missing that connection — every record of this kind has one.",
+      "noPath": "No path — these two records are not connected by anything in your store.",
+      "noPathBetween": "No path between those two records."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Applications with no follow-up scheduled",
+        "hint": "The gap that costs people interviews."
+      },
+      "tagged": {
+        "label": "Everything tagged Referral",
+        "hint": "One keyword, across every kind of record."
+      },
+      "repeatOrgs": {
+        "label": "Organisations I applied to more than once",
+        "hint": "Two applications at one employer, from one org node."
+      },
+      "looseReminders": {
+        "label": "Reminders not linked to any application",
+        "hint": "Work you will do without knowing what it was for."
+      },
+      "unusedFiles": {
+        "label": "Files not used by any application",
+        "hint": "Documents sitting in the Vault doing nothing."
+      },
+      "bareApplications": {
+        "label": "Applications with nothing filed in the Vault",
+        "hint": "No link, no file, no snippet — usually an unstarted one."
+      },
+      "path": {
+        "label": "Shortest path between two records",
+        "hint": "How a file and a job you applied for are related."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Employer",
+      "position": "Position",
+      "postingLink": "Posting link",
+      "location": "Location",
+      "appliedOn": "Applied on",
+      "stage": "Stage",
+      "highlight": "Highlight",
+      "notes": "Notes for you",
+      "materials": "Materials sent"
+    },
+    "fileStem": "{{person}} — applications {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "No copy of that document is stored in this browser, so there is nothing to read.",
+    "noReader": "No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.",
+    "noReaderToTryHarder": "{{reason}} No document reader is connected to try harder — Settings is where its address goes.",
+    "maybeScan": "Nothing could be read out of that document — it may be a scan.",
+    "noAddress": "No address yet. See Settings.",
+    "tooLarge": "That document is {{size}} MB and the reader takes up to {{max}} MB."
+  },
+  "network": {
+    "mixedPrivate": "This page is on https, which browsers forbid from calling a plain http address — install the jojo extension, which relays that one hop to your own network for you. Or serve jojo over http.",
+    "mixedPublic": "This page is on https, which browsers forbid from calling a plain http address. Serve jojo over http, or put the model on this machine, on your own network, or behind https — the extension relays those, but not a plain http address on the public internet.",
+    "cors": "Both this page and that address are https, so this is not a mixed-content block. The likely cause is CORS: the server answered without the headers a browser needs to read a reply. Cloud providers generally do not send them, which is what the jojo extension is for — check it is installed and enabled.",
+    "unknown": "The browser would not say why. Either nothing is listening there, or the server answered without the CORS headers a browser needs to read a reply — which both of the services this app talks to do in some cases, so a server that is running can fail this way too."
+  },
+  "mcpLink": {
+    "notBridge": "Something other than jojo-bridge (or an older copy of it) is answering at {{address}}.",
+    "displaced": "Another jojo tab is holding the link.",
+    "bridgeStatus": "jojo-bridge answered {{status}}.",
+    "otherTab": "Another jojo tab in this browser is carrying the link; this one takes over when that tab closes."
+  },
+  "roleScopeEmpty": {
+    "title": "No applications for these roles",
+    "description": "The role filter in the top bar is hiding every application this chart counts.",
+    "showAll": "Show all roles"
+  },
+  "create": {
+    "newApplication": "New application",
+    "fromLink": {
+      "label": "Application from a link",
+      "hint": "The model reads the posting and fills the form in"
+    },
+    "newReminder": "New reminder",
+    "newEvent": "New event",
+    "draftMessage": {
+      "label": "Draft a message",
+      "hint": "From your email snippets — nothing is generated"
+    },
+    "saveLink": {
+      "label": "Save a link",
+      "hint": "Opens the Vault, links tool"
+    },
+    "savePosting": {
+      "label": "Save a posting",
+      "hint": "Opens Job scout"
+    }
+  },
+  "stroke": {
+    "tap": "Tap",
+    "doubleTap": "Double tap",
+    "hold": "Press and hold",
+    "up": "Swipe up",
+    "down": "Swipe down",
+    "side": "Swipe sideways",
+    "diagonal": "Flick diagonally",
+    "backForth": "Back and forth",
+    "zigzag": "Zigzag sideways",
+    "scribbleUp": "Scribble up and down",
+    "circle": "Circle",
+    "square": "Square",
+    "vee": "V (or a tick)",
+    "peak": "Λ (a peak)",
+    "zed": "Z",
+    "arc": "Arc (a C)",
+    "ell": "L",
+    "triangle": "Triangle",
+    "other": "Anything else"
+  },
+  "move": {
+    "nod": "Nod",
+    "shake": "Shake",
+    "hi": "Hi",
+    "bow": "Bow",
+    "leanIn": "Lean in",
+    "wobble": "Wobble",
+    "bounce": "Bounce",
+    "spin": "Spin",
+    "recoil": "Recoil",
+    "startle": "Startle",
+    "dance": "Dance",
+    "shrug": "Shrug",
+    "lookAround": "Look around",
+    "hopSpin": "Hop spin",
+    "stretch": "Stretch",
+    "flex": "Flex",
+    "jab": "Punch combo",
+    "powerUp": "Power up",
+    "doze": "Doze off",
+    "wink": "Wink",
+    "love": "Love",
+    "robot": "Robot dance",
+    "jazz": "Jazz hands",
+    "point": "Point",
+    "hero": "Hero pose",
+    "handsUp": "Hands up",
+    "disco": "Disco",
+    "typing": "Typing",
+    "drumroll": "Drumroll"
+  }
+}

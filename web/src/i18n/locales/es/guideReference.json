@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Las herramientas",
+    "subtitle": "Lo que el asistente puede hacer de verdad, lo que se le impide hacer y cómo encuentra la herramienta adecuada.",
+    "can": {
+      "hint": "{{total}} en total",
+      "title": "Lo que puede hacer el asistente",
+      "intro": "El <go>Asistente</go> no escribe en tus pantallas. Llama a las mismas {{total}} operaciones que llaman los botones: el mismo camino de código, con las mismas comprobaciones. No hay una segunda puerta de entrada, y por eso una edición del asistente aparece en tu historial exactamente igual que una que hiciste tú.",
+      "stats": {
+        "readsLabel": "formas de consultar",
+        "readsHint": "leer nunca cambia nada",
+        "writesLabel": "formas de cambiar",
+        "writesHint": "todas ellas se pueden deshacer…",
+        "destructiveLabel": "marcadas como destructivas",
+        "destructiveHint": "…salvo dos, que preguntan antes"
+      },
+      "irreversibleOne": "De esas {{destructive}}, una no se puede deshacer de ninguna manera: las que reemplazan o vacían todo el almacén.",
+      "irreversibleTwo": "De esas {{destructive}}, dos no se pueden deshacer de ninguna manera: las que reemplazan o vacían todo el almacén.",
+      "irreversibleMany": "De esas {{destructive}}, {{irreversible}} no se pueden deshacer de ninguna manera: las que reemplazan o vacían todo el almacén.",
+      "neverOffered": "Nunca se le ofrecen al asistente salvo que tus propias palabras las pidan, e incluso entonces se detienen para pedir confirmación, sea cual sea el modo de aprobación de la conversación. El modo automático actúa sin preguntar en todo lo que se puede deshacer; ante estas, sigue preguntando.",
+      "ownWords": "«Que tus propias palabras las pidan» es una prueba concreta, no una cuestión de criterio: la frase tiene que contener algo que signifique borrar, algo que signifique todo el almacén y ninguna mención a un tipo concreto de registro. «Borra todo» cumple. «Quita las etiquetas de la candidatura a Baylor» no, y tampoco «borra todo lo que escribí en esa nota»: las dos nombran una cosa, así que las dos tratan de esa cosa.",
+      "errs": "Ante la duda, no lo ofrece. Si de verdad lo quieres y lo dices de una forma poco habitual, el asistente te dice que no puede en lugar de adivinar, y en Ajustes sigue estando el botón."
+    },
+    "gates": {
+      "hint": "la parte que de verdad se sostiene",
+      "title": "Qué impide que se ejecute la equivocada",
+      "intro": "Un modelo de lenguaje puede pedir cualquier cosa. Puede nombrar una herramienta que nunca se le mostró o inventarse una que no existe; los modelos pequeños lo hacen a menudo, y no es señal de que algo haya ido mal. Por eso jojo no depende de que el modelo tenga cuidado.",
+      "distinctionTitle": "La distinción que importa",
+      "distinction": "Elegir qué <em>mostrar</em> al modelo es una pista. Comprobar qué <em>llamó</em> de verdad es una regla, y la regla depende de quién eligió el conjunto. Donde lo fija la pantalla (Pregunta al grafo, un flujo de búsqueda), una llamada a cualquier cosa fuera de él se rechaza antes de buscar nada, y mucho menos de ejecutarlo. En un chat, el conjunto es la suposición de jojo sobre lo que necesitas, así que una llamada fuera de él no se rechaza: pasa por la misma comprobación de aprobación que cualquier otra llamada, que te pregunta primero salvo que la conversación esté configurada para actuar por su cuenta. La única excepción es borrar tus registros, lo único que no se puede deshacer: se rechaza salvo que hayas pedido borrarlo todo con esas mismas palabras.",
+      "askGraph": "Por eso la tarjeta «Pregunta al grafo» puede ofrecer con seguridad dos herramientas de solo lectura. No confía en que el modelo se quede dentro de ellas."
+    },
+    "workflow": {
+      "hint": "pasos, no un único intento largo",
+      "title": "Trabajo que lleva varios pasos",
+      "p1": "Leer un CV no es una sola pregunta. jojo divide el documento según sus propios encabezados, pregunta por cada sección por separado, vuelve a preguntar qué se ha pasado por alto y, por último, pregunta cómo se relacionan los datos: cinco o seis llamadas al modelo por cada archivo subido. Escrito como un solo bloque de código, sería un único <code>try</code> alrededor de todo, y una mala respuesta en cualquier punto lo echaría todo a perder.",
+      "p2": "Así que un trabajo así se declara como <strong>pasos unidos por aristas</strong>. Cada paso indica cuántas veces merece la pena reintentarlo y si el trabajo puede seguir sin él; el camino de un paso al siguiente lo decide lo que ha pasado, nunca preguntándole al modelo adónde ir. Un paso que falla aparece nombrado en el resultado en lugar de perderse en un «no se pudo leer tu CV».",
+      "p3": "Esto importa sobre todo con un modelo pequeño. Un 7B no suele fallar por razonar mal a lo largo de muchos pasos: falla devolviendo algo mal formado en un paso de cada seis. La respuesta útil es repetir ese paso y dejar los otros cinco en paz.",
+      "p4": "Un paso que solo mejora el resultado, como averiguar cómo se conectan tus datos, se marca como opcional: si falla, sigues teniendo todo lo que encontraron los pasos anteriores. Se permiten bucles (un paso puede volver hacia atrás) y hay un límite estricto de pasos en total, para que un error de enrutamiento se detenga con un rastro legible en lugar de quedarse girando a costa de tu GPU."
+    },
+    "badReply": {
+      "hint": "una mala respuesta cuesta una pasada, no el documento",
+      "title": "Cuando un modelo pequeño responde mal",
+      "p1": "A un modelo pequeño se le acaba el espacio a mitad de frase. Leer un CV pide una lista de datos, y una respuesta cortada a mitad de esa lista no tiene corchete de cierre: no es JSON, y lo obvio sería tirarla. jojo, en cambio, conserva todo hasta la última entrada <strong>terminada</strong> y te dice cuánto se ha perdido. Llegan veinte datos en lugar de ninguno.",
+      "p2": "Se detiene en una entrada terminada a propósito. Medio puesto de trabajo es peor que ninguno: aparece ante ti con aspecto de estar completo, y tú lo apruebas.",
+      "p3": "El mismo cuidado se aplica a las búsquedas. Si le piden «pasa mi candidatura a Rice a entrevista» y hay dos, un modelo que buscara una coincidencia y obtuviera una no tendría forma de saber que existe una segunda, así que movería el registro equivocado con total seguridad. Cada búsqueda informa de cuántas coincidencias hubo además de lo que muestra, y eso es lo que permite al asistente volver y preguntarte a cuál te referías."
+    },
+    "picks": {
+      "hint": "para que una petición nunca se quede a medias",
+      "title": "Cómo elige la adecuada",
+      "p1": "Mostrarle a un modelo las {{total}} herramientas a la vez cuesta bastante más de quince mil palabras del espacio que tiene para pensar, antes de que hayas escrito nada. En un modelo pequeño que se ejecuta en tu propio equipo, eso puede ser más espacio del que tiene. Por eso jojo reduce la lista a aquello a lo que apuntan tus palabras.",
+      "p2": "Reducir sin cuidado es peor que no reducir. La mayoría de las operaciones necesitan algo sobre lo que actuar: no puedes asignar una palabra clave sin una palabra clave, ni actualizar un documento sin un documento. Si ocultas la herramienta que crea la cosa, el asistente se queda a medias sin nada en pantalla que explique por qué.",
+      "unsureTitle": "Cuando no está seguro, no reduce",
+      "unsure": "«Recuérdame lo de Baylor el jueves» está claro, y jojo ofrece más o menos una quinta parte del catálogo. «En realidad era la otra» no aclara nada, así que lo ofrece todo, exactamente como antes de que existiera nada de esto. Dudar cuesta un poco de velocidad. Adivinar te costaría la respuesta.",
+      "secondTitle": "Un segundo asistente se encarga de elegir",
+      "second1": "Comparar tus palabras con una lista es rápido y gratis, pero no entiende la intención. «Me han contestado de Rice» no nombra ninguna herramienta ni ningún verbo, pero está claro que significa que una fase ha cambiado. Así que, cuando hay un modelo conectado, primero se ejecuta una segunda tarea mucho más pequeña: lee tu petición (no la conversación ni los resultados, solo lo que pediste) y responde con las herramientas que cree necesarias.",
+      "second2": "Es barato porque no necesita las instrucciones completas de cada herramienta, solo un nombre y una línea: más o menos una sexta parte de lo que costaría entregar el catálogo entero, y ese ahorro se repite en cada paso, no solo una vez. Medido a lo largo de diez preguntas seguidas, redujo el primer mensaje de unas 8000 palabras de contexto a 2900.",
+      "second3": "Solo puede reducir. Lo que elija pasa por las mismas comprobaciones de antes: las herramientas que crean algo acompañan a las que lo cambian, y las dos que vacían tu almacén nunca se incluyen salvo que las hayas pedido con tus propias palabras. Si va lento o no está disponible, se usa la comparación de palabras y no se pierde más que un momento.",
+      "longTitle": "Conversaciones largas",
+      "long1": "Un modelo solo puede abarcar cierta cantidad a la vez, y una conversación que lo supera se recorta: lo hace el servidor, desde el principio, que es donde están las reglas. jojo hace el recorte por su cuenta, desde el extremo más antiguo, y nunca toca sus propias instrucciones ni tu pregunta actual.",
+      "long2": "Lo que quita, antes lo sustituye por un breve resumen de lo que pasó ahí, de modo que el asistente sigue sabiendo que ya le dijiste a qué candidatura a Rice te referías. Se te avisa cuando ocurre. Tus registros nunca se ven afectados: esto solo tiene que ver con lo que cabe en un mensaje.",
+      "long3": "Una conversación conserva las herramientas que ha usado de verdad. Las que solo se le ofrecieron y nunca tocó desaparecen, para que un chat largo no se vaya llenando poco a poco de todo."
+    },
+    "evidence": {
+      "hint": "probado con modelos reales, no supuesto",
+      "title": "¿Funciona de verdad?",
+      "p1": "Todo lo anterior es un diseño. Si un modelo concreto es capaz de elegir la herramienta adecuada del catálogo de jojo es una pregunta sobre ese modelo, y la única forma de responderla es preguntarle. Por eso hay una batería de escenarios (lectura, escritura, cadenas que necesitan una búsqueda previa y casos en los que lo correcto es no hacer nada) que se ejecuta contra servidores reales.",
+      "p2": "Cada escenario se ejecuta dos veces: una con el catálogo completo y otra con el conjunto reducido. La segunda es la que importa. Reducir debería ayudar a un modelo pequeño al darle menos nombres con los que confundirse, pero también podría perjudicarle al quitarle algo necesario, y una afirmación así no vale nada sin el grupo de control al lado.",
+      "suiteTitle": "Qué busca la batería de pruebas",
+      "suite": "No si un modelo es listo. Si busca una herramienta de documentos cuando le diste una URL, si crea una segunda candidatura en lugar de actualizar la que nombraste, si se inventa un id en lugar de buscarlo o (el caso que más importa) si oye «borra la fecha límite» y recurre a la operación que vacía todo tu almacén."
+    },
+    "conversation": {
+      "hint": "un almacén real, y cómo quedó después",
+      "title": "¿Puede mantener una conversación?",
+      "p1": "La batería anterior le hace al modelo una sola pregunta y comprueba si nombró una herramienta sensata. Esa es la mitad fácil, y deja bien a todos. El trabajo real no es una sola pregunta: preguntas en qué fase está algo y luego dices «pásala a entrevista», y el registro al que te refieres está en la respuesta anterior, no en la frase.",
+      "p2": "Por eso hay una segunda prueba. Construye un almacén real (seis candidaturas, un calendario, una bóveda, palabras clave), le da al asistente un guion de {{conversations}} conversaciones repartidas en {{groups}} tipos de trabajo y deja que las llamadas a herramientas se ejecuten de verdad. Después mira qué hay en el almacén. Se puntúan cuatro cosas por separado, porque un modelo puede aprobar una y suspender otra:",
+      "called": "<lead>Qué llamó</lead>: si cada turno era defendible.",
+      "route": "<lead>Cómo llegó</lead>: si buscó un registro antes de cambiarlo o escribió solo a partir de la frase.",
+      "shape": "<lead>La forma del trabajo</lead>: cada caso lleva un grafo de referencia con las llamadas que requiere y cuáles dependen de cuáles, y la ejecución se puntúa contra él. Dos llamadas que el grafo dejó independientes pueden ocurrir en cualquier orden; una escritura antes de la lectura que encuentra dónde escribir, no.",
+      "left": "<lead>Qué dejó atrás</lead>: si el almacén está bien y si cambió algo que no debía cambiar.",
+      "p3": "La tercera es la que las pruebas suelen saltarse, y es la razón por la que un modelo puede puntuar bien aquí y decepcionar en el uso real: en un almacén tan pequeño, adivinar suele acertar con el registro. El grafo dice si estaba razonando o si tuvo suerte. Se informa junto al resultado principal en lugar de integrarse en él: llegar a la respuesta correcta por un camino que nadie previó sigue siendo la respuesta correcta."
+    },
+    "reasoning": {
+      "hint": "medido, con lo que cuesta en tiempo",
+      "title": "¿Ayuda el razonamiento?",
+      "p1": "Se le puede pedir a un modelo que piense antes de responder: es el ajuste Razonamiento en <go>Ajustes</go>. Si eso lo hace mejor en el trabajo de jojo es una pregunta sobre el modelo, así que la prueba de conversaciones anterior se ejecutó dos veces con el razonamiento activado y dos con él desactivado, en los mismos servidores y con el mismo código.",
+      "numbersTitle": "Qué dicen los números",
+      "gemma": "<lead>En Gemma, el razonamiento cuesta precisión y mucho tiempo.</lead> Obtuvo de media entre dos y tres conversaciones menos, y la conversación mediana tardó unas tres veces más. La lentitud es el propio pensamiento: Gemma genera unos 31 tokens por segundo y piensa unos cientos de tokens antes de cada respuesta, así que una ronda tarda de media unos seis segundos más y una larga, quince o más. En ambas pasadas arregló de forma fiable tres conversaciones y estropeó de forma fiable entre tres y cuatro; entre las estropeadas, archivar un documento nuevo y rechazar una sugerencia, que hace bien siempre con el razonamiento desactivado.",
+      "gptOss": "<lead>En GPT-OSS, el ajuste no cambia nada</lead>, y eso era de esperar, no un hallazgo. GPT-OSS siempre razona; «desactivado» solo puede pedirle que razone menos, y ambos ajustes se ejecutaron con su esfuerzo habitual. Además genera unas siete veces más rápido que Gemma, así que pensar le cuesta menos de un segundo por respuesta.",
+      "advice": "Si las respuestas te parecen lentas con un modelo como Gemma, desactiva el razonamiento: en esta prueba no pierdes nada con ello. En cualquier caso, los dos ayudantes (el que elige qué herramientas puede usar un turno y el que resume una conversación larga) nunca razonan, porque ninguna de las dos tareas mejora con ello, y un resumen llegó a tardar casi dos minutos cuando lo hacían.",
+      "firstToken": "La columna del primer token es la mayor parte de la espera en una conversación larga: una respuesta no puede empezar hasta que el servidor ha leído todo lo que se le envió. Un prompt que se repite sale mucho más barato, porque el servidor conserva el principio de la vez anterior; por eso el segundo turno de una conversación suele responder más rápido que el primero."
+    },
+    "previewer": {
+      "hint": "cada caso, literal",
+      "title": "Con qué se evaluó",
+      "p1": "Una puntuación solo vale lo que valen sus casos, y alguien eligió el denominador. Por eso la prueba completa está aquí para que la leas: el almacén con el que se ejecutó, cada frase que recibió el asistente y lo que tenía que ser cierto en tus registros después.",
+      "p2": "Esto se lee de la misma lista que ejecuta la prueba, no de una descripción de ella: un caso añadido mañana aparece aquí con sus prompts, y uno que se quite discretamente desaparece.",
+      "p3": "Elige un caso para ver qué se dijo, el flujo de trabajo que espera dibujado como un grafo de dependencias real, qué puede y qué no puede llamar cada turno y qué hizo realmente cada modelo con él, incluido lo que respondió, que es donde se delata un modelo que no hizo nada y anunció que todo había ido bien."
+    },
+    "ambiguity": {
+      "hint": "la razón de que exista la prueba",
+      "title": "Cuando coinciden dos registros",
+      "p1": "El almacén contiene a propósito dos candidaturas a Rice y dos campus de UT, porque así es una búsqueda de empleo real al cabo de unos meses, y es la situación en la que un asistente puede hacer un daño real mientras parece funcionar perfectamente.",
+      "p2": "Por eso jojo está construido como describe el resto de esta página. No se puede confiar en que un modelo se detenga, así que lo que no se puede deshacer nunca se ofrece salvo que lo pidas expresamente, cada escritura se comprueba contra lo que realmente se ofreció y cada cambio queda en tu historial, donde puedes deshacerlo.",
+      "p3": "También conviene decirlo claramente: una sola pasada de una prueba ordena los modelos de forma aproximada, como mucho. Las puntuaciones variaron entre ejecuciones en el mismo hardware con los mismos ajustes. Lo que no varía es la forma del fallo, y esa es la parte contra la que merece la pena diseñar."
+    },
+    "model": {
+      "hint": "tú eliges, y eso cambia adónde van tus palabras",
+      "title": "Qué modelo hace esto",
+      "p1": "jojo habla con lo que le indiques en <go>Ajustes</go>. Un modelo que se ejecuta en tu propio equipo (Ollama, vLLM, LM Studio) es la opción predeterminada, y es la única configuración en la que nada de lo que escribes sale del dispositivo.",
+      "p2": "También puedes usar Claude, OpenAI y otros con una clave de API. Es una contrapartida real y la pantalla lo dice claramente: tus registros van a esa empresa y se facturan a tu cuenta. La clave se guarda en este navegador, nunca se incluye en una copia de seguridad y nunca se envía a ningún sitio salvo al proveedor que elegiste.",
+      "stoppedTitle": "Si parece que el asistente ha dejado de leer",
+      "stopped": "Un modelo local con poco espacio descarta en silencio el principio de lo que se le envió y luego responde con seguridad a una pregunta que nunca vio entera. jojo compara ahora lo que el servidor dice haber leído con lo que realmente se envió, y te avisa cuando no coinciden, porque la alternativa es un asistente que parece hacer mal su trabajo cuando en realidad le falta espacio."
+    },
+    "next": "Siguiente: <go>con qué está hecho jojo</go>."
+  },
+  "graph": {
+    "pageTitle": "El grafo por debajo",
+    "subtitle": "Cada registro es un nodo y cada vínculo entre ellos es una arista. La página Grafo dibuja exactamente eso.",
+    "picture": {
+      "hint": "no es una ilustración del almacén: es el almacén",
+      "title": "Qué muestra la imagen",
+      "body": "La página <go>Grafo</go> recorre en cada renderizado los mismos registros que leen el tablero y el calendario, y dibuja una marca por registro y una línea por puntero. Nada de ese lienzo es una segunda copia de tus datos ni una maqueta: elimina una candidatura en el tablero y habrá desaparecido del lienzo antes de que vuelvas a él.",
+      "markTitle": "Qué significa una marca",
+      "colourTerm": "Color",
+      "colour": "El tipo de registro. Nada en esta página es nunca rojo ni ámbar: esos dos colores están reservados en toda la aplicación para lo vencido y lo que vence pronto, y un punto rojo aquí se leería como una fecha límite y no como un tipo.",
+      "shapeTerm": "Forma",
+      "shape": "La familia. Los círculos son los registros vivos de una búsqueda: candidaturas, elementos con fecha, ofertas, coincidencias. Los cuadrados redondeados son lo que archivaste en la Bóveda: enlaces, archivos, fragmentos. Los rombos son lo que comparten muchos registros. Dos de los cuatro rombos son registros con id propio, una organización y una palabra clave, y los otros dos no (ver más abajo).",
+      "sizeTerm": "Tamaño",
+      "size": "Cuántas aristas lo tocan, en raíz cuadrada y con un tope. Un nodo central con veinte conexiones es visiblemente más grande que uno con cuatro, pero no cinco veces más grande, que es lo que salía al calcular el tamaño directamente a partir del número: las candidaturas se volvían planetas y todo lo demás, polvo.",
+      "lineTerm": "Una línea",
+      "line": "Un puntero entre dos registros, dibujado sin punta de flecha. La dirección se guarda, y todos los recorridos de esta página la ignoran: quien pregunta qué conecta un archivo con un empleo no tiene una dirección en mente.",
+      "notDoTitle": "Dos cosas que el lienzo no hace",
+      "notDo1": "Pulsar una fila de la leyenda oculta ese tipo de registro, y ningún nodo cambia de tamaño al hacerlo. El tamaño es un dato sobre el registro, no sobre lo que estás mirando en ese momento, y un nodo que encogiera porque ocultaste una fila de la leyenda te estaría hablando de tu filtro y no de tus datos.",
+      "notDo2": "Y no todo lo que hay en tu almacén aparece en el lienzo. Las búsquedas guardadas de Job scout y tu perfil son registros, y ninguno se dibuja: una búsqueda guardada no nombra ningún registro de aquí, y el perfil es una sola fila que quedaría sola en una esquina de cada imagen. Están en la exportación y en el recuento de registros de <go>Ajustes</go> de todos modos."
+    },
+    "question": {
+      "hint": "tres paneles, y uno no ejecuta nada",
+      "title": "Hacerle una pregunta",
+      "intro": "El panel bajo el lienzo tiene tres partes, y conviene saber cuál es cuál antes de fiarte de una respuesta suya.",
+      "pickers": "<lead>Los selectores son reales.</lead> Qué buscas, si <hi>tiene</hi>, <hi>no tiene</hi> o <hi>tiene al menos</hi> dos de una relación, qué hay en el otro extremo y, opcionalmente, una palabra clave que todo debe llevar. Los elementos de la cronología tienen un segundo selector que nada más tiene (un tipo, o la marca de recordatorio), porque «candidaturas sin seguimiento» y «recordatorios no vinculados a nada» son las dos preguntas que la gente hace de verdad, y ninguna se puede expresar solo con tipos de registro.",
+      "queryLine": "<lead>La línea de consulta no lo es.</lead> El bloque de texto con aspecto de código bajo los selectores se genera a partir de ellos y nada lo interpreta. La propia página lo etiqueta como ilustrativo, y esta página no va a suavizarlo: jojo no tiene lenguaje de consulta, escribir en ese cuadro no es una función que vaya a llegar y ningún campo en ninguna parte lo acepta.",
+      "answer": "<lead>La respuesta es real.</lead> La tabla enumera los registros que coincidieron y los abre, y esos mismos registros se iluminan en el lienzo de arriba. Las respuestas largas se cortan a cuarenta filas en la tabla y lo indican; todas las coincidencias siguen iluminadas en el grafo de todos modos.",
+      "whyTitle": "Por qué está ahí la línea que nada interpreta",
+      "why": "Porque es la forma más corta de hacer legibles los selectores. Ver <code>{{query}}</code> junto a las palabras «candidaturas sin seguimiento» es lo que convierte tres desplegables en una frase que se puede leer, y enseña la forma de la pregunta, no una sintaxis que luego no tendrías dónde escribir. La regla que debe cumplir es que nunca finge: lleva su propia etiqueta, no tiene botón de ejecutar y está debajo de los controles que hacen el trabajo, no encima.",
+      "answersTitle": "Tres cosas que conviene saber sobre las respuestas",
+      "answers1": "Una pregunta se ejecuta sobre todo tu almacén, nunca sobre lo que queda visible. Una respuesta que cambiara al pulsar una fila de la leyenda sería peor que ninguna respuesta.",
+      "answers2": "No hay botón Ejecutar. Cada cambio se vuelve a ejecutar al instante, así que la tabla y los controles de encima nunca pueden estar describiendo dos preguntas distintas.",
+      "answers3": "Un resultado vacío se formula con las palabras de la propia pregunta. Pregunta qué candidaturas no tienen seguimiento, no obtengas nada y te dirá que todas lo tienen, lo cual es una respuesta, no un fallo."
+    },
+    "model": {
+      "hint": "la regla para merecer uno",
+      "title": "Once tipos de registro",
+      "intro": "Un valor se convierte en un registro propio cuando puedes renombrarlo o anotarlo, y si no, sigue siendo un campo. Un empleador lo cumple: puedes escribirlo de otra forma, las candidaturas se acumulan bajo él y merece ser una sola cosa en lugar de doce cadenas de texto. Esa única prueba es la que produjo los once de abajo y descartó todo lo demás.",
+      "manyTitle": "Un puntero, o muchos",
+      "many": "Tres de las siete son relaciones múltiples: el etiquetado, aquello de lo que trata (<code>ABOUT</code>) un elemento con fecha y aquello bajo lo que está archivado (<code>FILED_UNDER</code>) un registro de la bóveda. Un CV va a cada candidatura a la que lo envías y una fecha límite de referencias cubre cada empleo que cubre, así que esas dos son listas y no huecos. Las otras cuatro son como mucho una por registro, y volver a vincular reemplaza lo que había en la misma escritura. La identidad de un puntero es la terna que une, así que crearlo dos veces da el mismo puntero y no hay forma de acabar con dos líneas idénticas entre los mismos dos registros; por eso archivar un documento bajo un empleo en el que ya está archivado no hace nada en absoluto.",
+      "elevensTitle": "Dos onces y dos sietes, y no son los mismos",
+      "elevensIntro": "La página Grafo también tiene once tipos de nodo y siete tipos de línea, una coincidencia que merece la pena desmontar porque ha confundido a quien fue a buscar:",
+      "nineTerm": "Nueve de once coinciden",
+      "nine": "Dos tipos guardados nunca se dibujan (la búsqueda guardada y el perfil) y dos tipos dibujados nunca se guardan, que es la siguiente sección.",
+      "fiveTerm": "Cinco de siete coinciden",
+      "five": "Dos relaciones guardadas tampoco se dibujan nunca. Una dice que una candidatura es copia de otra, y se escribe cuando duplicas una; la otra une una oferta guardada o una coincidencia con la búsqueda de la que salió, y no se dibuja porque lo que hay en su otro extremo no se dibuja. Dos relaciones dibujadas nunca se guardan.",
+      "oneNameTerm": "Un nombre significa dos cosas",
+      "oneName": "El selector de relaciones ofrece <code>viene de</code>, y en el lienzo es la línea que va de una candidatura a donde la encontraste, una línea que el almacén nunca ha guardado. La relación guardada con el mismo nombre une una oferta con una búsqueda guardada y no aparece en ninguna imagen."
+    },
+    "drawn": {
+      "hint": "rol y origen",
+      "title": "Dos cosas dibujadas que nunca se guardaron",
+      "p1": "Una candidatura lleva una etiqueta de rol de una lista fija de cinco y, opcionalmente, dónde la encontraste, de una lista fija de cuatro. Ninguna de las dos es un registro. Son listas cerradas que alimentan un filtro y el orden de una leyenda, no son cosas que puedas renombrar ni anotar, y convertirlas en registros añadiría una búsqueda a cada proyección de la aplicación a cambio de nada que pudieras hacer después.",
+      "p2": "Se dibujan de todos modos, porque merece la pena tener una imagen de cuáles vinieron por una recomendación, y un chip de filtro no es la misma imagen. La página Grafo las crea a partir de las propiedades que ya tiene a mano, en el momento en que las tiene, y no escribe nada.",
+      "tellTitle": "Cómo distinguirlas en la imagen",
+      "tell": "Son los dos rombos que no tienen detrás ni un empleador ni una palabra clave, y la prueba definitiva es que no pueden sobrevivir a aquello de lo que se leyeron. Elimina la última candidatura etiquetada <hi>Postdoc</hi> y ese nodo desaparece con ella: no hay ningún otro sitio en jojo donde ese valor exista como cosa. Elimina la última candidatura en un empleador y el registro de la organización se queda, porque es un registro; lo mismo vale para una palabra clave, y por eso borrar todas las candidaturas en <go>Ajustes</go> deja tus palabras clave intactas.",
+      "source": "Además, un nodo de origen solo aparece si has indicado de dónde vino algo. Es un campo opcional, y una candidatura que no lo tiene simplemente no tiene ninguna línea en esa dirección."
+    },
+    "delete": {
+      "hint": "el único dato que vale la pena llevarse",
+      "title": "Eliminar desvincula, nunca arrastra en cascada",
+      "intro": "Elimina una candidatura y jojo quita ese registro y los punteros hacia él, sin tocar nada en el otro extremo de ninguno de ellos. Un diálogo que dice «eliminar Rice» no puede interpretarse razonablemente como consentimiento para eliminar los cuatro archivos en los que alguien se pasó una tarde entera.",
+      "afterTitle": "Lo que verás realmente después",
+      "after": "El archivo sigue en la Bóveda, archivado bajo nada. El recordatorio sigue en el calendario, sobre nada. Tus palabras clave no se tocan: las comparte todo y nunca pertenecieron a esa candidatura. En la página Grafo, esos registros pasan a ser nodos sin conexión, que es justo para lo que sirve el interruptor <hi>Ocultar registros sin conexión</hi> cuando hayas limpiado unas cuantas búsquedas muertas.",
+      "halfTitle": "Y ningún registro se elimina a medias",
+      "half": "No hay ninguna marca oculta que señale un registro como eliminado. Ese enfoque obliga a un filtro que nunca se puede olvidar en cada lectura, cada recuento, cada proyección y la exportación, y un solo sitio que lo olvide es un registro eliminado que vuelve a aparecer en tu tablero. Eliminado significa que la fila no está, y deshacer la devuelve con sus punteros, porque la escritura registró cómo era cada registro antes de ejecutarse, en lugar de una nota sobre cómo revertirse."
+    },
+    "source": {
+      "hint": "para quien abra el repositorio",
+      "title": "Una acción, un commit, una fila del registro, un deshacer",
+      "p1": "Cada escritura en jojo es una operación con nombre definida fuera de React, validada contra su propio esquema y ejecutada de forma síncrona dentro de una sola transacción. Las operaciones se llaman entre sí, y una llamada anidada se une a la transacción desde la que se la llamó en lugar de abrir la suya. Esa es toda la invariante, y el resto de esta página se deriva de ella.",
+      "p2": "Añadir una candidatura son tres escrituras: el registro, el empleador si es la primera candidatura allí y la fecha límite si indicaste una. Llegan como un solo commit, así que producen una fila en el registro, un aviso y una pulsación de deshacer. Eliminar una tiene la misma forma leída al revés: la transacción capturó cómo era cada registro que tocó antes y después, así que revertirla vuelve a vincular el recordatorio y el archivo sin que nadie haya escrito una función que sepa que había un recordatorio y un archivo de por medio. Por eso la desvinculación de arriba se puede deshacer, y por eso el enfoque anterior (una reversión escrita a mano para cada operación) era donde vivía este tipo de error: alguien tenía que recordar qué tocaba una escritura, y la escritura que tocaba cinco colecciones se recordaba como si tocara cuatro.",
+      "p3": "El registro se conserva. <go>Ajustes</go> enumera cada escritura, de la más reciente a la más antigua, limitada a las doscientas más recientes y depurada al abrir el almacén, y ofrece deshacer en la fila más reciente. La <em>pila</em> de deshacer es otra cosa: dura lo que la sesión y tiene cincuenta niveles, porque una pila que sobreviviera a una recarga invitaría a deshacer algo del martes pasado, y eso requiere reglas de conflicto que esta aplicación no tiene.",
+      "p4": "Dónde viven las operaciones, qué capa puede importar cuál y el mismo recorrido de añadir una candidatura dibujado a través de las cinco están en <go>Con qué está hecho</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "Las dos barreras entre una pregunta y un cambio en tus registros",
+      "desc": "Seis pasos, de arriba abajo. Uno, lo que escribiste. Dos, jojo elige las herramientas a las que apuntan tus palabras, y si tus palabras no están claras las ofrece todas en lugar de adivinar. Tres, añade aquello de lo que dependen esas herramientas, para que ninguna cadena quede sin salida. Cuatro, el modelo elige una herramienta. Cinco, jojo comprueba si esa herramienta se ofreció de verdad; si no, la llamada se rechaza y no se ejecuta nada. Seis, solo entonces cambian tus registros. El quinto paso es el que hace cumplir algo; el segundo es solo una pista, porque un modelo puede nombrar una herramienta que nunca se le mostró.",
+      "typed": "lo que escribiste",
+      "pick": "elegir las herramientas probables",
+      "pickNote": "¿no está claro? ofrecer las {{total}}",
+      "needs": "añadir lo que necesitan",
+      "needsNote": "para que ninguna cadena se atasque",
+      "chooses": "el modelo elige una",
+      "offered": "¿se ofreció?",
+      "offeredNote": "¿no? rechazada, no se ejecuta nada",
+      "change": "tus registros cambian",
+      "caption": "El paso dos te ahorra tokens. El paso cinco es el que te protege, y se ejecuta tanto si el paso dos redujo algo como si no."
+    },
+    "toolGraph": {
+      "title": "Cómo una herramienta arrastra consigo la herramienta que la alimenta",
+      "desc": "Tres filas, cada una leída de izquierda a derecha. En la primera, pedir keyword.attach arrastra keyword.create, porque asignar una palabra clave necesita una palabra clave que ya exista. En la segunda, vault.file.update arrastra vault.file.add, porque actualizar un documento necesita un documento. En la tercera, scout.posting.promote arrastra scout.posting.save, porque promover una oferta guardada necesita una oferta guardada. En todos los casos jojo deduce la dependencia a partir de la propia entrada de la herramienta y ofrece las dos juntas, para que al asistente nunca se le entregue un primer paso sin forma de llegar al segundo.",
+      "asked": "lo que pediste",
+      "needsHeader": "lo que necesita",
+      "offered": "se ofrece con ella",
+      "needsKeyword": "una palabra clave",
+      "needsFile": "un archivo",
+      "needsPosting": "una oferta",
+      "without": "Sin esto, al asistente podría ofrecérsele la primera caja y no la segunda,\ny se quedaría a medias sin nada en pantalla que dijera por qué.",
+      "caption": "jojo lee cada requisito de la propia definición de la herramienta, así que una herramienta añadida mañana queda cubierta sin que nadie actualice ninguna lista."
+    },
+    "benchAmbiguity": {
+      "title": "Una frase, dos registros, y cambió el equivocado",
+      "desc": "Arriba, la petición: cierra la candidatura a UT, me han rechazado. Debajo, dos registros que coinciden: UT Austin, aún enviada y activa, y UT Dallas, ya cerrada. Nada en la frase los distingue. La respuesta correcta es preguntar cuál; cuatro de seis ejecuciones de la prueba cerraron en cambio UT Austin, la candidatura activa. La herramienta que eligieron era la correcta. El registro al que la aplicaron, no.",
+      "quote": "«Cierra la candidatura a UT: me han rechazado.»",
+      "matchesBoth": "coincide con ambas",
+      "austinState": "enviada, aún activa",
+      "austinRuns": "cerrada en 4 de 6 ejecuciones",
+      "dallasState": "ya cerrada",
+      "dallasMeant": "la que querían decir",
+      "footer": "La herramienta era correcta. El registro no, y ninguna puntuación de elección de herramienta puede ver la diferencia.",
+      "caption": "La propia instrucción de jojo le dice al modelo que pregunte cuando una petición puede referirse a más de un registro. Dos de los tres modelos escribieron igualmente."
+    },
+    "benchAxes": {
+      "title": "Precisión por turno frente a éxito en la conversación completa",
+      "desc": "Tres barras, medidas sobre las mismas ejecuciones de la prueba. Turnos que llamaron a algo defendible: {{turnsGot}} de {{turnsOf}}, un {{turnsPct}} por ciento. Afirmaciones individuales sobre el almacén que se cumplieron: {{claimsGot}} de {{claimsOf}}, un {{claimsPct}} por ciento. Conversaciones completas sin ningún error: {{wholeGot}} de {{wholeOf}}, un {{wholePct}} por ciento. La tercera es más baja que las otras dos porque una conversación solo está limpia cuando todos los turnos y todas las afirmaciones se cumplen a la vez, así que los dos números altos se combinan en el bajo.",
+      "turnsLabel": "Turnos que llamaron a algo defendible",
+      "turnsNote": "la pregunta fácil",
+      "claimsLabel": "Afirmaciones sobre el almacén que se cumplieron",
+      "claimsNote": "comprobadas una a una",
+      "wholeLabel": "Conversaciones completas sin ningún error",
+      "wholeNote": "todos los turnos y todas las afirmaciones, a la vez",
+      "count": "{{got}} de {{of}}: {{note}}",
+      "bracket": "ambas deben\ncumplirse a la vez",
+      "caption": "Una prueba que solo informara de la primera barra diría que estos modelos son casi perfectos. La tercera es la que responde si el trabajo se hizo."
+    },
+    "toolTrace": {
+      "title": "Dónde vive el código para añadir una candidatura, capa a capa",
+      "desc": "Seis pasos, de arriba abajo. Uno, en src/components y fuera de la capa compartida, el formulario de la candidatura le pasa al entorno de ejecución un objeto de entrada. Dos, kg/react/use-tool.ts ejecuta la herramienta llamada application.create y no espera nada. Tres, kg/tools/application.ts abre una transacción, y las llamadas anidadas a org.ensure y a la herramienta de fecha límite se unen a ella en lugar de abrir la suya. Cuatro, kg/core valida la entrada contra el esquema de la herramienta y genera el id y el slug. Cinco, kg/repo hace un solo commit: se actualiza la instantánea, se añade una fila al registro y esa fila es el único deshacer. Seis, kg/storage escribe en cuatro almacenes de objetos de IndexedDB en una sola transacción, y solo este último paso se dibuja con una flecha discontinua, porque nada lo espera. Un corchete en el margen marca los pasos tres a cinco como una transacción y un deshacer.",
+      "webOnly": "solo web",
+      "form": "el formulario pasa un objeto de entrada",
+      "run": "run('application.create'): no se espera nada",
+      "join": "org.ensure y la fecha límite se unen a la llamada",
+      "parse": "valida la entrada, genera el id y el slug",
+      "commit": "commit: la instantánea, una fila, un deshacer",
+      "stores": "cuatro almacenes, una transacción de IndexedDB",
+      "bracket": "una transacción · un deshacer",
+      "nothingAwaits": "nada espera esto",
+      "caption": "Se lee de arriba abajo en el orden en que ocurre, no en el orden de la pila: <code>kg/core</code> es L1 y está debajo de <code>kg/repo</code> en el diagrama anterior, porque una herramienta llama hacia abajo y vuelve antes de que se haga commit de nada."
+    },
+    "stack": {
+      "title": "Cómo se organiza en capas el código de jojo",
+      "desc": "Tres cosas arriba: la extensión del navegador, la aplicación web y la aplicación del móvil. La extensión habla con la aplicación web mediante mensajes retransmitidos y no importa nada. La aplicación web envía datos al móvil por la red local. Ambas aplicaciones llaman al servicio compartido a través de sus hooks de React. El servicio tiene seis capas, y cada una solo usa las que están por debajo: react, agent, tools, repo, core y storage. Tools está resaltada: todos los cambios en los registros pasan por ella. Abajo, un driver de IndexedDB en la web y un driver de AsyncStorage en el móvil implementan cada uno el puerto de almacenamiento.",
+      "extension": "extensión",
+      "webApp": "aplicación web",
+      "phoneApp": "app del móvil",
+      "relay": "retransmisión",
+      "lan": "LAN",
+      "hooks": "hooks",
+      "reactNote": "hooks que comparten ambas apps",
+      "agentNote": "bucle del modelo · catálogo · MCP",
+      "toolsNote": "cada escritura · un deshacer",
+      "repoNote": "commit · registro · cola de escritura",
+      "coreNote": "reglas puras · hoy es un parámetro",
+      "storageNote": "puertos Driver y FileStore",
+      "idbDriver": "driver de IndexedDB · web",
+      "asyncDriver": "driver de AsyncStorage · móvil",
+      "caption": "Las flechas continuas indican hacia dónde puede depender el código: solo hacia abajo. Las líneas discontinuas no son importaciones: la extensión retransmite mensajes, la aplicación web pasa datos al móvil por la red local y cada driver de almacenamiento implementa el puerto inferior. Las aplicaciones también pueden usar directamente las funciones puras de core; nunca deben escribir por debajo de la capa de herramientas."
+    },
+    "recordModel": {
+      "title": "Los once tipos de registro que guarda jojo y las siete formas en que uno puede apuntar a otro",
+      "desc": "La candidatura está en el centro y casi todo apunta a ella. Un elemento de la cronología es ABOUT (trata de) una candidatura, y puede tratar de varias a la vez. Un enlace, un archivo y un fragmento están FILED_UNDER (archivados bajo) una candidatura, y pueden estarlo bajo varias. Una oferta guardada o una coincidencia de búsqueda BECAME (se convirtió en) una. Una candidatura está AT (en) una organización, y puede ser COPY_OF (copia de) otra candidatura. Una palabra clave TAGS (etiqueta) cinco tipos de registro: candidaturas, elementos de la cronología, enlaces, archivos y fragmentos. Tres de las siete relaciones pueden aparecer más de una vez (ABOUT, FILED_UNDER y TAGS); las otras cuatro son como mucho una por registro, así que volver a vincular reemplaza el vínculo que había. Dos tipos guardados no se dibujan en absoluto en la página Grafo: pipeline, del que vino (FROM) una oferta guardada o una coincidencia, y profile, que ninguna relación une con nada. COPY_OF y ese FROM se guardan pero tampoco se dibujan nunca, y por eso aquí van punteados. Bajo la regla están las dos cosas que la página Grafo dibuja y que el almacén nunca ha guardado: el rol y el origen. Son propiedades de una candidatura (su roleTag y su source) mostradas como nodos unidos por una arista IS y una segunda arista también llamada FROM, ninguna de las cuales se escribe en ninguna parte.",
+      "storedNotDrawn": "guardado, pero no\ndibujado en la página Grafo",
+      "drawnNeverStored": "dibujado en la página Grafo, nunca guardado",
+      "roleTagProp": "la propiedad roleTag",
+      "sourceProp": "la propiedad source",
+      "caption": "Once tipos de registro y siete relaciones que los unen. <code>ABOUT</code>, <code>FILED_UNDER</code> y <code>TAGS</code> pueden aparecer más de una vez cada una (un CV va a cada candidatura a la que lo envías), mientras que las otras cuatro son como mucho una por registro, así que volver a vincular reemplaza el vínculo en lugar de añadir un segundo. Dos tipos guardados nunca se dibujan en la página Grafo: <code>pipeline</code>, del que vino una oferta guardada o una coincidencia, y <code>profile</code>, que ninguna relación une con nada. Bajo la regla están las dos cosas que la página Grafo dibuja y que nunca se guardaron: <code>role</code> y <code>source</code> son propiedades de una candidatura, convertidas en nodos para la imagen y no escritas en ninguna parte."
+    },
+    "unlink": {
+      "title": "Eliminar una candidatura quita los punteros hacia ella y conserva cada registro que tenía uno",
+      "desc": "Dos estados, uno encima del otro. Antes: una candidatura, con un elemento de la cronología que apunta a ella por una arista ABOUT, una palabra clave por una arista TAGS y un archivo por una arista FILED_UNDER. Se ejecuta la herramienta application.delete. Después: el elemento de la cronología, la palabra clave y el archivo siguen ahí, en los mismos sitios, sin apuntar a nada: el elemento de la cronología no trata de nada, la palabra clave no etiqueta nada y el archivo no está archivado bajo nada. Solo han desaparecido la candidatura y las tres aristas. No se toca ningún registro del otro extremo de una arista.",
+      "before": "Antes",
+      "after": "Después",
+      "gone": "eliminada",
+      "aboutNothing": "sobre nada",
+      "taggingNothing": "sin etiquetar nada",
+      "filedNothing": "archivado bajo nada",
+      "caption": "La candidatura y los tres punteros hacia ella han desaparecido. El elemento de la cronología, la palabra clave y el archivo no: están en los mismos sitios, sin apuntar a nada, y todos siguen siendo tuyos para abrirlos. Deshacer devuelve las aristas, porque la escritura capturó cómo era cada registro antes de ejecutarse, en lugar de una nota sobre cómo revertirse."
+    }
+  }
+}

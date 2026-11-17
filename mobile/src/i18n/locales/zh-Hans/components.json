@@ -1,0 +1,613 @@
+{
+  "checklist": {
+    "title": "清单",
+    "titleCount": "清单 · {{total}} 项中 {{open}} 项未完成",
+    "notAdded": "该步骤未能添加",
+    "deleted": "已删除步骤",
+    "draft": "起草",
+    "draftMore": "再起草一些",
+    "actionsFor": "{{step}} 的操作",
+    "empty": {
+      "title": "清单里还没有内容",
+      "noPosting": "这个申请背后没有保存的招聘信息，所以 jojo 读不到它要求你提交什么。你仍然可以自己添加步骤。",
+      "noModel": "起草清单需要一个模型。请在设置中连接一个，或在下方自己添加步骤。",
+      "ready": "让 jojo 从招聘信息中读出你需要提交的材料，或在下方自己添加步骤。"
+    },
+    "addStep": "添加步骤",
+    "step": "步骤"
+  },
+  "fit": {
+    "title": "你的匹配度",
+    "step": {
+      "reading": "正在打开招聘信息…",
+      "asking": "正在读取它的要求…"
+    },
+    "measure": "评估这条招聘信息",
+    "rerun": "重新运行",
+    "rerunHint": "重新读取招聘信息并重新评估",
+    "clear": "清除这次评估",
+    "clearHint": "在你要求之前，jojo 不再评估这条招聘信息",
+    "cleared": "已清除匹配评估",
+    "notCleared": "未能清除",
+    "clearedBody": "除非你要求，jojo 不会再读取这条招聘信息。",
+    "options": "匹配选项",
+    "blocked": {
+      "noPosting": "这个申请背后没有保存的招聘信息，所以没有可以比较的对象。保存这条招聘启事，或通过链接添加该申请，这里就会填上内容。",
+      "noModel": "读取招聘信息的要求需要一个模型。请在 更多 → 设置 中连接一个。",
+      "noBackground": "jojo 还没有读过你的背景资料，所以无法用它来评估这条招聘信息。把你的简历放进资料库，并在它提出读取时同意即可。"
+    },
+    "clearedNote": "你清除了这次评估，所以 jojo 暂不处理这条招聘信息。",
+    "queued": "排队中…",
+    "leadWith": "重点突出",
+    "answers": "对应“{{requirement}}”",
+    "beReadyFor": "做好准备",
+    "required": "（必需）",
+    "skipped_other": " · 跳过了 {{count}} 行"
+  },
+  "tailored": {
+    "title": "定制材料",
+    "hint": "已针对这条招聘信息改写，并标出改动。",
+    "tailor": "定制",
+    "tailoredBefore": "{{label}} · 已定制过",
+    "blocked": {
+      "noPosting": "这个申请背后没有保存的招聘信息，所以没有可针对的对象来定制你的文档。通过链接添加该申请或保存招聘启事后，这里就会提供定制。",
+      "noModel": "定制文档需要一个模型。请在 更多 → 设置 中连接一个。",
+      "noDocuments": "还没有可以定制的内容。定制会改写你随申请发送的文档——在 更多 → 我的资料 中添加简历、陈述或求职信，或将它们放进资料库的“申请”分类，它们就会出现在这里。"
+    },
+    "queued": "排队中…",
+    "working": "处理中…",
+    "empty": "还没有定制过。点击“定制”，选择一份文档，jojo 会为这条招聘信息写一个版本并标出改动。",
+    "deleted": "已删除 {{title}}",
+    "notDeleted": "未能删除",
+    "deletedBody": "已从这个申请和资料库中移除。",
+    "provenance": "{{tag}} · 来自 {{from}} · {{model}}",
+    "chooseTitle": "定制一份文档",
+    "chooseHint": "本地模型需要一两分钟。",
+    "openInVault": "在资料库中打开",
+    "previewNamed": "预览 {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "运行中",
+      "done": "完成",
+      "failed": "失败",
+      "declined": "已拒绝"
+    },
+    "effect": {
+      "read": "读取",
+      "unknown": "无此工具",
+      "create": "已添加",
+      "update": "已更改",
+      "move": "已移动",
+      "delete": "已删除",
+      "admin": "存储"
+    },
+    "asked": "代理请求执行此操作。目前还没有任何更改。",
+    "dont": "不允许",
+    "allow": "允许",
+    "arguments": "参数",
+    "result": "结果",
+    "undoStep": "撤销这一步",
+    "cannotUndo": "这一步无法在这里撤销。更多 → 设置 → 记录 中保存了更改日志，可以撤销最近一次更改。",
+    "truncated": "已截断——已让代理缩小搜索范围以查看其余内容。",
+    "thinking": "处理中——{{model}} 正在决定下一步…"
+  },
+  "approval": {
+    "askedBy": "由 {{name}} 请求。目前还没有任何更改。",
+    "askedByUnnamed": "由一个对话请求。目前还没有任何更改。"
+  },
+  "threads": {
+    "conversations": "对话",
+    "new": "新对话",
+    "kept_other": "已保存 {{count}} 个",
+    "titleField": "对话标题",
+    "approvalLabel": "这个对话无需询问就能做多少事",
+    "rename": "重命名此对话",
+    "changeJob": "更改相关职位",
+    "fileUnder": "归到某个职位下",
+    "delete": "删除此对话",
+    "noJob": "尚未关联职位",
+    "listEmpty": "还没有内容——问点什么，它就会保存在这里，保存在这台设备上。",
+    "keptOnDevice_other": "此设备上保存了 {{count}} 个。",
+    "filter": "筛选",
+    "filterPlaceholder": "按名称或职位",
+    "noMatch": "没有匹配的对话。",
+    "working": "处理中…",
+    "questions_other": "{{count}} 个问题"
+  },
+  "picker": {
+    "title": "相关申请",
+    "description": "它属于多少个职位就选多少个。同一份简历会随你投递的每个申请一起发出，所以这里是一个列表，而不是单个位置。",
+    "notLinked": "未关联",
+    "none": "还没有申请",
+    "noneHint": "添加一个后，就可以把这项归到它下面。"
+  },
+  "audit": {
+    "records_other": "{{count}} 条记录",
+    "links_other": "{{count}} 个关联",
+    "undoFailed": "该更改已无法撤销",
+    "notInJournal": "它已不在日志中。",
+    "recorded_other": "已记录 {{count}} 条",
+    "title": "更改记录",
+    "empty": {
+      "title": "还没有写入任何内容",
+      "description": "每次添加、编辑和删除都会即时出现在这里——最新的在前，最后一次可以撤销。"
+    },
+    "explain": "最近一次更改可以恢复。更早的只是记录，不是时光机。",
+    "undoLast": "撤销最后一次",
+    "cannotUndo": "加载或清空数据集无法撤销。",
+    "showAll_other": "显示全部 {{count}} 条"
+  },
+  "crash": {
+    "title": "崩溃报告",
+    "thisPhone": "这部手机",
+    "notBuilt": "这一版 jojo 构建时未包含崩溃报告和使用情况分析，因此不会记录任何内容，也没有可开启的选项。",
+    "what": "出现故障时，jojo 可以保留错误信息供你回看——在出错的内容已经消失时很有用。报告包含错误消息、在 jojo 中发生的位置以及堆栈跟踪。报告从不包含你的申请、文档、笔记、个人资料或对话，API 密钥、地址和电子邮件地址会在写入报告前被移除。",
+    "where": "报告保存在这部手机上，同时会发送到 Firebase Crashlytics，后者会附加你的设备型号、系统版本以及一个随机 ID，用来统计有多少人遇到了同样的崩溃。Google 会保留 90 天。你的任何记录都不会随之发送。",
+    "report": "报告崩溃",
+    "reportHint": "已开启，这样你遇到的崩溃我们就能看到。关闭后不会记录任何内容。",
+    "usage": "分享我使用了哪些功能",
+    "usageHint": "只有计数，来自固定列表——绝不包含你的记录内容。",
+    "usageDetail": "它只能说出固定列表中的内容——打开了哪个屏幕、添加了一个申请、大约有多少个。它无法说出雇主、职位、文件或你输入的任何内容。数据发送到 Google Analytics。关闭后，jojo 还会关闭 Firebase 原本会自行收集的屏幕浏览和会话计数。",
+    "kept_other": "保留了 {{count}} 份报告",
+    "nothingBroken": "自你开启以来没有出现任何故障。",
+    "notRecording": "当前不记录任何内容。"
+  },
+  "date": {
+    "today": "今天",
+    "tomorrow": "明天",
+    "inSevenDays": "7 天后",
+    "triggerLabel": "{{label}}：{{value}}。选择日期",
+    "notSet": "未设置",
+    "pick": "选择日期",
+    "previousMonth": "上个月",
+    "nextMonth": "下个月",
+    "backTo": "回到 {{month}}"
+  },
+  "errorBoundary": {
+    "title": "出了点问题",
+    "body": "有一个屏幕未能绘制。你的记录都在这台设备上，也没有发送任何内容，但 jojo 无法判断你正在进行的更改是否已完成。",
+    "noMessage": "该错误没有附带任何消息。",
+    "hint": "如果再次出错，请从应用切换器关闭 jojo 并重新打开。"
+  },
+  "fileEditor": {
+    "editTitle": "编辑文档",
+    "newTitle": "记录文档",
+    "keptHere": "保存在这台设备的此应用中。不会上传任何内容，也不会读取其内容。",
+    "chooseOrType": "选择一个文件以保留副本，或手动填写以记录保存在别处的文档。",
+    "record": "记录",
+    "choosing": "正在选择…",
+    "chooseDifferent": "选择其他文件",
+    "choose": "选择文件",
+    "copyKept": "副本保存在此应用中，卸载应用后会被删除。",
+    "fileName": "文件名",
+    "nameRequired": "请输入名称，包括扩展名。",
+    "nameHint": "扩展名决定图标——.pdf、.doc、.pptx、.md。",
+    "size": "大小",
+    "sizePlaceholder": "例如 212 KB",
+    "sizeHint": "可选——留空表示未知，而不是零。",
+    "bucket": "分类",
+    "applicationsHint": "个人资料的文档面板和关系图会读取它来显示什么归在哪里。文档投给了多少个职位就选多少个。",
+    "note": "备注"
+  },
+  "filed": {
+    "sections": {
+      "files": "文件",
+      "links": "链接",
+      "snippets": "片段",
+      "people": "人脉"
+    },
+    "count_other": "此处归档 {{count}} 项",
+    "title": "来自资料库",
+    "empty": {
+      "title": "这里还没有归档任何内容",
+      "description": "文档、链接、片段和人脉都可以归到它们相关的多个职位下。在资料库中通过某项的菜单把它归到这个职位，它就会出现在这里。"
+    },
+    "conversations": "对话",
+    "openInAssistant": "在助手中打开 {{name}}",
+    "openInVault": "在资料库中打开 {{name}}"
+  },
+  "firstRun": {
+    "title": "你想如何开始？",
+    "description": "无论哪种方式，所有内容都保留在这台设备上，不会发送到任何地方。",
+    "demo": {
+      "title": "用示例记录体验",
+      "detail": "十二个申请、排满的日历和充实的资料库，让每个屏幕都有内容。你可以稍后在设置中清除它们。",
+      "action": "使用示例记录"
+    },
+    "empty": {
+      "title": "从空白开始",
+      "detail": "只有你自己的记录。需要数据的屏幕会说明缺少什么，而不是展示示例。"
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "推迟",
+    "currently": "{{title}} · 当前为 {{date}}",
+    "pickDate": "选择日期…",
+    "duplicate": "复制一份",
+    "duplicateHint": "相同的日期和关键词，作为第二行",
+    "draft": "起草消息",
+    "draftHint": "来自你的邮件片段——不会生成任何内容",
+    "reschedule": "改期"
+  },
+  "keywords": {
+    "on": "{{name}} 的关键词",
+    "none": "暂无",
+    "choose": "选择",
+    "title": "关键词",
+    "description": "关键词属于你，由申请、提醒、文件和链接共享——按其中一个筛选就能找到所有相关项。",
+    "newPlaceholder": "新关键词…",
+    "new": "新关键词",
+    "add": "添加",
+    "countHere_other": "{{name}}，此处 {{count}} 项"
+  },
+  "onboarding": {
+    "model": {
+      "title": "连接一个模型？",
+      "description": "这正是让 jojo 成为智能代理而不只是文件柜的关键。连接模型后，它能回答关于你求职的问题，根据你自己的记录起草跟进消息，并读取你添加的文档。",
+      "action": "去设置",
+      "local": "把它指向你自己电脑上的服务器——vLLM、Ollama 或 LM Studio——数据就不会离开设备。",
+      "later": "其他功能不需要模型也能用。随时可以在 更多 → 设置 中找到它。"
+    },
+    "tour": {
+      "title": "想来一次动手导览吗？",
+      "description": "动手走一遍真实的屏幕——每个部分有什么用，用聚光灯标出来，你边看边试。",
+      "action": "开始导览",
+      "safe": "它不会改变任何东西——不写入记录，也不修改设置。",
+      "later": "它一直在 更多 → 使用说明 里，所以现在拒绝也没关系。"
+    }
+  },
+  "pattern": {
+    "has": "有",
+    "hasHint": "至少有一个这样的关联",
+    "missing": "没有",
+    "missingHint": "完全没有这样的关联",
+    "anything": "任何记录",
+    "lookFor": "查找",
+    "records": "记录",
+    "aLink": "关联",
+    "anyKind": "任意类型",
+    "to": "指向",
+    "lookForHint": "答案列表中的记录类型。",
+    "quantifierTitle": "有，还是没有",
+    "quantifierHint": "下面的关联是必须存在还是必须不存在。",
+    "relTitle": "哪种关联",
+    "relHint": "两端如何连接。“任意类型”会同时查询全部六种。",
+    "endTitle": "另一端",
+    "endHint": "关联必须指向什么。"
+  },
+  "reporting": {
+    "title": "崩溃报告与使用情况",
+    "description": "两件独立的事，默认都已开启。你可以在这里或稍后在设置中关闭任一项。两者都不会携带你的记录：不包括申请、文档、笔记、个人资料或对话。",
+    "bothOff": "全部关闭",
+    "save": "保存选择",
+    "inReport": "崩溃报告包含什么",
+    "in": {
+      "message": "· 错误消息，以及它在 jojo 中发生的位置。",
+      "stack": "· 堆栈跟踪，指出出错的代码。",
+      "device": "· 你的设备型号、系统版本，以及用于统计有多少人遇到同一崩溃的随机 ID——没有姓名，没有账户。"
+    },
+    "notInReport": "报告中绝不会包含什么",
+    "notIn": {
+      "records": "· 你的申请、文档、笔记、个人资料或对话。",
+      "secrets": "· 你的 API 密钥、你使用的地址或任何电子邮件地址——在写入报告之前就被移除，而不是在发送前。"
+    },
+    "crashHint": "错误及其发生位置。发送到 Firebase Crashlytics。",
+    "usageHint": "只有计数——打开了哪些屏幕、多频繁。绝不包含屏幕里的内容。",
+    "usageDetail": "第二项是 jojo 发送的唯一与你的“操作”有关的数据，而且它只能说出固定列表里的内容——“打开了资料库”“添加了一个申请”“有 6–20 个”。它无法说出雇主、职位、文件或你输入的任何内容，因为这些词不在列表里。关闭它也会停止 Firebase 原本会自行收集的屏幕浏览数据。",
+    "later": "两者都在设置里，随时可以更改；关闭其中一项会丢弃它保存的数据。"
+  },
+  "stagePicker": {
+    "label": "{{name}} 的阶段：{{stage}}。更改阶段",
+    "title": "移到"
+  },
+  "welcome": {
+    "title": "简单介绍一下你自己",
+    "description": "草稿会以你的名字署名，职位侦察会根据你想找的工作打分。所有内容都保存在这台设备上，而且都是可选的——其余部分在“个人资料”里。",
+    "skip": "暂时跳过",
+    "save": "保存并继续",
+    "fullName": "全名",
+    "fullNamePlaceholder": "例如 Lonardo Jenson",
+    "position": "当前职位",
+    "positionPlaceholder": "例如 计算机科学博士生",
+    "location": "所在地",
+    "locationPlaceholder": "例如 Santa Clara, CA",
+    "email": "电子邮件",
+    "rest": "其余内容——链接、目标职位、职位侦察用来匹配的词——都在“更多”标签页的“个人资料”中。"
+  },
+  "offers": {
+    "open_other": "{{count}} 个进行中",
+    "title": "Offer 对比",
+    "noPackage": "未注明薪酬",
+    "respondBy": "请在 {{date}} 前答复",
+    "passed": "已过期",
+    "today": "今天",
+    "days_other": "{{count}} 天",
+    "ranked": "年度数字，根据你输入的内容读取。",
+    "notRanked": "未排序——这些薪酬使用不同货币，而 jojo 没有汇率。",
+    "annualised": " * 按 12 个月、52 周或 2,080 小时折算为年度。"
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "哪些申请没有安排跟进？",
+      "unfiled": "哪些文件没有归到任何地方？"
+    },
+    "notConnected": "在设置中连接本地模型，就能用一句话提问。下面的问题无论如何都能用。",
+    "placeholder": "哪些申请没有跟进？",
+    "label": "向关系图提问",
+    "stop": "停止",
+    "ask": "提问",
+    "again": "问点别的"
+  },
+  "background": {
+    "details_other": "{{count}} 条详情",
+    "fromDocument": "从文档中读取",
+    "editNamed": "编辑 {{title}}",
+    "removeNamed": "移除 {{title}}",
+    "added": "已添加 {{title}}",
+    "updated": "已更新 {{title}}",
+    "removed": "已移除 {{title}}",
+    "notSaved": "未能保存",
+    "editTitle": "编辑此条目",
+    "addTitle": "添加到你的背景",
+    "editRead": "从文档中读取。你的编辑会覆盖读取结果并保留。",
+    "editHint": "在你点击“保存”之前不会保存任何内容。",
+    "addHint": "任何应当用来评估招聘信息的内容。这里的内容不会发送到任何地方。",
+    "add": "添加",
+    "kind": "类型",
+    "title": "标题",
+    "titlePlaceholder": "它是什么",
+    "where": "地点",
+    "optional": "可选",
+    "when": "时间",
+    "whenPlaceholder": "按原样填写——“2021–2024”",
+    "year": "年份",
+    "detail": "详情",
+    "highlights": "亮点",
+    "highlightsHint": "每行一条——构建、发布、教授或发现了什么。",
+    "kindHint": "这属于你背景的哪个部分。",
+    "recorded_other": "已记录 {{count}} 条 · 用于评估招聘信息",
+    "panelTitle": "你的背景",
+    "read": "读取文档",
+    "addEntry": "添加条目",
+    "readTitle": "把文档读入你的个人资料",
+    "nothingReadable": "资料库中还没有可读取的内容",
+    "nothingReadableHint": "添加你的简历或陈述，它就会出现在这里。",
+    "alreadyRead": "已读取",
+    "empty": {
+      "title": "还没有记录",
+      "ready": "把你的简历、研究陈述或教学陈述放进资料库，jojo 会提出读取——在保存任何内容之前会先给你看它找到了什么。也可以手动添加条目。",
+      "noModel": "读取文档需要一个模型。在 更多 → 设置 中连接一个，然后把简历或陈述放进资料库。没有模型也可以手动添加条目。"
+    },
+    "removeTitle": "移除 {{title}}？",
+    "removeBody": "它会从你的背景中移除，招聘信息将不再与它比较。它所来自的文档不受影响。"
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "教育",
+      "employment": "工作经历",
+      "publication": "发表",
+      "skill": "技能",
+      "teaching": "教学",
+      "award": "奖项",
+      "service": "服务",
+      "certification": "认证",
+      "language": "语言",
+      "project": "项目",
+      "volunteering": "志愿活动",
+      "membership": "会员资格",
+      "grant": "资助",
+      "patent": "专利"
+    },
+    "skipped_other": "跳过了 {{count}} 个条目",
+    "alreadyThere": "已在你的个人资料中",
+    "added_other": "已添加 {{count}} 项到你的个人资料",
+    "nothingAdded": "没有可添加的内容",
+    "readFrom": "读取自 {{name}}。",
+    "alreadyKnown_other": "{{count}} 项中有 {{known}} 项已存在。",
+    "connectionsRecorded_other": "记录了 {{count}} 个关联。",
+    "refused": "这些条目被拒绝了。",
+    "readIt": "读取",
+    "readFailed": "读取文档失败。",
+    "entriesRead_other": "从此文档读取了 {{count}} 个条目",
+    "addNamed": "添加 {{title}}",
+    "connections_other": "它们之间有 {{count}} 个关联",
+    "addCount_other": "添加 {{count}} 项"
+  },
+  "proposals": {
+    "aPipeline": "某个流程",
+    "hint": "你同意之前什么都不会发生",
+    "title": "建议",
+    "empty": {
+      "title": "没有需要审核的内容",
+      "description": "流程运行时，它想更改的任何内容都会先出现在这里。在你批准之前，它不会动你的记录。"
+    },
+    "applied": "已应用",
+    "discarded": "已舍弃",
+    "failed": "无法应用",
+    "from": "{{tool}} · 来自 {{pipeline}}",
+    "approve": "批准",
+    "discardNamed": "舍弃：{{title}}",
+    "clearAnswered": "清除已处理",
+    "clearAll": "全部清除",
+    "confirmTitle": "清除所有建议？",
+    "confirmPending_other": "还有 {{count}} 条建议在等待，将被拒绝。你的记录不会有任何变化，流程也会继续运行——但不会再提供这些建议。",
+    "confirmAnswered": "已处理的卡片会从列表中移除。你的记录不会有任何变化。"
+  },
+  "nextSteps": {
+    "measured": "有数据支持",
+    "suggested": "建议",
+    "hint": "先看记录支持什么，再看什么成本最低",
+    "title": "下一步做什么"
+  },
+  "working": {
+    "arm": "{{of}} 中的 {{count}} · {{rate}}% · 可能为 {{range}}",
+    "repliesBy": "回复，按{{dimension}}",
+    "interviewsBy": "面试，按{{dimension}}",
+    "confident": "区间没有重叠，所以这是真实的差异——{{best}} 更值得你投入精力。",
+    "overlap": "区间有重叠，所以这只是两个数字而不是差异。更多记录会把它们区分开或缩小差距。",
+    "tooFew_other": "另有 {{count}} 个组的记录少于 {{min}} 条，未参与比较。",
+    "hint": "色带表示真实比率可能所在的范围",
+    "title": "哪些做法有效"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "jojo 动手导览",
+        "body": "它会指向真实的屏幕，并请你边看边试。它从不替你输入、保存或更改任何内容。随时可以关闭——进度会被保留，“使用说明”会接着继续。"
+      },
+      "today": {
+        "title": "今天",
+        "body": "现在要处理的事：已逾期的、即将到期的，以及等你做决定的事。首先打开的屏幕。"
+      },
+      "applications": {
+        "title": "你的申请",
+        "body": "每个职位一条记录：雇主、职位、阶段和你的笔记。它的日期、文档和对话都挂在它下面，所以不用重复输入。",
+        "say": "打开“申请”。"
+      },
+      "layout": {
+        "title": "列表或看板",
+        "body": "同样的记录，两种看法。列表可以排序和搜索；看板把阶段显示为列。",
+        "say": "切换到看板。"
+      },
+      "records": {
+        "title": "六个阶段",
+        "body": "草稿、已提交、初筛电话、面试、Offer、已结束。在看板上长按卡片，然后拖到下一列；每张卡片也有阶段菜单。每次移动都可以撤销。"
+      },
+      "search": {
+        "title": "搜索一切",
+        "body": "申请、提醒和日历条目，在任何标签页都能搜。",
+        "say": "打开搜索。"
+      },
+      "searchScreen": {
+        "title": "输入即可查找",
+        "body": "职位、雇主或阶段。点击结果即可打开，看完后返回即可。"
+      },
+      "new": {
+        "title": "新建任何内容",
+        "body": "“+”可以新建申请、提醒、日历条目、起草的消息、保存的链接或保存的招聘信息。在你保存之前不会保存任何内容，关闭填了一半的表单也没关系。"
+      },
+      "calendar": {
+        "title": "所有日期集中一处",
+        "body": "截止日期、面试和跟进是同一种记录，所以一条记录会同时显示在日历、“今天”和对应的申请上。",
+        "say": "打开日历。"
+      },
+      "vault": {
+        "title": "资料库",
+        "body": "申请以外的一切：提醒、链接、文件、你在每个表单里粘贴的片段、你认识的人，还有一个计算器。",
+        "say": "打开资料库。"
+      },
+      "vaultTools": {
+        "title": "一次一个工具",
+        "body": "每个工具都是独立的列表，而同一个关键词在所有列表中含义相同。",
+        "say": "选择“文件”。"
+      },
+      "files": {
+        "title": "文件，保存在手机上",
+        "body": "简历、陈述、招聘信息——复制到 jojo 自己的文件夹中，即使原文件被移动也不受影响。点击即可在这里阅读；它属于几个申请，就归到几个申请下。"
+      },
+      "more": {
+        "title": "更多",
+        "body": "其余一切：职位侦察、统计、关系图、传输、你的个人资料、助手、设置以及本说明。",
+        "say": "打开“更多”。"
+      },
+      "scout": {
+        "title": "职位侦察",
+        "body": "替你盯着招聘网站的已保存搜索。",
+        "say": "打开职位侦察。"
+      },
+      "scoutScreen": {
+        "title": "流程与建议",
+        "body": "每个流程都是在某个招聘网站上的搜索，按计划或在你要求时运行。它找到的内容会作为建议等你批准或舍弃，批准后会变成申请草稿。"
+      },
+      "statistics": {
+        "title": "统计",
+        "body": "根据你自己的记录统计求职进展。",
+        "say": "打开统计。"
+      },
+      "statisticsScreen": {
+        "title": "比率，附带真实区间",
+        "body": "回复率和面试率、一个漏斗以及下一步该做什么——每个比率都附有它真实可能所在的区间，因为几份申请只是很小的样本。"
+      },
+      "graph": {
+        "title": "知识图谱",
+        "body": "每一条记录——申请、雇主、人脉、日期、文件——都以它本来构成的网络呈现。",
+        "say": "打开关系图。"
+      },
+      "graphScreen": {
+        "title": "一切相互关联",
+        "body": "点击节点查看它连接到什么，提出问题即可高亮匹配的记录。"
+      },
+      "assistant": {
+        "title": "助手",
+        "body": "和 jojo 聊天：它用应用自带的工具查找、添加和更新你的记录，并在更改任何内容前先询问。在连接模型之前，它会展示示例。"
+      },
+      "transfer": {
+        "title": "手机与电脑",
+        "body": "传输会通过你的本地网络，在这部手机和你电脑上的 jojo 之间移动所有内容，不经过任何第三方。"
+      },
+      "settings": {
+        "title": "设置",
+        "body": "连接、外观和你的数据。",
+        "say": "打开设置。"
+      },
+      "device": {
+        "title": "你的记录保存在这部手机上",
+        "body": "你操作时直接写入手机自己的存储——无需账户、不同步、不上传。可以导出副本，或传输到你的电脑。"
+      },
+      "model": {
+        "title": "连接模型",
+        "body": "助手的模型在哪里运行。你自己电脑上的服务器——vLLM、Ollama 或 LM Studio——只需填写地址，并让你的记录留在你的设备上。OpenAI、Anthropic (Claude) 及其他云服务商需要 API 密钥。“测试连接”会在保存前先检查。"
+      },
+      "reader": {
+        "title": "让它读取你的文档",
+        "body": "手机可以自行读取 Word 文件、演示文稿、保存的网页和文本。PDF 需要你电脑上的 MarkItDown：用上面的两条命令启动它，然后点“测试连接”。"
+      },
+      "done": {
+        "title": "导览结束",
+        "body": "每次更改都可以撤销，“更多”下的“使用说明”会逐一介绍每个屏幕。导览随时可以再来一次。"
+      }
+    },
+    "stepOf": "第 {{step}} 步，共 {{total}} 步",
+    "end": "结束导览",
+    "nice": "很好——就是这样。",
+    "tryIt": "试一试：{{task}}",
+    "finish": "完成",
+    "skip": "跳过此步"
+  },
+  "marks": {
+    "bold": "粗体",
+    "italic": "斜体",
+    "underlined": "下划线"
+  },
+  "nav": {
+    "tabs": {
+      "today": "今天",
+      "applications": "申请",
+      "calendar": "日历",
+      "vault": "资料库",
+      "more": "更多"
+    },
+    "badge": {
+      "applications_other": "申请，{{count}} 个标记为待跟进",
+      "calendar_other": "日历，未来七天有 {{count}} 项",
+      "vault_other": "资料库，{{count}} 个提醒已过期",
+      "more_other": "更多，{{count}} 个匹配尚未添加为申请"
+    },
+    "create": "新建",
+    "search": "搜索",
+    "titles": {
+      "application": "申请",
+      "employer": "雇主",
+      "search": "搜索",
+      "jobScout": "职位侦察",
+      "statistics": "统计",
+      "profile": "我的资料",
+      "assistant": "助手",
+      "settings": "设置",
+      "guide": "使用说明",
+      "graph": "关系图",
+      "transfer": "传输"
+    }
+  }
+}

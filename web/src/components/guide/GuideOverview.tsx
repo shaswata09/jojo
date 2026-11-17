@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/common/PageHeader'
 import { GettingStarted } from '@/components/guide/GettingStarted'
 import { GuideContents } from '@/components/guide/GuideNav'
@@ -36,18 +37,19 @@ import { useTitle } from '@/lib/links'
  * `overview/sections.ts` lists and the shared `OnThisPage` links to.
  */
 export function GuideOverview() {
-  useTitle('How to use jojo')
+  const { t } = useTranslation('guide')
+  useTitle(t('overview.title'))
 
   return (
     <>
-      <PageHeader
-        title="How to use jojo"
-        subtitle="Everything runs on your machine. Start simple, add power when you want it."
-      />
+      <PageHeader title={t('overview.title')} subtitle={t('overview.subtitle')} />
 
       <GuideContents />
 
-      <OnThisPage sections={SECTIONS} caption="On this page" />
+      <OnThisPage
+        sections={SECTIONS.map(({ id }) => ({ id, label: t(`overview.sections.${id}`) }))}
+        caption={t('onThisPage')}
+      />
 
       {/* The tour was written, tested and imported by nothing — a door-less
           room, and a guide that mentioned a tutorial no reader could reach.
@@ -59,11 +61,7 @@ export function GuideOverview() {
       <GettingStarted />
 
       <div className="surface flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg px-4 py-3.5 sm:px-5">
-        <p className="min-w-0 flex-1 basis-64 text-sm text-text-2">
-          Or be walked through it, hands on: a spotlight on the real pages, and you try each thing
-          as you go. The tour never types anything for you, never saves a record and never changes a
-          setting.
-        </p>
+        <p className="min-w-0 flex-1 basis-64 text-sm text-text-2">{t('overview.tourIntro')}</p>
         <TourLauncher className="shrink-0" />
       </div>
 

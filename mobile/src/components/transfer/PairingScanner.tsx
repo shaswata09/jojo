@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
-import { createPulseReceiver } from '@jojo/service/core/pulse'
-import { readPulse } from '@jojo/service/core/pulse-read'
+import { useTranslation } from 'react-i18next'
+import { readPairingQr } from '@/lib/pairing-qr'
 import { Txt } from '@/components/ui/Text'
 import {
   SCANNER_HTML,
@@ -11,10 +11,10 @@ import {
   type ScannerMessage,
 } from '@/components/transfer/scanner-page'
 import { useColors } from '@/theme/theme-context'
-import { space } from '@/theme/tokens'
+import { i18next } from '@/i18n/i18n'
 
 /**
- * Reading the key off the other device's animation.
+ * Reading the key off the QR code on the other device's screen.
  *
  * The camera is the whole reason this handshake is trustworthy: it is a channel
  * an attacker on the wifi cannot see into, which is what lets `core/pairing.ts`
@@ -24,35 +24,23 @@ import { space } from '@/theme/tokens'
  * ## Where the work happens
  *
  * The WebView is a camera and a downsampler, and nothing else — see
- * `scanner-page.ts`. It posts a small grayscale buffer eight times a second, and
- * everything after that is TypeScript in this app: `core/pulse-read.ts` turns a
- * buffer into a frame, `core/pulse.ts` accumulates frames into the key.
+ * `scanner-page.ts`. It posts a grayscale buffer a few times a second, and
+ * `lib/pairing-qr.ts` looks for jojo's pairing code in it (Q329).
  *
- * That split matters more than it looks. The decoder exists ONCE, in the service
- * layer, and the desktop browser runs the same file. Two decoders — one bundled
- * into an HTML string for the phone, one imported for the web — would be two
- * chances to disagree about what a frame says, and a disagreement there is a
- * pairing that fails with nothing on either screen to explain it.
+ * ## Frames are dropped, not announced
  *
- * ## Frames are dropped, not repaired
- *
- * There is no error correction anywhere in this path, by design. The animation
- * CYCLES: a frame that does not read is discarded and comes round again a second
- * later. So a bad read costs part of one more pass and is never announced —
- * announcing it would mean a message flickering several times a second while
- * somebody is still lining the phone up.
+ * A frame with no readable code — the phone still moving, a blur, a stranger's
+ * QR code — is discarded and the next one tried. Announcing it would mean a
+ * message flickering several times a second while somebody is still lining the
+ * phone up.
  *
  * What IS announced is the state a person can act on: no camera, no permission,
  * or a key that has arrived.
  */
 
-/** What each failure should make the person do differently. */
-const ADVICE: Record<ScannerErrorReason, string> = {
-  denied:
-    'jojo needs the camera to read the code on your other device. Allow it, or type the code by hand instead.',
-  unsupported: 'This phone cannot open the camera for jojo.',
-  failed: 'The camera did not start. Close jojo and open it again.',
-}
+/** What each failure should make the person do differently (`scanner.advice.<reason>`). */
+const advice = (reason: ScannerErrorReason): string =>
+  i18next.t(`transfer:scanner.advice.${reason}`)
 
 export function PairingScanner({
   onOffer,
@@ -63,19 +51,9 @@ export function PairingScanner({
   /** Stops reading without unmounting, which is slow to restart. */
   paused?: boolean
 }) {
+  const { t } = useTranslation('transfer')
   const c = useColors()
   const [problem, setProblem] = useState<string | null>(null)
-  const [seen, setSeen] = useState(0)
-  const [total, setTotal] = useState(0)
-
-  /**
-   * The frames gathered so far.
-   *
-   * A ref, not state: frames arrive eight times a second and the accumulator
-   * must survive every render without being rebuilt. Only the COUNT is state,
-   * because only the count is on screen.
-   */
-  const receiver = useMemo(() => createPulseReceiver(), [])
   const done = useRef(false)
 
   const onMessage = useCallback(
@@ -92,7 +70,7 @@ export function PairingScanner({
       }
 
       if (message.kind === 'error') {
-        setProblem(ADVICE[message.reason])
+        setProblem(advice(message.reason))
         return
       }
       if (message.kind !== 'frame') return
@@ -105,18 +83,8 @@ export function PairingScanner({
       for (let i = 0; i < binary.length; i += 1) gray[i] = binary.charCodeAt(i)
       if (gray.length !== SIDE * SIDE) return
 
-      const read = readPulse(gray, SIDE, SIDE)
-      // A frame that did not read is simply dropped — the animation cycles.
-      if (!read.ok) return
-
-      const outcome = receiver.accept(read.value)
-      if (outcome === 'rejected') return
-
-      const at = receiver.progress()
-      setSeen(at.have)
-      setTotal(at.total)
-
-      const key = receiver.payload()
+      const key = readPairingQr(gray, SIDE, SIDE)
+      // No code in this frame, or not jojo's: try the next one.
       if (key === null) return
       // Latched before the callback: frames keep arriving for as long as the
       // camera is open, and handing the same key up twice would start a second
@@ -124,7 +92,7 @@ export function PairingScanner({
       done.current = true
       onOffer(key)
     },
-    [paused, onOffer, receiver],
+    [paused, onOffer],
   )
 
   return (
@@ -147,23 +115,13 @@ export function PairingScanner({
         allowFileAccess={false}
         allowUniversalAccessFromFileURLs={false}
         onMessage={onMessage}
-        onError={() => setProblem(ADVICE.failed)}
+        onError={() => setProblem(advice('failed'))}
       />
 
       <View style={[styles.status, { backgroundColor: c.panel }]}>
         <Txt size="sm" tone="muted" center>
-          {problem ??
-            (total === 0
-              ? 'Point this at the animation on your other device.'
-              : `Reading the key — ${seen} of ${total}`)}
+          {problem ?? t('scanner.point')}
         </Txt>
-        {problem === null && total > 0 ? (
-          <View style={[styles.track, { backgroundColor: c.well, marginTop: space[2] }]}>
-            <View
-              style={[styles.fill, { backgroundColor: c.text1, width: `${(seen / total) * 100}%` }]}
-            />
-          </View>
-        ) : null}
       </View>
     </View>
   )
@@ -172,6 +130,4 @@ export function PairingScanner({
 const styles = StyleSheet.create({
   frame: { flex: 1, overflow: 'hidden', borderRadius: 12 },
   status: { position: 'absolute', left: 12, right: 12, bottom: 12, borderRadius: 10, padding: 12 },
-  track: { height: 4, borderRadius: 2, overflow: 'hidden' },
-  fill: { height: 4, borderRadius: 2 },
 })

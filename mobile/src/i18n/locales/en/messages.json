@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Application",
+      "org": "Employer",
+      "role": "Role",
+      "item": "Date or reminder",
+      "file": "File",
+      "link": "Link",
+      "snippet": "Snippet",
+      "posting": "Saved posting",
+      "match": "Match",
+      "keyword": "Keyword"
+    },
+    "isA": "is a",
+    "fit": "{{fit}}% fit",
+    "query": {
+      "undated": {
+        "question": "Applications with nothing dated against them",
+        "why": "These are invisible on the calendar and in the week ahead, however live they are."
+      },
+      "untagged": {
+        "question": "Applications carrying no keyword",
+        "why": "A record nobody has filed is a record no filter will ever surface."
+      },
+      "orphanFiles": {
+        "question": "Files not filed under any application",
+        "why": "Documents drift; this is what says which ones nothing is pointing at."
+      },
+      "orphanLinks": {
+        "question": "Links not filed under any application",
+        "why": "The same question for the postings and pages you saved to come back to."
+      },
+      "busiest": {
+        "question": "The employers you have the most going on with",
+        "why": "Counted across every collection at once — applications, dates, files and links."
+      },
+      "unpromoted": {
+        "question": "Matches and postings that never became applications",
+        "why": "Leads go stale silently; nothing in the list views ever says which."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} not {{rel}} {{end}}",
+      "startAny": "Anything",
+      "relAny": "linked to",
+      "endAny": "anything",
+      "startType": {
+        "application": "Applications",
+        "org": "Employers",
+        "role": "Roles",
+        "item": "Dates or reminders",
+        "file": "Files",
+        "link": "Links",
+        "snippet": "Snippets",
+        "posting": "Saved postings",
+        "match": "Matches",
+        "keyword": "Keywords"
+      },
+      "endType": {
+        "application": "an application",
+        "org": "an employer",
+        "role": "a role",
+        "item": "a date or reminder",
+        "file": "a file",
+        "link": "a link",
+        "snippet": "a snippet",
+        "posting": "a saved posting",
+        "match": "a match",
+        "keyword": "a keyword"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Today",
+      "hint": "What needs a decision"
+    },
+    "apps": {
+      "label": "Applications",
+      "hint": "The list and the stage board"
+    },
+    "cal": {
+      "label": "Calendar",
+      "hint": "Deadlines, interviews and prep"
+    },
+    "reminders": {
+      "label": "Reminders",
+      "hint": "Vault · what you owe and when"
+    },
+    "links": {
+      "label": "Links",
+      "hint": "Vault · postings, people and pages"
+    },
+    "files": {
+      "label": "Files",
+      "hint": "Vault · documents you have recorded"
+    },
+    "snippets": {
+      "label": "Snippets",
+      "hint": "Vault · reusable paragraphs"
+    },
+    "tools": {
+      "label": "Tools",
+      "hint": "Vault · the calculator"
+    },
+    "scout": {
+      "label": "Job scout",
+      "hint": "Saved searches, matches and postings"
+    },
+    "stats": {
+      "label": "Statistics",
+      "hint": "Rates, a funnel and what to work on"
+    },
+    "graph": {
+      "label": "Graph",
+      "hint": "Your records as the network they are"
+    },
+    "profile": {
+      "label": "My profile",
+      "hint": "Basics, documents and match terms"
+    },
+    "assistant": {
+      "label": "Assistant",
+      "hint": "Worked examples until a model is connected"
+    },
+    "settings": {
+      "label": "Settings",
+      "hint": "Connections, appearance, keywords and your data"
+    },
+    "transfer": {
+      "label": "Transfer",
+      "hint": "Move everything to or from your computer"
+    },
+    "guide": {
+      "label": "How to use",
+      "hint": "The three layers, the screens and the graph"
+    },
+    "more": {
+      "label": "More",
+      "hint": "The rest of jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "New application"
+    },
+    "newApplicationFromLink": {
+      "label": "Application from a link",
+      "hint": "The model reads the posting and fills the form in"
+    },
+    "newReminder": {
+      "label": "New reminder"
+    },
+    "newEvent": {
+      "label": "New event"
+    },
+    "draftMessage": {
+      "label": "Draft a message",
+      "hint": "From your email snippets — nothing is generated"
+    },
+    "saveLink": {
+      "label": "Save a link",
+      "hint": "Opens the Vault, links tool"
+    },
+    "recordDocument": {
+      "label": "Record a document",
+      "hint": "Opens the Vault, files tool"
+    },
+    "savePosting": {
+      "label": "Save a posting",
+      "hint": "Opens Job scout"
+    }
+  },
+  "snooze": {
+    "soon1": "Tomorrow",
+    "later1": "A day later",
+    "soon3": "In 3 days",
+    "later3": "Three days later",
+    "soon7": "In 7 days",
+    "later7": "A week later"
+  },
+  "itemActions": {
+    "reopened": "{{title}} reopened",
+    "completed": "{{title}} completed",
+    "reopenedBody": "Back on the open list and counted as owed again.",
+    "completedBody": "It leaves the open lists and counts towards today — nothing is deleted.",
+    "rescheduled": "{{title}} rescheduled",
+    "nowDue": "Now due {{date}}, here and on the calendar.",
+    "movedTo": "Moved to {{date}}",
+    "copyTitle": "{{title}} (copy)",
+    "added": "{{title}} added",
+    "copyBody": "{{date}} — the copy carries the same keywords.",
+    "deleted": "{{title}} deleted",
+    "deletedReminder": "Gone from the reminders list and from the calendar.",
+    "deletedEvent": "Gone from the calendar."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "The keyword filter above the list is what is hiding them.",
+    "noSearchMatch": "Nothing matches that search",
+    "noBothMatch": "Nothing matches both filters",
+    "clearBoth": "Clear both filters",
+    "clearKeywords": "Clear keywords"
+  },
+  "boardScan": {
+    "badAddress": "That is not an address I can open.",
+    "timeout": "That board took too long to answer.",
+    "unreachable": "That board could not be reached.",
+    "status": "That board answered {{status}}.",
+    "browserOnly": "{{host}} only shows its listings to a real browser, so it cannot be read from the phone. On a computer the jojo browser extension can read it."
+  },
+  "timelineForm": {
+    "title": "Give it a title you will recognise.",
+    "date": "Pick a date — an undated item has nowhere to appear.",
+    "time": "Use a time like 14:30."
+  },
+  "reader": {
+    "tooBig": "That document is {{size}} MB and the reader takes up to {{max}} MB.",
+    "gone": "The copy of that document is no longer on this device.",
+    "empty": "Nothing could be read out of that document — it may be a scan.",
+    "noAddress": "No address yet. See Settings.",
+    "notConnected": "No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.",
+    "noCopy": "That record has no copy stored on this device, so there is nothing to read."
+  },
+  "jobs": {
+    "ready": "{{label}} is ready",
+    "readyBody": "Saved under the application it was written for.",
+    "failed": "{{label}} did not finish"
+  },
+  "boot": {
+    "corrupt": "the saved records could not be read ({{detail}}).",
+    "blocked": "storage is locked by something else on this device.",
+    "unsupported": "this device has no storage this app can use.",
+    "threw": "the store could not be opened at all.",
+    "banner": "Not saving to this device — {{why}}"
+  },
+  "posting": {
+    "needsReader": "This needs the document reader as well as the model — it is what fetches the page. Settings has the address.",
+    "empty": "That page came back nearly empty. Boards that render with JavaScript send a blank shell to anything but a browser — open it here and save the page instead.",
+    "note": "Read by the model from {{url}}",
+    "askedTwice": "Asked twice, with the same result."
+  },
+  "localService": {
+    "stopped": "Stopped before it was sent."
+  },
+  "clipboard": {
+    "tooBig": "Too big for the clipboard",
+    "tooBigBody": "Your records come to {{size}} and Android’s clipboard takes about {{max}} of text. Nothing was copied. Use Transfer to send everything to your computer over your local network.",
+    "copied": "Copied to the clipboard",
+    "copiedBody": "A backup you can paste into a note or a file. The documents you attached stay on this phone — their rows come back without their contents."
+  },
+  "documents": {
+    "incomplete": "The copy did not complete.",
+    "nothingCopied": "Nothing was copied."
+  },
+  "weekday": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "owed": {
+    "overdue": "Overdue",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "rest": "Rest of the week"
+  },
+  "receive": {
+    "declined": "Nothing was changed. Scan the code again to receive."
+  }
+}

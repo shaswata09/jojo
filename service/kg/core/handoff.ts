@@ -40,7 +40,7 @@
  */
 
 import type { Secrets } from './secrets'
-import type { PairingOffer } from './pairing'
+import { sameTag, type PairingOffer, type SessionKeys } from './pairing'
 
 /** Everything this server answers sits under one prefix. */
 const ROOT = 'jojo'
@@ -64,6 +64,13 @@ export type HandoffRoute =
   | 'chunk'
   /** The browser asking for one sealed chunk of the phone's backup. */
   | 'pull'
+  /**
+   * What became of the transfer on the RECEIVING device — see `HandoffOutcome`.
+   * In `push` the computer asks for it (GET, empty body) and the phone answers
+   * with a sealed outcome; in `pull` the computer, which received, tells the
+   * phone (POST, a sealed outcome). See `sealOutcome`.
+   */
+  | 'outcome'
   /** A CORS preflight, which a browser sends before the POST. */
   | 'preflight'
 
@@ -94,6 +101,97 @@ export type HandoffDirection = 'push' | 'pull'
 export const PULL_REQUEST_BYTES = 4 + 32
 
 export type HandoffRequest = { route: HandoffRoute; body: Uint8Array }
+
+/**
+ * What the receiving device did with a finished transfer.
+ *
+ * The bytes arriving is not the records arriving: the receiver asks its person
+ * before it replaces anything, and they may say no. Each device keeps its own
+ * handover stamp (`repo/meta.ts`), and the SENDER used to stamp the moment the
+ * last chunk went — so a transfer declined on the other end still left this
+ * device saying "the other device is holding the same records". Now the sender
+ * stamps only on `applied`, learned over this route.
+ *
+ * `pending` until the person answers. `failed` is a receiver that could not
+ * read or write what arrived.
+ */
+export type HandoffOutcome = 'pending' | 'applied' | 'declined' | 'failed'
+
+const OUTCOMES: readonly HandoffOutcome[] = ['pending', 'applied', 'declined', 'failed']
+
+/** One byte on the wire. */
+export const outcomeByte = (outcome: HandoffOutcome): Uint8Array =>
+  Uint8Array.of(OUTCOMES.indexOf(outcome))
+
+/** The outcome a body says, or null for anything that is not exactly one known byte. */
+export function outcomeOf(body: Uint8Array): HandoffOutcome | null {
+  if (body.byteLength !== 1) return null
+  return OUTCOMES[body[0]!] ?? null
+}
+
+/**
+ * The exact size of an outcome on the wire: the byte, then a 32-byte proof.
+ *
+ * The path token alone kept out a page that never saw the screen, but not
+ * anything that saw the URL go past on the network — the same gap the pull
+ * proof closes (`core/handoff-pull.ts`). The phone takes the FIRST outcome it
+ * hears, so a forged `applied` posted before the computer's own answer made
+ * the phone stamp a handover its person had declined.
+ */
+export const OUTCOME_BYTES = 1 + 32
+
+/** Domain separation for the outcome proof, apart from every other derived value. */
+const OUTCOME_LABEL = 'jojo/handoff/outcome/v1'
+
+/**
+ * The proof over one outcome byte, keyed by the device that RECEIVED — the one
+ * saying it. In `push` that is the phone (`answererToOfferer`); in `pull`, the
+ * computer (`offererToAnswerer`). One key per speaker, so an answer heard in
+ * one direction can never be replayed as the other's.
+ */
+async function outcomeProof(
+  secrets: Secrets,
+  keys: SessionKeys,
+  byte: number,
+  direction: HandoffDirection,
+): Promise<Uint8Array> {
+  const info = new Uint8Array(OUTCOME_LABEL.length + 1)
+  for (let i = 0; i < OUTCOME_LABEL.length; i += 1) info[i] = OUTCOME_LABEL.charCodeAt(i) & 0x7f
+  info[OUTCOME_LABEL.length] = byte
+  const key = direction === 'push' ? keys.answererToOfferer : keys.offererToAnswerer
+  return secrets.derive(key, new Uint8Array(0), info, 32)
+}
+
+/** An outcome as the receiver says it: the byte and its proof (`OUTCOME_BYTES`). */
+export async function sealOutcome(
+  secrets: Secrets,
+  keys: SessionKeys,
+  outcome: HandoffOutcome,
+  direction: HandoffDirection,
+): Promise<Uint8Array> {
+  const byte = outcomeByte(outcome)
+  const out = new Uint8Array(OUTCOME_BYTES)
+  out.set(byte, 0)
+  out.set(await outcomeProof(secrets, keys, byte[0]!, direction), 1)
+  return out
+}
+
+/**
+ * The outcome a sealed body says, or null for anything that is not exactly
+ * one known byte under a proof that checks out.
+ */
+export async function openOutcome(
+  secrets: Secrets,
+  keys: SessionKeys,
+  body: Uint8Array,
+  direction: HandoffDirection,
+): Promise<HandoffOutcome | null> {
+  if (body.byteLength !== OUTCOME_BYTES) return null
+  const outcome = outcomeOf(body.subarray(0, 1))
+  if (outcome === null) return null
+  const expected = await outcomeProof(secrets, keys, body[0]!, direction)
+  return sameTag(expected, body.slice(1)) ? outcome : null
+}
 
 export type HandoffProblem =
   /** Not enough bytes yet. Keep reading; this is not an error. */
@@ -135,6 +233,7 @@ export async function pathToken(
 export const pairPath = (token: string): string => `/${ROOT}/${token}/pair`
 export const chunkPath = (token: string): string => `/${ROOT}/${token}/chunk`
 export const pullPath = (token: string): string => `/${ROOT}/${token}/pull`
+export const outcomePath = (token: string): string => `/${ROOT}/${token}/outcome`
 
 /** Finds the blank line that ends the headers. -1 if it has not arrived. */
 function headerEnd(bytes: Uint8Array): number {
@@ -182,16 +281,23 @@ export function readRequest(
   if (method === undefined || path === undefined) return 'refused'
 
   // Compared whole. A prefix match would let `/jojo/<token>/pair/../anything`
-  // through, and there is no reason to accept anything but these two. The
-  // second path is the one this direction posts to, and only that one.
+  // through, and there is no reason to accept anything but these. The second
+  // path is the one this direction posts to, and only that one.
   const posts = direction === 'pull' ? pullPath(token) : chunkPath(token)
-  if (method === 'OPTIONS' && (path === pairPath(token) || path === posts)) {
+  const outcome = outcomePath(token)
+  if (method === 'OPTIONS' && (path === pairPath(token) || path === posts || path === outcome)) {
     return { route: 'preflight', body: new Uint8Array(0) }
   }
   if (method === 'GET' && path === pairPath(token)) {
     return { route: 'pair', body: new Uint8Array(0) }
   }
-  if (method !== 'POST' || path !== posts) return 'refused'
+  // The receiver's answer. In `push` the phone received, so the computer ASKS;
+  // in `pull` the computer received, so it TELLS — a sealed outcome, nothing else.
+  if (direction === 'push' && method === 'GET' && path === outcome) {
+    return { route: 'outcome', body: new Uint8Array(0) }
+  }
+  const told = direction === 'pull' && method === 'POST' && path === outcome
+  if (!told && (method !== 'POST' || path !== posts)) return 'refused'
 
   let length = -1
   for (const line of lines.slice(1)) {
@@ -204,12 +310,15 @@ export function readRequest(
     length = Number(value)
   }
   if (length < 0 || length > MAX_BODY_BYTES) return 'refused'
-  // A pull request has exactly one size. Checked on the DECLARED length, so a
-  // request that announces anything else is refused before it is waited for.
-  if (direction === 'pull' && length !== PULL_REQUEST_BYTES) return 'refused'
+  // A pull request has exactly one size, and so does an outcome. Checked on the
+  // DECLARED length, so a request that announces anything else is refused
+  // before it is waited for.
+  if (told && length !== OUTCOME_BYTES) return 'refused'
+  if (!told && direction === 'pull' && length !== PULL_REQUEST_BYTES) return 'refused'
   if (bytes.byteLength < end + length) return 'incomplete'
 
-  return { route: direction === 'pull' ? 'pull' : 'chunk', body: bytes.slice(end, end + length) }
+  const route: HandoffRoute = told ? 'outcome' : direction === 'pull' ? 'pull' : 'chunk'
+  return { route, body: bytes.slice(end, end + length) }
 }
 
 /** How many bytes one complete request occupied, so the buffer can be advanced. */

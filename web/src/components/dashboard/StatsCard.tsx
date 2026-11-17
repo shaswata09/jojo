@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { ApplicationFrequencyBody } from '@/components/dashboard/ApplicationFrequency'
@@ -33,51 +34,60 @@ import { useScopedApplications } from '@/lib/roles-scope'
 
 type ViewKey = 'pipeline' | 'rates' | 'when' | 'next'
 
+/** The views, labelled where they are rendered — `statsCard.views.*` in the reader's language. */
 const VIEWS = [
-  { value: 'pipeline' as const, label: 'Pipeline' },
-  { value: 'rates' as const, label: 'Rates' },
-  { value: 'when' as const, label: 'When' },
-  { value: 'next' as const, label: 'Next' },
+  { value: 'pipeline' as const },
+  { value: 'rates' as const },
+  { value: 'when' as const },
+  { value: 'next' as const },
 ]
 
-/** Short in the control, full above it — the switch has ~50px per option. */
+/** Short in the control, full above it — the switch has ~50px per option. Catalog keys. */
 const TITLE: Record<ViewKey, string> = {
-  pipeline: 'Pipeline',
-  rates: 'Headline rates',
-  when: 'When you applied',
-  next: 'What to work on next',
+  pipeline: 'statsCard.titles.pipeline',
+  rates: 'statsCard.titles.rates',
+  when: 'statsCard.titles.when',
+  next: 'statsCard.titles.next',
 }
 
 export function StatsCard() {
+  const { t } = useTranslation('dashboard')
+  const views = VIEWS.map((v) => ({ ...v, label: t(`statsCard.views.${v.value}`) }))
   const [view, setView] = useState<ViewKey>('pipeline')
   // The roles picked in the top bar, so "12 tracked" counts the same records
   // the pie under it draws.
   const { all } = useScopedApplications()
 
   return (
-    <Panel className="flex min-w-0 flex-col">
+    <Panel className="@container flex min-w-0 flex-col">
       {/* The switch is anchored, and the title is what gives way.
           `flex-wrap` put the control on a second line as soon as the title grew
           — "Pipeline" is eight characters and "What to work on next" is twenty —
           so the one control on this card moved every time it was used, which is
           the worst thing a control can do. No wrap, the heading takes `min-w-0`
           and truncates, and the switch keeps its place in the corner whatever is
-          being shown. Truncation is theoretical at the widths this card is used
-          at: the longest title measures well inside the space left over. */}
-      <div className="mb-4 flex items-center justify-between gap-3">
+          being shown.
+
+          Except in a narrow CARD, where the switch alone is wider than the
+          room: from 1024 to ~1150px the card has 240–300px and the switch takes
+          255 (English) to 308 (German), so it hung off the card and, in German,
+          scrolled the whole page sideways. Below `@sm` (24rem of card) it has
+          its own row, full width, options sharing it — decided by the card's
+          width, never by the title, so it still does not move when used. */}
+      <div className="mb-4 flex flex-col items-stretch gap-2 @sm:flex-row @sm:items-center @sm:justify-between @sm:gap-3">
         {/* The count stays on Pipeline only. On the other three it would be
             answering a question the view is not asking — "12 tracked" above a
             reply rate reads as the denominator, and it is not. */}
         <PanelTitle
           className="mb-0 min-w-0 truncate"
-          hint={view === 'pipeline' ? `${all.length} tracked` : undefined}
+          hint={view === 'pipeline' ? t('statsCard.tracked', { count: all.length }) : undefined}
         >
-          {TITLE[view]}
+          {t(TITLE[view])}
         </PanelTitle>
         <Segment
-          className="shrink-0"
-          label="Statistic"
-          options={VIEWS}
+          className="shrink-0 @max-sm:[&>button]:min-w-0 @max-sm:[&>button]:flex-auto @max-sm:[&>button]:px-1.5 @max-sm:[&>button]:wrap-anywhere @max-sm:[&>button]:hyphens-auto"
+          label={t('statsCard.control')}
+          options={views}
           value={view}
           onChange={setView}
         />

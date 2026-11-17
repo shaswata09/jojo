@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "지원",
+      "org": "고용주",
+      "role": "직무",
+      "item": "날짜 또는 알림",
+      "file": "파일",
+      "link": "링크",
+      "snippet": "스니펫",
+      "posting": "저장한 채용 공고",
+      "match": "매치",
+      "keyword": "키워드"
+    },
+    "isA": "유형",
+    "fit": "적합도 {{fit}}%",
+    "query": {
+      "undated": {
+        "question": "날짜가 하나도 없는 지원",
+        "why": "아무리 진행 중이어도 캘린더와 이번 주 일정에 나타나지 않아요."
+      },
+      "untagged": {
+        "question": "키워드가 없는 지원",
+        "why": "아무도 분류하지 않은 기록은 어떤 필터로도 찾을 수 없어요."
+      },
+      "orphanFiles": {
+        "question": "어떤 지원에도 분류되지 않은 파일",
+        "why": "문서는 흩어지기 쉬워요. 무엇도 가리키지 않는 문서가 무엇인지 알려 줘요."
+      },
+      "orphanLinks": {
+        "question": "어떤 지원에도 분류되지 않은 링크",
+        "why": "나중에 다시 보려고 저장한 채용 공고와 페이지에 대한 같은 질문이에요."
+      },
+      "busiest": {
+        "question": "가장 많은 일이 진행 중인 고용주",
+        "why": "지원, 날짜, 파일, 링크 등 모든 모음을 한꺼번에 세요."
+      },
+      "unpromoted": {
+        "question": "지원으로 이어지지 않은 매치와 채용 공고",
+        "why": "기회는 조용히 식어요. 목록 보기는 그게 어떤 건지 알려 주지 않아요."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} {{rel}} {{end}} 아님",
+      "startAny": "무엇이든",
+      "relAny": "연결됨",
+      "endAny": "무엇이든",
+      "startType": {
+        "application": "지원",
+        "org": "고용주",
+        "role": "직무",
+        "item": "날짜 또는 알림",
+        "file": "파일",
+        "link": "링크",
+        "snippet": "스니펫",
+        "posting": "저장한 채용 공고",
+        "match": "매치",
+        "keyword": "키워드"
+      },
+      "endType": {
+        "application": "지원",
+        "org": "고용주",
+        "role": "직무",
+        "item": "날짜 또는 알림",
+        "file": "파일",
+        "link": "링크",
+        "snippet": "스니펫",
+        "posting": "저장한 채용 공고",
+        "match": "매치",
+        "keyword": "키워드"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "오늘",
+      "hint": "결정이 필요한 일"
+    },
+    "apps": {
+      "label": "지원",
+      "hint": "목록과 단계 보드"
+    },
+    "cal": {
+      "label": "캘린더",
+      "hint": "마감일, 면접, 준비"
+    },
+    "reminders": {
+      "label": "알림",
+      "hint": "보관함 · 해야 할 일과 기한"
+    },
+    "links": {
+      "label": "링크",
+      "hint": "보관함 · 채용 공고, 사람, 페이지"
+    },
+    "files": {
+      "label": "파일",
+      "hint": "보관함 · 기록한 문서"
+    },
+    "snippets": {
+      "label": "스니펫",
+      "hint": "보관함 · 재사용할 문단"
+    },
+    "tools": {
+      "label": "도구",
+      "hint": "보관함 · 계산기"
+    },
+    "scout": {
+      "label": "채용 스카우트",
+      "hint": "저장한 검색, 매치, 채용 공고"
+    },
+    "stats": {
+      "label": "통계",
+      "hint": "비율, 퍼널, 개선할 점"
+    },
+    "graph": {
+      "label": "그래프",
+      "hint": "기록을 서로 연결된 네트워크로 보기"
+    },
+    "profile": {
+      "label": "내 프로필",
+      "hint": "기본 정보, 문서, 매칭 용어"
+    },
+    "assistant": {
+      "label": "어시스턴트",
+      "hint": "모델을 연결하기 전까지는 예시를 보여 줘요"
+    },
+    "settings": {
+      "label": "설정",
+      "hint": "연결, 화면 모양, 키워드, 내 데이터"
+    },
+    "transfer": {
+      "label": "전송",
+      "hint": "모든 것을 컴퓨터로 보내거나 컴퓨터에서 가져와요"
+    },
+    "guide": {
+      "label": "사용 방법",
+      "hint": "세 가지 레이어, 각 화면, 그래프"
+    },
+    "more": {
+      "label": "더 보기",
+      "hint": "jojo의 나머지 기능"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "새 지원"
+    },
+    "newApplicationFromLink": {
+      "label": "링크로 지원 만들기",
+      "hint": "모델이 채용 공고를 읽고 양식을 채워요"
+    },
+    "newReminder": {
+      "label": "새 알림"
+    },
+    "newEvent": {
+      "label": "새 일정"
+    },
+    "draftMessage": {
+      "label": "메시지 초안 작성",
+      "hint": "이메일 스니펫으로 작성해요. 아무것도 생성하지 않아요"
+    },
+    "saveLink": {
+      "label": "링크 저장",
+      "hint": "보관함의 링크 도구를 열어요"
+    },
+    "recordDocument": {
+      "label": "문서 기록",
+      "hint": "보관함의 파일 도구를 열어요"
+    },
+    "savePosting": {
+      "label": "채용 공고 저장",
+      "hint": "채용 스카우트를 열어요"
+    }
+  },
+  "snooze": {
+    "soon1": "내일",
+    "later1": "하루 미루기",
+    "soon3": "3일 후",
+    "later3": "3일 미루기",
+    "soon7": "7일 후",
+    "later7": "일주일 미루기"
+  },
+  "itemActions": {
+    "reopened": "{{title}} 다시 열었어요",
+    "completed": "{{title}} 완료했어요",
+    "reopenedBody": "열린 목록으로 돌아가 다시 할 일로 집계돼요.",
+    "completedBody": "열린 목록에서 빠지고 오늘 한 일로 집계돼요. 삭제되는 건 없어요.",
+    "rescheduled": "{{title}} 일정을 바꿨어요",
+    "nowDue": "이제 기한은 {{date}}이에요. 여기와 캘린더 모두에 반영돼요.",
+    "movedTo": "{{date}}(으)로 옮겼어요",
+    "copyTitle": "{{title}} (사본)",
+    "added": "{{title}} 추가했어요",
+    "copyBody": "{{date}} — 사본에도 같은 키워드가 붙어 있어요.",
+    "deleted": "{{title}} 삭제했어요",
+    "deletedReminder": "알림 목록과 캘린더에서 사라졌어요.",
+    "deletedEvent": "캘린더에서 사라졌어요."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "목록 위의 키워드 필터 때문에 숨겨져 있어요.",
+    "noSearchMatch": "검색과 일치하는 항목이 없어요",
+    "noBothMatch": "두 필터 모두와 일치하는 항목이 없어요",
+    "clearBoth": "두 필터 모두 해제",
+    "clearKeywords": "키워드 해제"
+  },
+  "boardScan": {
+    "badAddress": "열 수 없는 주소예요.",
+    "timeout": "채용 사이트가 응답하는 데 너무 오래 걸렸어요.",
+    "unreachable": "채용 사이트에 연결할 수 없었어요.",
+    "status": "채용 사이트가 {{status}}(으)로 응답했어요.",
+    "browserOnly": "{{host}}은(는) 실제 브라우저에만 채용 공고를 보여 줘서 휴대폰에서는 읽을 수 없어요. 컴퓨터에서는 jojo 브라우저 확장 프로그램으로 읽을 수 있어요."
+  },
+  "timelineForm": {
+    "title": "알아볼 수 있는 제목을 붙여 주세요.",
+    "date": "날짜를 고르세요. 날짜가 없는 항목은 표시될 곳이 없어요.",
+    "time": "14:30처럼 시간을 입력하세요."
+  },
+  "reader": {
+    "tooBig": "이 문서는 {{size}}MB인데 리더는 {{max}}MB까지만 읽을 수 있어요.",
+    "gone": "이 문서의 사본이 더 이상 이 기기에 없어요.",
+    "empty": "이 문서에서 아무것도 읽지 못했어요. 스캔본일 수 있어요.",
+    "noAddress": "아직 주소가 없어요. 설정을 확인하세요.",
+    "notConnected": "문서 리더가 연결되지 않아 이 파일의 내용을 읽을 수 없어요. 주소는 설정에서 입력해요.",
+    "noCopy": "이 기록에는 이 기기에 저장된 사본이 없어서 읽을 내용이 없어요."
+  },
+  "jobs": {
+    "ready": "{{label}} 준비됐어요",
+    "readyBody": "작성 대상인 지원 아래에 저장했어요.",
+    "failed": "{{label}} 완료하지 못했어요"
+  },
+  "boot": {
+    "corrupt": "저장된 기록을 읽을 수 없어요({{detail}}).",
+    "blocked": "이 기기의 다른 무언가가 저장소를 잠그고 있어요.",
+    "unsupported": "이 기기에는 이 앱이 쓸 수 있는 저장소가 없어요.",
+    "threw": "저장소를 전혀 열 수 없었어요.",
+    "banner": "이 기기에 저장하지 않고 있어요 — {{why}}"
+  },
+  "posting": {
+    "needsReader": "모델과 함께 문서 리더도 필요해요. 페이지를 가져오는 게 리더예요. 주소는 설정에 있어요.",
+    "empty": "페이지가 거의 비어서 돌아왔어요. JavaScript로 그리는 채용 사이트는 브라우저가 아니면 빈 껍데기만 보내요. 여기서 열어 페이지를 저장하세요.",
+    "note": "{{url}}에서 모델이 읽음",
+    "askedTwice": "두 번 물어봤지만 결과가 같았어요."
+  },
+  "localService": {
+    "stopped": "보내기 전에 중지했어요."
+  },
+  "clipboard": {
+    "tooBig": "클립보드에 담기에 너무 커요",
+    "tooBigBody": "기록이 {{size}}인데 Android 클립보드는 텍스트를 약 {{max}}까지만 담아요. 아무것도 복사하지 않았어요. 전송을 사용해 로컬 네트워크로 모든 것을 컴퓨터에 보내세요.",
+    "copied": "클립보드에 복사했어요",
+    "copiedBody": "메모나 파일에 붙여 넣을 수 있는 백업이에요. 첨부한 문서는 이 휴대전화에 남고, 그 행은 내용 없이 돌아와요."
+  },
+  "documents": {
+    "incomplete": "복사가 완료되지 않았어요.",
+    "nothingCopied": "아무것도 복사하지 않았어요."
+  },
+  "weekday": {
+    "sun": "일",
+    "mon": "월",
+    "tue": "화",
+    "wed": "수",
+    "thu": "목",
+    "fri": "금",
+    "sat": "토"
+  },
+  "owed": {
+    "overdue": "기한 지남",
+    "today": "오늘",
+    "tomorrow": "내일",
+    "rest": "이번 주 나머지"
+  },
+  "receive": {
+    "declined": "아무것도 바뀌지 않았어요. 받으려면 코드를 다시 스캔하세요."
+  }
+}

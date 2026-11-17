@@ -94,8 +94,8 @@ describe('GROUP_OF', () => {
 
 describe('the sentence the page reads back', () => {
   const groups: TransferGroup[] = [
-    { id: 'applications', label: 'Applications', unit: 'applications', hint: '', count: 12 },
-    { id: 'people', label: 'People', unit: 'people', hint: '', count: 5 },
+    { id: 'applications', label: 'Applications', hint: '', count: 12 },
+    { id: 'people', label: 'People', hint: '', count: 5 },
   ]
 
   it('totals and itemises the same groups', () => {

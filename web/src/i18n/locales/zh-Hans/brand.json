@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojo 的动作",
+    "hint": "选一个，或在机器人上画出对应的手势。",
+    "trigger": "jojo 的动作",
+    "triggerAria": "jojo 的动作与致谢",
+    "plays": "播放",
+    "modelCredit": "机器人模型："
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "toLight": "切换到浅色主题",
+    "toDark": "切换到深色主题"
+  },
+  "poke": "戳一下 jojo"
+}

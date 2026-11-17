@@ -40,6 +40,8 @@
  */
 
 import { useCallback } from 'react'
+import { domainText, englishT } from '../core/domain-text'
+import type { DomainText } from '../core/domain-text'
 import type { ToolResult } from '../tools/runtime'
 import type { Announcement } from '../tools/tool'
 import type { InputOf, OutputOf, ToolName } from '../tools'
@@ -76,18 +78,27 @@ export function useRun(): <N extends ToolName>(
  * refusal never reaches here: the runtime re-throws it to the ErrorBoundary,
  * because a bug that arrives as a polite toast is a bug that ships.
  */
-const refusal = (message: string): ToastOptions => ({
-  title: 'That did not save',
+const refusal = (message: string, text: DomainText): ToastOptions => ({
+  title: text.write.refused(),
   description: message,
   tone: 'danger',
 })
 
-const announced = (a: Announcement, undo: (() => void) | null): ToastOptions => ({
-  title: a.title,
+/**
+ * The tool's announcement, in the app's words where `text` knows the title
+ * (`DomainText.announce`) — 'Note removed' from `sticky.note.delete` — and the
+ * Undo button always. The description is the tool's: a record's own name, or
+ * the gist of the note, which is the person's text and not English.
+ */
+const announced = (a: Announcement, undo: (() => void) | null, text: DomainText): ToastOptions => ({
+  title: text.announce(a.title),
   ...(a.description === undefined ? {} : { description: a.description }),
   ...(a.tone === undefined ? {} : { tone: a.tone }),
-  ...(undo === null ? {} : { action: { label: 'Undo', onClick: undo } }),
+  ...(undo === null ? {} : { action: { label: text.undo.action(), onClick: undo } }),
 })
+
+/** What a caller handed no `text` says: the English the catalogs are generated from. */
+const ENGLISH = domainText(englishT)
 
 /**
  * The Undo is `undoableWith`'s, not `result.undo`.
@@ -136,6 +147,8 @@ export type ToolDeps = {
   run: <N extends ToolName>(name: N, input: InputOf<N>) => ToolResult<OutputOf<N>>
   undoable: <T>(write: () => T) => Undoable<T>
   toast: (options: ToastOptions) => void
+  /** The app's words for the toast (`KgContextValue.text`). Omitted means English. */
+  text?: DomainText
 }
 
 export function runWithToast<N extends ToolName>(
@@ -149,24 +162,25 @@ export function runWithToast<N extends ToolName>(
   // refusal commits nothing, so `restore` comes back null on its own — and so
   // does a tool declared `undoable: false`, which clears the stack as it commits.
   const { value: result, restore } = deps.undoable(() => deps.run(name, input))
+  const text = deps.text ?? ENGLISH
   if (!result.ok) {
-    deps.toast(refusal(result.errors[0]?.message ?? 'Something about that record did not fit.'))
+    deps.toast(refusal(result.errors[0]?.message ?? text.write.didNotFit(), text))
     return result
   }
-  deps.toast(announced(say ? say(result.announcement) : result.announcement, restore))
+  deps.toast(announced(say ? say(result.announcement) : result.announcement, restore, text))
   return result
 }
 
 export function useTool<N extends ToolName>(
   name: N,
 ): (input: InputOf<N>, say?: (a: Announcement) => Announcement) => ToolResult<OutputOf<N>> {
-  const { runtime } = useKg()
+  const { runtime, text } = useKg()
   const { toast } = useToast()
   const undoable = useUndoable()
 
   return useCallback(
     (input: InputOf<N>, say?: (a: Announcement) => Announcement) =>
-      runWithToast({ run: (n, i) => runtime.run(n, i), undoable, toast }, name, input, say),
-    [runtime, toast, name, undoable],
+      runWithToast({ run: (n, i) => runtime.run(n, i), undoable, toast, text }, name, input, say),
+    [runtime, toast, name, undoable, text],
   )
 }

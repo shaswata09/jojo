@@ -1,4 +1,5 @@
 import ReactNativeBlobUtil from 'react-native-blob-util'
+import { i18next } from '@/i18n/i18n'
 import {
   MAX_BYTES,
   convertRequest,
@@ -73,7 +74,7 @@ async function handshake(endpoint: string, signal?: AbortSignal): Promise<Conver
 export async function testReader(endpoint: string): Promise<ConvertResult> {
   shookHands = null
   if (endpoint.trim().length === 0) {
-    return { ok: false, reason: 'No address yet. See Settings.' }
+    return { ok: false, reason: i18next.t('messages:reader.noAddress') }
   }
   const opened = await send(initializeRequest(endpoint), endpoint)
   if (failed(opened)) return { ok: false, reason: opened.failed.reason }
@@ -116,11 +117,14 @@ export async function convertDocument(
     if (size > MAX_BYTES) {
       return {
         ok: false,
-        reason: `That document is ${String(Math.round(size / 1024 / 1024))} MB and the reader takes up to ${String(MAX_BYTES / 1024 / 1024)} MB.`,
+        reason: i18next.t('messages:reader.tooBig', {
+          size: Math.round(size / 1024 / 1024),
+          max: MAX_BYTES / 1024 / 1024,
+        }),
       }
     }
   } catch {
-    return { ok: false, reason: 'The copy of that document is no longer on this device.' }
+    return { ok: false, reason: i18next.t('messages:reader.gone') }
   }
 
   /*

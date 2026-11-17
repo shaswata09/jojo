@@ -65,6 +65,10 @@ export type TailoredSnippet = {
   readonly model: string
   /** 'today', '3 days ago', 'Sep 2'. */
   readonly when: string
+  /** The base document's name; null when it has left the Vault (`from` then says so in English). */
+  readonly fromName: string | null
+  /** What `when` counts, for an app to say it in its own language (`domain.ago`). */
+  readonly whenAt: { readonly day: string; readonly today: string } | null
 }
 
 /**
@@ -178,8 +182,10 @@ export function useTailoring<S extends Cancellation>({
           body: n.props.body,
           kind: t?.kind ?? 'other',
           from: from ?? 'a document no longer in the Vault',
+          fromName: from ?? null,
           model: t?.model ?? '',
           when: t === undefined ? '' : agoLabel(dayOf(t.at), today),
+          whenAt: t === undefined ? null : { day: dayOf(t.at), today },
         }
       }),
     [graph, applicationId, today],

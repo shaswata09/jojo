@@ -14,29 +14,35 @@ import { GESTURES, useMascot } from '@/lib/mascot-context'
 import { isSoundEnabled, playSwitchClick, setSoundEnabled } from '@/lib/sound'
 import { useTheme, type ThemePref } from '@/lib/theme-context'
 
-const THEMES = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-] as const satisfies readonly { value: ThemePref; label: string }[]
+/** The theme choices, by catalog key — labelled where they are rendered, in the reader's language. */
+const THEMES = ['light', 'dark', 'system'] as const satisfies readonly ThemePref[]
 
 export function AppearancePanel() {
+  const { t } = useTranslation('settings')
+  const themes = THEMES.map((value) => ({ value, label: t(`appearance.theme.${value}`) }))
   const { pref, setPref } = useTheme()
   const { pose, seq, play } = useMascot()
   const [sound, setSound] = useState(isSoundEnabled)
 
   return (
     <Panel>
-      <PanelTitle>Appearance</PanelTitle>
+      <PanelTitle>{t('appearance.title')}</PanelTitle>
       <SettingRow
-        label="Theme"
-        description="System follows your operating system setting"
-        control={<Segment label="Theme" options={THEMES} value={pref} onChange={setPref} />}
+        label={t('appearance.theme.label')}
+        description={t('appearance.theme.description')}
+        control={
+          <Segment
+            label={t('appearance.theme.label')}
+            options={themes}
+            value={pref}
+            onChange={setPref}
+          />
+        }
       />
       <LanguageRow />
       <SettingRow
-        label="Mascot gestures"
-        description="jojo reacts as you work. Try one."
+        label={t('appearance.gestures.label')}
+        description={t('appearance.gestures.description')}
         control={
           <div className="flex items-center justify-end gap-3">
             {/* A local preview, rather than telling you to go look at the
@@ -70,8 +76,8 @@ export function AppearancePanel() {
       {/* The same strokes the sidebar card reads (lib/gesture-pad.ts), and
           the model's credit, which the card's moves button also shows. */}
       <SettingRow
-        label="Draw a move"
-        description="Draw on the robot in the sidebar card. The robot button in its corner lists these too."
+        label={t('appearance.draw.label')}
+        description={t('appearance.draw.description')}
         control={
           <StrokeLegend className="max-w-36 grid-cols-1 min-[380px]:max-w-56 sm:max-w-none lg:grid-cols-2" />
         }
@@ -80,8 +86,8 @@ export function AppearancePanel() {
         <MascotCredit />
       </div>
       <SettingRow
-        label="Interface sounds"
-        description="A short click when you flip a switch"
+        label={t('appearance.sounds.label')}
+        description={t('appearance.sounds.description')}
         control={
           <Switch
             checked={sound}
@@ -91,7 +97,7 @@ export function AppearancePanel() {
               // Play on enable so you hear exactly what you just turned on.
               if (on) playSwitchClick()
             }}
-            aria-label="Interface sounds"
+            aria-label={t('appearance.sounds.label')}
           />
         }
       />

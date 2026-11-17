@@ -1,0 +1,946 @@
+{
+  "shared": {
+    "undo": "Desfazer",
+    "delete": "Excluir",
+    "cancel": "Cancelar",
+    "list": "{{items}} e {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "Hoje",
+    "subtitleEmpty": "{{date}} · nada acompanhado ainda — tudo o que você adiciona fica neste dispositivo.",
+    "subtitle_one": "{{date}} · {{count}} candidatura, tudo neste dispositivo.",
+    "subtitle_other": "{{date}} · {{count}} candidaturas, tudo neste dispositivo.",
+    "decision": {
+      "title": "Precisa de uma decisão",
+      "done": "Concluído",
+      "snooze": "Adiar",
+      "notConnected": "Nada está ligado a isto ainda",
+      "emptyTitle": "Nada para decidir hoje",
+      "emptyDescription": "Ofertas, candidaturas atrasadas, o próximo prazo firme e sua próxima entrevista aparecem aqui. Nenhum deles está pendente.",
+      "open_one": "{{count}} aberta",
+      "open_other": "{{count}} abertas"
+    },
+    "firstSteps": {
+      "title": "Primeiros passos",
+      "progress": "{{done}} de {{total}} concluídos",
+      "complete": "Os três estão concluídos. Tudo o que você adicionar daqui em diante aparece nesta tela, no calendário e na candidatura a que pertence.",
+      "intro": "Cada passo abre a função de verdade e se marca sozinho assim que existe um registro — nada disso é um tutorial que você precisa aguentar.",
+      "introEmpty": "Nada está sendo acompanhado ainda. Cada passo abre a função de verdade e se marca sozinho assim que existe um registro — nada disso é um tutorial que você precisa aguentar.",
+      "close": "Fechar primeiros passos",
+      "hide": "Ocultar estes passos",
+      "application": {
+        "title": "Adicione uma candidatura",
+        "body": "Uma vaga, sua etapa e seu prazo. Todo o resto no jojo depende deste registro."
+      },
+      "dated": {
+        "title": "Dê uma data a algo",
+        "body": "Prazos, entrevistas e visitas são um mesmo tipo de registro, então uma data chega ao mesmo tempo a esta tela, ao calendário e à candidatura.",
+        "label": "Novo evento"
+      },
+      "reminder": {
+        "title": "Programe um acompanhamento",
+        "body": "Um lembrete é o mesmo registro com um aviso ativado. Quando a data passa, ele fica pendente e continua aqui até você marcá-lo.",
+        "label": "Novo lembrete"
+      }
+    },
+    "glance": {
+      "active": "Ativas",
+      "interviews": "Triagens e entrevistas",
+      "overdue": "Atrasados",
+      "doneToday": "Concluídos hoje",
+      "a11y": "{{value}} {{label}}"
+    },
+    "owed": {
+      "title": "Pendente nesta semana",
+      "hintOverdue": "{{overdue}} atrasados · {{due}} pendentes",
+      "hintDue": "{{due}} pendentes",
+      "emptyTitle": "Nada pendente",
+      "emptyDescription": "Prazos, entrevistas e acompanhamentos chegam aqui assim que têm data e ficam até você marcá-los.",
+      "addEvent": "Adicionar um evento",
+      "dayLabel_one": "{{day}} {{date}}, {{count}} item",
+      "dayLabel_other": "{{day}} {{date}}, {{count}} itens",
+      "clear": "Hoje está livre.",
+      "clearDone_one": "Hoje está livre — {{count}} concluído.",
+      "clearDone_other": "Hoje está livre — {{count}} concluídos.",
+      "later": "Mais tarde",
+      "moreOnCalendar_one": "mais {{count}} no calendário",
+      "moreOnCalendar_other": "mais {{count}} no calendário"
+    },
+    "recent": {
+      "title": "Candidaturas recentes",
+      "hint": "atividade mais recente",
+      "viewAll": "Ver todas",
+      "emptyDescription": "Cada vaga que você acompanha aparece aqui quando você mexe nela, da mais recente para a mais antiga.",
+      "daysAgo_one": "há {{count}} dia",
+      "daysAgo_other": "há {{count}} dias",
+      "views": {
+        "notes": "Notas",
+        "recent": "Candidaturas recentes"
+      },
+      "control": "Mostrar neste cartão",
+      "addReminder": "Adicionar lembrete",
+      "headingNotes": "Notas adesivas"
+    },
+    "pipeline": {
+      "title": "Funil",
+      "emptyTitle": "Nada no funil",
+      "emptyDescription": "Cada candidatura está em uma etapa, e isto mostra como elas se distribuem. Adicione uma e a primeira fatia aparece."
+    },
+    "sticky": {
+      "newNote": "Nova nota adesiva",
+      "placeholder": "Anote algo para você…",
+      "newColour": "Cor da nova nota",
+      "stick": "Colar",
+      "empty": "Nada colado ainda. As notas ficam aqui até você tirá-las, e qualquer uma pode virar lembrete quando tiver uma data.",
+      "listLabel": "Notas adesivas",
+      "editNote": "Editar nota",
+      "editAria": "Editar nota: {{text}}",
+      "colour": "Cor",
+      "colourOf": "Cor da nota \"{{text}}\"",
+      "toReminderAria": "Transformar em lembrete: {{text}}",
+      "removeAria": "Remover nota: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "Candidaturas",
+    "subtitleEmpty": "Nada acompanhado ainda — tudo o que você adiciona fica neste dispositivo.",
+    "subtitle": "{{shown}} exibidas · {{total}} no total",
+    "new": "Nova",
+    "newApplication": "Nova candidatura",
+    "showNotes": "Mostrar notas",
+    "showNotesDescription": "A segunda linha abaixo de cada vaga",
+    "none": {
+      "title": "Nenhuma candidatura ainda",
+      "description": "Acompanhe uma vaga para a qual você está se candidatando e ela aparece aqui, no calendário e na semana à frente."
+    },
+    "searchLabel": "Buscar candidaturas",
+    "searchPlaceholder": "Busque por vaga, nota ou etapa",
+    "layout": "Visualização",
+    "views": {
+      "list": "Lista",
+      "board": "Quadro"
+    },
+    "filterByRole": "Filtrar por função",
+    "filterByStage": "Filtrar por etapa",
+    "sortButton": "Ordem: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "Última atividade",
+        "asc": "Mais recentes primeiro",
+        "desc": "Mais antigas primeiro"
+      },
+      "stage": {
+        "label": "Etapa",
+        "asc": "De rascunho a encerrada",
+        "desc": "De encerrada a rascunho"
+      },
+      "position": {
+        "label": "Vaga",
+        "asc": "De A a Z",
+        "desc": "De Z a A"
+      }
+    },
+    "sortMenu": {
+      "title": "Ordenar por",
+      "description": "Escolha a coluna e depois qual ponta fica em cima.",
+      "currently": "Agora: {{order}}"
+    },
+    "empty": {
+      "title": "Nenhuma candidatura corresponde",
+      "nothing": "Nada para mostrar aqui.",
+      "carries": "Nada corresponde a {{filters}}.",
+      "reasons": {
+        "search": "essa busca",
+        "stage": "a etapa {{stage}}",
+        "keywords": "as palavras-chave selecionadas",
+        "roles": "as funções selecionadas"
+      },
+      "showAll_one": "Mostrar a {{count}}",
+      "showAll_other": "Mostrar todas as {{count}}"
+    },
+    "row": {
+      "moreActions": "Mais ações para {{name}}",
+      "open": "Abrir registro",
+      "edit": "Editar",
+      "flag": "Marcar para acompanhamento",
+      "unflag": "Remover a marca de acompanhamento",
+      "duplicate": "Duplicar"
+    },
+    "roles": {
+      "description": "Nada selecionado significa tudo — limpar o filtro é o mesmo que nunca tê-lo definido.",
+      "tracked_one": "{{count}} acompanhada",
+      "tracked_other": "{{count}} acompanhadas",
+      "clear": "Mostrar todas as funções"
+    },
+    "paste": {
+      "label": "URL da vaga",
+      "placeholder": "Cole a URL de uma vaga",
+      "submit": "Do link"
+    }
+  },
+  "board": {
+    "cardHint": "Toque e segure para mover para outra etapa",
+    "addAt": "Adicionar uma candidatura em {{stage}}",
+    "addHere": "Adicionar aqui"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} duplicada",
+    "duplicatedDescription": "A cópia começa como rascunho — a etapa original, as datas e a oferta ficam para trás.",
+    "movedTitle": "{{name}} movida para {{stage}}",
+    "movedDescription": "Estava em {{from}}. O funil passa a contá-la em {{stage}} a partir de agora.",
+    "deletedTitle": "{{name}} excluída",
+    "deletedDescription": "Lembretes, arquivos e vagas salvas vinculados a ela foram mantidos, sem vínculo.",
+    "confirmTitle": "Excluir {{name}}?",
+    "confirmTitleGeneric": "Excluir a candidatura?",
+    "confirmDescription": "A candidatura e sua nota serão excluídas. Tudo o que estiver vinculado a ela — lembretes, arquivos, vagas salvas — é mantido, mas sem vínculo."
+  },
+  "detail": {
+    "missing": {
+      "title": "Candidatura",
+      "emptyTitle": "Esta candidatura não existe mais",
+      "emptyDescription": "Ela foi excluída, ou o link aponta para um id que nunca existiu. Nada mais foi removido com ela.",
+      "back": "Voltar"
+    },
+    "kept": {
+      "reminders_one": "{{count}} lembrete",
+      "reminders_other": "{{count}} lembretes",
+      "events_one": "{{count}} evento",
+      "events_other": "{{count}} eventos",
+      "saved_one": "{{count}} item salvo",
+      "saved_other": "{{count}} itens salvos"
+    },
+    "closedTitle": "{{name}} encerrada",
+    "closedDescription": "Registrada como {{outcome}}. Os detalhes da oferta e seus lembretes foram mantidos.",
+    "outcomes": {
+      "rejected": "rejeitada",
+      "withdrawn": "retirada",
+      "accepted": "aceita",
+      "declined": "recusada",
+      "ghosted": "sem resposta"
+    },
+    "duplicatedDescription": "A cópia começa em Rascunho, com a nota e os detalhes incluídos.",
+    "deletedKept": "{{kept}} foram mantidos, sem vínculo.",
+    "facts": {
+      "employer": "Empregador",
+      "employerJobs_one": "{{name}} · {{count}} vaga aqui",
+      "employerJobs_other": "{{name}} · {{count}} vagas aqui",
+      "source": "Origem",
+      "location": "Local",
+      "compensation": "Remuneração",
+      "posting": "Anúncio",
+      "postingId": "ID da vaga",
+      "appliedOn": "Candidatura em",
+      "confirmationRef": "Referência de confirmação",
+      "outcome": "Resultado"
+    },
+    "moreActions": "Mais ações",
+    "details": "Detalhes",
+    "postingHint": "Abre a vaga dentro do jojo, onde você pode guardar uma cópia",
+    "dates": {
+      "title": "Datas e lembretes",
+      "hint": "{{open}} abertos · {{total}} no total",
+      "add": "Adicionar uma data",
+      "emptyTitle": "Nada agendado",
+      "emptyDescription": "Prazos, entrevistas e acompanhamentos vinculados a esta candidatura aparecem aqui."
+    },
+    "note": {
+      "title": "Nota",
+      "hint": "Salva quando você toca fora",
+      "edit": "Editar esta nota",
+      "placeholder": "O que ainda falta, com quem você falou, o que perguntar em seguida",
+      "label": "Nota sobre {{name}}",
+      "formatKept": "A formatação é mantida nas palavras que você não altera.",
+      "saved": "Nota salva"
+    },
+    "draftMessage": "Redigir uma mensagem",
+    "confirmDeleteKept": "A candidatura e sua nota serão excluídas. {{kept}} serão mantidos, mas sem vínculo — nada do que você vinculou a ela é excluído.",
+    "confirmDeleteAlone": "A candidatura e sua nota serão excluídas. Nada mais aponta para ela.",
+    "offer": {
+      "title": "Oferta",
+      "settled": "Encerrada · registrada como {{outcome}}",
+      "pastDeadline_one": "{{count}} dia após o prazo",
+      "pastDeadline_other": "{{count}} dias após o prazo",
+      "daysLeft_one": "Falta {{count}} dia",
+      "daysLeft_other": "Faltam {{count}} dias",
+      "respondBy": "Responder até {{date}}",
+      "accept": "Aceitar",
+      "decline": "Recusar"
+    },
+    "stageDates": {
+      "dated": "{{stage}} com data de {{date}}",
+      "undated": "{{stage}} agora está sem data",
+      "datedBody": "{{name}}: este é o dia em que, segundo o registro, ela chegou a {{stage}}.",
+      "undatedBody": "{{name}}: a etapa continua no registro; só a data foi removida.",
+      "hint": "{{dated}} de {{total}} com data",
+      "title": "Datas das etapas",
+      "now": "atual",
+      "explain": "Mover esta candidatura para outra etapa registra a data automaticamente. O que ela alcançou antes de hoje pode ser preenchido aqui."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "Empregador",
+      "subtitle": "Nada responde a esse endereço",
+      "emptyTitle": "Nenhum empregador neste endereço",
+      "emptyDescription": "A página de um empregador existe enquanto alguma candidatura o mencionar. Se todas as candidaturas para ele foram excluídas, esta página também foi."
+    },
+    "subtitleOne": "Uma candidatura aqui",
+    "subtitleMany_one": "{{count}} candidatura aqui, {{open}} ainda abertas",
+    "subtitleMany_other": "{{count}} candidaturas aqui, {{open}} ainda abertas",
+    "applications": "Candidaturas",
+    "dates": "Datas",
+    "datesHint_one": "{{count}} entre estas vagas",
+    "datesHint_other": "{{count}} entre estas vagas",
+    "datesEmptyTitle": "Nada com data aqui",
+    "datesEmptyDescription": "Prazos, entrevistas e lembretes de qualquer uma destas vagas se reúnem nesta tela.",
+    "people": "Pessoas",
+    "peopleHint_one": "{{count}} citada",
+    "peopleHint_other": "{{count}} citadas",
+    "peopleEmptyTitle": "Ninguém citado ainda",
+    "peopleEmptyDescription": "Referências, presidentes de comissão e recrutadores citados em qualquer uma destas vagas aparecem aqui."
+  },
+  "calendar": {
+    "title": "Calendário",
+    "subtitle": "Prazos, entrevistas e preparação em uma só visão",
+    "key": {
+      "overdue": "Atrasado",
+      "soon": "Vence em até 48 horas",
+      "done": "Concluído"
+    },
+    "export": {
+      "label": "Exportar para meu calendário",
+      "done_one": "{{count}} data exportada",
+      "done_other": "{{count}} datas exportadas",
+      "doneDescription": "Seu calendário vai oferecer importá-las, com um lembrete em cada uma.",
+      "failed": "Nada aqui abre um arquivo de calendário",
+      "failedDescription": "O arquivo está salvo neste telefone. Um app de calendário que aceite .ics pode abri-lo."
+    },
+    "add": "Adicionar",
+    "addEvent": "Adicionar evento",
+    "tallCells": "Células de dia altas",
+    "tallCellsDescription": "Mais espaço por dia na grade",
+    "jump": "{{month}} de {{year}}. Ir para outro mês",
+    "previous": "Mês anterior",
+    "next": "Próximo mês",
+    "backTo": "Voltar para {{date}}",
+    "goTo": "Ir para {{target}}",
+    "goToDay": "Ir para {{day}} de {{month}}",
+    "today": "Hoje",
+    "selectedDay": "Dia selecionado",
+    "hint": "Toque em um dia para ver o que há nele. Toque em um evento para editá-lo ou remarcá-lo.",
+    "dayLabel_one": "{{day}} de {{month}}, {{count}} evento",
+    "dayLabel_other": "{{day}} de {{month}}, {{count}} eventos",
+    "nothingOn": "Nada em {{date}}",
+    "nothingOnDescription": "Adicione uma entrevista, um prazo ou um bloco de preparação e ele aparece aqui e na grade.",
+    "allDay": "Dia inteiro",
+    "reopen": "Reabrir {{title}}",
+    "markDone": "Marcar \"{{title}}\" como concluído",
+    "moreActions": "Mais ações para {{title}}",
+    "rest": {
+      "title": "Resto de {{month}}",
+      "lastDay": "{{date}} é o último dia do mês",
+      "nothingAfter": "Nada depois de {{date}}",
+      "lastDayDescription": "Não há nada depois. Avance para planejar em {{month}}.",
+      "clearDescription": "O resto de {{month}} está livre. Tudo o que você adicionar depois deste dia aparece aqui.",
+      "more_one": "+{{count}} mais tarde neste mês",
+      "more_other": "+{{count}} mais tarde neste mês"
+    }
+  },
+  "search": {
+    "title": "Buscar",
+    "subtitle": "Candidaturas, datas, o cofre e o explorador, tudo de uma vez",
+    "fieldLabel": "Buscar em tudo",
+    "placeholder": "Busque candidaturas, lembretes, arquivos…",
+    "idleTitle": "Digite para buscar",
+    "idleDescription": "Um só campo para todas as coleções — porque \"onde coloquei aquela coisa da Rice\" é uma pergunta sobre o registro, não sobre a lista em que ele está.",
+    "create": "Criar",
+    "createHint": "nada encontrado? crie",
+    "noneTitle": "Nada corresponde a \"{{query}}\"",
+    "noneDescription": "A busca lê o título, a nota e a categoria de cada registro. Nada aqui é buscado em outro lugar.",
+    "fit": "{{fit}}% de compatibilidade",
+    "results_one": "{{count}} resultado",
+    "results_other": "{{count}} resultados",
+    "showAll_one": "Mostrar {{count}}",
+    "showAll_other": "Mostrar todas as {{count}}",
+    "groups": {
+      "applications": "Candidaturas",
+      "reminders": "Lembretes",
+      "calendar": "Calendário",
+      "vault": "Cofre",
+      "jobScout": "Explorador de vagas",
+      "goTo": "Ir para"
+    }
+  },
+  "more": {
+    "title": "Mais",
+    "subtitle": "O resto do jojo",
+    "newBadge_one": "{{count}} nova",
+    "newBadge_other": "{{count}} novas",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "Explorador de vagas",
+        "hint": "Buscas salvas, correspondências e vagas que você guardou"
+      },
+      "statistics": {
+        "label": "Estatísticas",
+        "hint": "Taxas, um funil e no que trabalhar em seguida"
+      },
+      "graph": {
+        "label": "Grafo",
+        "hint": "Seus registros desenhados como a rede que eles formam"
+      },
+      "transfer": {
+        "label": "Transferir",
+        "hint": "Mova tudo para o seu computador ou a partir dele"
+      },
+      "profile": {
+        "label": "Meu perfil",
+        "hint": "Informações básicas, documentos e termos de busca"
+      },
+      "assistant": {
+        "label": "Assistente",
+        "hint": "Exemplos prontos até que um modelo local seja conectado"
+      },
+      "settings": {
+        "label": "Configurações",
+        "hint": "Conexões, aparência e seus dados"
+      },
+      "guide": {
+        "label": "Como usar",
+        "hint": "Um tour guiado e para que serve cada tela"
+      }
+    },
+    "storage": {
+      "saved": "salvo",
+      "saving": "salvando",
+      "savingCount": "salvando {{count}}",
+      "unsaved_one": "{{count}} não salvo",
+      "unsaved_other": "{{count}} não salvos",
+      "off": "não está salvando"
+    },
+    "runtime": {
+      "title": "Em execução",
+      "hint": "o que realmente está rodando",
+      "storage": "Armazenamento do dispositivo",
+      "model": "Modelo",
+      "modelConfigured": "{{model}} — configurado",
+      "modelNotSetUp": "não configurado",
+      "transfer": "Transferir",
+      "transferNever": "nunca usado",
+      "transferLast": "último uso em {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. Tudo roda neste dispositivo.",
+    "overdue_one": "{{count}} lembrete atrasado.",
+    "overdue_other": "{{count}} lembretes atrasados."
+  },
+  "statistics": {
+    "title": "Estatísticas",
+    "emptySubtitle": "Nada para medir ainda — esta tela se preenche conforme você adiciona candidaturas.",
+    "emptyTitle": "Nenhuma candidatura para medir",
+    "emptyDescription": "Taxas de resposta, um funil e um gráfico semanal precisam de registros para contar. Adicione o primeiro e isto começa a se preencher.",
+    "subtitleSent": "Contado a partir dos seus próprios registros. Os números marcados como típicos são de uma busca de exemplo, para comparação.",
+    "subtitleNone": "Contado a partir dos seus próprios registros. Preenche-se conforme as candidaturas são enviadas.",
+    "compare": "Comparar com uma busca típica",
+    "compareDescription": "Um número de exemplo ao lado de cada indicador principal",
+    "overTime": {
+      "title": "Candidaturas ao longo do tempo",
+      "hint": "pela função de cada uma",
+      "period": "Período",
+      "note": "Cada período é sua própria janela, então os totais diferem entre eles — um trimestre cobre buscas anteriores; uma semana, só esta temporada."
+    },
+    "sources": {
+      "title": "De onde vieram",
+      "hint_one": "{{count}} acompanhada",
+      "hint_other": "{{count}} acompanhadas",
+      "center": "acompanhadas"
+    },
+    "asFarAsShown": "até onde cada registro mostra",
+    "openApplications": "Abrir candidaturas",
+    "showAll": "Mostrar tudo",
+    "funnel": {
+      "title": "Até onde as candidaturas chegaram",
+      "emptyTitle": "Nada foi enviado ainda",
+      "emptyDescription": "As taxas de resposta, entrevista e oferta contam candidaturas que realmente foram enviadas. Tire uma do Rascunho e isto se preenche.",
+      "carried": "{{pct}}% avançaram"
+    },
+    "outcomes": {
+      "title": "Resultados",
+      "count_one": "{{count}} candidatura",
+      "count_other": "{{count}} candidaturas",
+      "partial": "{{shown}} de {{total}}",
+      "allOff": "Todos os resultados estão desativados."
+    },
+    "health": {
+      "title": "No que trabalhar em seguida",
+      "hint": "seus números comparados a uma busca típica",
+      "sample": "Exemplo",
+      "emptyTitle": "Ainda não há o suficiente para comparar",
+      "emptyDescription": "Isto compara suas respostas, entrevistas, indicações e acompanhamentos com uma busca típica. Precisa de candidaturas que realmente foram enviadas.",
+      "allOff": "As duas séries estão desativadas.",
+      "yours": "Seus",
+      "typical": "Típico",
+      "suggestions": "Sugestões, das mais úteis às menos"
+    },
+    "roles": {
+      "title": "Como está cada tipo de função",
+      "roles": "Funções",
+      "applied": "Enviadas",
+      "replied": "Respondidas",
+      "interviews": "Entrevistas",
+      "offers": "Ofertas"
+    }
+  },
+  "graph": {
+    "title": "Grafo",
+    "emptySubtitle": "Seus registros, desenhados como a rede que eles formam",
+    "emptyTitle": "Nada para desenhar",
+    "emptyDescription": "Cada nó aqui é um dos seus registros. Adicione uma candidatura e o primeiro aparece.",
+    "subtitle": "Uma prévia do jojo quando os registros deixam de ser sete listas separadas",
+    "caption": "{{visible}} de {{total}} nós · {{edges}} arestas. Toque em um nó para lê-lo; toque em um tipo abaixo para ocultá-lo.",
+    "legend": "Legenda",
+    "legendHint": "toque para ocultar um tipo",
+    "joinedTo": "Ligado a",
+    "noEdges": "Nada aponta para cá ainda.",
+    "openRecord": "Abrir o registro",
+    "ask": "Pergunte ao grafo",
+    "askHint": "pergunte em uma frase ou escolha uma",
+    "andMore_one": "e mais {{count}}",
+    "andMore_other": "e mais {{count}}",
+    "questions": "Perguntas",
+    "questionsHint": "respostas que uma lista não consegue dar",
+    "pattern": "Pergunte outra coisa",
+    "patternHint": "monte a sua",
+    "patternNone": "Nada corresponde a esta.",
+    "records_one": "{{count}} registro",
+    "records_other": "{{count}} registros",
+    "exampleNone": "Nada corresponde — que é a boa resposta para esta."
+  },
+  "jobScout": {
+    "title": "Explorador de vagas",
+    "subtitle": "Buscas salvas que vão observar sites de vagas por você — e um lugar para guardar vagas hoje",
+    "onlyActive": "Só buscas ativas",
+    "onlyActiveDescription": "Ocultar as desativadas",
+    "paused": "Nenhum modelo local está conectado, então as buscas estão pausadas. Você ainda pode criá-las e salvar vagas abaixo — elas começam a rodar assim que um modelo estiver acessível.",
+    "status": {
+      "off": "desativada",
+      "paused": "pausada",
+      "running": "rodando",
+      "watching": "observando"
+    },
+    "kinds": {
+      "twin": "Manter os registros completos",
+      "scout": "Encontrar vagas"
+    },
+    "kindLabel": {
+      "twin": "Gêmeo digital",
+      "scout": "Explorador de vagas"
+    },
+    "schedules": {
+      "hourly": "De hora em hora",
+      "daily": "Diária",
+      "weekly": "Semanal"
+    },
+    "toast": {
+      "updated": "Busca atualizada",
+      "created": "Busca criada",
+      "createdPaused": "{{name}} — pausada até que um modelo seja conectado.",
+      "createdRunning": "{{name}} — vai começar a procurar em breve.",
+      "deleted": "Busca excluída",
+      "deletedDescription": "{{name}} deixa de observar {{source}}.",
+      "addedDraft": "{{org}} adicionada como rascunho",
+      "matchLinked": "A correspondência continua neste feed, agora vinculada à candidatura.",
+      "postingSaved": "Vaga salva",
+      "postingLinked": "A vaga continua salva aqui, agora vinculada à candidatura.",
+      "postingRemoved": "Vaga removida"
+    },
+    "pipelines": {
+      "title": "Buscas",
+      "hint": "rodam localmente em uma programação",
+      "none": "Nenhuma busca",
+      "noneOn": "Nenhuma ativada",
+      "noneDescription": "Uma busca é uma pesquisa salva — um site para observar, os termos que importam e com que frequência olhar.",
+      "noneOnDescription": "Todas as suas buscas estão desativadas. Ative uma ou remova o filtro nas opções da página.",
+      "showAll": "Mostrar todas as buscas",
+      "toReview_one": "{{count}} para revisar",
+      "toReview_other": "{{count}} para revisar",
+      "auto": "auto",
+      "autoLabel": "Rodar sem perguntar",
+      "autoDescription": "Aplica o que encontrar e só avisa você depois.",
+      "autoToggle": "Rodar {{name}} sem perguntar",
+      "enable": "Ativar {{name}}",
+      "runNow": "Rodar {{name}} agora",
+      "edit": "Editar {{name}}",
+      "delete": "Excluir {{name}}"
+    },
+    "matches": {
+      "title": "Correspondências",
+      "hint": "pontuadas com base no seu perfil",
+      "emptyTitle": "Nenhuma correspondência",
+      "emptyDescription": "As buscas colocam vagas pontuadas aqui quando um modelo está conectado. Até lá, as vagas que você salva abaixo são o caminho.",
+      "matched": "corresponde a {{terms}}",
+      "notScored": "sem pontuação",
+      "added": "adicionada"
+    },
+    "inApplications": "Nas candidaturas como {{name}}",
+    "save": {
+      "title": "Salvar uma vaga",
+      "hint": "funciona sem modelo",
+      "description": "Nada aqui baixa a página, então o que fica guardado é a URL, o empregador deduzido dela e o dia em que você salvou — o suficiente para encontrar o anúncio de novo e se candidatar.",
+      "urlLabel": "URL da vaga",
+      "button": "Salvar vaga",
+      "blocker": "Cole uma URL primeiro",
+      "emptyTitle": "Nenhuma vaga salva",
+      "emptyDescription": "Cole a URL de um anúncio ao qual você quer voltar. Anúncios saem do ar; o link e a data são seus.",
+      "meta": "{{url}} · salva {{ago}}",
+      "linked": "vinculada a uma candidatura",
+      "unscored": "sem pontuação"
+    },
+    "footer": "As buscas rodam no seu dispositivo, enquanto o jojo está aberto. Nada é enviado a terceiros.",
+    "shutdown": {
+      "title": "Desativar {{name}}?",
+      "description": "Ela rodou duas vezes sem encontrar nada para sugerir, e não há nada esperando sua resposta. Desativá-la faz com que pare de procurar; tudo o que já encontrou fica onde está.",
+      "keep": "Manter rodando",
+      "off": "Desativar"
+    },
+    "editor": {
+      "newTitle": "Nova busca",
+      "editTitle": "Editar busca",
+      "description": "Uma busca é uma tarefa permanente para o assistente. Ela roda neste dispositivo enquanto o jojo está aberto, e tudo o que quiser mudar é mostrado a você antes.",
+      "create": "Criar",
+      "kind": "O que ela faz",
+      "kindTwinHint": "Lê o que você tem e sugere o que falta — notas, lembretes, etiquetas, organização.",
+      "kindScoutHint": "Procura vagas que merecem sua atenção e as coloca para revisão.",
+      "name": "Nome",
+      "nameError": "Dê a ela o nome do que observa.",
+      "namePlaceholderTwin": "ex.: Manter minhas candidaturas organizadas",
+      "namePlaceholderScout": "ex.: Site de vagas docentes da CRA",
+      "sources": "Fontes",
+      "sourcesError": "Um explorador sem fonte não tem nada para ler.",
+      "sourcesHint": "O site ou a página de carreiras que ela observa. Separe vários com vírgulas.",
+      "focus": "No que focar",
+      "focusHint": "Qualquer coisa a que deva prestar atenção especial. Deixe em branco para que olhe em todo lugar.",
+      "termsHint": "Com base em que uma vaga é pontuada. Deixe em branco para manter tudo o que a fonte lista.",
+      "focusPlaceholder": "acompanhamentos e prazos",
+      "termsPlaceholder": "professor assistente, CS/ECE",
+      "often": "Com que frequência",
+      "oftenHint": "Quanto tempo espera entre uma rodada e outra."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "Não foi possível guardar essa página",
+    "noAnswer": "A página não respondeu.",
+    "savedTitle": "{{name}} salva",
+    "savedDropped_one": "Guardada no seu cofre. {{count}} recurso não pôde ser guardado, então algumas partes podem parecer simples.",
+    "savedDropped_other": "Guardada no seu cofre. {{count}} recursos não puderam ser guardados, então algumas partes podem parecer simples.",
+    "savedOffline": "Guardada no seu cofre e legível sem conexão.",
+    "keep": "Guardar uma cópia",
+    "keeping": "Guardando…",
+    "waitForLoad": "Espere a página terminar de carregar"
+  },
+  "profile": {
+    "title": "Meu perfil",
+    "subtitle": "O que o explorador e o assistente usam para encontrar correspondências e redigir. Nada disso sai do seu dispositivo.",
+    "savedTitle": "Perfil salvo",
+    "savedDescription": "Salvo neste dispositivo.",
+    "basics": {
+      "title": "Informações básicas",
+      "fullName": "Nome completo",
+      "fullNamePlaceholder": "ex.: Lonardo Jenson",
+      "position": "Cargo atual",
+      "positionPlaceholder": "ex.: Doutorando, Ciência da Computação",
+      "location": "Local",
+      "locationPlaceholder": "ex.: Santa Clara, CA",
+      "email": "E-mail"
+    },
+    "links": {
+      "title": "Links",
+      "website": "Site"
+    },
+    "interests": {
+      "title": "Interesses e objetivos",
+      "hint": "orienta as correspondências do explorador",
+      "matchTerms": "Termos de busca",
+      "matchTermsDescription": "Áreas de pesquisa e formulações que o explorador procura. Separados das palavras-chave com que você organiza registros.",
+      "roleTags": "Etiquetas de função",
+      "roleTagsDescription": "Os tipos de função que você acompanha. Cada candidatura fica sob uma delas, e o filtro por função e os números por função as usam.",
+      "targetRoles": "Funções desejadas",
+      "targetRolesPlaceholder": "ex.: Professor assistente (TT) · Cientista pesquisador",
+      "regions": "Regiões preferidas",
+      "regionsPlaceholder": "ex.: Texas · remoto",
+      "academia": "Incluir vagas acadêmicas",
+      "industry": "Incluir vagas da indústria"
+    },
+    "remove": "Remover {{name}}",
+    "add": "Adicionar",
+    "documents": {
+      "title": "Documentos",
+      "hint": "a categoria {{bucket}} do cofre",
+      "emptyTitle": "Nenhum documento ainda",
+      "emptyDescription": "Adicione seu currículo e suas cartas — eles ficam no cofre em {{bucket}}, onde o resto do app consegue acessá-los.",
+      "add": "Adicionar um documento",
+      "openVault": "Abrir o cofre",
+      "meta": "{{size}} · salvo {{ago}}",
+      "footer": "Os mesmos arquivos da ferramenta Arquivos do cofre, filtrados por {{bucket}}. Um registro guarda o nome, o tamanho e o tipo de um documento — nunca o conteúdo.",
+      "addedTitle": "Documento adicionado",
+      "addedDescription": "Guardado no cofre em {{bucket}}. O nome, o tamanho e o tipo são mantidos — o arquivo em si não é lido."
+    },
+    "unsaved": "Alterações não salvas — salvar grava as alterações neste telefone.",
+    "discard": "Descartar",
+    "save": "Salvar",
+    "termSheet": {
+      "title": "Adicionar um termo de busca",
+      "description": "Uma área de pesquisa ou uma formulação que o explorador deve procurar em uma vaga.",
+      "label": "Termo de busca",
+      "placeholder": "ex.: treinamento distribuído"
+    },
+    "roleSheet": {
+      "title": "Adicionar uma etiqueta de função",
+      "description": "Um tipo de função que você acompanha. Ela passa a ser uma das opções em cada candidatura.",
+      "label": "Etiqueta de função",
+      "placeholder": "ex.: Cientista de dados"
+    }
+  },
+  "assistant": {
+    "title": "Assistente",
+    "undone": "Desfeito",
+    "saved": "Salvo nos trechos",
+    "savedDescription": "{{title}} · guardado em {{tag}}",
+    "openVault": "Abrir cofre",
+    "clear": "Limpar",
+    "emptyTitle": "Nada perguntado ainda",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "saveToSnippets": "Salvar nos trechos",
+    "ask": "Pergunte ao assistente",
+    "send": "Enviar",
+    "stop": "Parar",
+    "agent": {
+      "subtitle": "Conectado ao seu modelo e capaz de agir sobre seus registros. Tudo o que ele faz é listado à medida que acontece.",
+      "intro": "Respondendo com <code>{{model}}</code> em <code>{{endpoint}}</code>, que pode usar {{tools}} ferramentas neste dispositivo. Nada é enviado para outro lugar, e toda alteração pode ser desfeita.",
+      "deleted": "Conversa excluída",
+      "emptyDescription": "Peça para encontrar algo, adicionar uma candidatura ou avançar uma. Cada ferramenta usada aparece abaixo à medida que acontece, com o que enviou e o que recebeu.",
+      "placeholder": "Encontre minha candidatura na UT Austin, adicione uma, avance com ela…",
+      "footer": "Ele lê antes de escrever, pergunta antes de cada alteração, a menos que você desative isso em uma conversa, e tudo o que faz passa pelo mesmo desfazer de um botão.",
+      "prompts": {
+        "waiting": "O que estou esperando?",
+        "add": "Adicione uma candidatura: engenheiro de ML na Stripe, enviada",
+        "noDeadline": "Quais candidaturas não têm prazo?",
+        "flag": "Marque minha candidatura na UT Austin"
+      }
+    },
+    "scripted": {
+      "subtitle": "Por enquanto, exemplos prontos. Conecte um modelo local e ele vai redigir a partir dos seus registros e agir sobre eles.",
+      "cleared": "Conversa limpa",
+      "messages_one": "{{count}} mensagem",
+      "messages_other": "{{count}} mensagens",
+      "connectLabel": "Conecte um modelo nas Configurações",
+      "banner": "Nenhum modelo está conectado, então cada resposta aqui é um exemplo pronto, e não uma resposta real.",
+      "connect": "Conecte um nas Configurações →",
+      "emptyDescription": "Escolha uma das sugestões abaixo ou digite qualquer coisa. As respostas são exemplos escritos — úteis para trabalhar e nunca apresentados como a resposta de um modelo.",
+      "badge": "Resposta de exemplo · nenhum modelo conectado",
+      "placeholder": "Pergunte sobre uma carta de apresentação, um e-mail de acompanhamento, uma entrevista…",
+      "footer": "Com um modelo conectado, cada uma destas lê seu perfil e seus documentos como contexto. Como a inferência é local, seu currículo e suas notas nunca são enviados para lugar nenhum."
+    },
+    "thought": {
+      "live": "Pensando…",
+      "done": "Raciocínio",
+      "liveLabel": "Pensando. Mostrar o que o modelo está pensando",
+      "label": "Mostrar o que o modelo pensou"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "Redigir uma carta de apresentação",
+        "title": "Carta de apresentação — estrutura",
+        "reply": "Esta é a estrutura que eu usaria para [DEPARTAMENTO]:\n\nParágrafo 1 — no que você trabalha, em uma frase que alguém da comissão de fora da sua área consiga acompanhar.\nParágrafo 2 — os dois resultados que sustentam sua candidatura, cada um apresentado pela consequência, não pelo método.\nParágrafo 3 — por que este departamento: o grupo com o qual você teria afinidade e a disciplina que você daria.\nParágrafo 4 — disponibilidade e como seriam os três primeiros anos.\n\nMantenha em uma página. A comissão lê quarenta destas em uma noite."
+      },
+      "tailor-cv": {
+        "action": "Adaptar meu currículo a uma vaga",
+        "title": "Adaptar um currículo — três passadas",
+        "reply": "Três passadas, nesta ordem:\n\n1. Corte o que o anúncio não pede. Um currículo adaptado a tudo não está adaptado a nada.\n2. Leve a seção com que o anúncio começa para o topo da primeira página — um anúncio focado em ensino quer o ensino acima das publicações.\n3. Reescreva o título com as palavras do próprio anúncio, sem exagerar o alcance do trabalho.\n\nO que fica intocado: publicações, referências, datas. São as partes que uma comissão confere."
+      },
+      "parse-posting": {
+        "action": "Analisar uma vaga",
+        "title": "O que extrair de uma vaga",
+        "reply": "De um anúncio, eu extrairia: empregador, função, prazo, os documentos exigidos, o contato indicado e tudo o que estiver escrito como requisito obrigatório e não como preferência.\n\nÉ neste último ponto que candidaturas se perdem — \"deve ter o título até a data de início\" é um filtro; \"experiência com sistemas de grande escala é desejável\" não é.\n\nO explorador de vagas já faz a metade simples disso sem modelo: salve a URL lá e ele guarda o link e deduz o empregador a partir dela."
+      },
+      "follow-up": {
+        "action": "Redigir um e-mail de acompanhamento",
+        "title": "Acompanhamento sem resposta",
+        "reply": "Assunto: Acompanhamento — [VAGA], [DEPARTAMENTO]\n\nPrezado(a) [NOME],\n\nCandidatei-me à vaga de [VAGA] em [DATA] e gostaria de confirmar se a comissão tem tudo o que precisa de mim. Posso enviar diretamente a carta de recomendação pendente, se for mais fácil.\n\nContinuo muito interessado(a) na vaga e terei prazer em responder a qualquer pergunta por e-mail.\n\nAgradeço desde já,\n[SEU NOME]"
+      },
+      "interview": {
+        "action": "Prepare-me para uma entrevista",
+        "title": "Entrevista — seis perguntas para ter respondidas",
+        "reply": "Seis perguntas para as quais vale ter resposta antes do dia:\n\n— Do que se trata o seu trabalho, em noventa segundos, para alguém de fora da sua área?\n— Qual seria seu primeiro financiamento, e em qual agência?\n— Quais duas disciplinas você poderia dar no próximo semestre sem aviso prévio?\n— Com quem daqui você colaboraria, e em quê?\n— Qual é a fraqueza do seu próprio resultado?\n— Do que você precisa no primeiro ano para fazer o trabalho?\n\nEscreva as respostas à mão. O ensaio é o que importa, não as anotações."
+      },
+      "fallback": {
+        "title": "Assistente — resposta de exemplo",
+        "reply": "Nenhum modelo está conectado, então esta é uma resposta pronta e não uma resposta ao que você digitou.\n\nCom um conectado, esta tela leria seu perfil, os documentos do seu cofre e a candidatura que você citar, e redigiria a partir deles no seu próprio dispositivo. Aponte o jojo para um servidor local compatível com OpenAI nas Configurações — vLLM, Ollama ou LM Studio.\n\nCada uma das cinco sugestões abaixo tem um exemplo pronto que você pode usar enquanto isso."
+      }
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Conexões, sincronização e seus dados",
+    "themes": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
+    "dataSets": {
+      "demo": "Dados de demonstração",
+      "empty": "Vazio"
+    },
+    "reasoning": {
+      "on": "Ativado",
+      "low": "Leve",
+      "off": "Desativado"
+    },
+    "import": {
+      "refused": "Nada foi importado",
+      "fileFailed": "Não foi possível abrir o arquivo: {{reason}}",
+      "clipboardFailed": "Não foi possível ler a área de transferência: {{reason}}",
+      "unfinished": "A importação não terminou",
+      "replaceTitle": "Substituir tudo neste telefone?",
+      "replaceDescription": "{{described}}. {{replaces}}, e isso não pode ser desfeito.",
+      "replace": "Substituir"
+    },
+    "device": {
+      "title": "Neste dispositivo",
+      "hint": "onde seus registros realmente ficam",
+      "body": "Tudo o que você adiciona é gravado direto no armazenamento deste telefone enquanto você trabalha — não há nada para ativar, e nada sai do dispositivo. Os documentos anexados são copiados para a pasta do jojo, então sobrevivem se o original for movido ou excluído.",
+      "copyOut": "Para tirar uma cópia, use Exportar abaixo, ou Transferir para enviar tudo ao seu computador pela sua rede local."
+    },
+    "model": {
+      "title": "Modelo",
+      "intro": "Um modelo em uma máquina que você consegue acessar, ou um que você paga. Local é o padrão porque é a única opção em que seus registros nunca saem deste dispositivo.",
+      "endpoint": "Endpoint",
+      "loopback": "Esse endereço significa \"este dispositivo\", então em um telefone ele aponta para o telefone. Use o endereço do computador na sua rede — algo como 192.168.1.20, ou o nome .local dele.",
+      "endpointOllama": "O host e a porta. Sem /v1 — o jojo usa o endpoint próprio do Ollama para poder pedir que ele não corte o texto.",
+      "endpointHint": "A URL base, terminando em /v1.",
+      "apiKey": "Chave de API",
+      "apiKeyHint": "Guardada só neste dispositivo. Nunca entra em um backup nem é enviada para outro lugar além do provedor.",
+      "modelPlaceholder": "Descoberto quando você testa a conexão",
+      "modelHint": "O que o servidor informou. Altere se você servir mais de um.",
+      "savedAs": "Salvo como",
+      "savedAsHint": "Como este servidor se chama na lista. Por padrão, o modelo.",
+      "context": "Janela de contexto",
+      "contextOllama": "Tokens. Vazio usa {{tokens}} e deixa o Ollama se ajustar sozinho; um número aqui também é enviado como num_ctx.",
+      "contextHint": "Tokens que sua implantação comporta. Vazio usa {{tokens}}.",
+      "reasoning": "Raciocínio",
+      "reasoningDescription": "Permite que modelos capazes de pensar — gpt-oss, Gemma 4, Qwen3 — raciocinem antes de responder. Desative se as respostas voltarem vazias em um modelo pequeno.",
+      "endpointFirst": "Preencha um endpoint primeiro.",
+      "kept": "Guardado neste dispositivo. O assistente vai usar este modelo."
+    },
+    "test": {
+      "testing": "Testando…",
+      "again": "Testar novamente",
+      "test": "Testar conexão",
+      "connected": "Conectado",
+      "noAnswer": "Sem resposta",
+      "notConnected": "Não conectado"
+    },
+    "reader": {
+      "title": "Ler meus documentos",
+      "hint": "só PDFs",
+      "already": "Este telefone já lê sozinho arquivos do Word, arquivos OpenDocument, apresentações, páginas salvas e texto simples — nada para configurar e nada enviado para lugar nenhum.",
+      "pdf": "<strong>PDFs são a exceção.</strong> Transformar um de volta em texto exige as tabelas de fontes que há dentro dele, o que é mais do que este app carrega. Para eles, rode {{name}} em uma máquina que este telefone consiga acessar e informe o endereço abaixo.",
+      "address": "Endereço",
+      "addressHint": "Onde o markitdown-mcp está escutando. O caminho termina em /mcp.",
+      "notRunning": "Ainda não está rodando?",
+      "addressFirst": "Preencha um endereço primeiro.",
+      "ok": "Os documentos são enviados para esse endereço e para nenhum outro. Nada é enviado para a nuvem.",
+      "notice": "{{name}} é um programa separado, que não faz parte do jojo. {{copyright}} {{licence}}. O jojo não é afiliado à Microsoft."
+    },
+    "appearance": {
+      "title": "Aparência",
+      "theme": "Tema",
+      "themeDescription": "Sistema segue a configuração do seu dispositivo"
+    },
+    "data": {
+      "title": "Seus dados",
+      "export": "Exportar como JSON",
+      "import": "Importar",
+      "paste": "Colar um backup",
+      "exportNote": "A exportação inclui candidaturas, a linha do tempo, o cofre, vagas salvas, suas palavras-chave e o que elas marcam, e seu perfil. É um backup que este app consegue ler de volta — mas os documentos anexados ficam neste telefone, então as linhas deles voltam sem o conteúdo. Transferir, em Mais, move tudo para um computador com os documentos incluídos.",
+      "records": "Registros",
+      "recordsEmpty": "Todas as listas estão vazias, então cada tela mostra seu estado inicial.",
+      "recordsDemo": "A busca de exemplo — doze candidaturas, uma linha do tempo, um cofre cheio.",
+      "move": "Mover para outro dispositivo",
+      "moveDescription": "Pareie com seu computador pela rede local e mova tudo, documentos incluídos.",
+      "reset": "Redefinir os dados de demonstração",
+      "resetDescription": "Devolve tudo ao estado original, descartando as edições desta sessão.",
+      "resetButton": "Redefinir",
+      "resetBlocker": "Volte Registros para Dados de demonstração primeiro",
+      "warning": "Seus registros ficam salvos neste dispositivo e sobrevivem ao fechamento do app. Não há conta nem sincronização, e nenhum registro sai do telefone — nem pelo modelo, nem por um relatório de falhas. Exportar grava uma cópia na área de transferência se você quiser uma em outro lugar.",
+      "cleared": "Tudo apagado",
+      "clearedDescription": "Todos os registros foram apagados, inclusive seu perfil, e os documentos anexados foram excluídos deste dispositivo. Carregue os dados de demonstração de novo por aqui.",
+      "resetDone": "Dados de demonstração redefinidos",
+      "loaded": "Dados de demonstração carregados",
+      "loadedDescription": "As candidaturas, a linha do tempo, o cofre, as vagas e o perfil de exemplo voltaram ao estado original."
+    },
+    "confirm": {
+      "fallbackTitle": "Alterar os dados?",
+      "continue": "Continuar",
+      "empty": {
+        "title": "Apagar todos os registros?",
+        "description": "Candidaturas, a linha do tempo, o cofre, vagas salvas e seu perfil serão apagados, incluindo tudo o que você adicionou nesta sessão, e os documentos anexados serão excluídos deste dispositivo junto. Não é possível desfazer — exporte antes se quiser recuperá-los. Suas palavras-chave são mantidas, mas nada mais as usará.",
+        "confirm": "Apagar tudo"
+      },
+      "demo": {
+        "title": "Carregar os dados de demonstração?",
+        "description": "Os registros de exemplo voltam, marcados com as palavras-chave originais. Tudo o que você adicionou nesta sessão é substituído, não mesclado, e os documentos anexados são excluídos deste dispositivo. Não é possível desfazer.",
+        "confirm": "Carregar dados de demonstração"
+      },
+      "reset": {
+        "title": "Redefinir para os dados de demonstração?",
+        "description": "Todas as edições, adições e exclusões desta sessão são descartadas e os registros de exemplo voltam exatamente como eram, então os documentos anexados são excluídos deste dispositivo. Sua lista de palavras-chave não é alterada. Não é possível desfazer.",
+        "confirm": "Redefinir dados"
+      }
+    },
+    "provider": {
+      "title": "Provedor",
+      "description": "Escolher um define o endereço dele para você. Os de nuvem precisam de uma chave, e seus registros vão para eles.",
+      "cloud": "Seus textos vão para esta empresa e são cobrados de você",
+      "localKey": "Em uma máquina que você controla. Precisa de uma chave.",
+      "local": "Em uma máquina que você controla. Nada sai dela."
+    },
+    "cloud": {
+      "terms": "Termos de {{name}}",
+      "privacy": "Política de privacidade"
+    },
+    "servers": {
+      "title": "Servidores salvos",
+      "description": "Endereços que responderam neste dispositivo.",
+      "done": "Concluído",
+      "empty": "Nada salvo ainda. Teste uma conexão e o endereço é guardado aqui.",
+      "load": "Carregar {{name}}",
+      "inUse": "Em uso",
+      "forget": "Esquecer {{name}}"
+    },
+    "keywords": {
+      "title": "Palavras-chave",
+      "hint": "compartilhadas por candidaturas, lembretes e o cofre",
+      "takenOff_one": "Removida de {{count}} registro.",
+      "takenOff_other": "Removida de {{count}} registros.",
+      "usedOn_one": "Usada em {{count}} registro",
+      "usedOn_other": "Usada em {{count}} registros",
+      "rename": "Renomear {{name}}",
+      "editTitle": "Editar {{name}}",
+      "editGeneric": "Editar palavra-chave",
+      "editDescription": "Renomear não altera o id, então todos os registros com esta palavra-chave acompanham.",
+      "taken": "Esse nome já existe",
+      "takenDescription": "Outra palavra-chave já tem esse nome.",
+      "colour": "Cor",
+      "newTitle": "Nova palavra-chave",
+      "newDescription": "As palavras-chave são suas. A mesma funciona em uma candidatura, um lembrete, um arquivo e um link.",
+      "added": "{{name}} adicionada",
+      "placeholder": "ex.: Aguardando retorno",
+      "confirmUsed_one": "Ela será removida de {{count}} registro. O registro fica; só a palavra-chave sai.",
+      "confirmUsed_other": "Ela será removida de {{count}} registros. Os registros ficam; só a palavra-chave sai.",
+      "confirmUnused": "Nada está marcado com ela, então nada mais muda."
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
 import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
@@ -34,24 +35,25 @@ import { space } from '@/theme/tokens'
  * nothing at all until the answer is known.
  */
 
-const KIND_LABEL: Record<string, string> = {
-  education: 'Education',
-  employment: 'Employment',
-  publication: 'Publication',
-  skill: 'Skill',
-  teaching: 'Teaching',
-  award: 'Award',
-  service: 'Service',
-  certification: 'Certification',
-  language: 'Language',
-  project: 'Project',
-  volunteering: 'Volunteering',
-  membership: 'Membership',
-  grant: 'Grant',
-  patent: 'Patent',
-}
+const KINDS: ReadonlySet<string> = new Set([
+  'education',
+  'employment',
+  'publication',
+  'skill',
+  'teaching',
+  'award',
+  'service',
+  'certification',
+  'language',
+  'project',
+  'volunteering',
+  'membership',
+  'grant',
+  'patent',
+])
 
 export function ProfileUpdateOffer() {
+  const { t } = useTranslation(['components', 'common'])
   const c = useColors()
   const graph = useGraph()
   const { settings } = useModelSettings()
@@ -168,7 +170,7 @@ export function ProfileUpdateOffer() {
     setDropped(new Set())
     if (outcome.skipped.length > 0) {
       toast({
-        title: `${String(outcome.skipped.length)} entr${outcome.skipped.length === 1 ? 'y was' : 'ies were'} skipped`,
+        title: t('profileOffer.skipped', { count: outcome.skipped.length }),
         description: outcome.skipped[0] ?? '',
       })
     }
@@ -225,16 +227,27 @@ export function ProfileUpdateOffer() {
     toast({
       title: result.ok
         ? added === 0
-          ? 'Already on your profile'
-          : `${String(added)} added to your profile`
-        : 'Nothing could be added',
+          ? t('profileOffer.alreadyThere')
+          : t('profileOffer.added', { count: added })
+        : t('profileOffer.nothingAdded'),
       description: result.ok
-        ? `Read from ${target.subject}.${added < keeping.length ? ` ${String(keeping.length - added)} of ${String(keeping.length)} were already known.` : ''}${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} recorded.` : ''}`
-        : (result.errors[0]?.message ?? 'The entries were refused.'),
+        ? [
+            t('profileOffer.readFrom', { name: target.subject }),
+            ...(added < keeping.length
+              ? [
+                  t('profileOffer.alreadyKnown', {
+                    count: keeping.length,
+                    known: keeping.length - added,
+                  }),
+                ]
+              : []),
+            ...(related > 0 ? [t('profileOffer.connectionsRecorded', { count: related })] : []),
+          ].join(' ')
+        : (result.errors[0]?.message ?? t('profileOffer.refused')),
       ...(result.ok ? {} : { tone: 'danger' as const }),
       // One journal entry, so one Undo takes back the facts and their
       // relations together. The document stays marked as asked.
-      ...(undo ? { action: { label: 'Undo', onPress: undo } } : {}),
+      ...(undo ? { action: { label: t('common:actions.undo'), onPress: undo } } : {}),
     })
   }
 
@@ -267,7 +280,7 @@ export function ProfileUpdateOffer() {
         <View style={{ flexDirection: 'row', gap: space[2] }}>
           <Button
             size="sm"
-            label={busy ? step : 'Read it'}
+            label={busy ? step : t('profileOffer.readIt')}
             disabled={busy}
             onPress={() => {
               void accept().catch((thrown: unknown) => {
@@ -275,20 +288,18 @@ export function ProfileUpdateOffer() {
                 // failure as a value, so a throw here would otherwise leave the
                 // button stuck mid-step with nothing said.
                 setStep(null)
-                setError(thrown instanceof Error ? thrown.message : 'Reading the document failed.')
+                setError(thrown instanceof Error ? thrown.message : t('profileOffer.readFailed'))
               })
             }}
           />
-          <Button size="sm" variant="ghost" label="Not now" onPress={dismiss} />
+          <Button size="sm" variant="ghost" label={t('common:actions.notNow')} onPress={dismiss} />
         </View>
       ) : (
         <View style={{ gap: space[2] }}>
           {/* Nothing has been written at this point. This list IS the "shown to
               you first" the copy above promises. */}
           <Txt size="sm" weight="medium">
-            {drafts.length === 1
-              ? '1 entry read from this document'
-              : `${String(drafts.length)} entries read from this document`}
+            {t('profileOffer.entriesRead', { count: drafts.length })}
           </Txt>
           <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled>
             <View style={{ gap: space[1.5] }}>
@@ -299,7 +310,7 @@ export function ProfileUpdateOffer() {
                   key={`${d.kind}-${d.title}-${String(i)}`}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: !dropped.has(i) }}
-                  accessibilityLabel={`Add ${d.title}`}
+                  accessibilityLabel={t('profileOffer.addNamed', { title: d.title })}
                   onPress={() =>
                     setDropped((held) => {
                       const next = new Set(held)
@@ -323,7 +334,7 @@ export function ProfileUpdateOffer() {
                   />
                   <View style={{ flex: 1 }}>
                     <Txt size="xs" tone="secondary" uppercase>
-                      {KIND_LABEL[d.kind] ?? d.kind}
+                      {KINDS.has(d.kind) ? t(`profileOffer.kind.${d.kind}`) : d.kind}
                     </Txt>
                     <Txt
                       size="sm"
@@ -349,9 +360,7 @@ export function ProfileUpdateOffer() {
               }}
             >
               <Txt size="sm" weight="medium">
-                {links.length === 1
-                  ? '1 connection between them'
-                  : `${String(links.length)} connections between them`}
+                {t('profileOffer.connections', { count: links.length })}
               </Txt>
               {links.slice(0, 6).map((link) => (
                 <Txt
@@ -369,15 +378,16 @@ export function ProfileUpdateOffer() {
           <View style={{ flexDirection: 'row', gap: space[2] }}>
             <Button
               size="sm"
-              label={
-                drafts.length - dropped.size === 1
-                  ? 'Add it'
-                  : `Add ${String(drafts.length - dropped.size)}`
-              }
+              label={t('profileOffer.addCount', { count: drafts.length - dropped.size })}
               disabled={dropped.size === drafts.length}
               onPress={confirm}
             />
-            <Button size="sm" variant="ghost" label="Discard" onPress={dismiss} />
+            <Button
+              size="sm"
+              variant="ghost"
+              label={t('common:discard.confirm')}
+              onPress={dismiss}
+            />
           </View>
         </View>
       )}

@@ -1,0 +1,148 @@
+{
+  "sidebar": {
+    "navigation": "Navigation",
+    "close": "Fermer la navigation"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "applications": "Candidatures",
+    "calendar": "Calendrier",
+    "vault": "Coffre",
+    "jobScout": "Éclaireur d’emplois",
+    "statistics": "Statistiques",
+    "flagged_one": "{{count}} signalée",
+    "flagged_other": "{{count}} signalées",
+    "flagged_many": "{{count}} signalées",
+    "flaggedTitle": "Signalées pour un suivi",
+    "weekTitle": "Prévu dans les sept prochains jours",
+    "overdueTitle": "Rappels dont la date est passée",
+    "fresh_one": "{{count}} nouvelle",
+    "fresh_other": "{{count}} nouvelles",
+    "fresh_many": "{{count}} nouvelles",
+    "freshTitle": "Correspondances pas encore ajoutées aux candidatures"
+  },
+  "newMenu": {
+    "trigger": "Nouveau",
+    "find": "Trouver quelque chose à ajouter",
+    "findPlaceholder": "Trouver quelque chose à ajouter…",
+    "empty": "Rien à ajouter ne correspond."
+  },
+  "roleFilter": {
+    "label": "Filtrer par poste",
+    "all": "Tous les postes",
+    "selected_one": "{{count}} sélectionné",
+    "selected_other": "{{count}} sélectionnés",
+    "selected_many": "{{count}} sélectionnés",
+    "find": "Trouver un poste",
+    "findPlaceholder": "Trouver un poste…",
+    "empty": "Aucun poste ne correspond.",
+    "selectAll": "Tout sélectionner",
+    "clear": "Effacer le filtre",
+    "remove": "Retirer {{role}}"
+  },
+  "topbar": {
+    "openNav": "Ouvrir la navigation",
+    "search": "Rechercher candidatures, rappels, événements…",
+    "accountNav": "Compte et aide",
+    "links": {
+      "profile": "Mon profil",
+      "settings": "Paramètres",
+      "assistant": "Assistant",
+      "guide": "Mode d’emploi"
+    }
+  },
+  "runtime": {
+    "heading": "Environnement",
+    "tileTitle": "{{label}} — {{detail}}. Ouvre {{destination}}",
+    "dest": {
+      "graph": "le graphe",
+      "transfer": "Transfert",
+      "settings": "Paramètres"
+    },
+    "storage": {
+      "label": "Stockage du navigateur",
+      "notSaving": "pas d’enregistrement",
+      "notSavingDetail": "vos enregistrements ne sont pas sauvegardés — le bandeau au-dessus de la page explique pourquoi",
+      "retrying": "nouvel essai",
+      "retryingDetail_one": "{{count}} modification n’a pas encore pu être enregistrée, et jojo réessaie toujours",
+      "retryingDetail_other": "{{count}} modifications n’ont pas encore pu être enregistrées, et jojo réessaie toujours",
+      "retryingDetail_many": "{{count}} modifications n’ont pas encore pu être enregistrées, et jojo réessaie toujours",
+      "saved": "enregistré ici",
+      "savedDetail": "vos enregistrements sont écrits dans la base de données de ce navigateur au fil de votre travail"
+    },
+    "model": {
+      "label": "Modèle local",
+      "connected": "connecté",
+      "connectedDetail": "un modèle local a répondu — l’assistant et la notation de l’éclaireur peuvent l’utiliser",
+      "noAnswer": "pas de réponse",
+      "noAnswerDetail": "un modèle est configuré mais n’a pas répondu — vérifiez qu’il tourne",
+      "checking": "vérification",
+      "checkingDetail": "on demande au modèle s’il est là",
+      "unset": "non configuré",
+      "unsetDetail": "pas encore d’endpoint de modèle — cela se règle dans les Paramètres"
+    },
+    "transfer": {
+      "label": "Transfert",
+      "meta": "Synchroniser avec un autre appareil",
+      "detail": "aucun appareil n’est encore associé — cela se fait dans Transfert"
+    }
+  },
+  "banner": {
+    "reload": "Recharger",
+    "interrupted": "jojo a été mis à jour dans un autre onglet, celui-ci a donc fermé sa base de données pour laisser passer la mise à jour. Rien de ce que vous modifiez ici n’est enregistré. Rechargez pour continuer.",
+    "versionBlocked": "jojo n’a pas pu ouvrir sa base de données — un autre onglet jojo est ouvert sur une autre version de l’application. <strong>Vos enregistrements sont toujours sur le disque</strong>, mais cet onglet n’a pas pu les lire : il n’affiche donc rien plutôt que de deviner. Fermez les autres onglets et rechargez pour les retrouver.",
+    "noStorage": "Ce navigateur empêche jojo d’ouvrir son stockage, cet onglet est donc un espace vierge : ce qui est déjà enregistré sur cet appareil n’est pas affiché, et ce que vous saisissez ici disparaîtra à la fermeture de l’onglet. Les fenêtres privées et certains navigateurs gérés font cela. Exportez depuis les Paramètres avant de partir si vous ajoutez quelque chose qui vaut la peine d’être gardé.",
+    "atRisk_one": "{{count}} modification est à l’écran mais pas enregistrée — exportez depuis les Paramètres pour la garder, car recharger ou fermer cet onglet la perdra.",
+    "atRisk_other": "{{count}} modifications sont à l’écran mais pas enregistrées — exportez depuis les Paramètres pour les garder, car recharger ou fermer cet onglet les perdra.",
+    "atRisk_many": "{{count}} modifications sont à l’écran mais pas enregistrées — exportez depuis les Paramètres pour les garder, car recharger ou fermer cet onglet les perdra.",
+    "safeBefore": "Tout ce que vous avez modifié avant est sur le disque.",
+    "corrupt": "jojo a cessé d’enregistrer : ce navigateur a refusé une modification de vos enregistrements et réessayer n’y changera rien. {{atRisk}} Exportez maintenant depuis les Paramètres — Paramètres → Diagnostic donne les détails, et recharger avant d’exporter perd tout ce qui n’est qu’à l’écran.",
+    "quota": "Ce navigateur n’a plus de place, jojo a donc cessé d’enregistrer. {{atRisk}} Libérez de l’espace, puis rechargez.",
+    "otherTab": "jojo a cessé d’enregistrer car un autre onglet détient la base de données. Fermez les autres onglets, puis exportez depuis les Paramètres si quelque chose à l’écran n’a pas été enregistré — recharger cet onglet le perd.",
+    "degraded_one": "{{count}} modification n’a pas pu être enregistrée et jojo réessaie toujours. Exportez depuis les Paramètres si vous avez besoin d’une copie maintenant. ({{error}})",
+    "degraded_other": "{{count}} modifications n’ont pas pu être enregistrées et jojo réessaie toujours. Exportez depuis les Paramètres si vous avez besoin d’une copie maintenant. ({{error}})",
+    "degraded_many": "{{count}} modifications n’ont pas pu être enregistrées et jojo réessaie toujours. Exportez depuis les Paramètres si vous avez besoin d’une copie maintenant. ({{error}})",
+    "documentsBlocked": "Vos documents sont toujours sur cet appareil, mais un autre onglet jojo, ouvert sur une ancienne version de l’application, les retient. Fermez les autres onglets jojo — celui-ci les récupérera tout seul.",
+    "skipped_one": "{{count}} enregistrement de cet appareil n’a pas pu être lu et n’est pas affiché. Rien n’a été supprimé — <anchor>Diagnostic</anchor> l’identifie, et un export depuis cet écran inclut tout ce que jojo a pu lire.",
+    "skipped_other": "{{count}} enregistrements de cet appareil n’ont pas pu être lus et ne sont pas affichés. Rien n’a été supprimé — <anchor>Diagnostic</anchor> les identifie, et un export depuis cet écran inclut tout ce que jojo a pu lire.",
+    "skipped_many": "{{count}} enregistrements de cet appareil n’ont pas pu être lus et ne sont pas affichés. Rien n’a été supprimé — <anchor>Diagnostic</anchor> les identifie, et un export depuis cet écran inclut tout ce que jojo a pu lire.",
+    "nearlyFull": "Ce navigateur n’a presque plus de place pour jojo — environ {{percent}} % de ce qu’il autorise est utilisé. L’enregistrement cessera de fonctionner une fois plein : mieux vaut exporter depuis les Paramètres et libérer de l’espace maintenant, tant que vos enregistrements peuvent encore être écrits.",
+    "backup": {
+      "busy": "Sauvegarde…",
+      "download": "Télécharger une sauvegarde",
+      "notNow": "Pas maintenant"
+    }
+  },
+  "shell": {
+    "skipToMain": "Aller au contenu principal"
+  },
+  "spotlight": {
+    "title": "Rechercher",
+    "label": "Rechercher candidatures, rappels, événements et pages",
+    "placeholder": "Rechercher candidatures, rappels, événements…",
+    "emptyTitle": "Rien ne correspond.",
+    "emptyHint": "Essayez un poste, une organisation ou une étape.",
+    "actions": "Actions",
+    "applications": "Candidatures",
+    "reminders": "Rappels",
+    "calendar": "Calendrier",
+    "tools": "Outils",
+    "goTo": "Aller à",
+    "toOpen": "pour ouvrir",
+    "toClose": "Échap pour fermer",
+    "pages": {
+      "dashboard": "Tableau de bord",
+      "applications": "Candidatures",
+      "calendar": "Calendrier",
+      "vault": "Coffre",
+      "jobScout": "Éclaireur d’emplois",
+      "statistics": "Statistiques",
+      "graph": "Graphe",
+      "transfer": "Transfert",
+      "transferDetail": "Déplacer vos enregistrements vers un autre appareil",
+      "profile": "Mon profil",
+      "assistant": "Assistant",
+      "settings": "Paramètres"
+    }
+  }
+}

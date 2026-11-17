@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { PipelineDraft } from '@/components/scout/PipelineDialog'
 import type { Pipeline } from '@/data/scout'
 import type { useScout } from '@jojo/service/react/use-scout'
@@ -13,6 +14,7 @@ import { CUES } from '@/lib/mascot-cues'
 /** Creating, editing, deleting, switching and running pipelines. */
 export function usePipelineActions(scout: ReturnType<typeof useScout>, engine: PipelinesState) {
   const { addPipeline, updatePipeline, removePipeline } = scout
+  const { t } = useTranslation('scout')
   const { toast } = useToast()
   const mascot = useMascot()
   /** 'new' opens the create dialog; a pipeline opens the same dialog seeded. */
@@ -21,7 +23,7 @@ export function usePipelineActions(scout: ReturnType<typeof useScout>, engine: P
   const savePipeline = (draft: PipelineDraft) => {
     if (editing && editing !== 'new') {
       if (announceRefusal(updatePipeline(editing.id, draft), toast)) return
-      toast({ title: 'Pipeline updated', description: draft.name })
+      toast({ title: t('toasts.pipelineUpdated'), description: draft.name })
     } else {
       // Switched on: a new pipeline that arrived off would read as a create
       // that failed. Whether it can actually run is the model's business, and
@@ -29,10 +31,10 @@ export function usePipelineActions(scout: ReturnType<typeof useScout>, engine: P
       // pessimistic one the way it used to.
       const pipeline = addPipeline({ ...draft, enabled: true })
       toast({
-        title: 'Pipeline created',
+        title: t('toasts.pipelineCreated'),
         description: engine.paused
-          ? `${pipeline.name} — paused until a model is connected.`
-          : `${pipeline.name} — it will start looking shortly.`,
+          ? t('toasts.pipelineCreatedPaused', { name: pipeline.name })
+          : t('toasts.pipelineCreatedRunning', { name: pipeline.name }),
       })
     }
     setEditing(null)
@@ -46,10 +48,13 @@ export function usePipelineActions(scout: ReturnType<typeof useScout>, engine: P
   const onDelete = (pipeline: Pipeline) => {
     const { restore } = removePipeline(pipeline.id)
     toast({
-      title: 'Pipeline deleted',
-      description: `${pipeline.name} stops watching ${pipeline.source}.`,
+      title: t('toasts.pipelineDeleted'),
+      description: t('toasts.pipelineDeletedDescription', {
+        name: pipeline.name,
+        source: pipeline.source,
+      }),
       tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
+      action: { label: t('common.undo'), onClick: restore },
     })
   }
 

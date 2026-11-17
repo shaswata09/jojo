@@ -1,16 +1,17 @@
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { Loader2, RotateCw, Target, Trash2 } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { MenuItem, RowMenu } from '@/components/common/RowMenu'
 import { Button } from '@/components/ui/button'
 import { supersededToast } from '@jojo/service/react/undo'
-import { HOW_LABEL } from '@jojo/service/core/posting-source'
+import { useKg } from '@jojo/service/react/kg-context'
 import { STALE_NOTE } from '@jojo/service/core/fit-reading'
-import { VERDICT_LABEL } from '@jojo/service/core/tailor'
 import { useFit } from '@/lib/fit-agent'
 import type { FitStep } from '@/lib/fit-agent'
 import { useToast } from '@/lib/toast-context'
 import { settingsPath, vaultPath } from '@/lib/links'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * How this application's posting weighs against what the person has done.
@@ -61,12 +62,16 @@ import { settingsPath, vaultPath } from '@/lib/links'
  * last, which is what the Delete law requires of anything that removes a thing.
  */
 
+/** Catalog keys for each step, translated where the step is drawn. */
 const STEP_LABEL: Record<FitStep, string> = {
-  reading: 'Opening the posting',
-  asking: 'Reading what it asks for',
+  reading: 'fit.steps.reading',
+  asking: 'fit.steps.asking',
 }
 
 export function FitPanel({ applicationId }: { applicationId: string }) {
+  const { t } = useTranslation('applications')
+  const { text } = useKg()
+  const domain = useDomain()
   const fit = useFit(applicationId)
   const { toast } = useToast()
   const { source, guidance } = fit
@@ -76,16 +81,24 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id={`fit-${applicationId}`} className="flex items-center gap-2 font-medium">
           <Target aria-hidden className="size-4 text-muted-foreground" />
-          How you fit
+          {t('fit.title')}
         </h2>
         <div className="flex items-baseline gap-3">
           {source && (
             <p className="text-xs text-muted-foreground">
-              Measured against{' '}
-              <Link className="underline underline-offset-2" to={vaultPath({ tool: 'files' })}>
-                {source.name}
-              </Link>{' '}
-              — {HOW_LABEL[source.how]}
+              <Trans
+                t={t}
+                i18nKey="fit.measuredAgainst"
+                values={{ name: source.name, how: domain.how(source.how) }}
+                components={{
+                  anchor: (
+                    <Link
+                      className="underline underline-offset-2"
+                      to={vaultPath({ tool: 'files' })}
+                    />
+                  ),
+                }}
+              />
             </p>
           )}
           {/*
@@ -105,7 +118,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
            * that needs a model; Clear does not.
            */}
           {(fit.ready || fit.reading !== undefined) && fit.step === null && (
-            <RowMenu name="this fit reading" className="-my-1">
+            <RowMenu name={t('fit.menuName')} className="-my-1">
               {/* Re-run alone is withheld while a read waits for a slot —
                   pressing it then stacked a second read behind the first. The
                   MENU stays, because Clear is the one control that has to work
@@ -114,7 +127,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                   the whole menu took that away. */}
               {fit.ready && !fit.queued && (
                 <MenuItem icon={RotateCw} onSelect={fit.rerun}>
-                  {fit.cleared ? 'Measure this posting' : 'Re-run'}
+                  {fit.cleared ? t('fit.measure') : t('fit.rerun')}
                 </MenuItem>
               )}
               {fit.reading && !fit.cleared && (
@@ -129,21 +142,22 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                       // The title branches, because a refusal that announces
                       // "Fit reading cleared" and then explains why it did not
                       // is a toast arguing with itself.
-                      title: result.ok ? 'Fit reading cleared' : 'That did not clear',
+                      title: result.ok ? t('fit.cleared') : t('fit.notCleared'),
                       description: result.ok
-                        ? 'jojo will not read this posting again unless you ask it to.'
+                        ? t('fit.clearedBody')
                         : (result.errors[0]?.message ?? ''),
                       ...(result.ok
                         ? restore
                           ? {
                               action: {
-                                label: 'Undo',
+                                label: t('common.undo'),
                                 onClick: () => {
                                   const outcome = restore()
                                   // `undoableWith` declines to put a before-image
                                   // back over a record touched since, and says so
                                   // rather than looking like it worked.
-                                  if (outcome.superseded.length > 0) toast(supersededToast(outcome))
+                                  if (outcome.superseded.length > 0)
+                                    toast(supersededToast(outcome, text))
                                 },
                               },
                             }
@@ -152,7 +166,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                     })
                   }}
                 >
-                  Clear this reading
+                  {t('fit.clear')}
                 </MenuItem>
               )}
             </RowMenu>
@@ -162,37 +176,30 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
 
       {/* ------------------------- nothing to say ------------------------- */}
       {fit.blocked === 'no-posting' && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          There is no saved posting behind this application, so there is nothing to weigh you
-          against. Capture the listing with the extension, or add the application from its link, and
-          this fills in.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t('fit.noPosting')}</p>
       )}
 
       {fit.blocked === 'no-model' && (
         <p className="mt-3 text-sm text-muted-foreground">
-          Reading what a posting asks for needs a model.{' '}
-          <Link className="underline underline-offset-2" to={settingsPath()}>
-            Connect one in Settings
-          </Link>
-          .
+          <Trans
+            t={t}
+            i18nKey="fit.noModel"
+            components={{
+              anchor: <Link className="underline underline-offset-2" to={settingsPath()} />,
+            }}
+          />
         </p>
       )}
 
       {fit.blocked === 'no-background' && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          jojo has not read anything about your background yet, so it cannot weigh this posting
-          against it. Put your CV in the Vault and say yes when it offers to read it.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t('fit.noBackground')}</p>
       )}
 
       {/* An answer, not a gap. Nothing here offers to fill it in — the menu
           above turns back into "Measure this posting", which is the one way
           back and the only one the person asked for. */}
       {fit.blocked === null && fit.cleared && fit.step === null && !fit.queued && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          You cleared this reading, so jojo is leaving this posting alone.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t('fit.clearedNote')}</p>
       )}
 
       {/* ---------------------------- working ----------------------------- */}
@@ -203,14 +210,14 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       {fit.queued && (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden className="size-3.5 animate-spin" />
-          Queued…
+          {t('fit.queued')}
         </p>
       )}
 
       {fit.step !== null && (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden className="size-3.5 animate-spin" />
-          {STEP_LABEL[fit.step]}…
+          {t(STEP_LABEL[fit.step])}…
         </p>
       )}
 
@@ -218,7 +225,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
         <div className="mt-3 text-sm">
           <p className="text-danger">{fit.error}</p>
           <Button className="mt-2" size="sm" variant="ghost" onClick={fit.rerun}>
-            Try again
+            {t('common.tryAgain')}
           </Button>
         </div>
       )}
@@ -227,14 +234,14 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       {guidance && (
         <div className="mt-3 space-y-4 text-sm">
           <div>
-            <p className="font-medium">{VERDICT_LABEL[guidance.verdict]}</p>
+            <p className="font-medium">{domain.verdict(guidance.verdict)}</p>
             <p className="mt-1 text-muted-foreground">{guidance.summary}</p>
           </div>
 
           {guidance.tailor.length > 0 && (
             <div>
               <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Lead with
+                {t('fit.leadWith')}
               </h3>
               <ul className="mt-1.5 space-y-1.5">
                 {guidance.tailor.map((note) => (
@@ -243,7 +250,9 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                     {note.evidence.where !== undefined && (
                       <span className="text-muted-foreground"> · {note.evidence.where}</span>
                     )}
-                    <span className="block text-muted-foreground">answers “{note.answers}”</span>
+                    <span className="block text-muted-foreground">
+                      {t('fit.answers', { requirement: note.answers })}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -253,7 +262,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           {guidance.prepare.length > 0 && (
             <div>
               <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Be ready for
+                {t('fit.beReady')}
               </h3>
               <ul className="mt-1.5 space-y-1.5">
                 {guidance.prepare.map((note) => (
@@ -261,8 +270,8 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                     <span className="font-medium">
                       {note.requirement}
                       {note.essential && (
-                        <span className="ml-1.5 rounded bg-warning-soft px-1.5 py-0.5 text-xs font-normal text-warning">
-                          required
+                        <span className="ms-1.5 rounded bg-warning-soft px-1.5 py-0.5 text-xs font-normal text-warning [unicode-bidi:isolate]">
+                          {t('fit.required')}
                         </span>
                       )}
                     </span>
@@ -285,9 +294,9 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
            */}
           {fit.readNote && (
             <p className="text-xs text-muted-foreground">
-              {fit.readNote}
+              {fit.readBy && domain.readBy(fit.readBy.model, fit.readBy.day, fit.readBy.today)}
               {fit.reading?.skipped !== undefined &&
-                ` · ${String(fit.reading.skipped)} line${fit.reading.skipped === 1 ? '' : 's'} skipped`}
+                ` · ${t('fit.skipped', { count: fit.reading.skipped })}`}
               {fit.stale && <span className="block text-warning">{STALE_NOTE[fit.stale]}</span>}
             </p>
           )}

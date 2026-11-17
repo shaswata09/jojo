@@ -1,4 +1,6 @@
 import type { ComponentProps } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Chip } from '@/components/common/Chip'
 import { CopyButton } from '@/components/common/CopyButton'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -31,14 +33,17 @@ import { publicUrl } from '@/lib/public-url'
 
 type Tone = NonNullable<ComponentProps<typeof Chip>['tone']>
 
-/** Every state has a chip. A table, so a new state is a compile error here until it has one. */
+/**
+ * Every state has a chip. A table, so a new state is a compile error here until it has one.
+ * `label` is a catalog key, translated where the chip is drawn.
+ */
 const CHIP: { readonly [S in McpLinkStatus['state']]: { tone: Tone; label: string } } = {
-  off: { tone: 'gray', label: 'Off' },
-  searching: { tone: 'amber', label: 'Waiting for jojo-bridge' },
-  ready: { tone: 'green', label: 'Linked' },
-  'bad-token': { tone: 'red', label: 'Token refused' },
-  'no-extension': { tone: 'red', label: 'Needs the extension' },
-  'stale-extension': { tone: 'amber', label: 'Reload the extension' },
+  off: { tone: 'gray', label: 'mcp.chip.off' },
+  searching: { tone: 'amber', label: 'mcp.chip.searching' },
+  ready: { tone: 'green', label: 'mcp.chip.ready' },
+  'bad-token': { tone: 'red', label: 'mcp.chip.badToken' },
+  'no-extension': { tone: 'red', label: 'mcp.chip.noExtension' },
+  'stale-extension': { tone: 'amber', label: 'mcp.chip.staleExtension' },
 }
 
 /**
@@ -50,27 +55,26 @@ const SHELL: 'posix' | 'powershell' =
   typeof navigator !== 'undefined' && /Windows/i.test(navigator.userAgent) ? 'powershell' : 'posix'
 
 /** The sentence under the chip: what is true now, and what to do about it. */
-function explain(link: McpLink): string {
+function explain(link: McpLink, t: TFunction<'settings'>): string {
   switch (link.status.state) {
     case 'off':
       return ''
     case 'searching':
       // The link says why when it knows: another tab carrying it, or something
       // that is not jojo-bridge sitting on the port.
-      return (
-        link.status.reason ??
-        'Nothing is answering at 127.0.0.1:3002 yet. Start jojo-bridge with the first command — jojo keeps looking.'
-      )
+      return link.status.reason ?? t('mcp.explain.searching')
     case 'ready':
       return link.served > 0
-        ? `Answered ${String(link.served)} ${link.served === 1 ? 'request' : 'requests'} from your client this session, most recently ${link.lastMethod ?? 'one'}.`
-        : 'jojo-bridge is running. Connect your client with the second command.'
+        ? link.lastMethod === null
+          ? t('mcp.explain.servedNoMethod', { count: link.served })
+          : t('mcp.explain.served', { count: link.served, method: link.lastMethod })
+        : t('mcp.explain.ready')
     case 'bad-token':
-      return 'jojo-bridge is running with a different token. Stop it with Ctrl+C and start it again with the first command.'
+      return t('mcp.explain.badToken')
     case 'no-extension':
-      return 'This copy of jojo is served from the web, and Chrome keeps web pages away from 127.0.0.1. The jojo extension carries the link — its installer is on this page, under Keeping postings.'
+      return t('mcp.explain.noExtension')
     case 'stale-extension':
-      return 'The jojo extension in this browser is older than this page. Open chrome://extensions and press Reload on jojo.'
+      return t('mcp.explain.staleExtension')
   }
 }
 
@@ -92,7 +96,7 @@ function Step({
       <p className="text-xs text-text-2">
         <span className="font-mono text-text-3">{String(n)}.</span> {title}
       </p>
-      <div className="mt-1 flex items-start gap-2 rounded-md border border-hairline bg-raised py-1.5 pr-1 pl-2.5">
+      <div className="mt-1 flex items-start gap-2 rounded-md border border-hairline bg-raised py-1.5 ps-2.5 pe-1">
         {/* `min-w-0`, or the command refuses to shrink and pushes the button off the card. */}
         <pre className="min-w-0 flex-1 overflow-x-auto py-0.5 font-mono text-xs whitespace-pre text-text-1">
           {command}
@@ -105,6 +109,7 @@ function Step({
 }
 
 export function McpLinkPanel() {
+  const { t } = useTranslation('settings')
   const link = useMcpLink()
   const chip = CHIP[link.status.state]
   // Absolute, because it is pasted into a terminal that has no idea where this page lives.
@@ -112,48 +117,36 @@ export function McpLinkPanel() {
 
   return (
     <Panel>
-      <PanelTitle hint="optional">Connect from an MCP client</PanelTitle>
-      <p className="mb-3 text-sm text-text-2">
-        Let an assistant you already use — Claude Code on your own plan, say — read and update your
-        records here, with the same tools jojo&apos;s own assistant has. It reaches this tab through a
-        small program on your computer, and every change it makes shows up here with Undo.
-      </p>
+      <PanelTitle hint={t('shared.optional')}>{t('mcp.title')}</PanelTitle>
+      <p className="mb-3 text-sm text-text-2">{t('mcp.intro')}</p>
 
       <div className="flex items-center gap-3">
-        <Switch
-          id="mcp-link-switch"
-          checked={link.enabled}
-          onCheckedChange={link.setEnabled}
-        />
+        <Switch id="mcp-link-switch" checked={link.enabled} onCheckedChange={link.setEnabled} />
         <label htmlFor="mcp-link-switch" className="text-sm text-text-1">
-          Allow an MCP client on this computer to use jojo
+          {t('mcp.allow')}
         </label>
       </div>
 
       {link.enabled ? (
         <>
           <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <Chip tone={chip.tone}>{chip.label}</Chip>
-            <span className="text-xs text-text-3">{explain(link)}</span>
+            <Chip tone={chip.tone}>{t(chip.label)}</Chip>
+            <span className="text-xs text-text-3">{explain(link, t)}</span>
           </div>
 
           <Step
             n={1}
-            title="Start jojo-bridge, and leave it running"
+            title={t('mcp.start.title')}
             command={bridgeCommand(script, link.token, SHELL)}
-            copyLabel="Copy the command that starts jojo-bridge"
-            note={
-              SHELL === 'powershell'
-                ? 'Needs Node 18 or newer. Paste it into Windows PowerShell. The token goes in through the environment, so it never shows in the process list. A jojo-bridge downloaded before this version must be downloaded again — the command does that.'
-                : 'Needs Node 18 or newer. The token goes in through the environment, so it never shows in the process list. A jojo-bridge downloaded before this version must be downloaded again — the command does that.'
-            }
+            copyLabel={t('mcp.start.copy')}
+            note={SHELL === 'powershell' ? t('mcp.start.notePowershell') : t('mcp.start.note')}
           />
           <Step
             n={2}
-            title="Connect Claude Code to it, once"
+            title={t('mcp.connect.title')}
             command={clientCommand(link.token)}
-            copyLabel="Copy the command that connects Claude Code"
-            note="Then ask it something like “which of my applications are waiting on me?”. If your terminal says “command not found: claude”, you use Claude Code inside VS Code, which ships its own copy — run the same line with that copy’s full path (in the VS Code extensions folder, under anthropic.claude-code-…/resources/native-binary/claude), or install the Claude Code CLI. Any client that speaks MCP over HTTP can use the same address and token."
+            copyLabel={t('mcp.connect.copy')}
+            note={t('mcp.connect.note')}
           />
 
           {/*
@@ -161,21 +154,13 @@ export function McpLinkPanel() {
            * handing their records to another program is entitled to ask, and
            * none of them is a promise this code does not keep.
            */}
-          <p className="mt-3 text-xs text-text-3">
-            Your client runs on your own plan and your own login — jojo never sees either, and sends
-            nothing to Anthropic or anyone else. It can use every tool jojo&apos;s assistant can except
-            the two that cannot be undone, Reset and Clear. Claude Code asks before it uses a tool unless
-            you have told it not to, and jojo marks every delete as destructive. Keep this tab open while
-            you use it: the records live here, and so does the other end of the link.
-          </p>
+          <p className="mt-3 text-xs text-text-3">{t('mcp.honesty')}</p>
 
           <div className="mt-3 flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={link.regenerate}>
-              New token
+              {t('mcp.newToken')}
             </Button>
-            <span className="text-xs text-text-3">
-              The old commands stop working — run both again with the new one.
-            </span>
+            <span className="text-xs text-text-3">{t('mcp.newTokenNote')}</span>
           </div>
         </>
       ) : null}

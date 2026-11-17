@@ -15,6 +15,7 @@
  */
 import { PDFDocument, PDFHexString, PDFName, PDFNumber, degrees } from 'pdf-lib'
 import type { PDFPage, PDFRef } from 'pdf-lib'
+import { i18next } from '@/i18n/i18n'
 import { boundsOf, noteRect } from './geometry'
 import { hexToPdfRgb, colourById } from './annotations'
 import type { Annotation } from './annotations'
@@ -37,8 +38,8 @@ export async function readPdf(bytes: Uint8Array): Promise<PDFDocument> {
     const detail = cause instanceof Error ? cause.message : String(cause)
     throw new Error(
       /password/i.test(detail)
-        ? 'That PDF needs a password to open, so it cannot be edited here.'
-        : `That file could not be read as a PDF. ${detail}`,
+        ? i18next.t('messages:pdf.passwordNeeded')
+        : i18next.t('messages:pdf.unreadable', { detail }),
       { cause },
     )
   }
@@ -67,7 +68,7 @@ export type MergeSource = {
  * that graph: a 40-page source copied page-by-page embeds its fonts 40 times.
  */
 export async function mergePdfs(sources: readonly MergeSource[]): Promise<Uint8Array> {
-  if (sources.length === 0) throw new Error('Choose at least one PDF to merge.')
+  if (sources.length === 0) throw new Error(i18next.t('messages:pdf.chooseOne'))
   const merged = await PDFDocument.create()
   for (const source of sources) {
     const document = await readPdf(source.bytes)
@@ -76,7 +77,7 @@ export async function mergePdfs(sources: readonly MergeSource[]): Promise<Uint8A
     for (const index of wanted) {
       if (!Number.isInteger(index) || index < 0 || index >= total) {
         throw new Error(
-          `${source.name} has ${total} page${total === 1 ? '' : 's'}, so page ${index + 1} is not in it.`,
+          i18next.t('messages:pdf.pageNotIn', { name: source.name, count: total, page: index + 1 }),
         )
       }
     }
@@ -84,7 +85,7 @@ export async function mergePdfs(sources: readonly MergeSource[]): Promise<Uint8A
     const copied = await merged.copyPages(document, [...wanted])
     for (const page of copied) merged.addPage(page)
   }
-  if (merged.getPageCount() === 0) throw new Error('That selection has no pages in it.')
+  if (merged.getPageCount() === 0) throw new Error(i18next.t('messages:pdf.emptySelection'))
   return merged.save()
 }
 
@@ -97,13 +98,13 @@ export async function mergePdfs(sources: readonly MergeSource[]): Promise<Uint8A
  * moved — an edit nobody asked for, to a page nobody touched.
  */
 export async function applyPagePlan(bytes: Uint8Array, plan: PagePlan): Promise<Uint8Array> {
-  if (plan.length === 0) throw new Error('A document must keep at least one page.')
+  if (plan.length === 0) throw new Error(i18next.t('messages:pdf.keepOnePage'))
   const source = await readPdf(bytes)
   const total = source.getPageCount()
   for (const page of plan) {
     if (page.source < 0 || page.source >= total) {
       throw new Error(
-        `This document has ${total} pages; the plan asks for page ${page.source + 1}.`,
+        i18next.t('messages:pdf.planOutOfRange', { count: total, page: page.source + 1 }),
       )
     }
   }

@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import { settingsPath } from '@/lib/links'
 import bannerSource from './StorageBanner.tsx?raw'
+import layoutCatalog from '@/i18n/locales/en/layout.json?raw'
 import diagnosticsSource from '@/components/settings/Diagnostics.tsx?raw'
 import settingsSource from '@/routes/Settings.tsx?raw'
 
@@ -85,10 +86,12 @@ describe('the backup prompt (Q097)', () => {
     expect(prompt).toContain('const name = exportFilename(new Date())')
     expect(prompt).toMatch(/backup\s*\.download\(name\)/)
     expect(prompt).toContain('backupToast(outcome, name)')
-    expect(prompt).toMatch(/onClick=\{onDownload\}>[\s\S]*?'Download a backup'/)
+    expect(prompt).toMatch(/onClick=\{onDownload\}>[\s\S]*?t\('banner\.backup\.download'\)/)
+    expect(JSON.parse(layoutCatalog).banner.backup.download).toBe('Download a backup')
   })
 
   it('can be put away until the next substantial change', () => {
-    expect(prompt).toMatch(/onClick=\{backup\.dismiss\}>\s*Not now/)
+    expect(prompt).toMatch(/onClick=\{backup\.dismiss\}>\s*\{t\('banner\.backup\.notNow'\)\}/)
+    expect(JSON.parse(layoutCatalog).banner.backup.notNow).toBe('Not now')
   })
 })

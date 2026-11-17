@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TextInput, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { useAgent } from '@jojo/service/react/use-agent'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { NodeId } from '@jojo/service/core/model'
@@ -32,10 +33,7 @@ const GRAPH_ASK = 'ask:graph' as NodeId
 
 const TOOLS = ['graph.query', 'memory.search'] as const
 
-const SUGGESTIONS = [
-  'Which applications have no follow-up scheduled?',
-  'Which files are filed under nothing?',
-]
+const SUGGESTIONS = ['ask.suggestions.noFollowUp', 'ask.suggestions.unfiled']
 
 export function AskBox({
   onAnswer,
@@ -44,6 +42,7 @@ export function AskBox({
   onAnswer: (answer: GraphQueryResult, asked: string) => void
   onClear: () => void
 }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
@@ -125,8 +124,7 @@ export function AskBox({
         }}
       >
         <Txt size="xs" tone="muted">
-          Connect a local model in Settings and you can ask this in a sentence. The questions below
-          work either way.
+          {t('ask.notConnected')}
         </Txt>
       </View>
     )
@@ -138,9 +136,9 @@ export function AskBox({
         <TextInput
           value={prompt}
           onChangeText={setPrompt}
-          placeholder="Which applications have no follow-up?"
+          placeholder={t('ask.placeholder')}
           placeholderTextColor={c.text3}
-          accessibilityLabel="Ask the graph a question"
+          accessibilityLabel={t('ask.label')}
           returnKeyType="search"
           editable={!busy}
           onSubmitEditing={submit}
@@ -156,21 +154,26 @@ export function AskBox({
           }}
         />
         {busy ? (
-          <Button label="Stop" variant="outline" onPress={stop} />
+          <Button label={t('ask.stop')} variant="outline" onPress={stop} />
         ) : (
-          <IconButton icon="arrow-up" label="Ask" disabled={!prompt.trim()} onPress={submit} />
+          <IconButton
+            icon="arrow-up"
+            label={t('ask.ask')}
+            disabled={!prompt.trim()}
+            onPress={submit}
+          />
         )}
       </View>
 
       {entries.length === 0 ? (
         <View style={s.chipRow}>
-          {SUGGESTIONS.map((q) => (
+          {SUGGESTIONS.map((key) => (
             <Button
-              key={q}
-              label={q}
+              key={key}
+              label={t(key)}
               variant="outline"
               onPress={() => {
-                void send(q)
+                void send(t(key))
               }}
             />
           ))}
@@ -197,7 +200,7 @@ export function AskBox({
             ) : null,
           )}
           <Button
-            label="Ask something else"
+            label={t('ask.again')}
             variant="ghost"
             onPress={() => {
               clear()

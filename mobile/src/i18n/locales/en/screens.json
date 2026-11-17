@@ -1,0 +1,946 @@
+{
+  "shared": {
+    "undo": "Undo",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "list": "{{items}} and {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "Today",
+    "subtitleEmpty": "{{date}} · nothing tracked yet — everything you add stays on this device.",
+    "subtitle_one": "{{date}} · {{count}} application, all on this device.",
+    "subtitle_other": "{{date}} · {{count}} applications, all on this device.",
+    "decision": {
+      "title": "Needs a decision",
+      "done": "Done",
+      "snooze": "Snooze",
+      "notConnected": "Nothing is connected to this yet",
+      "emptyTitle": "Nothing needs deciding today",
+      "emptyDescription": "Offers, applications that are overdue, the next hard deadline and your next interview surface here. None of them is outstanding.",
+      "open_one": "{{count}} open",
+      "open_other": "{{count}} open"
+    },
+    "firstSteps": {
+      "title": "First steps",
+      "progress": "{{done}} of {{total}} done",
+      "complete": "All three are done. Anything you add from here reaches this screen, the calendar and the application it belongs to.",
+      "intro": "Each step opens the real thing and ticks itself once a record exists — none of it is a tutorial you have to sit through.",
+      "introEmpty": "Nothing is tracked yet. Each step opens the real thing and ticks itself once a record exists — none of it is a tutorial you have to sit through.",
+      "close": "Close first steps",
+      "hide": "Hide these steps",
+      "application": {
+        "title": "Add an application",
+        "body": "A position, its stage and its deadline. Everything else in jojo hangs off this record."
+      },
+      "dated": {
+        "title": "Give something a date",
+        "body": "Deadlines, interviews and visits are one kind of record, so a date reaches this screen, the calendar and the application at once.",
+        "label": "New event"
+      },
+      "reminder": {
+        "title": "Set a follow-up",
+        "body": "A reminder is the same record with a nudge switched on. Once its date passes it is owed, and it stays here until you tick it off.",
+        "label": "New reminder"
+      }
+    },
+    "glance": {
+      "active": "Active",
+      "interviews": "Screens & interviews",
+      "overdue": "Overdue",
+      "doneToday": "Done today",
+      "a11y": "{{value}} {{label}}"
+    },
+    "owed": {
+      "title": "Owed this week",
+      "hintOverdue": "{{overdue}} overdue · {{due}} due",
+      "hintDue": "{{due}} due",
+      "emptyTitle": "Nothing is owed",
+      "emptyDescription": "Deadlines, interviews and follow-ups land here as soon as they have a date, and stay until you tick them off.",
+      "addEvent": "Add an event",
+      "dayLabel_one": "{{day}} {{date}}, {{count}} item",
+      "dayLabel_other": "{{day}} {{date}}, {{count}} items",
+      "clear": "Today is clear.",
+      "clearDone_one": "Today is clear — {{count}} done.",
+      "clearDone_other": "Today is clear — {{count}} done.",
+      "later": "Later",
+      "moreOnCalendar_one": "{{count}} more on the calendar",
+      "moreOnCalendar_other": "{{count}} more on the calendar"
+    },
+    "recent": {
+      "title": "Recent applications",
+      "hint": "latest activity",
+      "viewAll": "View all",
+      "emptyDescription": "Every position you track shows up here as you touch it, newest first.",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
+      "views": {
+        "notes": "Notes",
+        "recent": "Recent applications"
+      },
+      "control": "Show on this card",
+      "addReminder": "Add reminder",
+      "headingNotes": "Sticky notes"
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "emptyTitle": "Nothing in the pipeline",
+      "emptyDescription": "Each application sits in one stage, and this shows how they are spread across them. Add one and the first slice appears."
+    },
+    "sticky": {
+      "newNote": "New sticky note",
+      "placeholder": "Jot a note to self…",
+      "newColour": "Colour for the new note",
+      "stick": "Stick it",
+      "empty": "Nothing stuck up yet. Notes stay here until you take them down, and any of them can become a reminder once it has a date.",
+      "listLabel": "Sticky notes",
+      "editNote": "Edit note",
+      "editAria": "Edit note: {{text}}",
+      "colour": "Colour",
+      "colourOf": "Colour of the note \"{{text}}\"",
+      "toReminderAria": "Turn into a reminder: {{text}}",
+      "removeAria": "Remove note: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "Applications",
+    "subtitleEmpty": "Nothing tracked yet — everything you add stays on this device.",
+    "subtitle": "{{shown}} shown · {{total}} total",
+    "new": "New",
+    "newApplication": "New application",
+    "showNotes": "Show notes",
+    "showNotesDescription": "The second line under each position",
+    "none": {
+      "title": "No applications yet",
+      "description": "Track a job you are applying for and it shows up here, on the calendar and in the week ahead."
+    },
+    "searchLabel": "Search applications",
+    "searchPlaceholder": "Search position, note or stage",
+    "layout": "Layout",
+    "views": {
+      "list": "List",
+      "board": "Board"
+    },
+    "filterByRole": "Filter by role",
+    "filterByStage": "Filter by stage",
+    "sortButton": "Sort: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "Last activity",
+        "asc": "Most recent first",
+        "desc": "Oldest first"
+      },
+      "stage": {
+        "label": "Stage",
+        "asc": "Draft to closed",
+        "desc": "Closed to draft"
+      },
+      "position": {
+        "label": "Position",
+        "asc": "A to Z",
+        "desc": "Z to A"
+      }
+    },
+    "sortMenu": {
+      "title": "Sort by",
+      "description": "Pick the column, then which end of it goes on top.",
+      "currently": "Currently: {{order}}"
+    },
+    "empty": {
+      "title": "No applications match",
+      "nothing": "Nothing here to show.",
+      "carries": "Nothing carries {{filters}}.",
+      "reasons": {
+        "search": "that search",
+        "stage": "the {{stage}} stage",
+        "keywords": "the selected keywords",
+        "roles": "the selected roles"
+      },
+      "showAll_one": "Show all {{count}}",
+      "showAll_other": "Show all {{count}}"
+    },
+    "row": {
+      "moreActions": "More actions for {{name}}",
+      "open": "Open record",
+      "edit": "Edit",
+      "flag": "Flag for follow-up",
+      "unflag": "Clear the follow-up flag",
+      "duplicate": "Duplicate"
+    },
+    "roles": {
+      "description": "Nothing selected means everything — clearing the filter is the same as never having set one.",
+      "tracked_one": "{{count}} tracked",
+      "tracked_other": "{{count}} tracked",
+      "clear": "Show every role"
+    },
+    "paste": {
+      "label": "Posting URL",
+      "placeholder": "Paste a posting URL",
+      "submit": "From link"
+    }
+  },
+  "board": {
+    "cardHint": "Press and hold to move this to another stage",
+    "addAt": "Add an application at {{stage}}",
+    "addHere": "Add here"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} duplicated",
+    "duplicatedDescription": "The copy starts as a draft — the original stage, dates and offer stay behind.",
+    "movedTitle": "{{name}} moved to {{stage}}",
+    "movedDescription": "It was in {{from}}. The pipeline and the funnel count it under {{stage}} from now on.",
+    "deletedTitle": "{{name}} deleted",
+    "deletedDescription": "Reminders, files and saved postings filed under it were kept, unlinked.",
+    "confirmTitle": "Delete {{name}}?",
+    "confirmTitleGeneric": "Delete application?",
+    "confirmDescription": "The application and its note go. Anything filed under it — reminders, files, saved postings — is kept but unlinked."
+  },
+  "detail": {
+    "missing": {
+      "title": "Application",
+      "emptyTitle": "This application no longer exists",
+      "emptyDescription": "It was deleted, or the link points at an id that never existed. Nothing else was removed with it.",
+      "back": "Back"
+    },
+    "kept": {
+      "reminders_one": "{{count}} reminder",
+      "reminders_other": "{{count}} reminders",
+      "events_one": "{{count}} event",
+      "events_other": "{{count}} events",
+      "saved_one": "{{count}} saved item",
+      "saved_other": "{{count}} saved items"
+    },
+    "closedTitle": "{{name}} closed",
+    "closedDescription": "Recorded as {{outcome}}. The offer details and its reminders were kept.",
+    "outcomes": {
+      "rejected": "rejected",
+      "withdrawn": "withdrawn",
+      "accepted": "accepted",
+      "declined": "declined",
+      "ghosted": "ghosted"
+    },
+    "duplicatedDescription": "The copy starts at Draft, with the note and details carried over.",
+    "deletedKept": "{{kept}} were kept, unlinked.",
+    "facts": {
+      "employer": "Employer",
+      "employerJobs_one": "{{name}} · {{count}} job here",
+      "employerJobs_other": "{{name}} · {{count}} jobs here",
+      "source": "Source",
+      "location": "Location",
+      "compensation": "Compensation",
+      "posting": "Posting",
+      "postingId": "Posting ID",
+      "appliedOn": "Applied on",
+      "confirmationRef": "Confirmation reference",
+      "outcome": "Outcome"
+    },
+    "moreActions": "More actions",
+    "details": "Details",
+    "postingHint": "Opens the posting inside jojo, where you can keep a copy of it",
+    "dates": {
+      "title": "Dates and reminders",
+      "hint": "{{open}} open · {{total}} total",
+      "add": "Add a date",
+      "emptyTitle": "Nothing scheduled",
+      "emptyDescription": "Deadlines, interviews and follow-ups filed against this application show up here."
+    },
+    "note": {
+      "title": "Note",
+      "hint": "Saves when you tap away",
+      "edit": "Edit this note",
+      "placeholder": "What is still outstanding, who you spoke to, what to ask next",
+      "label": "Note on {{name}}",
+      "formatKept": "Formatting is kept on the words you don’t change.",
+      "saved": "Note saved"
+    },
+    "draftMessage": "Draft a message",
+    "confirmDeleteKept": "The application and its note go. {{kept}} will be kept but unlinked — nothing you filed under it is deleted.",
+    "confirmDeleteAlone": "The application and its note go. Nothing else points at it.",
+    "offer": {
+      "title": "Offer",
+      "settled": "Closed · recorded as {{outcome}}",
+      "pastDeadline_one": "{{count}} day past the deadline",
+      "pastDeadline_other": "{{count}} days past the deadline",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "respondBy": "Respond by {{date}}",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
+    "stageDates": {
+      "dated": "{{stage}} dated {{date}}",
+      "undated": "{{stage}} has no date now",
+      "datedBody": "{{name}} — this is the day the record says it reached {{stage}}.",
+      "undatedBody": "{{name}} — the stage is still on the record; only its date is gone.",
+      "hint": "{{dated}} of {{total}} dated",
+      "title": "Stage dates",
+      "now": "now",
+      "explain": "Moving this application to another stage dates it automatically. Anything it reached before today can be filled in here."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "Employer",
+      "subtitle": "Nothing here answers to that address",
+      "emptyTitle": "No employer at this address",
+      "emptyDescription": "An employer page exists for as long as an application names it. If every application to this one was deleted, so was this."
+    },
+    "subtitleOne": "One application here",
+    "subtitleMany_one": "{{count}} application here, {{open}} still open",
+    "subtitleMany_other": "{{count}} applications here, {{open}} still open",
+    "applications": "Applications",
+    "dates": "Dates",
+    "datesHint_one": "{{count}} across these jobs",
+    "datesHint_other": "{{count}} across these jobs",
+    "datesEmptyTitle": "Nothing dated here",
+    "datesEmptyDescription": "Deadlines, interviews and reminders about any of these jobs collect on this screen.",
+    "people": "People",
+    "peopleHint_one": "{{count}} named",
+    "peopleHint_other": "{{count}} named",
+    "peopleEmptyTitle": "Nobody named yet",
+    "peopleEmptyDescription": "Referees, search chairs and recruiters named on any of these jobs show up here."
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Deadlines, interviews and prep in one view",
+    "key": {
+      "overdue": "Overdue",
+      "soon": "Due within 48 hours",
+      "done": "Done"
+    },
+    "export": {
+      "label": "Export to my calendar",
+      "done_one": "{{count}} date exported",
+      "done_other": "{{count}} dates exported",
+      "doneDescription": "Your calendar will offer to import them, with a reminder on each.",
+      "failed": "Nothing here opens a calendar file",
+      "failedDescription": "The file is saved on this phone. A calendar app that accepts .ics can open it."
+    },
+    "add": "Add",
+    "addEvent": "Add event",
+    "tallCells": "Tall day cells",
+    "tallCellsDescription": "More room per day in the grid",
+    "jump": "{{month}} {{year}}. Go to another month",
+    "previous": "Previous month",
+    "next": "Next month",
+    "backTo": "Back to {{date}}",
+    "goTo": "Go to {{target}}",
+    "goToDay": "Go to {{month}} {{day}}",
+    "today": "Today",
+    "selectedDay": "Selected day",
+    "hint": "Tap a day to list what is on it. Tap an event to edit or reschedule it.",
+    "dayLabel_one": "{{month}} {{day}}, {{count}} event",
+    "dayLabel_other": "{{month}} {{day}}, {{count}} events",
+    "nothingOn": "Nothing on {{date}}",
+    "nothingOnDescription": "Add an interview, a deadline or a block of prep and it shows up here and on the grid.",
+    "allDay": "All day",
+    "reopen": "Reopen {{title}}",
+    "markDone": "Mark \"{{title}}\" done",
+    "moreActions": "More actions for {{title}}",
+    "rest": {
+      "title": "Rest of {{month}}",
+      "lastDay": "{{date}} is the last day of the month",
+      "nothingAfter": "Nothing after {{date}}",
+      "lastDayDescription": "Nothing sits after it. Page forward to plan into {{month}}.",
+      "clearDescription": "The rest of {{month}} is clear. Anything you add after this day lands here.",
+      "more_one": "+{{count}} more later this month",
+      "more_other": "+{{count}} more later this month"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "subtitle": "Applications, dates, the vault and the scout, all at once",
+    "fieldLabel": "Search everything",
+    "placeholder": "Search applications, reminders, files…",
+    "idleTitle": "Type to search",
+    "idleDescription": "One field over every collection — because “where did I put the Rice thing” is a question about the record, not about which list it lives in.",
+    "create": "Create",
+    "createHint": "nothing to find? make it",
+    "noneTitle": "Nothing matches “{{query}}”",
+    "noneDescription": "Search reads the title, note and category of every record. Nothing here is fetched from anywhere else.",
+    "fit": "{{fit}}% fit",
+    "results_one": "{{count}} result",
+    "results_other": "{{count}} results",
+    "showAll_one": "Show all {{count}}",
+    "showAll_other": "Show all {{count}}",
+    "groups": {
+      "applications": "Applications",
+      "reminders": "Reminders",
+      "calendar": "Calendar",
+      "vault": "Vault",
+      "jobScout": "Job scout",
+      "goTo": "Go to"
+    }
+  },
+  "more": {
+    "title": "More",
+    "subtitle": "The rest of jojo",
+    "newBadge_one": "{{count}} new",
+    "newBadge_other": "{{count}} new",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "Job scout",
+        "hint": "Saved searches, matches and postings you parked"
+      },
+      "statistics": {
+        "label": "Statistics",
+        "hint": "Rates, a funnel and what to work on next"
+      },
+      "graph": {
+        "label": "Graph",
+        "hint": "Your records drawn as the network they are"
+      },
+      "transfer": {
+        "label": "Transfer",
+        "hint": "Move everything to or from your computer"
+      },
+      "profile": {
+        "label": "My profile",
+        "hint": "Basics, documents and match terms"
+      },
+      "assistant": {
+        "label": "Assistant",
+        "hint": "Worked examples until a local model is connected"
+      },
+      "settings": {
+        "label": "Settings",
+        "hint": "Connections, appearance and your data"
+      },
+      "guide": {
+        "label": "How to use",
+        "hint": "A guided tour, and what each screen is for"
+      }
+    },
+    "storage": {
+      "saved": "saved",
+      "saving": "saving",
+      "savingCount": "saving {{count}}",
+      "unsaved_one": "{{count}} unsaved",
+      "unsaved_other": "{{count}} unsaved",
+      "off": "not saving"
+    },
+    "runtime": {
+      "title": "Runtime",
+      "hint": "what is actually running",
+      "storage": "Device storage",
+      "model": "Model",
+      "modelConfigured": "{{model}} — configured",
+      "modelNotSetUp": "not set up",
+      "transfer": "Transfer",
+      "transferNever": "never used",
+      "transferLast": "last used {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. Everything runs on this device.",
+    "overdue_one": "{{count}} reminder overdue.",
+    "overdue_other": "{{count}} reminders overdue."
+  },
+  "statistics": {
+    "title": "Statistics",
+    "emptySubtitle": "Nothing to measure yet — this screen fills in as you add applications.",
+    "emptyTitle": "No applications to measure",
+    "emptyDescription": "Response rates, a funnel and a week-by-week chart all need records to count. Add the first one and this starts filling in.",
+    "subtitleSent": "Counted from your own records. Figures labelled typical are a sample search, there to compare against.",
+    "subtitleNone": "Counted from your own records. It fills in as applications go out.",
+    "compare": "Compare with a typical search",
+    "compareDescription": "A sample figure beside each headline number",
+    "overTime": {
+      "title": "Applications over time",
+      "hint": "by the role each was for",
+      "period": "Period",
+      "note": "Each period is its own window, so totals differ between them — a quarter covers earlier searches, a week only this season."
+    },
+    "sources": {
+      "title": "Where they came from",
+      "hint_one": "{{count}} tracked",
+      "hint_other": "{{count}} tracked",
+      "center": "tracked"
+    },
+    "asFarAsShown": "as far as each record shows",
+    "openApplications": "Open applications",
+    "showAll": "Show all",
+    "funnel": {
+      "title": "How far applications got",
+      "emptyTitle": "Nothing has been sent yet",
+      "emptyDescription": "Reply, interview and offer rates all count applications that have actually gone out. Move one out of Draft and this fills in.",
+      "carried": "{{pct}}% carried through"
+    },
+    "outcomes": {
+      "title": "Outcomes",
+      "count_one": "{{count}} application",
+      "count_other": "{{count}} applications",
+      "partial": "{{shown}} of {{total}}",
+      "allOff": "Every outcome is switched off."
+    },
+    "health": {
+      "title": "What to work on next",
+      "hint": "your figures against a typical search",
+      "sample": "Sample",
+      "emptyTitle": "Not enough to compare yet",
+      "emptyDescription": "This weighs your replies, interviews, referrals and follow-ups against a typical search. It needs applications that have actually gone out.",
+      "allOff": "Both series are switched off.",
+      "yours": "Yours",
+      "typical": "Typical",
+      "suggestions": "Suggestions, most useful first"
+    },
+    "roles": {
+      "title": "How each kind of role is going",
+      "roles": "Roles",
+      "applied": "Applied",
+      "replied": "Replied",
+      "interviews": "Interviews",
+      "offers": "Offers"
+    }
+  },
+  "graph": {
+    "title": "Graph",
+    "emptySubtitle": "Your records, drawn as the network they are",
+    "emptyTitle": "Nothing to draw",
+    "emptyDescription": "Every node here is one of your own records. Add an application and the first one appears.",
+    "subtitle": "A preview of what jojo looks like once records stop being seven separate lists",
+    "caption": "{{visible}} of {{total}} nodes · {{edges}} edges. Tap a node to read it; tap a type below to hide it.",
+    "legend": "Legend",
+    "legendHint": "tap to hide a type",
+    "joinedTo": "Joined to",
+    "noEdges": "Nothing points at this yet.",
+    "openRecord": "Open the record",
+    "ask": "Ask the graph",
+    "askHint": "ask in a sentence, or pick one",
+    "andMore_one": "and {{count}} more",
+    "andMore_other": "and {{count}} more",
+    "questions": "Questions",
+    "questionsHint": "answers a list view cannot give",
+    "pattern": "Ask something else",
+    "patternHint": "build your own",
+    "patternNone": "Nothing matches this one.",
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records",
+    "exampleNone": "Nothing matches — which is the good answer to this one."
+  },
+  "jobScout": {
+    "title": "Job scout",
+    "subtitle": "Saved searches that will watch job boards for you — and somewhere to park postings today",
+    "onlyActive": "Only active pipelines",
+    "onlyActiveDescription": "Hide the ones switched off",
+    "paused": "No local model is connected, so pipelines are paused. You can still write them and save postings below — they start running once a model is reachable.",
+    "status": {
+      "off": "off",
+      "paused": "paused",
+      "running": "running",
+      "watching": "watching"
+    },
+    "kinds": {
+      "twin": "Keep records complete",
+      "scout": "Find postings"
+    },
+    "kindLabel": {
+      "twin": "Digital twin",
+      "scout": "Job scout"
+    },
+    "schedules": {
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "toast": {
+      "updated": "Pipeline updated",
+      "created": "Pipeline created",
+      "createdPaused": "{{name}} — paused until a model is connected.",
+      "createdRunning": "{{name}} — it will start looking shortly.",
+      "deleted": "Pipeline deleted",
+      "deletedDescription": "{{name}} stops watching {{source}}.",
+      "addedDraft": "{{org}} added as a draft",
+      "matchLinked": "The match stays in this feed, now linked to the application.",
+      "postingSaved": "Posting saved",
+      "postingLinked": "The posting stays saved here, now linked to the application.",
+      "postingRemoved": "Posting removed"
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "hint": "run locally on a schedule",
+      "none": "No pipelines",
+      "noneOn": "Nothing switched on",
+      "noneDescription": "A pipeline is a saved search — a board to watch, the terms that matter, and how often to look.",
+      "noneOnDescription": "Every pipeline you have is switched off. Turn one on, or drop the filter in the page options.",
+      "showAll": "Show all pipelines",
+      "toReview_one": "{{count}} to review",
+      "toReview_other": "{{count}} to review",
+      "auto": "auto",
+      "autoLabel": "Run without asking",
+      "autoDescription": "Apply what it finds and just tell you afterwards.",
+      "autoToggle": "Run {{name}} without asking",
+      "enable": "Enable {{name}}",
+      "runNow": "Run {{name}} now",
+      "edit": "Edit {{name}}",
+      "delete": "Delete {{name}}"
+    },
+    "matches": {
+      "title": "Matches",
+      "hint": "scored against your profile",
+      "emptyTitle": "No matches",
+      "emptyDescription": "Pipelines put scored postings here once a model is connected. Until then, the postings you save below are the way in.",
+      "matched": "matched {{terms}}",
+      "notScored": "not scored",
+      "added": "added"
+    },
+    "inApplications": "In applications as {{name}}",
+    "save": {
+      "title": "Save a posting",
+      "hint": "works without a model",
+      "description": "Nothing here fetches the page, so what is kept is the URL, the employer guessed from it, and the day you saved it — enough to find the ad again, and to apply from.",
+      "urlLabel": "Job posting URL",
+      "button": "Save posting",
+      "blocker": "Paste a URL first",
+      "emptyTitle": "No postings saved",
+      "emptyDescription": "Paste the URL of an ad you want to come back to. Ads are taken down; the link and the date are yours.",
+      "meta": "{{url}} · saved {{ago}}",
+      "linked": "linked to application",
+      "unscored": "unscored"
+    },
+    "footer": "Pipelines run on your device, while jojo is open. Nothing is sent to a third party.",
+    "shutdown": {
+      "title": "Switch off {{name}}?",
+      "description": "It has run twice without finding anything to suggest, and there is nothing waiting for you to answer. Switching it off stops it looking; everything it has already found stays where it is.",
+      "keep": "Keep it running",
+      "off": "Switch it off"
+    },
+    "editor": {
+      "newTitle": "New pipeline",
+      "editTitle": "Edit pipeline",
+      "description": "A pipeline is a standing job for the assistant. It runs on this device while jojo is open, and everything it wants to change is shown to you first.",
+      "create": "Create",
+      "kind": "What it does",
+      "kindTwinHint": "Reads what you have and suggests what is missing — notes, reminders, tags, filing.",
+      "kindScoutHint": "Looks for postings worth your attention and puts them up for review.",
+      "name": "Name",
+      "nameError": "Name it after what it watches.",
+      "namePlaceholderTwin": "e.g. Keep my applications tidy",
+      "namePlaceholderScout": "e.g. CRA faculty job board",
+      "sources": "Sources",
+      "sourcesError": "A scout with no source has nothing to read.",
+      "sourcesHint": "The board or careers page it watches. Separate several with commas.",
+      "focus": "What to focus on",
+      "focusHint": "Anything it should pay particular attention to. Leave blank to let it look everywhere.",
+      "termsHint": "What a posting is scored against. Leave blank to keep everything the source lists.",
+      "focusPlaceholder": "follow-ups and deadlines",
+      "termsPlaceholder": "assistant professor, CS/ECE",
+      "often": "How often",
+      "oftenHint": "How long it waits between rounds."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "That page could not be kept",
+    "noAnswer": "The page did not answer.",
+    "savedTitle": "{{name}} saved",
+    "savedDropped_one": "Kept in your vault. {{count}} asset could not be kept, so parts may look plain.",
+    "savedDropped_other": "Kept in your vault. {{count}} assets could not be kept, so parts may look plain.",
+    "savedOffline": "Kept in your vault, and readable with no connection.",
+    "keep": "Keep a copy",
+    "keeping": "Keeping…",
+    "waitForLoad": "Wait for the page to finish loading"
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "What the scout and assistant use to match and draft. None of it leaves your device.",
+    "savedTitle": "Profile saved",
+    "savedDescription": "Saved on this device.",
+    "basics": {
+      "title": "Basics",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "e.g. Lonardo Jenson",
+      "position": "Current position",
+      "positionPlaceholder": "e.g. PhD candidate, Computer Science",
+      "location": "Location",
+      "locationPlaceholder": "e.g. Santa Clara, CA",
+      "email": "Email"
+    },
+    "links": {
+      "title": "Links",
+      "website": "Website"
+    },
+    "interests": {
+      "title": "Interests and targets",
+      "hint": "drives scout matching",
+      "matchTerms": "Match terms",
+      "matchTermsDescription": "Research areas and phrasings the scout looks for. Separate from the keywords you file records under.",
+      "roleTags": "Role tags",
+      "roleTagsDescription": "The kinds of role you are tracking. Every application is filed under one, and the role filter and the per-role figures read it.",
+      "targetRoles": "Target roles",
+      "targetRolesPlaceholder": "e.g. Assistant professor (TT) · Research scientist",
+      "regions": "Preferred regions",
+      "regionsPlaceholder": "e.g. Texas · remote",
+      "academia": "Include academia postings",
+      "industry": "Include industry postings"
+    },
+    "remove": "Remove {{name}}",
+    "add": "Add",
+    "documents": {
+      "title": "Documents",
+      "hint": "the Vault's {{bucket}} bucket",
+      "emptyTitle": "No documents yet",
+      "emptyDescription": "Add your CV and statements — they are filed in the Vault under {{bucket}}, where the rest of the app can reach them.",
+      "add": "Add a document",
+      "openVault": "Open the Vault",
+      "meta": "{{size}} · saved {{ago}}",
+      "footer": "The same files as the Vault's Files tool, filtered to {{bucket}}. A record keeps a document's name, size and type — never its contents.",
+      "addedTitle": "Document added",
+      "addedDescription": "Filed in the Vault under {{bucket}}. The name, size and type are kept — the file itself is not read."
+    },
+    "unsaved": "Unsaved changes — saving writes them to this phone.",
+    "discard": "Discard",
+    "save": "Save",
+    "termSheet": {
+      "title": "Add a match term",
+      "description": "A research area or a phrasing the scout should look for in a posting.",
+      "label": "Match term",
+      "placeholder": "e.g. distributed training"
+    },
+    "roleSheet": {
+      "title": "Add a role tag",
+      "description": "A kind of role you are tracking. It becomes one of the choices on every application.",
+      "label": "Role tag",
+      "placeholder": "e.g. Data scientist"
+    }
+  },
+  "assistant": {
+    "title": "Assistant",
+    "undone": "Undone",
+    "saved": "Saved to snippets",
+    "savedDescription": "{{title}} · filed under {{tag}}",
+    "openVault": "Open vault",
+    "clear": "Clear",
+    "emptyTitle": "Nothing asked yet",
+    "copy": "Copy",
+    "copied": "Copied",
+    "saveToSnippets": "Save to snippets",
+    "ask": "Ask the assistant",
+    "send": "Send",
+    "stop": "Stop",
+    "agent": {
+      "subtitle": "Connected to your model, and able to act on your records. Everything it does is listed as it happens.",
+      "intro": "Answering with <code>{{model}}</code> at <code>{{endpoint}}</code>, which can call {{tools}} tools on this device. Nothing is sent anywhere else, and every change can be undone.",
+      "deleted": "Conversation deleted",
+      "emptyDescription": "Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back.",
+      "placeholder": "Find my UT Austin application, add one, move it along…",
+      "footer": "It reads before it writes, asks before each change unless you turn that off for a conversation, and everything it does goes through the same undo a button press does.",
+      "prompts": {
+        "waiting": "What am I waiting on?",
+        "add": "Add an application: ML engineer at Stripe, submitted",
+        "noDeadline": "Which applications have no deadline?",
+        "flag": "Flag my UT Austin application"
+      }
+    },
+    "scripted": {
+      "subtitle": "Worked examples now. Connect a local model and it both drafts from your own records and acts on them.",
+      "cleared": "Conversation cleared",
+      "messages_one": "{{count}} message",
+      "messages_other": "{{count}} messages",
+      "connectLabel": "Connect a model in Settings",
+      "banner": "No model is connected, so every reply here is a worked example rather than an answer.",
+      "connect": "Connect one in Settings →",
+      "emptyDescription": "Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model’s answer.",
+      "badge": "Example response · no model connected",
+      "placeholder": "Ask about a cover letter, a follow-up email, an interview…",
+      "footer": "With a model connected each of these reads your profile and documents as context. Because inference is local, your CV and your notes are never uploaded anywhere."
+    },
+    "thought": {
+      "live": "Thinking…",
+      "done": "Thought",
+      "liveLabel": "Thinking. Show what the model is thinking",
+      "label": "Show what the model thought"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "Draft a cover letter",
+        "title": "Cover letter — structure",
+        "reply": "Here is the shape I would use for [DEPARTMENT]:\n\nParagraph 1 — what you work on, in one sentence a committee member outside your area can follow.\nParagraph 2 — the two results that make the case, each given with its consequence rather than its method.\nParagraph 3 — why this department: the group you would overlap with, and the course you would teach.\nParagraph 4 — availability, and what the first three years would look like.\n\nKeep it to one page. The committee reads forty of these in an evening."
+      },
+      "tailor-cv": {
+        "action": "Tailor my CV to a posting",
+        "title": "Tailoring a CV — three passes",
+        "reply": "Three passes, in this order:\n\n1. Cut what the ad does not ask for. A CV tailored to everything is tailored to nothing.\n2. Move the section the ad leads with to the top of page one — a teaching-heavy ad wants teaching above publications.\n3. Rewrite the headline in the ad's own words, without overstating the scope of the work.\n\nWhat survives untouched: publications, references, dates. Those are the parts a committee checks."
+      },
+      "parse-posting": {
+        "action": "Parse a job posting",
+        "title": "What to pull out of a posting",
+        "reply": "From an ad I would pull out: employer, role, deadline, the documents required, the named contact, and anything phrased as a hard requirement rather than a preference.\n\nThe last one is where applications are lost — \"must hold the degree by the start date\" is a filter, \"experience with large-scale systems desirable\" is not.\n\nJob scout already does the cheap half of this without a model: save the URL there and it keeps the link and guesses the employer from it."
+      },
+      "follow-up": {
+        "action": "Draft a follow-up email",
+        "title": "Follow-up after no response",
+        "reply": "Subject: Following up — [ROLE], [DEPARTMENT]\n\nDear [NAME],\n\nI applied for [ROLE] on [DATE] and wanted to check the committee has everything it needs from me. I am happy to send the outstanding reference letter directly if that is easier.\n\nI remain very interested in the position, and I am glad to answer anything by email.\n\nWith thanks,\n[YOUR NAME]"
+      },
+      "interview": {
+        "action": "Prepare me for an interview",
+        "title": "Interview — six questions to have answered",
+        "reply": "Six questions worth having an answer to before the day:\n\n— What is the work about, in ninety seconds, to someone outside your area?\n— What would your first grant be, and to which agency?\n— Which two courses could you teach next semester at no notice?\n— Who here would you collaborate with, and on what?\n— What is the weakness in your own result?\n— What do you need in year one to do the work?\n\nWrite the answers out longhand. The rehearsal is the point, not the notes."
+      },
+      "fallback": {
+        "title": "Assistant — example response",
+        "reply": "No model is connected, so this is a canned answer rather than a reply to what you typed.\n\nWith one connected, this screen would read your profile, the documents in your Vault and the application you name, then draft against them on your own device. Point jojo at a local OpenAI-compatible server in Settings — vLLM, Ollama or LM Studio.\n\nThe five prompts below each have a worked example you can use in the meantime."
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Connections, sync and your data",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "dataSets": {
+      "demo": "Demo data",
+      "empty": "Empty"
+    },
+    "reasoning": {
+      "on": "On",
+      "low": "Light",
+      "off": "Off"
+    },
+    "import": {
+      "refused": "Nothing was imported",
+      "fileFailed": "The file could not be opened: {{reason}}",
+      "clipboardFailed": "The clipboard could not be read: {{reason}}",
+      "unfinished": "The import did not finish",
+      "replaceTitle": "Replace everything on this phone?",
+      "replaceDescription": "{{described}}. {{replaces}}, and that cannot be undone.",
+      "replace": "Replace"
+    },
+    "device": {
+      "title": "On this device",
+      "hint": "where your records actually live",
+      "body": "Everything you add is written straight to this phone’s own storage as you work — there is nothing to switch on, and nothing leaves the device. Documents you attach are copied into jojo’s own folder, so they survive the original being moved or deleted.",
+      "copyOut": "To get a copy out, use Export below, or Transfer to send everything to your computer over your local network."
+    },
+    "model": {
+      "title": "Model",
+      "intro": "A model on a machine you can reach, or one you pay for. Local is the default because it is the only arrangement where your records never leave this device.",
+      "endpoint": "Endpoint",
+      "loopback": "That address means “this device”, so on a phone it points at the phone. Use the computer’s address on your network instead — something like 192.168.1.20, or its .local name.",
+      "endpointOllama": "The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.",
+      "endpointHint": "The base URL, ending in /v1.",
+      "apiKey": "API key",
+      "apiKeyHint": "Kept on this device only. It is never put in a backup and never sent anywhere but the provider.",
+      "modelPlaceholder": "Found when you test the connection",
+      "modelHint": "What the server reported. Change it if you serve more than one.",
+      "savedAs": "Saved as",
+      "savedAsHint": "What this server is called in the list. Defaults to the model.",
+      "context": "Context window",
+      "contextOllama": "Tokens. Empty uses {{tokens}} and lets Ollama size itself; a number here is also sent as num_ctx.",
+      "contextHint": "Tokens your deployment can hold. Empty uses {{tokens}}.",
+      "reasoning": "Reasoning",
+      "reasoningDescription": "Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model.",
+      "endpointFirst": "Fill in an endpoint first.",
+      "kept": "Kept on this device. The assistant will use this model."
+    },
+    "test": {
+      "testing": "Testing…",
+      "again": "Test again",
+      "test": "Test connection",
+      "connected": "Connected",
+      "noAnswer": "No answer",
+      "notConnected": "Not connected"
+    },
+    "reader": {
+      "title": "Read my documents",
+      "hint": "PDFs only",
+      "already": "This phone already reads Word files, OpenDocument files, decks, saved pages and plain text on its own — nothing to set up and nothing sent anywhere.",
+      "pdf": "<strong>PDFs are the exception.</strong> Turning one back into text needs the font tables inside it, which is more than this app carries. For those, run {{name}} on a machine this phone can reach and give its address below.",
+      "address": "Address",
+      "addressHint": "Where markitdown-mcp is listening. The path ends in /mcp.",
+      "notRunning": "Not running it yet?",
+      "addressFirst": "Fill in an address first.",
+      "ok": "Documents are sent to that address and nowhere else. Nothing is uploaded.",
+      "notice": "{{name}} is a separate program, not part of jojo. {{copyright}} {{licence}}. jojo is not affiliated with Microsoft."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "themeDescription": "System follows your device setting"
+    },
+    "data": {
+      "title": "Your data",
+      "export": "Export as JSON",
+      "import": "Import",
+      "paste": "Paste a backup",
+      "exportNote": "The export covers applications, the timeline, the vault, saved postings, your keywords and what they tag, and your profile. It is a backup this app can read back — but the documents you attached stay on this phone, so their rows come back without their contents. Transfer, under More, moves everything to a computer with the documents included.",
+      "records": "Records",
+      "recordsEmpty": "Every list is empty, so every screen is showing its first-run state.",
+      "recordsDemo": "The seeded search — twelve applications, a timeline, a stocked vault.",
+      "move": "Move to another device",
+      "moveDescription": "Pair with your computer over your local network and move everything, documents included.",
+      "reset": "Reset the demo data",
+      "resetDescription": "Puts back everything as it shipped, discarding this session's edits.",
+      "resetButton": "Reset",
+      "resetBlocker": "Switch Records back to Demo data first",
+      "warning": "Your records are saved on this device and survive closing the app. There is no account and no sync, and no record ever leaves the phone — not through the model, not through a crash report. Export writes a copy to the clipboard if you want one somewhere else.",
+      "cleared": "Everything cleared",
+      "clearedDescription": "Every record is gone, your profile included, and any documents you attached have been deleted from this device. Load the demo data again from here.",
+      "resetDone": "Demo data reset",
+      "loaded": "Demo data loaded",
+      "loadedDescription": "The seeded applications, timeline, vault, postings and profile are back as they shipped."
+    },
+    "confirm": {
+      "fallbackTitle": "Change the data?",
+      "continue": "Continue",
+      "empty": {
+        "title": "Clear every record?",
+        "description": "Applications, the timeline, the vault, saved postings and your profile all go, including anything you added this session, and any documents you attached are deleted from this device with them. There is no undo — export first if you want them back. Your keywords are kept, but nothing is left carrying them.",
+        "confirm": "Clear everything"
+      },
+      "demo": {
+        "title": "Load the demo data?",
+        "description": "The seeded records come back, tagged with the keywords they shipped with. Anything you have added this session is replaced, not merged, and any documents you attached are deleted from this device. There is no undo.",
+        "confirm": "Load demo data"
+      },
+      "reset": {
+        "title": "Reset to the demo data?",
+        "description": "Every edit, addition and deletion from this session is discarded and the seeded records come back exactly as they shipped, so any documents you attached are deleted from this device. Your keyword list itself is left alone. There is no undo.",
+        "confirm": "Reset data"
+      }
+    },
+    "provider": {
+      "title": "Provider",
+      "description": "Choosing one sets its address for you. The cloud ones need a key, and your records go to them.",
+      "cloud": "Your words go to this company, and are billed to you",
+      "localKey": "On a machine you control. Needs a key.",
+      "local": "On a machine you control. Nothing leaves it."
+    },
+    "cloud": {
+      "terms": "{{name}} terms",
+      "privacy": "Privacy policy"
+    },
+    "servers": {
+      "title": "Saved servers",
+      "description": "Addresses that have answered on this device.",
+      "done": "Done",
+      "empty": "Nothing saved yet. Test a connection and the address is kept here.",
+      "load": "Load {{name}}",
+      "inUse": "In use",
+      "forget": "Forget {{name}}"
+    },
+    "keywords": {
+      "title": "Keywords",
+      "hint": "shared by applications, reminders and the Vault",
+      "takenOff_one": "Taken off {{count}} record.",
+      "takenOff_other": "Taken off {{count}} records.",
+      "usedOn_one": "Used on {{count}} record",
+      "usedOn_other": "Used on {{count}} records",
+      "rename": "Rename {{name}}",
+      "editTitle": "Edit {{name}}",
+      "editGeneric": "Edit keyword",
+      "editDescription": "Renaming leaves the id alone, so every record carrying this keyword follows.",
+      "taken": "That name is taken",
+      "takenDescription": "Another keyword already answers to it.",
+      "colour": "Colour",
+      "newTitle": "New keyword",
+      "newDescription": "Keywords are yours. The same one works on an application, a reminder, a file and a link.",
+      "added": "{{name}} added",
+      "placeholder": "e.g. Waiting on them",
+      "confirmUsed_one": "It comes off {{count}} record. Those records stay; only the keyword goes.",
+      "confirmUsed_other": "It comes off {{count}} records. Those records stay; only the keyword goes.",
+      "confirmUnused": "Nothing is tagged with it, so nothing else changes."
+    }
+  }
+}

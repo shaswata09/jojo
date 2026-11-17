@@ -1,0 +1,472 @@
+{
+  "shared": {
+    "thisBrowserOnly": "仅限此浏览器",
+    "optional": "可选",
+    "undo": "撤销",
+    "save": "保存",
+    "cancel": "取消",
+    "testing": "正在测试…",
+    "testAgain": "再次测试",
+    "testConnection": "测试连接",
+    "connected": "已连接",
+    "noAnswer": "无响应",
+    "notConnected": "未连接"
+  },
+  "appearance": {
+    "title": "外观",
+    "theme": {
+      "label": "主题",
+      "description": "“系统”会跟随你的操作系统设置",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "系统"
+    },
+    "gestures": {
+      "label": "吉祥物动作",
+      "description": "jojo 会随着你的操作做出反应。试一个吧。"
+    },
+    "draw": {
+      "label": "画一个动作",
+      "description": "在侧边栏卡片里的机器人上画。卡片角落的机器人按钮里也列出了这些动作。"
+    },
+    "sounds": {
+      "label": "界面音效",
+      "description": "拨动开关时发出一声短促的咔嗒声"
+    }
+  },
+  "savedServers": {
+    "intro": "已保存的连接——所有在这里响应过的连接,可以完整地重新加载。密钥与地址一起保存在此设备上,绝不会进入备份。",
+    "inUse": "使用中",
+    "keyKept": "已保存密钥",
+    "load": "加载 {{name}}",
+    "loadWithKey": "加载 {{name}}(含密钥)",
+    "forget": "移除 {{name}}"
+  },
+  "model": {
+    "title": "模型",
+    "hint": "兼容 OpenAI",
+    "savedNone": "尚未保存任何内容——测试一次连接,地址就会被保存",
+    "savedServers": "已保存的服务器",
+    "intro": "这台机器上的模型,或你付费使用的模型。默认使用本地模型,因为只有这样你的记录才永远不会离开设备。",
+    "provider": "提供商",
+    "reasoningOptions": {
+      "on": "开启",
+      "light": "轻度",
+      "off": "关闭"
+    },
+    "endpoint": {
+      "label": "端点",
+      "hintOllama": "主机和端口。不要加 /v1——jojo 使用 Ollama 自己的端点,以便要求它不要截断。",
+      "hint": "以 /v1 结尾的基础 URL。"
+    },
+    "apiKey": {
+      "label": "API 密钥",
+      "hint": "只保存在此浏览器中。它绝不会进入备份,也只会发送给提供商。"
+    },
+    "getKeyLink": "<anchor>从 {{provider}} 获取密钥</anchor>",
+    "getKeyFree": "<anchor>从 {{provider}} 获取密钥</anchor>——免费,无需银行卡。",
+    "modelField": {
+      "label": "模型",
+      "placeholder": "提供商给出的模型 ID",
+      "hintConnected": "这是服务器报告的模型。如果你提供多个模型,可以修改。",
+      "hint": "测试连接让服务器自动填写,或自己输入 ID。"
+    },
+    "savedAs": {
+      "label": "保存为",
+      "hint": "此服务器在列表中的名称。默认为模型名。"
+    },
+    "contextWindow": {
+      "label": "上下文窗口",
+      "hintOllama": "单位为 token。留空则使用 {{tokens}} 并由 Ollama 自行决定大小;在此填写数字也会作为 num_ctx 发送。",
+      "hint": "你的部署能容纳的 token 数。留空则为 {{tokens}}。"
+    },
+    "reasoning": {
+      "label": "推理",
+      "description": "让能够思考的模型(gpt-oss、Gemma 4、Qwen3)在回答前先推理。如果小模型返回空回复,请关闭此项。"
+    },
+    "fillEndpoint": "请先填写端点",
+    "connectedNote": "已保存在此浏览器中。助手将使用此模型。"
+  },
+  "cloudTerms": {
+    "providerTerms": "{{provider}} 条款",
+    "privacy": "隐私政策",
+    "licence": "jojo 许可证页面"
+  },
+  "mcp": {
+    "title": "从 MCP 客户端连接",
+    "intro": "让你已经在用的助手(例如使用你自己套餐的 Claude Code)读取并更新这里的记录,使用与 jojo 自带助手相同的工具。它通过你电脑上的一个小程序连接到此标签页,所做的每项更改都会显示在这里,并可撤销。",
+    "allow": "允许此电脑上的 MCP 客户端使用 jojo",
+    "chip": {
+      "off": "关闭",
+      "searching": "正在等待 jojo-bridge",
+      "ready": "已连接",
+      "badToken": "令牌被拒绝",
+      "noExtension": "需要扩展程序",
+      "staleExtension": "请重新加载扩展程序"
+    },
+    "explain": {
+      "searching": "127.0.0.1:3002 上还没有任何响应。用第一条命令启动 jojo-bridge——jojo 会一直寻找。",
+      "served_other": "本次会话已响应你的客户端 {{count}} 个请求,最近一次是 {{method}}。",
+      "servedNoMethod_other": "本次会话已响应你的客户端 {{count}} 个请求。",
+      "ready": "jojo-bridge 正在运行。用第二条命令连接你的客户端。",
+      "badToken": "jojo-bridge 正在使用另一个令牌运行。按 Ctrl+C 停止它,再用第一条命令重新启动。",
+      "noExtension": "这份 jojo 是从网络上提供的,而 Chrome 不允许网页访问 127.0.0.1。jojo 扩展程序负责传递连接——它的安装程序就在本页的“保存职位”下。",
+      "staleExtension": "此浏览器中的 jojo 扩展程序比本页面旧。打开 chrome://extensions,在 jojo 上点击“重新加载”。"
+    },
+    "start": {
+      "title": "启动 jojo-bridge,并保持运行",
+      "copy": "复制启动 jojo-bridge 的命令",
+      "notePowershell": "需要 Node 18 或更高版本。请粘贴到 Windows PowerShell 中。令牌通过环境变量传入,因此不会出现在进程列表中。此版本之前下载的 jojo-bridge 需要重新下载——这条命令会完成这一步。",
+      "note": "需要 Node 18 或更高版本。令牌通过环境变量传入,因此不会出现在进程列表中。此版本之前下载的 jojo-bridge 需要重新下载——这条命令会完成这一步。"
+    },
+    "connect": {
+      "title": "将 Claude Code 连接到它,只需一次",
+      "copy": "复制连接 Claude Code 的命令",
+      "note": "然后问它类似“我的哪些申请在等我处理?”这样的问题。如果终端提示“command not found: claude”,说明你在 VS Code 中使用 Claude Code,它自带一份副本——用该副本的完整路径运行同一行命令(在 VS Code 扩展文件夹中的 anthropic.claude-code-…/resources/native-binary/claude 下),或者安装 Claude Code CLI。任何通过 HTTP 使用 MCP 的客户端都可以使用相同的地址和令牌。"
+    },
+    "honesty": "你的客户端使用你自己的套餐和登录——jojo 看不到其中任何一项,也不会向 Anthropic 或其他任何人发送任何内容。它可以使用 jojo 助手的所有工具,但无法撤销的两个除外:Reset 和 Clear。除非你另有设置,Claude Code 在使用工具前会先询问,而 jojo 会把每次删除标记为破坏性操作。使用期间请保持此标签页打开:记录保存在这里,连接的另一端也在这里。",
+    "newToken": "新令牌",
+    "newTokenNote": "旧命令将失效——请用新令牌重新运行这两条命令。"
+  },
+  "reader": {
+    "title": "读取我的文档",
+    "intro": "在有程序把文档转换成文本之前,助手只能看到文档的名称。在这台机器上运行 <anchor>{{name}}</anchor>,它就能读取你的 PDF、Word 文件、演示文稿和电子表格中的内容。",
+    "address": {
+      "label": "地址",
+      "hint": "开发时为本站的一个路径;安装扩展程序后为阅读器自己的地址。见下文。"
+    },
+    "notRunning": "还没有运行?",
+    "copySetup": "复制安装命令",
+    "cors": "它监听 <mono>{{endpoint}}</mono>,但不发送 CORS 头——因此浏览器不允许本页跨端口调用它。jojo 的开发服务器会把 <mono>{{path}}</mono> 转发给它,所以上面的地址是一个路径而不是 URL。手机应用直接与它通信,不需要这些设置。",
+    "hosted": "<em>在托管版本上,请安装扩展程序。</em>从网络提供的页面无法调用 <mono>127.0.0.1</mono>——没有代理来转发路径,而且 https:// 页面被禁止访问本地网络。扩展程序不是页面:它可以直接访问阅读器,jojo 会请它这样做。在上面填写阅读器自己的地址,它就会转发每个请求;它只会转发到这台机器。",
+    "fillAddress": "请先填写地址",
+    "connectedNote": "文档只会发送到该地址,不会发往其他任何地方。不会上传任何内容。",
+    "separate": "{{name}} 是一个独立的程序,不属于 jojo。",
+    "notAffiliated": "jojo 与 Microsoft 没有关联。"
+  },
+  "capture": {
+    "title": "保存职位",
+    "intro": "职位发布是你求职过程中唯一属于别人的文档。招聘信息会在面试后一周下线,要求也随之消失。jojo 扩展程序会保存一份副本——即你归档那天页面的样子,所有图片和样式表都已内嵌,所以一年后打开它也不会访问任何地方,也不需要联网。",
+    "checking": "正在检查此浏览器…",
+    "installed": "已安装并连接。",
+    "installedHint": "打开一个职位,点击工具栏上的 jojo 按钮——如果看不到,它在拼图图标菜单里,需要固定。然后回到资料库。",
+    "version": "版本 {{version}}。",
+    "safari": {
+      "title": "Safari 无法运行此扩展程序。",
+      "body": "Safari 只加载包含在已签名 Mac 应用中的扩展程序,所以这里没有可安装的内容。请使用 Chrome、Edge、Brave 或 Firefox 保存职位;jojo 的其他功能在 Safari 中照常可用。"
+    },
+    "download": "下载扩展程序",
+    "firefox": {
+      "title": "Firefox 需要已签名的副本。",
+      "body": "Firefox 是唯一可以一键完成安装的浏览器——经过 Mozilla 签名的附加组件无需上架商店,就能直接从这里的链接安装。jojo 目前还不生成签名版本,所以现在请从 <code>about:debugging</code> → 此 Firefox → 临时载入附加组件 中临时加载它,并选择 <code>manifest.json</code>。Firefox 重启后会忘记它。"
+    },
+    "steps": {
+      "unzip": "把它解压到一个固定的位置——不要放在“下载”中。<muted>浏览器每次启动都会从该文件夹读取扩展程序,所以删除或移动它就等于卸载扩展程序。</muted>",
+      "open": "打开扩展程序页面。",
+      "copied": "已复制",
+      "copy": "复制",
+      "paste": "粘贴到地址栏。",
+      "developer": "打开右上角的<strong>开发者模式</strong>。<muted>保持开启——关闭它会在不提示的情况下停用以这种方式加载的扩展程序。</muted>",
+      "load": "点击<strong>加载已解压的扩展程序</strong>,选择你解压的文件夹。",
+      "pin": "<strong>固定它。</strong>点击工具栏上的拼图按钮,固定 jojo。<muted>Chromium 浏览器默认把所有扩展程序都藏在这个菜单里,所以按钮虽然存在,却不在工具栏上——这是大家最容易漏掉的一步,看起来就像扩展程序安装失败了一样。</muted>",
+      "back": "回到这里。<muted>此面板会自动发现并变成绿色。</muted>"
+    },
+    "yourBrowser": "你的浏览器",
+    "noOneClick": "{{browser}} 没有一键安装,这是浏览器的决定,而不是这里缺少功能:允许这样做的 API 已在 2018 年移除,而且签名的安装包仍须来自 Chrome 应用商店。这个扩展程序不会与任何服务器通信——它读取你正在查看的页面,并把结果交给此标签页。"
+  },
+  "crash": {
+    "title": "崩溃报告",
+    "builtWithout": "这份 jojo 在构建时未包含崩溃报告和使用分析,因此不会记录任何内容,也没有可开启的选项。构建时通过 <mono>{{crashFlag}}</mono> 和 <mono>{{analyticsFlag}}</mono> 进行设置。",
+    "intro": "出现故障时,jojo 可以保存错误,方便你回头查看——当出错的内容已经滚出屏幕时很有用。报告包含错误信息、在 jojo 中发生的位置以及堆栈跟踪。它绝不包含你的申请、文档、笔记、个人资料或对话,而且在写入报告前会去除 API 密钥、地址、你的主目录和电子邮件地址。",
+    "where": "在此浏览器和扩展程序中,崩溃报告<em>只保存在此设备上</em>——不会上传任何内容,备份文件中也不包含它们。手机应用还会将其发送到 Firebase Crashlytics,并附加设备型号、系统版本以及一个用于统计有多少人遇到同一崩溃的随机 ID。崩溃报告只涉及崩溃——你在 jojo 中做了什么是下面另一个单独回答的问题。",
+    "keep": {
+      "label": "保存崩溃报告",
+      "description": "开启后,你遇到的崩溃我们才能看到。关闭则不记录任何内容。"
+    },
+    "usage": {
+      "label": "分享我使用的功能",
+      "description": "只有来自固定列表的计数——绝不包含你记录中的内容。",
+      "note": "它只能说出固定列表中的内容——打开了哪个界面、添加了一份申请、大概有多少份。它无法说出雇主、职位、文件或你输入的任何内容。数据发送到 Google Analytics。"
+    },
+    "kept_other": "已保存 {{count}} 份报告",
+    "clear": "清除",
+    "stack": "堆栈",
+    "emptyOn": "自你开启以来,还没有出现故障。",
+    "emptyOff": "当前未记录任何内容。"
+  },
+  "audit": {
+    "title": "jojo 做过的操作",
+    "kept_other": "已保存 {{count}} 条",
+    "records_other": "{{count}} 条记录",
+    "connections_other": "{{count}} 个关联",
+    "both": "{{records}},{{connections}}",
+    "noChange": "无更改",
+    "undoTitle": {
+      "can": "将记录恢复到此更改之前的状态",
+      "wholeStore": "此操作替换了整个存储,因此没有可恢复的内容",
+      "trimmed": "jojo 记录了这次更改,但信息不足以撤销——它是一次后台写入(匹配度评估、文件的字节),或者时间太久远"
+    },
+    "undoFailed": {
+      "title": "该更改已无法撤销",
+      "description": "它已不在日志中。"
+    },
+    "empty": "此存储中还没有写入任何内容。你所做的每项更改都会记录在这里,并且重新加载后记录依然保留。",
+    "showFewer": "收起",
+    "showAll": "显示全部 {{total}} 条",
+    "footer": "保留最近 200 次更改,最早的先被丢弃。在这里撤销本身也是一次新的更改——它会添加到列表顶部,而不是删除被撤销的那一行。"
+  },
+  "keywords": {
+    "title": "关键词",
+    "hint": "所有记录共用",
+    "intro": "申请、提醒和资料库共用一组关键词。重命名会在所有显示它的地方生效;删除则会将它从所有带有它的记录上移除。",
+    "usage": {
+      "none": "尚未用于任何记录",
+      "used_other": "用于 {{count}} 条记录"
+    },
+    "errors": {
+      "taken": "已有其他关键词使用这个名称。",
+      "blank": "关键词需要一个名称。",
+      "exists": "该关键词已存在。"
+    },
+    "renameNamed": "重命名 {{name}}",
+    "rename": "重命名",
+    "deleteNamed": "删除 {{name}}",
+    "delete": "删除",
+    "empty": {
+      "title": "还没有关键词",
+      "description": "在下方添加,或通过任意列表上方的关键词筛选器添加。关键词由你自己定义——它们不是顶部栏中固定的职位标签。"
+    },
+    "newKeyword": "新关键词",
+    "placeholder": "例如:内推",
+    "add": "添加关键词"
+  },
+  "documents": {
+    "title": "你的文档",
+    "hint": "在此设备上",
+    "intro": "你附加的简历、求职信和陈述都保存在这台机器的此浏览器中。不会上传到任何地方。",
+    "count_other": "{{count}} 份文档",
+    "noneReadable": {
+      "title": "没有文档可以读取",
+      "description": "此浏览器已不再保存其中任何一份的数据。"
+    },
+    "savedAll_other": "已保存 {{count}} 份文档",
+    "savedSome": "已保存 {{saved}}/{{total}} 份",
+    "savedAllDescription": "一个文件 {{name}},在你的下载文件夹中。这些是原件,而不是记录的副本。",
+    "savedSomeDescription": "{{name}} 在你的下载文件夹中,但不含此浏览器已无法读取的 {{missing}}。",
+    "failed": {
+      "title": "无法生成下载",
+      "description": "没有保存任何内容。请重试,或打开某份文档单独下载。"
+    },
+    "none": "还没有文档",
+    "stored_other": "已存储 {{count}} 份文档",
+    "usage": "已使用 {{used}} / {{quota}}",
+    "notPermanent": "此浏览器尚未将 jojo 的存储标记为永久存储,因此磁盘空间不足时可能会清除这些文档——而且无论显示什么,“清除浏览数据”都会删除它们。凡是你不想重写的内容,请自行保留副本。",
+    "saving": "正在保存…",
+    "downloadAll": "下载所有文档"
+  },
+  "diagnostics": {
+    "title": "诊断",
+    "types": {
+      "application": "申请",
+      "background": "背景事实",
+      "claim": "关系",
+      "thread": "对话",
+      "proposal": "建议",
+      "organisation": "机构",
+      "timelineItem": "时间线条目",
+      "keyword": "关键词",
+      "link": "链接",
+      "file": "文件",
+      "snippet": "片段",
+      "person": "人员",
+      "stickyNote": "便签",
+      "posting": "已保存的职位",
+      "match": "Scout 匹配",
+      "pipeline": "Scout 流程",
+      "profile": "个人资料"
+    },
+    "dataSet": {
+      "demo": "演示记录,未改动",
+      "empty": "有意清空,从未填充",
+      "user": "设置后已写入"
+    },
+    "notReported": "未报告",
+    "checking": "正在检查…",
+    "storage": "存储",
+    "durable": {
+      "label": "记录会写入磁盘",
+      "yes": "是——IndexedDB",
+      "no": "否——仅此标签页"
+    },
+    "schema": {
+      "label": "数据库结构",
+      "value": "v{{stored}}(应用期望 v{{expected}})"
+    },
+    "persisted": {
+      "label": "浏览器承诺保留",
+      "unknown": "此浏览器未说明",
+      "yes": "是",
+      "no": "否——浏览器随时可能清除它,无痕窗口关闭时也会清除"
+    },
+    "space": {
+      "label": "已用空间",
+      "value": "{{used}} / {{quota}}"
+    },
+    "queue": {
+      "label": "写入队列",
+      "idle": "空闲——全部已保存",
+      "writing_other": "正在保存 {{count}} 项更改",
+      "degraded": "正在重试 {{unsaved}} 项更改、{{pending}} 行(第 {{attempts}} 次尝试):{{error}}",
+      "stopped": "已停止——{{reason}}"
+    },
+    "store": "此存储",
+    "contents": "内容",
+    "created": "创建时间",
+    "seeded": "填充时间",
+    "never": "从未",
+    "lastOpened": "上次打开",
+    "lastWrite": "上次写入",
+    "nothingYet": "暂无",
+    "skipped": {
+      "label": "无法读取的记录",
+      "none": "无"
+    },
+    "integrity": {
+      "label": "完整性检查",
+      "failed": "{{total}} 项失败",
+      "passed": "全部通过"
+    },
+    "records": "记录({{total}})",
+    "connections": "关联({{total}})",
+    "none": "无"
+  },
+  "data": {
+    "title": "你的数据",
+    "export": {
+      "idle": "下载备份",
+      "progress": "正在准备备份… 文档 {{done}}/{{total}}",
+      "preparing": "正在准备备份…"
+    },
+    "restoreButton": "恢复备份",
+    "excel": {
+      "label": "导出到 Excel",
+      "title": "未内置电子表格生成器——JSON 导出包含相同的记录"
+    },
+    "import": {
+      "label": "导入",
+      "title": "读回备份需要一个能拒绝无法理解的文件的校验器——在它出现之前,导入只能靠猜"
+    },
+    "about": "完整备份:所有申请、时间线、资料库、已保存的职位、你的关键词及其标记,以及你的个人资料,都在一个带版本的文件中。这是此刻的副本——它不会跟随之后的更改更新,而且是唯一不在这台机器上的副本。",
+    "records": {
+      "label": "记录",
+      "empty": "所有列表都是空的,所以每个页面都显示首次运行时的状态。",
+      "emptyStays": "你回来时它仍然是空的。",
+      "emptyKeywords": "你的关键词还在,加载演示数据会用演示的关键词替换它们。",
+      "demo": "jojo 自带的演示求职数据——十二份申请、一条时间线、一个充实的资料库。这些都还不是你的。",
+      "own": "你自己的记录。加载演示数据会替换它们,如果想保留,请先导出备份。",
+      "loadDemo": "加载演示数据"
+    },
+    "clearRecords": {
+      "label": "清除所有记录",
+      "demo": "移除演示数据,让 jojo 变为空。这里还没有你的内容,所以自带的关键词也会一并删除。",
+      "own": "移除所有申请、时间线条目、资料库条目、已保存的职位、联系人、笔记、对话和简历事实,并清空你的个人资料。你的关键词会保留。",
+      "nothingLeft": "已经没有可清除的内容",
+      "deletes": "删除所有记录",
+      "button": "清除记录"
+    },
+    "move": {
+      "label": "迁移到另一台设备",
+      "description": "与第二台设备配对并移交所有内容。此版本中仅为演示——不会传输任何内容。",
+      "open": "打开传输"
+    },
+    "clearStorage": {
+      "label": "清除浏览器存储",
+      "description": "清空此网站在你浏览器中存储的一切——你的记录及其数据库、你附加的每份文档、偏好设置、缓存和 Cookie——然后像全新一样重新加载 jojo。文档只存在这里;如需保留,请先下载。",
+      "clearing": "正在清除…",
+      "button": "清除存储"
+    },
+    "footer": {
+      "durable": "你的记录会在你工作时写入此浏览器的数据库,所以关闭标签页是安全的。但该数据库仍只在这一台机器上:浏览器可能清除它,磁盘也可能损坏,因此只有保存在其他地方的导出文件才是真正的备份。",
+      "memory": "你的记录目前没有被保存——页面顶部的横幅说明了原因。关闭标签页前请导出一份副本。"
+    },
+    "confirm": {
+      "fallbackTitle": "更改数据?",
+      "continue": "继续"
+    },
+    "restoreConfirm": {
+      "title": "用此备份替换所有内容?",
+      "description": "该文件包含 {{contents}}。{{replaces}},且无法撤销——历史记录也会一并消失。如果不确定,请先下载一份备份。",
+      "confirm": "全部替换"
+    },
+    "restoreFailed": "恢复失败",
+    "reload": "重新加载 jojo",
+    "demoLoaded": {
+      "title": "已加载演示数据",
+      "durable": "十二份申请、一条时间线、一个充实的资料库和一份个人资料,已按原样写入你的数据库。",
+      "memory": "十二份申请、一条时间线、一个充实的资料库和一份个人资料,已按原样加载。目前不会保存任何内容,所以它们只在此标签页打开期间存在。"
+    },
+    "cleared": {
+      "title": "已全部清除",
+      "demoDurable": "所有演示记录都已删除,包括关键词,重新加载后依然如此。",
+      "demoMemory": "所有演示记录都已删除,包括关键词,但目前不会保存任何内容,所以重新加载后会从演示数据重新开始。",
+      "ownDurable": "所有记录都已删除,包括你的个人资料,重新加载后依然如此。你的关键词还在。",
+      "ownMemory": "所有记录都已删除,包括你的个人资料,但目前不会保存任何内容,所以重新加载后会从演示数据重新开始。你的关键词还在。"
+    }
+  },
+  "pending": {
+    "exportFirst": "先导出备份",
+    "empty": {
+      "title": "清除所有记录?",
+      "demoDurable": "演示的申请、时间线、资料库、已保存的职位、关键词和个人资料都会删除,重新加载后依然如此。这些都不是你的——自加载演示数据以来,此存储中没有写入过任何内容。",
+      "demoMemory": "演示的申请、时间线、资料库、已保存的职位、关键词和个人资料都会删除,但目前不会保存任何内容,所以重新加载后会从演示数据重新开始。这些都不是你的——自加载演示数据以来,此存储中没有写入过任何内容。",
+      "ownDurable": "申请、时间线、资料库、已保存的职位、联系人、笔记、对话、简历事实和你的个人资料都会删除,包括你本次会话中添加的任何内容,重新加载后依然如此。无法撤销。你的关键词会保留——它们本身就是记录——但已没有记录带有它们,所以关键词面板中的每个计数都会归零。",
+      "ownMemory": "申请、时间线、资料库、已保存的职位、联系人、笔记、对话、简历事实和你的个人资料都会删除,包括你本次会话中添加的任何内容,但目前不会保存任何内容,所以重新加载后会从演示数据重新开始。无法撤销。你的关键词会保留——它们本身就是记录——但已没有记录带有它们,所以关键词面板中的每个计数都会归零。",
+      "confirm": "全部清除"
+    },
+    "demo": {
+      "title": "加载演示数据?",
+      "fillDurable": "十二份申请、一条时间线、一个充实的资料库和一份个人资料会写入你的数据库,并带有自带的关键词。再次清除只需一键。",
+      "fillMemory": "十二份申请、一条时间线、一个充实的资料库和一份个人资料会被加载,并带有自带的关键词。再次清除只需一键。",
+      "replace": "jojo 中的所有内容都会被演示记录替换——你的申请、时间线、资料库、已保存的职位、联系人、笔记、对话、简历事实、关键词和个人资料,全部替换而非合并。无法撤销。",
+      "confirm": "加载演示数据"
+    },
+    "storage": {
+      "title": "清除此网站存储的所有内容?",
+      "description": "清空 jojo 在此浏览器中存放的一切——你的记录及其数据库、主题和音效偏好、所有缓存和 Cookie——然后重新加载。没有服务器保存副本,这里的内容也从未离开过这台机器,所以这就是全部。jojo 会像在新机器上一样回来:使用系统主题,并在首次运行时询问你是从演示数据开始还是从空白开始。无法撤销。",
+      "confirm": "清除存储"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_other": "{{count}} 条记录",
+      "documents_other": "{{count}} 份文档",
+      "links_other": "{{count}} 个关联"
+    },
+    "lost": {
+      "title": "部分记录无法恢复",
+      "description": "该文件包含 {{held}}。此设备上有 {{kept}},另有 {{lost}} 条无法读取——它们已经丢失。文件本身未被改动,因此能读取它们的版本仍可以恢复它。",
+      "descriptionWithDocuments": "该文件包含 {{held}}。此设备上有 {{kept}} 和 {{documents}},另有 {{lost}} 条无法读取——它们已经丢失。文件本身未被改动,因此能读取它们的版本仍可以恢复它。"
+    },
+    "withoutLinks": {
+      "title": "已恢复,但缺少部分关联",
+      "description": "全部 {{held}} 都已恢复。它们之间的 {{links}} 无法读取,因此一些文档、提醒或职位可能不再归档在原本所属的职位下。除此之外没有缺失。",
+      "descriptionWithDocuments": "全部 {{held}} 和 {{documents}} 都已恢复。它们之间的 {{links}} 无法读取,因此一些文档、提醒或职位可能不再归档在原本所属的职位下。除此之外没有缺失。"
+    },
+    "done": {
+      "title": "已恢复",
+      "description": "{{records}} 已恢复,与文件中保存的完全一致。",
+      "descriptionWithDocuments": "{{records}} 和 {{documents}} 已恢复,与文件中保存的完全一致。"
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "无法读取该文件",
+      "description": "你的浏览器无法读取该文件——它可能在你选择之后被移动、重命名或断开了连接。没有任何更改;等它恢复后请重新选择。"
+    },
+    "refused": {
+      "title": "无法恢复该文件",
+      "notBackup": "该文件不是 jojo 备份。没有任何更改。",
+      "reason": "{{reason}}。没有任何更改。"
+    }
+  }
+}

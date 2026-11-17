@@ -1,0 +1,254 @@
+{
+  "screen": {
+    "title": "So nutzt du jojo",
+    "pageLabel": "Seite der Anleitung",
+    "takeTour": "Rundgang starten",
+    "pages": {
+      "overview": {
+        "label": "Überblick",
+        "subtitle": "Alles läuft auf deinem Gerät. Fang einfach an und füge mehr hinzu, wenn du es brauchst."
+      },
+      "screens": {
+        "label": "Bildschirme",
+        "subtitle": "Wofür jeder Bildschirm da ist, und ein direkter Weg dorthin."
+      },
+      "graph": {
+        "label": "Graph",
+        "subtitle": "Das Datenmodell unter den sieben Listen."
+      },
+      "tools": {
+        "label": "Werkzeuge",
+        "subtitle": "Was der Assistent mit deinen Einträgen tun kann, und was ihn aufhält."
+      },
+      "built": {
+        "label": "Gebaut mit",
+        "subtitle": "Woraus das besteht, und was noch ein Platzhalter ist."
+      }
+    }
+  },
+  "overview": {
+    "active": "aktiv",
+    "notConnected": "nicht verbunden",
+    "layers": {
+      "device": {
+        "name": "Nur dieses Gerät",
+        "requires": "Nichts einzurichten",
+        "gives": "Bewerbungen, Fristen, Nachfassaktionen und Dokumente verfolgen"
+      },
+      "model": {
+        "name": "+ Lokales Modell",
+        "requires": "Ollama, vLLM oder LM Studio – oder ein kostenloser NVIDIA-Schlüssel",
+        "gives": "Ein Assistent mit Unterhaltungen, der deine Einträge liest und schreibt – jede Änderung wird dir zuerst gezeigt – und „Den Graphen fragen“ in einem Satz"
+      },
+      "reader": {
+        "name": "+ Dokumentleser",
+        "requires": "MarkItDown, unter einer Adresse, die du eingibst",
+        "gives": "Der Assistent liest den Inhalt deiner Lebensläufe und gespeicherten Anzeigen, und eine Anzeige, die du per Link hinzufügst, füllt ihr Formular selbst aus"
+      },
+      "computer": {
+        "name": "+ Dein Computer",
+        "requires": "Beide im selben Netzwerk",
+        "gives": "Übertragen verschiebt den ganzen Tresor zwischen diesem Telefon und deinem Computer, ohne etwas dazwischen"
+      }
+    },
+    "gettingStarted": "Erste Schritte",
+    "progress": "{{done}} von {{total}} erledigt",
+    "allDone": "Alle Schritte sind erledigt. Die Checkliste liest deine Einträge – sie passt sich an, wenn du sie löschst.",
+    "howItWorks": "Jeder Schritt öffnet die echte Funktion und hakt sich selbst ab, sobald ein Eintrag existiert. Nichts hier ist ein Tutorial, das du durchstehen musst.",
+    "done": "Erledigt",
+    "steps": {
+      "application": {
+        "title": "Bewerbung hinzufügen",
+        "body": "Eine Stelle, ihre Phase und ihre Frist. Alles andere in jojo hängt an diesem Eintrag.",
+        "label": "Neue Bewerbung"
+      },
+      "dated": {
+        "title": "Etwas mit einem Datum versehen",
+        "body": "Fristen, Vorstellungsgespräche und Campusbesuche sind eine Art von Eintrag – sie erscheinen gleichzeitig im Kalender, in der kommenden Woche und bei der Bewerbung.",
+        "label": "Neuer Termin"
+      },
+      "reminder": {
+        "title": "Nachfassen planen",
+        "body": "Eine Erinnerung ist derselbe Eintrag mit eingeschaltetem Hinweis. Sobald ihr Datum vorbei ist, wird sie unter Heute markiert, bis du sie abhakst.",
+        "label": "Neue Erinnerung"
+      },
+      "posting": {
+        "title": "Eine Anzeige behalten, bevor sie verschwindet",
+        "body": "Nichts wird abgerufen und keine Kopie gespeichert – behalten werden die URL, der daraus erratene Arbeitgeber und der Tag des Speicherns. Das reicht, um die Anzeige wiederzufinden.",
+        "label": "Stellen-Scout öffnen"
+      },
+      "file": {
+        "title": "Dokumente ablegen",
+        "body": "Erfasse einen Lebenslauf oder ein Anschreiben im Tresor. Namen, Größen und Typen werden gespeichert; die Datei selbst wird nie gelesen.",
+        "label": "Tresor öffnen"
+      },
+      "keyword": {
+        "title": "Etwas verschlagworten",
+        "body": "Schlagwörter gehören dir und werden von Bewerbungen, Erinnerungen und allem im Tresor geteilt – anders als die festen Rollen-Tags. Die Tag-Schaltfläche in jeder Zeile fügt eines hinzu.",
+        "label": "Schlagwörter verwalten"
+      },
+      "draft": {
+        "title": "Nachricht entwerfen",
+        "body": "Aus deinen eigenen E-Mail-Textbausteinen gebaut, mit Rolle, Arbeitgeber und Daten aus dem Eintrag. Der Name einer Person wird nie für dich eingesetzt. Nichts hier hält fest, dass du sie gesendet hast, daher hakt sich dieser Schritt nicht selbst ab.",
+        "label": "Nachricht entwerfen"
+      }
+    },
+    "profile": {
+      "title": "Profil ausfüllen",
+      "hint": "das Profil gehört nicht zur Checkliste",
+      "body": "Deine Grunddaten, Links, Zielrollen und Suchbegriffe findest du unter Mein Profil. Danach würde der Scout bewerten und daraus würde der Assistent entwerfen – sie sind also wichtig. Diese Version behält sie aber nur für die Sitzung, statt sie irgendwohin zu schreiben; deshalb kann die Checkliste oben sie nicht abhaken.",
+      "open": "Mein Profil öffnen"
+    },
+    "database": {
+      "title": "Die App ist die Datenbank",
+      "body": "Deine Einträge werden auf diesem Gerät gespeichert und überstehen einen Neustart. Nichts wird irgendwohin gesendet – kein Konto, keine Synchronisierung, kein Netzwerkaufruf. In den Einstellungen kannst du sie löschen, die Demodaten neu laden oder eine Kopie in die Zwischenablage exportieren."
+    }
+  },
+  "screens": {
+    "intro": "Jeder Bildschirm der App und der eine Satz, der sagt, wofür er da ist. Tippe auf eine Zeile, um ihn zu öffnen – diese Seite ist Zugang und Legende zugleich.",
+    "open": "{{name}} öffnen",
+    "groups": {
+      "tabs": {
+        "title": "In der Tab-Leiste",
+        "hint": "immer nur einen Tipp entfernt"
+      },
+      "vault": {
+        "title": "Im Tresor",
+        "hint": "fünf Werkzeuge, ein Tab"
+      },
+      "more": {
+        "title": "Hinter Mehr",
+        "hint": "der Rest von jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Jede Liste in dieser App ist eine Ansicht auf denselben Satz von Einträgen. Ein Eintrag ist ein <b>Knoten</b>; eine Verbindung zwischen zwei Einträgen ist eine <b>Kante</b> mit einem Namen. Das ist das ganze Modell, und deshalb lässt sich eine Frage, die zwei Listen kreuzt, überhaupt beantworten.",
+    "open": "Graph öffnen",
+    "kinds_one": "{{count}} Art",
+    "kinds_other": "{{count}} Arten",
+    "nodes": "Knoten",
+    "nodesIntro": "Ein Knoten pro Eintrag, dazu drei, die nur als Verbindungen existieren – ein Arbeitgeber, eine Rolle und ein Schlagwort sind jeweils Knoten, damit alles, was ihnen zugeordnet ist, von dort aus gefunden werden kann.",
+    "edges": "Kanten",
+    "edgesIntro": "Jede hat eine Richtung und einen Namen. Den Namen setzt der Fragen-Baukasten des Graph-Bildschirms in seine mittlere Zeile.",
+    "relShape": {
+      "AT": "Bewerbung → Arbeitgeber",
+      "IS": "Bewerbung → Rolle",
+      "ABOUT": "Termin oder Erinnerung → Bewerbung",
+      "FILED_UNDER": "Datei, Link oder Textbaustein → Bewerbung",
+      "TAGS": "Schlagwort → beliebiger Eintrag",
+      "BECAME": "Gespeicherte Anzeige oder Treffer → Bewerbung"
+    },
+    "deleteTitle": "Löschen trennt Verbindungen, ohne Kaskade",
+    "deleteBody": "Das Entfernen einer Bewerbung entfernt diesen Knoten und die Kanten, die ihn berühren. Die Erinnerungen, Dateien und gespeicherten Anzeigen, die ihr zugeordnet waren, bleiben – sie sind eigene Einträge und bestehen weiter, auch wenn nichts mehr auf sie zeigt. Jedes Löschen in der App sagt das, und im Fragen-Baukasten des Graph-Bildschirms findest du, was sich gelöst hat: Frag nach Dateien, die mit keiner Bewerbung verknüpft sind."
+  },
+  "tools": {
+    "inTotal": "{{count}} insgesamt",
+    "canDo": {
+      "title": "Was der Assistent tun kann",
+      "body_one": "Der Assistent tippt nicht für dich auf deine Bildschirme. Er ruft dieselbe {{count}} Operation auf, die auch die Schaltflächen aufrufen – derselbe Code, dieselben Prüfungen. Es gibt keinen zweiten Weg hinein, deshalb sieht eine Änderung des Assistenten in deinem Verlauf genauso aus wie eine eigene.",
+      "body_other": "Der Assistent tippt nicht für dich auf deine Bildschirme. Er ruft dieselben {{count}} Operationen auf, die auch die Schaltflächen aufrufen – derselbe Code, dieselben Prüfungen. Es gibt keinen zweiten Weg hinein, deshalb sieht eine Änderung des Assistenten in deinem Verlauf genauso aus wie eine eigene.",
+      "irreversible": "Zwei dieser {{count}} lassen sich gar nicht rückgängig machen – die, die den ganzen Speicher ersetzen oder leeren. Sie werden dem Assistenten nur angeboten, wenn deine eigenen Worte danach fragen, und halten selbst dann für eine Bestätigung an.",
+      "open": "Assistent öffnen"
+    },
+    "stats": {
+      "reads": {
+        "label_one": "Weg zum Nachsehen",
+        "label_other": "Wege zum Nachsehen",
+        "hint": "Lesen ändert nie etwas"
+      },
+      "writes": {
+        "label_one": "Weg zum Ändern",
+        "label_other": "Wege zum Ändern",
+        "hint": "jeder davon rückgängig zu machen …"
+      },
+      "destructive": {
+        "label": "als destruktiv markiert",
+        "hint": "… außer zweien, die vorher fragen"
+      }
+    },
+    "gate": {
+      "title": "Was die falsche Aktion stoppt",
+      "hint": "der Teil, der wirklich hält",
+      "body": "Ein Sprachmodell kann nach allem fragen. Es kann ein Werkzeug nennen, das ihm nie gezeigt wurde, oder eines erfinden, das es nicht gibt – kleinere Modelle tun das regelmäßig, und es ist kein Zeichen, dass etwas schiefgelaufen ist. Deshalb verlässt sich jojo nicht darauf, dass das Modell vorsichtig ist.",
+      "distinctionTitle": "Der Unterschied, auf den es ankommt",
+      "distinction": "Auszuwählen, was das Modell zu sehen bekommt, ist ein Hinweis. Zu prüfen, was es tatsächlich aufgerufen hat, ist eine Regel – und die Regel hängt davon ab, wer die Auswahl getroffen hat. Wo der Bildschirm sie festlegt – Den Graphen fragen, eine Scout-Pipeline –, wird ein Aufruf außerhalb davon abgelehnt, bevor überhaupt etwas nachgeschlagen, geschweige denn ausgeführt wird. Im Chat ist die Auswahl jojos Vermutung, was du brauchst; ein Aufruf außerhalb wird daher nicht abgelehnt, sondern durchläuft dieselbe Freigabeprüfung wie jeder andere Aufruf, die dich zuerst fragt, sofern die Unterhaltung nicht auf selbstständig eingestellt ist. Die einzige Ausnahme ist das Löschen deiner Einträge, das Einzige, was sich nicht rückgängig machen lässt: Es wird abgelehnt, solange du nicht ausdrücklich darum gebeten hast, alles zu löschen.",
+      "askGraph": "Deshalb kann das Feld „Den Graphen fragen“ auf dem Graph-Bildschirm gefahrlos zwei Nur-Lese-Werkzeuge anbieten. Es verlässt sich nicht darauf, dass das Modell bei ihnen bleibt."
+    },
+    "pick": {
+      "title": "Wie er das richtige auswählt",
+      "hint": "damit eine Anfrage nie auf halbem Weg stehen bleibt",
+      "cost_one": "Einem Modell {{count}} Werkzeug auf einmal zu zeigen, kostet etwa fünfzehntausend Wörter seines Denkraums – bevor du überhaupt etwas eingegeben hast. Bei einem kleinen Modell auf deinem eigenen Rechner kann das mehr sein, als es hat. Deshalb grenzt jojo die Liste auf das ein, worauf deine Worte zeigen.",
+      "cost_other": "Einem Modell alle {{count}} Werkzeuge auf einmal zu zeigen, kostet etwa fünfzehntausend Wörter seines Denkraums – bevor du überhaupt etwas eingegeben hast. Bei einem kleinen Modell auf deinem eigenen Rechner kann das mehr sein, als es hat. Deshalb grenzt jojo die Liste auf das ein, worauf deine Worte zeigen.",
+      "careless": "Unachtsam einzugrenzen ist schlimmer, als nicht einzugrenzen. Die meisten Operationen brauchen etwas, worauf sie wirken: Du kannst kein Schlagwort zuweisen ohne ein Schlagwort und kein Dokument aktualisieren ohne ein Dokument. Versteck das Werkzeug, das dieses Etwas erzeugt, und der Assistent bleibt auf halbem Weg stehen, ohne dass auf dem Bildschirm steht, warum.",
+      "unsureTitle": "Wenn er unsicher ist, grenzt er nicht ein",
+      "unsure": "„Erinnere mich am Donnerstag an Baylor“ ist klar, und jojo bietet etwa ein Fünftel des Katalogs an. „Eigentlich war es die andere“ ist über nichts klar – also bietet er alles an, genau wie vor all dem. Unsicherheit kostet etwas Tempo. Raten würde dich deine Antwort kosten.",
+      "onlyGains": "Eine Unterhaltung gewinnt nur Werkzeuge hinzu. Nichts, was du schon benutzt hast, wird dir durch eine spätere Frage weggenommen."
+    },
+    "model": {
+      "title": "Welches Modell das übernimmt",
+      "hint": "deine Wahl – und sie bestimmt, wohin deine Worte gehen",
+      "local": "jojo spricht mit dem, was du in den Einstellungen angibst. Ein Modell auf einem Rechner, den du kontrollierst – Ollama, vLLM, LM Studio – ist die Voreinstellung und die einzige Konstellation, in der nichts, was du schreibst, dieses Gerät verlässt.",
+      "cloud": "Du kannst auch Claude, OpenAI und andere mit einem API-Schlüssel nutzen. Das ist ein echter Kompromiss, und der Bildschirm sagt es deutlich: Deine Einträge gehen an dieses Unternehmen und werden deinem Konto berechnet. Der Schlüssel bleibt auf diesem Gerät, ist nie Teil einer Sicherung und wird nur an den gewählten Anbieter gesendet.",
+      "openSettings": "Einstellungen öffnen",
+      "truncatedTitle": "Wenn der Assistent nicht mehr zu lesen scheint",
+      "truncated": "Ein lokales Modell mit zu wenig Platz verwirft stillschweigend den Anfang dessen, was es bekommen hat, und antwortet dann selbstsicher auf eine Frage, die es nie ganz gesehen hat. jojo vergleicht, was der Server gelesen zu haben angibt, mit dem, was tatsächlich gesendet wurde, und sagt dir, wenn beides nicht übereinstimmt – sonst wirkt der Assistent schlecht in seiner Aufgabe, obwohl ihm nur Platz fehlt."
+    },
+    "gateFigure": {
+      "typed": "was du eingegeben hast",
+      "pick": "die passenden Werkzeuge wählen",
+      "pickNote": "unklar? alle {{count}} anbieten",
+      "add": "ergänzen, was diese Werkzeuge brauchen",
+      "addNote": "damit keine Kette in einer Sackgasse endet",
+      "choose": "das Modell wählt eines",
+      "offered": "wurde es angeboten?",
+      "offeredNote": "nein? abgelehnt, nichts läuft",
+      "change": "deine Einträge ändern sich",
+      "description": "Sechs Schritte, von oben nach unten. Eins: was du eingegeben hast. Zwei: jojo wählt die Werkzeuge, auf die deine Worte zeigen – und wenn sie unklar sind, bietet es alle {{count}} an, statt zu raten. Drei: Es ergänzt, wovon diese Werkzeuge abhängen, damit keine Kette in einer Sackgasse endet. Vier: Das Modell wählt ein Werkzeug. Fünf: jojo prüft, ob dieses Werkzeug tatsächlich angeboten wurde; wenn nicht, wird der Aufruf abgelehnt und nichts läuft. Sechs: Erst dann ändern sich deine Einträge. Der fünfte Schritt ist der einzige, der etwas durchsetzt – der zweite ist nur ein Hinweis, denn ein Modell kann ein Werkzeug nennen, das ihm nie gezeigt wurde.",
+      "caption": "Schritt zwei spart dir Tokens. Schritt fünf schützt dich – und er läuft, egal ob Schritt zwei etwas eingegrenzt hat oder nicht."
+    },
+    "graphFigure": {
+      "intro": "Drei Beispiele, ohne Reihenfolge. Jedes ist ein Werkzeug, nach dem deine Worte gefragt haben, das, ohne das es nicht laufen kann, und das Werkzeug, das jojo daneben anbietet, damit die Kette fertig werden kann.",
+      "description": "Drei Beispiele. Wer keyword.attach anfragt, bekommt auch keyword.create angeboten, denn ein Schlagwort zuzuweisen braucht ein bereits vorhandenes Schlagwort. Wer vault.file.update anfragt, bekommt auch vault.file.add, denn ein Dokument zu aktualisieren braucht ein Dokument. Wer scout.posting.promote anfragt, bekommt auch scout.posting.save, denn eine gespeicherte Anzeige zu übernehmen braucht eine gespeicherte Anzeige. In jedem Fall leitet jojo die Abhängigkeit aus der Eingabe des Werkzeugs selbst ab und bietet beide zusammen an – so bekommt der Assistent nie einen ersten Schritt ohne Weg zum zweiten.",
+      "needs": {
+        "keyword": "braucht ein Schlagwort, also bietet jojo auch an",
+        "file": "braucht eine Datei, also bietet jojo auch an",
+        "posting": "braucht eine Anzeige, also bietet jojo auch an"
+      },
+      "without": "Ohne das könnte dem Assistenten das erste Werkzeug angeboten werden, aber nicht das zweite – und er bliebe auf halbem Weg stehen, ohne dass auf dem Bildschirm steht, warum.",
+      "derived": "jojo liest jede Voraussetzung aus der Definition des Werkzeugs selbst, sodass ein morgen hinzugefügtes Werkzeug abgedeckt ist, ohne dass jemand eine Liste pflegen muss."
+    }
+  },
+  "builtWith": {
+    "intro": "Ein interaktiver Prototyp desselben Produkts wie die Web-App, der jedes Modul mit einer Regel darin teilt – die Datumsrechnung, den Statistik-Trichter, das Stichwortsystem und die Beispieldaten –, sodass die beiden sich über ein Datum, eine Quote oder eine Phase nicht widersprechen können.",
+    "stackTitle": "Gebaut mit",
+    "stackHint": "was tatsächlich läuft",
+    "unfinishedTitle": "Was noch ein Platzhalter ist",
+    "unfinishedHint": "gesagt, nicht versteckt",
+    "unfinishedIntro": "Ein Prototyp, der seine Grenzen versteckt, ist ein Prototyp, dem man zu viel glaubt. Diese drei sollte man kennen, bevor man irgendetwas anderes auf dem Bildschirm beurteilt.",
+    "placeholder": "Platzhalter",
+    "stack": {
+      "app": "Die App selbst, auf beiden Plattformen",
+      "build": "Der Build. Kein Expo – android/ und ios/ gehören uns",
+      "documents": "Eine Datei anhängen und sie wieder öffnen",
+      "navigation": "Die Tab-Leiste und der Bildschirmstapel",
+      "drag": "Das Ziehen per langem Drücken auf dem Board, im UI-Thread",
+      "charts": "Der Ring, das Radar und der Graph",
+      "type": "Die Schrift, mitgeliefert statt geladen"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "Der Assistent braucht ein Modell, das du mitbringst",
+        "detail": "Verbinde eines in den Einstellungen, und der Assistent wird zu einem agentischen Chat mit Verläufen: Er ruft die eigenen Werkzeuge der App auf, um zu antworten, listet jeden Aufruf auf, während er ihn macht, und speichert jeden Verlauf auf diesem Gerät. Ohne Modell ist jede Antwort eines von fünf ausgearbeiteten Beispielen und trägt ein Abzeichen, das das sagt."
+      },
+      "scout": {
+        "title": "Der Scout findet nichts von allein",
+        "detail": "Die Passungs-Prozente sind echt – auf diesem Gerät berechnet anhand der Suchbegriffe, Zielrollen und Regionen in deinem Profil, und sie sagen, worauf sie gepasst haben. Was fehlt, ist das Crawlen: Nichts zieht los und sucht nach Ausschreibungen, also enthält der Feed nur, was du hineinlegst."
+      },
+      "network": {
+        "title": "Nichts verlässt dieses Gerät, außer wohin du es schickst",
+        "detail": "Es gibt kein Konto, keine Synchronisierung und keinen Upload. Zwei Adressen können erreicht werden, beide deine und beide in den Einstellungen festgelegt: das Modell und der Dokumentenleser – der auch eine Stellenausschreibung abruft, wenn du eine Bewerbung über einen Link hinzufügst, sodass diese URL an deinen Leser geht und nicht an uns. Die Übertragung bewegt eine Kopie zwischen deinen Geräten über das lokale Netzwerk – auf diesem Telefon wird empfangen, und der Computer ist die Seite, die sendet. Sonst geht nichts irgendwohin."
+      }
+    }
+  }
+}

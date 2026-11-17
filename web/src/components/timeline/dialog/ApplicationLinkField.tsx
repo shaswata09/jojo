@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ArrowUpRight, Check, ChevronsUpDown, X } from 'lucide-react'
 import { FormField } from '@/components/common/Field'
 import { Button } from '@/components/ui/button'
@@ -45,15 +46,12 @@ export function ApplicationLinkField({
   /** Closes the dialog and goes to a router path. See `closeAndGo`. */
   onOpen?: (path: string) => void
 }) {
+  const { t } = useTranslation('timeline')
   const [pickerOpen, setPickerOpen] = useState(false)
   const appId = useId()
 
   return (
-    <FormField
-      label="Related application"
-      htmlFor={appId}
-      hint="Links them, so each application lists this and this leads back to any of them."
-    >
+    <FormField label={t('application.label')} htmlFor={appId} hint={t('application.hint')}>
       <div className="flex items-center gap-1.5">
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
           <PopoverTrigger asChild>
@@ -67,10 +65,10 @@ export function ApplicationLinkField({
             >
               <span className="truncate">
                 {selectedApps.length === 0
-                  ? 'Not linked'
+                  ? t('application.notLinked')
                   : selectedApps.length === 1 && selectedApps[0]
                     ? displayName(selectedApps[0])
-                    : `${String(selectedApps.length)} applications`}
+                    : t('application.count', { count: selectedApps.length })}
               </span>
               <ChevronsUpDown aria-hidden className="size-3.5 opacity-60" />
             </Button>
@@ -78,13 +76,11 @@ export function ApplicationLinkField({
           {/* Matched to the trigger so the longest name is readable, and padding
               dropped because Command brings its own. */}
           <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
-            <Command label="Search applications to link">
-              <CommandInput placeholder="Search applications…" />
+            <Command label={t('application.searchLabel')}>
+              <CommandInput placeholder={t('application.searchPlaceholder')} />
               <CommandList>
                 <CommandEmpty>
-                  {applications.length === 0
-                    ? 'No applications yet.'
-                    : 'No application matches that.'}
+                  {applications.length === 0 ? t('application.none') : t('application.noMatch')}
                 </CommandEmpty>
                 <CommandGroup>
                   {applications.map((a) => (
@@ -117,8 +113,8 @@ export function ApplicationLinkField({
             type="button"
             variant="ghost"
             size="icon-sm"
-            title="Clear the linked applications"
-            aria-label="Clear the linked applications"
+            title={t('application.clear')}
+            aria-label={t('application.clear')}
             onClick={onClear}
           >
             <X aria-hidden />
@@ -153,7 +149,9 @@ export function ApplicationLinkField({
                 className="inline-flex max-w-full min-w-0 items-center gap-1 text-text-2 underline underline-offset-2 hover:text-text-1"
               >
                 <ArrowUpRight aria-hidden className="size-3.5 shrink-0" />
-                <span className="truncate">Open {displayName(app)}</span>
+                <span className="truncate">
+                  {t('application.open', { name: displayName(app) })}
+                </span>
               </a>
             )
           })}

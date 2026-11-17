@@ -1,0 +1,146 @@
+{
+  "screen": {
+    "title": "传输",
+    "subtitle": "通过本地网络在这部手机和你的电脑之间转移所有内容。两者需要在同一个网络中。任何内容都不会上传到互联网，也不会存储在其他地方。",
+    "direction": "方向",
+    "roles": {
+      "send": "发送到电脑",
+      "receive": "从电脑接收"
+    },
+    "onPhone": "这部手机现在的内容",
+    "records_other": "{{count}} 条记录",
+    "empty": "空",
+    "sendNote": "发送会把这些内容全部复制到你的电脑，电脑在替换已有内容之前会先询问。这部手机上的内容不会改变。",
+    "receiveNote": "接收会替换所有这些内容。上方的一切都会被收到的内容覆盖，且无法撤销——如需保留，请先导出。"
+  },
+  "groups": {
+    "applications": {
+      "label": "申请",
+      "hint": "每份申请的所有阶段、备注和结果"
+    },
+    "timeline": {
+      "label": "提醒和事件",
+      "hint": "{{reminders}} 个提醒，{{events}} 个定日期的事件"
+    },
+    "vault": {
+      "label": "链接和片段",
+      "hint": "{{links}} 个链接 · {{snippets}} 个片段"
+    },
+    "files": {
+      "label": "文件",
+      "hint": "简历、陈述以及保存在申请下的其他所有文件"
+    },
+    "keywords": {
+      "label": "关键词",
+      "hint": "你的关键词列表及其关联的每条记录"
+    },
+    "scout": {
+      "label": "职位搜寻",
+      "hint": "{{pipelines}} 个搜寻流程 · {{postings}} 个已保存职位 · {{matches}} 个匹配"
+    },
+    "profile": {
+      "label": "个人资料",
+      "hint": "你的基本信息、链接、目标职位和匹配词"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "此设备不支持",
+    "noRandom": "此设备没有安全的随机数生成器，因此 jojo 不会在其上协商密钥。配对已停用，而不是以不安全的方式进行。",
+    "scan": "扫描二维码",
+    "retry": "重试",
+    "cancel": "取消"
+  },
+  "send": {
+    "title": "发送到电脑",
+    "hint": "对准电脑上的二维码",
+    "outcome": {
+      "applied": "你的电脑现在已有你的记录",
+      "declined": "你的电脑保留了自己的记录",
+      "failed": "你的电脑无法接收你的记录",
+      "handed": "已全部交付"
+    },
+    "detail": {
+      "waiting": "你的电脑在替换任何内容之前都会先询问——请在电脑上确认以完成。这部手机上没有任何改变。",
+      "unknown": "你的电脑没有告知是否接受了这些记录。这部手机上没有任何改变。",
+      "applied": "两台设备现在保存着相同的记录。这部手机上没有任何改变。",
+      "notReplaced": "那里没有替换任何内容。这部手机上没有任何改变。"
+    },
+    "unreadable_other": "{{count}} 个文档无法读取，未被发送。",
+    "again": "再次发送",
+    "typeThis": "在你的电脑上输入此代码",
+    "paired": "已配对。这部手机正在本地网络上等待你的电脑发出请求。",
+    "handing": "正在交付你的记录…",
+    "handingProgress": "正在交付你的记录——{{served}} / {{chunks}}。",
+    "intro": "在电脑上打开“传输”，选择“从手机接收”，然后扫描它显示的二维码。两者需要在同一个本地网络中。",
+    "gatherFailed": "jojo 无法收集这部手机上的记录，因此没有发送任何内容。请重试。"
+  },
+  "receive": {
+    "title": "接收",
+    "hint": "对准另一台设备上的二维码",
+    "complete": "传输完成",
+    "done": "完成",
+    "typeThis": "在你的另一台设备上输入此代码",
+    "paired": "已配对。这部手机只在你的本地网络上监听，不会在其他任何地方监听。",
+    "progress": "正在接收——目前 {{size}}。在你同意之前，这里的任何内容都不会改变。",
+    "intro": "在电脑上打开 jojo，选择“传输”，然后扫描它显示的二维码。",
+    "confirm": {
+      "title": "替换这部手机上的所有内容？",
+      "description": "{{contents}}。{{replaces}}，且无法撤销。",
+      "confirm": "替换"
+    },
+    "unrestorable": "收到的内容无法恢复：{{reason}}。这部手机上没有任何改变。"
+  },
+  "landed": {
+    "plain_other": "这部手机上现在有 {{count}} 条记录。",
+    "withDocuments_other": "这部手机上现在有 {{count}} 条记录，{{documents}}。",
+    "documents_other": "{{count}} 个文档",
+    "skipped_other": "{{count}} 条无法读取。"
+  },
+  "scanner": {
+    "point": "将相机对准另一台设备“传输”页面上的二维码。",
+    "advice": {
+      "denied": "jojo 需要使用相机来读取另一台设备上的二维码。请允许访问，或改为手动输入代码。",
+      "unsupported": "这部手机无法为 jojo 打开相机。",
+      "failed": "相机未能启动。请关闭 jojo 后重新打开。"
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "读取配对二维码",
+      "message": "jojo 需要使用相机来读取另一台设备上显示的二维码。不会录制任何内容，也不会有任何图像离开这部手机。",
+      "allow": "允许",
+      "notNow": "暂不"
+    },
+    "refused": {
+      "denied": "jojo 需要使用相机来读取另一台设备上的二维码。",
+      "blocked": "jojo 的相机权限已关闭。请在手机“设置”的“应用”中开启，以便扫码配对。"
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "该二维码不是 jojo 的配对请求。请扫描另一台设备上的二维码。",
+      "noNetwork": "这部手机未连接本地网络。jojo 只通过本地网络传输，因此两台设备需要在同一个网络中。",
+      "notLocal": "这部手机所在的网络不是 jojo 会用于传输的网络。jojo 只连接私有网络地址，因此你的记录绝不会经过互联网。",
+      "noSocket": "jojo 无法在这部手机上建立连接。请重试。"
+    }
+  },
+  "import": {
+    "clipboardEmpty": "剪贴板是空的。请先复制一个 jojo 备份，再粘贴到这里。",
+    "fileEmpty": "该文件是空的。这部手机上没有任何改变。",
+    "notBackup": "它不是 jojo 备份",
+    "unrestorable": {
+      "file": "该文件无法恢复：{{reason}}。这部手机上没有任何改变。",
+      "clipboard": "剪贴板中的内容无法恢复：{{reason}}。这部手机上没有任何改变。"
+    },
+    "noRecords": {
+      "file": "该文件是一个没有任何记录的备份。这部手机上没有任何改变——恢复它会清空这部手机。",
+      "clipboard": "剪贴板中的内容是一个没有任何记录的备份。这部手机上没有任何改变——恢复它会清空这部手机。"
+    },
+    "unreadable": "无法读取该文件。这部手机上没有任何改变。",
+    "noPicker": "这部手机上没有可以选择 JSON 或文本文件的应用。",
+    "openFailed": "无法打开文件：{{detail}}",
+    "failedTitle": "未导入任何内容",
+    "restoredTitle": "备份已恢复"
+  }
+}

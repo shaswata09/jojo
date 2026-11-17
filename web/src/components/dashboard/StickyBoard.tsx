@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BellPlus, Palette, Plus, StickyNote as StickyIcon, X } from 'lucide-react'
-import { agoLabel } from '@jojo/service/core/dates'
 import type { LabelTone, StickyNote } from '@jojo/service/core/model'
 import { DEFAULT_STICKY_TONE, MAX_STICKY_TEXT } from '@jojo/service/core/model'
 import { dayOf } from '@jojo/service/core/project'
@@ -13,10 +13,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Textarea } from '@/components/ui/textarea'
 import { fromReactKey, shouldSend } from '@/lib/composer-keys'
 import { useDialogs } from '@/lib/dialogs-context'
-import { reminderFromNote } from '@/lib/sticky'
+import { reminderFromNote } from '@jojo/service/core/sticky'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 import { isCommitEnter } from '@/components/common/enter-key'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The dashboard's sticky notes: notes to self, quick to write and quick to
@@ -29,6 +30,7 @@ import { isCommitEnter } from '@/components/common/enter-key'
  * reminder, through the reminder dialog, rather than growing a date of its own.
  */
 export function StickyBoard() {
+  const { t } = useTranslation('dashboard')
   const { notes, create, update, remove } = useStickyNotes()
   const { open } = useDialogs()
   const [draft, setDraft] = useState('')
@@ -56,26 +58,32 @@ export function StickyBoard() {
           event.preventDefault()
           add()
         }}
-        className={cn('rounded-md border p-2', toneClass[tone], 'text-text-1')}
+        // The note shows focus, not the borderless field inside it: with the
+        // field's own ring zeroed, focusing it changed nothing but the caret.
+        className={cn(
+          'rounded-md border p-2 transition-shadow has-[textarea:focus-visible]:ring-3 has-[textarea:focus-visible]:ring-ring/50',
+          toneClass[tone],
+          'text-text-1',
+        )}
       >
         <Label htmlFor="sticky-draft" className="sr-only">
-          New sticky note
+          {t('sticky.newNote')}
         </Label>
         <Textarea
           id="sticky-draft"
           value={draft}
           rows={2}
           maxLength={MAX_STICKY_TEXT}
-          placeholder="Jot a note to self… (Enter to stick it)"
+          placeholder={t('sticky.placeholder')}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onKey}
           className="field-sizing-fixed h-14 resize-none border-0 bg-transparent p-0 text-[13px] shadow-none focus-visible:ring-0 dark:bg-transparent"
         />
         <div className="mt-1.5 flex items-center justify-between gap-2">
-          <ToneMenu tone={tone} onPick={setTone} label="Colour for the new note" />
+          <ToneMenu tone={tone} onPick={setTone} label={t('sticky.newColour')} />
           <Button type="submit" size="xs" disabled={!draft.trim()}>
             <Plus className="size-3" strokeWidth={2} aria-hidden />
-            Stick it
+            {t('sticky.stick')}
           </Button>
         </div>
       </form>
@@ -83,8 +91,7 @@ export function StickyBoard() {
       {notes.length === 0 ? (
         <p className="flex items-start gap-2 text-xs leading-relaxed text-text-3">
           <StickyIcon className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
-          Nothing stuck up yet. Notes stay here until you take them down, and any of them can become
-          a reminder once it has a date.
+          {t('sticky.empty')}
         </p>
       ) : (
         /* Padded out to the full reach of `--shadow-sticky` (7px a side, 11px
@@ -92,7 +99,7 @@ export function StickyBoard() {
            whatever overflows it, and a shadow cut off at the box's edge is a
            square-cornered smudge under a rounded note. */
         <ul
-          aria-label="Sticky notes"
+          aria-label={t('sticky.listLabel')}
           className="-mx-2.5 -mt-1 -mb-3 grid max-h-[26rem] grid-cols-1 gap-2.5 overflow-y-auto px-2.5 pt-1 pb-3 min-[420px]:grid-cols-2"
         >
           {notes.map((note) => (
@@ -124,6 +131,8 @@ function StickyCard({
   onRemove: () => void
   onReminder: () => void
 }) {
+  const { t } = useTranslation('dashboard')
+  const domain = useDomain()
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState(note.text)
   const first = note.text.trim().split('\n')[0] ?? ''
@@ -167,7 +176,7 @@ function StickyCard({
       {editing ? (
         <>
           <Label htmlFor={`sticky-${note.id}`} className="sr-only">
-            Edit note
+            {t('sticky.editNote')}
           </Label>
           <Textarea
             id={`sticky-${note.id}`}
@@ -190,26 +199,26 @@ function StickyCard({
         <button
           type="button"
           onClick={begin}
-          title="Click to edit"
-          aria-label={`Edit note: ${first}`}
+          title={t('sticky.clickToEdit')}
+          aria-label={t('sticky.editAria', { text: first })}
           // A flex box so the text sits at the top: a button centres its
           // content vertically, and a one-line note floated mid-card.
-          className="flex flex-1 cursor-text items-start text-left text-[13px] leading-relaxed"
+          className="flex flex-1 cursor-text items-start text-start text-[13px] leading-relaxed"
         >
           <span className="line-clamp-6 wrap-anywhere whitespace-pre-wrap">{note.text}</span>
         </button>
       )}
 
       <div className="mt-2 flex items-center gap-0.5">
-        <span className="mr-auto text-[11px] text-text-3">
-          {agoLabel(dayOf(note.createdAt), TODAY)}
+        <span className="me-auto text-[11px] text-text-3">
+          {domain.ago(dayOf(note.createdAt), TODAY)}
         </span>
-        <ToneMenu tone={note.tone} onPick={onTone} label={`Colour of the note "${first}"`} />
+        <ToneMenu tone={note.tone} onPick={onTone} label={t('sticky.colourOf', { text: first })} />
         <button
           type="button"
           onClick={onReminder}
-          title="Turn into a reminder"
-          aria-label={`Turn into a reminder: ${first}`}
+          title={t('sticky.toReminder')}
+          aria-label={t('sticky.toReminderAria', { text: first })}
           className={ICON_BUTTON}
         >
           <BellPlus className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -217,8 +226,8 @@ function StickyCard({
         <button
           type="button"
           onClick={onRemove}
-          title="Take this note down"
-          aria-label={`Remove note: ${first}`}
+          title={t('sticky.takeDown')}
+          aria-label={t('sticky.removeAria', { text: first })}
           className={ICON_BUTTON}
         >
           <X className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -241,29 +250,30 @@ function ToneMenu({
   onPick: (tone: LabelTone) => void
   label: string
 }) {
+  const { t } = useTranslation('dashboard')
   const [open, setOpen] = useState(false)
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger aria-label={label} title="Colour" className={ICON_BUTTON}>
+      <PopoverTrigger aria-label={label} title={t('sticky.colour')} className={ICON_BUTTON}>
         <Palette className="size-3.5" strokeWidth={1.8} aria-hidden />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-auto p-2">
         <div className="grid grid-cols-4 gap-1.5">
-          {TONE_ORDER.map((t) => (
+          {TONE_ORDER.map((swatch) => (
             <button
-              key={t}
+              key={swatch}
               type="button"
-              aria-label={toneName[t]}
-              aria-pressed={t === tone}
-              title={toneName[t]}
+              aria-label={toneName[swatch]}
+              aria-pressed={swatch === tone}
+              title={toneName[swatch]}
               onClick={() => {
                 setOpen(false)
-                onPick(t)
+                onPick(swatch)
               }}
               className={cn(
                 'size-6 cursor-pointer rounded-full ring-offset-2 ring-offset-page transition-shadow',
-                toneFill[t],
-                t === tone ? 'ring-2 ring-text-1' : 'hover:ring-2 hover:ring-hairline-strong',
+                toneFill[swatch],
+                swatch === tone ? 'ring-2 ring-text-1' : 'hover:ring-2 hover:ring-hairline-strong',
               )}
             />
           ))}

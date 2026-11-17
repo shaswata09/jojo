@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useVault } from '@jojo/service/react/use-vault'
 import type { FileBucket } from '@/data/vault'
+import { i18next } from '@/i18n/i18n'
 import { report } from '@/lib/analytics'
 import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useToast } from '@/lib/toast-context'
@@ -35,9 +36,8 @@ export async function droppedPageNote(
   // — the same order `readCapture` checks in.
   if (file.size > CAPTURE_MAX_BYTES) {
     return {
-      title: `${file.name} was too large to check`,
-      description:
-        'It is filed, and jojo shows it with every web address in it blocked and its links switched off, so viewing it here reaches nothing on the network — but anything it loads from the web will be missing.',
+      title: i18next.t('vault:files.intake.tooLarge', { name: file.name }),
+      description: i18next.t('vault:files.intake.tooLargeDescription'),
     }
   }
   let refs: number
@@ -48,9 +48,8 @@ export async function droppedPageNote(
   }
   if (refs === 0) return null
   return {
-    title: `${file.name} names ${String(refs)} web address${refs === 1 ? '' : 'es'}`,
-    description:
-      'It is filed as you dropped it, and jojo shows it with every one of them blocked and its links switched off, so viewing it here reaches nothing on the network. Pictures or styles it loaded from the web will be missing.',
+    title: i18next.t('vault:files.intake.addresses', { name: file.name, count: refs }),
+    description: i18next.t('vault:files.intake.addressesDescription', { count: refs }),
   }
 }
 
@@ -67,10 +66,12 @@ export type FileIntakeOptions = {
   /** Where new rows are filed. */
   bucket: FileBucket
   /**
-   * How the success toast says where they went — "under To read" in the Vault,
-   * where the bucket is on screen; "in the Vault under Documents" elsewhere.
+   * The success toast names the Vault as well as the bucket — "in the Vault
+   * under Documents" — for a page that is not the Vault. In the Vault the bucket
+   * is on screen and "under To read" is enough. A flag rather than a phrase: the
+   * toast is one sentence per case, so each language words the whole of it.
    */
-  place?: string | undefined
+  namesVault?: boolean | undefined
   /** New rows will not show in the list right now (a keyword filter is up). */
   hidden?: boolean | undefined
   /** Count each new file as `vault_item_added`. The Vault's own tool does. */
@@ -79,14 +80,13 @@ export type FileIntakeOptions = {
 
 export function useFileIntake({
   bucket,
-  place,
+  namesVault = false,
   hidden = false,
   reportAdds = false,
 }: FileIntakeOptions) {
   const { files, addFile, removeFile } = useVault()
   const blobs = useVaultBlobs()
   const { toast } = useToast()
-  const where = place ?? `under ${bucket}`
 
   return useCallback(
     (list: Iterable<File> | ArrayLike<File> | null) => {
@@ -99,9 +99,8 @@ export function useFileIntake({
 
       if (picked.length === 0) {
         toast({
-          title: folders === 1 ? 'That looks like a folder' : 'Those look like folders',
-          description:
-            'jojo files documents one at a time. Open the folder and drop the files in it.',
+          title: i18next.t('vault:files.intake.folders', { count: folders }),
+          description: i18next.t('vault:files.intake.foldersDescription'),
         })
         return
       }
@@ -113,13 +112,12 @@ export function useFileIntake({
           toast(
             stored
               ? {
-                  title: `${file.name} is attached again`,
-                  description: 'The row was already here without its document. It has one now.',
+                  title: i18next.t('vault:files.intake.reattached', { name: file.name }),
+                  description: i18next.t('vault:files.intake.reattachedDescription'),
                 }
               : {
-                  title: `${file.name} still could not be saved`,
-                  description:
-                    'This browser refused to store it again — its storage is probably still full.',
+                  title: i18next.t('vault:files.intake.stillUnsaved', { name: file.name }),
+                  description: i18next.t('vault:files.intake.stillUnsavedDescription'),
                   tone: 'danger',
                 },
           )
@@ -149,9 +147,8 @@ export function useFileIntake({
         void blobs.put(record.id, file).then((stored) => {
           if (stored) return
           toast({
-            title: `${file.name} was filed, but not saved`,
-            description:
-              'The row is here, but this browser refused to store the document — usually because its storage is full. Free some space and drop the same file in again; it will attach to this row rather than making a second one.',
+            title: i18next.t('vault:files.intake.unsaved', { name: file.name }),
+            description: i18next.t('vault:files.intake.unsavedDescription'),
             tone: 'danger',
           })
         })
@@ -159,21 +156,27 @@ export function useFileIntake({
 
       if (fresh.length === 0 && refill.length === 0) {
         toast({
-          title: skipped === 1 ? 'That file is already here' : 'Those files are already here',
-          description: 'A file of the same name is already in the vault.',
+          title: i18next.t('vault:files.intake.alreadyHere', { count: skipped }),
+          description: i18next.t('vault:files.intake.alreadyHereDescription'),
         })
         return
       }
 
       if (fresh.length > 0) {
-        const named = fresh.length === 1 ? fresh[0].name : `${fresh.length} files`
         toast({
-          title: `${named} added`,
+          title:
+            fresh.length === 1
+              ? i18next.t('vault:files.intake.addedOne', { name: fresh[0].name })
+              : i18next.t('vault:files.intake.addedMany', { count: fresh.length }),
           description: hidden
-            ? `Filed ${where} — hidden while the keyword filter is on.`
-            : `Filed ${where} and saved in this browser. Nothing was uploaded anywhere.`,
+            ? namesVault
+              ? i18next.t('vault:files.intake.addedHiddenVault', { bucket })
+              : i18next.t('vault:files.intake.addedHidden', { bucket })
+            : namesVault
+              ? i18next.t('vault:files.intake.addedDescriptionVault', { bucket })
+              : i18next.t('vault:files.intake.addedDescription', { bucket }),
           action: {
-            label: 'Undo',
+            label: i18next.t('vault:common.undo'),
             onClick: () =>
               added.forEach((id) => {
                 removeFile(id)
@@ -186,20 +189,19 @@ export function useFileIntake({
       }
       if (skipped > 0) {
         toast({
-          title: `${skipped} skipped`,
-          description: 'A file of the same name was already in the vault.',
+          title: i18next.t('vault:files.intake.skipped', { count: skipped }),
+          description: i18next.t('vault:files.intake.skippedDescription'),
         })
       }
       // Said even when the rest of the drop landed, so nobody is left counting
       // rows and not finding the number they expected.
       if (folders > 0) {
         toast({
-          title: folders === 1 ? '1 folder skipped' : `${folders} folders skipped`,
-          description:
-            'jojo files documents one at a time. Open the folder and drop the files in it.',
+          title: i18next.t('vault:files.intake.foldersSkipped', { count: folders }),
+          description: i18next.t('vault:files.intake.foldersDescription'),
         })
       }
     },
-    [files, blobs, toast, addFile, removeFile, bucket, where, hidden, reportAdds],
+    [files, blobs, toast, addFile, removeFile, bucket, namesVault, hidden, reportAdds],
   )
 }

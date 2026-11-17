@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 /**
  * What happens between pressing Save and the record being on disk.
@@ -28,11 +29,11 @@ const SAVE_BOX_W = 100
 const SAVE_BOX_STEP = 120
 
 export function SavePath() {
-  const boxes = [
-    ['You press', 'Save'],
-    ['On screen,', 'at once'],
-    ['Saved in this', 'browser'],
-  ]
+  const { t } = useTranslation('guide')
+  const boxes = (['press', 'screen', 'saved'] as const).map((box) => [
+    t(`overview.savePath.${box}.line1`),
+    t(`overview.savePath.${box}.line2`),
+  ])
 
   const boxX = (index: number) => SAVE_INSET + index * SAVE_BOX_STEP
   const width = SAVE_INSET * 2 + (boxes.length - 1) * SAVE_BOX_STEP + SAVE_BOX_W
@@ -46,17 +47,13 @@ export function SavePath() {
       aria-labelledby="save-path-title save-path-desc"
       className="diagram h-auto w-full max-w-lg"
     >
-      <title id="save-path-title">What happens when you save something</title>
-      <desc id="save-path-desc">
-        Pressing Save changes what is on screen at once, and the write is queued and made to the
-        browser&rsquo;s database a moment later. If that write fails, the change is kept in the
-        queue and reported in a strip above the page rather than being thrown away.
-      </desc>
+      <title id="save-path-title">{t('overview.savePath.title')}</title>
+      <desc id="save-path-desc">{t('overview.savePath.desc')}</desc>
 
       {boxes.map(([first, second], index) => {
         const x = boxX(index)
         return (
-          <g key={first}>
+          <g key={index}>
             <rect
               x={x}
               y="8"
@@ -92,10 +89,10 @@ export function SavePath() {
       {/* The arrow sits in the gap after each box but the last, so it is
           derived from the same layout rather than from two numbers that were
           right until the boxes moved. */}
-      {boxes.slice(0, -1).map((box, index) => {
+      {boxes.slice(0, -1).map((_, index) => {
         const x = boxX(index) + SAVE_BOX_W
         return (
-          <g key={box[0]} style={{ fill: 'var(--text-3)', stroke: 'var(--text-3)' }}>
+          <g key={index} style={{ fill: 'var(--text-3)', stroke: 'var(--text-3)' }}>
             <line x1={x + 2} y1="28" x2={x + 12} y2="28" strokeWidth="1.5" />
             <polygon points={`${x + 18},28 ${x + 11},24.5 ${x + 11},31.5`} stroke="none" />
           </g>
@@ -128,7 +125,7 @@ export function SavePath() {
         style={{ fill: 'var(--warning)' }}
         className="font-sans"
       >
-        A write that fails is kept
+        {t('overview.savePath.fail.line1')}
       </text>
       <text
         x={lastRight - 158}
@@ -137,7 +134,7 @@ export function SavePath() {
         style={{ fill: 'var(--warning)' }}
         className="font-sans"
       >
-        and reported, not dropped.
+        {t('overview.savePath.fail.line2')}
       </text>
     </svg>
   )

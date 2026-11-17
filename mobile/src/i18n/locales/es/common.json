@@ -4,5 +4,40 @@
     "description": "El idioma en que se muestra jojo. Tus registros se quedan en el idioma en que los escribiste.",
     "system": "Igual que este dispositivo ({{name}})",
     "restartForDirection": "El árabe se lee de derecha a izquierda cuando jojo se reinicia."
+  },
+  "actions": {
+    "undo": "Deshacer",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "tryAgain": "Reintentar",
+    "preview": "Vista previa",
+    "moreFor": "Más acciones para {{name}}",
+    "save": "Guardar",
+    "done": "Listo",
+    "openNamed": "Abrir {{name}}",
+    "clear": "Borrar",
+    "clearNamed": "Borrar {{name}}",
+    "notNow": "Ahora no",
+    "duplicate": "Duplicar",
+    "remove": "Quitar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "close": "Cerrar",
+    "clearSearch": "Borrar búsqueda",
+    "copy": "Copiar",
+    "copied": "Copiado"
+  },
+  "discard": {
+    "title": "¿Descartar los cambios sin guardar?",
+    "description": "Lo que has escrito aquí no se ha guardado en ningún sitio, así que al salir se pierde, y no se puede deshacer.",
+    "confirm": "Descartar"
+  },
+  "filter": {
+    "all": "Todo"
+  },
+  "pageOptions": {
+    "title": "Opciones de página",
+    "description": "Se aplican solo a esta pantalla y solo en esta visita."
   }
 }

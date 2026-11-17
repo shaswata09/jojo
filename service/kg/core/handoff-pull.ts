@@ -12,7 +12,7 @@
  *
  * ## The pairing is unchanged, deliberately
  *
- * The computer shows the animation and the phone's camera reads it, as before.
+ * The computer shows its QR code and the phone's camera reads it, as before.
  * The phone answers with its key and the proof that it read the screen
  * (`core/pairing.ts`), and the computer refuses to ask for anything until that
  * proof has checked out. Nothing about which way the records go touches the
@@ -22,7 +22,7 @@
  *
  * THE PHONE serves a chunk only to a request that proves it holds this
  * session's key. The proof is an HMAC-style tag derived from the
- * computer-to-phone key — which only the device that showed the animation and
+ * computer-to-phone key — which only the device that showed the code and
  * the device that read it can derive — over the chunk number. The path token
  * (`handoff.ts`) already keeps out a page that never saw the screen; the proof
  * also keeps out anything that saw the URL go past on the network, because the

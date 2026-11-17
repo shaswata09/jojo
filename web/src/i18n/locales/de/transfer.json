@@ -1,0 +1,254 @@
+{
+  "page": {
+    "title": "Übertragen",
+    "subtitle": "Übertrage alles zwischen diesem Computer und deinem Handy",
+    "showAnimation": "Animation anzeigen",
+    "showAnimationHint": "Eine WebGPU-Szene, die jedes Bild neu zeichnet – im Akkubetrieb besser ausschalten",
+    "roleLabel": "Rolle dieses Geräts",
+    "roles": {
+      "send": "An Handy senden",
+      "receive": "Vom Handy empfangen"
+    },
+    "empty": {
+      "title": "Noch nichts zu senden",
+      "description": "Auf diesem Gerät sind keine Einträge, also gibt es nichts zu senden. Um deine Einträge vom Handy zu holen, wähle oben Vom Handy empfangen. Oder füge etwas hinzu oder lade die Demodaten, dann erscheint es hier als Gruppe, die du senden kannst.",
+      "receive": "Vom Handy empfangen",
+      "loadDemo": "Demodaten laden"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Bewerbungen",
+      "hint": "Jede Phase, Notiz und jedes Ergebnis zu jeder einzelnen",
+      "summary_one": "{{count}} Bewerbung",
+      "summary_other": "{{count}} Bewerbungen"
+    },
+    "timeline": {
+      "label": "Erinnerungen und Termine",
+      "hint": "{{reminders}} erinnern dich, {{events}} sind datierte Termine",
+      "summary_one": "{{count}} Erinnerung oder Termin",
+      "summary_other": "{{count}} Erinnerungen und Termine"
+    },
+    "vault": {
+      "label": "Links und Textbausteine",
+      "hint": "{{links}} Links · {{snippets}} Textbausteine",
+      "summary_one": "{{count}} Link oder Textbaustein",
+      "summary_other": "{{count}} Links und Textbausteine"
+    },
+    "files": {
+      "label": "Dateien",
+      "hint": "Lebensläufe, Anschreiben und alles andere, was zu einer Bewerbung gespeichert ist",
+      "summary_one": "{{count}} Datei",
+      "summary_other": "{{count}} Dateien"
+    },
+    "keywords": {
+      "label": "Schlagwörter",
+      "hint": "Deine Schlagwortliste und jeder Eintrag, dem sie zugeordnet sind",
+      "summary_one": "{{count}} Schlagwort",
+      "summary_other": "{{count}} Schlagwörter"
+    },
+    "scout": {
+      "label": "Jobsuche",
+      "hint": "{{pipelines}} Suchen · {{postings}} gespeicherte Stellen · {{matches}} Treffer",
+      "summary_one": "{{count}} Jobsuche-Eintrag",
+      "summary_other": "{{count}} Jobsuche-Einträge"
+    },
+    "notes": {
+      "label": "Haftnotizen",
+      "hint": "Die Notizen an dich selbst auf deinem Dashboard",
+      "summary_one": "{{count}} Haftnotiz",
+      "summary_other": "{{count}} Haftnotizen"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Dein Name, Links, Suchbegriffe und die Schalter der Jobsuche",
+      "summary_one": "{{count}} Profil",
+      "summary_other": "{{count}} Profile"
+    },
+    "people": {
+      "label": "Personen",
+      "hint": "Referenzen, Kommissionsvorsitzende und Recruiter sowie die Bewerbungen, zu denen sie gehören",
+      "summary_one": "{{count}} Person",
+      "summary_other": "{{count}} Personen"
+    },
+    "background": {
+      "label": "Werdegang",
+      "hint": "Abschlüsse, Stellen, Publikationen und Fähigkeiten aus deinem Lebenslauf",
+      "summary_one": "{{count}} Werdegang-Eintrag",
+      "summary_other": "{{count}} Werdegang-Einträge"
+    },
+    "nothing": "nichts"
+  },
+  "stage": {
+    "sameNetwork": "Beide Geräte müssen im selben lokalen Netzwerk sein – die Einträge gehen direkt von einem zum anderen, ohne Server und ohne Relay.",
+    "send": {
+      "idle": {
+        "title": "Warte auf das andere Gerät",
+        "body": "Öffne jojo auf deinem Handy, wähle Übertragen, dann Von einem Computer empfangen, und scanne den Code hier. Beim Scannen vereinbaren die beiden Geräte einen Schlüssel, ohne dass dafür etwas gesendet wird. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Verbinde mit deinem Handy",
+        "body": "Frage die eingegebene Adresse nach ihrer Hälfte des Handshakes. Noch wurde nichts gesendet."
+      },
+      "packing": {
+        "title": "Sammle deine Einträge",
+        "body": "Lese alles aus der Liste unten von diesem Gerät. Noch nichts im Netzwerk."
+      },
+      "sending": {
+        "title": "Übertrage deine Einträge",
+        "body": "Versiegelte Blöcke, direkt über das lokale Netzwerk an dein Handy. Der Fortschritt steht neben dem eingegebenen Code."
+      },
+      "done": {
+        "title": "Alles wurde gesendet",
+        "body": "Dein Handy fragt, bevor es etwas ersetzt; was es entschieden hat, steht neben dem eingegebenen Code. Von diesem Gerät wurde nichts entfernt – eine Übertragung ist eine Kopie."
+      },
+      "failed": {
+        "title": "Die Übertragung wurde abgebrochen",
+        "body": "Auf diesem Gerät hat sich nichts geändert. Was schiefgelaufen ist, steht neben dem eingegebenen Code."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "Warte auf dein Handy",
+        "body": "Öffne jojo auf deinem Handy, wähle Übertragen, dann An einen Computer senden, und scanne den Code hier. Dein Handy zeigt dann einen kurzen Code, den du rechts eingibst. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Verbinde mit deinem Handy",
+        "body": "Frage die eingegebene Adresse nach ihrer Hälfte des Handshakes. Noch wurde nichts empfangen."
+      },
+      "receiving": {
+        "title": "Empfange die Einträge deines Handys",
+        "body": "Versiegelte Blöcke, direkt über das lokale Netzwerk von deinem Handy. Auf diesem Computer ändert sich nichts, bis du zustimmst."
+      },
+      "confirming": {
+        "title": "Alles ist angekommen",
+        "body": "Die Einträge deines Handys sind angekommen und geprüft. Hier hat sich noch nichts geändert – entscheide, ob sie ersetzen sollen, was auf diesem Computer ist."
+      },
+      "restoring": {
+        "title": "Ersetze die Einträge hier",
+        "body": "Schreibe, was dein Handy gesendet hat, über das, was auf diesem Computer war."
+      },
+      "done": {
+        "title": "Alles wurde übertragen",
+        "body": "Dieser Computer hat jetzt die Einträge deines Handys. Vom Handy wurde nichts entfernt – eine Übertragung ist eine Kopie."
+      },
+      "failed": {
+        "title": "Die Übertragung wurde abgebrochen",
+        "body": "Auf diesem Computer hat sich nichts geändert. Was schiefgelaufen ist, steht neben dem eingegebenen Code."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} – das ist jetzt auf diesem Computer, und das ersetzen die Einträge deines Handys.",
+      "sent": "{{summary}} – das wurde gesendet.",
+      "willMove": "{{summary}} – das wird übertragen."
+    },
+    "scanHint": "Scanne den Code hier mit der jojo-App auf deinem Handy – das ist der Schlüssel – und sie zeigt dir dann einen kurzen Code, den du rechts eingibst.",
+    "chooseGroup": "Wähle mindestens eine Gruppe zum Senden aus."
+  },
+  "qr": {
+    "label": "Kopplungscode. Scanne ihn mit der jojo-App auf deinem Handy: Öffne Übertragen und richte die Kamera auf dieses Quadrat."
+  },
+  "details": {
+    "title": "Details",
+    "hint": "diese Übertragung",
+    "records": "Einträge",
+    "recordsHint": "alles in den Gruppen unten",
+    "encryption": "Verschlüsselung",
+    "encryptionHint": "AES-256-GCM, Schlüssel per Kamera vereinbart",
+    "keyAgreed": "Schlüssel vereinbart",
+    "notPaired": "Noch nicht gekoppelt",
+    "route": "Weg",
+    "routeHint": "eine private Netzwerkadresse – nie das Internet",
+    "localNetwork": "Lokales Netzwerk",
+    "servers": "Server",
+    "serversHint": "kein Relay, kein Signaling, nichts gehostet",
+    "none": "Keine"
+  },
+  "payload": {
+    "label": "Dateien übertragen",
+    "noFiles": "Keine Dateien auf diesem Gerät",
+    "files_one": "{{count}} Datei – der langsamste Teil einer Übertragung",
+    "files_other": "{{count}} Dateien – der langsamste Teil einer Übertragung"
+  },
+  "connect": {
+    "title": "Verbinden",
+    "hintUnable": "nicht in diesem Browser",
+    "unable": "Dieser Browser kann sich nicht mit einem anderen Gerät in deinem Netzwerk verbinden – Safari und alle Browser auf iPhone oder iPad können das nicht, ebenso wenig Firefox auf der veröffentlichten Seite. Nutze Chrome oder Edge auf einem Computer – oder übertrage alles mit einer Sicherungsdatei aus den Einstellungen, das funktioniert überall und ohne Größenlimit.",
+    "hint": "vom anderen Gerät",
+    "intro": "Nach dem Scannen zeigt dein Handy einen kurzen Code. Gib ihn hier ein – so erfährt dieser Computer, wo das Handy ist, was ein Browser nicht selbst herausfinden kann.",
+    "codeLabel": "Der Code auf deinem Handy",
+    "send": "Senden",
+    "progress": "Fortschritt der Übertragung",
+    "reaching": "Verbinde mit deinem Handy …",
+    "gathering": "Sammle deine Einträge …",
+    "percentSent": "{{percent}} % gesendet",
+    "cancel": "Abbrechen",
+    "another": "An ein anderes Gerät senden"
+  },
+  "done": {
+    "applied": "Dein Handy hat jetzt diese Einträge.",
+    "appliedAt": "Dein Handy unter {{target}} hat jetzt diese Einträge.",
+    "declined": "Alles wurde gesendet, und dein Handy hat seine eigenen Einträge behalten – dort wurde nichts ersetzt.",
+    "failed": "Alles wurde gesendet, aber dein Handy konnte es nicht lesen, daher wurde dort nichts ersetzt. Versuch es noch einmal.",
+    "unknown": "Alles wurde gesendet. Dein Handy hat nicht gemeldet, ob es die Einträge übernommen hat – sieh dort nach.",
+    "unknownTo": "Alles wurde an {{target}} gesendet. Dein Handy hat nicht gemeldet, ob es die Einträge übernommen hat – sieh dort nach.",
+    "waiting": "Alles wurde gesendet. Dein Handy fragt, bevor es etwas ersetzt – bestätige dort, um abzuschließen.",
+    "waitingTo": "Alles wurde an {{target}} gesendet. Dein Handy fragt, bevor es etwas ersetzt – bestätige dort, um abzuschließen."
+  },
+  "receive": {
+    "title": "Vom Handy empfangen",
+    "hint": "von deinem Handy",
+    "unable": "Dieser Browser kann sich nicht mit einem anderen Gerät in deinem Netzwerk verbinden – Safari und alle Browser auf iPhone oder iPad können das nicht, ebenso wenig Firefox auf der veröffentlichten Seite. Nutze Chrome oder Edge auf einem Computer – oder exportiere auf deinem Handy eine Sicherung und öffne sie unter Einstellungen.",
+    "intro": "Öffne auf deinem Handy Übertragen, wähle An einen Computer senden und scanne den Code auf dieser Seite. Es zeigt dann einen kurzen Code – gib ihn hier ein. Beide Geräte müssen im selben lokalen Netzwerk sein.",
+    "codeLabel": "Der Code auf deinem Handy",
+    "receive": "Empfangen",
+    "reaching": "Verbinde mit deinem Handy …",
+    "progress": "Bisher {{size}} empfangen. Hier ändert sich nichts, bis du zustimmst.",
+    "cancel": "Abbrechen",
+    "restoring": "Ersetze die Einträge auf diesem Computer …",
+    "replaceWarning": "Empfangen ersetzt alles auf diesem Computer durch das, was auf deinem Handy ist, sobald du zustimmst. Um eine Kopie von dem zu behalten, was hier ist, lade vorher eine Sicherung herunter.",
+    "downloadFirst": "Vorher eine Sicherung herunterladen",
+    "twoBrowsers": {
+      "title": "Zwei Browser",
+      "hint": "zwischen zwei Computern",
+      "body": "Eine Webseite kann keine Verbindung annehmen, die des anderen Computers auch nicht, also können sich zwei Computer nicht miteinander verbinden. Exportiere auf dem einen eine Sicherung und öffne sie auf dem anderen – sie enthält jeden Eintrag und jedes Dokument.",
+      "export": "Sicherung exportieren"
+    },
+    "reload": "jojo neu laden"
+  },
+  "pullConfirm": {
+    "title": "Alles durch das ersetzen, was dein Handy gesendet hat?",
+    "description": "Dein Handy hat {{contents}} gesendet. {{replaces}}, und das lässt sich nicht rückgängig machen – der Verlauf geht mit. Lade vorher eine Sicherung herunter, wenn du dir nicht sicher bist.",
+    "confirm": "Alles ersetzen"
+  },
+  "handover": {
+    "sendingAgain": "Erneutes Senden ersetzt dort alles durch alles von hier."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Dieser Browser kann sich nicht mit einem anderen Gerät in deinem Netzwerk verbinden – Safari kann es nicht, kein Browser auf iPhone oder iPad kann es, und Firefox kann es nicht auf der veröffentlichten Seite. Nutze Chrome oder Edge auf einem Computer oder übertrage deine Einträge stattdessen mit einer Sicherungsdatei.",
+      "notLocal": "Diese Adresse ist nicht in einem lokalen Netzwerk. jojo verbindet sich nur mit einer privaten Adresse, damit die Übertragung nie über das Internet läuft.",
+      "unreachable": "Keine Antwort von dieser Adresse. Prüfe, ob beide Geräte im selben lokalen Netzwerk sind und ob dein Browser Geräte im lokalen Netzwerk suchen darf. Manche Gastnetzwerke verhindern, dass Geräte einander sehen.",
+      "refused": "Dieses Gerät hat die Verbindung abgelehnt. Prüfe, ob das Handy auf die Gegenrichtung eingestellt ist – Empfangen auf dem Handy, wenn dieser Computer sendet, Senden, wenn er empfängt – zeige dann einen neuen Code an und scanne ihn erneut.",
+      "oversized": "Dieses Gerät hat mit viel mehr geantwortet, als jojo erwartet, deshalb wurde das Lesen abgebrochen. Auf diesem Computer hat sich nichts geändert.",
+      "timeout": "Dieses Gerät antwortet nicht mehr. Lass jojo auf dem Handy mit eingeschaltetem Bildschirm geöffnet, zeige dann einen neuen Code an und versuch es noch einmal.",
+      "blocked": "Dein Browser hat dieser Seite den Zugriff auf Geräte in deinem lokalen Netzwerk verweigert. Erlaube ihn in den Website-Einstellungen (das Symbol links neben der Adresse) und versuch es dann noch einmal.",
+      "cancelled": "Abgebrochen.",
+      "conflict": "Dein Handy konnte seine Einträge nicht zum Senden sammeln. Sieh dir die Meldung auf dem Handy an – auf diesem Computer hat sich nichts geändert."
+    },
+    "dial": {
+      "unreadable": "Dieser Code enthält Zeichen, die jojo nicht verwendet. Vergleiche ihn mit dem anderen Bildschirm.",
+      "length": "Dieser Code hat die falsche Länge. Er hat zwölf Zeichen in drei Vierergruppen.",
+      "mistyped": "Dieser Code stimmt nicht – irgendwo ist ein Zeichen falsch. Gib ihn noch einmal ein."
+    },
+    "pull": {
+      "forged": "Ein Teil dessen, was ankam, stammte nicht von dem gekoppelten Handy, deshalb hat jojo alles verworfen. Auf diesem Computer hat sich nichts geändert – zeige einen neuen Code an und versuch es noch einmal.",
+      "oversized": "Dein Handy hat mehr gesendet, als jojo auf einmal annimmt, deshalb wurde das Lesen abgebrochen. Auf diesem Computer hat sich nichts geändert.",
+      "unrestorable": "Was dein Handy gesendet hat, lässt sich nicht wiederherstellen: {{reason}}. Auf diesem Computer hat sich nichts geändert.",
+      "declined": "Es wurde nichts geändert. Was dein Handy gesendet hat, wurde verworfen."
+    },
+    "unexpected": "Auf diesem Computer ist etwas schiefgelaufen und die Übertragung wurde abgebrochen. Auf dem anderen Gerät ist nichts zurückgeblieben – versuch es noch einmal oder übertrage deine Einträge mit einer Sicherungsdatei aus den Einstellungen.",
+    "unproven": "Dieses Gerät konnte nicht nachweisen, dass es den Code auf diesem Bildschirm gelesen hat. Zeige einen neuen Code an und scanne ihn erneut.",
+    "pairingFailed": "Beim Einrichten einer sicheren Kopplung auf diesem Gerät ist etwas schiefgelaufen."
+  }
+}

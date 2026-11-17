@@ -1,4 +1,5 @@
 import { strFromU8, unzipSync } from 'fflate'
+import { i18next } from '@/i18n/i18n'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { MAX_BYTES } from '@jojo/service/agent/markitdown'
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
@@ -64,11 +65,14 @@ export async function readOnDevice(uri: string, name: string): Promise<ConvertRe
     if (Number(stat.size) > MAX_ARCHIVE_BYTES) {
       return {
         ok: false,
-        reason: `That document is ${String(Math.round(Number(stat.size) / 1024 / 1024))} MB and the reader takes up to ${String(MAX_ARCHIVE_BYTES / 1024 / 1024)} MB.`,
+        reason: i18next.t('messages:reader.tooBig', {
+          size: Math.round(Number(stat.size) / 1024 / 1024),
+          max: MAX_ARCHIVE_BYTES / 1024 / 1024,
+        }),
       }
     }
   } catch {
-    return { ok: false, reason: 'The copy of that document is no longer on this device.' }
+    return { ok: false, reason: i18next.t('messages:reader.gone') }
   }
 
   try {
@@ -83,7 +87,7 @@ export async function readOnDevice(uri: string, name: string): Promise<ConvertRe
        * record. Saying so lets the caller fall through to MarkItDown, which has
        * OCR and may do better.
        */
-      return { ok: false, reason: 'Nothing could be read out of that document — it may be a scan.' }
+      return { ok: false, reason: i18next.t('messages:reader.empty') }
     }
     return { ok: true, markdown }
   } catch (error) {

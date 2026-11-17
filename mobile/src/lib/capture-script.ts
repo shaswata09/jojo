@@ -42,7 +42,8 @@ import {
  * injected script's completion value is whatever the last expression evaluated
  * to, and a non-serialisable value there warns on iOS.
  */
-export function captureScript(): string {
+export function captureScript(nonce: string): string {
+  const requestNonce = JSON.stringify(nonce)
   const stripTags = JSON.stringify(CAPTURE_STRIP_TAGS)
   const stripAttrs = JSON.stringify(CAPTURE_STRIP_ATTRS)
   const urlAttrs = JSON.stringify(CAPTURE_URL_ATTRS)
@@ -61,6 +62,7 @@ export function captureScript(): string {
     var SCHEMES = ${schemes};
     var HREF_ATTR = ${hrefAttr};
     var UNCLAMP_ATTR = ${unclampAttr};
+    var NONCE = ${requestNonce};
 
     var doc = document.documentElement.cloneNode(true);
     var assets = [];
@@ -389,6 +391,7 @@ export function captureScript(): string {
 
     window.ReactNativeWebView.postMessage(JSON.stringify({
       type: 'jojo:capture',
+      nonce: NONCE,
       url: location.href,
       title: (document.title || '').trim(),
       html: '<!doctype html>' + doc.outerHTML,
@@ -399,10 +402,42 @@ export function captureScript(): string {
   } catch (error) {
     window.ReactNativeWebView.postMessage(JSON.stringify({
       type: 'jojo:capture-failed',
+      nonce: ${requestNonce},
       message: String((error && error.message) || error),
     }));
   }
 })();
 true;
 `
+}
+
+/**
+ * A fresh, unguessable token for one press of Keep.
+ *
+ * The posting browser is an ordinary WebView: any page in it can call
+ * `window.ReactNativeWebView.postMessage` with a `jojo:capture` of its own
+ * making, and the screen used to act on it — fetching the addresses the page
+ * named, filing a "Job postings" record under the application and closing the
+ * screen, with nobody having pressed anything. The script carries this token
+ * back, and `acceptsCapture` only lets through the reply to the request the app
+ * actually made.
+ */
+export function newCaptureNonce(): string {
+  try {
+    const bytes = new Uint8Array(16)
+    globalThis.crypto.getRandomValues(bytes)
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+  } catch {
+    // No secure source (see `lib/secure-random.ts`). The token only has to be
+    // one the page cannot know before Keep is pressed; it guards no secret.
+    return `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`
+  }
+}
+
+/**
+ * Whether a message is the answer to the capture the app asked for: one is
+ * pending, and the message carries its token. Anything else is a page talking.
+ */
+export function acceptsCapture(raw: { nonce?: unknown }, pending: string | null): boolean {
+  return pending !== null && pending !== '' && raw.nonce === pending
 }

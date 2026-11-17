@@ -23,6 +23,8 @@
  */
 
 /** True whenever the form is describing a timed item rather than an all-day one. */
+import { i18next } from '@/i18n/i18n'
+
 export type TimelineFormValues = {
   title: string
   /** 'YYYY-MM-DD', or empty while the date field is being cleared. */
@@ -72,13 +74,15 @@ export function timelineFormErrors({
   time,
 }: TimelineFormValues): TimelineFormErrors {
   return {
-    ...(title.trim() ? {} : { title: 'Give it a title you will recognise.' }),
-    ...(date ? {} : { date: 'Pick a date — an undated item has nowhere to appear.' }),
+    ...(title.trim() ? {} : { title: i18next.t('messages:timelineForm.title') }),
+    ...(date ? {} : { date: i18next.t('messages:timelineForm.date') }),
     // Only asked when the switch says there is a time to give. An all-day item
     // keeps whatever is in the box so that flipping the switch back gives the
     // typed time rather than the default, and half-typed text sitting behind a
     // hidden field must not block Save.
-    ...(allDay || minutesOf(time) !== undefined ? {} : { time: 'Use a time like 14:30.' }),
+    ...(allDay || minutesOf(time) !== undefined
+      ? {}
+      : { time: i18next.t('messages:timelineForm.time') }),
   }
 }
 

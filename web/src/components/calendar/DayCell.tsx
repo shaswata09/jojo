@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DraggableChip } from '@/components/calendar/EventChip'
 import { DAY_DROP_PREFIX } from '@/components/calendar/drop-target'
 import { DAY_DOT } from '@/components/calendar/marks'
@@ -50,6 +51,7 @@ export function DayCell({
   onAdd: () => void
   onOpen: (item: TimelineItem) => void
 }) {
+  const { t } = useTranslation('calendar')
   const { setNodeRef, isOver } = useDroppable({ id: `${DAY_DROP_PREFIX}${iso}` })
 
   // A compact cell has room for one chip and the count; a second would push the
@@ -67,7 +69,7 @@ export function DayCell({
     <div
       ref={setNodeRef}
       className={cn(
-        'group/cell relative flex flex-col rounded-md border p-1.5 text-left transition-colors',
+        'group/cell relative flex flex-col rounded-md border p-1.5 text-start transition-colors',
         tall ? 'min-h-[56px] sm:min-h-[76px]' : 'min-h-[38px] sm:min-h-[48px]',
         // The drop target cannot be a background swap: --accent-soft is
         // byte-identical to --well in both themes, so the "selected" fill you
@@ -105,7 +107,7 @@ export function DayCell({
         type="button"
         onClick={onSelect}
         aria-pressed={isSelected}
-        aria-label={`${label}, ${items.length} ${items.length === 1 ? 'event' : 'events'}`}
+        aria-label={t('dayCell.label', { label, count: items.length })}
         className={cn(
           "grid size-5 shrink-0 cursor-pointer place-items-center rounded-full text-xs font-medium after:absolute after:inset-0 after:content-['']",
           isToday ? 'bg-accent text-[color:var(--accent-fg)]' : 'text-text-2',
@@ -123,10 +125,10 @@ export function DayCell({
         type="button"
         onClick={onAdd}
         tabIndex={-1}
-        aria-label={`Add an event on ${label}`}
-        title={`Add an event on ${label}`}
+        aria-label={t('dayCell.add', { label })}
+        title={t('dayCell.add', { label })}
         className={cn(
-          'absolute top-1.5 right-1.5 z-[1] hidden size-5 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-panel hover:text-text-1 sm:grid',
+          'absolute end-1.5 top-1.5 z-[1] hidden size-5 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-panel hover:text-text-1 sm:grid',
           REVEAL_IN_CELL,
         )}
       >
@@ -141,7 +143,7 @@ export function DayCell({
           <span key={e.id} aria-hidden className={cn('size-1 rounded-full', DAY_DOT[markOf(e)])} />
         ))}
         {items.length > 3 ? (
-          <span aria-hidden className="ml-0.5 text-[10px] leading-none text-text-3">
+          <span aria-hidden className="ms-0.5 text-[10px] leading-none text-text-3">
             +{items.length - 3}
           </span>
         ) : null}
@@ -156,7 +158,9 @@ export function DayCell({
             third stub — a chip clipped to 'Book trave…' tells you less than the
             fact that two more things exist. */}
         {items.length > maxChips ? (
-          <span className="px-1 text-xs text-text-3">+{items.length - maxChips} more</span>
+          <span className="px-1 text-xs text-text-3">
+            {t('dayCell.more', { count: items.length - maxChips })}
+          </span>
         ) : null}
       </div>
     </div>

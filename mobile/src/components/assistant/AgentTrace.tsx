@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import { readStepDetail } from '@jojo/service/agent/execute'
 import { Button } from '@/components/ui/Button'
@@ -30,10 +31,10 @@ type StatusLook = {
 }
 
 const STATUS: Record<AgentStep['status'], StatusLook> = {
-  running: { icon: 'loader', colour: (c) => c.text3, label: 'Running' },
-  done: { icon: 'check', colour: (c) => c.success, label: 'Done' },
-  failed: { icon: 'x', colour: (c) => c.danger, label: 'Failed' },
-  declined: { icon: 'slash', colour: (c) => c.warning, label: 'Declined' },
+  running: { icon: 'loader', colour: (c) => c.text3, label: 'trace.status.running' },
+  done: { icon: 'check', colour: (c) => c.success, label: 'trace.status.done' },
+  failed: { icon: 'x', colour: (c) => c.danger, label: 'trace.status.failed' },
+  declined: { icon: 'slash', colour: (c) => c.warning, label: 'trace.status.declined' },
 }
 
 /** A read is grey and everything that writes is not. Delete is red. */
@@ -41,15 +42,15 @@ const EFFECT: Record<
   AgentStep['effect'],
   { tone: 'gray' | 'teal' | 'amber' | 'red'; label: string }
 > = {
-  read: { tone: 'gray', label: 'read' },
+  read: { tone: 'gray', label: 'trace.effect.read' },
   // A tool that does not exist. Amber rather than grey: it is not a harmless
   // read, it is a call that never had a meaning.
-  unknown: { tone: 'amber', label: 'no such tool' },
-  create: { tone: 'teal', label: 'added' },
-  update: { tone: 'teal', label: 'changed' },
-  move: { tone: 'teal', label: 'moved' },
-  delete: { tone: 'red', label: 'deleted' },
-  admin: { tone: 'red', label: 'store' },
+  unknown: { tone: 'amber', label: 'trace.effect.unknown' },
+  create: { tone: 'teal', label: 'trace.effect.create' },
+  update: { tone: 'teal', label: 'trace.effect.update' },
+  move: { tone: 'teal', label: 'trace.effect.move' },
+  delete: { tone: 'red', label: 'trace.effect.delete' },
+  admin: { tone: 'red', label: 'trace.effect.admin' },
 }
 
 /** Whether a step changed anything — the same rule web's trace uses. */
@@ -65,6 +66,7 @@ export function StepRow({
   /** Set when this step is waiting on a decision. Renders the two buttons. */
   pending?: { allow: () => void; decline: () => void }
 }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   const [open, setOpen] = useState(false)
   const status = STATUS[step.status]
@@ -74,7 +76,7 @@ export function StepRow({
     <View style={{ borderWidth: 1, borderColor: c.hairline, borderRadius: radius.lg }}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${step.title}, ${status.label}`}
+        accessibilityLabel={`${step.title}, ${t(status.label)}`}
         accessibilityState={{ expanded: open }}
         onPress={() => {
           setOpen((v) => !v)
@@ -91,7 +93,7 @@ export function StepRow({
             {step.title}
           </Txt>
           <Chip tone={effect.tone} size="sm">
-            {effect.label}
+            {t(effect.label)}
           </Chip>
           <Feather name={open ? 'chevron-up' : 'chevron-down'} size={14} color={c.text3} />
         </View>
@@ -129,12 +131,12 @@ export function StepRow({
           <View style={[s.row, { gap: space[2] }]}>
             <Feather name="alert-triangle" size={16} color={c.warning} />
             <Txt size="xs" tone="secondary" style={s.fill}>
-              The agent asked to do this. Nothing has changed yet.
+              {t('trace.asked')}
             </Txt>
           </View>
           <View style={[s.row, { justifyContent: 'flex-end', gap: space[2] }]}>
-            <Button label="Don’t" variant="outline" onPress={pending.decline} />
-            <Button label="Allow" onPress={pending.allow} />
+            <Button label={t('trace.dont')} variant="outline" onPress={pending.decline} />
+            <Button label={t('trace.allow')} onPress={pending.allow} />
           </View>
         </View>
       ) : null}
@@ -148,7 +150,7 @@ export function StepRow({
             gap: space[2],
           }}
         >
-          <Detail label="Arguments" value={JSON.stringify(step.args, null, 2)} />
+          <Detail label={t('trace.arguments')} value={JSON.stringify(step.args, null, 2)} />
           <Result step={step} />
         </View>
       ) : null}
@@ -161,7 +163,7 @@ export function StepRow({
           style={{ borderTopWidth: 1, borderTopColor: c.hairline, paddingHorizontal: space[2] }}
         >
           <Button
-            label="Undo this step"
+            label={t('trace.undoStep')}
             icon="rotate-ccw"
             variant="ghost"
             onPress={() => {
@@ -182,8 +184,7 @@ export function StepRow({
           }}
         >
           <Txt size="xs" tone="muted">
-            This step cannot be undone from here. More → Settings → Records keeps a log of what
-            changed and can reverse the most recent one.
+            {t('trace.cannotUndo')}
           </Txt>
         </View>
       ) : null}
@@ -200,16 +201,15 @@ export function StepRow({
  * them apart with the same predicate that chose the format.
  */
 function Result({ step }: { step: AgentStep }) {
+  const { t } = useTranslation('components')
   const detail = readStepDetail(step)
   if (!detail) return null
-  if (detail.kind === 'text') return <Detail label="Result" value={detail.value} />
+  if (detail.kind === 'text') return <Detail label={t('trace.result')} value={detail.value} />
   return (
     <Detail
-      label="Result"
+      label={t('trace.result')}
       value={JSON.stringify(detail.value, null, 2)}
-      {...(detail.truncated
-        ? { note: 'Cut short — the agent was told to narrow the search to see the rest.' }
-        : {})}
+      {...(detail.truncated ? { note: t('trace.truncated') } : {})}
     />
   )
 }
@@ -254,6 +254,7 @@ function Detail({ label, value, note }: { label: string; value: string; note?: s
 
 /** Shown while the model is deciding what to do, before any step exists. */
 export function Thinking({ model }: { model: string }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   return (
     <View
@@ -271,7 +272,7 @@ export function Thinking({ model }: { model: string }) {
     >
       <ActivityIndicator size="small" color={c.text3} />
       <Txt size="sm" tone="muted" numberOfLines={1} style={s.fill}>
-        Working — {model} is deciding what to do…
+        {t('trace.thinking', { model })}
       </Txt>
     </View>
   )

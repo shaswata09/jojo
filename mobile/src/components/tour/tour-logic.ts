@@ -37,11 +37,27 @@ export type Box = { x: number; y: number; width: number; height: number }
  * so the slot is a fifth of it — measuring the whole bar once is simpler and
  * steadier than wrapping each tab button.
  */
-export function tabSlot(bar: Box, name: string): Box | null {
-  const at = TAB_ORDER.indexOf(name as (typeof TAB_ORDER)[number])
-  if (at < 0) return null
+export function tabSlot(bar: Box, name: string, rtl = false): Box | null {
+  const index = TAB_ORDER.indexOf(name as (typeof TAB_ORDER)[number])
+  if (index < 0) return null
+  // In a right-to-left language the bar is mirrored: Today is the rightmost.
+  const at = rtl ? TAB_ORDER.length - 1 - index : index
   const width = bar.width / TAB_ORDER.length
   return { x: bar.x + width * at, y: bar.y, width, height: bar.height }
+}
+
+/**
+ * The `left` style that puts a box at physical x `x`.
+ *
+ * Every box here is measured with `measureInWindow`, which is physical. React
+ * Native reads `left` as the START edge, which in a right-to-left language is
+ * the right, so `left: x` drew the spotlight hole and its touch shields at the
+ * mirror image of the control — and a shield landed over the very control the
+ * step asked the person to press. In RTL the start offset is the distance from
+ * the right edge of the overlay instead.
+ */
+export function startInset(x: number, width: number, viewWidth: number, rtl: boolean): number {
+  return rtl ? viewWidth - x - width : x
 }
 
 export const EDGE = 12

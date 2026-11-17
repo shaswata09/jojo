@@ -6,6 +6,7 @@ import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Permanent column at `lg` and above; an off-canvas drawer below it.
@@ -15,6 +16,7 @@ import { useEffect, useRef } from 'react'
  * desktop, where it is just a navigation landmark. Hence the media query.
  */
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation('layout')
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
   const closeRef = useRef<HTMLButtonElement>(null)
   const asideRef = useRef<HTMLElement>(null)
@@ -69,16 +71,22 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
        * effect above moves focus to the close button.
        */
       {...(offCanvas ? { inert: true } : {})}
-      {...(!isDesktop ? { role: 'dialog', 'aria-modal': open, 'aria-label': 'Navigation' } : {})}
+      {...(!isDesktop
+        ? { role: 'dialog', 'aria-modal': open, 'aria-label': t('sidebar.navigation') }
+        : {})}
       className={cn(
         'surface z-50 flex w-[min(17rem,85vw)] flex-col gap-1.5 rounded-lg px-3.5 py-5',
         // Mobile: floating off-canvas drawer. Longhand insets rather than
         // `inset-y-*`, so the lg: overrides below don't depend on Tailwind's
-        // shorthand-vs-longhand ordering.
-        'fixed top-3 bottom-3 left-3 overflow-y-auto transition-transform duration-200 ease-out',
-        open ? 'translate-x-0' : '-translate-x-[calc(100%+1rem)]',
+        // shorthand-vs-longhand ordering. On the inline START, and hidden
+        // off that edge: in Arabic the button that opens it is on the right,
+        // and a drawer sliding in from the left came from the opposite side.
+        'fixed start-3 top-3 bottom-3 overflow-y-auto transition-transform duration-200 ease-out',
+        open
+          ? 'translate-x-0'
+          : '-translate-x-[calc(100%+1rem)] max-lg:rtl:translate-x-[calc(100%+1rem)]',
         // Desktop: permanent sticky column.
-        'lg:sticky lg:top-5 lg:bottom-auto lg:left-auto lg:h-[calc(100dvh-2.5rem)] lg:w-[232px]',
+        'lg:sticky lg:start-auto lg:top-5 lg:bottom-auto lg:h-[calc(100dvh-2.5rem)] lg:w-[232px]',
         'lg:shrink-0 lg:translate-x-0 lg:transition-none',
         'motion-reduce:transition-none',
       )}
@@ -90,7 +98,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             ref={closeRef}
             type="button"
             onClick={onClose}
-            aria-label="Close navigation"
+            aria-label={t('sidebar.close')}
             className="grid size-8 place-items-center rounded-full border border-white/20 bg-black/25 text-white/80 backdrop-blur-sm hover:text-white lg:hidden"
           >
             <X className="size-4" strokeWidth={1.7} />

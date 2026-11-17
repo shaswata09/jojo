@@ -1,0 +1,51 @@
+{
+  "chatWithJojo": "Converse com o jojo",
+  "newConversation": "Nova conversa",
+  "newAboutOpen": "Nova conversa sobre a candidatura aberta",
+  "hideConversations": "Ocultar conversas",
+  "showConversations": "Mostrar conversas",
+  "undo": "Desfazer",
+  "overflow_one": "Mais {{count}} conversa aberta",
+  "overflow_many": "Mais {{count}} conversas abertas",
+  "overflow_other": "Mais {{count}} conversas abertas",
+  "grip": {
+    "labelCorner": "Mover o chat para o lado — no canto. As setas o movem; clique duas vezes para devolvê-lo ao canto.",
+    "labelFarLeft": "Mover o chat para o lado — no extremo esquerdo. As setas o movem; clique duas vezes para devolvê-lo ao canto.",
+    "labelFarRight": "Mover o chat para o lado — no extremo direito. As setas o movem; clique duas vezes para devolvê-lo ao canto.",
+    "labelPartWay": "Mover o chat para o lado — a {{percent}}% do caminho para a esquerda. As setas o movem; clique duas vezes para devolvê-lo ao canto.",
+    "labelPartWayRight": "Mover o chat para o lado — a {{percent}}% do caminho para a direita. As setas o movem; clique duas vezes para devolvê-lo ao canto.",
+    "title": "Arraste para tirar o chat do caminho · clique duas vezes para devolvê-lo ao canto"
+  },
+  "prompts": {
+    "about": {
+      "left": "O que falta fazer nesta candidatura?",
+      "followUp": "Escreva um e-mail de acompanhamento para esta",
+      "summarise": "Resuma esta candidatura"
+    },
+    "general": {
+      "waiting": "Do que estou esperando resposta?",
+      "noDeadline": "Quais candidaturas não têm prazo?"
+    }
+  },
+  "window": {
+    "label": "Conversa: {{title}}",
+    "back": "Voltar às conversas",
+    "working": "Trabalhando",
+    "openInAssistant": "Abrir no Assistente",
+    "open": "Abrir esta conversa",
+    "minimise": "Minimizar esta conversa",
+    "close": "Fechar esta conversa",
+    "closeTitle": "Fechar — ela continua nas suas conversas",
+    "about": "Sobre <name>{{name}}</name>",
+    "detachAria": "Começar esta conversa sem um assunto específico",
+    "unfileAria": "Desarquivar esta conversa da candidatura",
+    "detachTitle": "Não é sobre esta candidatura",
+    "unfileTitle": "Desarquivar desta candidatura",
+    "notConfigured": "Conecte um modelo em <settings>Configurações</settings> para conversar com o jojo aqui. Tudo fica neste dispositivo.",
+    "askAbout": "Pergunte o que quiser sobre {{name}} — o jojo sabe que é desta candidatura que você está falando.",
+    "askGeneral": "Peça ao jojo para encontrar algo, adicionar uma candidatura ou fazer uma avançar.",
+    "composerLabel": "Mensagem para o jojo em {{title}}",
+    "placeholderAbout": "Pergunte sobre {{org}}…",
+    "placeholder": "Pergunte ao jojo…"
+  }
+}

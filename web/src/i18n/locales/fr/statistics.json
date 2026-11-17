@@ -1,0 +1,29 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Mesuré",
+        "hint": "Compté à partir de vos propres données"
+      },
+      "suggested": {
+        "label": "Suggéré",
+        "hint": "Général, ou mesuré par rapport à une recherche type plutôt qu’à la vôtre"
+      }
+    },
+    "title": "Que faire maintenant",
+    "intro": "Classé selon ce que vos données appuient, puis selon ce qui coûte le moins."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} sur {{of}}",
+    "rate": "{{rate}} % · probablement {{range}}",
+    "groupReplied": "Réponses, par {{dimension}}",
+    "groupInterviews": "Entretiens, par {{dimension}}",
+    "confident": "Les intervalles ne se chevauchent pas : la différence est réelle, et {{best}} mérite davantage vos efforts.",
+    "unconfident": "Les intervalles se chevauchent : ce sont deux chiffres, pas une différence. D’autres données les sépareront ou combleront l’écart.",
+    "tooFew_one": "{{count}} autre groupe a moins de {{min}} enregistrements et n’est pas comparé.",
+    "tooFew_many": "{{count}} autres groupes ont moins de {{min}} enregistrements et ne sont pas comparés.",
+    "tooFew_other": "{{count}} autres groupes ont moins de {{min}} enregistrements et ne sont pas comparés.",
+    "title": "Ce qui fonctionne",
+    "intro": "La barre indique où se situe vraisemblablement le taux réel ; la ligne, ce que vous avez mesuré. Une bande large signifie qu’il y a encore trop peu de données pour être sûr."
+  }
+}

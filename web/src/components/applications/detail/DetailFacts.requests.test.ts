@@ -15,23 +15,27 @@ import type { FormState } from '@/components/applications/dialog/form-state'
 import facts from './DetailFacts.tsx?raw'
 import header from './DetailHeader.tsx?raw'
 import note from './NotePanel.tsx?raw'
+import en from '@/i18n/locales/en/applications.json'
 import detail from '@/routes/ApplicationDetail.tsx?raw'
 
 const FILES = { facts, header, note, detail } as const
 
 /** Where each form field is drawn on the record, and the line that draws it. */
 const SHOWN_AT = {
-  org: ['facts', /label: 'Employer',[\s\S]*?\ba\.org\b/],
+  org: ['facts', /label: t\('facts\.employer'\),[\s\S]*?\ba\.org\b/],
   // The title is `displayName(a)`, which is "org — role".
   role: ['header', /\{displayName\(a\)\}/],
   roleTag: ['header', /<Chip>\{a\.roleTag\}<\/Chip>/],
   stage: ['header', /<StageMenu\s+value=\{a\.stage\}/],
-  source: ['facts', /\{ label: 'Source', value: a\.source \}/],
-  url: ['facts', /label: 'Posting',\s*value: a\.url \?/],
-  postingId: ['facts', /\{ label: 'Posting ID', value: a\.postingId \}/],
-  confirmationRef: ['facts', /\{ label: 'Confirmation reference', value: a\.confirmationRef \}/],
-  location: ['facts', /\{ label: 'Location', value: a\.location \}/],
-  comp: ['facts', /\{ label: 'Compensation', value: a\.comp\b/],
+  source: ['facts', /\{ label: t\('facts\.source'\), value: a\.source \}/],
+  url: ['facts', /label: t\('facts\.posting'\),\s*value: a\.url \?/],
+  postingId: ['facts', /\{ label: t\('facts\.postingId'\), value: a\.postingId \}/],
+  confirmationRef: [
+    'facts',
+    /\{ label: t\('facts\.confirmationRef'\), value: a\.confirmationRef \}/,
+  ],
+  location: ['facts', /\{ label: t\('facts\.location'\), value: a\.location \}/],
+  comp: ['facts', /\{ label: t\('facts\.compensation'\), value: a\.comp\b/],
   deadline: ['detail', /deadline=\{applicationDeadlineOf\(items\)\}/],
   note: ['note', /htmlFromNote\(a\.note,/],
   // The note's formatting (Q268), drawn by the same panel from the node.
@@ -48,6 +52,8 @@ describe('Q284 — every field from the form is shown on the record', () => {
   })
 
   it('draws the date the deadline chip carries in the header', () => {
-    expect(header).toContain('Deadline {shortDate(deadline.date)}')
+    expect(header).toContain('i18nKey="header.deadlineChip"')
+    expect(header).toContain('date: domain.shortDate(deadline.date)')
+    expect(en.header.deadlineChip).toContain('Deadline {{date}}')
   })
 })

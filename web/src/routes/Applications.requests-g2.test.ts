@@ -58,9 +58,15 @@ describe('Q047 — the table fits the page with its own scroll, filters and sear
   })
 
   it('shows the filters, with a search box and a stage filter for the table', () => {
-    expect(page).toContain('<ApplicationsFilters params={params} pool={pool} stageCounts={stageCounts} />')
+    expect(page).toContain(
+      '<ApplicationsFilters params={params} pool={pool} stageCounts={stageCounts} />',
+    )
     expect(filters).toMatch(/id="applications-search"\s+type="search"/)
-    expect(filters).toContain("onChange={(e) => params.set({ q: e.target.value })}")
+    // The box holds its own text and writes `?q=` behind it (perf-1: bound
+    // straight to the URL it dropped keystrokes on a slow re-render).
+    expect(filters).toContain('onChange={(e) => setText(e.target.value)}')
+    expect(filters).toMatch(/echo\.sent\(text\)\s*onSearch\(text\)/)
+    expect(filters).toContain('const search = useCallback((q: string) => set({ q }), [set])')
     expect(filters).toMatch(/params\.view === 'table' \? \(\s*<BucketFilter/)
   })
 })

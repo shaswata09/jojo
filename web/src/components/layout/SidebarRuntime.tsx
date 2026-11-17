@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import type { DotStatus } from '@/components/common/StatusDot'
 import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { listModels } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { runtimeTiles, type ModelState } from '@/components/layout/runtime-tiles'
@@ -93,9 +94,9 @@ function useModelState(): ModelState {
 
 /** Named in each tile's tooltip, so a click never lands somewhere unannounced. */
 const RUNTIME_DEST: Record<string, string> = {
-  [graphPath()]: 'the graph',
-  [transferPath()]: 'Transfer',
-  [settingsPath()]: 'Settings',
+  [graphPath()]: 'runtime.dest.graph',
+  [transferPath()]: 'runtime.dest.transfer',
+  [settingsPath()]: 'runtime.dest.settings',
 }
 
 /** Status carried by the icon's colour once the dot and the label are gone. */
@@ -107,6 +108,7 @@ const RUNTIME_TONE: Record<DotStatus, string> = {
 
 /** The three runtime tiles, pinned to the foot of the column. */
 export function SidebarRuntime({ tabIndex }: { tabIndex?: number }) {
+  const { t } = useTranslation('layout')
   const status = useStoreStatus()
   const { interrupted } = useBoot()
   const model = useModelState()
@@ -116,7 +118,9 @@ export function SidebarRuntime({ tabIndex }: { tabIndex?: number }) {
   return (
     // The guided tour lights the whole block, heading and tiles (components/tour).
     <div className="mt-auto flex flex-col gap-[7px] pt-4" data-tour="runtime">
-      <div className="px-2.5 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Runtime</div>
+      <div className="px-2.5 pb-0.5 text-xs tracking-wide text-text-3 uppercase">
+        {t('runtime.heading')}
+      </div>
       {/* Icon over value, four up. Colour carries health, the icon carries
           what it is, the text carries the value. The label survives as the
           tooltip and as the accessible name — an icon above "saved here" says
@@ -144,7 +148,11 @@ export function SidebarRuntime({ tabIndex }: { tabIndex?: number }) {
             key={r.label}
             type="button"
             onClick={() => navigate(r.to)}
-            title={`${r.label} — ${r.detail ?? r.meta}. Opens ${RUNTIME_DEST[r.to] ?? 'Settings'}`}
+            title={t('runtime.tileTitle', {
+              label: r.label,
+              detail: r.detail ?? r.meta,
+              destination: t(RUNTIME_DEST[r.to] ?? 'runtime.dest.settings'),
+            })}
             // Not tabbable while the drawer is closed off-screen, matching
             // the nav links above.
             tabIndex={tabIndex}

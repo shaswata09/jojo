@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojos Moves",
+    "hint": "Wähle einen aus oder zeichne seine Geste auf den Roboter.",
+    "trigger": "jojos Moves",
+    "triggerAria": "jojos Moves und Credits",
+    "plays": "spielt",
+    "modelCredit": "Robotermodell:"
+  },
+  "theme": {
+    "toggle": "Design wechseln",
+    "toLight": "Zum hellen Design wechseln",
+    "toDark": "Zum dunklen Design wechseln"
+  },
+  "poke": "jojo anstupsen"
+}

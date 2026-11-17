@@ -1,0 +1,249 @@
+{
+  "common": {
+    "undo": "Desfazer",
+    "cancel": "Cancelar"
+  },
+  "addFromLink": {
+    "title": "Candidatura a partir de um link",
+    "description": "O modelo lê a vaga, preenche o formulário e marca as suas palavras-chave das quais a vaga claramente trata. A página fica guardada no cofre, em Vagas de emprego, e nada é salvo como candidatura até você decidir.",
+    "url": "URL da vaga",
+    "addressOnly": "Usar só o endereço",
+    "reading": "Lendo…",
+    "retry": "Tentar de novo",
+    "submit": "Ler e preencher",
+    "failed": "Não foi possível ler a vaga.",
+    "steps": {
+      "reading": "Buscando a página",
+      "asking": "Lendo",
+      "saving": "Salvando a vaga"
+    },
+    "toast": {
+      "title": "Vaga salva e lida",
+      "kept": "{{name}} está no cofre e será vinculada à candidatura quando você salvar.",
+      "gaps_one": "{{count}} campo não estava na página.",
+      "gaps_other": "{{count}} campos não estavam na página.",
+      "tags_one": "{{count}} das suas palavras-chave está marcada.",
+      "tags_other": "{{count}} das suas palavras-chave estão marcadas."
+    }
+  },
+  "application": {
+    "newTitle": "Nova candidatura",
+    "editTitle": "Editar {{name}}",
+    "add": "Adicionar candidatura",
+    "save": "Salvar alterações",
+    "checking": "Procurando duplicatas…",
+    "noRecord": "Esta folha foi aberta sem um registro para editar",
+    "description": {
+      "edit": "As alterações substituem os dados atuais, e o prazo acompanha.",
+      "prefilledTagged": "Preenchido com o que você colou — confira o empregador, a função e as palavras-chave antes de salvar.",
+      "prefilled": "Preenchido com o que você colou — confira o empregador e a função antes de salvar.",
+      "create": "Acompanhe uma vaga para a qual você está se candidatando. Os campos com asterisco são obrigatórios."
+    },
+    "errors": {
+      "org": "Informe o empregador — é nele que o registro fica guardado.",
+      "role": "Informe a função, para que duas candidaturas no mesmo lugar não se confundam.",
+      "roleTag": "Escolha uma etiqueta de função — o filtro de funções e os gráficos a usam.",
+      "url": "Isso não é um link que um navegador consiga abrir — inclua https://."
+    },
+    "fields": {
+      "org": "Organização",
+      "orgPlaceholder": "Empregador ou instituição",
+      "role": "Cargo",
+      "rolePlaceholder": "ex.: Analista de dados sênior",
+      "roleTag": "Etiqueta de função",
+      "pickRoleTag": "Escolha uma etiqueta de função",
+      "roleTagDescription": "O eixo que o filtro de funções e os gráficos usam.",
+      "stage": "Etapa",
+      "deadline": "Prazo",
+      "deadlineHint": "Coloca uma entrada com data no calendário e na próxima semana.",
+      "source": "Origem",
+      "sourceNotSet": "Não definida",
+      "location": "Local",
+      "locationPlaceholder": "Cidade ou Remoto",
+      "comp": "Remuneração",
+      "compPlaceholder": "ex.: US$ 96 mil + ações",
+      "url": "URL da vaga",
+      "postingId": "ID da vaga",
+      "postingIdHint": "O número da vaga ou da requisição, se a vaga informar.",
+      "postingIdPlaceholder": "ex.: R-2024-0312",
+      "note": "Nota",
+      "notePlaceholder": "O que ainda precisa acontecer antes de enviar.",
+      "keywords": "Palavras-chave"
+    },
+    "toast": {
+      "draftDiscarded": "Rascunho descartado",
+      "changesDiscarded": "Alterações descartadas",
+      "nothingAdded": "Nada foi adicionado. Desfazer traz o formulário de volta como você deixou.",
+      "unchanged": "{{name}} não mudou. Desfazer traz suas edições de volta.",
+      "recordUnchanged": "O registro não mudou. Desfazer traz suas edições de volta.",
+      "added": "{{name}} adicionada",
+      "deadlineOnCalendar": "O prazo de {{date}} está no calendário.",
+      "noDeadline": "Ainda sem prazo — adicione um e ele aparece na próxima semana.",
+      "postingFiled": "A vaga está vinculada a ela.",
+      "saved": "Alterações salvas",
+      "deadlineRemoved": "{{name}} — o prazo saiu do calendário.",
+      "restoreDeadline": "Restaurar prazo"
+    },
+    "duplicate": {
+      "title": "Parece uma vaga que você já tem",
+      "modelSame": "O modelo as leu como a mesma vaga.",
+      "modelReading": " — leitura do modelo; confira abaixo.",
+      "existing": "O que você já tem",
+      "adding": "O que você está adicionando",
+      "untitled": "Sem título",
+      "postingId": "ID da vaga {{id}}",
+      "openYours": "Abrir a que você tem",
+      "openExisting": "Abrir {{name}}, que você já tem",
+      "tapToOpen": "Toque para abrir, ou continue e adicione esta como um segundo registro.",
+      "editInstead": "Editar em vez disso",
+      "discard": "Descartar",
+      "addAnyway": "Adicionar mesmo assim"
+    },
+    "since": {
+      "today": "hoje",
+      "yesterday": "ontem",
+      "daysAgo_one": "há {{count}} dia",
+      "daysAgo_other": "há {{count}} dias"
+    }
+  },
+  "draft": {
+    "title": "Escrever uma mensagem",
+    "description": {
+      "forApp": "Para {{name}}. Nada é gerado e nada é enviado — preencha as lacunas, copie para seu app de e-mail e depois marque como enviada.",
+      "forItem": "Para {{name}} · {{item}}. Nada é gerado e nada é enviado — preencha as lacunas, copie para seu app de e-mail e depois marque como enviada.",
+      "unlinked": "Não vinculada a nenhuma candidatura, então [ROLE] e [DATE] ficam em branco. Nada é gerado e nada é enviado — preencha as lacunas, copie para seu app de e-mail e depois marque como enviada."
+    },
+    "defaultTitle": "Rascunho de e-mail",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Salvar como trecho",
+    "writeFirst": "Escreva algo primeiro",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "markSent": "Marcar como enviada",
+    "openFromReminder": "Abra isto a partir de um lembrete para marcá-lo",
+    "alreadyTicked": "Já marcado",
+    "blank": "Rascunho em branco",
+    "startFromSnippet": "Começar com um dos seus trechos de e-mail",
+    "placeholder": "Escreva a mensagem ou escolha um trecho para começar…",
+    "editorLabel": "Rascunho da mensagem",
+    "empty": {
+      "title": "Nenhum trecho de e-mail ainda",
+      "description": "Trechos com a etiqueta Email aparecem aqui como ponto de partida. Não há nada para carregar, mas o rascunho não precisa começar de um.",
+      "startBlank": "Começar com um rascunho em branco"
+    },
+    "status": {
+      "empty": "Nada escrito ainda.",
+      "noBlanks": "Nenhuma lacuna restante.",
+      "blanksLeft_one": "{{count}} lacuna restante — {{names}}",
+      "blanksLeft_other": "{{count}} lacunas restantes — {{names}}",
+      "nameNever": " · o nome de uma pessoa nunca é preenchido por você"
+    },
+    "picker": {
+      "title": "Começar com",
+      "description": "Seus próprios trechos de e-mail, com o que os registros já sabem preenchido."
+    },
+    "toast": {
+      "replaced": "Rascunho substituído",
+      "loaded": "{{title}} carregado.",
+      "blank": "Recomeçado do zero.",
+      "saved": "Salvo nos trechos",
+      "savedDescription": "{{title}} · etiqueta Email, no cofre",
+      "sent": "Marcada como enviada",
+      "sentDescription": "{{title}} — marcado nos lembretes"
+    }
+  },
+  "stage": {
+    "moveTo": "Mover para {{stage}}",
+    "currently": "{{name}} · atualmente em {{stage}}",
+    "nothingElse": "Nada mais mudou no registro.",
+    "moveWithoutDetails": "Mover sem detalhes",
+    "outcome": "Resultado",
+    "submitted": {
+      "date": "Enviada em",
+      "portal": "URL do portal",
+      "portalHint": "Onde a candidatura está, para quando você precisar cobrar.",
+      "reference": "Código de confirmação",
+      "referencePlaceholder": "ex.: 4471-QZ"
+    },
+    "interview": {
+      "date": "Data da entrevista",
+      "format": "Formato",
+      "formatLabel": "Formato da entrevista",
+      "mint": "Adicionar à linha do tempo",
+      "mintDescription": "Cria uma entrada de entrevista nessa data, com um lembrete."
+    },
+    "offer": {
+      "respondBy": "Responder até",
+      "package": "Pacote",
+      "packagePlaceholder": "ex.: US$ 112 mil + US$ 15 mil de início",
+      "note": "Nota",
+      "notePlaceholder": "O que ainda está em negociação",
+      "mint": "Adicionar o prazo à linha do tempo",
+      "mintDescription": "Um prazo de resposta sem nada vigiando é o único prazo que você não pode se dar ao luxo de perder."
+    },
+    "keepOffer": {
+      "label": "Manter os detalhes da oferta",
+      "description": "Responder até {{date}}. Desative para apagá-los.",
+      "descriptionWithComp": "Responder até {{date}} · {{comp}}. Desative para apagá-los."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Novo lembrete",
+      "editReminder": "Editar lembrete",
+      "newEvent": "Novo evento",
+      "editEvent": "Editar evento"
+    },
+    "description": "É um único registro de qualquer jeito — ele aparece no calendário na data que você der, e na lista de lembretes do cofre enquanto a chave estiver ativada.",
+    "delete": "Excluir",
+    "save": "Salvar",
+    "addReminder": "Adicionar lembrete",
+    "addEvent": "Adicionar evento",
+    "reminderFallback": "Lembrete",
+    "duration": {
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} hora",
+      "hours_other": "{{count}} horas"
+    },
+    "fields": {
+      "title": "Título",
+      "reminderPlaceholder": "ex.: Cobrar o recrutador",
+      "eventPlaceholder": "ex.: Zoom com a comissão",
+      "remind": "Mostrar nos lembretes",
+      "remindOn": "Listado no cofre com uma caixa de seleção, e no calendário na sua data.",
+      "remindOff": "Só no calendário na sua data — sem caixa de seleção no cofre.",
+      "date": "Data",
+      "allDay": "Dia inteiro",
+      "allDayDescription": "Desativado, ganha um horário de início e uma duração.",
+      "startTime": "Horário de início",
+      "length": "Duração",
+      "applicationHint": "Vincula os dois, para que cada candidatura liste isto e isto leve de volta a qualquer uma delas.",
+      "kind": "Tipo",
+      "kindFollowUp": "Um acompanhamento também conta como pendente em Hoje, até você marcá-lo.",
+      "kindHint": "O ícone que ele leva no calendário e na lista de lembretes.",
+      "detail": "Detalhe",
+      "detailHint": "Uma linha de contexto, exibida abaixo do título.",
+      "note": "Nota",
+      "noteHint": "Suas anotações. Mantidas separadas do detalhe, para que uma edição nunca as apague.",
+      "keywords": "Palavras-chave",
+      "keywordsHint": "Compartilhadas com candidaturas, arquivos e links — filtrar por uma encontra todos."
+    },
+    "more": {
+      "title": "Mais detalhes",
+      "note": "nota",
+      "keywords": "palavras-chave",
+      "empty": "nota, palavras-chave"
+    },
+    "toast": {
+      "added": "{{title}} adicionado",
+      "updated": "{{title}} atualizado",
+      "inReminders": "nos lembretes",
+      "calendarOnly": "só no calendário",
+      "owed": "e pendente esta semana",
+      "deleted": "{{title}} excluído",
+      "goneFromBoth": "Saiu da lista de lembretes e do calendário.",
+      "goneFromCalendar": "Saiu do calendário."
+    }
+  }
+}

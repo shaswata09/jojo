@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { ChevronDown, FileText, Pencil, Sparkles, Trash2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -15,7 +16,7 @@ import {
   updateFrom,
 } from '@jojo/service/core/background-form'
 import type { BackgroundDraft } from '@jojo/service/core/background-form'
-import { BACKGROUND_LABEL, BACKGROUND_ORDER } from '@jojo/service/core/model'
+import { BACKGROUND_ORDER } from '@jojo/service/core/model'
 import type { Background, BackgroundKind } from '@jojo/service/core/model'
 import { readableDocuments } from '@jojo/service/core/twin'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
@@ -26,6 +27,7 @@ import { useModelSettings } from '@/lib/model-settings-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { cn } from '@/lib/utils'
 import { isCommitEnter } from '@/components/common/enter-key'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * What jojo knows about the person, grouped and listed.
@@ -66,6 +68,7 @@ function Entry({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation('profile')
   const [open, setOpen] = useState(false)
   const bullets = entry.highlights ?? []
 
@@ -94,10 +97,10 @@ function Entry({
                   aria-hidden
                   className={`size-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
                 />
-                {bullets.length === 1 ? '1 detail' : `${String(bullets.length)} details`}
+                {t('background.details', { count: bullets.length })}
               </button>
               {open && (
-                <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-text-2">
+                <ul className="mt-1 list-disc space-y-0.5 ps-5 text-sm text-text-2">
                   {bullets.map((b) => (
                     <li key={b}>{b}</li>
                   ))}
@@ -112,7 +115,7 @@ function Entry({
           {entry.source !== undefined && (
             <p className="mt-0.5 flex items-center gap-1 text-xs text-text-3">
               <FileText aria-hidden className="size-3" />
-              read from a document
+              {t('background.readFromDocument')}
             </p>
           )}
         </div>
@@ -122,10 +125,20 @@ function Entry({
             named the department rather than the university — and it used to
             take a delete and a retype. */}
         <div className="flex shrink-0 items-start opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-          <Button size="sm" variant="ghost" aria-label={`Edit ${entry.title}`} onClick={onEdit}>
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label={t('background.edit', { title: entry.title })}
+            onClick={onEdit}
+          >
             <Pencil aria-hidden className="size-4" />
           </Button>
-          <Button size="sm" variant="ghost" aria-label={`Remove ${entry.title}`} onClick={onDelete}>
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label={t('background.remove', { title: entry.title })}
+            onClick={onDelete}
+          >
             <Trash2 aria-hidden className="size-4" />
           </Button>
         </div>
@@ -157,6 +170,8 @@ function EntryForm({
   initial?: Background | undefined
   onDone: () => void
 }) {
+  const { t } = useTranslation('profile')
+  const domain = useDomain()
   const run = useRun()
   const { toast } = useToast()
   const [draft, setDraft] = useState<BackgroundDraft>(() =>
@@ -178,9 +193,9 @@ function EntryForm({
       const entry = addEntryFrom(draft)
       const result = run('profile.background.add', { background: [entry] })
       toast({
-        title: result.ok ? `${entry.title} added` : 'That did not save',
+        title: result.ok ? t('background.added', { title: entry.title }) : t('shared.didNotSave'),
         ...(result.ok
-          ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
+          ? { action: result.undo ? { label: t('shared.undo'), onClick: result.undo } : undefined }
           : { description: result.errors[0]?.message, tone: 'danger' as const }),
       })
       if (result.ok) onDone()
@@ -193,9 +208,11 @@ function EntryForm({
     }
     const result = run('profile.background.update', { id: initial.id, ...patch })
     toast({
-      title: result.ok ? `${draft.title.trim() || initial.title} updated` : 'That did not save',
+      title: result.ok
+        ? t('background.updated', { title: draft.title.trim() || initial.title })
+        : t('shared.didNotSave'),
       ...(result.ok
-        ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
+        ? { action: result.undo ? { label: t('shared.undo'), onClick: result.undo } : undefined }
         : { description: result.errors[0]?.message, tone: 'danger' as const }),
     })
     if (result.ok) onDone()
@@ -217,13 +234,15 @@ function EntryForm({
   return (
     <form
       className="space-y-2 rounded-lg border border-hairline p-3"
-      aria-label={editing ? `Edit ${initial.title}` : 'Add an entry'}
+      aria-label={
+        editing ? t('background.edit', { title: initial.title }) : t('background.addEntry')
+      }
       onSubmit={submit}
       onKeyDown={onKeyDown}
     >
       <div className="grid gap-2 sm:grid-cols-[minmax(0,11rem)_1fr]">
         <label className="flex flex-col gap-1 text-xs text-text-2">
-          Kind
+          {t('background.form.kind')}
           <select
             className="bg-surface h-9 rounded-md border border-hairline px-2 text-sm text-text-1"
             value={draft.kind}
@@ -231,16 +250,16 @@ function EntryForm({
           >
             {BACKGROUND_ORDER.map((kind) => (
               <option key={kind} value={kind}>
-                {BACKGROUND_LABEL[kind]}
+                {domain.background(kind)}
               </option>
             ))}
           </select>
         </label>
         <Field
-          label="Title"
+          label={t('background.form.title')}
           required
           autoFocus
-          placeholder="What it was"
+          placeholder={t('background.form.titlePlaceholder')}
           value={draft.title}
           error={tried ? problems.title : undefined}
           onChange={(e) => set('title')(e.target.value)}
@@ -248,19 +267,19 @@ function EntryForm({
       </div>
       <div className="grid gap-2 sm:grid-cols-[1fr_1fr_6rem]">
         <Field
-          label="Where"
-          placeholder="Optional"
+          label={t('background.form.where')}
+          placeholder={t('background.form.optional')}
           value={draft.where}
           onChange={(e) => set('where')(e.target.value)}
         />
         <Field
-          label="When"
-          placeholder="As written — “2021–2024”"
+          label={t('background.form.when')}
+          placeholder={t('background.form.whenPlaceholder')}
           value={draft.period}
           onChange={(e) => set('period')(e.target.value)}
         />
         <Field
-          label="Year"
+          label={t('background.form.year')}
           inputMode="numeric"
           maxLength={4}
           placeholder="2024"
@@ -270,15 +289,15 @@ function EntryForm({
         />
       </div>
       <TextareaField
-        label="Detail"
+        label={t('background.form.detail')}
         rows={2}
-        placeholder="Anything worth weighing a posting against (optional)"
+        placeholder={t('background.form.detailPlaceholder')}
         value={draft.detail}
         onChange={(e) => set('detail')(e.target.value)}
       />
       <TextareaField
-        label="Highlights"
-        hint="One per line — what was built, shipped, taught or found."
+        label={t('background.form.highlights')}
+        hint={t('background.form.highlightsHint')}
         rows={
           editing && draft.highlights !== ''
             ? Math.min(6, draft.highlights.split('\n').length + 1)
@@ -289,16 +308,16 @@ function EntryForm({
       />
       <div className="flex items-center justify-end gap-2">
         {editing && initial.source !== undefined && (
-          <p className="mr-auto flex items-center gap-1 text-xs text-text-3">
+          <p className="me-auto flex items-center gap-1 text-xs text-text-3">
             <FileText aria-hidden className="size-3" />
-            read from a document — your edit is kept over the reading
+            {t('background.form.readKept')}
           </p>
         )}
         <Button type="button" size="sm" variant="ghost" onClick={onDone}>
-          Cancel
+          {t('shared.cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={blocked}>
-          {editing ? 'Save changes' : 'Add'}
+          {editing ? t('background.form.saveChanges') : t('shared.add')}
         </Button>
       </div>
     </form>
@@ -306,6 +325,8 @@ function EntryForm({
 }
 
 export function BackgroundPanel() {
+  const { t } = useTranslation('profile')
+  const domain = useDomain()
   const graph = useGraph()
   const { projections } = useKg()
   const run = useRun()
@@ -348,23 +369,17 @@ export function BackgroundPanel() {
   const remove = (entry: Background) => {
     const result = run('profile.background.delete', { id: entry.id })
     toast({
-      title: result.ok ? `${entry.title} removed` : 'That did not save',
+      title: result.ok ? t('background.removed', { title: entry.title }) : t('shared.didNotSave'),
       ...(result.ok
-        ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
+        ? { action: result.undo ? { label: t('shared.undo'), onClick: result.undo } : undefined }
         : { description: result.errors[0]?.message, tone: 'danger' as const }),
     })
   }
 
   return (
     <Panel>
-      <PanelTitle
-        hint={
-          all.length === 0
-            ? undefined
-            : `${String(all.length)} recorded · what a posting is weighed against`
-        }
-      >
-        Your background
+      <PanelTitle hint={all.length === 0 ? undefined : t('background.hint', { count: all.length })}>
+        {t('background.title')}
       </PanelTitle>
 
       {open === 'add' ? (
@@ -375,7 +390,7 @@ export function BackgroundPanel() {
         <div className="mb-3 flex justify-end gap-2">
           <ReadDocumentMenu configured={configured} />
           <Button size="sm" variant="outline" onClick={() => setOpen('add')}>
-            Add an entry
+            {t('background.addEntry')}
           </Button>
         </div>
       )}
@@ -383,7 +398,7 @@ export function BackgroundPanel() {
       {all.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="Nothing recorded yet"
+          title={t('background.empty.title')}
           /*
            * Branched on whether a model is configured, because the unbranched
            * sentence was a promise the app could not keep: `ProfileUpdateOffer`
@@ -396,9 +411,7 @@ export function BackgroundPanel() {
             // Both halves now end with the manual route, because the empty
             // state used to describe the ONLY route and it needed a document
             // and, for one of the two, a model as well.
-            configured
-              ? 'Put your CV, a research or teaching statement in the Vault and jojo will offer to read it — what it finds is shown to you before anything is saved. Or add an entry by hand.'
-              : 'Reading a document needs a model. Connect one in Settings, then put your CV or a statement in the Vault and jojo will offer to read it. You can add entries by hand without one.'
+            configured ? t('background.empty.configured') : t('background.empty.unconfigured')
           }
         />
       ) : (
@@ -406,7 +419,7 @@ export function BackgroundPanel() {
           {groups.map(({ kind, rows }) => (
             <section key={kind}>
               <h3 className="mb-1 text-xs font-medium tracking-wide text-text-3 uppercase">
-                {BACKGROUND_LABEL[kind]}
+                {domain.background(kind)}
               </h3>
               <ul>
                 {rows.map((entry) =>
@@ -451,6 +464,7 @@ export function BackgroundPanel() {
  * again and file every fact twice.
  */
 function ReadDocumentMenu({ configured }: { configured: boolean }) {
+  const { t } = useTranslation('profile')
   const graph = useGraph()
   const blobs = useVaultBlobs()
   const [open, setOpen] = useState(false)
@@ -466,26 +480,19 @@ function ReadDocumentMenu({ configured }: { configured: boolean }) {
           size="sm"
           variant="outline"
           disabled={!configured}
-          title={
-            configured ? undefined : 'Reading a document needs a model. Connect one in Settings.'
-          }
+          title={configured ? undefined : t('background.readMenu.needsModel')}
         >
           <Sparkles className="size-3.5" strokeWidth={2} aria-hidden />
-          Read a document
+          {t('background.readMenu.button')}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 gap-1 p-1.5">
         {documents.length === 0 ? (
-          <p className="px-2 py-1.5 text-xs text-text-3">
-            Nothing in the Vault can be read yet. Drop your CV or a statement in and it appears
-            here.
-          </p>
+          <p className="px-2 py-1.5 text-xs text-text-3">{t('background.readMenu.nothing')}</p>
         ) : (
           <>
             {unread.length === 0 && (
-              <p className="px-2 py-1.5 text-xs text-text-3">
-                Everything readable in the Vault has been read.
-              </p>
+              <p className="px-2 py-1.5 text-xs text-text-3">{t('background.readMenu.allRead')}</p>
             )}
             {documents.map((d) => (
               <button
@@ -502,7 +509,11 @@ function ReadDocumentMenu({ configured }: { configured: boolean }) {
                 }}
               >
                 <span className="min-w-0 truncate">{d.name}</span>
-                {d.read && <span className="ml-2 shrink-0 text-xs text-text-3">read</span>}
+                {d.read && (
+                  <span className="ms-2 shrink-0 text-xs text-text-3 [unicode-bidi:isolate]">
+                    {t('background.readMenu.read')}
+                  </span>
+                )}
               </button>
             ))}
           </>

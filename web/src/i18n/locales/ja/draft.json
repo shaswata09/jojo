@@ -1,0 +1,56 @@
+{
+  "defaultTitle": "メールの下書き",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "メッセージを作成",
+    "for": "{{name}} 宛て。",
+    "forItem": "{{name}} 宛て · {{item}}。",
+    "unlinked": "応募に関連付けられていないため、[ROLE] と [DATE] は空欄のままです。",
+    "body": "何も生成されず、何も送信されません。空欄を埋めてメールアプリにコピーし、送信済みにしてください。"
+  },
+  "picker": {
+    "hint": "メールのスニペットから始めましょう。",
+    "searchLabel": "スニペットを検索",
+    "searchPlaceholder": "スニペットを検索…",
+    "noMatch": "一致するスニペットはありません。",
+    "emailGroup": "メールのスニペット",
+    "freshGroup": "最初から書く",
+    "blank": "空の下書き"
+  },
+  "editor": {
+    "placeholder": "メッセージを書くか、スニペットを選んで始めてください…",
+    "label": "メッセージの下書き",
+    "nothing": "まだ何も書かれていません。",
+    "noBlanks": "空欄はもうありません。",
+    "blanksLeft_other": "残りの空欄 {{count}} 件 — {{names}}",
+    "nameNote": " · 人の名前が自動で入力されることはありません",
+    "copyBlocked": "ブラウザーがコピーをブロックしました",
+    "copied": "下書きをクリップボードにコピーしました"
+  },
+  "empty": {
+    "title": "メールのスニペットはまだありません",
+    "description": "Email タグの付いたスニペットが、書き始めの候補としてここに表示されます。読み込めるものはありませんが、スニペットから始める必要はありません。",
+    "action": "空の下書きから始める"
+  },
+  "footer": {
+    "writeFirst": "先に何か書いてください",
+    "saveHint": "この下書きを Email タグ付きで保管庫に保存",
+    "save": "スニペットとして保存",
+    "assistantHint": "アシスタントには専用のページがあります。サイドバーから開いてください",
+    "assistant": "アシスタントで開く",
+    "copyHint": "メッセージをクリップボードにコピー",
+    "markNoItem": "ここでチェックを入れるには、リマインダーから開いてください",
+    "markDone": "そのリマインダーはすでにチェック済みです",
+    "markSent": "送信済みにする"
+  },
+  "toast": {
+    "replaced": "下書きを置き換えました",
+    "loaded": "{{title}} を読み込みました。",
+    "startedBlank": "空の状態からやり直しました。",
+    "undo": "元に戻す",
+    "saved": "スニペットに保存しました",
+    "savedDescription": "{{title}} · Email タグ付きで保管庫に保存",
+    "markedSent": "送信済みにしました",
+    "markedSentDescription": "{{title}} — リマインダーでチェック済み"
+  }
+}

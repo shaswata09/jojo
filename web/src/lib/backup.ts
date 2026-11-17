@@ -36,6 +36,7 @@
  * A backup moves the later instant forward too, which is what resets the count.
  */
 
+import { i18next } from '@/i18n/i18n'
 import { reportError } from '@/lib/report-error'
 import { revokeLater } from '@/lib/save-file'
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
@@ -210,14 +211,14 @@ export function backupNudge(
  * backup's filename follows.
  */
 export function backupPromptText(changed: number, lastBackupAt: string | null): string {
-  const records = changed === 1 ? '1 record' : `${String(changed)} records`
   const parsed = lastBackupAt === null ? Number.NaN : Date.parse(lastBackupAt)
-  const keep = 'download a copy and keep it somewhere else.'
   if (Number.isNaN(parsed)) {
-    return `${records} in jojo ${changed === 1 ? 'is' : 'are'} not in any backup yet. Everything here lives only in this browser, so clearing it or losing this machine would lose ${changed === 1 ? 'it' : 'them'} — ${keep}`
+    return i18next.t('messages:backup.prompt.never', { count: changed })
   }
-  const day = new Date(parsed).toLocaleDateString(undefined, { dateStyle: 'medium' })
-  return `${records} ${changed === 1 ? 'has' : 'have'} changed since your last backup on ${day}. ${changed === 1 ? 'It lives' : 'They live'} only in this browser until you ${keep}`
+  // In the language jojo is showing, not the browser's: the date sits inside a
+  // translated sentence.
+  const day = new Date(parsed).toLocaleDateString(i18next.language, { dateStyle: 'medium' })
+  return i18next.t('messages:backup.prompt.since', { count: changed, day })
 }
 
 /**
@@ -450,6 +451,17 @@ const reasonOf = (error: unknown): string | undefined =>
   error instanceof Error && OWN_REFUSALS.has(error.message) ? error.message : undefined
 
 /**
+ * One of jojo's own refusals, in the reader's language. The English constants
+ * stay the error's message — they are what is matched and what is logged.
+ */
+const ownRefusal = (reason: string | undefined): string | undefined =>
+  reason === DOCUMENTS_NOT_READY
+    ? i18next.t('messages:backup.documentsNotReady')
+    : reason === DOCUMENTS_UNREADABLE
+      ? i18next.t('messages:backup.documentsUnreadable')
+      : reason
+
+/**
  * What to tell the person once a download has ended, or null to say nothing.
  *
  * Here rather than in the Settings panel because a backup can now be started
@@ -465,30 +477,36 @@ export function backupToast(outcome: DownloadOutcome, name: string): ToastOption
   if (kind === 'cancelled') return null
   if (kind === 'failed') {
     return {
-      title: 'The backup could not be written',
-      description:
-        reason ??
-        'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
+      title: i18next.t('messages:backup.failedTitle'),
+      description: ownRefusal(reason) ?? i18next.t('messages:backup.failedDescription'),
       tone: 'danger',
     }
   }
   const missing = documents === undefined ? 0 : documents.total - documents.written
-  const holds =
-    missing === 0
-      ? 'your records and every document you have attached'
-      : `your records and ${documents?.written ?? 0} of your ${documents?.total ?? 0} documents — ${missing} could not be read and ${missing === 1 ? 'is' : 'are'} not in it`
+  const counts = {
+    name,
+    written: documents?.written ?? 0,
+    total: documents?.total ?? 0,
+    count: missing,
+  }
   return kind === 'saved'
     ? {
         // Asserted, because it is known: the file handle closed on disk.
-        title: 'Backup saved',
-        description: `${name} holds ${holds}.`,
+        title: i18next.t('messages:backup.savedTitle'),
+        description:
+          missing === 0
+            ? i18next.t('messages:backup.savedAll', { name })
+            : i18next.t('messages:backup.savedSome', counts),
       }
     : {
-        title: 'Backup started',
+        title: i18next.t('messages:backup.startedTitle'),
         // Named, not asserted. The click is the last thing this page can
         // observe — the browser's decision after it fires no event — so what is
         // said is what to look for rather than that it arrived.
-        description: `Look for ${name} in your downloads. It holds ${holds}.`,
+        description:
+          missing === 0
+            ? i18next.t('messages:backup.startedAll', { name })
+            : i18next.t('messages:backup.startedSome', counts),
       }
 }
 

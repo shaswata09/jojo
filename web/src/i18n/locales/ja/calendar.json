@@ -1,0 +1,59 @@
+{
+  "monthPicker": {
+    "goTo": "月へ移動",
+    "previousYear": "前の年",
+    "nextYear": "次の年"
+  },
+  "chip": {
+    "allDay": "終日",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}、完了 —"
+  },
+  "dayCell": {
+    "label_other": "{{label}}、予定 {{count}} 件",
+    "add": "{{label}} に予定を追加",
+    "more_other": "ほか {{count}} 件"
+  },
+  "grid": {
+    "dayLabel": "{{month}}{{day}}日",
+    "previousMonth": "前の月",
+    "nextMonth": "次の月",
+    "today": "今日",
+    "backTo": "{{date}} に戻る",
+    "goTo": "{{year}}年{{month}}へ移動",
+    "hintTouch": "日付をタップすると、その日の予定が表示されます。",
+    "hintPointer": "日付を選ぶと、グリッドの横にその日の予定が一覧表示されます。予定をクリックすると編集でき、別の日にドラッグして移動することもできます。ドラッグにはポインターが必要なため、キーボードでは予定内の日付欄を使ってください。",
+    "eventTypes": "予定の種類",
+    "showAll": "すべて表示",
+    "dateColours": "日付の色",
+    "marks": {
+      "overdue": "期限切れ",
+      "soon": "48 時間以内に期限",
+      "done": "完了"
+    }
+  },
+  "rail": {
+    "monthYear": "{{year}}年{{month}}",
+    "today": "今日",
+    "selectedDay": "選択した日",
+    "hiddenTitle": "{{date}} に表示する予定はありません",
+    "hiddenDescription_other": "{{count}} 件の予定が、グリッドの下でオフにした種類に含まれています。",
+    "showAllTypes": "すべての種類を表示",
+    "emptyTitle": "{{date}} の予定はありません",
+    "emptyDescription": "面接、締め切り、準備の時間を追加すると、こことグリッドに表示されます。",
+    "addEvent": "予定を追加",
+    "backTo": "{{month}} に戻る",
+    "delete": "予定を削除",
+    "deleteNamed": "{{title}} を削除",
+    "restOf": "{{month}} の残り",
+    "lastDayTitle": "{{date}} は月の最終日です",
+    "nothingAfterTitle": "{{date}} 以降の予定はありません",
+    "lastDayDescription": "この日以降の予定はありません。次のページへ進んで {{month}} の計画を立てましょう。",
+    "nothingAfterDescription": "{{month}} の残りは空いています。この日以降に追加した予定はここに表示されます。",
+    "goToMonth": "{{month}} へ移動",
+    "goToDay": "{{label}} へ移動",
+    "shortDay": "{{month}}{{day}}日",
+    "moreLater_other": "今月はこの後さらに {{count}} 件"
+  }
+}

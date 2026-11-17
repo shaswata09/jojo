@@ -7,7 +7,7 @@ import { unshout } from '@/lib/fill-from-posting'
 import { isConfigured } from '@/lib/llm'
 import { useLabels } from '@/lib/labels-context'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { NOTHING_TO_READ_WITH, NO_BACKGROUND_ROUTE, useReadPosting } from '@/lib/posting-agent'
+import { noBackgroundRoute, nothingToReadWith, useReadPosting } from '@/lib/posting-agent'
 import { useDropDiscardedPage, useDropUnclaimedPage } from '@/lib/scout-reading-hooks'
 import { nextToRead, readingQueue } from '@/lib/scout-reading-queue'
 
@@ -119,7 +119,7 @@ export function ScoutReader(): null {
         if (out.file && out.created === true) dropUnclaimed(out.file.id, url, proposal.id)
         return null
       }
-      if (!out.ok && (out.reason === NOTHING_TO_READ_WITH || out.reason === NO_BACKGROUND_ROUTE)) {
+      if (!out.ok && (out.reason === nothingToReadWith() || out.reason === noBackgroundRoute())) {
         // Not this card's fault: it is read once something can open a page.
         tried.current.delete(proposal.id)
         setBlocked(true)

@@ -13,6 +13,7 @@
 import { describe, expect, it } from 'vitest'
 import { PERIOD_VALUES } from '@jojo/service/core/model'
 import { PERIODS } from '@/data/seed'
+import en from '@/i18n/locales/en/dashboard.json'
 
 const sources = import.meta.glob('/src/components/dashboard/ApplicationFrequency.tsx', {
   query: '?raw',
@@ -30,7 +31,12 @@ describe('the frequency periods (Q022)', () => {
   })
 
   it('are the options the period switch offers', () => {
-    expect(source).toMatch(/<Segment label="Period" options=\{PERIODS\}/)
+    // Each period is labelled from the catalog, keyed by its value.
+    expect(source).toContain(
+      'const periods = PERIODS.map((p) => ({ ...p, label: t(`frequency.periods.${p.value}`) }))',
+    )
+    expect(Object.keys(en.frequency.periods)).toEqual([...PERIOD_VALUES])
+    expect(source).toMatch(/<Segment\s+label=\{t\('frequency\.period'\)\}\s+options=\{periods\}/)
     // The noun table is keyed by exactly those three, so a fourth cannot be
     // spoken in the chart's label without a compile error here first.
     expect(source).toMatch(
@@ -41,13 +47,14 @@ describe('the frequency periods (Q022)', () => {
 
 describe('the chart type switch (Q020)', () => {
   it('offers bars and a line', () => {
-    expect(source).toMatch(
-      /const CHARTS = \[\s*\{ value: 'bar', label: 'Bars' \},\s*\{ value: 'line', label: 'Line' \},\s*\] as const/,
-    )
+    expect(source).toMatch(/const CHARTS = \['bar', 'line'\] as const/)
+    expect(en.frequency.charts).toEqual({ bar: 'Bars', line: 'Line' })
   })
 
   it('is a control in the card that sets what is drawn', () => {
-    expect(source).toMatch(/label="Chart type"\s+options=\{CHARTS\}\s+value=\{chart\}\s+onChange=\{setChart\}/)
+    expect(source).toMatch(
+      /label=\{t\('frequency\.chartType'\)\}\s+options=\{charts\}\s+value=\{chart\}\s+onChange=\{setChart\}/,
+    )
     // Bars when 'bar', the polyline otherwise.
     expect(source).toMatch(/\{chart === 'bar'\s*\?\s*data\.map/)
     expect(source).toContain('<polyline')
@@ -56,7 +63,9 @@ describe('the chart type switch (Q020)', () => {
 
 describe('where the chart type switch sits (Q122)', () => {
   it('is pushed to the right edge of its row', () => {
-    const control = /<Segment\s+className="([^"]*)"\s+label="Chart type"/.exec(source)?.[1] ?? ''
-    expect(control.split(/\s+/)).toContain('ml-auto')
+    const control =
+      /<Segment\s+className="([^"]*)"\s+label=\{t\('frequency\.chartType'\)\}/.exec(source)?.[1] ??
+      ''
+    expect(control.split(/\s+/)).toContain('ms-auto')
   })
 })

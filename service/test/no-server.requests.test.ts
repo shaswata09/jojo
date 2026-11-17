@@ -16,13 +16,22 @@ import { describe, expect, it } from 'vitest'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 
-const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
-  cwd: ROOT,
-  encoding: 'utf8',
-  maxBuffer: 64 * 1024 * 1024,
-})
-  .split('\n')
-  .filter(Boolean)
+const git = (...args: string[]) =>
+  execFileSync('git', ['ls-files', ...args], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
+    .split('\n')
+    .filter(Boolean)
+
+/*
+ * Less the files deleted from the working tree but not yet from the index: a
+ * file moved and not yet staged is still `--cached`, and reading it threw
+ * ENOENT — the gate went red over a move, not over a server.
+ */
+const deleted = new Set(git('--deleted'))
+const files = git('--cached', '--others', '--exclude-standard').filter((f) => !deleted.has(f))
 
 /** Comments stripped, so the history told in a comment does not count as code. */
 const ci = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8')

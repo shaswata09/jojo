@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ClipboardList } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { statsFor } from '@jojo/service/core/statistics'
 import { useScopedApplications } from '@/lib/roles-scope'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The four headline rates — reply, interview, offer and the rest.
@@ -18,6 +20,8 @@ import { useScopedApplications } from '@/lib/roles-scope'
  * the same reason Statistics guards the section it used to live in.
  */
 export function HeadlineRatesBody({ showTypical = false }: { showTypical?: boolean }) {
+  const { t } = useTranslation('dashboard')
+  const domain = useDomain()
   const { all } = useScopedApplications()
   const { sent, kpis } = useMemo(() => statsFor(all), [all])
 
@@ -25,8 +29,8 @@ export function HeadlineRatesBody({ showTypical = false }: { showTypical?: boole
     return (
       <EmptyState
         icon={ClipboardList}
-        title="No rates yet"
-        description="Reply, interview and offer rates all count applications that have actually gone out. Move one out of Draft and this fills in."
+        title={t('headlineRates.emptyTitle')}
+        description={t('headlineRates.emptyDescription')}
       />
     )
   }
@@ -36,20 +40,23 @@ export function HeadlineRatesBody({ showTypical = false }: { showTypical?: boole
     // column as well as on the full-width Statistics page, and four tiles at
     // ~110px each put every label on three lines.
     <div className="grid grid-cols-2 gap-3">
-      {kpis.map((k) => (
-        <div key={k.label} className="surface rounded-lg px-4 py-3.5">
-          <div className="text-xs text-text-2">{k.label}</div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold">{k.value}</span>
-            {/* No arrow and no colour, for the reason the Statistics copy of
+      {kpis.map((k) => {
+        const said = domain.kpi(k)
+        return (
+          <div key={k.id} className="surface rounded-lg px-4 py-3.5">
+            <div className="text-xs text-text-2">{said.label}</div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-2xl font-semibold">{said.value}</span>
+              {/* No arrow and no colour, for the reason the Statistics copy of
                 this gives: a claim about change over time that the store has no
                 history to support, painted in the two colours reserved for
                 overdue and due-soon work. */}
-            {showTypical ? <span className="text-xs text-text-3">{k.typical}</span> : null}
+              {showTypical ? <span className="text-xs text-text-3">{said.typical}</span> : null}
+            </div>
+            <div className="mt-1 text-xs text-text-3">{said.note}</div>
           </div>
-          <div className="mt-1 text-xs text-text-3">{k.note}</div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

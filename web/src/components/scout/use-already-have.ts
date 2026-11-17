@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { useKg } from '@jojo/service/react/kg-context'
 import { appPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
@@ -13,6 +14,7 @@ import { CUES } from '@/lib/mascot-cues'
  */
 export function useAlreadyHave() {
   const kg = useKg()
+  const { t } = useTranslation('scout')
   const { toast } = useToast()
   const mascot = useMascot()
   const navigate = useNavigate()
@@ -35,9 +37,9 @@ export function useAlreadyHave() {
   ) => {
     mascot.play(CUES.alreadyHave)
     toast({
-      title: `Already in your applications — not added again`,
+      title: t('toasts.alreadyHaveTitle'),
       description: alreadyHaveDescription(existing),
-      action: { label: 'Open', onClick: () => navigate(appPath(target)) },
+      action: { label: t('common.open'), onClick: () => navigate(appPath(target)) },
     })
   }
 

@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import type { ErrorInfo, ReactNode } from 'react'
 import { reportError } from '@/lib/report-error'
+import { i18next } from '@/i18n/i18n'
 
 type Props = { children: ReactNode }
 type State = { error: Error | null }
@@ -62,28 +63,24 @@ export class ErrorBoundary extends Component<Props, State> {
   override render() {
     const { error } = this.state
     if (!error) return this.props.children
+    const t = (key: string) => i18next.t(`components:errorBoundary.${key}`)
 
     return (
       <View style={styles.root}>
         <View style={styles.card}>
-          <Text style={styles.title}>Something broke</Text>
-          <Text style={styles.body}>
-            A screen failed to draw. Your records are on this device and nothing was sent anywhere,
-            but jojo cannot tell you whether the change you were making finished.
-          </Text>
+          <Text style={styles.title}>{t('title')}</Text>
+          <Text style={styles.body}>{t('body')}</Text>
           <Text style={styles.detail} numberOfLines={3}>
-            {error.message || 'No message was attached to the error.'}
+            {error.message || t('noMessage')}
           </Text>
           <Pressable
             accessibilityRole="button"
             style={styles.button}
             onPress={() => this.setState({ error: null })}
           >
-            <Text style={styles.buttonText}>Try again</Text>
+            <Text style={styles.buttonText}>{i18next.t('common:actions.tryAgain')}</Text>
           </Pressable>
-          <Text style={styles.hint}>
-            If it breaks again, close jojo from the app switcher and reopen it.
-          </Text>
+          <Text style={styles.hint}>{t('hint')}</Text>
         </View>
       </View>
     )

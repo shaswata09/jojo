@@ -1,0 +1,601 @@
+{
+  "nav": {
+    "rail": "Guide pages",
+    "contents": "Guide contents",
+    "pager": "More guide pages",
+    "youAreHere": "you are here",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{current}} of {{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "How to use",
+      "blurb": "What a record is, where it is kept, what that costs you, and the few keys worth knowing before you trust a job search to it."
+    },
+    "screens": {
+      "label": "Every screen",
+      "blurb": "Each page in turn — what it is for, the mechanics that are not obvious from looking, and what is not connected yet."
+    },
+    "tools": {
+      "label": "The tools",
+      "blurb": "What the assistant can actually do, how it is stopped from doing anything else, and how it picks the right one out of the whole catalog."
+    },
+    "graph": {
+      "label": "The graph",
+      "blurb": "What the Graph page draws, how a question becomes a query, and the record model the whole app is stored as."
+    },
+    "builtWith": {
+      "label": "Built with",
+      "blurb": "The open-source work jojo is made of, the licences that cover it, and how the code is arranged."
+    },
+    "controlFlow": {
+      "label": "Control flow graph",
+      "blurb": "Every module and import as a graph, how control moves through six journeys, and where a change belongs."
+    },
+    "licence": {
+      "label": "Licence",
+      "blurb": "What jojo costs, what you may do with it, and the terms that come with the services you can point it at."
+    }
+  },
+  "onThisPage": "On this page",
+  "tour": {
+    "start": "Take the tour",
+    "resume": "Resume the tour — step {{step}} of {{total}}"
+  },
+  "gettingStarted": {
+    "title": "Getting started",
+    "progress": "{{done}} of {{total}} done",
+    "allDone": "Every step is done. The checklist reads your records, so it follows if you clear them.",
+    "intro": "Each step opens the real thing, and ticks itself once a record exists. Nothing here is a tutorial you have to sit through.",
+    "done": "Done",
+    "srDone": " — done",
+    "srNotDone": " — not done yet",
+    "steps": {
+      "application": {
+        "title": "Add an application",
+        "body": "A position, its stage and its deadline. Everything else in jojo hangs off this record.",
+        "action": "New application"
+      },
+      "dated": {
+        "title": "Give something a date",
+        "body": "Deadlines, interviews and campus visits are one kind of record, so they reach the calendar, the week ahead and the application at once.",
+        "action": "New event"
+      },
+      "reminder": {
+        "title": "Set a follow-up",
+        "body": "A reminder is the same record with a nudge switched on. Once its date passes it is flagged on the dashboard until you tick it off.",
+        "action": "New reminder"
+      },
+      "posting": {
+        "title": "Keep a posting before it is taken down",
+        "body": "Nothing is fetched and no copy is stored — what is kept is the URL, the employer guessed from it and the day you saved it. That is enough to find the ad again.",
+        "action": "Open Job scout"
+      },
+      "file": {
+        "title": "File your documents",
+        "body": "Drop a CV or a statement into the Vault. Names, sizes and types are recorded; a file you drop in this session also previews.",
+        "action": "Open the Vault"
+      },
+      "keyword": {
+        "title": "Tag something with a keyword",
+        "body": "Keywords are yours, shared by applications, reminders and everything in the Vault — unlike the fixed role tags in the top bar. The tag button on any row adds one.",
+        "action": "Manage keywords"
+      },
+      "draft": {
+        "title": "Draft a message",
+        "body": "Built from your own email snippets, with the role, employer and dates filled in from the record. A person’s name is never filled in for you. Nothing here records that you sent it, so this step does not tick itself.",
+        "action": "Draft a message"
+      }
+    }
+  },
+  "overview": {
+    "title": "How to use jojo",
+    "subtitle": "Everything runs on your machine. Start simple, add power when you want it.",
+    "tourIntro": "Or be walked through it, hands on: a spotlight on the real pages, and you try each thing as you go. The tour never types anything for you, never saves a record and never changes a setting.",
+    "sections": {
+      "application": "Track an application",
+      "dates": "Dates and follow-ups",
+      "vault": "The Vault",
+      "profile": "Your profile",
+      "keys": "Keys and undo",
+      "keywords": "Keywords",
+      "graph": "Ask the graph",
+      "data": "Your data",
+      "ladder": "Not connected yet"
+    },
+    "track": {
+      "hint": "the record everything else hangs off",
+      "title": "Track an application from applying to an offer",
+      "intro": "An application is one position at one employer. Dates, notes, documents, keywords and every figure on the <stats>statistics</stats> page point back at one of these, so it is the first record worth making. They live on <board>the board</board>; to add one, press <kbd>n</kbd> anywhere in the app, or use the checklist above.",
+      "movesTitle": "What each move asks for",
+      "movesIntro": "Where you move it from decides what you are asked. On the board or the table — a drag, the pill on a card, the chip on a row — the move just happens, with an Undo in the toast. From inside the record, four of the six destinations open a short form first; the other two still just happen, because a dialog whose only content is a Confirm button is a speed bump rather than a step.",
+      "asks": {
+        "submitted": "The day you sent it, the portal link, and a confirmation reference if you have one.",
+        "interview": "The date, and whether it is a phone, video or onsite round. It offers to put the round on your calendar with a reminder.",
+        "offer": "A respond-by date, the package and any notes. It offers to add the decision deadline to your calendar.",
+        "closed": "How it ended: rejected, withdrawn, accepted, declined, or ghosted — no reply. That is what the statistics count."
+      },
+      "asksNothing": "Nothing — the move happens as you make it.",
+      "offerQuestion": "One extra question, whatever the destination: moving an application that already has an offer asks whether to keep the offer details or clear them. An offer belongs to the round that produced it, so dropping it is a decision rather than a side effect.",
+      "onceTitle": "Once the record exists",
+      "once": {
+        "open": "Opening one keeps the list where it was — the record opens over it, and Back closes the record rather than losing your filters. The address is a name rather than a number, so a link to an application survives a reload.",
+        "note": "The note saves when you click away from it, and says so underneath. There is no Save button to forget.",
+        "duplicate": "<lead>Duplicate</lead> is for applying again: the copy starts back at Draft carrying the role, note, location and link, and deliberately not the offer, the outcome or the dates. jojo records that the two are copies of each other.",
+        "delete": "Deleting an application deletes the application and its note. Anything you filed under it — reminders, documents, keywords — is unlinked, not deleted, and the confirmation says which.",
+        "address": "The view, the search box, the stage filter and the sort all live in the address bar, so a view you set up is a link you can keep: <bystage>the table, sorted by stage</bystage> and <atoffer>everything at offer</atoffer> are just URLs. Both of those name the table deliberately: the stage chips and the column sort are the table’s own controls, and the board has no stage filter because it is already six columns of stage — so a stage in the address does nothing until the address also says table. The search box works in both. The role filter and the keyword chips beside it are in neither: they are this tab’s selection rather than part of the address, and they reset when you reload."
+      }
+    },
+    "stageRail": {
+      "title": "The six stages an application moves through",
+      "desc": "Draft, Submitted, Screening call, Interview, Offer and Closed, in order, on one track. Moving to Submitted, Interview, Offer or Closed opens a short form; moving to Draft or Screening call happens straight away. The list beneath says what each form asks for.",
+      "asks": "asks"
+    },
+    "dates": {
+      "hint": "one record type, three names",
+      "title": "Dates, deadlines and follow-ups",
+      "intro": "A submission deadline, an interview, a campus visit and a note to chase someone are the same kind of record with a different label on it, and a reminder is that record with a nudge switched on. This is the one thing in jojo worth knowing before you use it: add something once and it reaches the <calendar>calendar</calendar>, the week ahead on <today>Today</today> and the application it belongs to at the same time, because there is nothing to keep in step.",
+      "items": {
+        "grid": "The month grid and the day list are one page. Dragging an item onto another day reschedules it and offers an Undo in the toast.",
+        "colour": "Colour follows the date and nothing else — overdue, due within 48 hours, done — so nothing goes stale by sitting there. The legend is on the page.",
+        "url": "The month you are looking at, the day you selected and the item you opened are all in the URL, so a particular day is linkable.",
+        "reminders": "Reminders also have their own list in the <reminders>Vault</reminders>, where ticking them off is the whole job. An overdue one stays flagged on Today until it is ticked.",
+        "mint": "Moving an application to Interview or Offer offers to mint the date for you, so the round you just scheduled does not need entering twice."
+      }
+    },
+    "vault": {
+      "hint": "five tools, one shelf",
+      "title": "File what you will need again",
+      "reminders": {
+        "name": "Reminders",
+        "body": "Everything with a nudge on it, in one list, with the overdue ones first."
+      },
+      "links": {
+        "name": "Links",
+        "body": "Portals, funding pages, people worth remembering. Each goes in a bucket, and you can move it to another one later."
+      },
+      "files": {
+        "name": "Files",
+        "body": "The name, size and type of a document are recorded. <strong>The document itself is not</strong> — jojo has nowhere on your disk to put it. A file you pick during this visit previews until you reload; after that the row is a record that the document exists, which is enough to know what you sent and when."
+      },
+      "snippets": {
+        "name": "Snippets",
+        "body": "Paragraphs you keep rewriting. The <strong>Draft a message</strong> dialog is built out of these with the role, employer and dates filled in from the record — a person’s name is never filled in for you, because guessing one is how a message goes out addressed to the wrong human."
+      },
+      "tools": {
+        "name": "Tools",
+        "body": "A calculator, for the salary arithmetic every offer turns into. Its history is for this visit only."
+      }
+    },
+    "profile": {
+      "hint": "the profile is not part of the checklist",
+      "title": "Fill in your profile",
+      "body": "Your basics, links, target roles and match terms live under <profile>My profile</profile>. They are what the scout would score against and what the assistant would draft from, so they matter. Saving writes them to this browser and keeps them, exactly like every other record — the checklist above leaves them out because there is one profile either way, and a step that is done the moment you arrive is not a step.",
+      "documents": "Documents you list on the profile are filed in the Vault’s documents bucket rather than in a second place that could disagree with it, and the whole profile saves as one change, so one Undo puts it back."
+    },
+    "keys": {
+      "hint": "three keys, and two different Undos",
+      "title": "Doing things without the mouse",
+      "find": "<lead>Find anything, and run it.</lead> Type a few words and it narrows your applications, reminders and calendar — whole words in any order, so “rice stat” finds the Statistics post at Rice. Underneath the records is a <strong>Tools</strong> group: the named operations jojo is built out of, each with a form generated from what that operation actually takes. Picking one does the real thing to your real records, so it toasts, it lands in the audit log, and it offers exactly the Undo the same operation offers when you reach it from a card. Below that, <strong>Go to</strong> reaches every page, including the six the sidebar does not list.",
+      "make": "<lead>Make something.</lead> The same six rows as the New button: application, reminder, event, draft a message, save a link, save a posting. Ignored while a dialog is already open, and ignored while you are typing, so the letter n is still a letter.",
+      "undo": "<lead>Undo and redo, anywhere.</lead> Not per page — the keystroke belongs to the app, and it will undo the stage change you made on another screen two minutes ago. Deliberately ignored while the caret is in a text field, so inside a half-typed note your browser’s own undo wins and a stray ⌘Z cannot silently revert some other record behind the dialog.",
+      "twoUndosTitle": "Two Undos, and they do different things",
+      "twoUndos": "<kbd>⌘Z</kbd> reverts whatever is on top of the pile at the moment you press it. The <strong>Undo</strong> in a toast reverts <strong>that</strong> change, even if you have done three things since it appeared — which is the point, because a toast lives for seconds and you keep working. One user action is one undo however many records it touched: creating an application writes the application, its keywords and the deadline the form minted, and undoing it takes all three rather than stranding a deadline pointing at nothing.",
+      "pile": "The pile holds the last fifty changes and starts empty each visit — an undo stack that survived a reload would be offering to undo last Tuesday. If you have jojo open in two tabs, the one you return to re-reads the database and starts again for the same reason: it cannot undo something the other tab did. Everything is still listed in <settings>Settings → Audit log</settings>, newest first, and the newest row there can be undone from it."
+    },
+    "keywords": {
+      "hint": "yours, and shared by everything",
+      "title": "Keywords, and the role tags they are not",
+      "intro": "Two things in jojo look like tags and behave nothing alike. Getting them the wrong way round is the most common way to end up with a filter that will not find what you know is there.",
+      "yoursTitle": "Keywords are yours",
+      "yours": "You make them, name them, colour them and put them on anything — an application, a reminder, a link, a file, a snippet. They cut across every kind of record, which is what makes “show me everything to do with the referral” a question jojo can answer at all.",
+      "record": "A keyword is a record in its own right, not a piece of text copied onto rows: rename one and every row carrying it follows, and clearing every record leaves your keywords standing with their counts at zero. <settings>Settings → Keywords</settings> renames, recolours and deletes them, and tells you how many records each is on before you delete it.",
+      "rolesTitle": "Role tags are your list",
+      "roles": "A new store starts with five — Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer — and <profile>Profile</profile> edits them. They used to be fixed, and the argument for that was that the statistics compare across them; what it actually meant was that anyone outside academic CS filed their whole search under a label that was not true, and the charts then read that label back as if it were. Removing one leaves every application carrying it exactly where it is.",
+      "roleFilter": "Only applications carry one, and the role filter sits in the <applications>Applications</applications> toolbar next to the only list it filters — it used to be pinned in the top bar, which made every number elsewhere ambiguous about whether it counted your whole search. Rule of thumb: the role tag is what the job is, the keyword is why you care about it."
+    },
+    "graph": {
+      "hint": "no query language to learn",
+      "title": "Ask the graph a question",
+      "intro": "Every record in jojo is a node, and every link between two records is a real edge between them — that is not a picture of how it works, it is how it is stored. The <graph>Graph</graph> page draws it, and its query panel lets you ask the store the questions a list cannot answer. It is reached from the sidebar’s <strong>Browser storage</strong> tile, which is not an obvious door.",
+      "pickers": "A question is three pickers: what you are looking for, whether it <strong>has</strong> or is <strong>missing</strong> a relationship, and what sits on the other end. The answer updates as you change them — there is no Run button, so the table and the controls above it can never disagree.",
+      "examplesTitle": "The examples worth clicking first",
+      "examples": {
+        "noFollowUp": "Applications with no follow-up scheduled — the gap that costs people interviews.",
+        "keyword": "Everything tagged with one keyword, across every kind of record.",
+        "twice": "Organisations you applied to more than once.",
+        "unlinked": "Reminders not linked to any application — work you will do without knowing why.",
+        "unusedFiles": "Files not used by any application."
+      },
+      "path": "Each is built against the records you actually have, and one your store has nothing to ask about is switched off rather than answering with an empty table. The second shape, <strong>Path</strong>, answers “how are these two connected” — and answers “they are not” when they are not, which is a real result rather than a failure.",
+      "illustrative": "The query line underneath the pickers, the one that looks like code, is labelled <strong>illustrative</strong> on the page and means it: nothing parses it, and it is there so that seeing the shape beside the words makes the pickers legible. <guide>The graph</guide> page of this guide goes through what is drawn and why."
+    },
+    "data": {
+      "hint": "where it is, and what can go wrong",
+      "title": "Your data",
+      "askedTitle": "The question jojo asked once",
+      "asked": "On its first run jojo asks whether to start with demo data or empty, and it will not let you dismiss the question — a stranger looking at twelve applications for employers they have never contacted has no way to tell whether the app invented them or restored someone else’s. It is asked once because the answer is recorded, and neither answer is final: <settings>Settings → Your data</settings> has both halves, and clearing the demo records does not bring the question back.",
+      "diskTitle": "Nothing waits on the disk",
+      "disk": "A change is on screen the instant you make it, and written to the browser’s database a moment later in the background. That is why there are no spinners on save, and why closing the tab is safe — jojo flushes what it is holding when the tab is hidden or closed, including on a phone that kills the tab without warning. It is also why the “no room left” banner below has no Reload button: your unsaved change is sitting in that queue, and reloading is precisely what would throw it away.",
+      "stripsTitle": "If a strip appears above the page",
+      "strips": "None of these stop jojo working — what is on screen is real, and can still be read and exported. A strip rather than a toast, because a message saying your changes are not being saved must not scroll away after four seconds.",
+      "quoted": "“{{text}}”",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo could not open its database",
+          "means": "Another jojo tab is open on a different version of the app. Your records are still on disk — this tab could not read them, so it shows nothing rather than guessing. Close the other tabs and reload."
+        },
+        "blocked": {
+          "says": "This browser is not letting jojo open its storage",
+          "means": "A private window, or a browser your organisation manages. jojo still runs, but as a blank workspace: what is already saved on this device is not shown, and anything you type goes when you close the tab. Export before you leave if you add anything worth keeping."
+        },
+        "updated": {
+          "says": "jojo was updated in another tab",
+          "means": "A new version loaded elsewhere and this tab closed its database to let the update through. Nothing you change here is being saved. Reload."
+        },
+        "full": {
+          "says": "This browser has no room left",
+          "means": "Saving has stopped, and the banner counts the changes that are on screen but not written. There is deliberately no Reload button on this one — reloading is exactly what would lose them. Export first, free some space, then reload."
+        },
+        "unsaved": {
+          "says": "N changes could not be saved",
+          "means": "jojo is still retrying and the queue drains in order, so this is a number that can go down on its own. Export if you need a copy now."
+        },
+        "unreadable": {
+          "says": "N records could not be read",
+          "means": "Something on disk did not match what jojo expects, so it is being left out rather than shown half-read. Nothing has been deleted, and Settings → Diagnostics names the records by id."
+        }
+      },
+      "recovery": "There is one more you should not have to see. If the database is there and cannot be read, jojo shows a recovery screen <strong>instead of</strong> the app — nothing is mounted that could write over what is still on disk, and it never quietly starts again from scratch. It offers three things in the order they cost you something: download the rows it did manage to read, try again, or start fresh, which is the only one that asks first.",
+      "controlsTitle": "The controls in Settings",
+      "controls": {
+        "export": {
+          "name": "Export a backup",
+          "body": "Everything, in one versioned file: applications, timeline, vault, saved postings, your keywords and their tags, and your profile. It is written as <strong>{{file}}</strong>, dated so a second export does not overwrite the first. It is a copy taken at the moment you press it — it does not keep up with what you do next, and it is the only copy of your data that is not on this machine. Export to Excel and Import are switched off and say why when you hover them."
+        },
+        "demo": {
+          "name": "Load demo data",
+          "body": "Replaces what is there rather than merging into it. Worth pressing on an empty store to see what a filled one looks like; worth exporting first otherwise."
+        },
+        "clear": {
+          "name": "Clear every record",
+          "body": "Applications, timeline, vault, saved postings and your profile. <strong>Your keywords are kept</strong> — they are records of their own and you named them — so every count in the keyword panel goes to zero rather than the list going empty."
+        },
+        "clearStorage": {
+          "name": "Clear browser storage",
+          "body": "Everything this site has put in your browser — the records and their database, your theme and sound settings, caches and cookies — then a reload. jojo comes back the way it would on a new machine, first-run question and all. There is no server holding a copy, so this really is all of it."
+        }
+      },
+      "lastThree": "Those last three are the only writes <kbd>⌘Z</kbd> will not take back, which is why each one asks first and says exactly what it reaches. They still appear in the audit log. <strong>Diagnostics</strong>, on the same page, counts what is in your store, how much room the browser is giving jojo, and names anything it refused to read.",
+      "moveTitle": "Moving to another machine",
+      "move": "<transfer>Transfer</transfer> is the screen for handing your records to a second device: pick a direction, read the pairing code, see exactly what would go and how much of it, and choose whether documents come along. <strong>Nothing is transmitted in this build — it opens no connection and writes nothing.</strong> It is worth walking through because it is shaped like the real handoff and the counts on it are read from your actual store, but the way to move your data today is the export above."
+    },
+    "browserDb": {
+      "title": "Your browser is the database",
+      "body": "Every record is written to the database inside this browser as you work, so closing the tab is safe. Nothing leaves this machine and nothing syncs — clear your browser data, switch browsers or lose the disk and it goes with them. Export a <kbd>.json</kbd> backup from <settings>Settings</settings> for anything you want to keep elsewhere."
+    },
+    "savePath": {
+      "title": "What happens when you save something",
+      "desc": "Pressing Save changes what is on screen at once, and the write is queued and made to the browser’s database a moment later. If that write fails, the change is kept in the queue and reported in a strip above the page rather than being thrown away.",
+      "press": { "line1": "You press", "line2": "Save" },
+      "screen": { "line1": "On screen,", "line2": "at once" },
+      "saved": { "line1": "Saved in this", "line2": "browser" },
+      "fail": { "line1": "A write that fails is kept", "line2": "and reported, not dropped." }
+    },
+    "ladder": {
+      "title": "What jojo does with more on the machine",
+      "aside": "every rung is real; each is optional",
+      "intro": "The first two rungs are a tracker that never asks you for anything. From the third it becomes an assistant that works on the search with you — and every rung above that is still yours to skip.",
+      "layers": {
+        "browser": {
+          "name": "Browser only",
+          "requires": "Nothing to set up",
+          "gives": "Track applications and deadlines, and keep the documents you attach"
+        },
+        "backup": {
+          "name": "+ A backup you keep",
+          "requires": "Somewhere to put a file",
+          "gives": "One file holding every record and every document, restorable in a click"
+        },
+        "model": {
+          "name": "+ Local model",
+          "requires": "Ollama, vLLM or LM Studio — or a free NVIDIA key",
+          "gives": "The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, \"Ask the graph\" in a sentence, and real scout scoring"
+        },
+        "reader": {
+          "name": "+ Document reader",
+          "requires": "MarkItDown, running locally",
+          "gives": "The model reads your PDFs, Word files and decks — and a job posting, so New → Application from a link fills the form in"
+        },
+        "extension": {
+          "name": "+ The extension",
+          "requires": "Chrome, Edge, Brave or Arc",
+          "gives": "Keep a posting exactly as it read. It is also the only part of jojo that is not a page — which is what lets a pipeline sweep a board, and what lets a hosted copy reach a document reader on your own machine"
+        }
+      },
+      "built": "built",
+      "notBuilt": "not built",
+      "outro": "Every page says for itself which rung it is on, rather than making you come back here. The <assistant>Assistant</assistant> is a threaded agentic chat with a model connected and five worked examples without one, badged either way, and <scout>Job scout</scout> scores for real against your profile and says what it matched on. <screens>Every screen</screens> goes through the rest, page by page.",
+      "backup": {
+        "hint": "built in",
+        "title": "Keep a backup",
+        "storedTitle": "Your documents are stored here",
+        "stored": "The CVs and cover letters you attach are saved in this browser and survive closing the tab. Nothing is uploaded anywhere — and nothing leaves this machine unless you download it yourself.",
+        "oneFileTitle": "One file holds everything",
+        "oneFile": "<settings>Settings</settings> writes a backup carrying every record, every link between them and every document, all in one file. Restoring it puts all three back.",
+        "whyTitle": "Why it matters",
+        "why": "A browser may clear its own storage when a disk fills up, and <kbd>Clear browsing data</kbd> always will. A backup you have kept is the only copy that is not subject to either."
+      },
+      "model": {
+        "hint": "not connected",
+        "title": "Add a local model",
+        "connectTitle": "Connect it",
+        "connect": "Run vLLM, Ollama or LM Studio and enter the endpoint in <settings>Settings</settings>. Any OpenAI-compatible server works. No GPU? A free key from build.nvidia.com runs the same agent from the same screen — rate limited rather than billed, and the only cost is that your records leave the device.",
+        "changesTitle": "What changes",
+        "changes": "Drafting stops being a fill-in-the-blanks template and starts reading your profile and your documents. The <assistant>Assistant</assistant> page shows the worked examples it answers with until then.",
+        "scoringTitle": "Scout pipelines start scoring",
+        "scoring": "A pipeline is a saved search you can write today. Scoring is the half that waits on the model, and the banner on that page says so rather than showing figures nothing produced."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Every screen",
+    "title": "Every screen, and what it will and will not do",
+    "subtitle": "One section per page — what it is for, what is not obvious, and what is not connected yet.",
+    "caption": "Thirteen sections — jump to the one you came for",
+    "sections": {
+      "doors": "Where each page is",
+      "dashboard": "Today",
+      "applications": "Applications",
+      "calendar": "Calendar",
+      "vault": "Vault",
+      "scout": "Job scout",
+      "statistics": "Statistics",
+      "graph": "Graph",
+      "transfer": "Transfer",
+      "profile": "My profile",
+      "assistant": "Assistant",
+      "settings": "Settings",
+      "guide": "This guide"
+    },
+    "parts": {
+      "notObvious": "What is not obvious",
+      "whatIsReal": "What is real",
+      "addressNothing": "<lead>In the address bar</lead> carries nothing."
+    },
+    "doors": {
+      "hint": "six pages are in the sidebar; six are not",
+      "title": "Where each page is",
+      "intro": "The sidebar lists six pages. Six more are reached from somewhere else entirely: an icon in the top bar, or one of the four status tiles at the foot of the sidebar, which look like readouts and are also buttons. Below a laptop width the sidebar is a drawer behind the menu button at the top left; the top bar is on every screen at every size.",
+      "listTitle": "Every route, and the control that opens it",
+      "where": {
+        "dashboard": "Sidebar, first row. Also what jojo opens on.",
+        "applications": "Sidebar. Its badge counts records you have flagged for follow-up.",
+        "calendar": "Sidebar. Its badge counts what is scheduled in the next seven days.",
+        "vault": "Sidebar. Its badge counts reminders past their date. <code>/reminders</code> redirects here, which is where that page went.",
+        "scout": "Sidebar. Its badge counts matches nobody has turned into an application yet.",
+        "statistics": "Sidebar, last row.",
+        "graph": "The tile marked <strong>Browser storage</strong>, at the foot of the sidebar. Nothing else in the app calls it the Graph, which is why this is the hardest page in jojo to find by accident.",
+        "transfer": "The tile marked <strong>Transfer</strong>, and <settings>Settings → Your data</settings>.",
+        "profile": "The person icon in the top bar.",
+        "assistant": "The robot icon in the top bar.",
+        "settings": "The gear icon in the top bar. The <strong>Local model</strong> tile lands here too — it is where that is configured.",
+        "guide": "The question mark, last icon in the top bar. It is not in the sidebar."
+      },
+      "palette": "There is one door that reaches all of them, and it is the reason the six hidden pages are an inconvenience rather than a problem: <kbd>⌘K</kbd> ends in a <strong>Go to</strong> group listing every page, including each of this guide’s four separately. <overview>How to use jojo</overview> covers what else that palette does.",
+      "everyTitle": "Two things that are true of every page",
+      "switches": "The switches behind the gear beside a page title — show notes, compact rows, dots instead of titles, show counts — change what that page draws and last for this visit only. They are not in the address bar and they are not saved; the theme and the sound switch in Settings are, and they are the exceptions.",
+      "defaults": "Where a page does keep state in the address, a value equal to what the page shows anyway is left out of it. That is why <code>/applications</code> and <code>/applications?view=board&stage=all&sort=daysAgo</code> are the same screen, and why the tidier of the two is the one you get when you clear a filter."
+    },
+    "doorsDiagram": {
+      "title": "Where each page is reached from",
+      "desc": "The six rows down the sidebar open the Dashboard, Applications, Calendar, Vault, Job scout and Statistics. The four tiles beneath them open the Graph, Transfer and — for the bridge and the model — Settings. The four icons at the right of the top bar open My profile, Settings, the Assistant and this guide. Nothing in the sidebar list leads to those last six.",
+      "search": "Search…",
+      "new": "New",
+      "topBar": { "line1": "My profile · Settings ·", "line2": "Assistant · How to use" },
+      "sidebar": {
+        "line1": "Dashboard · Applications · Calendar",
+        "line2": "Vault · Job scout · Statistics"
+      },
+      "tiles": "Graph · Transfer · Settings"
+    },
+    "applications": {
+      "where": "sidebar · board, table and one record",
+      "open": "Open the board",
+      "intro": "Every position you are tracking, in one of two layouts over the same records, plus the record itself at its own address. The six stages and what moving between them asks you for are on <overview>How to use jojo</overview>; this is the page they happen on.",
+      "boardTitle": "Board and table are not the same view twice",
+      "board": {
+        "columns": "The board is one column per stage with a count in each header. <strong>Add here</strong> at the foot of a column opens a new record already in that stage — logging a job you have already interviewed for should not mean adding a draft and dragging it four columns.",
+        "sort": "The table sorts by Position, Stage and Last activity; clicking the same header again reverses it. Role and Next date are columns, not sort keys.",
+        "chips": "The stage filter chips are table-only. The board is already grouped by stage, so filtering it would blank five columns rather than shorten a list — switching to Board clears that filter rather than hiding it still switched on.",
+        "search": "The search box matches the employer, the position, the note, the role tag and the stage name, so typing “offer” finds a record whose only mention of it is a chip. The counts on the stage chips are over what the search and the keyword chips have left, not over everything.",
+        "empty": "When the list comes back empty it names the filters holding it that way, and offers to drop all of them at once."
+      },
+      "moveTitle": "Moving a card between stages",
+      "move": "The grip sits on the left edge of a card. Drag it and the card lifts out of its column — the column you are over takes the accent border and opens a dashed slot where the card will land. Dragging is not the only way, and with a keyboard it is the slow way — crossing two columns is a Space and twenty arrow presses. Every card carries a stage menu under its own stage pill, and in the table the stage chip on a row is that same menu; either is two presses.",
+      "fromBoard": {
+        "name": "From the board or the table",
+        "body": "The move happens as you make it, and the toast says which stage it came from and offers Undo. A drag and a menu pick are the same write, so a mis-drop is as recoverable as a mis-click — which it was not until the drag went through the same path as everything else."
+      },
+      "fromRecord": {
+        "name": "From inside the record",
+        "body": "The stage menu in the record’s own header is the one that can open a short form first, and it only opens when that move has something to ask: Submitted, Interview, Offer and Closed do, Draft and Screening call do not. Leaving a record that already has an offer always asks, whatever the destination, because the offer has to be kept or dropped deliberately."
+      },
+      "exits": "The form has three exits and none of them is a trick: <strong>Cancel</strong> writes nothing, <strong>Move without details</strong> changes the stage and touches nothing else, and the last one applies what you filled in. Where it offered to put a date on your calendar, the toast afterwards says it did.",
+      "recordTitle": "The record itself",
+      "record": {
+        "opens": "It opens over the list rather than instead of it. On a laptop it is a sheet across the right of the board, closed by Escape, by the backdrop or by the X in its own header; below that width it takes the whole page. Either way Back closes the record and leaves your view, search, stage and sort exactly as they were.",
+        "address": "Its address is a name — <code>/applications/rice</code> — because record ids are minted per store and a bookmarked id would be dead after loading the demo data again. A link built from an id still resolves.",
+        "note": "The note saves when you click away from it and says “Note saved” underneath. There is no Save button to forget.",
+        "delete": "Deleting counts what survives before it asks — the reminders, events and saved items filed under the record are kept and unlinked, never deleted — and the Undo in the toast puts back those links too, which you could not rebuild by adding the application again.",
+        "deleted": "A link to a record that has been deleted lands on a panel that says so, rather than on an error. Nothing else was removed with it."
+      },
+      "address": "<lead>In the address bar</lead> carries the layout, the search text, and — because both are the table’s own controls — the stage filter and the sort key, so <bystage>the table sorted by stage</bystage> and <atoffer>everything at offer</atoffer> are links you can keep. A stage in the address does nothing until the address also says table. The role filter and the keyword chips beside them are not in it at all: they are this tab’s selection and they reset when you reload."
+    },
+    "today": {
+      "where": "sidebar, first row",
+      "open": "Open Today",
+      "intro": "What the day owes you, and nothing else. Five panels, all counted from your records as they stand: <strong>Needs a decision</strong> — an offer, an application that is overdue, the next deadline or interview with a clock on it — beside a month strip and a set of counters, then <strong>Owed this week</strong>, <strong>Recent applications</strong> and the <strong>Pipeline</strong> breakdown.",
+      "items": {
+        "checklist": "While nothing is tracked, the decision deck is replaced by a three-step checklist that opens the real dialogs and ticks itself off the store. Clearing every record in Settings brings it back, because it is reading the store rather than remembering that you once finished it.",
+        "colour": "Colour on this page comes off the date and nothing else: red is past due, amber is due within 48 hours, and everything further out is plain however important it is. Something you have finished goes grey rather than green — nothing here is a reward.",
+        "rows": "Rows can be ticked off, snoozed by a day, three days or a week, or opened, without leaving the page. Each of those is a real write with an Undo in the toast.",
+        "strip": "The month strip is its own little calendar — it steps months without moving the <calendar>Calendar</calendar> page, and clicking a day opens that day there."
+      },
+      "address": "<lead>In the address bar</lead> carries nothing. This page is <code>/</code>, and every control on it is either a link somewhere else or a write."
+    },
+    "calendar": {
+      "where": "sidebar, third row",
+      "open": "Open Calendar",
+      "intro": "A month grid with the selected day’s list underneath it, on one page. Deadlines, interviews, campus visits and reminders are all here because they are all the same kind of record — the reason that is worth knowing is on <overview>How to use jojo</overview>.",
+      "items": {
+        "drag": "Dragging an entry onto another day reschedules it, with an Undo in the toast. Dropping it back on the day it came from writes nothing and says nothing — a toast claiming a move that did not happen is worse than silence.",
+        "types": "The event types under the grid are switches, like a chart’s legend: turn one off and its entries leave the grid and both day lists, for this visit. A day whose entries are all switched off says so rather than claiming to be empty, and a link to an entry of a hidden type turns that type back on so it has something to land on.",
+        "key": "The key under the grid is built from what this month actually holds. A month with nothing overdue in it does not list an overdue colour, because a key promising a mark that is not on the grid sends you hunting for it.",
+        "goTo": "<strong>Go to month</strong> browses years without moving the calendar behind it until you pick one, and it marks the real current month while you are away in another year. <strong>Today</strong> comes back to today, and stays pressed-looking while you are already there.",
+        "paging": "Paging between months keeps the day you were looking at, clamped to the month you land in: step off 31 January and you arrive on the last day of February rather than on a date that does not exist. The same clamp catches a hand-typed address, so <code>?m=2&d=31</code> answers with a real day instead of an empty grid.",
+        "add": "<strong>Add event</strong> is prefilled with the day on screen, which on a calendar is almost always the day you meant.",
+        "export": "<strong>Export to my calendar</strong> writes every date jojo holds as an <code>.ics</code>, with a reminder on each. It is here because jojo sends no notifications of its own: the calendar you already get alerts from is the only thing that can warn you about a deadline while this app is shut. It includes each offer’s respond-by, which lives on the application rather than on the timeline and so has never appeared on this grid. The file is a copy taken now — change a date and export again."
+      },
+      "address": "<lead>In the address bar</lead> carries the year, the month, the day and the entry you arrived at — with today’s year and month left out when that is where you are, so a link to next month is <code>/calendar?m=11&d=3</code>. The last of the four, <code>focus</code>, lights a row for a couple of seconds and then removes itself from the address, so a URL you copy afterwards is the day rather than a row nobody is looking at any more."
+    },
+    "vault": {
+      "where": "sidebar · six tools, one page",
+      "open": "Open Vault",
+      "intro": "Everything you set aside to come back to. The segmented control in the header switches between six tools and only one is on screen at a time, which is the thing most people miss: the Vault is not a list, and five of its six tools are behind a tab.",
+      "rows": {
+        "reminders": {
+          "name": "Reminders",
+          "body": "Grouped Overdue, Today, Upcoming and Completed. Ticking one off is the whole job, and the same snooze steps as the dashboard are on every row."
+        },
+        "links": {
+          "name": "Links",
+          "body": "Filed under Posting, Institution, Person or Guide, and movable between them afterwards."
+        },
+        "files": {
+          "name": "Files",
+          "body": "Buckets To read, Applications, Talks and Admin. Drop a file on the list or pick one — see below for what is actually kept."
+        },
+        "snippets": {
+          "name": "Snippets",
+          "body": "Tagged Cover letter, Application form, Email or Bio. These are what the <strong>Draft a message</strong> dialog is built out of, and where the Assistant files a reply you save."
+        },
+        "people": {
+          "name": "People",
+          "body": "Referees, search chairs, recruiters — anyone the search actually runs through. They file under a job exactly as a CV does, and for the same reason it is a list rather than one id: a referee writes for every position you name them on. Before this they lived inside the text of a reminder, which is why nothing could answer “whose letter is still outstanding”."
+        },
+        "tools": {
+          "name": "Tools",
+          "body": "A calculator, basic or scientific, for the arithmetic every offer turns into. It keeps the last thirty lines for this visit and nothing after you close the tab."
+        }
+      },
+      "items": {
+        "filter": "The keyword filter above the list belongs to the tool you have open, so the count beside a keyword describes this tab rather than the whole Vault. It is not drawn at all on Tools, which holds no records, or on a tab with nothing in it.",
+        "search": "Each of the four lists has its own search box and bucket filter, and neither is in the address — the open tab and the record you arrived at are.",
+        "redirect": "<code>/reminders</code> redirects here. Reminders were a page of their own before they were a tool, and links taken back then still land."
+      },
+      "notConnectedTitle": "Files are recorded, not stored",
+      "notConnected": "A file gives up its name, its size and its type, and that is all jojo keeps — there is nowhere on your disk for it to put the document itself. A file you pick or drop during this visit previews for real, from the bytes the browser handed over, for as long as the tab lives; the rows that came with the demo data have no bytes behind them and preview a labelled placeholder instead. Nothing is uploaded and no contents are read.",
+      "address": "<lead>In the address bar</lead> carries the open tool and, briefly, the record a link pointed at: <code>/vault?tool=snippets</code>. Switching tabs drops the highlight with it."
+    },
+    "scout": {
+      "where": "sidebar, fifth row",
+      "open": "Open Job scout",
+      "intro": "Three panels: the saved searches you would like run, the matches such a search would produce, and a box that saves a posting you found yourself. The strip at the top of the page says which of those is waiting on something, and it is the first thing on screen for that reason.",
+      "items": {
+        "pipelines": "<strong>Pipelines</strong> are records like any other — a board to watch, the terms that matter and how often to look. Writing, editing and deleting them all work and survive a reload. A pipeline you switch on reads <strong>paused</strong> rather than running, which is the honest word for it.",
+        "save": "<strong>Save a posting</strong> works with nothing connected. What is kept is the URL, the employer guessed from it, and the day you saved it — enough to find the ad again and to apply from. Nothing fetches the page.",
+        "add": "<strong>Add to applications</strong>, on a match or a saved posting, creates the application and links the two rather than moving the row. The row then says where it went, so you cannot make the trip twice."
+      },
+      "notConnectedTitle": "Snapshots wait on a local model. The scores do not.",
+      "notConnected": "The matches are still the ones that shipped with the demo data — nothing has crawled a board — but the percentage on each is computed here, on this device, against the match terms, target roles and regions on your profile, and every row says what it matched on. A profile with nothing in it reads <strong>not scored</strong> rather than a confident number over nothing. <strong>Open snapshot</strong> is the part that does wait: it is disabled on every saved posting and says why when you hover it, because no page was ever fetched and showing one would claim a file jojo does not have.",
+      "address": "<lead>In the address bar</lead> carries the row a link pointed at, named by which list it is in — <code>/scout?focus=match:unt</code> or <code>focus=posting:…</code>. Both lists mint their ids separately, so the list has to be part of the parameter for the right row to light up."
+    },
+    "statistics": {
+      "where": "sidebar, last row",
+      "open": "Open Statistics",
+      "intro": "Headline rates, when you applied, where each one came from, how far applications got, how they ended, what to work on next, and applications, replies, interviews and offers split by kind of role. Every figure is counted from your applications at the moment you look.",
+      "items": {
+        "funnel": "Only the stage a record is in now is stored, so the funnel counts each application as far as it shows. A record rejected after an interview is counted by the dates it carries and no further, and the two panels this affects say <strong>as far as each record shows</strong> in their headings rather than quietly reporting a number they cannot stand behind.",
+        "typical": "Figures marked <strong>typical</strong> are a sample search to compare yourself against, not your own history — the switch behind the gear hides them. jojo keeps no history of its own numbers, which is why nothing here reports a change over time.",
+        "legend": "The legend under the outcomes bar switches bands off, and the heading then says how many of the total are still shown. The percentages recount against what is left rather than staying still.",
+        "holds": "The page holds itself back rather than inventing a denominator. With nothing sent there are no headline rates and no funnel — a reply rate over zero applications is a made-up number — and with no records at all the whole page is one empty state."
+      },
+      "address": "<lead>In the address bar</lead> carries nothing. The switches and the legend are for this visit."
+    },
+    "graph": {
+      "where": "the sidebar's Browser storage tile",
+      "open": "Open the graph",
+      "intro": "Your records drawn as what they are stored as: a node for each one, an edge for each pointer between two of them. Colour is the kind of record and size is how much points at it. Underneath the picture is a query panel that answers the questions a list cannot, like which applications have no follow-up scheduled. <guide>The graph</guide> goes through all of it — this section is only here to say where the page is and what it does not do.",
+      "items": {
+        "legend": "The legend rows hide a kind of record from the picture. Questions still run over the whole graph — an answer that changed because you had hidden something would be worse than no answer.",
+        "illustrative": "The line under the pickers that looks like code is labelled <strong>illustrative</strong> and means it. Nothing parses it; it is there so that seeing the shape beside the words makes the pickers legible.",
+        "fetched": "This page and Transfer are fetched separately from the rest of jojo, so on a cold load you may see a named panel for a moment while the code arrives. It says so rather than spinning."
+      },
+      "address": "<lead>In the address bar</lead> carries nothing — not the selected node, not the question, not the types you have hidden. A view you set up here cannot be sent to anyone; the query examples in the panel are the shareable version."
+    },
+    "transfer": {
+      "where": "the sidebar's Transfer tile, and Settings",
+      "open": "Open Transfer",
+      "intro": "Handing everything to a second device: pick which end this machine is, read out the pairing code, see exactly what would go and how much of it, and decide whether documents come along. The counts are read from your own store, group by group, which is the point of walking through it — what it says it would move is what you actually have.",
+      "notConnectedTitle": "Nothing is transmitted",
+      "notConnected": "This build opens no connection, asks for no camera and writes to no store. The pairing code is minted fresh each visit and pairs with nothing; the progress it walks through is a demonstration of the shape the real handoff would take, and the page says so under the code rather than in a banner you would scroll past. The way to move your records to another machine today is the export in <settings>Settings → Your data</settings>.",
+      "items": {
+        "files": "Files are the one group switched off by default — they are the heavy half of a handoff and the half you most likely already have on the other device. The receiving end gets no say, because a device quietly dropping half of what arrived would be the worse surprise.",
+        "animation": "The animation is a WebGPU scene redrawing every frame. There is a switch behind the gear to put it away, which is worth it on battery.",
+        "empty": "With an empty store the page says there is nothing to move and points at the demo data, rather than offering to send zero of everything."
+      }
+    },
+    "profile": {
+      "where": "the person icon, top bar",
+      "open": "Open your profile",
+      "intro": "Four panels: your basics, your links, your interests and targets, and your documents. It is written to this browser and kept, exactly like every other record — <overview>How to use jojo</overview> says why it is still not one of the getting-started steps.",
+      "items": {
+        "match": "<strong>Match terms</strong> are not keywords, and the panel says so where you type them. A keyword is something you file records under and filter by; a match term is a phrasing the scout would score a posting against. The two lists have never had anything to do with each other.",
+        "documents": "The documents panel is a view of the <vault>Vault</vault>’s Applications bucket rather than a second list of its own — a CV added in either place shows up in both, because there is only one place. Uploading here records the name, size and type, on the same terms as the Vault.",
+        "save": "The whole page saves as one change, so one Undo puts all of it back. Pressing Save with nothing edited writes nothing and offers no Undo, rather than logging a change that did not happen.",
+        "example": "Every field carries a grey example. On an empty store that matters: this page used to render a stranger’s name and email as real values, in boxes a reader would reasonably take for their own answers."
+      }
+    },
+    "assistant": {
+      "where": "the robot icon, top bar",
+      "open": "Open the assistant",
+      "intro": "A threaded chat with the local model you connected in <settings>Settings</settings>, and a page of worked examples until you do. Which of the two you get is decided by whether an endpoint is saved — nothing is hidden and there is no switch.",
+      "connectedTitle": "With a model connected",
+      "connected": {
+        "agentic": "It is <strong>agentic</strong>: the model is handed the app’s own tools and can read and write records to answer you. Every call it makes is listed in the reply as it happens — the tool, its arguments, and what came back — so a write is something you watch rather than discover.",
+        "threads": "Conversations are <strong>threads, and they are saved</strong>. They live in this browser’s IndexedDB beside everything else, so closing the tab keeps them; the thread bar switches between them, and each can be filed under an application so two searches do not blur into one history.",
+        "documents": "With the document reader configured as well, it can <strong>read your documents</strong> — a PDF, a Word file, a deck — and answer from what is inside them."
+      },
+      "notConnectedTitle": "Without one, the replies are written rather than generated",
+      "notConnected": "Five prompts a job search actually raises — a cover letter, tailoring a CV, reading a posting, a follow-up email, interview preparation — each answered with a worked example written out in full. A message matching none of them returns a reply that opens by saying it is canned, rather than a plausible paragraph about whatever you asked, and every reply carries the same badge — <strong>Example response · no model connected</strong>.",
+      "items": {
+        "save": "<strong>Save to snippets</strong> files a reply in the <vault>Vault</vault> under the tag that reply belongs to, and the toast offers to open it there.",
+        "copy": "Copy can be refused outright by a browser, so the button reports the failure instead of confirming something that did not happen.",
+        "delete": "Deleting a thread offers an Undo rather than a confirmation."
+      }
+    },
+    "settings": {
+      "where": "the gear icon, top bar",
+      "open": "Open Settings",
+      "intro": "Seven panels: your documents, a local model, appearance, your data, your keywords, diagnostics, and the audit log. The runtime tile at the foot of the sidebar lands here, which is what it is for.",
+      "items": {
+        "export": "<strong>Export a backup</strong> writes a full versioned backup to <strong>{{file}}</strong>: applications, timeline, vault, saved postings, your keywords and their tags, and your profile. It is a copy taken at the moment you press it and does not keep up with what you do next.",
+        "clear": "<strong>Load demo data</strong>, <strong>Clear records</strong> and <strong>Clear storage</strong> each ask first and each say exactly what they reach. Clearing records keeps the keywords you named — unless the store is still untouched demo data, in which case the seeded keywords go with it, and the confirmation says which of the two it is about to do.",
+        "keywords": "<strong>Keywords</strong> renames, recolours and deletes them, and tells you how many records each is on before you delete it.",
+        "diagnostics": "<strong>Diagnostics</strong> is what turns “your records are saved” into something checkable: how many of each kind are in the store, which schema version is on disk, how much room the browser is giving jojo, and the id of anything it refused to read.",
+        "audit": "<strong>Audit log</strong> lists every write, newest first, up to two hundred. Only the newest row offers an Undo, because an entry from three hours ago describes records that have been edited a dozen times since. Load demo data and Clear records appear there like everything else and are the two the log will not undo — they said so before you pressed them."
+      },
+      "notConnectedTitle": "One panel and one button are switched off",
+      "notConnected": "The local-model endpoint is a field, and a Test button that says why it cannot run. The panel that used to sit beside it — a bridge address, a pairing code, a save path and three switches, all of which accepted what you typed and reached nothing — is gone; documents are stored for real now, and <strong>Your documents</strong> says where. <strong>Export to Excel</strong> and <strong>Import</strong> are disabled with their reasons on hover — no spreadsheet writer is bundled, and reading a backup back in needs a validator that can refuse a file it does not understand. What each of those would give you is on <overview>How to use jojo</overview>."
+    },
+    "guide": {
+      "where": "the question mark, top bar",
+      "open": "Open the first page",
+      "intro": "Four pages under one address, with the rail above and the pager below on every one of them. Its only entry in the chrome is the help icon: named on hover and to a screen reader, but carrying no visible text and no row in the sidebar, which is a thin door for the page you go looking for when something is unclear. <kbd>⌘K</kbd> is the reliable way back, and it lists all four pages separately rather than one row for the section.",
+      "order": "The order is an argument rather than an accident: anyone can stop after the first page and use the app, and anyone can jump straight to the last one.",
+      "address": "<lead>In the address bar</lead> is the page itself. The first page is <code>/guide</code> rather than <code>/guide/overview</code>, so every link and bookmark taken before there were four of them still lands somewhere real."
+    }
+  }
+}

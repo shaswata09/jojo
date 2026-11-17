@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { ChartColumn, Plus, SendHorizontal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelScroll, PanelTitle } from '@/components/common/Panel'
@@ -19,6 +20,7 @@ import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
 import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Outcomes are slices of one whole, so a sequential ramp — the same treatment
@@ -39,7 +41,9 @@ const OUTCOME_RAMP = [
 ]
 
 export function Statistics() {
-  useTitle('Statistics')
+  const { t } = useTranslation('pages')
+  const domain = useDomain()
+  useTitle(t('statistics.title'))
   // The benchmark is useful, and noisy when you are reading your own numbers.
   const [showTypical, setShowTypical] = useState(true)
   // Every figure on this page counts the roles picked in the top bar, and all
@@ -63,10 +67,7 @@ export function Statistics() {
   if (total > 0 && all.length === 0) {
     return (
       <>
-        <PageHeader
-          title="Statistics"
-          subtitle="The role filter in the top bar leaves nothing to measure."
-        />
+        <PageHeader title={t('statistics.title')} subtitle={t('statistics.scopedEmptySubtitle')} />
         <Panel>
           <RoleScopeEmpty />
         </Panel>
@@ -77,19 +78,16 @@ export function Statistics() {
   if (all.length === 0) {
     return (
       <>
-        <PageHeader
-          title="Statistics"
-          subtitle="Nothing to measure yet — this page fills in as you add applications."
-        />
+        <PageHeader title={t('statistics.title')} subtitle={t('statistics.emptySubtitle')} />
         <Panel>
           <EmptyState
             icon={ChartColumn}
-            title="No applications to measure"
-            description="Response rates, a funnel and a week-by-week chart all need records to count. Add the first one and this page starts filling in."
+            title={t('statistics.emptyTitle')}
+            description={t('statistics.emptyDescription')}
             action={
               <Button size="sm" onClick={() => open('application')}>
                 <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                New application
+                {t('statistics.newApplication')}
               </Button>
             }
           />
@@ -101,7 +99,7 @@ export function Statistics() {
   return (
     <>
       <PageHeader
-        title="Statistics"
+        title={t('statistics.title')}
         // Both halves are conditional on the same thing: with nothing sent,
         // there are no headline rates for the switch to change and no figure
         // on the page wearing the word "typical" for the subtitle to explain.
@@ -110,24 +108,20 @@ export function Statistics() {
           // itself sits up in the top bar, away from these figures.
           `${
             filtered
-              ? `Counted from the ${all.length} of your ${total} applications under the roles picked in the top bar.`
-              : 'Counted from your own records.'
-          } ${
-            sent > 0
-              ? 'Figures labelled typical are a sample search, there to compare against.'
-              : 'It fills in as applications go out.'
-          }`
+              ? t('statistics.countedScoped', { shown: all.length, count: total })
+              : t('statistics.counted')
+          } ${sent > 0 ? t('statistics.typicalNote') : t('statistics.fillsIn')}`
         }
         settings={
           sent > 0 ? (
             <PageOption
-              label="Compare with a typical search"
-              hint="A sample figure beside each headline number"
+              label={t('statistics.compareTypical')}
+              hint={t('statistics.compareTypicalHint')}
               control={
                 <Switch
                   checked={showTypical}
                   onCheckedChange={setShowTypical}
-                  aria-label="Compare with a typical search"
+                  aria-label={t('statistics.compareTypical')}
                 />
               }
             />
@@ -152,7 +146,7 @@ export function Statistics() {
           room for a second number under each one. */}
       {sent > 0 ? (
         <section data-tour="stats">
-          <h2 className="mb-3.5 text-base font-medium">Headline rates</h2>
+          <h2 className="mb-3.5 text-base font-medium">{t('statistics.headlineRates')}</h2>
           <HeadlineRatesBody showTypical={showTypical} />
         </section>
       ) : null}
@@ -176,17 +170,17 @@ export function Statistics() {
               is stored, so a record that was rejected after an interview counts
               as far as the dates it carries and no further — the panel says so
               rather than quietly reporting a number it cannot stand behind. */}
-          <PanelTitle hint={sent > 0 ? 'as far as each record shows' : undefined}>
-            How far applications got
+          <PanelTitle hint={sent > 0 ? t('statistics.asFarAsShown') : undefined}>
+            {t('statistics.funnelTitle')}
           </PanelTitle>
           {sent === 0 ? (
             <EmptyState
               icon={SendHorizontal}
-              title="Nothing has been sent yet"
-              description="Reply, interview and offer rates all count applications that have actually gone out. Move one out of Draft and this fills in."
+              title={t('statistics.nothingSentTitle')}
+              description={t('statistics.nothingSentDescription')}
               action={
                 <Button variant="outline" size="sm" asChild>
-                  <Link to={applicationsPath()}>Open the board</Link>
+                  <Link to={applicationsPath()}>{t('statistics.openBoard')}</Link>
                 </Button>
               }
             />
@@ -214,10 +208,12 @@ export function Statistics() {
                     key={step.stage}
                     className="grid grid-cols-[1fr_auto] items-baseline gap-x-3"
                   >
-                    <dt className="text-sm text-text-2">{step.stage}</dt>
+                    <dt className="text-sm text-text-2">{domain.funnel(step.stage)}</dt>
                     <dd className="font-mono text-sm text-text-1">
                       {step.count}
-                      <span className="ml-1.5 text-xs text-text-3">{Math.round(pct)}%</span>
+                      <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
+                        {Math.round(pct)}%
+                      </span>
                     </dd>
                     <div className="col-span-2 mt-1.5 h-2 overflow-hidden rounded-sm bg-well">
                       <div
@@ -227,7 +223,7 @@ export function Statistics() {
                     </div>
                     {prev ? (
                       <div className="col-span-2 mt-1 text-xs text-text-3">
-                        {share(step.count, prev.count)}% carried through
+                        {t('statistics.carriedThrough', { percent: share(step.count, prev.count) })}
                       </div>
                     ) : null}
                   </div>
@@ -247,13 +243,13 @@ export function Statistics() {
           <PanelTitle
             hint={
               outcomeTotal !== sent
-                ? `${outcomeTotal} of ${sent} shown`
+                ? t('statistics.outcomesShown', { shown: outcomeTotal, count: sent })
                 : sent === all.length
-                  ? `${sent} sent`
-                  : `${sent} of ${all.length} sent`
+                  ? t('statistics.outcomesSent', { count: sent })
+                  : t('statistics.outcomesSentOf', { sent, count: all.length })
             }
           >
-            Outcomes
+            {t('statistics.outcomes')}
           </PanelTitle>
 
           {/* Nothing sent means five bands of zero under a bar with no fill —
@@ -263,8 +259,8 @@ export function Statistics() {
           {sent === 0 ? (
             <EmptyState
               icon={SendHorizontal}
-              title="Nothing has an outcome yet"
-              description="An outcome is what came back, so only applications that have gone out can have one. Every record here is still a draft."
+              title={t('statistics.noOutcomeTitle')}
+              description={t('statistics.noOutcomeDescription')}
             />
           ) : (
             <>
@@ -276,7 +272,7 @@ export function Statistics() {
                 {visibleOutcomes.map((o) => (
                   <div
                     key={o.label}
-                    className="h-full first:rounded-l-full last:rounded-r-full"
+                    className="h-full first:rounded-s-full last:rounded-e-full"
                     style={{
                       width: `${share(o.count, outcomeTotal)}%`,
                       background: OUTCOME_RAMP[outcomes.indexOf(o) % OUTCOME_RAMP.length],
@@ -290,13 +286,13 @@ export function Statistics() {
               rather than four. */}
               {outcomeToggle.allHidden ? (
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-text-3">
-                  Every outcome is switched off.
+                  {t('statistics.allOff')}
                   <button
                     type="button"
                     onClick={outcomeToggle.showAll}
                     className="cursor-pointer rounded-sm border border-hairline bg-well px-2 py-0.5 text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
                   >
-                    Show all
+                    {t('statistics.showAll')}
                   </button>
                 </div>
               ) : null}
@@ -315,7 +311,11 @@ export function Statistics() {
                         type="button"
                         onClick={() => outcomeToggle.toggle(o.label)}
                         aria-pressed={!off}
-                        title={off ? `Show ${o.label}` : `Hide ${o.label}`}
+                        title={
+                          off
+                            ? t('statistics.showBand', { label: domain.band(o.label) })
+                            : t('statistics.hideBand', { label: domain.band(o.label) })
+                        }
                         className="flex w-full items-center gap-2.5 rounded-sm px-1 py-1 text-sm transition-colors hover:bg-row-hover"
                       >
                         <span
@@ -325,20 +325,20 @@ export function Statistics() {
                         />
                         <span
                           className={cn(
-                            'min-w-0 truncate text-left',
+                            'min-w-0 truncate text-start',
                             off ? 'text-text-3 line-through decoration-1' : 'text-text-2',
                           )}
                         >
-                          {o.label}
+                          {domain.band(o.label)}
                         </span>
                         <span
                           className={cn(
-                            'tabular ml-auto shrink-0 font-mono',
+                            'tabular ms-auto shrink-0 font-mono',
                             off ? 'text-text-3' : 'text-text-1',
                           )}
                         >
                           {o.count}
-                          <span className="ml-1.5 text-xs text-text-3">
+                          <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
                             {off ? 0 : share(o.count, outcomeTotal)}%
                           </span>
                         </span>
@@ -362,28 +362,26 @@ export function Statistics() {
           the columns cross-foot against it rather than merely resemble it. */}
       {roles.length > 0 ? (
         <Panel className="min-w-0">
-          <PanelTitle hint="as far as each record shows">How each kind of role is going</PanelTitle>
+          <PanelTitle hint={t('statistics.asFarAsShown')}>{t('statistics.rolesTitle')}</PanelTitle>
           <PanelScroll axis="x" className="flex-none">
             <table className="w-full min-w-[440px] text-sm">
-              <caption className="sr-only">
-                Applications, replies, interviews and offers by kind of role
-              </caption>
+              <caption className="sr-only">{t('statistics.rolesCaption')}</caption>
               <thead>
-                <tr className="text-left text-xs text-text-3">
-                  <th scope="col" className="py-2 pr-3 font-medium">
-                    Roles
+                <tr className="text-start text-xs text-text-3">
+                  <th scope="col" className="py-2 pe-3 font-medium">
+                    {t('statistics.colRoles')}
                   </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-medium">
-                    Applied
+                  <th scope="col" className="py-2 pe-3 text-end font-medium">
+                    {t('statistics.colApplied')}
                   </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-medium">
-                    Replied
+                  <th scope="col" className="py-2 pe-3 text-end font-medium">
+                    {t('statistics.colReplied')}
                   </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-medium">
-                    Interviews
+                  <th scope="col" className="py-2 pe-3 text-end font-medium">
+                    {t('statistics.colInterviews')}
                   </th>
-                  <th scope="col" className="py-2 text-right font-medium">
-                    Offers
+                  <th scope="col" className="py-2 text-end font-medium">
+                    {t('statistics.colOffers')}
                   </th>
                 </tr>
               </thead>
@@ -392,18 +390,18 @@ export function Statistics() {
                   <tr key={r.role}>
                     {/* Plain text, not a chip: a role is a category, and a
                         coloured pill on one would claim a status it has not got. */}
-                    <th scope="row" className="py-2.5 pr-3 text-left font-normal text-text-2">
+                    <th scope="row" className="py-2.5 pe-3 text-start font-normal text-text-2">
                       {r.role}
                     </th>
-                    <td className="tabular py-2.5 pr-3 text-right font-mono">{r.applied}</td>
-                    <td className="tabular py-2.5 pr-3 text-right font-mono">
+                    <td className="tabular py-2.5 pe-3 text-end font-mono">{r.applied}</td>
+                    <td className="tabular py-2.5 pe-3 text-end font-mono">
                       {r.responded}
-                      <span className="ml-1.5 text-xs text-text-3">
+                      <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
                         {share(r.responded, r.applied)}%
                       </span>
                     </td>
-                    <td className="tabular py-2.5 pr-3 text-right font-mono">{r.interviews}</td>
-                    <td className="tabular py-2.5 text-right font-mono">{r.offers}</td>
+                    <td className="tabular py-2.5 pe-3 text-end font-mono">{r.interviews}</td>
+                    <td className="tabular py-2.5 text-end font-mono">{r.offers}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,6 +1,7 @@
 import { useId, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link2, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
 import { FormField } from '@/components/common/Field'
@@ -33,6 +34,7 @@ import { announceRefusal } from '@/components/common/write-result'
  * title is derived from it so saving is one gesture rather than a form.
  */
 export function LinksTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
   const [bucket, setBucket] = useState<LinkCategory | 'all'>('all')
   const [query, setQuery] = useState('')
   // The paste field used to be open permanently, which put a text input, a
@@ -89,8 +91,8 @@ export function LinksTool({ focus }: { focus?: string }) {
     ? draft.trim()
       ? parsed
         ? undefined
-        : 'That needs a host, like jobs.rice.edu/postings.'
-      : 'Paste a URL to save it.'
+        : t('links.errors.url')
+      : t('links.errors.empty')
     : undefined
 
   const closeAdd = () => {
@@ -119,17 +121,17 @@ export function LinksTool({ focus }: { focus?: string }) {
     // unchanged list is how a prototype gets accused of dropping writes.
     const hidden = selectedLabels.size > 0
     toast({
-      title: `${link.title} saved`,
+      title: t('common.saved', { title: link.title }),
       description: hidden
-        ? `Filed under ${newCategory} — hidden while the keyword filter is on.`
-        : `Filed under ${newCategory}, with a title read off the URL.`,
-      action: { label: 'Undo', onClick: () => removeLink(link.id) },
+        ? t('links.toast.savedHidden', { category: newCategory })
+        : t('links.toast.saved', { category: newCategory }),
+      action: { label: t('common.undo'), onClick: () => removeLink(link.id) },
     })
   }
 
   const onDuplicate = (link: VaultLink) => {
     const copy = addLink({
-      title: `${link.title} (copy)`,
+      title: t('reminders.copyTitle', { title: link.title }),
       url: link.url,
       category: link.category,
       note: link.note,
@@ -138,10 +140,10 @@ export function LinksTool({ focus }: { focus?: string }) {
     const keywords = labelIdsOf(link.id)
     if (keywords.length > 0) setRecord(copy.id, keywords)
     toast({
-      title: `${link.title} duplicated`,
-      description: `The copy is filed under ${copy.category}, ready to be edited.`,
+      title: t('reminders.toast.duplicated', { title: link.title }),
+      description: t('links.toast.duplicated', { category: copy.category }),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => {
           removeLink(copy.id)
           removeRecord(copy.id)
@@ -154,9 +156,15 @@ export function LinksTool({ focus }: { focus?: string }) {
     const before = link.category
     if (announceRefusal(updateLink(link.id, { category: next }), toast)) return
     toast({
-      title: `${link.title} moved`,
-      description: `Filed under ${next}${bucket !== 'all' && bucket !== next ? ` — out of the ${bucket} list you are looking at` : ''}.`,
-      action: { label: 'Undo', onClick: () => updateLink(link.id, { category: before }) },
+      title: t('reminders.toast.moved', { title: link.title }),
+      description:
+        bucket !== 'all' && bucket !== next
+          ? t('snippets.toast.movedOut', { tag: next, filter: bucket })
+          : t('snippets.toast.moved', { tag: next }),
+      action: {
+        label: t('common.undo'),
+        onClick: () => updateLink(link.id, { category: before }),
+      },
     })
   }
 
@@ -173,8 +181,8 @@ export function LinksTool({ focus }: { focus?: string }) {
     // rather than "deleted" with an Undo that does nothing.
     if (!removed.ok) {
       toast({
-        title: 'That did not delete',
-        description: removed.refusal ?? `${link.title} is still in the Vault.`,
+        title: t('common.deleteFailed'),
+        description: removed.refusal ?? t('snippets.toast.stillThere', { title: link.title }),
         tone: 'danger',
       })
       return
@@ -184,11 +192,11 @@ export function LinksTool({ focus }: { focus?: string }) {
     if (editingId === link.id) setEditingId(null)
 
     toast({
-      title: `${link.title} deleted`,
-      description: 'Gone from the vault. The page it points at is untouched.',
+      title: t('common.deleted', { title: link.title }),
+      description: t('links.toast.deletedDescription'),
       tone: 'danger',
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => {
           restore()
           // Guarded: `setRecord` with an empty list files the record as carrying
@@ -206,7 +214,7 @@ export function LinksTool({ focus }: { focus?: string }) {
       onClick={() => (adding ? closeAdd() : setAdding(true))}
     >
       <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-      Add link
+      {t('links.add')}
     </Button>
   )
 
@@ -220,19 +228,18 @@ export function LinksTool({ focus }: { focus?: string }) {
     onClearKeywords: clearSelected,
     copy: {
       zero: {
-        title: 'No links saved yet',
-        description:
-          'Save a URL — a posting, a department page, a person you were told to contact. The title is read off the address.',
+        title: t('links.empty.zeroTitle'),
+        description: t('links.empty.zeroDescription'),
         action: addButton,
       },
-      search: (q) => `No link mentions "${q}" in its title, address, note or category.`,
-      both: `No ${bucket} link carries the selected keywords.`,
+      search: (q) => t('links.empty.search', { query: q }),
+      both: t('links.empty.both', { category: bucket }),
       bucket: {
-        title: `No links under ${bucket}`,
-        description: `${links.length} links are filed under the other categories.`,
-        clearLabel: 'Show all categories',
+        title: t('links.empty.bucketTitle', { category: bucket }),
+        description: t('links.empty.bucketDescription', { count: links.length }),
+        clearLabel: t('links.empty.showAll'),
       },
-      keywords: { title: 'No links carry those keywords' },
+      keywords: { title: t('links.empty.keywordsTitle') },
     },
   })
 
@@ -242,7 +249,7 @@ export function LinksTool({ focus }: { focus?: string }) {
         <VaultToolbar
           filter={
             <BucketFilter
-              label="Filter links by category"
+              label={t('links.filterLabel')}
               options={LINK_CATEGORIES}
               counts={counts}
               value={bucket}
@@ -252,8 +259,8 @@ export function LinksTool({ focus }: { focus?: string }) {
           }
           search={
             <VaultSearch
-              label="Search links"
-              placeholder="Search title, address or note"
+              label={t('links.searchLabel')}
+              placeholder={t('links.searchPlaceholder')}
               value={query}
               onChange={setQuery}
             />
@@ -265,10 +272,10 @@ export function LinksTool({ focus }: { focus?: string }) {
       {adding ? (
         <form noValidate onSubmit={save} className="mb-3.5 rounded-lg border border-hairline p-3">
           <FormField
-            label="Save a link"
+            label={t('links.form.label')}
             htmlFor={urlId}
             error={draftError}
-            hint={`Saved under ${newCategory}, with a title read off the URL. Edit any row to change either.`}
+            hint={t('links.form.hint', { category: newCategory })}
           >
             <div className="flex flex-wrap items-center gap-2">
               <Input
@@ -281,7 +288,7 @@ export function LinksTool({ focus }: { focus?: string }) {
                 autoFocus
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="Paste a URL…"
+                placeholder={t('links.form.placeholder')}
                 value={draft}
                 aria-invalid={draftError ? true : undefined}
                 aria-describedby={draftError ? `${urlId}-error` : undefined}
@@ -303,10 +310,10 @@ export function LinksTool({ focus }: { focus?: string }) {
                 className="w-48"
               />
               <Button type="submit" size="sm">
-                Save link
+                {t('links.form.save')}
               </Button>
               <Button type="button" variant="ghost" size="sm" onClick={closeAdd}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </FormField>

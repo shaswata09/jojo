@@ -1,0 +1,202 @@
+{
+  "common": {
+    "newPipeline": "New pipeline",
+    "addToApplications": "Add to applications",
+    "inApplicationsAs": "In applications as <anchor>{{name}}</anchor>",
+    "open": "Open",
+    "undo": "Undo"
+  },
+  "header": {
+    "title": "Job scout",
+    "subtitle": "Saved searches that will watch job boards for you — and somewhere to park postings today",
+    "onlyActive": "Only active pipelines",
+    "onlyActiveHint": "Hide the ones switched off",
+    "paused": "No local model is connected, so pipelines are paused. You can still write them and save postings below — they start running once a model is reachable.",
+    "runsLocally": "Pipelines run on your machine, while this tab is open. Nothing is sent to a third party."
+  },
+  "shutdown": {
+    "title": "Switch off {{name}}?",
+    "description": "It has run twice without finding anything to suggest, and there is nothing waiting for you to answer. Switching it off stops it looking; everything it has already found stays where it is. You can turn it back on whenever you like.",
+    "keep": "Keep it running",
+    "confirm": "Switch it off"
+  },
+  "matches": {
+    "title": "Matches",
+    "hint": "scored against your profile",
+    "emptyTitle": "No matches",
+    "emptyDescription": "Pipelines put scored postings here once a model is connected. Until then, the postings you save below are the way in.",
+    "matched": "matched {{list}}",
+    "notScored": "not scored",
+    "fit": "{{score}}% fit",
+    "added": "added"
+  },
+  "dialog": {
+    "editTitle": "Edit pipeline",
+    "description": "A pipeline is a standing job for the assistant. It runs on this device while jojo is open, and everything it wants to change is shown to you first.",
+    "kind": "What it does",
+    "kinds": {
+      "twin": "Keep records complete",
+      "scout": "Find postings"
+    },
+    "kindHint": {
+      "twin": "Reads what you have and suggests what is missing — notes, reminders, tags, filing.",
+      "scout": "Looks for postings worth your attention and puts them up for review."
+    },
+    "name": "Name",
+    "nameError": "Name it after what it watches.",
+    "namePlaceholder": {
+      "twin": "e.g. Keep my applications tidy",
+      "scout": "e.g. CRA faculty job board"
+    },
+    "sources": "Sources",
+    "sourcesHint": "The board or careers page it watches. Separate several with commas.",
+    "sourceError": "A scout with no source has nothing to read.",
+    "terms": {
+      "twin": "What to focus on",
+      "scout": "Match terms"
+    },
+    "termsHint": {
+      "twin": "Anything it should pay particular attention to. Leave blank to let it look everywhere.",
+      "scout": "What a posting is scored against. Leave blank to keep everything the source lists."
+    },
+    "termsPlaceholder": {
+      "twin": "follow-ups and deadlines",
+      "scout": "assistant professor, CS/ECE"
+    },
+    "howOften": "How often",
+    "howOftenHint": "How long it waits between rounds.",
+    "schedules": {
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "create": "Create pipeline"
+  },
+  "pipelines": {
+    "title": "Pipelines",
+    "hint": "run on this device while jojo is open",
+    "caption": "They work while this tab is open — nothing runs off this machine",
+    "kinds": {
+      "twin": "Digital twin",
+      "scout": "Job scout"
+    },
+    "status": {
+      "off": "off",
+      "paused": "paused",
+      "running": "running",
+      "watching": "watching"
+    },
+    "noneOnTitle": "Nothing switched on",
+    "noneOnDescription": "Every pipeline you have is switched off. Turn one on, or drop the filter in the page options.",
+    "emptyTitle": "No pipelines",
+    "emptyDescription": "A pipeline is a standing job for the assistant: keeping your records complete, or watching for postings worth your attention.",
+    "showAll": "Show all pipelines",
+    "auto": "auto",
+    "autoAria": "Run {{name}} without asking",
+    "toReview_one": "{{count}} to review",
+    "toReview_other": "{{count}} to review",
+    "runNow": "Run {{name}} now",
+    "edit": "Edit {{name}}",
+    "delete": "Delete {{name}}",
+    "enable": "Enable {{name}}"
+  },
+  "postings": {
+    "title": "Save a posting",
+    "hint": "works without a model",
+    "intro": "Saving keeps the page too, in the Vault under Job postings — opened through the jojo extension the way you would see it, or fetched by the document reader. Without either, what is kept is the URL, the employer guessed from it, and the day you saved it.",
+    "urlLabel": "Job posting URL",
+    "pasteFirst": "Paste a URL first",
+    "save": "Save posting",
+    "emptyTitle": "No postings saved",
+    "emptyDescription": "Paste the URL of an ad you want to come back to. Ads are taken down; the link and the date are yours.",
+    "saved": "saved {{when}}",
+    "linked": "linked to application",
+    "unscored": "unscored",
+    "openSnapshot": "Open snapshot",
+    "savingPage": "Saving page…",
+    "savePage": "Save page",
+    "savePageTitle": "Open the posting and keep a copy in the Vault",
+    "remove": "Remove {{title}}"
+  },
+  "proposals": {
+    "title": "Suggestions",
+    "hint": "nothing happens until you say so",
+    "aPipeline": "a pipeline",
+    "clearAnswered": "Clear answered",
+    "approveAll": "Approve all {{count}}",
+    "clearAll": "Clear all",
+    "emptyTitle": "Nothing to review",
+    "emptyDescription": "When a pipeline is running, anything it wants to change shows up here first. It will not touch your records until you approve it.",
+    "clearTitle": "Clear all suggestions?",
+    "clearPending_one": "{{count}} suggestion is still waiting for you and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.",
+    "clearPending_other": "{{count}} suggestions are still waiting for you and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.",
+    "clearAnsweredOnly": "The answered cards come off the list. Nothing in your records changes.",
+    "status": {
+      "applied": "applied",
+      "discarded": "discarded",
+      "failed": "could not apply"
+    },
+    "noSummary": "No summary came with this one — open the posting to see what it is.",
+    "reading": "Reading the posting for its details…",
+    "notALink": "Not a web address, so it is not offered as a link",
+    "from": "from {{name}}",
+    "openPosting": "Open posting",
+    "openPostingAria": "Open posting in a new tab: {{title}}",
+    "inApplications": "In applications",
+    "approve": "Approve",
+    "discard": "Discard this suggestion",
+    "discardAria": "Discard: {{title}}",
+    "unreadable": "The page could not be read: {{reason}}",
+    "unreadableKept": "The page could not be read: {{reason}} The page itself was saved.",
+    "applyBy": "apply by {{date}}",
+    "pageSaved": "Page saved"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Already in your applications — not added again",
+    "alreadyHaveDescription": "This is {{name}}, reposted on another board. The posting is linked to it, and its page is filed under it.",
+    "duplicateDescription": "The posting is {{name}}, which you already have. {{why}} Its page is filed under that one.",
+    "keepBoth": "Keep both",
+    "fillFailedTitle": "{{org}}: the posting could not be read",
+    "fillFailedKept": "{{reason}} The page itself was saved and filed under the draft — open it to fill in the rest.",
+    "fillFailed": "{{reason}} The draft keeps what its link says — open it to fill in the rest.",
+    "filledTitle": "{{name}} filled from the posting",
+    "checkedTitle": "{{name}} checked against the posting",
+    "filledIn": "Filled in: {{list}}.",
+    "checked": "Checked against the page: {{list}}.",
+    "keptYours": "Kept your edits to: {{list}}.",
+    "addedNothing": "The page added nothing the draft did not have.",
+    "missing": "Not on the page: {{list}}.",
+    "filedUnder": "The page is filed under it.",
+    "approvedReading": "Reading the posting to fill in its details — the draft updates when it is done.",
+    "approvedFromLink": "Filled from its link. Connect a model in Settings to have the posting itself read in.",
+    "approvedOpen": "Open it to fill in the rest.",
+    "allRepeatsTitle": "Already in your applications — nothing new added",
+    "allRepeats_one": "{{count}} is a job you already have, reposted on another board. It is linked to the application you have.",
+    "allRepeats_other": "{{count}} are jobs you already have, reposted on another board. They are linked to the applications you have.",
+    "added_one": "{{count}} added to your applications as a draft",
+    "added_other": "{{count}} added to your applications as drafts",
+    "addedWithRepeats_one": "{{count}} added to your applications as a draft · {{repeats}} already there",
+    "addedWithRepeats_other": "{{count}} added to your applications as drafts · {{repeats}} already there",
+    "addedReading": "Reading each posting in turn to fill in its details.",
+    "addedFromLinks": "Filled from their links. Connect a model in Settings to have the postings themselves read in.",
+    "addedOne": "{{org}} added to your applications as a draft",
+    "addedAsDraft": "{{org}} added as a draft",
+    "matchStays": "The match stays in this feed, now linked to the application.",
+    "postingSaved": "Posting saved",
+    "postingReading": "Reading the posting to check and fill in its details — the draft updates when it is done.",
+    "postingStays": "The posting stays saved here, now linked to the application.",
+    "postingRemoved": "Posting removed",
+    "pageNotSaved": "The posting’s page was not saved",
+    "pageSaved": "Posting page saved",
+    "pageSavedFiled": "{{title}} — filed under its application.",
+    "pageSavedVault": "{{title}} — in the Vault under Job postings.",
+    "pipelineUpdated": "Pipeline updated",
+    "pipelineCreated": "Pipeline created",
+    "pipelineCreatedPaused": "{{name}} — paused until a model is connected.",
+    "pipelineCreatedRunning": "{{name}} — it will start looking shortly.",
+    "pipelineDeleted": "Pipeline deleted",
+    "pipelineDeletedDescription": "{{name}} stops watching {{source}}."
+  }
+}

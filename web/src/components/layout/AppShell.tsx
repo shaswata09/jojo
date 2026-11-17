@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { assistantPath } from '@/lib/links'
 import { ChatDock } from '@/components/chat-dock/ChatDock'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
@@ -16,6 +17,7 @@ import { report } from '@/lib/analytics'
 import { screenForPath } from '@jojo/service/core/analytics'
 
 export function AppShell() {
+  const { t } = useTranslation('layout')
   const [navOpen, setNavOpen] = useState(false)
   const navButtonRef = useRef<HTMLButtonElement>(null)
   const mainRef = useRef<HTMLElement>(null)
@@ -202,9 +204,9 @@ export function AppShell() {
           event.preventDefault()
           mainRef.current?.focus()
         }}
-        className="sr-only rounded-md bg-panel px-3 py-2 text-sm text-text-1 shadow-[var(--shadow-raised)] ring-1 ring-hairline-strong focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60]"
+        className="sr-only rounded-md bg-panel px-3 py-2 text-sm text-text-1 shadow-[var(--shadow-raised)] ring-1 ring-hairline-strong focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-[60]"
       >
-        Skip to main content
+        {t('shell.skipToMain')}
       </a>
 
       {/* Backdrop: mobile only, and only while open. */}
@@ -264,11 +266,15 @@ export function AppShell() {
               without becoming a tab stop of its own; outline-none because that
               focus is a scroll-and-announce, not something to draw a ring
               around — the ring belongs on controls the user aimed at. */}
+          {/* `--dock-clearance` at the foot: the chat dock is fixed over the
+              bottom corner, and with nothing reserved the end of every page
+              stayed under it however far you scrolled — the Guide's "Next"
+              link, the last Vault row's menu. Zero where there is no dock. */}
           <main
             ref={mainRef}
             id="main"
             tabIndex={-1}
-            className="flex min-h-0 flex-1 flex-col gap-4 outline-none sm:gap-5"
+            className="flex min-h-0 flex-1 flex-col gap-4 pb-[var(--dock-clearance,0px)] outline-none sm:gap-5"
           >
             {/*
              * A boundary per ROUTE, inside the shell.

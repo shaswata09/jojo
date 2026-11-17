@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -41,6 +42,7 @@ import type { CrashReport } from '@jojo/service/core/crash'
  * single "help improve jojo" is how consent stops meaning anything.
  */
 export function CrashPanel() {
+  const { t } = useTranslation(['components', 'common'])
   const c = useColors()
   const [on, setOn] = useState(false)
   const [usage, setUsage] = useState(false)
@@ -63,10 +65,9 @@ export function CrashPanel() {
   if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
     return (
       <Panel>
-        <PanelTitle hint="this phone">Crash reports</PanelTitle>
+        <PanelTitle hint={t('crash.thisPhone')}>{t('crash.title')}</PanelTitle>
         <Txt size="sm" tone="muted">
-          This build of jojo was made without crash reporting or usage analytics, so nothing is
-          recorded and there is nothing to turn on.
+          {t('crash.notBuilt')}
         </Txt>
       </Panel>
     )
@@ -74,29 +75,23 @@ export function CrashPanel() {
 
   return (
     <Panel>
-      <PanelTitle hint="this phone">Crash reports</PanelTitle>
+      <PanelTitle hint={t('crash.thisPhone')}>{t('crash.title')}</PanelTitle>
 
       <Txt size="sm" tone="muted" style={styles.para}>
-        When something breaks, jojo can keep the error so you can read it back — useful when the
-        thing that failed has already gone. A report holds the error message, where in jojo it
-        happened, and the stack trace. It never holds your applications, documents, notes, profile
-        or conversations, and API keys, addresses and email addresses are stripped out before a
-        report is written.
+        {t('crash.what')}
       </Txt>
       <Txt size="sm" tone="muted" style={styles.para}>
-        Reports are kept on this phone, and also sent to Firebase Crashlytics, which adds your
-        device model, its OS version, and a random id used to count how many people hit the same
-        crash. Google keeps those for 90 days. None of your records go with them.
+        {t('crash.where')}
       </Txt>
 
       {CRASH_CAPABILITY === 'off' ? null : (
         <SettingRow
-          label="Report crashes"
-          description="On, so a crash you hit is one we can see. Turn it off and nothing is recorded."
+          label={t('crash.report')}
+          description={t('crash.reportHint')}
           control={
             <Toggle
               value={on}
-              label="Report crashes"
+              label={t('crash.report')}
               onValueChange={(next) => {
                 setOn(next)
                 void setCrashEnabled(next)
@@ -109,12 +104,12 @@ export function CrashPanel() {
       {ANALYTICS_CAPABILITY === 'off' ? null : (
         <View style={styles.usage}>
           <SettingRow
-            label="Share which features I use"
-            description="Counts only, from a fixed list — never what is in your records."
+            label={t('crash.usage')}
+            description={t('crash.usageHint')}
             control={
               <Toggle
                 value={usage}
-                label="Share which features I use"
+                label={t('crash.usage')}
                 onValueChange={(next) => {
                   setUsage(next)
                   // Applied to the SDK immediately, not at the next launch —
@@ -125,10 +120,7 @@ export function CrashPanel() {
             }
           />
           <Txt size="xs" tone="muted" style={styles.fine}>
-            It can only say things from a fixed list — which screen was opened, that an application
-            was added, roughly how many there are. It cannot name an employer, a role, a file or
-            anything you typed. Goes to Google Analytics. With this off, jojo also turns off the
-            screen views and session counts Firebase would otherwise collect on its own.
+            {t('crash.usageDetail')}
           </Txt>
         </View>
       )}
@@ -137,10 +129,10 @@ export function CrashPanel() {
         <View style={[styles.list, { borderColor: c.hairline }]}>
           <View style={[styles.listHead, { borderColor: c.hairline, backgroundColor: c.well }]}>
             <Txt size="xs" tone="muted">
-              {reports.length === 1 ? '1 report kept' : `${reports.length} reports kept`}
+              {t('crash.kept', { count: reports.length })}
             </Txt>
             <Button
-              label="Clear"
+              label={t('common:actions.clear')}
               variant="ghost"
               size="sm"
               onPress={() => {
@@ -160,7 +152,7 @@ export function CrashPanel() {
         </View>
       ) : (
         <Txt size="xs" tone="muted" style={styles.fine}>
-          {on ? 'Nothing has broken since you turned this on.' : 'Nothing is being recorded.'}
+          {on ? t('crash.nothingBroken') : t('crash.notRecording')}
         </Txt>
       )}
     </Panel>

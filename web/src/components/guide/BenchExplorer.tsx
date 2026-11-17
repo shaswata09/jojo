@@ -112,7 +112,7 @@ function ExpectedView({ conversation }: { conversation: Conversation }) {
                 title={node.detail}
                 className={cn('rounded-md border px-2.5 py-2 text-xs', NODE_STYLE[node.kind])}
               >
-                <div className="text-[10px] uppercase tracking-wide opacity-70">
+                <div className="text-[10px] tracking-wide uppercase opacity-70">
                   {KIND_LABEL[node.kind]}
                 </div>
                 <div className="mt-0.5 break-words">{node.label}</div>
@@ -145,7 +145,10 @@ function RunsView({ conversation }: { conversation: Conversation }) {
   return (
     <div className="space-y-3">
       {runs.map((run) => (
-        <div key={`${run.model}-${run.condition}`} className="rounded-md border border-hairline p-3">
+        <div
+          key={`${run.model}-${run.condition}`}
+          className="rounded-md border border-hairline p-3"
+        >
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-text-1">{run.label}</span>
             <span className="text-xs text-text-3">
@@ -162,11 +165,15 @@ function RunsView({ conversation }: { conversation: Conversation }) {
             ) : null}
             <span
               className={cn(
-                'ml-auto inline-flex items-center gap-1 text-xs',
+                'ms-auto inline-flex items-center gap-1 text-xs',
                 run.clean ? 'text-text-2' : 'text-warning',
               )}
             >
-              {run.clean ? <Check className="size-3.5" aria-hidden /> : <X className="size-3.5" aria-hidden />}
+              {run.clean ? (
+                <Check className="size-3.5" aria-hidden />
+              ) : (
+                <X className="size-3.5" aria-hidden />
+              )}
               {run.clean ? 'clean' : 'failed'}
             </span>
           </div>
@@ -184,7 +191,10 @@ function RunsView({ conversation }: { conversation: Conversation }) {
                 turn since the last publish would otherwise show this model
                 failing a turn it was never asked. */}
             {run.stale ? (
-              <span className="text-text-3" title="The case has changed since this run was published">
+              <span
+                className="text-text-3"
+                title="The case has changed since this run was published"
+              >
                 measured against an earlier version of this case
               </span>
             ) : null}
@@ -276,7 +286,7 @@ function RunsView({ conversation }: { conversation: Conversation }) {
                 {run.errors.length} refused call{run.errors.length === 1 ? '' : 's'}
               </summary>
               {run.errors.map((e, i) => (
-                <p key={i} className="mt-1 break-words text-xs text-text-2">
+                <p key={i} className="mt-1 text-xs break-words text-text-2">
                   <span className="text-text-1">{e.tool}</span> {e.args}
                   <br />
                   <span className="text-warning">{e.detail}</span>
@@ -310,7 +320,9 @@ export function BenchExplorer() {
           <span className="text-text-1">{CHECKS}</span> checks on the store
         </span>
         <span>
-          <span className="text-text-1">{Object.values<number>(WORLD_SHAPE).reduce((a, b) => a + b, 0)}</span>{' '}
+          <span className="text-text-1">
+            {Object.values<number>(WORLD_SHAPE).reduce((a, b) => a + b, 0)}
+          </span>{' '}
           records in the world
         </span>
         <span>
@@ -326,15 +338,18 @@ export function BenchExplorer() {
               <button
                 type="button"
                 onClick={() => setOpen(open === group ? null : group)}
-                className="flex w-full items-center gap-1.5 px-2.5 py-2 text-left text-xs hover:bg-row-hover"
+                className="flex w-full items-center gap-1.5 px-2.5 py-2 text-start text-xs hover:bg-row-hover"
                 aria-expanded={open === group}
               >
                 <ChevronRight
-                  className={cn('size-3.5 shrink-0 transition-transform', open === group && 'rotate-90')}
+                  className={cn(
+                    'size-3.5 shrink-0 transition-transform',
+                    open === group ? 'rotate-90' : 'rtl:-scale-x-100',
+                  )}
                   aria-hidden
                 />
                 <span className="text-text-1">{group}</span>
-                <span className="tabular ml-auto text-text-3">{items.length}</span>
+                <span className="tabular ms-auto text-text-3">{items.length}</span>
               </button>
               {open === group ? (
                 <>
@@ -348,13 +363,15 @@ export function BenchExplorer() {
                         setTab('Conversation')
                       }}
                       className={cn(
-                        'block w-full px-2.5 py-1.5 text-left text-xs hover:bg-row-hover',
+                        'block w-full px-2.5 py-1.5 text-start text-xs hover:bg-row-hover',
                         c.id === selected.id ? 'bg-well text-text-1' : 'text-text-2',
                       )}
                     >
                       {c.id}
                       {PUBLISHED.has(c.id) ? null : (
-                        <span className="ml-1.5 text-text-3">· not yet run</span>
+                        <span className="ms-1.5 text-text-3 [unicode-bidi:isolate]">
+                          · not yet run
+                        </span>
                       )}
                     </button>
                   ))}
@@ -369,7 +386,7 @@ export function BenchExplorer() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-text-1">{selected.id}</span>
             <Segment
-              className="ml-auto"
+              className="ms-auto"
               label="What to show about this case"
               options={TABS.map((t) => ({ value: t, label: t }))}
               value={tab}
@@ -410,7 +427,7 @@ export function BenchExplorer() {
                       {(turn.answerMustNot ?? []).map((fact) => (
                         <span
                           key={`not-${fact}`}
-                          className="rounded border border-danger-border bg-danger-soft px-1.5 py-0.5 text-danger-fg"
+                          className="text-danger-fg rounded border border-danger-border bg-danger-soft px-1.5 py-0.5"
                         >
                           must not say “{fact}”
                         </span>

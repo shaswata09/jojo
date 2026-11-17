@@ -1,0 +1,117 @@
+{
+  "common": {
+    "connections_one": "{{count}} Verbindung",
+    "connections_other": "{{count}} Verbindungen",
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge"
+  },
+  "legend": {
+    "show": "{{name}} einblenden",
+    "hide": "{{name}} ausblenden",
+    "allHidden": "Alle Arten von Einträgen sind ausgeblendet.",
+    "showAll": "Alle anzeigen",
+    "isA": "ist ein"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Wissensgraph – {{records}}, {{connections}}",
+    "capped": "Angezeigt werden die {{shown}} am stärksten verbundenen Einträge. {{dropped}} weitere sind im Speicher, aber nicht auf dieser Fläche – grenze mit den Filtern ein, um sie zu sehen.",
+    "description": "Jeder Eintrag ist ein Knoten und jeder Verweis zwischen Einträgen eine Linie. Die Bereiche neben diesem Graphen zeigen dieselben Informationen als Text."
+  },
+  "answer": {
+    "title": "Antwort",
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge",
+    "prompt": "Wähle ein Beispiel oder baue ein Muster, dann erscheint die Antwort hier und leuchtet im Graphen oben auf.",
+    "emptyTitle": "Keine passenden Einträge",
+    "clear": "Abfrage leeren",
+    "caption": "Einträge, die zum Muster passen",
+    "columns": {
+      "record": "Eintrag",
+      "kind": "Art",
+      "matched": "Treffer"
+    },
+    "open": "Öffnen",
+    "select": "Im Graphen auswählen",
+    "via": "über {{rel}}",
+    "more_one": "{{names}} +{{count}} weiterer",
+    "more_other": "{{names}} +{{count}} weitere",
+    "showing": "Angezeigt werden die ersten {{shown}} von {{total}}. Alle davon leuchten im Graphen oben."
+  },
+  "examples": {
+    "title": "Durchgespielte Beispiele",
+    "nothingToAsk": "In dieser Sitzung gibt es nichts, wozu man das fragen könnte"
+  },
+  "query": {
+    "title": "Den Graphen fragen",
+    "hint": "In einem Satz fragen oder die Frage von Hand bauen",
+    "shape": "Form der Frage",
+    "pattern": "Muster",
+    "path": "Pfad",
+    "generated": "Erzeugte Abfrage",
+    "clear": "Leeren",
+    "sqlNote": "Die Form der Frage, zur besseren Lesbarkeit in SQL-Worten. Ausgeführt wird die strukturierte Abfrage darüber – diese Zeile wertet nichts aus."
+  },
+  "fields": {
+    "records": "Einträge",
+    "anyRecord": "Beliebiger Eintrag",
+    "ofKind": "Der Art",
+    "anyKind": "Beliebige Art",
+    "reminder": "Erinnerung",
+    "condition": "Bedingung",
+    "quantifier": {
+      "has": "hat",
+      "missing": "hat kein",
+      "atLeast": "hat mindestens"
+    },
+    "howMany": "Wie viele",
+    "orMore_one": "{{count}} oder mehr",
+    "orMore_other": "{{count}} oder mehr",
+    "relationship": "Beziehung",
+    "anyRelationship": "beliebige Beziehung",
+    "connectedTo": "Verbunden mit",
+    "anything": "irgendetwas",
+    "keyword": "Mit Schlagwort",
+    "anyKeyword": "beliebiges Schlagwort",
+    "from": "Von",
+    "to": "Nach"
+  },
+  "detail": {
+    "title": "Ausgewählter Eintrag",
+    "nothingSelected": "Nichts ausgewählt",
+    "pickHint": "Wähle einen Knoten – per Klick oder per Tab und Enter –, um zu sehen, womit er verbunden ist und wo er in der App liegt.",
+    "open": "{{type}} öffnen",
+    "openType": {
+      "application": "Bewerbung öffnen",
+      "organisation": "Organisation öffnen",
+      "role": "Stelle öffnen",
+      "item": "Zeitleisteneintrag öffnen",
+      "keyword": "Schlagwort öffnen",
+      "link": "Link öffnen",
+      "file": "Datei öffnen",
+      "snippet": "Textbaustein öffnen",
+      "posting": "Gespeicherte Stellenanzeige öffnen",
+      "match": "Scout-Treffer öffnen",
+      "source": "Quelle öffnen",
+      "background": "„Über dich“ öffnen",
+      "claim": "Beziehung öffnen"
+    },
+    "derived": "Aus deinen Einträgen abgeleitet – es hat keine eigene Seite.",
+    "verbs": "Was du damit tun kannst",
+    "noLinks": "Noch verweist nichts auf diesen Eintrag."
+  },
+  "ask": {
+    "notConnected": "Verbinde in den <settings>Einstellungen</settings> ein lokales Modell, dann kannst du das in einem Satz fragen. Der Baukasten unten funktioniert so oder so.",
+    "label": "Dem Graphen eine Frage stellen",
+    "stop": "Stopp",
+    "submit": "Fragen",
+    "again": "Etwas anderes fragen",
+    "suggestions": {
+      "noFollowUp": "Welche Bewerbungen haben keine geplante Nachfrage?",
+      "unfiled": "Welche Dateien sind nirgends abgelegt?",
+      "busy": "Welche Bewerbungen haben mehr als zwei Einträge in der Zeitleiste?"
+    }
+  }
+}

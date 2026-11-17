@@ -18,6 +18,15 @@ import phoneScreenSource from '../../../mobile/src/screens/TransferScreen.tsx?ra
 import phoneSendSource from '../../../mobile/src/components/transfer/SendPanel.tsx?raw'
 import phoneServeSource from '../../../mobile/src/lib/handoff-serve.ts?raw'
 import { pullConfirmCopy } from '@/lib/handoff-pull'
+import settingsCatalog from '@/i18n/locales/en/settings.json'
+import transferCatalog from '@/i18n/locales/en/transfer.json'
+import phoneCatalogSource from '../../../mobile/src/i18n/locales/en/transfer.json?raw'
+
+/** The phone's English `transfer` catalog — read raw, since it sits outside this project. */
+const phoneCatalog = JSON.parse(phoneCatalogSource) as {
+  screen: { subtitle: string; roles: { send: string } }
+  send: { intro: string }
+}
 
 const strip = (source: string) =>
   source
@@ -27,20 +36,26 @@ const strip = (source: string) =>
 
 describe('what the person sees (Q129)', () => {
   it('offers "Send to a computer" on the phone', () => {
-    expect(strip(phoneScreenSource)).toContain("{ value: 'send', label: 'Send to a computer' }")
+    expect(strip(phoneScreenSource)).toContain("const ROLES = ['send', 'receive'] as const")
+    expect(strip(phoneScreenSource)).toContain('label: t(`screen.roles.${value}`)')
+    expect(phoneCatalog.screen.roles.send).toBe('Send to a computer')
     expect(strip(phoneScreenSource)).toContain("role === 'send' ? <SendPanel /> : <ReceivePanel />")
     expect(strip(phoneScreenSource)).not.toMatch(/not possible from a phone/)
+    expect(phoneCatalogSource).not.toMatch(/not possible from a phone/)
   })
 
   it('offers "Receive from phone" on the computer, with a real panel behind it', () => {
     const page = strip(transferSource)
-    expect(page).toContain("{ value: 'receive', label: 'Receive from phone' }")
+    expect(page).toContain("const ROLES = ['send', 'receive'] as const")
+    expect(page).toContain('label: t(`page.roles.${value}`)')
+    expect(transferCatalog.page.roles.receive).toBe('Receive from phone')
     expect(page).toContain('<ReceivePanel pull={pull} tokens={pairing.tokens} />')
     // The animation the phone reads is up in both roles.
     expect(page).toContain("usePairingSession(true, role === 'send' ? 'push' : 'pull')")
     const panel = strip(receiveSource)
-    expect(panel).toContain('Receive from phone')
-    expect(panel).not.toMatch(/not possible in a browser/)
+    expect(panel).toContain("{t('receive.title')}")
+    expect(transferCatalog.receive.title).toBe('Receive from phone')
+    expect(JSON.stringify(transferCatalog)).not.toMatch(/not possible in a browser/)
   })
 
   it('shows the phone’s code on its send screen, built from its own address', () => {
@@ -49,14 +64,20 @@ describe('what the person sees (Q129)', () => {
 
   it('takes the typed code on the computer and starts the pull with it', () => {
     const panel = strip(receiveSource)
-    expect(panel).toContain('aria-label="The code shown on your phone"')
+    expect(panel).toContain("aria-label={t('receive.codeLabel')}")
+    expect(transferCatalog.receive.codeLabel).toBe('The code shown on your phone')
     expect(panel).toContain('void pull.start(code, tokens)')
   })
 
   it('says on both devices that they must share a local network', () => {
-    expect(strip(receiveSource)).toMatch(/Both devices need to be on the\s+same local\s+network/)
-    expect(strip(phoneSendSource)).toMatch(/Both need to be on the same local network/)
-    expect(strip(phoneScreenSource)).toMatch(/Both need to be on the same network/)
+    expect(strip(receiveSource)).toContain("{t('receive.intro')}")
+    expect(transferCatalog.receive.intro).toMatch(
+      /Both devices need to be on the\s+same\s+local\s+network/,
+    )
+    expect(strip(phoneSendSource)).toContain("t('send.intro')")
+    expect(phoneCatalog.send.intro).toMatch(/Both need to be on the same local network/)
+    expect(strip(phoneScreenSource)).toContain("t('screen.subtitle')")
+    expect(phoneCatalog.screen.subtitle).toMatch(/Both need to be on the same network/)
   })
 })
 
@@ -98,17 +119,22 @@ describe('what arrives is restored the way a backup file is (Q129)', () => {
   })
 
   it('asks the same "replaces / back up first" question, word for word', () => {
-    // Read out of DataPanel's own dialog, so the two cannot drift apart.
-    // Both say what goes through the one `replacesClause`, then the same words.
-    const file =
-      /That file holds \$\{describeBackup\(staged\)\}\. \$\{replacesClause\(staged, 'you have now'\)\}(.*?)`/.exec(
-        dataPanelSource,
-      )?.[1]
+    // Read out of DataPanel's own dialog — its English catalog string — so the
+    // two cannot drift apart. Both say what goes through the one
+    // `domain.replaces`, then the same words.
+    const dialog = settingsCatalog.data.restoreConfirm
+    const file = /^That file holds \{\{contents\}\}\. \{\{replaces\}\}(.*)$/.exec(
+      dialog.description,
+    )?.[1]
     expect(file).toBeTruthy()
+    expect(dataPanelSource).toMatch(
+      /t\('data\.restoreConfirm\.description', \{\s*contents: domain\.backup\(staged\),\s*replaces: domain\.replaces\(staged, 'computer'\),/,
+    )
     const plan = { exportedAt: '', nodes: [], edges: [], documents: [] }
     expect(pullConfirmCopy(plan).description.endsWith(file!)).toBe(true)
-    expect(pullSource).toContain("replacesClause(plan, 'you have now')")
-    expect(dataPanelSource).toContain(`confirmLabel="${pullConfirmCopy(plan).confirm}"`)
+    expect(pullSource).toContain("domain.replaces(plan, 'computer')")
+    expect(dataPanelSource).toContain("confirmLabel={t('data.restoreConfirm.confirm')}")
+    expect(dialog.confirm).toBe(pullConfirmCopy(plan).confirm)
   })
 
   it('puts the plan behind that dialog, and nothing is written before it is agreed', () => {

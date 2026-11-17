@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { report } from '@/lib/analytics'
 import { SCREENS } from '@jojo/service/core/analytics'
@@ -52,6 +53,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
  * than as part of the work.
  */
 function TabNavigator() {
+  const { t } = useTranslation('components')
   const { colors: c } = useTheme()
   const { all } = useApplications()
   const { reminders, thisWeek } = useTimeline()
@@ -100,6 +102,7 @@ function TabNavigator() {
         name="Today"
         component={TodayScreen}
         options={{
+          tabBarLabel: t('nav.tabs.today'),
           tabBarIcon: ({ color, size }) => <Feather name="sun" size={size} color={color} />,
         }}
       />
@@ -107,42 +110,46 @@ function TabNavigator() {
         name="Applications"
         component={ApplicationsScreen}
         options={{
+          tabBarLabel: t('nav.tabs.applications'),
           tabBarIcon: ({ color, size }) => <Feather name="clipboard" size={size} color={color} />,
           tabBarBadge: flagged > 0 ? flagged : undefined,
           tabBarAccessibilityLabel:
-            flagged > 0 ? `Applications, ${flagged} flagged for follow-up` : 'Applications',
+            flagged > 0
+              ? t('nav.badge.applications', { count: flagged })
+              : t('nav.tabs.applications'),
         }}
       />
       <Tabs.Screen
         name="Calendar"
         component={CalendarScreen}
         options={{
+          tabBarLabel: t('nav.tabs.calendar'),
           tabBarIcon: ({ color, size }) => <Feather name="calendar" size={size} color={color} />,
           tabBarBadge: week > 0 ? week : undefined,
           tabBarAccessibilityLabel:
-            week > 0 ? `Calendar, ${week} in the next seven days` : 'Calendar',
+            week > 0 ? t('nav.badge.calendar', { count: week }) : t('nav.tabs.calendar'),
         }}
       />
       <Tabs.Screen
         name="Vault"
         component={VaultScreen}
         options={{
+          tabBarLabel: t('nav.tabs.vault'),
           tabBarIcon: ({ color, size }) => <Feather name="archive" size={size} color={color} />,
           tabBarBadge: overdue > 0 ? overdue : undefined,
           tabBarAccessibilityLabel:
-            overdue > 0 ? `Vault, ${overdue} reminders past their date` : 'Vault',
+            overdue > 0 ? t('nav.badge.vault', { count: overdue }) : t('nav.tabs.vault'),
         }}
       />
       <Tabs.Screen
         name="More"
         component={MoreScreen}
         options={{
+          tabBarLabel: t('nav.tabs.more'),
           tabBarIcon: ({ color, size }) => <Feather name="grid" size={size} color={color} />,
           tabBarBadge: freshMatches > 0 ? freshMatches : undefined,
           tabBarAccessibilityLabel:
-            freshMatches > 0
-              ? `More, ${freshMatches} matches not yet added to applications`
-              : 'More',
+            freshMatches > 0 ? t('nav.badge.more', { count: freshMatches }) : t('nav.tabs.more'),
         }}
       />
     </Tabs.Navigator>
@@ -157,17 +164,18 @@ function TabNavigator() {
  * meant first finding the screen that owned reminders.
  */
 function CreateButton() {
+  const { t } = useTranslation('components')
   const runCreateAction = useRunCreateAction()
   const actions = useCreateActions()
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <>
-      <IconButton icon="plus" label="Create" onPress={() => setMenuOpen(true)} />
+      <IconButton icon="plus" label={t('nav.create')} onPress={() => setMenuOpen(true)} />
       <MenuSheet
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        title="Create"
+        title={t('nav.create')}
         actions={actions.map((action) => ({
           id: action.id,
           label: action.label,
@@ -182,10 +190,11 @@ function CreateButton() {
 
 /** The two chrome controls the tab screens carry: search, and create. */
 function HeaderActions({ onSearch }: { onSearch: () => void }) {
+  const { t } = useTranslation('components')
   return (
     <View style={styles.headerActions}>
       <TourTarget id="header:search">
-        <IconButton icon="search" label="Search" onPress={onSearch} />
+        <IconButton icon="search" label={t('nav.search')} onPress={onSearch} />
       </TourTarget>
       <TourTarget id="header:new">
         <CreateButton />
@@ -225,6 +234,7 @@ const SCREEN_FOR_ROUTE: Readonly<Record<string, (typeof SCREENS)[number]>> = {
 }
 
 export function RootNavigator() {
+  const { t } = useTranslation('components')
   const { theme, colors: c } = useTheme()
   /*
    * A container ref rather than `useNavigation`: `headerRight` is rendered by
@@ -300,30 +310,58 @@ export function RootNavigator() {
         <Stack.Screen
           name="ApplicationDetail"
           component={ApplicationDetailScreen}
-          options={{ title: 'Application' }}
+          options={{ title: t('nav.titles.application') }}
         />
         <Stack.Screen
           name="Organisation"
           component={OrganisationScreen}
-          options={{ title: 'Employer' }}
+          options={{ title: t('nav.titles.employer') }}
         />
-        <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Search' }} />
-        <Stack.Screen name="JobScout" component={JobScoutScreen} options={{ title: 'Job scout' }} />
+        <Stack.Screen
+          name="Search"
+          component={SearchScreen}
+          options={{ title: t('nav.titles.search') }}
+        />
+        <Stack.Screen
+          name="JobScout"
+          component={JobScoutScreen}
+          options={{ title: t('nav.titles.jobScout') }}
+        />
         <Stack.Screen
           name="Statistics"
           component={StatisticsScreen}
-          options={{ title: 'Statistics' }}
+          options={{ title: t('nav.titles.statistics') }}
         />
-        <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'My profile' }} />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ title: t('nav.titles.profile') }}
+        />
         <Stack.Screen
           name="Assistant"
           component={AssistantScreen}
-          options={{ title: 'Assistant' }}
+          options={{ title: t('nav.titles.assistant') }}
         />
-        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
-        <Stack.Screen name="Guide" component={GuideScreen} options={{ title: 'How to use' }} />
-        <Stack.Screen name="Graph" component={GraphScreen} options={{ title: 'Graph' }} />
-        <Stack.Screen name="Transfer" component={TransferScreen} options={{ title: 'Transfer' }} />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ title: t('nav.titles.settings') }}
+        />
+        <Stack.Screen
+          name="Guide"
+          component={GuideScreen}
+          options={{ title: t('nav.titles.guide') }}
+        />
+        <Stack.Screen
+          name="Graph"
+          component={GraphScreen}
+          options={{ title: t('nav.titles.graph') }}
+        />
+        <Stack.Screen
+          name="Transfer"
+          component={TransferScreen}
+          options={{ title: t('nav.titles.transfer') }}
+        />
         {/* Titled by the site rather than by the app, because the user is
             looking at somebody else's page and the header is the only thing
             saying whose. `headerBackTitle` is emptied so a long host does not

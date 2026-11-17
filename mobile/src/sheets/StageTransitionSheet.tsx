@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { ScrollView, View } from 'react-native'
 import { DateField } from '@/components/common/DateField'
@@ -9,8 +10,8 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
-import { addDays, shortDate } from '@jojo/service/data/timeline'
-import { FORMATS, OUTCOMES, OUTCOME_LABEL } from '@jojo/service/core/transition-options'
+import { addDays } from '@jojo/service/data/timeline'
+import { FORMATS, OUTCOMES } from '@jojo/service/core/transition-options'
 import type { Format } from '@jojo/service/core/transition-options'
 import {
   buildStageItem,
@@ -22,6 +23,7 @@ import type { StageTransitionDraft } from '@jojo/service/core/stage-policy'
 import { stageNeedsDetails } from '@/lib/stage-transition'
 import type { TimelineDraft } from '@/lib/store-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /*
  * FORMATS, FORMAT_LABEL, OUTCOME_LABEL, OUTCOMES and OUTCOME_ACTION were all
@@ -72,6 +74,8 @@ export function StageTransitionSheet({
   target,
   onApply,
 }: StageTransitionSheetProps) {
+  const { t } = useTranslation('sheets')
+  const domain = useDomain()
   const needs = stageNeedsDetails(application, target)
   const applied = useRef(false)
 
@@ -98,8 +102,11 @@ export function StageTransitionSheet({
     <Sheet
       open={open}
       onClose={() => onOpenChange(false)}
-      title={`Move to ${STAGE_LABEL[target]}`}
-      description={`${displayName(application)} · currently ${STAGE_LABEL[application.stage]}`}
+      title={t('stage.moveTo', { stage: domain.stage(target) })}
+      description={t('stage.currently', {
+        name: displayName(application),
+        stage: domain.stage(application.stage),
+      })}
       // The form scrolls itself (`TransitionForm`).
       scroll={false}
     >
@@ -127,6 +134,8 @@ function TransitionForm({
   onApply: StageTransitionSheetProps['onApply']
   onClose: () => void
 }) {
+  const { t } = useTranslation('sheets')
+  const domain = useDomain()
   const [date, setDate] = useState(TODAY)
   const [portalUrl, setPortalUrl] = useState(application.url ?? '')
   const [reference, setReference] = useState('')
@@ -195,7 +204,7 @@ function TransitionForm({
   /** The stage change with nothing attached — including the offer, kept as-is. */
   const moveWithoutDetails = () => {
     onApply({ stage: target, lastAction: `Moved to ${STAGE_LABEL[target]}` }, undefined, [
-      'Nothing else on the record changed.',
+      t('stage.nothingElse'),
     ])
     onClose()
   }
@@ -209,22 +218,22 @@ function TransitionForm({
       >
         {target === 'submitted' ? (
           <>
-            <DateField label="Submitted on" required value={date} onChange={setDate} />
+            <DateField label={t('stage.submitted.date')} required value={date} onChange={setDate} />
             <TextField
-              label="Portal URL"
+              label={t('stage.submitted.portal')}
               mono
               autoCapitalize="none"
               keyboardType="url"
               placeholder="https://"
               value={portalUrl}
-              hint="Where the application lives, for when you need to chase it."
+              hint={t('stage.submitted.portalHint')}
               onChangeText={setPortalUrl}
             />
             <TextField
-              label="Confirmation reference"
+              label={t('stage.submitted.reference')}
               mono
               autoCapitalize="characters"
-              placeholder="e.g. 4471-QZ"
+              placeholder={t('stage.submitted.referencePlaceholder')}
               value={reference}
               onChangeText={setReference}
             />
@@ -233,23 +242,23 @@ function TransitionForm({
 
         {target === 'interview' ? (
           <>
-            <DateField label="Interview date" required value={date} onChange={setDate} />
-            <FormField label="Format">
+            <DateField label={t('stage.interview.date')} required value={date} onChange={setDate} />
+            <FormField label={t('stage.interview.format')}>
               <Segment
-                label="Interview format"
-                options={FORMATS}
+                label={t('stage.interview.formatLabel')}
+                options={FORMATS.map((f) => ({ ...f, label: domain.format(f.value) }))}
                 value={format}
                 onChange={setFormat}
               />
             </FormField>
             <SettingRow
-              label="Add it to the timeline"
-              description="Creates an interview entry on that date, with a reminder."
+              label={t('stage.interview.mint')}
+              description={t('stage.interview.mintDescription')}
               control={
                 <Toggle
                   value={mintInterview}
                   onValueChange={setMintInterview}
-                  label="Add it to the timeline"
+                  label={t('stage.interview.mint')}
                 />
               }
             />
@@ -258,28 +267,33 @@ function TransitionForm({
 
         {target === 'offer' ? (
           <>
-            <DateField label="Respond by" required value={respondBy} onChange={setRespondBy} />
+            <DateField
+              label={t('stage.offer.respondBy')}
+              required
+              value={respondBy}
+              onChange={setRespondBy}
+            />
             <TextField
-              label="Package"
-              placeholder="e.g. $112k + $15k startup"
+              label={t('stage.offer.package')}
+              placeholder={t('stage.offer.packagePlaceholder')}
               value={offerComp}
               onChangeText={setOfferComp}
             />
             <TextField
-              label="Note"
+              label={t('stage.offer.note')}
               multiline
-              placeholder="What is still being negotiated"
+              placeholder={t('stage.offer.notePlaceholder')}
               value={offerNote}
               onChangeText={setOfferNote}
             />
             <SettingRow
-              label="Add the deadline to the timeline"
-              description="A respond-by date with nothing watching it is the one deadline you cannot afford to miss."
+              label={t('stage.offer.mint')}
+              description={t('stage.offer.mintDescription')}
               control={
                 <Toggle
                   value={mintRespondBy}
                   onValueChange={setMintRespondBy}
-                  label="Add the deadline to the timeline"
+                  label={t('stage.offer.mint')}
                 />
               }
             />
@@ -287,9 +301,9 @@ function TransitionForm({
         ) : null}
 
         {target === 'closed' ? (
-          <FormField label="Outcome" required>
+          <FormField label={t('stage.outcome')} required>
             <Button
-              label={OUTCOME_LABEL[outcome]}
+              label={domain.outcome(outcome)}
               variant="outline"
               size="md"
               full
@@ -300,15 +314,22 @@ function TransitionForm({
 
         {leavingOffer ? (
           <SettingRow
-            label="Keep the offer details"
-            description={`Respond by ${shortDate(application.offer?.respondBy ?? TODAY)}${
-              application.offer?.comp ? ` · ${application.offer.comp}` : ''
-            }. Turn this off to clear them.`}
+            label={t('stage.keepOffer.label')}
+            description={
+              application.offer?.comp
+                ? t('stage.keepOffer.descriptionWithComp', {
+                    date: domain.shortDate(application.offer?.respondBy ?? TODAY),
+                    comp: application.offer.comp,
+                  })
+                : t('stage.keepOffer.description', {
+                    date: domain.shortDate(application.offer?.respondBy ?? TODAY),
+                  })
+            }
             control={
               <Toggle
                 value={keepOffer}
                 onValueChange={setKeepOffer}
-                label="Keep the offer details"
+                label={t('stage.keepOffer.label')}
               />
             }
           />
@@ -321,29 +342,29 @@ function TransitionForm({
           it actually does. */}
       <View style={{ gap: space[2], paddingBottom: space[2] }}>
         <Button
-          label={`Move to ${STAGE_LABEL[target]}`}
+          label={t('stage.moveTo', { stage: domain.stage(target) })}
           size="md"
           full
           blocker={blocker}
           onPress={apply}
         />
         <Button
-          label="Move without details"
+          label={t('stage.moveWithoutDetails')}
           variant="outline"
           size="md"
           full
           onPress={moveWithoutDetails}
         />
-        <Button label="Cancel" variant="ghost" size="md" full onPress={onClose} />
+        <Button label={t('common.cancel')} variant="ghost" size="md" full onPress={onClose} />
       </View>
 
       <MenuSheet
         open={outcomeOpen}
         onClose={() => setOutcomeOpen(false)}
-        title="Outcome"
+        title={t('stage.outcome')}
         actions={OUTCOMES.map((o) => ({
           id: o.value,
-          label: o.label,
+          label: domain.outcome(o.value),
           checked: o.value === outcome,
           onPress: () => setOutcome(o.value),
         }))}

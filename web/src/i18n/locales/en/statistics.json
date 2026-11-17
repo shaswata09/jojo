@@ -1,0 +1,28 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Measured",
+        "hint": "Counted from your own records"
+      },
+      "suggested": {
+        "label": "Suggested",
+        "hint": "General, or measured against a typical search rather than yours"
+      }
+    },
+    "title": "What to do next",
+    "intro": "Ordered by what your records support, then by what costs least."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} of {{of}}",
+    "rate": "{{rate}}% · likely {{range}}",
+    "groupReplied": "Replies, by {{dimension}}",
+    "groupInterviews": "Interviews, by {{dimension}}",
+    "confident": "The ranges do not overlap, so this is a real difference — {{best}} is worth more of your effort.",
+    "unconfident": "The ranges overlap, so this is two numbers rather than a difference. More records will separate them or close the gap.",
+    "tooFew_one": "{{count}} other group has fewer than {{min}} records and is not compared.",
+    "tooFew_other": "{{count}} other groups have fewer than {{min}} records and are not compared.",
+    "title": "What is working",
+    "intro": "The bar is where the true rate plausibly sits; the line is what you have measured. A wide band means too few records to be sure yet."
+  }
+}

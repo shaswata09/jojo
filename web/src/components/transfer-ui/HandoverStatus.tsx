@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { RefreshCcw } from 'lucide-react'
-import { handoverSentence, handoverStatus } from '@jojo/service/core/handover'
+import { handoverStatus } from '@jojo/service/core/handover'
 import { useKg } from '@jojo/service/react/kg-context'
+import { domain } from '@/i18n/domain'
 
 /**
  * How far this device has drifted from the copy it last handed over.
@@ -23,6 +25,7 @@ import { useKg } from '@jojo/service/react/kg-context'
  * decision is yours.
  */
 export function HandoverStatus() {
+  const { t } = useTranslation('transfer')
   const { repo } = useKg()
 
   const status = handoverStatus(repo.meta.handoverAt, repo.audit, new Date().toISOString())
@@ -37,13 +40,11 @@ export function HandoverStatus() {
         aria-hidden
       />
       <p className="text-xs text-text-2">
-        {handoverSentence(status)}
+        {domain.handover(status)}
         {status.state === 'drifted' ? (
           <>
             {' '}
-            <span className="text-text-3">
-              Sending again replaces everything there with everything here.
-            </span>
+            <span className="text-text-3">{t('handover.sendingAgain')}</span>
           </>
         ) : null}
       </p>

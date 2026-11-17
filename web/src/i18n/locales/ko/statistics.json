@@ -1,0 +1,27 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "측정됨",
+        "hint": "내 기록에서 집계했어요"
+      },
+      "suggested": {
+        "label": "제안",
+        "hint": "일반적인 내용이거나, 내 구직이 아닌 일반적인 구직과 비교한 결과예요"
+      }
+    },
+    "title": "다음에 할 일",
+    "intro": "기록이 뒷받침하는 순서대로, 그다음 비용이 적은 순서대로 정렬했어요."
+  },
+  "whatIsWorking": {
+    "countOf": "{{of}}개 중 {{count}}개",
+    "rate": "{{rate}}% · 대략 {{range}}",
+    "groupReplied": "응답, {{dimension}}별",
+    "groupInterviews": "면접, {{dimension}}별",
+    "confident": "범위가 겹치지 않으니 실제 차이예요. {{best}}에 더 힘을 쏟을 만해요.",
+    "unconfident": "범위가 겹치니 차이가 아니라 두 숫자일 뿐이에요. 기록이 더 쌓이면 둘이 갈라지거나 격차가 좁혀질 거예요.",
+    "tooFew_other": "다른 {{count}}개 그룹은 기록이 {{min}}개 미만이라 비교하지 않았어요.",
+    "title": "효과가 있는 것",
+    "intro": "막대는 실제 비율이 있을 법한 범위이고, 선은 측정한 값이에요. 띠가 넓으면 아직 기록이 적어서 확신할 수 없다는 뜻이에요."
+  }
+}

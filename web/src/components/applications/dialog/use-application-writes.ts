@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type {
   ApplicationInitial,
   Errors,
@@ -6,7 +7,6 @@ import type {
 import { deadlineWrite, refusalOf } from '@/components/applications/dialog/form-state'
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, RoleTag } from '@/data/seed'
-import { shortDate } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useVault } from '@jojo/service/react/use-vault'
 import { report } from '@/lib/analytics'
@@ -18,6 +18,7 @@ import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
 import { useMascot } from '@/lib/mascot-context'
 import { CUES } from '@/lib/mascot-cues'
+import { useDomain } from '@/i18n/domain'
 
 /** What Save came to: the record as stored, or the tool's refusal to show. */
 export type SaveOutcome =
@@ -47,6 +48,8 @@ export function useApplicationWrites({
   keywords: string[]
   initial?: ApplicationInitial
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const applications = useApplications()
   const graph = useGraph()
   const { projections } = useKg()
@@ -139,7 +142,7 @@ export function useApplicationWrites({
   /** The refusal, said, and handed back for the form to put on its fields. */
   function refused(errors: readonly { message: string; field?: string }[]): SaveOutcome {
     const { message, fields } = refusalOf(errors)
-    toast({ title: 'That did not save', description: message, tone: 'danger' })
+    toast({ title: t('common.didNotSave'), description: message, tone: 'danger' })
     return { ok: false, message, fields }
   }
 
@@ -208,16 +211,16 @@ export function useApplicationWrites({
 
     mascot.play(CUES.applicationAdded)
     toast({
-      title: `${displayName(created)} added`,
+      title: t('writes.added', { name: displayName(created) }),
       description: [
         form.deadline
-          ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
-          : 'No deadline yet — add one and it shows up in This week.',
-        posting ? 'The posting is filed under it.' : '',
+          ? t('writes.deadlineOn', { date: domain.shortDate(form.deadline) })
+          : t('writes.noDeadline'),
+        posting ? t('writes.postingFiled') : '',
       ]
         .filter(Boolean)
         .join(' '),
-      action: restore ? { label: 'Undo', onClick: restore } : undefined,
+      action: restore ? { label: t('common.undo'), onClick: restore } : undefined,
     })
     return { ok: true, application: created }
   }
@@ -250,14 +253,14 @@ export function useApplicationWrites({
     const removed = deadline === null
 
     toast({
-      title: 'Changes saved',
+      title: t('writes.saved'),
       description: removed
-        ? `${displayName(next)} — its deadline is off the calendar.`
+        ? t('writes.deadlineOff', { name: displayName(next) })
         : displayName(next),
       // The record's own fields can be typed back; a deadline deleted as a side
       // effect of clearing one field cannot. The save is one journal entry now,
       // so the Undo offered for that case puts the whole save back.
-      action: removed && restore ? { label: 'Undo', onClick: restore } : undefined,
+      action: removed && restore ? { label: t('common.undo'), onClick: restore } : undefined,
     })
     return { ok: true, application: next }
   }

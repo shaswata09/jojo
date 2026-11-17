@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "{{label}} 표시",
+    "hide": "{{label}} 숨기기"
+  },
+  "allHidden": {
+    "withReset": "범례에서 모든 계열이 꺼져 있어요.",
+    "noReset": "모든 계열이 숨겨져 있어요. 범례에서 하나를 골라 다시 표시하세요.",
+    "showAll": "모든 계열 표시"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "{{axes}} 기준으로 {{series}}을(를) 비교하는 레이더 차트"
+  }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Command,
   CommandEmpty,
@@ -27,6 +28,7 @@ import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
  * icon button.
  */
 export function NewMenu({ className }: { className?: string }) {
+  const { t } = useTranslation('layout')
   const run = useRunCreateAction()
   const actions = useCreateActions()
   const { open, setOpen } = useNewShortcut()
@@ -41,7 +43,7 @@ export function NewMenu({ className }: { className?: string }) {
         <Button
           ref={triggerRef}
           type="button"
-          aria-label="New"
+          aria-label={t('newMenu.trigger')}
           data-tour="new"
           // Squares off below `sm`, where the topbar already wraps the search
           // field onto its own row and the top row has no width to spare.
@@ -54,7 +56,7 @@ export function NewMenu({ className }: { className?: string }) {
           className={cn('size-8 shrink-0 rounded-md p-0 text-xs sm:w-auto sm:px-2.5', className)}
         >
           <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-          <span className="hidden sm:inline">New</span>
+          <span className="hidden sm:inline">{t('newMenu.trigger')}</span>
         </Button>
       </PopoverTrigger>
 
@@ -82,10 +84,10 @@ export function NewMenu({ className }: { className?: string }) {
             Drop the input and Radix focuses the popover instead — a parent of
             the Command root, so nothing bubbles into it and the list becomes
             unreachable from the keyboard while still looking navigable. */}
-        <Command label="Find something to add">
-          <CommandInput placeholder="Find something to add…" className="h-9" />
+        <Command label={t('newMenu.find')}>
+          <CommandInput placeholder={t('newMenu.findPlaceholder')} className="h-9" />
           <CommandList>
-            <CommandEmpty>Nothing to add matches that.</CommandEmpty>
+            <CommandEmpty>{t('newMenu.empty')}</CommandEmpty>
             <CommandGroup>
               {actions.map((action) => (
                 <CommandItem

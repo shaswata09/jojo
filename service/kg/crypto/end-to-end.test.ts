@@ -26,7 +26,6 @@ import {
   encodeOffer,
   type SessionKeys,
 } from '../core/pairing'
-import { createPulseReceiver, planPulse } from '../core/pulse'
 import { createConvoyReceiver, planConvoy } from '../core/convoy'
 import { createSecrets } from './noble-secrets'
 
@@ -72,21 +71,16 @@ describe('one device to another, all the way', () => {
     const laptop = createSecrets()
     const phone = createSecrets()
 
-    // 1. The laptop mints an offer and the animation begins saying it.
+    // 1. The laptop mints an offer and draws it as a QR code.
     const state = await beginPairing(laptop, AT)
     const offer = encodeOffer(state.offer)
-    const plan = planPulse(offer)
 
-    // 2. The phone's camera gathers the frames.
-    const receiver = createPulseReceiver()
-    for (const frame of plan.frames) receiver.accept(frame)
-    const scanned = receiver.payload()
-    expect(scanned).not.toBeNull()
-    if (scanned === null) throw new Error('the key did not read')
+    // 2. The phone's camera scans it: the same bytes, exactly. (That a drawn
+    //    code reads back as these bytes is `mobile/src/lib/pairing-qr.test.ts`.)
+    const scanned = offer.slice()
 
-    // 3. The phone answers, over the network. The payload is padded to whole
-    //    frames, so the offer's own length is what `acceptPairing` is given.
-    const accepted = await acceptPairing(phone, scanned.subarray(0, offer.byteLength))
+    // 3. The phone answers, over the network.
+    const accepted = await acceptPairing(phone, scanned)
     expect(accepted.ok).toBe(true)
     if (!accepted.ok) throw new Error(accepted.error)
 
@@ -168,11 +162,7 @@ describe('the ways it must refuse', () => {
     const b = createSecrets()
     const state = await beginPairing(a, AT)
     const offer = encodeOffer(state.offer)
-    const receiver = createPulseReceiver()
-    for (const frame of planPulse(offer).frames) receiver.accept(frame)
-    const scanned = receiver.payload()
-    if (scanned === null) throw new Error('setup')
-    const accepted = await acceptPairing(b, scanned.subarray(0, offer.byteLength))
+    const accepted = await acceptPairing(b, offer)
     if (!accepted.ok) throw new Error('setup')
     const completed = await completePairing(a, state, accepted.value.response, AT + 1)
     if (!completed.ok) throw new Error('setup')

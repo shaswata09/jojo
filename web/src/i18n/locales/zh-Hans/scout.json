@@ -1,0 +1,197 @@
+{
+  "common": {
+    "newPipeline": "新建流程",
+    "addToApplications": "加入申请",
+    "inApplicationsAs": "已作为 <anchor>{{name}}</anchor> 加入申请",
+    "open": "打开",
+    "undo": "撤销"
+  },
+  "header": {
+    "title": "职位侦察",
+    "subtitle": "替你盯着招聘网站的已保存搜索——今天就能存放职位发布的地方",
+    "onlyActive": "仅显示启用的流程",
+    "onlyActiveHint": "隐藏已关闭的流程",
+    "paused": "没有连接本地模型，所以流程已暂停。你仍然可以编写流程并在下方保存职位发布——一旦模型可用，它们就会开始运行。",
+    "runsLocally": "流程在你的电脑上运行，只在此标签页打开时运行。不会向任何第三方发送内容。"
+  },
+  "shutdown": {
+    "title": "关闭 {{name}}？",
+    "description": "它已经运行了两次，都没有找到可建议的内容，也没有等你答复的事项。关闭后它会停止查找；它已找到的一切都保持原样。你可以随时重新打开它。",
+    "keep": "保持运行",
+    "confirm": "关闭"
+  },
+  "matches": {
+    "title": "匹配结果",
+    "hint": "根据你的个人资料评分",
+    "emptyTitle": "没有匹配结果",
+    "emptyDescription": "连接模型后，流程会把评过分的职位发布放在这里。在此之前，你在下方保存的职位发布就是入口。",
+    "matched": "匹配：{{list}}",
+    "notScored": "未评分",
+    "fit": "匹配度 {{score}}%",
+    "added": "已加入"
+  },
+  "dialog": {
+    "editTitle": "编辑流程",
+    "description": "流程是交给助手的常驻任务。它在 jojo 打开时于本设备上运行，任何它想做的更改都会先给你过目。",
+    "kind": "用途",
+    "kinds": {
+      "twin": "补全记录",
+      "scout": "查找职位发布"
+    },
+    "kindHint": {
+      "twin": "读取你已有的内容，并建议缺少的部分——笔记、提醒、标签、归档。",
+      "scout": "查找值得你关注的职位发布，并提交给你审阅。"
+    },
+    "name": "名称",
+    "nameError": "用它所监视的对象来命名。",
+    "namePlaceholder": {
+      "twin": "例如：保持我的申请井井有条",
+      "scout": "例如：CRA 教职招聘网站"
+    },
+    "sources": "来源",
+    "sourcesHint": "它监视的招聘网站或招聘页面。多个来源用逗号分隔。",
+    "sourceError": "没有来源的侦察流程无从读取。",
+    "terms": {
+      "twin": "关注重点",
+      "scout": "匹配关键词"
+    },
+    "termsHint": {
+      "twin": "需要它特别留意的内容。留空则让它到处查看。",
+      "scout": "职位发布据此评分。留空则保留来源列出的所有内容。"
+    },
+    "termsPlaceholder": {
+      "twin": "跟进和截止日期",
+      "scout": "助理教授，CS/ECE"
+    },
+    "howOften": "频率",
+    "howOftenHint": "两轮之间等待多久。",
+    "schedules": {
+      "hourly": "每小时",
+      "daily": "每天",
+      "weekly": "每周"
+    },
+    "cancel": "取消",
+    "save": "保存更改",
+    "create": "创建流程"
+  },
+  "pipelines": {
+    "title": "流程",
+    "hint": "在 jojo 打开时于本设备上运行",
+    "caption": "它们只在此标签页打开时工作——不会在这台电脑之外运行",
+    "kinds": {
+      "twin": "数字分身",
+      "scout": "职位侦察"
+    },
+    "status": {
+      "off": "已关闭",
+      "paused": "已暂停",
+      "running": "运行中",
+      "watching": "监视中"
+    },
+    "noneOnTitle": "没有启用任何流程",
+    "noneOnDescription": "你的所有流程都已关闭。打开其中一个，或在页面选项中取消筛选。",
+    "emptyTitle": "没有流程",
+    "emptyDescription": "流程是交给助手的常驻任务：保持你的记录完整，或留意值得你关注的职位发布。",
+    "showAll": "显示所有流程",
+    "auto": "自动",
+    "autoAria": "无需询问即运行 {{name}}",
+    "toReview_other": "{{count}} 项待审阅",
+    "runNow": "立即运行 {{name}}",
+    "edit": "编辑 {{name}}",
+    "delete": "删除 {{name}}",
+    "enable": "启用 {{name}}"
+  },
+  "postings": {
+    "title": "保存职位发布",
+    "hint": "无需模型即可使用",
+    "intro": "保存时也会保留页面，放在保险库的“职位发布”下——通过 jojo 扩展按你看到的样子打开，或由文档阅读器获取。两者都没有时，保留的是网址、据此推测的雇主以及你保存的日期。",
+    "urlLabel": "职位发布网址",
+    "pasteFirst": "请先粘贴网址",
+    "save": "保存职位发布",
+    "emptyTitle": "还没有保存职位发布",
+    "emptyDescription": "粘贴你想以后再看的招聘广告网址。广告会被撤下；链接和日期归你所有。",
+    "saved": "保存于{{when}}",
+    "linked": "已关联申请",
+    "unscored": "未评分",
+    "openSnapshot": "打开快照",
+    "savingPage": "正在保存页面……",
+    "savePage": "保存页面",
+    "savePageTitle": "打开职位发布并在保险库中保留一份副本",
+    "remove": "移除 {{title}}"
+  },
+  "proposals": {
+    "title": "建议",
+    "hint": "你点头之前什么都不会发生",
+    "aPipeline": "某个流程",
+    "clearAnswered": "清除已处理",
+    "approveAll": "全部批准（{{count}}）",
+    "clearAll": "全部清除",
+    "emptyTitle": "没有需要审阅的内容",
+    "emptyDescription": "流程运行时，它想做的任何更改都会先出现在这里。在你批准之前，它不会动你的记录。",
+    "clearTitle": "清除所有建议？",
+    "clearPending_other": "还有 {{count}} 条建议在等你处理，它们将被拒绝。你的记录不会有任何变化，流程也会继续运行——但不会再提出这些建议。",
+    "clearAnsweredOnly": "已处理的卡片会从列表中移除。你的记录不会有任何变化。",
+    "status": {
+      "applied": "已应用",
+      "discarded": "已丢弃",
+      "failed": "无法应用"
+    },
+    "noSummary": "这条没有附带摘要——打开职位发布看看是什么。",
+    "reading": "正在读取职位发布的详细信息……",
+    "notALink": "不是网址，所以不作为链接提供",
+    "from": "来自 {{name}}",
+    "openPosting": "打开职位发布",
+    "openPostingAria": "在新标签页中打开职位发布：{{title}}",
+    "inApplications": "已在申请中",
+    "approve": "批准",
+    "discard": "丢弃此建议",
+    "discardAria": "丢弃：{{title}}",
+    "unreadable": "无法读取页面：{{reason}}",
+    "unreadableKept": "无法读取页面：{{reason}} 页面本身已保存。",
+    "applyBy": "截止申请 {{date}}",
+    "pageSaved": "页面已保存"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "已在你的申请中——未重复添加",
+    "alreadyHaveDescription": "这是 {{name}}，在另一个网站上重新发布。该职位发布已关联到它，页面也已归档到它下面。",
+    "duplicateDescription": "该职位发布就是你已有的 {{name}}。{{why}} 它的页面已归档到那份申请下。",
+    "keepBoth": "两份都保留",
+    "fillFailedTitle": "{{org}}：无法读取职位发布",
+    "fillFailedKept": "{{reason}} 页面本身已保存并归档到草稿下——打开草稿补全其余内容。",
+    "fillFailed": "{{reason}} 草稿保留了其链接所提供的信息——打开草稿补全其余内容。",
+    "filledTitle": "已根据职位发布填写 {{name}}",
+    "checkedTitle": "已将 {{name}} 与职位发布核对",
+    "filledIn": "已填写：{{list}}。",
+    "checked": "已与页面核对：{{list}}。",
+    "keptYours": "保留了你的修改：{{list}}。",
+    "addedNothing": "页面没有提供草稿中没有的内容。",
+    "missing": "页面上没有：{{list}}。",
+    "filedUnder": "页面已归档到它下面。",
+    "approvedReading": "正在读取职位发布以填写详细信息——完成后草稿会更新。",
+    "approvedFromLink": "已根据其链接填写。在设置中连接模型，即可读取职位发布本身。",
+    "approvedOpen": "打开它以补全其余内容。",
+    "allRepeatsTitle": "已在你的申请中——没有新增任何内容",
+    "allRepeats_other": "{{count}} 个是你已有的职位，在另一个网站上重新发布。它们已关联到你现有的申请。",
+    "added_other": "已将 {{count}} 份作为草稿加入你的申请",
+    "addedWithRepeats_other": "已将 {{count}} 份作为草稿加入你的申请 · {{repeats}} 份已存在",
+    "addedReading": "正在依次读取每个职位发布以填写详细信息。",
+    "addedFromLinks": "已根据各自的链接填写。在设置中连接模型，即可读取职位发布本身。",
+    "addedOne": "已将 {{org}} 作为草稿加入你的申请",
+    "addedAsDraft": "已将 {{org}} 添加为草稿",
+    "matchStays": "该匹配结果仍保留在此列表中，现已关联到申请。",
+    "postingSaved": "职位发布已保存",
+    "postingReading": "正在读取职位发布以核对并填写详细信息——完成后草稿会更新。",
+    "postingStays": "职位发布仍保存在这里，现已关联到申请。",
+    "postingRemoved": "职位发布已移除",
+    "pageNotSaved": "职位发布的页面未能保存",
+    "pageSaved": "职位发布页面已保存",
+    "pageSavedFiled": "{{title}}——已归档到其申请下。",
+    "pageSavedVault": "{{title}}——在保险库的“职位发布”下。",
+    "pipelineUpdated": "流程已更新",
+    "pipelineCreated": "流程已创建",
+    "pipelineCreatedPaused": "{{name}}——已暂停，等待连接模型。",
+    "pipelineCreatedRunning": "{{name}}——很快就会开始查找。",
+    "pipelineDeleted": "流程已删除",
+    "pipelineDeletedDescription": "{{name}} 不再监视 {{source}}。"
+  }
+}

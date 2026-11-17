@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
@@ -36,11 +37,13 @@ export function ProposalQueue({
   onSweep: (pipelineId: string) => void
   onClearAll: () => void
 }) {
+  const { t } = useTranslation('components')
   const [confirming, setConfirming] = useState(false)
   const pending = proposals.filter((p) => p.status === 'pending')
   const answered = proposals.filter((p) => p.status !== 'pending')
   const ordered = [...pending, ...answered]
-  const nameOf = (id: string | null) => pipelines.find((p) => p.id === id)?.name ?? 'a pipeline'
+  const nameOf = (id: string | null) =>
+    pipelines.find((p) => p.id === id)?.name ?? t('proposals.aPipeline')
 
   // Only offered when everything answered came from one pipeline — a single
   // Clear across two searches is one gesture the user cannot describe after.
@@ -49,13 +52,13 @@ export function ProposalQueue({
 
   return (
     <Panel>
-      <PanelTitle hint="nothing happens until you say so">Suggestions</PanelTitle>
+      <PanelTitle hint={t('proposals.hint')}>{t('proposals.title')}</PanelTitle>
 
       {ordered.length === 0 ? (
         <EmptyState
           icon="inbox"
-          title="Nothing to review"
-          description="When a pipeline is running, anything it wants to change shows up here first. It will not touch your records until you approve it."
+          title={t('proposals.empty.title')}
+          description={t('proposals.empty.description')}
         />
       ) : (
         <>
@@ -82,17 +85,17 @@ export function ProposalQueue({
                       </Txt>
                       {p.status === 'approved' ? (
                         <Chip tone="green" size="sm">
-                          applied
+                          {t('proposals.applied')}
                         </Chip>
                       ) : null}
                       {p.status === 'discarded' ? (
                         <Chip tone="gray" size="sm">
-                          discarded
+                          {t('proposals.discarded')}
                         </Chip>
                       ) : null}
                       {p.status === 'failed' ? (
                         <Chip tone="red" size="sm">
-                          could not apply
+                          {t('proposals.failed')}
                         </Chip>
                       ) : null}
                     </View>
@@ -129,16 +132,20 @@ export function ProposalQueue({
                       numberOfLines={1}
                       style={{ marginTop: space[1] }}
                     >
-                      {p.tool} · from {nameOf(p.pipelineId)}
+                      {t('proposals.from', { tool: p.tool, pipeline: nameOf(p.pipelineId) })}
                     </Txt>
                   </View>
 
                   {p.status === 'pending' ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[1] }}>
-                      <Button label="Approve" size="sm" onPress={() => onApprove(p.id)} />
+                      <Button
+                        label={t('proposals.approve')}
+                        size="sm"
+                        onPress={() => onApprove(p.id)}
+                      />
                       <IconButton
                         icon="x"
-                        label={`Discard: ${p.title}`}
+                        label={t('proposals.discardNamed', { title: p.title })}
                         onPress={() => onDiscard(p.id)}
                       />
                     </View>
@@ -161,14 +168,14 @@ export function ProposalQueue({
           >
             {answered.length > 0 && sweepable ? (
               <Button
-                label="Clear answered"
+                label={t('proposals.clearAnswered')}
                 variant="outline"
                 size="sm"
                 onPress={() => onSweep(sweepable)}
               />
             ) : null}
             <Button
-              label="Clear all"
+              label={t('proposals.clearAll')}
               variant="outline"
               size="sm"
               onPress={() => setConfirming(true)}
@@ -182,13 +189,13 @@ export function ProposalQueue({
       <ConfirmSheet
         open={confirming}
         onClose={() => setConfirming(false)}
-        title="Clear all suggestions?"
+        title={t('proposals.confirmTitle')}
         description={
           pending.length > 0
-            ? `${String(pending.length)} ${pending.length === 1 ? 'suggestion is' : 'suggestions are'} still waiting and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.`
-            : 'The answered cards come off the list. Nothing in your records changes.'
+            ? t('proposals.confirmPending', { count: pending.length })
+            : t('proposals.confirmAnswered')
         }
-        confirmLabel="Clear all"
+        confirmLabel={t('proposals.clearAll')}
         tone="danger"
         onConfirm={onClearAll}
       />

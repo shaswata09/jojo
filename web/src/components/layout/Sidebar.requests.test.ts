@@ -22,12 +22,15 @@ const aside = strip(sidebar)
 
 describe('the sidebar on a narrow screen (Q003)', () => {
   it('is a fixed drawer that slides off to the left until opened', () => {
-    expect(aside).toMatch(/'fixed top-3 bottom-3 left-3 /)
-    expect(aside).toMatch(/open \? 'translate-x-0' : '-translate-x-\[calc\(100%\+1rem\)\]'/)
+    // The inline start: the left, and the right on a right-to-left page.
+    expect(aside).toMatch(/'fixed start-3 top-3 bottom-3 /)
+    expect(aside).toMatch(
+      /open\s*\?\s*'translate-x-0'\s*:\s*'-translate-x-\[calc\(100%\+1rem\)\] max-lg:rtl:translate-x-\[calc\(100%\+1rem\)\]'/,
+    )
   })
 
   it('becomes a permanent column from lg up', () => {
-    expect(aside).toMatch(/'lg:sticky lg:top-5 /)
+    expect(aside).toMatch(/'lg:sticky lg:start-auto lg:top-5 /)
     expect(aside).toMatch(/lg:translate-x-0/)
   })
 

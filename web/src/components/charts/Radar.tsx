@@ -1,4 +1,14 @@
-import { CX, CY, H, LABEL_RING, RINGS, W, plot, ringPoint } from '@/components/charts/radar-geometry'
+import {
+  CX,
+  CY,
+  H,
+  LABEL_RING,
+  RINGS,
+  W,
+  plot,
+  ringPoint,
+} from '@/components/charts/radar-geometry'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 export type RadarSeries = { label: string; color: string; values: number[] }
@@ -18,6 +28,7 @@ export function Radar({
   series: RadarSeries[]
   className?: string
 }) {
+  const { t, i18n } = useTranslation('charts')
   const n = axes.length
   const point = (i: number, value: number) => plot(i, n, value)
   const polygon = (values: number[]) => values.map((v, i) => point(i, v).join(',')).join(' ')
@@ -28,7 +39,12 @@ export function Radar({
         viewBox={`0 0 ${W} ${H}`}
         className="h-auto w-full max-w-[340px]"
         role="img"
-        aria-label={`Radar comparing ${series.map((s) => s.label).join(' and ')} across ${axes.join(', ')}`}
+        aria-label={t('radar.aria', {
+          series: new Intl.ListFormat(i18n.language, { type: 'conjunction' }).format(
+            series.map((s) => s.label),
+          ),
+          axes: new Intl.ListFormat(i18n.language, { type: 'unit' }).format(axes),
+        })}
       >
         {/* Concentric rings as the scale, spokes to each axis. */}
         {Array.from({ length: RINGS }, (_, ring) => {

@@ -1,0 +1,182 @@
+{
+  "shared": {
+    "undo": "Deshacer",
+    "cancel": "Cancelar",
+    "add": "Añadir",
+    "discard": "Descartar",
+    "save": "Guardar",
+    "didNotSave": "No se guardó"
+  },
+  "saveBar": {
+    "unsaved": "Cambios sin guardar: al guardar se escriben en este navegador."
+  },
+  "form": {
+    "saved": {
+      "title": "Perfil guardado",
+      "description": "Escrito en este navegador y conservado."
+    }
+  },
+  "fields": {
+    "basics": "Datos básicos",
+    "fullName": {
+      "label": "Nombre completo",
+      "placeholder": "p. ej., Lonardo Jenson"
+    },
+    "position": {
+      "label": "Puesto actual",
+      "placeholder": "p. ej., Doctorando, Informática"
+    },
+    "location": {
+      "label": "Ubicación",
+      "placeholder": "p. ej., Santa Clara, CA"
+    },
+    "email": {
+      "label": "Correo electrónico"
+    },
+    "links": "Enlaces",
+    "website": {
+      "label": "Sitio web"
+    }
+  },
+  "interests": {
+    "title": "Intereses y objetivos",
+    "hint": "guía las coincidencias de Scout",
+    "matchTerms": {
+      "title": "Términos de búsqueda",
+      "description": "Áreas de investigación y expresiones que busca Scout. Son distintos de las palabras clave con las que archivas registros.",
+      "remove": "Quitar {{term}}",
+      "newLabel": "Nuevo término de búsqueda",
+      "placeholder": "Añadir un término"
+    },
+    "targetRoles": {
+      "label": "Puestos objetivo",
+      "placeholder": "p. ej., Profesor ayudante (TT) · Científico investigador"
+    },
+    "regions": {
+      "label": "Regiones preferidas",
+      "placeholder": "p. ej., Texas · remoto"
+    },
+    "academia": "Incluir ofertas del ámbito académico",
+    "industry": "Incluir ofertas de la industria"
+  },
+  "roleTags": {
+    "title": "Etiquetas de puesto",
+    "description": "Los tipos de puesto que sigues. Cada solicitud se archiva bajo una, y tanto el filtro de puestos como las cifras por puesto de Estadísticas la usan. Quitar una aquí deja las solicitudes que la llevan exactamente donde están.",
+    "remove_one": "Quitar {{role}}, usada en {{count}} solicitud",
+    "remove_many": "Quitar {{role}}, usada en {{count}} solicitudes",
+    "remove_other": "Quitar {{role}}, usada en {{count}} solicitudes",
+    "newLabel": "Nueva etiqueta de puesto",
+    "placeholder": "p. ej., Científico de datos"
+  },
+  "documents": {
+    "title": "Documentos",
+    "hint": "la sección {{bucket}} de la Bóveda",
+    "upload": "Subir",
+    "exportInSettings": "Exportar en Ajustes",
+    "empty": {
+      "title": "Aún no hay documentos",
+      "description": "Suelta aquí tu CV y tus declaraciones, o elígelos: se archivan en la Bóveda, en {{bucket}}, donde el resto de la app puede acceder a ellos.",
+      "upload": "Subir un documento"
+    },
+    "footer": "Los mismos archivos que la <anchor>herramienta Archivos</anchor> de la Bóveda, filtrados por {{bucket}}. Suelta aquí un documento o elige uno, y el archivo se guarda en este navegador: no se sube nada a ninguna parte. Haz clic en uno para leerlo."
+  },
+  "documentTile": {
+    "open": "Abrir {{name}}",
+    "meta": "{{size}} · guardado {{ago}}",
+    "delete": "Eliminar {{name}}"
+  },
+  "background": {
+    "title": "Tu trayectoria",
+    "hint_one": "{{count}} registrado · con lo que se compara una oferta",
+    "hint_many": "{{count}} registrados · con lo que se compara una oferta",
+    "hint_other": "{{count}} registrados · con lo que se compara una oferta",
+    "details_one": "{{count}} detalle",
+    "details_many": "{{count}} detalles",
+    "details_other": "{{count}} detalles",
+    "readFromDocument": "leído de un documento",
+    "edit": "Editar {{title}}",
+    "remove": "Quitar {{title}}",
+    "added": "{{title}} añadido",
+    "updated": "{{title}} actualizado",
+    "removed": "{{title}} quitado",
+    "addEntry": "Añadir una entrada",
+    "form": {
+      "kind": "Tipo",
+      "title": "Título",
+      "titlePlaceholder": "Qué fue",
+      "where": "Dónde",
+      "optional": "Opcional",
+      "when": "Cuándo",
+      "whenPlaceholder": "Tal como está escrito: «2021–2024»",
+      "year": "Año",
+      "detail": "Detalle",
+      "detailPlaceholder": "Cualquier cosa con la que valga la pena comparar una oferta (opcional)",
+      "highlights": "Logros",
+      "highlightsHint": "Uno por línea: lo que se construyó, lanzó, enseñó o descubrió.",
+      "readKept": "leído de un documento: tu edición prevalece sobre la lectura",
+      "saveChanges": "Guardar cambios"
+    },
+    "empty": {
+      "title": "Aún no hay nada registrado",
+      "configured": "Pon tu CV o una declaración de investigación o docencia en la Bóveda y jojo te ofrecerá leerlo; lo que encuentre se te mostrará antes de guardar nada. O añade una entrada a mano.",
+      "unconfigured": "Para leer un documento hace falta un modelo. Conecta uno en Ajustes, luego pon tu CV o una declaración en la Bóveda y jojo te ofrecerá leerlo. Puedes añadir entradas a mano sin él."
+    },
+    "readMenu": {
+      "needsModel": "Para leer un documento hace falta un modelo. Conecta uno en Ajustes.",
+      "button": "Leer un documento",
+      "nothing": "Todavía no hay nada legible en la Bóveda. Suelta tu CV o una declaración y aparecerá aquí.",
+      "allRead": "Ya se ha leído todo lo legible de la Bóveda.",
+      "read": "leído"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Formación",
+      "employment": "Empleo",
+      "publication": "Publicación",
+      "skill": "Habilidad",
+      "teaching": "Docencia",
+      "award": "Premio",
+      "service": "Servicio",
+      "certification": "Certificación",
+      "language": "Idioma",
+      "project": "Proyecto",
+      "volunteering": "Voluntariado",
+      "membership": "Membresía",
+      "grant": "Beca",
+      "patent": "Patente"
+    },
+    "skipped_one": "Se omitió {{count}} entrada",
+    "skipped_many": "Se omitieron {{count}} entradas",
+    "skipped_other": "Se omitieron {{count}} entradas",
+    "readIt": "Leerlo",
+    "readFailed": "No se pudo leer el documento.",
+    "notNow": "Ahora no",
+    "discardEntries": "Descartar estas entradas",
+    "review": {
+      "single": "1 entrada leída de este documento",
+      "some": "Se añadirán {{kept}} de {{total}} entradas",
+      "untick": "Desmarca lo que haya leído mal.",
+      "add": "Añadir {{title}}",
+      "connections_one": "{{count}} conexión entre ellas",
+      "connections_many": "{{count}} conexiones entre ellas",
+      "connections_other": "{{count}} conexiones entre ellas",
+      "addOne": "Añadirlo a mi perfil",
+      "addMany": "Añadir {{total}} a mi perfil"
+    },
+    "toast": {
+      "already": "Ya está en tu perfil",
+      "added_one": "{{count}} añadida a tu perfil",
+      "added_many": "{{count}} añadidas a tu perfil",
+      "added_other": "{{count}} añadidas a tu perfil",
+      "nothing": "No se pudo añadir nada",
+      "readFrom": "Leído de {{name}}.",
+      "known": "{{known}} de {{total}} ya se conocían.",
+      "related_one": "Se registró {{count}} conexión entre ellas.",
+      "related_many": "Se registraron {{count}} conexiones entre ellas.",
+      "related_other": "Se registraron {{count}} conexiones entre ellas.",
+      "weigh": "jojo ya puede comparar una oferta con lo que has hecho.",
+      "refused": "Las entradas fueron rechazadas."
+    }
+  }
+}

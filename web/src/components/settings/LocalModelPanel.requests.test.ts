@@ -20,7 +20,7 @@ const failureBranch = (() => {
 })()
 
 /** The API key Field's own JSX. */
-const keyField = /<Field\s+label="API key"[\s\S]*?\/>/.exec(source)?.[0] ?? ''
+const keyField = /<Field\s+label=\{t\('model\.apiKey\.label'\)\}[\s\S]*?\/>/.exec(source)?.[0] ?? ''
 
 describe('Q172 — testing a connection', () => {
   it('reads the failure branch it means to', () => {

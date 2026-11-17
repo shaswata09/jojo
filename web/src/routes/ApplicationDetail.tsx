@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { FileQuestion } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DatesPanel } from '@/components/applications/detail/DatesPanel'
 import { FiledPanel } from '@/components/applications/detail/FiledPanel'
 import { DetailFacts } from '@/components/applications/detail/DetailFacts'
@@ -16,11 +17,11 @@ import { OfferBlock } from '@/components/applications/OfferBlock'
 import type { OfferDecision } from '@/components/applications/OfferBlock'
 import { StageTransitionDialog } from '@/components/applications/StageTransitionDialog'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import { listJoin, plural } from '@/components/common/text'
+import { listJoin } from '@/components/common/text'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { STAGE_LABEL, displayName } from '@/data/seed'
+import { displayName } from '@/data/seed'
 import type { Application, OfferApplication, Stage } from '@/data/seed'
 import { compareItems } from '@/data/timeline'
 import { applicationDeadlineOf } from '@/components/applications/deadline'
@@ -36,6 +37,7 @@ import { useMascot } from '@/lib/mascot-context'
 import { stageGesture } from '@/lib/mascot-cues'
 import { useUndoable } from '@/lib/undo'
 import { announceRefusal } from '@/components/common/write-result'
+import { useDomain } from '@/i18n/domain'
 
 export type ApplicationDetailProps = {
   /**
@@ -72,6 +74,7 @@ export function ApplicationDetail({ onAddItem, onEdit, onClose }: ApplicationDet
   // that knows the difference; nothing here may compare it to `a.id`.
   const { key = '' } = useParams()
   const { get } = useApplications()
+  const { t } = useTranslation('pages')
   const application = get(key)
 
   // The missing case first, because it is a real destination rather than an
@@ -82,11 +85,11 @@ export function ApplicationDetail({ onAddItem, onEdit, onClose }: ApplicationDet
       <Panel className="min-w-0">
         <EmptyState
           icon={FileQuestion}
-          title="This application no longer exists"
-          description="It was deleted, or the link points at a record that never existed. Nothing else was removed with it."
+          title={t('applicationDetail.missingTitle')}
+          description={t('applicationDetail.missingDescription')}
           action={
             <Button asChild variant="outline" size="sm">
-              <Link to={applicationsPath()}>Back to applications</Link>
+              <Link to={applicationsPath()}>{t('applicationDetail.back')}</Link>
             </Button>
           }
         />
@@ -113,6 +116,8 @@ function Detail({
   onEdit,
   onClose,
 }: { application: Application } & ApplicationDetailProps) {
+  const { t } = useTranslation('pages')
+  const domain = useDomain()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { play } = useMascot()
@@ -195,9 +200,11 @@ function Detail({
    */
   const kept = listJoin(
     [
-      reminderCount > 0 ? plural(reminderCount, 'reminder') : '',
-      items.length - reminderCount > 0 ? plural(items.length - reminderCount, 'event') : '',
-      savedCount > 0 ? plural(savedCount, 'saved item') : '',
+      reminderCount > 0 ? t('applicationDetail.keptReminders', { count: reminderCount }) : '',
+      items.length - reminderCount > 0
+        ? t('applicationDetail.keptEvents', { count: items.length - reminderCount })
+        : '',
+      savedCount > 0 ? t('applicationDetail.keptSaved', { count: savedCount }) : '',
     ].filter(Boolean),
   )
 
@@ -232,9 +239,9 @@ function Detail({
     if (gesture) play(gesture)
 
     toast({
-      title: `${displayName(a)} moved to ${STAGE_LABEL[to]}`,
+      title: t('applicationDetail.moved', { name: displayName(a), stage: domain.stage(to) }),
       description: consequences.length > 0 ? consequences.join(' ') : undefined,
-      ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
+      ...(restore ? { action: { label: t('applicationDetail.undo'), onClick: restore } } : {}),
     })
   }
 
@@ -260,9 +267,12 @@ function Detail({
     const gesture = stageGesture(a.stage, 'closed', decision)
     if (gesture) play(gesture)
     toast({
-      title: `${displayName(a)} closed`,
-      description: `Recorded as ${decision}. The offer details and its reminders were kept.`,
-      ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
+      title: t('applicationDetail.closed', { name: displayName(a) }),
+      description:
+        decision === 'accepted'
+          ? t('applicationDetail.closedAccepted')
+          : t('applicationDetail.closedDeclined'),
+      ...(restore ? { action: { label: t('applicationDetail.undo'), onClick: restore } } : {}),
     })
   }
 
@@ -270,10 +280,10 @@ function Detail({
     const copy = duplicate(a.id)
     if (!copy) return
     toast({
-      title: `${displayName(copy)} duplicated`,
-      description: 'The copy starts at Draft, with the note and details carried over.',
+      title: t('applicationDetail.duplicated', { name: displayName(copy) }),
+      description: t('applicationDetail.duplicatedDescription'),
       action: {
-        label: 'Undo',
+        label: t('applicationDetail.undo'),
         onClick: () => {
           remove(copy.id)
           navigate(appPath(a) + keep)
@@ -292,11 +302,11 @@ function Detail({
     // back every edge the delete unlinked, which the user could not rebuild by
     // simply adding the application again.
     toast({
-      title: `${displayName(a)} deleted`,
-      description: kept ? `${kept} were kept, unlinked.` : undefined,
+      title: t('applicationDetail.deleted', { name: displayName(a) }),
+      description: kept ? t('applicationDetail.deletedKept', { kept }) : undefined,
       tone: 'danger',
       action: {
-        label: 'Undo',
+        label: t('applicationDetail.undo'),
         onClick: () => {
           restore()
           navigate(appPath(a) + keep)
@@ -387,13 +397,11 @@ function Detail({
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title={`Delete ${displayName(a)}?`}
+        title={t('applicationDetail.confirmTitle', { name: displayName(a) })}
         description={
-          kept
-            ? `The application and its note go. ${kept} will be kept but unlinked — nothing you filed under it is deleted.`
-            : 'The application and its note go. Nothing else points at it.'
+          kept ? t('applicationDetail.confirmKept', { kept }) : t('applicationDetail.confirmAlone')
         }
-        confirmLabel="Delete application"
+        confirmLabel={t('applicationDetail.confirmLabel')}
         tone="danger"
         onConfirm={onDelete}
       />

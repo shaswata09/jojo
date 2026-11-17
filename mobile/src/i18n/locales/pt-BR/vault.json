@@ -1,0 +1,299 @@
+{
+  "common": {
+    "undo": "Desfazer",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "remove": "Remover",
+    "done": "Concluir",
+    "title": "Título",
+    "note": "Nota",
+    "changeApplications": "Alterar candidaturas",
+    "fileUnderApplication": "Vincular a uma candidatura",
+    "moreActionsFor": "Mais ações para {{name}}",
+    "openNamed": "Abrir {{name}}",
+    "savedAgo": "salvo {{ago}}",
+    "copyOf": "{{name}} (cópia)",
+    "movedTo": "Movido para {{name}}",
+    "titleRequired": "Dê um nome para poder encontrar de novo."
+  },
+  "screen": {
+    "title": "Cofre",
+    "subtitle": "Lembretes, links, arquivos, trechos e pessoas",
+    "counts": {
+      "reminders_one": "{{count}} lembrete",
+      "reminders_other": "{{count}} lembretes",
+      "links_one": "{{count}} link",
+      "links_other": "{{count}} links",
+      "files_one": "{{count}} arquivo",
+      "files_other": "{{count}} arquivos",
+      "snippets_one": "{{count}} trecho",
+      "snippets_other": "{{count}} trechos",
+      "people_one": "{{count}} pessoa",
+      "people_other": "{{count}} pessoas"
+    },
+    "showCounts": "Mostrar totais",
+    "showCountsDescription": "Totais de itens no subtítulo, em vez do que as abas contêm",
+    "toolLabel": "Ferramenta do cofre",
+    "tools": {
+      "reminders": "Lembretes",
+      "links": "Links",
+      "files": "Arquivos",
+      "snippets": "Trechos",
+      "people": "Pessoas",
+      "tools": "Ferramentas"
+    }
+  },
+  "files": {
+    "add": "Registrar um documento",
+    "filterLabel": "Filtrar documentos",
+    "editLabel": "Editar documento",
+    "bucket": "Pasta",
+    "search": {
+      "label": "Buscar documentos",
+      "placeholder": "Buscar por nome, nota ou pasta"
+    },
+    "empty": {
+      "zeroTitle": "Nenhum documento ainda",
+      "zeroDescription": "Seu currículo, cartas, palestras e documentos digitalizados. Nomes, tamanhos e tipos são registrados — nada lê o arquivo em si.",
+      "search": "Nenhum documento menciona \"{{query}}\" no nome, na nota ou na pasta.",
+      "both": "Nenhum documento em {{bucket}} tem as palavras-chave selecionadas.",
+      "bucketTitle": "Nada em {{bucket}}",
+      "bucketDescription_one": "{{count}} documento está nas outras pastas.",
+      "bucketDescription_other": "{{count}} documentos estão nas outras pastas.",
+      "showAll": "Mostrar todas as pastas",
+      "keywordsTitle": "Nenhum documento tem essas palavras-chave"
+    },
+    "toast": {
+      "removed": "Documento removido",
+      "duplicated": "Documento duplicado",
+      "updated": "Documento atualizado",
+      "recorded": "Documento registrado",
+      "recordedDescription": "{{name}} · guardado em {{bucket}}. O nome, o tamanho e o tipo são mantidos — o arquivo em si não é lido."
+    }
+  },
+  "snippets": {
+    "add": "Novo trecho",
+    "filterLabel": "Filtrar trechos",
+    "tag": "Etiqueta",
+    "copyNamed": "Copiar {{name}}",
+    "search": {
+      "label": "Buscar trechos",
+      "placeholder": "Buscar por título ou texto"
+    },
+    "empty": {
+      "zeroTitle": "Nenhum trecho ainda",
+      "zeroDescription": "As respostas que você digita de novo em todo formulário — uma bio curta, um parágrafo sobre docência, o e-mail de acompanhamento que você sempre envia.",
+      "search": "Nenhum trecho menciona \"{{query}}\" no nome, no texto ou no tipo.",
+      "both": "Nenhum trecho do tipo {{tag}} tem as palavras-chave selecionadas.",
+      "bucketTitle": "Nenhum trecho do tipo {{tag}}",
+      "bucketDescription_one": "{{count}} trecho está nos outros tipos.",
+      "bucketDescription_other": "{{count}} trechos estão nos outros tipos.",
+      "showAll": "Mostrar todos os tipos",
+      "keywordsTitle": "Nenhum trecho tem essas palavras-chave"
+    },
+    "toast": {
+      "deleted": "Trecho excluído",
+      "duplicated": "Trecho duplicado",
+      "filedUnder": "Guardado em {{tag}}",
+      "saved": "Trecho salvo",
+      "added": "Trecho adicionado",
+      "addedDescription": "{{title}} · guardado em {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Editar trecho",
+      "description": "Tudo entre [COLCHETES] fica em branco quando a folha de rascunho carrega isto, então o nome de uma pessoa nunca é preenchido por você.",
+      "titlePlaceholder": "ex.: Acompanhamento sem resposta",
+      "applicationHint": "Opcional. Um trecho escrito para empregadores específicos pode dizer quais.",
+      "body": "Texto",
+      "bodyRequired": "Um trecho sem texto não tem nada para colar.",
+      "bodyPlaceholder": "Prezado(a) [NAME], …"
+    },
+    "discard": {
+      "title": "Descartar alterações não salvas?",
+      "description": "O que você digitou aqui não foi salvo em lugar nenhum, então sair descarta tudo — e isso não pode ser desfeito.",
+      "confirm": "Descartar"
+    }
+  },
+  "links": {
+    "add": "Salvar um link",
+    "filterLabel": "Filtrar links",
+    "category": "Categoria",
+    "search": {
+      "label": "Buscar links",
+      "placeholder": "Buscar por título, URL ou nota"
+    },
+    "empty": {
+      "zeroTitle": "Nada salvo ainda",
+      "zeroDescription": "Vagas, páginas de departamentos, pessoas e guias — tudo a que você quer voltar.",
+      "search": "Nenhum link menciona \"{{query}}\" no título, no endereço, na nota ou na categoria.",
+      "both": "Nenhum link da categoria {{category}} tem as palavras-chave selecionadas.",
+      "bucketTitle": "Nenhum link em {{category}}",
+      "bucketDescription_one": "{{count}} link está nas outras categorias.",
+      "bucketDescription_other": "{{count}} links estão nas outras categorias.",
+      "showAll": "Mostrar todas as categorias",
+      "keywordsTitle": "Nenhum link tem essas palavras-chave"
+    },
+    "menu": {
+      "open": "Abrir link",
+      "copy": "Copiar URL"
+    },
+    "toast": {
+      "removed": "Link removido",
+      "duplicated": "Link duplicado",
+      "copied": "URL copiada",
+      "updated": "Link atualizado",
+      "saved": "Link salvo"
+    },
+    "editor": {
+      "editTitle": "Editar link",
+      "description": "Nada é baixado — o que fica guardado é o título, a URL e o dia em que você salvou.",
+      "saveLink": "Salvar link",
+      "titlePlaceholder": "ex.: Rice — vaga em Estatística",
+      "url": "URL",
+      "urlRequired": "Um link sem URL não leva a lugar nenhum.",
+      "applicationHint": "Vincula os dois, para que cada candidatura conte isto entre o que está guardado nela.",
+      "notePlaceholder": "Por que vale a pena voltar a isto"
+    }
+  },
+  "reminders": {
+    "add": "Novo lembrete",
+    "filterLabel": "Filtrar lembretes",
+    "markDone": "Marcar \"{{title}}\" como feito",
+    "markNotDone": "Marcar \"{{title}}\" como não feito",
+    "buckets": {
+      "overdue": "Atrasados",
+      "today": "Hoje",
+      "upcoming": "Próximos",
+      "done": "Concluídos"
+    },
+    "search": {
+      "label": "Buscar lembretes",
+      "placeholder": "Buscar por título, nota ou tipo"
+    },
+    "empty": {
+      "zeroTitle": "Nenhum lembrete ainda",
+      "zeroDescription": "Um lembrete é um registro com data e um aviso ativado. Quando a data passa, ele fica pendente e permanece em Hoje até você marcá-lo.",
+      "search": "Nenhum lembrete menciona \"{{query}}\" no título, na nota ou no tipo.",
+      "both": {
+        "overdue": "Nenhum lembrete atrasado tem as palavras-chave selecionadas.",
+        "today": "Nenhum lembrete de hoje tem as palavras-chave selecionadas.",
+        "upcoming": "Nenhum lembrete próximo tem as palavras-chave selecionadas.",
+        "done": "Nenhum lembrete concluído tem as palavras-chave selecionadas."
+      },
+      "nothingIn": {
+        "overdue": "Nada atrasado",
+        "today": "Nada para hoje",
+        "upcoming": "Nada por vir"
+      },
+      "doneTitle": "Nada concluído ainda",
+      "doneDescription": "Os lembretes que você marca ficam reunidos aqui, então um marcado por engano ainda pode ser encontrado.",
+      "bucketDescription_one": "{{count}} lembrete está nos outros grupos.",
+      "bucketDescription_other": "{{count}} lembretes estão nos outros grupos.",
+      "showAll": "Mostrar todos os lembretes",
+      "keywordsTitle": "Nenhum lembrete tem essas palavras-chave"
+    }
+  },
+  "people": {
+    "add": "Adicionar",
+    "optionsFor": "Opções para {{name}}",
+    "search": {
+      "label": "Buscar pessoas",
+      "placeholder": "Buscar por nome, função ou nota"
+    },
+    "empty": {
+      "zeroTitle": "Ninguém ainda",
+      "zeroDescription": "Referências, presidentes de comissão, recrutadores — qualquer pessoa por quem a busca passe. Cite-as nas vagas para as quais escrevem e elas também aparecem nesses registros.",
+      "noMatchTitle": "Ninguém corresponde",
+      "noMatchDescription": "Tente parte de um nome, uma função ou onde a pessoa está."
+    },
+    "toast": {
+      "removed": "Pessoa removida",
+      "saved": "Pessoa salva"
+    },
+    "editor": {
+      "editTitle": "Editar pessoa",
+      "addTitle": "Adicionar pessoa",
+      "save": "Salvar pessoa",
+      "description": "Só é preciso um nome. O resto é o que acabar importando.",
+      "noApplication": "Nenhuma candidatura",
+      "name": "Nome",
+      "namePlaceholder": "ex.: Profa. Ngozi Okafor",
+      "role": "Função",
+      "rolePlaceholder": "ex.: referência, presidente da comissão, recrutador",
+      "affiliation": "Instituição",
+      "affiliationPlaceholder": "ex.: Rice",
+      "affiliationHint": "Onde a pessoa está. Não é vinculada a um empregador para o qual você se candidatou.",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "namedOn": "Citada em",
+      "namedOnHint": "Cada vaga para a qual ela escreve, avalia ou preside.",
+      "notePlaceholder": "O que disse, o que te deve, quando cobrar."
+    }
+  },
+  "calculator": {
+    "title": "Calculadora",
+    "hint": "funciona sem registros e sem conexão",
+    "copy": "Copiar o resultado",
+    "mode": "Modo",
+    "modes": {
+      "basic": "Básica",
+      "scientific": "Científica"
+    },
+    "plusMinus": "mais ou menos",
+    "history": "Histórico",
+    "kept": "{{count}} guardados",
+    "clear": "Limpar",
+    "emptyTitle": "Nenhum cálculo ainda",
+    "emptyDescription": "Os últimos trinta resultados ficam aqui, para comparar o segundo número com o primeiro. Toque em um para colocá-lo de volta na tela.",
+    "historyEntry": "{{expr}} é igual a {{value}}. Colocar de volta na tela"
+  },
+  "pageViewer": {
+    "capturedFrom": "Capturado de {{host}}",
+    "missingTitle": "Nenhuma cópia salva neste dispositivo",
+    "missingDescription": "As capturas ficam onde foram feitas, então uma feita no app web não está aqui. O registro manteve o nome e o endereço."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · guardado {{ago}}",
+    "editDetails": "Editar detalhes",
+    "openFailed": "Nenhum app deste celular se ofereceu para abrir.",
+    "facts": {
+      "type": "Tipo",
+      "size": "Tamanho",
+      "filed": "Guardado",
+      "bucket": "Pasta"
+    },
+    "typed": {
+      "title": "Registrado, não armazenado",
+      "description": "Este foi registrado à mão — um nome, um tipo e um tamanho para um documento guardado em outro lugar. Edite e escolha um arquivo para manter uma cópia aqui."
+    },
+    "checking": {
+      "title": "Procurando a cópia",
+      "description": "Verificando se o arquivo a que este registro aponta ainda está no armazenamento do app."
+    },
+    "kept": {
+      "title": "Guardado neste dispositivo",
+      "pageDescription": "Abre aqui, sem scripts e sem conexão — a cópia da vaga como estava no dia em que foi salva.",
+      "read": "Ler",
+      "fileDescription": "Abre no app deste celular que lida com esse tipo. Nada é enviado, e nada aqui lê o conteúdo.",
+      "open": "Abrir"
+    },
+    "gone": {
+      "title": "A cópia sumiu",
+      "description": "Este registro aponta para um arquivo que não está mais no armazenamento do app — provavelmente apagado pelo sistema. O registro está intacto; escolha o arquivo de novo para anexá-lo.",
+      "choose": "Escolher de novo"
+    },
+    "attachedTo": "Vinculado a",
+    "change": "Alterar",
+    "fileUnderJob": "Vincular a uma vaga",
+    "notFiled": "Não vinculado a nenhuma candidatura. Vinculá-lo coloca o documento nesses registros e permite que o grafo o encontre a partir de qualquer um deles.",
+    "addNote": "Adicionar uma nota",
+    "notePlaceholder": "Para que serve este documento?",
+    "saveNote": "Salvar nota",
+    "noNote": "Nada anotado sobre este ainda.",
+    "toast": {
+      "noteSaved": "Nota salva"
+    }
+  }
+}

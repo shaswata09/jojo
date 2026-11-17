@@ -3,6 +3,7 @@
  * connected, and the pure rules that pick and file them. Rendered by
  * `ScriptedPanel.tsx`; tested in `scripts.test.ts`.
  */
+import { i18next } from '@/i18n/i18n'
 import type { SnippetTag } from '@/data/vault'
 
 /**
@@ -28,78 +29,56 @@ export type Script = {
   reply: string
 }
 
+/**
+ * A script whose words come from the `assistant` catalog, read each time they
+ * are asked for, so a reply drawn after the language changes is in the new one.
+ * The `cues` are matching data and stay English.
+ */
+function scripted(
+  id: string,
+  key: string,
+  cues: string[],
+  tag: SnippetTag,
+  { quickAction = true }: { quickAction?: boolean } = {},
+): Script {
+  const tx = (field: string) => i18next.t(`assistant:scripts.${key}.${field}`)
+  return {
+    id,
+    cues,
+    tag,
+    get action() {
+      return quickAction ? tx('action') : ''
+    },
+    get title() {
+      return tx('title')
+    },
+    get reply() {
+      return tx('reply')
+    },
+  }
+}
+
 export const SCRIPTS: Script[] = [
-  {
-    id: 'cover-letter',
-    action: 'Draft a cover letter',
-    cues: ['cover letter', 'letter of application', 'motivation'],
-    title: 'Cover letter — structure',
-    tag: 'Cover letter',
-    reply:
-      'Here is the shape I would use for [DEPARTMENT]:\n\n' +
-      'Paragraph 1 — what you work on, in one sentence a committee member outside your area can follow.\n' +
-      'Paragraph 2 — the two results that make the case, each given with its consequence rather than its method.\n' +
-      'Paragraph 3 — why this department: the group you would overlap with, and the course you would teach.\n' +
-      'Paragraph 4 — availability, and what the first three years would look like.\n\n' +
-      'Keep it to one page. The committee reads forty of these in an evening.',
-  },
-  {
-    id: 'tailor-cv',
-    action: 'Tailor my CV to a posting',
-    cues: ['cv', 'resume', 'tailor'],
-    title: 'Tailoring a CV — three passes',
-    tag: 'Application form',
-    reply:
-      'Three passes, in this order:\n\n' +
-      '1. Cut what the ad does not ask for. A CV tailored to everything is tailored to nothing.\n' +
-      '2. Move the section the ad leads with to the top of page one — a teaching-heavy ad wants teaching above publications.\n' +
-      "3. Rewrite the headline in the ad's own words, without overstating the scope of the work.\n\n" +
-      'What survives untouched: publications, references, dates. Those are the parts a committee checks.',
-  },
-  {
-    id: 'parse-posting',
-    action: 'Parse a job posting',
-    cues: ['posting', 'parse', 'job ad', 'advert'],
-    title: 'What to pull out of a posting',
-    tag: 'Application form',
-    reply:
-      'From an ad I would pull out: employer, role, deadline, the documents required, the named contact, ' +
-      'and anything phrased as a hard requirement rather than a preference.\n\n' +
-      'The last one is where applications are lost — "must hold the degree by the start date" is a filter, ' +
-      '"experience with large-scale systems desirable" is not.\n\n' +
-      'Job scout already does the cheap half of this without a model: save the URL there and it keeps the link ' +
-      'and guesses the employer from it.',
-  },
-  {
-    id: 'follow-up',
-    action: 'Draft a follow-up email',
-    cues: ['follow up', 'follow-up', 'chase', 'nudge', 'email'],
-    title: 'Follow-up after no response',
-    tag: 'Email',
-    reply:
-      'Subject: Following up — [ROLE], [DEPARTMENT]\n\n' +
-      'Dear [NAME],\n\n' +
-      'I applied for [ROLE] on [DATE] and wanted to check the committee has everything it needs from me. ' +
-      'I am happy to send the outstanding reference letter directly if that is easier.\n\n' +
-      'I remain very interested in the position, and I am glad to answer anything by email.\n\n' +
-      'With thanks,\n[YOUR NAME]',
-  },
-  {
-    id: 'interview',
-    action: 'Prepare me for an interview',
-    cues: ['interview', 'job talk', 'chalk talk', 'campus visit'],
-    title: 'Interview — six questions to have answered',
-    tag: 'Application form',
-    reply:
-      'Six questions worth having an answer to before the day:\n\n' +
-      '— What is the work about, in ninety seconds, to someone outside your area?\n' +
-      '— What would your first grant be, and to which agency?\n' +
-      '— Which two courses could you teach next semester at no notice?\n' +
-      '— Who here would you collaborate with, and on what?\n' +
-      '— What is the weakness in your own result?\n' +
-      '— What do you need in year one to do the work?\n\n' +
-      'Write the answers out longhand. The rehearsal is the point, not the notes.',
-  },
+  scripted(
+    'cover-letter',
+    'coverLetter',
+    ['cover letter', 'letter of application', 'motivation'],
+    'Cover letter',
+  ),
+  scripted('tailor-cv', 'tailorCv', ['cv', 'resume', 'tailor'], 'Application form'),
+  scripted(
+    'parse-posting',
+    'parsePosting',
+    ['posting', 'parse', 'job ad', 'advert'],
+    'Application form',
+  ),
+  scripted('follow-up', 'followUp', ['follow up', 'follow-up', 'chase', 'nudge', 'email'], 'Email'),
+  scripted(
+    'interview',
+    'interview',
+    ['interview', 'job talk', 'chalk talk', 'campus visit'],
+    'Application form',
+  ),
 ]
 
 /**
@@ -109,19 +88,9 @@ export const SCRIPTS: Script[] = [
  * plausible-sounding paragraph about whatever was typed — is the exact thing a
  * page with no model behind it must not do.
  */
-export const FALLBACK: Script = {
-  id: 'fallback',
-  action: '',
-  cues: [],
-  title: 'Assistant — example response',
-  tag: 'Application form',
-  reply:
-    'No model is connected, so this is a canned answer rather than a reply to what you typed.\n\n' +
-    'With one connected, this page would read your profile, the documents in your Vault and the application ' +
-    'you name, then draft against them on your own machine. Point jojo at a local OpenAI-compatible server ' +
-    'in Settings — vLLM, Ollama or LM Studio.\n\n' +
-    'Clear the conversation to see the worked examples again.',
-}
+export const FALLBACK: Script = scripted('fallback', 'fallback', [], 'Application form', {
+  quickAction: false,
+})
 
 /** First script with a cue in the message. Order in SCRIPTS breaks ties. */
 export function scriptFor(text: string): Script {
@@ -155,8 +124,9 @@ export function scriptById(id: string | undefined): Script {
  * One exchange: the question as asked and the script's reply, numbered from
  * `at`. The reply carries `scriptId`, which is what puts the badge on it.
  */
-export function scriptedExchange(at: number, clean: string): [Message, Message] {
-  const script = scriptFor(clean)
+export function scriptedExchange(at: number, clean: string, scriptId?: string): [Message, Message] {
+  // A quick action names its script; typed text is matched on its cues.
+  const script = scriptId === undefined ? scriptFor(clean) : scriptById(scriptId)
   return [
     { id: `m${at}`, role: 'you', text: clean },
     { id: `m${at + 1}`, role: 'assistant', text: script.reply, scriptId: script.id },

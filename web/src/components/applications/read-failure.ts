@@ -1,3 +1,5 @@
+import { i18next } from '@/i18n/i18n'
+
 /**
  * The sentence a failed "From link" read shows, given what survived it.
  *
@@ -9,5 +11,5 @@
 export function readFailureMessage(reason: string, file?: { name: string }): string {
   if (!file) return reason
   const said = /[.!?]$/.test(reason.trim()) ? reason.trim() : `${reason.trim()}.`
-  return `${said} ${file.name} was saved to the Vault, so the page is not lost.`
+  return `${said} ${i18next.t('applications:readFailure.kept', { name: file.name })}`
 }

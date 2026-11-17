@@ -210,6 +210,8 @@ ships.
 - react-remove-scroll-bar 2.3.8 — Anton Korzunov (MIT by its manifest; the
   package ships no licence file)
 - get-nonce 1.0.1 — Copyright (c) 2020 Anton Korzunov
+- html-parse-stringify 4.0.1 — Copyright (c) 2025 Henrik Joreteg; Copyright (c)
+  2026-present i18next
 
 ```
 Permission is hereby granted, free of charge, to any person obtaining a copy

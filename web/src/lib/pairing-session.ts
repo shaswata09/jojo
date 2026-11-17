@@ -38,9 +38,9 @@ import {
   type SessionKeys,
 } from '@jojo/service/core/pairing'
 import { pathToken, type HandoffDirection } from '@jojo/service/core/handoff'
-import { planPulse, type PulseFrame } from '@jojo/service/core/pulse'
 import type { Secrets } from '@jojo/service/core/secrets'
 import { SecretsUnavailable, createSecrets } from '@jojo/service/crypto/noble-secrets'
+import { i18next } from '@/i18n/i18n'
 
 export type PairingPhase =
   /** Minting the first offer. Nothing on screen yet. */
@@ -55,13 +55,11 @@ export type PairingPhase =
 export type PairingSession = {
   phase: PairingPhase
   /**
-   * The frames the animation cycles through, or null before an offer exists.
-   *
-   * Ten of them for an offer — a second and a quarter at eight frames a second.
-   * Each is a 12x12 grid of regions saying which areas of the scene glow and
-   * which dim; see `core/pulse.ts`. A new array on every re-mint.
+   * The offer as bytes (`encodeOffer`), or null before one exists — what the
+   * screen draws as a QR code for the phone to scan. A new array on every
+   * re-mint, so a renderer keyed on it redraws exactly when the code changes.
    */
-  frames: readonly PulseFrame[] | null
+  offer: Uint8Array | null
   /**
    * The path every request to the other device goes to.
    *
@@ -154,7 +152,7 @@ export function usePairingSession(
   const secrets = useMemo<Secrets>(() => createSecrets(), [])
 
   const [phase, setPhase] = useState<PairingPhase>('starting')
-  const [frames, setFrames] = useState<readonly PulseFrame[] | null>(null)
+  const [offer, setOffer] = useState<Uint8Array | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [keys, setKeys] = useState<SessionKeys | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
@@ -218,12 +216,8 @@ export function usePairingSession(
         const url = await pathToken(secrets, next.offer, direction)
         if (!live) return
         liveToken.current = url
-        // Ten frames, cycling. The offer is 83 bytes and a frame carries nine,
-        // so at `PULSE_FPS` the animation says the whole key in about 1.7
-        // seconds and then says it again for as long as the screen is up. A
-        // frame the camera misreads is dropped and comes round again, which is
-        // why there is no error correction anywhere in this path.
-        setFrames(planPulse(encodeOffer(next.offer)).frames)
+        // 83 bytes, drawn as one QR code by the screen.
+        setOffer(encodeOffer(next.offer))
         setToken(url)
         setPhase('offering')
         setProblem(null)
@@ -233,13 +227,13 @@ export function usePairingSession(
         // so here — before anything is on screen — is the whole reason
         // `Secrets` throws instead of falling back to something weaker.
         state.current = null
-        setFrames(null)
+        setOffer(null)
         setToken(null)
         setPhase('unavailable')
         setProblem(
           cause instanceof SecretsUnavailable
             ? cause.message
-            : 'Something went wrong setting up a secure pairing on this device.',
+            : i18next.t('transfer:advice.pairingFailed'),
         )
       }
     }
@@ -264,7 +258,7 @@ export function usePairingSession(
     liveToken.current = null
     previous.current = null
     setPreviousToken(null)
-    setFrames(null)
+    setOffer(null)
     setToken(null)
     setKeys(null)
     setRefused(null)
@@ -301,7 +295,7 @@ export function usePairingSession(
       previous.current = null
       setPreviousToken(null)
       paired.current = true
-      setFrames(null)
+      setOffer(null)
       setRefused(null)
       setKeys(result.value)
       setPhase('paired')
@@ -315,5 +309,5 @@ export function usePairingSession(
     [token, previousToken],
   )
 
-  return { phase, frames, token, tokens, keys, problem, refused, complete, refresh }
+  return { phase, offer, token, tokens, keys, problem, refused, complete, refresh }
 }

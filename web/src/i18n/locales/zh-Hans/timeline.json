@@ -1,0 +1,113 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "新建提醒",
+        "event": "新建事件"
+      },
+      "edit": {
+        "reminder": "编辑提醒",
+        "event": "编辑事件"
+      }
+    },
+    "description": "无论哪种都是同一条记录——它会显示在日历中你指定的日期上；只要标题旁的开关打开，它也会出现在保险库的提醒列表中。"
+  },
+  "form": {
+    "title": {
+      "label": "标题",
+      "error": "请起一个你认得出的标题。",
+      "placeholder": {
+        "reminder": "例如：催一下招聘人员",
+        "event": "例如：委员会 Zoom 会议"
+      }
+    },
+    "remind": {
+      "label": "在提醒中显示",
+      "on": "在保险库中带复选框列出，并显示在日历中对应的日期上。",
+      "off": "只显示在日历中对应的日期上——保险库中没有复选框。"
+    },
+    "kind": {
+      "label": "类型",
+      "hintFollowUp": "跟进事项还会出现在仪表板的“待跟进”中，直到你勾选完成。",
+      "hint": "它在日历和提醒列表中显示的图标。"
+    },
+    "detail": {
+      "label": "详情",
+      "hint": "一行背景说明，显示在标题下方。"
+    },
+    "more": {
+      "label": "更多详情",
+      "empty": "备注、关键词",
+      "filledNote": "备注",
+      "filledKeywords": "关键词",
+      "filledBoth": "备注 · 关键词"
+    },
+    "note": {
+      "label": "备注",
+      "hint": "你自己的随手记。与详情分开保存，所以编辑详情不会覆盖它。"
+    },
+    "keywords": {
+      "label": "关键词",
+      "hint": "与申请、文件和链接共用——按某个关键词筛选可以找到所有相关内容。"
+    },
+    "delete": "删除",
+    "cancel": "取消",
+    "save": "保存更改",
+    "add": {
+      "reminder": "添加提醒",
+      "event": "添加事件"
+    }
+  },
+  "schedule": {
+    "date": "日期",
+    "dateError": "请选择日期——没有日期的项目无处显示。",
+    "quick": {
+      "today": "今天",
+      "tomorrow": "明天",
+      "inWeek": "7 天后"
+    },
+    "allDay": {
+      "label": "全天",
+      "description": "关闭后可设置开始时间和时长，并放到日历的小时网格中。"
+    },
+    "startTime": "开始时间",
+    "length": "时长",
+    "durations": {
+      "min15": "15 分钟",
+      "min30": "30 分钟",
+      "min45": "45 分钟",
+      "hour1": "1 小时",
+      "hour1_5": "1.5 小时",
+      "hour2": "2 小时",
+      "hour3": "3 小时"
+    }
+  },
+  "application": {
+    "label": "相关申请",
+    "hint": "将它们关联起来，这样每个申请都会列出此项，你也能从这里回到其中任何一个。",
+    "notLinked": "未关联",
+    "count_other": "{{count}} 个申请",
+    "searchLabel": "搜索要关联的申请",
+    "searchPlaceholder": "搜索申请…",
+    "none": "还没有申请。",
+    "noMatch": "没有匹配的申请。",
+    "clear": "清除已关联的申请",
+    "open": "打开 {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "已添加 {{title}}",
+    "updated": "已更新 {{title}}",
+    "inReminders": "{{when}} — 已作为提醒加入提醒列表",
+    "inRemindersAndFollowUps": "{{when}} — 已作为提醒加入提醒列表 — 并显示在“待跟进”中",
+    "calendarOnly": "{{when}} — 仅显示在日历中",
+    "undo": "撤销",
+    "deleteFailed": "删除失败",
+    "stillThere": "{{title}} 仍在日历中。",
+    "stillThereUnnamed": "该提醒仍在日历中。",
+    "deleted": "已删除 {{title}}",
+    "deletedUnnamed": "提醒已删除",
+    "goneBoth": "已从提醒列表和日历中移除。",
+    "goneCalendar": "已从日历中移除。"
+  }
+}

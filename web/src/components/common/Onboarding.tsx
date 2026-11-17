@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Compass } from 'lucide-react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useProfile } from '@jojo/service/react/use-profile'
 import {
   ConnectModelStep,
@@ -62,6 +63,7 @@ import { contentModal } from '@/components/ui/dialog-width'
  * prompt is a smaller cost than finding that out inside a cover letter.
  */
 export function Onboarding() {
+  const { t } = useTranslation()
   const { needsDataChoice } = useBoot()
   const tour = useTour()
   const { isBlank } = useProfile()
@@ -210,18 +212,14 @@ export function Onboarding() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Compass className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-              Want a hands-on tour?
+              {t('onboarding.tourTitle')}
             </DialogTitle>
-            <DialogDescription>
-              A walk through the real pages — a spotlight on each part, what it is for, and you try
-              each thing as you go. It never types, saves or changes anything for you, and it keeps
-              your place if you stop.
-            </DialogDescription>
+            <DialogDescription>{t('onboarding.tourDescription')}</DialogDescription>
           </DialogHeader>
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => finish('tour')}>
-              Not now
+              {t('onboarding.notNow')}
             </Button>
             {/* Starts the tour where the reader is. It used to send them to
                 the guide page, where the tour was a dialog, and that page then
@@ -233,13 +231,16 @@ export function Onboarding() {
                 tour.start(0)
               }}
             >
-              Start the tour
+              {t('onboarding.start')}
             </Button>
           </DialogFooter>
 
           <p className="text-xs text-text-3">
-            It is always there under <span className="text-text-1">How to use</span>, so saying no
-            now costs nothing.
+            <Trans
+              t={t}
+              i18nKey="onboarding.always"
+              components={{ em: <span className="text-text-1" /> }}
+            />
           </p>
         </DialogContent>
       </Dialog>

@@ -1,0 +1,911 @@
+{
+  "shared": {
+    "undo": "元に戻す",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "list": "{{items}}、{{last}}",
+    "separator": "、"
+  },
+  "today": {
+    "title": "今日",
+    "subtitleEmpty": "{{date}} · まだ何も記録されていません。追加したものはすべてこのデバイスに保存されます。",
+    "subtitle_other": "{{date}} · 応募 {{count}} 件、すべてこのデバイス上にあります。",
+    "decision": {
+      "title": "判断が必要",
+      "done": "完了",
+      "snooze": "後で通知",
+      "notConnected": "まだ何にも接続されていません",
+      "emptyTitle": "今日判断が必要なものはありません",
+      "emptyDescription": "内定、期限切れの応募、次の確定締め切り、次の面接がここに表示されます。現在、未対応のものはありません。",
+      "open_other": "未対応 {{count}} 件"
+    },
+    "firstSteps": {
+      "title": "はじめの一歩",
+      "progress": "{{total}} 件中 {{done}} 件完了",
+      "complete": "3 つとも完了しました。これから追加するものは、この画面、カレンダー、関連する応募に表示されます。",
+      "intro": "各ステップでは実際の機能が開き、記録ができると自動でチェックされます。我慢して見るチュートリアルではありません。",
+      "introEmpty": "まだ何も記録されていません。各ステップでは実際の機能が開き、記録ができると自動でチェックされます。我慢して見るチュートリアルではありません。",
+      "close": "はじめの一歩を閉じる",
+      "hide": "このステップを非表示にする",
+      "application": {
+        "title": "応募を追加する",
+        "body": "職種、その段階、締め切り。jojo のほかのすべてはこの記録にひも付きます。"
+      },
+      "dated": {
+        "title": "何かに日付を付ける",
+        "body": "締め切り、面接、訪問は同じ種類の記録なので、日付はこの画面、カレンダー、応募に同時に反映されます。",
+        "label": "新しい予定"
+      },
+      "reminder": {
+        "title": "フォローアップを設定する",
+        "body": "リマインダーは通知をオンにした同じ記録です。日付を過ぎると対応待ちになり、チェックを付けるまでここに残ります。",
+        "label": "新しいリマインダー"
+      }
+    },
+    "glance": {
+      "active": "進行中",
+      "interviews": "選考・面接",
+      "overdue": "期限切れ",
+      "doneToday": "今日完了",
+      "a11y": "{{label}} {{value}}"
+    },
+    "owed": {
+      "title": "今週の対応事項",
+      "hintOverdue": "期限切れ {{overdue}} 件 · 対応待ち {{due}} 件",
+      "hintDue": "対応待ち {{due}} 件",
+      "emptyTitle": "対応事項はありません",
+      "emptyDescription": "締め切り、面接、フォローアップは日付が付くとすぐここに表示され、チェックを付けるまで残ります。",
+      "addEvent": "予定を追加",
+      "dayLabel_other": "{{day}} {{date}}、{{count}} 件",
+      "clear": "今日は予定がありません。",
+      "clearDone_other": "今日は予定がありません。{{count}} 件完了しました。",
+      "later": "その後",
+      "moreOnCalendar_other": "カレンダーにさらに {{count}} 件"
+    },
+    "recent": {
+      "title": "最近の応募",
+      "hint": "最新のアクティビティ",
+      "viewAll": "すべて表示",
+      "emptyDescription": "記録している職種は、操作するたびに新しい順でここに表示されます。",
+      "daysAgo_other": "{{count}} 日前",
+      "views": {
+        "notes": "メモ",
+        "recent": "最近の応募"
+      },
+      "control": "このカードに表示",
+      "addReminder": "リマインダーを追加",
+      "headingNotes": "付箋"
+    },
+    "pipeline": {
+      "title": "パイプライン",
+      "emptyTitle": "パイプラインに何もありません",
+      "emptyDescription": "応募はそれぞれ 1 つの段階にあり、ここではその分布を表示します。1 件追加すると最初の区分が表示されます。"
+    },
+    "sticky": {
+      "newNote": "新しい付箋",
+      "placeholder": "自分用のメモを書く…",
+      "newColour": "新しい付箋の色",
+      "stick": "貼る",
+      "empty": "まだ何も貼られていません。付箋ははがすまでここに残り、日付が決まればリマインダーにできます。",
+      "listLabel": "付箋",
+      "editNote": "付箋を編集",
+      "editAria": "付箋を編集：{{text}}",
+      "colour": "色",
+      "colourOf": "付箋「{{text}}」の色",
+      "toReminderAria": "リマインダーにする：{{text}}",
+      "removeAria": "付箋を削除：{{text}}"
+    }
+  },
+  "applications": {
+    "title": "応募",
+    "subtitleEmpty": "まだ何も記録されていません。追加したものはすべてこのデバイスに保存されます。",
+    "subtitle": "{{shown}} 件表示 · 全 {{total}} 件",
+    "new": "新規",
+    "newApplication": "新しい応募",
+    "showNotes": "メモを表示",
+    "showNotesDescription": "各職種の下の 2 行目",
+    "none": {
+      "title": "まだ応募がありません",
+      "description": "応募中の求人を記録すると、ここ、カレンダー、今後 1 週間の予定に表示されます。"
+    },
+    "searchLabel": "応募を検索",
+    "searchPlaceholder": "職種、メモ、段階で検索",
+    "layout": "レイアウト",
+    "views": {
+      "list": "リスト",
+      "board": "ボード"
+    },
+    "filterByRole": "職種タイプで絞り込む",
+    "filterByStage": "段階で絞り込む",
+    "sortButton": "並べ替え：{{sort}}、{{order}}",
+    "sorts": {
+      "activity": {
+        "label": "最終アクティビティ",
+        "asc": "新しい順",
+        "desc": "古い順"
+      },
+      "stage": {
+        "label": "段階",
+        "asc": "下書きから終了へ",
+        "desc": "終了から下書きへ"
+      },
+      "position": {
+        "label": "職種",
+        "asc": "A から Z",
+        "desc": "Z から A"
+      }
+    },
+    "sortMenu": {
+      "title": "並べ替え",
+      "description": "列を選んでから、どちらの端を上にするか選んでください。",
+      "currently": "現在：{{order}}"
+    },
+    "empty": {
+      "title": "一致する応募はありません",
+      "nothing": "表示するものはありません。",
+      "carries": "{{filters}}に一致するものはありません。",
+      "reasons": {
+        "search": "その検索",
+        "stage": "「{{stage}}」段階",
+        "keywords": "選択したキーワード",
+        "roles": "選択した職種タイプ"
+      },
+      "showAll_other": "全 {{count}} 件を表示"
+    },
+    "row": {
+      "moreActions": "{{name}} のその他の操作",
+      "open": "記録を開く",
+      "edit": "編集",
+      "flag": "フォローアップの印を付ける",
+      "unflag": "フォローアップの印を外す",
+      "duplicate": "複製"
+    },
+    "roles": {
+      "description": "何も選ばなければすべてが対象です。フィルターを解除するのは、一度も設定しなかったのと同じです。",
+      "tracked_other": "{{count}} 件記録",
+      "clear": "すべての職種タイプを表示"
+    },
+    "paste": {
+      "label": "求人の URL",
+      "placeholder": "求人の URL を貼り付け",
+      "submit": "リンクから"
+    }
+  },
+  "board": {
+    "cardHint": "長押しすると別の段階に移動できます",
+    "addAt": "「{{stage}}」に応募を追加",
+    "addHere": "ここに追加"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} を複製しました",
+    "duplicatedDescription": "コピーは下書きから始まります。元の段階、日付、オファーは引き継がれません。",
+    "movedTitle": "{{name}} を{{stage}}に移動しました",
+    "movedDescription": "移動前は{{from}}でした。今後、パイプラインとファネルでは{{stage}}として数えられます。",
+    "deletedTitle": "{{name}} を削除しました",
+    "deletedDescription": "これに整理されていたリマインダー、ファイル、保存済みの求人は、リンクを外して残してあります。",
+    "confirmTitle": "{{name}} を削除しますか？",
+    "confirmTitleGeneric": "応募を削除しますか？",
+    "confirmDescription": "応募とそのメモが削除されます。これに整理されたもの（リマインダー、ファイル、保存済みの求人）はリンクを外して残ります。"
+  },
+  "detail": {
+    "missing": {
+      "title": "応募",
+      "emptyTitle": "この応募はもう存在しません",
+      "emptyDescription": "削除されたか、存在しない ID へのリンクです。一緒に削除されたものはありません。",
+      "back": "戻る"
+    },
+    "kept": {
+      "reminders_other": "リマインダー {{count}} 件",
+      "events_other": "予定 {{count}} 件",
+      "saved_other": "保存済み項目 {{count}} 件"
+    },
+    "closedTitle": "{{name}} を終了しました",
+    "closedDescription": "「{{outcome}}」として記録しました。オファーの詳細とリマインダーは残してあります。",
+    "outcomes": {
+      "rejected": "不採用",
+      "withdrawn": "取り下げ",
+      "accepted": "承諾",
+      "declined": "辞退",
+      "ghosted": "連絡なし"
+    },
+    "duplicatedDescription": "コピーは下書きから始まり、メモと詳細は引き継がれます。",
+    "deletedKept": "{{kept}}はリンクを外して残してあります。",
+    "facts": {
+      "employer": "雇用主",
+      "employerJobs_other": "{{name}} · この雇用主の求人 {{count}} 件",
+      "source": "応募経路",
+      "location": "勤務地",
+      "compensation": "報酬",
+      "posting": "求人",
+      "postingId": "求人 ID",
+      "appliedOn": "応募日",
+      "confirmationRef": "確認番号",
+      "outcome": "結果"
+    },
+    "moreActions": "その他の操作",
+    "details": "詳細",
+    "postingHint": "求人を jojo 内で開きます。そこでコピーを保存できます",
+    "dates": {
+      "title": "日付とリマインダー",
+      "hint": "未完了 {{open}} 件 · 全 {{total}} 件",
+      "add": "日付を追加",
+      "emptyTitle": "予定はありません",
+      "emptyDescription": "この応募に登録した締め切り、面接、フォローアップがここに表示されます。"
+    },
+    "note": {
+      "title": "メモ",
+      "hint": "ほかの場所をタップすると保存されます",
+      "edit": "このメモを編集",
+      "placeholder": "まだ残っていること、話した相手、次に聞くこと",
+      "label": "{{name}} のメモ",
+      "formatKept": "変更しない語の書式はそのまま残ります。",
+      "saved": "メモを保存しました"
+    },
+    "draftMessage": "メッセージを下書き",
+    "confirmDeleteKept": "応募とそのメモが削除されます。{{kept}}はリンクを外して残ります。これに整理したものは何も削除されません。",
+    "confirmDeleteAlone": "応募とそのメモが削除されます。ほかに参照しているものはありません。",
+    "offer": {
+      "title": "オファー",
+      "settled": "終了 · 「{{outcome}}」として記録",
+      "pastDeadline_other": "期限を {{count}} 日過ぎています",
+      "daysLeft_other": "残り {{count}} 日",
+      "respondBy": "{{date}} までに返答",
+      "accept": "承諾する",
+      "decline": "辞退する"
+    },
+    "stageDates": {
+      "dated": "{{stage}}の日付を {{date}} にしました",
+      "undated": "{{stage}}の日付がなくなりました",
+      "datedBody": "{{name}} — 記録上、{{stage}}に到達した日です。",
+      "undatedBody": "{{name}} — ステージは記録に残っています。日付だけが消えました。",
+      "hint": "{{total}} 件中 {{dated}} 件に日付あり",
+      "title": "ステージの日付",
+      "now": "現在",
+      "explain": "この応募を別のステージに移動すると、自動的に日付が付きます。今日より前に到達したステージは、ここで入力できます。"
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "雇用主",
+      "subtitle": "このアドレスには何もありません",
+      "emptyTitle": "このアドレスに雇用主はいません",
+      "emptyDescription": "雇用主のページは、その雇用主を挙げた応募がある間だけ存在します。この雇用主への応募がすべて削除されたため、このページも削除されました。"
+    },
+    "subtitleOne": "ここへの応募は 1 件",
+    "subtitleMany_other": "ここへの応募は {{count}} 件、うち {{open}} 件が進行中",
+    "applications": "応募",
+    "dates": "日付",
+    "datesHint_other": "これらの求人で {{count}} 件",
+    "datesEmptyTitle": "日付のある項目はありません",
+    "datesEmptyDescription": "これらの求人に関する締め切り、面接、リマインダーがこの画面に集まります。",
+    "people": "人物",
+    "peopleHint_other": "{{count}} 人",
+    "peopleEmptyTitle": "まだ誰も登録されていません",
+    "peopleEmptyDescription": "これらの求人で挙げられた推薦者、選考委員長、採用担当者がここに表示されます。"
+  },
+  "calendar": {
+    "title": "カレンダー",
+    "subtitle": "締め切り、面接、準備をひとつの画面で",
+    "key": {
+      "overdue": "期限切れ",
+      "soon": "48 時間以内に期限",
+      "done": "完了"
+    },
+    "export": {
+      "label": "カレンダーに書き出す",
+      "done_other": "{{count}} 件の日付を書き出しました",
+      "doneDescription": "カレンダーで読み込むよう案内されます。それぞれにリマインダーが付きます。",
+      "failed": "カレンダーファイルを開けるアプリがありません",
+      "failedDescription": "ファイルはこのスマートフォンに保存されています。.ics に対応したカレンダーアプリで開けます。"
+    },
+    "add": "追加",
+    "addEvent": "予定を追加",
+    "tallCells": "日付のマスを高くする",
+    "tallCellsDescription": "グリッドの 1 日あたりの表示領域を広げます",
+    "jump": "{{year}}年{{month}}。別の月へ移動",
+    "previous": "前の月",
+    "next": "次の月",
+    "backTo": "{{date}} に戻る",
+    "goTo": "{{target}}へ移動",
+    "goToDay": "{{month}}{{day}}日へ移動",
+    "today": "今日",
+    "selectedDay": "選択した日",
+    "hint": "日付をタップするとその日の予定を表示します。予定をタップすると編集や日程変更ができます。",
+    "dayLabel_other": "{{month}}{{day}}日、予定 {{count}} 件",
+    "nothingOn": "{{date}} の予定はありません",
+    "nothingOnDescription": "面接、締め切り、準備の時間を追加すると、こことグリッドに表示されます。",
+    "allDay": "終日",
+    "reopen": "{{title}} を再開",
+    "markDone": "「{{title}}」を完了にする",
+    "moreActions": "{{title}} のその他の操作",
+    "rest": {
+      "title": "{{month}}の残り",
+      "lastDay": "{{date}} は月の最終日です",
+      "nothingAfter": "{{date}} 以降の予定はありません",
+      "lastDayDescription": "この後には何もありません。次へ進んで{{month}}の計画を立てましょう。",
+      "clearDescription": "{{month}}の残りは空いています。この日以降に追加したものはここに表示されます。",
+      "more_other": "今月はこの後さらに {{count}} 件"
+    }
+  },
+  "search": {
+    "title": "検索",
+    "subtitle": "応募、日付、保管庫、スカウトをまとめて検索",
+    "fieldLabel": "すべてを検索",
+    "placeholder": "応募、リマインダー、ファイルを検索…",
+    "idleTitle": "入力して検索",
+    "idleDescription": "すべてのコレクションをひとつの欄で検索します。「Rice のあれ、どこに置いたっけ」は、どのリストにあるかではなく記録そのものについての問いだからです。",
+    "create": "作成",
+    "createHint": "見つからない？作りましょう",
+    "noneTitle": "「{{query}}」に一致するものはありません",
+    "noneDescription": "検索では各記録のタイトル、メモ、カテゴリを読み取ります。ほかの場所から取得するものはありません。",
+    "fit": "適合度 {{fit}}%",
+    "results_other": "{{count}} 件",
+    "showAll_other": "すべて表示（{{count}} 件）",
+    "groups": {
+      "applications": "応募",
+      "reminders": "リマインダー",
+      "calendar": "カレンダー",
+      "vault": "保管庫",
+      "jobScout": "求人スカウト",
+      "goTo": "移動"
+    }
+  },
+  "more": {
+    "title": "その他",
+    "subtitle": "jojo のその他の機能",
+    "newBadge_other": "新着 {{count}} 件",
+    "rowWithBadge": "{{name}}、{{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "求人スカウト",
+        "hint": "保存した検索、マッチ、取っておいた求人"
+      },
+      "statistics": {
+        "label": "統計",
+        "hint": "各種の率、ファネル、次に取り組むこと"
+      },
+      "graph": {
+        "label": "グラフ",
+        "hint": "記録をそのつながりのとおりに描画"
+      },
+      "transfer": {
+        "label": "転送",
+        "hint": "パソコンとの間ですべてを移動"
+      },
+      "profile": {
+        "label": "マイプロフィール",
+        "hint": "基本情報、書類、マッチ用キーワード"
+      },
+      "assistant": {
+        "label": "アシスタント",
+        "hint": "ローカルモデルを接続するまでは作例を表示"
+      },
+      "settings": {
+        "label": "設定",
+        "hint": "接続、外観、データ"
+      },
+      "guide": {
+        "label": "使い方",
+        "hint": "ガイドツアーと各画面の役割"
+      }
+    },
+    "storage": {
+      "saved": "保存済み",
+      "saving": "保存中",
+      "savingCount": "{{count}} 件を保存中",
+      "unsaved_other": "未保存 {{count}} 件",
+      "off": "保存していません"
+    },
+    "runtime": {
+      "title": "稼働状況",
+      "hint": "実際に動いているもの",
+      "storage": "デバイスのストレージ",
+      "model": "モデル",
+      "modelConfigured": "{{model}} — 設定済み",
+      "modelNotSetUp": "未設定",
+      "transfer": "転送",
+      "transferNever": "未使用",
+      "transferLast": "最終使用 {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization。すべてこのデバイス上で動作します。",
+    "overdue_other": "期限切れのリマインダーが {{count}} 件あります。"
+  },
+  "statistics": {
+    "title": "統計",
+    "emptySubtitle": "まだ測定するものがありません。応募を追加すると、この画面が埋まっていきます。",
+    "emptyTitle": "測定できる応募がありません",
+    "emptyDescription": "返信率、ファネル、週ごとのグラフには数える記録が必要です。最初の 1 件を追加すると表示され始めます。",
+    "subtitleSent": "自分の記録から集計しています。「典型的」と表示された数値は比較用のサンプルの就職活動のものです。",
+    "subtitleNone": "自分の記録から集計しています。応募を送ると埋まっていきます。",
+    "compare": "典型的な就職活動と比較",
+    "compareDescription": "主要な数値の横にサンプル値を表示",
+    "overTime": {
+      "title": "応募数の推移",
+      "hint": "応募先の職種タイプ別",
+      "period": "期間",
+      "note": "期間ごとに集計範囲が異なるため、合計も異なります。四半期では以前の活動も含み、週では今シーズンのみです。"
+    },
+    "sources": {
+      "title": "応募経路",
+      "hint_other": "{{count}} 件記録",
+      "center": "記録"
+    },
+    "asFarAsShown": "各記録で確認できる範囲",
+    "openApplications": "応募を開く",
+    "showAll": "すべて表示",
+    "funnel": {
+      "title": "応募がどこまで進んだか",
+      "emptyTitle": "まだ何も送っていません",
+      "emptyDescription": "返信率、面接率、内定率は実際に送った応募を数えます。下書きから 1 件進めると表示されます。",
+      "carried": "{{pct}}% が次へ進みました"
+    },
+    "outcomes": {
+      "title": "結果",
+      "count_other": "応募 {{count}} 件",
+      "partial": "{{total}} 件中 {{shown}} 件",
+      "allOff": "すべての結果が非表示になっています。"
+    },
+    "health": {
+      "title": "次に取り組むこと",
+      "hint": "典型的な就職活動との比較",
+      "sample": "サンプル",
+      "emptyTitle": "まだ比較できるほどのデータがありません",
+      "emptyDescription": "返信、面接、紹介、フォローアップを典型的な就職活動と比較します。実際に送った応募が必要です。",
+      "allOff": "両方の系列が非表示になっています。",
+      "yours": "あなた",
+      "typical": "典型",
+      "suggestions": "役立つ順の提案"
+    },
+    "roles": {
+      "title": "職種タイプ別の状況",
+      "roles": "職種タイプ",
+      "applied": "応募",
+      "replied": "返信",
+      "interviews": "面接",
+      "offers": "内定"
+    }
+  },
+  "graph": {
+    "title": "グラフ",
+    "emptySubtitle": "記録をそのつながりのとおりに描画",
+    "emptyTitle": "描画するものがありません",
+    "emptyDescription": "ここのノードはすべてあなたの記録です。応募を追加すると最初のノードが表示されます。",
+    "subtitle": "記録が 7 つの別々のリストでなくなったときの jojo のプレビュー",
+    "caption": "{{total}} 個中 {{visible}} 個のノード · エッジ {{edges}} 本。ノードをタップすると内容を表示し、下の種類をタップすると非表示にできます。",
+    "legend": "凡例",
+    "legendHint": "タップで種類を非表示",
+    "joinedTo": "つながり",
+    "noEdges": "まだこれを参照しているものはありません。",
+    "openRecord": "記録を開く",
+    "ask": "グラフに質問",
+    "askHint": "文章で質問するか、選んでください",
+    "andMore_other": "ほか {{count}} 件",
+    "questions": "質問",
+    "questionsHint": "リストでは得られない答え",
+    "pattern": "ほかのことを聞く",
+    "patternHint": "自分で組み立てる",
+    "patternNone": "これに一致するものはありません。",
+    "records_other": "{{count}} 件の記録",
+    "exampleNone": "一致なし。この質問にはそれが良い答えです。"
+  },
+  "jobScout": {
+    "title": "求人スカウト",
+    "subtitle": "求人サイトを見張ってくれる保存済み検索と、今すぐ求人を取っておける場所",
+    "onlyActive": "有効なパイプラインのみ",
+    "onlyActiveDescription": "オフのものを非表示",
+    "paused": "ローカルモデルが接続されていないため、パイプラインは一時停止中です。パイプラインの作成や下での求人の保存はできます。モデルに接続できるようになると動き始めます。",
+    "status": {
+      "off": "オフ",
+      "paused": "一時停止中",
+      "running": "実行中",
+      "watching": "監視中"
+    },
+    "kinds": {
+      "twin": "記録を完全に保つ",
+      "scout": "求人を探す"
+    },
+    "kindLabel": {
+      "twin": "デジタルツイン",
+      "scout": "求人スカウト"
+    },
+    "schedules": {
+      "hourly": "1 時間ごと",
+      "daily": "毎日",
+      "weekly": "毎週"
+    },
+    "toast": {
+      "updated": "パイプラインを更新しました",
+      "created": "パイプラインを作成しました",
+      "createdPaused": "{{name}} — モデルが接続されるまで一時停止します。",
+      "createdRunning": "{{name}} — まもなく検索を開始します。",
+      "deleted": "パイプラインを削除しました",
+      "deletedDescription": "{{name}} は {{source}} の監視を終了します。",
+      "addedDraft": "{{org}} を下書きとして追加しました",
+      "matchLinked": "マッチはこの一覧に残り、応募にリンクされました。",
+      "postingSaved": "求人を保存しました",
+      "postingLinked": "求人はここに保存されたまま、応募にリンクされました。",
+      "postingRemoved": "求人を削除しました"
+    },
+    "pipelines": {
+      "title": "パイプライン",
+      "hint": "スケジュールに従ってローカルで実行",
+      "none": "パイプラインはありません",
+      "noneOn": "オンのものはありません",
+      "noneDescription": "パイプラインとは保存済みの検索です。監視する求人サイト、重要なキーワード、確認する頻度を指定します。",
+      "noneOnDescription": "すべてのパイプラインがオフです。どれかをオンにするか、ページのオプションでフィルターを外してください。",
+      "showAll": "すべてのパイプラインを表示",
+      "toReview_other": "確認待ち {{count}} 件",
+      "auto": "自動",
+      "autoLabel": "確認せずに実行",
+      "autoDescription": "見つけたものを適用し、後で知らせます。",
+      "autoToggle": "{{name}} を確認せずに実行",
+      "enable": "{{name}} を有効にする",
+      "runNow": "{{name}} を今すぐ実行",
+      "edit": "{{name}} を編集",
+      "delete": "{{name}} を削除"
+    },
+    "matches": {
+      "title": "マッチ",
+      "hint": "プロフィールに基づいて採点",
+      "emptyTitle": "マッチはありません",
+      "emptyDescription": "モデルが接続されると、パイプラインが採点した求人をここに置きます。それまでは、下で保存する求人が入口になります。",
+      "matched": "一致：{{terms}}",
+      "notScored": "未採点",
+      "added": "追加済み"
+    },
+    "inApplications": "応募に「{{name}}」として登録済み",
+    "save": {
+      "title": "求人を保存",
+      "hint": "モデルなしで使えます",
+      "description": "ここではページを取得しないため、保存されるのは URL、そこから推測した雇用主、保存日です。広告を再び見つけて応募するには十分です。",
+      "urlLabel": "求人の URL",
+      "button": "求人を保存",
+      "blocker": "先に URL を貼り付けてください",
+      "emptyTitle": "保存した求人はありません",
+      "emptyDescription": "また見たい求人広告の URL を貼り付けてください。広告は消えますが、リンクと日付は手元に残ります。",
+      "meta": "{{url}} · {{ago}}に保存",
+      "linked": "応募にリンク済み",
+      "unscored": "未採点"
+    },
+    "footer": "パイプラインは jojo が開いている間、あなたのデバイス上で動作します。第三者には何も送信されません。",
+    "shutdown": {
+      "title": "{{name}} をオフにしますか？",
+      "description": "2 回実行しましたが、提案できるものは見つからず、返答待ちのものもありません。オフにすると検索を止めます。すでに見つけたものはそのまま残ります。",
+      "keep": "実行を続ける",
+      "off": "オフにする"
+    },
+    "editor": {
+      "newTitle": "新しいパイプライン",
+      "editTitle": "パイプラインを編集",
+      "description": "パイプラインはアシスタントに任せる継続的な作業です。jojo が開いている間このデバイス上で動作し、変更したい内容はすべて事前に表示されます。",
+      "create": "作成",
+      "kind": "内容",
+      "kindTwinHint": "手元の記録を読み、足りないもの（メモ、リマインダー、タグ、整理）を提案します。",
+      "kindScoutHint": "注目に値する求人を探し、確認用に提示します。",
+      "name": "名前",
+      "nameError": "監視対象にちなんだ名前を付けてください。",
+      "namePlaceholderTwin": "例：応募を整理しておく",
+      "namePlaceholderScout": "例：CRA の教員求人サイト",
+      "sources": "ソース",
+      "sourcesError": "ソースのないスカウトには読むものがありません。",
+      "sourcesHint": "監視する求人サイトや採用ページ。複数ある場合はカンマで区切ります。",
+      "focus": "重点項目",
+      "focusHint": "特に注意してほしいこと。空欄にするとすべてを確認します。",
+      "termsHint": "求人の採点基準です。空欄にするとソースの掲載内容をすべて残します。",
+      "focusPlaceholder": "フォローアップと締め切り",
+      "termsPlaceholder": "助教、CS/ECE",
+      "often": "頻度",
+      "oftenHint": "各回の間に待つ時間。"
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "このページは保存できませんでした",
+    "noAnswer": "ページが応答しませんでした。",
+    "savedTitle": "{{name}} を保存しました",
+    "savedDropped_other": "保管庫に保存しました。{{count}} 個のリソースを保存できなかったため、一部が簡素に見えることがあります。",
+    "savedOffline": "保管庫に保存しました。オフラインでも読めます。",
+    "keep": "コピーを保存",
+    "keeping": "保存中…",
+    "waitForLoad": "ページの読み込みが終わるまでお待ちください"
+  },
+  "profile": {
+    "title": "マイプロフィール",
+    "subtitle": "スカウトとアシスタントがマッチングや下書きに使う情報です。デバイスの外には一切出ません。",
+    "savedTitle": "プロフィールを保存しました",
+    "savedDescription": "このデバイスに保存しました。",
+    "basics": {
+      "title": "基本情報",
+      "fullName": "氏名",
+      "fullNamePlaceholder": "例：Lonardo Jenson",
+      "position": "現在の職位",
+      "positionPlaceholder": "例：博士課程、コンピュータサイエンス",
+      "location": "所在地",
+      "locationPlaceholder": "例：Santa Clara, CA",
+      "email": "メール"
+    },
+    "links": {
+      "title": "リンク",
+      "website": "ウェブサイト"
+    },
+    "interests": {
+      "title": "関心と目標",
+      "hint": "スカウトのマッチングに使用",
+      "matchTerms": "マッチ用キーワード",
+      "matchTermsDescription": "スカウトが探す研究分野や表現です。記録の整理に使うキーワードとは別のものです。",
+      "roleTags": "職種タグ",
+      "roleTagsDescription": "記録している職種のタイプです。どの応募もいずれかに分類され、職種タイプのフィルターや職種別の数値に使われます。",
+      "targetRoles": "希望職種",
+      "targetRolesPlaceholder": "例：助教（テニュアトラック）· 研究員",
+      "regions": "希望地域",
+      "regionsPlaceholder": "例：テキサス · リモート",
+      "academia": "アカデミアの求人を含める",
+      "industry": "産業界の求人を含める"
+    },
+    "remove": "{{name}} を削除",
+    "add": "追加",
+    "documents": {
+      "title": "書類",
+      "hint": "保管庫の「{{bucket}}」",
+      "emptyTitle": "まだ書類がありません",
+      "emptyDescription": "履歴書や各種ステートメントを追加しましょう。保管庫の「{{bucket}}」に整理され、アプリのほかの部分から利用できます。",
+      "add": "書類を追加",
+      "openVault": "保管庫を開く",
+      "meta": "{{size}} · {{ago}}に保存",
+      "footer": "保管庫の「ファイル」ツールと同じファイルを「{{bucket}}」で絞り込んだものです。記録には書類の名前、サイズ、種類のみが保存され、内容は保存されません。",
+      "addedTitle": "書類を追加しました",
+      "addedDescription": "保管庫の「{{bucket}}」に整理しました。名前、サイズ、種類のみ保存され、ファイル自体は読み取られません。"
+    },
+    "unsaved": "未保存の変更があります。保存するとこのスマートフォンに書き込まれます。",
+    "discard": "破棄",
+    "save": "保存",
+    "termSheet": {
+      "title": "マッチ用キーワードを追加",
+      "description": "スカウトが求人の中から探すべき研究分野や表現です。",
+      "label": "マッチ用キーワード",
+      "placeholder": "例：分散学習"
+    },
+    "roleSheet": {
+      "title": "職種タグを追加",
+      "description": "記録している職種のタイプです。すべての応募の選択肢のひとつになります。",
+      "label": "職種タグ",
+      "placeholder": "例：データサイエンティスト"
+    }
+  },
+  "assistant": {
+    "title": "アシスタント",
+    "undone": "元に戻しました",
+    "saved": "スニペットに保存しました",
+    "savedDescription": "{{title}} · {{tag}}に分類",
+    "openVault": "保管庫を開く",
+    "clear": "クリア",
+    "emptyTitle": "まだ質問していません",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "saveToSnippets": "スニペットに保存",
+    "ask": "アシスタントに質問",
+    "send": "送信",
+    "stop": "停止",
+    "agent": {
+      "subtitle": "モデルに接続済みで、記録を操作できます。実行したことはすべてその場で一覧表示されます。",
+      "intro": "<code>{{endpoint}}</code> の <code>{{model}}</code> で回答しています。このデバイス上の {{tools}} 個のツールを呼び出せます。ほかの場所には何も送信されず、すべての変更は元に戻せます。",
+      "deleted": "会話を削除しました",
+      "emptyDescription": "何かを探す、応募を追加する、応募を進めるなどを頼んでみてください。使ったツールは、送ったものと返ってきたものと一緒に、その場で下に表示されます。",
+      "placeholder": "UT Austin への応募を探して、追加して、進めて…",
+      "footer": "書き込む前に読み、会話ごとにオフにしない限り変更のたびに確認します。行ったことはすべて、ボタン操作と同じ「元に戻す」で取り消せます。",
+      "prompts": {
+        "waiting": "何の返事を待っていますか？",
+        "add": "応募を追加：Stripe の ML エンジニア、提出済み",
+        "noDeadline": "締め切りのない応募はどれですか？",
+        "flag": "UT Austin への応募に印を付けて"
+      }
+    },
+    "scripted": {
+      "subtitle": "現在は作例のみです。ローカルモデルを接続すると、自分の記録をもとに下書きし、記録を操作もできます。",
+      "cleared": "会話をクリアしました",
+      "messages_other": "メッセージ {{count}} 件",
+      "connectLabel": "設定でモデルを接続",
+      "banner": "モデルが接続されていないため、ここでの返答はすべて作例であり、実際の回答ではありません。",
+      "connect": "設定で接続する →",
+      "emptyDescription": "下の候補から選ぶか、自由に入力してください。返答は書かれた作例で、作業の参考にはなりますが、モデルの回答として示されることはありません。",
+      "badge": "作例 · モデル未接続",
+      "placeholder": "カバーレター、フォローアップのメール、面接について質問…",
+      "footer": "モデルを接続すると、これらはプロフィールと書類をコンテキストとして読み込みます。推論はローカルで行われるため、履歴書やメモがどこかにアップロードされることはありません。"
+    },
+    "thought": {
+      "live": "考え中…",
+      "done": "思考",
+      "liveLabel": "考え中。モデルが考えている内容を表示",
+      "label": "モデルが考えた内容を表示"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "カバーレターを下書き",
+        "title": "カバーレター — 構成",
+        "reply": "[学科]向けなら、次の構成にします。\n\n第 1 段落：何を研究しているかを、分野外の選考委員にも伝わる一文で。\n第 2 段落：決め手となる 2 つの成果。それぞれ方法ではなく、もたらした結果で示します。\n第 3 段落：なぜこの学科か。重なる研究グループと、担当したい授業。\n第 4 段落：着任可能時期と、最初の 3 年間の見通し。\n\n1 ページに収めましょう。選考委員会は一晩でこうした手紙を 40 通読みます。"
+      },
+      "tailor-cv": {
+        "action": "履歴書を求人に合わせる",
+        "title": "履歴書の調整 — 3 回の見直し",
+        "reply": "次の順で 3 回見直します。\n\n1. 求人が求めていないものを削る。何にでも合わせた履歴書は、何にも合っていません。\n2. 求人が最初に挙げている項目を 1 ページ目の先頭に移す。教育重視の求人なら、業績より教育を上に。\n3. 見出しを求人自体の言葉で書き直す。ただし仕事の範囲を誇張しないこと。\n\n手を付けない部分：業績、推薦者、日付。選考委員会が確認するのはそこです。"
+      },
+      "parse-posting": {
+        "action": "求人を解析",
+        "title": "求人から抜き出すべきこと",
+        "reply": "求人広告から抜き出すのは、雇用主、職種、締め切り、必要書類、記載された連絡先、そして希望ではなく必須条件として書かれていることすべてです。\n\n最後の点で応募が落ちます。「着任日までに学位を取得していること」はふるい分けの条件ですが、「大規模システムの経験があれば望ましい」はそうではありません。\n\n求人スカウトは、その簡単な半分をモデルなしですでに行っています。そこに URL を保存すれば、リンクを残し、そこから雇用主を推測します。"
+      },
+      "follow-up": {
+        "action": "フォローアップのメールを下書き",
+        "title": "返信がない場合のフォローアップ",
+        "reply": "件名：ご確認のお願い — [職種]、[学科]\n\n[氏名] 様\n\n[日付]に[職種]へ応募いたしました。選考委員会に必要な書類がすべて揃っているか確認させていただきたく、ご連絡しました。未提出の推薦状を直接お送りした方がよろしければ、喜んでお送りいたします。\n\n引き続き本ポジションに強い関心を持っております。ご質問があれば、メールでいつでもお答えいたします。\n\nよろしくお願いいたします。\n[あなたの名前]"
+      },
+      "interview": {
+        "action": "面接の準備を手伝って",
+        "title": "面接 — 答えを用意しておく 6 つの質問",
+        "reply": "当日までに答えを用意しておきたい 6 つの質問：\n\n— 分野外の人に向けて、自分の研究を 90 秒で説明すると？\n— 最初の研究費はどの機関に、何を申請する？\n— 来学期、急に頼まれても担当できる授業を 2 つ挙げると？\n— ここの誰と、何について共同研究する？\n— 自分の成果の弱点は何か？\n— 1 年目に研究を進めるために何が必要か？\n\n答えは手で書き出しましょう。大事なのはメモではなく、練習そのものです。"
+      },
+      "fallback": {
+        "title": "アシスタント — 作例",
+        "reply": "モデルが接続されていないため、これは入力内容への返答ではなく、あらかじめ用意された回答です。\n\nモデルを接続すると、この画面はプロフィール、保管庫の書類、指定した応募を読み込み、あなたのデバイス上でそれらをもとに下書きします。設定で jojo を OpenAI 互換のローカルサーバー（vLLM、Ollama、LM Studio）に向けてください。\n\n下の 5 つの候補には、それまでの間に使える作例がそれぞれ用意されています。"
+      }
+    }
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "接続、同期、データ",
+    "themes": {
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム"
+    },
+    "dataSets": {
+      "demo": "デモデータ",
+      "empty": "空"
+    },
+    "reasoning": {
+      "on": "オン",
+      "low": "軽め",
+      "off": "オフ"
+    },
+    "import": {
+      "refused": "何も読み込まれませんでした",
+      "fileFailed": "ファイルを開けませんでした：{{reason}}",
+      "clipboardFailed": "クリップボードを読み取れませんでした：{{reason}}",
+      "unfinished": "読み込みが完了しませんでした",
+      "replaceTitle": "このスマートフォンのすべてを置き換えますか？",
+      "replaceDescription": "{{described}}。{{replaces}}。この操作は元に戻せません。",
+      "replace": "置き換える"
+    },
+    "device": {
+      "title": "このデバイス上",
+      "hint": "記録が実際に保存されている場所",
+      "body": "追加したものはすべて、作業中にこのスマートフォンのストレージへ直接書き込まれます。オンにする設定はなく、デバイスの外には何も出ません。添付した書類は jojo 専用のフォルダーにコピーされるため、元のファイルを移動・削除しても残ります。",
+      "copyOut": "コピーを取り出すには、下の「書き出し」を使うか、「転送」でローカルネットワーク経由ですべてをパソコンに送ります。"
+    },
+    "model": {
+      "title": "モデル",
+      "intro": "アクセスできるマシン上のモデル、または有料のモデルです。記録がこのデバイスの外に出ない唯一の構成なので、ローカルが既定です。",
+      "endpoint": "エンドポイント",
+      "loopback": "このアドレスは「このデバイス」を意味するため、スマートフォンではスマートフォン自身を指します。代わりにネットワーク上のパソコンのアドレス（例：192.168.1.20）か .local 名を使ってください。",
+      "endpointOllama": "ホストとポート。/v1 は不要です。jojo は切り詰めないよう指示できるよう、Ollama 独自のエンドポイントを使います。",
+      "endpointHint": "/v1 で終わるベース URL。",
+      "apiKey": "API キー",
+      "apiKeyHint": "このデバイスにのみ保存されます。バックアップに含まれることはなく、プロバイダー以外に送信されることもありません。",
+      "modelPlaceholder": "接続テストで検出されます",
+      "modelHint": "サーバーが報告したモデルです。複数提供している場合は変更してください。",
+      "savedAs": "保存名",
+      "savedAsHint": "一覧でのこのサーバーの名前。既定はモデル名です。",
+      "context": "コンテキストウィンドウ",
+      "contextOllama": "トークン数。空欄の場合は {{tokens}} を使い、Ollama に自動調整させます。ここに入力した数値は num_ctx としても送信されます。",
+      "contextHint": "デプロイが扱えるトークン数。空欄の場合は {{tokens}} を使います。",
+      "reasoning": "推論",
+      "reasoningDescription": "考えることができるモデル（gpt-oss、Gemma 4、Qwen3）に、回答前に推論させます。小さなモデルで返答が空になる場合はオフにしてください。",
+      "endpointFirst": "先にエンドポイントを入力してください。",
+      "kept": "このデバイスに保存しました。アシスタントはこのモデルを使います。"
+    },
+    "test": {
+      "testing": "テスト中…",
+      "again": "もう一度テスト",
+      "test": "接続をテスト",
+      "connected": "接続済み",
+      "noAnswer": "応答なし",
+      "notConnected": "未接続"
+    },
+    "reader": {
+      "title": "書類を読み込む",
+      "hint": "PDF のみ",
+      "already": "このスマートフォンは、Word ファイル、OpenDocument ファイル、プレゼンテーション、保存したページ、プレーンテキストをすでに単独で読み込めます。設定は不要で、どこにも送信されません。",
+      "pdf": "<strong>PDF は例外です。</strong>PDF をテキストに戻すには内部のフォントテーブルが必要で、このアプリにはそこまでの機能がありません。PDF には、このスマートフォンからアクセスできるマシンで {{name}} を実行し、下にそのアドレスを入力してください。",
+      "address": "アドレス",
+      "addressHint": "markitdown-mcp が待ち受けている場所。パスは /mcp で終わります。",
+      "notRunning": "まだ動かしていませんか？",
+      "addressFirst": "先にアドレスを入力してください。",
+      "ok": "書類はそのアドレスにのみ送信されます。アップロードされるものはありません。",
+      "notice": "{{name}} は jojo の一部ではない独立したプログラムです。{{copyright}} {{licence}}。jojo は Microsoft とは提携していません。"
+    },
+    "appearance": {
+      "title": "外観",
+      "theme": "テーマ",
+      "themeDescription": "「システム」はデバイスの設定に従います"
+    },
+    "data": {
+      "title": "データ",
+      "export": "JSON として書き出す",
+      "import": "読み込む",
+      "paste": "バックアップを貼り付け",
+      "exportNote": "書き出しには、応募、タイムライン、保管庫、保存した求人、キーワードとそのタグ付け先、プロフィールが含まれます。このアプリで読み戻せるバックアップですが、添付した書類はこのスマートフォンに残るため、その行は内容なしで戻ります。「その他」の「転送」なら、書類を含めてすべてをパソコンに移せます。",
+      "records": "記録",
+      "recordsEmpty": "すべての一覧が空なので、各画面は初期状態を表示しています。",
+      "recordsDemo": "サンプルの就職活動：応募 12 件、タイムライン、中身の入った保管庫。",
+      "move": "別のデバイスに移す",
+      "moveDescription": "ローカルネットワークでパソコンとペアリングし、書類を含めてすべてを移します。",
+      "reset": "デモデータをリセット",
+      "resetDescription": "このセッションの編集を破棄し、すべてを初期状態に戻します。",
+      "resetButton": "リセット",
+      "resetBlocker": "先に「記録」を「デモデータ」に戻してください",
+      "warning": "記録はこのデバイスに保存され、アプリを閉じても残ります。アカウントも同期もなく、記録がスマートフォンの外に出ることはありません。モデル経由でも、クラッシュレポート経由でもです。ほかの場所にもコピーが欲しい場合は、「書き出し」でクリップボードにコピーできます。",
+      "cleared": "すべて消去しました",
+      "clearedDescription": "プロフィールを含むすべての記録が消去され、添付した書類もこのデバイスから削除されました。デモデータはここから再読み込みできます。",
+      "resetDone": "デモデータをリセットしました",
+      "loaded": "デモデータを読み込みました",
+      "loadedDescription": "サンプルの応募、タイムライン、保管庫、求人、プロフィールが初期状態に戻りました。"
+    },
+    "confirm": {
+      "fallbackTitle": "データを変更しますか？",
+      "continue": "続行",
+      "empty": {
+        "title": "すべての記録を消去しますか？",
+        "description": "応募、タイムライン、保管庫、保存した求人、プロフィールが、このセッションで追加したものも含めてすべて消え、添付した書類もこのデバイスから削除されます。元には戻せません。取っておきたい場合は先に書き出してください。キーワードは残りますが、それを持つ記録はなくなります。",
+        "confirm": "すべて消去"
+      },
+      "demo": {
+        "title": "デモデータを読み込みますか？",
+        "description": "サンプルの記録が元のキーワード付きで戻ります。このセッションで追加したものは統合されずに置き換えられ、添付した書類はこのデバイスから削除されます。元には戻せません。",
+        "confirm": "デモデータを読み込む"
+      },
+      "reset": {
+        "title": "デモデータにリセットしますか？",
+        "description": "このセッションでの編集、追加、削除はすべて破棄され、サンプルの記録が初期状態のまま戻ります。そのため、添付した書類はこのデバイスから削除されます。キーワード一覧そのものは変更されません。元には戻せません。",
+        "confirm": "データをリセット"
+      }
+    },
+    "provider": {
+      "title": "プロバイダー",
+      "description": "選ぶとアドレスが自動で設定されます。クラウドのものはキーが必要で、記録はそこへ送信されます。",
+      "cloud": "入力した文章はこの会社に送られ、料金が請求されます",
+      "localKey": "自分で管理するマシン上。キーが必要です。",
+      "local": "自分で管理するマシン上。外には何も出ません。"
+    },
+    "cloud": {
+      "terms": "{{name}} の利用規約",
+      "privacy": "プライバシーポリシー"
+    },
+    "servers": {
+      "title": "保存したサーバー",
+      "description": "このデバイスで応答したアドレス。",
+      "done": "完了",
+      "empty": "まだ何も保存されていません。接続をテストすると、アドレスがここに保存されます。",
+      "load": "{{name}} を読み込む",
+      "inUse": "使用中",
+      "forget": "{{name}} を削除"
+    },
+    "keywords": {
+      "title": "キーワード",
+      "hint": "応募、リマインダー、保管庫で共通",
+      "takenOff_other": "{{count}} 件の記録から外しました。",
+      "usedOn_other": "{{count}} 件の記録で使用",
+      "rename": "{{name}} の名前を変更",
+      "editTitle": "{{name}} を編集",
+      "editGeneric": "キーワードを編集",
+      "editDescription": "名前を変えても ID は変わらないため、このキーワードを持つすべての記録に反映されます。",
+      "taken": "その名前は使用済みです",
+      "takenDescription": "別のキーワードがすでにその名前を使っています。",
+      "colour": "色",
+      "newTitle": "新しいキーワード",
+      "newDescription": "キーワードは自由に決められます。同じキーワードを応募、リマインダー、ファイル、リンクに使えます。",
+      "added": "{{name}} を追加しました",
+      "placeholder": "例：先方の返事待ち",
+      "confirmUsed_other": "{{count}} 件の記録から外れます。記録は残り、キーワードだけが削除されます。",
+      "confirmUnused": "これでタグ付けされたものはないため、ほかには何も変わりません。"
+    }
+  }
+}

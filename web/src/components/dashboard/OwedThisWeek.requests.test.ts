@@ -21,7 +21,7 @@ const sources = import.meta.glob('/src/components/dashboard/OwedThisWeek.tsx', {
 const source = sources['/src/components/dashboard/OwedThisWeek.tsx'] ?? ''
 
 /** The JSX of the Later strip, from its heading to the end of its list. */
-const later = /Later<\/div>([\s\S]*?)<\/ul>/.exec(source)?.[1] ?? ''
+const later = /\{t\('owed\.later'\)\}\s*<\/div>([\s\S]*?)<\/ul>/.exec(source)?.[1] ?? ''
 
 /** The body of `OpenItemMenu`. */
 const menu = /function OpenItemMenu\([\s\S]*?\n\}\n/.exec(source)?.[0] ?? ''
@@ -40,7 +40,9 @@ describe('a long title in the Later strip (Q237)', () => {
 
   it('truncates the title and keeps the date whole', () => {
     expect(later).toContain('<span className="min-w-0 truncate">{e.title}</span>')
-    expect(later).toContain('<span className="shrink-0 text-text-3">· {shortDate(e.date)}</span>')
+    expect(later).toContain(
+      '<span className="shrink-0 text-text-3">· {domain.shortDate(e.date)}</span>',
+    )
   })
 })
 
@@ -51,7 +53,7 @@ describe('clicking an owed item (Q288)', () => {
 
   it('asks edit or open when the item is filed under an application', () => {
     expect(menu).toMatch(/<Popover open=\{open\} onOpenChange=\{setOpen\}>/)
-    expect(menu).toMatch(/onEdit\(\)\s*\}\}\s*>[\s\S]*?Edit \{noun\}/)
+    expect(menu).toMatch(/onEdit\(\)\s*\}\}\s*>[\s\S]*?\{t\(`owed\.edit\.\$\{noun\}`\)\}/)
     expect(menu).toMatch(/applications\.map\(\(a\) => \([\s\S]*?void navigate\(appPath\(a\)\)/)
   })
 
@@ -59,5 +61,20 @@ describe('clicking an owed item (Q288)', () => {
     expect(menu).toMatch(
       /if \(applications\.length === 0\) \{\s*return \(\s*<button type="button" onClick=\{onEdit\}/,
     )
+  })
+})
+
+describe('a long overdue backlog (perf-3)', () => {
+  it('renders the first overdue rows only, with a way to show the rest', () => {
+    // 334 overdue rows each mounted two popovers and a store subscription, and
+    // one tick held the main thread for hundreds of milliseconds.
+    expect(source).toMatch(/const OVERDUE_SHOWN = \d+/)
+    expect(source).toMatch(
+      /capped && !allOverdue \? group\.items\.slice\(0, OVERDUE_SHOWN\) : group\.items/,
+    )
+    expect(source).toContain('{rows.map((e) => {')
+    expect(source).not.toContain('{group.items.map((e) => {')
+    expect(source).toMatch(/onClick=\{\(\) => setAllOverdue\(!allOverdue\)\}/)
+    expect(source).toContain("t('owed.showAll', { total: group.items.length })")
   })
 })

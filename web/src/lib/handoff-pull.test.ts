@@ -26,11 +26,11 @@ import type { RestorePlan } from '@jojo/service/core/backup'
 import type { DocumentStore } from '@jojo/service/repo/restore'
 import type { Repository } from '@jojo/service/repo/repository'
 import type { StoreMeta } from '@jojo/service/repo/meta'
-import { HANDOFF_ADVICE, type HandoffResult } from '@/lib/handoff-client'
-import { DIAL_ADVICE } from '@/lib/handoff-send'
+import { handoffAdvice, type HandoffResult } from '@/lib/handoff-client'
+import { dialAdvice } from '@/lib/handoff-send'
 import {
-  PULL_ADVICE,
-  UNPROVEN_ADVICE,
+  pullAdvice,
+  unprovenAdvice,
   createDecision,
   pullConfirmCopy,
   pullFromPhone,
@@ -93,7 +93,10 @@ async function scene({
   const log: string[] = []
 
   /** The phone's socket: refuses any token but its own, as `readRequest` does. */
-  const fetchPairing = async (address: DialAddress, t: string): Promise<HandoffResult<Uint8Array>> => {
+  const fetchPairing = async (
+    address: DialAddress,
+    t: string,
+  ): Promise<HandoffResult<Uint8Array>> => {
     log.push(`pair ${t === phoneToken ? 'token-ok' : 'TOKEN-WRONG'}`)
     if (address.port !== PHONE.port) return { ok: false, error: 'handoff/unreachable' }
     if (t !== phoneToken) return { ok: false, error: 'handoff/refused' }
@@ -115,7 +118,15 @@ async function scene({
     const done = await completePairing(secrets, state, response, Date.now())
     return done.ok ? done.value : null
   }
-  return { token, code: groupCode(encodeAddress(PHONE)), fetchPairing, fetchChunk, complete, log, server }
+  return {
+    token,
+    code: groupCode(encodeAddress(PHONE)),
+    fetchPairing,
+    fetchChunk,
+    complete,
+    log,
+    server,
+  }
 }
 
 describe('receiving from the phone (Q129)', () => {
@@ -138,21 +149,21 @@ describe('receiving from the phone (Q129)', () => {
     const s = await scene()
     const wrong = s.code.slice(0, 5) + (s.code[5] === 'K' ? 'M' : 'K') + s.code.slice(6)
     const run = await pullFromPhone({ ...s, code: wrong, secrets })
-    expect(run).toEqual({ ok: false, problem: DIAL_ADVICE['dial/mistyped'], answered: false })
+    expect(run).toEqual({ ok: false, problem: dialAdvice('dial/mistyped'), answered: false })
     expect(s.log).toEqual([])
   })
 
   it('asks for nothing from a device that cannot prove it read this screen', async () => {
     const s = await scene({ unproven: true })
     const run = await pullFromPhone({ ...s, secrets })
-    expect(run).toEqual({ ok: false, problem: UNPROVEN_ADVICE, answered: true })
+    expect(run).toEqual({ ok: false, problem: unprovenAdvice(), answered: true })
     expect(s.log).toEqual(['pair token-ok'])
   })
 
   it("is refused by a phone listening under a different session's token", async () => {
     const s = await scene({ elsewhere: true })
     const run = await pullFromPhone({ ...s, secrets })
-    expect(run).toEqual({ ok: false, problem: HANDOFF_ADVICE['handoff/refused'], answered: false })
+    expect(run).toEqual({ ok: false, problem: handoffAdvice('handoff/refused'), answered: false })
     expect(s.log).toEqual(['pair TOKEN-WRONG'])
   })
 
@@ -167,7 +178,7 @@ describe('receiving from the phone (Q129)', () => {
         return got
       },
     })
-    expect(run).toEqual({ ok: false, problem: PULL_ADVICE['pull/forged'], answered: true })
+    expect(run).toEqual({ ok: false, problem: pullAdvice('pull/forged'), answered: true })
   })
 
   it('stops on an answer bigger than any chunk, and changes nothing', async () => {
@@ -177,7 +188,7 @@ describe('receiving from the phone (Q129)', () => {
       secrets,
       fetchChunk: async () => ({ ok: true, value: new Uint8Array(70_000) }),
     })
-    expect(run).toEqual({ ok: false, problem: PULL_ADVICE['pull/oversized'], answered: true })
+    expect(run).toEqual({ ok: false, problem: pullAdvice('pull/oversized'), answered: true })
   })
 
   it('says so when what arrived is not a backup', async () => {
@@ -185,7 +196,9 @@ describe('receiving from the phone (Q129)', () => {
     const run = await pullFromPhone({ ...s, secrets })
     expect(run?.ok).toBe(false)
     if (run === null || run.ok) return
-    expect(run.problem).toMatch(/^What your phone sent cannot be restored: .*Nothing on this computer has changed\.$/)
+    expect(run.problem).toMatch(
+      /^What your phone sent cannot be restored: .*Nothing on this computer has changed\.$/,
+    )
   })
 
   it('returns nothing to say when the person walks away mid-pull', async () => {
@@ -253,7 +266,9 @@ describe('restoring what the phone sent', () => {
     const repo = {
       meta: META,
       replaceAll: vi.fn(async () =>
-        ok ? { ok: true as const, value: undefined } : { ok: false as const, error: { message: 'full' } },
+        ok
+          ? { ok: true as const, value: undefined }
+          : { ok: false as const, error: { message: 'full' } },
       ),
       setMeta: vi.fn(),
     }

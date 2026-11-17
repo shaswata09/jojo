@@ -11,6 +11,8 @@
  * as "not refused", so a card can adopt this before its hook does.
  */
 
+import { i18next } from '@/i18n/i18n'
+
 export type WriteResult =
   { ok: true } | { ok: false; errors: readonly { message: string }[] } | null | undefined | void
 
@@ -20,8 +22,8 @@ export type RefusalToast = { title: string; description: string; tone: 'danger' 
 export function refusalToast(result: WriteResult): RefusalToast | null {
   if (!result || result.ok) return null
   return {
-    title: 'That did not save',
-    description: result.errors[0]?.message ?? 'The change was refused.',
+    title: i18next.t('common:writeResult.title'),
+    description: result.errors[0]?.message ?? i18next.t('common:writeResult.refused'),
     tone: 'danger',
   }
 }

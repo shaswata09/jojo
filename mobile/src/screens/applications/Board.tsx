@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { I18nManager, Platform, Pressable, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   runOnJS,
@@ -20,13 +21,14 @@ import { Chip } from '@/components/ui/Chip'
 import { Txt } from '@/components/ui/Text'
 import { STAGES, displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
-import { dropStage } from '@/lib/board-drop'
+import { columnAt, dropStage, fromStartEdge, startOffset } from '@/lib/board-drop'
 import { refKey } from '@/lib/ids'
 import { useSheets } from '@/lib/sheets-context'
 import type { RowActions } from '@/screens/applications/use-row-actions'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 const COLUMN_W = 250
 const COLUMN_GAP = space[2.5]
@@ -37,6 +39,14 @@ const EDGE = 72
 const EDGE_SPEED = 8
 /** Hold this long and the card lifts. Below ~200ms taps start arming a drag. */
 const LIFT_DELAY = 220
+/*
+ * Read once: a change of direction only takes effect after a restart
+ * (`LocaleProvider`), so it cannot change under a mounted board. In RTL the
+ * columns run from the right, and Android reports the horizontal scroll offset
+ * physically where iOS reports it from the start edge — see `lib/board-drop.ts`.
+ */
+const RTL = I18nManager.isRTL
+const PHYSICAL_SCROLL = Platform.OS === 'android'
 
 /**
  * One card, drawn identically in its column and under the finger.
@@ -57,6 +67,7 @@ function BoardCard({
   state?: 'idle' | 'source' | 'floating'
   onOpen?: (id: string) => void
 }) {
+  const { t } = useTranslation('screens')
   const c = useColors()
 
   return (
@@ -65,7 +76,7 @@ function BoardCard({
       // Announced on the card itself, because a drag is invisible to anyone who
       // cannot see the board — and the stage menu below stays the route that
       // does not require one.
-      accessibilityHint="Press and hold to move this to another stage"
+      accessibilityHint={t('board.cardHint')}
       onPress={onOpen ? () => onOpen(a.id) : undefined}
       style={[
         styles.card,
@@ -105,6 +116,7 @@ type DragControl = {
   wrapX: SharedValue<number>
   wrapY: SharedValue<number>
   viewportW: SharedValue<number>
+  contentW: SharedValue<number>
   scrollX: SharedValue<number>
   pointerX: SharedValue<number>
   pointerY: SharedValue<number>
@@ -163,8 +175,20 @@ function DraggableCard({
         .onUpdate((e) => {
           ctl.pointerX.value = e.absoluteX
           ctl.pointerY.value = e.absoluteY
-          const local = e.absoluteX - ctl.wrapX.value + ctl.scrollX.value
-          const idx = Math.min(STAGES.length - 1, Math.max(0, Math.floor(local / COLUMN_STRIDE)))
+          // Counted from the board's start edge, so in Arabic the column under
+          // the finger is the one highlighted and written, not its mirror image.
+          const idx = columnAt(
+            fromStartEdge(e.absoluteX, ctl.wrapX.value, ctl.viewportW.value, RTL),
+            startOffset(
+              ctl.scrollX.value,
+              RTL,
+              PHYSICAL_SCROLL,
+              ctl.contentW.value,
+              ctl.viewportW.value,
+            ),
+            COLUMN_STRIDE,
+            STAGES.length,
+          )
           // Only on change: this fires every frame, and setState must not.
           if (idx !== ctl.hoverSV.value) {
             ctl.hoverSV.value = idx
@@ -239,6 +263,8 @@ export function Board({
   /** Freezes the page scroller while a card is in the air. */
   onDragChange: (dragging: boolean) => void
 }) {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const { open } = useSheets()
 
@@ -251,6 +277,7 @@ export function Board({
   const wrapX = useSharedValue(0)
   const wrapY = useSharedValue(0)
   const viewportW = useSharedValue(0)
+  const contentW = useSharedValue(0)
   const scrollX = useSharedValue(0)
   const pointerX = useSharedValue(0)
   const pointerY = useSharedValue(0)
@@ -269,8 +296,6 @@ export function Board({
   const held = useRef<Application | null>(null)
   const latest = useRef({ actions, onDragChange })
   latest.current = { actions, onDragChange }
-
-  const maxScroll = Math.max(0, STAGES.length * COLUMN_STRIDE - COLUMN_GAP + space[3] - 320)
 
   const measure = useCallback(() => {
     wrap.current?.measureInWindow((x, y) => {
@@ -310,12 +335,17 @@ export function Board({
   const frame = useFrameCallback(() => {
     'worklet'
     if (!active.value) return
-    const local = pointerX.value - wrapX.value
+    // In start-edge terms, so the board scrolls toward the edge the finger is
+    // at in RTL too; converted back to the platform's own offset to apply.
+    const local = fromStartEdge(pointerX.value, wrapX.value, viewportW.value, RTL)
     let delta = 0
     if (local < EDGE) delta = -EDGE_SPEED
     else if (local > viewportW.value - EDGE) delta = EDGE_SPEED
     if (delta === 0) return
-    scrollX.value = Math.min(maxScroll, Math.max(0, scrollX.value + delta))
+    const max = Math.max(0, contentW.value - viewportW.value)
+    const from = startOffset(scrollX.value, RTL, PHYSICAL_SCROLL, contentW.value, viewportW.value)
+    const to = Math.min(max, Math.max(0, from + delta))
+    scrollX.value = startOffset(to, RTL, PHYSICAL_SCROLL, contentW.value, viewportW.value)
     scrollTo(scroller, scrollX.value, 0, false)
   }, false)
 
@@ -327,6 +357,7 @@ export function Board({
       wrapX,
       wrapY,
       viewportW,
+      contentW,
       scrollX,
       pointerX,
       pointerY,
@@ -345,6 +376,7 @@ export function Board({
       wrapX,
       wrapY,
       viewportW,
+      contentW,
       scrollX,
       pointerX,
       pointerY,
@@ -360,8 +392,13 @@ export function Board({
     ],
   )
 
+  // The finger is physical; `left` is not in RTL (React Native treats it as
+  // the start edge, the right). `end` is the physical left in RTL, so the card
+  // stays under the finger either way.
   const floating = useAnimatedStyle(() => ({
-    left: pointerX.value - wrapX.value - grabX.value,
+    ...(RTL
+      ? { end: pointerX.value - wrapX.value - grabX.value }
+      : { left: pointerX.value - wrapX.value - grabX.value }),
     top: pointerY.value - wrapY.value - grabY.value,
     opacity: lift.value,
     transform: [{ scale: 0.96 + lift.value * 0.08 }, { rotate: `${lift.value * 1.5}deg` }],
@@ -378,6 +415,9 @@ export function Board({
         scrollEventThrottle={16}
         onLayout={(e) => {
           viewportW.value = e.nativeEvent.layout.width
+        }}
+        onContentSizeChange={(w) => {
+          contentW.value = w
         }}
       >
         <View style={styles.board}>
@@ -406,7 +446,7 @@ export function Board({
                     }}
                   />
                   <Txt size="xs" weight="medium" tone="secondary" style={s.fill} numberOfLines={1}>
-                    {stage.label}
+                    {domain.stage(stage.id)}
                   </Txt>
                   <Txt size="xs" tone="muted" mono>
                     {items.length}
@@ -429,13 +469,13 @@ export function Board({
                     draft and then moving it four columns to the right. */}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Add an application at ${stage.label}`}
+                  accessibilityLabel={t('board.addAt', { stage: domain.stage(stage.id) })}
                   onPress={() => open('application', { initial: { stage: stage.id } })}
                   style={[styles.addHere, { borderColor: c.hairlineStrong }]}
                 >
                   <Feather name="plus" size={13} color={c.text3} />
                   <Txt size="xs" tone="muted">
-                    Add here
+                    {t('board.addHere')}
                   </Txt>
                 </Pressable>
               </View>

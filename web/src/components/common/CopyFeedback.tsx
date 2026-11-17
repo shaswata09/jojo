@@ -1,4 +1,5 @@
 import { Ban, Check, Copy } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * The icon and word a copy button shows, for all three of them.
@@ -22,11 +23,12 @@ import { Ban, Check, Copy } from 'lucide-react'
  * the failure of a copy is not a neutral event when the user is about to paste.
  */
 export function CopyFeedback({ copied, failed }: { copied: boolean; failed?: boolean }) {
+  const { t } = useTranslation()
   if (copied && failed) {
     return (
       <>
         <Ban className="size-3.5 text-danger" strokeWidth={2} aria-hidden />
-        <span className="text-danger">Blocked</span>
+        <span className="text-danger">{t('copy.blocked')}</span>
       </>
     )
   }
@@ -38,7 +40,7 @@ export function CopyFeedback({ copied, failed }: { copied: boolean; failed?: boo
       ) : (
         <Copy className="size-3.5" strokeWidth={1.8} aria-hidden />
       )}
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? t('copy.copied') : t('copy.copy')}
     </>
   )
 }

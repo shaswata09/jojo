@@ -1,4 +1,5 @@
 import type { Application, RoleTag, Source, Stage } from '@/data/seed'
+import { i18next } from '@/i18n/i18n'
 import { refKey } from '@/lib/ids'
 
 /**
@@ -124,22 +125,19 @@ function isOpenableUrl(value: string) {
 
 export function validate(form: FormState): Errors {
   const errors: Errors = {}
+  const t = (key: string) => i18next.t(`applications:validation.${key}`)
 
-  if (!form.org.trim()) errors.org = 'Name the employer — it is what the record is filed under.'
-  if (!form.role.trim()) {
-    errors.role = 'Name the role, so two applications to the same place stay apart.'
-  }
-  if (!form.roleTag) errors.roleTag = 'Pick a role tag — the role filter and the charts read it.'
+  if (!form.org.trim()) errors.org = t('org')
+  if (!form.role.trim()) errors.role = t('role')
+  if (!form.roleTag) errors.roleTag = t('roleTag')
 
-  if (form.url.trim() && !isOpenableUrl(form.url.trim())) {
-    errors.url = 'That is not a link a browser can open — include https://.'
-  }
+  if (form.url.trim() && !isOpenableUrl(form.url.trim())) errors.url = t('url')
 
   // A date field hands back '' or an ISO string, but it degrades to a plain
   // text box in browsers that do not implement it, and this value is copied
   // straight onto a timeline item where anything else would break sorting.
   if (form.deadline && !ISO_DATE.test(form.deadline)) {
-    errors.deadline = 'Use a date in the form 2026-11-01.'
+    errors.deadline = t('deadline')
   }
 
   return errors
@@ -224,5 +222,8 @@ export function refusalOf(errors: readonly { message: string; field?: string }[]
     const key = FIELD_ORDER.find((k) => k === error.field)
     if (key !== undefined && fields[key] === undefined) fields[key] = error.message
   }
-  return { message: errors[0]?.message ?? 'Something about that record did not fit.', fields }
+  return {
+    message: errors[0]?.message ?? i18next.t('applications:validation.refusalFallback'),
+    fields,
+  }
 }

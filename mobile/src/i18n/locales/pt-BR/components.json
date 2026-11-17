@@ -1,0 +1,641 @@
+{
+  "checklist": {
+    "title": "Checklist",
+    "titleCount": "Checklist · {{open}} em aberto de {{total}}",
+    "notAdded": "Essa etapa não foi adicionada",
+    "deleted": "Etapa excluída",
+    "draft": "Rascunhar",
+    "draftMore": "Rascunhar mais",
+    "actionsFor": "Ações para {{step}}",
+    "empty": {
+      "title": "Nada na lista ainda",
+      "noPosting": "Não há vaga salva por trás desta candidatura, então o jojo não consegue ler o que ela pede para você enviar. Você ainda pode adicionar suas próprias etapas.",
+      "noModel": "Rascunhar um checklist precisa de um modelo. Conecte um nas Configurações ou adicione suas próprias etapas abaixo.",
+      "ready": "Peça ao jojo para ler na vaga o que você precisa enviar, ou adicione suas próprias etapas abaixo."
+    },
+    "addStep": "Adicionar uma etapa",
+    "step": "Etapa"
+  },
+  "fit": {
+    "title": "Como você se encaixa",
+    "step": {
+      "reading": "Abrindo a vaga…",
+      "asking": "Lendo o que ela pede…"
+    },
+    "measure": "Avaliar esta vaga",
+    "rerun": "Executar de novo",
+    "rerunHint": "Ler a vaga de novo e reavaliar",
+    "clear": "Limpar esta leitura",
+    "clearHint": "O jojo para de avaliar esta vaga até você pedir",
+    "cleared": "Leitura de encaixe limpa",
+    "notCleared": "Não foi possível limpar",
+    "clearedBody": "O jojo não vai ler esta vaga de novo, a menos que você peça.",
+    "options": "Opções de encaixe",
+    "blocked": {
+      "noPosting": "Não há vaga salva por trás desta candidatura, então não há com o que comparar você. Capture o anúncio ou adicione a candidatura pelo link, e isto será preenchido.",
+      "noModel": "Ler o que uma vaga pede precisa de um modelo. Conecte um em Mais → Configurações.",
+      "noBackground": "O jojo ainda não leu nada sobre sua trajetória, então não consegue comparar esta vaga com ela. Coloque seu currículo no Cofre e aceite quando ele oferecer para ler."
+    },
+    "clearedNote": "Você limpou esta leitura, então o jojo está deixando esta vaga de lado.",
+    "queued": "Na fila…",
+    "leadWith": "Destaque",
+    "answers": "atende a “{{requirement}}”",
+    "beReadyFor": "Prepare-se para",
+    "required": " — obrigatório",
+    "skipped_one": " · {{count}} linha ignorada",
+    "skipped_other": " · {{count}} linhas ignoradas"
+  },
+  "tailored": {
+    "title": "Materiais adaptados",
+    "hint": "Reescritos para esta vaga, com as mudanças marcadas.",
+    "tailor": "Adaptar",
+    "tailoredBefore": "{{label}} · já adaptado",
+    "blocked": {
+      "noPosting": "Não há vaga salva por trás desta candidatura, então não há para o que adaptar seus documentos. Adicione a candidatura pelo link ou capture o anúncio, e isto passará a oferecer a adaptação.",
+      "noModel": "Adaptar um documento precisa de um modelo. Conecte um em Mais → Configurações.",
+      "noDocuments": "Nada para adaptar ainda. A adaptação reescreve os documentos que você envia com uma candidatura — adicione seu currículo, declarações ou uma carta de apresentação em Mais → Meu perfil, ou guarde-os no Cofre em Candidaturas, e eles aparecerão aqui."
+    },
+    "queued": "Na fila…",
+    "working": "Trabalhando…",
+    "empty": "Nada adaptado ainda. Toque em Adaptar, escolha um documento e o jojo escreve uma versão para esta vaga com o que mudou marcado.",
+    "deleted": "{{title}} excluído",
+    "notDeleted": "Não foi possível excluir",
+    "deletedBody": "Saiu desta candidatura e do Cofre.",
+    "provenance": "{{tag}} · de {{from}} · {{model}}",
+    "chooseTitle": "Adaptar um documento",
+    "chooseHint": "Leva um ou dois minutos com um modelo local.",
+    "openInVault": "Abrir no Cofre",
+    "previewNamed": "Visualizar {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "Em execução",
+      "done": "Concluído",
+      "failed": "Falhou",
+      "declined": "Recusado"
+    },
+    "effect": {
+      "read": "leitura",
+      "unknown": "ferramenta inexistente",
+      "create": "adicionado",
+      "update": "alterado",
+      "move": "movido",
+      "delete": "excluído",
+      "admin": "armazenamento"
+    },
+    "asked": "O agente pediu para fazer isto. Nada mudou ainda.",
+    "dont": "Não permitir",
+    "allow": "Permitir",
+    "arguments": "Argumentos",
+    "result": "Resultado",
+    "undoStep": "Desfazer esta etapa",
+    "cannotUndo": "Esta etapa não pode ser desfeita daqui. Mais → Configurações → Registros mantém um histórico do que mudou e pode reverter a mudança mais recente.",
+    "truncated": "Cortado — o agente foi instruído a restringir a busca para ver o resto.",
+    "thinking": "Trabalhando — {{model}} está decidindo o que fazer…"
+  },
+  "approval": {
+    "askedBy": "Pedido por {{name}}. Nada mudou ainda.",
+    "askedByUnnamed": "Pedido por uma conversa. Nada mudou ainda."
+  },
+  "threads": {
+    "conversations": "Conversas",
+    "new": "Nova conversa",
+    "kept_one": "{{count}} guardada",
+    "kept_other": "{{count}} guardadas",
+    "titleField": "Título da conversa",
+    "approvalLabel": "Quanto esta conversa pode fazer sem perguntar",
+    "rename": "Renomear esta conversa",
+    "changeJob": "Mudar a vaga a que ela se refere",
+    "fileUnder": "Associar a uma vaga",
+    "delete": "Excluir esta conversa",
+    "noJob": "Ainda não associada a uma vaga",
+    "listEmpty": "Nada ainda — pergunte algo e a conversa fica guardada aqui, neste dispositivo.",
+    "keptOnDevice_one": "{{count}} guardada neste dispositivo.",
+    "keptOnDevice_other": "{{count}} guardadas neste dispositivo.",
+    "filter": "Filtrar",
+    "filterPlaceholder": "Por nome ou vaga",
+    "noMatch": "Nenhuma conversa corresponde.",
+    "working": "Trabalhando…",
+    "questions_one": "{{count}} pergunta",
+    "questions_other": "{{count}} perguntas"
+  },
+  "picker": {
+    "title": "Candidaturas relacionadas",
+    "description": "Quantas vagas forem. Um mesmo currículo vai para cada candidatura a que você o envia, então isto é uma lista, não um espaço único.",
+    "notLinked": "Sem vínculo",
+    "none": "Nenhuma candidatura ainda",
+    "noneHint": "Adicione uma e ela vira um lugar para guardar isto."
+  },
+  "audit": {
+    "records_one": "{{count}} registro",
+    "records_other": "{{count}} registros",
+    "links_one": "{{count}} vínculo",
+    "links_other": "{{count}} vínculos",
+    "undoFailed": "Essa mudança não pôde mais ser desfeita",
+    "notInJournal": "Ela não está mais no histórico.",
+    "recorded_one": "{{count}} registrada",
+    "recorded_other": "{{count}} registradas",
+    "title": "O que mudou",
+    "empty": {
+      "title": "Nada escrito ainda",
+      "description": "Cada inclusão, edição e exclusão aparece aqui no momento em que você faz — o mais recente primeiro, e a última pode ser desfeita."
+    },
+    "explain": "A mudança mais recente pode ser revertida. As mais antigas são um registro, não uma máquina do tempo.",
+    "undoLast": "Desfazer a última",
+    "cannotUndo": "Carregar ou limpar o conjunto de dados não pode ser desfeito.",
+    "showAll_one": "Mostrar {{count}}",
+    "showAll_other": "Mostrar todas as {{count}}"
+  },
+  "crash": {
+    "title": "Relatórios de falhas",
+    "thisPhone": "este celular",
+    "notBuilt": "Esta versão do jojo foi feita sem relatórios de falhas nem análise de uso, então nada é registrado e não há nada para ativar.",
+    "what": "Quando algo quebra, o jojo pode guardar o erro para você ler depois — útil quando o que falhou já sumiu. Um relatório contém a mensagem de erro, onde no jojo aconteceu e o stack trace. Ele nunca contém suas candidaturas, documentos, notas, perfil ou conversas, e chaves de API, endereços e endereços de e-mail são removidos antes de o relatório ser escrito.",
+    "where": "Os relatórios ficam neste celular e também são enviados ao Firebase Crashlytics, que adiciona o modelo do seu dispositivo, a versão do sistema e um id aleatório usado para contar quantas pessoas tiveram a mesma falha. O Google guarda isso por 90 dias. Nenhum dos seus registros vai junto.",
+    "report": "Relatar falhas",
+    "reportHint": "Ativado, para que possamos ver as falhas que você encontra. Desative e nada é registrado.",
+    "usage": "Compartilhar quais recursos eu uso",
+    "usageHint": "Só contagens, de uma lista fixa — nunca o que está nos seus registros.",
+    "usageDetail": "Ele só pode dizer coisas de uma lista fixa — qual tela foi aberta, que uma candidatura foi adicionada, mais ou menos quantas existem. Não pode citar um empregador, um cargo, um arquivo nem nada que você digitou. Vai para o Google Analytics. Com isto desativado, o jojo também desativa as visualizações de tela e as contagens de sessão que o Firebase coletaria por conta própria.",
+    "kept_one": "{{count}} relatório guardado",
+    "kept_other": "{{count}} relatórios guardados",
+    "nothingBroken": "Nada quebrou desde que você ativou isto.",
+    "notRecording": "Nada está sendo registrado."
+  },
+  "date": {
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "inSevenDays": "Em 7 dias",
+    "triggerLabel": "{{label}}: {{value}}. Escolha uma data",
+    "notSet": "não definida",
+    "pick": "Escolha uma data",
+    "previousMonth": "Mês anterior",
+    "nextMonth": "Próximo mês",
+    "backTo": "Voltar para {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Algo quebrou",
+    "body": "Uma tela não conseguiu ser desenhada. Seus registros estão neste dispositivo e nada foi enviado, mas o jojo não sabe dizer se a mudança que você fazia terminou.",
+    "noMessage": "O erro não veio com nenhuma mensagem.",
+    "hint": "Se quebrar de novo, feche o jojo pelo alternador de apps e abra de novo."
+  },
+  "fileEditor": {
+    "editTitle": "Editar documento",
+    "newTitle": "Registrar um documento",
+    "keptHere": "Guardado neste dispositivo, neste app. Nada é enviado e nada lê o conteúdo.",
+    "chooseOrType": "Escolha um arquivo para guardar uma cópia, ou preencha à mão para registrar um que você guarda em outro lugar.",
+    "record": "Registrar",
+    "choosing": "Escolhendo…",
+    "chooseDifferent": "Escolher outro arquivo",
+    "choose": "Escolher um arquivo",
+    "copyKept": "Uma cópia fica guardada neste app. Ela some quando o app é desinstalado.",
+    "fileName": "Nome do arquivo",
+    "nameRequired": "Dê um nome, incluindo a extensão.",
+    "nameHint": "A extensão define o ícone — .pdf, .doc, .pptx, .md.",
+    "size": "Tamanho",
+    "sizePlaceholder": "ex.: 212 KB",
+    "sizeHint": "Opcional — em branco, é lido como desconhecido em vez de zero.",
+    "bucket": "Categoria",
+    "applicationsHint": "O que o painel Documentos do perfil e o grafo leem para saber o que está guardado onde. Quantas vagas receberam o documento.",
+    "note": "Nota"
+  },
+  "filed": {
+    "sections": {
+      "files": "Arquivos",
+      "links": "Links",
+      "snippets": "Trechos",
+      "people": "Pessoas"
+    },
+    "count_one": "{{count}} guardado aqui",
+    "count_other": "{{count}} guardados aqui",
+    "title": "Do Cofre",
+    "empty": {
+      "title": "Nada guardado aqui ainda",
+      "description": "Documentos, links, trechos e pessoas podem ser associados a quantas vagas forem. Associe um a esta vaga — pelo menu dele no Cofre — e ele aparece aqui."
+    },
+    "conversations": "Conversas",
+    "openInAssistant": "Abrir {{name}} no Assistente",
+    "openInVault": "Abrir {{name}} no Cofre"
+  },
+  "firstRun": {
+    "title": "Como você quer começar?",
+    "description": "De qualquer forma, tudo fica neste dispositivo e nada é enviado.",
+    "demo": {
+      "title": "Explorar com registros de demonstração",
+      "detail": "Doze candidaturas, um calendário cheio e um cofre abastecido, para que cada tela tenha algo. Você pode limpá-los depois nas Configurações.",
+      "action": "Usar os registros de demonstração"
+    },
+    "empty": {
+      "title": "Começar vazio",
+      "detail": "Só os seus próprios registros. Telas que precisam de dados vão dizer o que falta em vez de mostrar um exemplo."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Adiar em",
+    "currently": "{{title}} · atualmente em {{date}}",
+    "pickDate": "Escolher uma data…",
+    "duplicate": "Duplicar",
+    "duplicateHint": "Mesma data e palavras-chave, em uma segunda linha",
+    "draft": "Rascunhar uma mensagem",
+    "draftHint": "A partir dos seus trechos de e-mail — nada é gerado",
+    "reschedule": "Remarcar"
+  },
+  "keywords": {
+    "on": "Palavras-chave de {{name}}",
+    "none": "Nenhuma ainda",
+    "choose": "Escolher",
+    "title": "Palavras-chave",
+    "description": "As palavras-chave são suas e compartilhadas por candidaturas, lembretes, arquivos e links — filtrar por uma encontra todos eles.",
+    "newPlaceholder": "Nova palavra-chave…",
+    "new": "Nova palavra-chave",
+    "add": "Adicionar",
+    "countHere_one": "{{name}}, {{count}} aqui",
+    "countHere_other": "{{name}}, {{count}} aqui"
+  },
+  "onboarding": {
+    "model": {
+      "title": "Conectar um modelo?",
+      "description": "É isso que faz do jojo um agente e não um arquivo de pastas. Com um modelo conectado, ele responde perguntas sobre sua busca, rascunha follow-ups a partir dos seus próprios registros e lê os documentos que você adiciona.",
+      "action": "Configurar um",
+      "local": "Aponte para um servidor na sua própria máquina — vLLM, Ollama ou LM Studio — e nada sai do dispositivo.",
+      "later": "Todo o resto funciona sem ele. Está em Mais → Configurações quando você quiser."
+    },
+    "tour": {
+      "title": "Quer um tour prático?",
+      "description": "Um passeio prático pelas telas reais — para que serve cada parte, com um destaque sobre ela, e você testa cada coisa enquanto avança.",
+      "action": "Começar o tour",
+      "safe": "Ele não muda nada — nenhum registro é escrito e nenhuma configuração é tocada.",
+      "later": "Ele está sempre em Mais → Como usar, então dizer não agora não custa nada."
+    }
+  },
+  "pattern": {
+    "has": "que têm",
+    "hasHint": "Pelo menos um vínculo assim",
+    "missing": "que não têm",
+    "missingHint": "Nenhum vínculo assim",
+    "anything": "Qualquer coisa",
+    "lookFor": "Procurar",
+    "records": "Registros",
+    "aLink": "Um vínculo",
+    "anyKind": "De qualquer tipo",
+    "to": "Para",
+    "lookForHint": "O tipo de registro de que a resposta é uma lista.",
+    "quantifierTitle": "Com ou sem",
+    "quantifierHint": "Se o vínculo abaixo precisa existir ou precisa faltar.",
+    "relTitle": "Qual vínculo",
+    "relHint": "Como as duas pontas se ligam. “De qualquer tipo” pergunta pelos seis de uma vez.",
+    "endTitle": "Na outra ponta",
+    "endHint": "Para o que o vínculo precisa apontar."
+  },
+  "reporting": {
+    "title": "Relatórios de falhas e uso",
+    "description": "Duas coisas separadas, ambas ativadas. Desative qualquer uma aqui ou depois nas Configurações. Nenhuma pode levar seus registros: nem uma candidatura, um documento, uma nota, um perfil ou uma conversa.",
+    "bothOff": "Desativar os dois",
+    "save": "Salvar escolhas",
+    "inReport": "O que vai em um relatório de falhas",
+    "in": {
+      "message": "· A mensagem de erro e onde no jojo aconteceu.",
+      "stack": "· O stack trace, que indica o código que falhou.",
+      "device": "· O modelo do seu dispositivo, a versão do sistema e um id aleatório usado para contar quantas pessoas tiveram a mesma falha — sem nome, sem conta."
+    },
+    "notInReport": "O que nunca vai nele",
+    "notIn": {
+      "records": "· Suas candidaturas, documentos, notas, perfil ou conversas.",
+      "secrets": "· Suas chaves de API, os endereços que você usa ou qualquer endereço de e-mail — removidos antes de o relatório ser escrito, não antes de ser enviado."
+    },
+    "crashHint": "O erro e onde ele aconteceu. Vai para o Firebase Crashlytics.",
+    "usageHint": "Só contagens — quais telas são abertas e com que frequência. Nunca o que há nelas.",
+    "usageDetail": "O segundo é a única coisa que o jojo envia sobre o que você FAZ, e ele só pode dizer coisas de uma lista fixa — “o cofre foi aberto”, “uma candidatura foi adicionada”, “há de 6 a 20 delas”. Ele não pode citar um empregador, um cargo, um arquivo nem nada que você digitou, porque essas palavras não estão na lista. Desativá-lo também interrompe as visualizações de tela que o Firebase coletaria por conta própria.",
+    "later": "Os dois ficam nas Configurações quando você quiser mudá-los, e desativar um descarta o que ele guardou."
+  },
+  "stagePicker": {
+    "label": "Etapa de {{name}}: {{stage}}. Mudar etapa",
+    "title": "Mover para"
+  },
+  "welcome": {
+    "title": "Um pouco sobre você",
+    "description": "Os rascunhos são assinados com seu nome, e o explorador pontua de acordo com o que você procura. Tudo fica neste dispositivo e tudo é opcional — o Perfil tem o resto.",
+    "skip": "Pular por enquanto",
+    "save": "Salvar e continuar",
+    "fullName": "Nome completo",
+    "fullNamePlaceholder": "ex.: Lonardo Jenson",
+    "position": "Cargo atual",
+    "positionPlaceholder": "ex.: Doutorando em Ciência da Computação",
+    "location": "Localização",
+    "locationPlaceholder": "ex.: Santa Clara, CA",
+    "email": "E-mail",
+    "rest": "O resto — links, cargos desejados, os termos que o explorador procura — fica em Perfil, na aba Mais."
+  },
+  "offers": {
+    "open_one": "{{count}} em aberto",
+    "open_other": "{{count}} em aberto",
+    "title": "Ofertas lado a lado",
+    "noPackage": "Pacote não informado",
+    "respondBy": "Responder até {{date}}",
+    "passed": "vencido",
+    "today": "hoje",
+    "days_one": "{{count}} dia",
+    "days_other": "{{count}} dias",
+    "ranked": "Valores anuais, lidos do que você digitou.",
+    "notRanked": "Sem ordenação — os pacotes estão em moedas diferentes e o jojo não tem taxa de câmbio.",
+    "annualised": " * anualizado em 12 meses, 52 semanas ou 2.080 horas."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "Quais candidaturas não têm follow-up agendado?",
+      "unfiled": "Quais arquivos não estão associados a nada?"
+    },
+    "notConnected": "Conecte um modelo local nas Configurações e você poderá perguntar isto em uma frase. As perguntas abaixo funcionam de qualquer jeito.",
+    "placeholder": "Quais candidaturas não têm follow-up?",
+    "label": "Fazer uma pergunta ao grafo",
+    "stop": "Parar",
+    "ask": "Perguntar",
+    "again": "Perguntar outra coisa"
+  },
+  "background": {
+    "details_one": "{{count}} detalhe",
+    "details_other": "{{count}} detalhes",
+    "fromDocument": "lido de um documento",
+    "editNamed": "Editar {{title}}",
+    "removeNamed": "Remover {{title}}",
+    "added": "{{title}} adicionado",
+    "updated": "{{title}} atualizado",
+    "removed": "{{title}} removido",
+    "notSaved": "Não foi salvo",
+    "editTitle": "Editar esta entrada",
+    "addTitle": "Adicionar à sua trajetória",
+    "editRead": "Lido de um documento. Sua edição prevalece sobre a leitura.",
+    "editHint": "Nada é salvo até você tocar em Salvar.",
+    "addHint": "Qualquer coisa com que uma vaga deva ser comparada. Nada aqui é enviado para lugar nenhum.",
+    "add": "Adicionar",
+    "kind": "Tipo",
+    "title": "Título",
+    "titlePlaceholder": "O que foi",
+    "where": "Onde",
+    "optional": "Opcional",
+    "when": "Quando",
+    "whenPlaceholder": "Como escrito — “2021–2024”",
+    "year": "Ano",
+    "detail": "Detalhe",
+    "highlights": "Destaques",
+    "highlightsHint": "Um por linha — o que foi construído, lançado, ensinado ou descoberto.",
+    "kindHint": "A que parte da sua trajetória isto pertence.",
+    "recorded_one": "{{count}} registrada · o que serve de comparação para uma vaga",
+    "recorded_other": "{{count}} registradas · o que serve de comparação para uma vaga",
+    "panelTitle": "Sua trajetória",
+    "read": "Ler um documento",
+    "addEntry": "Adicionar uma entrada",
+    "readTitle": "Ler um documento para o seu perfil",
+    "nothingReadable": "Nada no Cofre pode ser lido ainda",
+    "nothingReadableHint": "Adicione seu currículo ou uma declaração e ele aparece aqui.",
+    "alreadyRead": "Já lido",
+    "empty": {
+      "title": "Nada registrado ainda",
+      "ready": "Coloque seu currículo ou uma declaração de pesquisa ou docência no Cofre e o jojo vai oferecer para ler — o que ele encontrar é mostrado a você antes de qualquer coisa ser salva. Ou adicione uma entrada à mão.",
+      "noModel": "Ler um documento precisa de um modelo. Conecte um em Mais → Configurações e depois coloque seu currículo ou uma declaração no Cofre. Você pode adicionar entradas à mão sem ele."
+    },
+    "removeTitle": "Remover {{title}}?",
+    "removeBody": "Sai da sua trajetória, então as vagas deixam de ser comparadas com isso. O documento de origem não é alterado."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Formação",
+      "employment": "Emprego",
+      "publication": "Publicação",
+      "skill": "Habilidade",
+      "teaching": "Docência",
+      "award": "Prêmio",
+      "service": "Serviço",
+      "certification": "Certificação",
+      "language": "Idioma",
+      "project": "Projeto",
+      "volunteering": "Voluntariado",
+      "membership": "Associação",
+      "grant": "Bolsa",
+      "patent": "Patente"
+    },
+    "skipped_one": "{{count}} entrada foi ignorada",
+    "skipped_other": "{{count}} entradas foram ignoradas",
+    "alreadyThere": "Já está no seu perfil",
+    "added_one": "{{count}} adicionada ao seu perfil",
+    "added_other": "{{count}} adicionadas ao seu perfil",
+    "nothingAdded": "Nada pôde ser adicionado",
+    "readFrom": "Lido de {{name}}.",
+    "alreadyKnown_one": "{{known}} de {{count}} já era conhecida.",
+    "alreadyKnown_other": "{{known}} de {{count}} já eram conhecidas.",
+    "connectionsRecorded_one": "{{count}} conexão registrada.",
+    "connectionsRecorded_other": "{{count}} conexões registradas.",
+    "refused": "As entradas foram recusadas.",
+    "readIt": "Ler",
+    "readFailed": "Falha ao ler o documento.",
+    "entriesRead_one": "{{count}} entrada lida deste documento",
+    "entriesRead_other": "{{count}} entradas lidas deste documento",
+    "addNamed": "Adicionar {{title}}",
+    "connections_one": "{{count}} conexão entre elas",
+    "connections_other": "{{count}} conexões entre elas",
+    "addCount_one": "Adicionar",
+    "addCount_other": "Adicionar {{count}}"
+  },
+  "proposals": {
+    "aPipeline": "um pipeline",
+    "hint": "nada acontece até você dizer",
+    "title": "Sugestões",
+    "empty": {
+      "title": "Nada para revisar",
+      "description": "Quando um pipeline está rodando, tudo o que ele quer mudar aparece aqui primeiro. Ele não mexe nos seus registros até você aprovar."
+    },
+    "applied": "aplicada",
+    "discarded": "descartada",
+    "failed": "não pôde ser aplicada",
+    "from": "{{tool}} · de {{pipeline}}",
+    "approve": "Aprovar",
+    "discardNamed": "Descartar: {{title}}",
+    "clearAnswered": "Limpar respondidas",
+    "clearAll": "Limpar tudo",
+    "confirmTitle": "Limpar todas as sugestões?",
+    "confirmPending_one": "{{count}} sugestão ainda está esperando e será recusada. Nada muda nos seus registros e os pipelines continuam rodando — mas não vão oferecê-la de novo.",
+    "confirmPending_other": "{{count}} sugestões ainda estão esperando e serão recusadas. Nada muda nos seus registros e os pipelines continuam rodando — mas não vão oferecê-las de novo.",
+    "confirmAnswered": "Os cartões respondidos saem da lista. Nada muda nos seus registros."
+  },
+  "nextSteps": {
+    "measured": "Medido",
+    "suggested": "Sugerido",
+    "hint": "o que seus registros sustentam, depois o que custa menos",
+    "title": "O que fazer agora"
+  },
+  "working": {
+    "arm": "{{count}} de {{of}} · {{rate}}% · provavelmente {{range}}",
+    "repliesBy": "Respostas, por {{dimension}}",
+    "interviewsBy": "Entrevistas, por {{dimension}}",
+    "confident": "As faixas não se sobrepõem, então a diferença é real — {{best}} merece mais do seu esforço.",
+    "overlap": "As faixas se sobrepõem, então são dois números e não uma diferença. Mais registros vão separá-los ou fechar a distância.",
+    "tooFew_one": "{{count}} outro grupo tem menos de {{min}} registros e não é comparado.",
+    "tooFew_other": "{{count}} outros grupos têm menos de {{min}} registros e não são comparados.",
+    "hint": "a faixa mostra onde a taxa real provavelmente está",
+    "title": "O que está funcionando"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "Um tour prático pelo jojo",
+        "body": "Ele aponta para as telas reais e pede que você teste cada coisa enquanto avança. Nunca digita, salva ou muda nada por você. Feche quando quiser — seu progresso fica guardado e Como usar retoma de onde parou."
+      },
+      "today": {
+        "title": "Hoje",
+        "body": "O que está pendente agora: o que está atrasado, o que vence e as decisões que esperam por você. A primeira tela a abrir."
+      },
+      "applications": {
+        "title": "Suas candidaturas",
+        "body": "Um registro por vaga: o empregador, o cargo, a etapa e suas notas. Datas, documentos e conversas ficam ligados a ele, então nada é digitado duas vezes.",
+        "say": "Abra Candidaturas."
+      },
+      "layout": {
+        "title": "Uma lista ou um quadro",
+        "body": "Os mesmos registros, de dois jeitos. A lista ordena e busca; o quadro mostra as etapas como colunas.",
+        "say": "Mude para Quadro."
+      },
+      "records": {
+        "title": "Seis etapas",
+        "body": "Rascunho, Enviada, Triagem, Entrevista, Oferta, Encerrada. No quadro, mantenha um cartão pressionado e arraste-o para a próxima coluna; cada cartão também tem um menu de etapa. Todo movimento pode ser desfeito."
+      },
+      "search": {
+        "title": "Busque em tudo",
+        "body": "Candidaturas, lembretes e entradas do calendário, de qualquer aba.",
+        "say": "Abra a busca."
+      },
+      "searchScreen": {
+        "title": "Digite para encontrar qualquer coisa",
+        "body": "Um cargo, um empregador ou uma etapa. Toque em um resultado para abri-lo, ou volte quando terminar."
+      },
+      "new": {
+        "title": "Crie qualquer coisa",
+        "body": "O + cria uma candidatura, um lembrete, uma entrada de calendário, uma mensagem rascunhada, um link salvo ou uma vaga salva. Nada é salvo até você salvar, e fechar um formulário pela metade não custa nada."
+      },
+      "calendar": {
+        "title": "Todas as datas em um só lugar",
+        "body": "Prazos, entrevistas e follow-ups são um mesmo tipo de registro, então uma entrada aparece no calendário, em Hoje e na sua candidatura.",
+        "say": "Abra o Calendário."
+      },
+      "vault": {
+        "title": "O cofre",
+        "body": "Tudo o que não é candidatura: lembretes, links, arquivos, os trechos que você cola em todo formulário, as pessoas que você conhece e uma calculadora.",
+        "say": "Abra o Cofre."
+      },
+      "vaultTools": {
+        "title": "Uma ferramenta por vez",
+        "body": "Cada uma é sua própria lista, e uma palavra-chave significa a mesma coisa em todas.",
+        "say": "Escolha Arquivos."
+      },
+      "files": {
+        "title": "Arquivos, guardados no celular",
+        "body": "Um currículo, uma declaração, uma vaga — copiados para a pasta do próprio jojo, para sobreviverem se o original for movido. Toque em um para lê-lo aqui; associe-o a quantas candidaturas ele pertencer."
+      },
+      "more": {
+        "title": "Mais",
+        "body": "Todo o resto: Explorador de vagas, Estatísticas, o grafo, Transferir, seu perfil, o assistente, Configurações e este guia.",
+        "say": "Abra Mais."
+      },
+      "scout": {
+        "title": "Explorador de vagas",
+        "body": "Buscas salvas que vigiam sites de vagas para você.",
+        "say": "Abra o Explorador de vagas."
+      },
+      "scoutScreen": {
+        "title": "Pipelines e sugestões",
+        "body": "Cada pipeline é uma busca em um site de vagas, executada por agendamento ou quando você pede. O que ele encontra espera como sugestão que você aprova ou descarta, e uma sugestão aprovada vira um rascunho de candidatura."
+      },
+      "statistics": {
+        "title": "Estatísticas",
+        "body": "Como sua busca está indo, contado a partir dos seus próprios registros.",
+        "say": "Abra Estatísticas."
+      },
+      "statisticsScreen": {
+        "title": "Taxas, com faixas honestas",
+        "body": "Taxas de resposta e de entrevista, um funil e no que trabalhar a seguir — cada taxa com a faixa em que ela realmente pode estar, já que um punhado de candidaturas é uma amostra pequena."
+      },
+      "graph": {
+        "title": "O grafo de conhecimento",
+        "body": "Cada registro — candidaturas, empregadores, pessoas, datas, arquivos — desenhado como a rede que ele forma.",
+        "say": "Abra o Grafo."
+      },
+      "graphScreen": {
+        "title": "Tudo conectado",
+        "body": "Toque em um nó para ver ao que ele se conecta e faça uma pergunta para destacar os registros correspondentes."
+      },
+      "assistant": {
+        "title": "O assistente",
+        "body": "Converse com o jojo: ele encontra, adiciona e atualiza seus registros com as ferramentas do próprio app, e pergunta antes de mudar qualquer coisa. Até um modelo ser conectado, ele mostra exemplos prontos."
+      },
+      "transfer": {
+        "title": "Celular e computador",
+        "body": "Transferir move tudo entre este celular e o jojo no seu computador pela sua rede local, sem passar por mais ninguém."
+      },
+      "settings": {
+        "title": "Configurações",
+        "body": "Conexões, aparência e seus dados.",
+        "say": "Abra Configurações."
+      },
+      "device": {
+        "title": "Seus registros vivem neste celular",
+        "body": "Gravados direto no armazenamento do celular enquanto você trabalha — sem conta, sem sincronização, nada enviado. Exporte uma cópia ou transfira para o seu computador."
+      },
+      "model": {
+        "title": "Conecte um modelo",
+        "body": "Onde roda o modelo do assistente. Um servidor na sua própria máquina — vLLM, Ollama ou LM Studio — recebe o endereço e mantém seus registros nos seus dispositivos. OpenAI, Anthropic (Claude) e os outros provedores de nuvem pedem uma chave de API. Testar conexão verifica antes de qualquer coisa ser salva."
+      },
+      "reader": {
+        "title": "Deixe-o ler seus documentos",
+        "body": "O celular lê sozinho arquivos do Word, apresentações, páginas salvas e texto. PDFs precisam do MarkItDown no seu computador: inicie-o com os dois comandos acima e depois toque em Testar conexão."
+      },
+      "done": {
+        "title": "Esse foi o tour",
+        "body": "Toda mudança pode ser desfeita, e Como usar, em Mais, passa por cada tela. O tour continua lá para refazer."
+      }
+    },
+    "stepOf": "Etapa {{step}} de {{total}}",
+    "end": "Encerrar tour",
+    "nice": "Isso — é assim.",
+    "tryIt": "Experimente: {{task}}",
+    "finish": "Concluir",
+    "skip": "Pular esta"
+  },
+  "marks": {
+    "bold": "negrito",
+    "italic": "itálico",
+    "underlined": "sublinhado"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Hoje",
+      "applications": "Candidaturas",
+      "calendar": "Calendário",
+      "vault": "Cofre",
+      "more": "Mais"
+    },
+    "badge": {
+      "applications_one": "Candidaturas, {{count}} marcada para follow-up",
+      "applications_other": "Candidaturas, {{count}} marcadas para follow-up",
+      "calendar_one": "Calendário, {{count}} nos próximos sete dias",
+      "calendar_other": "Calendário, {{count}} nos próximos sete dias",
+      "vault_one": "Cofre, {{count}} lembrete atrasado",
+      "vault_other": "Cofre, {{count}} lembretes atrasados",
+      "more_one": "Mais, {{count}} correspondência ainda não adicionada às candidaturas",
+      "more_other": "Mais, {{count}} correspondências ainda não adicionadas às candidaturas"
+    },
+    "create": "Criar",
+    "search": "Buscar",
+    "titles": {
+      "application": "Candidatura",
+      "employer": "Empregador",
+      "search": "Buscar",
+      "jobScout": "Explorador de vagas",
+      "statistics": "Estatísticas",
+      "profile": "Meu perfil",
+      "assistant": "Assistente",
+      "settings": "Configurações",
+      "guide": "Como usar",
+      "graph": "Grafo",
+      "transfer": "Transferir"
+    }
+  }
+}

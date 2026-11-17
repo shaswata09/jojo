@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import type { ChangeEvent } from 'react'
 import { Link } from 'react-router'
 import { Download, FileText, Upload } from 'lucide-react'
@@ -18,6 +19,7 @@ import { useDocumentViewer } from './use-document-viewer'
 
 /** The Profile's Documents card: upload, drop, the grid of documents and the inline viewer. */
 export function DocumentsPanel() {
+  const { t } = useTranslation('profile')
   const { files } = useVault()
   const { get } = useApplications()
   const fileInput = useRef<HTMLInputElement>(null)
@@ -44,7 +46,7 @@ export function DocumentsPanel() {
    */
   const takeFiles = useFileIntake({
     bucket: DOCUMENTS_BUCKET,
-    place: `in the Vault under ${DOCUMENTS_BUCKET}`,
+    namesVault: true,
   })
 
   const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
@@ -60,8 +62,8 @@ export function DocumentsPanel() {
   return (
     <Panel>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <PanelTitle className="mb-0" hint={`the Vault's ${DOCUMENTS_BUCKET} bucket`}>
-          Documents
+        <PanelTitle className="mb-0" hint={t('documents.hint', { bucket: DOCUMENTS_BUCKET })}>
+          {t('documents.title')}
         </PanelTitle>
         <div className="flex gap-2">
           {/* The button is the affordance; the input is only the mechanism, so
@@ -78,7 +80,7 @@ export function DocumentsPanel() {
           />
           <Button variant="ghost" size="sm" onClick={() => fileInput.current?.click()}>
             <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Upload
+            {t('documents.upload')}
           </Button>
           {/* Not a disabled "Export all": nothing on this page holds a
               document's contents, so the only honest export is the record
@@ -86,7 +88,7 @@ export function DocumentsPanel() {
           <Button variant="ghost" size="sm" asChild>
             <Link to="/settings">
               <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Export in Settings
+              {t('documents.exportInSettings')}
             </Link>
           </Button>
         </div>
@@ -109,12 +111,12 @@ export function DocumentsPanel() {
         {documents.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="No documents yet"
-            description={`Drop your CV and statements here, or choose them — they are filed in the Vault under ${DOCUMENTS_BUCKET}, where the rest of the app can reach them.`}
+            title={t('documents.empty.title')}
+            description={t('documents.empty.description', { bucket: DOCUMENTS_BUCKET })}
             action={
               <Button size="sm" onClick={() => fileInput.current?.click()}>
                 <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Upload a document
+                {t('documents.empty.upload')}
               </Button>
             }
           />
@@ -145,21 +147,27 @@ export function DocumentsPanel() {
           <FileViewer
             file={viewer.openDoc}
             blob={viewer.openBlob ?? undefined}
+            // Keyed by document, so a note draft never carries to the next one.
+            key={viewer.openDoc.id}
             onClose={viewer.close}
           />
         </div>
       ) : null}
 
       <p className="mt-4 text-xs text-text-3">
-        The same files as the Vault's{' '}
-        <Link
-          to={vaultPath({ tool: 'files' })}
-          className="text-text-2 underline underline-offset-2 hover:text-text-1"
-        >
-          Files tool
-        </Link>
-        , filtered to {DOCUMENTS_BUCKET}. Drop a document here or choose one and the file itself is
-        kept in this browser — nothing is uploaded anywhere. Click one to read it.
+        <Trans
+          t={t}
+          i18nKey="documents.footer"
+          values={{ bucket: DOCUMENTS_BUCKET }}
+          components={{
+            anchor: (
+              <Link
+                to={vaultPath({ tool: 'files' })}
+                className="text-text-2 underline underline-offset-2 hover:text-text-1"
+              />
+            ),
+          }}
+        />
       </p>
     </Panel>
   )

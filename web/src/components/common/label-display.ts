@@ -1,8 +1,9 @@
 import { inkOf } from '@jojo/service/core/ink'
 import type { Theme } from '@jojo/service/core/ink'
-import { TONE_LABEL } from '@jojo/service/core/model'
 import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import type { LabelTone } from '@/data/labels'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 
 /**
  * How a keyword is drawn and how its count is worded.
@@ -56,8 +57,15 @@ export const toneFill: Record<LabelTone, string> = {
  * Re-exported from the model rather than declared here. It was declared here,
  * and the phone declared its own with `teal: 'Teal'` against this file's
  * `teal: 'Blue'` — one keyword, two names, depending on which screen you asked.
+ * Each name is a getter onto `domain.tone`, read when shown, so it speaks the
+ * language on screen.
  */
-export const toneName = TONE_LABEL
+export const toneName: Readonly<Record<LabelTone, string>> = Object.defineProperties(
+  {} as Record<LabelTone, string>,
+  Object.fromEntries(
+    LABEL_TONE_VALUES.map((tone) => [tone, { enumerable: true, get: () => domain.tone(tone) }]),
+  ),
+)
 
 /**
  * The order the swatches are offered in — the palette's own, which runs round
@@ -72,7 +80,7 @@ export const TONE_ORDER = LABEL_TONE_VALUES
 
 /** "9 records" / "1 record" — used in the menu, the confirm and the undo toast. */
 export function usage(n: number) {
-  return n === 1 ? '1 record' : `${n} records`
+  return i18next.t('common:records', { count: n })
 }
 
 /**

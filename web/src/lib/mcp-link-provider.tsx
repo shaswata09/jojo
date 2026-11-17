@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import type { ToolHost } from '@jojo/service/agent/execute'
 import { mcpAllowed } from '@jojo/service/agent/mcp'
 import { useToolHost } from '@jojo/service/react/use-tool-host'
+import { i18next } from '@/i18n/i18n'
 import { relayToBridge } from '@/lib/capture-bridge'
 import { BRIDGE_ADDRESS, directTransport, mintToken, runElected, runLink } from '@/lib/mcp-link'
 import { McpLinkContext } from '@/lib/mcp-link-context'
@@ -53,8 +54,7 @@ function load(): Stored {
 }
 
 /** Pages served from this machine; only they may call the bridge without the extension. */
-const servedLocally = () =>
-  ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
+const servedLocally = () => ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
 
 const throughExtension: LinkTransport = (request, signal) => relayToBridge(request, signal)
 
@@ -122,7 +122,7 @@ export function McpLinkProvider({ children }: { children: ReactNode }) {
       () => {
         setStatus({
           state: 'searching',
-          reason: 'Another jojo tab in this browser is carrying the link; this one takes over when that tab closes.',
+          reason: i18next.t('messages:mcpLink.otherTab'),
         })
       },
     )

@@ -1,0 +1,148 @@
+{
+  "sidebar": {
+    "navigation": "Navegación",
+    "close": "Cerrar navegación"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "applications": "Candidaturas",
+    "calendar": "Calendario",
+    "vault": "Bóveda",
+    "jobScout": "Explorador de empleo",
+    "statistics": "Estadísticas",
+    "flagged_one": "{{count}} marcada",
+    "flagged_other": "{{count}} marcadas",
+    "flagged_many": "{{count}} marcadas",
+    "flaggedTitle": "Marcadas para seguimiento",
+    "weekTitle": "Programado en los próximos siete días",
+    "overdueTitle": "Recordatorios vencidos",
+    "fresh_one": "{{count}} nueva",
+    "fresh_other": "{{count}} nuevas",
+    "fresh_many": "{{count}} nuevas",
+    "freshTitle": "Coincidencias aún no añadidas a candidaturas"
+  },
+  "newMenu": {
+    "trigger": "Nuevo",
+    "find": "Busca algo que añadir",
+    "findPlaceholder": "Busca algo que añadir…",
+    "empty": "Nada que añadir coincide con eso."
+  },
+  "roleFilter": {
+    "label": "Filtrar por puesto",
+    "all": "Todos los puestos",
+    "selected_one": "{{count}} seleccionado",
+    "selected_other": "{{count}} seleccionados",
+    "selected_many": "{{count}} seleccionados",
+    "find": "Buscar un puesto",
+    "findPlaceholder": "Buscar un puesto…",
+    "empty": "Ningún puesto coincide.",
+    "selectAll": "Seleccionar todos",
+    "clear": "Quitar filtro",
+    "remove": "Quitar {{role}}"
+  },
+  "topbar": {
+    "openNav": "Abrir navegación",
+    "search": "Buscar candidaturas, recordatorios, eventos…",
+    "accountNav": "Cuenta y ayuda",
+    "links": {
+      "profile": "Mi perfil",
+      "settings": "Ajustes",
+      "assistant": "Asistente",
+      "guide": "Cómo usar"
+    }
+  },
+  "runtime": {
+    "heading": "Entorno",
+    "tileTitle": "{{label}}: {{detail}}. Abre {{destination}}",
+    "dest": {
+      "graph": "el grafo",
+      "transfer": "Transferir",
+      "settings": "Ajustes"
+    },
+    "storage": {
+      "label": "Almacenamiento del navegador",
+      "notSaving": "sin guardar",
+      "notSavingDetail": "tus registros no se están guardando; el aviso sobre la página explica por qué",
+      "retrying": "reintentando",
+      "retryingDetail_one": "{{count}} cambio aún no se pudo guardar y jojo sigue reintentando",
+      "retryingDetail_other": "{{count}} cambios aún no se pudieron guardar y jojo sigue reintentando",
+      "retryingDetail_many": "{{count}} cambios aún no se pudieron guardar y jojo sigue reintentando",
+      "saved": "guardado aquí",
+      "savedDetail": "tus registros se escriben en la base de datos de este navegador mientras trabajas"
+    },
+    "model": {
+      "label": "Modelo local",
+      "connected": "conectado",
+      "connectedDetail": "un modelo local respondió: el asistente y la puntuación del explorador pueden usarlo",
+      "noAnswer": "sin respuesta",
+      "noAnswerDetail": "hay un modelo configurado pero no respondió; comprueba que esté en marcha",
+      "checking": "comprobando",
+      "checkingDetail": "preguntando al modelo si está disponible",
+      "unset": "sin configurar",
+      "unsetDetail": "aún no hay endpoint de modelo; se configura en Ajustes"
+    },
+    "transfer": {
+      "label": "Transferir",
+      "meta": "Sincronizar con otro dispositivo",
+      "detail": "aún no hay ningún dispositivo vinculado; se añade en Transferir"
+    }
+  },
+  "banner": {
+    "reload": "Recargar",
+    "interrupted": "jojo se actualizó en otra pestaña, así que esta cerró su base de datos para dejar pasar la actualización. Nada de lo que cambies aquí se está guardando. Recarga para continuar.",
+    "versionBlocked": "jojo no pudo abrir su base de datos: hay otra pestaña de jojo abierta con una versión distinta de la app. <strong>Tus registros siguen en el disco</strong>, pero esta pestaña no pudo leerlos, así que no muestra nada en lugar de adivinar. Cierra las otras pestañas y recarga para recuperarlos.",
+    "noStorage": "Este navegador no deja que jojo abra su almacenamiento, así que esta pestaña es un espacio en blanco: lo que ya está guardado en este dispositivo no se muestra, y lo que escribas aquí se perderá al cerrar la pestaña. Las ventanas privadas y algunos navegadores gestionados hacen esto. Exporta desde Ajustes antes de salir si añades algo que valga la pena conservar.",
+    "atRisk_one": "{{count}} cambio está en pantalla pero sin guardar: exporta desde Ajustes para conservarlo, porque recargar o cerrar esta pestaña lo perderá.",
+    "atRisk_other": "{{count}} cambios están en pantalla pero sin guardar: exporta desde Ajustes para conservarlos, porque recargar o cerrar esta pestaña los perderá.",
+    "atRisk_many": "{{count}} cambios están en pantalla pero sin guardar: exporta desde Ajustes para conservarlos, porque recargar o cerrar esta pestaña los perderá.",
+    "safeBefore": "Todo lo que cambiaste antes está en el disco.",
+    "corrupt": "jojo ha dejado de guardar: este navegador rechazó un cambio en tus registros y reintentar no servirá. {{atRisk}} Exporta ahora desde Ajustes; en Ajustes → Diagnóstico tienes los detalles, y recargar antes de exportar pierde todo lo que solo está en pantalla.",
+    "quota": "Este navegador no tiene espacio libre, así que jojo ha dejado de guardar. {{atRisk}} Libera algo de espacio y recarga.",
+    "otherTab": "jojo ha dejado de guardar porque otra pestaña tiene la base de datos. Cierra las otras pestañas y exporta desde Ajustes si hay algo en pantalla sin guardar: recargar esta pestaña lo pierde.",
+    "degraded_one": "{{count}} cambio no se pudo guardar y jojo sigue reintentando. Exporta desde Ajustes si necesitas una copia ahora. ({{error}})",
+    "degraded_other": "{{count}} cambios no se pudieron guardar y jojo sigue reintentando. Exporta desde Ajustes si necesitas una copia ahora. ({{error}})",
+    "degraded_many": "{{count}} cambios no se pudieron guardar y jojo sigue reintentando. Exporta desde Ajustes si necesitas una copia ahora. ({{error}})",
+    "documentsBlocked": "Tus documentos siguen en este dispositivo, pero otra pestaña de jojo, abierta con una versión anterior de la app, los está reteniendo. Cierra las otras pestañas de jojo; esta los recuperará sola.",
+    "skipped_one": "{{count}} registro de este dispositivo no se pudo leer y no se muestra. No se ha eliminado nada: <anchor>Diagnóstico</anchor> indica cuál es, y una exportación desde ahí incluye todo lo que jojo pudo leer.",
+    "skipped_other": "{{count}} registros de este dispositivo no se pudieron leer y no se muestran. No se ha eliminado nada: <anchor>Diagnóstico</anchor> indica cuáles son, y una exportación desde ahí incluye todo lo que jojo pudo leer.",
+    "skipped_many": "{{count}} registros de este dispositivo no se pudieron leer y no se muestran. No se ha eliminado nada: <anchor>Diagnóstico</anchor> indica cuáles son, y una exportación desde ahí incluye todo lo que jojo pudo leer.",
+    "nearlyFull": "Este navegador casi no tiene espacio para jojo: se usa aproximadamente el {{percent}}% de lo permitido. Guardar dejará de funcionar cuando se llene, así que conviene exportar desde Ajustes y liberar espacio ahora, mientras tus registros aún se pueden escribir.",
+    "backup": {
+      "busy": "Haciendo copia…",
+      "download": "Descargar una copia de seguridad",
+      "notNow": "Ahora no"
+    }
+  },
+  "shell": {
+    "skipToMain": "Saltar al contenido principal"
+  },
+  "spotlight": {
+    "title": "Buscar",
+    "label": "Buscar candidaturas, recordatorios, eventos y páginas",
+    "placeholder": "Buscar candidaturas, recordatorios, eventos…",
+    "emptyTitle": "Nada coincide con eso.",
+    "emptyHint": "Prueba con un puesto, una organización o una etapa.",
+    "actions": "Acciones",
+    "applications": "Candidaturas",
+    "reminders": "Recordatorios",
+    "calendar": "Calendario",
+    "tools": "Herramientas",
+    "goTo": "Ir a",
+    "toOpen": "para abrir",
+    "toClose": "esc para cerrar",
+    "pages": {
+      "dashboard": "Panel",
+      "applications": "Candidaturas",
+      "calendar": "Calendario",
+      "vault": "Bóveda",
+      "jobScout": "Explorador de empleo",
+      "statistics": "Estadísticas",
+      "graph": "Grafo",
+      "transfer": "Transferir",
+      "transferDetail": "Lleva tus registros a otro dispositivo",
+      "profile": "Mi perfil",
+      "assistant": "Asistente",
+      "settings": "Ajustes"
+    }
+  }
+}

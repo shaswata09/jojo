@@ -1,5 +1,6 @@
 import type { Ref } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Copy, ExternalLink, Link2, Pencil, Trash2 } from 'lucide-react'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
@@ -34,6 +35,7 @@ export function LinkRow({
   onMove: (link: VaultLink, next: LinkCategory) => void
   onDelete: (link: VaultLink) => void
 }) {
+  const { t } = useTranslation('vault')
   return (
     <li
       ref={rowRef}
@@ -61,7 +63,7 @@ export function LinkRow({
              --accent and --text-1 are the same #fafafa (see index.css), so the
              colour change alone painted nothing — which is also why the
              address below, which has always underlined, kept working. */
-          className="block max-w-full cursor-pointer truncate text-left text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
+          className="block max-w-full cursor-pointer truncate text-start text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
         >
           {l.title}
         </button>
@@ -77,7 +79,7 @@ export function LinkRow({
           >
             <span className="truncate">{pathLabel(l.url)}</span>
             <ExternalLink
-              aria-label="Opens in a new tab"
+              aria-label={t('links.newTab')}
               role="img"
               strokeWidth={1.7}
               className="size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
@@ -101,12 +103,12 @@ export function LinkRow({
         <LabelPicker recordId={l.id} />
         <RowMenu name={l.title}>
           <MenuItem icon={Pencil} onSelect={onEdit}>
-            Edit
+            {t('common.edit')}
           </MenuItem>
           <MenuItem icon={Copy} onSelect={() => onDuplicate(l)}>
-            Duplicate
+            {t('common.duplicate')}
           </MenuItem>
-          <MenuSection title="Move to">
+          <MenuSection title={t('snippets.card.moveTo')}>
             {LINK_CATEGORIES.map((c) => (
               <MenuItem key={c} current={c === l.category} onSelect={() => onMove(l, c)}>
                 {c}
@@ -115,7 +117,7 @@ export function LinkRow({
           </MenuSection>
           <MenuSection>
             <MenuItem icon={Trash2} danger onSelect={() => onDelete(l)}>
-              Delete
+              {t('common.delete')}
             </MenuItem>
           </MenuSection>
         </RowMenu>

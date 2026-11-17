@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Active, Over } from '@dnd-kit/core'
-import { dragAnnouncements } from '@/components/common/drag-announcements'
+import { dragAnnouncements, dragInstructions } from '@/components/common/drag-announcements'
+import en from '@/i18n/locales/en/common.json'
 import { dayDropLabel } from '@/components/calendar/drop-target'
 
 const UUID = '3f9c2b1e-0d7a-4c1b-9a3e-5b6f7c8d9e0f'
@@ -49,5 +50,11 @@ describe('dayDropLabel', () => {
     expect(dayDropLabel('day:2026-11-02')).toBe('November 2')
     expect(dayDropLabel('day:2026-13-02')).toBeUndefined()
     expect(dayDropLabel('3f9c2b1e')).toBeUndefined()
+  })
+})
+
+describe('dragInstructions', () => {
+  it('tells a screen reader how to drag in the catalog’s words, not dnd-kit’s built-in English', () => {
+    expect(dragInstructions().draggable).toBe(en.drag.instructions)
   })
 })

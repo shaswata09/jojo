@@ -1,5 +1,6 @@
 import type { Ref } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import {
   Briefcase,
   FileText,
@@ -92,6 +93,7 @@ export function FileRow({
    */
   onReadIntoProfile?: ((file: VaultFile) => void) | undefined
 }) {
+  const { t } = useTranslation('vault')
   const Icon = kindIcon[f.kind]
 
   return (
@@ -116,7 +118,7 @@ export function FileRow({
         {editingField === 'name' ? (
           <InlineEdit
             key="name"
-            label="File name"
+            label={t('files.row.fileName')}
             value={f.name}
             mono
             required
@@ -126,7 +128,7 @@ export function FileRow({
         ) : editingField === 'note' ? (
           <InlineEdit
             key="note"
-            label="Note"
+            label={t('links.fields.note')}
             value={f.note ?? ''}
             onCancel={onCancelEdit}
             onSave={(next) => onNote(f, next)}
@@ -144,7 +146,7 @@ export function FileRow({
               className="flex-1"
             />
             <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         ) : (
@@ -155,12 +157,12 @@ export function FileRow({
             <button
               type="button"
               onClick={() => onEdit('name')}
-              title="Rename this file"
+              title={t('files.row.renameHint')}
               /* `hover:underline` as well as the colour. In the dark theme
                  --accent and --text-1 are the same #fafafa (see index.css), so
                  the colour change alone painted nothing and the file name gave
                  no sign it could be clicked to rename. */
-              className="block max-w-full cursor-pointer truncate text-left font-mono text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
+              className="block max-w-full cursor-pointer truncate text-start font-mono text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
             >
               {f.name}
             </button>
@@ -173,7 +175,7 @@ export function FileRow({
                   <span aria-hidden>·</span>
                   {/* Worth saying: it is the difference between a
                       real preview and a generated stand-in. */}
-                  <span className="shrink-0">on this device</span>
+                  <span className="shrink-0">{t('files.row.onDevice')}</span>
                 </>
               ) : null}
               {f.note ? <span className="truncate">· {f.note}</span> : null}
@@ -203,24 +205,24 @@ export function FileRow({
           aria-pressed={previewing}
           onClick={onTogglePreview}
         >
-          {previewing ? 'Viewing' : 'Preview'}
+          {previewing ? t('files.row.viewing') : t('files.row.preview')}
         </Button>
         <RowMenu name={f.name}>
           <MenuItem icon={Pencil} onSelect={() => onEdit('name')}>
-            Rename
+            {t('files.row.rename')}
           </MenuItem>
           <MenuItem icon={StickyNote} onSelect={() => onEdit('note')}>
-            {f.note ? 'Edit note' : 'Add note'}
+            {f.note ? t('files.row.editNote') : t('files.row.addNote')}
           </MenuItem>
           <MenuItem icon={Briefcase} onSelect={() => onEdit('application')}>
-            {related.length > 0 ? 'Change applications' : 'File under an application'}
+            {related.length > 0 ? t('files.row.changeApplications') : t('files.row.fileUnder')}
           </MenuItem>
           {onReadIntoProfile && (
             <MenuItem icon={Sparkles} onSelect={() => onReadIntoProfile(f)}>
-              Read into your profile
+              {t('files.row.readIntoProfile')}
             </MenuItem>
           )}
-          <MenuSection title="Move to">
+          <MenuSection title={t('snippets.card.moveTo')}>
             {FILE_BUCKETS.map((b) => (
               <MenuItem key={b} current={b === f.bucket} onSelect={() => onMove(f, b)}>
                 {b}
@@ -229,7 +231,7 @@ export function FileRow({
           </MenuSection>
           <MenuSection>
             <MenuItem icon={Trash2} danger onSelect={() => onDelete(f)}>
-              Delete
+              {t('common.delete')}
             </MenuItem>
           </MenuSection>
         </RowMenu>

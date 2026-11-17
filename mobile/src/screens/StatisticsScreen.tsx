@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -21,7 +22,7 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { PERIODS } from '@jojo/service/data/seed'
 import type { Period, RoleTag } from '@jojo/service/data/seed'
-import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@jojo/service/core/frequency'
+import { bucketKey, bucketKeys, sentOn } from '@jojo/service/core/frequency'
 import { searchHealthFor, statsFor } from '@jojo/service/core/statistics'
 import { useRoles } from '@/lib/roles-context'
 import { useRoleVocabulary } from '@jojo/service/react/use-roles'
@@ -34,6 +35,8 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { NextSteps } from '@/components/statistics/NextSteps'
 import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
+import { useDomain } from '@/i18n/domain'
+import { useAdvice } from '@/i18n/advice'
 
 /**
  * Below three plotted axes a radar is a line or a triangle with nothing to
@@ -42,6 +45,11 @@ import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
 const MIN_AXES = 3
 
 export function StatisticsScreen() {
+  const { t, i18n } = useTranslation('screens')
+  // The frequency chart's axis labels are worded in the language on screen.
+  const language = i18n.language
+  const domain = useDomain()
+  const advice = useAdvice()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { all, sourceCounts } = useApplications()
@@ -99,6 +107,7 @@ export function StatisticsScreen() {
    * applied in draws a gap instead of closing up into a straight line.
    */
   const buckets = useMemo(() => {
+    void language
     const dated = all.filter((a) => sentOn(a) !== undefined)
     const dates = dated.map((a) => sentOn(a) as string)
     // Always includes today, so an empty store still draws a frame and a record
@@ -114,27 +123,28 @@ export function StatisticsScreen() {
       if (row) row[a.roleTag] += 1
     }
     return keys.map((key) => ({
-      label: bucketLabel(key, period),
+      label: domain.bucketLabel(key, period),
       counts: counts.get(key) ?? blank(),
     }))
-  }, [all, period, vocabulary])
+  }, [all, period, vocabulary, domain, language])
 
   // Nothing on this screen survives a zero: a rate has no denominator, a funnel
   // has no first step, and every panel would be an invented search sitting
   // beside a store the user has just emptied.
   if (all.length === 0) {
     return (
-      <Screen
-        title="Statistics"
-        subtitle="Nothing to measure yet — this screen fills in as you add applications."
-      >
+      <Screen title={t('statistics.title')} subtitle={t('statistics.emptySubtitle')}>
         <Panel>
           <EmptyState
             icon="bar-chart-2"
-            title="No applications to measure"
-            description="Response rates, a funnel and a week-by-week chart all need records to count. Add the first one and this starts filling in."
+            title={t('statistics.emptyTitle')}
+            description={t('statistics.emptyDescription')}
             action={
-              <Button label="New application" icon="plus" onPress={() => open('application')} />
+              <Button
+                label={t('applications.newApplication')}
+                icon="plus"
+                onPress={() => open('application')}
+              />
             }
           />
         </Panel>
@@ -149,22 +159,18 @@ export function StatisticsScreen() {
   return (
     <Screen
       wide
-      title="Statistics"
-      subtitle={
-        sent > 0
-          ? 'Counted from your own records. Figures labelled typical are a sample search, there to compare against.'
-          : 'Counted from your own records. It fills in as applications go out.'
-      }
+      title={t('statistics.title')}
+      subtitle={sent > 0 ? t('statistics.subtitleSent') : t('statistics.subtitleNone')}
       options={
         sent > 0 ? (
           <SettingRow
-            label="Compare with a typical search"
-            description="A sample figure beside each headline number"
+            label={t('statistics.compare')}
+            description={t('statistics.compareDescription')}
             control={
               <Toggle
                 value={showTypical}
                 onValueChange={setShowTypical}
-                label="Compare with a typical search"
+                label={t('statistics.compare')}
               />
             }
           />
@@ -178,29 +184,32 @@ export function StatisticsScreen() {
             rate over an empty denominator is a made-up number. */}
         {sent > 0 ? (
           <View style={styles.kpiGrid}>
-            {kpis.map((k) => (
-              <Panel key={k.label} style={styles.kpi}>
-                <Txt size="xs" tone="secondary">
-                  {k.label}
-                </Txt>
-                <View style={styles.kpiValue}>
-                  <Txt size="xxl" weight="semibold">
-                    {k.value}
+            {kpis.map((kpi) => {
+              const k = domain.kpi(kpi)
+              return (
+                <Panel key={kpi.id} style={styles.kpi}>
+                  <Txt size="xs" tone="secondary">
+                    {k.label}
                   </Txt>
-                  {/* No arrow and no colour. This slot used to hold "+6 points"
+                  <View style={styles.kpiValue}>
+                    <Txt size="xxl" weight="semibold">
+                      {k.value}
+                    </Txt>
+                    {/* No arrow and no colour. This slot used to hold "+6 points"
                       under an up arrow — a claim about change over time that the
                       store has no history to support. */}
-                  {showTypical ? (
-                    <Txt size="xs" tone="muted">
-                      {k.typical}
-                    </Txt>
-                  ) : null}
-                </View>
-                <Txt size="xs" tone="muted">
-                  {k.note}
-                </Txt>
-              </Panel>
-            ))}
+                    {showTypical ? (
+                      <Txt size="xs" tone="muted">
+                        {k.typical}
+                      </Txt>
+                    ) : null}
+                  </View>
+                  <Txt size="xs" tone="muted">
+                    {k.note}
+                  </Txt>
+                </Panel>
+              )
+            })}
           </View>
         ) : null}
 
@@ -214,9 +223,11 @@ export function StatisticsScreen() {
         <WhatIsWorking />
 
         <Panel>
-          <PanelTitle hint="by the role each was for">Applications over time</PanelTitle>
+          <PanelTitle hint={t('statistics.overTime.hint')}>
+            {t('statistics.overTime.title')}
+          </PanelTitle>
           <Segment
-            label="Period"
+            label={t('statistics.overTime.period')}
             options={PERIODS}
             value={period}
             onChange={setPeriod}
@@ -244,13 +255,14 @@ export function StatisticsScreen() {
             />
           </View>
           <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-            Each period is its own window, so totals differ between them — a quarter covers earlier
-            searches, a week only this season.
+            {t('statistics.overTime.note')}
           </Txt>
         </Panel>
 
         <Panel>
-          <PanelTitle hint={`${all.length} tracked`}>Where they came from</PanelTitle>
+          <PanelTitle hint={t('statistics.sources.hint', { count: all.length })}>
+            {t('statistics.sources.title')}
+          </PanelTitle>
           <View style={styles.donutRow}>
             <Donut
               slices={sourceCounts.map((source, i) => ({
@@ -259,7 +271,7 @@ export function StatisticsScreen() {
                 color: c.ramp[i % c.ramp.length],
               }))}
               centerValue={String(all.length)}
-              centerLabel="tracked"
+              centerLabel={t('statistics.sources.center')}
             />
             <View style={s.fill}>
               {sourceCounts.map((source, i) => (
@@ -292,18 +304,18 @@ export function StatisticsScreen() {
           {/* The hint is load-bearing, not decoration. Only the current stage is
               stored, so a record rejected after an interview counts as far as the
               dates it carries and no further. */}
-          <PanelTitle hint={sent > 0 ? 'as far as each record shows' : undefined}>
-            How far applications got
+          <PanelTitle hint={sent > 0 ? t('statistics.asFarAsShown') : undefined}>
+            {t('statistics.funnel.title')}
           </PanelTitle>
 
           {sent === 0 ? (
             <EmptyState
               icon="send"
-              title="Nothing has been sent yet"
-              description="Reply, interview and offer rates all count applications that have actually gone out. Move one out of Draft and this fills in."
+              title={t('statistics.funnel.emptyTitle')}
+              description={t('statistics.funnel.emptyDescription')}
               action={
                 <Button
-                  label="Open applications"
+                  label={t('statistics.openApplications')}
                   variant="outline"
                   onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
                 />
@@ -318,7 +330,7 @@ export function StatisticsScreen() {
                   <View key={step.stage}>
                     <View style={styles.funnelHead}>
                       <Txt size="sm" tone="secondary" style={s.fill}>
-                        {step.stage}
+                        {domain.funnel(step.stage)}
                       </Txt>
                       <Txt size="sm" mono>
                         {step.count}
@@ -332,7 +344,7 @@ export function StatisticsScreen() {
                     <Meter value={step.count} max={sent} color={c.info} />
                     {prev ? (
                       <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
-                        {share(step.count, prev.count)}% carried through
+                        {t('statistics.funnel.carried', { pct: share(step.count, prev.count) })}
                       </Txt>
                     ) : null}
                   </View>
@@ -348,16 +360,16 @@ export function StatisticsScreen() {
           <PanelTitle
             hint={
               outcomeTotal === all.length
-                ? `${all.length} ${all.length === 1 ? 'application' : 'applications'}`
-                : `${outcomeTotal} of ${all.length}`
+                ? t('statistics.outcomes.count', { count: all.length })
+                : t('statistics.outcomes.partial', { shown: outcomeTotal, total: all.length })
             }
           >
-            Outcomes
+            {t('statistics.outcomes.title')}
           </PanelTitle>
 
           <StackedStrip
             slices={visibleOutcomes.map((o) => ({
-              label: o.label,
+              label: domain.band(o.label),
               value: o.count,
               color: OUTCOME_RAMP[outcomes.indexOf(o) % OUTCOME_RAMP.length],
             }))}
@@ -368,9 +380,13 @@ export function StatisticsScreen() {
           {outcomeToggle.allHidden ? (
             <View style={styles.allHidden}>
               <Txt size="xs" tone="muted">
-                Every outcome is switched off.
+                {t('statistics.outcomes.allOff')}
               </Txt>
-              <Button label="Show all" variant="outline" onPress={outcomeToggle.showAll} />
+              <Button
+                label={t('statistics.showAll')}
+                variant="outline"
+                onPress={outcomeToggle.showAll}
+              />
             </View>
           ) : null}
 
@@ -398,7 +414,7 @@ export function StatisticsScreen() {
                     style={[s.fill, off && s.struck]}
                     numberOfLines={1}
                   >
-                    {o.label}
+                    {domain.band(o.label)}
                   </Txt>
                   <Txt size="sm" mono tone={off ? 'muted' : 'primary'}>
                     {o.count}
@@ -414,26 +430,26 @@ export function StatisticsScreen() {
 
         <Panel>
           <PanelTitle
-            hint={health.length >= MIN_AXES ? 'your figures against a typical search' : undefined}
+            hint={health.length >= MIN_AXES ? t('statistics.health.hint') : undefined}
             right={
               health.length >= MIN_AXES ? (
                 <Chip size="sm" tone="gray">
-                  Sample
+                  {t('statistics.health.sample')}
                 </Chip>
               ) : undefined
             }
           >
-            What to work on next
+            {t('statistics.health.title')}
           </PanelTitle>
 
           {health.length < MIN_AXES ? (
             <EmptyState
               icon="compass"
-              title="Not enough to compare yet"
-              description="This weighs your replies, interviews, referrals and follow-ups against a typical search. It needs applications that have actually gone out."
+              title={t('statistics.health.emptyTitle')}
+              description={t('statistics.health.emptyDescription')}
               action={
                 <Button
-                  label="Open applications"
+                  label={t('statistics.openApplications')}
                   variant="outline"
                   onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
                 />
@@ -444,16 +460,20 @@ export function StatisticsScreen() {
               {radarToggle.allHidden ? (
                 <View style={styles.allHidden}>
                   <Txt size="xs" tone="muted">
-                    Both series are switched off.
+                    {t('statistics.health.allOff')}
                   </Txt>
-                  <Button label="Show all" variant="outline" onPress={radarToggle.showAll} />
+                  <Button
+                    label={t('statistics.showAll')}
+                    variant="outline"
+                    onPress={radarToggle.showAll}
+                  />
                 </View>
               ) : (
                 <Radar
-                  axes={health.map((a) => a.axis)}
+                  axes={health.map((a) => advice.axis(a.id))}
                   series={[
-                    { key: 'you', label: 'Yours', color: c.series[0] },
-                    { key: 'target', label: 'Typical', color: c.text3 },
+                    { key: 'you', label: t('statistics.health.yours'), color: c.series[0] },
+                    { key: 'target', label: t('statistics.health.typical'), color: c.text3 },
                   ]
                     .filter((s) => !radarToggle.isHidden(s.key))
                     .map((s) => ({
@@ -467,8 +487,8 @@ export function StatisticsScreen() {
               <View style={{ alignItems: 'center', marginTop: space[2] }}>
                 <ChartLegend
                   items={[
-                    { key: 'you', label: 'Yours', color: c.series[0] },
-                    { key: 'target', label: 'Typical', color: c.text3 },
+                    { key: 'you', label: t('statistics.health.yours'), color: c.series[0] },
+                    { key: 'target', label: t('statistics.health.typical'), color: c.text3 },
                   ]}
                   isHidden={radarToggle.isHidden}
                   onToggle={radarToggle.toggle}
@@ -481,29 +501,33 @@ export function StatisticsScreen() {
                 uppercase
                 style={{ marginTop: space[4], marginBottom: space[2] }}
               >
-                Suggestions, most useful first
+                {t('statistics.health.suggestions')}
               </Txt>
-              {ranked.map((a, i) => (
-                <View key={a.axis}>
-                  {i > 0 ? <Divider /> : null}
-                  <View style={styles.suggestion}>
-                    <Txt size="xs" tone="muted" mono style={{ marginTop: 2 }}>
-                      {i + 1}
-                    </Txt>
-                    <View style={s.fill}>
-                      <Txt size="sm">
-                        {a.axis}{' '}
-                        <Txt size="xs" tone="muted">
-                          {a.basis}
+              {ranked.map((a, i) => {
+                // The axis's own figures, said in the language on screen.
+                const said = advice.health(a)
+                return (
+                  <View key={a.id}>
+                    {i > 0 ? <Divider /> : null}
+                    <View style={styles.suggestion}>
+                      <Txt size="xs" tone="muted" mono style={{ marginTop: 2 }}>
+                        {i + 1}
+                      </Txt>
+                      <View style={s.fill}>
+                        <Txt size="sm">
+                          {said.axis}{' '}
+                          <Txt size="xs" tone="muted">
+                            {said.basis}
+                          </Txt>
                         </Txt>
-                      </Txt>
-                      <Txt size="xs" tone="muted" style={{ marginTop: 2 }}>
-                        {a.suggestion}
-                      </Txt>
+                        <Txt size="xs" tone="muted" style={{ marginTop: 2 }}>
+                          {said.suggestion}
+                        </Txt>
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                )
+              })}
             </>
           )}
         </Panel>
@@ -512,26 +536,26 @@ export function StatisticsScreen() {
             role the user has never applied for is data the screen invented. */}
         {roles.length > 0 ? (
           <Panel>
-            <PanelTitle hint="as far as each record shows">
-              How each kind of role is going
+            <PanelTitle hint={t('statistics.asFarAsShown')}>
+              {t('statistics.roles.title')}
             </PanelTitle>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View>
                 <View style={styles.tableHead}>
                   <Txt size="xs" tone="muted" style={styles.colRole}>
-                    Roles
+                    {t('statistics.roles.roles')}
                   </Txt>
                   <Txt size="xs" tone="muted" style={styles.colNum}>
-                    Applied
+                    {t('statistics.roles.applied')}
                   </Txt>
                   <Txt size="xs" tone="muted" style={styles.colNum}>
-                    Replied
+                    {t('statistics.roles.replied')}
                   </Txt>
                   <Txt size="xs" tone="muted" style={styles.colNum}>
-                    Interviews
+                    {t('statistics.roles.interviews')}
                   </Txt>
                   <Txt size="xs" tone="muted" style={styles.colNum}>
-                    Offers
+                    {t('statistics.roles.offers')}
                   </Txt>
                 </View>
                 {roles.map((r, i) => (

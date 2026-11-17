@@ -1,0 +1,27 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "实测",
+        "hint": "根据你自己的记录统计"
+      },
+      "suggested": {
+        "label": "建议",
+        "hint": "通用建议，或与典型求职情况而非你的情况对比得出"
+      }
+    },
+    "title": "下一步做什么",
+    "intro": "先按你的记录支持程度排序，再按成本从低到高排序。"
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} / {{of}}",
+    "rate": "{{rate}}% · 可能在 {{range}}",
+    "groupReplied": "回复情况（按{{dimension}}）",
+    "groupInterviews": "面试情况（按{{dimension}}）",
+    "confident": "区间没有重叠，所以这是真实的差异——{{best}}更值得你投入精力。",
+    "unconfident": "区间有重叠，所以这只是两个数字，而不是差异。更多记录会把它们分开，或缩小差距。",
+    "tooFew_other": "另有 {{count}} 个分组的记录少于 {{min}} 条，未参与比较。",
+    "title": "哪些做法有效",
+    "intro": "色条表示真实比率可能所在的范围；竖线是你实测的值。色条越宽，说明记录越少，还无法确定。"
+  }
+}

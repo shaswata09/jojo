@@ -1,14 +1,16 @@
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Scale } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { annualised, comparable, parseComp } from '@jojo/service/core/comp'
 import type { ParsedComp } from '@jojo/service/core/comp'
-import { offerDaysLeft, shortDate } from '@jojo/service/core/dates'
+import { offerDaysLeft } from '@jojo/service/core/dates'
 import { displayName } from '@/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useKg } from '@jojo/service/react/kg-context'
 import { appPath } from '@/lib/links'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Two offers, side by side, on the one screen where a decision gets made.
@@ -32,6 +34,8 @@ import { appPath } from '@/lib/links'
  * compare. Mixed currencies still list, and simply are not ranked.
  */
 export function OfferComparison() {
+  const { t, i18n } = useTranslation('dashboard')
+  const domain = useDomain()
   const { offers } = useApplications()
   const { today } = useKg()
 
@@ -57,10 +61,10 @@ export function OfferComparison() {
 
   return (
     <Panel>
-      <PanelTitle hint={`${offers.length} open`}>
+      <PanelTitle hint={t('offers.open', { count: offers.length })}>
         <span className="inline-flex items-center gap-2">
           <Scale className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-          Offers, side by side
+          {t('offers.title')}
         </span>
       </PanelTitle>
 
@@ -70,23 +74,20 @@ export function OfferComparison() {
               reaching the table by its own list of tables arrives at four
               column names and no subject. Same treatment as the guide's
               directory table, which is the pattern here. */}
-          <caption className="sr-only">
-            Your open offers, with the package as you typed it, a yearly reading of it, and the date
-            each one has to be answered by
-          </caption>
+          <caption className="sr-only">{t('offers.caption')}</caption>
           <thead>
             <tr className="text-xs text-text-3">
-              <th scope="col" className="py-2 pr-3 text-left font-normal">
-                Job
+              <th scope="col" className="py-2 pe-3 text-start font-normal">
+                {t('offers.columns.job')}
               </th>
-              <th scope="col" className="py-2 pr-3 text-left font-normal">
-                Package
+              <th scope="col" className="py-2 pe-3 text-start font-normal">
+                {t('offers.columns.package')}
               </th>
-              <th scope="col" className="py-2 pr-3 text-right font-normal">
-                A year
+              <th scope="col" className="py-2 pe-3 text-end font-normal">
+                {t('offers.columns.year')}
               </th>
-              <th scope="col" className="py-2 text-right font-normal">
-                Respond by
+              <th scope="col" className="py-2 text-end font-normal">
+                {t('offers.columns.respondBy')}
               </th>
             </tr>
           </thead>
@@ -101,7 +102,7 @@ export function OfferComparison() {
                       "A year, 180,000" with no idea whose offer that is, which
                       on the one screen where two packages are being weighed
                       against each other is the whole content of the row. */}
-                  <th scope="row" className="py-2.5 pr-3 text-left font-normal">
+                  <th scope="row" className="py-2.5 pe-3 text-start font-normal">
                     <Link
                       to={appPath(application)}
                       className="text-text-1 underline-offset-2 hover:text-accent hover:underline"
@@ -115,62 +116,61 @@ export function OfferComparison() {
 
                   {/* The user's own words, always. The figure beside them is a
                       reading of this, never a replacement for it. */}
-                  <td className="py-2.5 pr-3 text-text-2">
-                    {application.offer.comp || <span className="text-text-3">not stated</span>}
+                  <td className="py-2.5 pe-3 text-text-2">
+                    {application.offer.comp || (
+                      <span className="text-text-3">{t('offers.notStated')}</span>
+                    )}
                   </td>
 
-                  <td className="tabular py-2.5 pr-3 text-right font-mono">
+                  <td className="tabular py-2.5 pe-3 text-end font-mono">
                     {yearly === undefined ? (
-                      <span
-                        className="text-text-3"
-                        title="No amount could be read from the package"
-                      >
+                      <span className="text-text-3" title={t('offers.noAmount')}>
                         {/* The dash is a typographic stand-in and announces as
                             one; `title` is the sighted hover and reaches
                             neither a screen reader nor a keyboard. The reason
                             the cell is empty is the information. */}
                         <span aria-hidden>—</span>
-                        <span className="sr-only">No amount could be read from the package</span>
+                        <span className="sr-only">{t('offers.noAmount')}</span>
                       </span>
                     ) : (
                       <span
                         className={
                           best !== undefined && yearly === best ? 'text-success' : 'text-text-1'
                         }
-                        title={`Read from “${p?.matched ?? ''}”`}
+                        title={t('offers.readFrom', { text: p?.matched ?? '' })}
                       >
-                        {yearly.toLocaleString()}
+                        {yearly.toLocaleString(i18n.language)}
                         {/* The green was the ONLY thing saying which offer is
                             the bigger one — colour alone, on the row that
                             carries the decision. Said out loud here as well,
                             for a screen reader and for the ~8% of men who
                             cannot take a green as a signal. */}
                         {best !== undefined && yearly === best ? (
-                          <span className="sr-only"> — the highest here</span>
+                          <span className="sr-only"> {t('offers.highest')}</span>
                         ) : null}
                         {p && p.period !== 'year' ? (
                           <>
                             <span className="text-text-3" aria-hidden>
                               *
                             </span>
-                            <span className="sr-only"> (annualised)</span>
+                            <span className="sr-only"> {t('offers.annualised')}</span>
                           </>
                         ) : null}
                       </span>
                     )}
                   </td>
 
-                  <td className="py-2.5 text-right">
+                  <td className="py-2.5 text-end">
                     <div className="tabular font-mono text-text-2">
-                      {shortDate(application.offer.respondBy)}
+                      {domain.shortDate(application.offer.respondBy)}
                     </div>
                     <div className="mt-0.5">
                       <Chip tone={daysLeft <= 3 ? 'red' : daysLeft <= 7 ? 'amber' : 'gray'}>
                         {daysLeft < 0
-                          ? 'passed'
+                          ? t('offers.passed')
                           : daysLeft === 0
-                            ? 'today'
-                            : `${daysLeft} day${daysLeft === 1 ? '' : 's'}`}
+                            ? t('offers.today')
+                            : t('offers.daysLeft', { count: daysLeft })}
                       </Chip>
                     </div>
                   </td>
@@ -182,12 +182,8 @@ export function OfferComparison() {
       </div>
 
       <p className="mt-2.5 text-xs text-text-3">
-        {rankable
-          ? 'The yearly figure is read from what you typed — hover one to see which words it came from.'
-          : 'These are not ranked: the packages are in different currencies, and jojo has no exchange rate and makes no network call to find one.'}
-        {anyDerived || anyAssumed
-          ? ' * annualised at 12 months, 52 weeks or 2,080 hours, which is a convention rather than your contract.'
-          : ''}
+        {rankable ? t('offers.ranked') : t('offers.unranked')}
+        {anyDerived || anyAssumed ? ` ${t('offers.annualisedNote')}` : ''}
       </p>
     </Panel>
   )

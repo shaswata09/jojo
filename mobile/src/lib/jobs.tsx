@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { i18next } from '@/i18n/i18n'
 import type { ReactNode } from 'react'
 import { JobsProvider } from '@jojo/service/react/jobs-provider'
 import type { Job } from '@jojo/service/core/jobs'
@@ -43,14 +44,14 @@ export function AppJobsProvider({ children }: { children: ReactNode }) {
     if (job.notify !== true || job.state === 'cancelled') return
     if (job.state === 'done') {
       say.current({
-        title: `${job.label} is ready`,
-        description: 'Saved under the application it was written for.',
+        title: i18next.t('messages:jobs.ready', { label: job.label }),
+        description: i18next.t('messages:jobs.readyBody'),
       })
       return
     }
     if (job.state === 'failed') {
       say.current({
-        title: `${job.label} did not finish`,
+        title: i18next.t('messages:jobs.failed', { label: job.label }),
         description: job.error ?? '',
         tone: 'danger',
       })

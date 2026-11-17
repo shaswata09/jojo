@@ -1,0 +1,50 @@
+{
+  "chatWithJojo": "Chat with jojo",
+  "newConversation": "New conversation",
+  "newAboutOpen": "New conversation about the open application",
+  "hideConversations": "Hide conversations",
+  "showConversations": "Show conversations",
+  "undo": "Undo",
+  "overflow_one": "{{count}} more open conversation",
+  "overflow_other": "{{count}} more open conversations",
+  "grip": {
+    "labelCorner": "Move chat sideways — in the corner. Arrow keys move it; double-click returns it to the corner.",
+    "labelFarLeft": "Move chat sideways — at the far left. Arrow keys move it; double-click returns it to the corner.",
+    "labelFarRight": "Move chat sideways — at the far right. Arrow keys move it; double-click returns it to the corner.",
+    "labelPartWay": "Move chat sideways — {{percent}}% of the way left. Arrow keys move it; double-click returns it to the corner.",
+    "labelPartWayRight": "Move chat sideways — {{percent}}% of the way right. Arrow keys move it; double-click returns it to the corner.",
+    "title": "Drag to move the chat out of the way · double-click to return it to the corner"
+  },
+  "prompts": {
+    "about": {
+      "left": "What is left to do for this application?",
+      "followUp": "Draft a follow-up email for this one",
+      "summarise": "Summarise this application"
+    },
+    "general": {
+      "waiting": "What am I waiting on?",
+      "noDeadline": "Which applications have no deadline?"
+    }
+  },
+  "window": {
+    "label": "Conversation: {{title}}",
+    "back": "Back to conversations",
+    "working": "Working",
+    "openInAssistant": "Open in the Assistant",
+    "open": "Open this conversation",
+    "minimise": "Minimise this conversation",
+    "close": "Close this conversation",
+    "closeTitle": "Close — it stays in your conversations",
+    "about": "About <name>{{name}}</name>",
+    "detachAria": "Start this conversation about nothing in particular",
+    "unfileAria": "Unfile this conversation from the application",
+    "detachTitle": "Not about this application",
+    "unfileTitle": "Unfile from this application",
+    "notConfigured": "Connect a model in <settings>Settings</settings> to chat with jojo here. Everything stays on this device.",
+    "askAbout": "Ask anything about {{name}} — jojo knows this is the application you mean.",
+    "askGeneral": "Ask jojo to find something, add an application, or move one along.",
+    "composerLabel": "Message jojo in {{title}}",
+    "placeholderAbout": "Ask about {{org}}…",
+    "placeholder": "Ask jojo…"
+  }
+}

@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link2 } from 'lucide-react'
 import {
   DEFAULT_THINKING,
@@ -22,6 +23,7 @@ import type { ProviderId } from '@jojo/service/core/provider'
 import { Shell } from '@/components/settings/PanelShell'
 import { SavedServers } from '@/components/settings/SavedServers'
 import { CloudTerms } from '@/components/settings/CloudTerms'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The reasoning choices a person is offered. `server-default` is left out on
@@ -29,10 +31,10 @@ import { CloudTerms } from '@/components/settings/CloudTerms'
  * started with" is not a choice anyone can make from this form.
  */
 const REASONING = [
-  { value: 'on', label: 'On' },
-  { value: 'low', label: 'Light' },
-  { value: 'off', label: 'Off' },
-] as const satisfies readonly { value: Thinking; label: string }[]
+  { value: 'on', key: 'model.reasoningOptions.on' },
+  { value: 'low', key: 'model.reasoningOptions.light' },
+  { value: 'off', key: 'model.reasoningOptions.off' },
+] as const satisfies readonly { value: Thinking; key: string }[]
 
 /**
  * Point the app at a model that is already running on this machine.
@@ -60,6 +62,8 @@ const REASONING = [
  * differently from Settings would be two things to keep in step.
  */
 export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
+  const { t, i18n } = useTranslation('settings')
+  const domain = useDomain()
   const { settings, servers, save, remember, rename, forget } = useModelSettings()
   /*
    * Started from what was stored, which is why a returning user is connected
@@ -268,7 +272,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   return (
     <Shell bare={bare} tour="model">
       <PanelTitle
-        hint="OpenAI-compatible"
+        hint={t('model.hint')}
         right={
           <button
             type="button"
@@ -278,30 +282,23 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             }}
             disabled={shown.length === 0}
             aria-expanded={listOpen}
-            title={
-              shown.length === 0
-                ? 'Nothing saved yet — test a connection and the address is kept'
-                : 'Saved servers'
-            }
+            title={shown.length === 0 ? t('model.savedNone') : t('model.savedServers')}
           >
             <Link2 className="size-4" aria-hidden />
-            <span className="sr-only">Saved servers</span>
+            <span className="sr-only">{t('model.savedServers')}</span>
           </button>
         }
       >
-        Model
+        {t('model.title')}
       </PanelTitle>
-      <p className="mb-3 text-sm text-text-2">
-        A model on this machine, or one you pay for. Local is the default because it is the only
-        option where your records never leave the device.
-      </p>
+      <p className="mb-3 text-sm text-text-2">{t('model.intro')}</p>
 
       {/* The provider first, because every field under it depends on the answer:
           a local server needs an address, a cloud one needs a key and has its
           address already. */}
       <div className="mb-3">
         <label className="mb-1.5 block text-sm font-medium" htmlFor={providerId}>
-          Provider
+          {t('model.provider')}
         </label>
         <select
           id={providerId}
@@ -341,7 +338,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
         >
           {PROVIDERS.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.label}
+              {domain.provider(p.id)}
             </option>
           ))}
         </select>
@@ -360,7 +357,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       <div className="space-y-3">
         {provider.fixedEndpoint ? null : (
           <Field
-            label="Endpoint"
+            label={t('model.endpoint.label')}
             mono
             type="url"
             spellCheck={false}
@@ -368,8 +365,8 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             placeholder={provider.endpoint || 'http://localhost:8000/v1'}
             hint={
               provider.dialect === 'ollama'
-                ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
-                : 'The base URL, ending in /v1.'
+                ? t('model.endpoint.hintOllama')
+                : t('model.endpoint.hint')
             }
             onChange={(e) => {
               onEndpointChange(e.target.value)
@@ -379,7 +376,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
 
         {provider.needsKey ? (
           <Field
-            label="API key"
+            label={t('model.apiKey.label')}
             mono
             type="password"
             spellCheck={false}
@@ -395,7 +392,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
              * inside the records — which is why a backup export cannot contain
              * it even by accident.
              */
-            hint="Kept in this browser only. It is never put in a backup and never sent anywhere but the provider."
+            hint={t('model.apiKey.hint')}
             onChange={(e) => {
               // A new key is a new question. Leaving the previous verdict up
               // would show "Connected" for credentials nothing has tried.
@@ -410,15 +407,23 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             cannot find the page does not get an agent at all. */}
         {provider.needsKey && provider.keyUrl ? (
           <p className="-mt-1 text-xs text-text-3">
-            <a
-              href={provider.keyUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-2 hover:text-text-1"
-            >
-              Get a key from {provider.label.split(' —')[0].split(' (')[0]}
-            </a>
-            {provider.billed ? null : ' — free, no card.'}
+            {/* One sentence with the link inside it, so "free, no card" can sit
+                wherever the language puts it rather than glued on after. */}
+            <Trans
+              t={t}
+              i18nKey={provider.billed ? 'model.getKeyLink' : 'model.getKeyFree'}
+              values={{ provider: provider.label.split(' —')[0].split(' (')[0] }}
+              components={{
+                anchor: (
+                  <a
+                    href={provider.keyUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-2 hover:text-text-1"
+                  />
+                ),
+              }}
+            />
           </p>
         ) : null}
         {/*
@@ -437,18 +442,14 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          * itself.
          */}
         <Field
-          label="Model"
+          label={t('model.modelField.label')}
           mono
           spellCheck={false}
           value={model}
           placeholder={
-            connected ? '' : provider.modelLooksLike || 'The model id, from your provider'
+            connected ? '' : provider.modelLooksLike || t('model.modelField.placeholder')
           }
-          hint={
-            connected
-              ? 'What the server reported. Change it if you serve more than one.'
-              : 'Test the connection to fill this from the server, or type the id yourself.'
-          }
+          hint={connected ? t('model.modelField.hintConnected') : t('model.modelField.hint')}
           onChange={(e) => {
             // Typing a model id is not evidence that anything answered — which
             // is exactly the bug this replaced.
@@ -463,11 +464,11 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             label for a connection that does not exist. */}
         {connected ? (
           <Field
-            label="Saved as"
+            label={t('model.savedAs.label')}
             spellCheck={false}
             value={name}
             placeholder={model}
-            hint="What this server is called in the list. Defaults to the model."
+            hint={t('model.savedAs.hint')}
             onChange={(e) => {
               setNameEdit(e.target.value)
             }}
@@ -491,7 +492,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          * guessed. Typing a number opts into both halves at once.
          */}
         <Field
-          label="Context window"
+          label={t('model.contextWindow.label')}
           mono
           inputMode="numeric"
           spellCheck={false}
@@ -499,8 +500,12 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
           placeholder={String(provider.defaultContext)}
           hint={
             provider.dialect === 'ollama'
-              ? `Tokens. Leave empty to use ${provider.defaultContext.toLocaleString()} and let Ollama size itself; a number here is also sent as num_ctx.`
-              : `Tokens your deployment can hold. Leave empty for ${provider.defaultContext.toLocaleString()}.`
+              ? t('model.contextWindow.hintOllama', {
+                  tokens: provider.defaultContext.toLocaleString(i18n.language),
+                })
+              : t('model.contextWindow.hint', {
+                  tokens: provider.defaultContext.toLocaleString(i18n.language),
+                })
           }
           onChange={(e) => {
             setWindowEdit(e.target.value.replace(/[^0-9]/g, ''))
@@ -522,12 +527,12 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          */}
         {sendsThinking(provider.id, 'on') ? (
           <SettingRow
-            label="Reasoning"
-            description="Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
+            label={t('model.reasoning.label')}
+            description={t('model.reasoning.description')}
             control={
               <Segment
-                label="Reasoning"
-                options={REASONING}
+                label={t('model.reasoning.label')}
+                options={REASONING.map(({ value, key }) => ({ value, label: t(key) }))}
                 value={
                   settings.thinking === undefined || settings.thinking === 'server-default'
                     ? DEFAULT_THINKING
@@ -554,19 +559,23 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
           variant="outline"
           size="sm"
           disabled={testing || endpoint.trim().length === 0}
-          title={endpoint.trim().length === 0 ? 'Fill in an endpoint first' : undefined}
+          title={endpoint.trim().length === 0 ? t('model.fillEndpoint') : undefined}
           onClick={() => {
             void onTest()
           }}
         >
-          {testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
+          {testing
+            ? t('shared.testing')
+            : connected
+              ? t('shared.testAgain')
+              : t('shared.testConnection')}
         </Button>
         {connected ? (
-          <Chip tone="green">Connected</Chip>
+          <Chip tone="green">{t('shared.connected')}</Chip>
         ) : failure ? (
-          <Chip tone="red">No answer</Chip>
+          <Chip tone="red">{t('shared.noAnswer')}</Chip>
         ) : (
-          <Chip tone="gray">Not connected</Chip>
+          <Chip tone="gray">{t('shared.notConnected')}</Chip>
         )}
       </div>
 
@@ -582,9 +591,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       {failure ? (
         <p className="mt-2 text-xs text-danger">{failure.reason}</p>
       ) : connected ? (
-        <p className="mt-2 text-xs text-text-3">
-          Kept in this browser. The assistant will use this model.
-        </p>
+        <p className="mt-2 text-xs text-text-3">{t('model.connectedNote')}</p>
       ) : null}
     </Shell>
   )

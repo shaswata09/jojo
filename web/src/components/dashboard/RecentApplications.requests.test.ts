@@ -3,7 +3,7 @@
  * default, whose notes persist and can become a reminder.
  *
  * Persistence is the `sticky.note.*` tools (`service/test/coverage.test.ts`)
- * and the note-to-reminder rule is `reminderFromNote` (`lib/sticky.test.ts`).
+ * and the note-to-reminder rule is `reminderFromNote` (`service/kg/core/sticky.test.ts`).
  * What neither can see is the card: that the toggle exists, that it opens on
  * the notes, and that the board writes through the store and hands a note to
  * the reminder dialog through that rule. D20 bans mounting, so this is a
@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import en from '@/i18n/locales/en/dashboard.json'
 
 const sources = import.meta.glob(
   ['/src/components/dashboard/RecentApplications.tsx', '/src/components/dashboard/StickyBoard.tsx'],
@@ -22,10 +23,9 @@ const board = sources['/src/components/dashboard/StickyBoard.tsx'] ?? ''
 
 describe('the Recent applications card (Q289)', () => {
   it('toggles between the notes and the recent list', () => {
-    expect(card).toMatch(
-      /const VIEWS = \[\s*\{ value: 'notes', label: 'Notes' \},\s*\{ value: 'recent', label: 'Recent applications' \},\s*\] as const/,
-    )
-    expect(card).toMatch(/<Segment options=\{VIEWS\} value=\{view\} onChange=\{choose\}/)
+    expect(card).toMatch(/const VIEWS = \['notes', 'recent'\] as const/)
+    expect(en.recent.views).toEqual({ notes: 'Notes', recent: 'Recent applications' })
+    expect(card).toMatch(/<Segment options=\{views\} value=\{view\} onChange=\{choose\}/)
     expect(card).toContain("{view === 'notes' ? <StickyBoard /> : <RecentList />}")
   })
 

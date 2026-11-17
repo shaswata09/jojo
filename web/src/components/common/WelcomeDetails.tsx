@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { UserRound } from 'lucide-react'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { Button } from '@/components/ui/button'
@@ -68,6 +69,7 @@ export function WelcomeDetails({
   fresh: boolean
   onDone: () => void
 }) {
+  const { t } = useTranslation()
   const { profile, update } = useProfile()
   // Blank on a first run, whatever the store holds.
   //
@@ -138,14 +140,10 @@ export function WelcomeDetails({
       <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserRound className="size-4 text-accent" strokeWidth={1.8} aria-hidden />A little about
-            you
+            <UserRound className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
+            {t('welcome.title')}
           </DialogTitle>
-          <DialogDescription>
-            Drafts sign off with your name, and the scout scores against what you are looking for.
-            All of it stays on this machine, and all of it is optional — you can fill it in later
-            under Profile.
-          </DialogDescription>
+          <DialogDescription>{t('welcome.description')}</DialogDescription>
         </DialogHeader>
 
         <form
@@ -156,27 +154,27 @@ export function WelcomeDetails({
           }}
         >
           <Field
-            label="Full name"
+            label={t('welcome.fullName')}
             value={draft.fullName}
             autoComplete="name"
             autoFocus
-            placeholder="e.g. Lonardo Jenson"
+            placeholder={t('welcome.fullNameExample')}
             onChange={set('fullName')}
           />
           <Field
-            label="Current position"
+            label={t('welcome.position')}
             value={draft.position}
-            placeholder="e.g. PhD candidate, Computer Science"
+            placeholder={t('welcome.positionExample')}
             onChange={set('position')}
           />
           <Field
-            label="Location"
+            label={t('welcome.location')}
             value={draft.location}
-            placeholder="e.g. Santa Clara, CA"
+            placeholder={t('welcome.locationExample')}
             onChange={set('location')}
           />
           <Field
-            label="Email"
+            label={t('welcome.email')}
             type="email"
             value={draft.email}
             autoComplete="email"
@@ -187,27 +185,31 @@ export function WelcomeDetails({
 
           <DialogFooter className="mt-1 sm:col-span-2">
             <Button type="button" variant="ghost" onClick={dismiss}>
-              Skip for now
+              {t('welcome.skip')}
             </Button>
             {/* Disabled only when there is genuinely nothing to write, so the
                 button never claims to have saved an empty form. Skip is right
                 there and does the same thing honestly. */}
             <Button type="submit" disabled={!anything}>
-              Save and continue
+              {t('welcome.save')}
             </Button>
           </DialogFooter>
         </form>
 
         <p className="text-xs text-text-3">
-          The rest — links, target roles, the terms the scout matches on — lives under{' '}
           {/* A router Link: a bare anchor skips `basename`, so this pointed at
               the domain root and 404ed wherever the app is served from a
               subpath — and it reloaded the document, which kills any agent run
               still working. */}
-          <Link className="text-text-1 underline underline-offset-2" to={profilePath()}>
-            Profile
-          </Link>
-          .
+          <Trans
+            t={t}
+            i18nKey="welcome.rest"
+            components={{
+              anchor: (
+                <Link className="text-text-1 underline underline-offset-2" to={profilePath()} />
+              ),
+            }}
+          />
         </p>
       </DialogContent>
     </Dialog>

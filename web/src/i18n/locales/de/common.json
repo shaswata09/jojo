@@ -4,5 +4,271 @@
     "description": "Die Sprache, in der jojo angezeigt wird. Deine Einträge bleiben in der Sprache, in der du sie geschrieben hast.",
     "system": "Wie dieser Browser ({{name}})",
     "loadFailed": "Diese Sprache konnte nicht geladen werden. jojo bleibt auf {{name}}."
+  },
+  "buckets": {
+    "overdue": "Überfällig",
+    "today": "Heute",
+    "upcoming": "Demnächst",
+    "done": "Erledigt"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Morgen",
+      "later": "Einen Tag später",
+      "duration": "Ein Tag"
+    },
+    "threeDays": {
+      "soon": "In 3 Tagen",
+      "later": "Drei Tage später",
+      "duration": "Drei Tage"
+    },
+    "week": {
+      "soon": "In 7 Tagen",
+      "later": "Eine Woche später",
+      "duration": "Eine Woche"
+    }
+  },
+  "routeFailure": {
+    "title": "Diese Seite wurde nicht geladen",
+    "subtitle": "Der Rest von jojo läuft weiter.",
+    "emptyTitle": "In dieser Ansicht ist etwas kaputtgegangen",
+    "emptyDescription": "Wechsle kurz woandershin und komm zurück, dann wird sie neu geladen. Passiert das jedes Mal, liegt es an den Einträgen, die diese Seite anzeigt – in den Einstellungen kannst du vorher ein Backup machen.",
+    "back": "Zurück zum Dashboard"
+  },
+  "writeResult": {
+    "title": "Das wurde nicht gespeichert",
+    "refused": "Die Änderung wurde abgelehnt."
+  },
+  "copy": {
+    "blocked": "Blockiert",
+    "copied": "Kopiert",
+    "copy": "Kopieren"
+  },
+  "drag": {
+    "theItem": "das Element",
+    "aTarget": "ein Ablageziel",
+    "start": "{{name}} aufgenommen.",
+    "over": "{{name}} ist über {{place}}.",
+    "notOver": "{{name}} ist über keinem Ablageziel mehr.",
+    "dropped": "{{name}} wurde auf {{place}} abgelegt.",
+    "droppedHome": "{{name}} wurde am Ausgangspunkt abgelegt.",
+    "cancelled": "Ziehen abgebrochen. {{name}} wurde an seinen Platz zurückgelegt.",
+    "instructions": "Um ein verschiebbares Element aufzunehmen, drücke die Leertaste.\nVerschiebe das Element beim Ziehen mit den Pfeiltasten.\nDrücke erneut die Leertaste, um es an der neuen Position abzulegen, oder Escape, um abzubrechen."
+  },
+  "actions": {
+    "undo": "Rückgängig",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "close": "Schließen"
+  },
+  "records_one": "{{count}} Eintrag",
+  "records_other": "{{count}} Einträge",
+  "deleteKeyword": {
+    "failed": "Das wurde nicht gelöscht",
+    "stillThere": "{{name}} ist weiterhin ein Stichwort.",
+    "deleted": "{{name}} gelöscht",
+    "wasUnused": "Es war an keinem Eintrag.",
+    "takenOff_one": "Von {{count}} Eintrag und aus dem Stichwortfilter entfernt.",
+    "takenOff_other": "Von {{count}} Einträgen und aus dem Stichwortfilter entfernt.",
+    "confirmTitle": "{{name}} löschen?",
+    "confirmTitleAny": "Stichwort löschen?",
+    "unused": "Noch an keinem Eintrag, daher ändert sich sonst nichts.",
+    "usedOn_one": "An {{count}} Eintrag verwendet. Der Eintrag bleibt – er verliert nur dieses Stichwort.",
+    "usedOn_other": "An {{count}} Einträgen verwendet. Die Einträge bleiben – sie verlieren nur dieses Stichwort.",
+    "confirm": "Stichwort löschen"
+  },
+  "bucketFilter": {
+    "all": "Alle"
+  },
+  "marks": {
+    "bold": "fett",
+    "italic": "kursiv",
+    "underlined": "unterstrichen"
+  },
+  "pageHeader": {
+    "options": "Optionen: {{title}}"
+  },
+  "errorBoundary": {
+    "title": "Etwas ist kaputtgegangen",
+    "body": "Eine Ansicht konnte nicht dargestellt werden. „Erneut versuchen“ baut sie neu auf, ohne die Seite neu zu laden.",
+    "retry": "Erneut versuchen"
+  },
+  "tone": {
+    "colourFor": "Farbe für {{label}}",
+    "anyColourFor": "Beliebige Farbe für {{label}}"
+  },
+  "boot": {
+    "takingLong": "Deine lokale Datenbank braucht länger als üblich zum Öffnen. Vielleicht hält ein anderer jojo-Tab sie fest – die anderen zu schließen, gibt sie meist frei.",
+    "opening": "Deine lokale Datenbank wird geöffnet …"
+  },
+  "keywordPicker": {
+    "none": "Noch keine",
+    "choose": "Stichwörter wählen",
+    "heading": "Stichwörter",
+    "newPlaceholder": "Neues Stichwort …",
+    "new": "Neues Stichwort"
+  },
+  "rowMenu": {
+    "moreFor": "Weitere Aktionen für {{name}}",
+    "more": "Weitere Aktionen"
+  },
+  "firstRun": {
+    "title": "Wie möchtest du starten?",
+    "description": "jojo speichert alles auf diesem Gerät, also entscheidest du. Keine Antwort ist endgültig – du kannst die Demodaten später laden oder alle Einträge löschen, über die Einstellungen.",
+    "demo": {
+      "title": "Mit Demodaten erkunden",
+      "detail": "Eine fertige Jobsuche zum Umsehen – zwölf Bewerbungen, eine Zeitleiste, ein gefüllter Tresor. Nichts davon gehört dir, und es später zu löschen, ist ein Klick.",
+      "working": "Wird geladen …"
+    },
+    "empty": {
+      "title": "Leer starten",
+      "detail": "Gar keine Demoeinträge. Jede Seite öffnet sich leer, und das Erste in jojo ist etwas, das du selbst hinzugefügt hast.",
+      "working": "Wird geleert …"
+    }
+  },
+  "recovery": {
+    "title": "jojo kann seine Datenbank nicht lesen",
+    "body": "Deine Einträge sind noch auf diesem Gerät. jojo hat nichts geändert oder ersetzt und lädt auch keine Demodaten darüber – ein Speicher, der sich selbst neu befüllt, um gesund auszusehen, würde daraus einen dauerhaften Datenverlust machen.",
+    "downloadHint": "Schreibt die lesbaren Zeilen in eine Datei",
+    "downloadNothing": "Die Datenbank konnte gar nicht gelesen werden, daher gibt es nichts zu schreiben",
+    "download": "Herunterladen, was lesbar war",
+    "working": "Wird ausgeführt …",
+    "retry": "Erneut versuchen",
+    "freshHint": "Löscht die Datenbank und startet jojo wie neu",
+    "fresh": "Neu anfangen",
+    "readable_one": "{{count}} Zeile war lesbar – lade sie zuerst herunter, denn Neu anfangen löscht sie.",
+    "readable_other": "{{count}} Zeilen waren lesbar – lade sie zuerst herunter, denn Neu anfangen löscht sie.",
+    "unreadable": "Aus dem Speicher ließ sich nichts lesen, daher gibt es nichts herunterzuladen. Versuch es zuerst erneut: Eine Datenbank, die ein anderer Tab offen hält, schlägt genau so fehl und erholt sich von selbst.",
+    "confirmTitle": "Datenbank löschen und neu anfangen?",
+    "confirmBody": "Das löscht die lokale Datenbank von jojo und alles, was noch darin ist, und beginnt dann bei null – einschließlich der Frage beim ersten Start, ob mit Demodaten oder leer begonnen wird. Es repariert nichts und lässt sich nicht rückgängig machen. Wenn du die lesbaren Zeilen noch nicht heruntergeladen hast, brich ab und hol das zuerst nach.",
+    "confirm": "Löschen und neu anfangen"
+  },
+  "labelFilter": {
+    "label": "Nach Stichwort filtern",
+    "none": "Noch keine Stichwörter – füge eines hinzu, um danach zu filtern.",
+    "example": "z. B. Entwickler",
+    "add": "Stichwort hinzufügen",
+    "clear": "Zurücksetzen"
+  },
+  "labelPicker": {
+    "editOn": "Stichwörter von {{name}} bearbeiten",
+    "edit": "Stichwörter bearbeiten"
+  },
+  "keywordChip": {
+    "taken": "Ein anderes Stichwort hat schon diesen Namen.",
+    "needsName": "Ein Stichwort braucht einen Namen.",
+    "rename": "Umbenennen",
+    "colour": "Farbe",
+    "stopFiltering": "Nicht mehr nach {{name}} filtern",
+    "filterBy": "Nach {{name}} filtern",
+    "edit": "Stichwort {{name}} bearbeiten",
+    "editHint": "Umbenennen, umfärben oder löschen"
+  },
+  "welcome": {
+    "title": "Ein bisschen über dich",
+    "description": "Entwürfe enden mit deinem Namen, und der Scout bewertet nach dem, was du suchst. Alles bleibt auf diesem Gerät, und alles ist optional – du kannst es später unter Profil ausfüllen.",
+    "fullName": "Vollständiger Name",
+    "fullNameExample": "z. B. Lonardo Jenson",
+    "position": "Aktuelle Position",
+    "positionExample": "z. B. Doktorand, Informatik",
+    "location": "Ort",
+    "locationExample": "z. B. Santa Clara, CA",
+    "email": "E-Mail",
+    "skip": "Vorerst überspringen",
+    "save": "Speichern und weiter",
+    "rest": "Der Rest – Links, Zielrollen, die Begriffe, nach denen der Scout sucht – steht unter <anchor>Profil</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Lust auf eine Tour zum Mitmachen?",
+    "tourDescription": "Ein Rundgang durch die echten Seiten – ein Spotlight auf jeden Teil, wofür er da ist, und du probierst alles direkt aus. Die Tour tippt, speichert oder ändert nie etwas für dich und merkt sich, wo du aufgehört hast.",
+    "notNow": "Jetzt nicht",
+    "start": "Tour starten",
+    "always": "Sie ist immer unter <em>Anleitung</em> zu finden, also kostet ein Nein jetzt nichts."
+  },
+  "setup": {
+    "skip": "Vorerst überspringen",
+    "continue": "Weiter",
+    "done": "Fertig",
+    "optional": "Alles davon ist optional, und du kannst es später in den Einstellungen einrichten.",
+    "model": {
+      "title": "Ein Modell verbinden",
+      "body": "Das macht jojo zu einem Agenten statt zu einem Aktenschrank: Es kann dann Fragen zu deiner Suche beantworten, Nachfassmails und Entwürfe schreiben und die Job-Scout-Pipelines ausführen, die deine Einträge vervollständigen und nach Stellen Ausschau halten. Richte es auf ein Modell auf deinem eigenen Rechner aus, dann verlässt nichts das Gerät."
+    },
+    "reader": {
+      "title": "Lass es deine Dokumente lesen",
+      "body": "Ohne das sieht der Assistent nur den Namen eines Dokuments. Starte MarkItDown auf diesem Rechner – zwei Befehle, siehe unten – und er kann lesen, was in deinen Lebensläufen, Anschreiben und gespeicherten Stellen steht, wenn er entwirft und antwortet."
+    },
+    "crash": {
+      "title": "Absturzberichte und Nutzung",
+      "description": "Zwei getrennte Dinge, beide an – schalte eines davon hier oder später in den Einstellungen aus. Keines kann deine Einträge enthalten: keine Bewerbung, kein Dokument, keine Notiz, kein Profil, kein Gespräch.",
+      "inReport": "Was in einem Bericht steht",
+      "inError": "Die Fehlermeldung und wo in jojo sie auftrat.",
+      "inStack": "Der Stacktrace, der den fehlgeschlagenen Code nennt.",
+      "never": "Was nie darin steht",
+      "neverRecords": "Deine Bewerbungen, Dokumente, Notizen, dein Profil oder deine Gespräche.",
+      "neverSecrets": "Deine API-Schlüssel, die Adressen, die du nutzt, dein Home-Verzeichnis oder E-Mail-Adressen – sie werden entfernt, bevor ein Bericht geschrieben wird, nicht erst vor dem Senden.",
+      "where": "In diesem Browser und in der jojo-Erweiterung <em>bleiben Absturzberichte auf diesem Gerät</em>: Nichts wird hochgeladen, und eine Backup-Datei enthält sie nicht. Du liest sie selbst in den Einstellungen. In der jojo-App fürs Handy wird derselbe Bericht außerdem an Firebase Crashlytics von Google gesendet, das dein Gerätemodell, die Version des Betriebssystems und eine zufällige ID ergänzt, um zu zählen, wie viele Menschen auf denselben Absturz stoßen – kein Name, kein Konto, nichts, was mit dir verknüpft ist. Nutzungszahlen, der zweite Schalter unten, gehen aus jeder Version an Google Analytics, auch aus dieser.",
+      "keep": "Absturzberichte behalten",
+      "keepHint": "Der Fehler und wo er auftrat. Bleibt im Browser auf diesem Gerät.",
+      "share": "Teilen, welche Funktionen ich nutze",
+      "shareHint": "Nur Zählungen – welche Bildschirme wie oft geöffnet werden. Nie, was darin steht.",
+      "usageNote": "Der zweite ist das Einzige, was jojo darüber sendet, was du TUST, und er kann nur Dinge aus einer festen Liste sagen – „der Tresor wurde geöffnet“, „eine Bewerbung wurde hinzugefügt“, „es sind 6–20 davon“. Er kann keinen Arbeitgeber, keine Rolle, keine Datei und nichts, was du getippt hast, nennen, weil diese Wörter nicht in der Liste stehen. Er geht an Google Analytics, damit wir sehen, welche Teile von jojo mehr Arbeit verdienen.",
+      "bothOff": "Beide ausschalten",
+      "save": "Auswahl speichern",
+      "continueOff": "Mit beiden aus fortfahren",
+      "later": "Du kannst beides jederzeit in den Einstellungen ändern, und wenn du eines ausschaltest, wird auch verworfen, was es gesammelt hat."
+    },
+    "extension": {
+      "title": "Behalte die Stellen, auf die du dich bewirbst",
+      "body": "Stellenanzeigen verschwinden, oft bevor du eine Antwort hast. Die Browsererweiterung speichert eine Stelle so, wie sie heute aussieht, in deinem eigenen Tresor – und über sie liest der Job Scout auch die Jobbörsen, denen du folgst."
+    }
+  },
+  "spectrum": {
+    "saturation": "Sättigung und Helligkeit",
+    "hue": "Farbton",
+    "hex": "Hex-Farbe",
+    "any": "Beliebige Farbe"
+  },
+  "field": {
+    "openInTab": "{{label}} in neuem Tab öffnen",
+    "hide": "{{label}} verbergen",
+    "show": "{{label}} anzeigen"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Klein",
+      "normal": "Normal",
+      "large": "Groß",
+      "huge": "Riesig"
+    },
+    "clearFormatting": "Formatierung entfernen",
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "underline": "Unterstrichen",
+    "strikeThrough": "Durchgestrichen",
+    "insertUnorderedList": "Aufzählung",
+    "insertOrderedList": "Nummerierte Liste",
+    "snippetText": "Text des Bausteins",
+    "fontSize": "Schriftgröße",
+    "insertTable": "Tabelle einfügen",
+    "textColour": "Textfarbe"
+  },
+  "toolForm": {
+    "aRecord": "ein Eintrag",
+    "yourProfile": "Dein Profil"
+  },
+  "toolRun": {
+    "choose": "Auswählen …",
+    "none": "Keine",
+    "omitted_one": "Nicht in diesem Formular: {{fields}}. Öffne den Eintrag, um es festzulegen.",
+    "omitted_other": "Nicht in diesem Formular: {{fields}}. Öffne den Eintrag, um sie festzulegen."
+  },
+  "toast": {
+    "notifications": "Benachrichtigungen",
+    "dismiss": "Schließen – {{title}}"
+  },
+  "command": {
+    "title": "Befehlspalette",
+    "description": "Nach einem Befehl suchen ..."
   }
 }

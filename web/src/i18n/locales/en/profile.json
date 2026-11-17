@@ -1,0 +1,175 @@
+{
+  "shared": {
+    "undo": "Undo",
+    "cancel": "Cancel",
+    "add": "Add",
+    "discard": "Discard",
+    "save": "Save",
+    "didNotSave": "That did not save"
+  },
+  "saveBar": {
+    "unsaved": "Unsaved changes — saving writes them to this browser."
+  },
+  "form": {
+    "saved": {
+      "title": "Profile saved",
+      "description": "Written to this browser and kept."
+    }
+  },
+  "fields": {
+    "basics": "Basics",
+    "fullName": {
+      "label": "Full name",
+      "placeholder": "e.g. Lonardo Jenson"
+    },
+    "position": {
+      "label": "Current position",
+      "placeholder": "e.g. PhD candidate, Computer Science"
+    },
+    "location": {
+      "label": "Location",
+      "placeholder": "e.g. Santa Clara, CA"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "links": "Links",
+    "website": {
+      "label": "Website"
+    }
+  },
+  "interests": {
+    "title": "Interests and targets",
+    "hint": "drives scout matching",
+    "matchTerms": {
+      "title": "Match terms",
+      "description": "Research areas and phrasings the scout looks for. Separate from the keywords you file records under.",
+      "remove": "Remove {{term}}",
+      "newLabel": "New match term",
+      "placeholder": "Add a match term"
+    },
+    "targetRoles": {
+      "label": "Target roles",
+      "placeholder": "e.g. Assistant professor (TT) · Research scientist"
+    },
+    "regions": {
+      "label": "Preferred regions",
+      "placeholder": "e.g. Texas · remote"
+    },
+    "academia": "Include academia postings",
+    "industry": "Include industry postings"
+  },
+  "roleTags": {
+    "title": "Role tags",
+    "description": "The kinds of role you are tracking. Every application is filed under one, and the role filter and the per-role figures in Statistics both read it. Removing one here leaves the applications that carry it exactly where they are.",
+    "remove_one": "Remove {{role}}, used on {{count}} application",
+    "remove_other": "Remove {{role}}, used on {{count}} applications",
+    "newLabel": "New role tag",
+    "placeholder": "e.g. Data scientist"
+  },
+  "documents": {
+    "title": "Documents",
+    "hint": "the Vault's {{bucket}} bucket",
+    "upload": "Upload",
+    "exportInSettings": "Export in Settings",
+    "empty": {
+      "title": "No documents yet",
+      "description": "Drop your CV and statements here, or choose them — they are filed in the Vault under {{bucket}}, where the rest of the app can reach them.",
+      "upload": "Upload a document"
+    },
+    "footer": "The same files as the Vault's <anchor>Files tool</anchor>, filtered to {{bucket}}. Drop a document here or choose one and the file itself is kept in this browser — nothing is uploaded anywhere. Click one to read it."
+  },
+  "documentTile": {
+    "open": "Open {{name}}",
+    "meta": "{{size}} · saved {{ago}}",
+    "delete": "Delete {{name}}"
+  },
+  "background": {
+    "title": "Your background",
+    "hint_one": "{{count}} recorded · what a posting is weighed against",
+    "hint_other": "{{count}} recorded · what a posting is weighed against",
+    "details_one": "{{count}} detail",
+    "details_other": "{{count}} details",
+    "readFromDocument": "read from a document",
+    "edit": "Edit {{title}}",
+    "remove": "Remove {{title}}",
+    "added": "{{title}} added",
+    "updated": "{{title}} updated",
+    "removed": "{{title}} removed",
+    "addEntry": "Add an entry",
+    "form": {
+      "kind": "Kind",
+      "title": "Title",
+      "titlePlaceholder": "What it was",
+      "where": "Where",
+      "optional": "Optional",
+      "when": "When",
+      "whenPlaceholder": "As written — “2021–2024”",
+      "year": "Year",
+      "detail": "Detail",
+      "detailPlaceholder": "Anything worth weighing a posting against (optional)",
+      "highlights": "Highlights",
+      "highlightsHint": "One per line — what was built, shipped, taught or found.",
+      "readKept": "read from a document — your edit is kept over the reading",
+      "saveChanges": "Save changes"
+    },
+    "empty": {
+      "title": "Nothing recorded yet",
+      "configured": "Put your CV, a research or teaching statement in the Vault and jojo will offer to read it — what it finds is shown to you before anything is saved. Or add an entry by hand.",
+      "unconfigured": "Reading a document needs a model. Connect one in Settings, then put your CV or a statement in the Vault and jojo will offer to read it. You can add entries by hand without one."
+    },
+    "readMenu": {
+      "needsModel": "Reading a document needs a model. Connect one in Settings.",
+      "button": "Read a document",
+      "nothing": "Nothing in the Vault can be read yet. Drop your CV or a statement in and it appears here.",
+      "allRead": "Everything readable in the Vault has been read.",
+      "read": "read"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Education",
+      "employment": "Employment",
+      "publication": "Publication",
+      "skill": "Skill",
+      "teaching": "Teaching",
+      "award": "Award",
+      "service": "Service",
+      "certification": "Certification",
+      "language": "Language",
+      "project": "Project",
+      "volunteering": "Volunteering",
+      "membership": "Membership",
+      "grant": "Grant",
+      "patent": "Patent"
+    },
+    "skipped_one": "{{count}} entry was skipped",
+    "skipped_other": "{{count}} entries were skipped",
+    "readIt": "Read it",
+    "readFailed": "Reading the document failed.",
+    "notNow": "Not now",
+    "discardEntries": "Discard these entries",
+    "review": {
+      "single": "1 entry read from this document",
+      "some": "{{kept}} of {{total}} entries will be added",
+      "untick": "Untick anything it got wrong.",
+      "add": "Add {{title}}",
+      "connections_one": "{{count}} connection between them",
+      "connections_other": "{{count}} connections between them",
+      "addOne": "Add it to my profile",
+      "addMany": "Add {{total}} to my profile"
+    },
+    "toast": {
+      "already": "Already on your profile",
+      "added_one": "{{count}} added to your profile",
+      "added_other": "{{count}} added to your profile",
+      "nothing": "Nothing could be added",
+      "readFrom": "Read from {{name}}.",
+      "known": "{{known}} of {{total}} were already known.",
+      "related_one": "{{count}} connection between them recorded.",
+      "related_other": "{{count}} connections between them recorded.",
+      "weigh": "jojo can now weigh a posting against what you have done.",
+      "refused": "The entries were refused."
+    }
+  }
+}

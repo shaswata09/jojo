@@ -25,7 +25,7 @@ describe('the full-screen PDF notes drawer (Q061)', () => {
     const aside = fullView.indexOf('<aside')
     expect(frame).toBeGreaterThan(-1)
     expect(aside).toBeGreaterThan(frame)
-    expect(fullView).toMatch(/<aside className="[^"]*\bborder-l\b/)
+    expect(fullView).toMatch(/<aside className="[^"]*\bborder-s\b/)
   })
 
   it('is written in the rich text editor', () => {
@@ -48,15 +48,49 @@ describe('the full-screen snippet editor (Q061)', () => {
   it('renders the same form full screen, title and keywords included', () => {
     expect(snippet).toMatch(/<FullScreenDialog[\s\S]*?>\s*\{form\}\s*<\/FullScreenDialog>/)
     const form = snippet.slice(snippet.indexOf('const form = ('), snippet.indexOf('return full ?'))
-    expect(form).toMatch(/<Field\s+label="Title"/)
+    expect(form).toMatch(/<Field\s+label=\{t\('snippets\.editor\.title\.label'\)\}/)
     expect(form).toMatch(/<KeywordPicker\b/)
   })
 
   it('drops its own Close button full screen, leaving the dialog’s X as the only one', () => {
     // The form's Close button exists only outside full screen…
-    expect(snippet).toMatch(/\{full \? null : \(\s*<Button[\s\S]*?onClick=\{requestClose\}[\s\S]*?Close\s*<\/Button>\s*\)\}/)
+    expect(snippet).toMatch(
+      /\{full \? null : \(\s*<Button[\s\S]*?onClick=\{requestClose\}[\s\S]*?\{t\('common\.close'\)\}\s*<\/Button>\s*\)\}/,
+    )
     // …and the full-screen dialog does not add a second close of its own.
     const dialog = strip(fullScreenSource)
     expect(dialog).not.toContain('showCloseButton={false}')
+  })
+})
+
+describe('switching documents in the viewer (web-4)', () => {
+  // The note draft is reset from the stored note, which is the same string for
+  // two files with no note — so without a key, one file's unsaved note opened
+  // on the next, and Save wrote it there.
+  const sites = import.meta.glob(
+    ['/src/components/vault/FilesTool.tsx', '/src/components/profile/DocumentsPanel.tsx'],
+    { query: '?raw', import: 'default', eager: true },
+  ) as Record<string, string>
+  const hook = import.meta.glob('/src/components/profile/use-document-viewer.ts', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>
+
+  it('is keyed by the file at every call site, so a draft never carries over', () => {
+    expect(sites['/src/components/vault/FilesTool.tsx']).toMatch(
+      /<FileViewer\s+file=\{open\}[\s\S]*?key=\{open\.id\}/,
+    )
+    expect(sites['/src/components/profile/DocumentsPanel.tsx']).toMatch(
+      /<FileViewer\s+file=\{viewer\.openDoc\}[\s\S]*?key=\{viewer\.openDoc\.id\}/,
+    )
+  })
+
+  it('drops the last document’s bytes before reading the next one', () => {
+    for (const source of [sites['/src/components/vault/FilesTool.tsx'], ...Object.values(hook)]) {
+      expect(source).toMatch(
+        /useEffect\(\(\) => \{[\s\S]*?setOpenBlob\(null\)\s*if \(openId === null\) return/,
+      )
+    }
   })
 })

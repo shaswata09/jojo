@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -50,6 +51,7 @@ import { space } from '@/theme/tokens'
  * cover letter that it prints `[YOUR NAME]`.
  */
 export function Onboarding({ fresh }: { fresh: boolean }) {
+  const { t } = useTranslation(['components', 'common'])
   const c = useColors()
   const { isBlank } = useProfile()
   const [offered, setOffered] = useState<Record<OnboardingStage, boolean> | null>(null)
@@ -94,13 +96,18 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
       <Sheet
         open
         onClose={() => finish('model')}
-        title="Connect a model?"
-        description="This is what makes jojo agentic rather than a filing cabinet. With one connected it answers questions about your search, drafts follow-ups against your own records, and reads documents you add."
+        title={t('onboarding.model.title')}
+        description={t('onboarding.model.description')}
         footer={
           <>
-            <Button label="Not now" variant="ghost" size="md" onPress={() => finish('model')} />
             <Button
-              label="Set one up"
+              label={t('common:actions.notNow')}
+              variant="ghost"
+              size="md"
+              onPress={() => finish('model')}
+            />
+            <Button
+              label={t('onboarding.model.action')}
               size="md"
               onPress={() => {
                 // Marked before navigating, not after: the sheet unmounts on
@@ -118,12 +125,11 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
           <View style={s.row}>
             <Feather name="cpu" size={15} color={c.accent} />
             <Txt size="sm" tone="secondary" style={s.fill}>
-              Point it at a server on your own machine — vLLM, Ollama or LM Studio — and nothing
-              leaves the device.
+              {t('onboarding.model.local')}
             </Txt>
           </View>
           <Txt size="xs" tone="muted">
-            Everything else works without one. It is under More → Settings whenever you want it.
+            {t('onboarding.model.later')}
           </Txt>
         </View>
       </Sheet>
@@ -145,13 +151,18 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
       <Sheet
         open
         onClose={() => finish('tour')}
-        title="Want a hands-on tour?"
-        description="A hands-on walk through the real screens — what each part is for, with a spotlight on it, and you try each thing as you go."
+        title={t('onboarding.tour.title')}
+        description={t('onboarding.tour.description')}
         footer={
           <>
-            <Button label="Not now" variant="ghost" size="md" onPress={() => finish('tour')} />
             <Button
-              label="Start the tour"
+              label={t('common:actions.notNow')}
+              variant="ghost"
+              size="md"
+              onPress={() => finish('tour')}
+            />
+            <Button
+              label={t('onboarding.tour.action')}
               size="md"
               onPress={() => {
                 // Answers the offer, then walks the real screens — the tour is
@@ -167,11 +178,11 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
           <View style={s.row}>
             <Feather name="compass" size={15} color={c.accent} />
             <Txt size="sm" tone="secondary" style={s.fill}>
-              It changes nothing — no record is written and no setting is touched.
+              {t('onboarding.tour.safe')}
             </Txt>
           </View>
           <Txt size="xs" tone="muted">
-            It is always there under More → How to use, so saying no now costs nothing.
+            {t('onboarding.tour.later')}
           </Txt>
         </View>
       </Sheet>

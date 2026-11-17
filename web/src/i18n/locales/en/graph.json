@@ -1,0 +1,117 @@
+{
+  "common": {
+    "connections_one": "{{count}} connection",
+    "connections_other": "{{count}} connections",
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records"
+  },
+  "legend": {
+    "show": "Show {{name}}",
+    "hide": "Hide {{name}}",
+    "allHidden": "Every kind of record is hidden.",
+    "showAll": "Show all",
+    "isA": "is a"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Knowledge graph — {{records}}, {{connections}}",
+    "capped": "Showing the {{shown}} most connected records. {{dropped}} more are in the store but not on this canvas — narrow it with the filters to see them.",
+    "description": "Each record is a node and each pointer between records is a line. The panels beside this graph list the same information as text."
+  },
+  "answer": {
+    "title": "Answer",
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records",
+    "prompt": "Pick an example, or build a pattern, and the answer appears here and lights up in the graph above.",
+    "emptyTitle": "No records match",
+    "clear": "Clear the query",
+    "caption": "Records matching the pattern",
+    "columns": {
+      "record": "Record",
+      "kind": "Kind",
+      "matched": "Matched"
+    },
+    "open": "Open",
+    "select": "Select in the graph",
+    "via": "via {{rel}}",
+    "more_one": "{{names}} +{{count}} more",
+    "more_other": "{{names}} +{{count}} more",
+    "showing": "Showing the first {{shown}} of {{total}}. Every one of them is lit in the graph above."
+  },
+  "examples": {
+    "title": "Worked examples",
+    "nothingToAsk": "This session has nothing to ask that of"
+  },
+  "query": {
+    "title": "Ask the graph",
+    "hint": "Ask in a sentence, or build the question by hand",
+    "shape": "Question shape",
+    "pattern": "Pattern",
+    "path": "Path",
+    "generated": "Generated query",
+    "clear": "Clear",
+    "sqlNote": "The shape of the question, in SQL's words for readability. The query that actually runs is the structured one above it — nothing parses this line."
+  },
+  "fields": {
+    "records": "Records",
+    "anyRecord": "Any record",
+    "ofKind": "Of kind",
+    "anyKind": "Any kind",
+    "reminder": "Reminder",
+    "condition": "Condition",
+    "quantifier": {
+      "has": "has",
+      "missing": "has no",
+      "atLeast": "has at least"
+    },
+    "howMany": "How many",
+    "orMore_one": "{{count}} or more",
+    "orMore_other": "{{count}} or more",
+    "relationship": "Relationship",
+    "anyRelationship": "any relationship",
+    "connectedTo": "Connected to",
+    "anything": "anything",
+    "keyword": "Carrying keyword",
+    "anyKeyword": "any keyword",
+    "from": "From",
+    "to": "To"
+  },
+  "detail": {
+    "title": "Selected record",
+    "nothingSelected": "Nothing selected",
+    "pickHint": "Pick a node — by clicking it, or by tabbing to it and pressing Enter — to see what it connects to and where it lives in the app.",
+    "open": "Open {{type}}",
+    "openType": {
+      "application": "Open application",
+      "organisation": "Open organisation",
+      "role": "Open role",
+      "item": "Open timeline item",
+      "keyword": "Open keyword",
+      "link": "Open link",
+      "file": "Open file",
+      "snippet": "Open snippet",
+      "posting": "Open saved posting",
+      "match": "Open Scout match",
+      "source": "Open source",
+      "background": "Open \"About you\"",
+      "claim": "Open relation"
+    },
+    "derived": "Derived from your records — it has no page of its own.",
+    "verbs": "What you can do with it",
+    "noLinks": "Nothing points at this record yet."
+  },
+  "ask": {
+    "notConnected": "Connect a local model in <settings>Settings</settings> and you can ask this in a sentence. The builder below works either way.",
+    "label": "Ask the graph a question",
+    "stop": "Stop",
+    "submit": "Ask",
+    "again": "Ask something else",
+    "suggestions": {
+      "noFollowUp": "Which applications have no follow-up scheduled?",
+      "unfiled": "Which files are filed under nothing?",
+      "busy": "Which applications have more than two timeline items?"
+    }
+  }
+}

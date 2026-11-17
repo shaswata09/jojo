@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Check, Tag } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { inkStyle, toneClass } from '@/components/common/label-display'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -40,7 +41,8 @@ export function LabelPicker({
   const { labels, labelsOf, toggleOn, addLabel } = useLabels()
   const [draft, setDraft] = useState('')
   const mine = new Set(labelsOf(recordId).map((l) => l.id))
-  const trigger = name ? `Edit keywords on ${name}` : 'Edit keywords'
+  const { t } = useTranslation()
+  const trigger = name ? t('labelPicker.editOn', { name }) : t('labelPicker.edit')
 
   const create = () => {
     const typed = draft.trim()
@@ -70,7 +72,9 @@ export function LabelPicker({
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-56">
-        <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">Keywords</div>
+        <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">
+          {t('keywordPicker.heading')}
+        </div>
         <ul className="flex flex-col">
           {labels.map((l) => {
             const on = mine.has(l.id)
@@ -104,8 +108,8 @@ export function LabelPicker({
         <Input
           value={draft}
           autoComplete="off"
-          placeholder="New keyword…"
-          aria-label="New keyword"
+          placeholder={t('keywordPicker.newPlaceholder')}
+          aria-label={t('keywordPicker.new')}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (isCommitEnter(e)) {

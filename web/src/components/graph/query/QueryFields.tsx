@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { FormField } from '@/components/common/Field'
 import { GRAPH_RELS, NODE_TYPE_LABEL, REL_LABEL } from '@/lib/graph/model'
 import type { GraphNode, GraphNodeType } from '@/lib/graph/model'
 import { ITEM_FACETS } from '@/lib/graph/query'
 import type { ItemFacet, PathQuery, PatternQuery } from '@/lib/graph/query'
-import { KIND_LABEL } from '@/lib/timeline-visuals'
+import { domain } from '@/i18n/domain'
 import { truncate } from './truncate'
 
 /**
@@ -22,8 +24,12 @@ import { truncate } from './truncate'
 const SELECT_CLASS =
   'h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2 text-sm text-text-1 transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
 
-const facetLabel = (facet: ItemFacet) =>
-  facet === 'any' ? 'Any kind' : facet === 'reminder' ? 'Reminder' : KIND_LABEL[facet]
+const facetLabel = (facet: ItemFacet, t: TFunction<'graph'>) =>
+  facet === 'any'
+    ? t('fields.anyKind')
+    : facet === 'reminder'
+      ? t('fields.reminder')
+      : domain.kind(facet)
 
 export function PatternFields({
   fieldId,
@@ -39,16 +45,17 @@ export function PatternFields({
   keywords: GraphNode[]
   onEdit: (patch: Partial<PatternQuery>) => void
 }) {
+  const { t } = useTranslation('graph')
   return (
     <div className="grid gap-2.5 sm:grid-cols-2">
-      <FormField label="Records" htmlFor={`${fieldId}-start`}>
+      <FormField label={t('fields.records')} htmlFor={`${fieldId}-start`}>
         <select
           id={`${fieldId}-start`}
           className={SELECT_CLASS}
           value={pattern.start}
           onChange={(event) => onEdit({ start: event.target.value as PatternQuery['start'] })}
         >
-          <option value="any">Any record</option>
+          <option value="any">{t('fields.anyRecord')}</option>
           {presentTypes.map((type) => (
             <option key={type} value={type}>
               {NODE_TYPE_LABEL[type]}
@@ -58,7 +65,7 @@ export function PatternFields({
       </FormField>
 
       {pattern.start === 'item' ? (
-        <FormField label="Of kind" htmlFor={`${fieldId}-start-facet`}>
+        <FormField label={t('fields.ofKind')} htmlFor={`${fieldId}-start-facet`}>
           <select
             id={`${fieldId}-start-facet`}
             className={SELECT_CLASS}
@@ -67,14 +74,14 @@ export function PatternFields({
           >
             {ITEM_FACETS.map((facet) => (
               <option key={facet} value={facet}>
-                {facetLabel(facet)}
+                {facetLabel(facet, t)}
               </option>
             ))}
           </select>
         </FormField>
       ) : null}
 
-      <FormField label="Condition" htmlFor={`${fieldId}-quantifier`}>
+      <FormField label={t('fields.condition')} htmlFor={`${fieldId}-quantifier`}>
         <select
           id={`${fieldId}-quantifier`}
           className={SELECT_CLASS}
@@ -83,14 +90,14 @@ export function PatternFields({
             onEdit({ quantifier: event.target.value as PatternQuery['quantifier'] })
           }
         >
-          <option value="has">has</option>
-          <option value="missing">has no</option>
-          <option value="atLeast">has at least</option>
+          <option value="has">{t('fields.quantifier.has')}</option>
+          <option value="missing">{t('fields.quantifier.missing')}</option>
+          <option value="atLeast">{t('fields.quantifier.atLeast')}</option>
         </select>
       </FormField>
 
       {pattern.quantifier === 'atLeast' ? (
-        <FormField label="How many" htmlFor={`${fieldId}-at-least`}>
+        <FormField label={t('fields.howMany')} htmlFor={`${fieldId}-at-least`}>
           <select
             id={`${fieldId}-at-least`}
             className={SELECT_CLASS}
@@ -99,21 +106,21 @@ export function PatternFields({
           >
             {[2, 3, 4, 5].map((n) => (
               <option key={n} value={n}>
-                {n} or more
+                {t('fields.orMore', { count: n })}
               </option>
             ))}
           </select>
         </FormField>
       ) : null}
 
-      <FormField label="Relationship" htmlFor={`${fieldId}-rel`}>
+      <FormField label={t('fields.relationship')} htmlFor={`${fieldId}-rel`}>
         <select
           id={`${fieldId}-rel`}
           className={SELECT_CLASS}
           value={pattern.rel}
           onChange={(event) => onEdit({ rel: event.target.value as PatternQuery['rel'] })}
         >
-          <option value="any">any relationship</option>
+          <option value="any">{t('fields.anyRelationship')}</option>
           {GRAPH_RELS.map((rel) => (
             <option key={rel} value={rel}>
               {REL_LABEL[rel]} ({rel})
@@ -122,14 +129,14 @@ export function PatternFields({
         </select>
       </FormField>
 
-      <FormField label="Connected to" htmlFor={`${fieldId}-end`}>
+      <FormField label={t('fields.connectedTo')} htmlFor={`${fieldId}-end`}>
         <select
           id={`${fieldId}-end`}
           className={SELECT_CLASS}
           value={pattern.end}
           onChange={(event) => onEdit({ end: event.target.value as PatternQuery['end'] })}
         >
-          <option value="any">anything</option>
+          <option value="any">{t('fields.anything')}</option>
           {presentTypes.map((type) => (
             <option key={type} value={type}>
               {NODE_TYPE_LABEL[type]}
@@ -139,7 +146,7 @@ export function PatternFields({
       </FormField>
 
       {pattern.end === 'item' ? (
-        <FormField label="Of kind" htmlFor={`${fieldId}-end-facet`}>
+        <FormField label={t('fields.ofKind')} htmlFor={`${fieldId}-end-facet`}>
           <select
             id={`${fieldId}-end-facet`}
             className={SELECT_CLASS}
@@ -148,7 +155,7 @@ export function PatternFields({
           >
             {ITEM_FACETS.map((facet) => (
               <option key={facet} value={facet}>
-                {facetLabel(facet)}
+                {facetLabel(facet, t)}
               </option>
             ))}
           </select>
@@ -156,14 +163,14 @@ export function PatternFields({
       ) : null}
 
       {keywords.length > 0 ? (
-        <FormField label="Carrying keyword" htmlFor={`${fieldId}-keyword`}>
+        <FormField label={t('fields.keyword')} htmlFor={`${fieldId}-keyword`}>
           <select
             id={`${fieldId}-keyword`}
             className={SELECT_CLASS}
             value={pattern.keywordId ?? ''}
             onChange={(event) => onEdit({ keywordId: event.target.value || undefined })}
           >
-            <option value="">any keyword</option>
+            <option value="">{t('fields.anyKeyword')}</option>
             {keywords.map((keyword) => (
               <option key={keyword.id} value={keyword.id}>
                 {keyword.label}
@@ -190,9 +197,10 @@ export function PathFields({
   nodesByType: ReadonlyMap<GraphNodeType, GraphNode[]>
   onEdit: (patch: Partial<PathQuery>) => void
 }) {
+  const { t } = useTranslation('graph')
   return (
     <div className="grid gap-2.5 sm:grid-cols-2">
-      <FormField label="From" htmlFor={`${fieldId}-from`}>
+      <FormField label={t('fields.from')} htmlFor={`${fieldId}-from`}>
         <NodePicker
           id={`${fieldId}-from`}
           types={presentTypes}
@@ -201,7 +209,7 @@ export function PathFields({
           onChange={(id) => onEdit({ from: id })}
         />
       </FormField>
-      <FormField label="To" htmlFor={`${fieldId}-to`}>
+      <FormField label={t('fields.to')} htmlFor={`${fieldId}-to`}>
         <NodePicker
           id={`${fieldId}-to`}
           types={presentTypes}

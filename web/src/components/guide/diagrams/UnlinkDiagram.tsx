@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 import { Arrow } from '@/components/guide/diagrams/parts'
 
@@ -34,10 +35,11 @@ const REC_W = 112
 const REC_H = 34
 const REC_X = [16, 154, 292]
 
+/* `after` is a catalog key under `diagrams.unlink`; `type` and `rel` are names. */
 const RECORDS = [
-  { type: 'timelineItem', rel: 'ABOUT', after: 'about nothing' },
-  { type: 'keyword', rel: 'TAGS', after: 'tagging nothing' },
-  { type: 'file', rel: 'FILED_UNDER', after: 'filed under nothing' },
+  { type: 'timelineItem', rel: 'ABOUT', after: 'aboutNothing' },
+  { type: 'keyword', rel: 'TAGS', after: 'taggingNothing' },
+  { type: 'file', rel: 'FILED_UNDER', after: 'filedNothing' },
 ]
 
 const BEFORE_APP_Y = 26
@@ -46,6 +48,7 @@ const AFTER_APP_Y = 196
 const AFTER_REC_Y = 236
 
 export function UnlinkDiagram() {
+  const { t } = useTranslation('guideReference')
   const id = useId()
   const titleId = `${id}-title`
   const descId = `${id}-desc`
@@ -58,22 +61,12 @@ export function UnlinkDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>
-          Deleting an application removes the pointers to it and leaves every record that carried
-          one
-        </title>
-        <desc id={descId}>
-          Two states, one above the other. Before: an application, with a timeline item pointing at
-          it along an ABOUT edge, a keyword along a TAGS edge and a file along a FILED_UNDER edge.
-          The tool application.delete runs. After: the timeline item, the keyword and the file are
-          all still there, in the same places, carrying nothing — the timeline item is about
-          nothing, the keyword tags nothing, the file is filed under nothing. Only the application
-          and the three edges are gone. No record at the far end of an edge is touched.
-        </desc>
+        <title id={titleId}>{t('diagrams.unlink.title')}</title>
+        <desc id={descId}>{t('diagrams.unlink.desc')}</desc>
 
         {/* ------------------------------ before ---------------------------- */}
         <text x={6} y={16} fontSize={10} fill="var(--text-3)">
-          Before
+          {t('diagrams.unlink.before')}
         </text>
 
         <rect
@@ -136,7 +129,7 @@ export function UnlinkDiagram() {
 
         {/* ------------------------------- after ---------------------------- */}
         <text x={6} y={186} fontSize={10} fill="var(--text-3)">
-          After
+          {t('diagrams.unlink.after')}
         </text>
 
         <rect
@@ -157,7 +150,7 @@ export function UnlinkDiagram() {
           fontSize={10}
           fill="var(--text-3)"
         >
-          gone
+          {t('diagrams.unlink.gone')}
         </text>
 
         {RECORDS.map((record, i) => (
@@ -166,17 +159,12 @@ export function UnlinkDiagram() {
             x={REC_X[i] ?? 0}
             y={AFTER_REC_Y}
             type={record.type}
-            note={record.after}
+            note={t(`diagrams.unlink.${record.after}`)}
           />
         ))}
       </svg>
 
-      <figcaption className="mt-3 text-sm text-text-2">
-        The application and the three pointers at it are gone. The timeline item, the keyword and
-        the file are not — they are in the same places, carrying nothing, and every one of them is
-        still yours to open. Undo puts the edges back, because the write captured what each record
-        looked like before it ran rather than a note about how to reverse itself.
-      </figcaption>
+      <figcaption className="mt-3 text-sm text-text-2">{t('diagrams.unlink.caption')}</figcaption>
     </figure>
   )
 }

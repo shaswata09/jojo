@@ -48,10 +48,10 @@ export function useDocumentViewer(documents: readonly VaultFile[]) {
   }
 
   useEffect(() => {
-    if (openId === null) {
-      setOpenBlob(null)
-      return
-    }
+    // Cleared first, every time: until the new document's read resolves, the
+    // last one's bytes would otherwise sit under the new one's name.
+    setOpenBlob(null)
+    if (openId === null) return
     let live = true
     void blobs.get(openId).then((file) => {
       // Guarded: the viewer can be closed, or another row opened, while a large

@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
 /**
-  * One toolbar shape for every Vault tool: `[filter] … [search] [Add]`.
+ * One toolbar shape for every Vault tool: `[filter] … [search] [Add]`.
  *
  * The tabs used to disagree about everything above the list. Reminders led with
  * a prose count and a segmented control on the right; Links opened with a
@@ -84,7 +84,7 @@ export function VaultSearch({
       <Search
         aria-hidden
         strokeWidth={1.8}
-        className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-3"
+        className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3"
       />
       <Input
         id={id}
@@ -101,7 +101,7 @@ export function VaultSearch({
           event.preventDefault()
           onChange('')
         }}
-        className="pl-8"
+        className="ps-8"
       />
     </div>
   )

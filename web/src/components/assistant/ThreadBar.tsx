@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Briefcase, Check, Pencil, Trash2, X } from 'lucide-react'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { ApprovalMode, NodeId } from '@jojo/service/core/model'
-import { APPROVAL_LABEL, APPROVAL_MODES, APPROVAL_SAID } from '@jojo/service/core/model'
+import { APPROVAL_MODES } from '@jojo/service/core/model'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import { Chip } from '@/components/common/Chip'
@@ -11,6 +12,7 @@ import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { isCommitEnter } from '@/components/common/enter-key'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The open conversation: its name, the job it is about, and what you can do to it.
@@ -47,6 +49,8 @@ export function ThreadBar({
   onSetApproval: (id: NodeId, mode: ApprovalMode) => void
   busy: boolean
 }) {
+  const { t: tr } = useTranslation('assistant')
+  const domain = useDomain()
   const active = threads.find((t) => t.id === activeId) ?? null
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -66,7 +70,7 @@ export function ThreadBar({
                 value={draft}
                 autoFocus
                 className="h-8 max-w-xs"
-                aria-label="Conversation title"
+                aria-label={tr('threadBar.titleLabel')}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => {
                   if (isCommitEnter(e)) {
@@ -79,7 +83,7 @@ export function ThreadBar({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label="Save the title"
+                aria-label={tr('threadBar.saveTitle')}
                 onClick={() => {
                   onRename(active.id, draft)
                   setEditing(false)
@@ -90,7 +94,7 @@ export function ThreadBar({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label="Cancel"
+                aria-label={tr('threadBar.cancel')}
                 onClick={() => setEditing(false)}
               >
                 <X className="size-3.5" aria-hidden />
@@ -102,7 +106,7 @@ export function ThreadBar({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label="Rename this conversation"
+                aria-label={tr('threadBar.rename')}
                 onClick={() => {
                   setDraft(active.title)
                   setEditing(true)
@@ -127,7 +131,7 @@ export function ThreadBar({
               setFiling((v) => !v)
             }}
           >
-            {filedUnder ? 'Change job' : 'File under a job'}
+            {filedUnder ? tr('threadBar.changeJob') : tr('threadBar.fileUnder')}
           </Button>
 
           {/* Per conversation, not per app. The granularity people want is
@@ -140,15 +144,15 @@ export function ThreadBar({
               not for edits, and its label said only "act without asking". The
               hint under it names what each one lets through, since that is the
               part a person is actually deciding. */}
-          <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-text-3">Approval</span>
+          <div className="ms-auto flex items-center gap-2">
+            <span className="text-xs text-text-3">{tr('threadBar.approval')}</span>
             <Segment
-              options={APPROVAL_MODES.map((m) => ({ value: m, label: APPROVAL_LABEL[m] }))}
+              options={APPROVAL_MODES.map((m) => ({ value: m, label: domain.approval(m) }))}
               value={active.approval}
               onChange={(mode) => {
                 onSetApproval(active.id, mode)
               }}
-              label="How much this conversation may do without asking"
+              label={tr('threadBar.approvalLabel')}
             />
           </div>
 
@@ -161,7 +165,7 @@ export function ThreadBar({
             }}
           >
             <Trash2 className="size-3.5" aria-hidden />
-            Delete
+            {tr('threadBar.delete')}
           </Button>
         </div>
       ) : null}
@@ -171,7 +175,7 @@ export function ThreadBar({
           that closing an application goes through unasked, and that is exactly
           the thing a person is deciding. */}
       {active ? (
-        <p className="px-3 pb-2 text-xs text-text-3">{APPROVAL_SAID[active.approval]}</p>
+        <p className="px-3 pb-2 text-xs text-text-3">{domain.approvalSaid(active.approval)}</p>
       ) : null}
 
       {/* A conversation is about one job, so the multi-select is handed a list

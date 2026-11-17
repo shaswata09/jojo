@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Check, Link as LinkIcon, Loader2, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { draftFromUrl } from '@/components/applications/draft-from'
 import {
   Dialog,
@@ -46,10 +47,11 @@ import { readFailureMessage } from '@/components/applications/read-failure'
  * application and a page that would not open is no reason to stop them.
  */
 
+/** The steps in order; each label is a catalog key, translated where it is drawn. */
 const STEPS: { id: PostingStep; label: string }[] = [
-  { id: 'reading', label: 'Fetching the page' },
-  { id: 'asking', label: 'Reading it' },
-  { id: 'saving', label: 'Saving the posting' },
+  { id: 'reading', label: 'fromLink.steps.reading' },
+  { id: 'asking', label: 'fromLink.steps.asking' },
+  { id: 'saving', label: 'fromLink.steps.saving' },
 ]
 
 export function AddFromLinkDialog({
@@ -64,6 +66,7 @@ export function AddFromLinkDialog({
   start?: boolean | undefined
 }) {
   const id = useId()
+  const { t } = useTranslation('applications')
   const { open: openDialog, close } = useDialogs()
   const { settings, reader } = useModelSettings()
   const readPosting = useReadPosting()
@@ -132,15 +135,12 @@ export function AddFromLinkDialog({
       const tags = outcome.keywords.length
       const gaps = outcome.missing.length
       toast({
-        title: 'Posting read and saved',
+        title: t('fromLink.toastTitle'),
         description: [
           outcome.via === 'extension'
-            ? 'The extension saved the page to the Vault'
-            : `${outcome.file.name} is in the Vault`,
-          'and it is filed under the application when you save it.',
-          gaps === 0
-            ? ''
-            : `${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
+            ? t('fromLink.savedByExtension')
+            : t('fromLink.savedFile', { name: outcome.file.name }),
+          gaps === 0 ? '' : t('fromLink.missing', { count: gaps }),
           // Said only when there are some. "0 keywords matched" is a sentence
           // about the feature rather than about this posting, and the picker
           // below already shows the answer.
@@ -148,8 +148,8 @@ export function AddFromLinkDialog({
           // partitive, so "1 of your keyword is ticked" is not English. The
           // `gaps` line above gets away with switching the noun because nothing
           // precedes it.
-          tags === 0 ? '' : `${String(tags)} of your keywords ${tags === 1 ? 'is' : 'are'} ticked.`,
-          'Check the form before saving it.',
+          tags === 0 ? '' : t('fromLink.ticked', { count: tags }),
+          t('fromLink.check'),
         ]
           .filter(Boolean)
           .join(' '),
@@ -159,7 +159,7 @@ export function AddFromLinkDialog({
         // filed under the application when they save, which is where they will look.
       })
     },
-    [url, busy, settings, reader, readPosting, close, openDialog, toast],
+    [url, busy, settings, reader, readPosting, close, openDialog, toast, t],
   )
 
   /*
@@ -200,13 +200,8 @@ export function AddFromLinkDialog({
     >
       <DialogContent className={contentModal}>
         <DialogHeader>
-          <DialogTitle>New application from a link</DialogTitle>
-          <DialogDescription>
-            The model reads the posting and fills the form in, and ticks any of your own keywords
-            the job is plainly about. The page is kept in the Vault under Job postings — saved by
-            the jojo extension when it is installed — and filed under the application once you save
-            it. Nothing is saved as an application until you say so.
-          </DialogDescription>
+          <DialogTitle>{t('fromLink.title')}</DialogTitle>
+          <DialogDescription>{t('fromLink.description')}</DialogDescription>
         </DialogHeader>
 
         <form
@@ -217,13 +212,13 @@ export function AddFromLinkDialog({
           }}
         >
           <label htmlFor={id} className="sr-only">
-            Job posting URL
+            {t('fromLink.urlLabel')}
           </label>
           <div className="relative min-w-0">
             <LinkIcon
               aria-hidden
               strokeWidth={1.8}
-              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-3"
+              className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3"
             />
             <Input
               id={id}
@@ -235,7 +230,7 @@ export function AddFromLinkDialog({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://boards.greenhouse.io/acme/jobs/4"
-              className="pl-8"
+              className="ps-8"
             />
           </div>
 
@@ -263,7 +258,7 @@ export function AddFromLinkDialog({
                     ) : (
                       <span aria-hidden className="size-3.5" />
                     )}
-                    {s.label}
+                    {t(s.label)}
                   </li>
                 )
               })}
@@ -280,8 +275,8 @@ export function AddFromLinkDialog({
             {/* Only after a failure: before one, it is a way to skip the
                 model the person chose to use. */}
             {error && !busy ? (
-              <Button type="button" variant="ghost" className="sm:mr-auto" onClick={fromAddress}>
-                Use the address only
+              <Button type="button" variant="ghost" className="sm:me-auto" onClick={fromAddress}>
+                {t('fromLink.useAddress')}
               </Button>
             ) : null}
             <Button
@@ -292,11 +287,11 @@ export function AddFromLinkDialog({
                 close()
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={!url.trim() || busy}>
               <Sparkles className="size-3.5" strokeWidth={2} aria-hidden />
-              {busy ? 'Reading…' : error ? 'Try again' : 'Read and prefill'}
+              {busy ? t('fromLink.reading') : error ? t('common.tryAgain') : t('fromLink.submit')}
             </Button>
           </DialogFooter>
         </form>

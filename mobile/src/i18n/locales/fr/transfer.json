@@ -1,0 +1,152 @@
+{
+  "screen": {
+    "title": "Transfert",
+    "subtitle": "Déplacez tout entre ce téléphone et votre ordinateur, via votre réseau local. Les deux doivent être sur le même réseau. Rien ne passe par Internet et rien n’est stocké ailleurs.",
+    "direction": "Sens",
+    "roles": {
+      "send": "Envoyer à un ordinateur",
+      "receive": "Recevoir d’un ordinateur"
+    },
+    "onPhone": "Ce qui se trouve sur ce téléphone",
+    "records_one": "{{count}} enregistrement",
+    "records_other": "{{count}} enregistrements",
+    "empty": "vide",
+    "sendNote": "L’envoi copie tout vers votre ordinateur, qui demande avant de remplacer ce qu’il contient. Rien ne change sur ce téléphone.",
+    "receiveNote": "La réception remplace tout. Tout ce qui figure ci-dessus est écrasé par ce qui arrive, et c’est irréversible — exportez d’abord si vous voulez le garder."
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidatures",
+      "hint": "Chaque étape, note et issue de chacune"
+    },
+    "timeline": {
+      "label": "Rappels et événements",
+      "hint": "{{reminders}} vous rappellent quelque chose, {{events}} sont des événements datés"
+    },
+    "vault": {
+      "label": "Liens et extraits",
+      "hint": "{{links}} liens · {{snippets}} extraits"
+    },
+    "files": {
+      "label": "Fichiers",
+      "hint": "CV, lettres et tout ce qui est enregistré dans une candidature"
+    },
+    "keywords": {
+      "label": "Mots-clés",
+      "hint": "Votre liste de mots-clés et chaque enregistrement auquel ils sont associés"
+    },
+    "scout": {
+      "label": "Veille d’offres",
+      "hint": "{{pipelines}} recherches · {{postings}} offres enregistrées · {{matches}} correspondances"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Vos informations de base, liens, postes visés et termes de correspondance"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "indisponible sur cet appareil",
+    "noRandom": "Cet appareil n’a pas de générateur sécurisé de nombres aléatoires, jojo n’y convient donc d’aucune clé. L’appairage est désactivé plutôt que fait de manière peu sûre.",
+    "scan": "Scanner le code",
+    "retry": "Réessayer",
+    "cancel": "Annuler"
+  },
+  "send": {
+    "title": "Envoyer à un ordinateur",
+    "hint": "pointez vers le code sur votre ordinateur",
+    "outcome": {
+      "applied": "Votre ordinateur a maintenant vos enregistrements",
+      "declined": "Votre ordinateur a conservé ses propres enregistrements",
+      "failed": "Votre ordinateur n’a pas pu accepter vos enregistrements",
+      "handed": "Tout a été transmis"
+    },
+    "detail": {
+      "waiting": "Votre ordinateur demande avant de remplacer quoi que ce soit — confirmez sur celui-ci pour terminer. Rien n’a changé sur ce téléphone.",
+      "unknown": "Votre ordinateur n’a pas indiqué s’il les a acceptés. Rien n’a changé sur ce téléphone.",
+      "applied": "Les deux appareils contiennent maintenant les mêmes enregistrements. Rien n’a changé sur ce téléphone.",
+      "notReplaced": "Rien n’y a été remplacé. Rien n’a changé sur ce téléphone."
+    },
+    "unreadable_one": "{{count}} document n’a pas pu être lu et est resté ici.",
+    "unreadable_other": "{{count}} documents n’ont pas pu être lus et sont restés ici.",
+    "again": "Renvoyer",
+    "typeThis": "Saisissez ceci sur votre ordinateur",
+    "paired": "Appairé. Ce téléphone attend sur votre réseau local que votre ordinateur le sollicite.",
+    "handing": "Transmission de vos enregistrements…",
+    "handingProgress": "Transmission de vos enregistrements — {{served}} sur {{chunks}}.",
+    "intro": "Sur votre ordinateur, ouvrez Transfert, choisissez Recevoir du téléphone et scannez le code affiché. Les deux doivent être sur le même réseau local.",
+    "gatherFailed": "jojo n’a pas pu rassembler les enregistrements de ce téléphone, rien n’a donc été envoyé. Réessayez."
+  },
+  "receive": {
+    "title": "Recevoir",
+    "hint": "pointez vers le code sur l’autre appareil",
+    "complete": "Transfert terminé",
+    "done": "Terminé",
+    "typeThis": "Saisissez ceci sur votre autre appareil",
+    "paired": "Appairé. Ce téléphone écoute sur votre réseau local et nulle part ailleurs.",
+    "progress": "Réception — {{size}} jusqu’ici. Rien ne change ici tant que vous n’avez pas accepté.",
+    "intro": "Ouvrez jojo sur votre ordinateur, choisissez Transfert et scannez le code affiché.",
+    "confirm": {
+      "title": "Tout remplacer sur ce téléphone ?",
+      "description": "{{contents}}. {{replaces}}, et c’est irréversible.",
+      "confirm": "Remplacer"
+    },
+    "unrestorable": "Ce qui est arrivé ne peut pas être restauré : {{reason}}. Rien n’a changé sur ce téléphone."
+  },
+  "landed": {
+    "plain_one": "{{count}} enregistrement est sur ce téléphone.",
+    "plain_other": "{{count}} enregistrements sont sur ce téléphone.",
+    "withDocuments_one": "{{count}} enregistrement est sur ce téléphone, {{documents}}.",
+    "withDocuments_other": "{{count}} enregistrements sont sur ce téléphone, {{documents}}.",
+    "documents_one": "{{count}} document",
+    "documents_other": "{{count}} documents",
+    "skipped_one": "{{count}} n’a pas pu être lu.",
+    "skipped_other": "{{count}} n’ont pas pu être lus."
+  },
+  "scanner": {
+    "point": "Pointez ceci vers le code de la page Transfert de votre autre appareil.",
+    "advice": {
+      "denied": "jojo a besoin de l’appareil photo pour lire le code sur votre autre appareil. Autorisez-le, ou saisissez le code à la main.",
+      "unsupported": "Ce téléphone ne peut pas ouvrir l’appareil photo pour jojo.",
+      "failed": "L’appareil photo n’a pas démarré. Fermez jojo et rouvrez-le."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Lire le code d’appairage",
+      "message": "jojo a besoin de l’appareil photo pour lire le code affiché sur votre autre appareil. Rien n’est enregistré, et aucune image ne quitte ce téléphone.",
+      "allow": "Autoriser",
+      "notNow": "Pas maintenant"
+    },
+    "refused": {
+      "denied": "jojo a besoin de l’appareil photo pour lire le code sur votre autre appareil.",
+      "blocked": "L’appareil photo est désactivé pour jojo. Activez-le dans les Réglages de votre téléphone, sous Applications, pour appairer en scannant."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Ce code n’est pas une offre d’appairage jojo. Scannez celui de votre autre appareil.",
+      "noNetwork": "Ce téléphone n’est pas sur un réseau local. jojo ne transfère que via votre réseau local, les deux appareils doivent donc être sur le même.",
+      "notLocal": "Ce téléphone est sur un réseau par lequel jojo ne transfère pas. Il ne se connecte qu’à une adresse de réseau privé, donc vos enregistrements ne passent jamais par Internet.",
+      "noSocket": "jojo n’a pas pu ouvrir de connexion sur ce téléphone. Réessayez."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "Le presse-papiers est vide. Copiez d’abord une sauvegarde jojo, puis collez-la ici.",
+    "fileEmpty": "Ce fichier est vide. Rien n’a changé sur ce téléphone.",
+    "notBackup": "ce n’est pas une sauvegarde jojo",
+    "unrestorable": {
+      "file": "Ce fichier ne peut pas être restauré : {{reason}}. Rien n’a changé sur ce téléphone.",
+      "clipboard": "Le contenu du presse-papiers ne peut pas être restauré : {{reason}}. Rien n’a changé sur ce téléphone."
+    },
+    "noRecords": {
+      "file": "Ce fichier est une sauvegarde sans aucun enregistrement. Rien n’a changé sur ce téléphone — la restaurer l’aurait vidé.",
+      "clipboard": "Le contenu du presse-papiers est une sauvegarde sans aucun enregistrement. Rien n’a changé sur ce téléphone — la restaurer l’aurait vidé."
+    },
+    "unreadable": "Ce fichier n’a pas pu être lu. Rien n’a changé sur ce téléphone.",
+    "noPicker": "Ce téléphone n’a rien qui puisse choisir un fichier JSON ou texte.",
+    "openFailed": "Le fichier n’a pas pu être ouvert : {{detail}}",
+    "failedTitle": "Rien n’a été importé",
+    "restoredTitle": "Sauvegarde restaurée"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { Field } from '@/components/common/Field'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ export function InlineEdit({
   onSave: (next: string) => void
   onCancel: () => void
 }) {
+  const { t } = useTranslation('vault')
   const [draft, setDraft] = useState(value)
   const blocked = Boolean(required) && !draft.trim()
 
@@ -59,12 +61,12 @@ export function InlineEdit({
         type="submit"
         size="sm"
         disabled={blocked}
-        title={blocked ? 'A file needs a name' : undefined}
+        title={blocked ? t('files.inlineEdit.needsName') : undefined}
       >
-        Save
+        {t('common.save')}
       </Button>
       <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-        Cancel
+        {t('common.cancel')}
       </Button>
     </form>
   )

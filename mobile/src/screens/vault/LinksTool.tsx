@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
@@ -19,8 +20,7 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { filedUnderLabel } from '@jojo/service/data/seed'
-import { agoLabel } from '@jojo/service/data/timeline'
+import { displayName } from '@jojo/service/data/seed'
 import { LINK_CATEGORIES } from '@jojo/service/data/vault'
 import type { LinkCategory, VaultLink } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
@@ -35,6 +35,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
+import { useDomain } from '@/i18n/domain'
 
 const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) as Record<
   LinkCategory,
@@ -43,6 +44,8 @@ const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) a
 
 /** Postings, department pages, people and guides — anything to come back to. */
 export function LinksTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   // Only the arrival highlight needs the palette here.
   const c = useColors()
   const { links, addLink, updateLink, removeLink } = useVault()
@@ -94,20 +97,20 @@ export function LinksTool({ focus }: { focus?: string }) {
   const onDelete = (l: VaultLink) => {
     const { restore } = removeLink(l.id)
     toast({
-      title: 'Link removed',
+      title: t('links.toast.removed'),
       description: l.title,
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('common.undo'), onPress: restore },
     })
   }
 
   const onDuplicate = (l: VaultLink) => {
     const { id: _id, savedOn: _savedOn, ...rest } = l
-    const copyRecord = addLink({ ...rest, title: `${l.title} (copy)` })
+    const copyRecord = addLink({ ...rest, title: t('common.copyOf', { name: l.title }) })
     toast({
-      title: 'Link duplicated',
+      title: t('links.toast.duplicated'),
       description: copyRecord.title,
-      action: { label: 'Undo', onPress: () => removeLink(copyRecord.id) },
+      action: { label: t('common.undo'), onPress: () => removeLink(copyRecord.id) },
     })
   }
 
@@ -117,10 +120,10 @@ export function LinksTool({ focus }: { focus?: string }) {
     updateLink(record.id, { applicationIds })
     const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: capitalize(filedUnderLabel(chosen)),
+      title: capitalize(domain.filedUnder(chosen.map(displayName))),
       description: record.title,
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => updateLink(record.id, { applicationIds: before }),
       },
     })
@@ -130,13 +133,13 @@ export function LinksTool({ focus }: { focus?: string }) {
     const before = l.category
     updateLink(l.id, { category: next })
     toast({
-      title: `Moved to ${next}`,
+      title: t('common.movedTo', { name: next }),
       description: l.title,
-      action: { label: 'Undo', onPress: () => updateLink(l.id, { category: before }) },
+      action: { label: t('common.undo'), onPress: () => updateLink(l.id, { category: before }) },
     })
   }
 
-  const addButton = <Button label="Save a link" icon="plus" onPress={() => setEditing('new')} />
+  const addButton = <Button label={t('links.add')} icon="plus" onPress={() => setEditing('new')} />
 
   const empty = vaultEmptyState({
     total: links.length,
@@ -149,31 +152,30 @@ export function LinksTool({ focus }: { focus?: string }) {
     copy: {
       icon: 'link-2',
       zero: {
-        title: 'Nothing saved yet',
-        description:
-          'Postings, department pages, people and guides — anything you want to come back to.',
+        title: t('links.empty.zeroTitle'),
+        description: t('links.empty.zeroDescription'),
       },
-      search: (q) => `No link mentions "${q}" in its title, address, note or category.`,
-      both: `No ${category} link carries the selected keywords.`,
+      search: (q) => t('links.empty.search', { query: q }),
+      both: t('links.empty.both', { category }),
       bucket: {
-        title: `No links under ${category}`,
-        description: `${String(links.length)} links are filed under the other categories.`,
-        clearLabel: 'Show all categories',
+        title: t('links.empty.bucketTitle', { category }),
+        description: t('links.empty.bucketDescription', { count: links.length }),
+        clearLabel: t('links.empty.showAll'),
       },
-      keywords: { title: 'No links carry those keywords' },
+      keywords: { title: t('links.empty.keywordsTitle') },
     },
   })
 
   return (
     <>
       <SearchInput
-        label="Search links"
+        label={t('links.search.label')}
         value={query}
         onChange={setQuery}
-        placeholder="Search title, URL or note"
+        placeholder={t('links.search.placeholder')}
       />
       <BucketFilter
-        label="Filter links"
+        label={t('links.filterLabel')}
         options={LINK_CATEGORIES}
         labels={CATEGORY_LABELS}
         counts={counts}
@@ -181,7 +183,7 @@ export function LinksTool({ focus }: { focus?: string }) {
         onChange={setCategory}
         total={pool.length}
       />
-      <Button label="Save a link" icon="plus" onPress={() => setEditing('new')} />
+      <Button label={t('links.add')} icon="plus" onPress={() => setEditing('new')} />
 
       <Panel padded={false}>
         {rows.length === 0 ? (
@@ -211,7 +213,7 @@ export function LinksTool({ focus }: { focus?: string }) {
                 <View style={[styles.row, focus === l.id && { backgroundColor: c.accentSoft }]}>
                   <Pressable
                     accessibilityRole="link"
-                    accessibilityLabel={`Open ${l.title}`}
+                    accessibilityLabel={t('common.openNamed', { name: l.title })}
                     onPress={() => Linking.openURL(hrefOf(l.url))}
                     style={s.fill}
                   >
@@ -219,7 +221,8 @@ export function LinksTool({ focus }: { focus?: string }) {
                       {l.title}
                     </Txt>
                     <Txt size="xs" tone="muted" mono numberOfLines={1}>
-                      {displayUrl(l.url)} · saved {agoLabel(l.savedOn, TODAY)}
+                      {displayUrl(l.url)} ·{' '}
+                      {t('common.savedAgo', { ago: domain.ago(l.savedOn, TODAY) })}
                     </Txt>
                     {l.note ? (
                       <Txt size="xs" tone="muted" numberOfLines={2}>
@@ -237,7 +240,7 @@ export function LinksTool({ focus }: { focus?: string }) {
                   <LabelPicker recordId={l.id} name={l.title} />
                   <IconButton
                     icon="more-horizontal"
-                    label={`More actions for ${l.title}`}
+                    label={t('common.moreActionsFor', { name: l.title })}
                     onPress={() => setMenuFor(l)}
                   />
                 </View>
@@ -265,41 +268,45 @@ export function LinksTool({ focus }: { focus?: string }) {
           menuFor
             ? buildRecordMenu({
                 onEdit: () => setEditing(menuFor),
+                editLabel: t('common.edit'),
                 onDuplicate: () => onDuplicate(menuFor),
                 extra: [
                   {
                     id: 'file-under',
                     label:
                       menuFor.applicationIds.length > 0
-                        ? 'Change applications'
-                        : 'File under an application',
+                        ? t('common.changeApplications')
+                        : t('common.fileUnderApplication'),
                     icon: 'briefcase',
                     onPress: () => setFiling(menuFor.id),
                   },
                   {
                     id: 'open',
-                    label: 'Open link',
+                    label: t('links.menu.open'),
                     icon: 'external-link',
                     onPress: () => Linking.openURL(hrefOf(menuFor.url)),
                   },
                   {
                     id: 'copy',
-                    label: 'Copy URL',
+                    label: t('links.menu.copy'),
                     icon: 'copy',
                     onPress: async () => {
                       await copy(menuFor.url)
-                      toast({ title: 'URL copied', description: displayUrl(menuFor.url) })
+                      toast({
+                        title: t('links.toast.copied'),
+                        description: displayUrl(menuFor.url),
+                      })
                     },
                   },
                 ],
                 move: {
-                  label: 'Category',
+                  label: t('links.category'),
                   options: LINK_CATEGORIES,
                   current: menuFor.category,
                   onMove: (next) => onMove(menuFor, next),
                 },
                 onDelete: () => onDelete(menuFor),
-                deleteLabel: 'Remove',
+                deleteLabel: t('common.remove'),
               })
             : []
         }
@@ -313,11 +320,11 @@ export function LinksTool({ focus }: { focus?: string }) {
           onSave={(draft) => {
             if (editing !== 'new') {
               updateLink(editing.id, draft)
-              toast({ title: 'Link updated', description: draft.title })
+              toast({ title: t('links.toast.updated'), description: draft.title })
             } else {
               addLink(draft)
               void report('vault_item_added', { kind: 'link' })
-              toast({ title: 'Link saved', description: draft.title })
+              toast({ title: t('links.toast.saved'), description: draft.title })
             }
             setEditing(null)
           }}
@@ -336,6 +343,7 @@ function LinkEditor({
   onClose: () => void
   onSave: (draft: Omit<VaultLink, 'id' | 'savedOn'>) => void
 }) {
+  const { t } = useTranslation('vault')
   const [title, setTitle] = useState(initial?.title ?? '')
   const [url, setUrl] = useState(initial?.url ?? '')
   const [note, setNote] = useState(initial?.note ?? '')
@@ -361,38 +369,42 @@ function LinkEditor({
     <Sheet
       open
       onClose={onClose}
-      title={initial ? 'Edit link' : 'Save a link'}
-      description="Nothing is fetched — what is kept is the title, the URL and the day you saved it."
+      title={initial ? t('links.editor.editTitle') : t('links.add')}
+      description={t('links.editor.description')}
       footer={
         <>
-          <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
-          <Button label={initial ? 'Save' : 'Save link'} size="md" onPress={submit} />
+          <Button label={t('common.cancel')} variant="ghost" size="md" onPress={onClose} />
+          <Button
+            label={initial ? t('common.save') : t('links.editor.saveLink')}
+            size="md"
+            onPress={submit}
+          />
         </>
       }
     >
       <View style={{ gap: space[3.5], paddingBottom: space[2] }}>
         <TextField
-          label="Title"
+          label={t('common.title')}
           required
           value={title}
-          error={attempted && !title.trim() ? 'Name it so you can find it again.' : undefined}
-          placeholder="e.g. Rice — Statistics posting"
+          error={attempted && !title.trim() ? t('common.titleRequired') : undefined}
+          placeholder={t('links.editor.titlePlaceholder')}
           onChangeText={setTitle}
         />
         <TextField
-          label="URL"
+          label={t('links.editor.url')}
           required
           mono
           autoCapitalize="none"
           keyboardType="url"
           value={url}
-          error={attempted && !url.trim() ? 'A link with no URL goes nowhere.' : undefined}
+          error={attempted && !url.trim() ? t('links.editor.urlRequired') : undefined}
           placeholder="jobs.rice.edu/postings/…"
           onChangeText={setUrl}
         />
-        <FormField label="Category">
+        <FormField label={t('links.category')}>
           <Segment
-            label="Category"
+            label={t('links.category')}
             scroll
             options={LINK_CATEGORIES.map((k) => ({ value: k, label: k }))}
             value={category}
@@ -406,14 +418,14 @@ function LinkEditor({
         <ApplicationField
           values={applicationIds}
           onChange={setApplicationIds}
-          hint="Links the two, so each application counts this among what is filed under it."
+          hint={t('links.editor.applicationHint')}
         />
 
         <TextField
-          label="Note"
+          label={t('common.note')}
           value={note}
           multiline
-          placeholder="Why this is worth coming back to"
+          placeholder={t('links.editor.notePlaceholder')}
           onChangeText={setNote}
         />
       </View>

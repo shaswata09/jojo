@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MonthPickerSheet } from '@/components/common/DateField'
 import { MenuSheet } from '@/components/ui/Menu'
 import type { MenuAction } from '@/components/ui/Menu'
-import { addDays, shortDate } from '@jojo/service/data/timeline'
+import { addDays } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
-import { KIND_LABEL } from '@/lib/timeline-visuals'
 import { SNOOZE_STEPS, anchorOf, snoozeLabel } from '@/lib/use-item-actions'
 import type { ItemActions } from '@/lib/use-item-actions'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Push a dated row out by a step, or onto a day you choose.
@@ -29,27 +30,33 @@ export function SnoozeMenu({
   actions: ItemActions
   onClose: () => void
 }) {
+  const { t } = useTranslation('components')
   const [picking, setPicking] = useState(false)
+  const domain = useDomain()
 
   return (
     <>
       <MenuSheet
         open={item !== null && !picking}
         onClose={onClose}
-        title="Push out by"
-        description={item ? `${item.title} · currently ${shortDate(item.date)}` : undefined}
+        title={t('itemMenu.pushOutBy')}
+        description={
+          item
+            ? t('itemMenu.currently', { title: item.title, date: domain.shortDate(item.date) })
+            : undefined
+        }
         actions={
           item
             ? [
                 ...SNOOZE_STEPS.map((step) => ({
                   id: String(step.days),
                   label: snoozeLabel(item, step),
-                  hint: shortDate(addDays(anchorOf(item), step.days)),
+                  hint: domain.shortDate(addDays(anchorOf(item), step.days)),
                   onPress: () => actions.push(item, step.days),
                 })),
                 {
                   id: 'pick',
-                  label: 'Pick a date…',
+                  label: t('itemMenu.pickDate'),
                   icon: 'calendar' as const,
                   // Opens the grid instead of closing: `MenuSheet` closes itself
                   // before running an action, so the picker is raised from the
@@ -98,38 +105,45 @@ export function ItemMenu({
   /** Raised by the caller so one snooze menu serves the whole screen. */
   onSnooze: (item: TimelineItem) => void
 }) {
+  const { t } = useTranslation(['components', 'common'])
+  const domain = useDomain()
   const draftable = item ? DRAFTABLE.includes(item.kind) : false
 
   const menu: MenuAction[] = item
     ? [
-        { id: 'edit', label: 'Edit', icon: 'edit-2', onPress: () => actions.edit(item) },
+        {
+          id: 'edit',
+          label: t('common:actions.edit'),
+          icon: 'edit-2',
+          onPress: () => actions.edit(item),
+        },
         {
           id: 'duplicate',
-          label: 'Duplicate',
+          label: t('itemMenu.duplicate'),
           icon: 'copy',
-          hint: 'Same date and keywords, as a second row',
+          hint: t('itemMenu.duplicateHint'),
           onPress: () => actions.duplicate(item),
         },
         ...(draftable
           ? [
               {
                 id: 'draft',
-                label: 'Draft a message',
+                label: t('itemMenu.draft'),
                 icon: 'mail' as const,
-                hint: 'From your email snippets — nothing is generated',
+                hint: t('itemMenu.draftHint'),
                 onPress: () => actions.draft(item),
               },
             ]
           : []),
         {
           id: 'snooze',
-          label: 'Reschedule',
+          label: t('itemMenu.reschedule'),
           icon: 'clock',
           onPress: () => onSnooze(item),
         },
         {
           id: 'delete',
-          label: 'Delete',
+          label: t('common:actions.delete'),
           icon: 'trash-2',
           tone: 'danger',
           onPress: () => actions.destroy(item),
@@ -142,7 +156,7 @@ export function ItemMenu({
       open={item !== null}
       onClose={onClose}
       title={item?.title}
-      description={item ? `${KIND_LABEL[item.kind]} · ${shortDate(item.date)}` : undefined}
+      description={item ? `${domain.kind(item.kind)} · ${domain.shortDate(item.date)}` : undefined}
       actions={menu}
     />
   )

@@ -24,6 +24,7 @@ import { displayName } from '@/data/seed'
 import type { NodeType, StoredNode } from '@jojo/service/core/model'
 import type { FieldMeta } from '@jojo/service/core/schema'
 import { labelOf } from '@jojo/service/core/ontology'
+import { i18next } from '@/i18n/i18n'
 import { isAnswerable } from '@jojo/service/core/proposal'
 import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import type { AnyTool } from '@jojo/service/tools/tool'
@@ -221,7 +222,9 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
       const end = (rel: 'SUBJECT' | 'OBJECT') => {
         const other = memory.out(node.id, rel)[0]?.to
         const found = other === undefined ? undefined : memory.node(other)
-        return found === undefined ? 'a record' : recordLabel(memory, found)
+        return found === undefined
+          ? i18next.t('common:toolForm.aRecord')
+          : recordLabel(memory, found)
       }
       return `${end('SUBJECT')} ${labelOf(node.props.predicate)} ${end('OBJECT')}`
     }
@@ -260,7 +263,7 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
     }
     case 'profile':
       // Singleton, and the only node whose props hold no name of its own.
-      return 'Your profile'
+      return i18next.t('common:toolForm.yourProfile')
   }
 }
 

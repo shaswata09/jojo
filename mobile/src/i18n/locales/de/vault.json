@@ -1,0 +1,299 @@
+{
+  "common": {
+    "undo": "Rückgängig",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "remove": "Entfernen",
+    "done": "Fertig",
+    "title": "Titel",
+    "note": "Notiz",
+    "changeApplications": "Bewerbungen ändern",
+    "fileUnderApplication": "Einer Bewerbung zuordnen",
+    "moreActionsFor": "Weitere Aktionen für {{name}}",
+    "openNamed": "{{name}} öffnen",
+    "savedAgo": "gespeichert {{ago}}",
+    "copyOf": "{{name}} (Kopie)",
+    "movedTo": "Verschoben nach {{name}}",
+    "titleRequired": "Gib ihm einen Namen, damit du es wiederfindest."
+  },
+  "screen": {
+    "title": "Tresor",
+    "subtitle": "Erinnerungen, Links, Dateien, Textbausteine und Personen",
+    "counts": {
+      "reminders_one": "{{count}} Erinnerung",
+      "reminders_other": "{{count}} Erinnerungen",
+      "links_one": "{{count}} Link",
+      "links_other": "{{count}} Links",
+      "files_one": "{{count}} Datei",
+      "files_other": "{{count}} Dateien",
+      "snippets_one": "{{count}} Textbaustein",
+      "snippets_other": "{{count}} Textbausteine",
+      "people_one": "{{count}} Person",
+      "people_other": "{{count}} Personen"
+    },
+    "showCounts": "Anzahl anzeigen",
+    "showCountsDescription": "Gesamtzahlen im Untertitel statt des Inhalts der Tabs",
+    "toolLabel": "Tresor-Werkzeug",
+    "tools": {
+      "reminders": "Erinnerungen",
+      "links": "Links",
+      "files": "Dateien",
+      "snippets": "Textbausteine",
+      "people": "Personen",
+      "tools": "Werkzeuge"
+    }
+  },
+  "files": {
+    "add": "Dokument erfassen",
+    "filterLabel": "Dokumente filtern",
+    "editLabel": "Dokument bearbeiten",
+    "bucket": "Ablage",
+    "search": {
+      "label": "Dokumente durchsuchen",
+      "placeholder": "Nach Name, Notiz oder Ablage suchen"
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Dokumente",
+      "zeroDescription": "Dein Lebenslauf, Anschreiben, Vorträge und eingescannte Unterlagen. Namen, Größen und Typen werden erfasst – nichts liest die Datei selbst.",
+      "search": "Kein Dokument erwähnt „{{query}}“ in Name, Notiz oder Ablage.",
+      "both": "Kein Dokument in {{bucket}} trägt die ausgewählten Schlagwörter.",
+      "bucketTitle": "Nichts in {{bucket}}",
+      "bucketDescription_one": "{{count}} Dokument liegt in den anderen Ablagen.",
+      "bucketDescription_other": "{{count}} Dokumente liegen in den anderen Ablagen.",
+      "showAll": "Alle Ablagen anzeigen",
+      "keywordsTitle": "Kein Dokument trägt diese Schlagwörter"
+    },
+    "toast": {
+      "removed": "Dokument entfernt",
+      "duplicated": "Dokument dupliziert",
+      "updated": "Dokument aktualisiert",
+      "recorded": "Dokument erfasst",
+      "recordedDescription": "{{name}} · abgelegt in {{bucket}}. Name, Größe und Typ werden gespeichert – die Datei selbst wird nicht gelesen."
+    }
+  },
+  "snippets": {
+    "add": "Neuer Textbaustein",
+    "filterLabel": "Textbausteine filtern",
+    "tag": "Kategorie",
+    "copyNamed": "{{name}} kopieren",
+    "search": {
+      "label": "Textbausteine durchsuchen",
+      "placeholder": "Nach Titel oder Text suchen"
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Textbausteine",
+      "zeroDescription": "Die Antworten, die du in jedes Formular neu tippst – eine kurze Bio, ein Absatz zur Lehre, die Nachfass-E-Mail, die du immer schickst.",
+      "search": "Kein Textbaustein erwähnt „{{query}}“ in Name, Text oder Art.",
+      "both": "Kein Textbaustein der Art {{tag}} trägt die ausgewählten Schlagwörter.",
+      "bucketTitle": "Keine Textbausteine der Art {{tag}}",
+      "bucketDescription_one": "{{count}} Textbaustein liegt unter den anderen Arten.",
+      "bucketDescription_other": "{{count}} Textbausteine liegen unter den anderen Arten.",
+      "showAll": "Alle Arten anzeigen",
+      "keywordsTitle": "Kein Textbaustein trägt diese Schlagwörter"
+    },
+    "toast": {
+      "deleted": "Textbaustein gelöscht",
+      "duplicated": "Textbaustein dupliziert",
+      "filedUnder": "Abgelegt unter {{tag}}",
+      "saved": "Textbaustein gespeichert",
+      "added": "Textbaustein hinzugefügt",
+      "addedDescription": "{{title}} · abgelegt unter {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Textbaustein bearbeiten",
+      "description": "Alles in [ECKIGEN KLAMMERN] bleibt eine Lücke, wenn das Entwurfsblatt dies lädt – der Name einer Person wird also nie für dich eingesetzt.",
+      "titlePlaceholder": "z. B. Nachfassen ohne Antwort",
+      "applicationHint": "Optional. Ein Textbaustein für bestimmte Arbeitgeber kann sagen, für welche.",
+      "body": "Text",
+      "bodyRequired": "Ein Textbaustein ohne Text hat nichts zum Einfügen.",
+      "bodyPlaceholder": "Liebe/r [NAME], …"
+    },
+    "discard": {
+      "title": "Ungespeicherte Änderungen verwerfen?",
+      "description": "Was du hier eingegeben hast, ist nirgends gespeichert. Wenn du gehst, ist es weg – und das lässt sich nicht rückgängig machen.",
+      "confirm": "Verwerfen"
+    }
+  },
+  "links": {
+    "add": "Link speichern",
+    "filterLabel": "Links filtern",
+    "category": "Kategorie",
+    "search": {
+      "label": "Links durchsuchen",
+      "placeholder": "Nach Titel, URL oder Notiz suchen"
+    },
+    "empty": {
+      "zeroTitle": "Noch nichts gespeichert",
+      "zeroDescription": "Stellenanzeigen, Institutsseiten, Personen und Leitfäden – alles, worauf du zurückkommen willst.",
+      "search": "Kein Link erwähnt „{{query}}“ in Titel, Adresse, Notiz oder Kategorie.",
+      "both": "Kein Link der Kategorie {{category}} trägt die ausgewählten Schlagwörter.",
+      "bucketTitle": "Keine Links unter {{category}}",
+      "bucketDescription_one": "{{count}} Link liegt in den anderen Kategorien.",
+      "bucketDescription_other": "{{count}} Links liegen in den anderen Kategorien.",
+      "showAll": "Alle Kategorien anzeigen",
+      "keywordsTitle": "Kein Link trägt diese Schlagwörter"
+    },
+    "menu": {
+      "open": "Link öffnen",
+      "copy": "URL kopieren"
+    },
+    "toast": {
+      "removed": "Link entfernt",
+      "duplicated": "Link dupliziert",
+      "copied": "URL kopiert",
+      "updated": "Link aktualisiert",
+      "saved": "Link gespeichert"
+    },
+    "editor": {
+      "editTitle": "Link bearbeiten",
+      "description": "Nichts wird abgerufen – gespeichert werden der Titel, die URL und der Tag, an dem du ihn gespeichert hast.",
+      "saveLink": "Link speichern",
+      "titlePlaceholder": "z. B. Rice – Stelle in Statistik",
+      "url": "URL",
+      "urlRequired": "Ein Link ohne URL führt nirgendwohin.",
+      "applicationHint": "Verknüpft beides, sodass jede Bewerbung dies zu dem zählt, was ihr zugeordnet ist.",
+      "notePlaceholder": "Warum es sich lohnt, darauf zurückzukommen"
+    }
+  },
+  "reminders": {
+    "add": "Neue Erinnerung",
+    "filterLabel": "Erinnerungen filtern",
+    "markDone": "„{{title}}“ als erledigt markieren",
+    "markNotDone": "„{{title}}“ als nicht erledigt markieren",
+    "buckets": {
+      "overdue": "Überfällig",
+      "today": "Heute",
+      "upcoming": "Demnächst",
+      "done": "Erledigt"
+    },
+    "search": {
+      "label": "Erinnerungen durchsuchen",
+      "placeholder": "Nach Titel, Notiz oder Art suchen"
+    },
+    "empty": {
+      "zeroTitle": "Noch keine Erinnerungen",
+      "zeroDescription": "Eine Erinnerung ist ein datierter Eintrag mit eingeschaltetem Hinweis. Sobald ihr Datum vorbei ist, ist sie fällig und bleibt unter Heute, bis du sie abhakst.",
+      "search": "Keine Erinnerung erwähnt „{{query}}“ in Titel, Notiz oder Art.",
+      "both": {
+        "overdue": "Keine überfällige Erinnerung trägt die ausgewählten Schlagwörter.",
+        "today": "Keine heutige Erinnerung trägt die ausgewählten Schlagwörter.",
+        "upcoming": "Keine anstehende Erinnerung trägt die ausgewählten Schlagwörter.",
+        "done": "Keine erledigte Erinnerung trägt die ausgewählten Schlagwörter."
+      },
+      "nothingIn": {
+        "overdue": "Nichts überfällig",
+        "today": "Nichts für heute",
+        "upcoming": "Nichts in Sicht"
+      },
+      "doneTitle": "Noch nichts erledigt",
+      "doneDescription": "Erinnerungen, die du abhakst, sammeln sich hier – so bleibt eine versehentlich abgehakte auffindbar.",
+      "bucketDescription_one": "{{count}} Erinnerung liegt in den anderen Gruppen.",
+      "bucketDescription_other": "{{count}} Erinnerungen liegen in den anderen Gruppen.",
+      "showAll": "Alle Erinnerungen anzeigen",
+      "keywordsTitle": "Keine Erinnerung trägt diese Schlagwörter"
+    }
+  },
+  "people": {
+    "add": "Hinzufügen",
+    "optionsFor": "Optionen für {{name}}",
+    "search": {
+      "label": "Personen durchsuchen",
+      "placeholder": "Nach Name, Rolle oder Notiz suchen"
+    },
+    "empty": {
+      "zeroTitle": "Noch niemand",
+      "zeroDescription": "Referenzen, Kommissionsvorsitzende, Recruiter – alle, über die deine Suche läuft. Nenne sie bei den Stellen, für die sie schreiben, dann erscheinen sie auch in diesen Einträgen.",
+      "noMatchTitle": "Niemand passt dazu",
+      "noMatchDescription": "Versuche es mit einem Teil des Namens, einer Rolle oder ihrem Ort."
+    },
+    "toast": {
+      "removed": "Person entfernt",
+      "saved": "Person gespeichert"
+    },
+    "editor": {
+      "editTitle": "Person bearbeiten",
+      "addTitle": "Person hinzufügen",
+      "save": "Person speichern",
+      "description": "Nur ein Name ist nötig. Der Rest ist das, was sich als wichtig herausstellt.",
+      "noApplication": "Keine Bewerbung",
+      "name": "Name",
+      "namePlaceholder": "z. B. Prof. Ngozi Okafor",
+      "role": "Rolle",
+      "rolePlaceholder": "z. B. Referenz, Kommissionsvorsitz, Recruiterin",
+      "affiliation": "Einrichtung",
+      "affiliationPlaceholder": "z. B. Rice",
+      "affiliationHint": "Wo die Person ist. Nicht mit einem Arbeitgeber verknüpft, bei dem du dich beworben hast.",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "namedOn": "Genannt bei",
+      "namedOnHint": "Jede Stelle, für die sie schreibt, sichtet oder den Vorsitz hat.",
+      "notePlaceholder": "Was sie gesagt hat, was sie dir schuldet, wann du nachfassen solltest."
+    }
+  },
+  "calculator": {
+    "title": "Rechner",
+    "hint": "funktioniert ohne Einträge und ohne Verbindung",
+    "copy": "Ergebnis kopieren",
+    "mode": "Modus",
+    "modes": {
+      "basic": "Standard",
+      "scientific": "Wissenschaftlich"
+    },
+    "plusMinus": "plus oder minus",
+    "history": "Verlauf",
+    "kept": "{{count}} gespeichert",
+    "clear": "Leeren",
+    "emptyTitle": "Noch nichts berechnet",
+    "emptyDescription": "Die letzten dreißig Ergebnisse bleiben hier, damit sich die zweite Zahl mit der ersten vergleichen lässt. Tippe auf eines, um es wieder anzuzeigen.",
+    "historyEntry": "{{expr}} ergibt {{value}}. Wieder anzeigen"
+  },
+  "pageViewer": {
+    "capturedFrom": "Erfasst von {{host}}",
+    "missingTitle": "Keine gespeicherte Kopie auf diesem Gerät",
+    "missingDescription": "Erfassungen bleiben dort, wo sie gemacht wurden – eine aus der Web-App ist also nicht hier. Der Eintrag hat seinen Namen und seine Adresse behalten."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · abgelegt {{ago}}",
+    "editDetails": "Details bearbeiten",
+    "openFailed": "Keine App auf diesem Telefon hat angeboten, es zu öffnen.",
+    "facts": {
+      "type": "Typ",
+      "size": "Größe",
+      "filed": "Abgelegt",
+      "bucket": "Ablage"
+    },
+    "typed": {
+      "title": "Erfasst, nicht gespeichert",
+      "description": "Dieses wurde von Hand angelegt – ein Name, ein Typ und eine Größe für ein Dokument, das woanders liegt. Bearbeite es und wähle eine Datei, um hier eine Kopie zu behalten."
+    },
+    "checking": {
+      "title": "Kopie wird gesucht",
+      "description": "Es wird geprüft, ob die Datei, auf die dieser Eintrag verweist, noch im Speicher der App liegt."
+    },
+    "kept": {
+      "title": "Auf diesem Gerät gespeichert",
+      "pageDescription": "Öffnet sich hier, ohne Skripte und ohne Verbindung – die Kopie der Anzeige, wie sie am Tag des Speicherns aussah.",
+      "read": "Lesen",
+      "fileDescription": "Öffnet sich in der App auf diesem Telefon, die den Typ verarbeitet. Nichts wird hochgeladen, und nichts hier liest den Inhalt.",
+      "open": "Öffnen"
+    },
+    "gone": {
+      "title": "Die Kopie ist verschwunden",
+      "description": "Dieser Eintrag verweist auf eine Datei, die nicht mehr im Speicher der App liegt – wahrscheinlich vom System gelöscht. Der Eintrag ist unversehrt; wähle die Datei erneut, um sie anzuhängen.",
+      "choose": "Erneut auswählen"
+    },
+    "attachedTo": "Zugeordnet zu",
+    "change": "Ändern",
+    "fileUnderJob": "Einer Stelle zuordnen",
+    "notFiled": "Keiner Bewerbung zugeordnet. Eine Zuordnung zeigt es in diesen Einträgen an und lässt den Graphen es von jedem davon aus finden.",
+    "addNote": "Notiz hinzufügen",
+    "notePlaceholder": "Wofür ist dieses Dokument?",
+    "saveNote": "Notiz speichern",
+    "noNote": "Zu diesem ist noch nichts notiert.",
+    "toast": {
+      "noteSaved": "Notiz gespeichert"
+    }
+  }
+}

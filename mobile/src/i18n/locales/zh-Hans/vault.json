@@ -1,0 +1,290 @@
+{
+  "common": {
+    "undo": "撤销",
+    "cancel": "取消",
+    "save": "保存",
+    "edit": "编辑",
+    "delete": "删除",
+    "remove": "移除",
+    "done": "完成",
+    "title": "标题",
+    "note": "备注",
+    "changeApplications": "更改申请",
+    "fileUnderApplication": "归入某个申请",
+    "moreActionsFor": "{{name}} 的更多操作",
+    "openNamed": "打开 {{name}}",
+    "savedAgo": "保存于{{ago}}",
+    "copyOf": "{{name}}（副本）",
+    "movedTo": "已移至 {{name}}",
+    "titleRequired": "起个名字，方便以后找到。"
+  },
+  "screen": {
+    "title": "保险库",
+    "subtitle": "提醒、链接、文件、片段和联系人",
+    "counts": {
+      "reminders_other": "{{count}} 个提醒",
+      "links_other": "{{count}} 个链接",
+      "files_other": "{{count}} 个文件",
+      "snippets_other": "{{count}} 个片段",
+      "people_other": "{{count}} 位联系人"
+    },
+    "showCounts": "显示数量",
+    "showCountsDescription": "在副标题中显示各项总数，而不是各标签页的内容",
+    "toolLabel": "保险库工具",
+    "tools": {
+      "reminders": "提醒",
+      "links": "链接",
+      "files": "文件",
+      "snippets": "片段",
+      "people": "联系人",
+      "tools": "工具"
+    }
+  },
+  "files": {
+    "add": "记录文档",
+    "filterLabel": "筛选文档",
+    "editLabel": "编辑文档",
+    "bucket": "分组",
+    "search": {
+      "label": "搜索文档",
+      "placeholder": "搜索名称、备注或分组"
+    },
+    "empty": {
+      "zeroTitle": "还没有文档",
+      "zeroDescription": "你的简历、陈述、讲稿和行政扫描件。只记录名称、大小和类型——不会读取文件本身。",
+      "search": "没有文档的名称、备注或分组提到“{{query}}”。",
+      "both": "“{{bucket}}”中没有带所选关键词的文档。",
+      "bucketTitle": "“{{bucket}}”中没有内容",
+      "bucketDescription_other": "有 {{count}} 个文档在其他分组中。",
+      "showAll": "显示所有分组",
+      "keywordsTitle": "没有文档带这些关键词"
+    },
+    "toast": {
+      "removed": "已移除文档",
+      "duplicated": "已复制文档",
+      "updated": "已更新文档",
+      "recorded": "已记录文档",
+      "recordedDescription": "{{name}} · 已归入“{{bucket}}”。只保存名称、大小和类型——不会读取文件本身。"
+    }
+  },
+  "snippets": {
+    "add": "新建片段",
+    "filterLabel": "筛选片段",
+    "tag": "标签",
+    "copyNamed": "复制 {{name}}",
+    "search": {
+      "label": "搜索片段",
+      "placeholder": "搜索标题或正文"
+    },
+    "empty": {
+      "zeroTitle": "还没有片段",
+      "zeroDescription": "那些你在每张表格里都要重新输入的回答——简短的个人介绍、一段教学陈述、你总会发出的跟进邮件。",
+      "search": "没有片段的名称、正文或类型提到“{{query}}”。",
+      "both": "没有“{{tag}}”类片段带所选关键词。",
+      "bucketTitle": "没有“{{tag}}”类片段",
+      "bucketDescription_other": "有 {{count}} 个片段在其他类型中。",
+      "showAll": "显示所有类型",
+      "keywordsTitle": "没有片段带这些关键词"
+    },
+    "toast": {
+      "deleted": "已删除片段",
+      "duplicated": "已复制片段",
+      "filedUnder": "已归入“{{tag}}”",
+      "saved": "已保存片段",
+      "added": "已添加片段",
+      "addedDescription": "{{title}} · 已归入“{{tag}}”"
+    },
+    "editor": {
+      "editTitle": "编辑片段",
+      "description": "草稿面板载入时，[方括号] 中的内容都会留空，所以绝不会替你填上某个人的名字。",
+      "titlePlaceholder": "例如：未获回复后的跟进",
+      "applicationHint": "可选。为特定雇主写的片段可以注明是哪些。",
+      "body": "正文",
+      "bodyRequired": "没有正文的片段没有内容可粘贴。",
+      "bodyPlaceholder": "尊敬的 [NAME]：……"
+    },
+    "discard": {
+      "title": "放弃未保存的更改？",
+      "description": "你在这里输入的内容还没有保存到任何地方，离开就会丢失——而且无法撤销。",
+      "confirm": "放弃"
+    }
+  },
+  "links": {
+    "add": "保存链接",
+    "filterLabel": "筛选链接",
+    "category": "类别",
+    "search": {
+      "label": "搜索链接",
+      "placeholder": "搜索标题、URL 或备注"
+    },
+    "empty": {
+      "zeroTitle": "还没有保存任何内容",
+      "zeroDescription": "招聘信息、院系页面、联系人和指南——任何你想回头再看的内容。",
+      "search": "没有链接的标题、地址、备注或类别提到“{{query}}”。",
+      "both": "没有“{{category}}”类链接带所选关键词。",
+      "bucketTitle": "“{{category}}”下没有链接",
+      "bucketDescription_other": "有 {{count}} 个链接在其他类别中。",
+      "showAll": "显示所有类别",
+      "keywordsTitle": "没有链接带这些关键词"
+    },
+    "menu": {
+      "open": "打开链接",
+      "copy": "复制 URL"
+    },
+    "toast": {
+      "removed": "已移除链接",
+      "duplicated": "已复制链接",
+      "copied": "已复制 URL",
+      "updated": "已更新链接",
+      "saved": "已保存链接"
+    },
+    "editor": {
+      "editTitle": "编辑链接",
+      "description": "不会抓取任何内容——只保存标题、URL 和你保存的日期。",
+      "saveLink": "保存链接",
+      "titlePlaceholder": "例如：Rice — 统计学职位",
+      "url": "URL",
+      "urlRequired": "没有 URL 的链接哪儿也去不了。",
+      "applicationHint": "将两者关联，这样每个申请都会把它算作归入其下的内容。",
+      "notePlaceholder": "为什么值得回头再看"
+    }
+  },
+  "reminders": {
+    "add": "新建提醒",
+    "filterLabel": "筛选提醒",
+    "markDone": "将“{{title}}”标为完成",
+    "markNotDone": "将“{{title}}”标为未完成",
+    "buckets": {
+      "overdue": "已逾期",
+      "today": "今天",
+      "upcoming": "即将到来",
+      "done": "已完成"
+    },
+    "search": {
+      "label": "搜索提醒",
+      "placeholder": "搜索标题、备注或类型"
+    },
+    "empty": {
+      "zeroTitle": "还没有提醒",
+      "zeroDescription": "提醒就是开启了提示的带日期记录。日期一过它就到期了，并会一直留在“今天”，直到你勾选完成。",
+      "search": "没有提醒的标题、备注或类型提到“{{query}}”。",
+      "both": {
+        "overdue": "没有已逾期的提醒带所选关键词。",
+        "today": "没有今天的提醒带所选关键词。",
+        "upcoming": "没有即将到来的提醒带所选关键词。",
+        "done": "没有已完成的提醒带所选关键词。"
+      },
+      "nothingIn": {
+        "overdue": "没有逾期事项",
+        "today": "今天没有事项",
+        "upcoming": "没有即将到来的事项"
+      },
+      "doneTitle": "还没有已完成的事项",
+      "doneDescription": "你勾选完成的提醒会集中在这里，所以误勾的提醒也能找回来。",
+      "bucketDescription_other": "有 {{count}} 个提醒在其他分组中。",
+      "showAll": "显示所有提醒",
+      "keywordsTitle": "没有提醒带这些关键词"
+    }
+  },
+  "people": {
+    "add": "添加",
+    "optionsFor": "{{name}} 的选项",
+    "search": {
+      "label": "搜索联系人",
+      "placeholder": "搜索姓名、角色或备注"
+    },
+    "empty": {
+      "zeroTitle": "还没有联系人",
+      "zeroDescription": "推荐人、遴选委员会主席、招聘人员——求职过程中经手的任何人。在他们写推荐的职位上注明他们，他们也会出现在那些记录中。",
+      "noMatchTitle": "没有匹配的联系人",
+      "noMatchDescription": "试试姓名的一部分、角色或所在机构。"
+    },
+    "toast": {
+      "removed": "已移除联系人",
+      "saved": "已保存联系人"
+    },
+    "editor": {
+      "editTitle": "编辑联系人",
+      "addTitle": "添加联系人",
+      "save": "保存联系人",
+      "description": "只需要一个名字。其余的，就是后来证明重要的东西。",
+      "noApplication": "无申请",
+      "name": "姓名",
+      "namePlaceholder": "例如：Ngozi Okafor 教授",
+      "role": "角色",
+      "rolePlaceholder": "例如：推荐人、遴选委员会主席、招聘人员",
+      "affiliation": "所属机构",
+      "affiliationPlaceholder": "例如：Rice",
+      "affiliationHint": "他们所在的地方。不会关联到你申请过的雇主。",
+      "email": "电子邮件",
+      "phone": "电话",
+      "namedOn": "关联职位",
+      "namedOnHint": "他们为之写推荐、参与筛选或担任主席的每个职位。",
+      "notePlaceholder": "他们说了什么、欠你什么、何时跟进。"
+    }
+  },
+  "calculator": {
+    "title": "计算器",
+    "hint": "无需记录、无需联网即可使用",
+    "copy": "复制结果",
+    "mode": "模式",
+    "modes": {
+      "basic": "基础",
+      "scientific": "科学"
+    },
+    "plusMinus": "正负号",
+    "history": "历史记录",
+    "kept": "保留 {{count}} 条",
+    "clear": "清除",
+    "emptyTitle": "还没有计算",
+    "emptyDescription": "最近三十个结果会保留在这里，方便把第二个数和第一个比较。点按一个结果即可放回显示屏。",
+    "historyEntry": "{{expr}} 等于 {{value}}。放回显示屏"
+  },
+  "pageViewer": {
+    "capturedFrom": "抓取自 {{host}}",
+    "missingTitle": "此设备上没有保存的副本",
+    "missingDescription": "抓取的页面保存在抓取它的地方，所以在网页版中抓取的不在这里。记录保留了它的名称和地址。"
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · 归档于{{ago}}",
+    "editDetails": "编辑详情",
+    "openFailed": "这部手机上没有应用能打开它。",
+    "facts": {
+      "type": "类型",
+      "size": "大小",
+      "filed": "归档时间",
+      "bucket": "分组"
+    },
+    "typed": {
+      "title": "已记录，未存储",
+      "description": "这是手动登记的——为保存在别处的文档记下名称、类型和大小。编辑它并选择一个文件，就能在这里保留副本。"
+    },
+    "checking": {
+      "title": "正在查找副本",
+      "description": "正在检查这条记录指向的文件是否仍在应用的存储中。"
+    },
+    "kept": {
+      "title": "保存在此设备上",
+      "pageDescription": "在这里打开，脚本关闭且不联网——即保存当天那则招聘信息的副本。",
+      "read": "阅读",
+      "fileDescription": "在这部手机上能处理该类型的应用中打开。不会上传任何内容，这里也不会读取其中的内容。",
+      "open": "打开"
+    },
+    "gone": {
+      "title": "副本已丢失",
+      "description": "这条记录指向的文件已不在应用的存储中——很可能被系统清理了。记录本身完好；重新选择该文件即可附加。",
+      "choose": "重新选择"
+    },
+    "attachedTo": "已关联到",
+    "change": "更改",
+    "fileUnderJob": "归入某个职位",
+    "notFiled": "未归入任何申请。归入后，它会出现在这些记录上，图谱也能从其中任意一个找到它。",
+    "addNote": "添加备注",
+    "notePlaceholder": "这份文档是做什么用的？",
+    "saveNote": "保存备注",
+    "noNote": "还没有为它写下任何内容。",
+    "toast": {
+      "noteSaved": "已保存备注"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
 import { CATALOG } from '@jojo/service/agent/catalog'
@@ -17,27 +18,32 @@ export function AgentHeader({
   busy: boolean
   onClear: () => void
 }) {
+  const { t } = useTranslation('assistant')
   return (
     <>
       <PageHeader
-        title="Assistant"
-        subtitle="Connected to your model, and able to act on your records. Everything it does is listed as it happens."
+        title={t('common.title')}
+        subtitle={t('header.subtitle')}
         actions={
           canClear ? (
             <Button variant="ghost" size="sm" disabled={busy} onClick={onClear}>
-              Clear
+              {t('header.clear')}
             </Button>
           ) : null
         }
       />
 
       <p role="status" className="rounded-lg border border-hairline px-4 py-3 text-sm text-text-2">
-        Answers come from <span className="font-mono text-text-1">{model}</span> at{' '}
-        <span className="font-mono text-text-1">{endpoint}</span>, which can call{' '}
-        <Link to="/guide" className="underline underline-offset-2">
-          {CATALOG.length} tools
-        </Link>{' '}
-        on this device. Nothing is sent anywhere else.
+        <Trans
+          t={t}
+          i18nKey="header.connected"
+          count={CATALOG.length}
+          values={{ model, endpoint }}
+          components={{
+            mono: <span className="font-mono text-text-1" />,
+            tools: <Link to="/guide" className="underline underline-offset-2" />,
+          }}
+        />
       </p>
     </>
   )

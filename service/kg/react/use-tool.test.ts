@@ -26,7 +26,8 @@ import { createRepository } from '../repo/repository'
 import type { Repository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
 import type { ToastOptions } from './toast'
-import { undoableSaying } from './undo'
+import { domainText, englishT } from '../core/domain-text'
+import { undoableSaying, undoShortcutToast } from './undo'
 import { runWithToast } from './use-tool'
 
 type Options = Parameters<typeof createRepository>[0]
@@ -74,7 +75,7 @@ function harness() {
     deps: {
       run: runtime.run,
       undoable: <T>(write: () => T) =>
-        undoableSaying(repo, (options) => void said.push(options), write),
+        undoableSaying(repo, (options) => void said.push(options), write, domainText(englishT)),
       toast: (options: ToastOptions) => void said.push(options),
     },
   }
@@ -237,5 +238,74 @@ describe('the Undo it wires is undoableWith, not result.undo', () => {
     )
     expect(h.said.at(-1)?.title).toBe('Nothing was undone')
     expect(h.said.at(-1)?.tone).toBe('danger')
+  })
+})
+
+/**
+ * `kg/react` may not import i18next, so the words it says itself come from the
+ * app's `domainText` (`KgContextValue.text`). A marking translator shows which
+ * words went through it: everything but what the person or the record wrote.
+ */
+const marked = domainText((key, options) =>
+  options?.['count'] === undefined ? `‹${key}›` : `‹${key}:${String(options['count'])}›`,
+)
+
+describe('the words this layer says itself, in the app’s language', () => {
+  it('says a tool toast’s title and Undo through the app’s words', () => {
+    const h = harness()
+    const created = h.runtime.run('sticky.note.create', { text: 'Ask Dana about the visit' })
+    if (!created.ok) throw new Error('no note')
+    runWithToast({ ...h.deps, text: marked }, 'sticky.note.delete', { id: created.output })
+    expect(h.said[0]?.title).toBe('‹domain:announce.stickyRemoved›')
+    expect(h.said[0]?.description).toBe('Ask Dana about the visit')
+    expect(undoOf(h.said).label).toBe('‹domain:undo.action›')
+  })
+
+  it('says a refusal’s title through the app’s words', () => {
+    const h = harness()
+    runWithToast({ ...h.deps, text: marked }, 'application.stage.set', {
+      id: 'application_missing',
+      stage: 'offer',
+    })
+    expect(h.said[0]?.title).toBe('‹domain:write.refused›')
+  })
+
+  it('answers ⌘Z and ⇧⌘Z in the app’s words, and drops a label it cannot say', () => {
+    const h = harness()
+    expect(undoShortcutToast(h.runtime.undo(), 'undo', marked)).toEqual({
+      title: '‹domain:undo.nothing.undo›',
+    })
+    expect(undoShortcutToast(h.runtime.redo(), 'redo', marked)).toEqual({
+      title: '‹domain:undo.nothing.redo›',
+    })
+    h.runtime.run('application.create', anApplication)
+    // The journal label is the create's English title; the marking language
+    // holds no `asWritten`, so it is left out rather than shown in English.
+    expect(undoShortcutToast(h.runtime.undo(), 'undo', marked)).toEqual({
+      title: '‹domain:undo.done.undo›',
+    })
+    expect(undoShortcutToast(h.runtime.redo(), 'redo', marked)).toEqual({
+      title: '‹domain:undo.done.redo›',
+    })
+  })
+
+  it('says in English exactly what the runtime says, label included', () => {
+    const h = harness()
+    const english = domainText((key, options) => englishT(key, options))
+    const said = (result: ReturnType<typeof h.runtime.undo>) => ({
+      title: result.ok ? result.announcement.title : result.errors[0]?.message,
+      ...(result.ok && result.announcement.description !== undefined
+        ? { description: result.announcement.description }
+        : {}),
+    })
+    const nothing = h.runtime.undo()
+    expect(undoShortcutToast(nothing, 'undo', english)).toEqual(said(nothing))
+    const noRedo = h.runtime.redo()
+    expect(undoShortcutToast(noRedo, 'redo', english)).toEqual(said(noRedo))
+    h.runtime.run('application.create', anApplication)
+    const undone = h.runtime.undo()
+    expect(undoShortcutToast(undone, 'undo', english)).toEqual(said(undone))
+    const redone = h.runtime.redo()
+    expect(undoShortcutToast(redone, 'redo', english)).toEqual(said(redone))
   })
 })

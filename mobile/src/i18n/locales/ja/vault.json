@@ -1,0 +1,290 @@
+{
+  "common": {
+    "undo": "元に戻す",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "edit": "編集",
+    "delete": "削除",
+    "remove": "取り除く",
+    "done": "完了",
+    "title": "タイトル",
+    "note": "メモ",
+    "changeApplications": "応募を変更",
+    "fileUnderApplication": "応募に分類",
+    "moreActionsFor": "{{name}} のその他の操作",
+    "openNamed": "{{name}} を開く",
+    "savedAgo": "{{ago}}に保存",
+    "copyOf": "{{name}}（コピー）",
+    "movedTo": "{{name}} に移動しました",
+    "titleRequired": "あとで見つけられるように名前を付けてください。"
+  },
+  "screen": {
+    "title": "保管庫",
+    "subtitle": "リマインダー、リンク、ファイル、スニペット、人物",
+    "counts": {
+      "reminders_other": "リマインダー {{count}} 件",
+      "links_other": "リンク {{count}} 件",
+      "files_other": "ファイル {{count}} 件",
+      "snippets_other": "スニペット {{count}} 件",
+      "people_other": "人物 {{count}} 人"
+    },
+    "showCounts": "件数を表示",
+    "showCountsDescription": "サブタイトルにタブの内容ではなく項目の合計を表示します",
+    "toolLabel": "保管庫のツール",
+    "tools": {
+      "reminders": "リマインダー",
+      "links": "リンク",
+      "files": "ファイル",
+      "snippets": "スニペット",
+      "people": "人物",
+      "tools": "ツール"
+    }
+  },
+  "files": {
+    "add": "書類を記録",
+    "filterLabel": "書類を絞り込む",
+    "editLabel": "書類を編集",
+    "bucket": "分類",
+    "search": {
+      "label": "書類を検索",
+      "placeholder": "名前、メモ、分類で検索"
+    },
+    "empty": {
+      "zeroTitle": "まだ書類がありません",
+      "zeroDescription": "履歴書、ステートメント、講演資料、事務書類のスキャンなど。名前・サイズ・種類を記録します。ファイルの中身は読み取りません。",
+      "search": "名前、メモ、分類に「{{query}}」を含む書類はありません。",
+      "both": "「{{bucket}}」に選択したキーワードの付いた書類はありません。",
+      "bucketTitle": "「{{bucket}}」には何もありません",
+      "bucketDescription_other": "{{count}} 件の書類が他の分類にあります。",
+      "showAll": "すべての分類を表示",
+      "keywordsTitle": "そのキーワードの付いた書類はありません"
+    },
+    "toast": {
+      "removed": "書類を取り除きました",
+      "duplicated": "書類を複製しました",
+      "updated": "書類を更新しました",
+      "recorded": "書類を記録しました",
+      "recordedDescription": "{{name}} · 「{{bucket}}」に分類。名前・サイズ・種類を保存しました。ファイルの中身は読み取っていません。"
+    }
+  },
+  "snippets": {
+    "add": "新しいスニペット",
+    "filterLabel": "スニペットを絞り込む",
+    "tag": "タグ",
+    "copyNamed": "{{name}} をコピー",
+    "search": {
+      "label": "スニペットを検索",
+      "placeholder": "タイトルや本文で検索"
+    },
+    "empty": {
+      "zeroTitle": "まだスニペットがありません",
+      "zeroDescription": "どのフォームでも打ち直している回答――短い自己紹介、教育についての一段落、いつも送るフォローアップのメールなど。",
+      "search": "名前、本文、種類に「{{query}}」を含むスニペットはありません。",
+      "both": "選択したキーワードの付いた「{{tag}}」のスニペットはありません。",
+      "bucketTitle": "「{{tag}}」のスニペットはありません",
+      "bucketDescription_other": "{{count}} 件のスニペットが他の種類にあります。",
+      "showAll": "すべての種類を表示",
+      "keywordsTitle": "そのキーワードの付いたスニペットはありません"
+    },
+    "toast": {
+      "deleted": "スニペットを削除しました",
+      "duplicated": "スニペットを複製しました",
+      "filedUnder": "「{{tag}}」に分類しました",
+      "saved": "スニペットを保存しました",
+      "added": "スニペットを追加しました",
+      "addedDescription": "{{title}} · 「{{tag}}」に分類"
+    },
+    "editor": {
+      "editTitle": "スニペットを編集",
+      "description": "下書きシートがこれを読み込むとき、[角かっこ] の中はすべて空欄のままになります。そのため、人の名前が勝手に入力されることはありません。",
+      "titlePlaceholder": "例：返信がないときのフォローアップ",
+      "applicationHint": "任意。特定の雇用主向けに書いたスニペットなら、その相手を示せます。",
+      "body": "本文",
+      "bodyRequired": "本文のないスニペットには貼り付けるものがありません。",
+      "bodyPlaceholder": "[NAME] 様 …"
+    },
+    "discard": {
+      "title": "保存していない変更を破棄しますか？",
+      "description": "ここに入力した内容はどこにも保存されていません。離れると失われ、元に戻せません。",
+      "confirm": "破棄"
+    }
+  },
+  "links": {
+    "add": "リンクを保存",
+    "filterLabel": "リンクを絞り込む",
+    "category": "カテゴリ",
+    "search": {
+      "label": "リンクを検索",
+      "placeholder": "タイトル、URL、メモで検索"
+    },
+    "empty": {
+      "zeroTitle": "まだ何も保存されていません",
+      "zeroDescription": "求人、学科のページ、人物、ガイドなど、あとで見返したいものなら何でも。",
+      "search": "タイトル、アドレス、メモ、カテゴリに「{{query}}」を含むリンクはありません。",
+      "both": "選択したキーワードの付いた「{{category}}」のリンクはありません。",
+      "bucketTitle": "「{{category}}」にリンクはありません",
+      "bucketDescription_other": "{{count}} 件のリンクが他のカテゴリにあります。",
+      "showAll": "すべてのカテゴリを表示",
+      "keywordsTitle": "そのキーワードの付いたリンクはありません"
+    },
+    "menu": {
+      "open": "リンクを開く",
+      "copy": "URL をコピー"
+    },
+    "toast": {
+      "removed": "リンクを取り除きました",
+      "duplicated": "リンクを複製しました",
+      "copied": "URL をコピーしました",
+      "updated": "リンクを更新しました",
+      "saved": "リンクを保存しました"
+    },
+    "editor": {
+      "editTitle": "リンクを編集",
+      "description": "ページは取得しません。保存するのはタイトル、URL、保存した日付だけです。",
+      "saveLink": "リンクを保存",
+      "titlePlaceholder": "例：Rice — 統計学の求人",
+      "url": "URL",
+      "urlRequired": "URL のないリンクはどこにもつながりません。",
+      "applicationHint": "両者を結び付け、各応募がこれを分類済みの項目として数えるようにします。",
+      "notePlaceholder": "見返す価値がある理由"
+    }
+  },
+  "reminders": {
+    "add": "新しいリマインダー",
+    "filterLabel": "リマインダーを絞り込む",
+    "markDone": "「{{title}}」を完了にする",
+    "markNotDone": "「{{title}}」を未完了にする",
+    "buckets": {
+      "overdue": "期限切れ",
+      "today": "今日",
+      "upcoming": "今後",
+      "done": "完了"
+    },
+    "search": {
+      "label": "リマインダーを検索",
+      "placeholder": "タイトル、メモ、種類で検索"
+    },
+    "empty": {
+      "zeroTitle": "まだリマインダーがありません",
+      "zeroDescription": "リマインダーとは、通知をオンにした日付付きの記録です。日付を過ぎると対応待ちになり、チェックを付けるまで「今日」に残ります。",
+      "search": "タイトル、メモ、種類に「{{query}}」を含むリマインダーはありません。",
+      "both": {
+        "overdue": "選択したキーワードの付いた期限切れのリマインダーはありません。",
+        "today": "選択したキーワードの付いた今日のリマインダーはありません。",
+        "upcoming": "選択したキーワードの付いた今後のリマインダーはありません。",
+        "done": "選択したキーワードの付いた完了済みのリマインダーはありません。"
+      },
+      "nothingIn": {
+        "overdue": "期限切れはありません",
+        "today": "今日の予定はありません",
+        "upcoming": "今後の予定はありません"
+      },
+      "doneTitle": "まだ完了したものはありません",
+      "doneDescription": "チェックを付けたリマインダーはここに集まるので、誤ってチェックしたものもあとで見つけられます。",
+      "bucketDescription_other": "{{count}} 件のリマインダーが他のグループにあります。",
+      "showAll": "すべてのリマインダーを表示",
+      "keywordsTitle": "そのキーワードの付いたリマインダーはありません"
+    }
+  },
+  "people": {
+    "add": "追加",
+    "optionsFor": "{{name}} のオプション",
+    "search": {
+      "label": "人物を検索",
+      "placeholder": "名前、役割、メモで検索"
+    },
+    "empty": {
+      "zeroTitle": "まだ誰もいません",
+      "zeroDescription": "推薦者、選考委員長、リクルーターなど、就職活動で関わるすべての人。推薦状を書いてくれる求人に名前を挙げると、その記録にも表示されます。",
+      "noMatchTitle": "一致する人はいません",
+      "noMatchDescription": "名前の一部、役割、所属先で試してみてください。"
+    },
+    "toast": {
+      "removed": "人物を取り除きました",
+      "saved": "人物を保存しました"
+    },
+    "editor": {
+      "editTitle": "人物を編集",
+      "addTitle": "人物を追加",
+      "save": "人物を保存",
+      "description": "必要なのは名前だけです。それ以外は、あとで大事だとわかったことを。",
+      "noApplication": "応募なし",
+      "name": "名前",
+      "namePlaceholder": "例：Ngozi Okafor 教授",
+      "role": "役割",
+      "rolePlaceholder": "例：推薦者、選考委員長、リクルーター",
+      "affiliation": "所属",
+      "affiliationPlaceholder": "例：Rice",
+      "affiliationHint": "その人がいる場所です。応募先の雇用主とは結び付きません。",
+      "email": "メール",
+      "phone": "電話",
+      "namedOn": "関わる求人",
+      "namedOnHint": "推薦状を書く、選考する、委員長を務めるすべての求人。",
+      "notePlaceholder": "言われたこと、してもらう約束、いつ催促するか。"
+    }
+  },
+  "calculator": {
+    "title": "電卓",
+    "hint": "記録なし・接続なしで使えます",
+    "copy": "結果をコピー",
+    "mode": "モード",
+    "modes": {
+      "basic": "標準",
+      "scientific": "関数"
+    },
+    "plusMinus": "プラスマイナス",
+    "history": "履歴",
+    "kept": "{{count}} 件保存",
+    "clear": "消去",
+    "emptyTitle": "まだ計算していません",
+    "emptyDescription": "直近 30 件の結果がここに残るので、2 つ目の数字を 1 つ目と比べられます。タップすると表示に戻せます。",
+    "historyEntry": "{{expr}} は {{value}}。表示に戻す"
+  },
+  "pageViewer": {
+    "capturedFrom": "{{host}} から取得",
+    "missingTitle": "このデバイスに保存されたコピーはありません",
+    "missingDescription": "取得したページは取得した場所に保存されるため、ウェブアプリで取得したものはここにはありません。記録には名前とアドレスが残っています。"
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · {{ago}}に分類",
+    "editDetails": "詳細を編集",
+    "openFailed": "このスマートフォンには開けるアプリがありませんでした。",
+    "facts": {
+      "type": "種類",
+      "size": "サイズ",
+      "filed": "分類日",
+      "bucket": "分類"
+    },
+    "typed": {
+      "title": "記録のみ、保存なし",
+      "description": "これは手動で登録したものです。別の場所にある書類の名前・種類・サイズだけを記録しています。編集してファイルを選ぶと、ここにコピーを保存できます。"
+    },
+    "checking": {
+      "title": "コピーを確認しています",
+      "description": "この記録が指すファイルがまだアプリのストレージにあるかを確認しています。"
+    },
+    "kept": {
+      "title": "このデバイスに保存済み",
+      "pageDescription": "スクリプトをオフにし、接続なしでここで開きます。保存した日の求人そのままのコピーです。",
+      "read": "読む",
+      "fileDescription": "このスマートフォンでその種類を扱うアプリで開きます。アップロードはせず、ここで中身を読み取ることもありません。",
+      "open": "開く"
+    },
+    "gone": {
+      "title": "コピーが見つかりません",
+      "description": "この記録が指すファイルは、もうアプリのストレージにありません。システムによって削除された可能性が高いです。記録は無事なので、ファイルをもう一度選んで添付してください。",
+      "choose": "もう一度選ぶ"
+    },
+    "attachedTo": "添付先",
+    "change": "変更",
+    "fileUnderJob": "求人に分類",
+    "notFiled": "どの応募にも分類されていません。分類すると、その記録に表示され、どの記録からでもグラフで見つけられるようになります。",
+    "addNote": "メモを追加",
+    "notePlaceholder": "この書類は何のためのものですか？",
+    "saveNote": "メモを保存",
+    "noNote": "この書類についてはまだ何も書かれていません。",
+    "toast": {
+      "noteSaved": "メモを保存しました"
+    }
+  }
+}

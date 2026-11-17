@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -34,6 +35,7 @@ import { space } from '@/theme/tokens'
  * default, not a gate, and someone who taps outside it has not lost anything.
  */
 export function FirstRunChoice({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation('components')
   const c = useColors()
   const { clearAll } = useStoreAdmin()
   const [open, setOpen] = useState(true)
@@ -52,25 +54,25 @@ export function FirstRunChoice({ onDone }: { onDone: () => void }) {
     <Sheet
       open={open}
       onClose={close}
-      title="How would you like to start?"
-      description="Either way, everything stays on this device and nothing is sent anywhere."
+      title={t('firstRun.title')}
+      description={t('firstRun.description')}
     >
       <View style={{ gap: space[3], paddingBottom: space[2] }}>
         <Choice
           icon="sparkles"
-          title="Explore with demo records"
-          detail="Twelve applications, a filled calendar and a stocked vault, so every screen has something in it. You can clear them later in Settings."
+          title={t('firstRun.demo.title')}
+          detail={t('firstRun.demo.detail')}
           color={c.accent}
         />
-        <Button label="Use the demo records" full onPress={close} />
+        <Button label={t('firstRun.demo.action')} full onPress={close} />
 
         <Choice
           icon="square"
-          title="Start empty"
-          detail="Nothing but your own records. Screens that need data will say what is missing rather than showing an example."
+          title={t('firstRun.empty.title')}
+          detail={t('firstRun.empty.detail')}
           color={c.text3}
         />
-        <Button label="Start empty" variant="outline" full onPress={startEmpty} />
+        <Button label={t('firstRun.empty.title')} variant="outline" full onPress={startEmpty} />
       </View>
     </Sheet>
   )

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { ClipboardList, Plus, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { ApplicationsFilters } from '@/components/applications/ApplicationsFilters'
 import { ApplicationsBoard } from '@/components/applications/board/ApplicationsBoard'
 import { DetailSheet } from '@/components/applications/detail/DetailSheet'
@@ -30,6 +31,7 @@ import { DESKTOP_QUERY, useMediaQuery, useReducedMotion } from '@/lib/use-media-
 import { useRoles } from '@/lib/roles-context'
 
 export function Applications() {
+  const { t } = useTranslation('pages')
   // The top bar's role selection, not a copy of it: this list, the dashboard
   // and Statistics all narrow by the same picks, so a role chosen here is still
   // chosen on the next page. "Show all" below clears it as well, because an
@@ -106,16 +108,14 @@ export function Applications() {
     selectedKeywords.size > 0 ||
     selectedRoles.size > 0
 
-  const emptyReason = useMemo(
-    () =>
-      emptyReasonFor({
-        query,
-        stageFilter,
-        keywordCount: selectedKeywords.size,
-        roleCount: selectedRoles.size,
-      }),
-    [query, stageFilter, selectedKeywords, selectedRoles],
-  )
+  // Not memoised: it is a sentence in the language of the moment, and four
+  // string checks cost less than remembering which language it was worded in.
+  const emptyReason = emptyReasonFor({
+    query,
+    stageFilter,
+    keywordCount: selectedKeywords.size,
+    roleCount: selectedRoles.size,
+  })
 
   const clearFilters = () => {
     params.set({ q: '', stage: 'all' })
@@ -174,38 +174,38 @@ export function Applications() {
    * standing down only below `lg` left a bookmarked record titled
    * "Applications" there for the same reason.
    */
-  useTitle(detail ? null : 'Applications')
+  useTitle(detail ? null : t('applications.title'))
 
   return (
     <>
       {inlineDetail ? null : (
         <PageHeader
-          title="Applications"
+          title={t('applications.title')}
           settings={
             <>
               <PageOption
-                label="Show notes"
+                label={t('applications.showNotes')}
                 // Says "table" because that is now the only view with a note
                 // line to show: a board card carries none at any setting, since
                 // one long note made one card six lines tall and pushed its
                 // whole column off the screen.
-                hint="The second line under each position in the table"
+                hint={t('applications.showNotesHint')}
                 control={
                   <Switch
                     checked={showNotes}
                     onCheckedChange={setShowNotes}
-                    aria-label="Show notes"
+                    aria-label={t('applications.showNotes')}
                   />
                 }
               />
               <PageOption
-                label="Compact rows"
-                hint="Tighter row height in the table"
+                label={t('applications.compact')}
+                hint={t('applications.compactHint')}
                 control={
                   <Switch
                     checked={compact}
                     onCheckedChange={setCompact}
-                    aria-label="Compact rows"
+                    aria-label={t('applications.compact')}
                   />
                 }
               />
@@ -213,8 +213,8 @@ export function Applications() {
           }
           subtitle={
             empty
-              ? 'Nothing tracked yet — everything you add stays on this machine.'
-              : `${shown} shown · ${all.length} total`
+              ? t('applications.subtitleEmpty')
+              : t('applications.subtitle', { shown, total: all.length })
           }
           actions={
             <>
@@ -224,12 +224,12 @@ export function Applications() {
                   pushed the button onto a second line. */}
               <AddByUrl
                 fieldClassName="w-[210px] flex-none"
-                placeholder="Paste a posting URL"
-                submitLabel="From link"
+                placeholder={t('applications.urlPlaceholder')}
+                submitLabel={t('applications.fromLink')}
               />
               <Button size="sm" onClick={() => onNew()}>
                 <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                New application
+                {t('applications.newApplication')}
               </Button>
             </>
           }
@@ -249,12 +249,12 @@ export function Applications() {
           <Panel>
             <EmptyState
               icon={ClipboardList}
-              title="No applications yet"
-              description="Track a job you are applying for and it shows up here, on the calendar and in the week ahead."
+              title={t('applications.emptyTitle')}
+              description={t('applications.emptyDescription')}
               action={
                 <Button size="sm" onClick={() => onNew()}>
                   <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                  New application
+                  {t('applications.newApplication')}
                 </Button>
               }
             />
@@ -263,14 +263,14 @@ export function Applications() {
           <Panel>
             <EmptyState
               icon={ClipboardList}
-              title="No applications match"
+              title={t('applications.noMatchTitle')}
               description={emptyReason}
               action={
                 <div className="flex flex-wrap justify-center gap-2">
                   {anyFilter ? (
                     <Button variant="outline" size="sm" onClick={clearFilters}>
                       <X className="size-3.5" strokeWidth={2} aria-hidden />
-                      Show all {all.length}
+                      {t('applications.showAll', { count: all.length })}
                     </Button>
                   ) : null}
                   <Button
@@ -278,7 +278,7 @@ export function Applications() {
                     onClick={() => onNew(stageFilter === 'all' ? undefined : stageFilter)}
                   >
                     <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                    New application
+                    {t('applications.newApplication')}
                   </Button>
                 </div>
               }
@@ -326,7 +326,11 @@ export function Applications() {
 
       {detail && isDesktop ? (
         <DetailSheet
-          name={openId ? (all.find((a) => a.id === openId)?.org ?? 'Application') : 'Application'}
+          name={
+            openId
+              ? (all.find((a) => a.id === openId)?.org ?? t('applications.fallbackName'))
+              : t('applications.fallbackName')
+          }
           applicationId={openId ?? undefined}
           onClose={closeDetail}
         >

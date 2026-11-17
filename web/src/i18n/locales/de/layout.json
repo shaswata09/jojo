@@ -1,0 +1,141 @@
+{
+  "sidebar": {
+    "navigation": "Navigation",
+    "close": "Navigation schließen"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "applications": "Bewerbungen",
+    "calendar": "Kalender",
+    "vault": "Tresor",
+    "jobScout": "Job-Scout",
+    "statistics": "Statistiken",
+    "flagged_one": "{{count}} markiert",
+    "flagged_other": "{{count}} markiert",
+    "flaggedTitle": "Zum Nachfassen markiert",
+    "weekTitle": "In den nächsten sieben Tagen geplant",
+    "overdueTitle": "Erinnerungen, deren Datum vorbei ist",
+    "fresh_one": "{{count}} neu",
+    "fresh_other": "{{count}} neu",
+    "freshTitle": "Treffer, die noch nicht zu Bewerbungen hinzugefügt wurden"
+  },
+  "newMenu": {
+    "trigger": "Neu",
+    "find": "Etwas zum Hinzufügen finden",
+    "findPlaceholder": "Etwas zum Hinzufügen finden …",
+    "empty": "Nichts zum Hinzufügen passt dazu."
+  },
+  "roleFilter": {
+    "label": "Nach Rolle filtern",
+    "all": "Alle Rollen",
+    "selected_one": "{{count}} ausgewählt",
+    "selected_other": "{{count}} ausgewählt",
+    "find": "Rolle suchen",
+    "findPlaceholder": "Rolle suchen …",
+    "empty": "Keine Rolle passt.",
+    "selectAll": "Alle auswählen",
+    "clear": "Filter zurücksetzen",
+    "remove": "{{role}} entfernen"
+  },
+  "topbar": {
+    "openNav": "Navigation öffnen",
+    "search": "Bewerbungen, Erinnerungen, Termine durchsuchen …",
+    "accountNav": "Konto und Hilfe",
+    "links": {
+      "profile": "Mein Profil",
+      "settings": "Einstellungen",
+      "assistant": "Assistent",
+      "guide": "Anleitung"
+    }
+  },
+  "runtime": {
+    "heading": "Laufzeit",
+    "tileTitle": "{{label}} – {{detail}}. Öffnet {{destination}}",
+    "dest": {
+      "graph": "den Graphen",
+      "transfer": "Übertragen",
+      "settings": "Einstellungen"
+    },
+    "storage": {
+      "label": "Browserspeicher",
+      "notSaving": "speichert nicht",
+      "notSavingDetail": "deine Einträge werden nicht gespeichert – das Banner über der Seite sagt, warum",
+      "retrying": "neuer Versuch",
+      "retryingDetail_one": "{{count}} Änderung konnte noch nicht gespeichert werden, und jojo versucht es weiter",
+      "retryingDetail_other": "{{count}} Änderungen konnten noch nicht gespeichert werden, und jojo versucht es weiter",
+      "saved": "hier gespeichert",
+      "savedDetail": "deine Einträge werden beim Arbeiten in die Datenbank dieses Browsers geschrieben"
+    },
+    "model": {
+      "label": "Lokales Modell",
+      "connected": "verbunden",
+      "connectedDetail": "ein lokales Modell hat geantwortet – der Assistent und die Scout-Bewertung können es nutzen",
+      "noAnswer": "keine Antwort",
+      "noAnswerDetail": "ein Modell ist eingerichtet, hat aber nicht geantwortet – prüfe, ob es läuft",
+      "checking": "wird geprüft",
+      "checkingDetail": "das Modell wird gefragt, ob es da ist",
+      "unset": "nicht eingerichtet",
+      "unsetDetail": "noch kein Modell-Endpunkt – der wird in den Einstellungen eingetragen"
+    },
+    "transfer": {
+      "label": "Übertragen",
+      "meta": "Mit anderem Gerät synchronisieren",
+      "detail": "noch kein Gerät gekoppelt – das geht unter Übertragen"
+    }
+  },
+  "banner": {
+    "reload": "Neu laden",
+    "interrupted": "jojo wurde in einem anderen Tab aktualisiert, daher hat dieser Tab seine Datenbank geschlossen, um das Update durchzulassen. Nichts, was du hier änderst, wird gespeichert. Lade neu, um weiterzumachen.",
+    "versionBlocked": "jojo konnte seine Datenbank nicht öffnen – ein anderer jojo-Tab ist mit einer anderen Version der App geöffnet. <strong>Deine Einträge sind noch auf der Festplatte</strong>, aber dieser Tab konnte sie nicht lesen und zeigt deshalb lieber nichts an, statt zu raten. Schließe die anderen Tabs und lade neu, um sie zurückzubekommen.",
+    "noStorage": "Dieser Browser lässt jojo seinen Speicher nicht öffnen, daher ist dieser Tab ein leerer Arbeitsbereich: Was schon auf diesem Gerät gespeichert ist, wird nicht angezeigt, und was du hier eingibst, ist weg, wenn du den Tab schließt. Private Fenster und manche verwaltete Browser tun das. Exportiere über die Einstellungen, bevor du gehst, wenn du etwas Wichtiges hinzufügst.",
+    "atRisk_one": "{{count}} Änderung ist auf dem Bildschirm, aber nicht gespeichert – exportiere über die Einstellungen, um sie zu behalten, denn Neuladen oder Schließen dieses Tabs verliert sie.",
+    "atRisk_other": "{{count}} Änderungen sind auf dem Bildschirm, aber nicht gespeichert – exportiere über die Einstellungen, um sie zu behalten, denn Neuladen oder Schließen dieses Tabs verliert sie.",
+    "safeBefore": "Alles, was du davor geändert hast, ist auf der Festplatte.",
+    "corrupt": "jojo speichert nicht mehr: Dieser Browser hat eine Änderung an deinen Einträgen abgelehnt, und erneutes Versuchen hilft nicht. {{atRisk}} Exportiere jetzt über die Einstellungen – unter Einstellungen → Diagnose stehen die Details, und Neuladen vor dem Export verliert alles, was nur auf dem Bildschirm ist.",
+    "quota": "Dieser Browser hat keinen Platz mehr, daher speichert jojo nicht mehr. {{atRisk}} Schaffe etwas Platz und lade dann neu.",
+    "otherTab": "jojo speichert nicht mehr, weil ein anderer Tab die Datenbank hat. Schließe die anderen Tabs und exportiere dann über die Einstellungen, falls etwas auf dem Bildschirm nicht gespeichert wurde – Neuladen dieses Tabs verliert es.",
+    "degraded_one": "{{count}} Änderung konnte nicht gespeichert werden, und jojo versucht es weiter. Exportiere über die Einstellungen, wenn du jetzt eine Kopie brauchst. ({{error}})",
+    "degraded_other": "{{count}} Änderungen konnten nicht gespeichert werden, und jojo versucht es weiter. Exportiere über die Einstellungen, wenn du jetzt eine Kopie brauchst. ({{error}})",
+    "documentsBlocked": "Deine Dokumente sind noch auf diesem Gerät, aber ein anderer jojo-Tab mit einer älteren Version der App hält sie fest. Schließe die anderen jojo-Tabs – dieser holt sie sich dann von selbst.",
+    "skipped_one": "{{count}} Eintrag auf diesem Gerät konnte nicht gelesen werden und wird nicht angezeigt. Nichts wurde gelöscht – die <anchor>Diagnose</anchor> nennt ihn, und ein Export von dort enthält alles, was jojo lesen konnte.",
+    "skipped_other": "{{count}} Einträge auf diesem Gerät konnten nicht gelesen werden und werden nicht angezeigt. Nichts wurde gelöscht – die <anchor>Diagnose</anchor> nennt sie, und ein Export von dort enthält alles, was jojo lesen konnte.",
+    "nearlyFull": "Dieser Browser hat fast keinen Platz mehr für jojo – etwa {{percent}} % des Erlaubten sind belegt. Wenn er voll ist, funktioniert das Speichern nicht mehr, also lohnt es sich, jetzt über die Einstellungen zu exportieren und Platz zu schaffen, solange deine Einträge noch geschrieben werden können.",
+    "backup": {
+      "busy": "Backup läuft …",
+      "download": "Backup herunterladen",
+      "notNow": "Jetzt nicht"
+    }
+  },
+  "shell": {
+    "skipToMain": "Zum Hauptinhalt springen"
+  },
+  "spotlight": {
+    "title": "Suchen",
+    "label": "Bewerbungen, Erinnerungen, Termine und Seiten durchsuchen",
+    "placeholder": "Bewerbungen, Erinnerungen, Termine durchsuchen …",
+    "emptyTitle": "Nichts passt dazu.",
+    "emptyHint": "Versuch es mit einer Rolle, einer Organisation oder einer Phase.",
+    "actions": "Aktionen",
+    "applications": "Bewerbungen",
+    "reminders": "Erinnerungen",
+    "calendar": "Kalender",
+    "tools": "Werkzeuge",
+    "goTo": "Gehe zu",
+    "toOpen": "zum Öffnen",
+    "toClose": "Esc zum Schließen",
+    "pages": {
+      "dashboard": "Dashboard",
+      "applications": "Bewerbungen",
+      "calendar": "Kalender",
+      "vault": "Tresor",
+      "jobScout": "Job-Scout",
+      "statistics": "Statistiken",
+      "graph": "Graph",
+      "transfer": "Übertragen",
+      "transferDetail": "Deine Einträge auf ein anderes Gerät bringen",
+      "profile": "Mein Profil",
+      "assistant": "Assistent",
+      "settings": "Einstellungen"
+    }
+  }
+}

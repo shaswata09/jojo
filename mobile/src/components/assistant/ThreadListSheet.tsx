@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { NodeId } from '@jojo/service/core/model'
-import { agoLabel } from '@jojo/service/core/dates'
 import { dayOf } from '@jojo/service/core/project'
 import { useBusyThreads } from '@jojo/service/react/agent-runs-context'
 import { displayName } from '@jojo/service/data/seed'
@@ -15,6 +15,7 @@ import { TODAY } from '@/lib/today'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Every conversation, to move between.
@@ -46,6 +47,8 @@ export function ThreadListSheet({
   onNew: () => void
   onClose: () => void
 }) {
+  const { t: tr } = useTranslation(['components', 'common'])
+  const domain = useDomain()
   const c = useColors()
   const [filter, setFilter] = useState('')
 
@@ -66,12 +69,12 @@ export function ThreadListSheet({
       // Unfiled last, under a heading naming what they have in common rather
       // than what they lack.
       const key = label || '￿'
-      const group = by.get(key) ?? { label: label || 'Not about a job yet', threads: [] }
+      const group = by.get(key) ?? { label: label || tr('threads.noJob'), threads: [] }
       group.threads.push(t)
       by.set(key, group)
     }
     return [...by.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, g]) => g)
-  }, [byId, filter, threads])
+  }, [byId, filter, threads, tr])
 
   const busyThreads = useBusyThreads()
 
@@ -80,16 +83,16 @@ export function ThreadListSheet({
       open={open}
       onClose={onClose}
       size="tall"
-      title="Conversations"
+      title={tr('threads.conversations')}
       description={
         threads.length === 0
-          ? 'Nothing yet — ask something and it is kept here, on this device.'
-          : `${String(threads.length)} kept on this device.`
+          ? tr('threads.listEmpty')
+          : tr('threads.keptOnDevice', { count: threads.length })
       }
       footer={
         <>
           <Button
-            label="New conversation"
+            label={tr('threads.new')}
             icon="plus"
             variant="outline"
             onPress={() => {
@@ -97,16 +100,16 @@ export function ThreadListSheet({
               onClose()
             }}
           />
-          <Button label="Done" onPress={onClose} />
+          <Button label={tr('common:actions.done')} onPress={onClose} />
         </>
       }
     >
       <View style={{ gap: space[4] }}>
         {threads.length >= FILTER_FROM ? (
           <TextField
-            label="Filter"
+            label={tr('threads.filter')}
             value={filter}
-            placeholder="By name or job"
+            placeholder={tr('threads.filterPlaceholder')}
             autoCapitalize="none"
             onChangeText={setFilter}
           />
@@ -114,7 +117,7 @@ export function ThreadListSheet({
 
         {groups.length === 0 && threads.length > 0 ? (
           <Txt size="sm" tone="muted">
-            No conversation matches that.
+            {tr('threads.noMatch')}
           </Txt>
         ) : null}
 
@@ -131,7 +134,7 @@ export function ThreadListSheet({
                   key={t.id}
                   accessibilityRole="button"
                   accessibilityState={{ selected: on }}
-                  accessibilityLabel={`Open ${t.title}`}
+                  accessibilityLabel={tr('common:actions.openNamed', { name: t.title })}
                   onPress={() => {
                     onOpen(t.id)
                     onClose()
@@ -156,12 +159,12 @@ export function ThreadListSheet({
                         one, so the row is the only place that fact can live. */}
                     {busyThreads.includes(t.id) ? (
                       <Txt size="xs" tone="accent">
-                        Working…
+                        {tr('threads.working')}
                       </Txt>
                     ) : (
                       <>
                         <Txt size="xs" tone="muted">
-                          {asked} {asked === 1 ? 'question' : 'questions'}
+                          {tr('threads.questions', { count: asked })}
                         </Txt>
                         <Txt size="xs" tone="muted">
                           {/* `dayOf`, not `.slice(0, 10)` — the same repair as
@@ -175,7 +178,7 @@ export function ThreadListSheet({
                               `agoLabel` printed "Oct 13" — a future date — on a
                               row that should have said "today". East of UTC the
                               same pair reads "yesterday". */}
-                          · {agoLabel(dayOf(t.updatedAt), TODAY)}
+                          · {domain.ago(dayOf(t.updatedAt), TODAY)}
                         </Txt>
                       </>
                     )}

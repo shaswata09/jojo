@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Les outils",
+    "subtitle": "Ce que l’assistant peut réellement faire, ce qu’on l’empêche de faire, et comment il trouve le bon outil.",
+    "can": {
+      "hint": "{{total}} au total",
+      "title": "Ce que l’assistant peut faire",
+      "intro": "L’<go>Assistant</go> ne tape rien dans vos écrans. Il appelle les mêmes {{total}} opérations que les boutons : le même chemin de code, avec les mêmes vérifications. Il n’existe pas de seconde porte d’entrée, et c’est pourquoi une modification de l’assistant apparaît dans votre historique exactement comme une modification faite par vous.",
+      "stats": {
+        "readsLabel": "façons de consulter",
+        "readsHint": "lire ne change jamais rien",
+        "writesLabel": "façons de modifier",
+        "writesHint": "toutes peuvent être annulées…",
+        "destructiveLabel": "marquées destructrices",
+        "destructiveHint": "…sauf deux, qui demandent d’abord"
+      },
+      "irreversibleOne": "Sur ces {{destructive}}, une ne peut pas du tout être annulée : celles qui remplacent ou vident toute la base.",
+      "irreversibleTwo": "Sur ces {{destructive}}, deux ne peuvent pas du tout être annulées : celles qui remplacent ou vident toute la base.",
+      "irreversibleMany": "Sur ces {{destructive}}, {{irreversible}} ne peuvent pas du tout être annulées : celles qui remplacent ou vident toute la base.",
+      "neverOffered": "Elles ne sont jamais proposées à l’assistant, sauf si vos propres mots les demandent, et même alors elles s’arrêtent pour demander confirmation, quel que soit le mode d’approbation de la conversation. Le mode automatique agit sans demander pour tout ce qui peut être annulé ; il demande quand même avant celles-ci.",
+      "ownWords": "« Vos propres mots les demandent » est un test précis, pas une appréciation : la phrase doit contenir quelque chose qui signifie effacer, quelque chose qui signifie toute la base, et aucune mention d’un type de fiche particulier. « Efface tout » remplit les conditions. « Enlève les étiquettes de la candidature Baylor » non, pas plus que « supprime tout ce que j’ai écrit dans cette note » : les deux nomment une chose, donc les deux portent sur cette chose.",
+      "errs": "Dans le doute, il ne propose pas. Si vous le voulez vraiment et le formulez de façon inhabituelle, l’assistant dit qu’il ne peut pas au lieu de deviner, et le bouton reste disponible dans les Réglages."
+    },
+    "gates": {
+      "hint": "la partie qui tient vraiment",
+      "title": "Ce qui empêche le mauvais outil de s’exécuter",
+      "intro": "Un modèle de langage peut demander n’importe quoi. Il peut nommer un outil qu’on ne lui a jamais montré, ou en inventer un qui n’existe pas ; les petits modèles le font régulièrement, et ce n’est pas le signe que quelque chose a mal tourné. jojo ne compte donc pas sur la prudence du modèle.",
+      "distinctionTitle": "La distinction qui compte",
+      "distinction": "Choisir ce qu’on <em>montre</em> au modèle est une indication. Vérifier ce qu’il a réellement <em>appelé</em> est une règle, et la règle dépend de qui a choisi l’ensemble. Là où l’écran le fixe (Interroger le graphe, un pipeline de veille), un appel à quoi que ce soit hors de cet ensemble est refusé avant même toute recherche, à plus forte raison toute exécution. Dans un chat, l’ensemble est l’estimation de jojo de ce dont vous avez besoin : un appel hors de cet ensemble n’est donc pas refusé, il passe par la même vérification d’approbation que tout autre appel, qui vous demande d’abord, sauf si la conversation est réglée pour agir seule. La seule exception est l’effacement de vos fiches, la seule chose qui ne peut pas être annulée : il est refusé sauf si vous avez demandé de tout effacer en toutes lettres.",
+      "askGraph": "C’est pourquoi la carte « Interroger le graphe » peut proposer sans risque deux outils en lecture seule. Elle ne compte pas sur le modèle pour s’y tenir."
+    },
+    "workflow": {
+      "hint": "des étapes, pas un seul long try",
+      "title": "Un travail en plusieurs étapes",
+      "p1": "Lire un CV n’est pas une seule question. jojo découpe le document selon ses propres titres, interroge chaque section séparément, demande encore une fois ce qui a été oublié, et enfin comment les faits sont liés : cinq ou six appels au modèle pour un seul import. Écrit d’un seul bloc, ce serait un unique <code>try</code> autour de l’ensemble, et une seule mauvaise réponse n’importe où ferait tout perdre.",
+      "p2": "Un tel travail est donc déclaré comme des <strong>étapes reliées par des arêtes</strong>. Chaque étape indique combien de fois elle vaut la peine d’être relancée et si le travail peut continuer sans elle ; le passage d’une étape à la suivante est décidé par ce qui s’est passé, jamais en demandant au modèle où aller. Une étape qui échoue est nommée dans le résultat au lieu de disparaître dans un « la lecture de votre CV a échoué ».",
+      "p3": "C’est surtout important avec un petit modèle. Un 7B n’échoue généralement pas en raisonnant mal sur de nombreuses étapes : il échoue en renvoyant quelque chose de mal formé à une étape sur six. La bonne réponse est de relancer cette étape et de laisser les cinq autres tranquilles.",
+      "p4": "Une étape qui ne fait qu’améliorer le résultat, comme déterminer comment vos faits sont liés, est marquée facultative : si elle échoue, vous obtenez quand même tout ce que les étapes précédentes ont trouvé. Les boucles sont permises (une étape peut revenir en arrière) et le nombre total d’étapes a un plafond strict, pour qu’une erreur d’aiguillage s’arrête avec une trace lisible au lieu de tourner indéfiniment sur votre GPU."
+    },
+    "badReply": {
+      "hint": "une mauvaise réponse coûte un passage, pas le document",
+      "title": "Quand un petit modèle répond mal",
+      "p1": "Un petit modèle manque de place au milieu d’une phrase. Lire un CV demande une liste de faits, et une réponse coupée au milieu de cette liste n’a pas de crochet fermant : ce n’est donc pas du JSON, et le réflexe évident serait de la jeter. jojo conserve plutôt tout jusqu’à la dernière entrée <strong>terminée</strong>, et indique ce qui a été perdu. Vingt faits arrivent au lieu d’aucun.",
+      "p2": "Il s’arrête volontairement à une entrée terminée. La moitié d’un intitulé de poste est pire que pas d’intitulé du tout : elle vous est présentée avec l’air d’être complète, et vous l’approuvez.",
+      "p3": "La même attention s’applique aux recherches. Si on lui demande « passe ma candidature Rice en entretien » alors qu’il y en a deux, un modèle qui chercherait une correspondance et en trouverait une n’aurait aucun moyen de savoir qu’il en existe une seconde : il déplacerait donc la mauvaise fiche en toute confiance. Chaque recherche indique combien de résultats correspondent en plus de ce qu’elle affiche, et c’est ce qui permet à l’assistant de revenir vers vous pour demander laquelle vous vouliez dire."
+    },
+    "picks": {
+      "hint": "pour qu’une demande ne s’arrête jamais à mi-chemin",
+      "title": "Comment il choisit le bon outil",
+      "p1": "Montrer à un modèle les {{total}} outils d’un coup coûte bien plus de quinze mille mots de l’espace dont il dispose pour réfléchir, avant même que vous ayez tapé quoi que ce soit. Sur un petit modèle qui tourne sur votre propre machine, cela peut dépasser l’espace dont il dispose. jojo réduit donc la liste à ce que vos mots désignent.",
+      "p2": "Réduire sans précaution est pire que ne pas réduire. La plupart des opérations ont besoin de quelque chose sur quoi agir : impossible d’attacher un mot-clé sans mot-clé, ni de mettre à jour un document sans document. Cachez l’outil qui crée la chose, et l’assistant s’arrête à mi-chemin sans rien à l’écran pour expliquer pourquoi.",
+      "unsureTitle": "Quand il n’est pas sûr, il ne réduit pas",
+      "unsure": "« Rappelle-moi Baylor jeudi » est clair, et jojo propose environ un cinquième du catalogue. « En fait, c’était l’autre » n’est clair sur rien : il propose donc tout, exactement comme avant que tout cela n’existe. L’incertitude coûte un peu de vitesse. Deviner vous coûterait votre réponse.",
+      "secondTitle": "Un second assistant se charge du choix",
+      "second1": "Comparer vos mots à une liste est rapide et gratuit, mais ne peut pas saisir l’intention. « Rice m’a répondu » ne nomme aucun outil ni aucun verbe, mais signifie clairement qu’une étape a changé. Lorsqu’un modèle est connecté, une seconde tâche, bien plus petite, s’exécute donc d’abord : elle lit votre demande (pas la conversation, pas les résultats, seulement ce que vous avez demandé) et répond avec les outils qu’elle juge nécessaires.",
+      "second2": "Elle est peu coûteuse parce qu’elle n’a pas besoin des instructions complètes de chaque outil, seulement d’un nom et d’une ligne : environ un sixième de ce que coûterait la transmission du catalogue entier, et cette économie se répète à chaque étape, pas une seule fois. Mesuré sur dix questions d’affilée, le premier message est passé d’environ 8 000 mots de contexte à 2 900.",
+      "second3": "Elle ne peut que réduire. Ce qu’elle choisit passe par les mêmes vérifications qu’avant : les outils qui créent une chose accompagnent ceux qui la modifient, et les deux qui vident votre base ne sont jamais inclus sauf si vous les avez demandés avec vos propres mots. Si elle est lente ou indisponible, c’est la comparaison de mots qui s’exécute, et vous ne perdez qu’un instant.",
+      "longTitle": "Longues conversations",
+      "long1": "Un modèle ne peut contenir qu’une certaine quantité à la fois, et une conversation qui le dépasse est tronquée, par le serveur, depuis le début, là où se trouvent les règles. jojo fait lui-même la coupe, depuis l’extrémité la plus ancienne, et ne touche jamais à ses propres instructions ni à votre question en cours.",
+      "long2": "Ce qu’il retire, il le remplace d’abord par un bref résumé de ce qui s’y est passé, pour que l’assistant sache toujours que vous lui avez déjà dit de quelle candidature Rice vous parliez. Vous êtes prévenu quand cela arrive. Vos fiches ne sont jamais concernées : il s’agit seulement de ce qui tient dans un message.",
+      "long3": "Une conversation garde les outils qu’elle a réellement utilisés. Ceux qui lui ont seulement été proposés sans jamais servir disparaissent, pour qu’un long chat ne se remplisse pas peu à peu de tout."
+    },
+    "evidence": {
+      "hint": "testé sur de vrais modèles, pas affirmé",
+      "title": "Est-ce que ça marche vraiment ?",
+      "p1": "Tout ce qui précède est une conception. Savoir si un modèle donné sait choisir le bon outil dans le catalogue de jojo est une question sur ce modèle, et la seule façon d’y répondre est de lui poser. Il existe donc une série de scénarios (lecture, écriture, enchaînements qui exigent d’abord une recherche, et cas où la bonne réponse est de ne rien faire) qui s’exécute sur de vrais serveurs.",
+      "p2": "Chaque scénario est exécuté deux fois : une fois avec le catalogue complet, une fois avec l’ensemble réduit. C’est la seconde exécution qui compte. Réduire est censé aider un petit modèle en lui donnant moins de noms à confondre, mais cela pourrait tout aussi bien nuire en retirant quelque chose de nécessaire, et une telle affirmation ne vaut rien sans le témoin à côté.",
+      "suiteTitle": "Ce que la série cherche",
+      "suite": "Pas si un modèle est intelligent. S’il se tourne vers un outil de document quand vous lui avez donné une URL, s’il crée une seconde candidature au lieu de mettre à jour celle que vous avez nommée, s’il invente un id au lieu d’en chercher un, ou (le cas qui compte le plus) s’il entend « efface l’échéance » et se tourne vers l’opération qui vide toute votre base."
+    },
+    "conversation": {
+      "hint": "une vraie base, et son état après coup",
+      "title": "Sait-il tenir une conversation ?",
+      "p1": "La série ci-dessus pose une seule question au modèle et vérifie s’il a nommé un outil raisonnable. C’est la moitié facile, et elle flatte tout le monde. Le vrai travail n’est pas une seule question : vous demandez où en est quelque chose, puis vous dites « passe-la en entretien », et la fiche dont vous parlez se trouve dans la réponse précédente, pas dans la phrase.",
+      "p2": "Il existe donc un second banc d’essai. Il construit une vraie base (six candidatures, un calendrier, un coffre, des mots-clés), remet à l’assistant un script de {{conversations}} conversations réparties sur {{groups}} types de travail, et laisse les appels d’outils s’exécuter réellement. Il examine ensuite ce que contient la base. Quatre choses sont notées séparément, car un modèle peut réussir l’une et échouer à l’autre :",
+      "called": "<lead>Ce qu’il a appelé</lead> : chaque tour était-il défendable.",
+      "route": "<lead>Comment il y est arrivé</lead> : a-t-il consulté une fiche avant de la modifier, ou écrit à partir de la seule phrase.",
+      "shape": "<lead>La forme du travail</lead> : chaque cas comporte un graphe de référence des appels nécessaires et de leurs dépendances, et l’exécution est notée par rapport à lui. Deux appels que le graphe laisse indépendants peuvent se produire dans n’importe quel ordre ; une écriture avant la lecture qui trouve où écrire, non.",
+      "left": "<lead>Ce qu’il a laissé derrière lui</lead> : la base est-elle correcte, et quelque chose a-t-il changé qui n’aurait pas dû.",
+      "p3": "La troisième est celle que les bancs d’essai omettent d’habitude, et c’est la raison pour laquelle un modèle peut obtenir un bon score ici et décevoir à l’usage : sur une base aussi petite, deviner tombe souvent sur la bonne fiche. Le graphe dit s’il raisonnait ou s’il a eu de la chance. Elle est présentée à côté du résultat principal plutôt qu’intégrée à lui : atteindre la bonne réponse par un chemin que personne n’avait prévu reste la bonne réponse."
+    },
+    "reasoning": {
+      "hint": "mesuré, avec ce que cela coûte en temps",
+      "title": "Le raisonnement aide-t-il ?",
+      "p1": "On peut demander à un modèle de réfléchir avant de répondre : c’est le réglage Raisonnement dans les <go>Réglages</go>. Savoir si cela le rend meilleur pour le travail de jojo est une question sur le modèle ; le banc d’essai de conversations ci-dessus a donc été exécuté deux fois avec le raisonnement activé et deux fois désactivé, sur les mêmes serveurs et avec le même code.",
+      "numbersTitle": "Ce que disent les chiffres",
+      "gemma": "<lead>Sur Gemma, le raisonnement coûte en précision et beaucoup en temps.</lead> Il a obtenu en moyenne deux à trois conversations de moins, et la conversation médiane a pris environ trois fois plus de temps. La lenteur, c’est la réflexion elle-même : Gemma génère environ 31 tokens par seconde et réfléchit quelques centaines de tokens avant de répondre, si bien qu’un tour prend en moyenne environ six secondes de plus, et un long tour quinze ou plus. Sur les deux passages, il a corrigé de façon fiable trois conversations et en a cassé de façon fiable trois à quatre ; parmi celles-ci, classer un nouveau document et refuser une suggestion, ce qu’il réussit à chaque fois sans raisonnement.",
+      "gptOss": "<lead>Sur GPT-OSS, le réglage ne change rien</lead>, et c’est attendu plutôt qu’une découverte. GPT-OSS raisonne toujours ; « désactivé » ne peut que lui demander de raisonner moins, et les deux réglages ont tourné à son effort habituel. Il génère aussi environ sept fois plus vite que Gemma, donc sa réflexion coûte moins d’une seconde par réponse.",
+      "advice": "Si les réponses vous semblent lentes avec un modèle comme Gemma, désactivez le raisonnement : sur ce banc d’essai, vous n’y perdez rien. Dans tous les cas, les deux assistants auxiliaires (celui qui choisit les outils qu’un tour peut utiliser et celui qui résume une longue conversation) ne raisonnent jamais, car aucune de ces tâches n’en bénéficie, et un résumé a déjà pris près de deux minutes quand ils le faisaient.",
+      "firstToken": "La colonne du premier token représente l’essentiel de l’attente dans une longue conversation : une réponse ne peut pas commencer avant que le serveur ait lu tout ce qu’on lui a envoyé. Un prompt qui se répète coûte bien moins, car le serveur garde son début de la fois précédente ; c’est pourquoi le deuxième tour d’une conversation répond généralement plus vite que le premier."
+    },
+    "previewer": {
+      "hint": "chaque cas, mot pour mot",
+      "title": "Sur quoi il a été évalué",
+      "p1": "Un score ne vaut que ce que valent ses cas, et quelqu’un a choisi le dénominateur. Le banc d’essai complet est donc ici, à lire : la base sur laquelle il a tourné, chaque phrase envoyée à l’assistant, et ce qui devait être vrai de vos fiches après coup.",
+      "p2": "Tout cela est lu dans la liste même qu’exécute le banc d’essai, pas dans une description : un cas ajouté demain apparaît ici avec ses prompts, et un cas discrètement retiré disparaît.",
+      "p3": "Choisissez un cas pour voir ce qui a été dit, le déroulement attendu dessiné comme un vrai graphe de dépendances, ce que chaque tour peut ou ne peut pas appeler, et ce que chaque modèle en a réellement fait, y compris ce qu’il a répondu, là où se trahit un modèle qui n’a rien fait et a annoncé un succès."
+    },
+    "ambiguity": {
+      "hint": "la raison d’être du banc d’essai",
+      "title": "Quand deux fiches correspondent",
+      "p1": "La base contient délibérément deux candidatures Rice et deux campus UT, car c’est à cela que ressemble une vraie recherche d’emploi après quelques mois, et c’est la situation où un assistant peut faire de vrais dégâts tout en ayant l’air de fonctionner parfaitement.",
+      "p2": "C’est pourquoi jojo est construit comme le décrit le reste de cette page. On ne peut pas compter sur un modèle pour s’arrêter : ce qui ne peut pas être annulé n’est donc jamais proposé sauf si vous le demandez nommément, chaque écriture est vérifiée par rapport à ce qui a réellement été proposé, et chaque modification arrive dans votre historique, où vous pouvez l’annuler.",
+      "p3": "Disons-le aussi clairement : un seul passage d’un banc d’essai classe les modèles de façon approximative, au mieux. Les scores ont varié d’une exécution à l’autre sur le même matériel avec les mêmes réglages. Ce qui ne varie pas, c’est la forme de l’échec, et c’est contre elle qu’il vaut la peine de concevoir."
+    },
+    "model": {
+      "hint": "votre choix, et il change où vont vos mots",
+      "title": "Quel modèle fait cela",
+      "p1": "jojo dialogue avec ce que vous lui indiquez dans les <go>Réglages</go>. Un modèle qui tourne sur votre propre machine (Ollama, vLLM, LM Studio) est l’option par défaut, et c’est la seule configuration où rien de ce que vous écrivez ne quitte l’appareil.",
+      "p2": "Vous pouvez aussi utiliser Claude, OpenAI et d’autres avec une clé d’API. C’est un vrai compromis, et l’écran le dit clairement : vos fiches sont envoyées à cette entreprise et facturées sur votre compte. La clé est conservée dans ce navigateur, n’est jamais incluse dans une sauvegarde et n’est jamais envoyée ailleurs qu’au fournisseur choisi.",
+      "stoppedTitle": "Si l’assistant semble avoir cessé de lire",
+      "stopped": "Un modèle local qui manque de place abandonne silencieusement le début de ce qu’on lui a envoyé, puis répond avec assurance à une question qu’il n’a jamais vue en entier. jojo compare désormais ce que le serveur dit avoir lu avec ce qui a réellement été envoyé, et vous prévient en cas de désaccord, car sinon on obtient un assistant qui semble mal faire son travail alors qu’il manque simplement de place."
+    },
+    "next": "Ensuite : <go>avec quoi jojo est construit</go>."
+  },
+  "graph": {
+    "pageTitle": "Le graphe en dessous",
+    "subtitle": "Chaque fiche est un nœud et chaque lien entre elles est une arête. La page Graphe dessine exactement cela.",
+    "picture": {
+      "hint": "pas une illustration de la base : la base elle-même",
+      "title": "Ce que montre l’image",
+      "body": "La page <go>Graphe</go> parcourt, à chaque rendu, les mêmes fiches que lisent le tableau et le calendrier, et dessine une marque par fiche et une ligne par pointeur. Rien sur ce canevas n’est une seconde copie de vos données, et rien n’y est une maquette : supprimez une candidature sur le tableau et elle aura quitté le canevas avant que vous n’y reveniez.",
+      "markTitle": "Ce que signifie une marque",
+      "colourTerm": "Couleur",
+      "colour": "Le type de fiche. Rien sur cette page n’est jamais rouge ni ambré : ces deux couleurs sont réservées dans toute l’application aux éléments en retard et bientôt dus, et un point rouge ici se lirait comme une échéance plutôt que comme un type.",
+      "shapeTerm": "Forme",
+      "shape": "La famille. Les cercles sont les fiches vivantes d’une recherche : candidatures, éléments datés, offres, correspondances. Les carrés arrondis sont ce que vous avez classé dans le Coffre : liens, fichiers, extraits. Les losanges sont ce que partagent de nombreuses fiches. Deux des quatre losanges sont des fiches avec leur propre id, une organisation et un mot-clé, et les deux autres non (voir plus bas).",
+      "sizeTerm": "Taille",
+      "size": "Le nombre d’arêtes qui le touchent, en racine carrée et plafonné. Un nœud central avec vingt connexions est visiblement plus grand qu’un nœud qui en a quatre, sans être cinq fois plus étendu, ce que donnait un dimensionnement direct à partir du nombre : les candidatures devenaient des planètes et tout le reste de la poussière.",
+      "lineTerm": "Une ligne",
+      "line": "Un pointeur entre deux fiches, dessiné sans pointe de flèche. La direction est enregistrée, et chaque parcours sur cette page l’ignore : quelqu’un qui se demande ce qui relie un fichier à un poste n’a pas de direction en tête.",
+      "notDoTitle": "Deux choses que le canevas ne fait pas",
+      "notDo1": "Appuyer sur une ligne de la légende masque ce type de fiche, et aucun nœud ne change de taille pour autant. La taille est un fait sur la fiche, pas sur ce que vous regardez en ce moment, et un nœud qui rétrécirait parce que vous avez masqué une ligne de la légende vous parlerait de votre filtre plutôt que de vos données.",
+      "notDo2": "Et tout ce qui est dans votre base ne figure pas sur le canevas. Les recherches enregistrées de Job scout et votre profil sont des fiches, et aucun n’est dessiné : une recherche enregistrée ne désigne aucune fiche ici, et le profil est une seule ligne qui resterait seule dans un coin de chaque image. Ils figurent de toute façon dans l’export et dans le décompte des fiches des <go>Réglages</go>."
+    },
+    "question": {
+      "hint": "trois volets, dont un n’exécute rien",
+      "title": "Lui poser une question",
+      "intro": "Le panneau sous le canevas comporte trois parties, et mieux vaut savoir laquelle est laquelle avant de vous fier à une de ses réponses.",
+      "pickers": "<lead>Les sélecteurs sont réels.</lead> Ce que vous cherchez, s’il <hi>a</hi>, <hi>n’a pas</hi> ou <hi>a au moins</hi> deux d’une relation, ce qui se trouve à l’autre bout, et éventuellement un mot-clé que tout doit porter. Les éléments de la chronologie ont un second sélecteur que rien d’autre n’a (un type, ou l’indicateur de rappel), car « candidatures sans relance » et « rappels liés à rien » sont les deux questions que l’on pose vraiment, et aucune ne s’exprime avec les seuls types de fiches.",
+      "queryLine": "<lead>La ligne de requête, elle, ne l’est pas.</lead> Le bloc de texte qui ressemble à du code sous les sélecteurs est généré à partir d’eux et n’est analysé par rien. Il est étiqueté comme illustratif sur la page même, et cette page ne l’atténuera pas : jojo n’a pas de langage de requête, taper dans ce champ n’est pas une fonction à venir, et aucune saisie nulle part n’en accepte.",
+      "answer": "<lead>La réponse est réelle.</lead> Le tableau liste les fiches correspondantes et permet de les ouvrir, et les mêmes fiches s’allument sur le canevas au-dessus. Les longues réponses sont coupées à quarante lignes dans le tableau, qui le signale ; chaque correspondance reste allumée dans le graphe quoi qu’il arrive.",
+      "whyTitle": "Pourquoi la ligne non analysée est là",
+      "why": "Parce que c’est le moyen le plus court de rendre les sélecteurs lisibles. Voir <code>{{query}}</code> à côté des mots « candidatures sans relance » transforme trois listes déroulantes en une phrase lisible, et enseigne la forme de la question plutôt qu’une syntaxe que vous n’auriez ensuite nulle part où taper. La règle qu’elle doit respecter est de ne jamais faire semblant : elle porte sa propre étiquette, n’a pas de bouton d’exécution, et se trouve sous les commandes qui font le travail plutôt qu’au-dessus.",
+      "answersTitle": "Trois choses à savoir sur les réponses",
+      "answers1": "Une question porte sur toute votre base, jamais sur ce qui reste visible. Une réponse qui changerait quand vous appuyez sur une ligne de la légende serait pire que pas de réponse.",
+      "answers2": "Il n’y a pas de bouton Exécuter. Chaque modification relance immédiatement la requête, donc le tableau et les commandes au-dessus ne peuvent jamais décrire deux questions différentes.",
+      "answers3": "Un résultat vide est formulé avec les mots de la question. Demandez quelles candidatures n’ont pas de relance, n’obtenez rien, et la réponse dira que toutes en ont une, ce qui est une réponse, pas un échec."
+    },
+    "model": {
+      "hint": "la règle pour en mériter un",
+      "title": "Onze types de fiche",
+      "intro": "Une valeur devient une fiche à part entière quand on peut la renommer ou l’annoter, et reste un champ sinon. Un employeur passe le test : on peut l’écrire autrement, les candidatures s’accumulent sous lui, et il vaut mieux qu’il soit une seule chose plutôt que douze chaînes de caractères. C’est ce seul test qui a produit les onze ci-dessous et écarté tout le reste.",
+      "manyTitle": "Un pointeur, ou plusieurs",
+      "many": "Trois des sept sont des relations multiples : l’étiquetage, ce sur quoi porte (<code>ABOUT</code>) un élément daté, et ce sous quoi est classée (<code>FILED_UNDER</code>) une fiche du coffre. Un CV va à chaque candidature à laquelle vous l’envoyez et une échéance de références couvre chaque poste qu’elle couvre, donc ces deux-là sont des listes plutôt que des emplacements. Les quatre autres sont au plus une par fiche, et relier à nouveau remplace ce qui s’y trouvait dans la même écriture. L’identité d’un pointeur est le triplet qu’il relie : le créer deux fois donne le même pointeur, et il est impossible d’obtenir deux lignes identiques entre les deux mêmes fiches ; c’est pourquoi classer un document sous un poste où il est déjà classé ne fait rien du tout.",
+      "elevensTitle": "Deux onze et deux sept, et ce ne sont pas les mêmes",
+      "elevensIntro": "La page Graphe a aussi onze types de nœud et sept types de ligne, une coïncidence qui mérite d’être démontée car elle a induit en erreur ceux qui sont allés voir :",
+      "nineTerm": "Neuf sur onze se recoupent",
+      "nine": "Deux types enregistrés ne sont jamais dessinés (la recherche enregistrée et le profil) et deux types dessinés ne sont jamais enregistrés, ce qui fait l’objet de la section suivante.",
+      "fiveTerm": "Cinq sur sept se recoupent",
+      "five": "Deux relations enregistrées ne sont jamais dessinées non plus. L’une indique qu’une candidature est la copie d’une autre, écrite quand vous en dupliquez une ; l’autre relie une offre enregistrée ou une correspondance à la recherche dont elle provient, et elle n’est pas dessinée parce que ce qui se trouve à son autre bout ne l’est pas. Deux relations dessinées ne sont jamais enregistrées.",
+      "oneNameTerm": "Un nom pour deux choses",
+      "oneName": "Le sélecteur de relation propose <code>provient de</code>, et sur le canevas c’est la ligne qui va d’une candidature à l’endroit où vous l’avez trouvée, une ligne que la base n’a jamais contenue. La relation enregistrée du même nom relie une offre à une recherche enregistrée et n’apparaît sur aucune image."
+    },
+    "drawn": {
+      "hint": "rôle et source",
+      "title": "Deux choses dessinées qui n’ont jamais été enregistrées",
+      "p1": "Une candidature porte une étiquette de rôle issue d’une liste fixe de cinq, et éventuellement l’endroit où vous l’avez trouvée, issu d’une liste fixe de quatre. Aucune des deux n’est une fiche. Ce sont des listes fermées qui pilotent un filtre et l’ordre d’une légende, on ne peut ni les renommer ni les annoter, et les promouvoir ajouterait une recherche à chaque projection de l’application sans rien vous permettre de plus.",
+      "p2": "Elles sont dessinées malgré tout, parce qu’une image de celles qui sont venues d’une recommandation vaut la peine, et qu’une puce de filtre n’est pas la même image. La page Graphe les crée à partir des propriétés qu’elle a déjà sous la main, au moment où elle les a, et n’écrit rien.",
+      "tellTitle": "Comment les distinguer sur l’image",
+      "tell": "Ce sont les deux losanges derrière lesquels il n’y a ni employeur ni mot-clé, et le test décisif est qu’ils ne peuvent pas survivre à ce dont ils ont été lus. Supprimez la dernière candidature étiquetée <hi>Postdoc</hi> et ce nœud disparaît avec elle : il n’existe nulle part ailleurs dans jojo d’endroit où cette valeur existe en tant que chose. Supprimez la dernière candidature chez un employeur et la fiche de l’organisation reste, parce que c’est une fiche ; il en va de même pour un mot-clé, et c’est pourquoi effacer toutes les candidatures dans les <go>Réglages</go> laisse vos mots-clés en place.",
+      "source": "Un nœud de source n’apparaît d’ailleurs que si vous avez indiqué d’où venait quelque chose. C’est un champ facultatif, et une candidature où il n’est pas renseigné n’a tout simplement aucune ligne dans cette direction."
+    },
+    "delete": {
+      "hint": "le seul fait à retenir",
+      "title": "Supprimer délie, sans jamais propager",
+      "intro": "Supprimez une candidature et jojo retire cette fiche et les pointeurs vers elle, sans toucher à rien à l’autre bout de chacun d’eux. Une boîte de dialogue qui dit « supprimer Rice » ne peut pas honnêtement valoir consentement à supprimer les quatre fichiers sur lesquels quelqu’un a passé une soirée.",
+      "afterTitle": "Ce que vous verrez réellement ensuite",
+      "after": "Le fichier est toujours dans le Coffre, classé sous rien. Le rappel est toujours dans le calendrier, à propos de rien. Vos mots-clés sont intacts : ils sont partagés par tout et n’ont jamais appartenu à cette candidature. Sur la page Graphe, ces fiches deviennent des nœuds non connectés, ce à quoi sert précisément l’interrupteur <hi>Masquer les fiches non connectées</hi> une fois que vous avez fait le ménage dans quelques recherches abandonnées.",
+      "halfTitle": "Et aucune fiche n’est jamais à moitié supprimée",
+      "half": "Il n’y a pas d’indicateur caché qui marque une fiche comme supprimée. Cette approche impose un filtre à ne jamais oublier dans chaque lecture, chaque décompte, chaque projection et l’export, et un seul endroit qui l’oublie, c’est une fiche supprimée qui réapparaît sur votre tableau. Disparu signifie que la ligne n’est pas là, et annuler la remet en place avec ses pointeurs, parce que l’écriture a enregistré l’état de chaque fiche avant son exécution plutôt qu’une note sur la manière de s’inverser."
+    },
+    "source": {
+      "hint": "pour qui ouvre le dépôt",
+      "title": "Une action, un commit, une ligne de journal, une annulation",
+      "p1": "Chaque écriture dans jojo est une opération nommée définie en dehors de React, validée par son propre schéma, et exécutée de façon synchrone dans une seule transaction. Les opérations s’appellent entre elles, et un appel imbriqué rejoint la transaction depuis laquelle il a été appelé au lieu d’ouvrir la sienne. C’est tout l’invariant, et le reste de cette page en découle.",
+      "p2": "Ajouter une candidature, ce sont trois écritures : la fiche, l’employeur si c’est la première candidature chez lui, et l’échéance si vous en avez indiqué une. Elles arrivent en un seul commit, et produisent donc une ligne dans le journal, une notification et une seule pression sur annuler. En supprimer une a la même forme lue à l’envers : la transaction a capturé l’état avant et après de chaque fiche touchée, et l’inverser relie donc de nouveau le rappel et le fichier sans que personne ait écrit une fonction sachant qu’un rappel et un fichier étaient concernés. C’est pour cela que la déliaison ci-dessus peut être annulée, et c’est pour cela que l’approche précédente (une inversion écrite à la main pour chaque opération) était le terrain de ce type de bug : quelqu’un devait se souvenir de ce que touchait une écriture, et l’écriture qui touchait cinq collections était retenue comme en touchant quatre.",
+      "p3": "Le journal est conservé. Les <go>Réglages</go> listent chaque écriture, de la plus récente à la plus ancienne, limitées aux deux cents dernières et élaguées à l’ouverture de la base, et proposent d’annuler la ligne la plus récente. La <em>pile</em> d’annulation est autre chose : limitée à la session et profonde de cinquante, car une pile qui survivrait à un rechargement inciterait à annuler quelque chose de mardi dernier, ce qui exige des règles de conflit que cette application n’a pas.",
+      "p4": "Où vivent les opérations, quelle couche peut importer laquelle, et le même parcours d’ajout d’une candidature tracé à travers les cinq : tout cela se trouve sur <go>Construit avec</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "Les deux barrières entre une question et une modification de vos fiches",
+      "desc": "Six étapes, de haut en bas. Un, ce que vous avez tapé. Deux, jojo choisit les outils que désignent vos mots, et si vos mots ne sont pas clairs, il les propose tous au lieu de deviner. Trois, il ajoute ce dont ces outils dépendent, pour qu’aucun enchaînement ne tombe dans une impasse. Quatre, le modèle choisit un outil. Cinq, jojo vérifie si cet outil a réellement été proposé ; sinon, l’appel est refusé et rien ne s’exécute. Six, alors seulement vos fiches changent. La cinquième étape est celle qui fait respecter quoi que ce soit ; la deuxième n’est qu’une indication, car un modèle peut nommer un outil qu’on ne lui a jamais montré.",
+      "typed": "ce que vous avez tapé",
+      "pick": "choisir les outils probables",
+      "pickNote": "pas clair ? proposer les {{total}}",
+      "needs": "ajouter ce qu’il leur faut",
+      "needsNote": "aucune impasse possible",
+      "chooses": "le modèle en choisit un",
+      "offered": "a-t-il été proposé ?",
+      "offeredNote": "non ? refusé, rien ne s’exécute",
+      "change": "vos fiches changent",
+      "caption": "L’étape deux vous fait économiser des tokens. L’étape cinq est celle qui vous protège, et elle s’exécute que l’étape deux ait réduit quelque chose ou non."
+    },
+    "toolGraph": {
+      "title": "Comment un outil entraîne celui qui l’alimente",
+      "desc": "Trois lignes, chacune lue de gauche à droite. Dans la première, demander keyword.attach entraîne keyword.create, car attacher un mot-clé exige un mot-clé qui existe déjà. Dans la deuxième, vault.file.update entraîne vault.file.add, car mettre à jour un document exige un document. Dans la troisième, scout.posting.promote entraîne scout.posting.save, car promouvoir une offre enregistrée exige une offre enregistrée. Dans tous les cas, jojo déduit la dépendance de l’entrée même de l’outil et propose les deux outils ensemble, pour que l’assistant ne reçoive jamais une première étape sans moyen d’atteindre la seconde.",
+      "asked": "ce que vous avez demandé",
+      "needsHeader": "ce qu’il lui faut",
+      "offered": "proposé avec",
+      "needsKeyword": "un mot-clé",
+      "needsFile": "un fichier",
+      "needsPosting": "une offre",
+      "without": "Sans cela, l’assistant pourrait recevoir la première case et pas la seconde,\net s’arrêterait à mi-chemin sans rien à l’écran pour dire pourquoi.",
+      "caption": "jojo lit chaque besoin dans la définition même de l’outil : un outil ajouté demain est couvert sans que personne ait à mettre une liste à jour."
+    },
+    "benchAmbiguity": {
+      "title": "Une phrase, deux fiches, et la mauvaise a changé",
+      "desc": "En haut, la demande : clôture la candidature UT, ils m’ont refusé. En dessous, deux fiches qui correspondent toutes deux : UT Austin, encore envoyée et active, et UT Dallas, déjà clôturée. Rien dans la phrase ne les distingue. La bonne réaction est de demander laquelle ; quatre exécutions du banc d’essai sur six ont au contraire clôturé UT Austin, la candidature active. L’outil choisi était le bon. La fiche à laquelle ils l’ont appliqué ne l’était pas.",
+      "quote": "« Clôture la candidature UT : ils m’ont refusé. »",
+      "matchesBoth": "correspond aux deux",
+      "austinState": "envoyée, encore active",
+      "austinRuns": "clôturée par 4 exécutions sur 6",
+      "dallasState": "déjà clôturée",
+      "dallasMeant": "celle qu’on voulait dire",
+      "footer": "L’outil était le bon. La fiche non, et aucun score de choix d’outil ne peut voir la différence.",
+      "caption": "La propre consigne de jojo demande au modèle de poser la question quand une demande peut désigner plusieurs fiches. Deux des trois modèles ont écrit quand même."
+    },
+    "benchAxes": {
+      "title": "Précision par tour face à la réussite de la conversation entière",
+      "desc": "Trois barres, mesurées sur les mêmes exécutions du banc d’essai. Tours ayant appelé quelque chose de défendable : {{turnsGot}} sur {{turnsOf}}, soit {{turnsPct}} pour cent. Affirmations individuelles sur la base qui se sont vérifiées : {{claimsGot}} sur {{claimsOf}}, soit {{claimsPct}} pour cent. Conversations entières sans aucune erreur : {{wholeGot}} sur {{wholeOf}}, soit {{wholePct}} pour cent. La troisième est plus basse que les deux autres parce qu’une conversation n’est propre que si chaque tour et chaque affirmation réussissent ensemble : les deux chiffres élevés se combinent en un chiffre bas.",
+      "turnsLabel": "Tours ayant appelé quelque chose de défendable",
+      "turnsNote": "la question facile",
+      "claimsLabel": "Affirmations sur la base vérifiées",
+      "claimsNote": "contrôlées une à une",
+      "wholeLabel": "Conversations entières sans erreur",
+      "wholeNote": "chaque tour et chaque affirmation, ensemble",
+      "count": "{{got}} sur {{of}} — {{note}}",
+      "bracket": "les deux doivent\ntenir à la fois",
+      "caption": "Un banc d’essai qui ne présenterait que la première barre jugerait ces modèles presque parfaits. La troisième est celle qui dit si le travail a été fait."
+    },
+    "toolTrace": {
+      "title": "Où se trouve le code d’ajout d’une candidature, couche par couche",
+      "desc": "Six étapes, de haut en bas. Un, dans src/components et hors de la couche partagée, le formulaire de candidature transmet un objet d’entrée à l’environnement d’exécution. Deux, kg/react/use-tool.ts exécute l’outil nommé application.create et n’attend rien. Trois, kg/tools/application.ts ouvre une transaction, et les appels imbriqués à org.ensure et à l’outil d’échéance la rejoignent au lieu d’ouvrir la leur. Quatre, kg/core valide l’entrée selon le schéma de l’outil et génère l’id et le slug. Cinq, kg/repo fait un seul commit : l’instantané est mis à jour, une ligne de journal est ajoutée, et cette ligne est l’unique annulation. Six, kg/storage écrit dans quatre magasins d’objets IndexedDB en une seule transaction ; seule cette dernière étape est dessinée en flèche pointillée, car rien ne l’attend. Une accolade dans la marge regroupe les étapes trois à cinq en une transaction et une annulation.",
+      "webOnly": "web seulement",
+      "form": "le formulaire transmet un objet d’entrée",
+      "run": "run('application.create') : rien n’est attendu",
+      "join": "org.ensure et l’échéance rejoignent l’appel",
+      "parse": "valide l’entrée, génère l’id et le slug",
+      "commit": "commit : instantané, une ligne, une annulation",
+      "stores": "quatre magasins, une transaction IndexedDB",
+      "bracket": "une transaction · une annulation",
+      "nothingAwaits": "rien n’attend ceci",
+      "caption": "À lire de haut en bas dans l’ordre où cela se produit, pas dans l’ordre de la pile : <code>kg/core</code> est L1 et se trouve sous <code>kg/repo</code> dans le diagramme ci-dessus, car un outil l’appelle et en revient avant que quoi que ce soit ne soit validé."
+    },
+    "stack": {
+      "title": "Comment le code de jojo est organisé en couches",
+      "desc": "Trois éléments en haut : l’extension de navigateur, l’application web et l’application mobile. L’extension communique avec l’application web par messages relayés et n’importe rien. L’application web envoie des données au téléphone via le réseau local. Les deux applications appellent le service partagé par ses hooks React. Le service compte six couches, chacune n’utilisant que celles du dessous : react, agent, tools, repo, core et storage. Tools est mise en évidence : chaque modification des fiches passe par elle. En bas, un driver IndexedDB sur le web et un driver AsyncStorage sur le téléphone implémentent chacun le port de stockage.",
+      "extension": "extension",
+      "webApp": "application web",
+      "phoneApp": "app mobile",
+      "relay": "relais",
+      "lan": "LAN",
+      "hooks": "hooks",
+      "reactNote": "hooks partagés par les deux apps",
+      "agentNote": "boucle du modèle · catalogue · MCP",
+      "toolsNote": "chaque écriture · une annulation",
+      "repoNote": "commit · journal · file d’écriture",
+      "coreNote": "règles pures · aujourd’hui est un paramètre",
+      "storageNote": "ports Driver et FileStore",
+      "idbDriver": "driver IndexedDB · web",
+      "asyncDriver": "driver AsyncStorage · mobile",
+      "caption": "Les flèches pleines indiquent le sens dans lequel le code peut dépendre : vers le bas uniquement. Les lignes pointillées ne sont pas des imports : l’extension relaie des messages, l’application web transmet des données au téléphone via le réseau local, et chaque driver de stockage implémente le port du bas. Les applications peuvent aussi utiliser directement les fonctions pures de core ; elles ne doivent jamais écrire sous la couche des outils."
+    },
+    "recordModel": {
+      "title": "Les onze types de fiche que jojo enregistre et les sept façons dont l’une peut pointer vers une autre",
+      "desc": "La candidature est au centre et presque tout pointe vers elle. Un élément de chronologie est ABOUT (à propos d’)une candidature, et peut concerner plusieurs à la fois. Un lien, un fichier et un extrait sont chacun FILED_UNDER (classés sous) une candidature, et peuvent l’être sous plusieurs. Une offre enregistrée ou une correspondance de veille BECAME (est devenue) une candidature. Une candidature est AT (chez) une organisation, et peut être COPY_OF (copie d’)une autre candidature. Un mot-clé TAGS (étiquette) cinq types de fiche : candidatures, éléments de chronologie, liens, fichiers et extraits. Trois des sept relations peuvent être portées plusieurs fois (ABOUT, FILED_UNDER et TAGS) ; les quatre autres sont au plus une par fiche, donc relier à nouveau remplace le lien existant. Deux types enregistrés ne sont pas du tout dessinés sur la page Graphe : pipeline, d’où vient (FROM) une offre enregistrée ou une correspondance, et profile, qu’aucune relation ne relie à quoi que ce soit. COPY_OF et ce FROM sont enregistrés mais jamais dessinés non plus, et figurent ici en pointillé pour cette raison. Sous le trait se trouvent les deux choses que la page Graphe dessine sans que la base les ait jamais contenues : le rôle et la source. Ce sont des propriétés d’une candidature (son roleTag et sa source) affichées comme des nœuds reliés par une arête IS et une seconde arête aussi appelée FROM, dont aucune n’est écrite nulle part.",
+      "storedNotDrawn": "enregistré, mais pas\ndessiné sur la page Graphe",
+      "drawnNeverStored": "dessiné sur la page Graphe, jamais enregistré",
+      "roleTagProp": "la propriété roleTag",
+      "sourceProp": "la propriété source",
+      "caption": "Onze types de fiche, et sept relations qui les relient. <code>ABOUT</code>, <code>FILED_UNDER</code> et <code>TAGS</code> peuvent chacune être portées plusieurs fois (un CV va à chaque candidature à laquelle vous l’envoyez), tandis que les quatre autres sont au plus une par fiche, donc relier à nouveau remplace le lien au lieu d’en ajouter un second. Deux types enregistrés ne sont jamais dessinés sur la page Graphe : <code>pipeline</code>, d’où vient une offre enregistrée ou une correspondance, et <code>profile</code>, qu’aucune relation ne relie à quoi que ce soit. Sous le trait se trouvent les deux choses que la page Graphe dessine sans qu’elles aient jamais été enregistrées : <code>role</code> et <code>source</code> sont des propriétés d’une candidature, promues en nœuds pour l’image et écrites nulle part."
+    },
+    "unlink": {
+      "title": "Supprimer une candidature retire les pointeurs vers elle et conserve chaque fiche qui en portait un",
+      "desc": "Deux états, l’un au-dessus de l’autre. Avant : une candidature, avec un élément de chronologie qui pointe vers elle par une arête ABOUT, un mot-clé par une arête TAGS et un fichier par une arête FILED_UNDER. L’outil application.delete s’exécute. Après : l’élément de chronologie, le mot-clé et le fichier sont toujours là, aux mêmes endroits, sans rien porter : l’élément de chronologie ne concerne plus rien, le mot-clé n’étiquette plus rien, le fichier n’est classé sous rien. Seules la candidature et les trois arêtes ont disparu. Aucune fiche à l’autre bout d’une arête n’est touchée.",
+      "before": "Avant",
+      "after": "Après",
+      "gone": "disparue",
+      "aboutNothing": "à propos de rien",
+      "taggingNothing": "n’étiquette rien",
+      "filedNothing": "classé sous rien",
+      "caption": "La candidature et les trois pointeurs vers elle ont disparu. L’élément de chronologie, le mot-clé et le fichier non : ils sont aux mêmes endroits, sans rien porter, et chacun d’eux reste à vous et peut toujours être ouvert. Annuler remet les arêtes en place, parce que l’écriture a capturé l’état de chaque fiche avant son exécution plutôt qu’une note sur la manière de s’inverser."
+    }
+  }
+}

@@ -9,15 +9,18 @@
  * time — someone renames a section, the anchor above it goes on pointing at a
  * fragment that no longer exists, and the page looks broken rather than stale.
  * `screens/sections.ts` states the same rule for page two.
+ *
+ * Each label is the catalog key `guide:overview.sections.<id>`, translated
+ * where the list is rendered rather than here.
  */
 export const SECTIONS = [
-  { id: 'application', label: 'Track an application' },
-  { id: 'dates', label: 'Dates and follow-ups' },
-  { id: 'vault', label: 'The Vault' },
-  { id: 'profile', label: 'Your profile' },
-  { id: 'keys', label: 'Keys and undo' },
-  { id: 'keywords', label: 'Keywords' },
-  { id: 'graph', label: 'Ask the graph' },
-  { id: 'data', label: 'Your data' },
-  { id: 'ladder', label: 'Not connected yet' },
+  { id: 'application' },
+  { id: 'dates' },
+  { id: 'vault' },
+  { id: 'profile' },
+  { id: 'keys' },
+  { id: 'keywords' },
+  { id: 'graph' },
+  { id: 'data' },
+  { id: 'ladder' },
 ] as const

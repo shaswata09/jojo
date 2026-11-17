@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
@@ -45,24 +46,29 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
  * here, next to the list they are looking at.
  */
 
+/**
+ * The kinds the reader may return, by catalog key. A kind the model invents
+ * that is not here is shown as it came back.
+ */
 const KIND_LABEL: Record<string, string> = {
-  education: 'Education',
-  employment: 'Employment',
-  publication: 'Publication',
-  skill: 'Skill',
-  teaching: 'Teaching',
-  award: 'Award',
-  service: 'Service',
-  certification: 'Certification',
-  language: 'Language',
-  project: 'Project',
-  volunteering: 'Volunteering',
-  membership: 'Membership',
-  grant: 'Grant',
-  patent: 'Patent',
+  education: 'offer.kinds.education',
+  employment: 'offer.kinds.employment',
+  publication: 'offer.kinds.publication',
+  skill: 'offer.kinds.skill',
+  teaching: 'offer.kinds.teaching',
+  award: 'offer.kinds.award',
+  service: 'offer.kinds.service',
+  certification: 'offer.kinds.certification',
+  language: 'offer.kinds.language',
+  project: 'offer.kinds.project',
+  volunteering: 'offer.kinds.volunteering',
+  membership: 'offer.kinds.membership',
+  grant: 'offer.kinds.grant',
+  patent: 'offer.kinds.patent',
 }
 
 export function ProfileUpdateOffer() {
+  const { t } = useTranslation('profile')
   const graph = useGraph()
   const { settings } = useModelSettings()
   const readCv = useReadCv()
@@ -207,7 +213,7 @@ export function ProfileUpdateOffer() {
     setDropped(new Set())
     if (outcome.skipped.length > 0) {
       toast({
-        title: `${String(outcome.skipped.length)} entr${outcome.skipped.length === 1 ? 'y was' : 'ies were'} skipped`,
+        title: t('offer.skipped', { count: outcome.skipped.length }),
         description: outcome.skipped[0] ?? '',
       })
     }
@@ -273,21 +279,36 @@ export function ProfileUpdateOffer() {
     toast({
       title: result.ok
         ? added === 0
-          ? `Already on your profile`
-          : `${String(added)} added to your profile`
-        : 'Nothing could be added',
+          ? t('offer.toast.already')
+          : t('offer.toast.added', { count: added })
+        : t('offer.toast.nothing'),
+      // Whole sentences, each its own key, joined — never a clause spliced
+      // into another language's sentence.
       description: result.ok
-        ? `Read from ${target.subject}.${added < keeping.length ? ` ${String(keeping.length - added)} of ${String(keeping.length)} were already known.` : ''}${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} between them recorded.` : ''} jojo can now weigh a posting against what you have done.`
-        : (result.errors[0]?.message ?? 'The entries were refused.'),
+        ? [
+            t('offer.toast.readFrom', { name: target.subject }),
+            added < keeping.length
+              ? t('offer.toast.known', { known: keeping.length - added, total: keeping.length })
+              : null,
+            related > 0 ? t('offer.toast.related', { count: related }) : null,
+            t('offer.toast.weigh'),
+          ]
+            .filter((sentence) => sentence !== null)
+            .join(' ')
+        : (result.errors[0]?.message ?? t('offer.toast.refused')),
       ...(result.ok ? {} : { tone: 'danger' as const }),
       // The import is one journal entry, so one Undo takes back the facts and
       // their relations together. The document stays marked as asked: undoing
       // the import is not asking to be offered it again.
-      ...(undo ? { action: { label: 'Undo', onClick: undo } } : {}),
+      ...(undo ? { action: { label: t('shared.undo'), onClick: undo } } : {}),
     })
   }
 
   const busy = step !== null
+  const kindLabel = (kind: string) => {
+    const key = KIND_LABEL[kind]
+    return key === undefined ? kind : t(key)
+  }
 
   return (
     <div
@@ -313,9 +334,7 @@ export function ProfileUpdateOffer() {
                   // failure as a value, so a throw here would otherwise leave the
                   // button stuck mid-step with nothing said.
                   setStep(null)
-                  setError(
-                    thrown instanceof Error ? thrown.message : 'Reading the document failed.',
-                  )
+                  setError(thrown instanceof Error ? thrown.message : t('offer.readFailed'))
                 })
               }}
             >
@@ -325,7 +344,7 @@ export function ProfileUpdateOffer() {
                   {step}
                 </>
               ) : (
-                'Read it'
+                t('offer.readIt')
               )}
             </Button>
           )}
@@ -333,7 +352,7 @@ export function ProfileUpdateOffer() {
             size="sm"
             variant="ghost"
             onClick={dismiss}
-            aria-label={drafts === null ? 'Not now' : 'Discard these entries'}
+            aria-label={drafts === null ? t('offer.notNow') : t('offer.discardEntries')}
           >
             <X aria-hidden className="size-4" />
           </Button>
@@ -346,9 +365,14 @@ export function ProfileUpdateOffer() {
         <div className="rounded-md border border-border bg-background px-3 py-2.5">
           <p className="mb-2 font-medium">
             {drafts.length === 1
-              ? '1 entry read from this document'
-              : `${String(drafts.length - dropped.size)} of ${String(drafts.length)} entries will be added`}
-            <span className="ml-2 font-normal text-text-3">Untick anything it got wrong.</span>
+              ? t('offer.review.single')
+              : t('offer.review.some', {
+                  kept: drafts.length - dropped.size,
+                  total: drafts.length,
+                })}
+            <span className="ms-2 font-normal text-text-3 [unicode-bidi:isolate]">
+              {t('offer.review.untick')}
+            </span>
           </p>
           <ul className="max-h-64 space-y-1.5 overflow-y-auto text-muted-foreground">
             {drafts.map((d, i) => (
@@ -363,7 +387,7 @@ export function ProfileUpdateOffer() {
                   type="checkbox"
                   className="mt-0.5 size-3.5 shrink-0 accent-accent"
                   checked={!dropped.has(i)}
-                  aria-label={`Add ${d.title}`}
+                  aria-label={t('offer.review.add', { title: d.title })}
                   onChange={() =>
                     setDropped((held) => {
                       const next = new Set(held)
@@ -374,7 +398,7 @@ export function ProfileUpdateOffer() {
                   }
                 />
                 <span className="w-24 shrink-0 text-xs tracking-wide uppercase">
-                  {KIND_LABEL[d.kind] ?? d.kind}
+                  {kindLabel(d.kind)}
                 </span>
                 <span
                   className={`min-w-0 flex-1 ${dropped.has(i) ? 'text-text-3 line-through' : 'text-foreground'}`}
@@ -393,9 +417,7 @@ export function ProfileUpdateOffer() {
           {links.length > 0 && (
             <div className="mt-3 border-t border-hairline pt-2.5">
               <p className="mb-1.5 font-medium">
-                {links.length === 1
-                  ? '1 connection between them'
-                  : `${String(links.length)} connections between them`}
+                {t('offer.review.connections', { count: links.length })}
               </p>
               <ul className="max-h-32 space-y-1 overflow-y-auto text-muted-foreground">
                 {links.map((link) => (
@@ -412,11 +434,11 @@ export function ProfileUpdateOffer() {
           <div className="mt-3 flex gap-2">
             <Button size="sm" onClick={confirm} disabled={dropped.size === drafts.length}>
               {drafts.length - dropped.size === 1
-                ? 'Add it to my profile'
-                : `Add ${String(drafts.length - dropped.size)} to my profile`}
+                ? t('offer.review.addOne')
+                : t('offer.review.addMany', { total: drafts.length - dropped.size })}
             </Button>
             <Button size="sm" variant="ghost" onClick={dismiss}>
-              Discard
+              {t('shared.discard')}
             </Button>
           </div>
         </div>

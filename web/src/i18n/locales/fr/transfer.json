@@ -1,0 +1,254 @@
+{
+  "page": {
+    "title": "Transfert",
+    "subtitle": "Déplacez tout entre cet ordinateur et votre téléphone",
+    "showAnimation": "Afficher l’animation",
+    "showAnimationHint": "Une scène WebGPU redessinée à chaque image — désactivez-la sur batterie",
+    "roleLabel": "Rôle de cet appareil",
+    "roles": {
+      "send": "Envoyer au téléphone",
+      "receive": "Recevoir du téléphone"
+    },
+    "empty": {
+      "title": "Rien à envoyer pour l’instant",
+      "description": "Cet appareil ne contient aucun enregistrement, il n’y a donc rien à envoyer. Pour récupérer vos enregistrements depuis votre téléphone, choisissez Recevoir du téléphone ci-dessus. Ou ajoutez quelque chose, ou chargez les données de démonstration, et cela apparaîtra ici comme un groupe que vous pouvez envoyer.",
+      "receive": "Recevoir du téléphone",
+      "loadDemo": "Charger les données de démonstration"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidatures",
+      "hint": "Chaque étape, note et issue de chacune",
+      "summary_one": "{{count}} candidature",
+      "summary_other": "{{count}} candidatures"
+    },
+    "timeline": {
+      "label": "Rappels et événements",
+      "hint": "{{reminders}} vous rappellent quelque chose, {{events}} sont des événements datés",
+      "summary_one": "{{count}} rappel ou événement",
+      "summary_other": "{{count}} rappels et événements"
+    },
+    "vault": {
+      "label": "Liens et extraits",
+      "hint": "{{links}} liens · {{snippets}} extraits",
+      "summary_one": "{{count}} lien ou extrait",
+      "summary_other": "{{count}} liens et extraits"
+    },
+    "files": {
+      "label": "Fichiers",
+      "hint": "CV, lettres et tout ce qui est enregistré dans une candidature",
+      "summary_one": "{{count}} fichier",
+      "summary_other": "{{count}} fichiers"
+    },
+    "keywords": {
+      "label": "Mots-clés",
+      "hint": "Votre liste de mots-clés et chaque enregistrement auquel ils sont associés",
+      "summary_one": "{{count}} mot-clé",
+      "summary_other": "{{count}} mots-clés"
+    },
+    "scout": {
+      "label": "Veille d’offres",
+      "hint": "{{pipelines}} recherches · {{postings}} offres enregistrées · {{matches}} correspondances",
+      "summary_one": "{{count}} enregistrement de veille d’offres",
+      "summary_other": "{{count}} enregistrements de veille d’offres"
+    },
+    "notes": {
+      "label": "Notes adhésives",
+      "hint": "Vos pense-bêtes sur le tableau de bord",
+      "summary_one": "{{count}} note adhésive",
+      "summary_other": "{{count}} notes adhésives"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Votre nom, vos liens, vos termes de correspondance et les réglages de la veille",
+      "summary_one": "{{count}} profil",
+      "summary_other": "{{count}} profils"
+    },
+    "people": {
+      "label": "Personnes",
+      "hint": "Référents, responsables de recrutement et recruteurs, et les candidatures auxquelles ils sont liés",
+      "summary_one": "{{count}} personne",
+      "summary_other": "{{count}} personnes"
+    },
+    "background": {
+      "label": "Parcours",
+      "hint": "Diplômes, postes, publications et compétences lus dans votre CV",
+      "summary_one": "{{count}} élément de parcours",
+      "summary_other": "{{count}} éléments de parcours"
+    },
+    "nothing": "rien"
+  },
+  "stage": {
+    "sameNetwork": "Les deux appareils doivent être sur le même réseau local — les enregistrements passent directement de l’un à l’autre, sans serveur ni relais.",
+    "send": {
+      "idle": {
+        "title": "En attente de l’autre appareil",
+        "body": "Ouvrez jojo sur votre téléphone, choisissez Transfert, puis Recevoir d’un ordinateur, et scannez le code affiché ici. Ce scan convient d’une clé de chiffrement entre les deux appareils, sans rien diffuser. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Connexion à votre téléphone",
+        "body": "Demande à l’adresse saisie sa moitié de l’échange de clés. Rien n’a encore été envoyé."
+      },
+      "packing": {
+        "title": "Rassemblement de vos enregistrements",
+        "body": "Lecture sur cet appareil de tout ce qui figure dans la liste ci-dessous. Toujours rien sur le réseau."
+      },
+      "sending": {
+        "title": "Déplacement de vos enregistrements",
+        "body": "Des blocs scellés, directement vers votre téléphone par le réseau local. La progression s’affiche à côté du code saisi."
+      },
+      "done": {
+        "title": "Tout a été envoyé",
+        "body": "Votre téléphone demande avant de remplacer quoi que ce soit ; sa décision s’affiche à côté du code saisi. Rien n’a été supprimé de cet appareil — un transfert est une copie."
+      },
+      "failed": {
+        "title": "Le transfert s’est arrêté",
+        "body": "Rien n’a changé sur cet appareil. La cause du problème est indiquée à côté du code saisi."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "En attente de votre téléphone",
+        "body": "Ouvrez jojo sur votre téléphone, choisissez Transfert, puis Envoyer à un ordinateur, et scannez le code affiché ici. Votre téléphone affiche ensuite un code court à saisir à droite. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Connexion à votre téléphone",
+        "body": "Demande à l’adresse saisie sa moitié de l’échange de clés. Rien n’a encore été reçu."
+      },
+      "receiving": {
+        "title": "Réception des enregistrements de votre téléphone",
+        "body": "Des blocs scellés, directement depuis votre téléphone par le réseau local. Rien ne change sur cet ordinateur tant que vous n’avez pas accepté."
+      },
+      "confirming": {
+        "title": "Tout est arrivé",
+        "body": "Les enregistrements de votre téléphone sont arrivés et ont été vérifiés. Rien n’a encore changé ici — indiquez s’ils doivent remplacer ce qui se trouve sur cet ordinateur."
+      },
+      "restoring": {
+        "title": "Remplacement des enregistrements ici",
+        "body": "Écriture de ce que votre téléphone a envoyé à la place de ce qui se trouvait sur cet ordinateur."
+      },
+      "done": {
+        "title": "Tout a été déplacé",
+        "body": "Cet ordinateur contient désormais les enregistrements de votre téléphone. Rien n’a été supprimé du téléphone — un transfert est une copie."
+      },
+      "failed": {
+        "title": "Le transfert s’est arrêté",
+        "body": "Rien n’a changé sur cet ordinateur. La cause du problème est indiquée à côté du code saisi."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} — c’est ce qui se trouve sur cet ordinateur maintenant, et ce que les enregistrements de votre téléphone remplaceront.",
+      "sent": "{{summary}} — c’est ce qui a été envoyé.",
+      "willMove": "{{summary}} — c’est ce qui sera déplacé."
+    },
+    "scanHint": "Scannez le code affiché ici avec l’app jojo de votre téléphone — c’est la clé — et elle vous affichera ensuite un code court à saisir à droite.",
+    "chooseGroup": "Choisissez au moins un groupe à envoyer."
+  },
+  "qr": {
+    "label": "Code d’appairage. Scannez-le avec l’app jojo de votre téléphone : ouvrez Transfert et pointez l’appareil photo vers ce carré."
+  },
+  "details": {
+    "title": "Détails",
+    "hint": "ce transfert",
+    "records": "Enregistrements",
+    "recordsHint": "tout ce qui figure dans les groupes ci-dessous",
+    "encryption": "Chiffrement",
+    "encryptionHint": "AES-256-GCM, clé convenue par l’appareil photo",
+    "keyAgreed": "Clé convenue",
+    "notPaired": "Pas encore appairé",
+    "route": "Itinéraire",
+    "routeHint": "une adresse de réseau privé — jamais Internet",
+    "localNetwork": "Réseau local",
+    "servers": "Serveurs",
+    "serversHint": "aucun relais, aucune signalisation, rien d’hébergé",
+    "none": "Aucun"
+  },
+  "payload": {
+    "label": "Transférer les fichiers",
+    "noFiles": "Aucun fichier sur cet appareil",
+    "files_one": "{{count}} fichier — la partie la plus lente d’un transfert",
+    "files_other": "{{count}} fichiers — la partie la plus lente d’un transfert"
+  },
+  "connect": {
+    "title": "Connexion",
+    "hintUnable": "pas dans ce navigateur",
+    "unable": "Ce navigateur ne peut pas se connecter à un autre appareil de votre réseau — ni Safari, ni aucun navigateur sur iPhone ou iPad, ni Firefox depuis le site publié. Utilisez Chrome ou Edge sur un ordinateur — ou déplacez tout avec un fichier de sauvegarde depuis les Réglages, qui fonctionne partout et sans limite de taille.",
+    "hint": "depuis l’autre appareil",
+    "intro": "Après le scan, votre téléphone affiche un code court. Saisissez-le ici — c’est ainsi que cet ordinateur apprend où se trouve le téléphone, ce qu’un navigateur ne peut pas découvrir seul.",
+    "codeLabel": "Le code affiché sur votre téléphone",
+    "send": "Envoyer",
+    "progress": "Progression du transfert",
+    "reaching": "Connexion à votre téléphone…",
+    "gathering": "Rassemblement de vos enregistrements…",
+    "percentSent": "{{percent}} % envoyé",
+    "cancel": "Annuler",
+    "another": "Envoyer à un autre appareil"
+  },
+  "done": {
+    "applied": "Votre téléphone contient désormais ces enregistrements.",
+    "appliedAt": "Votre téléphone à l’adresse {{target}} contient désormais ces enregistrements.",
+    "declined": "Tout a été envoyé, et votre téléphone a conservé ses propres enregistrements — rien n’y a été remplacé.",
+    "failed": "Tout a été envoyé, mais votre téléphone n’a pas pu le lire, donc rien n’y a été remplacé. Réessayez.",
+    "unknown": "Tout a été envoyé. Votre téléphone n’a pas indiqué s’il a accepté les enregistrements — vérifiez sur celui-ci.",
+    "unknownTo": "Tout a été envoyé à {{target}}. Votre téléphone n’a pas indiqué s’il a accepté les enregistrements — vérifiez sur celui-ci.",
+    "waiting": "Tout a été envoyé. Votre téléphone demande avant de remplacer quoi que ce soit — confirmez sur celui-ci pour terminer.",
+    "waitingTo": "Tout a été envoyé à {{target}}. Votre téléphone demande avant de remplacer quoi que ce soit — confirmez sur celui-ci pour terminer."
+  },
+  "receive": {
+    "title": "Recevoir du téléphone",
+    "hint": "depuis votre téléphone",
+    "unable": "Ce navigateur ne peut pas se connecter à un autre appareil de votre réseau — ni Safari, ni aucun navigateur sur iPhone ou iPad, ni Firefox depuis le site publié. Utilisez Chrome ou Edge sur un ordinateur — ou exportez une sauvegarde sur votre téléphone et ouvrez-la dans les Réglages.",
+    "intro": "Sur votre téléphone, ouvrez Transfert, choisissez Envoyer à un ordinateur et scannez le code de cette page. Il affiche ensuite un code court — saisissez-le ici. Les deux appareils doivent être sur le même réseau local.",
+    "codeLabel": "Le code affiché sur votre téléphone",
+    "receive": "Recevoir",
+    "reaching": "Connexion à votre téléphone…",
+    "progress": "{{size}} reçus jusqu’ici. Rien ne change ici tant que vous n’avez pas accepté.",
+    "cancel": "Annuler",
+    "restoring": "Remplacement des enregistrements de cet ordinateur…",
+    "replaceWarning": "La réception remplace tout ce qui se trouve sur cet ordinateur par ce qui est sur votre téléphone, une fois que vous avez accepté. Pour garder une copie de ce qui est ici, téléchargez d’abord une sauvegarde.",
+    "downloadFirst": "Télécharger d’abord une sauvegarde",
+    "twoBrowsers": {
+      "title": "Deux navigateurs",
+      "hint": "entre deux ordinateurs",
+      "body": "Une page web ne peut pas accepter de connexion, pas plus que celle de l’autre ordinateur, donc deux ordinateurs ne peuvent pas se connecter l’un à l’autre. Exportez une sauvegarde depuis l’un et ouvrez-la sur l’autre — elle contient chaque enregistrement et chaque document.",
+      "export": "Exporter une sauvegarde"
+    },
+    "reload": "Recharger jojo"
+  },
+  "pullConfirm": {
+    "title": "Tout remplacer par ce que votre téléphone a envoyé ?",
+    "description": "Votre téléphone a envoyé {{contents}}. {{replaces}}, et c’est irréversible — l’historique part avec eux. Téléchargez d’abord une sauvegarde si vous n’êtes pas sûr.",
+    "confirm": "Tout remplacer"
+  },
+  "handover": {
+    "sendingAgain": "Un nouvel envoi remplace tout ce qui s’y trouve par tout ce qui est ici."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Ce navigateur ne peut pas se connecter à un autre appareil de votre réseau — Safari ne le peut pas, aucun navigateur sur iPhone ou iPad non plus, ni Firefox depuis le site publié. Utilisez Chrome ou Edge sur un ordinateur, ou déplacez vos enregistrements avec un fichier de sauvegarde.",
+      "notLocal": "Cette adresse n’est pas sur un réseau local. jojo ne se connecte qu’à une adresse privée, donc le transfert ne passe jamais par Internet.",
+      "unreachable": "Aucune réponse de cette adresse. Vérifiez que les deux appareils sont sur le même réseau local et que votre navigateur a été autorisé à trouver des appareils sur le réseau local. Certains réseaux invités empêchent les appareils de se voir.",
+      "refused": "Cet appareil a refusé la connexion. Vérifiez que le téléphone est réglé dans l’autre sens — Recevoir sur le téléphone quand cet ordinateur envoie, Envoyer quand il reçoit — puis affichez un nouveau code et scannez-le à nouveau.",
+      "oversized": "Cet appareil a répondu avec bien plus que ce que jojo attend, la lecture a donc été interrompue. Rien n’a changé sur cet ordinateur.",
+      "timeout": "Cet appareil a cessé de répondre. Gardez jojo ouvert sur le téléphone avec l’écran allumé, puis affichez un nouveau code et réessayez.",
+      "blocked": "Votre navigateur a empêché ce site d’accéder aux appareils de votre réseau local. Autorisez-le dans les paramètres du site (l’icône à gauche de l’adresse), puis réessayez.",
+      "cancelled": "Annulé.",
+      "conflict": "Votre téléphone n’a pas pu rassembler ses enregistrements à envoyer. Consultez le message sur le téléphone — rien n’a changé sur cet ordinateur."
+    },
+    "dial": {
+      "unreadable": "Ce code contient des caractères que jojo n’utilise pas. Comparez-le avec l’autre écran.",
+      "length": "Ce code n’a pas la bonne longueur. Il compte douze caractères, en trois groupes de quatre.",
+      "mistyped": "Ce code n’est pas valide — un caractère est faux quelque part. Essayez de le saisir à nouveau."
+    },
+    "pull": {
+      "forged": "Une partie de ce qui est arrivé ne venait pas du téléphone appairé, jojo a donc tout rejeté. Rien n’a changé sur cet ordinateur — affichez un nouveau code et réessayez.",
+      "oversized": "Votre téléphone a envoyé plus que ce que jojo accepte en une fois, la lecture a donc été interrompue. Rien n’a changé sur cet ordinateur.",
+      "unrestorable": "Ce que votre téléphone a envoyé ne peut pas être restauré : {{reason}}. Rien n’a changé sur cet ordinateur.",
+      "declined": "Rien n’a été modifié. Ce que votre téléphone a envoyé a été supprimé."
+    },
+    "unexpected": "Un problème est survenu sur cet ordinateur et le transfert s’est arrêté. Rien n’est resté sur l’autre appareil — réessayez, ou déplacez vos enregistrements avec un fichier de sauvegarde depuis les Réglages.",
+    "unproven": "Cet appareil n’a pas pu prouver qu’il avait lu le code de cet écran. Affichez un nouveau code et scannez-le à nouveau.",
+    "pairingFailed": "Un problème est survenu lors de la configuration d’un appairage sécurisé sur cet appareil."
+  }
+}

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { RotateCcw } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
@@ -37,23 +39,28 @@ const NO_UNDO: readonly string[] = ['memory.reset', 'memory.clear']
 /** How many rows before the list gets a "show everything" of its own. */
 const FIRST_PAGE = 8
 
-const touchedBy = (entry: JournalEntry): string => {
+const touchedBy = (entry: JournalEntry, t: TFunction<'settings'>): string => {
   const records = entry.nodes.length
   const links = entry.edges.length
-  const parts: string[] = []
-  if (records > 0) parts.push(`${records} record${records === 1 ? '' : 's'}`)
-  if (links > 0) parts.push(`${links} connection${links === 1 ? '' : 's'}`)
   // An entry that changed nothing is still recorded — "you pressed save and
   // nothing happened" is worth being able to see — so it needs a word too.
-  return parts.length === 0 ? 'no change' : parts.join(', ')
+  if (records === 0 && links === 0) return t('audit.noChange')
+  if (links === 0) return t('audit.records', { count: records })
+  if (records === 0) return t('audit.connections', { count: links })
+  return t('audit.both', {
+    records: t('audit.records', { count: records }),
+    connections: t('audit.connections', { count: links }),
+  })
 }
 
-const time = (instant: string): string => {
+/** In the language jojo is showing, not the browser's. */
+const time = (instant: string, locale: string): string => {
   const parsed = new Date(instant)
-  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString()
+  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString(locale)
 }
 
 export function AuditLog() {
+  const { t, i18n } = useTranslation('settings')
   const { repo } = useKg()
   const { toast } = useToast()
   const [all, setAll] = useState(false)
@@ -75,10 +82,10 @@ export function AuditLog() {
   // Said by case: the whole-store sentence on a trimmed row named the wrong
   // reason for the same disabled button.
   const undoTitle = canUndo
-    ? 'Puts the records back as they were before this change'
+    ? t('audit.undoTitle.can')
     : top !== undefined && NO_UNDO.includes(top.tool)
-      ? 'This one replaced the whole store, so there is nothing to put back'
-      : "jojo kept a record of this change but not enough to put it back — it was a background write (a fit reading, a file's bytes) or is too far back"
+      ? t('audit.undoTitle.wholeStore')
+      : t('audit.undoTitle.trimmed')
 
   const onUndo = () => {
     if (!top) return
@@ -91,8 +98,8 @@ export function AuditLog() {
       // pressed. A thrown error out of a click handler would take the route
       // down with it through the boundary.
       toast({
-        title: 'That change could no longer be undone',
-        description: error instanceof Error ? error.message : 'It is no longer in the journal.',
+        title: t('audit.undoFailed.title'),
+        description: error instanceof Error ? error.message : t('audit.undoFailed.description'),
         tone: 'danger',
       })
     }
@@ -100,13 +107,10 @@ export function AuditLog() {
 
   return (
     <Panel>
-      <PanelTitle hint={`${entries.length} kept`}>What jojo has done</PanelTitle>
+      <PanelTitle hint={t('audit.kept', { count: entries.length })}>{t('audit.title')}</PanelTitle>
 
       {entries.length === 0 ? (
-        <p className="text-sm text-text-2">
-          Nothing has been written to this store yet. Every change you make is recorded here, and
-          the record survives a reload.
-        </p>
+        <p className="text-sm text-text-2">{t('audit.empty')}</p>
       ) : (
         <>
           <div className="divide-y divide-hairline">
@@ -115,7 +119,7 @@ export function AuditLog() {
                 <div className="min-w-0">
                   <div className="truncate text-sm text-text-1">{entry.label}</div>
                   <div className="mt-0.5 text-xs text-text-3">
-                    {time(entry.at)} · {touchedBy(entry)} ·{' '}
+                    {time(entry.at, i18n.language)} · {touchedBy(entry, t)} ·{' '}
                     <span className="font-mono">{entry.tool}</span>
                   </div>
                 </div>
@@ -129,7 +133,7 @@ export function AuditLog() {
                     title={undoTitle}
                   >
                     <RotateCcw className="size-3.5" strokeWidth={1.8} aria-hidden />
-                    Undo
+                    {t('shared.undo')}
                   </Button>
                 ) : null}
               </div>
@@ -138,14 +142,11 @@ export function AuditLog() {
 
           {entries.length > FIRST_PAGE ? (
             <Button variant="ghost" size="sm" className="mt-2" onClick={() => setAll(!all)}>
-              {all ? 'Show fewer' : `Show all ${entries.length}`}
+              {all ? t('audit.showFewer') : t('audit.showAll', { total: entries.length })}
             </Button>
           ) : null}
 
-          <p className="mt-3 text-xs text-text-3">
-            The last 200 changes are kept, oldest dropped first. Undoing here is a new change of its
-            own — it is added to the top of this list rather than removing the row it reverses.
-          </p>
+          <p className="mt-3 text-xs text-text-3">{t('audit.footer')}</p>
         </>
       )}
     </Panel>

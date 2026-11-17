@@ -1,6 +1,7 @@
 import type { Ref } from 'react'
 import { Radar } from 'lucide-react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { listJoin } from '@/components/common/text'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -39,6 +40,7 @@ export function MatchesPanel({
   /** Scored against, rather than decorated with. See the panel title. */
   profile: Profile
 }) {
+  const { t } = useTranslation('scout')
   return (
     <Panel>
       {/*
@@ -48,13 +50,13 @@ export function MatchesPanel({
         the same `core/fit.ts` the phone scores with, so it says what they are
         measured against.
       */}
-      <PanelTitle hint="scored against your profile">Matches</PanelTitle>
+      <PanelTitle hint={t('matches.hint')}>{t('matches.title')}</PanelTitle>
 
       {matches.length === 0 ? (
         <EmptyState
           icon={Radar}
-          title="No matches"
-          description="Pipelines put scored postings here once a model is connected. Until then, the postings you save below are the way in."
+          title={t('matches.emptyTitle')}
+          description={t('matches.emptyDescription')}
         />
       ) : (
         <RowList>
@@ -77,7 +79,7 @@ export function MatchesPanel({
                       can check rather than a number to be trusted. */}
                   {fit.matched.length > 0 ? (
                     <div className="mt-0.5 truncate text-xs text-text-3">
-                      matched {listJoin(fit.matched.slice(0, 3))}
+                      {t('matches.matched', { list: listJoin(fit.matched.slice(0, 3)) })}
                     </div>
                   ) : null}
                   {fit.score === null ? (
@@ -85,13 +87,19 @@ export function MatchesPanel({
                   ) : null}
                   {application ? (
                     <div className="mt-1 text-xs text-text-3">
-                      In applications as{' '}
-                      <Link
-                        to={appPath(application)}
-                        className="text-text-2 underline underline-offset-2 hover:text-text-1"
-                      >
-                        {displayName(application)}
-                      </Link>
+                      <Trans
+                        t={t}
+                        i18nKey="common.inApplicationsAs"
+                        values={{ name: displayName(application) }}
+                        components={{
+                          anchor: (
+                            <Link
+                              to={appPath(application)}
+                              className="text-text-2 underline underline-offset-2 hover:text-text-1"
+                            />
+                          ),
+                        }}
+                      />
                     </div>
                   ) : null}
                 </div>
@@ -99,18 +107,18 @@ export function MatchesPanel({
                     the app nothing to rank against, and a confident number over
                     nothing is exactly what the fixtures used to be. */}
                 {fit.score === null ? (
-                  <Chip tone="gray">not scored</Chip>
+                  <Chip tone="gray">{t('matches.notScored')}</Chip>
                 ) : (
-                  <Chip tone={fitTone(fit.score)}>{fit.score}% fit</Chip>
+                  <Chip tone={fitTone(fit.score)}>{t('matches.fit', { score: fit.score })}</Chip>
                 )}
                 {/* Promoting links the two rather than moving the match: the feed
                   is generated, so a mis-click on a row that vanished could not
                   be undone. Already-promoted rows say where they went. */}
                 {application ? (
-                  <Chip tone="teal">added</Chip>
+                  <Chip tone="teal">{t('matches.added')}</Chip>
                 ) : (
                   <Button variant="ghost" size="sm" onClick={() => onPromote(m.id)}>
-                    Add to applications
+                    {t('common.addToApplications')}
                   </Button>
                 )}
               </Row>

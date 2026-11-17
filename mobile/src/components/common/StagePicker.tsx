@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Pressable } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/ui/Chip'
 import { MenuSheet } from '@/components/ui/Menu'
-import { STAGES, STAGE_LABEL } from '@jojo/service/data/seed'
+import { STAGES } from '@jojo/service/data/seed'
 import type { Stage } from '@jojo/service/data/seed'
 import { slopFor } from '@/theme/tokens'
 import { useColors } from '@/theme/theme-context'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The stage chip, as a control.
@@ -27,6 +29,8 @@ export function StagePicker({
   /** The record's name, for the menu's title and the accessible label. */
   name: string
 }) {
+  const { t } = useTranslation('components')
+  const domain = useDomain()
   const c = useColors()
   const [open, setOpen] = useState(false)
 
@@ -34,7 +38,7 @@ export function StagePicker({
     <>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Stage of ${name}: ${STAGE_LABEL[value]}. Change stage`}
+        accessibilityLabel={t('stagePicker.label', { name, stage: domain.stage(value) })}
         onPress={() => setOpen(true)}
         /*
          * The chip is about 24 points tall — `paddingVertical: 3` around a
@@ -44,17 +48,17 @@ export function StagePicker({
          */
         hitSlop={slopFor(24)}
       >
-        <Chip stage={value}>{STAGE_LABEL[value]}</Chip>
+        <Chip stage={value}>{domain.stage(value)}</Chip>
       </Pressable>
 
       <MenuSheet
         open={open}
         onClose={() => setOpen(false)}
-        title="Move to"
+        title={t('stagePicker.title')}
         description={name}
         actions={STAGES.map((s) => ({
           id: s.id,
-          label: s.label,
+          label: domain.stage(s.id),
           dotColor: c.stage[s.id],
           checked: s.id === value,
           onPress: () => onSelect(s.id),

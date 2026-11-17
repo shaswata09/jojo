@@ -9,11 +9,13 @@ import {
   Table,
   Underline,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SpectrumPicker } from '@/components/common/SpectrumSwatch'
-import { LABEL_TONE_VALUES, TONE_LABEL } from '@jojo/service/core/model'
+import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import type { LabelTone } from '@jojo/service/core/model'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Sizes map onto `fontSize` 1–7, the only scale the command understands.
@@ -21,10 +23,10 @@ import { cn } from '@/lib/utils'
  * nothing to anyone.
  */
 const SIZES = [
-  { value: '2', label: 'Small' },
-  { value: '3', label: 'Normal' },
-  { value: '5', label: 'Large' },
-  { value: '6', label: 'Huge' },
+  { value: '2', label: 'richText.sizes.small' },
+  { value: '3', label: 'richText.sizes.normal' },
+  { value: '5', label: 'richText.sizes.large' },
+  { value: '6', label: 'richText.sizes.huge' },
 ]
 
 /**
@@ -58,21 +60,23 @@ const COLORS = [
   // Not "default colour": `execCommand` cannot undo one property, so the reset
   // swatch runs `removeFormat` and takes bold and italic with it. Labelled for
   // what it does rather than for where it sits.
-  { name: 'Clear formatting', value: '' },
-  ...LABEL_TONE_VALUES.map((tone) => ({ name: TONE_LABEL[tone], value: TONE_INK[tone] })),
-]
+  // Named by a `common` catalog key, the tones after it by `domain.tone`; see
+  // `colourName`.
+  { tone: null, value: '' },
+  ...LABEL_TONE_VALUES.map((tone) => ({ tone, value: TONE_INK[tone] })),
+] satisfies readonly { tone: LabelTone | null; value: string }[]
 
-/** Marks whose on/off state the toolbar reflects. */
+/** Marks whose on/off state the toolbar reflects. Labels are `common` catalog keys. */
 const MARKS = [
-  { cmd: 'bold', icon: Bold, label: 'Bold' },
-  { cmd: 'italic', icon: Italic, label: 'Italic' },
-  { cmd: 'underline', icon: Underline, label: 'Underline' },
-  { cmd: 'strikeThrough', icon: Strikethrough, label: 'Strikethrough' },
+  { cmd: 'bold', icon: Bold, label: 'richText.bold' },
+  { cmd: 'italic', icon: Italic, label: 'richText.italic' },
+  { cmd: 'underline', icon: Underline, label: 'richText.underline' },
+  { cmd: 'strikeThrough', icon: Strikethrough, label: 'richText.strikeThrough' },
 ] as const
 
 const LISTS = [
-  { cmd: 'insertUnorderedList', icon: List, label: 'Bullet list' },
-  { cmd: 'insertOrderedList', icon: ListOrdered, label: 'Numbered list' },
+  { cmd: 'insertUnorderedList', icon: List, label: 'richText.insertUnorderedList' },
+  { cmd: 'insertOrderedList', icon: ListOrdered, label: 'richText.insertOrderedList' },
 ] as const
 
 /**
@@ -112,7 +116,7 @@ export function RichTextEditor({
   value,
   onChange,
   placeholder,
-  ariaLabel = 'Snippet text',
+  ariaLabel,
   inlineOnly = false,
   onBlur,
   className,
@@ -153,8 +157,12 @@ export function RichTextEditor({
    */
   surfaceClassName?: string
 }) {
+  const { t } = useTranslation()
+  const domain = useDomain()
   const ref = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState<Record<string, boolean>>({})
+  const colourName = (c: { tone: LabelTone | null }) =>
+    c.tone === null ? t('richText.clearFormatting') : domain.tone(c.tone)
 
   /**
    * Only writes into the DOM when the incoming value differs from what is
@@ -263,7 +271,7 @@ export function RichTextEditor({
     <div className={cn('flex min-h-0 flex-col', className)}>
       <div className="flex flex-wrap items-center gap-1 rounded-t-md border border-hairline bg-well px-1.5 py-1.5">
         <label className="sr-only" htmlFor={sizeId}>
-          Font size
+          {t('richText.fontSize')}
         </label>
         <select
           id={sizeId}
@@ -273,7 +281,7 @@ export function RichTextEditor({
         >
           {SIZES.map((s) => (
             <option key={s.value} value={s.value}>
-              {s.label}
+              {t(s.label)}
             </option>
           ))}
         </select>
@@ -284,8 +292,8 @@ export function RichTextEditor({
           <button
             key={cmd}
             type="button"
-            title={label}
-            aria-label={label}
+            title={t(label)}
+            aria-label={t(label)}
             aria-pressed={!!active[cmd]}
             onClick={() => exec(cmd)}
             className={cn(btn, active[cmd] && btnOn)}
@@ -301,8 +309,8 @@ export function RichTextEditor({
             <button
               key={cmd}
               type="button"
-              title={label}
-              aria-label={label}
+              title={t(label)}
+              aria-label={t(label)}
               aria-pressed={!!active[cmd]}
               onClick={() => exec(cmd)}
               className={cn(btn, active[cmd] && btnOn)}
@@ -314,8 +322,8 @@ export function RichTextEditor({
         {!inlineOnly && (
           <button
             type="button"
-            title="Insert table"
-            aria-label="Insert table"
+            title={t('richText.insertTable')}
+            aria-label={t('richText.insertTable')}
             onClick={() => exec('insertHTML', TABLE_HTML)}
             className={btn}
           >
@@ -324,7 +332,11 @@ export function RichTextEditor({
         )}
 
         <Popover open={colourOpen} onOpenChange={setColourOpen}>
-          <PopoverTrigger title="Text colour" aria-label="Text colour" className={btn}>
+          <PopoverTrigger
+            title={t('richText.textColour')}
+            aria-label={t('richText.textColour')}
+            className={btn}
+          >
             <Palette className="size-3.5" strokeWidth={2} aria-hidden />
           </PopoverTrigger>
           <PopoverContent
@@ -340,14 +352,16 @@ export function RichTextEditor({
              */
             onFocusOutside={(event) => event.preventDefault()}
           >
-            <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">Text colour</div>
+            <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">
+              {t('richText.textColour')}
+            </div>
             <div className="grid grid-cols-5 gap-1.5">
               {COLORS.map((c) => (
                 <button
-                  key={c.name}
+                  key={c.tone ?? 'clear'}
                   type="button"
-                  title={c.name}
-                  aria-label={c.name}
+                  title={colourName(c)}
+                  aria-label={colourName(c)}
                   // Mouse-down is swallowed so the click cannot move focus or
                   // collapse the selection the colour is about to land on.
                   onMouseDown={(e) => e.preventDefault()}
@@ -381,7 +395,7 @@ export function RichTextEditor({
              */}
             <div className="border-t border-hairline pt-2">
               <div className="mb-1.5 px-0.5 text-xs tracking-wide text-text-3 uppercase">
-                Any colour
+                {t('spectrum.any')}
               </div>
               <SpectrumPicker value={undefined} onCommit={(hex) => exec('foreColor', hex)} />
             </div>
@@ -395,7 +409,7 @@ export function RichTextEditor({
         suppressContentEditableWarning
         role="textbox"
         aria-multiline="true"
-        aria-label={ariaLabel}
+        aria-label={ariaLabel ?? t('richText.snippetText')}
         data-placeholder={placeholder}
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
         onBlur={onBlur}

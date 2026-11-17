@@ -10,8 +10,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { VaultFile } from '@jojo/service/data/vault'
 import {
-  NOTHING_TO_READ_WITH,
-  NO_BACKGROUND_ROUTE,
+  nothingToReadWith,
+  noBackgroundRoute,
   keptOrDropped,
   reusablePage,
   withoutExtension,
@@ -58,15 +58,15 @@ describe('reusablePage', () => {
 describe('withoutExtension', () => {
   it('never hands an unattended read to the document reader', () => {
     expect(withoutExtension('http://127.0.0.1:3001/mcp', true)).toEqual({
-      reason: NO_BACKGROUND_ROUTE,
+      reason: noBackgroundRoute(),
     })
-    expect(withoutExtension('', true)).toEqual({ reason: NO_BACKGROUND_ROUTE })
+    expect(withoutExtension('', true)).toEqual({ reason: noBackgroundRoute() })
   })
 
   it('uses the reader for a posting a person opened, when it is set up', () => {
     expect(withoutExtension('http://127.0.0.1:3001/mcp', false)).toEqual({
       reader: 'http://127.0.0.1:3001/mcp',
     })
-    expect(withoutExtension('  ', false)).toEqual({ reason: NOTHING_TO_READ_WITH })
+    expect(withoutExtension('  ', false)).toEqual({ reason: nothingToReadWith() })
   })
 })

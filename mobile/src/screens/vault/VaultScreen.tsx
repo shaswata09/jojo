@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import { LabelFilter } from '@/components/common/Labels'
@@ -15,14 +16,15 @@ import { PeopleTool } from '@/screens/vault/PeopleTool'
 import { SnippetsTool } from '@/screens/vault/SnippetsTool'
 import { TourTarget } from '@/components/tour/TourTarget'
 
+/** The tools in order; each is labelled by `screen.tools.<value>` in the vault catalog. */
 const TOOLS = [
-  { value: 'reminders', label: 'Reminders' },
-  { value: 'links', label: 'Links' },
-  { value: 'files', label: 'Files' },
-  { value: 'snippets', label: 'Snippets' },
-  { value: 'people', label: 'People' },
-  { value: 'tools', label: 'Tools' },
-] as const satisfies readonly { value: VaultTool; label: string }[]
+  'reminders',
+  'links',
+  'files',
+  'snippets',
+  'people',
+  'tools',
+] as const satisfies readonly VaultTool[]
 
 /**
  * Everything you set aside to come back to.
@@ -37,6 +39,7 @@ const TOOLS = [
  * has to be made without disturbing three others in the same scroll.
  */
 export function VaultScreen() {
+  const { t } = useTranslation('vault')
   const route = useRoute<RouteProp<TabParamList, 'Vault'>>()
   const [tool, setTool] = useState<VaultTool>(route.params?.tool ?? 'reminders')
   // The web page makes this a switch too. The totals are the right default —
@@ -86,24 +89,43 @@ export function VaultScreen() {
    * split belongs to the reminders bucket filter, where you can act on it.
    */
   const subtitle = showCounts
-    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets · ${people.length} people`
-    : 'Reminders, links, files, snippets and people'
+    ? [
+        t('screen.counts.reminders', { count: reminders.length }),
+        t('screen.counts.links', { count: links.length }),
+        t('screen.counts.files', { count: files.length }),
+        t('screen.counts.snippets', { count: snippets.length }),
+        t('screen.counts.people', { count: people.length }),
+      ].join(' · ')
+    : t('screen.subtitle')
+  const toolOptions = TOOLS.map((value) => ({ value, label: t(`screen.tools.${value}`) }))
 
   return (
     <Screen
-      title="Vault"
+      title={t('screen.title')}
       subtitle={subtitle}
       options={
         <SettingRow
-          label="Show counts"
-          description="Item totals in the subtitle, rather than what the tabs hold"
-          control={<Toggle value={showCounts} onValueChange={setShowCounts} label="Show counts" />}
+          label={t('screen.showCounts')}
+          description={t('screen.showCountsDescription')}
+          control={
+            <Toggle
+              value={showCounts}
+              onValueChange={setShowCounts}
+              label={t('screen.showCounts')}
+            />
+          }
         />
       }
     >
       {/* Marked for the guided tour, which asks for Files. */}
       <TourTarget id="vault-tools" state={tool}>
-        <Segment label="Vault tool" scroll options={TOOLS} value={tool} onChange={setTool} />
+        <Segment
+          label={t('screen.toolLabel')}
+          scroll
+          options={toolOptions}
+          value={tool}
+          onChange={setTool}
+        />
       </TourTarget>
 
       {/* One filter for the whole vault: a keyword means the same thing on a

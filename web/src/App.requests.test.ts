@@ -30,3 +30,36 @@ describe('the reminders page, now the Vault (Q046)', () => {
     expect(VAULT_DEFAULTS.tool).toBe('reminders')
   })
 })
+
+describe('the guide is not in the chunk every page waits on (perf-2)', () => {
+  const guide = import.meta.glob('/src/routes/Guide.tsx', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>
+
+  it.each([
+    'GuideOverview',
+    'GuideScreens',
+    'GuideGraph',
+    'GuideTools',
+    'GuideBuiltWith',
+    'GuideControlFlow',
+    'GuideLicence',
+  ])('loads %s lazily, never by a static import', (page) => {
+    // GuideTools pulls the benchmark report and its conversations — about a
+    // third of a megabyte gzipped — into whichever chunk imports it.
+    expect(code).not.toMatch(new RegExp(`^import \\{ ${page} \\}`, 'm'))
+    expect(code).toMatch(
+      new RegExp(
+        `const ${page} = lazy\\(async \\(\\) => \\(\\{\\s*default: \\(await import\\('@/components/guide/${page}'\\)\\)\\.${page},`,
+      ),
+    )
+  })
+
+  it('suspends a page under the guide’s rail, not the whole app', () => {
+    expect(guide['/src/routes/Guide.tsx']).toMatch(
+      /<Suspense fallback=\{<GuidePageFallback \/>\}>\s*<Outlet \/>\s*<\/Suspense>/,
+    )
+  })
+})

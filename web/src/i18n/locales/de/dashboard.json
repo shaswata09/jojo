@@ -1,0 +1,271 @@
+{
+  "common": {
+    "newApplication": "Neue Bewerbung",
+    "openBoard": "Board öffnen",
+    "showAll": "Alle anzeigen",
+    "undo": "Rückgängig",
+    "pushOut": "„{{title}}“ verschieben",
+    "pushOutBy": "Verschieben um",
+    "completed": "{{title}} erledigt",
+    "rescheduled": "{{title}} verschoben"
+  },
+  "headlineRates": {
+    "emptyTitle": "Noch keine Quoten",
+    "emptyDescription": "Antwort-, Gesprächs- und Angebotsquoten zählen nur Bewerbungen, die wirklich rausgegangen sind. Hol eine aus dem Entwurf, dann füllt sich das hier."
+  },
+  "pipeline": {
+    "emptyTitle": "Nichts in der Pipeline",
+    "emptyDescription": "Jede Bewerbung steht in einer Phase, und hier siehst du, wie sie sich verteilen. Füge eine hinzu, dann erscheint das erste Segment.",
+    "ariaLabel_one": "{{count}} Bewerbung nach Phase",
+    "ariaLabel_other": "{{count}} Bewerbungen nach Phase"
+  },
+  "statsCard": {
+    "control": "Statistik",
+    "tracked_one": "{{count}} erfasst",
+    "tracked_other": "{{count}} erfasst",
+    "views": {
+      "pipeline": "Pipeline",
+      "rates": "Quoten",
+      "when": "Wann",
+      "next": "Als Nächstes"
+    },
+    "titles": {
+      "pipeline": "Pipeline",
+      "rates": "Wichtigste Quoten",
+      "when": "Wann du dich beworben hast",
+      "next": "Woran du als Nächstes arbeiten solltest"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "Notizen",
+      "recent": "Letzte Bewerbungen"
+    },
+    "headingNotes": "Haftnotizen",
+    "headingRecent": "Letzte Bewerbungen",
+    "control": "Auf dieser Karte anzeigen",
+    "addReminder": "Erinnerung hinzufügen",
+    "viewAll": "Alle ansehen",
+    "emptyTitle": "Noch keine Bewerbungen",
+    "emptyDescription": "Jede Stelle, die du verfolgst, erscheint hier, sobald du sie bearbeitest – die neueste zuerst.",
+    "today": "Heute",
+    "daysAgo_one": "vor {{count}} Tag",
+    "daysAgo_other": "vor {{count}} Tagen"
+  },
+  "searchHealth": {
+    "title": "Woran du als Nächstes arbeiten solltest",
+    "series": {
+      "you": "Deine",
+      "target": "Typisch"
+    },
+    "intro": "deine Zahlen im Vergleich zu einer typischen Suche",
+    "sample": "Beispiel",
+    "sampleTitle": "Nur der typische Ring ist illustrativ",
+    "emptyTitle": "Noch nicht genug zum Vergleichen",
+    "emptyDescription": "Hier werden deine Antworten, Gespräche, Empfehlungen und Nachfragen mit einer typischen Suche verglichen. Dafür braucht es Bewerbungen, die wirklich rausgegangen sind.",
+    "suggestions": "Vorschläge, die nützlichsten zuerst"
+  },
+  "sources": {
+    "title": "Woher sie kamen",
+    "views": {
+      "bars": "Balken",
+      "donut": "Ring"
+    },
+    "chartType": "Diagrammtyp",
+    "unrecorded": "Nicht erfasst",
+    "hintAll_one": "{{count}} Bewerbung",
+    "hintAll_other": "{{count}} Bewerbungen",
+    "hintSome": "{{shown}} von {{count}}",
+    "emptyTitle": "Noch nichts aufzuschlüsseln",
+    "emptyDescription": "Jede Bewerbung hält fest, wo du sie gefunden hast – eine Jobbörse, eine Empfehlung, die Seite des Instituts. Hier werden sie aufgeteilt, sobald es welche gibt.",
+    "centerLabel": "Bewerbungen",
+    "show": "{{name}} einblenden",
+    "hide": "{{name}} ausblenden",
+    "allOff": "Alle Quellen sind ausgeschaltet."
+  },
+  "offers": {
+    "title": "Angebote im Vergleich",
+    "open_one": "{{count}} offen",
+    "open_other": "{{count}} offen",
+    "caption": "Deine offenen Angebote mit dem Gehaltspaket, wie du es eingegeben hast, seiner Jahresumrechnung und dem Datum, bis zu dem du jeweils antworten musst",
+    "columns": {
+      "job": "Stelle",
+      "package": "Paket",
+      "year": "Pro Jahr",
+      "respondBy": "Antwort bis"
+    },
+    "notStated": "nicht angegeben",
+    "noAmount": "Aus dem Paket ließ sich kein Betrag lesen",
+    "readFrom": "Gelesen aus „{{text}}“",
+    "highest": "– das höchste hier",
+    "annualised": "(aufs Jahr gerechnet)",
+    "passed": "abgelaufen",
+    "today": "heute",
+    "daysLeft_one": "{{count}} Tag",
+    "daysLeft_other": "{{count}} Tage",
+    "ranked": "Der Jahresbetrag wird aus deiner Eingabe gelesen – fahr mit der Maus darüber, um zu sehen, aus welchen Wörtern er stammt.",
+    "unranked": "Sie sind nicht gereiht: Die Pakete sind in verschiedenen Währungen, und jojo hat keinen Wechselkurs und macht keinen Netzwerkaufruf, um einen zu finden.",
+    "annualisedNote": "* aufs Jahr gerechnet mit 12 Monaten, 52 Wochen oder 2.080 Stunden – eine Konvention, nicht dein Vertrag."
+  },
+  "sticky": {
+    "newNote": "Neue Haftnotiz",
+    "placeholder": "Notiere dir etwas … (Enter zum Anheften)",
+    "newColour": "Farbe der neuen Notiz",
+    "stick": "Anheften",
+    "empty": "Noch nichts angeheftet. Notizen bleiben hier, bis du sie abnimmst, und jede kann zur Erinnerung werden, sobald sie ein Datum hat.",
+    "listLabel": "Haftnotizen",
+    "editNote": "Notiz bearbeiten",
+    "clickToEdit": "Zum Bearbeiten klicken",
+    "editAria": "Notiz bearbeiten: {{text}}",
+    "colour": "Farbe",
+    "colourOf": "Farbe der Notiz „{{text}}“",
+    "toReminder": "In Erinnerung umwandeln",
+    "toReminderAria": "In Erinnerung umwandeln: {{text}}",
+    "takeDown": "Diese Notiz abnehmen",
+    "removeAria": "Notiz entfernen: {{text}}"
+  },
+  "frequency": {
+    "title": "Wann du dich beworben hast",
+    "period": "Zeitraum",
+    "periods": {
+      "week": "Woche",
+      "month": "Monat",
+      "quarter": "Quartal"
+    },
+    "chartType": "Diagrammtyp",
+    "charts": {
+      "bar": "Balken",
+      "line": "Linie"
+    },
+    "emptyTitle": "Noch nichts darzustellen",
+    "emptyDescription": "Hier werden die Bewerbungen gezählt, die du verschickst – Woche für Woche, nach Art der Stelle. Füge eine hinzu, dann erscheint der erste Balken.",
+    "noDatesTitle": "Noch keine Versanddaten erfasst",
+    "noDates_one": "Deine einzige Bewerbung hat noch kein Datum. Es wird gesetzt, wenn du einen Eintrag auf Eingereicht stellst.",
+    "noDates_other": "Keine deiner {{count}} Bewerbungen hat bisher ein Datum. Es wird gesetzt, wenn du einen Eintrag auf Eingereicht stellst.",
+    "perPeriod": {
+      "week": "Verschickte Bewerbungen pro Woche, aufgeteilt nach {{series}}",
+      "month": "Verschickte Bewerbungen pro Monat, aufgeteilt nach {{series}}",
+      "quarter": "Verschickte Bewerbungen pro Quartal, aufgeteilt nach {{series}}"
+    },
+    "caption": {
+      "week": "Verschickte Bewerbungen pro Woche",
+      "month": "Verschickte Bewerbungen pro Monat",
+      "quarter": "Verschickte Bewerbungen pro Quartal"
+    },
+    "countingUndated_one": "Gezählt werden {{inWindow}} von {{total}} Bewerbungen – {{count}} hat noch kein Datum.",
+    "countingUndated_other": "Gezählt werden {{inWindow}} von {{total}} Bewerbungen – {{count}} haben noch kein Datum.",
+    "countingEarlier_one": "Gezählt werden {{inWindow}} von {{total}} Bewerbungen – {{count}} liegt vor {{first}}.",
+    "countingEarlier_other": "Gezählt werden {{inWindow}} von {{total}} Bewerbungen – {{count}} liegen vor {{first}}.",
+    "countingBoth": "Gezählt werden {{inWindow}} von {{total}} Bewerbungen – {{undated}} noch ohne Datum und {{earlier}} vor {{first}}."
+  },
+  "glance": {
+    "heading": "Auf einen Blick",
+    "stats": {
+      "active": "Aktiv",
+      "screens": "Vorgespräche & Interviews",
+      "overdue": "Überfällig",
+      "doneToday": "Heute erledigt"
+    },
+    "previousMonth": "Vorheriger Monat",
+    "currentMonth": "Zum aktuellen Monat",
+    "currentMonthTitle": "{{date}} – aktueller Monat",
+    "nextMonth": "Nächster Monat",
+    "openCalendar": "Kalender öffnen",
+    "dayNone": "{{date}}, keine Termine",
+    "day_one": "{{date}}, {{count}} Termin",
+    "day_other": "{{date}}, {{count}} Termine",
+    "dayAllDone_one": "{{date}}, {{count}} Termin, alles erledigt",
+    "dayAllDone_other": "{{date}}, {{count}} Termine, alles erledigt",
+    "today": "heute",
+    "nothingPlanned": "Nichts geplant. <add>Etwas hinzufügen</add>."
+  },
+  "priority": {
+    "title": "Braucht eine Entscheidung",
+    "open_one": "{{count}} offen",
+    "open_other": "{{count}} offen",
+    "completedDescription": "Es verschwindet aus dem Stapel und aus dieser Woche – gelöscht wird nichts.",
+    "rescheduledDescription": "Jetzt fällig am {{date}}, im Kalender und in der kommenden Woche.",
+    "tickOff": "„{{title}}“ abhaken",
+    "done": "Erledigt",
+    "snooze": "Verschieben",
+    "notConnected": "Damit ist noch nichts verbunden",
+    "earlierAria": "Frühere Entscheidungen anzeigen",
+    "earlier": "Früher",
+    "laterAria": "Spätere Entscheidungen anzeigen",
+    "later": "Später",
+    "listLabel": "Entscheidungen, die früheste zuerst",
+    "emptyTitle": "Heute ist nichts zu entscheiden",
+    "emptyDescription": "Angebote, überfällige Bewerbungen, die nächste feste Frist und dein nächstes Gespräch erscheinen hier. Nichts davon steht an."
+  },
+  "firstSteps": {
+    "title": "Erste Schritte",
+    "hint": "{{done}} von {{total}} erledigt",
+    "application": {
+      "title": "Füge eine Bewerbung hinzu",
+      "body": "Eine Stelle, ihre Phase und ihre Frist. Alles andere in jojo hängt an diesem Eintrag."
+    },
+    "dated": {
+      "title": "Gib etwas ein Datum",
+      "body": "Fristen, Gespräche und Besuche sind eine Art von Eintrag, also erscheint ein Datum gleichzeitig hier, im Kalender und in der Bewerbung.",
+      "action": "Neuer Termin"
+    },
+    "reminder": {
+      "title": "Plane eine Nachfrage",
+      "body": "Eine Erinnerung ist derselbe Eintrag mit eingeschaltetem Hinweis. Ist ihr Datum vorbei, ist sie fällig und bleibt hier, bis du sie abhakst.",
+      "action": "Neue Erinnerung"
+    },
+    "complete": "Alle drei sind erledigt. Alles, was du ab jetzt hinzufügst, erscheint hier, im Kalender und in der Bewerbung, zu der es gehört.",
+    "intro": "Jeder Schritt öffnet die echte Funktion und hakt sich selbst ab, sobald ein Eintrag existiert – kein Tutorial, durch das du dich quälen musst.",
+    "introBare": "Noch wird nichts verfolgt. Jeder Schritt öffnet die echte Funktion und hakt sich selbst ab, sobald ein Eintrag existiert – kein Tutorial, durch das du dich quälen musst.",
+    "doneSr": "– erledigt",
+    "notDoneSr": "– noch nicht erledigt",
+    "hideHint": "Dieselben Schritte stehen auch in der Anleitung",
+    "close": "Erste Schritte schließen",
+    "hide": "Diese Schritte ausblenden"
+  },
+  "owed": {
+    "title": "Diese Woche fällig",
+    "add": "Hinzufügen",
+    "addEvent": "Termin hinzufügen",
+    "emptyTitle": "Nichts fällig",
+    "emptyDescription": "Fristen, Gespräche und Nachfragen landen hier, sobald sie ein Datum haben, und bleiben, bis du sie abhakst.",
+    "hintOverdue": "{{overdue}} überfällig · {{due}} fällig",
+    "hintDue_one": "{{count}} fällig",
+    "hintDue_other": "{{count}} fällig",
+    "snoozeAria": "{{title}} verschieben",
+    "openAria": {
+      "reminder": "{{title}} öffnen: Erinnerung bearbeiten oder zur Bewerbung gehen",
+      "event": "{{title}} öffnen: Termin bearbeiten oder zur Bewerbung gehen"
+    },
+    "edit": {
+      "reminder": "Erinnerung bearbeiten",
+      "event": "Termin bearbeiten"
+    },
+    "openApplication": "<name>{{name}}</name> öffnen",
+    "groups": {
+      "overdue": "Überfällig",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "rest": "Rest der Woche"
+    },
+    "completedDescription": "Es verschwindet aus dieser Liste und zählt für heute – gelöscht wird nichts.",
+    "rescheduledDescription": "Jetzt fällig am {{date}}, hier und im Kalender.",
+    "nextSeven": "Die nächsten sieben Tage",
+    "items_one": "{{count}} Eintrag",
+    "items_other": "{{count}} Einträge",
+    "allDone": "alles erledigt",
+    "nothingScheduled": "nichts geplant",
+    "todayClear": "Heute ist frei.",
+    "todayClearDone": "Heute ist frei – {{count}} erledigt.",
+    "markDoneAria": "„{{title}}“ als erledigt markieren",
+    "markDone": "Als erledigt markieren",
+    "draftTitle": "Aus einem deiner E-Mail-Textbausteine schreiben",
+    "draftAria": "{{title}} entwerfen",
+    "later": "Später",
+    "openTitle": "{{title}} öffnen",
+    "more_one": "{{count}} weiterer im Kalender",
+    "more_other": "{{count}} weitere im Kalender",
+    "showAll": "Alle {{total}} anzeigen",
+    "showFewer": "Weniger anzeigen"
+  }
+}

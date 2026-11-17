@@ -21,6 +21,7 @@ import { fromBase64, readBackup, type RestorePlan } from '@jojo/service/core/bac
 import { decodeUtf8 } from '@jojo/service/core/utf8'
 import type { RestoreOutcome } from '@/lib/restore-received'
 import type { ToastOptions } from '@/lib/toast-context'
+import { i18next } from '@/i18n/i18n'
 
 export type ImportSource = 'file' | 'clipboard'
 
@@ -40,12 +41,6 @@ export function stripBom(text: string): string {
   return text.startsWith(BOM) ? text.slice(BOM.length) : text
 }
 
-/** What the person was holding, as the start of a sentence. */
-const WHAT: Record<ImportSource, string> = {
-  file: 'That file',
-  clipboard: 'What is on the clipboard',
-}
-
 /**
  * Text to a plan the person can be asked about, or the reason there is none.
  *
@@ -60,30 +55,34 @@ const WHAT: Record<ImportSource, string> = {
  *   replace every record with none, and then saying no to the yes.
  */
 export function planImport(text: string, source: ImportSource): ImportPlan {
-  const what = WHAT[source]
   const body = stripBom(text)
   if (body.trim().length === 0) {
     return {
       ok: false,
       message:
         source === 'clipboard'
-          ? 'The clipboard is empty. Copy a jojo backup first, then paste it here.'
-          : 'That file is empty. Nothing on this phone has changed.',
+          ? i18next.t('transfer:import.clipboardEmpty')
+          : i18next.t('transfer:import.fileEmpty'),
     }
   }
   const read = readBackup(body)
   if (!read.ok) {
     const reason =
-      read.error.code === 'backup/unreadable' ? 'it is not a jojo backup' : read.error.message
+      read.error.code === 'backup/unreadable'
+        ? i18next.t('transfer:import.notBackup')
+        : read.error.message
+    // One whole sentence per source — "That file" and "What is on the
+    // clipboard" are where the sentence starts, which is not where every
+    // language starts it.
     return {
       ok: false,
-      message: `${what} cannot be restored: ${reason}. Nothing on this phone has changed.`,
+      message: i18next.t(`transfer:import.unrestorable.${source}`, { reason }),
     }
   }
   if (read.value.nodes.length === 0) {
     return {
       ok: false,
-      message: `${what} is a backup with no records in it. Nothing on this phone has changed — restoring it would have emptied this phone.`,
+      message: i18next.t(`transfer:import.noRecords.${source}`),
     }
   }
   return { ok: true, plan: read.value }
@@ -93,7 +92,7 @@ export function planImport(text: string, source: ImportSource): ImportPlan {
 export function planImportBase64(base64: string): ImportPlan {
   const bytes = fromBase64(base64)
   if (bytes === null) {
-    return { ok: false, message: 'That file could not be read. Nothing on this phone has changed.' }
+    return { ok: false, message: i18next.t('transfer:import.unreadable') }
   }
   return planImport(decodeUtf8(bytes), 'file')
 }
@@ -125,10 +124,10 @@ export function pickFailure(error: unknown): string | null {
       : undefined
   if (code === 'OPERATION_CANCELED' || code === 'ASYNC_OP_IN_PROGRESS') return null
   if (code === 'UNABLE_TO_OPEN_FILE_TYPE') {
-    return 'This phone has nothing that can pick a JSON or text file.'
+    return i18next.t('transfer:import.noPicker')
   }
   const detail = error instanceof Error ? error.message : String(error)
-  return `The file could not be opened: ${detail}`
+  return i18next.t('transfer:import.openFailed', { detail })
 }
 
 /**
@@ -140,15 +139,36 @@ export function pickFailure(error: unknown): string | null {
  */
 export function importOutcomeToast(outcome: RestoreOutcome): ToastOptions {
   if (!outcome.ok) {
-    return { title: 'Nothing was imported', description: outcome.message, tone: 'danger' }
+    return {
+      title: i18next.t('transfer:import.failedTitle'),
+      description: outcome.message,
+      tone: 'danger',
+    }
   }
-  const files =
-    outcome.documents === 0
-      ? ''
-      : `, ${String(outcome.documents)} document${outcome.documents === 1 ? '' : 's'}`
-  const lost = outcome.skipped === 0 ? '' : ` ${String(outcome.skipped)} could not be read.`
-  return {
-    title: 'Backup restored',
-    description: `${String(outcome.nodes)} ${outcome.nodes === 1 ? 'record is' : 'records are'} on this phone${files}.${lost}`,
-  }
+  return { title: i18next.t('transfer:import.restoredTitle'), description: landedText(outcome) }
+}
+
+/**
+ * What a restore left on this phone — records, documents, and what could not
+ * be read — said the same way by an import and by a transfer's receive.
+ */
+export function landedText({
+  nodes,
+  documents,
+  skipped,
+}: {
+  nodes: number
+  documents: number
+  skipped: number
+}): string {
+  const held =
+    documents === 0
+      ? i18next.t('transfer:landed.plain', { count: nodes })
+      : i18next.t('transfer:landed.withDocuments', {
+          count: nodes,
+          documents: i18next.t('transfer:landed.documents', { count: documents }),
+        })
+  return skipped === 0
+    ? held
+    : `${held} ${i18next.t('transfer:landed.skipped', { count: skipped })}`
 }

@@ -20,6 +20,7 @@
  */
 
 import type { RestorePlan } from '@jojo/service/core/backup'
+import { i18next } from '@/i18n/i18n'
 
 export type SheetAnswer = 'unanswered' | 'declined' | 'confirmed'
 
@@ -29,7 +30,7 @@ export type SheetAnswer = 'unanswered' | 'declined' | 'confirmed'
  * The sentence matters as much as the state: the person has just been told the
  * transfer arrived, and silence after "no" reads as "no" having failed.
  */
-export const DECLINED_MESSAGE = 'Nothing was changed. Scan the code again to receive.'
+export const declinedMessage = () => i18next.t('messages:receive.declined')
 
 /**
  * Folds one handler call into the answer so far.
@@ -76,5 +77,5 @@ export function actionFor(answer: SheetAnswer, plan: RestorePlan | null): Receiv
   if (answer === 'unanswered' || plan === null) return { kind: 'wait' }
   return answer === 'confirmed'
     ? { kind: 'apply', plan }
-    : { kind: 'decline', message: DECLINED_MESSAGE }
+    : { kind: 'decline', message: declinedMessage() }
 }

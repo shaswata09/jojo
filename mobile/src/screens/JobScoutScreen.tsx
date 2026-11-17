@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { fitOf } from '@jojo/service/core/fit'
-import { listJoin } from '@/lib/text'
 import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -17,7 +18,6 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import type { Pipeline } from '@jojo/service/data/scout'
 import { displayName } from '@jojo/service/data/seed'
-import { agoLabel } from '@jojo/service/data/timeline'
 // The parser is the shared one. `src/lib/draft-from.ts` held a 349-line copy of
 // it that was never tested here; the two were checked input for input before it
 // was deleted. `scout.posting.promote` parses a posting's URL through this same
@@ -38,6 +38,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
+import { useDomain } from '@/i18n/domain'
 
 /** Fit bands. A number alone doesn't say whether 64 is good. */
 const fitTone = (fit: number) => (fit >= 80 ? 'green' : fit >= 60 ? 'amber' : 'gray')
@@ -47,27 +48,32 @@ const fitTone = (fit: number) => (fit >= 80 ? 'green' : fit >= 60 ? 'amber' : 'g
  * PipelineDialog, with a `frequencyOf` on each side to cope with a stored value
  * that matched neither copy — `scheduleOf` is that function, once.
  */
-const FREQUENCIES = PIPELINE_SCHEDULES.map((value) => ({
-  value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
-}))
-
-const KINDS = [
-  { value: 'twin', label: 'Keep records complete' },
-  { value: 'scout', label: 'Find postings' },
-] as const
-
-const KIND_LABEL = { twin: 'Digital twin', scout: 'Job scout' } as const
+// The labels are catalog keys, translated where they are drawn.
+const KINDS = ['twin', 'scout'] as const
 
 /** What a row's chip says. Four states, and each is a claim about the world. */
-function statusOf(p: Pipeline, running: boolean, paused: boolean) {
-  if (!p.enabled) return { label: 'off', tone: 'gray' as const, dot: 'off' as const }
-  if (paused) return { label: 'paused', tone: 'amber' as const, dot: 'warn' as const }
-  if (running) return { label: 'running', tone: 'teal' as const, dot: 'on' as const }
-  return { label: 'watching', tone: 'green' as const, dot: 'on' as const }
+function statusOf(p: Pipeline, running: boolean, paused: boolean, t: TFunction<'screens'>) {
+  if (!p.enabled)
+    return { label: t('jobScout.status.off'), tone: 'gray' as const, dot: 'off' as const }
+  if (paused)
+    return { label: t('jobScout.status.paused'), tone: 'amber' as const, dot: 'warn' as const }
+  if (running)
+    return { label: t('jobScout.status.running'), tone: 'teal' as const, dot: 'on' as const }
+  return { label: t('jobScout.status.watching'), tone: 'green' as const, dot: 'on' as const }
+}
+
+/** "a, b and c", in the reader's language. */
+function joinList(parts: string[], t: TFunction<'screens'>) {
+  if (parts.length <= 1) return parts[0] ?? ''
+  return t('shared.list', {
+    items: parts.slice(0, -1).join(t('shared.separator')),
+    last: parts.at(-1),
+  })
 }
 
 export function JobScoutScreen() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const {
@@ -104,17 +110,17 @@ export function JobScoutScreen() {
   const savePipeline = (draft: PipelineDraft) => {
     if (editing && editing !== 'new') {
       updatePipeline(editing.id, draft)
-      toast({ title: 'Pipeline updated', description: draft.name })
+      toast({ title: t('jobScout.toast.updated'), description: draft.name })
     } else {
       // Switched on: one that arrived off would read as a create that failed.
       // Whether it can run is the model's business, and the toast says which of
       // the two just happened rather than asserting the pessimistic one.
       const pipeline = addPipeline({ ...draft, enabled: true })
       toast({
-        title: 'Pipeline created',
+        title: t('jobScout.toast.created'),
         description: engine.paused
-          ? `${pipeline.name} — paused until a model is connected.`
-          : `${pipeline.name} — it will start looking shortly.`,
+          ? t('jobScout.toast.createdPaused', { name: pipeline.name })
+          : t('jobScout.toast.createdRunning', { name: pipeline.name }),
       })
     }
     setEditing(null)
@@ -123,10 +129,10 @@ export function JobScoutScreen() {
   const onDeletePipeline = (p: Pipeline) => {
     const { restore } = removePipeline(p.id)
     toast({
-      title: 'Pipeline deleted',
-      description: `${p.name} stops watching ${p.source}.`,
+      title: t('jobScout.toast.deleted'),
+      description: t('jobScout.toast.deletedDescription', { name: p.name, source: p.source }),
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('shared.undo'), onPress: restore },
     })
   }
 
@@ -135,8 +141,8 @@ export function JobScoutScreen() {
     const application = promoteToApplication(matchId)
     if (!application) return
     toast({
-      title: `${application.org} added as a draft`,
-      description: 'The match stays in this feed, now linked to the application.',
+      title: t('jobScout.toast.addedDraft', { org: application.org }),
+      description: t('jobScout.toast.matchLinked'),
     })
     navigation.navigate('ApplicationDetail', { id: application.id })
   }
@@ -152,15 +158,15 @@ export function JobScoutScreen() {
     const title = [guess.org, guess.role].filter(Boolean).join(' — ') || text
     addPosting({ title, url: text, size: '—' })
     setUrl('')
-    toast({ title: 'Posting saved', description: title })
+    toast({ title: t('jobScout.toast.postingSaved'), description: title })
   }
 
   const onPromotePosting = (postingId: string) => {
     const application = promotePosting(postingId)
     if (!application) return
     toast({
-      title: `${application.org} added as a draft`,
-      description: 'The posting stays saved here, now linked to the application.',
+      title: t('jobScout.toast.addedDraft', { org: application.org }),
+      description: t('jobScout.toast.postingLinked'),
     })
     navigation.navigate('ApplicationDetail', { id: application.id })
   }
@@ -168,27 +174,29 @@ export function JobScoutScreen() {
   const onRemovePosting = (id: string, title: string) => {
     const { restore } = removePosting(id)
     toast({
-      title: 'Posting removed',
+      title: t('jobScout.toast.postingRemoved'),
       description: title,
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('shared.undo'), onPress: restore },
     })
   }
 
   return (
     <Screen
-      title="Job scout"
-      subtitle="Saved searches that will watch job boards for you — and somewhere to park postings today"
-      actions={<Button label="New" icon="plus" onPress={() => setEditing('new')} />}
+      title={t('jobScout.title')}
+      subtitle={t('jobScout.subtitle')}
+      actions={
+        <Button label={t('applications.new')} icon="plus" onPress={() => setEditing('new')} />
+      }
       options={
         <SettingRow
-          label="Only active pipelines"
-          description="Hide the ones switched off"
+          label={t('jobScout.onlyActive')}
+          description={t('jobScout.onlyActiveDescription')}
           control={
             <Toggle
               value={onlyActive}
               onValueChange={setOnlyActive}
-              label="Only active pipelines"
+              label={t('jobScout.onlyActive')}
             />
           }
         />
@@ -203,40 +211,43 @@ export function JobScoutScreen() {
           style={[s.banner, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
         >
           <Txt size="sm" tone="warning">
-            No local model is connected, so pipelines are paused. You can still write them and save
-            postings below — they start running once a model is reachable.
+            {t('jobScout.paused')}
           </Txt>
         </View>
       ) : null}
 
       <Panel>
-        <PanelTitle hint="run locally on a schedule">Pipelines</PanelTitle>
+        <PanelTitle hint={t('jobScout.pipelines.hint')}>{t('jobScout.pipelines.title')}</PanelTitle>
 
         {visiblePipelines.length === 0 ? (
           <EmptyState
             icon="radio"
-            title={onlyActive ? 'Nothing switched on' : 'No pipelines'}
+            title={onlyActive ? t('jobScout.pipelines.noneOn') : t('jobScout.pipelines.none')}
             description={
               onlyActive
-                ? 'Every pipeline you have is switched off. Turn one on, or drop the filter in the page options.'
-                : 'A pipeline is a saved search — a board to watch, the terms that matter, and how often to look.'
+                ? t('jobScout.pipelines.noneOnDescription')
+                : t('jobScout.pipelines.noneDescription')
             }
             action={
               onlyActive ? (
                 <Button
-                  label="Show all pipelines"
+                  label={t('jobScout.pipelines.showAll')}
                   variant="outline"
                   onPress={() => setOnlyActive(false)}
                 />
               ) : (
-                <Button label="New pipeline" icon="plus" onPress={() => setEditing('new')} />
+                <Button
+                  label={t('jobScout.editor.newTitle')}
+                  icon="plus"
+                  onPress={() => setEditing('new')}
+                />
               )
             }
           />
         ) : (
           visiblePipelines.map((p, i) => {
             const isRunning = engine.running === p.id
-            const state = statusOf(p, isRunning, engine.paused)
+            const state = statusOf(p, isRunning, engine.paused, t)
             const pending = engine.pendingFor(p.id).length
             const kind = kindOf(p)
 
@@ -269,19 +280,19 @@ export function JobScoutScreen() {
                       }}
                     >
                       <Chip tone="gray" size="sm">
-                        {KIND_LABEL[kind]}
+                        {t(`jobScout.kindLabel.${kind}`)}
                       </Chip>
                       <Chip tone={state.tone} size="sm">
                         {state.label}
                       </Chip>
                       {pending > 0 ? (
                         <Chip tone="teal" size="sm">
-                          {`${String(pending)} to review`}
+                          {t('jobScout.pipelines.toReview', { count: pending })}
                         </Chip>
                       ) : null}
                       {isAuto(p) ? (
                         <Chip tone="amber" size="sm">
-                          auto
+                          {t('jobScout.pipelines.auto')}
                         </Chip>
                       ) : null}
                     </View>
@@ -291,13 +302,13 @@ export function JobScoutScreen() {
                     {AUTO_CAPABLE[kind] ? (
                       <View style={{ marginTop: space[2] }}>
                         <SettingRow
-                          label="Run without asking"
-                          description="Apply what it finds and just tell you afterwards."
+                          label={t('jobScout.pipelines.autoLabel')}
+                          description={t('jobScout.pipelines.autoDescription')}
                           control={
                             <Toggle
                               value={isAuto(p)}
                               onValueChange={(auto) => engine.setAuto(p, auto)}
-                              label={`Run ${p.name} without asking`}
+                              label={t('jobScout.pipelines.autoToggle', { name: p.name })}
                             />
                           }
                         />
@@ -307,11 +318,11 @@ export function JobScoutScreen() {
                   <Toggle
                     value={p.enabled}
                     onValueChange={(enabled) => engine.setEnabled(p, enabled)}
-                    label={`Enable ${p.name}`}
+                    label={t('jobScout.pipelines.enable', { name: p.name })}
                   />
                   <IconButton
                     icon="play"
-                    label={`Run ${p.name} now`}
+                    label={t('jobScout.pipelines.runNow', { name: p.name })}
                     disabled={engine.paused || engine.running !== null}
                     onPress={() => {
                       engine.runNow(p.id)
@@ -320,13 +331,13 @@ export function JobScoutScreen() {
                   />
                   <IconButton
                     icon="edit-2"
-                    label={`Edit ${p.name}`}
+                    label={t('jobScout.pipelines.edit', { name: p.name })}
                     onPress={() => setEditing(p)}
                   />
                   <IconButton
                     icon="trash-2"
                     tone="danger"
-                    label={`Delete ${p.name}`}
+                    label={t('jobScout.pipelines.delete', { name: p.name })}
                     onPress={() => onDeletePipeline(p)}
                   />
                 </View>
@@ -358,13 +369,13 @@ export function JobScoutScreen() {
             fixtures. They are computed now — against the match terms, target
             roles and regions on your profile — so the hint says what they are
             measured against rather than apologising for them. */}
-        <PanelTitle hint="scored against your profile">Matches</PanelTitle>
+        <PanelTitle hint={t('jobScout.matches.hint')}>{t('jobScout.matches.title')}</PanelTitle>
 
         {matches.length === 0 ? (
           <EmptyState
             icon="radio"
-            title="No matches"
-            description="Pipelines put scored postings here once a model is connected. Until then, the postings you save below are the way in."
+            title={t('jobScout.matches.emptyTitle')}
+            description={t('jobScout.matches.emptyDescription')}
           />
         ) : (
           matches.map((m, i) => {
@@ -385,7 +396,9 @@ export function JobScoutScreen() {
                         check rather than a number to be trusted. */}
                     {fit.matched.length > 0 ? (
                       <Txt size="xs" tone="muted" numberOfLines={1}>
-                        matched {listJoin(fit.matched.slice(0, 3))}
+                        {t('jobScout.matches.matched', {
+                          terms: joinList(fit.matched.slice(0, 3), t),
+                        })}
                       </Txt>
                     ) : null}
                     {fit.score === null ? (
@@ -401,7 +414,7 @@ export function JobScoutScreen() {
                         }
                       >
                         <Txt size="xs" tone="info" style={{ marginTop: space[1] }}>
-                          In applications as {displayName(application)}
+                          {t('jobScout.inApplications', { name: displayName(application) })}
                         </Txt>
                       </Pressable>
                     ) : null}
@@ -412,20 +425,26 @@ export function JobScoutScreen() {
                         number over nothing is what the fixtures used to do. */}
                     {fit.score === null ? (
                       <Chip tone="gray" size="sm">
-                        not scored
+                        {t('jobScout.matches.notScored')}
                       </Chip>
                     ) : (
-                      <Chip tone={fitTone(fit.score)} size="sm">{`${fit.score}% fit`}</Chip>
+                      <Chip tone={fitTone(fit.score)} size="sm">
+                        {t('search.fit', { fit: fit.score })}
+                      </Chip>
                     )}
                     {/* Promoting links the two rather than moving the match: the
                         feed is generated, so a mis-tap on a row that vanished
                         could not be undone. */}
                     {application ? (
                       <Chip tone="teal" size="sm">
-                        added
+                        {t('jobScout.matches.added')}
                       </Chip>
                     ) : (
-                      <Button label="Add" variant="outline" onPress={() => onPromote(m.id)} />
+                      <Button
+                        label={t('profile.add')}
+                        variant="outline"
+                        onPress={() => onPromote(m.id)}
+                      />
                     )}
                   </View>
                 </View>
@@ -436,23 +455,22 @@ export function JobScoutScreen() {
       </Panel>
 
       <Panel>
-        <PanelTitle hint="works without a model">Save a posting</PanelTitle>
+        <PanelTitle hint={t('jobScout.save.hint')}>{t('jobScout.save.title')}</PanelTitle>
         <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-          Nothing here fetches the page, so what is kept is the URL, the employer guessed from it,
-          and the day you saved it — enough to find the ad again, and to apply from.
+          {t('jobScout.save.description')}
         </Txt>
 
         <View style={{ gap: space[2] }}>
           <SearchInput
-            label="Job posting URL"
+            label={t('jobScout.save.urlLabel')}
             value={url}
             onChange={setUrl}
             placeholder="https://university.edu/careers/…"
           />
           <Button
-            label="Save posting"
+            label={t('jobScout.save.button')}
             size="md"
-            blocker={url.trim() ? undefined : 'Paste a URL first'}
+            blocker={url.trim() ? undefined : t('jobScout.save.blocker')}
             onPress={onSavePosting}
           />
         </View>
@@ -461,8 +479,8 @@ export function JobScoutScreen() {
           {postings.length === 0 ? (
             <EmptyState
               icon="external-link"
-              title="No postings saved"
-              description="Paste the URL of an ad you want to come back to. Ads are taken down; the link and the date are yours."
+              title={t('jobScout.save.emptyTitle')}
+              description={t('jobScout.save.emptyDescription')}
             />
           ) : (
             postings.map((p, i) => {
@@ -483,23 +501,26 @@ export function JobScoutScreen() {
                           fetched. Printing it would restate the very claim the
                           disabled snapshot button denies. */}
                       <Txt size="xs" tone="muted" mono numberOfLines={1}>
-                        {displayUrl(p.url)} · saved {agoLabel(p.savedOn, TODAY)}
+                        {t('jobScout.save.meta', {
+                          url: displayUrl(p.url),
+                          ago: domain.ago(p.savedOn, TODAY),
+                        })}
                       </Txt>
                       {application ? (
                         <Txt size="xs" tone="info" style={{ marginTop: space[1] }}>
-                          In applications as {displayName(application)}
+                          {t('jobScout.inApplications', { name: displayName(application) })}
                         </Txt>
                       ) : null}
                       <View style={{ marginTop: space[1.5] }}>
                         <Chip tone={p.linked ? 'teal' : 'gray'} size="sm">
-                          {p.linked ? 'linked to application' : 'unscored'}
+                          {p.linked ? t('jobScout.save.linked') : t('jobScout.save.unscored')}
                         </Chip>
                       </View>
                     </Pressable>
                     <View style={styles.matchRight}>
                       {p.linked ? null : (
                         <Button
-                          label="Add"
+                          label={t('profile.add')}
                           variant="outline"
                           onPress={() => onPromotePosting(p.id)}
                         />
@@ -507,7 +528,7 @@ export function JobScoutScreen() {
                       <IconButton
                         icon="trash-2"
                         tone="danger"
-                        label={`Remove ${p.title}`}
+                        label={t('profile.remove', { name: p.title })}
                         onPress={() => onRemovePosting(p.id, p.title)}
                       />
                     </View>
@@ -520,7 +541,7 @@ export function JobScoutScreen() {
       </Panel>
 
       <Txt size="xs" tone="muted">
-        Pipelines run on your device, while jojo is open. Nothing is sent to a third party.
+        {t('jobScout.footer')}
       </Txt>
 
       {/*
@@ -531,17 +552,17 @@ export function JobScoutScreen() {
       <Sheet
         open={engine.shutdownOffer !== null}
         onClose={engine.dismissShutdown}
-        title={`Switch off ${engine.shutdownOffer?.name ?? ''}?`}
-        description="It has run twice without finding anything to suggest, and there is nothing waiting for you to answer. Switching it off stops it looking; everything it has already found stays where it is."
+        title={t('jobScout.shutdown.title', { name: engine.shutdownOffer?.name ?? '' })}
+        description={t('jobScout.shutdown.description')}
         footer={
           <>
             <Button
-              label="Keep it running"
+              label={t('jobScout.shutdown.keep')}
               variant="ghost"
               size="md"
               onPress={engine.dismissShutdown}
             />
-            <Button label="Switch it off" size="md" onPress={engine.acceptShutdown} />
+            <Button label={t('jobScout.shutdown.off')} size="md" onPress={engine.acceptShutdown} />
           </>
         }
       >
@@ -578,6 +599,12 @@ function PipelineEditor({
   onClose: () => void
   onSave: (draft: PipelineDraft) => void
 }) {
+  const { t } = useTranslation('screens')
+  const kinds = KINDS.map((value) => ({ value, label: t(`jobScout.kinds.${value}`) }))
+  const frequencies = PIPELINE_SCHEDULES.map((value) => ({
+    value,
+    label: t(`jobScout.schedules.${value}`),
+  }))
   const [kind, setKind] = useState<PipelineKind>(initial?.kind ?? 'scout')
   const [name, setName] = useState(initial?.name ?? '')
   const [source, setSource] = useState(initial?.source === '—' ? '' : (initial?.source ?? ''))
@@ -613,12 +640,16 @@ function PipelineEditor({
     <Sheet
       open
       onClose={onClose}
-      title={initial ? 'Edit pipeline' : 'New pipeline'}
-      description="A pipeline is a standing job for the assistant. It runs on this device while jojo is open, and everything it wants to change is shown to you first."
+      title={initial ? t('jobScout.editor.editTitle') : t('jobScout.editor.newTitle')}
+      description={t('jobScout.editor.description')}
       footer={
         <>
-          <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
-          <Button label={initial ? 'Save' : 'Create'} size="md" onPress={submit} />
+          <Button label={t('shared.cancel')} variant="ghost" size="md" onPress={onClose} />
+          <Button
+            label={initial ? t('profile.save') : t('jobScout.editor.create')}
+            size="md"
+            onPress={submit}
+          />
         </>
       }
     >
@@ -629,58 +660,61 @@ function PipelineEditor({
             pipeline. `scout.pipeline.update` refuses it for the same reason. */}
         {initial ? null : (
           <FormField
-            label="What it does"
+            label={t('jobScout.editor.kind')}
             hint={
               kind === 'twin'
-                ? 'Reads what you have and suggests what is missing — notes, reminders, tags, filing.'
-                : 'Looks for postings worth your attention and puts them up for review.'
+                ? t('jobScout.editor.kindTwinHint')
+                : t('jobScout.editor.kindScoutHint')
             }
           >
-            <Segment label="What it does" options={KINDS} value={kind} onChange={setKind} />
+            <Segment
+              label={t('jobScout.editor.kind')}
+              options={kinds}
+              value={kind}
+              onChange={setKind}
+            />
           </FormField>
         )}
         <TextField
-          label="Name"
+          label={t('jobScout.editor.name')}
           required
           value={name}
-          error={attempted && !name.trim() ? 'Name it after what it watches.' : undefined}
+          error={attempted && !name.trim() ? t('jobScout.editor.nameError') : undefined}
           placeholder={
-            kind === 'twin' ? 'e.g. Keep my applications tidy' : 'e.g. CRA faculty job board'
+            kind === 'twin'
+              ? t('jobScout.editor.namePlaceholderTwin')
+              : t('jobScout.editor.namePlaceholderScout')
           }
           onChangeText={setName}
         />
         {needsSource ? (
           <TextField
-            label="Sources"
+            label={t('jobScout.editor.sources')}
             required
             mono
             autoCapitalize="none"
             value={source}
-            error={
-              attempted && !source.trim()
-                ? 'A scout with no source has nothing to read.'
-                : undefined
-            }
-            hint="The board or careers page it watches. Separate several with commas."
+            error={attempted && !source.trim() ? t('jobScout.editor.sourcesError') : undefined}
+            hint={t('jobScout.editor.sourcesHint')}
             placeholder="cra.org/ads"
             onChangeText={setSource}
           />
         ) : null}
         <TextField
-          label={kind === 'twin' ? 'What to focus on' : 'Match terms'}
+          label={kind === 'twin' ? t('jobScout.editor.focus') : t('profile.interests.matchTerms')}
           value={terms}
-          hint={
+          hint={kind === 'twin' ? t('jobScout.editor.focusHint') : t('jobScout.editor.termsHint')}
+          placeholder={
             kind === 'twin'
-              ? 'Anything it should pay particular attention to. Leave blank to let it look everywhere.'
-              : 'What a posting is scored against. Leave blank to keep everything the source lists.'
+              ? t('jobScout.editor.focusPlaceholder')
+              : t('jobScout.editor.termsPlaceholder')
           }
-          placeholder={kind === 'twin' ? 'follow-ups and deadlines' : 'assistant professor, CS/ECE'}
           onChangeText={setTerms}
         />
-        <FormField label="How often" hint="How long it waits between rounds.">
+        <FormField label={t('jobScout.editor.often')} hint={t('jobScout.editor.oftenHint')}>
           <Segment
-            label="How often"
-            options={FREQUENCIES}
+            label={t('jobScout.editor.often')}
+            options={frequencies}
             value={schedule}
             onChange={setSchedule}
           />

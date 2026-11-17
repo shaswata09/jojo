@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ArrowRight, Loader } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { SendState } from '@/lib/handoff-send'
+import { doneSentence } from './done-sentence'
 import { canReachLocalNetwork } from '@/lib/handoff-client'
 
 /**
@@ -27,6 +29,7 @@ import { canReachLocalNetwork } from '@/lib/handoff-client'
  * work: the backup file.
  */
 export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readonly string[] }) {
+  const { t } = useTranslation('transfer')
   const [code, setCode] = useState('')
   const able = canReachLocalNetwork()
   const busy = send.stage === 'connecting' || send.stage === 'packing' || send.stage === 'sending'
@@ -34,20 +37,15 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
   if (!able) {
     return (
       <Panel>
-        <PanelTitle hint="not in this browser">Connect</PanelTitle>
-        <p className="text-sm text-text-2">
-          This browser cannot connect to another device on your network — Safari and every browser
-          on an iPhone or iPad cannot, and nor can Firefox from the published site. Use Chrome or
-          Edge on a computer — or move everything with a backup file from Settings, which works
-          everywhere and has no size limit.
-        </p>
+        <PanelTitle hint={t('connect.hintUnable')}>{t('connect.title')}</PanelTitle>
+        <p className="text-sm text-text-2">{t('connect.unable')}</p>
       </Panel>
     )
   }
 
   return (
     <Panel>
-      <PanelTitle hint="from the other device">Connect</PanelTitle>
+      <PanelTitle hint={t('connect.hint')}>{t('connect.title')}</PanelTitle>
 
       {send.stage === 'done' ? (
         <>
@@ -55,9 +53,8 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
               bytes, and it asks its person before it replaces anything — so
               until they confirm there, nothing on it has changed (transfer
               audit, 2026-11-16). */}
-          <p className="text-sm text-text-2">
-            Everything was sent{send.target === null ? '' : ` to ${send.target}`}. Your phone asks
-            before it replaces anything — confirm there to finish.
+          <p className="text-sm text-text-2" aria-live="polite">
+            {doneSentence(send)}
           </p>
           {/* The page has already put a new code up for the next device, and
               this is the way back to the field to type that device's address.
@@ -72,15 +69,12 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
               send.cancel()
             }}
           >
-            Send to another device
+            {t('connect.another')}
           </Button>
         </>
       ) : (
         <>
-          <p className="mb-3 text-sm text-text-2">
-            After scanning, your phone shows a short code. Type it here — it is how this computer
-            learns where the phone is, which a browser cannot work out on its own.
-          </p>
+          <p className="mb-3 text-sm text-text-2">{t('connect.intro')}</p>
 
           <div className="flex gap-2">
             <Input
@@ -91,7 +85,7 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
               autoCapitalize="characters"
               autoComplete="off"
               className="tabular font-mono tracking-[0.12em]"
-              aria-label="The code shown on your phone"
+              aria-label={t('connect.codeLabel')}
               disabled={busy}
             />
             <Button
@@ -104,9 +98,9 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
               {busy ? (
                 <Loader className="size-3.5 animate-spin" strokeWidth={1.8} aria-hidden />
               ) : (
-                <ArrowRight className="size-3.5" strokeWidth={1.8} aria-hidden />
+                <ArrowRight className="size-3.5 rtl:-scale-x-100" strokeWidth={1.8} aria-hidden />
               )}
-              Send
+              {t('connect.send')}
             </Button>
           </div>
 
@@ -114,7 +108,7 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
             <div className="mt-4">
               <div
                 role="progressbar"
-                aria-label="Transfer progress"
+                aria-label={t('connect.progress')}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={Math.round(send.progress * 100)}
@@ -128,17 +122,17 @@ export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readon
               <div className="mt-1.5 flex items-center justify-between gap-2">
                 <p className="text-xs text-text-3">
                   {send.stage === 'connecting'
-                    ? 'Reaching your phone…'
+                    ? t('connect.reaching')
                     : send.stage === 'packing'
-                      ? 'Gathering your records…'
-                      : `${Math.round(send.progress * 100)}% sent`}
+                      ? t('connect.gathering')
+                      : t('connect.percentSent', { percent: Math.round(send.progress * 100) })}
                 </p>
                 {/* Always a way out. A phone that went quiet used to leave this
                     spinning with every control disabled. Stopping part-way
                     changes nothing on the phone, which acts only on a whole,
                     authenticated transfer. */}
                 <Button size="xs" variant="ghost" onClick={send.cancel}>
-                  Cancel
+                  {t('connect.cancel')}
                 </Button>
               </div>
             </div>

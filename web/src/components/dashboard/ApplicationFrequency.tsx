@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CalendarOff, ClipboardList, Plus } from 'lucide-react'
 import { AllHidden, ChartLegend } from '@/components/charts/ChartLegend'
-import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@jojo/service/core/frequency'
+import { bucketKey, bucketKeys, sentOn } from '@jojo/service/core/frequency'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
@@ -13,6 +14,7 @@ import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
 import { useScopedApplications } from '@/lib/roles-scope'
 import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
+import { useDomain } from '@/i18n/domain'
 
 /** Chart slots, indexed by the store's role order so a role keeps its colour whichever
  *  other roles happen to be in the store. */
@@ -24,11 +26,9 @@ const SLOT = [
   'var(--series-5)',
 ]
 
-const CHARTS = [
-  { value: 'bar', label: 'Bars' },
-  { value: 'line', label: 'Line' },
-] as const
-type ChartType = (typeof CHARTS)[number]['value']
+/** The two drawings, labelled where they are rendered — `frequency.charts.*` in the reader's language. */
+const CHARTS = ['bar', 'line'] as const
+type ChartType = (typeof CHARTS)[number]
 
 const W = 640
 const H = 200
@@ -39,6 +39,7 @@ const PLOT_H = H - PAD.top - PAD.bottom
 const SEGMENT_GAP = 2
 const RADIUS = 3
 
+/** The period's catalog segment: `frequency.perPeriod.<noun>` and `frequency.caption.<noun>`. */
 const PERIOD_NOUN: Record<Period, string> = { week: 'week', month: 'month', quarter: 'quarter' }
 
 function topRoundedRect(x: number, y: number, w: number, h: number, r: number) {
@@ -70,6 +71,12 @@ const blankCounts = (roles: readonly string[]) =>
  * rather than quietly dropped.
  */
 export function ApplicationFrequencyBody() {
+  const { t, i18n } = useTranslation('dashboard')
+  const domain = useDomain()
+  // The axis labels are worded in the language on screen.
+  const language = i18n.language
+  const charts = CHARTS.map((value) => ({ value, label: t(`frequency.charts.${value}`) }))
+  const periods = PERIODS.map((p) => ({ ...p, label: t(`frequency.periods.${p.value}`) }))
   const [hover, setHover] = useState<number | null>(null)
   const [chart, setChart] = useState<ChartType>('bar')
   const [period, setPeriod] = useState<Period>('week')
@@ -81,6 +88,7 @@ export function ApplicationFrequencyBody() {
   const { open } = useDialogs()
 
   const { data, series, inWindow, undated, earlier, firstLabel } = useMemo(() => {
+    void language
     const dated = all.filter((a) => sentOn(a) !== undefined)
     const dates = dated.map((a) => sentOn(a) as string)
 
@@ -100,7 +108,11 @@ export function ApplicationFrequencyBody() {
     }
 
     return {
-      data: keys.map((key) => ({ key, label: bucketLabel(key, period), counts: counts.get(key)! })),
+      data: keys.map((key) => ({
+        key,
+        label: domain.bucketLabel(key, period),
+        counts: counts.get(key)!,
+      })),
       // Only the roles actually present get a series — an always-empty legend
       // entry is a filter that filters nothing.
       series: vocabulary
@@ -113,9 +125,9 @@ export function ApplicationFrequencyBody() {
       inWindow: hit,
       undated: all.length - dated.length,
       earlier: dated.length - hit,
-      firstLabel: keys.length > 0 ? bucketLabel(keys[0], period) : '',
+      firstLabel: keys.length > 0 ? domain.bucketLabel(keys[0], period) : '',
     }
-  }, [all, period, vocabulary])
+  }, [all, period, vocabulary, domain, language])
 
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(series.map((s) => s.key))
   const visible = series.filter((s) => !isHidden(s.key))
@@ -150,9 +162,16 @@ export function ApplicationFrequencyBody() {
 
   // What the chart cannot show, said out loud. Silently dropping the records
   // without a date is how the dashboard came to say 13 while this said 12.
-  const gaps: string[] = []
-  if (undated > 0) gaps.push(`${undated} ${undated === 1 ? 'has' : 'have'} no date yet`)
-  if (earlier > 0) gaps.push(`${earlier} ${earlier === 1 ? 'falls' : 'fall'} before ${firstLabel}`)
+  // One whole sentence per case, so each language words it in its own order.
+  const counting = { inWindow, total: all.length, first: firstLabel }
+  const gaps =
+    undated > 0 && earlier > 0
+      ? t('frequency.countingBoth', { ...counting, undated, earlier })
+      : undated > 0
+        ? t('frequency.countingUndated', { ...counting, count: undated })
+        : earlier > 0
+          ? t('frequency.countingEarlier', { ...counting, count: earlier })
+          : null
 
   return (
     <>
@@ -166,20 +185,25 @@ export function ApplicationFrequencyBody() {
           line nobody reads. */}
       {showChart ? (
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Segment label="Period" options={PERIODS} value={period} onChange={setPeriod} />
+          <Segment
+            label={t('frequency.period')}
+            options={periods}
+            value={period}
+            onChange={setPeriod}
+          />
           {/* Pushed to the right, because the two controls are not the same kind
               of thing: the period changes what is being counted and the chart
               type changes how it is drawn. Separating them across the row says
               so without a label, and it puts the drawing control on the same
               edge as the one in the card's title above it.
 
-              `ml-auto` rather than `justify-between` on the row, so that when
+              `ms-auto` rather than `justify-between` on the row, so that when
               the two do wrap on a narrow card the second still sits right and
               does not stretch away from the first. */}
           <Segment
-            className="ml-auto"
-            label="Chart type"
-            options={CHARTS}
+            className="ms-auto"
+            label={t('frequency.chartType')}
+            options={charts}
             value={chart}
             onChange={setChart}
           />
@@ -200,26 +224,22 @@ export function ApplicationFrequencyBody() {
       ) : noRecords ? (
         <EmptyState
           icon={ClipboardList}
-          title="Nothing to chart yet"
-          description="This counts the applications you send, week by week, split by the kind of role. Add one and the first bar appears."
+          title={t('frequency.emptyTitle')}
+          description={t('frequency.emptyDescription')}
           action={
             <Button size="sm" onClick={() => open('application')}>
               <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-              New application
+              {t('common.newApplication')}
             </Button>
           }
         />
       ) : noDates ? (
         <EmptyState
           icon={CalendarOff}
-          title="No send dates recorded yet"
-          description={
-            // Singular-safe: at one record this line read "None of your 1
-            // applications", which is the first-run state of this panel.
-            all.length === 1
-              ? 'Your one application carries no date yet. One is stamped when you move a record to Submitted.'
-              : `None of your ${all.length} applications carries a date yet. One is stamped when you move a record to Submitted.`
-          }
+          title={t('frequency.noDatesTitle')}
+          // Singular-safe: at one record this line read "None of your 1
+          // applications", which is the first-run state of this panel.
+          description={t('frequency.noDates', { count: all.length })}
         />
       ) : allHidden ? (
         <AllHidden onShowAll={showAll} />
@@ -229,7 +249,9 @@ export function ApplicationFrequencyBody() {
             viewBox={`0 0 ${W} ${H}`}
             className="h-auto w-full"
             role="img"
-            aria-label={`Applications sent per ${PERIOD_NOUN[period]}, split by ${visible.map((s) => s.label).join(', ')}`}
+            aria-label={t(`frequency.perPeriod.${PERIOD_NOUN[period]}`, {
+              series: visible.map((s) => s.label).join(', '),
+            })}
           >
             {ticks.map((t) => (
               <g key={t}>
@@ -372,7 +394,7 @@ export function ApplicationFrequencyBody() {
                     style={{ background: s.color }}
                   />
                   {s.label}
-                  <span className="tabular ml-auto pl-3 font-mono text-text-1">
+                  <span className="tabular ms-auto ps-3 font-mono text-text-1">
                     {data[hover].counts[s.key]}
                   </span>
                 </div>
@@ -382,11 +404,7 @@ export function ApplicationFrequencyBody() {
         </div>
       )}
 
-      {showChart && gaps.length > 0 ? (
-        <p className="mt-3 text-xs text-text-3">
-          Counting {inWindow} of {all.length} applications — {gaps.join(' and ')}.
-        </p>
-      ) : null}
+      {showChart && gaps ? <p className="mt-3 text-xs text-text-3">{gaps}</p> : null}
 
       {/* `sr-only` on a <div>, not on the <table>. On a table the utility's
           `width: 1px` is only a minimum — table-layout:auto grows the box to fit
@@ -397,10 +415,10 @@ export function ApplicationFrequencyBody() {
       {showChart ? (
         <div className="sr-only">
           <table>
-            <caption>Applications sent per {PERIOD_NOUN[period]}</caption>
+            <caption>{t(`frequency.caption.${PERIOD_NOUN[period]}`)}</caption>
             <thead>
               <tr>
-                <th scope="col">Period</th>
+                <th scope="col">{t('frequency.period')}</th>
                 {series.map((s) => (
                   <th key={s.key} scope="col">
                     {s.label}
@@ -434,9 +452,10 @@ export function ApplicationFrequencyBody() {
  * control that says the same thing is now the first thing under the title.
  */
 export function ApplicationFrequency() {
+  const { t } = useTranslation('dashboard')
   return (
     <Panel className="min-w-0">
-      <PanelTitle>When you applied</PanelTitle>
+      <PanelTitle>{t('frequency.title')}</PanelTitle>
       <ApplicationFrequencyBody />
     </Panel>
   )

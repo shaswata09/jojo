@@ -1,0 +1,207 @@
+{
+  "common": {
+    "newPipeline": "Novo pipeline",
+    "addToApplications": "Adicionar às candidaturas",
+    "inApplicationsAs": "Nas candidaturas como <anchor>{{name}}</anchor>",
+    "open": "Abrir",
+    "undo": "Desfazer"
+  },
+  "header": {
+    "title": "Explorador de vagas",
+    "subtitle": "Buscas salvas que vão vigiar sites de vagas por você — e um lugar para guardar anúncios hoje mesmo",
+    "onlyActive": "Só pipelines ativos",
+    "onlyActiveHint": "Ocultar os desativados",
+    "paused": "Nenhum modelo local está conectado, então os pipelines estão pausados. Você ainda pode criá-los e salvar anúncios abaixo — eles começam a rodar quando um modelo estiver acessível.",
+    "runsLocally": "Os pipelines rodam na sua máquina, enquanto esta aba está aberta. Nada é enviado a terceiros."
+  },
+  "shutdown": {
+    "title": "Desativar {{name}}?",
+    "description": "Ele rodou duas vezes sem encontrar nada para sugerir, e não há nada esperando sua resposta. Desativá-lo faz com que pare de procurar; tudo o que ele já encontrou fica onde está. Você pode reativá-lo quando quiser.",
+    "keep": "Manter ativo",
+    "confirm": "Desativar"
+  },
+  "matches": {
+    "title": "Correspondências",
+    "hint": "pontuadas com base no seu perfil",
+    "emptyTitle": "Nenhuma correspondência",
+    "emptyDescription": "Os pipelines colocam aqui anúncios pontuados assim que um modelo é conectado. Até lá, os anúncios que você salva abaixo são a porta de entrada.",
+    "matched": "corresponde em {{list}}",
+    "notScored": "sem pontuação",
+    "fit": "{{score}}% de adequação",
+    "added": "adicionada"
+  },
+  "dialog": {
+    "editTitle": "Editar pipeline",
+    "description": "Um pipeline é uma tarefa permanente para o assistente. Ele roda neste dispositivo enquanto o jojo está aberto, e tudo o que ele quiser mudar é mostrado a você antes.",
+    "kind": "O que ele faz",
+    "kinds": {
+      "twin": "Completar registros",
+      "scout": "Encontrar anúncios"
+    },
+    "kindHint": {
+      "twin": "Lê o que você tem e sugere o que falta — notas, lembretes, tags, arquivamento.",
+      "scout": "Procura anúncios que merecem sua atenção e os deixa para revisão."
+    },
+    "name": "Nome",
+    "nameError": "Dê a ele o nome do que ele vigia.",
+    "namePlaceholder": {
+      "twin": "ex.: Manter minhas candidaturas organizadas",
+      "scout": "ex.: Site de vagas docentes da CRA"
+    },
+    "sources": "Fontes",
+    "sourcesHint": "O site ou a página de carreiras que ele vigia. Separe várias com vírgulas.",
+    "sourceError": "Um explorador sem fonte não tem nada para ler.",
+    "terms": {
+      "twin": "No que focar",
+      "scout": "Termos de correspondência"
+    },
+    "termsHint": {
+      "twin": "Qualquer coisa a que ele deva prestar atenção especial. Deixe em branco para ele olhar em todo lugar.",
+      "scout": "Com o que um anúncio é pontuado. Deixe em branco para manter tudo o que a fonte lista."
+    },
+    "termsPlaceholder": {
+      "twin": "acompanhamentos e prazos",
+      "scout": "professor assistente, CS/ECE"
+    },
+    "howOften": "Com que frequência",
+    "howOftenHint": "Quanto tempo ele espera entre uma rodada e outra.",
+    "schedules": {
+      "hourly": "De hora em hora",
+      "daily": "Diariamente",
+      "weekly": "Semanalmente"
+    },
+    "cancel": "Cancelar",
+    "save": "Salvar alterações",
+    "create": "Criar pipeline"
+  },
+  "pipelines": {
+    "title": "Pipelines",
+    "hint": "rodam neste dispositivo enquanto o jojo está aberto",
+    "caption": "Eles funcionam enquanto esta aba está aberta — nada roda fora desta máquina",
+    "kinds": {
+      "twin": "Gêmeo digital",
+      "scout": "Explorador de vagas"
+    },
+    "status": {
+      "off": "desativado",
+      "paused": "pausado",
+      "running": "rodando",
+      "watching": "vigiando"
+    },
+    "noneOnTitle": "Nada ativado",
+    "noneOnDescription": "Todos os seus pipelines estão desativados. Ative um ou remova o filtro nas opções da página.",
+    "emptyTitle": "Nenhum pipeline",
+    "emptyDescription": "Um pipeline é uma tarefa permanente para o assistente: manter seus registros completos ou vigiar anúncios que merecem sua atenção.",
+    "showAll": "Mostrar todos os pipelines",
+    "auto": "auto",
+    "autoAria": "Rodar {{name}} sem perguntar",
+    "toReview_one": "{{count}} para revisar",
+    "toReview_many": "{{count}} para revisar",
+    "toReview_other": "{{count}} para revisar",
+    "runNow": "Rodar {{name}} agora",
+    "edit": "Editar {{name}}",
+    "delete": "Excluir {{name}}",
+    "enable": "Ativar {{name}}"
+  },
+  "postings": {
+    "title": "Salvar um anúncio",
+    "hint": "funciona sem modelo",
+    "intro": "Salvar também guarda a página, no Cofre em Anúncios de vagas — aberta pela extensão do jojo do jeito que você a veria, ou buscada pelo leitor de documentos. Sem nenhum dos dois, fica guardada a URL, o empregador deduzido dela e o dia em que você a salvou.",
+    "urlLabel": "URL do anúncio de vaga",
+    "pasteFirst": "Cole uma URL primeiro",
+    "save": "Salvar anúncio",
+    "emptyTitle": "Nenhum anúncio salvo",
+    "emptyDescription": "Cole a URL de um anúncio ao qual você quer voltar. Anúncios saem do ar; o link e a data são seus.",
+    "saved": "salvo {{when}}",
+    "linked": "ligado a uma candidatura",
+    "unscored": "sem pontuação",
+    "openSnapshot": "Abrir cópia",
+    "savingPage": "Salvando página…",
+    "savePage": "Salvar página",
+    "savePageTitle": "Abrir o anúncio e guardar uma cópia no Cofre",
+    "remove": "Remover {{title}}"
+  },
+  "proposals": {
+    "title": "Sugestões",
+    "hint": "nada acontece até você dizer",
+    "aPipeline": "um pipeline",
+    "clearAnswered": "Limpar respondidas",
+    "approveAll": "Aprovar todas as {{count}}",
+    "clearAll": "Limpar tudo",
+    "emptyTitle": "Nada para revisar",
+    "emptyDescription": "Quando um pipeline está rodando, tudo o que ele quer mudar aparece aqui primeiro. Ele não mexe nos seus registros até você aprovar.",
+    "clearTitle": "Limpar todas as sugestões?",
+    "clearPending_one": "{{count}} sugestão ainda está esperando por você e será recusada. Nada muda nos seus registros, e os pipelines continuam rodando — mas não vão oferecê-la de novo.",
+    "clearPending_many": "{{count}} sugestões ainda estão esperando por você e serão recusadas. Nada muda nos seus registros, e os pipelines continuam rodando — mas não vão oferecê-las de novo.",
+    "clearPending_other": "{{count}} sugestões ainda estão esperando por você e serão recusadas. Nada muda nos seus registros, e os pipelines continuam rodando — mas não vão oferecê-las de novo.",
+    "clearAnsweredOnly": "Os cartões respondidos saem da lista. Nada muda nos seus registros.",
+    "status": {
+      "applied": "aplicada",
+      "discarded": "descartada",
+      "failed": "não foi possível aplicar"
+    },
+    "noSummary": "Esta veio sem resumo — abra o anúncio para ver do que se trata.",
+    "reading": "Lendo o anúncio para obter os detalhes…",
+    "notALink": "Não é um endereço web, então não é oferecido como link",
+    "from": "de {{name}}",
+    "openPosting": "Abrir anúncio",
+    "openPostingAria": "Abrir anúncio em uma nova aba: {{title}}",
+    "inApplications": "Nas candidaturas",
+    "approve": "Aprovar",
+    "discard": "Descartar esta sugestão",
+    "discardAria": "Descartar: {{title}}",
+    "unreadable": "Não foi possível ler a página: {{reason}}",
+    "unreadableKept": "Não foi possível ler a página: {{reason}} A página em si foi salva.",
+    "applyBy": "candidatar-se até {{date}}",
+    "pageSaved": "Página salva"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Já está nas suas candidaturas — não foi adicionada de novo",
+    "alreadyHaveDescription": "Esta é {{name}}, republicada em outro site. O anúncio está ligado a ela, e a página dele está arquivada nela.",
+    "duplicateDescription": "O anúncio é {{name}}, que você já tem. {{why}} A página dele está arquivada nessa.",
+    "keepBoth": "Manter as duas",
+    "fillFailedTitle": "{{org}}: não foi possível ler o anúncio",
+    "fillFailedKept": "{{reason}} A página em si foi salva e arquivada no rascunho — abra-o para preencher o resto.",
+    "fillFailed": "{{reason}} O rascunho mantém o que o link diz — abra-o para preencher o resto.",
+    "filledTitle": "{{name}} preenchida a partir do anúncio",
+    "checkedTitle": "{{name}} conferida com o anúncio",
+    "filledIn": "Preenchido: {{list}}.",
+    "checked": "Conferido com a página: {{list}}.",
+    "keptYours": "Suas edições mantidas em: {{list}}.",
+    "addedNothing": "A página não acrescentou nada que o rascunho já não tivesse.",
+    "missing": "Não consta na página: {{list}}.",
+    "filedUnder": "A página está arquivada nela.",
+    "approvedReading": "Lendo o anúncio para preencher os detalhes — o rascunho é atualizado quando terminar.",
+    "approvedFromLink": "Preenchida a partir do link. Conecte um modelo em Configurações para que o próprio anúncio seja lido.",
+    "approvedOpen": "Abra-a para preencher o resto.",
+    "allRepeatsTitle": "Já está nas suas candidaturas — nada novo adicionado",
+    "allRepeats_one": "{{count}} é uma vaga que você já tem, republicada em outro site. Ela está ligada à candidatura que você tem.",
+    "allRepeats_many": "{{count}} são vagas que você já tem, republicadas em outro site. Elas estão ligadas às candidaturas que você tem.",
+    "allRepeats_other": "{{count}} são vagas que você já tem, republicadas em outro site. Elas estão ligadas às candidaturas que você tem.",
+    "added_one": "{{count}} adicionada às suas candidaturas como rascunho",
+    "added_many": "{{count}} adicionadas às suas candidaturas como rascunhos",
+    "added_other": "{{count}} adicionadas às suas candidaturas como rascunhos",
+    "addedWithRepeats_one": "{{count}} adicionada às suas candidaturas como rascunho · {{repeats}} já estavam lá",
+    "addedWithRepeats_many": "{{count}} adicionadas às suas candidaturas como rascunhos · {{repeats}} já estavam lá",
+    "addedWithRepeats_other": "{{count}} adicionadas às suas candidaturas como rascunhos · {{repeats}} já estavam lá",
+    "addedReading": "Lendo cada anúncio, um por vez, para preencher os detalhes.",
+    "addedFromLinks": "Preenchidas a partir dos links. Conecte um modelo em Configurações para que os próprios anúncios sejam lidos.",
+    "addedOne": "{{org}} adicionada às suas candidaturas como rascunho",
+    "addedAsDraft": "{{org}} adicionada como rascunho",
+    "matchStays": "A correspondência continua neste feed, agora ligada à candidatura.",
+    "postingSaved": "Anúncio salvo",
+    "postingReading": "Lendo o anúncio para conferir e preencher os detalhes — o rascunho é atualizado quando terminar.",
+    "postingStays": "O anúncio continua salvo aqui, agora ligado à candidatura.",
+    "postingRemoved": "Anúncio removido",
+    "pageNotSaved": "A página do anúncio não foi salva",
+    "pageSaved": "Página do anúncio salva",
+    "pageSavedFiled": "{{title}} — arquivada na candidatura.",
+    "pageSavedVault": "{{title}} — no Cofre em Anúncios de vagas.",
+    "pipelineUpdated": "Pipeline atualizado",
+    "pipelineCreated": "Pipeline criado",
+    "pipelineCreatedPaused": "{{name}} — pausado até um modelo ser conectado.",
+    "pipelineCreatedRunning": "{{name}} — ele vai começar a procurar em breve.",
+    "pipelineDeleted": "Pipeline excluído",
+    "pipelineDeletedDescription": "{{name}} para de vigiar {{source}}."
+  }
+}

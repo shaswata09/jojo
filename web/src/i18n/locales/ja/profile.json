@@ -1,0 +1,168 @@
+{
+  "shared": {
+    "undo": "元に戻す",
+    "cancel": "キャンセル",
+    "add": "追加",
+    "discard": "破棄",
+    "save": "保存",
+    "didNotSave": "保存されませんでした"
+  },
+  "saveBar": {
+    "unsaved": "未保存の変更があります — 保存するとこのブラウザに書き込まれます。"
+  },
+  "form": {
+    "saved": {
+      "title": "プロフィールを保存しました",
+      "description": "このブラウザに書き込み、保存しました。"
+    }
+  },
+  "fields": {
+    "basics": "基本情報",
+    "fullName": {
+      "label": "氏名",
+      "placeholder": "例: Lonardo Jenson"
+    },
+    "position": {
+      "label": "現在の役職",
+      "placeholder": "例: 博士課程、コンピュータサイエンス"
+    },
+    "location": {
+      "label": "所在地",
+      "placeholder": "例: Santa Clara, CA"
+    },
+    "email": {
+      "label": "メール"
+    },
+    "links": "リンク",
+    "website": {
+      "label": "ウェブサイト"
+    }
+  },
+  "interests": {
+    "title": "関心と目標",
+    "hint": "スカウトのマッチングに使われます",
+    "matchTerms": {
+      "title": "マッチング用語",
+      "description": "スカウトが探す研究分野や言い回しです。記録を分類するキーワードとは別のものです。",
+      "remove": "{{term}} を削除",
+      "newLabel": "新しいマッチング用語",
+      "placeholder": "マッチング用語を追加"
+    },
+    "targetRoles": {
+      "label": "希望する職種",
+      "placeholder": "例: 助教(テニュアトラック)· 研究員"
+    },
+    "regions": {
+      "label": "希望する地域",
+      "placeholder": "例: テキサス · リモート"
+    },
+    "academia": "アカデミアの求人を含める",
+    "industry": "産業界の求人を含める"
+  },
+  "roleTags": {
+    "title": "職種タグ",
+    "description": "追跡している職種の種類です。すべての応募はいずれかに分類され、職種フィルターと統計の職種別の数値の両方がこれを参照します。ここで削除しても、そのタグが付いた応募はそのまま残ります。",
+    "remove_other": "{{role}} を削除({{count}} 件の応募で使用中)",
+    "newLabel": "新しい職種タグ",
+    "placeholder": "例: データサイエンティスト"
+  },
+  "documents": {
+    "title": "ドキュメント",
+    "hint": "保管庫の {{bucket}} 区分",
+    "upload": "アップロード",
+    "exportInSettings": "設定で書き出す",
+    "empty": {
+      "title": "ドキュメントはまだありません",
+      "description": "履歴書やステートメントをここにドロップするか選択してください — 保管庫の {{bucket}} に保存され、アプリのほかの機能からも使えます。",
+      "upload": "ドキュメントをアップロード"
+    },
+    "footer": "保管庫の<anchor>ファイルツール</anchor>と同じファイルを {{bucket}} で絞り込んだものです。ドキュメントをここにドロップするか選択すると、ファイル自体はこのブラウザに保存されます — どこにもアップロードされません。クリックすると読めます。"
+  },
+  "documentTile": {
+    "open": "{{name}} を開く",
+    "meta": "{{size}} · {{ago}}に保存",
+    "delete": "{{name}} を削除"
+  },
+  "background": {
+    "title": "あなたの経歴",
+    "hint_other": "{{count}} 件記録済み · 求人と照らし合わせる内容",
+    "details_other": "詳細 {{count}} 件",
+    "readFromDocument": "ドキュメントから読み取り",
+    "edit": "{{title}} を編集",
+    "remove": "{{title}} を削除",
+    "added": "{{title}} を追加しました",
+    "updated": "{{title}} を更新しました",
+    "removed": "{{title}} を削除しました",
+    "addEntry": "項目を追加",
+    "form": {
+      "kind": "種類",
+      "title": "タイトル",
+      "titlePlaceholder": "何だったか",
+      "where": "場所",
+      "optional": "任意",
+      "when": "時期",
+      "whenPlaceholder": "記載どおり — 「2021–2024」",
+      "year": "年",
+      "detail": "詳細",
+      "detailPlaceholder": "求人と照らし合わせる価値のあること(任意)",
+      "highlights": "ハイライト",
+      "highlightsHint": "1 行に 1 つ — 作ったもの、出したもの、教えたこと、見つけたこと。",
+      "readKept": "ドキュメントから読み取り — 読み取り結果よりあなたの編集が優先されます",
+      "saveChanges": "変更を保存"
+    },
+    "empty": {
+      "title": "まだ何も記録されていません",
+      "configured": "履歴書や研究・教育のステートメントを保管庫に入れると、jojo が読み取りを提案します — 見つかった内容は、保存する前にあなたに表示されます。手動で項目を追加することもできます。",
+      "unconfigured": "ドキュメントを読むにはモデルが必要です。設定でモデルを接続してから、履歴書やステートメントを保管庫に入れると、jojo が読み取りを提案します。モデルがなくても手動で項目を追加できます。"
+    },
+    "readMenu": {
+      "needsModel": "ドキュメントを読むにはモデルが必要です。設定で接続してください。",
+      "button": "ドキュメントを読む",
+      "nothing": "保管庫にはまだ読めるものがありません。履歴書やステートメントを入れると、ここに表示されます。",
+      "allRead": "保管庫の読めるものはすべて読み取り済みです。",
+      "read": "読み取り済み"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "学歴",
+      "employment": "職歴",
+      "publication": "出版物",
+      "skill": "スキル",
+      "teaching": "教育",
+      "award": "受賞",
+      "service": "社会貢献",
+      "certification": "資格",
+      "language": "言語",
+      "project": "プロジェクト",
+      "volunteering": "ボランティア",
+      "membership": "所属団体",
+      "grant": "助成金",
+      "patent": "特許"
+    },
+    "skipped_other": "{{count}} 件の項目をスキップしました",
+    "readIt": "読み取る",
+    "readFailed": "ドキュメントの読み取りに失敗しました。",
+    "notNow": "今はしない",
+    "discardEntries": "これらの項目を破棄",
+    "review": {
+      "single": "このドキュメントから 1 件の項目を読み取りました",
+      "some": "{{total}} 件中 {{kept}} 件の項目を追加します",
+      "untick": "誤っているものはチェックを外してください。",
+      "add": "{{title}} を追加",
+      "connections_other": "項目間のつながり {{count}} 件",
+      "addOne": "プロフィールに追加",
+      "addMany": "{{total}} 件をプロフィールに追加"
+    },
+    "toast": {
+      "already": "すでにプロフィールにあります",
+      "added_other": "{{count}} 件をプロフィールに追加しました",
+      "nothing": "何も追加できませんでした",
+      "readFrom": "{{name}} から読み取りました。",
+      "known": "{{total}} 件中 {{known}} 件は既知でした。",
+      "related_other": "項目間のつながりを {{count}} 件記録しました。",
+      "weigh": "jojo はあなたの経歴と求人を照らし合わせられるようになりました。",
+      "refused": "項目は拒否されました。"
+    }
+  }
+}

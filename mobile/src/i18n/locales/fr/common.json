@@ -4,5 +4,40 @@
     "description": "La langue dans laquelle jojo s’affiche. Vos fiches restent dans la langue où vous les avez écrites.",
     "system": "Comme cet appareil ({{name}})",
     "restartForDirection": "L’arabe se lit de droite à gauche après le redémarrage de jojo."
+  },
+  "actions": {
+    "undo": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "tryAgain": "Réessayer",
+    "preview": "Aperçu",
+    "moreFor": "Plus d’actions pour {{name}}",
+    "save": "Enregistrer",
+    "done": "Terminé",
+    "openNamed": "Ouvrir {{name}}",
+    "clear": "Effacer",
+    "clearNamed": "Effacer {{name}}",
+    "notNow": "Pas maintenant",
+    "duplicate": "Dupliquer",
+    "remove": "Retirer",
+    "back": "Retour",
+    "next": "Suivant",
+    "close": "Fermer",
+    "clearSearch": "Effacer la recherche",
+    "copy": "Copier",
+    "copied": "Copié"
+  },
+  "discard": {
+    "title": "Abandonner les modifications non enregistrées ?",
+    "description": "Ce que vous avez saisi ici n’a été enregistré nulle part : en partant, vous le perdez, et c’est irréversible.",
+    "confirm": "Abandonner"
+  },
+  "filter": {
+    "all": "Tout"
+  },
+  "pageOptions": {
+    "title": "Options de la page",
+    "description": "Elles ne s’appliquent qu’à cet écran, pour cette visite."
   }
 }

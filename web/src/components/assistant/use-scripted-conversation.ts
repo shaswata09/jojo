@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { fromReactKey, shouldSend } from '@/lib/composer-keys'
 import { vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
@@ -18,6 +19,7 @@ export function useScriptedConversation() {
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const { addSnippet } = useVault()
+  const { t } = useTranslation('assistant')
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -32,13 +34,13 @@ export function useScriptedConversation() {
    * row in `ScriptedMessage`, where the badge is keyed to the message rather
    * than to the branch that drew it.
    */
-  const send = (text: string) => {
+  const send = (text: string, scriptId?: string) => {
     const clean = text.trim()
     if (!clean) return
     const at = nextId.current
     nextId.current += 2
     setPrompt('')
-    setMessages((prev) => [...prev, ...scriptedExchange(at, clean)])
+    setMessages((prev) => [...prev, ...scriptedExchange(at, clean, scriptId)])
   }
 
   const onSubmit = (event: FormEvent) => {
@@ -76,10 +78,10 @@ export function useScriptedConversation() {
     const script = scriptById(message.scriptId)
     const snippet = addSnippet({ title: script.title, tag: script.tag, body: message.text })
     toast({
-      title: 'Saved to snippets',
-      description: `${snippet.title} · filed under ${snippet.tag}`,
+      title: t('common.savedToSnippets'),
+      description: t('common.filedUnder', { title: snippet.title, tag: snippet.tag }),
       action: {
-        label: 'Open vault',
+        label: t('common.openVault'),
         onClick: () => navigate(vaultPath({ tool: 'snippets' })),
       },
     })
@@ -91,10 +93,10 @@ export function useScriptedConversation() {
     const previous = messages
     setMessages([])
     toast({
-      title: 'Conversation cleared',
-      description: `${previous.length} messages`,
+      title: t('scripted.cleared'),
+      description: t('scripted.messages', { count: previous.length }),
       tone: 'danger',
-      action: { label: 'Undo', onClick: () => setMessages(previous) },
+      action: { label: t('common.undo'), onClick: () => setMessages(previous) },
     })
   }
 

@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -25,11 +26,11 @@ import {
   scoutReading,
 } from '@jojo/service/core/proposal'
 import type { ScoutReading } from '@jojo/service/core/proposal'
-import { shortDate } from '@jojo/service/core/dates'
 import { KeywordChips } from '@/components/common/LabelPicker'
 import { useReadingNow } from '@/lib/scout-reading-hooks'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The queue, as cards a person answers one at a time.
@@ -73,10 +74,12 @@ export function ProposalQueue({
   /** The second step: turn that saved job into a draft application. */
   onPromote: (job: ApprovedJob) => void
 }) {
+  const { t } = useTranslation('scout')
   const [confirming, setConfirming] = useState(false)
   const pending = proposals.filter((p) => p.status === 'pending')
   const answered = proposals.filter((p) => p.status !== 'pending')
-  const nameOf = (id: string | null) => pipelines.find((p) => p.id === id)?.name ?? 'a pipeline'
+  const nameOf = (id: string | null) =>
+    pipelines.find((p) => p.id === id)?.name ?? t('proposals.aPipeline')
 
   /*
    * Approve all and Clear are per-pipeline, not global, so they are only
@@ -95,19 +98,19 @@ export function ProposalQueue({
   return (
     <Panel>
       <div className="mb-3.5 flex flex-wrap items-baseline justify-between gap-2">
-        <PanelTitle className="mb-0" hint="nothing happens until you say so">
-          Suggestions
+        <PanelTitle className="mb-0" hint={t('proposals.hint')}>
+          {t('proposals.title')}
         </PanelTitle>
         <div className="flex items-center gap-2">
           {answered.length > 0 && answeredFrom ? (
             <Button size="sm" variant="ghost" onClick={() => onSweep(answeredFrom)}>
-              Clear answered
+              {t('proposals.clearAnswered')}
             </Button>
           ) : null}
           {pending.length > 1 && pendingFrom ? (
             <Button size="sm" variant="outline" onClick={() => onApproveAll(pendingFrom)}>
               <ListChecks className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Approve all {pending.length}
+              {t('proposals.approveAll', { count: pending.length })}
             </Button>
           ) : null}
           {/* Not restricted to one pipeline, unlike its two neighbours.
@@ -121,7 +124,7 @@ export function ProposalQueue({
           {proposals.length > 0 ? (
             <Button size="sm" variant="ghost" onClick={() => setConfirming(true)}>
               <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Clear all
+              {t('proposals.clearAll')}
             </Button>
           ) : null}
         </div>
@@ -130,8 +133,8 @@ export function ProposalQueue({
       {proposals.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title="Nothing to review"
-          description="When a pipeline is running, anything it wants to change shows up here first. It will not touch your records until you approve it."
+          title={t('proposals.emptyTitle')}
+          description={t('proposals.emptyDescription')}
         />
       ) : (
         /*
@@ -168,13 +171,13 @@ export function ProposalQueue({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Clear all suggestions?"
+        title={t('proposals.clearTitle')}
         description={
           pending.length > 0
-            ? `${String(pending.length)} ${pending.length === 1 ? 'suggestion is' : 'suggestions are'} still waiting for you and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.`
-            : 'The answered cards come off the list. Nothing in your records changes.'
+            ? t('proposals.clearPending', { count: pending.length })
+            : t('proposals.clearAnsweredOnly')
         }
-        confirmLabel="Clear all"
+        confirmLabel={t('proposals.clearAll')}
         tone="danger"
         onConfirm={onClearAll}
       />
@@ -186,10 +189,10 @@ const STATUS: Record<
   Exclude<Proposal['status'], 'pending'>,
   { label: string; tone: 'green' | 'gray' | 'red' }
 > = {
-  // The approved label depends on the tool — see `approvedLabel`.
-  approved: { label: 'applied', tone: 'green' },
-  discarded: { label: 'discarded', tone: 'gray' },
-  failed: { label: 'could not apply', tone: 'red' },
+  // Catalog keys. The approved label depends on the tool — see `approvedLabel`.
+  approved: { label: 'proposals.status.applied', tone: 'green' },
+  discarded: { label: 'proposals.status.discarded', tone: 'gray' },
+  failed: { label: 'proposals.status.failed', tone: 'red' },
 }
 
 function ProposalCard({
@@ -207,9 +210,12 @@ function ProposalCard({
   job: ApprovedJob | null
   onPromote: (job: ApprovedJob) => void
 }) {
+  const { t } = useTranslation('scout')
   const settled = p.status !== 'pending'
   const base = settled ? STATUS[p.status as Exclude<Proposal['status'], 'pending'>] : null
-  const status = base && p.status === 'approved' ? { ...base, label: approvedLabel(p.tool) } : base
+  const status = base
+    ? { ...base, label: p.status === 'approved' ? approvedLabel(p.tool) : t(base.label) }
+    : null
   const posting = postingPreview(p.tool, p.input)
   const detail = posting ? null : proposalDetail(p.input)
   const reading = posting ? scoutReading(p.reading) : null
@@ -263,9 +269,7 @@ function ProposalCard({
               ) : reading?.ok || readingNow ? null : (
                 // Not said once the page itself has been read (or is being):
                 // the reading below is the summary, and better.
-                <p className="text-xs text-text-3 italic">
-                  No summary came with this one — open the posting to see what it is.
-                </p>
+                <p className="text-xs text-text-3 italic">{t('proposals.noSummary')}</p>
               )}
               {readingNow ? (
                 <p className="flex items-center gap-1.5 text-xs text-text-3">
@@ -274,7 +278,7 @@ function ProposalCard({
                     strokeWidth={1.8}
                     aria-hidden
                   />
-                  Reading the posting for its details…
+                  {t('proposals.reading')}
                 </p>
               ) : reading ? (
                 <ReadingLine reading={reading} />
@@ -290,10 +294,7 @@ function ProposalCard({
                   {posting.label}
                 </a>
               ) : (
-                <p
-                  className="truncate text-xs text-text-3"
-                  title="Not a web address, so it is not offered as a link"
-                >
+                <p className="truncate text-xs text-text-3" title={t('proposals.notALink')}>
                   {posting.label}
                 </p>
               )}
@@ -330,22 +331,24 @@ function ProposalCard({
               know which operation they are approving, and the title above is a
               paraphrase. */}
           <p className="mt-1.5 truncate font-mono text-xs text-text-3">
-            {p.tool} · from {pipelineName}
+            {p.tool} · {t('proposals.from', { name: pipelineName })}
           </p>
         </div>
 
         {posting?.href || !settled || job ? (
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <div className="ms-auto flex shrink-0 items-center gap-1.5">
             {posting?.href ? (
               <Button size="sm" variant="outline" asChild>
                 <a
                   href={posting.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Open posting in a new tab: ${posting.title ?? posting.label}`}
+                  aria-label={t('proposals.openPostingAria', {
+                    title: posting.title ?? posting.label,
+                  })}
                 >
                   <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
-                  Open posting
+                  {t('proposals.openPosting')}
                 </a>
               </Button>
             ) : null}
@@ -353,25 +356,25 @@ function ProposalCard({
                 it says so instead, the same way the Matches row does. */}
             {job?.applicationId ? (
               <Chip tone="teal" size="sm">
-                In applications
+                {t('proposals.inApplications')}
               </Chip>
             ) : job ? (
               <Button size="sm" onClick={() => onPromote(job)}>
                 <FilePlus2 className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Add to applications
+                {t('common.addToApplications')}
               </Button>
             ) : null}
             {settled ? null : (
               <>
                 <Button size="sm" onClick={onApprove}>
                   <Check className="size-3.5" strokeWidth={2} aria-hidden />
-                  Approve
+                  {t('proposals.approve')}
                 </Button>
                 <Button
                   size="icon-sm"
                   variant="ghost"
-                  title="Discard this suggestion"
-                  aria-label={`Discard: ${p.title}`}
+                  title={t('proposals.discard')}
+                  aria-label={t('proposals.discardAria', { title: p.title })}
                   onClick={onDiscard}
                 >
                   <X className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -392,13 +395,16 @@ function ProposalCard({
  * the page matched, and whether the page itself was kept.
  */
 function ReadingLine({ reading }: { reading: ScoutReading }) {
+  const { t } = useTranslation('scout')
+  const domain = useDomain()
   if (!reading.ok) {
     return (
       <p className="flex items-start gap-1.5 text-xs leading-relaxed wrap-anywhere text-text-3">
         <TriangleAlert className="mt-0.5 size-3 shrink-0" strokeWidth={1.8} aria-hidden />
         <span>
-          The page could not be read: {reading.reason}
-          {reading.fileId ? ' The page itself was saved.' : ''}
+          {reading.fileId
+            ? t('proposals.unreadableKept', { reason: reading.reason })
+            : t('proposals.unreadable', { reason: reading.reason })}
         </span>
       </p>
     )
@@ -408,7 +414,9 @@ function ReadingLine({ reading }: { reading: ScoutReading }) {
   const facts = [
     fields.location,
     fields.comp && fields.comp.length <= 60 ? fields.comp : undefined,
-    fields.deadline ? `apply by ${shortDate(fields.deadline)}` : undefined,
+    fields.deadline
+      ? t('proposals.applyBy', { date: domain.shortDate(fields.deadline) })
+      : undefined,
   ].filter(Boolean)
   return (
     <div className="space-y-1 rounded border border-hairline bg-well px-2 py-1.5">
@@ -421,7 +429,7 @@ function ReadingLine({ reading }: { reading: ScoutReading }) {
         {reading.fileId ? (
           <span className="flex items-center gap-1 text-xs text-text-3">
             <FileCheck2 className="size-3 shrink-0" strokeWidth={1.8} aria-hidden />
-            Page saved
+            {t('proposals.pageSaved')}
           </span>
         ) : null}
       </div>

@@ -1,0 +1,63 @@
+{
+  "monthPicker": {
+    "goTo": "Zu Monat springen",
+    "previousYear": "Vorheriges Jahr",
+    "nextYear": "Nächstes Jahr"
+  },
+  "chip": {
+    "allDay": "Ganztägig",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, erledigt —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} Termin",
+    "label_other": "{{label}}, {{count}} Termine",
+    "add": "Termin am {{label}} hinzufügen",
+    "more_one": "+{{count}} weiterer",
+    "more_other": "+{{count}} weitere"
+  },
+  "grid": {
+    "dayLabel": "{{day}}. {{month}}",
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "today": "Heute",
+    "backTo": "Zurück zum {{date}}",
+    "goTo": "Zu {{month}} {{year}}",
+    "hintTouch": "Tippe auf einen Tag, um zu sehen, was ansteht.",
+    "hintPointer": "Wähle einen Tag, um ihn neben dem Raster aufzulisten. Klicke auf einen Termin, um ihn zu bearbeiten, oder zieh ihn auf einen anderen Tag – Ziehen braucht einen Zeiger, mit der Tastatur nutzt du das Datumsfeld im Termin.",
+    "eventTypes": "Terminarten",
+    "showAll": "Alle anzeigen",
+    "dateColours": "Datumsfarben",
+    "marks": {
+      "overdue": "Überfällig",
+      "soon": "Fällig in 48 Stunden",
+      "done": "Erledigt"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Heute",
+    "selectedDay": "Ausgewählter Tag",
+    "hiddenTitle": "Am {{date}} wird nichts angezeigt",
+    "hiddenDescription_one": "{{count}} Termin gehört zu einer Art, die unter dem Raster ausgeblendet ist.",
+    "hiddenDescription_other": "{{count}} Termine gehören zu einer Art, die unter dem Raster ausgeblendet ist.",
+    "showAllTypes": "Alle Terminarten anzeigen",
+    "emptyTitle": "Nichts am {{date}}",
+    "emptyDescription": "Füge ein Vorstellungsgespräch, eine Frist oder einen Vorbereitungsblock hinzu – er erscheint hier und im Raster.",
+    "addEvent": "Termin hinzufügen",
+    "backTo": "Zurück zu {{month}}",
+    "delete": "Termin löschen",
+    "deleteNamed": "{{title}} löschen",
+    "restOf": "Rest des {{month}}",
+    "lastDayTitle": "Der {{date}} ist der letzte Tag des Monats",
+    "nothingAfterTitle": "Nichts nach dem {{date}}",
+    "lastDayDescription": "Danach kommt nichts mehr. Blättere weiter, um {{month}} zu planen.",
+    "nothingAfterDescription": "Der Rest des {{month}} ist frei. Alles, was du nach diesem Tag hinzufügst, erscheint hier.",
+    "goToMonth": "Zu {{month}}",
+    "goToDay": "Zum {{label}}",
+    "shortDay": "{{day}}. {{month}}",
+    "moreLater_one": "+{{count}} weiterer später in diesem Monat",
+    "moreLater_other": "+{{count}} weitere später in diesem Monat"
+  }
+}

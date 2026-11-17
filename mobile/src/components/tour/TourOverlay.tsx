@@ -4,11 +4,13 @@ import {
   Animated,
   BackHandler,
   Easing,
+  I18nManager,
   StyleSheet,
   View,
   useWindowDimensions,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
@@ -20,6 +22,7 @@ import {
   needsRoute,
   placeCard,
   scrollNeeded,
+  startInset,
   tabSlot,
   visiblePart,
   type Box,
@@ -92,7 +95,7 @@ async function measure(id: string | undefined, root: View | null): Promise<Box |
   ])
   if (!box) return null
   const local = { ...box, x: box.x - (origin?.x ?? 0), y: box.y - (origin?.y ?? 0) }
-  return tab ? tabSlot(local, tab) : local
+  return tab ? tabSlot(local, tab, I18nManager.isRTL) : local
 }
 
 /**
@@ -113,6 +116,7 @@ export function TourOverlay() {
 }
 
 function Walk({ index }: { index: number }) {
+  const { t } = useTranslation(['components', 'common'])
   const c = useColors()
   const insets = useSafeAreaInsets()
   const view = useWindowDimensions()
@@ -257,6 +261,10 @@ function Walk({ index }: { index: number }) {
     { width: view.width, height: view.height, top: insets.top, bottom: insets.bottom },
   )
   const dim = 'rgba(0,0,0,0.58)'
+  // Boxes are physical (measureInWindow); `left` is the start edge, which is
+  // the right in Arabic. Without this the hole and its shields were mirrored.
+  const rtl = I18nManager.isRTL
+  const leftOf = (x: number, width: number) => startInset(x, width, view.width, rtl)
   const panes: Box[] = lit
     ? [
         { x: 0, y: 0, width: view.width, height: Math.max(0, lit.y) },
@@ -289,7 +297,7 @@ function Walk({ index }: { index: number }) {
           pointerEvents={shield ? 'auto' : 'none'}
           style={{
             position: 'absolute',
-            left: b.x,
+            left: leftOf(b.x, b.width),
             top: b.y,
             width: b.width,
             height: b.height,
@@ -303,7 +311,7 @@ function Walk({ index }: { index: number }) {
           pointerEvents="none"
           style={{
             position: 'absolute',
-            left: lit.x,
+            left: leftOf(lit.x, lit.width),
             top: lit.y,
             width: lit.width,
             height: lit.height,
@@ -334,7 +342,7 @@ function Walk({ index }: { index: number }) {
         onLayout={(e) => setCardHeight(e.nativeEvent.layout.height)}
         style={{
           position: 'absolute',
-          left: place.left,
+          left: leftOf(place.left, cardWidth),
           top: place.top,
           width: cardWidth,
           backgroundColor: c.panel,
@@ -352,9 +360,9 @@ function Walk({ index }: { index: number }) {
       >
         <View style={styles.headRow}>
           <Txt size="xs" tone="muted">
-            Step {index + 1} of {TOUR_STEPS.length}
+            {t('tour.stepOf', { step: index + 1, total: TOUR_STEPS.length })}
           </Txt>
-          <Button label="End tour" variant="ghost" size="sm" onPress={leaveTour} />
+          <Button label={t('tour.end')} variant="ghost" size="sm" onPress={leaveTour} />
         </View>
         <View style={[styles.track, { backgroundColor: c.hairline }]}>
           <View
@@ -384,18 +392,34 @@ function Walk({ index }: { index: number }) {
               <View style={[styles.dot, { backgroundColor: TOUR }]} />
             )}
             <Txt size="sm" weight="medium" color={done ? TOUR : undefined} style={styles.fill}>
-              {done ? 'Nice — that’s it.' : `Try it: ${step.task.say}`}
+              {done ? t('tour.nice') : t('tour.tryIt', { task: step.task.say })}
             </Txt>
           </View>
         ) : null}
         <View style={styles.footRow}>
           {index > 0 ? (
-            <Button label="Back" variant="ghost" size="md" onPress={() => goToStep(index - 1)} />
+            <Button
+              label={t('common:actions.back')}
+              variant="ghost"
+              size="md"
+              onPress={() => goToStep(index - 1)}
+            />
           ) : (
-            <Button label="Not now" variant="ghost" size="md" onPress={leaveTour} />
+            <Button
+              label={t('common:actions.notNow')}
+              variant="ghost"
+              size="md"
+              onPress={leaveTour}
+            />
           )}
           <Button
-            label={last ? 'Finish' : step.task && !done ? 'Skip this' : 'Next'}
+            label={
+              last
+                ? t('tour.finish')
+                : step.task && !done
+                  ? t('tour.skip')
+                  : t('common:actions.next')
+            }
             size="md"
             onPress={next}
           />

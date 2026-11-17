@@ -27,6 +27,7 @@
  */
 import { GlobalWorkerOptions, TextLayer, getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist'
+import { i18next } from '@/i18n/i18n'
 import type { Point } from './geometry'
 
 /**
@@ -180,7 +181,7 @@ export async function openPdf(bytes: Uint8Array): Promise<OpenPdf> {
     canvas.style.height = `${Math.floor(viewport.height)}px`
 
     const context = canvas.getContext('2d')
-    if (!context) throw new Error('This browser would not give the page a canvas to draw on.')
+    if (!context) throw new Error(i18next.t('messages:pdf.noCanvas'))
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     const task = page.render({ canvas, canvasContext: context, viewport })
     inFlight.set(canvas, task)

@@ -129,20 +129,25 @@ export function GuideBuiltWith() {
             body={
               <>
                 The robot in the sidebar is based on &ldquo;Sci-fi O.B. Robot Unit TH-ICC02
-                (animated)&rdquo; by Jungle Jim, licensed under Creative Commons Attribution 4.0
-                (CC BY 4.0). Model:{' '}
+                (animated)&rdquo; by Jungle Jim, licensed under Creative Commons Attribution 4.0 (CC
+                BY 4.0). Model:{' '}
                 <span className="font-mono text-xs break-all">
                   sketchfab.com/3d-models/sci-fi-ob-robot-unit-th-icc02-animated-6c0764c2bc4c4aaa8e03ba1653f455a6
                 </span>
-                . Artist: <span className="font-mono text-xs break-all">sketchfab.com/jungle_jim</span>.
+                . Artist:{' '}
+                <span className="font-mono text-xs break-all">sketchfab.com/jungle_jim</span>.
                 Licence:{' '}
-                <span className="font-mono text-xs break-all">creativecommons.org/licenses/by/4.0</span>.
-                jojo changed it: the mesh and textures are reduced for the web, its bundled animation
-                is removed, and jojo adds its own eyes on the visor and its own movements. The
-                changes are made by{' '}
-                <span className="font-mono text-xs break-all">web/scripts/robot/prepare_model.py</span>
-                , which lists each one. The model is served from jojo&rsquo;s own origin and drawn on
-                your device with three.js, so showing it makes no request to anyone else&rsquo;s
+                <span className="font-mono text-xs break-all">
+                  creativecommons.org/licenses/by/4.0
+                </span>
+                . jojo changed it: the mesh and textures are reduced for the web, its bundled
+                animation is removed, and jojo adds its own eyes on the visor and its own movements.
+                The changes are made by{' '}
+                <span className="font-mono text-xs break-all">
+                  web/scripts/robot/prepare_model.py
+                </span>
+                , which lists each one. The model is served from jojo&rsquo;s own origin and drawn
+                on your device with three.js, so showing it makes no request to anyone else&rsquo;s
                 server. The artist does not endorse jojo.
               </>
             }
@@ -269,7 +274,7 @@ export function GuideBuiltWith() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           How the code is arranged
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             for anyone opening the repository
           </small>
         </h2>
@@ -427,7 +432,7 @@ function LicenceText({ name, text }: { name: string; text: string }) {
   return (
     <div className="mt-3 first:mt-0">
       <h3 className="text-sm font-medium">{name}</h3>
-      <blockquote className="mt-1.5 border-l-2 border-hairline pl-3 text-xs whitespace-pre-line text-text-3">
+      <blockquote className="mt-1.5 border-s-2 border-hairline ps-3 text-xs whitespace-pre-line text-text-3">
         {text}
       </blockquote>
     </div>

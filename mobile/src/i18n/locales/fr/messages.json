@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Candidature",
+      "org": "Employeur",
+      "role": "Poste",
+      "item": "Date ou rappel",
+      "file": "Fichier",
+      "link": "Lien",
+      "snippet": "Extrait",
+      "posting": "Offre enregistrée",
+      "match": "Correspondance",
+      "keyword": "Mot-clé"
+    },
+    "isA": "est un",
+    "fit": "{{fit}} % d’adéquation",
+    "query": {
+      "undated": {
+        "question": "Candidatures sans aucune date associée",
+        "why": "Elles sont invisibles dans le calendrier et dans la semaine à venir, aussi actives soient-elles."
+      },
+      "untagged": {
+        "question": "Candidatures sans aucun mot-clé",
+        "why": "Une fiche que personne n’a classée est une fiche qu’aucun filtre ne fera jamais ressortir."
+      },
+      "orphanFiles": {
+        "question": "Fichiers rattachés à aucune candidature",
+        "why": "Les documents s’égarent ; ceci indique ceux vers lesquels rien ne pointe."
+      },
+      "orphanLinks": {
+        "question": "Liens rattachés à aucune candidature",
+        "why": "La même question pour les offres et les pages que vous avez gardées pour y revenir."
+      },
+      "busiest": {
+        "question": "Les employeurs avec qui vous avez le plus en cours",
+        "why": "Compté dans toutes les collections à la fois : candidatures, dates, fichiers et liens."
+      },
+      "unpromoted": {
+        "question": "Correspondances et offres jamais devenues des candidatures",
+        "why": "Les pistes refroidissent en silence ; aucune vue en liste ne dit lesquelles."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} non {{rel}} {{end}}",
+      "startAny": "N’importe quoi",
+      "relAny": "lié à",
+      "endAny": "n’importe quoi",
+      "startType": {
+        "application": "Candidatures",
+        "org": "Employeurs",
+        "role": "Postes",
+        "item": "Dates ou rappels",
+        "file": "Fichiers",
+        "link": "Liens",
+        "snippet": "Extraits",
+        "posting": "Offres enregistrées",
+        "match": "Correspondances",
+        "keyword": "Mots-clés"
+      },
+      "endType": {
+        "application": "une candidature",
+        "org": "un employeur",
+        "role": "un poste",
+        "item": "une date ou un rappel",
+        "file": "un fichier",
+        "link": "un lien",
+        "snippet": "un extrait",
+        "posting": "une offre enregistrée",
+        "match": "une correspondance",
+        "keyword": "un mot-clé"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Aujourd’hui",
+      "hint": "Ce qui attend une décision"
+    },
+    "apps": {
+      "label": "Candidatures",
+      "hint": "La liste et le tableau des étapes"
+    },
+    "cal": {
+      "label": "Calendrier",
+      "hint": "Échéances, entretiens et préparation"
+    },
+    "reminders": {
+      "label": "Rappels",
+      "hint": "Coffre · ce que vous devez faire, et quand"
+    },
+    "links": {
+      "label": "Liens",
+      "hint": "Coffre · offres, personnes et pages"
+    },
+    "files": {
+      "label": "Fichiers",
+      "hint": "Coffre · les documents que vous avez enregistrés"
+    },
+    "snippets": {
+      "label": "Extraits",
+      "hint": "Coffre · paragraphes réutilisables"
+    },
+    "tools": {
+      "label": "Outils",
+      "hint": "Coffre · la calculatrice"
+    },
+    "scout": {
+      "label": "Éclaireur d’emploi",
+      "hint": "Recherches enregistrées, correspondances et offres"
+    },
+    "stats": {
+      "label": "Statistiques",
+      "hint": "Taux, entonnoir et pistes de progrès"
+    },
+    "graph": {
+      "label": "Graphe",
+      "hint": "Vos fiches, vues comme le réseau qu’elles forment"
+    },
+    "profile": {
+      "label": "Mon profil",
+      "hint": "Infos de base, documents et termes de recherche"
+    },
+    "assistant": {
+      "label": "Assistant",
+      "hint": "Des exemples commentés tant qu’aucun modèle n’est connecté"
+    },
+    "settings": {
+      "label": "Réglages",
+      "hint": "Connexions, apparence, mots-clés et vos données"
+    },
+    "transfer": {
+      "label": "Transfert",
+      "hint": "Tout déplacer vers ou depuis votre ordinateur"
+    },
+    "guide": {
+      "label": "Mode d’emploi",
+      "hint": "Les trois couches, les écrans et le graphe"
+    },
+    "more": {
+      "label": "Plus",
+      "hint": "Le reste de jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Nouvelle candidature"
+    },
+    "newApplicationFromLink": {
+      "label": "Candidature depuis un lien",
+      "hint": "Le modèle lit l’offre et remplit le formulaire"
+    },
+    "newReminder": {
+      "label": "Nouveau rappel"
+    },
+    "newEvent": {
+      "label": "Nouvel événement"
+    },
+    "draftMessage": {
+      "label": "Rédiger un message",
+      "hint": "À partir de vos extraits d’e-mail ; rien n’est généré"
+    },
+    "saveLink": {
+      "label": "Enregistrer un lien",
+      "hint": "Ouvre le Coffre, outil Liens"
+    },
+    "recordDocument": {
+      "label": "Enregistrer un document",
+      "hint": "Ouvre le Coffre, outil Fichiers"
+    },
+    "savePosting": {
+      "label": "Enregistrer une offre",
+      "hint": "Ouvre l’Éclaireur d’emploi"
+    }
+  },
+  "snooze": {
+    "soon1": "Demain",
+    "later1": "Un jour plus tard",
+    "soon3": "Dans 3 jours",
+    "later3": "Trois jours plus tard",
+    "soon7": "Dans 7 jours",
+    "later7": "Une semaine plus tard"
+  },
+  "itemActions": {
+    "reopened": "{{title}} rouvert",
+    "completed": "{{title}} terminé",
+    "reopenedBody": "De retour dans la liste ouverte et de nouveau compté comme à faire.",
+    "completedBody": "Il quitte les listes ouvertes et compte pour aujourd’hui ; rien n’est supprimé.",
+    "rescheduled": "{{title}} reprogrammé",
+    "nowDue": "Désormais prévu le {{date}}, ici et dans le calendrier.",
+    "movedTo": "Déplacé au {{date}}",
+    "copyTitle": "{{title}} (copie)",
+    "added": "{{title}} ajouté",
+    "copyBody": "{{date}} — la copie porte les mêmes mots-clés.",
+    "deleted": "{{title}} supprimé",
+    "deletedReminder": "Retiré de la liste des rappels et du calendrier.",
+    "deletedEvent": "Retiré du calendrier."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "C’est le filtre de mots-clés au-dessus de la liste qui les masque.",
+    "noSearchMatch": "Aucun résultat pour cette recherche",
+    "noBothMatch": "Aucun résultat pour les deux filtres",
+    "clearBoth": "Retirer les deux filtres",
+    "clearKeywords": "Retirer les mots-clés"
+  },
+  "boardScan": {
+    "badAddress": "Je ne peux pas ouvrir cette adresse.",
+    "timeout": "Ce site d’offres a mis trop de temps à répondre.",
+    "unreachable": "Impossible de joindre ce site d’offres.",
+    "status": "Ce site d’offres a répondu {{status}}.",
+    "browserOnly": "{{host}} n’affiche ses offres qu’à un vrai navigateur ; il ne peut donc pas être lu depuis le téléphone. Sur un ordinateur, l’extension de navigateur jojo peut le lire."
+  },
+  "timelineForm": {
+    "title": "Donnez-lui un titre que vous reconnaîtrez.",
+    "date": "Choisissez une date : un élément sans date n’a nulle part où apparaître.",
+    "time": "Utilisez une heure comme 14:30."
+  },
+  "reader": {
+    "tooBig": "Ce document fait {{size}} Mo et le lecteur accepte jusqu’à {{max}} Mo.",
+    "gone": "La copie de ce document n’est plus sur cet appareil.",
+    "empty": "Rien n’a pu être lu dans ce document ; c’est peut-être un scan.",
+    "noAddress": "Pas encore d’adresse. Voir Réglages.",
+    "notConnected": "Aucun lecteur de documents n’est connecté : le contenu de ce fichier ne peut pas être lu. Son adresse se règle dans Réglages.",
+    "noCopy": "Cette fiche n’a aucune copie stockée sur cet appareil : il n’y a rien à lire."
+  },
+  "jobs": {
+    "ready": "{{label}} est prêt",
+    "readyBody": "Enregistré sous la candidature pour laquelle il a été rédigé.",
+    "failed": "{{label}} n’a pas abouti"
+  },
+  "boot": {
+    "corrupt": "les fiches enregistrées n’ont pas pu être lues ({{detail}}).",
+    "blocked": "le stockage est verrouillé par autre chose sur cet appareil.",
+    "unsupported": "cet appareil n’a aucun stockage utilisable par cette app.",
+    "threw": "le stockage n’a pas pu être ouvert du tout.",
+    "banner": "Aucun enregistrement sur cet appareil — {{why}}"
+  },
+  "posting": {
+    "needsReader": "Il faut le lecteur de documents en plus du modèle : c’est lui qui récupère la page. L’adresse est dans Réglages.",
+    "empty": "Cette page est revenue presque vide. Les sites qui s’affichent en JavaScript envoient une coquille vide à tout ce qui n’est pas un navigateur : ouvrez-la ici et enregistrez plutôt la page.",
+    "note": "Lu par le modèle depuis {{url}}",
+    "askedTwice": "Demandé deux fois, avec le même résultat."
+  },
+  "localService": {
+    "stopped": "Arrêté avant l’envoi."
+  },
+  "clipboard": {
+    "tooBig": "Trop volumineux pour le presse-papiers",
+    "tooBigBody": "Vos fiches font {{size}} et le presse-papiers d’Android accepte environ {{max}} de texte. Rien n’a été copié. Utilisez Transfert pour tout envoyer à votre ordinateur via votre réseau local.",
+    "copied": "Copié dans le presse-papiers",
+    "copiedBody": "Une sauvegarde à coller dans une note ou un fichier. Les documents joints restent sur ce téléphone : leurs lignes reviennent sans leur contenu."
+  },
+  "documents": {
+    "incomplete": "La copie n’a pas abouti.",
+    "nothingCopied": "Rien n’a été copié."
+  },
+  "weekday": {
+    "sun": "dim.",
+    "mon": "lun.",
+    "tue": "mar.",
+    "wed": "mer.",
+    "thu": "jeu.",
+    "fri": "ven.",
+    "sat": "sam."
+  },
+  "owed": {
+    "overdue": "En retard",
+    "today": "Aujourd’hui",
+    "tomorrow": "Demain",
+    "rest": "Reste de la semaine"
+  },
+  "receive": {
+    "declined": "Rien n’a été modifié. Scannez de nouveau le code pour recevoir."
+  }
+}

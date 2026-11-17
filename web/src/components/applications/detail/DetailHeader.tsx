@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { plural } from '@/components/common/text'
+import { Trans, useTranslation } from 'react-i18next'
 import { StageMenu } from '@/components/applications/StageMenu'
 import { Chip } from '@/components/common/Chip'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
@@ -21,16 +21,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { menuItemClass } from '@/components/common/RowMenu'
 import { displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
-import { shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import { urgencyOf } from '@jojo/service/core/dates'
 import type { Urgency } from '@jojo/service/core/dates'
 import { TODAY } from '@/lib/today'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { ACTION_PHRASES } from '@jojo/service/core/domain-text'
 import { refKey } from '@/lib/ids'
 import { applicationsPath } from '@/lib/links'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The shared popover item, plus the disabled state only this menu has.
@@ -96,6 +97,8 @@ export function DetailHeader({
   onRequestDelete: () => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const { update } = useApplications()
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
 
@@ -127,8 +130,8 @@ export function DetailHeader({
             to={applicationsPath()}
             className="inline-flex items-center gap-1 text-xs text-text-3 transition-colors hover:text-text-1 lg:hidden"
           >
-            <ArrowLeft className="size-3.5" strokeWidth={2} aria-hidden />
-            Applications
+            <ArrowLeft className="size-3.5 rtl:-scale-x-100" strokeWidth={2} aria-hidden />
+            {t('header.back')}
           </Link>
           <Heading
             id={DETAIL_TITLE_ID}
@@ -139,7 +142,8 @@ export function DetailHeader({
           {/* The app's one relative vocabulary. "yesterday" was a sixth word
               for a gap the rest of the app spells "1 day ago". */}
           <p className="mt-0.5 text-xs text-text-3">
-            {a.lastAction} · {a.daysAgo === 0 ? 'Today' : `${plural(a.daysAgo, 'day')} ago`}
+            {domain.action(a.lastAction)} ·{' '}
+            {a.daysAgo === 0 ? t('header.today') : t('header.daysAgo', { count: a.daysAgo })}
           </p>
 
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -166,12 +170,19 @@ export function DetailHeader({
             {deadline ? (
               <Chip
                 tone={URGENCY_TONE[urgencyOf(deadline, TODAY)]}
-                title={`Application deadline: ${shortDate(deadline.date)}`}
+                title={t('header.deadlineTitle', { date: domain.shortDate(deadline.date) })}
               >
                 <CalendarClock className="size-3 shrink-0" strokeWidth={1.9} aria-hidden />
                 <span>
-                  <span className="sr-only">Application </span>Deadline {shortDate(deadline.date)} ·{' '}
-                  {whenLabel(deadline, TODAY).toLowerCase()}
+                  <Trans
+                    t={t}
+                    i18nKey="header.deadlineChip"
+                    values={{
+                      date: domain.shortDate(deadline.date),
+                      when: domain.when(deadline, TODAY, { inline: true }),
+                    }}
+                    components={{ sr: <span className="sr-only" /> }}
+                  />
                 </span>
               </Chip>
             ) : null}
@@ -197,12 +208,12 @@ export function DetailHeader({
           <button
             type="button"
             aria-pressed={Boolean(a.flagged)}
-            title={a.flagged ? 'Clear the follow-up flag' : 'Flag for follow-up'}
-            aria-label={a.flagged ? 'Clear the follow-up flag' : 'Flag for follow-up'}
+            title={a.flagged ? t('common.clearFlag') : t('common.flag')}
+            aria-label={a.flagged ? t('common.clearFlag') : t('common.flag')}
             onClick={() =>
               update(a.id, {
                 flagged: !a.flagged,
-                lastAction: a.flagged ? 'Flag cleared' : 'Flagged for follow-up',
+                lastAction: a.flagged ? ACTION_PHRASES.flagCleared : ACTION_PHRASES.flagged,
               })
             }
             className={cn(
@@ -220,8 +231,8 @@ export function DetailHeader({
 
           <Popover open={menuOpen} onOpenChange={setMenuOpen}>
             <PopoverTrigger
-              aria-label="More actions"
-              title="More actions"
+              aria-label={t('header.moreActions')}
+              title={t('header.moreActions')}
               className="grid size-8 place-items-center rounded-lg border border-hairline bg-well text-text-3 transition-colors hover:border-hairline-strong hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent"
             >
               <MoreHorizontal className="size-4" strokeWidth={1.9} aria-hidden />
@@ -245,18 +256,14 @@ export function DetailHeader({
                 // page is rendered, so this branch is unreachable today. It
                 // stays as the prop contract, and now names something that
                 // would actually be true if a second caller ever omitted it.
-                title={
-                  onEdit
-                    ? undefined
-                    : 'Editing is unavailable here — open this record from Applications'
-                }
+                title={onEdit ? undefined : t('header.editUnavailable')}
                 onClick={() => {
                   onEdit?.(a.id)
                   setMenuOpen(false)
                 }}
               >
                 <Pencil className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-                Edit
+                {t('common.edit')}
               </button>
 
               {/* The record's own way into a message. Until this existed the
@@ -271,7 +278,7 @@ export function DetailHeader({
                 }}
               >
                 <PenLine className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-                Draft a message
+                {t('common.draftMessage')}
               </button>
 
               <button
@@ -283,7 +290,7 @@ export function DetailHeader({
                 }}
               >
                 <Copy className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-                Duplicate
+                {t('common.duplicate')}
               </button>
 
               <button
@@ -296,7 +303,7 @@ export function DetailHeader({
                 }}
               >
                 <ArrowRightLeft className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-                Move to…
+                {t('header.moveTo')}
               </button>
 
               <button
@@ -308,7 +315,7 @@ export function DetailHeader({
                 }}
               >
                 <Trash2 className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-                Delete
+                {t('common.delete')}
               </button>
             </PopoverContent>
           </Popover>
@@ -319,8 +326,8 @@ export function DetailHeader({
           <button
             type="button"
             onClick={onClose}
-            title="Close this record"
-            aria-label="Close this record"
+            title={t('header.close')}
+            aria-label={t('header.close')}
             className="grid size-8 place-items-center rounded-lg border border-transparent text-text-3 transition-colors hover:border-hairline hover:bg-well hover:text-text-1"
           >
             <X className="size-4" strokeWidth={1.9} aria-hidden />

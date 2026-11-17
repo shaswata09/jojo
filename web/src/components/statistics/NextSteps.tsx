@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CircleCheck, Lightbulb, Ruler } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { recommendationsFor } from '@jojo/service/core/recommend'
@@ -7,6 +8,7 @@ import { useScopedApplications } from '@/lib/roles-scope'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { TODAY } from '@/lib/today'
+import { useAdvice } from '@/i18n/advice'
 
 /**
  * What to do next, ranked, with the counts behind each line.
@@ -32,15 +34,18 @@ import { TODAY } from '@/lib/today'
  * only one of them is a question.
  */
 
+/** Catalog keys, translated where the badge is drawn. */
 const BADGE: Record<Recommendation['strength'], { label: string; hint: string }> = {
-  measured: { label: 'Measured', hint: 'Counted from your own records' },
+  measured: { label: 'nextSteps.badges.measured.label', hint: 'nextSteps.badges.measured.hint' },
   suggested: {
-    label: 'Suggested',
-    hint: 'General, or measured against a typical search rather than yours',
+    label: 'nextSteps.badges.suggested.label',
+    hint: 'nextSteps.badges.suggested.hint',
   },
 }
 
 export function NextSteps() {
+  const { t } = useTranslation('statistics')
+  const advice = useAdvice()
   // The roles picked in the top bar, like every other figure on this page.
   const { all } = useScopedApplications()
   const { all: timeline } = useTimeline()
@@ -63,17 +68,18 @@ export function NextSteps() {
   return (
     <Panel aria-labelledby="next-steps">
       <h2 id="next-steps" className="mb-1 text-base font-medium">
-        What to do next
+        {t('nextSteps.title')}
       </h2>
-      <p className="mb-3.5 text-xs text-text-3">
-        Ordered by what your records support, then by what costs least.
-      </p>
+      <p className="mb-3.5 text-xs text-text-3">{t('nextSteps.intro')}</p>
 
       <ol className="flex flex-col gap-3.5">
         {items.map((item) => {
           const clear = item.id === 'clear'
           const badge = BADGE[item.strength]
           const Icon = clear ? CircleCheck : item.strength === 'measured' ? Ruler : Lightbulb
+          // Core writes the English for the agent; the screen says it again,
+          // from the same figures, in the language on screen.
+          const said = advice.recommendation(item)
           return (
             <li key={item.id} className="flex gap-2.5">
               <Icon
@@ -82,17 +88,17 @@ export function NextSteps() {
               />
               <div className="min-w-0">
                 <p className="text-sm font-medium">
-                  {item.headline}
+                  {said.headline}
                   {!clear && (
                     <span
-                      title={badge.hint}
-                      className="ml-2 rounded border border-hairline px-1.5 py-0.5 align-middle text-[11px] font-normal text-text-3"
+                      title={t(badge.hint)}
+                      className="ms-2 rounded border border-hairline px-1.5 py-0.5 align-middle text-[11px] font-normal text-text-3"
                     >
-                      {badge.label}
+                      {t(badge.label)}
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-sm text-text-2">{item.because}</p>
+                <p className="mt-0.5 text-sm text-text-2">{said.because}</p>
               </div>
             </li>
           )

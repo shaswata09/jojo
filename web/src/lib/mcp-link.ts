@@ -1,6 +1,7 @@
 import type { ToolHost } from '@jojo/service/agent/execute'
 import { handleMcp } from '@jojo/service/agent/mcp'
 import type { McpOptions } from '@jojo/service/agent/mcp'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * The tab's side of the MCP link: how an outside client reaches jojo's records.
@@ -135,10 +136,17 @@ export const directTransport =
         // being a local one.
         credentials: 'omit',
       })
-      return { ok: response.ok, status: response.status, text: await response.text().catch(() => '') }
+      return {
+        ok: response.ok,
+        status: response.status,
+        text: await response.text().catch(() => ''),
+      }
     } catch (error) {
       return {
-        failed: { kind: 'transport', reason: error instanceof Error ? error.message : String(error) },
+        failed: {
+          kind: 'transport',
+          reason: error instanceof Error ? error.message : String(error),
+        },
       }
     }
   }
@@ -275,7 +283,10 @@ export async function runLink({
 
   while (!signal.aborted) {
     if (!identified) {
-      const hello = await transport({ url: `${address}/tab/hello`, method: 'GET', headers: {} }, signal)
+      const hello = await transport(
+        { url: `${address}/tab/hello`, method: 'GET', headers: {} },
+        signal,
+      )
       if (signal.aborted) return
       if ('failed' in hello) {
         strikes += 1
@@ -289,7 +300,7 @@ export async function runLink({
         // command in Settings. Either way the token stays here.
         onStatus({
           state: 'searching',
-          reason: `Something other than jojo-bridge (or an older copy of it) is answering at ${address}.`,
+          reason: i18next.t('messages:mcpLink.notBridge', { address }),
         })
         await backOff()
         continue
@@ -336,13 +347,16 @@ export async function runLink({
        * without one, or a window that slipped past the election.
        */
       strikes = 0
-      onStatus({ state: 'searching', reason: 'Another jojo tab is holding the link.' })
+      onStatus({ state: 'searching', reason: i18next.t('messages:mcpLink.displaced') })
       await backOff()
       continue
     }
     if (next.status !== 200) {
       identified = false
-      onStatus({ state: 'searching', reason: `jojo-bridge answered ${String(next.status)}.` })
+      onStatus({
+        state: 'searching',
+        reason: i18next.t('messages:mcpLink.bridgeStatus', { status: String(next.status) }),
+      })
       await backOff()
       continue
     }
@@ -370,7 +384,10 @@ export async function runLink({
       response = {
         jsonrpc: '2.0',
         id: message?.id ?? null,
-        error: { code: -32603, message: 'jojo could not answer that — the tool failed unexpectedly.' },
+        error: {
+          code: -32603,
+          message: 'jojo could not answer that — the tool failed unexpectedly.',
+        },
       }
     }
     onServed?.(typeof message?.method === 'string' ? message.method : 'unknown')
@@ -399,7 +416,11 @@ export async function runLink({
  * `powershell` is Windows, where `curl` is an alias unless spelled `curl.exe`
  * and `&&` does not exist in Windows PowerShell 5.
  */
-export const bridgeCommand = (scriptUrl: string, token: string, shell: 'posix' | 'powershell' = 'posix') =>
+export const bridgeCommand = (
+  scriptUrl: string,
+  token: string,
+  shell: 'posix' | 'powershell' = 'posix',
+) =>
   shell === 'powershell'
     ? `curl.exe -fsSL ${scriptUrl} -o jojo-bridge.mjs; $env:JOJO_BRIDGE_TOKEN="${token}"; node jojo-bridge.mjs`
     : `curl -fsSL ${scriptUrl} -o jojo-bridge.mjs && JOJO_BRIDGE_TOKEN=${token} node jojo-bridge.mjs`

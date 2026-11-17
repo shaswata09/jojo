@@ -19,7 +19,9 @@ const anchor = /function OpenLink[\s\S]*?<a\b([\s\S]*?)>\s*<ExternalLink\b/.exec
 
 describe('the go-to button on a URL field (Q154)', () => {
   it('appears for a field of type url holding an address openHref accepts', () => {
-    expect(code).toMatch(/const href = props\.type === 'url' \? openHref\(String\(props\.value \?\? ''\)\) : undefined/)
+    expect(code).toMatch(
+      /const href = props\.type === 'url' \? openHref\(String\(props\.value \?\? ''\)\) : undefined/,
+    )
     expect(code).toMatch(/\{href \? <OpenLink href=\{href\} label=\{label\} \/> : null\}/)
   })
 
@@ -30,7 +32,7 @@ describe('the go-to button on a URL field (Q154)', () => {
   })
 
   it('sits at the right of the field, which leaves room for it', () => {
-    expect(anchor).toMatch(/className="absolute top-1\/2 right-1 /)
-    expect(code).toMatch(/button && 'pr-8 /)
+    expect(anchor).toMatch(/className="absolute end-1 top-1\/2 /)
+    expect(code).toMatch(/button && 'pe-8 /)
   })
 })

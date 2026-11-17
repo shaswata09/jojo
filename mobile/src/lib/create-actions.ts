@@ -7,6 +7,7 @@ import { useSheets } from '@/lib/sheets-context'
 import type { SheetName } from '@/lib/sheets-context'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
+import { i18next } from '@/i18n/i18n'
 
 export type CreateAction = {
   id: string
@@ -58,24 +59,36 @@ export type CreateAction = {
  *
  * Ordered by how often a tracker actually needs them, not alphabetically.
  */
+/** Read when the menu is drawn, so it follows the language jojo is in. */
+const text = (id: string, field: 'label' | 'hint') =>
+  i18next.t(`messages:createActions.${id}.${field}`)
+
 export const CREATE_ACTIONS: CreateAction[] = [
   {
     id: 'new-application',
-    label: 'New application',
+    get label() {
+      return text('newApplication', 'label')
+    },
     icon: 'clipboard',
     sheet: { name: 'application' },
   },
   {
     id: 'new-application-from-link',
-    label: 'Application from a link',
+    get label() {
+      return text('newApplicationFromLink', 'label')
+    },
     icon: 'zap',
-    hint: 'The model reads the posting and fills the form in',
+    get hint() {
+      return text('newApplicationFromLink', 'hint')
+    },
     sheet: { name: 'applicationFromLink' },
     requires: 'model',
   },
   {
     id: 'new-reminder',
-    label: 'New reminder',
+    get label() {
+      return text('newReminder', 'label')
+    },
     icon: 'bell',
     // Reminders and events are one record with one sheet — `mode` only picks
     // which fields lead, so the two rows cannot drift into two editors.
@@ -83,38 +96,56 @@ export const CREATE_ACTIONS: CreateAction[] = [
   },
   {
     id: 'new-event',
-    label: 'New event',
+    get label() {
+      return text('newEvent', 'label')
+    },
     icon: 'calendar',
     sheet: { name: 'timelineItem', props: { mode: 'event' } },
   },
   {
     id: 'draft-message',
-    label: 'Draft a message',
+    get label() {
+      return text('draftMessage', 'label')
+    },
     icon: 'mail',
     // Opened with no record, so nothing is substituted and every blank stays on
     // the page. Reachable from a reminder as well, where it can also tick it off.
-    hint: 'From your email snippets — nothing is generated',
+    get hint() {
+      return text('draftMessage', 'hint')
+    },
     sheet: { name: 'draft' },
   },
   {
     id: 'save-link',
-    label: 'Save a link',
+    get label() {
+      return text('saveLink', 'label')
+    },
     icon: 'link-2',
-    hint: 'Opens the Vault, links tool',
+    get hint() {
+      return text('saveLink', 'hint')
+    },
     tab: { screen: 'Vault', params: { tool: 'links' } },
   },
   {
     id: 'record-document',
-    label: 'Record a document',
+    get label() {
+      return text('recordDocument', 'label')
+    },
     icon: 'file-text',
-    hint: 'Opens the Vault, files tool',
+    get hint() {
+      return text('recordDocument', 'hint')
+    },
     tab: { screen: 'Vault', params: { tool: 'files' } },
   },
   {
     id: 'save-posting',
-    label: 'Save a posting',
+    get label() {
+      return text('savePosting', 'label')
+    },
     icon: 'briefcase',
-    hint: 'Opens Job scout',
+    get hint() {
+      return text('savePosting', 'hint')
+    },
     screen: 'JobScout',
   },
 ]

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { BackgroundPanel } from '@/components/profile/BackgroundPanel'
 import { DocumentsPanel } from '@/components/profile/DocumentsPanel'
@@ -10,7 +11,8 @@ import { Switch } from '@/components/ui/switch'
 import { useTitle } from '@/lib/links'
 
 export function Profile() {
-  useTitle('Profile')
+  const { t } = useTranslation('pages')
+  useTitle(t('profile.tabTitle'))
   // Page option: the profile drives scoring, so seeing that spelled out helps
   // the first time and is noise thereafter.
   const [showScoringHelp, setShowScoringHelp] = useState(true)
@@ -20,21 +22,17 @@ export function Profile() {
   return (
     <>
       <PageHeader
-        title="My profile"
-        subtitle={
-          showScoringHelp
-            ? 'What the scout and assistant use to match and draft. None of it leaves your device.'
-            : 'Basics, documents and match terms'
-        }
+        title={t('profile.title')}
+        subtitle={showScoringHelp ? t('profile.subtitleLong') : t('profile.subtitleShort')}
         settings={
           <PageOption
-            label="Explain what this feeds"
-            hint="The longer subtitle about scoring and privacy"
+            label={t('profile.explainOption')}
+            hint={t('profile.explainHint')}
             control={
               <Switch
                 checked={showScoringHelp}
                 onCheckedChange={setShowScoringHelp}
-                aria-label="Explain what this feeds"
+                aria-label={t('profile.explainOption')}
               />
             }
           />

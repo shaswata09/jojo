@@ -105,6 +105,9 @@ describe('what it counts', () => {
     const chase = found.find((r) => r.id === 'silent:past-median')
     expect(chase?.because).toContain('5 days')
     expect(chase?.headline).toContain('1 application')
+    // One application is singular all the way through.
+    expect(chase?.headline).toBe('Chase 1 application that has gone quiet.')
+    expect(chase?.because).toContain('and this one has passed that')
   })
 
   it('says nothing about silence before there is a median to compare to', () => {
@@ -168,6 +171,17 @@ describe('what it counts', () => {
       app({ stage: 'draft', appliedOn: undefined, daysAgo: 40 }),
     ])
     expect(found.find((r) => r.id === 'drafts:open')?.because).toContain('40 days')
+  })
+
+  it('measures the oldest draft from the day it was drafted, not its last edit', () => {
+    // Drafted 2026-08-15 (30 days before TODAY) and edited yesterday.
+    const found = run([
+      app({ stage: 'draft', appliedOn: undefined, daysAgo: 1, stageDates: { draft: '2026-08-15' } }),
+      app({ stage: 'draft', appliedOn: undefined, daysAgo: 5 }),
+    ])
+    const drafts = found.find((r) => r.id === 'drafts:open')
+    expect(drafts?.because).toContain('open 30 days')
+    expect(drafts?.facts).toMatchObject({ oldestDays: 30 })
   })
 
   it('offers to read the CV only when nothing is known and something is out', () => {

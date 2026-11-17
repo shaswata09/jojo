@@ -1,0 +1,167 @@
+{
+  "common": {
+    "title": "Asistente",
+    "undo": "Deshacer",
+    "nothingAsked": "Aún no has preguntado nada",
+    "askLabel": "Pregunta al asistente",
+    "saveToSnippets": "Guardar en fragmentos",
+    "savedToSnippets": "Guardado en fragmentos",
+    "filedUnder": "{{title}} · archivado en {{tag}}",
+    "openVault": "Abrir bóveda",
+    "copyBlocked": "El navegador bloqueó la copia",
+    "copied": "Respuesta copiada",
+    "newConversation": "Nueva conversación"
+  },
+  "header": {
+    "subtitle": "Conectado a tu modelo y capaz de actuar sobre tus registros. Todo lo que hace se muestra a medida que ocurre.",
+    "clear": "Borrar",
+    "connected_one": "Las respuestas vienen de <mono>{{model}}</mono> en <mono>{{endpoint}}</mono>, que puede usar <tools>{{count}} herramienta</tools> en este dispositivo. No se envía nada a ningún otro sitio.",
+    "connected_many": "Las respuestas vienen de <mono>{{model}}</mono> en <mono>{{endpoint}}</mono>, que puede usar <tools>{{count}} herramientas</tools> en este dispositivo. No se envía nada a ningún otro sitio.",
+    "connected_other": "Las respuestas vienen de <mono>{{model}}</mono> en <mono>{{endpoint}}</mono>, que puede usar <tools>{{count}} herramientas</tools> en este dispositivo. No se envía nada a ningún otro sitio."
+  },
+  "composer": {
+    "send": "Enviar",
+    "typeFirst": "Escribe primero un mensaje",
+    "stop": "Detener",
+    "stopTitle": "Detener al agente"
+  },
+  "approval": {
+    "waiting": "{{title}} — esperando tu respuesta",
+    "askedBy": "Lo pidió {{name}}. Todavía no ha cambiado nada.",
+    "askedByUnnamed": "Lo pidió una conversación. Todavía no ha cambiado nada.",
+    "decline": "No",
+    "allow": "Permitir"
+  },
+  "scripted": {
+    "subtitle": "Ejemplos resueltos por ahora. Conecta un modelo local y redactará a partir de tus registros y actuará sobre ellos.",
+    "clear": "Borrar conversación",
+    "notConnected": "No hay ningún modelo conectado, así que cada respuesta de abajo es un ejemplo y no una respuesta real. Conecta jojo a un servidor local compatible con OpenAI (vLLM, Ollama o LM Studio) en <settings>Ajustes</settings>.",
+    "emptyDescription": "Elige una de las propuestas de abajo o escribe lo que quieras. Las respuestas son ejemplos escritos: útiles como punto de partida y nunca presentados como la respuesta de un modelo.",
+    "placeholder": "Pregunta sobre una carta de presentación, un correo de seguimiento, una entrevista…",
+    "footer": "Con un modelo conectado, cada una de estas lee tu perfil y tus documentos como contexto. Como la inferencia es local, tu CV y tus notas nunca se suben a ningún sitio.",
+    "badge": "Respuesta de ejemplo · sin modelo conectado",
+    "cleared": "Conversación borrada",
+    "messages_one": "{{count}} mensaje",
+    "messages_many": "{{count}} mensajes",
+    "messages_other": "{{count}} mensajes"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Redacta una carta de presentación",
+      "title": "Carta de presentación: estructura",
+      "reply": "Esta es la estructura que usaría para [DEPARTAMENTO]:\n\nPárrafo 1: en qué trabajas, en una frase que pueda seguir un miembro del comité ajeno a tu área.\nPárrafo 2: los dos resultados que sostienen tu candidatura, cada uno con su consecuencia y no con su método.\nPárrafo 3: por qué este departamento: el grupo con el que coincidirías y la asignatura que impartirías.\nPárrafo 4: disponibilidad y cómo serían los tres primeros años.\n\nQue no pase de una página. El comité lee cuarenta de estas en una tarde."
+    },
+    "tailorCv": {
+      "action": "Adapta mi CV a una oferta",
+      "title": "Adaptar un CV: tres pasadas",
+      "reply": "Tres pasadas, en este orden:\n\n1. Quita lo que el anuncio no pide. Un CV adaptado a todo no está adaptado a nada.\n2. Sube al principio de la primera página la sección con la que empieza el anuncio: un anuncio centrado en la docencia quiere la docencia por encima de las publicaciones.\n3. Reescribe el titular con las palabras del propio anuncio, sin exagerar el alcance del trabajo.\n\nLo que se queda intacto: publicaciones, referencias, fechas. Eso es lo que comprueba un comité."
+    },
+    "parsePosting": {
+      "action": "Analiza una oferta de empleo",
+      "title": "Qué sacar de una oferta",
+      "reply": "De un anuncio sacaría: el empleador, el puesto, el plazo, los documentos requeridos, el contacto indicado y todo lo que esté redactado como requisito obligatorio y no como preferencia.\n\nEsto último es donde se pierden candidaturas: «debe tener el título antes de la fecha de incorporación» es un filtro; «se valorará experiencia con sistemas a gran escala», no.\n\nEl explorador de empleo ya hace la parte sencilla sin modelo: guarda ahí la URL y conservará el enlace y deducirá el empleador."
+    },
+    "followUp": {
+      "action": "Redacta un correo de seguimiento",
+      "title": "Seguimiento sin respuesta",
+      "reply": "Asunto: Seguimiento — [PUESTO], [DEPARTAMENTO]\n\nEstimado/a [NOMBRE]:\n\nPresenté mi candidatura a [PUESTO] el [FECHA] y quería confirmar que el comité tiene todo lo que necesita de mí. Con gusto envío directamente la carta de referencia pendiente si así resulta más fácil.\n\nSigo muy interesado/a en el puesto y estaré encantado/a de responder a cualquier pregunta por correo.\n\nMuchas gracias,\n[TU NOMBRE]"
+    },
+    "interview": {
+      "action": "Prepárame para una entrevista",
+      "title": "Entrevista: seis preguntas que llevar respondidas",
+      "reply": "Seis preguntas que conviene tener respondidas antes del día:\n\n— ¿De qué trata tu trabajo, en noventa segundos, para alguien ajeno a tu área?\n— ¿Cuál sería tu primera solicitud de financiación y a qué organismo?\n— ¿Qué dos asignaturas podrías impartir el próximo semestre sin preaviso?\n— ¿Con quién colaborarías aquí y en qué?\n— ¿Cuál es el punto débil de tu propio resultado?\n— ¿Qué necesitas el primer año para hacer el trabajo?\n\nEscribe las respuestas a mano. Lo importante es el ensayo, no las notas."
+    },
+    "fallback": {
+      "title": "Asistente: respuesta de ejemplo",
+      "reply": "No hay ningún modelo conectado, así que esta es una respuesta predefinida y no una respuesta a lo que escribiste.\n\nCon uno conectado, esta página leería tu perfil, los documentos de tu Bóveda y la candidatura que nombres, y redactaría a partir de ellos en tu propio equipo. Conecta jojo a un servidor local compatible con OpenAI en Ajustes: vLLM, Ollama o LM Studio.\n\nBorra la conversación para volver a ver los ejemplos resueltos."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "¿Qué tengo pendiente de respuesta?",
+      "add": "Añade una candidatura: ingeniero de ML en Stripe, enviada",
+      "noDeadline": "¿Qué candidaturas no tienen plazo?",
+      "flag": "Marca mi candidatura a UT Austin"
+    },
+    "emptyDescription": "Pídele que encuentre algo, que añada una candidatura o que haga avanzar una. Cada herramienta que usa aparece abajo a medida que ocurre, con lo que envió y lo que recibió.",
+    "placeholder": "Busca mi candidatura a UT Austin, añade una o pásala a entrevista…"
+  },
+  "threadBar": {
+    "titleLabel": "Título de la conversación",
+    "saveTitle": "Guardar el título",
+    "cancel": "Cancelar",
+    "rename": "Renombrar esta conversación",
+    "changeJob": "Cambiar puesto",
+    "fileUnder": "Archivar en un puesto",
+    "approval": "Aprobación",
+    "approvalLabel": "Cuánto puede hacer esta conversación sin preguntar",
+    "delete": "Eliminar"
+  },
+  "threads": {
+    "deleted": "Conversación eliminada"
+  },
+  "threadList": {
+    "title": "Conversaciones",
+    "kept_one": "{{count}} guardada aquí",
+    "kept_many": "{{count}} guardadas aquí",
+    "kept_other": "{{count}} guardadas aquí",
+    "noJob": "Aún no trata de ningún puesto",
+    "searchLabel": "Buscar conversaciones",
+    "searchPlaceholder": "Busca lo que se dijo",
+    "clearSearch": "Borrar búsqueda",
+    "noMention": "No se menciona",
+    "mentionsIn": "{{mentions}} en {{conversations}}",
+    "mentions_one": "{{count}} mención",
+    "mentions_many": "{{count}} menciones",
+    "mentions_other": "{{count}} menciones",
+    "conversationCount_one": "{{count}} conversación",
+    "conversationCount_many": "{{count}} conversaciones",
+    "conversationCount_other": "{{count}} conversaciones",
+    "empty": "Aún no hay nada. Pregunta algo y se guardará aquí, en este dispositivo.",
+    "noResults": "Nada menciona «{{query}}». Esto busca en todas las conversaciones, no solo en sus nombres.",
+    "working": "Trabajando…",
+    "matches_one": "{{count}} coincidencia",
+    "matches_many": "{{count}} coincidencias",
+    "matches_other": "{{count}} coincidencias",
+    "questions_one": "{{count}} pregunta",
+    "questions_many": "{{count}} preguntas",
+    "questions_other": "{{count}} preguntas"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "No hay nada que deshacer: ha cambiado desde entonces",
+      "alreadyUndone": "Ya se deshizo",
+      "outOfReach": "Está demasiado atrás para deshacerlo desde aquí",
+      "undone": "Deshecho"
+    },
+    "thinking": "Pensando…",
+    "thought": "Razonamiento"
+  },
+  "trace": {
+    "status": {
+      "running": "En curso",
+      "done": "Hecho",
+      "failed": "Falló",
+      "declined": "Rechazado"
+    },
+    "effect": {
+      "read": "lectura",
+      "unknown": "herramienta inexistente",
+      "create": "añadido",
+      "update": "cambiado",
+      "move": "movido",
+      "delete": "eliminado",
+      "admin": "almacén"
+    },
+    "approvalNeeded": "Se necesita aprobación: {{title}}",
+    "asked": "El agente pidió hacer esto. Todavía no ha cambiado nada.",
+    "declineAria": "No: {{title}}",
+    "allowAria": "Permitir: {{title}}",
+    "arguments": "Argumentos",
+    "result": "Resultado",
+    "undoStep": "Deshacer este paso",
+    "cannotUndo": "Este paso no se puede deshacer desde aquí. Ajustes → Registros guarda un historial de lo que cambió y puede revertir lo más reciente.",
+    "truncated": "Recortado: se pidió al agente que acotara la búsqueda para ver el resto.",
+    "working": "Trabajando: {{model}} está decidiendo qué hacer…"
+  }
+}

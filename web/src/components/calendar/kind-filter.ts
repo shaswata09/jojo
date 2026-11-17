@@ -1,6 +1,7 @@
 import type { LegendItem } from '@/components/charts/ChartLegend'
 import type { TimelineItem, TimelineKind } from '@jojo/service/core/model'
-import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
+import { KIND_ICON, TIMELINE_KINDS } from '@/lib/timeline-visuals'
+import { domain } from '@/i18n/domain'
 
 /**
  * The Calendar's event-type legend: one entry per kind, each a switch.
@@ -14,10 +15,15 @@ import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
  * Kinds carry an icon and no colour. That is the colour law, not an omission:
  * on this page colour means how close a date is and nothing else, which is what
  * the date key beside this legend explains.
+ *
+ * The label is a getter onto `domain.kind`, read when the legend renders, so
+ * the entries speak the language on screen; the list itself stays one constant.
  */
 export const KIND_LEGEND: readonly LegendItem[] = TIMELINE_KINDS.map((kind) => ({
   key: kind,
-  label: KIND_LABEL[kind],
+  get label() {
+    return domain.kind(kind)
+  },
   icon: KIND_ICON[kind],
 }))
 

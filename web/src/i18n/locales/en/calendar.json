@@ -1,0 +1,63 @@
+{
+  "monthPicker": {
+    "goTo": "Go to month",
+    "previousYear": "Previous year",
+    "nextYear": "Next year"
+  },
+  "chip": {
+    "allDay": "All day",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, done —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} event",
+    "label_other": "{{label}}, {{count}} events",
+    "add": "Add an event on {{label}}",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more"
+  },
+  "grid": {
+    "dayLabel": "{{month}} {{day}}",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "today": "Today",
+    "backTo": "Back to {{date}}",
+    "goTo": "Go to {{month}} {{year}}",
+    "hintTouch": "Tap a day to see what is on it.",
+    "hintPointer": "Pick a day to list it beside the grid. Click an event to edit it, or drag it onto another day — dragging needs a pointer, so the date field inside the event is the keyboard route.",
+    "eventTypes": "Event types",
+    "showAll": "Show all",
+    "dateColours": "Date colours",
+    "marks": {
+      "overdue": "Overdue",
+      "soon": "Due within 48 hours",
+      "done": "Done"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Today",
+    "selectedDay": "Selected day",
+    "hiddenTitle": "Nothing shown on {{date}}",
+    "hiddenDescription_one": "{{count}} event is of a type switched off under the grid.",
+    "hiddenDescription_other": "{{count}} events are of a type switched off under the grid.",
+    "showAllTypes": "Show all event types",
+    "emptyTitle": "Nothing on {{date}}",
+    "emptyDescription": "Add an interview, a deadline or a block of prep and it shows up here and on the grid.",
+    "addEvent": "Add event",
+    "backTo": "Back to {{month}}",
+    "delete": "Delete event",
+    "deleteNamed": "Delete {{title}}",
+    "restOf": "Rest of {{month}}",
+    "lastDayTitle": "{{date}} is the last day of the month",
+    "nothingAfterTitle": "Nothing after {{date}}",
+    "lastDayDescription": "Nothing sits after it. Page forward to plan into {{month}}.",
+    "nothingAfterDescription": "The rest of {{month}} is clear. Anything you add after this day lands here.",
+    "goToMonth": "Go to {{month}}",
+    "goToDay": "Go to {{label}}",
+    "shortDay": "{{month}} {{day}}",
+    "moreLater_one": "+{{count}} more later this month",
+    "moreLater_other": "+{{count}} more later this month"
+  }
+}

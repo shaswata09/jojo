@@ -26,6 +26,7 @@
  */
 
 import type { BoardScan } from '@jojo/service/core/board'
+import { i18next } from '@/i18n/i18n'
 
 const TIMEOUT_MS = 20000
 
@@ -61,7 +62,7 @@ export async function scanBoard(url: string): ReturnType<BoardScan> {
   try {
     host = new URL(url).hostname
   } catch {
-    return { ok: false, reason: 'That is not an address I can open.' }
+    return { ok: false, reason: i18next.t('messages:boardScan.badAddress') }
   }
 
   /*
@@ -72,7 +73,7 @@ export async function scanBoard(url: string): ReturnType<BoardScan> {
   if (NEEDS_A_BROWSER.test(host)) {
     return {
       ok: false,
-      reason: `${host} only shows its listings to a real browser, so it cannot be read from the phone. On a computer the jojo browser extension can read it.`,
+      reason: i18next.t('messages:boardScan.browserOnly', { host }),
     }
   }
 
@@ -95,13 +96,18 @@ export async function scanBoard(url: string): ReturnType<BoardScan> {
     const aborted = error instanceof Error && error.name === 'AbortError'
     return {
       ok: false,
-      reason: aborted ? 'That board took too long to answer.' : `That board could not be reached.`,
+      reason: aborted
+        ? i18next.t('messages:boardScan.timeout')
+        : i18next.t('messages:boardScan.unreachable'),
     }
   }
   clearTimeout(timer)
 
   if (!response.ok) {
-    return { ok: false, reason: `That board answered ${String(response.status)}.` }
+    return {
+      ok: false,
+      reason: i18next.t('messages:boardScan.status', { status: response.status }),
+    }
   }
 
   const body = await response.text()
@@ -127,7 +133,8 @@ export async function scanBoard(url: string): ReturnType<BoardScan> {
 
   // Where the fetch ended up after redirects, so relative links resolve there.
   // `response.url` is empty on some React Native builds; then it is left out.
-  const landed = typeof response.url === 'string' && /^https?:/i.test(response.url) ? response.url : undefined
+  const landed =
+    typeof response.url === 'string' && /^https?:/i.test(response.url) ? response.url : undefined
   return { ok: true, rows, ...(landed ? { landed } : {}) }
 }
 

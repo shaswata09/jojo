@@ -1,23 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { PairingScanner } from '@/components/transfer/PairingScanner'
-import { CAMERA_REFUSED, ensureCamera, type CameraAccess } from '@/lib/camera-permission'
+import { cameraRefused, ensureCamera, type CameraAccess } from '@/lib/camera-permission'
 import { encodeAddress, groupCode } from '@jojo/service/core/dial'
 import { sizeLabel } from '@jojo/service/core/files'
 import { canPair } from '@jojo/service/crypto/noble-secrets'
 import { useKg } from '@jojo/service/react/kg-context'
-import { RECEIVE_ADVICE, beginReceiving, type ReceiveSession } from '@/lib/handoff-receive'
+import { beginReceiving, receiveAdvice, type ReceiveSession } from '@/lib/handoff-receive'
 import { applyPlan } from '@/lib/restore-received'
+import { landedText } from '@/lib/import-backup'
 import { createLanding } from '@/lib/receive-landing'
 import { actionFor, recordAnswer } from '@/lib/receive-decision'
 import type { SheetAnswer } from '@/lib/receive-decision'
-import { describeBackup, replacesClause } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The receiving half: point the camera at the other device and agree a key.
@@ -51,6 +53,8 @@ import { space } from '@/theme/tokens'
  * interval is slow enough not to matter and fast enough that the bar moves.
  */
 export function ReceivePanel() {
+  const { t } = useTranslation('transfer')
+  const domain = useDomain()
   const c = useColors()
   const [access, setAccess] = useState<CameraAccess | null>(null)
   const [scanning, setScanning] = useState(false)
@@ -89,6 +93,15 @@ export function ReceivePanel() {
   const [able] = useState(canPair)
 
   const start = useCallback(async () => {
+    /*
+     * Clear what the last attempt left, as `SendPanel`'s `start` does. A decline
+     * or a failed `beginReceiving` leaves `failed` set with no session, Retry
+     * lands here rather than in `reset()`, and the code is only drawn while
+     * `failed` is null: the next scan opened a listener whose code never showed.
+     */
+    setFailed(null)
+    setLanded(null)
+    setBytes(0)
     const granted = await ensureCamera()
     setAccess(granted)
     if (granted === 'granted') setScanning(true)
@@ -107,7 +120,7 @@ export function ReceivePanel() {
     setScanning(false)
     const started = await beginReceiving(offer)
     if (!started.ok) {
-      setFailed(RECEIVE_ADVICE[started.error])
+      setFailed(receiveAdvice(started.error))
       return
     }
     if (!mounted.current) {
@@ -179,22 +192,20 @@ export function ReceivePanel() {
   const applyPending = useCallback(
     (plan: RestorePlan) => {
       void applyPlan(repo, plan, new Date().toISOString(), { handover: true }).then((done) => {
+        // The computer is asking what happened here; it stamps its own
+        // handover only if the records were taken.
+        session?.settle(done.ok ? 'applied' : 'failed')
         if (!done.ok) {
           setFailed(done.message)
           return
         }
-        const files =
-          done.documents === 0
-            ? ''
-            : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
         // The skipped count is said out loud rather than rounded away. A person
         // checking their records against the other device needs to know the
         // number is short before they go looking for what is missing.
-        const lost = done.skipped === 0 ? '' : ` ${String(done.skipped)} could not be read.`
-        setLanded(`${String(done.nodes)} records are on this phone${files}.${lost}`)
+        setLanded(landedText(done))
       })
     },
-    [repo],
+    [repo, session],
   )
 
   /**
@@ -223,21 +234,24 @@ export function ReceivePanel() {
     if (action.kind === 'wait') return
     setPending(null)
     if (action.kind === 'decline') {
+      // Said before the session is dropped: dropping it stops the socket, and
+      // a settled session keeps listening just long enough for the computer
+      // to hear "declined" and not stamp a handover that never happened.
+      session?.settle('declined')
       setSession(null)
       setBytes(0)
       setFailed(action.message)
       return
     }
     applyPending(action.plan)
-  }, [answer, pending, applyPending])
+  }, [answer, pending, applyPending, session])
 
   if (!able) {
     return (
       <Panel>
-        <PanelTitle hint="not available on this device">Receive</PanelTitle>
+        <PanelTitle hint={t('pairing.unavailableHint')}>{t('receive.title')}</PanelTitle>
         <Txt size="sm" tone="muted">
-          This device has no secure random number generator, so jojo will not agree a key on it.
-          Pairing is disabled rather than done weakly.
+          {t('pairing.noRandom')}
         </Txt>
       </Panel>
     )
@@ -245,7 +259,7 @@ export function ReceivePanel() {
 
   return (
     <Panel>
-      <PanelTitle hint="point at the code on the other device">Receive</PanelTitle>
+      <PanelTitle hint={t('receive.hint')}>{t('receive.title')}</PanelTitle>
 
       {scanning ? (
         <View style={styles.viewfinder}>
@@ -256,7 +270,7 @@ export function ReceivePanel() {
           {landed !== null ? (
             <>
               <Txt size="sm" weight="semibold" center>
-                Transfer complete
+                {t('receive.complete')}
               </Txt>
               <Txt size="sm" tone="muted" center style={{ marginTop: space[2] }}>
                 {landed}
@@ -267,22 +281,22 @@ export function ReceivePanel() {
                 style={[styles.action, { borderColor: c.hairline }]}
               >
                 <Txt size="sm" weight="semibold">
-                  Done
+                  {t('receive.done')}
                 </Txt>
               </Pressable>
             </>
           ) : session !== null && failed === null ? (
             <>
               <Txt size="sm" tone="muted" center>
-                Type this on your other device
+                {t('receive.typeThis')}
               </Txt>
               <Txt size="xxl" weight="semibold" mono center style={{ marginTop: space[2] }}>
                 {groupCode(encodeAddress(session.address))}
               </Txt>
               <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
                 {bytes === 0
-                  ? 'Paired. This phone is listening on your local network and nowhere else.'
-                  : `Receiving — ${sizeLabel(bytes)} so far. Nothing here changes until you agree to it.`}
+                  ? t('receive.paired')
+                  : t('receive.progress', { size: sizeLabel(bytes) })}
               </Txt>
               <Pressable
                 accessibilityRole="button"
@@ -290,7 +304,7 @@ export function ReceivePanel() {
                 style={[styles.action, { borderColor: c.hairline }]}
               >
                 <Txt size="sm" weight="semibold">
-                  Cancel
+                  {t('pairing.cancel')}
                 </Txt>
               </Pressable>
             </>
@@ -299,8 +313,8 @@ export function ReceivePanel() {
               <Txt size="sm" tone="muted" center>
                 {failed ??
                   (access !== null && access !== 'granted'
-                    ? CAMERA_REFUSED[access]
-                    : 'Open jojo on your computer, choose Transfer, and scan the code it shows.')}
+                    ? cameraRefused(access)
+                    : t('receive.intro'))}
               </Txt>
               {access === 'blocked' ? null : (
                 <Pressable
@@ -312,7 +326,7 @@ export function ReceivePanel() {
                   style={[styles.action, { borderColor: c.hairline }]}
                 >
                   <Txt size="sm" weight="semibold">
-                    {failed === null && access === null ? 'Scan the code' : 'Try again'}
+                    {failed === null && access === null ? t('pairing.scan') : t('pairing.retry')}
                   </Txt>
                 </Pressable>
               )}
@@ -338,13 +352,16 @@ export function ReceivePanel() {
          * sticky, so the order the two arrive in stops mattering.
          */
         onClose={() => setAnswer((a) => recordAnswer(a, 'closed'))}
-        title="Replace everything on this phone?"
+        title={t('receive.confirm.title')}
         description={
           pending === null
             ? ''
-            : `${describeBackup(pending)}. ${replacesClause(pending, 'on this phone')}, and that cannot be undone.`
+            : t('receive.confirm.description', {
+                contents: domain.backup(pending),
+                replaces: domain.replaces(pending, 'phone'),
+              })
         }
-        confirmLabel="Replace"
+        confirmLabel={t('receive.confirm.confirm')}
         tone="danger"
         onConfirm={() => setAnswer((a) => recordAnswer(a, 'confirmed'))}
       />

@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -26,6 +27,7 @@ import { Pressable } from 'react-native'
  * the point, cannot appear in one and be missing from the other.
  */
 export function GuideScreens() {
+  const { t } = useTranslation('guide')
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -45,7 +47,7 @@ export function GuideScreens() {
           {i > 0 ? <Divider /> : null}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Open ${d.label}`}
+            accessibilityLabel={t('screens.open', { name: d.label })}
             onPress={() => d.go(navigation)}
             style={({ pressed }) => [
               s.row,
@@ -76,15 +78,14 @@ export function GuideScreens() {
     <>
       <Panel>
         <Txt size="sm" tone="secondary">
-          Every screen in the app, and the one sentence that says what it is for. Tapping a row
-          opens it — this page is a way in as well as a legend.
+          {t('screens.intro')}
         </Txt>
       </Panel>
 
       <Columns>
-        {group('In the tab bar', 'always one tap away', inTabs)}
-        {group('Inside the Vault', 'five tools, one tab', inVault)}
-        {group('Behind More', 'the rest of jojo', elsewhere)}
+        {group(t('screens.groups.tabs.title'), t('screens.groups.tabs.hint'), inTabs)}
+        {group(t('screens.groups.vault.title'), t('screens.groups.vault.hint'), inVault)}
+        {group(t('screens.groups.more.title'), t('screens.groups.more.hint'), elsewhere)}
       </Columns>
     </>
   )

@@ -1,4 +1,5 @@
 import type { FeatherName } from '@/lib/timeline-visuals'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * Every empty list names the control that emptied it.
@@ -61,7 +62,7 @@ export type VaultEmptyCopy = {
 }
 
 /** Where the keyword filter lives, said once. */
-export const KEYWORDS_HID_THEM = 'The keyword filter above the list is what is hiding them.'
+export const keywordsHidThem = () => i18next.t('messages:vaultEmpty.keywordsHidThem')
 
 export function vaultEmptyState({
   total,
@@ -89,19 +90,19 @@ export function vaultEmptyState({
   if (trimmed) {
     return {
       icon: copy.icon,
-      title: 'Nothing matches that search',
+      title: i18next.t('messages:vaultEmpty.noSearchMatch'),
       description: copy.search(trimmed),
-      clear: { label: 'Clear search', onPress: onClearQuery },
+      clear: { label: i18next.t('common:actions.clearSearch'), onPress: onClearQuery },
     }
   }
 
   if (filteredByBucket && filteredByKeyword) {
     return {
       icon: copy.icon,
-      title: 'Nothing matches both filters',
+      title: i18next.t('messages:vaultEmpty.noBothMatch'),
       description: copy.both,
       clear: {
-        label: 'Clear both filters',
+        label: i18next.t('messages:vaultEmpty.clearBoth'),
         onPress: () => {
           onClearBucket()
           onClearKeywords()
@@ -122,7 +123,7 @@ export function vaultEmptyState({
   return {
     icon: copy.icon,
     title: copy.keywords.title,
-    description: copy.keywords.description ?? KEYWORDS_HID_THEM,
-    clear: { label: 'Clear keywords', onPress: onClearKeywords },
+    description: copy.keywords.description ?? keywordsHidThem(),
+    clear: { label: i18next.t('messages:vaultEmpty.clearKeywords'), onPress: onClearKeywords },
   }
 }

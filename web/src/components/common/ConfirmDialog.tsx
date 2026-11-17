@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -41,6 +42,7 @@ export function ConfirmDialog({
   tone?: 'danger'
   onConfirm: () => void
 }) {
+  const { t } = useTranslation()
   // Nothing at all while closed, and that is the whole point.
   //
   // Every other dialog in the app is mounted by `DialogHost` only while it is
@@ -66,7 +68,7 @@ export function ConfirmDialog({
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t('actions.cancel')}</Button>
           </DialogClose>
           <Button
             variant={tone === 'danger' ? 'destructive' : 'default'}

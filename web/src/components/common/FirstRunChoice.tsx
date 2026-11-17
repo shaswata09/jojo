@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Sparkles, SquareDashed } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -58,6 +59,7 @@ import { contentModal } from '@/components/ui/dialog-width'
  * away — the destructive one.
  */
 
+/** The words are `common` catalog keys, read when the dialog draws. */
 const OPTIONS: readonly {
   choice: DataSetChoice
   icon: typeof Sparkles
@@ -68,22 +70,21 @@ const OPTIONS: readonly {
   {
     choice: 'demo',
     icon: Sparkles,
-    title: 'Explore with demo data',
-    detail:
-      'A worked job search to look around in — twelve applications, a timeline, a stocked vault. Nothing in it is yours, and clearing it later takes one press.',
-    working: 'Loading…',
+    title: 'firstRun.demo.title',
+    detail: 'firstRun.demo.detail',
+    working: 'firstRun.demo.working',
   },
   {
     choice: 'empty',
     icon: SquareDashed,
-    title: 'Start empty',
-    detail:
-      'No demo records at all. Every page opens on its empty state, and the first thing in jojo is something you added.',
-    working: 'Clearing…',
+    title: 'firstRun.empty.title',
+    detail: 'firstRun.empty.detail',
+    working: 'firstRun.empty.working',
   },
 ]
 
 export function FirstRunChoice() {
+  const { t } = useTranslation()
   const { needsDataChoice, chooseDataSet, busy } = useBoot()
   /** Which button was pressed, so only that one says it is working. */
   const [pressed, setPressed] = useState<DataSetChoice | null>(null)
@@ -116,11 +117,8 @@ export function FirstRunChoice() {
         onInteractOutside={(event) => event.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>How would you like to start?</DialogTitle>
-          <DialogDescription>
-            jojo keeps everything on this machine, so this is yours to decide. Neither answer is
-            final — you can load the demo data or clear every record later, from Settings.
-          </DialogDescription>
+          <DialogTitle>{t('firstRun.title')}</DialogTitle>
+          <DialogDescription>{t('firstRun.description')}</DialogDescription>
         </DialogHeader>
 
         {/* One column on a phone, two from `sm`, and equal width in both: the
@@ -133,13 +131,13 @@ export function FirstRunChoice() {
               type="button"
               onClick={() => choose(choice)}
               disabled={busy}
-              className="flex flex-col gap-1.5 rounded-lg border border-border bg-background p-3 text-left transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+              className="flex flex-col gap-1.5 rounded-lg border border-border bg-background p-3 text-start transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
             >
               <span className="flex items-center gap-2 text-sm font-medium">
                 <Icon className="size-4 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
-                {pressed === choice ? working : title}
+                {pressed === choice ? t(working) : t(title)}
               </span>
-              <span className="text-xs text-text-2">{detail}</span>
+              <span className="text-xs text-text-2">{t(detail)}</span>
             </button>
           ))}
         </div>

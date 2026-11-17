@@ -1,0 +1,207 @@
+{
+  "common": {
+    "newPipeline": "Nouveau pipeline",
+    "addToApplications": "Ajouter aux candidatures",
+    "inApplicationsAs": "Dans les candidatures sous <anchor>{{name}}</anchor>",
+    "open": "Ouvrir",
+    "undo": "Annuler"
+  },
+  "header": {
+    "title": "Éclaireur d’emplois",
+    "subtitle": "Des recherches enregistrées qui surveilleront les sites d’offres pour vous — et un endroit où garder des offres dès aujourd’hui",
+    "onlyActive": "Pipelines actifs uniquement",
+    "onlyActiveHint": "Masquer ceux qui sont désactivés",
+    "paused": "Aucun modèle local n’est connecté, les pipelines sont donc en pause. Vous pouvez toujours les créer et enregistrer des offres ci-dessous — ils démarreront dès qu’un modèle sera joignable.",
+    "runsLocally": "Les pipelines s’exécutent sur votre machine, tant que cet onglet est ouvert. Rien n’est envoyé à un tiers."
+  },
+  "shutdown": {
+    "title": "Désactiver {{name}} ?",
+    "description": "Il s’est exécuté deux fois sans rien trouver à suggérer, et rien n’attend votre réponse. Le désactiver l’empêche de chercher ; tout ce qu’il a déjà trouvé reste en place. Vous pouvez le réactiver quand vous voulez.",
+    "keep": "Le laisser actif",
+    "confirm": "Le désactiver"
+  },
+  "matches": {
+    "title": "Correspondances",
+    "hint": "notées d’après votre profil",
+    "emptyTitle": "Aucune correspondance",
+    "emptyDescription": "Les pipelines placent ici des offres notées dès qu’un modèle est connecté. D’ici là, les offres que vous enregistrez ci-dessous sont le point d’entrée.",
+    "matched": "correspond sur {{list}}",
+    "notScored": "non notée",
+    "fit": "{{score}} % d’adéquation",
+    "added": "ajoutée"
+  },
+  "dialog": {
+    "editTitle": "Modifier le pipeline",
+    "description": "Un pipeline est une tâche permanente pour l’assistant. Il s’exécute sur cet appareil tant que jojo est ouvert, et tout ce qu’il veut modifier vous est d’abord montré.",
+    "kind": "Ce qu’il fait",
+    "kinds": {
+      "twin": "Compléter les dossiers",
+      "scout": "Trouver des offres"
+    },
+    "kindHint": {
+      "twin": "Lit ce que vous avez et suggère ce qui manque — notes, rappels, étiquettes, classement.",
+      "scout": "Cherche des offres qui méritent votre attention et les soumet à votre examen."
+    },
+    "name": "Nom",
+    "nameError": "Nommez-le d’après ce qu’il surveille.",
+    "namePlaceholder": {
+      "twin": "ex. Garder mes candidatures en ordre",
+      "scout": "ex. Offres d’enseignants de la CRA"
+    },
+    "sources": "Sources",
+    "sourcesHint": "Le site d’offres ou la page carrières qu’il surveille. Séparez-en plusieurs par des virgules.",
+    "sourceError": "Un éclaireur sans source n’a rien à lire.",
+    "terms": {
+      "twin": "Points d’attention",
+      "scout": "Termes de correspondance"
+    },
+    "termsHint": {
+      "twin": "Tout ce à quoi il doit prêter une attention particulière. Laissez vide pour qu’il regarde partout.",
+      "scout": "Ce par rapport à quoi une offre est notée. Laissez vide pour garder tout ce que la source publie."
+    },
+    "termsPlaceholder": {
+      "twin": "relances et échéances",
+      "scout": "maître de conférences, CS/ECE"
+    },
+    "howOften": "Fréquence",
+    "howOftenHint": "Combien de temps il attend entre deux passages.",
+    "schedules": {
+      "hourly": "Toutes les heures",
+      "daily": "Tous les jours",
+      "weekly": "Toutes les semaines"
+    },
+    "cancel": "Annuler",
+    "save": "Enregistrer les modifications",
+    "create": "Créer le pipeline"
+  },
+  "pipelines": {
+    "title": "Pipelines",
+    "hint": "s’exécutent sur cet appareil tant que jojo est ouvert",
+    "caption": "Ils fonctionnent tant que cet onglet est ouvert — rien ne s’exécute hors de cette machine",
+    "kinds": {
+      "twin": "Jumeau numérique",
+      "scout": "Éclaireur d’emplois"
+    },
+    "status": {
+      "off": "désactivé",
+      "paused": "en pause",
+      "running": "en cours",
+      "watching": "en veille"
+    },
+    "noneOnTitle": "Rien n’est activé",
+    "noneOnDescription": "Tous vos pipelines sont désactivés. Activez-en un ou retirez le filtre dans les options de la page.",
+    "emptyTitle": "Aucun pipeline",
+    "emptyDescription": "Un pipeline est une tâche permanente pour l’assistant : garder vos dossiers complets, ou surveiller les offres qui méritent votre attention.",
+    "showAll": "Afficher tous les pipelines",
+    "auto": "auto",
+    "autoAria": "Exécuter {{name}} sans demander",
+    "toReview_one": "{{count}} à examiner",
+    "toReview_many": "{{count}} à examiner",
+    "toReview_other": "{{count}} à examiner",
+    "runNow": "Exécuter {{name}} maintenant",
+    "edit": "Modifier {{name}}",
+    "delete": "Supprimer {{name}}",
+    "enable": "Activer {{name}}"
+  },
+  "postings": {
+    "title": "Enregistrer une offre",
+    "hint": "fonctionne sans modèle",
+    "intro": "L’enregistrement conserve aussi la page, dans le Coffre sous Offres d’emploi — ouverte via l’extension jojo telle que vous la verriez, ou récupérée par le lecteur de documents. Sans l’un ni l’autre, sont conservés l’URL, l’employeur déduit de celle-ci et le jour de l’enregistrement.",
+    "urlLabel": "URL de l’offre d’emploi",
+    "pasteFirst": "Collez d’abord une URL",
+    "save": "Enregistrer l’offre",
+    "emptyTitle": "Aucune offre enregistrée",
+    "emptyDescription": "Collez l’URL d’une annonce à laquelle vous voulez revenir. Les annonces disparaissent ; le lien et la date vous restent.",
+    "saved": "enregistrée {{when}}",
+    "linked": "liée à une candidature",
+    "unscored": "non notée",
+    "openSnapshot": "Ouvrir la copie",
+    "savingPage": "Enregistrement de la page…",
+    "savePage": "Enregistrer la page",
+    "savePageTitle": "Ouvrir l’offre et en garder une copie dans le Coffre",
+    "remove": "Retirer {{title}}"
+  },
+  "proposals": {
+    "title": "Suggestions",
+    "hint": "rien ne se passe sans votre accord",
+    "aPipeline": "un pipeline",
+    "clearAnswered": "Effacer les traitées",
+    "approveAll": "Tout approuver ({{count}})",
+    "clearAll": "Tout effacer",
+    "emptyTitle": "Rien à examiner",
+    "emptyDescription": "Quand un pipeline tourne, tout ce qu’il veut modifier apparaît d’abord ici. Il ne touchera pas à vos dossiers tant que vous n’aurez pas approuvé.",
+    "clearTitle": "Effacer toutes les suggestions ?",
+    "clearPending_one": "{{count}} suggestion vous attend encore et sera refusée. Rien ne change dans vos dossiers, et les pipelines continuent de tourner — mais ils ne la proposeront plus.",
+    "clearPending_many": "{{count}} suggestions vous attendent encore et seront refusées. Rien ne change dans vos dossiers, et les pipelines continuent de tourner — mais ils ne les proposeront plus.",
+    "clearPending_other": "{{count}} suggestions vous attendent encore et seront refusées. Rien ne change dans vos dossiers, et les pipelines continuent de tourner — mais ils ne les proposeront plus.",
+    "clearAnsweredOnly": "Les cartes traitées sortent de la liste. Rien ne change dans vos dossiers.",
+    "status": {
+      "applied": "appliquée",
+      "discarded": "écartée",
+      "failed": "impossible à appliquer"
+    },
+    "noSummary": "Aucun résumé n’accompagnait celle-ci — ouvrez l’offre pour voir de quoi il s’agit.",
+    "reading": "Lecture de l’offre pour en extraire les détails…",
+    "notALink": "Ce n’est pas une adresse web, elle n’est donc pas proposée comme lien",
+    "from": "de {{name}}",
+    "openPosting": "Ouvrir l’offre",
+    "openPostingAria": "Ouvrir l’offre dans un nouvel onglet : {{title}}",
+    "inApplications": "Dans les candidatures",
+    "approve": "Approuver",
+    "discard": "Écarter cette suggestion",
+    "discardAria": "Écarter : {{title}}",
+    "unreadable": "La page n’a pas pu être lue : {{reason}}",
+    "unreadableKept": "La page n’a pas pu être lue : {{reason}} La page elle-même a été enregistrée.",
+    "applyBy": "postuler avant le {{date}}",
+    "pageSaved": "Page enregistrée"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Déjà dans vos candidatures — pas ajoutée une seconde fois",
+    "alreadyHaveDescription": "Il s’agit de {{name}}, republiée sur un autre site. L’offre y est liée, et sa page est classée avec elle.",
+    "duplicateDescription": "L’offre correspond à {{name}}, que vous avez déjà. {{why}} Sa page est classée avec celle-ci.",
+    "keepBoth": "Garder les deux",
+    "fillFailedTitle": "{{org}} : l’offre n’a pas pu être lue",
+    "fillFailedKept": "{{reason}} La page elle-même a été enregistrée et classée avec le brouillon — ouvrez-le pour compléter le reste.",
+    "fillFailed": "{{reason}} Le brouillon garde ce que dit son lien — ouvrez-le pour compléter le reste.",
+    "filledTitle": "{{name}} complétée à partir de l’offre",
+    "checkedTitle": "{{name}} vérifiée par rapport à l’offre",
+    "filledIn": "Complété : {{list}}.",
+    "checked": "Vérifié par rapport à la page : {{list}}.",
+    "keptYours": "Vos modifications conservées : {{list}}.",
+    "addedNothing": "La page n’a rien ajouté que le brouillon n’avait déjà.",
+    "missing": "Absent de la page : {{list}}.",
+    "filedUnder": "La page est classée avec elle.",
+    "approvedReading": "Lecture de l’offre pour compléter ses détails — le brouillon se mettra à jour une fois terminé.",
+    "approvedFromLink": "Complétée à partir de son lien. Connectez un modèle dans les Paramètres pour faire lire l’offre elle-même.",
+    "approvedOpen": "Ouvrez-la pour compléter le reste.",
+    "allRepeatsTitle": "Déjà dans vos candidatures — rien de nouveau ajouté",
+    "allRepeats_one": "{{count}} est un poste que vous avez déjà, republié sur un autre site. Il est lié à la candidature que vous avez.",
+    "allRepeats_many": "{{count}} sont des postes que vous avez déjà, republiés sur un autre site. Ils sont liés aux candidatures que vous avez.",
+    "allRepeats_other": "{{count}} sont des postes que vous avez déjà, republiés sur un autre site. Ils sont liés aux candidatures que vous avez.",
+    "added_one": "{{count}} ajoutée à vos candidatures comme brouillon",
+    "added_many": "{{count}} ajoutées à vos candidatures comme brouillons",
+    "added_other": "{{count}} ajoutées à vos candidatures comme brouillons",
+    "addedWithRepeats_one": "{{count}} ajoutée à vos candidatures comme brouillon · {{repeats}} déjà présentes",
+    "addedWithRepeats_many": "{{count}} ajoutées à vos candidatures comme brouillons · {{repeats}} déjà présentes",
+    "addedWithRepeats_other": "{{count}} ajoutées à vos candidatures comme brouillons · {{repeats}} déjà présentes",
+    "addedReading": "Lecture de chaque offre à tour de rôle pour compléter ses détails.",
+    "addedFromLinks": "Complétées à partir de leurs liens. Connectez un modèle dans les Paramètres pour faire lire les offres elles-mêmes.",
+    "addedOne": "{{org}} ajoutée à vos candidatures comme brouillon",
+    "addedAsDraft": "{{org}} ajoutée comme brouillon",
+    "matchStays": "La correspondance reste dans ce fil, désormais liée à la candidature.",
+    "postingSaved": "Offre enregistrée",
+    "postingReading": "Lecture de l’offre pour vérifier et compléter ses détails — le brouillon se mettra à jour une fois terminé.",
+    "postingStays": "L’offre reste enregistrée ici, désormais liée à la candidature.",
+    "postingRemoved": "Offre retirée",
+    "pageNotSaved": "La page de l’offre n’a pas été enregistrée",
+    "pageSaved": "Page de l’offre enregistrée",
+    "pageSavedFiled": "{{title}} — classée avec sa candidature.",
+    "pageSavedVault": "{{title}} — dans le Coffre sous Offres d’emploi.",
+    "pipelineUpdated": "Pipeline mis à jour",
+    "pipelineCreated": "Pipeline créé",
+    "pipelineCreatedPaused": "{{name}} — en pause jusqu’à la connexion d’un modèle.",
+    "pipelineCreatedRunning": "{{name}} — il va commencer à chercher sous peu.",
+    "pipelineDeleted": "Pipeline supprimé",
+    "pipelineDeletedDescription": "{{name}} cesse de surveiller {{source}}."
+  }
+}

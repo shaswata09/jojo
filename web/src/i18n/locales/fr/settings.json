@@ -1,0 +1,500 @@
+{
+  "shared": {
+    "thisBrowserOnly": "ce navigateur uniquement",
+    "optional": "facultatif",
+    "undo": "Annuler",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "testing": "Test en cours…",
+    "testAgain": "Tester à nouveau",
+    "testConnection": "Tester la connexion",
+    "connected": "Connecté",
+    "noAnswer": "Pas de réponse",
+    "notConnected": "Non connecté"
+  },
+  "appearance": {
+    "title": "Apparence",
+    "theme": {
+      "label": "Thème",
+      "description": "Système suit le réglage de votre système d’exploitation",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "gestures": {
+      "label": "Gestes de la mascotte",
+      "description": "jojo réagit pendant que vous travaillez. Essayez-en un."
+    },
+    "draw": {
+      "label": "Dessiner un mouvement",
+      "description": "Dessinez sur le robot de la carte de la barre latérale. Le bouton robot dans son coin les liste aussi."
+    },
+    "sounds": {
+      "label": "Sons de l’interface",
+      "description": "Un bref clic quand vous basculez un interrupteur"
+    }
+  },
+  "savedServers": {
+    "intro": "Connexions enregistrées : tout ce qui a répondu ici, prêt à être rechargé en entier. Une clé est conservée à côté de l’adresse sur cet appareil ; elle n’entre jamais dans une sauvegarde.",
+    "inUse": "En cours d’utilisation",
+    "keyKept": "clé conservée",
+    "load": "Charger {{name}}",
+    "loadWithKey": "Charger {{name}}, avec sa clé",
+    "forget": "Oublier {{name}}"
+  },
+  "model": {
+    "title": "Modèle",
+    "hint": "compatible OpenAI",
+    "savedNone": "Rien d’enregistré pour l’instant : testez une connexion et l’adresse sera conservée",
+    "savedServers": "Serveurs enregistrés",
+    "intro": "Un modèle sur cette machine, ou un modèle payant. Le local est le choix par défaut, car c’est la seule option où vos fiches ne quittent jamais l’appareil.",
+    "provider": "Fournisseur",
+    "reasoningOptions": {
+      "on": "Activé",
+      "light": "Léger",
+      "off": "Désactivé"
+    },
+    "endpoint": {
+      "label": "Point d’accès",
+      "hintOllama": "L’hôte et le port. Sans /v1 : jojo utilise le point d’accès propre à Ollama pour pouvoir lui demander de ne pas tronquer.",
+      "hint": "L’URL de base, se terminant par /v1."
+    },
+    "apiKey": {
+      "label": "Clé d’API",
+      "hint": "Conservée uniquement dans ce navigateur. Elle n’entre jamais dans une sauvegarde et n’est envoyée nulle part ailleurs qu’au fournisseur."
+    },
+    "getKeyLink": "<anchor>Obtenir une clé auprès de {{provider}}</anchor>",
+    "getKeyFree": "<anchor>Obtenir une clé auprès de {{provider}}</anchor> — gratuit, sans carte.",
+    "modelField": {
+      "label": "Modèle",
+      "placeholder": "L’identifiant du modèle, fourni par votre fournisseur",
+      "hintConnected": "Ce que le serveur a indiqué. Modifiez-le si vous en servez plusieurs.",
+      "hint": "Testez la connexion pour que le serveur le remplisse, ou saisissez l’identifiant vous-même."
+    },
+    "savedAs": {
+      "label": "Enregistré sous",
+      "hint": "Le nom de ce serveur dans la liste. Par défaut, le modèle."
+    },
+    "contextWindow": {
+      "label": "Fenêtre de contexte",
+      "hintOllama": "En tokens. Laissez vide pour utiliser {{tokens}} et laisser Ollama se dimensionner ; un nombre ici est aussi envoyé comme num_ctx.",
+      "hint": "Les tokens que votre déploiement peut contenir. Laissez vide pour {{tokens}}."
+    },
+    "reasoning": {
+      "label": "Raisonnement",
+      "description": "Permet aux modèles capables de réfléchir — gpt-oss, Gemma 4, Qwen3 — de raisonner avant de répondre. Désactivez-le si les réponses arrivent vides avec un petit modèle."
+    },
+    "fillEndpoint": "Indiquez d’abord un point d’accès",
+    "connectedNote": "Conservé dans ce navigateur. L’assistant utilisera ce modèle."
+  },
+  "cloudTerms": {
+    "providerTerms": "Conditions de {{provider}}",
+    "privacy": "Politique de confidentialité",
+    "licence": "Page de licence de jojo"
+  },
+  "mcp": {
+    "title": "Se connecter depuis un client MCP",
+    "intro": "Laissez un assistant que vous utilisez déjà — Claude Code avec votre propre abonnement, par exemple — lire et mettre à jour vos fiches ici, avec les mêmes outils que l’assistant de jojo. Il rejoint cet onglet par un petit programme sur votre ordinateur, et chaque modification qu’il fait apparaît ici avec Annuler.",
+    "allow": "Autoriser un client MCP de cet ordinateur à utiliser jojo",
+    "chip": {
+      "off": "Désactivé",
+      "searching": "En attente de jojo-bridge",
+      "ready": "Relié",
+      "badToken": "Jeton refusé",
+      "noExtension": "Extension requise",
+      "staleExtension": "Rechargez l’extension"
+    },
+    "explain": {
+      "searching": "Rien ne répond encore à 127.0.0.1:3002. Lancez jojo-bridge avec la première commande — jojo continue de chercher.",
+      "served_one": "{{count}} requête de votre client traitée pendant cette session, la plus récente {{method}}.",
+      "served_many": "{{count}} requêtes de votre client traitées pendant cette session, la plus récente {{method}}.",
+      "served_other": "{{count}} requêtes de votre client traitées pendant cette session, la plus récente {{method}}.",
+      "servedNoMethod_one": "{{count}} requête de votre client traitée pendant cette session.",
+      "servedNoMethod_many": "{{count}} requêtes de votre client traitées pendant cette session.",
+      "servedNoMethod_other": "{{count}} requêtes de votre client traitées pendant cette session.",
+      "ready": "jojo-bridge est lancé. Connectez votre client avec la deuxième commande.",
+      "badToken": "jojo-bridge tourne avec un autre jeton. Arrêtez-le avec Ctrl+C et relancez-le avec la première commande.",
+      "noExtension": "Cette copie de jojo est servie depuis le web, et Chrome tient les pages web à l’écart de 127.0.0.1. L’extension jojo porte la liaison — son installateur est sur cette page, sous Conserver les offres.",
+      "staleExtension": "L’extension jojo de ce navigateur est plus ancienne que cette page. Ouvrez chrome://extensions et cliquez sur Actualiser pour jojo."
+    },
+    "start": {
+      "title": "Lancez jojo-bridge et laissez-le tourner",
+      "copy": "Copier la commande qui lance jojo-bridge",
+      "notePowershell": "Nécessite Node 18 ou plus récent. Collez-la dans Windows PowerShell. Le jeton passe par l’environnement, il n’apparaît donc jamais dans la liste des processus. Un jojo-bridge téléchargé avant cette version doit être téléchargé à nouveau — la commande s’en charge.",
+      "note": "Nécessite Node 18 ou plus récent. Le jeton passe par l’environnement, il n’apparaît donc jamais dans la liste des processus. Un jojo-bridge téléchargé avant cette version doit être téléchargé à nouveau — la commande s’en charge."
+    },
+    "connect": {
+      "title": "Connectez-y Claude Code, une seule fois",
+      "copy": "Copier la commande qui connecte Claude Code",
+      "note": "Demandez-lui ensuite par exemple « lesquelles de mes candidatures attendent une action de ma part ? ». Si votre terminal affiche « command not found: claude », vous utilisez Claude Code dans VS Code, qui embarque sa propre copie — lancez la même ligne avec le chemin complet de cette copie (dans le dossier des extensions de VS Code, sous anthropic.claude-code-…/resources/native-binary/claude), ou installez la CLI Claude Code. Tout client qui parle MCP sur HTTP peut utiliser la même adresse et le même jeton."
+    },
+    "honesty": "Votre client fonctionne avec votre propre abonnement et votre propre identifiant — jojo ne voit ni l’un ni l’autre, et n’envoie rien à Anthropic ni à personne. Il peut utiliser tous les outils de l’assistant de jojo, sauf les deux qui ne peuvent pas être annulés, Reset et Clear. Claude Code demande avant d’utiliser un outil, sauf si vous lui avez dit de ne pas le faire, et jojo marque chaque suppression comme destructive. Gardez cet onglet ouvert pendant que vous l’utilisez : les fiches vivent ici, tout comme l’autre bout de la liaison.",
+    "newToken": "Nouveau jeton",
+    "newTokenNote": "Les anciennes commandes cessent de fonctionner — relancez les deux avec le nouveau."
+  },
+  "reader": {
+    "title": "Lire mes documents",
+    "intro": "L’assistant ne voit que le nom d’un document tant que rien ne le convertit en texte. Lancez <anchor>{{name}}</anchor> sur cette machine et il pourra lire le contenu de vos PDF, fichiers Word, présentations et tableurs.",
+    "address": {
+      "label": "Adresse",
+      "hint": "Un chemin sur ce site en développement, ou l’adresse propre du lecteur avec l’extension installée. Voir ci-dessous."
+    },
+    "notRunning": "Pas encore lancé ?",
+    "copySetup": "Copier les commandes d’installation",
+    "cors": "Il écoute sur <mono>{{endpoint}}</mono>, mais n’envoie aucun en-tête CORS — un navigateur ne laisse donc pas cette page l’appeler d’un port à l’autre. Le serveur de développement de jojo lui transmet <mono>{{path}}</mono>, c’est pourquoi l’adresse ci-dessus est un chemin et non une URL. L’application mobile lui parle directement et n’a besoin de rien de tout cela.",
+    "hosted": "<em>Sur une copie hébergée, installez l’extension.</em> Une page servie depuis le web ne peut pas appeler <mono>127.0.0.1</mono> — il n’y a pas de proxy pour transmettre un chemin, et les pages https:// n’ont pas accès au réseau local. L’extension n’est pas une page : elle atteint le lecteur directement, et jojo le lui demande. Indiquez ci-dessus l’adresse propre du lecteur et elle relaiera chaque requête ; elle ne relaie jamais qu’à cette machine.",
+    "fillAddress": "Indiquez d’abord une adresse",
+    "connectedNote": "Les documents sont envoyés à cette adresse et nulle part ailleurs. Rien n’est téléversé.",
+    "separate": "{{name}} est un programme distinct, qui ne fait pas partie de jojo.",
+    "notAffiliated": "jojo n’est pas affilié à Microsoft."
+  },
+  "capture": {
+    "title": "Conserver les offres",
+    "intro": "Une offre d’emploi est le seul document de votre recherche qui appartient à quelqu’un d’autre. L’annonce disparaît la semaine qui suit l’entretien et emporte les exigences avec elle. L’extension jojo en garde une copie — la page telle qu’elle était le jour où vous l’avez classée, avec chaque image et feuille de style intégrées, pour qu’en l’ouvrant un an plus tard rien ne soit appelé et qu’aucune connexion ne soit nécessaire.",
+    "checking": "Vérification de ce navigateur…",
+    "installed": "Installée et connectée.",
+    "installedHint": "Ouvrez une offre et cliquez sur le bouton jojo dans la barre d’outils — si vous ne le voyez pas, il est derrière le menu en forme de pièce de puzzle et doit être épinglé. Revenez ensuite au Coffre.",
+    "version": "Version {{version}}.",
+    "safari": {
+      "title": "Safari ne peut pas exécuter cette extension.",
+      "body": "Safari ne charge que les extensions intégrées à une app Mac signée, il n’y a donc rien à installer ici. Utilisez Chrome, Edge, Brave ou Firefox pour conserver les offres ; tout le reste de jojo fonctionne de la même façon dans Safari."
+    },
+    "download": "Télécharger l’extension",
+    "firefox": {
+      "title": "Firefox a besoin d’une copie signée.",
+      "body": "Firefox est le seul navigateur où cela pourrait se faire en un clic — un module signé par Mozilla peut s’installer directement depuis un lien ici, sans fiche dans une boutique. jojo ne produit pas encore de version signée ; pour l’instant, chargez-le temporairement depuis <code>about:debugging</code> → Ce Firefox → Charger un module complémentaire temporaire, et choisissez <code>manifest.json</code>. Firefox l’oublie à son redémarrage."
+    },
+    "steps": {
+      "unzip": "Décompressez-la dans un emplacement permanent — pas dans Téléchargements. <muted>Le navigateur lit l’extension depuis ce dossier à chaque démarrage, donc le supprimer ou le déplacer désinstalle l’extension.</muted>",
+      "open": "Ouvrez la page des extensions.",
+      "copied": "Copié",
+      "copy": "Copier",
+      "paste": "Collez-le dans la barre d’adresse.",
+      "developer": "Activez le <strong>Mode développeur</strong>, en haut à droite. <muted>Laissez-le activé — le désactiver désactive les extensions chargées ainsi, sans prévenir.</muted>",
+      "load": "Cliquez sur <strong>Charger l’extension non empaquetée</strong> et choisissez le dossier décompressé.",
+      "pin": "<strong>Épinglez-la.</strong> Cliquez sur le bouton en forme de pièce de puzzle dans la barre d’outils et épinglez jojo. <muted>Les navigateurs Chromium cachent par défaut chaque extension derrière ce menu ; le bouton existe donc mais n’est pas dans la barre — c’est l’étape que l’on oublie, et on dirait exactement que l’installation a échoué.</muted>",
+      "back": "Revenez ici. <muted>Ce panneau le remarque tout seul et passe au vert.</muted>"
+    },
+    "yourBrowser": "votre navigateur",
+    "noOneClick": "Il n’existe pas d’installation en un clic pour {{browser}}, et c’est une décision du navigateur plutôt qu’une fonctionnalité manquante ici : l’API qui le permettait a été supprimée en 2018, et un paquet signé devrait de toute façon venir du Chrome Web Store. Rien dans cette extension ne parle à un serveur — elle lit la page que vous regardez et transmet le résultat à cet onglet."
+  },
+  "crash": {
+    "title": "Rapports de plantage",
+    "builtWithout": "Cette copie de jojo a été compilée sans rapports de plantage ni statistiques d’utilisation : rien n’est enregistré et il n’y a rien à activer. Une compilation les définit avec <mono>{{crashFlag}}</mono> et <mono>{{analyticsFlag}}</mono>.",
+    "intro": "Quand quelque chose plante, jojo peut conserver l’erreur pour que vous puissiez la relire — utile quand ce qui a échoué a déjà défilé hors de l’écran. Un rapport contient le message d’erreur, l’endroit de jojo où cela s’est produit et la pile d’appels. Il ne contient jamais vos candidatures, documents, notes, profil ou conversations, et les clés d’API, les adresses, votre répertoire personnel et les adresses e-mail sont retirés avant l’écriture du rapport.",
+    "where": "Dans ce navigateur et dans l’extension, les rapports de plantage <em>restent sur cet appareil</em> — rien n’est envoyé, et un fichier de sauvegarde ne les contient pas. L’application mobile les envoie aussi à Firebase Crashlytics, qui ajoute le modèle de l’appareil, la version de son système et un identifiant aléatoire servant à compter combien de personnes rencontrent le même plantage. Les rapports de plantage ne concernent que les plantages — ce que vous faites dans jojo est la question distincte ci-dessous, traitée séparément.",
+    "keep": {
+      "label": "Conserver les rapports de plantage",
+      "description": "Activé, pour qu’un plantage que vous rencontrez soit visible pour nous. Désactivez-le et rien n’est enregistré."
+    },
+    "usage": {
+      "label": "Partager les fonctionnalités que j’utilise",
+      "description": "Uniquement des comptages, issus d’une liste fixe — jamais le contenu de vos fiches.",
+      "note": "Il ne peut dire que des choses issues d’une liste fixe — quel écran a été ouvert, qu’une candidature a été ajoutée, à peu près combien il y en a. Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi. Envoyé à Google Analytics."
+    },
+    "kept_one": "{{count}} rapport conservé",
+    "kept_many": "{{count}} rapports conservés",
+    "kept_other": "{{count}} rapports conservés",
+    "clear": "Effacer",
+    "stack": "Pile",
+    "emptyOn": "Rien n’a planté depuis que vous l’avez activé.",
+    "emptyOff": "Rien n’est enregistré."
+  },
+  "audit": {
+    "title": "Ce que jojo a fait",
+    "kept_one": "{{count}} conservée",
+    "kept_many": "{{count}} conservées",
+    "kept_other": "{{count}} conservées",
+    "records_one": "{{count}} fiche",
+    "records_many": "{{count}} fiches",
+    "records_other": "{{count}} fiches",
+    "connections_one": "{{count}} liaison",
+    "connections_many": "{{count}} liaisons",
+    "connections_other": "{{count}} liaisons",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "aucun changement",
+    "undoTitle": {
+      "can": "Remet les fiches dans l’état où elles étaient avant ce changement",
+      "wholeStore": "Ce changement a remplacé tout le stockage, il n’y a donc rien à remettre",
+      "trimmed": "jojo a gardé une trace de ce changement, mais pas assez pour l’annuler — c’était une écriture en arrière-plan (une évaluation d’adéquation, les octets d’un fichier) ou il est trop ancien"
+    },
+    "undoFailed": {
+      "title": "Ce changement ne pouvait plus être annulé",
+      "description": "Il n’est plus dans le journal."
+    },
+    "empty": "Rien n’a encore été écrit dans ce stockage. Chaque modification que vous faites est consignée ici, et la trace survit à un rechargement.",
+    "showFewer": "Afficher moins",
+    "showAll": "Tout afficher ({{total}})",
+    "footer": "Les 200 dernières modifications sont conservées, les plus anciennes sont supprimées en premier. Annuler ici est une nouvelle modification à part entière — elle s’ajoute en haut de cette liste au lieu de retirer la ligne qu’elle annule."
+  },
+  "keywords": {
+    "title": "Mots-clés",
+    "hint": "partagés par toutes les fiches",
+    "intro": "Un seul ensemble pour les candidatures, les rappels et le Coffre. En renommer un le change partout où il apparaît ; en supprimer un le retire de toutes les fiches qui le portent.",
+    "usage": {
+      "none": "Sur aucune fiche pour l’instant",
+      "used_one": "Utilisé sur {{count}} fiche",
+      "used_many": "Utilisé sur {{count}} fiches",
+      "used_other": "Utilisé sur {{count}} fiches"
+    },
+    "errors": {
+      "taken": "Un autre mot-clé porte déjà ce nom.",
+      "blank": "Un mot-clé a besoin d’un nom.",
+      "exists": "Ce mot-clé existe déjà."
+    },
+    "renameNamed": "Renommer {{name}}",
+    "rename": "Renommer",
+    "deleteNamed": "Supprimer {{name}}",
+    "delete": "Supprimer",
+    "empty": {
+      "title": "Aucun mot-clé pour l’instant",
+      "description": "Ajoutez-en un ci-dessous, ou depuis le filtre de mots-clés au-dessus de n’importe quelle liste. Les mots-clés sont à vous — ce ne sont pas les étiquettes de poste fixes de la barre supérieure."
+    },
+    "newKeyword": "Nouveau mot-clé",
+    "placeholder": "ex. Recommandation",
+    "add": "Ajouter un mot-clé"
+  },
+  "documents": {
+    "title": "Vos documents",
+    "hint": "sur cet appareil",
+    "intro": "Les CV, lettres de motivation et déclarations que vous joignez sont enregistrés dans ce navigateur, sur cette machine. Rien n’est envoyé nulle part.",
+    "count_one": "{{count}} document",
+    "count_many": "{{count}} documents",
+    "count_other": "{{count}} documents",
+    "noneReadable": {
+      "title": "Aucun document n’a pu être lu",
+      "description": "Ce navigateur ne conserve plus les octets d’aucun d’entre eux."
+    },
+    "savedAll_one": "{{count}} document enregistré",
+    "savedAll_many": "{{count}} documents enregistrés",
+    "savedAll_other": "{{count}} documents enregistrés",
+    "savedSome": "{{saved}} sur {{total}} enregistrés",
+    "savedAllDescription": "Un seul fichier, {{name}}, dans votre dossier de téléchargements. Ce sont les originaux, pas des copies des fiches.",
+    "savedSomeDescription": "{{name}} est dans votre dossier de téléchargements, sans {{missing}} que ce navigateur ne pouvait plus lire.",
+    "failed": {
+      "title": "Impossible de préparer le téléchargement",
+      "description": "Rien n’a été enregistré. Réessayez, ou ouvrez un document et téléchargez-le séparément."
+    },
+    "none": "Aucun document pour l’instant",
+    "stored_one": "{{count}} document stocké",
+    "stored_many": "{{count}} documents stockés",
+    "stored_other": "{{count}} documents stockés",
+    "usage": "{{used}} utilisés sur {{quota}}",
+    "notPermanent": "Ce navigateur n’a pas marqué le stockage de jojo comme permanent : il peut donc effacer ces documents si le disque se remplit — et « Effacer les données de navigation » les supprimera quoi qu’il arrive. Gardez vos propres copies de tout ce que vous ne voudriez pas réécrire.",
+    "saving": "Enregistrement…",
+    "downloadAll": "Télécharger tous les documents"
+  },
+  "diagnostics": {
+    "title": "Diagnostic",
+    "types": {
+      "application": "Candidatures",
+      "background": "Éléments de parcours",
+      "claim": "Relations",
+      "thread": "Conversations",
+      "proposal": "Suggestions",
+      "organisation": "Organisations",
+      "timelineItem": "Éléments de la chronologie",
+      "keyword": "Mots-clés",
+      "link": "Liens",
+      "file": "Fichiers",
+      "snippet": "Extraits",
+      "person": "Personnes",
+      "stickyNote": "Notes adhésives",
+      "posting": "Offres enregistrées",
+      "match": "Correspondances Scout",
+      "pipeline": "Pipelines Scout",
+      "profile": "Profil"
+    },
+    "dataSet": {
+      "demo": "les fiches de démonstration, intactes",
+      "empty": "vidé volontairement, jamais rempli",
+      "user": "modifié depuis sa configuration"
+    },
+    "notReported": "non communiqué",
+    "checking": "vérification…",
+    "storage": "Stockage",
+    "durable": {
+      "label": "Les fiches sont écrites sur le disque",
+      "yes": "oui — IndexedDB",
+      "no": "non — cet onglet uniquement"
+    },
+    "schema": {
+      "label": "Schéma de la base de données",
+      "value": "v{{stored}} (l’app attend v{{expected}})"
+    },
+    "persisted": {
+      "label": "Le navigateur promet de le conserver",
+      "unknown": "ce navigateur ne le dit pas",
+      "yes": "oui",
+      "no": "non — le navigateur peut l’effacer à tout moment, et une fenêtre privée le fera à sa fermeture"
+    },
+    "space": {
+      "label": "Espace utilisé",
+      "value": "{{used}} sur {{quota}}"
+    },
+    "queue": {
+      "label": "File d’écriture",
+      "idle": "inactive — tout est enregistré",
+      "writing_one": "enregistrement de {{count}} modification",
+      "writing_many": "enregistrement de {{count}} modifications",
+      "writing_other": "enregistrement de {{count}} modifications",
+      "degraded": "nouvelle tentative pour {{unsaved}} modification(s), {{pending}} ligne(s) (tentative {{attempts}}) : {{error}}",
+      "stopped": "arrêtée — {{reason}}"
+    },
+    "store": "Ce stockage",
+    "contents": "Contenu",
+    "created": "Créé",
+    "seeded": "Rempli",
+    "never": "jamais",
+    "lastOpened": "Dernière ouverture",
+    "lastWrite": "Dernière écriture",
+    "nothingYet": "rien pour l’instant",
+    "skipped": {
+      "label": "Fiches illisibles",
+      "none": "aucune"
+    },
+    "integrity": {
+      "label": "Contrôles d’intégrité",
+      "failed": "{{total}} en échec",
+      "passed": "tous réussis"
+    },
+    "records": "Fiches ({{total}})",
+    "connections": "Liaisons ({{total}})",
+    "none": "Aucune"
+  },
+  "data": {
+    "title": "Vos données",
+    "export": {
+      "idle": "Télécharger une sauvegarde",
+      "progress": "Préparation de la sauvegarde… {{done}} sur {{total}} documents",
+      "preparing": "Préparation de la sauvegarde…"
+    },
+    "restoreButton": "Restaurer une sauvegarde",
+    "excel": {
+      "label": "Exporter vers Excel",
+      "title": "Aucun générateur de tableur n’est inclus — l’export JSON contient les mêmes fiches"
+    },
+    "import": {
+      "label": "Importer",
+      "title": "Relire une sauvegarde nécessite un validateur capable de refuser un fichier qu’il ne comprend pas — tant qu’il n’existe pas, un import ne pourrait que deviner"
+    },
+    "about": "Une sauvegarde complète : toutes les candidatures, la chronologie, le Coffre, les offres enregistrées, vos mots-clés et leurs étiquettes, et votre profil, dans un seul fichier versionné. C’est une copie prise maintenant — elle ne suit pas les modifications ultérieures, et c’est la seule copie qui ne se trouve pas sur cette machine.",
+    "records": {
+      "label": "Fiches",
+      "empty": "Toutes les listes sont vides, chaque page affiche donc son état de premier lancement.",
+      "emptyStays": "Il restera vide à votre retour.",
+      "emptyKeywords": "Vos mots-clés sont toujours là, et charger les données de démonstration les remplace par les siens.",
+      "demo": "La recherche de démonstration fournie avec jojo — douze candidatures, une chronologie, un Coffre garni. Rien de tout cela n’est encore à vous.",
+      "own": "Vos propres fiches. Charger les données de démonstration les remplace : exportez d’abord une sauvegarde si vous voulez les garder.",
+      "loadDemo": "Charger les données de démonstration"
+    },
+    "clearRecords": {
+      "label": "Effacer toutes les fiches",
+      "demo": "Retire les données de démonstration et laisse jojo vide. Rien ici n’est encore à vous, les mots-clés fournis partent donc avec.",
+      "own": "Retire toutes les candidatures, éléments de chronologie, entrées du Coffre, offres enregistrées, contacts, notes, conversations et éléments de CV, et vide votre profil. Vos mots-clés sont conservés.",
+      "nothingLeft": "Il ne reste rien à effacer",
+      "deletes": "Supprime toutes les fiches",
+      "button": "Effacer les fiches"
+    },
+    "move": {
+      "label": "Passer sur un autre appareil",
+      "description": "Associez un second appareil et transférez-lui tout. Une démonstration dans cette version — rien n’est transmis.",
+      "open": "Ouvrir Transfert"
+    },
+    "clearStorage": {
+      "label": "Effacer le stockage du navigateur",
+      "description": "Vide tout ce que ce site a stocké dans votre navigateur — vos fiches et leur base de données, chaque document joint, les préférences, caches et cookies — puis recharge jojo comme s’il était neuf. Les documents ne sont qu’ici ; téléchargez-les d’abord si vous voulez les garder.",
+      "clearing": "Effacement…",
+      "button": "Effacer le stockage"
+    },
+    "footer": {
+      "durable": "Vos fiches sont écrites dans la base de données de ce navigateur au fil de votre travail, vous pouvez donc fermer l’onglet sans risque. Cette base reste toutefois sur cette seule machine : un navigateur peut l’effacer et un disque peut lâcher, donc un fichier exporté conservé ailleurs est la seule vraie sauvegarde.",
+      "memory": "Vos fiches ne sont pas enregistrées en ce moment — la bannière en haut de la page explique pourquoi. Exportez une copie avant de fermer l’onglet."
+    },
+    "confirm": {
+      "fallbackTitle": "Modifier les données ?",
+      "continue": "Continuer"
+    },
+    "restoreConfirm": {
+      "title": "Tout remplacer par cette sauvegarde ?",
+      "description": "Ce fichier contient {{contents}}. {{replaces}}, et c’est irréversible — l’historique part avec. Téléchargez d’abord une sauvegarde si vous n’êtes pas sûr.",
+      "confirm": "Tout remplacer"
+    },
+    "restoreFailed": "La restauration a échoué",
+    "reload": "Recharger jojo",
+    "demoLoaded": {
+      "title": "Données de démonstration chargées",
+      "durable": "Douze candidatures, une chronologie, un Coffre garni et un profil, écrits dans votre base de données tels qu’ils ont été fournis.",
+      "memory": "Douze candidatures, une chronologie, un Coffre garni et un profil, tels qu’ils ont été fournis. Rien n’est enregistré en ce moment, ils durent donc aussi longtemps que cet onglet."
+    },
+    "cleared": {
+      "title": "Tout a été effacé",
+      "demoDurable": "Toutes les fiches de démonstration ont disparu, mots-clés compris, et cela reste ainsi après un rechargement.",
+      "demoMemory": "Toutes les fiches de démonstration ont disparu, mots-clés compris, mais rien n’est enregistré en ce moment : un rechargement repart donc des données de démonstration.",
+      "ownDurable": "Toutes les fiches ont disparu, votre profil compris, et cela reste ainsi après un rechargement. Vos mots-clés sont toujours là.",
+      "ownMemory": "Toutes les fiches ont disparu, votre profil compris, mais rien n’est enregistré en ce moment : un rechargement repart donc des données de démonstration. Vos mots-clés sont toujours là."
+    }
+  },
+  "pending": {
+    "exportFirst": "Exporter d’abord une sauvegarde",
+    "empty": {
+      "title": "Effacer toutes les fiches ?",
+      "demoDurable": "Les candidatures, la chronologie, le Coffre, les offres enregistrées, les mots-clés et le profil de démonstration disparaissent tous, et cela reste ainsi après un rechargement. Rien de tout cela n’était à vous — rien n’a été écrit dans ce stockage depuis le chargement des données de démonstration.",
+      "demoMemory": "Les candidatures, la chronologie, le Coffre, les offres enregistrées, les mots-clés et le profil de démonstration disparaissent tous, mais rien n’est enregistré en ce moment : un rechargement repart donc des données de démonstration. Rien de tout cela n’était à vous — rien n’a été écrit dans ce stockage depuis le chargement des données de démonstration.",
+      "ownDurable": "Les candidatures, la chronologie, le Coffre, les offres enregistrées, les contacts, les notes, les conversations, les éléments de CV et votre profil disparaissent tous, y compris ce que vous avez ajouté pendant cette session, et cela reste ainsi après un rechargement. C’est irréversible. Vos mots-clés sont conservés — ce sont des fiches à part entière —, mais plus rien ne les porte, donc chaque compteur du panneau des mots-clés tombe à zéro.",
+      "ownMemory": "Les candidatures, la chronologie, le Coffre, les offres enregistrées, les contacts, les notes, les conversations, les éléments de CV et votre profil disparaissent tous, y compris ce que vous avez ajouté pendant cette session, mais rien n’est enregistré en ce moment : un rechargement repart donc des données de démonstration. C’est irréversible. Vos mots-clés sont conservés — ce sont des fiches à part entière —, mais plus rien ne les porte, donc chaque compteur du panneau des mots-clés tombe à zéro.",
+      "confirm": "Tout effacer"
+    },
+    "demo": {
+      "title": "Charger les données de démonstration ?",
+      "fillDurable": "Douze candidatures, une chronologie, un Coffre garni et un profil sont écrits dans votre base de données, étiquetés avec les mots-clés fournis. Les effacer à nouveau se fait en un clic.",
+      "fillMemory": "Douze candidatures, une chronologie, un Coffre garni et un profil sont chargés, étiquetés avec les mots-clés fournis. Les effacer à nouveau se fait en un clic.",
+      "replace": "Tout ce qui est dans jojo est remplacé par les fiches de démonstration — vos candidatures, votre chronologie, votre Coffre, vos offres enregistrées, contacts, notes, conversations, éléments de CV, mots-clés et votre profil, absolument tout, remplacé et non fusionné. C’est irréversible.",
+      "confirm": "Charger les données de démonstration"
+    },
+    "storage": {
+      "title": "Effacer tout ce que ce site a stocké ?",
+      "description": "Vide ce navigateur de tout ce que jojo y a mis — vos fiches et leur base de données, vos préférences de thème et de son, les caches et les cookies — puis recharge. Aucun serveur ne détient de copie, et rien ici n’a jamais quitté cette machine : c’est donc tout. jojo revient comme sur une machine neuve : le thème du système, et la question posée au premier lancement sur le choix de commencer avec les données de démonstration ou à vide. C’est irréversible.",
+      "confirm": "Effacer le stockage"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_one": "{{count}} fiche",
+      "records_many": "{{count}} fiches",
+      "records_other": "{{count}} fiches",
+      "documents_one": "{{count}} document",
+      "documents_many": "{{count}} documents",
+      "documents_other": "{{count}} documents",
+      "links_one": "{{count}} lien",
+      "links_many": "{{count}} liens",
+      "links_other": "{{count}} liens"
+    },
+    "lost": {
+      "title": "Certaines fiches n’ont pas pu être restaurées",
+      "description": "Ce fichier contenait {{held}}. {{kept}} sont sur cet appareil et {{lost}} n’ont pas pu être lues — celles-là sont perdues. Le fichier lui-même est intact, donc une version capable de les lire peut encore le restaurer.",
+      "descriptionWithDocuments": "Ce fichier contenait {{held}}. {{kept}} et {{documents}} sont sur cet appareil et {{lost}} n’ont pas pu être lues — celles-là sont perdues. Le fichier lui-même est intact, donc une version capable de les lire peut encore le restaurer."
+    },
+    "withoutLinks": {
+      "title": "Restauré, sans certains liens",
+      "description": "Les {{held}} sont toutes revenues. {{links}} entre elles n’ont pas pu être lus, donc quelques documents, rappels ou offres risquent de ne plus être classés sous le poste auquel ils appartenaient. Rien d’autre ne manque.",
+      "descriptionWithDocuments": "Les {{held}} et {{documents}} sont tous revenus. {{links}} entre eux n’ont pas pu être lus, donc quelques documents, rappels ou offres risquent de ne plus être classés sous le poste auquel ils appartenaient. Rien d’autre ne manque."
+    },
+    "done": {
+      "title": "Restauré",
+      "description": "{{records}} sont revenues, exactement comme le fichier les contenait.",
+      "descriptionWithDocuments": "{{records}} et {{documents}} sont revenus, exactement comme le fichier les contenait."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "Ce fichier n’a pas pu être lu",
+      "description": "Votre navigateur n’a pas pu lire ce fichier — il a peut-être été déplacé, renommé ou déconnecté depuis que vous l’avez choisi. Rien n’a été modifié ; choisissez-le à nouveau une fois qu’il est de retour."
+    },
+    "refused": {
+      "title": "Ce fichier ne peut pas être restauré",
+      "notBackup": "Ce fichier n’est pas une sauvegarde jojo. Rien n’a été modifié.",
+      "reason": "{{reason}}. Rien n’a été modifié."
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { FormEvent } from 'react'
 import { Field, FormField } from '@/components/common/Field'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
@@ -25,6 +26,7 @@ const SELECT_CLASS =
  * row opened, which is where half-edited values leak between records.
  */
 export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => void }) {
+  const { t } = useTranslation('vault')
   const { updateLink } = useVault()
   const { toast } = useToast()
 
@@ -41,9 +43,8 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
   const cleanUrl = normalizeUrl(url)
   const parsed = parseUrl(cleanUrl)
 
-  const titleError = submitted && !title.trim() ? 'Give the link a title.' : undefined
-  const urlError =
-    submitted && !parsed ? 'That needs a host, like jobs.rice.edu/postings.' : undefined
+  const titleError = submitted && !title.trim() ? t('links.errors.title') : undefined
+  const urlError = submitted && !parsed ? t('links.errors.url') : undefined
 
   const save = (event: FormEvent) => {
     event.preventDefault()
@@ -71,9 +72,9 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
     // with what was typed, rather than closing over a success toast.
     if (announceRefusal(written, toast)) return
     toast({
-      title: `${title.trim()} updated`,
-      description: `Filed under ${category}.`,
-      action: { label: 'Undo', onClick: () => updateLink(link.id, before) },
+      title: t('common.updated', { title: title.trim() }),
+      description: t('snippets.toast.moved', { tag: category }),
+      action: { label: t('common.undo'), onClick: () => updateLink(link.id, before) },
     })
     onDone()
   }
@@ -84,7 +85,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
     <form noValidate onSubmit={save} className="grid gap-3 py-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
-          label="Title"
+          label={t('links.fields.title')}
           required
           error={titleError}
           value={title}
@@ -93,7 +94,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
           onChange={(event) => setTitle(event.target.value)}
         />
         <Field
-          label="URL"
+          label={t('links.fields.url')}
           mono
           required
           error={urlError}
@@ -104,7 +105,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label="Category" htmlFor={categoryId}>
+        <FormField label={t('links.fields.category')} htmlFor={categoryId}>
           <select
             id={categoryId}
             value={category}
@@ -120,9 +121,9 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
         </FormField>
 
         <FormField
-          label="Related application"
+          label={t('snippets.editor.application.label')}
           htmlFor={appFieldId}
-          hint="Files the link under a job, so both ends know about the other."
+          hint={t('links.fields.applicationHint')}
         >
           <ApplicationPicker
             id={appFieldId}
@@ -134,16 +135,16 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
       </div>
 
       <Field
-        label="Note"
-        hint="One line about why this is worth keeping."
+        label={t('links.fields.note')}
+        hint={t('links.fields.noteHint')}
         value={note}
         autoComplete="off"
         onChange={(event) => setNote(event.target.value)}
       />
 
       <FormField
-        label="Keywords"
-        hint="Shared with applications, reminders and files — filtering by one finds all of them."
+        label={t('snippets.editor.keywords.label')}
+        hint={t('snippets.editor.keywords.hint')}
       >
         <div className="flex min-h-6 flex-wrap items-center gap-1.5">
           <LabelPicker recordId={link.id} />
@@ -155,12 +156,12 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
 
       <div className="flex flex-wrap justify-end gap-2">
         <Button type="button" variant="outline" size="sm" onClick={onDone}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         {/* Left enabled with a field empty: pressing it names the problem, where
             a disabled button leaves the user hunting for which one. */}
         <Button type="submit" size="sm">
-          Save changes
+          {t('common.saveChanges')}
         </Button>
       </div>
     </form>

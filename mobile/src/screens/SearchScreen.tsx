@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Screen } from '@/components/ui/Screen'
 import { SearchInput } from '@/components/ui/SearchInput'
@@ -11,7 +13,6 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { s } from '@/theme/styles'
 import { Txt } from '@/components/ui/Text'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
-import { shortDate, whenLabel } from '@jojo/service/data/timeline'
 import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { DESTINATIONS } from '@/lib/destinations'
 import { matchesQuery } from '@/lib/search'
@@ -22,14 +23,26 @@ import { KIND_ICON } from '@/lib/timeline-visuals'
 import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+
+/**
+ * Rows drawn per group until the person asks for the rest.
+ *
+ * A one-letter query matches nearly every record, and every match is a
+ * Pressable row mounted inside a ScrollView — there is no virtualised list on
+ * the phone — on every keystroke. Twenty is more than a phone screen shows, so
+ * nothing is hidden that would have been seen without scrolling.
+ */
+const GROUP_ROWS = 20
 import { TourTarget } from '@/components/tour/TourTarget'
+import { useDomain } from '@/i18n/domain'
 
 type Result = {
   id: string
   icon: FeatherName
   title: string
   detail: string
-  group: string
+  /** Which section the result is listed under; a key, translated when drawn. */
+  group: 'applications' | 'reminders' | 'calendar' | 'vault' | 'jobScout' | 'goTo'
   onPress: () => void
 }
 
@@ -43,6 +56,8 @@ type Result = {
  * which list it happens to live in.
  */
 export function SearchScreen() {
+  const { t, i18n } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { open } = useSheets()
@@ -56,6 +71,12 @@ export function SearchScreen() {
 
   const [query, setQuery] = useState('')
   const q = query.trim()
+  /** Groups opened past `GROUP_ROWS`, for this query only. */
+  const [expanded, setExpanded] = useState<{ query: string; groups: Set<string> }>({
+    query: '',
+    groups: new Set(),
+  })
+  const shown = (group: string) => expanded.query === q && expanded.groups.has(group)
 
   const results = useMemo<Result[]>(() => {
     if (!q) return []
@@ -64,13 +85,16 @@ export function SearchScreen() {
     const out: Result[] = []
 
     for (const a of applications) {
-      if (!hit(a.org, a.role, a.note, a.roleTag, STAGE_LABEL[a.stage], a.location)) continue
+      // The stage in both the English the record is written in and the words
+      // on screen, so either finds it.
+      const stage = domain.stage(a.stage)
+      if (!hit(a.org, a.role, a.note, a.roleTag, STAGE_LABEL[a.stage], stage, a.location)) continue
       out.push({
         id: `app-${a.id}`,
         icon: 'clipboard',
         title: displayName(a),
-        detail: `${STAGE_LABEL[a.stage]} · ${a.roleTag}`,
-        group: 'Applications',
+        detail: `${stage} · ${a.roleTag}`,
+        group: 'applications',
         onPress: () => navigation.navigate('ApplicationDetail', { id: a.id }),
       })
     }
@@ -81,8 +105,8 @@ export function SearchScreen() {
         id: `item-${i.id}`,
         icon: KIND_ICON[i.kind],
         title: i.title,
-        detail: `${shortDate(i.date)} · ${whenLabel(i, TODAY)}`,
-        group: i.remind ? 'Reminders' : 'Calendar',
+        detail: `${domain.shortDate(i.date)} · ${domain.when(i, TODAY)}`,
+        group: i.remind ? 'reminders' : 'calendar',
         onPress: () => open('timelineItem', { mode: i.remind ? 'reminder' : 'event', initial: i }),
       })
     }
@@ -94,7 +118,7 @@ export function SearchScreen() {
         icon: 'link-2',
         title: l.title,
         detail: l.category,
-        group: 'Vault',
+        group: 'vault',
         onPress: () => navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'links' } }),
       })
     }
@@ -106,7 +130,7 @@ export function SearchScreen() {
         icon: 'file-text',
         title: f.name,
         detail: `${f.bucket} · ${f.size}`,
-        group: 'Vault',
+        group: 'vault',
         onPress: () => navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'files' } }),
       })
     }
@@ -118,7 +142,7 @@ export function SearchScreen() {
         icon: 'copy',
         title: s.title,
         detail: s.tag,
-        group: 'Vault',
+        group: 'vault',
         onPress: () =>
           navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
       })
@@ -131,7 +155,7 @@ export function SearchScreen() {
         icon: 'external-link',
         title: p.title,
         detail: p.url,
-        group: 'Job scout',
+        group: 'jobScout',
         onPress: () => navigation.navigate('JobScout'),
       })
     }
@@ -142,8 +166,8 @@ export function SearchScreen() {
         id: `match-${m.id}`,
         icon: 'radio',
         title: m.role,
-        detail: `${m.fit}% fit`,
-        group: 'Job scout',
+        detail: t('search.fit', { fit: m.fit }),
+        group: 'jobScout',
         onPress: () => navigation.navigate('JobScout'),
       })
     }
@@ -158,29 +182,50 @@ export function SearchScreen() {
         icon: d.icon,
         title: d.label,
         detail: d.hint,
-        group: 'Go to',
+        group: 'goTo',
         onPress: () => d.go(navigation),
       })
     }
 
     return out
-  }, [q, applications, items, links, files, snippets, postings, matches, navigation, open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the language is what `domain` reads; a switch must re-run this
+  }, [
+    q,
+    applications,
+    items,
+    links,
+    files,
+    snippets,
+    postings,
+    matches,
+    navigation,
+    open,
+    t,
+    domain,
+    i18n.language,
+  ])
 
   const grouped = useMemo(() => {
-    const map = new Map<string, Result[]>()
-    for (const r of results) map.set(r.group, [...(map.get(r.group) ?? []), r])
+    const map = new Map<Result['group'], Result[]>()
+    // Pushed, not spread: a spread copied the group's array once per row, which
+    // is quadratic in the size of the group on every keystroke.
+    for (const r of results) {
+      const rows = map.get(r.group)
+      if (rows) rows.push(r)
+      else map.set(r.group, [r])
+    }
     return [...map.entries()]
   }, [results])
 
   return (
-    <Screen title="Search" subtitle="Applications, dates, the vault and the scout, all at once">
+    <Screen title={t('search.title')} subtitle={t('search.subtitle')}>
       {/* Marked for the guided tour, which lights the field to type in. */}
       <TourTarget id="search-field">
         <SearchInput
-          label="Search everything"
+          label={t('search.fieldLabel')}
           value={query}
           onChange={setQuery}
-          placeholder="Search applications, reminders, files…"
+          placeholder={t('search.placeholder')}
           autoFocus
         />
       </TourTarget>
@@ -190,8 +235,8 @@ export function SearchScreen() {
           <Panel>
             <EmptyState
               icon="search"
-              title="Type to search"
-              description="One field over every collection — because “where did I put the Rice thing” is a question about the record, not about which list it lives in."
+              title={t('search.idleTitle')}
+              description={t('search.idleDescription')}
             />
           </Panel>
 
@@ -200,7 +245,7 @@ export function SearchScreen() {
               time the answer is that it does not exist yet. */}
           <Panel padded={false}>
             <View style={{ paddingHorizontal: space[4], paddingTop: space[3] }}>
-              <PanelTitle hint="nothing to find? make it">Create</PanelTitle>
+              <PanelTitle hint={t('search.createHint')}>{t('search.create')}</PanelTitle>
             </View>
             {createActions.map((action, i) => (
               <View key={action.id}>
@@ -229,19 +274,19 @@ export function SearchScreen() {
         <Panel>
           <EmptyState
             icon="search"
-            title={`Nothing matches “${query.trim()}”`}
-            description="Search reads the title, note and category of every record. Nothing here is fetched from anywhere else."
+            title={t('search.noneTitle', { query: query.trim() })}
+            description={t('search.noneDescription')}
           />
         </Panel>
       ) : (
         grouped.map(([group, rows]) => (
           <Panel key={group} padded={false}>
             <View style={{ paddingHorizontal: space[4], paddingTop: space[3] }}>
-              <PanelTitle hint={`${rows.length} ${rows.length === 1 ? 'result' : 'results'}`}>
-                {group}
+              <PanelTitle hint={t('search.results', { count: rows.length })}>
+                {t(`search.groups.${group}`)}
               </PanelTitle>
             </View>
-            {rows.map((r, i) => (
+            {(shown(group) ? rows : rows.slice(0, GROUP_ROWS)).map((r, i) => (
               <View key={r.id}>
                 {i > 0 ? <Divider /> : null}
                 <Pressable
@@ -262,6 +307,19 @@ export function SearchScreen() {
                 </Pressable>
               </View>
             ))}
+            {rows.length > GROUP_ROWS && !shown(group) ? (
+              <Button
+                label={t('search.showAll', { count: rows.length })}
+                variant="ghost"
+                onPress={() =>
+                  setExpanded((was) => ({
+                    query: q,
+                    groups: new Set([...(was.query === q ? was.groups : []), group]),
+                  }))
+                }
+                style={{ alignSelf: 'flex-start', margin: space[2] }}
+              />
+            ) : null}
           </Panel>
         ))
       )}

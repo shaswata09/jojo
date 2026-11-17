@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { AgentPanel } from '@/components/assistant/AgentPanel'
 import { ScriptedPanel } from '@/components/assistant/ScriptedPanel'
 import { useTitle } from '@/lib/links'
@@ -5,7 +6,8 @@ import { isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
 
 export function Assistant() {
-  useTitle('Assistant')
+  const { t } = useTranslation('pages')
+  useTitle(t('assistant.title'))
   const { settings } = useModelSettings()
   // The split is at the top because the two modes share almost nothing below it:
   // one has a transcript of messages and the other a trace of tool calls, and a

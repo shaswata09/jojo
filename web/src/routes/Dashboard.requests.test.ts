@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import applicationsEn from '@/i18n/locales/en/applications.json'
 
 const sources = import.meta.glob('/src/**/*.tsx', {
   query: '?raw',
@@ -32,10 +33,12 @@ const dashboard = read('/src/routes/Dashboard.tsx')
 const owed = read('/src/components/dashboard/OwedThisWeek.tsx')
 
 /** The `<div className="grid ...">` blocks of the dashboard, in order. */
-const grids = [...dashboard.matchAll(/<div className="(grid [^"]*)">([\s\S]*?)\n {6}<\/div>/g)].map((m) => ({
-  className: m[1] ?? '',
-  body: m[2] ?? '',
-}))
+const grids = [...dashboard.matchAll(/<div className="(grid [^"]*)">([\s\S]*?)\n {6}<\/div>/g)].map(
+  (m) => ({
+    className: m[1] ?? '',
+    body: m[2] ?? '',
+  }),
+)
 
 const classesOf = (src: string, pattern: RegExp) => (pattern.exec(src)?.[1] ?? '').split(/\s+/)
 
@@ -54,7 +57,9 @@ describe('the dashboard content (Q004)', () => {
 
   it('flags overdue work by its date and lists it first', () => {
     expect(owed).toMatch(/const overdue = openItems\.filter\(\(i\) => i\.date < today\)/)
-    expect(owed).toMatch(/groups: \[\s*\{ id: 'overdue', label: 'Overdue', items: overdue \}/)
+    expect(owed).toMatch(
+      /groups: \[\s*\{ id: 'overdue', label: t\('owed\.groups\.overdue'\), items: overdue \}/,
+    )
   })
 })
 
@@ -76,7 +81,8 @@ describe('the bottom row (Q041, Q062)', () => {
     expect(bottom?.className).toContain('lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]')
     const body = bottom?.body ?? ''
     expect(body.indexOf('<OwedThisWeek />')).toBeGreaterThanOrEqual(0)
-    const column = /<div className="flex min-w-0 flex-col[^"]*">([\s\S]*?)<\/div>/.exec(body)?.[1] ?? ''
+    const column =
+      /<div className="flex min-w-0 flex-col[^"]*">([\s\S]*?)<\/div>/.exec(body)?.[1] ?? ''
     // StatsCard opens on the Pipeline view.
     expect(column).toMatch(/<RecentApplications \/>\s*<StatsCard \/>/)
   })
@@ -85,7 +91,9 @@ describe('the bottom row (Q041, Q062)', () => {
     expect(bottom?.className.split(/\s+/)).toContain('items-stretch')
     expect(owed).toMatch(/<Panel className="flex min-w-0 flex-col">/)
     // The list fills what it is given and scrolls, rather than setting the height.
-    expect(classesOf(owed, /<div className="(relative lg:min-h-0 lg:flex-1)">/)).toContain('lg:flex-1')
+    expect(classesOf(owed, /<div className="(relative lg:min-h-0 lg:flex-1)">/)).toContain(
+      'lg:flex-1',
+    )
     const list = classesOf(owed, /<div className="(-mx-4 -mb-4 max-h-\[30rem\][^"]*)">/)
     expect(list).toContain('lg:absolute')
     expect(list).toContain('lg:max-h-none')
@@ -97,8 +105,12 @@ describe('a Vault reminder row on a phone (Q062)', () => {
 
   it('wraps its actions under the title below sm', () => {
     expect(row).toContain("'flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 sm:flex-nowrap'")
-    expect(row).toContain('<div className="min-w-0 flex-1 basis-[calc(100%-1.875rem)] sm:basis-auto">')
-    expect(row).toContain('<div className="flex w-full shrink-0 items-center justify-end gap-1 sm:w-auto sm:justify-start">')
+    expect(row).toContain(
+      '<div className="min-w-0 flex-1 basis-[calc(100%-1.875rem)] sm:basis-auto">',
+    )
+    expect(row).toContain(
+      '<div className="flex w-full shrink-0 items-center justify-end gap-1 sm:w-auto sm:justify-start">',
+    )
   })
 })
 
@@ -122,7 +134,10 @@ describe('cards with many items (Q313)', () => {
 
   for (const [card, classes] of Object.entries(scrollBoxes)) {
     it(`${card} caps its height and scrolls with the bar on the card edge`, () => {
-      expect(classes.some((c) => /^max-h-\[\d+rem\]$/.test(c)), classes.join(' ')).toBe(true)
+      expect(
+        classes.some((c) => /^max-h-\[\d+rem\]$/.test(c)),
+        classes.join(' '),
+      ).toBe(true)
       expect(classes).toContain('overflow-y-auto')
       const bleed = classes.find((c) => c.startsWith('-mx-'))?.slice('-mx-'.length)
       expect(bleed).toBeDefined()
@@ -133,7 +148,9 @@ describe('cards with many items (Q313)', () => {
 
 describe('the quick start above the deck (Q043)', () => {
   // Comments stripped, so a sentence about AddByUrl cannot stand in for the tag.
-  const code = dashboard.replace(/\{?\/\*[\s\S]*?\*\/\}?/g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
+  const code = dashboard
+    .replace(/\{?\/\*[\s\S]*?\*\/\}?/g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 
   it('uses the shared AddByUrl component, not a copy', () => {
     expect(code).toContain("import { AddByUrl } from '@/components/applications/AddByUrl'")
@@ -149,7 +166,11 @@ describe('the quick start above the deck (Q043)', () => {
     // No `submitLabel`: the component's default is "Add application", which is
     // what the owner asked the button to say. The /applications header shortens
     // it to "From link" only because a New application button sits beside it.
-    expect(code).toMatch(/<Panel aria-label="Start from a link" className="py-2\.5 sm:py-3">\s*<AddByUrl \/>\s*<\/Panel>/)
-    expect(read('/src/components/applications/AddByUrl.tsx')).toContain("submitLabel = 'Add application'")
+    expect(code).toMatch(
+      /<Panel aria-label=\{t\('dashboard\.startFromLink'\)\} className="py-2\.5 sm:py-3">\s*<AddByUrl \/>\s*<\/Panel>/,
+    )
+    const addByUrl = read('/src/components/applications/AddByUrl.tsx')
+    expect(addByUrl).toContain("{submitLabel ?? t('addByUrl.submit')}")
+    expect(applicationsEn.addByUrl.submit).toBe('Add application')
   })
 })

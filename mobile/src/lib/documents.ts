@@ -1,4 +1,5 @@
 import { Platform, Share } from 'react-native'
+import { i18next } from '@/i18n/i18n'
 import {
   errorCodes,
   isErrorWithCode,
@@ -158,7 +159,8 @@ export async function pickDocuments(bucket: FileBucket): Promise<PickOutcome> {
       // The old code threw on the first failure and lost the rest of the batch;
       // this keeps whatever copied and only reports if nothing did.
       if (!copy || copy.status !== 'success') {
-        firstFailure ??= copy?.status === 'error' ? copy.copyError : 'The copy did not complete.'
+        firstFailure ??=
+          copy?.status === 'error' ? copy.copyError : i18next.t('messages:documents.incomplete')
         continue
       }
 
@@ -177,7 +179,11 @@ export async function pickDocuments(bucket: FileBucket): Promise<PickOutcome> {
     }
 
     if (documents.length === 0) {
-      return { ok: false, cancelled: false, reason: firstFailure ?? 'Nothing was copied.' }
+      return {
+        ok: false,
+        cancelled: false,
+        reason: firstFailure ?? i18next.t('messages:documents.nothingCopied'),
+      }
     }
     return { ok: true, documents }
   } catch (error) {

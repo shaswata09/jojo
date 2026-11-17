@@ -113,7 +113,7 @@ describe('the Settings control (Q064)', () => {
   const code = dataPanelSource.replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ')
 
   it('asks first: the button only stages the clear', () => {
-    const row = code.slice(code.indexOf('label="Clear browser storage"'))
+    const row = code.slice(code.indexOf("label={t('data.clearStorage.label')}"))
     expect(row).toMatch(/onClick=\{\(\) => setPending\('storage'\)\}/)
     expect(row.slice(0, row.indexOf('</Button>'))).not.toContain('onClearStorage')
   })

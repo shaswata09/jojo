@@ -1,0 +1,122 @@
+{
+  "common": {
+    "connections_one": "{{count}} connexion",
+    "connections_many": "{{count}} connexions",
+    "connections_other": "{{count}} connexions",
+    "records_one": "{{count}} enregistrement",
+    "records_many": "{{count}} enregistrements",
+    "records_other": "{{count}} enregistrements"
+  },
+  "legend": {
+    "show": "Afficher {{name}}",
+    "hide": "Masquer {{name}}",
+    "allHidden": "Tous les types d’enregistrement sont masqués.",
+    "showAll": "Tout afficher",
+    "isA": "est un"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Graphe de connaissances — {{records}}, {{connections}}",
+    "capped": "Affichage des {{shown}} enregistrements les plus connectés. {{dropped}} autres sont dans le stockage mais pas sur ce canevas — affinez avec les filtres pour les voir.",
+    "description": "Chaque enregistrement est un nœud et chaque référence entre enregistrements est une ligne. Les panneaux à côté de ce graphe donnent les mêmes informations sous forme de texte."
+  },
+  "answer": {
+    "title": "Réponse",
+    "records_one": "{{count}} enregistrement",
+    "records_many": "{{count}} enregistrements",
+    "records_other": "{{count}} enregistrements",
+    "prompt": "Choisissez un exemple ou construisez un motif : la réponse apparaît ici et s’allume dans le graphe ci-dessus.",
+    "emptyTitle": "Aucun enregistrement ne correspond",
+    "clear": "Effacer la requête",
+    "caption": "Enregistrements correspondant au motif",
+    "columns": {
+      "record": "Enregistrement",
+      "kind": "Type",
+      "matched": "Correspondances"
+    },
+    "open": "Ouvrir",
+    "select": "Sélectionner dans le graphe",
+    "via": "via {{rel}}",
+    "more_one": "{{names}} +{{count}} autre",
+    "more_many": "{{names}} +{{count}} autres",
+    "more_other": "{{names}} +{{count}} autres",
+    "showing": "Affichage des {{shown}} premiers sur {{total}}. Tous sont allumés dans le graphe ci-dessus."
+  },
+  "examples": {
+    "title": "Exemples commentés",
+    "nothingToAsk": "Cette session n’a rien sur quoi poser cette question"
+  },
+  "query": {
+    "title": "Interroger le graphe",
+    "hint": "Posez la question en une phrase, ou construisez-la à la main",
+    "shape": "Forme de la question",
+    "pattern": "Motif",
+    "path": "Chemin",
+    "generated": "Requête générée",
+    "clear": "Effacer",
+    "sqlNote": "La forme de la question, avec les mots de SQL pour plus de lisibilité. La requête réellement exécutée est la version structurée au-dessus — rien n’analyse cette ligne."
+  },
+  "fields": {
+    "records": "Enregistrements",
+    "anyRecord": "Tout enregistrement",
+    "ofKind": "De type",
+    "anyKind": "Tout type",
+    "reminder": "Rappel",
+    "condition": "Condition",
+    "quantifier": {
+      "has": "a",
+      "missing": "n’a pas de",
+      "atLeast": "a au moins"
+    },
+    "howMany": "Combien",
+    "orMore_one": "{{count}} ou plus",
+    "orMore_many": "{{count}} ou plus",
+    "orMore_other": "{{count}} ou plus",
+    "relationship": "Relation",
+    "anyRelationship": "toute relation",
+    "connectedTo": "Relié à",
+    "anything": "n’importe quoi",
+    "keyword": "Avec le mot-clé",
+    "anyKeyword": "tout mot-clé",
+    "from": "De",
+    "to": "À"
+  },
+  "detail": {
+    "title": "Enregistrement sélectionné",
+    "nothingSelected": "Aucune sélection",
+    "pickHint": "Choisissez un nœud — en cliquant dessus, ou en y allant avec Tab puis Entrée — pour voir à quoi il est relié et où il se trouve dans l’application.",
+    "open": "Ouvrir : {{type}}",
+    "openType": {
+      "application": "Ouvrir la candidature",
+      "organisation": "Ouvrir l’organisation",
+      "role": "Ouvrir le poste",
+      "item": "Ouvrir l’élément de la chronologie",
+      "keyword": "Ouvrir le mot-clé",
+      "link": "Ouvrir le lien",
+      "file": "Ouvrir le fichier",
+      "snippet": "Ouvrir l’extrait",
+      "posting": "Ouvrir l’offre enregistrée",
+      "match": "Ouvrir la correspondance de l’éclaireur",
+      "source": "Ouvrir la source",
+      "background": "Ouvrir « À propos de vous »",
+      "claim": "Ouvrir la relation"
+    },
+    "derived": "Dérivé de vos enregistrements — il n’a pas de page propre.",
+    "verbs": "Ce que vous pouvez en faire",
+    "noLinks": "Rien ne pointe encore vers cet enregistrement."
+  },
+  "ask": {
+    "notConnected": "Connectez un modèle local dans les <settings>Paramètres</settings> pour poser cette question en une phrase. Le constructeur ci-dessous fonctionne dans tous les cas.",
+    "label": "Poser une question au graphe",
+    "stop": "Arrêter",
+    "submit": "Demander",
+    "again": "Demander autre chose",
+    "suggestions": {
+      "noFollowUp": "Quelles candidatures n’ont aucune relance programmée ?",
+      "unfiled": "Quels fichiers ne sont classés nulle part ?",
+      "busy": "Quelles candidatures ont plus de deux éléments dans leur chronologie ?"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { AddByUrl } from '@/components/applications/AddByUrl'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
@@ -7,12 +8,10 @@ import { StatsCard } from '@/components/dashboard/StatsCard'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
 import { OfferComparison } from '@/components/dashboard/OfferComparison'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
-import { MONTH_LABELS } from '@/data/calendar'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTitle } from '@/lib/links'
 import { TODAY_PARTS } from '@/lib/today'
-
-const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+import { domain } from '@/i18n/domain'
 
 /**
  * "Monday 12 October" — today, spelled out.
@@ -29,10 +28,14 @@ const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
  * read "Monday 12 October". That is the worst place in the app for it: the page
  * is titled Today and the subtitle is the only sentence on it that names a day.
  */
-const spellOut = (parts: { year: number; month: number; day: number }) =>
-  `${WEEKDAY_NAMES[new Date(parts.year, parts.month - 1, parts.day).getDay()]} ${parts.day} ${
-    MONTH_LABELS[parts.month - 1]
-  }`
+const spellOut = (parts: { year: number; month: number; day: number }, language: string) =>
+  language === 'en'
+    ? `${domain.weekday(new Date(parts.year, parts.month - 1, parts.day).getDay())} ${parts.day} ${domain.month(parts.month)}`
+    : // Every other language spells the day its own way — order, case and
+      // punctuation included — which is what `Intl` is for.
+      new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(
+        new Date(parts.year, parts.month - 1, parts.day),
+      )
 
 /**
  * The landing screen, and until now the only route with no `PageHeader` — no
@@ -46,21 +49,22 @@ const spellOut = (parts: { year: number; month: number; day: number }) =>
  * what is overdue, what is due — below the fold on a 900px screen.
  */
 export function Dashboard() {
-  useTitle('Today')
+  const { t, i18n } = useTranslation('pages')
+  useTitle(t('dashboard.title'))
   const { all } = useApplications()
 
   // Spelled at render, so the header follows the pin the rest of the app moved
   // to at midnight.
-  const todayLabel = spellOut(TODAY_PARTS)
+  const todayLabel = spellOut(TODAY_PARTS, i18n.language)
 
   const subtitle =
     all.length === 0
-      ? `${todayLabel} · nothing tracked yet — everything you add stays on this machine.`
-      : `${todayLabel} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this machine.`
+      ? t('dashboard.subtitleEmpty', { date: todayLabel })
+      : t('dashboard.subtitle', { date: todayLabel, count: all.length })
 
   return (
     <>
-      <PageHeader title="Today" subtitle={subtitle} />
+      <PageHeader title={t('dashboard.title')} subtitle={subtitle} />
 
       {/* The quick start the owner asked for: paste a posting's link and start
           an application from it, above the deck. It is the same AddByUrl as on
@@ -69,7 +73,7 @@ export function Dashboard() {
           the duplicate check at Save comes with it. One row on its own slim
           surface: the field takes the width and the button sits on its right,
           which still fits a 400px phone. */}
-      <Panel aria-label="Start from a link" className="py-2.5 sm:py-3">
+      <Panel aria-label={t('dashboard.startFromLink')} className="py-2.5 sm:py-3">
         <AddByUrl />
       </Panel>
 

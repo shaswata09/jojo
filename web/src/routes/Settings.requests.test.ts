@@ -4,6 +4,8 @@ import connections from '@/components/settings/ConnectionsSection.tsx?raw'
 import captureExtension from '@/components/settings/CaptureExtensionPanel.tsx?raw'
 import dataPanel from '@/components/settings/DataPanel.tsx?raw'
 import firstRunChoice from '@/components/common/FirstRunChoice.tsx?raw'
+import commonCatalog from '@/i18n/locales/en/common.json?raw'
+import settingsCatalog from '@/i18n/locales/en/settings.json'
 
 /**
  * The Settings page (G6). Source reads, because D20 forbids mounting; comments
@@ -36,7 +38,9 @@ describe('what Settings no longer shows', () => {
   })
 
   it('has no field showing the page’s own address (Q086)', () => {
-    expect(anywhere(/location\.href|location\.host\b|label="(?:Page )?(?:URL|Address of this page)"/)).toEqual([])
+    expect(
+      anywhere(/location\.href|location\.host\b|label="(?:Page )?(?:URL|Address of this page)"/),
+    ).toEqual([])
   })
 
   it('has no bridge pairing code (Q088)', () => {
@@ -47,7 +51,9 @@ describe('what Settings no longer shows', () => {
 
 describe('the Settings layout', () => {
   it('runs the extension paragraph the full width of its card (Q116)', () => {
-    const paragraph = /<p className="([^"]*)">\s*A job posting is the one document/.exec(
+    // The paragraph's words live in the catalog; the source holds its key.
+    expect(settingsCatalog.capture.intro).toMatch(/^A job posting is the one document/)
+    const paragraph = /<p className="([^"]*)">\s*\{t\('capture\.intro'\)\}/.exec(
       strip(captureExtension),
     )
     expect(paragraph).not.toBeNull()
@@ -69,10 +75,15 @@ describe('the Settings layout', () => {
 
 describe('starting empty and loading the demo again (Q073)', () => {
   it('offers Start empty on first run', () => {
-    expect(strip(firstRunChoice)).toMatch(/choice: 'empty',\s*icon: \w+,\s*title: 'Start empty'/)
+    expect(strip(firstRunChoice)).toMatch(
+      /choice: 'empty',\s*icon: \w+,\s*title: 'firstRun\.empty\.title'/,
+    )
+    expect(JSON.parse(commonCatalog).firstRun.empty.title).toBe('Start empty')
   })
 
   it('offers the demo data again from Settings → Data', () => {
-    expect(strip(dataPanel)).toMatch(/const onLoadDemo = async \(\) => \{\s*if \(!\(await chooseDataSet\('demo'\)\)\) return/)
+    expect(strip(dataPanel)).toMatch(
+      /const onLoadDemo = async \(\) => \{\s*if \(!\(await chooseDataSet\('demo'\)\)\) return/,
+    )
   })
 })

@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Briefcase, Loader2, MessageSquarePlus, Search, X } from 'lucide-react'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { NodeId } from '@jojo/service/core/model'
-import { agoLabel } from '@jojo/service/core/dates'
 import { dayOf } from '@jojo/service/core/project'
 import { useBusyThreads } from '@jojo/service/react/agent-runs-context'
 import { displayName } from '@jojo/service/data/seed'
@@ -14,6 +14,7 @@ import type { Snippet } from '@/components/assistant/thread-search'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TODAY } from '@/lib/today'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Every conversation, to move between.
@@ -91,6 +92,9 @@ export function ThreadList({
   const filter = query
   const setFilter = onQuery
 
+  // `tr`, because `t` is this file's name for a thread.
+  const { t: tr } = useTranslation('assistant')
+  const domain = useDomain()
   const { groups, evidence, hitCount } = useMemo(() => {
     const nameOf = (t: Thread) => {
       const app = t.applicationId ? byId.get(t.applicationId) : undefined
@@ -122,7 +126,7 @@ export function ThreadList({
       // than what they lack — "Not about a job yet" is a state, "Other" is a
       // shrug.
       const key = label || '￿'
-      const group = by.get(key) ?? { label: label || 'Not about a job yet', threads: [] }
+      const group = by.get(key) ?? { label: label || tr('threadList.noJob'), threads: [] }
       group.threads.push(t)
       by.set(key, group)
     }
@@ -133,7 +137,7 @@ export function ThreadList({
       evidence,
       hitCount: (found ?? []).reduce((n, h) => n + h.matchCount, 0),
     }
-  }, [byId, filter, threads])
+  }, [byId, filter, threads, tr])
 
   const busyThreads = useBusyThreads()
 
@@ -143,14 +147,14 @@ export function ThreadList({
         <div className="mt-2">
           <div className="relative">
             <Search
-              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-3"
+              className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3"
               aria-hidden
             />
             <Input
               value={filter}
-              aria-label="Search conversations"
-              placeholder="Search what was said"
-              className="h-8 pr-8 pl-8"
+              aria-label={tr('threadList.searchLabel')}
+              placeholder={tr('threadList.searchPlaceholder')}
+              className="h-8 ps-8 pe-8"
               onChange={(e) => {
                 setFilter(e.target.value)
               }}
@@ -167,11 +171,11 @@ export function ThreadList({
             {filter ? (
               <button
                 type="button"
-                aria-label="Clear search"
+                aria-label={tr('threadList.clearSearch')}
                 onClick={() => {
                   setFilter('')
                 }}
-                className="absolute top-1/2 right-1.5 -translate-y-1/2 cursor-pointer rounded-sm p-1 text-text-3 transition-colors hover:text-text-1"
+                className="absolute end-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-sm p-1 text-text-3 transition-colors hover:text-text-1"
               >
                 <X className="size-3.5" strokeWidth={1.8} aria-hidden />
               </button>
@@ -182,20 +186,23 @@ export function ThreadList({
           {filter.trim() ? (
             <p aria-live="polite" className="mt-1.5 px-0.5 text-xs text-text-3">
               {hitCount === 0
-                ? 'No mention of that'
-                : `${String(hitCount)} ${hitCount === 1 ? 'mention' : 'mentions'} in ${String(groups.reduce((n, g) => n + g.threads.length, 0))} ${groups.reduce((n, g) => n + g.threads.length, 0) === 1 ? 'conversation' : 'conversations'}`}
+                ? tr('threadList.noMention')
+                : tr('threadList.mentionsIn', {
+                    mentions: tr('threadList.mentions', { count: hitCount }),
+                    conversations: tr('threadList.conversationCount', {
+                      count: groups.reduce((n, g) => n + g.threads.length, 0),
+                    }),
+                  })}
             </p>
           ) : null}
         </div>
       ) : null}
 
       {threads.length === 0 ? (
-        <p className="mt-3 text-xs text-text-3">
-          Nothing yet. Ask something and it is kept here, on this device.
-        </p>
+        <p className="mt-3 text-xs text-text-3">{tr('threadList.empty')}</p>
       ) : groups.length === 0 ? (
         <p className="mt-3 text-xs wrap-anywhere text-text-3">
-          Nothing mentions “{filter}”. This searches every conversation, not just their names.
+          {tr('threadList.noResults', { query: filter })}
         </p>
       ) : (
         // Capped in height rather than growing without limit: the conversation
@@ -204,7 +211,7 @@ export function ThreadList({
         <ul
           className={
             bare || fill
-              ? 'mt-3 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1'
+              ? 'mt-3 min-h-0 flex-1 space-y-3 overflow-y-auto pe-1'
               : 'mt-3 max-h-[26rem] space-y-3 overflow-y-auto'
           }
         >
@@ -228,7 +235,7 @@ export function ThreadList({
                         onClick={() => {
                           onOpen(t.id)
                         }}
-                        className={`pressable w-full cursor-pointer rounded-md border px-2.5 py-1.5 text-left transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+                        className={`pressable w-full cursor-pointer rounded-md border px-2.5 py-1.5 text-start transition-colors disabled:pointer-events-none disabled:opacity-50 ${
                           on
                             ? 'border-accent bg-accent-soft'
                             : 'border-transparent hover:border-hairline hover:bg-well'
@@ -264,16 +271,16 @@ export function ThreadList({
                                 strokeWidth={2}
                                 aria-hidden
                               />
-                              <span className="text-accent">Working…</span>
+                              <span className="text-accent">{tr('threadList.working')}</span>
                             </>
                           ) : (
                             <span>
                               {hit && hit.count > 0 ? (
                                 <span className="text-accent">
-                                  {hit.count} {hit.count === 1 ? 'match' : 'matches'} ·{' '}
+                                  {tr('threadList.matches', { count: hit.count })} ·{' '}
                                 </span>
                               ) : null}
-                              {asked} {asked === 1 ? 'question' : 'questions'} ·{' '}
+                              {tr('threadList.questions', { count: asked })} ·{' '}
                               {/* `dayOf`, not `.slice(0, 10)`. `updatedAt` is an
                                   instant and slicing takes the UTC day out of
                                   it, while `TODAY` is the LOCAL day — so the two
@@ -285,7 +292,7 @@ export function ThreadList({
                                   and printed "Oct 13" — a future date — on a row
                                   that should have said "today". East of UTC the
                                   same pair reads "yesterday" instead. */}
-                              {agoLabel(dayOf(t.updatedAt), TODAY)}
+                              {domain.ago(dayOf(t.updatedAt), TODAY)}
                             </span>
                           )}
                         </span>
@@ -305,8 +312,10 @@ export function ThreadList({
 
   return (
     <Panel className={fill ? 'flex min-h-0 min-w-0 flex-col' : 'min-w-0'}>
-      <PanelTitle hint={threads.length > 0 ? `${threads.length} kept here` : undefined}>
-        Conversations
+      <PanelTitle
+        hint={threads.length > 0 ? tr('threadList.kept', { count: threads.length }) : undefined}
+      >
+        {tr('threadList.title')}
       </PanelTitle>
 
       {/* Not disabled while something is running. Starting a second
@@ -314,7 +323,7 @@ export function ThreadList({
           each run is keyed by its own conversation now, so they do not collide. */}
       <Button variant="outline" size="sm" className="w-full" onClick={onNew}>
         <MessageSquarePlus className="size-3.5" strokeWidth={1.8} aria-hidden />
-        New conversation
+        {tr('common.newConversation')}
       </Button>
 
       {body}

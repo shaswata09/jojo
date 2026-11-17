@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
@@ -54,6 +55,7 @@ import { space } from '@/theme/tokens'
  * separate non-persistent data store rather than to a global wipe.
  */
 export function PageViewer({ file, onClose }: { file: VaultFile; onClose: () => void }) {
+  const { t } = useTranslation('vault')
   const c = useColors()
   const insets = useSafeAreaInsets()
   /** `undefined` while loading, `null` when there are no bytes on this device. */
@@ -83,11 +85,11 @@ export function PageViewer({ file, onClose }: { file: VaultFile; onClose: () => 
                 the live site would be the request this is all built to avoid. */}
             {file.sourceUrl !== undefined && isCaptureSource(file.sourceUrl) ? (
               <Txt size="xs" tone="muted" numberOfLines={1}>
-                Captured from {hostOf(file.sourceUrl)}
+                {t('pageViewer.capturedFrom', { host: hostOf(file.sourceUrl) })}
               </Txt>
             ) : null}
           </View>
-          <Button label="Done" size="sm" onPress={onClose} />
+          <Button label={t('common.done')} size="sm" onPress={onClose} />
         </View>
 
         {html === undefined ? (
@@ -98,8 +100,8 @@ export function PageViewer({ file, onClose }: { file: VaultFile; onClose: () => 
           <View style={styles.centre}>
             <EmptyState
               icon="globe"
-              title="No saved copy on this device"
-              description="Captures are kept where they were taken, so one made in the web app is not here. The record kept its name and its address."
+              title={t('pageViewer.missingTitle')}
+              description={t('pageViewer.missingDescription')}
             />
           </View>
         ) : (

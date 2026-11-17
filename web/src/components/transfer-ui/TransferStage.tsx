@@ -1,7 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import { Smartphone } from 'lucide-react'
 import { SceneBackdrop } from '@/components/transfer-ui/SceneBackdrop'
-import { PulseOverlay } from '@/components/transfer/PulseOverlay'
-import type { PulseFrame } from '@jojo/service/core/pulse'
+import { PairingQrCard } from '@/components/transfer/PairingQrCard'
 import { summarise, type TransferGroup } from '@/components/transfer-ui/groups'
 import { showsOffer, type RunStage } from '@/components/transfer-ui/send-cycle'
 import { stageCopy, type TransferRole } from '@/components/transfer-ui/stage-copy'
@@ -48,7 +48,7 @@ export function TransferStage({
   groups,
   canStart,
   showScene = true,
-  frames = null,
+  offer = null,
 }: {
   role: TransferRole
   /**
@@ -62,80 +62,77 @@ export function TransferStage({
   /** Lets the page put the WebGPU scene away — see Transfer's page options. */
   showScene?: boolean
   /**
-   * The key, as frames of the animation itself.
-   *
-   * There is no code laid over the picture. The scene is a field of dots that
-   * brighten and fade; these say which AREAS of it brighten, and cycling
-   * through them says the key. Two surfaces — one showing a picture, one
-   * showing a symbol — invited the reading that the picture was decoration,
-   * and it was.
+   * The pairing offer (`encodeOffer`), drawn as a QR code beside the copy for
+   * the phone to scan — the owner's decision of 2026-11-16 (Q329). The scene
+   * behind is decoration and carries nothing.
    */
-  frames?: readonly PulseFrame[] | null
+  offer?: Uint8Array | null
 }) {
+  const { t } = useTranslation('transfer')
   const copy = stageCopy(role, stage)
   // Only while the key is the thing on screen to look at: never mid-run, when
   // the offer is in use. After a run that stopped it is shown again, because
   // that offer is either still the live one or the new code the panel tells
   // the person to scan — hiding it there left nothing to scan. Both roles:
   // receiving pairs exactly as sending does, by the phone reading this screen.
-  const showing = showsOffer(stage) ? frames : null
+  const showing = showsOffer(stage) ? offer : null
 
   return (
     <section className="surface relative flex min-h-[24rem] flex-col overflow-hidden rounded-lg px-4 py-4 sm:px-5 sm:py-5">
-      {/* Behind the words, never over them. With the scene put away the key
-          still has to be on screen — the phone cannot pair without it — so
-          the overlay the scene's own fallback uses draws it alone. */}
-      {showScene ? <SceneBackdrop frames={showing} /> : <PulseOverlay frames={showing} />}
+      {showScene ? <SceneBackdrop /> : null}
 
-      {/* While a key is up the copy keeps clear of the overlay's column, so
-          no word sits over a region the camera has to measure. The same
-          width as the overlay in `PulseOverlay`, plus a gutter. */}
-      <div
-        className={cn(
-          'relative flex flex-1 flex-col',
-          showing !== null && 'pr-[calc(min(40%,17rem)+2rem)]',
-        )}
-      >
-        <h2 className="text-lg font-medium">{copy.title}</h2>
-        <p className="mt-1 max-w-md text-sm text-text-2">{copy.body}</p>
+      {/* The code sits in its own column, beside the words and never under
+          them: a QR code with copy over it is a QR code a camera cannot read,
+          and copy over a QR code is copy nobody can read. Stacked under the
+          copy on a narrow screen. */}
+      <div className="relative flex flex-1 flex-col gap-5 sm:flex-row sm:items-center">
+        <div className="relative flex min-w-0 flex-1 flex-col self-stretch">
+          <h2 className="text-lg font-medium">{copy.title}</h2>
+          <p className="mt-1 max-w-md text-sm text-text-2">{copy.body}</p>
 
-        {groups.length > 0 ? (
-          <>
-            <ul className="mt-4 max-w-xs space-y-1.5">
-              {groups.map((group) => (
-                <li key={group.id} className="flex items-center gap-2 text-sm">
-                  {/* A dot, not a tick or a spinner. It marks a line in a list
+          {groups.length > 0 ? (
+            <>
+              <ul className="mt-4 max-w-xs space-y-1.5">
+                {groups.map((group) => (
+                  <li key={group.id} className="flex items-center gap-2 text-sm">
+                    {/* A dot, not a tick or a spinner. It marks a line in a list
                       of what is included; nothing about it is a status. */}
-                  <span aria-hidden className="grid size-3.5 place-items-center">
-                    <span className="size-1.5 rounded-full bg-hairline-strong" />
-                  </span>
-                  <span className={cn(stage === 'done' ? 'text-text-1' : 'text-text-2')}>
-                    {group.label}
-                  </span>
-                  <span className="tabular ml-auto text-xs text-text-3">{group.count}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 max-w-md text-sm text-text-2">
-              {role === 'receive'
-                ? `${summarise(groups)} — that is what is on this computer now, and what your phone's records replace.`
-                : stage === 'done'
-                  ? `${summarise(groups)} — that is what is now on the other device.`
-                  : `${summarise(groups)} — that is what will move.`}
-            </p>
-          </>
-        ) : null}
+                    <span aria-hidden className="grid size-3.5 place-items-center">
+                      <span className="size-1.5 rounded-full bg-hairline-strong" />
+                    </span>
+                    <span className={cn(stage === 'done' ? 'text-text-1' : 'text-text-2')}>
+                      {group.label}
+                    </span>
+                    <span className="tabular ms-auto text-xs text-text-3">{group.count}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 max-w-md text-sm text-text-2">
+                {t(
+                  role === 'receive'
+                    ? 'stage.manifest.receive'
+                    : stage === 'done'
+                      ? 'stage.manifest.sent'
+                      : 'stage.manifest.willMove',
+                  { summary: summarise(groups) },
+                )}
+              </p>
+            </>
+          ) : null}
 
-        {stage === 'idle' ? (
-          <div className="mt-auto pt-5">
-            <p className="flex items-center gap-2 text-xs text-text-3">
-              <Smartphone className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
-              {role === 'receive' || canStart
-                ? "Point your phone's camera at the pulsing pattern of light here — that is the key — and it then shows you a short code to type on the right."
-                : 'Choose at least one group to send.'}
-            </p>
-          </div>
-        ) : null}
+          {stage === 'idle' ? (
+            <div className="mt-auto pt-5">
+              <p className="flex items-center gap-2 text-xs text-text-3">
+                <Smartphone className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
+                {role === 'receive' || canStart ? t('stage.scanHint') : t('stage.chooseGroup')}
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        {showing === null ? null : (
+          <PairingQrCard offer={showing} className="mx-auto w-[min(100%,15rem)] shrink-0 sm:mx-0" />
+        )}
       </div>
     </section>
   )

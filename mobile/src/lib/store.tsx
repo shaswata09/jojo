@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
 import { Onboarding } from '@/components/common/Onboarding'
 import { Txt } from '@/components/ui/Text'
 import { kgWarn } from '@jojo/service/log'
 import { KgProvider } from '@jojo/service/react/kg'
+import { domain } from '@/i18n/domain'
 import { StoreStatusProvider } from '@jojo/service/react/status'
 import { boot } from '@jojo/service/repo/boot'
 import { stateFor, stateForThrow } from '@/lib/boot-state'
@@ -107,7 +109,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   if (state.phase === 'loading') return <Gate />
 
   return (
-    <KgProvider repo={state.session.repo} now={now} host={nativeHost}>
+    <KgProvider repo={state.session.repo} now={now} host={nativeHost} text={domain}>
       {/* `state.status` is the boot phase in the shape the status context wants,
           and it now has one arm per outcome. It used to be computed here and
           flattened: every failure was reported as `unavailable/unsupported`,
@@ -161,6 +163,7 @@ function Gate() {
  * know that before they spend an evening typing into it.
  */
 function DegradedBanner({ why }: { why: string }) {
+  const { t } = useTranslation('messages')
   return (
     <View
       style={{
@@ -170,7 +173,7 @@ function DegradedBanner({ why }: { why: string }) {
       }}
     >
       <Txt size="xs" color="#ffb4b4">
-        Not saving to this device — {why}
+        {t('boot.banner', { why })}
       </Txt>
     </View>
   )

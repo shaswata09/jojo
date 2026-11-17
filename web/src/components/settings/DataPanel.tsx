@@ -1,5 +1,6 @@
 import { reportError } from '@/lib/report-error'
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Download, Share2, Sparkles, Trash2, Upload } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
@@ -35,13 +36,15 @@ import {
 } from '@/lib/backup'
 import { restoreBackup } from '@jojo/service/repo/restore'
 import { useVaultBlobs } from '@/lib/vault-blobs'
-import { describeBackup, replacesClause } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useToast } from '@/lib/toast-context'
 import { announceRefusal } from '@/components/common/write-result'
+import { useDomain } from '@/i18n/domain'
 
 export function DataPanel() {
+  const { t } = useTranslation('settings')
+  const domain = useDomain()
   const { exportJSON, clearAll, isEmpty, demoReplacesNothing, dataSet } = useStoreAdmin()
   // The readable half is still `exportJSON`'s projections; the restorable half is
   // the raw rows and the document bytes that `useBackup` adds around them.
@@ -103,7 +106,7 @@ export function DataPanel() {
     setStaged(null)
     const done = await restoreBackup(repo, blobs, plan, new Date().toISOString())
     if (!done.ok) {
-      toast({ title: 'The restore failed', description: done.message, tone: 'danger' })
+      toast({ title: t('data.restoreFailed'), description: done.message, tone: 'danger' })
       return
     }
     // What was just restored is in the file it came from: the backup prompt
@@ -149,9 +152,9 @@ export function DataPanel() {
    * your database". A page that contradicts its own banner within a screenful
    * teaches the reader to believe neither of them.
    */
-  const persists = durable
-    ? 'and it stays that way across a reload'
-    : 'though nothing is being saved right now, so a reload starts over from the demo data'
+  /* Each sentence that makes one is written twice in the catalog, durable and
+     not, rather than spliced from a clause: where the clause sits is the
+     language's call. */
 
   /**
    * Writes the store to a file the browser downloads.
@@ -312,10 +315,8 @@ export function DataPanel() {
   const onLoadDemo = async () => {
     if (!(await chooseDataSet('demo'))) return
     toast({
-      title: 'Demo data loaded',
-      description: durable
-        ? 'Twelve applications, a timeline, a stocked vault and a profile, written to your database as they shipped.'
-        : 'Twelve applications, a timeline, a stocked vault and a profile, as they shipped. Nothing is being saved right now, so they last as long as this tab does.',
+      title: t('data.demoLoaded.title'),
+      description: t(durable ? 'data.demoLoaded.durable' : 'data.demoLoaded.memory'),
     })
   }
 
@@ -343,10 +344,10 @@ export function DataPanel() {
     await blobs.replaceAll([])
 
     toast({
-      title: 'Everything cleared',
+      title: t('data.cleared.title'),
       description: untouchedDemo
-        ? `Every demo record is gone, keywords included, ${persists}.`
-        : `Every record is gone, your profile included, ${persists}. Your keywords are still here.`,
+        ? t(durable ? 'data.cleared.demoDurable' : 'data.cleared.demoMemory')
+        : t(durable ? 'data.cleared.ownDurable' : 'data.cleared.ownMemory'),
       tone: 'danger',
     })
   }
@@ -363,12 +364,12 @@ export function DataPanel() {
     void onLoadDemo()
   }
 
-  const copy = pendingCopy({ untouchedDemo, demoReplacesNothing, durable, persists, onExport })
+  const copy = pendingCopy({ untouchedDemo, demoReplacesNothing, durable, onExport })
 
   return (
     <>
       <Panel>
-        <PanelTitle>Your data</PanelTitle>
+        <PanelTitle>{t('data.title')}</PanelTitle>
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -380,14 +381,17 @@ export function DataPanel() {
           >
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
             {exporting === null
-              ? 'Download a backup'
+              ? t('data.export.idle')
               : exporting.total > 0
-                ? `Preparing backup… ${String(exporting.done)} of ${String(exporting.total)} documents`
-                : 'Preparing backup…'}
+                ? t('data.export.progress', {
+                    done: String(exporting.done),
+                    total: String(exporting.total),
+                  })
+                : t('data.export.preparing')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => importRef.current?.click()}>
             <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Restore a backup
+            {t('data.restoreButton')}
           </Button>
           <input
             ref={importRef}
@@ -402,23 +406,13 @@ export function DataPanel() {
               e.target.value = ''
             }}
           />
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            title="No spreadsheet writer is bundled — the JSON export holds the same records"
-          >
+          <Button variant="outline" size="sm" disabled title={t('data.excel.title')}>
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Export to Excel
+            {t('data.excel.label')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            title="Reading a backup back in needs a validator that can refuse a file it does not understand — until that exists, an import could only guess"
-          >
+          <Button variant="outline" size="sm" disabled title={t('data.import.title')}>
             <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Import
+            {t('data.import.label')}
           </Button>
         </div>
         {/* The old sentence here ended "keywords live in their own store and are
@@ -426,11 +420,7 @@ export function DataPanel() {
             one. There is one store now and this is all of it, so the paragraph
             says what a backup is instead — including the part people get wrong,
             which is that the file does not update itself. */}
-        <p className="mt-2 text-xs text-text-3">
-          A full backup: every application, the timeline, the vault, saved postings, your keywords
-          and their tags, and your profile, in one versioned file. It is a copy taken now — it does
-          not keep up with later changes, and it is the only copy that is not on this machine.
-        </p>
+        <p className="mt-2 text-xs text-text-3">{t('data.about')}</p>
 
         <div className="mt-4">
           {/* A button rather than the Demo data / Empty segment that stood here.
@@ -442,16 +432,22 @@ export function DataPanel() {
               description, which is the half of a segment that was doing the
               work anyway. */}
           <SettingRow
-            label="Records"
+            label={t('data.records.label')}
             /* Three readings, because the old two said "the seeded search" about a
                store the user had spent a month filling — `isEmpty` cannot tell a
                demo store from an authored one, and only the meta row can. */
             description={
               isEmpty
-                ? `Every list is empty, so every page is showing its first-run state.${durable ? ' It stays empty when you come back.' : ''}${demoReplacesNothing ? '' : ' Your keywords are still here, and loading the demo data replaces them with its own.'}`
+                ? [
+                    t('data.records.empty'),
+                    durable ? t('data.records.emptyStays') : null,
+                    demoReplacesNothing ? null : t('data.records.emptyKeywords'),
+                  ]
+                    .filter((sentence) => sentence !== null)
+                    .join(' ')
                 : untouchedDemo
-                  ? 'The demo search jojo ships with — twelve applications, a timeline, a stocked vault. None of it is yours yet.'
-                  : 'Your own records. Loading the demo data replaces them, so export a backup first if you want them.'
+                  ? t('data.records.demo')
+                  : t('data.records.own')
             }
             control={
               <Button
@@ -461,27 +457,25 @@ export function DataPanel() {
                 onClick={() => setPending('demo')}
               >
                 <Sparkles className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Load demo data
+                {t('data.records.loadDemo')}
               </Button>
             }
           />
           <SettingRow
-            label="Clear every record"
-            description={
-              untouchedDemo
-                ? 'Removes the demo data and leaves jojo empty. Nothing here is yours yet, so the seeded keywords go with it.'
-                : 'Removes every application, timeline item, vault entry, saved posting, contact, note, conversation and CV fact, and blanks your profile. Your keywords are kept.'
-            }
+            label={t('data.clearRecords.label')}
+            description={untouchedDemo ? t('data.clearRecords.demo') : t('data.clearRecords.own')}
             control={
               <Button
                 variant="outline"
                 size="sm"
                 disabled={busy || isEmpty}
-                title={isEmpty ? 'There is nothing left to clear' : 'Deletes every record'}
+                title={
+                  isEmpty ? t('data.clearRecords.nothingLeft') : t('data.clearRecords.deletes')
+                }
                 onClick={() => setPending('empty')}
               >
                 <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Clear records
+                {t('data.clearRecords.button')}
               </Button>
             }
           />
@@ -492,13 +486,13 @@ export function DataPanel() {
               turned out to be a demonstration would be a worse surprise than
               one that says so before you press it. */}
           <SettingRow
-            label="Move to another device"
-            description="Pair with a second device and hand over everything. A demonstration in this build — nothing is transmitted."
+            label={t('data.move.label')}
+            description={t('data.move.description')}
             control={
               <Button variant="outline" size="sm" asChild>
                 <Link to={transferPath()}>
                   <Share2 className="size-3.5" strokeWidth={1.8} aria-hidden />
-                  Open Transfer
+                  {t('data.move.open')}
                 </Link>
               </Button>
             }
@@ -507,8 +501,8 @@ export function DataPanel() {
               rows above change what is in the app, this one leaves nothing of
               jojo on the machine at all. */}
           <SettingRow
-            label="Clear browser storage"
-            description="Empties everything this site has stored in your browser — your records and their database, every document you have attached, preferences, caches and cookies — then reloads jojo as if it were new. Documents are only here; download them first if you want to keep them."
+            label={t('data.clearStorage.label')}
+            description={t('data.clearStorage.description')}
             control={
               <Button
                 variant="outline"
@@ -517,7 +511,7 @@ export function DataPanel() {
                 onClick={() => setPending('storage')}
               >
                 <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
-                {clearing ? 'Clearing…' : 'Clear storage'}
+                {clearing ? t('data.clearStorage.clearing') : t('data.clearStorage.button')}
               </Button>
             }
           />
@@ -537,9 +531,7 @@ export function DataPanel() {
          * records are saved" from a claim into something checkable.
          */}
         <p className="mt-4 text-xs text-text-3">
-          {durable
-            ? "Your records are written to this browser's database as you work, so closing the tab is safe. That database is still on this one machine: a browser can clear it and a disk can fail, so an exported file kept somewhere else is the only real backup."
-            : 'Your records are not being saved right now — the banner at the top of the page says why. Export a copy before you close the tab.'}
+          {durable ? t('data.footer.durable') : t('data.footer.memory')}
         </p>
       </Panel>
 
@@ -548,9 +540,9 @@ export function DataPanel() {
         onOpenChange={(open) => {
           if (!open) setPending(null)
         }}
-        title={pending ? copy[pending].title : 'Change the data?'}
+        title={pending ? copy[pending].title : t('data.confirm.fallbackTitle')}
         description={pending ? copy[pending].description : ''}
-        confirmLabel={pending ? copy[pending].confirm : 'Continue'}
+        confirmLabel={pending ? copy[pending].confirm : t('data.confirm.continue')}
         tone="danger"
         onConfirm={applyPending}
       />
@@ -570,19 +562,22 @@ export function DataPanel() {
 
       {/* Separate from the dialog above because what it must say is different:
           that one asks about data the user can see, this one names what is in a
-          file they cannot. `describeBackup` is that sentence. */}
+          file they cannot. `domain.backup` is that sentence. */}
       <ConfirmDialog
         open={staged !== null}
         onOpenChange={(open) => {
           if (!open) setStaged(null)
         }}
-        title="Replace everything with this backup?"
+        title={t('data.restoreConfirm.title')}
         description={
           staged === null
             ? ''
-            : `That file holds ${describeBackup(staged)}. ${replacesClause(staged, 'you have now')}, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`
+            : t('data.restoreConfirm.description', {
+                contents: domain.backup(staged),
+                replaces: domain.replaces(staged, 'computer'),
+              })
         }
-        confirmLabel="Replace everything"
+        confirmLabel={t('data.restoreConfirm.confirm')}
         tone="danger"
         onConfirm={() => void onRestore()}
       />
@@ -597,6 +592,7 @@ export function DataPanel() {
  * everything else — so a second button would have to be a lie or a no-op.
  */
 function RestoreOutcomeDialog({ report, onDone }: { report: RestoreReport; onDone: () => void }) {
+  const { t } = useTranslation('settings')
   const summary = restoreSummary(report)
 
   return (
@@ -614,7 +610,7 @@ function RestoreOutcomeDialog({ report, onDone }: { report: RestoreReport; onDon
           <DialogDescription>{summary.description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={onDone}>Reload jojo</Button>
+          <Button onClick={onDone}>{t('data.reload')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

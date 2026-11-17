@@ -48,6 +48,29 @@ import {
 /** Bytes a single connection may buffer before it is dropped. */
 const MAX_PENDING = 512 * 1024
 
+/**
+ * Connections held open at once; one more is closed on arrival.
+ *
+ * The listener is bound to every interface and the token is only checked once
+ * a header is complete, so without a cap anyone on the same network could open
+ * sockets that never finish a header and hold them for the whole transfer —
+ * file descriptors and native socket threads the real browser then cannot get.
+ * The browser's client is sequential (one request at a time, `Connection:
+ * close`), so eight leaves room for a request still closing and a browser's
+ * speculative pre-connects.
+ */
+export const MAX_CONNECTIONS = 8
+
+/**
+ * How long a connection may go without sending a byte before it has handed
+ * over a whole request.
+ *
+ * Reset by every chunk that arrives, so a slow upload that keeps moving is never
+ * cut off — only silence is. Disarmed once a request is dispatched: a handler
+ * that takes a while to answer is this app's time, not the peer's.
+ */
+export const IDLE_MS = 15_000
+
 export type HandoffAnswer = {
   status: 200 | 204 | 400 | 404 | 409
   body?: Uint8Array
@@ -75,6 +98,10 @@ export function startHandoffServer(
     const sockets = new Set<{ destroy: () => void }>()
 
     const server = TcpSocket.createServer((socket) => {
+      if (sockets.size >= MAX_CONNECTIONS) {
+        socket.destroy()
+        return
+      }
       sockets.add(socket as unknown as { destroy: () => void })
 
       // One buffer per connection. `Connection: close` means one request per
@@ -83,10 +110,23 @@ export function startHandoffServer(
       let held = new Uint8Array(0)
       let busy = false
 
+      let idle: ReturnType<typeof setTimeout> | null = null
+      const disarm = () => {
+        if (idle !== null) clearTimeout(idle)
+        idle = null
+      }
+
       const shut = () => {
+        disarm()
         sockets.delete(socket as unknown as { destroy: () => void })
         socket.destroy()
       }
+
+      const arm = () => {
+        disarm()
+        idle = setTimeout(shut, IDLE_MS)
+      }
+      arm()
 
       /**
        * One response, and a close that waits for it to have gone out.
@@ -138,6 +178,9 @@ export function startHandoffServer(
         const incoming =
           typeof chunk === 'string' ? new Uint8Array(0) : new Uint8Array(chunk as ArrayLike<number>)
         if (incoming.byteLength === 0) return
+        // Progress: the clock restarts, unless a request is already being
+        // answered, in which case there is no clock.
+        if (!busy) arm()
 
         const merged = new Uint8Array(held.byteLength + incoming.byteLength)
         merged.set(held, 0)
@@ -174,6 +217,7 @@ export function startHandoffServer(
         // being built, and a second dispatch would run two handlers against one
         // connection and interleave their writes.
         busy = true
+        disarm()
         held = held.slice(requestLength(held, read))
 
         void answer(read)
@@ -189,7 +233,10 @@ export function startHandoffServer(
       })
 
       socket.on('error', shut)
-      socket.on('close', () => sockets.delete(socket as unknown as { destroy: () => void }))
+      socket.on('close', () => {
+        disarm()
+        sockets.delete(socket as unknown as { destroy: () => void })
+      })
     })
 
     server.on('error', reject)

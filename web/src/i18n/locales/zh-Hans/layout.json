@@ -1,0 +1,134 @@
+{
+  "sidebar": {
+    "navigation": "导航",
+    "close": "关闭导航"
+  },
+  "nav": {
+    "dashboard": "仪表板",
+    "applications": "申请",
+    "calendar": "日历",
+    "vault": "保险库",
+    "jobScout": "职位侦察",
+    "statistics": "统计",
+    "flagged_other": "已标记 {{count}}",
+    "flaggedTitle": "已标记待跟进",
+    "weekTitle": "未来七天内的安排",
+    "overdueTitle": "已过期的提醒",
+    "fresh_other": "{{count}} 个新的",
+    "freshTitle": "尚未加入申请的匹配"
+  },
+  "newMenu": {
+    "trigger": "新建",
+    "find": "查找要添加的内容",
+    "findPlaceholder": "查找要添加的内容…",
+    "empty": "没有匹配的可添加项。"
+  },
+  "roleFilter": {
+    "label": "按职位类型筛选",
+    "all": "所有职位类型",
+    "selected_other": "已选 {{count}} 个",
+    "find": "查找职位类型",
+    "findPlaceholder": "查找职位类型…",
+    "empty": "没有匹配的职位类型。",
+    "selectAll": "全选",
+    "clear": "清除筛选",
+    "remove": "移除 {{role}}"
+  },
+  "topbar": {
+    "openNav": "打开导航",
+    "search": "搜索申请、提醒、事件…",
+    "accountNav": "账户与支持",
+    "links": {
+      "profile": "我的资料",
+      "settings": "设置",
+      "assistant": "助手",
+      "guide": "使用指南"
+    }
+  },
+  "runtime": {
+    "heading": "运行状态",
+    "tileTitle": "{{label}}——{{detail}}。打开{{destination}}",
+    "dest": {
+      "graph": "图谱",
+      "transfer": "传输",
+      "settings": "设置"
+    },
+    "storage": {
+      "label": "浏览器存储",
+      "notSaving": "未保存",
+      "notSavingDetail": "你的记录没有被保存——页面上方的横幅说明了原因",
+      "retrying": "正在重试",
+      "retryingDetail_other": "有 {{count}} 项更改尚未保存，jojo 仍在重试",
+      "saved": "已保存在此",
+      "savedDetail": "你工作时，记录会写入此浏览器的数据库"
+    },
+    "model": {
+      "label": "本地模型",
+      "connected": "已连接",
+      "connectedDetail": "本地模型已响应——助手和侦察评分可以使用它",
+      "noAnswer": "无响应",
+      "noAnswerDetail": "已配置模型，但它没有响应——请检查它是否在运行",
+      "checking": "检查中",
+      "checkingDetail": "正在询问模型是否在线",
+      "unset": "未设置",
+      "unsetDetail": "还没有模型端点——请在设置中填写"
+    },
+    "transfer": {
+      "label": "传输",
+      "meta": "与其他设备同步",
+      "detail": "尚未配对任何设备——请在“传输”中添加"
+    }
+  },
+  "banner": {
+    "reload": "重新加载",
+    "interrupted": "jojo 在另一个标签页中更新了，因此此标签页关闭了数据库以便完成更新。你在这里的任何更改都不会被保存。请重新加载以继续。",
+    "versionBlocked": "jojo 无法打开其数据库——另一个 jojo 标签页正在运行不同版本的应用。<strong>你的记录仍在磁盘上</strong>，但此标签页无法读取，因此它选择什么都不显示，而不是猜测。关闭其他标签页并重新加载即可恢复。",
+    "noStorage": "此浏览器不允许 jojo 打开其存储，因此此标签页是一个空白工作区：此设备上已保存的内容不会显示，你在这里输入的内容会在关闭标签页时丢失。隐私窗口和某些受管理的浏览器会这样做。如果你添加了值得保留的内容，离开前请在设置中导出。",
+    "atRisk_other": "有 {{count}} 项更改显示在屏幕上但尚未保存——请在设置中导出以保留，因为重新加载或关闭此标签页会丢失它们。",
+    "safeBefore": "在此之前的所有更改都已存到磁盘。",
+    "corrupt": "jojo 已停止保存：此浏览器拒绝了对你记录的一项更改，重试也无济于事。{{atRisk}} 请立即在设置中导出——详情见设置 → 诊断，在导出前重新加载会丢失仅显示在屏幕上的内容。",
+    "quota": "此浏览器已没有剩余空间，因此 jojo 已停止保存。{{atRisk}} 请释放一些空间，然后重新加载。",
+    "otherTab": "jojo 已停止保存，因为另一个标签页占用着数据库。请关闭其他标签页；如果屏幕上有未保存的内容，请在设置中导出——重新加载此标签页会丢失它。",
+    "degraded_other": "有 {{count}} 项更改无法保存，jojo 仍在重试。如果现在需要副本，请在设置中导出。（{{error}}）",
+    "documentsBlocked": "你的文档仍在此设备上，但另一个运行旧版应用的 jojo 标签页占用着它们。关闭其他 jojo 标签页——此标签页会自动接管。",
+    "skipped_other": "此设备上有 {{count}} 条记录无法读取，因此没有显示。没有删除任何内容——<anchor>诊断</anchor>会列出它们，从那里导出会包含 jojo 能读取的全部内容。",
+    "nearlyFull": "此浏览器留给 jojo 的空间快用完了——已使用允许量的约 {{percent}}%。存满后将无法保存，所以最好趁记录还能写入时，现在就在设置中导出并清理空间。",
+    "backup": {
+      "busy": "正在备份…",
+      "download": "下载备份",
+      "notNow": "以后再说"
+    }
+  },
+  "shell": {
+    "skipToMain": "跳到主要内容"
+  },
+  "spotlight": {
+    "title": "搜索",
+    "label": "搜索申请、提醒、事件和页面",
+    "placeholder": "搜索申请、提醒、事件…",
+    "emptyTitle": "没有匹配的内容。",
+    "emptyHint": "试试职位类型、机构或阶段。",
+    "actions": "操作",
+    "applications": "申请",
+    "reminders": "提醒",
+    "calendar": "日历",
+    "tools": "工具",
+    "goTo": "前往",
+    "toOpen": "打开",
+    "toClose": "按 esc 关闭",
+    "pages": {
+      "dashboard": "仪表板",
+      "applications": "申请",
+      "calendar": "日历",
+      "vault": "保险库",
+      "jobScout": "职位侦察",
+      "statistics": "统计",
+      "graph": "图谱",
+      "transfer": "传输",
+      "transferDetail": "把你的记录移到另一台设备",
+      "profile": "我的资料",
+      "assistant": "助手",
+      "settings": "设置"
+    }
+  }
+}

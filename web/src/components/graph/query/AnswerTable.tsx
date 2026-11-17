@@ -1,5 +1,7 @@
 import { ArrowUpRight, SearchX } from 'lucide-react'
 import { Link } from 'react-router'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PanelScroll } from '@/components/common/Panel'
 import { TypeSwatch } from '@/components/graph/NodeGlyph'
@@ -20,12 +22,12 @@ import { truncate } from './truncate'
 /** Long tables stop being an answer and become a second graph. */
 const MAX_ROWS = 40
 
-function matchedSummary(row: QueryRow) {
-  if (row.via) return `via ${REL_LABEL[row.via]}`
+function matchedSummary(row: QueryRow, t: TFunction<'graph'>) {
+  if (row.via) return t('answer.via', { rel: REL_LABEL[row.via] })
   if (row.matched.length === 0) return '—'
   const names = row.matched.slice(0, 3).map((n) => n.label)
   const rest = row.matched.length - names.length
-  return rest > 0 ? `${names.join(', ')} +${rest} more` : names.join(', ')
+  return rest > 0 ? t('answer.more', { names: names.join(', '), count: rest }) : names.join(', ')
 }
 
 export function AnswerTable({
@@ -40,86 +42,84 @@ export function AnswerTable({
   onSelectNode: (id: string) => void
   onClear: () => void
 }) {
+  const { t } = useTranslation('graph')
   const rows = result ? result.rows.slice(0, MAX_ROWS) : []
 
   return (
     <div className="min-w-0">
       <h3 className="mb-1.5 flex flex-wrap items-baseline gap-2 text-xs text-text-3">
-        Answer
+        {t('answer.title')}
         {result ? (
           <span className="tabular font-mono">
-            {result.rows.length} {result.rows.length === 1 ? 'record' : 'records'}
+            {t('answer.records', { count: result.rows.length })}
           </span>
         ) : null}
       </h3>
 
       {!result ? (
-        <p className="px-1 py-8 text-center text-xs text-text-3">
-          Pick an example, or build a pattern, and the answer appears here and lights up in the
-          graph above.
-        </p>
+        <p className="px-1 py-8 text-center text-xs text-text-3">{t('answer.prompt')}</p>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={SearchX}
-          title="No records match"
+          title={t('answer.emptyTitle')}
           description={result.emptyNote}
           action={
             <Button size="sm" variant="outline" onClick={onClear}>
-              Clear the query
+              {t('answer.clear')}
             </Button>
           }
         />
       ) : (
         <PanelScroll axis="x" inset="tight" className="flex-none">
           <table className="w-full min-w-[520px] text-sm">
-            <caption className="sr-only">Records matching the pattern</caption>
+            <caption className="sr-only">{t('answer.caption')}</caption>
             <thead>
-              <tr className="text-left text-xs text-text-3">
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  Record
+              <tr className="text-start text-xs text-text-3">
+                <th scope="col" className="py-2 pe-3 font-medium">
+                  {t('answer.columns.record')}
                 </th>
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  Kind
+                <th scope="col" className="py-2 pe-3 font-medium">
+                  {t('answer.columns.kind')}
                 </th>
-                <th scope="col" className="py-2 pr-3 text-right font-medium">
+                <th scope="col" className="py-2 pe-3 text-end font-medium">
                   {result.countLabel}
                 </th>
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  Matched
+                <th scope="col" className="py-2 pe-3 font-medium">
+                  {t('answer.columns.matched')}
                 </th>
                 <th scope="col" className="py-2">
-                  <span className="sr-only">Open</span>
+                  <span className="sr-only">{t('answer.open')}</span>
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-hairline">
               {rows.map((row) => (
                 <tr key={row.node.id} className={cn(selectedId === row.node.id && 'bg-row-hover')}>
-                  <th scope="row" className="py-1.5 pr-3 text-left font-normal">
+                  <th scope="row" className="py-1.5 pe-3 text-start font-normal">
                     <button
                       type="button"
                       onClick={() => onSelectNode(row.node.id)}
-                      title="Select in the graph"
-                      className="pressable-row flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left transition-colors hover:bg-row-hover"
+                      title={t('answer.select')}
+                      className="pressable-row flex w-full items-center gap-2 rounded-sm px-1 py-1 text-start transition-colors hover:bg-row-hover"
                     >
                       <TypeSwatch type={row.node.type} />
                       <span className="min-w-0 truncate">{truncate(row.node.label)}</span>
                     </button>
                   </th>
-                  <td className="py-1.5 pr-3 text-xs text-text-3">
+                  <td className="py-1.5 pe-3 text-xs text-text-3">
                     {NODE_TYPE_LABEL[row.node.type]}
                   </td>
-                  <td className="tabular py-1.5 pr-3 text-right font-mono">{row.count}</td>
-                  <td className="py-1.5 pr-3 text-xs text-text-2">
-                    {truncate(matchedSummary(row), 40)}
+                  <td className="tabular py-1.5 pe-3 text-end font-mono">{row.count}</td>
+                  <td className="py-1.5 pe-3 text-xs text-text-2">
+                    {truncate(matchedSummary(row, t), 40)}
                   </td>
-                  <td className="py-1.5 text-right">
+                  <td className="py-1.5 text-end">
                     {row.node.href ? (
                       <Link
                         to={row.node.href}
                         className="inline-flex items-center gap-0.5 rounded-sm text-xs text-text-2 transition-colors hover:text-text-1"
                       >
-                        Open
+                        {t('answer.open')}
                         <ArrowUpRight className="size-3" strokeWidth={2} aria-hidden />
                       </Link>
                     ) : null}
@@ -133,8 +133,7 @@ export function AnswerTable({
 
       {result && result.rows.length > rows.length ? (
         <p className="mt-2 text-xs text-text-3">
-          Showing the first {rows.length} of {result.rows.length}. Every one of them is lit in the
-          graph above.
+          {t('answer.showing', { shown: rows.length, total: result.rows.length })}
         </p>
       ) : null}
     </div>

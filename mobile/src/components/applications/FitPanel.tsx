@@ -1,19 +1,20 @@
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button, IconButton } from '@/components/ui/Button'
 import { MenuSheet } from '@/components/ui/Menu'
 import type { MenuAction } from '@/components/ui/Menu'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { HOW_LABEL } from '@jojo/service/core/posting-source'
 import { STALE_NOTE } from '@jojo/service/core/fit-reading'
 import { supersededToast } from '@jojo/service/react/undo'
-import { VERDICT_LABEL } from '@jojo/service/core/tailor'
+import { useKg } from '@jojo/service/react/kg-context'
 import { useFit } from '@/lib/fit-agent'
 import type { FitStep } from '@/lib/fit-agent'
 import { useToast } from '@/lib/toast-context'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * How this application's posting weighs against what the person has done.
@@ -39,12 +40,15 @@ import { space } from '@/theme/tokens'
  * together is what makes the two screens describe the same feature.
  */
 
-const STEP_LABEL: Record<FitStep, string> = {
-  reading: 'Opening the posting',
-  asking: 'Reading what it asks for',
+const STEP_KEY: Record<FitStep, string> = {
+  reading: 'fit.step.reading',
+  asking: 'fit.step.asking',
 }
 
 export function FitPanel({ applicationId }: { applicationId: string }) {
+  const { t } = useTranslation(['components', 'common'])
+  const { text } = useKg()
+  const domain = useDomain()
   const c = useColors()
   const fit = useFit(applicationId)
   const { toast } = useToast()
@@ -63,8 +67,8 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       ? [
           {
             id: 'rerun',
-            label: fit.cleared ? 'Measure this posting' : 'Re-run',
-            hint: 'Read the posting again and re-measure',
+            label: fit.cleared ? t('fit.measure') : t('fit.rerun'),
+            hint: t('fit.rerunHint'),
             icon: 'refresh-cw' as const,
             onPress: fit.rerun,
           },
@@ -74,8 +78,8 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       ? [
           {
             id: 'clear',
-            label: 'Clear this reading',
-            hint: 'jojo stops measuring this posting until you ask',
+            label: t('fit.clear'),
+            hint: t('fit.clearHint'),
             icon: 'trash-2' as const,
             tone: 'danger' as const,
             onPress: () => {
@@ -86,10 +90,8 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                 // The title branches: a refusal that announces "Fit reading
                 // cleared" and then explains why it did not is a toast arguing
                 // with itself.
-                title: result.ok ? 'Fit reading cleared' : 'That did not clear',
-                description: result.ok
-                  ? 'jojo will not read this posting again unless you ask it to.'
-                  : (result.errors[0]?.message ?? ''),
+                title: result.ok ? t('fit.cleared') : t('fit.notCleared'),
+                description: result.ok ? t('fit.clearedBody') : (result.errors[0]?.message ?? ''),
                 // Hand-wired, because the service toast port types its action as
                 // `onClick` and this app's as `onPress`. Dropping it is what made
                 // a mis-tap on somebody's own record unrecoverable once already.
@@ -97,7 +99,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                   ? restore
                     ? {
                         action: {
-                          label: 'Undo',
+                          label: t('common:actions.undo'),
                           onPress: () => {
                             const outcome = restore()
                             // `undoableWith` declines to put a before-image back
@@ -107,7 +109,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                             // action is an `onClick` this provider cannot take —
                             // and this one carries no action at all.
                             if (outcome.superseded.length > 0) {
-                              const said = supersededToast(outcome)
+                              const said = supersededToast(outcome, text)
                               toast({
                                 title: said.title,
                                 ...(said.description === undefined
@@ -131,7 +133,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
   return (
     <Panel>
       <PanelTitle
-        hint={source ? `${source.name} — ${HOW_LABEL[source.how]}` : undefined}
+        hint={source ? `${source.name} — ${domain.how(source.how)}` : undefined}
         right={
           (fit.ready || fit.reading !== undefined) && fit.step === null ? (
             <IconButton
@@ -140,7 +142,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
               // uses — a 40pt target carrying its accessible name, rather than
               // the labelled pill an earlier draft of this file put here on the
               // false belief that no icon-only control existed.
-              label="Fit options"
+              label={t('fit.options')}
               onPress={() => {
                 setMenu(true)
               }}
@@ -148,26 +150,24 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           ) : undefined
         }
       >
-        How you fit
+        {t('fit.title')}
       </PanelTitle>
 
       {fit.blocked === 'no-posting' && (
         <Txt size="sm" tone="secondary">
-          There is no saved posting behind this application, so there is nothing to weigh you
-          against. Capture the listing, or add the application from its link, and this fills in.
+          {t('fit.blocked.noPosting')}
         </Txt>
       )}
 
       {fit.blocked === 'no-model' && (
         <Txt size="sm" tone="secondary">
-          Reading what a posting asks for needs a model. Connect one under More → Settings.
+          {t('fit.blocked.noModel')}
         </Txt>
       )}
 
       {fit.blocked === 'no-background' && (
         <Txt size="sm" tone="secondary">
-          jojo has not read anything about your background yet, so it cannot weigh this posting
-          against it. Put your CV in the Vault and say yes when it offers to read it.
+          {t('fit.blocked.noBackground')}
         </Txt>
       )}
 
@@ -175,7 +175,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           turns back into "Measure this posting", which is the one way back. */}
       {fit.blocked === null && fit.cleared && fit.step === null && !fit.queued && (
         <Txt size="sm" tone="secondary">
-          You cleared this reading, so jojo is leaving this posting alone.
+          {t('fit.clearedNote')}
         </Txt>
       )}
 
@@ -183,13 +183,13 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           queue, so a read can wait a whole minute before it starts. */}
       {fit.queued && (
         <Txt size="sm" tone="secondary">
-          Queued…
+          {t('fit.queued')}
         </Txt>
       )}
 
       {fit.step !== null && (
         <Txt size="sm" tone="secondary">
-          {STEP_LABEL[fit.step]}…
+          {t(STEP_KEY[fit.step])}
         </Txt>
       )}
 
@@ -198,7 +198,12 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           <Txt size="sm" color={c.danger}>
             {fit.error}
           </Txt>
-          <Button size="sm" variant="ghost" label="Try again" onPress={fit.rerun} />
+          <Button
+            size="sm"
+            variant="ghost"
+            label={t('common:actions.tryAgain')}
+            onPress={fit.rerun}
+          />
         </View>
       )}
 
@@ -206,7 +211,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
         <View style={{ gap: space[4] }}>
           <View style={{ gap: space[1] }}>
             <Txt size="sm" weight="medium">
-              {VERDICT_LABEL[guidance.verdict]}
+              {domain.verdict(guidance.verdict)}
             </Txt>
             <Txt size="sm" tone="secondary">
               {guidance.summary}
@@ -216,7 +221,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           {guidance.tailor.length > 0 && (
             <View style={{ gap: space[1.5] }}>
               <Txt size="xs" tone="muted" uppercase>
-                Lead with
+                {t('fit.leadWith')}
               </Txt>
               {guidance.tailor.map((note) => (
                 <View key={note.evidence.id}>
@@ -225,7 +230,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                     {note.evidence.where === undefined ? '' : ` · ${note.evidence.where}`}
                   </Txt>
                   <Txt size="xs" tone="secondary">
-                    answers “{note.answers}”
+                    {t('fit.answers', { requirement: note.answers })}
                   </Txt>
                 </View>
               ))}
@@ -235,13 +240,13 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           {guidance.prepare.length > 0 && (
             <View style={{ gap: space[1.5] }}>
               <Txt size="xs" tone="muted" uppercase>
-                Be ready for
+                {t('fit.beReadyFor')}
               </Txt>
               {guidance.prepare.map((note) => (
                 <View key={note.requirement}>
                   <Txt size="sm" weight="medium">
                     {note.requirement}
-                    {note.essential ? ' — required' : ''}
+                    {note.essential ? t('fit.required') : ''}
                   </Txt>
                   <Txt size="xs" tone="secondary">
                     {note.advice}
@@ -257,10 +262,10 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           {fit.readNote && (
             <View>
               <Txt size="xs" tone="muted">
-                {fit.readNote}
+                {fit.readBy && domain.readBy(fit.readBy.model, fit.readBy.day, fit.readBy.today)}
                 {fit.reading?.skipped === undefined
                   ? ''
-                  : ` · ${String(fit.reading.skipped)} line${fit.reading.skipped === 1 ? '' : 's'} skipped`}
+                  : t('fit.skipped', { count: fit.reading.skipped })}
               </Txt>
               {fit.stale && (
                 <Txt size="xs" color={c.warning}>
@@ -277,7 +282,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
         onClose={() => {
           setMenu(false)
         }}
-        title="How you fit"
+        title={t('fit.title')}
         description={source?.name}
         actions={actions}
       />

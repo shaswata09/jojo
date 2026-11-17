@@ -1,0 +1,112 @@
+{
+  "common": {
+    "connections_other": "연결 {{count}}개",
+    "records_other": "기록 {{count}}개"
+  },
+  "legend": {
+    "show": "{{name}} 표시",
+    "hide": "{{name}} 숨기기",
+    "allHidden": "모든 종류의 기록이 숨겨져 있어요.",
+    "showAll": "모두 보기",
+    "isA": "유형"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "지식 그래프 — {{records}}, {{connections}}",
+    "capped": "연결이 가장 많은 기록 {{shown}}개를 보여 주고 있어요. 저장소에 {{dropped}}개가 더 있지만 이 캔버스에는 없어요. 필터로 범위를 좁히면 볼 수 있어요.",
+    "description": "기록은 각각 노드이고, 기록 사이의 참조는 각각 선이에요. 이 그래프 옆의 패널에 같은 정보가 텍스트로 나와 있어요."
+  },
+  "answer": {
+    "title": "답",
+    "records_other": "기록 {{count}}개",
+    "prompt": "예시를 고르거나 패턴을 만들면 답이 여기에 나타나고 위 그래프에서 강조돼요.",
+    "emptyTitle": "일치하는 기록이 없어요",
+    "clear": "쿼리 지우기",
+    "caption": "패턴과 일치하는 기록",
+    "columns": {
+      "record": "기록",
+      "kind": "종류",
+      "matched": "일치 항목"
+    },
+    "open": "열기",
+    "select": "그래프에서 선택",
+    "via": "{{rel}} 경유",
+    "more_other": "{{names}} 외 {{count}}개",
+    "showing": "{{total}}개 중 처음 {{shown}}개를 보여 주고 있어요. 모두 위 그래프에서 강조돼 있어요."
+  },
+  "examples": {
+    "title": "예시",
+    "nothingToAsk": "이 세션에는 그 질문을 던질 대상이 없어요"
+  },
+  "query": {
+    "title": "그래프에 묻기",
+    "hint": "문장으로 묻거나 직접 질문을 만들어 보세요",
+    "shape": "질문 형태",
+    "pattern": "패턴",
+    "path": "경로",
+    "generated": "생성된 쿼리",
+    "clear": "지우기",
+    "sqlNote": "읽기 쉽도록 SQL 용어로 나타낸 질문의 형태예요. 실제로 실행되는 건 위의 구조화된 쿼리이고, 이 줄은 아무것도 해석하지 않아요."
+  },
+  "fields": {
+    "records": "기록",
+    "anyRecord": "모든 기록",
+    "ofKind": "종류",
+    "anyKind": "모든 종류",
+    "reminder": "리마인더",
+    "condition": "조건",
+    "quantifier": {
+      "has": "있음",
+      "missing": "없음",
+      "atLeast": "최소"
+    },
+    "howMany": "개수",
+    "orMore_other": "{{count}}개 이상",
+    "relationship": "관계",
+    "anyRelationship": "모든 관계",
+    "connectedTo": "연결 대상",
+    "anything": "무엇이든",
+    "keyword": "키워드 포함",
+    "anyKeyword": "모든 키워드",
+    "from": "시작",
+    "to": "끝"
+  },
+  "detail": {
+    "title": "선택한 기록",
+    "nothingSelected": "선택한 항목 없음",
+    "pickHint": "노드를 클릭하거나 Tab으로 이동해 Enter를 눌러 선택하면, 무엇과 연결되어 있고 앱의 어디에 있는지 볼 수 있어요.",
+    "open": "{{type}} 열기",
+    "openType": {
+      "application": "지원서 열기",
+      "organisation": "기관 열기",
+      "role": "직무 열기",
+      "item": "타임라인 항목 열기",
+      "keyword": "키워드 열기",
+      "link": "링크 열기",
+      "file": "파일 열기",
+      "snippet": "스니펫 열기",
+      "posting": "저장한 채용 공고 열기",
+      "match": "스카우트 매치 열기",
+      "source": "출처 열기",
+      "background": "내 소개 열기",
+      "claim": "관계 열기"
+    },
+    "derived": "내 기록에서 파생된 것이라 자체 페이지가 없어요.",
+    "verbs": "이것으로 할 수 있는 일",
+    "noLinks": "아직 이 기록을 가리키는 게 없어요."
+  },
+  "ask": {
+    "notConnected": "<settings>설정</settings>에서 로컬 모델을 연결하면 이걸 문장으로 물어볼 수 있어요. 아래 빌더는 어느 쪽이든 쓸 수 있어요.",
+    "label": "그래프에 질문하기",
+    "stop": "중지",
+    "submit": "질문",
+    "again": "다른 질문하기",
+    "suggestions": {
+      "noFollowUp": "후속 연락이 잡혀 있지 않은 지원은 뭐야?",
+      "unfiled": "어디에도 정리되지 않은 파일은 뭐야?",
+      "busy": "타임라인 항목이 세 개 이상인 지원은 뭐야?"
+    }
+  }
+}

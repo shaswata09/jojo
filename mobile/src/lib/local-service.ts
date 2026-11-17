@@ -1,4 +1,5 @@
 import { MODEL_TIMEOUT_MS, unreachable } from '@jojo/service/core/model-server'
+import { i18next } from '@/i18n/i18n'
 import type { ModelRequest, ModelResponse } from '@jojo/service/core/model-server'
 
 /**
@@ -48,7 +49,7 @@ export async function send(
   // read would still send the model request. See the web twin.
   if (signal?.aborted === true) {
     clearTimeout(timer)
-    return { failed: unreachable(endpoint, 'Stopped before it was sent.', true) }
+    return { failed: unreachable(endpoint, i18next.t('messages:localService.stopped'), true) }
   }
   // The caller's cancel and our timeout both have to reach the same request.
   signal?.addEventListener('abort', () => controller.abort())

@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import { STAGE_ASKS } from '@/components/guide/overview/stage-asks'
 import { STAGES } from '@/data/seed'
+import { useDomain } from '@/i18n/domain'
 
 const RAIL_ROW = 46
 const RAIL_TOP = 22
@@ -25,6 +27,8 @@ const RAIL_TOP = 22
  * diagram cannot be the thing that fails silently when a utility is renamed.
  */
 export function StageRail() {
+  const { t } = useTranslation('guide')
+  const domain = useDomain()
   const height = RAIL_TOP * 2 + (STAGES.length - 1) * RAIL_ROW
 
   return (
@@ -34,12 +38,8 @@ export function StageRail() {
       aria-labelledby="stage-rail-title stage-rail-desc"
       className="diagram h-auto w-full max-w-[260px]"
     >
-      <title id="stage-rail-title">The six stages an application moves through</title>
-      <desc id="stage-rail-desc">
-        Draft, Submitted, Screening call, Interview, Offer and Closed, in order, on one track.
-        Moving to Submitted, Interview, Offer or Closed opens a short form; moving to Draft or
-        Screening call happens straight away. The list beneath says what each form asks for.
-      </desc>
+      <title id="stage-rail-title">{t('overview.stageRail.title')}</title>
+      <desc id="stage-rail-desc">{t('overview.stageRail.desc')}</desc>
 
       <line
         x1="14"
@@ -69,7 +69,7 @@ export function StageRail() {
               style={{ fill: 'var(--text-1)' }}
               className="font-sans"
             >
-              {stage.label}
+              {domain.stage(stage.id)}
             </text>
             {asks ? (
               <>
@@ -89,7 +89,7 @@ export function StageRail() {
                   style={{ fill: 'var(--text-3)' }}
                   className="font-sans"
                 >
-                  asks
+                  {t('overview.stageRail.asks')}
                 </text>
               </>
             ) : null}

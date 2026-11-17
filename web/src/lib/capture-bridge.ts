@@ -6,6 +6,7 @@ import {
   type CaptureRejection,
 } from '@jojo/service/core/capture'
 import type { BoardScan, ScanCancellation } from '@jojo/service/core/board'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * The app's end of the conversation with the capture extension.
@@ -69,10 +70,7 @@ const NEEDS_PROTOCOL = 3
  * failing after every Reload. And "chrome://" was wrong for the person it was
  * said to, who was on Brave.
  */
-const STALE =
-  'The jojo extension in this browser is older than this page and cannot carry the request. ' +
-  'Update it: press Reload on jojo in your browser’s extensions page — or, if you installed it from Settings, ' +
-  'download it again there and load the new folder in place of the old one. An unpacked extension never updates itself.'
+const stale = (): string => i18next.t('messages:extension.stale')
 
 /**
  * How long a relay gets to answer a PROBE before it is treated as absent.
@@ -361,14 +359,16 @@ function ask(request: Ask): Promise<Reply | null> {
           // Borrowing the scan's was what threw away conversions and model
           // answers that had not finished yet — see `RELAY_TIMEOUT_MS`. The
           // link's held poll (25 s) fits under either.
-          (answered ? RELAY_TIMEOUT_MS : UNPROVEN_RELAY_TIMEOUT_MS)
+          answered
+          ? RELAY_TIMEOUT_MS
+          : UNPROVEN_RELAY_TIMEOUT_MS
         : request.capture !== undefined
           ? CAPTURE_TIMEOUT_MS
           : request.scan !== undefined
-          ? SCAN_TIMEOUT_MS
-          : request.take === true
-            ? TAKE_TIMEOUT_MS
-            : (request.patience ?? PROBE_TIMEOUT_MS)
+            ? SCAN_TIMEOUT_MS
+            : request.take === true
+              ? TAKE_TIMEOUT_MS
+              : (request.patience ?? PROBE_TIMEOUT_MS)
     let timer = window.setTimeout(() => done(null), timeout)
     window.addEventListener('message', onMessage)
     // Checked as well as listened for: `abort` never fires on a signal that was
@@ -424,8 +424,7 @@ async function probeExtension(signal?: AbortSignal): Promise<Reply | 'known' | n
 /** The bridge revision that follows a same-site redirect and presses "Load more". See `bridge.js`. */
 const FOLLOWS_BOARDS = 9
 
-const OLD_SCANNER =
-  '(The jojo extension in this browser is an older version that cannot follow a board to its own subdomain or press “Load more”. Press Reload on jojo in your browser’s extensions page.)'
+const oldScanner = (): string => i18next.t('messages:extension.oldScanner')
 
 /**
  * Reads a job board through the extension, for the scout pipeline.
@@ -442,10 +441,7 @@ const OLD_SCANNER =
  * different problems with different answers, and a model told only that
  * something failed will retry the same board until its step cap.
  */
-export async function scanBoard(
-  url: string,
-  signal?: ScanCancellation,
-): ReturnType<BoardScan> {
+export async function scanBoard(url: string, signal?: ScanCancellation): ReturnType<BoardScan> {
   /*
    * A stop ends the WAIT, as it does for `capturePage`; the worker's tab still
    * closes on its own clock. The caller's cancellation is structural (the
@@ -460,17 +456,19 @@ export async function scanBoard(
     }
     if (signal.aborted) abort()
     signal.onAbort?.(abort)
-    ;(signal as { addEventListener?: (type: 'abort', fn: () => void, options?: { once?: boolean }) => void })
-      .addEventListener?.('abort', abort, { once: true })
+    ;(
+      signal as {
+        addEventListener?: (type: 'abort', fn: () => void, options?: { once?: boolean }) => void
+      }
+    ).addEventListener?.('abort', abort, { once: true })
   }
   const reply = await ask({ scan: url, signal: stop.signal })
 
   if (reply === null) {
-    if (stop.signal.aborted) return { ok: false, reason: 'The read was cancelled.' }
+    if (stop.signal.aborted) return { ok: false, reason: i18next.t('messages:readCancelled') }
     return {
       ok: false,
-      reason:
-        'The jojo browser extension did not answer, so no board could be read. It is what lets jojo open a page you are signed into; Settings has the installer.',
+      reason: i18next.t('messages:extension.noAnswerBoard'),
     }
   }
   /*
@@ -488,9 +486,9 @@ export async function scanBoard(
    * missing `rows` field — the inference was right and could only ever say "too
    * old", where the number can also say how to fix it.
    */
-  if ((reply.protocol ?? 0) < 2) return { ok: false, reason: STALE }
+  if ((reply.protocol ?? 0) < 2) return { ok: false, reason: stale() }
   if (reply.ok !== true) {
-    const reason = reply.error ?? 'That board could not be read.'
+    const reason = reply.error ?? i18next.t('messages:extension.boardUnreadable')
     /*
      * A worker before revision 9 refuses every change of host, so a board that
      * moved within its own site (`cra.org/ads` → `careercenter.cra.org`) reads
@@ -498,13 +496,15 @@ export async function scanBoard(
      * because nothing else will ever update an unpacked extension.
      */
     return (reply.protocol ?? 0) < FOLLOWS_BOARDS
-      ? { ok: false, reason: `${reason} ${OLD_SCANNER}` }
+      ? { ok: false, reason: `${reason} ${oldScanner()}` }
       : { ok: false, reason }
   }
   return {
     ok: true,
     rows: reply.rows,
-    ...(typeof reply.landed === 'string' && reply.landed.length > 0 ? { landed: reply.landed } : {}),
+    ...(typeof reply.landed === 'string' && reply.landed.length > 0
+      ? { landed: reply.landed }
+      : {}),
   }
 }
 
@@ -530,7 +530,7 @@ const CAPTURES_BY_ADDRESS = 8
  * browser says it too.
  */
 function workerReason(error: string | null | undefined, url: string): string {
-  if (error === undefined || error === null) return 'That page could not be saved.'
+  if (error === undefined || error === null) return i18next.t('messages:extension.pageUnsaved')
   if (/showing error page|ERR_[A-Z_]+/.test(error)) {
     let host = url
     try {
@@ -538,7 +538,7 @@ function workerReason(error: string | null | undefined, url: string): string {
     } catch {
       // Keep the address as given.
     }
-    return `${host} did not load — the link may be wrong, the site may be down, or you may be offline. Open it in a tab to see what it says.`
+    return i18next.t('messages:extension.hostDidNotLoad', { host })
   }
   return error
 }
@@ -583,7 +583,11 @@ export type PageCapture =
  */
 export async function capturePage(url: string, signal?: AbortSignal): Promise<PageCapture> {
   const waiting = signal === undefined ? {} : { signal }
-  const cancelled: PageCapture = { ok: false, absent: false, reason: 'The read was cancelled.' }
+  const cancelled: PageCapture = {
+    ok: false,
+    absent: false,
+    reason: i18next.t('messages:readCancelled'),
+  }
 
   const probe = await probeExtension(signal)
   if (probe === null) {
@@ -591,14 +595,13 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
     return {
       ok: false,
       absent: true,
-      reason:
-        'The jojo browser extension did not answer, so the page could not be opened. Settings has the installer.',
+      reason: i18next.t('messages:extension.noAnswerPage'),
     }
   }
   // A probe skipped because something already answered carries no revision;
   // the capture's own reply does, and is checked below.
   if (probe !== 'known' && (probe.protocol ?? 0) < CAPTURES_BY_ADDRESS) {
-    return { ok: false, absent: false, reason: STALE }
+    return { ok: false, absent: false, reason: stale() }
   }
 
   const reply = await ask({ capture: url, ...waiting })
@@ -607,11 +610,11 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
     return {
       ok: false,
       absent: false,
-      reason:
-        'The jojo extension opened the page but did not finish saving it in time. A very heavy page can take longer — try again, or open it and use the extension’s Capture button.',
+      reason: i18next.t('messages:extension.captureTimeout'),
     }
   }
-  if ((reply.protocol ?? 0) < CAPTURES_BY_ADDRESS) return { ok: false, absent: false, reason: STALE }
+  if ((reply.protocol ?? 0) < CAPTURES_BY_ADDRESS)
+    return { ok: false, absent: false, reason: stale() }
   if (reply.ok !== true) {
     return { ok: false, absent: false, reason: workerReason(reply.error, url) }
   }
@@ -662,11 +665,10 @@ export async function readDocument(
     // A cancel and a silent extension both arrive as `null`, and they must not
     // be reported the same way: one of them is the caller's own doing, and
     // accusing the extension of it sends somebody to reinstall a working one.
-    if (signal?.aborted === true) return { failed: { reason: 'The read was cancelled.' } }
+    if (signal?.aborted === true) return { failed: { reason: i18next.t('messages:readCancelled') } }
     return {
       failed: {
-        reason:
-          'The jojo browser extension did not answer, so the reader could not be reached. It is what lets this page talk to a reader on your own machine; Settings has the installer.',
+        reason: i18next.t('messages:extension.noAnswerReader'),
       },
     }
   }
@@ -674,7 +676,7 @@ export async function readDocument(
   // Named by revision rather than guessed at from a missing field. A bridge
   // that predates `read` answers a peek, which is indistinguishable from a
   // refusal unless the revision is asked for.
-  if ((reply.protocol ?? 0) < NEEDS_PROTOCOL) return { failed: { reason: STALE } }
+  if ((reply.protocol ?? 0) < NEEDS_PROTOCOL) return { failed: { reason: stale() } }
 
   // A transport failure carries a reason and no status; an HTTP answer carries
   // a status even when it is a bad one, and belongs to the protocol layer.
@@ -720,17 +722,19 @@ export async function relayToBridge(
     // A switch turned off and a missing extension are the same silence here,
     // and only one of them should send somebody to the installer.
     if (signal?.aborted === true) {
-      return { failed: { kind: 'transport', reason: 'The link was switched off.' } }
+      return {
+        failed: { kind: 'transport', reason: i18next.t('messages:extension.linkSwitchedOff') },
+      }
     }
     return {
       failed: {
         kind: 'absent',
-        reason:
-          'The jojo browser extension did not answer. On a copy of jojo served from the web it is what carries the link to jojo-bridge; Settings has the installer.',
+        reason: i18next.t('messages:extension.noAnswerLink'),
       },
     }
   }
-  if ((reply.protocol ?? 0) < MCP_LINK_PROTOCOL) return { failed: { kind: 'stale', reason: STALE } }
+  if ((reply.protocol ?? 0) < MCP_LINK_PROTOCOL)
+    return { failed: { kind: 'stale', reason: stale() } }
   if (reply.error != null && !reply.status) {
     return { failed: { kind: 'transport', reason: reply.error } }
   }
@@ -795,8 +799,7 @@ export async function callModel(
   if ((await probeExtension()) === null) {
     return {
       failed: {
-        reason:
-          'The jojo browser extension did not answer, so the provider could not be reached. Providers that send no CORS headers can only be called through it; Settings has the installer.',
+        reason: i18next.t('messages:extension.noAnswerProvider'),
       },
     }
   }
@@ -810,13 +813,12 @@ export async function callModel(
   if (reply === null) {
     return {
       failed: {
-        reason:
-          'The jojo browser extension did not answer, so the provider could not be reached. Providers that send no CORS headers can only be called through it; Settings has the installer.',
+        reason: i18next.t('messages:extension.noAnswerProvider'),
       },
     }
   }
 
-  if ((reply.protocol ?? 0) < NEEDS_PROTOCOL) return { failed: { reason: STALE } }
+  if ((reply.protocol ?? 0) < NEEDS_PROTOCOL) return { failed: { reason: stale() } }
 
   if (reply.error != null && !reply.status) return { failed: { reason: reply.error } }
   return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }

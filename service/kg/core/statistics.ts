@@ -99,13 +99,16 @@ export function reachedOf(a: Reachable): number {
   // still counts at the end of the funnel — that is what happened to it. So
   // does a kept offer or a dated Offer stage: a board move from Offer to
   // Closed records no outcome, and without these the offer fell out of the
-  // offer rate and the record banded as Withdrawn.
+  // offer rate and the record banded as Withdrawn. The date counts on a
+  // closed record only, for the reason the Interview and Screen dates below
+  // do: a card dragged back out of Offer keeps the date it left behind, and
+  // the board no longer shows that record as an offer.
   if (
     a.stage === 'offer' ||
     a.outcome === 'accepted' ||
     a.outcome === 'declined' ||
     a.offer !== undefined ||
-    a.stageDates?.offer !== undefined
+    (a.stage === 'closed' && a.stageDates?.offer !== undefined)
   )
     return REACH.offer
   // A closed record is read the way its own panel reads it (`stagesToDate`):
@@ -137,7 +140,7 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 export type FunnelStep = { stage: string; count: number }
 
 /** In order. A record counts at step `i` when it reached rank `i + 1`. */
-const FUNNEL_STEPS = ['Applied', 'Replied', 'Screening call', 'Interview', 'Offer'] as const
+export const FUNNEL_STEPS = ['Applied', 'Replied', 'Screening call', 'Interview', 'Offer'] as const
 
 /**
  * Counted as nested subsets of one another, so the funnel can only ever narrow
@@ -153,7 +156,13 @@ function funnelFor(all: readonly Application[]): FunnelStep[] {
 
 /* ---------------------------------- KPIs ---------------------------------- */
 
+/** Which headline figure a tile is, so an app can say it in its own language. */
+export type KpiId = 'response' | 'interview' | 'offer' | 'reply'
+
 export type Kpi = {
+  id: KpiId
+  /** The figures the sentences are made of (`domain-text.ts` renders them). */
+  facts: { count: number; of: number; typical: number; median: number | null }
   label: string
   /** '—' when the store cannot support the figure. Never a guess. */
   value: string
@@ -215,7 +224,15 @@ function kpisFor(all: readonly Application[], funnel: FunnelStep[]): Kpi[] {
 
   // The headline and the caption under it are now the same division, so a tile
   // can no longer read "11%" above "1 of 12".
-  const rate = (label: string, step: number, verb: string, typical: number): Kpi => ({
+  const rate = (
+    id: KpiId,
+    label: string,
+    step: number,
+    verb: string,
+    typical: number,
+  ): Kpi => ({
+    id,
+    facts: { count: countAt(funnel, step), of: sent, typical, median: null },
     label,
     value: `${pct(countAt(funnel, step), sent)}%`,
     note: `${countAt(funnel, step)} of ${sent} ${verb}`,
@@ -223,10 +240,12 @@ function kpisFor(all: readonly Application[], funnel: FunnelStep[]): Kpi[] {
   })
 
   return [
-    rate('Response rate', 1, 'replied', TYPICAL.responseRate),
-    rate('Interview rate', 3, 'reached an interview', TYPICAL.interviewRate),
-    rate('Offer rate', 4, 'reached an offer', TYPICAL.offerRate),
+    rate('response', 'Response rate', 1, 'replied', TYPICAL.responseRate),
+    rate('interview', 'Interview rate', 3, 'reached an interview', TYPICAL.interviewRate),
+    rate('offer', 'Offer rate', 4, 'reached an offer', TYPICAL.offerRate),
     {
+      id: 'reply',
+      facts: { count: gaps.length, of: sent, typical: TYPICAL.replyDays, median },
       label: 'Median reply time',
       value: median === null ? '—' : plural(median, 'day', 'days'),
       note:
@@ -380,7 +399,31 @@ export function statsFor(all: readonly Application[]): Stats {
  * person looking for something to do next a report card on a process that is
  * demoralising enough already.
  */
+/** Which radar axis, so an app can say it in its own language. */
+export type HealthAxisId = 'sent' | 'replies' | 'interviews' | 'referrals' | 'followUps' | 'keptMoving'
+
+/**
+ * The counts every axis's sentences are made of — the same object on each
+ * axis, since they are all one search. `advice-text.ts` renders them.
+ */
+export type HealthFacts = {
+  readonly total: number
+  readonly sent: number
+  readonly drafts: number
+  readonly replied: number
+  readonly interviewed: number
+  readonly referred: number
+  /** Open follow-ups, and how many of them are late. */
+  readonly open: number
+  readonly late: number
+  /** Sent and not closed, and how many of those have gone quiet. */
+  readonly live: number
+  readonly stale: number
+}
+
 export type HealthAxis = {
+  id: HealthAxisId
+  facts: HealthFacts
   axis: string
   /** 0–100, counted from the store. Null when there is nothing to count. */
   score: number | null
@@ -434,8 +477,23 @@ export function searchHealthFor(input: {
   const live = sent.filter((a) => a.stage !== 'closed')
   const stale = live.filter((a) => a.daysAgo > STALE_DAYS).length
 
+  const facts: HealthFacts = {
+    total,
+    sent: sent.length,
+    drafts,
+    replied,
+    interviewed,
+    referred,
+    open: openFollowUps.length,
+    late,
+    live: live.length,
+    stale,
+  }
+
   return [
     {
+      id: 'sent',
+      facts,
       axis: 'Sent',
       score: shareOrNull(sent.length, total),
       target: TYPICAL.sentShare,
@@ -446,6 +504,8 @@ export function searchHealthFor(input: {
           : `${plural(drafts, 'application is', 'applications are')} still in draft. A draft does nothing until it goes out, and the one closest to done is the cheapest to finish.`,
     },
     {
+      id: 'replies',
+      facts,
       axis: 'Replies',
       score: shareOrNull(replied, sent.length),
       target: TYPICAL.responseRate,
@@ -467,6 +527,8 @@ export function searchHealthFor(input: {
               : `${replied} of ${sent.length} came back. Tailoring the opening paragraph to each posting moves this more than anything else.`,
     },
     {
+      id: 'interviews',
+      facts,
       axis: 'Interviews',
       score: shareOrNull(interviewed, sent.length),
       target: TYPICAL.interviewRate,
@@ -479,6 +541,8 @@ export function searchHealthFor(input: {
             : `${interviewed} of the ${plural(replied, 'reply', 'replies')} became a call. Replies that stall before one usually mean the fit is not obvious early enough.`,
     },
     {
+      id: 'referrals',
+      facts,
       axis: 'Referrals',
       score: shareOrNull(referred, total),
       target: TYPICAL.referralShare,
@@ -489,6 +553,8 @@ export function searchHealthFor(input: {
           : `${referred} of ${total} came through an introduction. It is the highest-yield thing on this list, and the one that scales worst — which is why it is worth asking before the next cold send rather than after.`,
     },
     {
+      id: 'followUps',
+      facts,
       axis: 'Follow-ups',
       score: shareOrNull(openFollowUps.length - late, openFollowUps.length),
       target: TYPICAL.followUpsOnTime,
@@ -502,6 +568,8 @@ export function searchHealthFor(input: {
           : `${plural(late, 'follow-up is', 'follow-ups are')} overdue. Clearing those usually pays off faster than applying somewhere new.`,
     },
     {
+      id: 'keptMoving',
+      facts,
       axis: 'Kept moving',
       score: shareOrNull(live.length - stale, live.length),
       target: TYPICAL.keptMoving,

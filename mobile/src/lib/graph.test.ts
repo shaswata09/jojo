@@ -544,22 +544,23 @@ describe('describePattern', () => {
 
   /**
    * PINNED AS IT READS, WHICH IS NOT AS ENGLISH. The sentence is assembled from
-   * a plural subject and a third-person-singular verb off `EDGE_SCHEMA`, with a
-   * bare 'a' in front of the object — so it produces 'Applications is about a
-   * application' and 'Files not is filed under…'. That is what ships on the
-   * phone's graph screen today.
+   * a plural subject and a third-person-singular verb off `EDGE_SCHEMA` — so it
+   * produces 'Applications is about an application' and 'Files not is filed
+   * under…'. That is what ships on the phone's graph screen today.
    *
-   * Left alone deliberately rather than half-fixed. The article is a one-line
-   * change; the verb agreement and the negation are a copy decision about how
-   * the three controls should read as a whole, and fixing one of the three
-   * leaves a sentence that is still wrong and now looks deliberate. These cases
+   * The article was fixed on its own (review i18n-6, 2026-11-16): it lives in
+   * the catalog's `endType` values, not in the assembly, so 'an application'
+   * and 'an employer' changed nothing else. The verb agreement and the
+   * negation are left alone: they are a copy decision about how the three
+   * controls should read as a whole, and fixing one leaves a sentence that is
+   * still wrong and now looks deliberate. These cases
    * exist so that whoever makes that decision has the current wording written
    * down and fails here when they change it, rather than discovering it on a
    * device.
    */
   it('assembles subject, verb and object — including the wording that is wrong', () => {
     expect(sentence({ quantifier: 'has', rel: 'ABOUT', end: 'application' })).toBe(
-      'Applications is about a application',
+      'Applications is about an application',
     )
     expect(sentence({ start: 'file', quantifier: 'missing', rel: 'FILED_UNDER' })).toBe(
       'Files not is filed under a date or reminder',
@@ -567,10 +568,10 @@ describe('describePattern', () => {
   })
 
   it('says the promoted-lead sentence with the model’s verb', () => {
-    // 'became', not 'came from'. The article is the known defect above.
+    // 'became', not 'came from'.
     expect(
       sentence({ start: 'posting', quantifier: 'has', rel: 'BECAME', end: 'application' }),
-    ).toBe('Saved postings became a application')
+    ).toBe('Saved postings became an application')
   })
 
   it('spells “any” as a word rather than leaving the slot blank', () => {

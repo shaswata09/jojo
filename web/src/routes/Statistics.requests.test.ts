@@ -13,6 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import statisticsEn from '@/i18n/locales/en/statistics.json'
 
 const sources = import.meta.glob(
   [
@@ -35,12 +36,13 @@ describe('the radar on the Statistics page (Q021)', () => {
 
   it('is drawn from the measured search-health axes', () => {
     expect(health).toMatch(/searchHealthFor\(\{ applications: all, timeline, today: TODAY \}\)/)
-    expect(health).toMatch(/<Radar\s+axes=\{measured\.map\(\(a\) => a\.axis\)\}/)
+    expect(health).toMatch(/<Radar\s+axes=\{measured\.map\(\(a\) => advice\.axis\(a\.id\)\)\}/)
   })
 
   it('lists a suggestion for each axis beside it', () => {
-    expect(health).toMatch(/\{ranked\.map\(\(a, i\) => \(/)
-    expect(health).toContain('{a.suggestion}</p>')
+    expect(health).toMatch(/\{ranked\.map\(\(a, i\) => \{/)
+    expect(health).toContain('const said = advice.health(a)')
+    expect(health).toContain('{said.suggestion}</p>')
   })
 })
 
@@ -54,13 +56,16 @@ describe('recommendations on the Statistics page (Q186)', () => {
   })
 
   it('list the ranked recommendations with each one’s strength', () => {
-    expect(next).toMatch(/recommendationsFor\(\{ applications: all, timeline, background, today: TODAY \}\)/)
+    expect(next).toMatch(
+      /recommendationsFor\(\{ applications: all, timeline, background, today: TODAY \}\)/,
+    )
     expect(next).toContain('const badge = BADGE[item.strength]')
   })
 
   it('state each rate with its interval and say whether a difference is real', () => {
     expect(working).toContain('const comparisons = useMemo(() => comparisonsFor(all), [all])')
-    expect(working).toContain('{arm.rate}% · likely {rangeLabel(arm)}')
+    expect(working).toContain("t('whatIsWorking.rate', { rate: arm.rate, range: rangeLabel(arm) })")
+    expect(statisticsEn.whatIsWorking.rate).toBe('{{rate}}% · likely {{range}}')
     expect(working).toMatch(/\{c\.confident\s*\?/)
   })
 })

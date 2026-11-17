@@ -1,0 +1,641 @@
+{
+  "checklist": {
+    "title": "Checklist",
+    "titleCount": "Checklist · {{open}} open of {{total}}",
+    "notAdded": "That step was not added",
+    "deleted": "Step deleted",
+    "draft": "Draft",
+    "draftMore": "Draft more",
+    "actionsFor": "Actions for {{step}}",
+    "empty": {
+      "title": "Nothing on the list yet",
+      "noPosting": "There is no saved posting behind this application, so jojo cannot read what it asks you to send. You can still add your own steps.",
+      "noModel": "Drafting a checklist needs a model. Connect one in Settings, or add your own steps below.",
+      "ready": "Ask jojo to read the posting for what you have to send, or add your own steps below."
+    },
+    "addStep": "Add a step",
+    "step": "Step"
+  },
+  "fit": {
+    "title": "How you fit",
+    "step": {
+      "reading": "Opening the posting…",
+      "asking": "Reading what it asks for…"
+    },
+    "measure": "Measure this posting",
+    "rerun": "Re-run",
+    "rerunHint": "Read the posting again and re-measure",
+    "clear": "Clear this reading",
+    "clearHint": "jojo stops measuring this posting until you ask",
+    "cleared": "Fit reading cleared",
+    "notCleared": "That did not clear",
+    "clearedBody": "jojo will not read this posting again unless you ask it to.",
+    "options": "Fit options",
+    "blocked": {
+      "noPosting": "There is no saved posting behind this application, so there is nothing to weigh you against. Capture the listing, or add the application from its link, and this fills in.",
+      "noModel": "Reading what a posting asks for needs a model. Connect one under More → Settings.",
+      "noBackground": "jojo has not read anything about your background yet, so it cannot weigh this posting against it. Put your CV in the Vault and say yes when it offers to read it."
+    },
+    "clearedNote": "You cleared this reading, so jojo is leaving this posting alone.",
+    "queued": "Queued…",
+    "leadWith": "Lead with",
+    "answers": "answers “{{requirement}}”",
+    "beReadyFor": "Be ready for",
+    "required": " — required",
+    "skipped_one": " · {{count}} line skipped",
+    "skipped_other": " · {{count}} lines skipped"
+  },
+  "tailored": {
+    "title": "Tailored materials",
+    "hint": "Rewritten for this posting, with the changes marked.",
+    "tailor": "Tailor",
+    "tailoredBefore": "{{label}} · tailored before",
+    "blocked": {
+      "noPosting": "There is no saved posting behind this application, so there is nothing to tailor your documents for. Add the application from its link, or capture the listing, and this offers to.",
+      "noModel": "Tailoring a document needs a model. Connect one under More → Settings.",
+      "noDocuments": "Nothing to tailor yet. Tailoring rewrites the documents you send with an application — add your CV, statements or a cover letter under More → My profile, or file them in the Vault under Applications, and they appear here."
+    },
+    "queued": "Queued…",
+    "working": "Working…",
+    "empty": "Nothing tailored yet. Press Tailor, choose a document, and jojo writes a version for this posting with what it changed marked.",
+    "deleted": "{{title}} deleted",
+    "notDeleted": "That did not delete",
+    "deletedBody": "Gone from this application and from the Vault.",
+    "provenance": "{{tag}} · from {{from}} · {{model}}",
+    "chooseTitle": "Tailor a document",
+    "chooseHint": "Takes a minute or two on a local model.",
+    "openInVault": "Open in the Vault",
+    "previewNamed": "Preview {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "Running",
+      "done": "Done",
+      "failed": "Failed",
+      "declined": "Declined"
+    },
+    "effect": {
+      "read": "read",
+      "unknown": "no such tool",
+      "create": "added",
+      "update": "changed",
+      "move": "moved",
+      "delete": "deleted",
+      "admin": "store"
+    },
+    "asked": "The agent asked to do this. Nothing has changed yet.",
+    "dont": "Don’t",
+    "allow": "Allow",
+    "arguments": "Arguments",
+    "result": "Result",
+    "undoStep": "Undo this step",
+    "cannotUndo": "This step cannot be undone from here. More → Settings → Records keeps a log of what changed and can reverse the most recent one.",
+    "truncated": "Cut short — the agent was told to narrow the search to see the rest.",
+    "thinking": "Working — {{model}} is deciding what to do…"
+  },
+  "approval": {
+    "askedBy": "Asked by {{name}}. Nothing has changed yet.",
+    "askedByUnnamed": "Asked by a conversation. Nothing has changed yet."
+  },
+  "threads": {
+    "conversations": "Conversations",
+    "new": "New conversation",
+    "kept_one": "{{count}} kept",
+    "kept_other": "{{count}} kept",
+    "titleField": "Conversation title",
+    "approvalLabel": "How much this conversation may do without asking",
+    "rename": "Rename this conversation",
+    "changeJob": "Change the job this is about",
+    "fileUnder": "File under a job",
+    "delete": "Delete this conversation",
+    "noJob": "Not about a job yet",
+    "listEmpty": "Nothing yet — ask something and it is kept here, on this device.",
+    "keptOnDevice_one": "{{count}} kept on this device.",
+    "keptOnDevice_other": "{{count}} kept on this device.",
+    "filter": "Filter",
+    "filterPlaceholder": "By name or job",
+    "noMatch": "No conversation matches that.",
+    "working": "Working…",
+    "questions_one": "{{count}} question",
+    "questions_other": "{{count}} questions"
+  },
+  "picker": {
+    "title": "Related applications",
+    "description": "As many jobs as it belongs to. One CV goes to every application you send it to, so this is a list, not a slot.",
+    "notLinked": "Not linked",
+    "none": "No applications yet",
+    "noneHint": "Add one and it becomes a place to file this."
+  },
+  "audit": {
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records",
+    "links_one": "{{count}} link",
+    "links_other": "{{count}} links",
+    "undoFailed": "That change could no longer be undone",
+    "notInJournal": "It is no longer in the journal.",
+    "recorded_one": "{{count}} recorded",
+    "recorded_other": "{{count}} recorded",
+    "title": "What changed",
+    "empty": {
+      "title": "Nothing written yet",
+      "description": "Every add, edit and delete lands here as you make it — newest first, with the last one undoable."
+    },
+    "explain": "The newest change can be put back. Older ones are a record, not a time machine.",
+    "undoLast": "Undo the last",
+    "cannotUndo": "Loading or clearing the data set cannot be undone.",
+    "showAll_one": "Show all {{count}}",
+    "showAll_other": "Show all {{count}}"
+  },
+  "crash": {
+    "title": "Crash reports",
+    "thisPhone": "this phone",
+    "notBuilt": "This build of jojo was made without crash reporting or usage analytics, so nothing is recorded and there is nothing to turn on.",
+    "what": "When something breaks, jojo can keep the error so you can read it back — useful when the thing that failed has already gone. A report holds the error message, where in jojo it happened, and the stack trace. It never holds your applications, documents, notes, profile or conversations, and API keys, addresses and email addresses are stripped out before a report is written.",
+    "where": "Reports are kept on this phone, and also sent to Firebase Crashlytics, which adds your device model, its OS version, and a random id used to count how many people hit the same crash. Google keeps those for 90 days. None of your records go with them.",
+    "report": "Report crashes",
+    "reportHint": "On, so a crash you hit is one we can see. Turn it off and nothing is recorded.",
+    "usage": "Share which features I use",
+    "usageHint": "Counts only, from a fixed list — never what is in your records.",
+    "usageDetail": "It can only say things from a fixed list — which screen was opened, that an application was added, roughly how many there are. It cannot name an employer, a role, a file or anything you typed. Goes to Google Analytics. With this off, jojo also turns off the screen views and session counts Firebase would otherwise collect on its own.",
+    "kept_one": "{{count}} report kept",
+    "kept_other": "{{count}} reports kept",
+    "nothingBroken": "Nothing has broken since you turned this on.",
+    "notRecording": "Nothing is being recorded."
+  },
+  "date": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "inSevenDays": "In 7 days",
+    "triggerLabel": "{{label}}: {{value}}. Pick a date",
+    "notSet": "not set",
+    "pick": "Pick a date",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "backTo": "Back to {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Something broke",
+    "body": "A screen failed to draw. Your records are on this device and nothing was sent anywhere, but jojo cannot tell you whether the change you were making finished.",
+    "noMessage": "No message was attached to the error.",
+    "hint": "If it breaks again, close jojo from the app switcher and reopen it."
+  },
+  "fileEditor": {
+    "editTitle": "Edit document",
+    "newTitle": "Record a document",
+    "keptHere": "Kept on this device, in this app. Nothing is uploaded and nothing reads what is inside it.",
+    "chooseOrType": "Choose a file to keep a copy of it, or fill this in by hand to record one you are keeping elsewhere.",
+    "record": "Record it",
+    "choosing": "Choosing…",
+    "chooseDifferent": "Choose a different file",
+    "choose": "Choose a file",
+    "copyKept": "A copy is kept in this app. It goes when the app is uninstalled.",
+    "fileName": "File name",
+    "nameRequired": "Name it, including the extension.",
+    "nameHint": "The extension picks the icon — .pdf, .doc, .pptx, .md.",
+    "size": "Size",
+    "sizePlaceholder": "e.g. 212 KB",
+    "sizeHint": "Optional — left blank it reads as unknown rather than as zero.",
+    "bucket": "Bucket",
+    "applicationsHint": "What the Profile’s Documents panel and the graph read to say what is filed where. As many jobs as the document went to.",
+    "note": "Note"
+  },
+  "filed": {
+    "sections": {
+      "files": "Files",
+      "links": "Links",
+      "snippets": "Snippets",
+      "people": "People"
+    },
+    "count_one": "{{count}} filed here",
+    "count_other": "{{count}} filed here",
+    "title": "From the Vault",
+    "empty": {
+      "title": "Nothing filed under this yet",
+      "description": "Documents, links, snippets and people can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
+    },
+    "conversations": "Conversations",
+    "openInAssistant": "Open {{name}} in the Assistant",
+    "openInVault": "Open {{name}} in the Vault"
+  },
+  "firstRun": {
+    "title": "How would you like to start?",
+    "description": "Either way, everything stays on this device and nothing is sent anywhere.",
+    "demo": {
+      "title": "Explore with demo records",
+      "detail": "Twelve applications, a filled calendar and a stocked vault, so every screen has something in it. You can clear them later in Settings.",
+      "action": "Use the demo records"
+    },
+    "empty": {
+      "title": "Start empty",
+      "detail": "Nothing but your own records. Screens that need data will say what is missing rather than showing an example."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Push out by",
+    "currently": "{{title}} · currently {{date}}",
+    "pickDate": "Pick a date…",
+    "duplicate": "Duplicate",
+    "duplicateHint": "Same date and keywords, as a second row",
+    "draft": "Draft a message",
+    "draftHint": "From your email snippets — nothing is generated",
+    "reschedule": "Reschedule"
+  },
+  "keywords": {
+    "on": "Keywords on {{name}}",
+    "none": "None yet",
+    "choose": "Choose",
+    "title": "Keywords",
+    "description": "Keywords are yours, and shared by applications, reminders, files and links — filtering by one finds all of them.",
+    "newPlaceholder": "New keyword…",
+    "new": "New keyword",
+    "add": "Add",
+    "countHere_one": "{{name}}, {{count}} here",
+    "countHere_other": "{{name}}, {{count}} here"
+  },
+  "onboarding": {
+    "model": {
+      "title": "Connect a model?",
+      "description": "This is what makes jojo agentic rather than a filing cabinet. With one connected it answers questions about your search, drafts follow-ups against your own records, and reads documents you add.",
+      "action": "Set one up",
+      "local": "Point it at a server on your own machine — vLLM, Ollama or LM Studio — and nothing leaves the device.",
+      "later": "Everything else works without one. It is under More → Settings whenever you want it."
+    },
+    "tour": {
+      "title": "Want a hands-on tour?",
+      "description": "A hands-on walk through the real screens — what each part is for, with a spotlight on it, and you try each thing as you go.",
+      "action": "Start the tour",
+      "safe": "It changes nothing — no record is written and no setting is touched.",
+      "later": "It is always there under More → How to use, so saying no now costs nothing."
+    }
+  },
+  "pattern": {
+    "has": "that have",
+    "hasHint": "At least one such link",
+    "missing": "that do not have",
+    "missingHint": "No such link at all",
+    "anything": "Anything",
+    "lookFor": "Look for",
+    "records": "Records",
+    "aLink": "A link",
+    "anyKind": "Of any kind",
+    "to": "To",
+    "lookForHint": "The kind of record the answer is a list of.",
+    "quantifierTitle": "Having, or missing",
+    "quantifierHint": "Whether the link below has to be there or has to be absent.",
+    "relTitle": "Which link",
+    "relHint": "How the two ends are joined. “Of any kind” asks about all six at once.",
+    "endTitle": "At the other end",
+    "endHint": "What the link has to point at."
+  },
+  "reporting": {
+    "title": "Crash reports and usage",
+    "description": "Two separate things, both on. Turn off either one here or later in Settings. Neither can carry your records: not an application, a document, a note, a profile or a conversation.",
+    "bothOff": "Turn both off",
+    "save": "Save choices",
+    "inReport": "What is in a crash report",
+    "in": {
+      "message": "· The error message and where in jojo it happened.",
+      "stack": "· The stack trace, which names the code that failed.",
+      "device": "· Your device model, its OS version, and a random id used to count how many people hit the same crash — no name, no account."
+    },
+    "notInReport": "What is never in one",
+    "notIn": {
+      "records": "· Your applications, documents, notes, profile or conversations.",
+      "secrets": "· Your API keys, the addresses you use, or any email address — stripped out before a report is written, not before it is sent."
+    },
+    "crashHint": "The error and where it happened. Goes to Firebase Crashlytics.",
+    "usageHint": "Counts only — which screens are opened, how often. Never what is in them.",
+    "usageDetail": "The second one is the only thing jojo sends about what you DO, and it can only ever say things from a fixed list — “the vault was opened”, “an application was added”, “there are 6–20 of them”. It cannot name an employer, a role, a file or anything you typed, because those words are not in the list. Turning it off also stops the screen views Firebase would otherwise collect on its own.",
+    "later": "Both are under Settings whenever you want to change them, and turning one off discards what it kept."
+  },
+  "stagePicker": {
+    "label": "Stage of {{name}}: {{stage}}. Change stage",
+    "title": "Move to"
+  },
+  "welcome": {
+    "title": "A little about you",
+    "description": "Drafts sign off with your name, and the scout scores against what you are looking for. All of it stays on this device, and all of it is optional — Profile has the rest.",
+    "skip": "Skip for now",
+    "save": "Save and continue",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "e.g. Lonardo Jenson",
+    "position": "Current position",
+    "positionPlaceholder": "e.g. PhD candidate, Computer Science",
+    "location": "Location",
+    "locationPlaceholder": "e.g. Santa Clara, CA",
+    "email": "Email",
+    "rest": "The rest — links, target roles, the terms the scout matches on — lives under Profile, in the More tab."
+  },
+  "offers": {
+    "open_one": "{{count}} open",
+    "open_other": "{{count}} open",
+    "title": "Offers, side by side",
+    "noPackage": "Package not stated",
+    "respondBy": "Respond by {{date}}",
+    "passed": "passed",
+    "today": "today",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "ranked": "Yearly figures, read from what you typed.",
+    "notRanked": "Not ranked — the packages are in different currencies, and jojo has no exchange rate.",
+    "annualised": " * annualised at 12 months, 52 weeks or 2,080 hours."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "Which applications have no follow-up scheduled?",
+      "unfiled": "Which files are filed under nothing?"
+    },
+    "notConnected": "Connect a local model in Settings and you can ask this in a sentence. The questions below work either way.",
+    "placeholder": "Which applications have no follow-up?",
+    "label": "Ask the graph a question",
+    "stop": "Stop",
+    "ask": "Ask",
+    "again": "Ask something else"
+  },
+  "background": {
+    "details_one": "{{count}} detail",
+    "details_other": "{{count}} details",
+    "fromDocument": "read from a document",
+    "editNamed": "Edit {{title}}",
+    "removeNamed": "Remove {{title}}",
+    "added": "{{title}} added",
+    "updated": "{{title}} updated",
+    "removed": "{{title}} removed",
+    "notSaved": "That did not save",
+    "editTitle": "Edit this entry",
+    "addTitle": "Add to your background",
+    "editRead": "Read from a document. Your edit is kept over the reading.",
+    "editHint": "Nothing is saved until you press Save.",
+    "addHint": "Anything a posting should be weighed against. Nothing here is sent anywhere.",
+    "add": "Add",
+    "kind": "Kind",
+    "title": "Title",
+    "titlePlaceholder": "What it was",
+    "where": "Where",
+    "optional": "Optional",
+    "when": "When",
+    "whenPlaceholder": "As written — “2021–2024”",
+    "year": "Year",
+    "detail": "Detail",
+    "highlights": "Highlights",
+    "highlightsHint": "One per line — what was built, shipped, taught or found.",
+    "kindHint": "Which part of your background this belongs to.",
+    "recorded_one": "{{count}} recorded · what a posting is weighed against",
+    "recorded_other": "{{count}} recorded · what a posting is weighed against",
+    "panelTitle": "Your background",
+    "read": "Read a document",
+    "addEntry": "Add an entry",
+    "readTitle": "Read a document into your profile",
+    "nothingReadable": "Nothing in the Vault can be read yet",
+    "nothingReadableHint": "Add your CV or a statement and it appears here.",
+    "alreadyRead": "Already read",
+    "empty": {
+      "title": "Nothing recorded yet",
+      "ready": "Put your CV, a research or teaching statement in the Vault and jojo will offer to read it — what it finds is shown to you before anything is saved. Or add an entry by hand.",
+      "noModel": "Reading a document needs a model. Connect one under More → Settings, then put your CV or a statement in the Vault. You can add entries by hand without one."
+    },
+    "removeTitle": "Remove {{title}}?",
+    "removeBody": "It goes from your background, so postings stop being weighed against it. The document it came from is untouched."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Education",
+      "employment": "Employment",
+      "publication": "Publication",
+      "skill": "Skill",
+      "teaching": "Teaching",
+      "award": "Award",
+      "service": "Service",
+      "certification": "Certification",
+      "language": "Language",
+      "project": "Project",
+      "volunteering": "Volunteering",
+      "membership": "Membership",
+      "grant": "Grant",
+      "patent": "Patent"
+    },
+    "skipped_one": "{{count}} entry was skipped",
+    "skipped_other": "{{count}} entries were skipped",
+    "alreadyThere": "Already on your profile",
+    "added_one": "{{count}} added to your profile",
+    "added_other": "{{count}} added to your profile",
+    "nothingAdded": "Nothing could be added",
+    "readFrom": "Read from {{name}}.",
+    "alreadyKnown_one": "{{known}} of {{count}} was already known.",
+    "alreadyKnown_other": "{{known}} of {{count}} were already known.",
+    "connectionsRecorded_one": "{{count}} connection recorded.",
+    "connectionsRecorded_other": "{{count}} connections recorded.",
+    "refused": "The entries were refused.",
+    "readIt": "Read it",
+    "readFailed": "Reading the document failed.",
+    "entriesRead_one": "{{count}} entry read from this document",
+    "entriesRead_other": "{{count}} entries read from this document",
+    "addNamed": "Add {{title}}",
+    "connections_one": "{{count}} connection between them",
+    "connections_other": "{{count}} connections between them",
+    "addCount_one": "Add it",
+    "addCount_other": "Add {{count}}"
+  },
+  "proposals": {
+    "aPipeline": "a pipeline",
+    "hint": "nothing happens until you say so",
+    "title": "Suggestions",
+    "empty": {
+      "title": "Nothing to review",
+      "description": "When a pipeline is running, anything it wants to change shows up here first. It will not touch your records until you approve it."
+    },
+    "applied": "applied",
+    "discarded": "discarded",
+    "failed": "could not apply",
+    "from": "{{tool}} · from {{pipeline}}",
+    "approve": "Approve",
+    "discardNamed": "Discard: {{title}}",
+    "clearAnswered": "Clear answered",
+    "clearAll": "Clear all",
+    "confirmTitle": "Clear all suggestions?",
+    "confirmPending_one": "{{count}} suggestion is still waiting and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.",
+    "confirmPending_other": "{{count}} suggestions are still waiting and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.",
+    "confirmAnswered": "The answered cards come off the list. Nothing in your records changes."
+  },
+  "nextSteps": {
+    "measured": "Measured",
+    "suggested": "Suggested",
+    "hint": "what your records support, then what costs least",
+    "title": "What to do next"
+  },
+  "working": {
+    "arm": "{{count}} of {{of}} · {{rate}}% · likely {{range}}",
+    "repliesBy": "Replies, by {{dimension}}",
+    "interviewsBy": "Interviews, by {{dimension}}",
+    "confident": "The ranges do not overlap, so this is a real difference — {{best}} is worth more of your effort.",
+    "overlap": "The ranges overlap, so this is two numbers rather than a difference. More records will separate them or close the gap.",
+    "tooFew_one": "{{count}} other group has fewer than {{min}} records and is not compared.",
+    "tooFew_other": "{{count}} other groups have fewer than {{min}} records and are not compared.",
+    "hint": "the band is where the true rate plausibly sits",
+    "title": "What is working"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "A tour of jojo, hands on",
+        "body": "It points at the real screens and asks you to try each thing as you go. It never types, saves or changes anything for you. Close it whenever you like — your place is kept, and How to use will pick it up again."
+      },
+      "today": {
+        "title": "Today",
+        "body": "What is owed now: what is overdue, what is due, and the decisions waiting on you. The screen to open first."
+      },
+      "applications": {
+        "title": "Your applications",
+        "body": "One record per job: the employer, the role, its stage and your notes. Its dates, documents and conversations all hang off it, so nothing is typed twice.",
+        "say": "Open Applications."
+      },
+      "layout": {
+        "title": "A list or a board",
+        "body": "The same records, two ways. The list sorts and searches; the board shows the stages as columns.",
+        "say": "Switch to Board."
+      },
+      "records": {
+        "title": "Six stages",
+        "body": "Draft, Submitted, Screening call, Interview, Offer, Closed. On the board, press and hold a card, then drag it to its next column; each card also has a stage menu. Every move can be undone."
+      },
+      "search": {
+        "title": "Search everything",
+        "body": "Applications, reminders and calendar entries, from any tab.",
+        "say": "Open search."
+      },
+      "searchScreen": {
+        "title": "Type to find anything",
+        "body": "A role, an employer or a stage. Tap a result to open it, or go back when you are done looking."
+      },
+      "new": {
+        "title": "Make anything",
+        "body": "The + makes an application, a reminder, a calendar entry, a drafted message, a saved link or a saved posting. Nothing is saved until you save, and closing a half-filled form costs nothing."
+      },
+      "calendar": {
+        "title": "Every date in one place",
+        "body": "Deadlines, interviews and follow-ups are one kind of record, so one entry shows on the calendar, on Today and on its application.",
+        "say": "Open the Calendar."
+      },
+      "vault": {
+        "title": "The vault",
+        "body": "Everything that is not an application: reminders, links, files, the snippets you paste into every form, the people you know, and a calculator.",
+        "say": "Open the Vault."
+      },
+      "vaultTools": {
+        "title": "One tool at a time",
+        "body": "Each of these is its own list, and a keyword means the same thing in all of them.",
+        "say": "Pick Files."
+      },
+      "files": {
+        "title": "Files, kept on the phone",
+        "body": "A CV, a statement, a posting — copied into jojo’s own folder, so they survive the original being moved. Tap one to read it here; file it under as many applications as it belongs to."
+      },
+      "more": {
+        "title": "More",
+        "body": "Everything else: Job scout, Statistics, the graph, Transfer, your profile, the assistant, Settings and this guide.",
+        "say": "Open More."
+      },
+      "scout": {
+        "title": "Job scout",
+        "body": "Saved searches that watch job boards for you.",
+        "say": "Open Job scout."
+      },
+      "scoutScreen": {
+        "title": "Pipelines and suggestions",
+        "body": "Each pipeline is a search on a board, run on a schedule or when you ask. What it finds waits as a suggestion you approve or discard, and an approved one becomes a draft application."
+      },
+      "statistics": {
+        "title": "Statistics",
+        "body": "How your search is going, counted from your own records.",
+        "say": "Open Statistics."
+      },
+      "statisticsScreen": {
+        "title": "Rates, with honest ranges",
+        "body": "Response and interview rates, a funnel and what to work on next — each rate with the range it could really be, since a handful of applications is a small sample."
+      },
+      "graph": {
+        "title": "The knowledge graph",
+        "body": "Every record — applications, employers, people, dates, files — drawn as the network it is.",
+        "say": "Open the Graph."
+      },
+      "graphScreen": {
+        "title": "Everything, connected",
+        "body": "Tap a node to see what it connects to, and ask a question to light up the records that match."
+      },
+      "assistant": {
+        "title": "The assistant",
+        "body": "Chat with jojo: it finds, adds and updates your records with the app’s own tools, and asks before it changes anything. Until a model is connected it shows worked examples."
+      },
+      "transfer": {
+        "title": "Phone and computer",
+        "body": "Transfer moves everything between this phone and jojo on your computer over your local network, without going through anyone else."
+      },
+      "settings": {
+        "title": "Settings",
+        "body": "Connections, appearance and your data.",
+        "say": "Open Settings."
+      },
+      "device": {
+        "title": "Your records live on this phone",
+        "body": "Written straight to the phone’s own storage as you work — no account, no sync, nothing uploaded. Export a copy, or Transfer it to your computer."
+      },
+      "model": {
+        "title": "Connect a model",
+        "body": "Where the assistant’s model runs. A server on your own machine — vLLM, Ollama or LM Studio — takes its address and keeps your records on your devices. OpenAI, Anthropic (Claude) and the other cloud providers take an API key. Test connection checks it before anything is saved."
+      },
+      "reader": {
+        "title": "Let it read your documents",
+        "body": "The phone reads Word files, decks, saved pages and text on its own. PDFs need MarkItDown on your computer: start it with the two commands above, then Test connection."
+      },
+      "done": {
+        "title": "That’s the tour",
+        "body": "Every change can be undone, and How to use, under More, covers every screen in turn. The tour is there to take again."
+      }
+    },
+    "stepOf": "Step {{step}} of {{total}}",
+    "end": "End tour",
+    "nice": "Nice — that’s it.",
+    "tryIt": "Try it: {{task}}",
+    "finish": "Finish",
+    "skip": "Skip this"
+  },
+  "marks": {
+    "bold": "bold",
+    "italic": "italic",
+    "underlined": "underlined"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Today",
+      "applications": "Applications",
+      "calendar": "Calendar",
+      "vault": "Vault",
+      "more": "More"
+    },
+    "badge": {
+      "applications_one": "Applications, {{count}} flagged for follow-up",
+      "applications_other": "Applications, {{count}} flagged for follow-up",
+      "calendar_one": "Calendar, {{count}} in the next seven days",
+      "calendar_other": "Calendar, {{count}} in the next seven days",
+      "vault_one": "Vault, {{count}} reminder past its date",
+      "vault_other": "Vault, {{count}} reminders past their date",
+      "more_one": "More, {{count}} match not yet added to applications",
+      "more_other": "More, {{count}} matches not yet added to applications"
+    },
+    "create": "Create",
+    "search": "Search",
+    "titles": {
+      "application": "Application",
+      "employer": "Employer",
+      "search": "Search",
+      "jobScout": "Job scout",
+      "statistics": "Statistics",
+      "profile": "My profile",
+      "assistant": "Assistant",
+      "settings": "Settings",
+      "guide": "How to use",
+      "graph": "Graph",
+      "transfer": "Transfer"
+    }
+  }
+}

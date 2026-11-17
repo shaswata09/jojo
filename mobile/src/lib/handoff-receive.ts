@@ -22,11 +22,12 @@
 import NetInfo from '@react-native-community/netinfo'
 import { createConvoyReceiver } from '@jojo/service/core/convoy'
 import { isPrivateAddress, type DialAddress } from '@jojo/service/core/dial'
-import { pathToken } from '@jojo/service/core/handoff'
+import { pathToken, sealOutcome, type HandoffOutcome } from '@jojo/service/core/handoff'
 import { acceptPairing, type PairingOffer, type SessionKeys } from '@jojo/service/core/pairing'
 import { decodeOffer } from '@jojo/service/core/pairing'
 import { createSecrets } from '@jojo/service/crypto/noble-secrets'
 import { startHandoffServer, type HandoffServer } from '@/lib/handoff-server'
+import { i18next } from '@/i18n/i18n'
 
 export type ReceiveProblem =
   /** The scanned code was not a pairing offer this build understands. */
@@ -47,8 +48,21 @@ export type ReceiveSession = {
   progress: () => { bytes: number; complete: boolean }
   /** The transferred payload, once the final chunk has authenticated. */
   payload: () => Uint8Array | null
+  /**
+   * Records what the person did with the transfer, for the computer to ask
+   * about, and closes the socket once it has had time to (`OUTCOME_GRACE_MS`).
+   * The computer stamps its handover only on `applied`.
+   */
+  settle: (outcome: Exclude<HandoffOutcome, 'pending'>) => void
+  /** Closes the socket now — unless the transfer has settled, when the grace runs out first. */
   stop: () => void
 }
+
+/**
+ * How long the socket stays up after the person has answered, so the
+ * computer's next ask (every two seconds) can hear what they decided.
+ */
+export const OUTCOME_GRACE_MS = 8_000
 
 export type ReceiveResult =
   { ok: true; value: ReceiveSession } | { ok: false; error: ReceiveProblem }
@@ -105,6 +119,10 @@ export async function beginReceiving(offerBytes: Uint8Array): Promise<ReceiveRes
   const token = await pathToken(secrets, offer, 'push')
   const convoy = createConvoyReceiver(secrets, accepted.value.keys.offererToAnswerer)
 
+  /** What became of the transfer here, for the computer's `outcome` request. */
+  let outcome: HandoffOutcome = 'pending'
+  let settled = false
+
   let server: HandoffServer
   try {
     server = await startHandoffServer(token, async (request) => {
@@ -116,10 +134,21 @@ export async function beginReceiving(offerBytes: Uint8Array): Promise<ReceiveRes
       // it is useless to anything that did not — so it goes out in the clear.
       if (request.route === 'pair') return { status: 200, body: accepted.value.response }
 
-      const outcome = await convoy.accept(request.body)
+      // Whether the person here took the records. Not a secret either, and
+      // only reachable under this session's token — but sealed with this
+      // phone's proof, so the computer stamps a handover only on an answer
+      // that came from here (`core/handoff.ts` `sealOutcome`).
+      if (request.route === 'outcome') {
+        return {
+          status: 200,
+          body: await sealOutcome(secrets, accepted.value.keys, outcome, 'push'),
+        }
+      }
+
+      const verdict = await convoy.accept(request.body)
       // 409 rather than 400: the chunk was well-formed and did not belong here.
       // The sender's correct response is to stop, not to resend.
-      return { status: outcome === 'rejected' ? 409 : 200 }
+      return { status: verdict === 'rejected' ? 409 : 200 }
     })
   } catch {
     return { ok: false, error: 'receive/no-socket' }
@@ -142,17 +171,27 @@ export async function beginReceiving(offerBytes: Uint8Array): Promise<ReceiveRes
         return { bytes: at.bytes, complete: at.complete }
       },
       payload: () => convoy.payload(),
-      stop: server.stop,
+      settle: (answer) => {
+        if (settled) return
+        settled = true
+        outcome = answer
+        setTimeout(server.stop, OUTCOME_GRACE_MS)
+      },
+      stop: () => {
+        if (!settled) server.stop()
+      },
     },
   }
 }
 
-/** What to tell the person, per failure. */
-export const RECEIVE_ADVICE: Record<ReceiveProblem, string> = {
-  'receive/offer': 'That code is not a jojo pairing offer. Scan the one on your other device.',
-  'receive/no-network':
-    'This phone is not on a local network. jojo transfers over your local network only, so both devices need to be on the same one.',
-  'receive/not-local':
-    'This phone is on a network jojo will not transfer over. It only connects to a private network address, so your records never cross the internet.',
-  'receive/no-socket': 'jojo could not open a connection on this phone. Try again.',
+/** Where each failure's sentence sits in the catalog, under `advice.receive`. */
+const RECEIVE_ADVICE_KEY: Record<ReceiveProblem, string> = {
+  'receive/offer': 'offer',
+  'receive/no-network': 'noNetwork',
+  'receive/not-local': 'notLocal',
+  'receive/no-socket': 'noSocket',
 }
+
+/** What to tell the person, per failure — in the language on screen when it is said. */
+export const receiveAdvice = (problem: ReceiveProblem): string =>
+  i18next.t(`transfer:advice.receive.${RECEIVE_ADVICE_KEY[problem]}`)

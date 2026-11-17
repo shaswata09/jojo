@@ -9,6 +9,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import screensEn from '@/i18n/locales/en/screens.json'
 
 const SRC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const read = (rel: string) =>
@@ -56,14 +57,19 @@ describe('edits that undo and save what they say (Q328)', () => {
 
   it('asks before Cancel throws away a half-written snippet', () => {
     expect(read('screens/vault/SnippetsTool.tsx')).toMatch(
-      /label="Cancel"[^\n]*onPress=\{askOrClose\}/,
+      /label=\{t\('common\.cancel'\)\}[^\n]*onPress=\{askOrClose\}/,
     )
+    const vault = JSON.parse(read('i18n/locales/en/vault.json')) as { common: { cancel: string } }
+    expect(vault.common.cancel).toBe('Cancel')
   })
 
   it('says saving the profile writes it to the phone', () => {
+    // The sentence lives in the English catalog; the screen draws it by key.
     const profile = read('screens/ProfileScreen.tsx')
-    expect(profile).toMatch(/saving writes them to this phone/)
-    expect(profile).not.toMatch(/not to disk/)
+    const unsaved = (screensEn as { profile: { unsaved: string } }).profile.unsaved
+    expect(profile).toMatch(/t\('profile\.unsaved'\)/)
+    expect(unsaved).toMatch(/saving writes them to this phone/)
+    expect(unsaved).not.toMatch(/not to disk/)
   })
 })
 
@@ -120,7 +126,8 @@ describe('the phone counts the same features the web does (Q328)', () => {
     const offer = read('components/profile/ProfileUpdateOffer.tsx')
     expect(offer).toMatch(/run\('profile\.background\.import'/)
     expect(offer).not.toMatch(/run\('claim\.add'/)
-    expect(offer).toMatch(/action: \{ label: 'Undo', onPress: undo \}/)
+    // The label is the shared Undo word, drawn from the common catalog.
+    expect(offer).toMatch(/action: \{ label: t\('common:actions\.undo'\), onPress: undo \}/)
   })
 })
 

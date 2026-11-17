@@ -1,0 +1,641 @@
+{
+  "checklist": {
+    "title": "Lista de tareas",
+    "titleCount": "Lista de tareas · {{open}} pendientes de {{total}}",
+    "notAdded": "No se añadió ese paso",
+    "deleted": "Paso eliminado",
+    "draft": "Redactar",
+    "draftMore": "Redactar más",
+    "actionsFor": "Acciones para {{step}}",
+    "empty": {
+      "title": "Aún no hay nada en la lista",
+      "noPosting": "Esta solicitud no tiene ninguna oferta guardada, así que jojo no puede leer qué te pide enviar. Aun así, puedes añadir tus propios pasos.",
+      "noModel": "Redactar una lista de tareas necesita un modelo. Conecta uno en Ajustes o añade tus propios pasos abajo.",
+      "ready": "Pide a jojo que lea en la oferta lo que tienes que enviar, o añade tus propios pasos abajo."
+    },
+    "addStep": "Añadir un paso",
+    "step": "Paso"
+  },
+  "fit": {
+    "title": "Cómo encajas",
+    "step": {
+      "reading": "Abriendo la oferta…",
+      "asking": "Leyendo lo que pide…"
+    },
+    "measure": "Medir esta oferta",
+    "rerun": "Volver a ejecutar",
+    "rerunHint": "Leer la oferta otra vez y volver a medir",
+    "clear": "Borrar esta lectura",
+    "clearHint": "jojo deja de medir esta oferta hasta que se lo pidas",
+    "cleared": "Lectura de encaje borrada",
+    "notCleared": "No se pudo borrar",
+    "clearedBody": "jojo no volverá a leer esta oferta a menos que se lo pidas.",
+    "options": "Opciones de encaje",
+    "blocked": {
+      "noPosting": "Esta solicitud no tiene ninguna oferta guardada, así que no hay nada con lo que compararte. Captura el anuncio o añade la solicitud desde su enlace y esto se completará.",
+      "noModel": "Leer lo que pide una oferta necesita un modelo. Conecta uno en Más → Ajustes.",
+      "noBackground": "jojo todavía no ha leído nada sobre tu trayectoria, así que no puede comparar esta oferta con ella. Pon tu CV en la Bóveda y di que sí cuando se ofrezca a leerlo."
+    },
+    "clearedNote": "Borraste esta lectura, así que jojo deja esta oferta en paz.",
+    "queued": "En cola…",
+    "leadWith": "Destaca",
+    "answers": "responde a «{{requirement}}»",
+    "beReadyFor": "Prepárate para",
+    "required": " — obligatorio",
+    "skipped_one": " · {{count}} línea omitida",
+    "skipped_other": " · {{count}} líneas omitidas"
+  },
+  "tailored": {
+    "title": "Materiales adaptados",
+    "hint": "Reescritos para esta oferta, con los cambios marcados.",
+    "tailor": "Adaptar",
+    "tailoredBefore": "{{label}} · adaptado antes",
+    "blocked": {
+      "noPosting": "Esta solicitud no tiene ninguna oferta guardada, así que no hay nada para lo que adaptar tus documentos. Añade la solicitud desde su enlace o captura el anuncio y esto te lo ofrecerá.",
+      "noModel": "Adaptar un documento necesita un modelo. Conecta uno en Más → Ajustes.",
+      "noDocuments": "Aún no hay nada que adaptar. Adaptar reescribe los documentos que envías con una solicitud: añade tu CV, tus declaraciones o una carta de presentación en Más → Mi perfil, o guárdalos en la Bóveda bajo Solicitudes, y aparecerán aquí."
+    },
+    "queued": "En cola…",
+    "working": "Trabajando…",
+    "empty": "Aún no hay nada adaptado. Pulsa Adaptar, elige un documento y jojo escribirá una versión para esta oferta con lo que cambió marcado.",
+    "deleted": "{{title}} eliminado",
+    "notDeleted": "No se pudo eliminar",
+    "deletedBody": "Ya no está en esta solicitud ni en la Bóveda.",
+    "provenance": "{{tag}} · de {{from}} · {{model}}",
+    "chooseTitle": "Adaptar un documento",
+    "chooseHint": "Tarda uno o dos minutos con un modelo local.",
+    "openInVault": "Abrir en la Bóveda",
+    "previewNamed": "Vista previa de {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "En curso",
+      "done": "Hecho",
+      "failed": "Falló",
+      "declined": "Rechazado"
+    },
+    "effect": {
+      "read": "lectura",
+      "unknown": "herramienta inexistente",
+      "create": "añadido",
+      "update": "cambiado",
+      "move": "movido",
+      "delete": "eliminado",
+      "admin": "almacén"
+    },
+    "asked": "El agente pidió hacer esto. Todavía no ha cambiado nada.",
+    "dont": "No",
+    "allow": "Permitir",
+    "arguments": "Argumentos",
+    "result": "Resultado",
+    "undoStep": "Deshacer este paso",
+    "cannotUndo": "Este paso no se puede deshacer desde aquí. Más → Ajustes → Registros guarda un historial de lo que cambió y puede revertir el cambio más reciente.",
+    "truncated": "Recortado: se le pidió al agente que acotara la búsqueda para ver el resto.",
+    "thinking": "Trabajando: {{model}} está decidiendo qué hacer…"
+  },
+  "approval": {
+    "askedBy": "Lo pidió {{name}}. Todavía no ha cambiado nada.",
+    "askedByUnnamed": "Lo pidió una conversación. Todavía no ha cambiado nada."
+  },
+  "threads": {
+    "conversations": "Conversaciones",
+    "new": "Nueva conversación",
+    "kept_one": "{{count}} guardada",
+    "kept_other": "{{count}} guardadas",
+    "titleField": "Título de la conversación",
+    "approvalLabel": "Cuánto puede hacer esta conversación sin preguntar",
+    "rename": "Renombrar esta conversación",
+    "changeJob": "Cambiar el empleo al que se refiere",
+    "fileUnder": "Asociar a un empleo",
+    "delete": "Eliminar esta conversación",
+    "noJob": "Aún no asociada a ningún empleo",
+    "listEmpty": "Nada todavía: pregunta algo y se guardará aquí, en este dispositivo.",
+    "keptOnDevice_one": "{{count}} guardada en este dispositivo.",
+    "keptOnDevice_other": "{{count}} guardadas en este dispositivo.",
+    "filter": "Filtrar",
+    "filterPlaceholder": "Por nombre o empleo",
+    "noMatch": "Ninguna conversación coincide.",
+    "working": "Trabajando…",
+    "questions_one": "{{count}} pregunta",
+    "questions_other": "{{count}} preguntas"
+  },
+  "picker": {
+    "title": "Solicitudes relacionadas",
+    "description": "Todos los empleos a los que pertenece. Un mismo CV va a cada solicitud a la que lo envías, así que esto es una lista, no un hueco.",
+    "notLinked": "Sin vincular",
+    "none": "Aún no hay solicitudes",
+    "noneHint": "Añade una y será un lugar donde guardar esto."
+  },
+  "audit": {
+    "records_one": "{{count}} registro",
+    "records_other": "{{count}} registros",
+    "links_one": "{{count}} vínculo",
+    "links_other": "{{count}} vínculos",
+    "undoFailed": "Ese cambio ya no se pudo deshacer",
+    "notInJournal": "Ya no está en el diario.",
+    "recorded_one": "{{count}} registrado",
+    "recorded_other": "{{count}} registrados",
+    "title": "Qué cambió",
+    "empty": {
+      "title": "Aún no se ha escrito nada",
+      "description": "Cada alta, edición y eliminación aparece aquí al hacerla: lo más reciente primero, y la última se puede deshacer."
+    },
+    "explain": "El cambio más reciente se puede revertir. Los anteriores son un registro, no una máquina del tiempo.",
+    "undoLast": "Deshacer el último",
+    "cannotUndo": "Cargar o vaciar el conjunto de datos no se puede deshacer.",
+    "showAll_one": "Mostrar {{count}}",
+    "showAll_other": "Mostrar los {{count}}"
+  },
+  "crash": {
+    "title": "Informes de errores",
+    "thisPhone": "este teléfono",
+    "notBuilt": "Esta versión de jojo se compiló sin informes de errores ni analítica de uso, así que no se registra nada y no hay nada que activar.",
+    "what": "Cuando algo falla, jojo puede guardar el error para que lo consultes después, algo útil cuando lo que falló ya no está. Un informe contiene el mensaje de error, en qué parte de jojo ocurrió y la traza de la pila. Nunca contiene tus solicitudes, documentos, notas, perfil ni conversaciones, y las claves de API, direcciones y direcciones de correo se eliminan antes de escribir el informe.",
+    "where": "Los informes se guardan en este teléfono y también se envían a Firebase Crashlytics, que añade el modelo de tu dispositivo, la versión del sistema y un identificador aleatorio para contar cuántas personas sufren el mismo fallo. Google los conserva 90 días. Ninguno de tus registros va con ellos.",
+    "report": "Informar de fallos",
+    "reportHint": "Activado, para que podamos ver los fallos que sufres. Desactívalo y no se registra nada.",
+    "usage": "Compartir qué funciones uso",
+    "usageHint": "Solo recuentos, de una lista fija; nunca lo que hay en tus registros.",
+    "usageDetail": "Solo puede decir cosas de una lista fija: qué pantalla se abrió, que se añadió una solicitud, aproximadamente cuántas hay. No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito. Va a Google Analytics. Con esto desactivado, jojo también desactiva las vistas de pantalla y los recuentos de sesión que Firebase recogería por su cuenta.",
+    "kept_one": "{{count}} informe guardado",
+    "kept_other": "{{count}} informes guardados",
+    "nothingBroken": "No ha fallado nada desde que lo activaste.",
+    "notRecording": "No se está registrando nada."
+  },
+  "date": {
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "inSevenDays": "En 7 días",
+    "triggerLabel": "{{label}}: {{value}}. Elige una fecha",
+    "notSet": "sin definir",
+    "pick": "Elige una fecha",
+    "previousMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "backTo": "Volver a {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Algo se rompió",
+    "body": "Una pantalla no se pudo dibujar. Tus registros están en este dispositivo y no se envió nada, pero jojo no puede saber si el cambio que estabas haciendo terminó.",
+    "noMessage": "El error no traía ningún mensaje.",
+    "hint": "Si vuelve a fallar, cierra jojo desde el selector de apps y ábrelo de nuevo."
+  },
+  "fileEditor": {
+    "editTitle": "Editar documento",
+    "newTitle": "Registrar un documento",
+    "keptHere": "Se guarda en este dispositivo, dentro de esta app. No se sube nada y nada lee su contenido.",
+    "chooseOrType": "Elige un archivo para guardar una copia, o rellena esto a mano para registrar uno que guardas en otro sitio.",
+    "record": "Registrarlo",
+    "choosing": "Eligiendo…",
+    "chooseDifferent": "Elegir otro archivo",
+    "choose": "Elegir un archivo",
+    "copyKept": "Se guarda una copia en esta app. Desaparece al desinstalarla.",
+    "fileName": "Nombre del archivo",
+    "nameRequired": "Ponle nombre, con la extensión.",
+    "nameHint": "La extensión decide el icono: .pdf, .doc, .pptx, .md.",
+    "size": "Tamaño",
+    "sizePlaceholder": "p. ej., 212 KB",
+    "sizeHint": "Opcional: si lo dejas en blanco se lee como desconocido, no como cero.",
+    "bucket": "Categoría",
+    "applicationsHint": "Lo que leen el panel Documentos del perfil y el grafo para saber qué está guardado dónde. Todos los empleos a los que fue el documento.",
+    "note": "Nota"
+  },
+  "filed": {
+    "sections": {
+      "files": "Archivos",
+      "links": "Enlaces",
+      "snippets": "Fragmentos",
+      "people": "Personas"
+    },
+    "count_one": "{{count}} guardado aquí",
+    "count_other": "{{count}} guardados aquí",
+    "title": "Desde la Bóveda",
+    "empty": {
+      "title": "Aún no hay nada guardado aquí",
+      "description": "Documentos, enlaces, fragmentos y personas pueden asociarse a todos los empleos a los que fueron. Asocia uno a este empleo desde su menú en la Bóveda y aparecerá aquí."
+    },
+    "conversations": "Conversaciones",
+    "openInAssistant": "Abrir {{name}} en el Asistente",
+    "openInVault": "Abrir {{name}} en la Bóveda"
+  },
+  "firstRun": {
+    "title": "¿Cómo quieres empezar?",
+    "description": "En cualquier caso, todo se queda en este dispositivo y no se envía nada.",
+    "demo": {
+      "title": "Explorar con registros de ejemplo",
+      "detail": "Doce solicitudes, un calendario lleno y una bóveda surtida, para que cada pantalla tenga algo. Puedes borrarlos después en Ajustes.",
+      "action": "Usar los registros de ejemplo"
+    },
+    "empty": {
+      "title": "Empezar vacío",
+      "detail": "Solo tus propios registros. Las pantallas que necesitan datos dirán qué falta en lugar de mostrar un ejemplo."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Aplazar",
+    "currently": "{{title}} · ahora el {{date}}",
+    "pickDate": "Elegir una fecha…",
+    "duplicate": "Duplicar",
+    "duplicateHint": "Misma fecha y palabras clave, como una segunda fila",
+    "draft": "Redactar un mensaje",
+    "draftHint": "A partir de tus fragmentos de correo; no se genera nada",
+    "reschedule": "Reprogramar"
+  },
+  "keywords": {
+    "on": "Palabras clave de {{name}}",
+    "none": "Ninguna todavía",
+    "choose": "Elegir",
+    "title": "Palabras clave",
+    "description": "Las palabras clave son tuyas y las comparten solicitudes, recordatorios, archivos y enlaces: filtrar por una los encuentra todos.",
+    "newPlaceholder": "Nueva palabra clave…",
+    "new": "Nueva palabra clave",
+    "add": "Añadir",
+    "countHere_one": "{{name}}, {{count}} aquí",
+    "countHere_other": "{{name}}, {{count}} aquí"
+  },
+  "onboarding": {
+    "model": {
+      "title": "¿Conectar un modelo?",
+      "description": "Esto es lo que convierte a jojo en un agente y no en un archivador. Con uno conectado responde preguntas sobre tu búsqueda, redacta seguimientos a partir de tus propios registros y lee los documentos que añadas.",
+      "action": "Configurar uno",
+      "local": "Apúntalo a un servidor en tu propia máquina (vLLM, Ollama o LM Studio) y nada sale del dispositivo.",
+      "later": "Todo lo demás funciona sin él. Está en Más → Ajustes cuando lo quieras."
+    },
+    "tour": {
+      "title": "¿Quieres un recorrido práctico?",
+      "description": "Un recorrido práctico por las pantallas reales: para qué sirve cada parte, con un foco sobre ella, y tú pruebas cada cosa sobre la marcha.",
+      "action": "Empezar el recorrido",
+      "safe": "No cambia nada: no se escribe ningún registro ni se toca ningún ajuste.",
+      "later": "Siempre está en Más → Cómo se usa, así que decir que no ahora no cuesta nada."
+    }
+  },
+  "pattern": {
+    "has": "que tienen",
+    "hasHint": "Al menos un vínculo así",
+    "missing": "que no tienen",
+    "missingHint": "Ningún vínculo así",
+    "anything": "Cualquier cosa",
+    "lookFor": "Buscar",
+    "records": "Registros",
+    "aLink": "Un vínculo",
+    "anyKind": "De cualquier tipo",
+    "to": "Hacia",
+    "lookForHint": "El tipo de registro del que la respuesta es una lista.",
+    "quantifierTitle": "Con o sin",
+    "quantifierHint": "Si el vínculo de abajo tiene que estar o tiene que faltar.",
+    "relTitle": "Qué vínculo",
+    "relHint": "Cómo se unen los dos extremos. «De cualquier tipo» pregunta por los seis a la vez.",
+    "endTitle": "En el otro extremo",
+    "endHint": "A qué tiene que apuntar el vínculo."
+  },
+  "reporting": {
+    "title": "Informes de errores y uso",
+    "description": "Dos cosas distintas, ambas activadas. Desactiva cualquiera aquí o más tarde en Ajustes. Ninguna puede llevar tus registros: ni una solicitud, ni un documento, ni una nota, ni un perfil, ni una conversación.",
+    "bothOff": "Desactivar ambos",
+    "save": "Guardar opciones",
+    "inReport": "Qué hay en un informe de errores",
+    "in": {
+      "message": "· El mensaje de error y en qué parte de jojo ocurrió.",
+      "stack": "· La traza de la pila, que nombra el código que falló.",
+      "device": "· El modelo de tu dispositivo, la versión del sistema y un identificador aleatorio para contar cuántas personas sufren el mismo fallo: sin nombre ni cuenta."
+    },
+    "notInReport": "Qué nunca hay en uno",
+    "notIn": {
+      "records": "· Tus solicitudes, documentos, notas, perfil o conversaciones.",
+      "secrets": "· Tus claves de API, las direcciones que usas o cualquier dirección de correo: se eliminan antes de escribir el informe, no antes de enviarlo."
+    },
+    "crashHint": "El error y dónde ocurrió. Va a Firebase Crashlytics.",
+    "usageHint": "Solo recuentos: qué pantallas se abren y con qué frecuencia. Nunca lo que contienen.",
+    "usageDetail": "El segundo es lo único que jojo envía sobre lo que HACES, y solo puede decir cosas de una lista fija: «se abrió la bóveda», «se añadió una solicitud», «hay entre 6 y 20». No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito, porque esas palabras no están en la lista. Desactivarlo también detiene las vistas de pantalla que Firebase recogería por su cuenta.",
+    "later": "Ambos están en Ajustes cuando quieras cambiarlos, y al desactivar uno se descarta lo que guardó."
+  },
+  "stagePicker": {
+    "label": "Etapa de {{name}}: {{stage}}. Cambiar etapa",
+    "title": "Mover a"
+  },
+  "welcome": {
+    "title": "Un poco sobre ti",
+    "description": "Los borradores se firman con tu nombre y el explorador puntúa según lo que buscas. Todo se queda en este dispositivo y todo es opcional: el Perfil tiene el resto.",
+    "skip": "Omitir por ahora",
+    "save": "Guardar y continuar",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "p. ej., Lonardo Jenson",
+    "position": "Puesto actual",
+    "positionPlaceholder": "p. ej., Doctorando en Informática",
+    "location": "Ubicación",
+    "locationPlaceholder": "p. ej., Santa Clara, CA",
+    "email": "Correo electrónico",
+    "rest": "El resto (enlaces, puestos objetivo, los términos con los que busca el explorador) está en Perfil, en la pestaña Más."
+  },
+  "offers": {
+    "open_one": "{{count}} abierta",
+    "open_other": "{{count}} abiertas",
+    "title": "Ofertas, lado a lado",
+    "noPackage": "Paquete no indicado",
+    "respondBy": "Responder antes del {{date}}",
+    "passed": "vencido",
+    "today": "hoy",
+    "days_one": "{{count}} día",
+    "days_other": "{{count}} días",
+    "ranked": "Cifras anuales, leídas de lo que escribiste.",
+    "notRanked": "Sin ordenar: los paquetes están en monedas distintas y jojo no tiene tipo de cambio.",
+    "annualised": " * anualizado a 12 meses, 52 semanas o 2080 horas."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "¿Qué solicitudes no tienen seguimiento programado?",
+      "unfiled": "¿Qué archivos no están asociados a nada?"
+    },
+    "notConnected": "Conecta un modelo local en Ajustes y podrás preguntar esto con una frase. Las preguntas de abajo funcionan igual.",
+    "placeholder": "¿Qué solicitudes no tienen seguimiento?",
+    "label": "Haz una pregunta al grafo",
+    "stop": "Detener",
+    "ask": "Preguntar",
+    "again": "Preguntar otra cosa"
+  },
+  "background": {
+    "details_one": "{{count}} detalle",
+    "details_other": "{{count}} detalles",
+    "fromDocument": "leído de un documento",
+    "editNamed": "Editar {{title}}",
+    "removeNamed": "Quitar {{title}}",
+    "added": "{{title}} añadido",
+    "updated": "{{title}} actualizado",
+    "removed": "{{title}} quitado",
+    "notSaved": "No se guardó",
+    "editTitle": "Editar esta entrada",
+    "addTitle": "Añadir a tu trayectoria",
+    "editRead": "Leído de un documento. Tu edición se conserva por encima de la lectura.",
+    "editHint": "No se guarda nada hasta que pulses Guardar.",
+    "addHint": "Cualquier cosa con la que comparar una oferta. Nada de esto se envía a ningún sitio.",
+    "add": "Añadir",
+    "kind": "Tipo",
+    "title": "Título",
+    "titlePlaceholder": "Qué fue",
+    "where": "Dónde",
+    "optional": "Opcional",
+    "when": "Cuándo",
+    "whenPlaceholder": "Tal como lo escribas: «2021–2024»",
+    "year": "Año",
+    "detail": "Detalle",
+    "highlights": "Logros",
+    "highlightsHint": "Uno por línea: lo que se construyó, se lanzó, se enseñó o se descubrió.",
+    "kindHint": "A qué parte de tu trayectoria pertenece.",
+    "recorded_one": "{{count}} registrada · con lo que se compara una oferta",
+    "recorded_other": "{{count}} registradas · con lo que se compara una oferta",
+    "panelTitle": "Tu trayectoria",
+    "read": "Leer un documento",
+    "addEntry": "Añadir una entrada",
+    "readTitle": "Leer un documento en tu perfil",
+    "nothingReadable": "Aún no hay nada legible en la Bóveda",
+    "nothingReadableHint": "Añade tu CV o una declaración y aparecerá aquí.",
+    "alreadyRead": "Ya leído",
+    "empty": {
+      "title": "Aún no hay nada registrado",
+      "ready": "Pon en la Bóveda tu CV o una declaración de investigación o docencia y jojo se ofrecerá a leerlo: lo que encuentre se te muestra antes de guardar nada. O añade una entrada a mano.",
+      "noModel": "Leer un documento necesita un modelo. Conecta uno en Más → Ajustes y luego pon tu CV o una declaración en la Bóveda. Puedes añadir entradas a mano sin él."
+    },
+    "removeTitle": "¿Quitar {{title}}?",
+    "removeBody": "Sale de tu trayectoria, así que las ofertas dejan de compararse con ello. El documento del que vino no se toca."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Formación",
+      "employment": "Empleo",
+      "publication": "Publicación",
+      "skill": "Habilidad",
+      "teaching": "Docencia",
+      "award": "Premio",
+      "service": "Servicio",
+      "certification": "Certificación",
+      "language": "Idioma",
+      "project": "Proyecto",
+      "volunteering": "Voluntariado",
+      "membership": "Afiliación",
+      "grant": "Beca",
+      "patent": "Patente"
+    },
+    "skipped_one": "Se omitió {{count}} entrada",
+    "skipped_other": "Se omitieron {{count}} entradas",
+    "alreadyThere": "Ya está en tu perfil",
+    "added_one": "{{count}} añadida a tu perfil",
+    "added_other": "{{count}} añadidas a tu perfil",
+    "nothingAdded": "No se pudo añadir nada",
+    "readFrom": "Leído de {{name}}.",
+    "alreadyKnown_one": "{{known}} de {{count}} ya se conocía.",
+    "alreadyKnown_other": "{{known}} de {{count}} ya se conocían.",
+    "connectionsRecorded_one": "{{count}} conexión registrada.",
+    "connectionsRecorded_other": "{{count}} conexiones registradas.",
+    "refused": "Las entradas fueron rechazadas.",
+    "readIt": "Leerlo",
+    "readFailed": "No se pudo leer el documento.",
+    "entriesRead_one": "{{count}} entrada leída de este documento",
+    "entriesRead_other": "{{count}} entradas leídas de este documento",
+    "addNamed": "Añadir {{title}}",
+    "connections_one": "{{count}} conexión entre ellas",
+    "connections_other": "{{count}} conexiones entre ellas",
+    "addCount_one": "Añadirla",
+    "addCount_other": "Añadir {{count}}"
+  },
+  "proposals": {
+    "aPipeline": "una canalización",
+    "hint": "no pasa nada hasta que tú lo digas",
+    "title": "Sugerencias",
+    "empty": {
+      "title": "Nada que revisar",
+      "description": "Cuando una canalización está en marcha, todo lo que quiera cambiar aparece aquí primero. No tocará tus registros hasta que lo apruebes."
+    },
+    "applied": "aplicada",
+    "discarded": "descartada",
+    "failed": "no se pudo aplicar",
+    "from": "{{tool}} · de {{pipeline}}",
+    "approve": "Aprobar",
+    "discardNamed": "Descartar: {{title}}",
+    "clearAnswered": "Quitar respondidas",
+    "clearAll": "Quitar todas",
+    "confirmTitle": "¿Quitar todas las sugerencias?",
+    "confirmPending_one": "{{count}} sugerencia sigue esperando y se rechazará. Nada cambia en tus registros y las canalizaciones siguen en marcha, pero no volverán a ofrecerla.",
+    "confirmPending_other": "{{count}} sugerencias siguen esperando y se rechazarán. Nada cambia en tus registros y las canalizaciones siguen en marcha, pero no volverán a ofrecerlas.",
+    "confirmAnswered": "Las tarjetas respondidas salen de la lista. Nada cambia en tus registros."
+  },
+  "nextSteps": {
+    "measured": "Medido",
+    "suggested": "Sugerido",
+    "hint": "lo que respaldan tus registros y, después, lo que menos cuesta",
+    "title": "Qué hacer ahora"
+  },
+  "working": {
+    "arm": "{{count}} de {{of}} · {{rate}} % · probablemente {{range}}",
+    "repliesBy": "Respuestas, por {{dimension}}",
+    "interviewsBy": "Entrevistas, por {{dimension}}",
+    "confident": "Los rangos no se solapan, así que es una diferencia real: {{best}} merece más de tu esfuerzo.",
+    "overlap": "Los rangos se solapan, así que son dos números y no una diferencia. Más registros los separarán o cerrarán la brecha.",
+    "tooFew_one": "{{count}} grupo más tiene menos de {{min}} registros y no se compara.",
+    "tooFew_other": "{{count}} grupos más tienen menos de {{min}} registros y no se comparan.",
+    "hint": "la banda es donde probablemente está la tasa real",
+    "title": "Qué funciona"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "Un recorrido práctico por jojo",
+        "body": "Señala las pantallas reales y te pide que pruebes cada cosa sobre la marcha. Nunca escribe, guarda ni cambia nada por ti. Ciérralo cuando quieras: se guarda por dónde ibas y Cómo se usa lo retoma."
+      },
+      "today": {
+        "title": "Hoy",
+        "body": "Lo que está pendiente ahora: lo vencido, lo que toca y las decisiones que esperan por ti. La primera pantalla que abrir."
+      },
+      "applications": {
+        "title": "Tus solicitudes",
+        "body": "Un registro por empleo: el empleador, el puesto, su etapa y tus notas. Sus fechas, documentos y conversaciones cuelgan de él, así que nada se escribe dos veces.",
+        "say": "Abre Solicitudes."
+      },
+      "layout": {
+        "title": "Una lista o un tablero",
+        "body": "Los mismos registros, de dos formas. La lista ordena y busca; el tablero muestra las etapas como columnas.",
+        "say": "Cambia a Tablero."
+      },
+      "records": {
+        "title": "Seis etapas",
+        "body": "Borrador, Enviada, Llamada de selección, Entrevista, Oferta, Cerrada. En el tablero, mantén pulsada una tarjeta y arrástrala a la columna siguiente; cada tarjeta tiene además un menú de etapa. Todo movimiento se puede deshacer."
+      },
+      "search": {
+        "title": "Busca en todo",
+        "body": "Solicitudes, recordatorios y entradas del calendario, desde cualquier pestaña.",
+        "say": "Abre la búsqueda."
+      },
+      "searchScreen": {
+        "title": "Escribe para encontrar lo que sea",
+        "body": "Un puesto, un empleador o una etapa. Toca un resultado para abrirlo, o vuelve atrás cuando termines."
+      },
+      "new": {
+        "title": "Crea lo que sea",
+        "body": "El + crea una solicitud, un recordatorio, una entrada de calendario, un mensaje redactado, un enlace guardado o una oferta guardada. No se guarda nada hasta que guardas, y cerrar un formulario a medias no cuesta nada."
+      },
+      "calendar": {
+        "title": "Todas las fechas en un solo lugar",
+        "body": "Plazos, entrevistas y seguimientos son un mismo tipo de registro, así que una entrada aparece en el calendario, en Hoy y en su solicitud.",
+        "say": "Abre el Calendario."
+      },
+      "vault": {
+        "title": "La bóveda",
+        "body": "Todo lo que no es una solicitud: recordatorios, enlaces, archivos, los fragmentos que pegas en cada formulario, las personas que conoces y una calculadora.",
+        "say": "Abre la Bóveda."
+      },
+      "vaultTools": {
+        "title": "Una herramienta cada vez",
+        "body": "Cada una es su propia lista, y una palabra clave significa lo mismo en todas.",
+        "say": "Elige Archivos."
+      },
+      "files": {
+        "title": "Archivos, guardados en el teléfono",
+        "body": "Un CV, una declaración, una oferta: copiados a la carpeta propia de jojo, así sobreviven aunque se mueva el original. Toca uno para leerlo aquí; asócialo a todas las solicitudes a las que pertenezca."
+      },
+      "more": {
+        "title": "Más",
+        "body": "Todo lo demás: Explorador de empleo, Estadísticas, el grafo, Transferir, tu perfil, el asistente, Ajustes y esta guía.",
+        "say": "Abre Más."
+      },
+      "scout": {
+        "title": "Explorador de empleo",
+        "body": "Búsquedas guardadas que vigilan portales de empleo por ti.",
+        "say": "Abre el Explorador de empleo."
+      },
+      "scoutScreen": {
+        "title": "Canalizaciones y sugerencias",
+        "body": "Cada canalización es una búsqueda en un portal, ejecutada según un horario o cuando lo pidas. Lo que encuentra espera como sugerencia que apruebas o descartas, y una aprobada se convierte en un borrador de solicitud."
+      },
+      "statistics": {
+        "title": "Estadísticas",
+        "body": "Cómo va tu búsqueda, contado a partir de tus propios registros.",
+        "say": "Abre Estadísticas."
+      },
+      "statisticsScreen": {
+        "title": "Tasas, con rangos honestos",
+        "body": "Tasas de respuesta y de entrevista, un embudo y en qué trabajar después; cada tasa con el rango en que podría estar de verdad, porque un puñado de solicitudes es una muestra pequeña."
+      },
+      "graph": {
+        "title": "El grafo de conocimiento",
+        "body": "Cada registro (solicitudes, empleadores, personas, fechas, archivos) dibujado como la red que forma.",
+        "say": "Abre el Grafo."
+      },
+      "graphScreen": {
+        "title": "Todo, conectado",
+        "body": "Toca un nodo para ver con qué se conecta y haz una pregunta para iluminar los registros que coinciden."
+      },
+      "assistant": {
+        "title": "El asistente",
+        "body": "Chatea con jojo: encuentra, añade y actualiza tus registros con las herramientas de la propia app, y pregunta antes de cambiar nada. Hasta que conectes un modelo, muestra ejemplos resueltos."
+      },
+      "transfer": {
+        "title": "Teléfono y ordenador",
+        "body": "Transferir mueve todo entre este teléfono y jojo en tu ordenador a través de tu red local, sin pasar por nadie más."
+      },
+      "settings": {
+        "title": "Ajustes",
+        "body": "Conexiones, apariencia y tus datos.",
+        "say": "Abre Ajustes."
+      },
+      "device": {
+        "title": "Tus registros viven en este teléfono",
+        "body": "Se escriben directamente en el almacenamiento del teléfono mientras trabajas: sin cuenta, sin sincronización, sin subir nada. Exporta una copia o transfiérela a tu ordenador."
+      },
+      "model": {
+        "title": "Conecta un modelo",
+        "body": "Dónde se ejecuta el modelo del asistente. Un servidor en tu propia máquina (vLLM, Ollama o LM Studio) solo necesita su dirección y mantiene tus registros en tus dispositivos. OpenAI, Anthropic (Claude) y los demás proveedores en la nube necesitan una clave de API. Probar conexión lo comprueba antes de guardar nada."
+      },
+      "reader": {
+        "title": "Deja que lea tus documentos",
+        "body": "El teléfono lee por sí solo archivos de Word, presentaciones, páginas guardadas y texto. Los PDF necesitan MarkItDown en tu ordenador: inícialo con los dos comandos de arriba y luego Probar conexión."
+      },
+      "done": {
+        "title": "Ese es el recorrido",
+        "body": "Todo cambio se puede deshacer, y Cómo se usa, en Más, recorre cada pantalla. El recorrido sigue ahí para repetirlo."
+      }
+    },
+    "stepOf": "Paso {{step}} de {{total}}",
+    "end": "Terminar recorrido",
+    "nice": "Bien, eso es.",
+    "tryIt": "Pruébalo: {{task}}",
+    "finish": "Terminar",
+    "skip": "Saltar este"
+  },
+  "marks": {
+    "bold": "negrita",
+    "italic": "cursiva",
+    "underlined": "subrayado"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Hoy",
+      "applications": "Solicitudes",
+      "calendar": "Calendario",
+      "vault": "Bóveda",
+      "more": "Más"
+    },
+    "badge": {
+      "applications_one": "Solicitudes, {{count}} marcada para seguimiento",
+      "applications_other": "Solicitudes, {{count}} marcadas para seguimiento",
+      "calendar_one": "Calendario, {{count}} en los próximos siete días",
+      "calendar_other": "Calendario, {{count}} en los próximos siete días",
+      "vault_one": "Bóveda, {{count}} recordatorio vencido",
+      "vault_other": "Bóveda, {{count}} recordatorios vencidos",
+      "more_one": "Más, {{count}} coincidencia aún sin añadir a solicitudes",
+      "more_other": "Más, {{count}} coincidencias aún sin añadir a solicitudes"
+    },
+    "create": "Crear",
+    "search": "Buscar",
+    "titles": {
+      "application": "Solicitud",
+      "employer": "Empleador",
+      "search": "Buscar",
+      "jobScout": "Explorador de empleo",
+      "statistics": "Estadísticas",
+      "profile": "Mi perfil",
+      "assistant": "Asistente",
+      "settings": "Ajustes",
+      "guide": "Cómo se usa",
+      "graph": "Grafo",
+      "transfer": "Transferir"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "chatWithJojo": "jojo とチャット",
+  "newConversation": "新しい会話",
+  "newAboutOpen": "開いている応募についての新しい会話",
+  "hideConversations": "会話を隠す",
+  "showConversations": "会話を表示",
+  "undo": "元に戻す",
+  "overflow_other": "ほかに開いている会話 {{count}} 件",
+  "grip": {
+    "labelCorner": "チャットを横に移動 — 隅にあります。矢印キーで移動し、ダブルクリックで隅に戻ります。",
+    "labelFarLeft": "チャットを横に移動 — 左端にあります。矢印キーで移動し、ダブルクリックで隅に戻ります。",
+    "labelFarRight": "チャットを横に移動 — 右端にあります。矢印キーで移動し、ダブルクリックで隅に戻ります。",
+    "labelPartWay": "チャットを横に移動 — 左へ {{percent}}% の位置にあります。矢印キーで移動し、ダブルクリックで隅に戻ります。",
+    "labelPartWayRight": "チャットを横に移動 — 右へ {{percent}}% の位置にあります。矢印キーで移動し、ダブルクリックで隅に戻ります。",
+    "title": "ドラッグしてチャットをよけます · ダブルクリックで隅に戻ります"
+  },
+  "prompts": {
+    "about": {
+      "left": "この応募で残っていることは？",
+      "followUp": "この応募のフォローアップのメールを書いて",
+      "summarise": "この応募を要約して"
+    },
+    "general": {
+      "waiting": "何の返事を待っている？",
+      "noDeadline": "締め切りのない応募はどれ？"
+    }
+  },
+  "window": {
+    "label": "会話：{{title}}",
+    "back": "会話一覧に戻る",
+    "working": "作業中",
+    "openInAssistant": "アシスタントで開く",
+    "open": "この会話を開く",
+    "minimise": "この会話を最小化",
+    "close": "この会話を閉じる",
+    "closeTitle": "閉じる（会話の一覧には残ります）",
+    "about": "<name>{{name}}</name> について",
+    "detachAria": "この会話を特定の話題なしで始める",
+    "unfileAria": "この会話を応募から外す",
+    "detachTitle": "この応募についてではない",
+    "unfileTitle": "この応募から外す",
+    "notConfigured": "<settings>設定</settings>でモデルを接続すると、ここで jojo とチャットできます。すべてこのデバイスに残ります。",
+    "askAbout": "{{name}} について何でも聞いてください。jojo はこの応募のことだとわかっています。",
+    "askGeneral": "何かを探す、応募を追加する、応募を先に進めるといったことを jojo に頼んでください。",
+    "composerLabel": "{{title}} で jojo にメッセージ",
+    "placeholderAbout": "{{org}} について質問…",
+    "placeholder": "jojo に質問…"
+  }
+}

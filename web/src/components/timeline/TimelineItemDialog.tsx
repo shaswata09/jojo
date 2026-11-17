@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ItemForm } from '@/components/timeline/dialog/ItemForm'
 import {
   Dialog,
@@ -36,20 +37,17 @@ export function TimelineItemDialog({
   initial,
   onSaved,
 }: TimelineItemDialogProps) {
+  const { t } = useTranslation('timeline')
   const editing = initial?.id !== undefined
-  const noun = mode === 'reminder' ? 'reminder' : 'event'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn('max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)]', contentModal)}>
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${noun}` : `New ${noun}`}</DialogTitle>
+          <DialogTitle>{t(`dialog.title.${editing ? 'edit' : 'new'}.${mode}`)}</DialogTitle>
           {/* Identical in both modes on purpose: explaining that these are the
               same record is the whole reason there is one dialog. */}
-          <DialogDescription>
-            One record either way — it lands on the calendar for the date you give it, and in the
-            Vault's reminders list while the switch beside the title is on.
-          </DialogDescription>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
         {/* The form is a child so it mounts with the dialog: its state is seeded
             from `initial` once, and a fresh open starts from the props rather

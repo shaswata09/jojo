@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { appPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { useModelSettings } from '@/lib/model-settings-context'
@@ -32,6 +33,7 @@ import { CUES } from '@/lib/mascot-cues'
 export function useFillDraft(pages: PostingPages) {
   const { reader, settings } = useModelSettings()
   const fillFromPosting = useFillFromPosting()
+  const { t } = useTranslation('scout')
   const { toast } = useToast()
   const mascot = useMascot()
   const navigate = useNavigate()
@@ -76,15 +78,21 @@ export function useFillDraft(pages: PostingPages) {
         }
         mascot.play(CUES.alreadyHave)
         toast({
-          title: `Already in your applications — not added again`,
-          description: `The posting is ${duplicate.name}, which you already have. ${duplicate.why} Its page is filed under that one.`,
-          action: { label: 'Keep both', onClick: duplicate.restore },
+          title: t('toasts.alreadyHaveTitle'),
+          description: t('toasts.duplicateDescription', {
+            name: duplicate.name,
+            why: duplicate.why,
+          }),
+          action: { label: t('toasts.keepBoth'), onClick: duplicate.restore },
         })
         return
       }
       toast({
         ...fillDoneToast(out),
-        action: { label: 'Open', onClick: () => navigate(appPath({ id: out.application })) },
+        action: {
+          label: t('common.open'),
+          onClick: () => navigate(appPath({ id: out.application })),
+        },
       })
     })
   }

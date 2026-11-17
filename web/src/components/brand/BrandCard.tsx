@@ -1,5 +1,6 @@
 import { useEffect, useRef, type PointerEvent, type ReactNode } from 'react'
 import { Bot, Moon, Sun } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { playSwitchClick } from '@/lib/sound'
 import { useTheme } from '@/lib/theme-context'
 import { JojoRobot } from '@/components/brand/JojoRobot'
@@ -40,6 +41,7 @@ const TRAIL = `rgb(${EYE_RGB.map((c) => Math.round(c * 255)).join(' ')})`
  * watch the move you picked.
  */
 function MovesPanel() {
+  const { t } = useTranslation('brand')
   const { play } = useMascot()
   // Beside the card on a desktop; below it in the phone drawer, where the
   // card already fills the drawer's width and a panel to its right started
@@ -55,8 +57,8 @@ function MovesPanel() {
       className="max-h-[min(34rem,calc(100vh-2rem))] w-80 gap-2 overflow-y-auto"
     >
       <div className="px-2 pt-1">
-        <div className="text-sm font-medium">jojo&rsquo;s moves</div>
-        <p className="mt-0.5 text-xs text-text-3">Pick one, or draw its stroke on the robot.</p>
+        <div className="text-sm font-medium">{t('moves.title')}</div>
+        <p className="mt-0.5 text-xs text-text-3">{t('moves.hint')}</p>
       </div>
       <MoveList onPlay={play} />
       <MascotCredit className="border-t border-hairline px-2 pt-2.5 pb-1" />
@@ -147,6 +149,7 @@ function useGesturePad(play: (pose: MascotPose) => void) {
 }
 
 function ThemeToggle() {
+  const { t } = useTranslation('brand')
   const { theme, toggle } = useTheme()
   return (
     <button
@@ -157,8 +160,8 @@ function ThemeToggle() {
         playSwitchClick()
         toggle()
       }}
-      title="Toggle theme"
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      title={t('theme.toggle')}
+      aria-label={theme === 'dark' ? t('theme.toLight') : t('theme.toDark')}
       className={CORNER_BUTTON}
     >
       {theme === 'dark' ? (
@@ -171,6 +174,7 @@ function ThemeToggle() {
 }
 
 export function BrandCard({ action, className }: { action?: ReactNode; className?: string }) {
+  const { t } = useTranslation('brand')
   const { play } = useMascot()
   const pad = useGesturePad(play)
 
@@ -199,7 +203,7 @@ export function BrandCard({ action, className }: { action?: ReactNode; className
             onClick={(e) => {
               if (e.detail === 0) play('nod')
             }}
-            aria-label="Poke jojo"
+            aria-label={t('poke')}
             className="absolute inset-0 cursor-pointer touch-none select-none"
           >
             {/* Framed by its own camera for this square, so the canvas sits
@@ -249,8 +253,8 @@ export function BrandCard({ action, className }: { action?: ReactNode; className
           {/* Top-left: every move, its stroke, and the robot's credit. */}
           <div className="absolute top-2 left-2 z-10">
             <PopoverTrigger
-              title="jojo's moves"
-              aria-label="jojo's moves and credit"
+              title={t('moves.trigger')}
+              aria-label={t('moves.triggerAria')}
               data-tour="moves"
               className={CORNER_BUTTON}
             >

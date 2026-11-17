@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { Link as LinkIcon, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { addByUrlDialog } from '@/components/applications/add-by-url'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,13 +33,13 @@ import { cn } from '@/lib/utils'
 export function AddByUrl({
   className,
   fieldClassName,
-  placeholder = 'Paste a job posting URL to start from',
+  placeholder,
   /**
    * Shortened where a primary "New application" button sits beside this one:
    * two adjacent buttons both reading "Add application" is a choice nobody can
    * make without clicking one to find out.
    */
-  submitLabel = 'Add application',
+  submitLabel,
 }: {
   className?: string
   fieldClassName?: string
@@ -48,6 +49,7 @@ export function AddByUrl({
   // Generated, not a literal: both call sites can mount at once and a duplicate
   // id would point every label at the first field.
   const id = useId()
+  const { t } = useTranslation('applications')
   const { open } = useDialogs()
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
@@ -76,14 +78,14 @@ export function AddByUrl({
       }}
     >
       <label htmlFor={id} className="sr-only">
-        Job posting URL
+        {t('addByUrl.fieldLabel')}
       </label>
 
       <div className={cn('relative min-w-0 flex-1', fieldClassName)}>
         <LinkIcon
           aria-hidden
           strokeWidth={1.8}
-          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-3"
+          className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3"
         />
         <Input
           id={id}
@@ -92,8 +94,8 @@ export function AddByUrl({
           autoComplete="off"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder={placeholder}
-          className="pl-8"
+          placeholder={placeholder ?? t('addByUrl.placeholder')}
+          className="ps-8"
         />
       </div>
 
@@ -103,16 +105,12 @@ export function AddByUrl({
         // Disabled only while there is nothing to work with, and it says so.
         disabled={!url.trim()}
         title={
-          !url.trim()
-            ? 'Paste a posting URL first'
-            : connected
-              ? 'The model reads the posting and fills the form in'
-              : undefined
+          !url.trim() ? t('addByUrl.pasteFirst') : connected ? t('addByUrl.modelReads') : undefined
         }
         className="shrink-0"
       >
         <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-        {submitLabel}
+        {submitLabel ?? t('addByUrl.submit')}
       </Button>
     </form>
   )

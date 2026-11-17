@@ -1,0 +1,67 @@
+{
+  "monthPicker": {
+    "goTo": "Ir para o mês",
+    "previousYear": "Ano anterior",
+    "nextYear": "Próximo ano"
+  },
+  "chip": {
+    "allDay": "Dia inteiro",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, concluído —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} evento",
+    "label_many": "{{label}}, {{count}} eventos",
+    "label_other": "{{label}}, {{count}} eventos",
+    "add": "Adicionar um evento em {{label}}",
+    "more_one": "+{{count}} outro",
+    "more_many": "+{{count}} outros",
+    "more_other": "+{{count}} outros"
+  },
+  "grid": {
+    "dayLabel": "{{day}} de {{month}}",
+    "previousMonth": "Mês anterior",
+    "nextMonth": "Próximo mês",
+    "today": "Hoje",
+    "backTo": "Voltar para {{date}}",
+    "goTo": "Ir para {{month}} de {{year}}",
+    "hintTouch": "Toque em um dia para ver o que há nele.",
+    "hintPointer": "Escolha um dia para listá-lo ao lado da grade. Clique em um evento para editá-lo ou arraste-o para outro dia — arrastar exige um ponteiro; pelo teclado, use o campo de data dentro do evento.",
+    "eventTypes": "Tipos de evento",
+    "showAll": "Mostrar tudo",
+    "dateColours": "Cores das datas",
+    "marks": {
+      "overdue": "Atrasado",
+      "soon": "Vence em até 48 horas",
+      "done": "Concluído"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} de {{year}}",
+    "today": "Hoje",
+    "selectedDay": "Dia selecionado",
+    "hiddenTitle": "Nada exibido em {{date}}",
+    "hiddenDescription_one": "{{count}} evento é de um tipo desativado abaixo da grade.",
+    "hiddenDescription_many": "{{count}} eventos são de um tipo desativado abaixo da grade.",
+    "hiddenDescription_other": "{{count}} eventos são de um tipo desativado abaixo da grade.",
+    "showAllTypes": "Mostrar todos os tipos de evento",
+    "emptyTitle": "Nada em {{date}}",
+    "emptyDescription": "Adicione uma entrevista, um prazo ou um bloco de preparação e ele aparecerá aqui e na grade.",
+    "addEvent": "Adicionar evento",
+    "backTo": "Voltar para {{month}}",
+    "delete": "Excluir evento",
+    "deleteNamed": "Excluir {{title}}",
+    "restOf": "Restante de {{month}}",
+    "lastDayTitle": "{{date}} é o último dia do mês",
+    "nothingAfterTitle": "Nada depois de {{date}}",
+    "lastDayDescription": "Não há nada depois. Avance para planejar {{month}}.",
+    "nothingAfterDescription": "O restante de {{month}} está livre. O que você adicionar depois deste dia aparecerá aqui.",
+    "goToMonth": "Ir para {{month}}",
+    "goToDay": "Ir para {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "+{{count}} outro ainda este mês",
+    "moreLater_many": "+{{count}} outros ainda este mês",
+    "moreLater_other": "+{{count}} outros ainda este mês"
+  }
+}

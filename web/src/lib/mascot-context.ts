@@ -1,3 +1,4 @@
+import { i18next } from '@/i18n/i18n'
 import { createContext, useContext } from 'react'
 
 /**
@@ -86,35 +87,180 @@ export const POSE_MS: Record<MascotPose, number> = {
 
 /** Every gesture, in the order a person would want to try them. */
 export const GESTURES: { pose: Exclude<MascotPose, 'idle'>; label: string }[] = [
-  { pose: 'nod', label: 'Nod' },
-  { pose: 'shake', label: 'Shake' },
-  { pose: 'hi', label: 'Hi' },
-  { pose: 'bow', label: 'Bow' },
-  { pose: 'leanIn', label: 'Lean in' },
-  { pose: 'wobble', label: 'Wobble' },
-  { pose: 'bounce', label: 'Bounce' },
-  { pose: 'spin', label: 'Spin' },
-  { pose: 'recoil', label: 'Recoil' },
-  { pose: 'startle', label: 'Startle' },
-  { pose: 'dance', label: 'Dance' },
-  { pose: 'shrug', label: 'Shrug' },
-  { pose: 'lookAround', label: 'Look around' },
-  { pose: 'hopSpin', label: 'Hop spin' },
-  { pose: 'stretch', label: 'Stretch' },
-  { pose: 'flex', label: 'Flex' },
-  { pose: 'jab', label: 'Punch combo' },
-  { pose: 'powerUp', label: 'Power up' },
-  { pose: 'doze', label: 'Doze off' },
-  { pose: 'wink', label: 'Wink' },
-  { pose: 'love', label: 'Love' },
-  { pose: 'robot', label: 'Robot dance' },
-  { pose: 'jazz', label: 'Jazz hands' },
-  { pose: 'point', label: 'Point' },
-  { pose: 'hero', label: 'Hero pose' },
-  { pose: 'handsUp', label: 'Hands up' },
-  { pose: 'disco', label: 'Disco' },
-  { pose: 'typing', label: 'Typing' },
-  { pose: 'drumroll', label: 'Drumroll' },
+  {
+    pose: 'nod',
+    get label() {
+      return i18next.t('messages:move.nod')
+    },
+  },
+  {
+    pose: 'shake',
+    get label() {
+      return i18next.t('messages:move.shake')
+    },
+  },
+  {
+    pose: 'hi',
+    get label() {
+      return i18next.t('messages:move.hi')
+    },
+  },
+  {
+    pose: 'bow',
+    get label() {
+      return i18next.t('messages:move.bow')
+    },
+  },
+  {
+    pose: 'leanIn',
+    get label() {
+      return i18next.t('messages:move.leanIn')
+    },
+  },
+  {
+    pose: 'wobble',
+    get label() {
+      return i18next.t('messages:move.wobble')
+    },
+  },
+  {
+    pose: 'bounce',
+    get label() {
+      return i18next.t('messages:move.bounce')
+    },
+  },
+  {
+    pose: 'spin',
+    get label() {
+      return i18next.t('messages:move.spin')
+    },
+  },
+  {
+    pose: 'recoil',
+    get label() {
+      return i18next.t('messages:move.recoil')
+    },
+  },
+  {
+    pose: 'startle',
+    get label() {
+      return i18next.t('messages:move.startle')
+    },
+  },
+  {
+    pose: 'dance',
+    get label() {
+      return i18next.t('messages:move.dance')
+    },
+  },
+  {
+    pose: 'shrug',
+    get label() {
+      return i18next.t('messages:move.shrug')
+    },
+  },
+  {
+    pose: 'lookAround',
+    get label() {
+      return i18next.t('messages:move.lookAround')
+    },
+  },
+  {
+    pose: 'hopSpin',
+    get label() {
+      return i18next.t('messages:move.hopSpin')
+    },
+  },
+  {
+    pose: 'stretch',
+    get label() {
+      return i18next.t('messages:move.stretch')
+    },
+  },
+  {
+    pose: 'flex',
+    get label() {
+      return i18next.t('messages:move.flex')
+    },
+  },
+  {
+    pose: 'jab',
+    get label() {
+      return i18next.t('messages:move.jab')
+    },
+  },
+  {
+    pose: 'powerUp',
+    get label() {
+      return i18next.t('messages:move.powerUp')
+    },
+  },
+  {
+    pose: 'doze',
+    get label() {
+      return i18next.t('messages:move.doze')
+    },
+  },
+  {
+    pose: 'wink',
+    get label() {
+      return i18next.t('messages:move.wink')
+    },
+  },
+  {
+    pose: 'love',
+    get label() {
+      return i18next.t('messages:move.love')
+    },
+  },
+  {
+    pose: 'robot',
+    get label() {
+      return i18next.t('messages:move.robot')
+    },
+  },
+  {
+    pose: 'jazz',
+    get label() {
+      return i18next.t('messages:move.jazz')
+    },
+  },
+  {
+    pose: 'point',
+    get label() {
+      return i18next.t('messages:move.point')
+    },
+  },
+  {
+    pose: 'hero',
+    get label() {
+      return i18next.t('messages:move.hero')
+    },
+  },
+  {
+    pose: 'handsUp',
+    get label() {
+      return i18next.t('messages:move.handsUp')
+    },
+  },
+  {
+    pose: 'disco',
+    get label() {
+      return i18next.t('messages:move.disco')
+    },
+  },
+  {
+    pose: 'typing',
+    get label() {
+      return i18next.t('messages:move.typing')
+    },
+  },
+  {
+    pose: 'drumroll',
+    get label() {
+      return i18next.t('messages:move.drumroll')
+    },
+  },
 ]
 
 export type MascotContextValue = {

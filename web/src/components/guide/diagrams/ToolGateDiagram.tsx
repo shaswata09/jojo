@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 import { Box, Connector, Rule } from '@/components/guide/diagrams/parts'
 import { CATALOG } from '@jojo/service/agent/catalog'
@@ -28,18 +29,17 @@ import { CATALOG } from '@jojo/service/agent/catalog'
  * were added and the figure carried on claiming a number that had stopped being
  * true. A count in a diagram is exactly as prone to going stale as a count in
  * prose, and this page argues that jojo does not let that happen.
+ *
+ * The words are catalog KEYS (`guideReference:diagrams.toolGate.*`), translated
+ * where the figure draws them, so the table never freezes in one language.
  */
 const STEPS = [
-  { label: 'what you typed', tone: 'plain' as const, note: '' },
-  {
-    label: 'pick the likely tools',
-    tone: 'gate' as const,
-    note: `unclear? offer all ${String(CATALOG.length)}`,
-  },
-  { label: 'add what those tools need', tone: 'plain' as const, note: 'so no chain dead-ends' },
-  { label: 'the model chooses one', tone: 'plain' as const, note: '' },
-  { label: 'was it offered?', tone: 'stop' as const, note: 'no? refused, nothing runs' },
-  { label: 'your records change', tone: 'plain' as const, note: '' },
+  { label: 'typed', tone: 'plain' as const, note: '' },
+  { label: 'pick', tone: 'gate' as const, note: 'pickNote' },
+  { label: 'needs', tone: 'plain' as const, note: 'needsNote' },
+  { label: 'chooses', tone: 'plain' as const, note: '' },
+  { label: 'offered', tone: 'stop' as const, note: 'offeredNote' },
+  { label: 'change', tone: 'plain' as const, note: '' },
 ]
 
 const TOP = 26
@@ -48,6 +48,8 @@ const H = 32
 const W = 190
 
 export function ToolGateDiagram() {
+  const { t } = useTranslation('guideReference')
+  const total = String(CATALOG.length)
   const titleId = useId()
   const descId = useId()
   const height = TOP + STEPS.length * PITCH
@@ -60,16 +62,8 @@ export function ToolGateDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>The two gates between a question and a change to your records</title>
-        <desc id={descId}>
-          Six steps, top to bottom. One, what you typed. Two, jojo picks the tools your words point
-          at — and if your words are unclear it offers all of them rather than guessing. Three,
-          it adds whatever those tools depend on, so no chain can dead-end. Four, the model chooses
-          one tool. Five, jojo checks whether that tool was actually offered; if it was not, the
-          call is refused and nothing runs. Six, only then do your records change. The fifth step is
-          the one that enforces anything — the second is only a hint, because a model can name a
-          tool it was never shown.
-        </desc>
+        <title id={titleId}>{t('diagrams.toolGate.title')}</title>
+        <desc id={descId}>{t('diagrams.toolGate.desc')}</desc>
 
         {STEPS.map((step, i) => {
           const y = TOP + i * PITCH
@@ -82,9 +76,16 @@ export function ToolGateDiagram() {
                 : 'var(--hairline-strong)'
           return (
             <g key={step.label}>
-              <Box x={4} y={y} w={W} h={H} stroke={stroke} width={step.tone === 'plain' ? 1 : 1.5} />
+              <Box
+                x={4}
+                y={y}
+                w={W}
+                h={H}
+                stroke={stroke}
+                width={step.tone === 'plain' ? 1 : 1.5}
+              />
               <text x={14} y={mid + 4} fontSize={11} fill="var(--text-1)">
-                {step.label}
+                {t(`diagrams.toolGate.${step.label}`)}
               </text>
 
               {/* The escape, drawn as a branch off to the right rather than as a
@@ -94,26 +95,19 @@ export function ToolGateDiagram() {
                 <>
                   <Rule x1={W + 8} y1={mid} x2={228} y2={mid} stroke={stroke} dash={DASH.soft} />
                   <text x={234} y={mid + 4} fontSize={10} fill="var(--text-2)">
-                    {step.note}
+                    {t(`diagrams.toolGate.${step.note}`, { total })}
                   </text>
                 </>
               ) : null}
 
               {i < STEPS.length - 1 ? (
-                <Connector
-                  from={[W / 2, y + H]}
-                  to={[W / 2, y + PITCH]}
-                  dir="down"
-                />
+                <Connector from={[W / 2, y + H]} to={[W / 2, y + PITCH]} dir="down" />
               ) : null}
             </g>
           )
         })}
       </svg>
-      <figcaption className="mt-2 text-xs text-text-3">
-        Step two saves you tokens. Step five is the one that keeps you safe — and it runs whether or
-        not step two narrowed anything.
-      </figcaption>
+      <figcaption className="mt-2 text-xs text-text-3">{t('diagrams.toolGate.caption')}</figcaption>
     </figure>
   )
 }

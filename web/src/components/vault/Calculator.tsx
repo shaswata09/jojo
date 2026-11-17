@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Delete, History, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { cn } from '@/lib/utils'
@@ -12,11 +13,16 @@ import { MAX_DIGITS } from '@jojo/service/core/calculator'
 import { planCalculatorKey } from './calculator-keys'
 import { type HistoryEntry, withEntry } from './calculator-history'
 
-const MODES = [
-  { value: 'basic', label: 'Basic' },
-  { value: 'scientific', label: 'Scientific' },
-] as const
-type Mode = (typeof MODES)[number]['value']
+type Mode = 'basic' | 'scientific'
+
+/** Each operator's spoken name, as a catalog key under `calculator.ops`. */
+const OP_KEY: Record<Op, string> = {
+  '+': 'plus',
+  '−': 'minus',
+  '×': 'times',
+  '÷': 'dividedBy',
+  '^': 'power',
+}
 
 /**
  * A four-function calculator with an optional scientific pad and a running
@@ -36,6 +42,12 @@ type Mode = (typeof MODES)[number]['value']
  * it does exist.
  */
 export function Calculator() {
+  const { t } = useTranslation('vault')
+  // Built in the render so the labels follow the language on screen.
+  const modes = [
+    { value: 'basic', label: t('calculator.modes.basic') },
+    { value: 'scientific', label: t('calculator.modes.scientific') },
+  ] as const
   const [display, setDisplay] = useState('0')
   /** The left-hand side of a pending operation, held while the right is typed. */
   const [accumulator, setAccumulator] = useState<number | null>(null)
@@ -188,9 +200,7 @@ export function Calculator() {
     <button
       type="button"
       onClick={() => operator(op)}
-      aria-label={
-        { '+': 'plus', '−': 'minus', '×': 'times', '÷': 'divided by', '^': 'to the power of' }[op]
-      }
+      aria-label={t(`calculator.ops.${OP_KEY[op]}`)}
       aria-pressed={pending === op}
       className={cn(action, 'font-medium')}
     >
@@ -205,13 +215,13 @@ export function Calculator() {
     <div ref={root} className="flex flex-wrap items-start gap-4 sm:gap-5">
       <Panel className="min-w-0 flex-1 basis-[320px] sm:max-w-sm">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <PanelTitle className="mb-0">Calculator</PanelTitle>
+          <PanelTitle className="mb-0">{t('instruments.calculator')}</PanelTitle>
           <button
             type="button"
             onClick={() => setShowHistory((v) => !v)}
             aria-pressed={showHistory}
-            aria-label="History"
-            title="History"
+            aria-label={t('calculator.history')}
+            title={t('calculator.history')}
             className={cn(
               'grid size-7 shrink-0 cursor-pointer place-items-center rounded-full border transition-colors',
               showHistory
@@ -223,7 +233,7 @@ export function Calculator() {
           </button>
         </div>
 
-        <Segment label="Calculator mode" options={MODES} value={mode} onChange={setMode} />
+        <Segment label={t('calculator.mode')} options={modes} value={mode} onChange={setMode} />
 
         <output
           aria-live="polite"
@@ -242,7 +252,7 @@ export function Calculator() {
             <button
               type="button"
               onClick={() => operator('^')}
-              aria-label="to the power of"
+              aria-label={t('calculator.ops.power')}
               className={sci}
             >
               xʸ
@@ -253,7 +263,12 @@ export function Calculator() {
             <button type="button" onClick={() => constant(Math.E)} className={sci}>
               e
             </button>
-            <button type="button" onClick={negate} aria-label="plus or minus" className={sci}>
+            <button
+              type="button"
+              onClick={negate}
+              aria-label={t('calculator.plusMinus')}
+              className={sci}
+            >
               ±
             </button>
           </div>
@@ -263,7 +278,12 @@ export function Calculator() {
           <button type="button" onClick={clear} className={action}>
             C
           </button>
-          <button type="button" onClick={backspace} aria-label="Backspace" className={action}>
+          <button
+            type="button"
+            onClick={backspace}
+            aria-label={t('calculator.backspace')}
+            className={action}
+          >
             <Delete className="size-4" strokeWidth={1.8} aria-hidden />
           </button>
           <Operator op="÷" />
@@ -297,7 +317,7 @@ export function Calculator() {
         // that are a dozen characters long.
         <Panel className="min-w-0 flex-1 basis-[240px] sm:max-w-xs">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <PanelTitle className="mb-0">History</PanelTitle>
+            <PanelTitle className="mb-0">{t('calculator.history')}</PanelTitle>
             {history.length > 0 ? (
               <button
                 type="button"
@@ -305,15 +325,13 @@ export function Calculator() {
                 className="flex shrink-0 cursor-pointer items-center gap-1 rounded-sm px-1 py-0.5 text-xs text-text-3 transition-colors hover:text-danger"
               >
                 <Trash2 className="size-3" strokeWidth={1.8} aria-hidden />
-                Clear
+                {t('calculator.clear')}
               </button>
             ) : null}
           </div>
 
           {history.length === 0 ? (
-            <p className="py-6 text-center text-xs text-text-3">
-              Nothing yet. Finished calculations land here.
-            </p>
+            <p className="py-6 text-center text-xs text-text-3">{t('calculator.empty')}</p>
           ) : (
             <ul className="flex max-h-[26rem] flex-col overflow-y-auto">
               {history.map((h) => (
@@ -326,8 +344,8 @@ export function Calculator() {
                       setDisplay(h.value)
                       setReplace(true)
                     }}
-                    title={`Use ${h.value}`}
-                    className="flex w-full cursor-pointer items-baseline justify-between gap-3 rounded-sm px-1 py-1.5 text-left transition-colors hover:bg-well"
+                    title={t('calculator.use', { value: h.value })}
+                    className="flex w-full cursor-pointer items-baseline justify-between gap-3 rounded-sm px-1 py-1.5 text-start transition-colors hover:bg-well"
                   >
                     <span className="min-w-0 truncate font-mono text-xs text-text-3">{h.expr}</span>
                     <span className="shrink-0 font-mono text-sm text-text-1">{h.value}</span>

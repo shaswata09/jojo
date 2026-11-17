@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "{{label}} einblenden",
+    "hide": "{{label}} ausblenden"
+  },
+  "allHidden": {
+    "withReset": "Alle Reihen sind in der Legende ausgeschaltet.",
+    "noReset": "Alle Reihen sind ausgeblendet – wähle eine in der Legende, um sie wieder anzuzeigen.",
+    "showAll": "Alle Reihen einblenden"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "Radardiagramm: {{series}} im Vergleich über {{axes}}"
+  }
+}

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { recommendationsFor } from '@jojo/service/core/recommend'
@@ -10,6 +11,7 @@ import { useApplications, useTimeline } from '@/lib/store-context'
 import { TODAY } from '@/lib/today'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { useAdvice } from '@/i18n/advice'
 
 /**
  * What to do next, ranked, with the counts behind each line.
@@ -22,11 +24,13 @@ import { space } from '@/theme/tokens'
  */
 
 const BADGE: Record<Recommendation['strength'], string> = {
-  measured: 'Measured',
-  suggested: 'Suggested',
+  measured: 'nextSteps.measured',
+  suggested: 'nextSteps.suggested',
 }
 
 export function NextSteps() {
+  const { t } = useTranslation('components')
+  const advice = useAdvice()
   const { all } = useApplications()
   const { all: timeline } = useTimeline()
   const graph = useGraph()
@@ -47,13 +51,14 @@ export function NextSteps() {
 
   return (
     <Panel>
-      <PanelTitle hint="what your records support, then what costs least">
-        What to do next
-      </PanelTitle>
+      <PanelTitle hint={t('nextSteps.hint')}>{t('nextSteps.title')}</PanelTitle>
 
       <View style={{ gap: space[3.5] }}>
         {items.map((item) => {
           const clear = item.id === 'clear'
+          // Core's English is for the agent; this says the same figures in the
+          // language on screen.
+          const said = advice.recommendation(item)
           return (
             <View key={item.id} style={{ flexDirection: 'row', gap: space[2.5] }}>
               <Feather
@@ -64,10 +69,15 @@ export function NextSteps() {
               />
               <View style={{ flex: 1, gap: space[0.5] }}>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: space[2], flexWrap: 'wrap' }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: space[2],
+                    flexWrap: 'wrap',
+                  }}
                 >
                   <Txt size="sm" weight="medium" style={{ flexShrink: 1 }}>
-                    {item.headline}
+                    {said.headline}
                   </Txt>
                   {!clear && (
                     <View
@@ -80,13 +90,13 @@ export function NextSteps() {
                       }}
                     >
                       <Txt size="xs" tone="muted">
-                        {BADGE[item.strength]}
+                        {t(BADGE[item.strength])}
                       </Txt>
                     </View>
                   )}
                 </View>
                 <Txt size="sm" tone="secondary">
-                  {item.because}
+                  {said.because}
                 </Txt>
               </View>
             </View>

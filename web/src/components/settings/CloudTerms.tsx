@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { cloudTerms } from '@jojo/service/core/cloud-terms'
 import { guidePath } from '@/lib/links'
 import type { ProviderMeta } from '@jojo/service/core/provider'
@@ -29,6 +30,7 @@ import type { ProviderMeta } from '@jojo/service/core/provider'
  * other provider here sells production use; that is what the bill is for.
  */
 export function CloudTerms({ provider }: { provider: ProviderMeta }) {
+  const { t } = useTranslation('settings')
   const terms = cloudTerms(provider)
 
   // The dropdown entry reads "NVIDIA (build.nvidia.com) — free, rate limited",
@@ -87,7 +89,7 @@ export function CloudTerms({ provider }: { provider: ProviderMeta }) {
             rel="noreferrer noopener"
             className="text-accent underline decoration-1 underline-offset-4"
           >
-            {short} terms
+            {t('cloudTerms.providerTerms', { provider: short })}
           </a>
           <a
             href={provider.privacyUrl}
@@ -95,13 +97,13 @@ export function CloudTerms({ provider }: { provider: ProviderMeta }) {
             rel="noreferrer noopener"
             className="text-accent underline decoration-1 underline-offset-4"
           >
-            Privacy policy
+            {t('cloudTerms.privacy')}
           </a>
           <Link
             to={guidePath('licence')}
             className="text-accent underline decoration-1 underline-offset-4"
           >
-            jojo’s licence page
+            {t('cloudTerms.licence')}
           </Link>
         </p>
       </div>

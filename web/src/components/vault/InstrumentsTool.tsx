@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Calculator } from '@/components/vault/Calculator'
 import { Segment } from '@/components/common/Segment'
 import { Panel } from '@/components/common/Panel'
@@ -26,24 +27,26 @@ const PdfEditor = lazy(() =>
   import('@/components/vault/pdf/PdfEditor').then((module) => ({ default: module.PdfEditor })),
 )
 
-const INSTRUMENTS = [
-  { value: 'calculator', label: 'Calculator' },
-  { value: 'pdf', label: 'PDF editor' },
-] as const
-type Instrument = (typeof INSTRUMENTS)[number]['value']
+type Instrument = 'calculator' | 'pdf'
 
 export function InstrumentsTool() {
+  const { t } = useTranslation('vault')
   const [instrument, setInstrument] = useState<Instrument>('calculator')
+  // Built in the render so the labels follow the language on screen.
+  const instruments = [
+    { value: 'calculator', label: t('instruments.calculator') },
+    { value: 'pdf', label: t('instruments.pdf') },
+  ] as const
 
   return (
     <div className="flex flex-col gap-3">
       {/* Wrapped only to carry the guided tour's mark (components/tour). */}
       <div data-tour="instruments" className="self-start">
         <Segment
-          options={INSTRUMENTS}
+          options={instruments}
           value={instrument}
           onChange={setInstrument}
-          label="Which tool"
+          label={t('instruments.label')}
         />
       </div>
       {instrument === 'calculator' ? (
@@ -53,7 +56,7 @@ export function InstrumentsTool() {
           fallback={
             <Panel>
               <p className="text-sm text-text-3" aria-live="polite">
-                Getting the PDF tools ready…
+                {t('instruments.loading')}
               </p>
             </Panel>
           }

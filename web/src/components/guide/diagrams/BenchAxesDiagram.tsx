@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Rule } from '@/components/guide/diagrams/parts'
 import report from '@/components/guide/tool-bench.json'
 
@@ -36,24 +37,27 @@ type Run = {
 const runs = report.report as Run[]
 const total = (pick: (r: Run) => number) => runs.reduce((n, r) => n + pick(r), 0)
 
+/* `label` and `note` are catalog keys under `diagrams.benchAxes`, translated
+   where they are drawn rather than frozen here at import. */
+
 const BARS = [
   {
-    label: 'Turns called something defensible',
+    label: 'turnsLabel',
     got: total((r) => r.turnsCorrect),
     of: total((r) => r.turns),
-    note: 'the easy question',
+    note: 'turnsNote',
   },
   {
-    label: 'Claims about the store that held',
+    label: 'claimsLabel',
     got: total((r) => r.stateChecksPassed),
     of: total((r) => r.stateChecks),
-    note: 'checked one at a time',
+    note: 'claimsNote',
   },
   {
-    label: 'Whole conversations with nothing wrong',
+    label: 'wholeLabel',
     got: total((r) => r.conversationsClean),
     of: total((r) => r.conversations),
-    note: 'every turn and every claim, together',
+    note: 'wholeNote',
   },
 ]
 
@@ -64,10 +68,14 @@ const BAR_X = 8
 const BAR_W = 300
 
 export function BenchAxesDiagram() {
+  const { t } = useTranslation('guideReference')
   const titleId = useId()
   const descId = useId()
   const height = TOP + BARS.length * PITCH + 6
   const pct = (b: (typeof BARS)[number]) => b.got / b.of
+  const percent = (b: (typeof BARS)[number]) => String(Math.round(pct(b) * 100))
+  const [turns, claims, whole] = [BARS[0]!, BARS[1]!, BARS[2]!]
+  const [bracketFirst, bracketSecond] = t('diagrams.benchAxes.bracket').split('\n')
 
   return (
     <figure className="m-0">
@@ -77,15 +85,19 @@ export function BenchAxesDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>Per-turn accuracy against whole-conversation success</title>
+        <title id={titleId}>{t('diagrams.benchAxes.title')}</title>
         <desc id={descId}>
-          Three bars, measured over the same benchmark runs. Turns that called something defensible:{' '}
-          {BARS[0]!.got} of {BARS[0]!.of}, {Math.round(pct(BARS[0]!) * 100)} per cent. Individual
-          claims about the store that held: {BARS[1]!.got} of {BARS[1]!.of},{' '}
-          {Math.round(pct(BARS[1]!) * 100)} per cent. Whole conversations with nothing wrong in them:{' '}
-          {BARS[2]!.got} of {BARS[2]!.of}, {Math.round(pct(BARS[2]!) * 100)} per cent. The third is
-          lower than the other two because a conversation is only clean when every turn and every
-          claim passed together, so the two high numbers compound into the low one.
+          {t('diagrams.benchAxes.desc', {
+            turnsGot: String(turns.got),
+            turnsOf: String(turns.of),
+            turnsPct: percent(turns),
+            claimsGot: String(claims.got),
+            claimsOf: String(claims.of),
+            claimsPct: percent(claims),
+            wholeGot: String(whole.got),
+            wholeOf: String(whole.of),
+            wholePct: percent(whole),
+          })}
         </desc>
 
         {BARS.map((bar, i) => {
@@ -95,7 +107,7 @@ export function BenchAxesDiagram() {
           return (
             <g key={bar.label}>
               <text x={BAR_X} y={y - 8} fontSize={11} fill="var(--text-1)">
-                {bar.label}
+                {t(`diagrams.benchAxes.${bar.label}`)}
               </text>
 
               {/* The track, then the fill. The track matters: without it a
@@ -120,7 +132,11 @@ export function BenchAxesDiagram() {
                 {Math.round(pct(bar) * 100)}%
               </text>
               <text x={BAR_X} y={y + BAR_H + 14} fontSize={9.5} fill="var(--text-3)">
-                {bar.got} of {bar.of} — {bar.note}
+                {t('diagrams.benchAxes.count', {
+                  got: String(bar.got),
+                  of: String(bar.of),
+                  note: t(`diagrams.benchAxes.${bar.note}`),
+                })}
               </text>
             </g>
           )
@@ -136,15 +152,14 @@ export function BenchAxesDiagram() {
           stroke="var(--hairline-strong)"
         />
         <text x={BAR_X + BAR_W + 48} y={TOP + PITCH / 2 + 8} fontSize={9.5} fill="var(--text-3)">
-          both must
+          {bracketFirst}
         </text>
         <text x={BAR_X + BAR_W + 48} y={TOP + PITCH / 2 + 20} fontSize={9.5} fill="var(--text-3)">
-          hold at once
+          {bracketSecond}
         </text>
       </svg>
       <figcaption className="mt-2 text-xs text-text-3">
-        A benchmark that reported only the first bar would call these models nearly perfect. The
-        third is the one that answers whether the job got done.
+        {t('diagrams.benchAxes.caption')}
       </figcaption>
     </figure>
   )

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import type { VaultFile } from '@jojo/service/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
+import { i18next } from '@/i18n/i18n'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
@@ -61,8 +62,9 @@ export function useFileDelete() {
         // Refused: the record is still there, so its bytes and keywords stay
         // too, and the toast says why instead of "deleted".
         toast({
-          title: 'That did not delete',
-          description: removed.refusal ?? `${file.name} is still in the Vault.`,
+          title: i18next.t('messages:fileDelete.refusedTitle'),
+          description:
+            removed.refusal ?? i18next.t('messages:fileDelete.stillInVault', { name: file.name }),
           tone: 'danger',
         })
         return
@@ -75,16 +77,16 @@ export function useFileDelete() {
       onGone?.(file.id)
 
       toast({
-        title: `${file.name} deleted`,
+        title: i18next.t('messages:fileDelete.deletedTitle', { name: file.name }),
         description:
           had === undefined
-            ? 'The row, its keywords and any copy jojo kept all go. The original on your computer is untouched.'
+            ? i18next.t('messages:fileDelete.deletedUnknown')
             : had
-              ? 'The row, its keywords and jojo’s copy of the document all go. The original on your computer is untouched.'
-              : 'The row and its keywords go. There was no stored copy of this one to lose.',
+              ? i18next.t('messages:fileDelete.deletedWithCopy')
+              : i18next.t('messages:fileDelete.deletedNoCopy'),
         tone: 'danger',
         action: {
-          label: 'Undo',
+          label: i18next.t('messages:fileDelete.undo'),
           onClick: () => {
             restore()
             // The document comes back with the row — and if it cannot, say so.
@@ -94,9 +96,8 @@ export function useFileDelete() {
             void undoDocument(removal, () => blobs.restore(file.id)).then((outcome) => {
               if (outcome !== 'lost') return
               toast({
-                title: `${file.name} came back without its document`,
-                description:
-                  'The row and its keywords are restored, but the stored copy could not be. Drop the file in again to attach it.',
+                title: i18next.t('messages:fileDelete.lostTitle', { name: file.name }),
+                description: i18next.t('messages:fileDelete.lostDescription'),
                 tone: 'danger',
               })
             })

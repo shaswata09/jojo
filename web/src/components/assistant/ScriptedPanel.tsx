@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { ArrowUp, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -14,8 +15,6 @@ import { ScriptedMessage } from './ScriptedMessage'
 import { SCRIPTS } from './scripts'
 import { useScriptedConversation } from './use-scripted-conversation'
 
-const OPENERS = SCRIPTS.map((s) => ({ key: s.id, label: s.action }))
-
 /**
  * The assistant with no model behind it.
  *
@@ -26,18 +25,24 @@ const OPENERS = SCRIPTS.map((s) => ({ key: s.id, label: s.action }))
  * that used to be threaded through every string are gone with it.
  */
 export function ScriptedPanel() {
-  useTitle('Assistant')
+  const { t } = useTranslation('assistant')
+  useTitle(t('common.title'))
   const c = useScriptedConversation()
+  // Built per render rather than at import, so the labels follow the language.
+  const openers = SCRIPTS.map((s) => ({ key: s.id, label: s.action }))
+  // A quick action names its script outright: the cues that pick a script from
+  // typed text are English, and a translated label would not find them.
+  const pick = (label: string) => c.send(label, openers.find((o) => o.label === label)?.key)
 
   return (
     <>
       <PageHeader
-        title="Assistant"
-        subtitle="Worked examples now. Connect a local model and it both drafts from your own records and acts on them."
+        title={t('common.title')}
+        subtitle={t('scripted.subtitle')}
         actions={
           c.messages.length > 0 ? (
             <Button variant="ghost" size="sm" onClick={c.clearConversation}>
-              Clear conversation
+              {t('scripted.clear')}
             </Button>
           ) : null
         }
@@ -57,12 +62,13 @@ export function ScriptedPanel() {
       >
         <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
         <p>
-          No model is connected, so every reply below is a worked example rather than an answer.
-          Point jojo at a local OpenAI-compatible server — vLLM, Ollama or LM Studio — in{' '}
-          <Link to="/settings" className="underline underline-offset-2">
-            Settings
-          </Link>
-          .
+          <Trans
+            t={t}
+            i18nKey="scripted.notConnected"
+            components={{
+              settings: <Link to="/settings" className="underline underline-offset-2" />,
+            }}
+          />
         </p>
       </div>
 
@@ -73,8 +79,8 @@ export function ScriptedPanel() {
             // SVG with the same three props, so the cast is safe and is how the
             // rest of the app has always passed it.
             icon={RobotIcon as unknown as LucideIcon}
-            title="Nothing asked yet"
-            description="Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model’s answer."
+            title={t('common.nothingAsked')}
+            description={t('scripted.emptyDescription')}
           />
         ) : (
           // A log, so both halves are announced in the order they arrive.
@@ -95,18 +101,18 @@ export function ScriptedPanel() {
         {/* Announced rather than only shown: the confirmation appears on a
             button the user has just left, and a swapped icon is easy to miss. */}
         <p aria-live="polite" className="sr-only">
-          {c.copiedId ? (c.copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
+          {c.copiedId ? (c.copyFailed ? t('common.copyBlocked') : t('common.copied')) : ''}
         </p>
 
         {/* Empty thread only, exactly as the connected panel does it — the two
             must not visibly diverge for the person who has not set a model up
             yet, and that includes when the openers disappear. */}
-        {c.messages.length === 0 ? <OpenerList openers={OPENERS} onPick={c.send} /> : null}
+        {c.messages.length === 0 ? <OpenerList openers={openers} onPick={pick} /> : null}
 
         <form onSubmit={c.onSubmit} className="mt-2 flex gap-2">
           <div className="min-w-0 flex-1">
             <Label htmlFor="assistant-prompt" className="sr-only">
-              Ask the assistant
+              {t('common.askLabel')}
             </Label>
             <Textarea
               id="assistant-prompt"
@@ -115,7 +121,7 @@ export function ScriptedPanel() {
               // Fixed, for the reasons set out on the connected composer above.
               className="field-sizing-fixed h-16 resize-none overflow-y-auto"
               autoComplete="off"
-              placeholder="Ask about a cover letter, a follow-up email, an interview…"
+              placeholder={t('scripted.placeholder')}
               onChange={(event) => c.setPrompt(event.target.value)}
               onKeyDown={c.onComposerKey}
             />
@@ -123,19 +129,16 @@ export function ScriptedPanel() {
           <Button
             type="submit"
             size="icon"
-            aria-label="Send"
+            aria-label={t('composer.send')}
             disabled={!c.prompt.trim()}
-            title={c.prompt.trim() ? 'Send' : 'Type a message first'}
+            title={c.prompt.trim() ? t('composer.send') : t('composer.typeFirst')}
           >
             <ArrowUp className="size-4" strokeWidth={2} aria-hidden />
           </Button>
         </form>
       </Panel>
 
-      <p className="text-sm text-text-2">
-        With a model connected each of these reads your profile and documents as context. Because
-        inference is local, your CV and your notes are never uploaded anywhere.
-      </p>
+      <p className="text-sm text-text-2">{t('scripted.footer')}</p>
     </>
   )
 }

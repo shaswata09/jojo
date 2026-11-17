@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { ArrowLeft, Briefcase, ChevronDown, ChevronUp, Loader2, Maximize2, X } from 'lucide-react'
 import { displayName } from '@jojo/service/core/model'
 import type { NodeId } from '@jojo/service/core/model'
@@ -20,14 +21,13 @@ import { cn } from '@/lib/utils'
 import type { DockDrag } from '@/components/chat-dock/ChatDock'
 import { shouldTakeFocus } from '@/components/chat-dock/take-focus'
 
-/** Openers for a conversation about one application — the questions people ask beside a record. */
-const ABOUT_PROMPTS = [
-  'What is left to do for this application?',
-  'Draft a follow-up email for this one',
-  'Summarise this application',
-]
+/**
+ * Openers for a conversation about one application — the questions people ask
+ * beside a record. Catalog keys: each is shown and sent in the reader's language.
+ */
+const ABOUT_PROMPTS = ['prompts.about.left', 'prompts.about.followUp', 'prompts.about.summarise']
 /** And for a conversation about nothing in particular. */
-const GENERAL_PROMPTS = ['What am I waiting on?', 'Which applications have no deadline?']
+const GENERAL_PROMPTS = ['prompts.general.waiting', 'prompts.general.noDeadline']
 
 /*
  * The transcript, skipped when its props have not changed.
@@ -110,6 +110,7 @@ export function ChatWindow({
   /** The person has used the dock since it mounted — see `take-focus.ts`. */
   dockUsed?: boolean | undefined
 }) {
+  const { t } = useTranslation('chatDock')
   const { file } = useThreads()
   const { toast } = useToast()
   const convo = useConversation({
@@ -120,7 +121,7 @@ export function ChatWindow({
   const { entries, busy, send, stop, thread, subject, configured, model } = convo
 
   const draft = useRef('')
-  const title = thread?.title ?? 'New conversation'
+  const title = thread?.title ?? t('newConversation')
   const open = fullScreen || !win.minimized
 
   /* Stick to the newest turn unless the reader scrolled up — the page's rule. */
@@ -168,7 +169,7 @@ export function ChatWindow({
     if (result.ok) {
       toast({
         title: result.announcement.title,
-        ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
+        ...(result.undo ? { action: { label: t('undo'), onClick: result.undo } } : {}),
       })
     }
   }
@@ -176,7 +177,7 @@ export function ChatWindow({
   return (
     <section
       {...{ [DOCK_ATTR]: '' }}
-      aria-label={`Conversation: ${title}`}
+      aria-label={t('window.label', { title })}
       style={fullScreen ? undefined : { width }}
       className={cn(
         'flex flex-col overflow-hidden border border-hairline bg-page shadow-[var(--shadow-raised)]',
@@ -190,7 +191,7 @@ export function ChatWindow({
         className={cn(
           'flex h-12 shrink-0 items-center gap-1.5 border-b border-hairline px-2',
           !fullScreen && 'cursor-pointer touch-none select-none',
-          drag && !fullScreen && 'pl-1',
+          drag && !fullScreen && 'ps-1',
         )}
         // The header moves the whole dock, the same as the bar does — an open
         // conversation is the biggest thing the dock puts over the page, so it
@@ -211,7 +212,7 @@ export function ChatWindow({
             variant="ghost"
             size="icon"
             className="size-8 shrink-0"
-            aria-label="Back to conversations"
+            aria-label={t('window.back')}
             // Where focus goes when the window before this one was closed and
             // the layout shows one panel at a time (`ChatDock`'s `onClose`).
             data-dock-home=""
@@ -220,10 +221,10 @@ export function ChatWindow({
               onBack()
             }}
           >
-            <ArrowLeft className="size-4" strokeWidth={1.8} aria-hidden />
+            <ArrowLeft className="size-4 rtl:-scale-x-100" strokeWidth={1.8} aria-hidden />
           </Button>
         ) : (
-          <RobotIcon className="ml-1 size-5 shrink-0" aria-hidden />
+          <RobotIcon className="ms-1 size-5 shrink-0" aria-hidden />
         )}
         <span className="min-w-0 flex-1 truncate text-sm font-medium" title={title}>
           {title}
@@ -232,7 +233,7 @@ export function ChatWindow({
           <Loader2
             className="size-3.5 shrink-0 animate-spin text-accent"
             strokeWidth={2}
-            aria-label="Working"
+            aria-label={t('window.working')}
           />
         ) : null}
         {win.threadId !== null ? (
@@ -245,8 +246,8 @@ export function ChatWindow({
           >
             <Link
               to={assistantPath({ thread: win.threadId })}
-              aria-label="Open in the Assistant"
-              title="Open in the Assistant"
+              aria-label={t('window.openInAssistant')}
+              title={t('window.openInAssistant')}
             >
               <Maximize2 className="size-3.5" strokeWidth={1.8} aria-hidden />
             </Link>
@@ -257,7 +258,7 @@ export function ChatWindow({
             variant="ghost"
             size="icon"
             className="size-8 shrink-0 text-text-3"
-            aria-label={win.minimized ? 'Open this conversation' : 'Minimise this conversation'}
+            aria-label={win.minimized ? t('window.open') : t('window.minimise')}
             aria-expanded={!win.minimized}
             data-dock-home=""
             onClick={(e) => {
@@ -276,8 +277,8 @@ export function ChatWindow({
           variant="ghost"
           size="icon"
           className="size-8 shrink-0 text-text-3"
-          aria-label="Close this conversation"
-          title="Close — it stays in your conversations"
+          aria-label={t('window.close')}
+          title={t('window.closeTitle')}
           onClick={(e) => {
             e.stopPropagation()
             onClose(win.key)
@@ -293,20 +294,17 @@ export function ChatWindow({
             <div className="flex shrink-0 items-center gap-1.5 border-b border-hairline px-3 py-1.5 text-xs text-text-2">
               <Briefcase className="size-3 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
               <span className="min-w-0 flex-1 truncate">
-                About <span className="text-text-1">{displayName(subject)}</span>
+                <Trans
+                  t={t}
+                  i18nKey="window.about"
+                  values={{ name: displayName(subject) }}
+                  components={{ name: <span className="text-text-1" /> }}
+                />
               </span>
               <button
                 type="button"
-                aria-label={
-                  win.threadId === null
-                    ? 'Start this conversation about nothing in particular'
-                    : 'Unfile this conversation from the application'
-                }
-                title={
-                  win.threadId === null
-                    ? 'Not about this application'
-                    : 'Unfile from this application'
-                }
+                aria-label={win.threadId === null ? t('window.detachAria') : t('window.unfileAria')}
+                title={win.threadId === null ? t('window.detachTitle') : t('window.unfileTitle')}
                 onClick={removeSubject}
                 className="grid size-5 shrink-0 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-well hover:text-text-1"
               >
@@ -325,24 +323,26 @@ export function ChatWindow({
           >
             {!configured ? (
               <p className="text-sm text-text-2">
-                Connect a model in{' '}
-                <Link to={settingsPath()} className="underline underline-offset-2">
-                  Settings
-                </Link>{' '}
-                to chat with jojo here. Everything stays on this device.
+                <Trans
+                  t={t}
+                  i18nKey="window.notConfigured"
+                  components={{
+                    settings: <Link to={settingsPath()} className="underline underline-offset-2" />,
+                  }}
+                />
               </p>
             ) : entries.length === 0 ? (
               <div className="space-y-2">
                 <p className="text-sm text-text-2">
                   {subject
-                    ? `Ask anything about ${displayName(subject)} — jojo knows this is the application you mean.`
-                    : 'Ask jojo to find something, add an application, or move one along.'}
+                    ? t('window.askAbout', { name: displayName(subject) })
+                    : t('window.askGeneral')}
                 </p>
                 <ul className="flex flex-wrap gap-1.5">
                   {(subject ? ABOUT_PROMPTS : GENERAL_PROMPTS).map((p) => (
                     <li key={p}>
-                      <Button variant="outline" size="xs" disabled={busy} onClick={() => ask(p)}>
-                        {p}
+                      <Button variant="outline" size="xs" disabled={busy} onClick={() => ask(t(p))}>
+                        {t(p)}
                       </Button>
                     </li>
                   ))}
@@ -356,13 +356,17 @@ export function ChatWindow({
           <div className="shrink-0 border-t border-hairline p-2">
             <DockComposer
               id={composerId}
-              label={`Message jojo in ${title}`}
+              label={t('window.composerLabel', { title })}
               draft={draft}
               onSend={ask}
               busy={busy}
               onStop={stop}
               disabled={!configured}
-              placeholder={subject ? `Ask about ${subject.org}…` : 'Ask jojo…'}
+              placeholder={
+                subject
+                  ? t('window.placeholderAbout', { org: subject.org })
+                  : t('window.placeholder')
+              }
               compact
             />
           </div>

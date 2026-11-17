@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -19,6 +20,7 @@ export function ChipAdder({
   placeholder: string
   onAdd: (typed: string) => void
 }) {
+  const { t } = useTranslation('profile')
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
 
@@ -26,7 +28,7 @@ export function ChipAdder({
     return (
       <Button variant="ghost" size="sm" onClick={() => setAdding(true)}>
         <Plus className="size-3" strokeWidth={2} aria-hidden />
-        Add
+        {t('shared.add')}
       </Button>
     )
 

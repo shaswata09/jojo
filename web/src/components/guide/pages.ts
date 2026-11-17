@@ -1,3 +1,4 @@
+import { i18next } from '@/i18n/i18n'
 import { GUIDE_PAGES, type GuidePage } from '@/lib/links'
 
 /**
@@ -24,45 +25,32 @@ export type GuidePageMeta = {
   blurb: string
 }
 
-const META: Record<GuidePage, Omit<GuidePageMeta, 'id'>> = {
-  overview: {
-    label: 'How to use',
-    blurb:
-      'What a record is, where it is kept, what that costs you, and the few keys worth knowing before you trust a job search to it.',
-  },
-  screens: {
-    label: 'Every screen',
-    blurb:
-      'Each page in turn — what it is for, the mechanics that are not obvious from looking, and what is not connected yet.',
-  },
-  tools: {
-    label: 'The tools',
-    blurb:
-      'What the assistant can actually do, how it is stopped from doing anything else, and how it picks the right one out of the whole catalog.',
-  },
-  graph: {
-    label: 'The graph',
-    blurb:
-      'What the Graph page draws, how a question becomes a query, and the record model the whole app is stored as.',
-  },
-  'built-with': {
-    label: 'Built with',
-    blurb:
-      'The open-source work jojo is made of, the licences that cover it, and how the code is arranged.',
-  },
-  'control-flow': {
-    label: 'Control flow graph',
-    blurb:
-      'Every module and import as a graph, how control moves through six journeys, and where a change belongs.',
-  },
-  licence: {
-    label: 'Licence',
-    blurb:
-      'What jojo costs, what you may do with it, and the terms that come with the services you can point it at.',
-  },
+/**
+ * The catalog key each page's label and blurb sit under, in the `guide`
+ * namespace. A key rather than the words, because a table built when this module
+ * is imported would be frozen in whatever language was showing then.
+ */
+const KEY: Record<GuidePage, string> = {
+  overview: 'overview',
+  screens: 'screens',
+  tools: 'tools',
+  graph: 'graph',
+  'built-with': 'builtWith',
+  'control-flow': 'controlFlow',
+  licence: 'licence',
 }
 
+/**
+ * Getters, so each read is translated at the moment it is made: a component
+ * that calls `useTranslation` re-renders on a language change and reads the new
+ * words, where a value copied out at import time would stay English.
+ */
 export const GUIDE_PAGE_META: readonly GuidePageMeta[] = GUIDE_PAGES.map((id) => ({
   id,
-  ...META[id],
+  get label() {
+    return i18next.t(`guide:pages.${KEY[id]}.label`)
+  },
+  get blurb() {
+    return i18next.t(`guide:pages.${KEY[id]}.blurb`)
+  },
 }))

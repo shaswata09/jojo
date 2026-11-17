@@ -1,0 +1,249 @@
+{
+  "common": {
+    "undo": "Rückgängig",
+    "cancel": "Abbrechen"
+  },
+  "addFromLink": {
+    "title": "Bewerbung aus einem Link",
+    "description": "Das Modell liest die Anzeige, füllt das Formular aus und hakt deine eigenen Schlagwörter an, um die es in der Stelle eindeutig geht. Die Seite wird im Tresor unter Stellenanzeigen aufbewahrt, und nichts wird als Bewerbung gespeichert, bis du es sagst.",
+    "url": "URL der Stellenanzeige",
+    "addressOnly": "Nur die Adresse verwenden",
+    "reading": "Wird gelesen …",
+    "retry": "Erneut versuchen",
+    "submit": "Lesen und vorausfüllen",
+    "failed": "Die Anzeige konnte nicht gelesen werden.",
+    "steps": {
+      "reading": "Seite wird abgerufen",
+      "asking": "Wird gelesen",
+      "saving": "Anzeige wird gespeichert"
+    },
+    "toast": {
+      "title": "Anzeige gespeichert und gelesen",
+      "kept": "{{name}} liegt im Tresor und wird der Bewerbung zugeordnet, sobald du sie speicherst.",
+      "gaps_one": "{{count}} Feld stand nicht auf der Seite.",
+      "gaps_other": "{{count}} Felder standen nicht auf der Seite.",
+      "tags_one": "{{count}} deiner Schlagwörter ist angehakt.",
+      "tags_other": "{{count}} deiner Schlagwörter sind angehakt."
+    }
+  },
+  "application": {
+    "newTitle": "Neue Bewerbung",
+    "editTitle": "{{name}} bearbeiten",
+    "add": "Bewerbung hinzufügen",
+    "save": "Änderungen speichern",
+    "checking": "Suche nach Duplikaten …",
+    "noRecord": "Dieses Blatt wurde ohne einen Eintrag zum Bearbeiten geöffnet",
+    "description": {
+      "edit": "Änderungen ersetzen die aktuellen Angaben, und die Frist wandert mit.",
+      "prefilledTagged": "Aus deinem eingefügten Text vorausgefüllt – prüfe Arbeitgeber, Rolle und Schlagwörter vor dem Speichern.",
+      "prefilled": "Aus deinem eingefügten Text vorausgefüllt – prüfe Arbeitgeber und Rolle vor dem Speichern.",
+      "create": "Verfolge eine Stelle, auf die du dich bewirbst. Felder mit Stern sind Pflicht."
+    },
+    "errors": {
+      "org": "Nenne den Arbeitgeber – unter ihm wird der Eintrag abgelegt.",
+      "role": "Nenne die Rolle, damit zwei Bewerbungen beim selben Arbeitgeber getrennt bleiben.",
+      "roleTag": "Wähle ein Rollen-Tag – der Rollenfilter und die Diagramme lesen es.",
+      "url": "Das ist kein Link, den ein Browser öffnen kann – füge https:// hinzu."
+    },
+    "fields": {
+      "org": "Organisation",
+      "orgPlaceholder": "Arbeitgeber oder Einrichtung",
+      "role": "Stellenbezeichnung",
+      "rolePlaceholder": "z. B. Senior Data Analyst",
+      "roleTag": "Rollen-Tag",
+      "pickRoleTag": "Rollen-Tag wählen",
+      "roleTagDescription": "Die Achse, die der Rollenfilter und die Diagramme lesen.",
+      "stage": "Phase",
+      "deadline": "Frist",
+      "deadlineHint": "Legt einen datierten Eintrag in den Kalender und in die kommende Woche.",
+      "source": "Quelle",
+      "sourceNotSet": "Nicht festgelegt",
+      "location": "Ort",
+      "locationPlaceholder": "Stadt oder Remote",
+      "comp": "Vergütung",
+      "compPlaceholder": "z. B. 96.000 $ + Beteiligung",
+      "url": "URL der Anzeige",
+      "postingId": "Anzeigen-ID",
+      "postingIdHint": "Die Stellen- oder Ausschreibungsnummer, falls die Anzeige eine nennt.",
+      "postingIdPlaceholder": "z. B. R-2024-0312",
+      "note": "Notiz",
+      "notePlaceholder": "Was noch passieren muss, bevor das rausgeht.",
+      "keywords": "Schlagwörter"
+    },
+    "toast": {
+      "draftDiscarded": "Entwurf verworfen",
+      "changesDiscarded": "Änderungen verworfen",
+      "nothingAdded": "Nichts wurde hinzugefügt. Rückgängig bringt das Formular so zurück, wie du es verlassen hast.",
+      "unchanged": "{{name}} ist unverändert. Rückgängig bringt deine Änderungen zurück.",
+      "recordUnchanged": "Der Eintrag ist unverändert. Rückgängig bringt deine Änderungen zurück.",
+      "added": "{{name}} hinzugefügt",
+      "deadlineOnCalendar": "Die Frist am {{date}} steht im Kalender.",
+      "noDeadline": "Noch keine Frist – füge eine hinzu, dann erscheint sie in der kommenden Woche.",
+      "postingFiled": "Die Anzeige ist ihr zugeordnet.",
+      "saved": "Änderungen gespeichert",
+      "deadlineRemoved": "{{name}} – die Frist ist aus dem Kalender entfernt.",
+      "restoreDeadline": "Frist wiederherstellen"
+    },
+    "duplicate": {
+      "title": "Das sieht nach einer Stelle aus, die du schon hast",
+      "modelSame": "Das Modell hat sie als dieselbe Stelle gelesen.",
+      "modelReading": " – die Einschätzung des Modells; prüfe sie unten.",
+      "existing": "Was du schon hast",
+      "adding": "Was du hinzufügst",
+      "untitled": "Ohne Titel",
+      "postingId": "Anzeigen-ID {{id}}",
+      "openYours": "Die vorhandene öffnen",
+      "openExisting": "{{name}} öffnen, die du schon hast",
+      "tapToOpen": "Tippe, um sie zu öffnen, oder mach weiter und füge diese als zweiten Eintrag hinzu.",
+      "editInstead": "Stattdessen bearbeiten",
+      "discard": "Verwerfen",
+      "addAnyway": "Trotzdem hinzufügen"
+    },
+    "since": {
+      "today": "heute",
+      "yesterday": "gestern",
+      "daysAgo_one": "vor {{count}} Tag",
+      "daysAgo_other": "vor {{count}} Tagen"
+    }
+  },
+  "draft": {
+    "title": "Nachricht entwerfen",
+    "description": {
+      "forApp": "Für {{name}}. Nichts wird erzeugt und nichts gesendet – fülle die Lücken, kopiere den Text in dein Mailprogramm und markiere ihn dann als gesendet.",
+      "forItem": "Für {{name}} · {{item}}. Nichts wird erzeugt und nichts gesendet – fülle die Lücken, kopiere den Text in dein Mailprogramm und markiere ihn dann als gesendet.",
+      "unlinked": "Mit keiner Bewerbung verknüpft, daher bleiben [ROLE] und [DATE] leer. Nichts wird erzeugt und nichts gesendet – fülle die Lücken, kopiere den Text in dein Mailprogramm und markiere ihn dann als gesendet."
+    },
+    "defaultTitle": "E-Mail-Entwurf",
+    "titleForOrg": "{{title}} – {{org}}",
+    "saveAsSnippet": "Als Textbaustein speichern",
+    "writeFirst": "Schreib zuerst etwas",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "markSent": "Als gesendet markieren",
+    "openFromReminder": "Öffne dies aus einer Erinnerung, um sie abzuhaken",
+    "alreadyTicked": "Bereits abgehakt",
+    "blank": "Leerer Entwurf",
+    "startFromSnippet": "Mit einem deiner E-Mail-Textbausteine beginnen",
+    "placeholder": "Schreib die Nachricht oder wähle einen Textbaustein als Anfang …",
+    "editorLabel": "Nachrichtenentwurf",
+    "empty": {
+      "title": "Noch keine E-Mail-Textbausteine",
+      "description": "Textbausteine mit der Kategorie Email erscheinen hier als Ausgangspunkt. Es gibt nichts zu laden, aber der Entwurf muss nicht mit einem beginnen.",
+      "startBlank": "Mit einem leeren Entwurf beginnen"
+    },
+    "status": {
+      "empty": "Noch nichts entworfen.",
+      "noBlanks": "Keine Lücken mehr.",
+      "blanksLeft_one": "Noch {{count}} Lücke – {{names}}",
+      "blanksLeft_other": "Noch {{count}} Lücken – {{names}}",
+      "nameNever": " · der Name einer Person wird nie für dich eingesetzt"
+    },
+    "picker": {
+      "title": "Beginnen mit",
+      "description": "Deine eigenen E-Mail-Textbausteine, mit dem ausgefüllt, was die Einträge schon wissen."
+    },
+    "toast": {
+      "replaced": "Entwurf ersetzt",
+      "loaded": "{{title}} geladen.",
+      "blank": "Leer neu begonnen.",
+      "saved": "In Textbausteinen gespeichert",
+      "savedDescription": "{{title}} · Kategorie Email, im Tresor",
+      "sent": "Als gesendet markiert",
+      "sentDescription": "{{title}} – in den Erinnerungen abgehakt"
+    }
+  },
+  "stage": {
+    "moveTo": "Nach {{stage}} verschieben",
+    "currently": "{{name}} · derzeit {{stage}}",
+    "nothingElse": "Sonst hat sich am Eintrag nichts geändert.",
+    "moveWithoutDetails": "Ohne Details verschieben",
+    "outcome": "Ergebnis",
+    "submitted": {
+      "date": "Eingereicht am",
+      "portal": "Portal-URL",
+      "portalHint": "Wo die Bewerbung liegt, für den Fall, dass du nachfassen musst.",
+      "reference": "Bestätigungsnummer",
+      "referencePlaceholder": "z. B. 4471-QZ"
+    },
+    "interview": {
+      "date": "Datum des Gesprächs",
+      "format": "Format",
+      "formatLabel": "Gesprächsformat",
+      "mint": "Zur Zeitleiste hinzufügen",
+      "mintDescription": "Erstellt an diesem Datum einen Gesprächseintrag mit Erinnerung."
+    },
+    "offer": {
+      "respondBy": "Antwort bis",
+      "package": "Paket",
+      "packagePlaceholder": "z. B. 112.000 $ + 15.000 $ Startpaket",
+      "note": "Notiz",
+      "notePlaceholder": "Was noch verhandelt wird",
+      "mint": "Frist zur Zeitleiste hinzufügen",
+      "mintDescription": "Eine Antwortfrist, die niemand im Blick hat, ist die eine Frist, die du dir nicht leisten kannst zu verpassen."
+    },
+    "keepOffer": {
+      "label": "Angebotsdetails behalten",
+      "description": "Antwort bis {{date}}. Schalte das aus, um sie zu löschen.",
+      "descriptionWithComp": "Antwort bis {{date}} · {{comp}}. Schalte das aus, um sie zu löschen."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Neue Erinnerung",
+      "editReminder": "Erinnerung bearbeiten",
+      "newEvent": "Neuer Termin",
+      "editEvent": "Termin bearbeiten"
+    },
+    "description": "So oder so ein einziger Eintrag – er erscheint im Kalender an dem Datum, das du angibst, und in der Erinnerungsliste des Tresors, solange der Schalter an ist.",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "addReminder": "Erinnerung hinzufügen",
+    "addEvent": "Termin hinzufügen",
+    "reminderFallback": "Erinnerung",
+    "duration": {
+      "minutes_one": "{{count}} Min.",
+      "minutes_other": "{{count}} Min.",
+      "hours_one": "{{count}} Stunde",
+      "hours_other": "{{count}} Stunden"
+    },
+    "fields": {
+      "title": "Titel",
+      "reminderPlaceholder": "z. B. Beim Recruiter nachhaken",
+      "eventPlaceholder": "z. B. Zoom mit der Kommission",
+      "remind": "In Erinnerungen anzeigen",
+      "remindOn": "Im Tresor mit Kästchen zum Abhaken aufgeführt und im Kalender an seinem Datum.",
+      "remindOff": "Nur im Kalender an seinem Datum – kein Kästchen im Tresor.",
+      "date": "Datum",
+      "allDay": "Ganztägig",
+      "allDayDescription": "Ausgeschaltet bekommt er eine Startzeit und eine Dauer.",
+      "startTime": "Startzeit",
+      "length": "Dauer",
+      "applicationHint": "Verknüpft sie, sodass jede Bewerbung dies auflistet und dies zu jeder von ihnen zurückführt.",
+      "kind": "Art",
+      "kindFollowUp": "Ein Nachfassen gilt unter Heute außerdem als fällig, bis du es abhakst.",
+      "kindHint": "Das Symbol, das er im Kalender und in der Erinnerungsliste trägt.",
+      "detail": "Detail",
+      "detailHint": "Eine Zeile Kontext, unter dem Titel angezeigt.",
+      "note": "Notiz",
+      "noteHint": "Deine eigene Notiz. Getrennt vom Detail gehalten, damit eine Änderung sie nie überschreibt.",
+      "keywords": "Schlagwörter",
+      "keywordsHint": "Geteilt mit Bewerbungen, Dateien und Links – wer nach einem filtert, findet alle."
+    },
+    "more": {
+      "title": "Weitere Details",
+      "note": "Notiz",
+      "keywords": "Schlagwörter",
+      "empty": "Notiz, Schlagwörter"
+    },
+    "toast": {
+      "added": "{{title}} hinzugefügt",
+      "updated": "{{title}} aktualisiert",
+      "inReminders": "in den Erinnerungen",
+      "calendarOnly": "nur im Kalender",
+      "owed": "und diese Woche fällig",
+      "deleted": "{{title}} gelöscht",
+      "goneFromBoth": "Aus der Erinnerungsliste und aus dem Kalender entfernt.",
+      "goneFromCalendar": "Aus dem Kalender entfernt."
+    }
+  }
+}

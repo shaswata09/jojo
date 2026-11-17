@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ApplicationField } from '@/components/common/ApplicationPickerSheet'
 import { pickDocuments } from '@/lib/documents'
 import { Txt } from '@/components/ui/Text'
@@ -33,6 +34,7 @@ export function FileEditor({
   onClose: () => void
   onSave: (draft: Omit<VaultFile, 'id' | 'savedOn'>) => void
 }) {
+  const { t } = useTranslation(['components', 'common'])
   const [name, setName] = useState(initial?.name ?? '')
   const [size, setSize] = useState(initial?.size === '—' ? '' : (initial?.size ?? ''))
   const [note, setNote] = useState(initial?.note ?? '')
@@ -124,16 +126,21 @@ export function FileEditor({
     <Sheet
       open
       onClose={askOrClose}
-      title={initial ? 'Edit document' : 'Record a document'}
-      description={
-        uri
-          ? 'Kept on this device, in this app. Nothing is uploaded and nothing reads what is inside it.'
-          : 'Choose a file to keep a copy of it, or fill this in by hand to record one you are keeping elsewhere.'
-      }
+      title={initial ? t('fileEditor.editTitle') : t('fileEditor.newTitle')}
+      description={uri ? t('fileEditor.keptHere') : t('fileEditor.chooseOrType')}
       footer={
         <>
-          <Button label="Cancel" variant="ghost" size="md" onPress={askOrClose} />
-          <Button label={initial ? 'Save' : 'Record it'} size="md" onPress={submit} />
+          <Button
+            label={t('common:actions.cancel')}
+            variant="ghost"
+            size="md"
+            onPress={askOrClose}
+          />
+          <Button
+            label={initial ? t('common:actions.save') : t('fileEditor.record')}
+            size="md"
+            onPress={submit}
+          />
         </>
       }
     >
@@ -143,7 +150,13 @@ export function FileEditor({
             a file on a laptop — which is what the old build could only do. */}
         <View style={{ gap: space[2] }}>
           <Button
-            label={picking ? 'Choosing…' : uri ? 'Choose a different file' : 'Choose a file'}
+            label={
+              picking
+                ? t('fileEditor.choosing')
+                : uri
+                  ? t('fileEditor.chooseDifferent')
+                  : t('fileEditor.choose')
+            }
             icon="upload"
             variant="outline"
             full
@@ -153,7 +166,7 @@ export function FileEditor({
           />
           {uri ? (
             <Txt size="xs" tone="muted">
-              A copy is kept in this app. It goes when the app is uninstalled.
+              {t('fileEditor.copyKept')}
             </Txt>
           ) : null}
           {pickError ? (
@@ -164,26 +177,26 @@ export function FileEditor({
         </View>
 
         <TextField
-          label="File name"
+          label={t('fileEditor.fileName')}
           required
           mono
           autoCapitalize="none"
           value={name}
-          error={attempted && !name.trim() ? 'Name it, including the extension.' : undefined}
-          hint="The extension picks the icon — .pdf, .doc, .pptx, .md."
+          error={attempted && !name.trim() ? t('fileEditor.nameRequired') : undefined}
+          hint={t('fileEditor.nameHint')}
           placeholder="Research-statement-v4.doc"
           onChangeText={setName}
         />
         <TextField
-          label="Size"
+          label={t('fileEditor.size')}
           value={size}
-          placeholder="e.g. 212 KB"
-          hint="Optional — left blank it reads as unknown rather than as zero."
+          placeholder={t('fileEditor.sizePlaceholder')}
+          hint={t('fileEditor.sizeHint')}
           onChangeText={setSize}
         />
-        <FormField label="Bucket">
+        <FormField label={t('fileEditor.bucket')}>
           <Segment
-            label="Bucket"
+            label={t('fileEditor.bucket')}
             scroll
             options={FILE_BUCKETS.map((b) => ({ value: b, label: b }))}
             value={bucket}
@@ -194,18 +207,18 @@ export function FileEditor({
         <ApplicationField
           values={applicationIds}
           onChange={setApplicationIds}
-          hint="What the Profile's Documents panel and the graph read to say what is filed where. As many jobs as the document went to."
+          hint={t('fileEditor.applicationsHint')}
         />
 
-        <TextField label="Note" value={note} multiline onChangeText={setNote} />
+        <TextField label={t('fileEditor.note')} value={note} multiline onChangeText={setNote} />
       </View>
 
       <ConfirmSheet
         open={discarding}
         onClose={() => setDiscarding(false)}
-        title="Discard unsaved changes?"
-        description="What you have typed here has not been saved anywhere, so leaving throws it away — and that cannot be undone."
-        confirmLabel="Discard"
+        title={t('common:discard.title')}
+        description={t('common:discard.description')}
+        confirmLabel={t('common:discard.confirm')}
         tone="danger"
         onConfirm={() => {
           setDiscarding(false)

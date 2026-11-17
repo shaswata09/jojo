@@ -1,0 +1,202 @@
+{
+  "common": {
+    "newPipeline": "Neue Pipeline",
+    "addToApplications": "Zu den Bewerbungen hinzufügen",
+    "inApplicationsAs": "In den Bewerbungen als <anchor>{{name}}</anchor>",
+    "open": "Öffnen",
+    "undo": "Rückgängig"
+  },
+  "header": {
+    "title": "Job-Scout",
+    "subtitle": "Gespeicherte Suchen, die Jobbörsen für dich beobachten – und ein Ort, an dem du schon heute Stellenanzeigen ablegen kannst",
+    "onlyActive": "Nur aktive Pipelines",
+    "onlyActiveHint": "Ausgeschaltete ausblenden",
+    "paused": "Es ist kein lokales Modell verbunden, deshalb sind die Pipelines pausiert. Du kannst sie trotzdem anlegen und unten Anzeigen speichern – sie laufen los, sobald ein Modell erreichbar ist.",
+    "runsLocally": "Pipelines laufen auf deinem Rechner, solange dieser Tab offen ist. Nichts wird an Dritte gesendet."
+  },
+  "shutdown": {
+    "title": "{{name}} ausschalten?",
+    "description": "Sie ist zweimal gelaufen, ohne etwas vorzuschlagen, und nichts wartet auf deine Antwort. Ausschalten beendet die Suche; alles, was sie schon gefunden hat, bleibt, wo es ist. Du kannst sie jederzeit wieder einschalten.",
+    "keep": "Weiterlaufen lassen",
+    "confirm": "Ausschalten"
+  },
+  "matches": {
+    "title": "Treffer",
+    "hint": "an deinem Profil gemessen",
+    "emptyTitle": "Keine Treffer",
+    "emptyDescription": "Pipelines legen hier bewertete Anzeigen ab, sobald ein Modell verbunden ist. Bis dahin sind die Anzeigen, die du unten speicherst, der Weg hinein.",
+    "matched": "passt bei {{list}}",
+    "notScored": "nicht bewertet",
+    "fit": "{{score}} % Passung",
+    "added": "hinzugefügt"
+  },
+  "dialog": {
+    "editTitle": "Pipeline bearbeiten",
+    "description": "Eine Pipeline ist ein Dauerauftrag für den Assistenten. Sie läuft auf diesem Gerät, solange jojo offen ist, und alles, was sie ändern will, wird dir zuerst gezeigt.",
+    "kind": "Was sie tut",
+    "kinds": {
+      "twin": "Einträge vervollständigen",
+      "scout": "Anzeigen finden"
+    },
+    "kindHint": {
+      "twin": "Liest, was du hast, und schlägt vor, was fehlt – Notizen, Erinnerungen, Tags, Ablage.",
+      "scout": "Sucht Anzeigen, die deine Aufmerksamkeit verdienen, und legt sie dir zur Prüfung vor."
+    },
+    "name": "Name",
+    "nameError": "Benenne sie nach dem, was sie beobachtet.",
+    "namePlaceholder": {
+      "twin": "z. B. Meine Bewerbungen aufgeräumt halten",
+      "scout": "z. B. CRA-Jobbörse für Professuren"
+    },
+    "sources": "Quellen",
+    "sourcesHint": "Die Börse oder Karriereseite, die sie beobachtet. Mehrere durch Kommas trennen.",
+    "sourceError": "Ein Scout ohne Quelle hat nichts zu lesen.",
+    "terms": {
+      "twin": "Worauf achten",
+      "scout": "Suchbegriffe"
+    },
+    "termsHint": {
+      "twin": "Alles, worauf sie besonders achten soll. Leer lassen, damit sie überall schaut.",
+      "scout": "Woran eine Anzeige gemessen wird. Leer lassen, um alles zu behalten, was die Quelle listet."
+    },
+    "termsPlaceholder": {
+      "twin": "Nachfragen und Fristen",
+      "scout": "Assistant Professor, CS/ECE"
+    },
+    "howOften": "Wie oft",
+    "howOftenHint": "Wie lange sie zwischen zwei Durchgängen wartet.",
+    "schedules": {
+      "hourly": "Stündlich",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich"
+    },
+    "cancel": "Abbrechen",
+    "save": "Änderungen speichern",
+    "create": "Pipeline anlegen"
+  },
+  "pipelines": {
+    "title": "Pipelines",
+    "hint": "laufen auf diesem Gerät, solange jojo offen ist",
+    "caption": "Sie arbeiten, solange dieser Tab offen ist – nichts läuft außerhalb dieses Rechners",
+    "kinds": {
+      "twin": "Digitaler Zwilling",
+      "scout": "Job-Scout"
+    },
+    "status": {
+      "off": "aus",
+      "paused": "pausiert",
+      "running": "läuft",
+      "watching": "beobachtet"
+    },
+    "noneOnTitle": "Nichts eingeschaltet",
+    "noneOnDescription": "Alle deine Pipelines sind ausgeschaltet. Schalte eine ein oder entferne den Filter in den Seitenoptionen.",
+    "emptyTitle": "Keine Pipelines",
+    "emptyDescription": "Eine Pipeline ist ein Dauerauftrag für den Assistenten: deine Einträge vollständig halten oder nach Anzeigen Ausschau halten, die deine Aufmerksamkeit verdienen.",
+    "showAll": "Alle Pipelines anzeigen",
+    "auto": "auto",
+    "autoAria": "{{name}} ohne Nachfrage ausführen",
+    "toReview_one": "{{count}} zu prüfen",
+    "toReview_other": "{{count}} zu prüfen",
+    "runNow": "{{name}} jetzt ausführen",
+    "edit": "{{name}} bearbeiten",
+    "delete": "{{name}} löschen",
+    "enable": "{{name}} aktivieren"
+  },
+  "postings": {
+    "title": "Anzeige speichern",
+    "hint": "funktioniert ohne Modell",
+    "intro": "Beim Speichern wird auch die Seite aufbewahrt, im Tresor unter Stellenanzeigen – geöffnet über die jojo-Erweiterung so, wie du sie sehen würdest, oder abgerufen vom Dokumentleser. Ohne beides bleiben die URL, der daraus erratene Arbeitgeber und der Tag, an dem du sie gespeichert hast.",
+    "urlLabel": "URL der Stellenanzeige",
+    "pasteFirst": "Füge zuerst eine URL ein",
+    "save": "Anzeige speichern",
+    "emptyTitle": "Keine Anzeigen gespeichert",
+    "emptyDescription": "Füge die URL einer Anzeige ein, zu der du zurückkehren willst. Anzeigen verschwinden; Link und Datum gehören dir.",
+    "saved": "gespeichert {{when}}",
+    "linked": "mit Bewerbung verknüpft",
+    "unscored": "nicht bewertet",
+    "openSnapshot": "Kopie öffnen",
+    "savingPage": "Seite wird gespeichert …",
+    "savePage": "Seite speichern",
+    "savePageTitle": "Die Anzeige öffnen und eine Kopie im Tresor behalten",
+    "remove": "{{title}} entfernen"
+  },
+  "proposals": {
+    "title": "Vorschläge",
+    "hint": "nichts passiert, bevor du es sagst",
+    "aPipeline": "einer Pipeline",
+    "clearAnswered": "Beantwortete entfernen",
+    "approveAll": "Alle {{count}} genehmigen",
+    "clearAll": "Alle entfernen",
+    "emptyTitle": "Nichts zu prüfen",
+    "emptyDescription": "Wenn eine Pipeline läuft, erscheint alles, was sie ändern will, zuerst hier. Deine Einträge rührt sie erst an, wenn du zustimmst.",
+    "clearTitle": "Alle Vorschläge entfernen?",
+    "clearPending_one": "{{count}} Vorschlag wartet noch auf dich und wird abgelehnt. An deinen Einträgen ändert sich nichts, und die Pipelines laufen weiter – aber sie bieten ihn nicht noch einmal an.",
+    "clearPending_other": "{{count}} Vorschläge warten noch auf dich und werden abgelehnt. An deinen Einträgen ändert sich nichts, und die Pipelines laufen weiter – aber sie bieten sie nicht noch einmal an.",
+    "clearAnsweredOnly": "Die beantworteten Karten verschwinden aus der Liste. An deinen Einträgen ändert sich nichts.",
+    "status": {
+      "applied": "übernommen",
+      "discarded": "verworfen",
+      "failed": "nicht übernehmbar"
+    },
+    "noSummary": "Hierzu kam keine Zusammenfassung – öffne die Anzeige, um zu sehen, worum es geht.",
+    "reading": "Die Anzeige wird nach Details gelesen …",
+    "notALink": "Keine Webadresse, daher nicht als Link angeboten",
+    "from": "von {{name}}",
+    "openPosting": "Anzeige öffnen",
+    "openPostingAria": "Anzeige in neuem Tab öffnen: {{title}}",
+    "inApplications": "In den Bewerbungen",
+    "approve": "Genehmigen",
+    "discard": "Diesen Vorschlag verwerfen",
+    "discardAria": "Verwerfen: {{title}}",
+    "unreadable": "Die Seite konnte nicht gelesen werden: {{reason}}",
+    "unreadableKept": "Die Seite konnte nicht gelesen werden: {{reason}} Die Seite selbst wurde gespeichert.",
+    "applyBy": "bewerben bis {{date}}",
+    "pageSaved": "Seite gespeichert"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Schon in deinen Bewerbungen – nicht erneut hinzugefügt",
+    "alreadyHaveDescription": "Das ist {{name}}, auf einer anderen Börse erneut ausgeschrieben. Die Anzeige ist damit verknüpft, und ihre Seite ist dort abgelegt.",
+    "duplicateDescription": "Die Anzeige ist {{name}}, die du schon hast. {{why}} Ihre Seite ist dort abgelegt.",
+    "keepBoth": "Beide behalten",
+    "fillFailedTitle": "{{org}}: Die Anzeige konnte nicht gelesen werden",
+    "fillFailedKept": "{{reason}} Die Seite selbst wurde gespeichert und beim Entwurf abgelegt – öffne ihn, um den Rest auszufüllen.",
+    "fillFailed": "{{reason}} Der Entwurf behält, was sein Link hergibt – öffne ihn, um den Rest auszufüllen.",
+    "filledTitle": "{{name}} aus der Anzeige ausgefüllt",
+    "checkedTitle": "{{name}} mit der Anzeige abgeglichen",
+    "filledIn": "Ausgefüllt: {{list}}.",
+    "checked": "Mit der Seite abgeglichen: {{list}}.",
+    "keptYours": "Deine Änderungen behalten bei: {{list}}.",
+    "addedNothing": "Die Seite brachte nichts, was der Entwurf nicht schon hatte.",
+    "missing": "Nicht auf der Seite: {{list}}.",
+    "filedUnder": "Die Seite ist dort abgelegt.",
+    "approvedReading": "Die Anzeige wird gelesen, um die Details auszufüllen – der Entwurf aktualisiert sich, wenn das fertig ist.",
+    "approvedFromLink": "Aus dem Link ausgefüllt. Verbinde in den Einstellungen ein Modell, damit die Anzeige selbst gelesen wird.",
+    "approvedOpen": "Öffne sie, um den Rest auszufüllen.",
+    "allRepeatsTitle": "Schon in deinen Bewerbungen – nichts Neues hinzugefügt",
+    "allRepeats_one": "{{count}} ist eine Stelle, die du schon hast, auf einer anderen Börse erneut ausgeschrieben. Sie ist mit deiner Bewerbung verknüpft.",
+    "allRepeats_other": "{{count}} sind Stellen, die du schon hast, auf einer anderen Börse erneut ausgeschrieben. Sie sind mit deinen Bewerbungen verknüpft.",
+    "added_one": "{{count}} als Entwurf zu deinen Bewerbungen hinzugefügt",
+    "added_other": "{{count}} als Entwürfe zu deinen Bewerbungen hinzugefügt",
+    "addedWithRepeats_one": "{{count}} als Entwurf zu deinen Bewerbungen hinzugefügt · {{repeats}} schon vorhanden",
+    "addedWithRepeats_other": "{{count}} als Entwürfe zu deinen Bewerbungen hinzugefügt · {{repeats}} schon vorhanden",
+    "addedReading": "Jede Anzeige wird nacheinander gelesen, um ihre Details auszufüllen.",
+    "addedFromLinks": "Aus ihren Links ausgefüllt. Verbinde in den Einstellungen ein Modell, damit die Anzeigen selbst gelesen werden.",
+    "addedOne": "{{org}} als Entwurf zu deinen Bewerbungen hinzugefügt",
+    "addedAsDraft": "{{org}} als Entwurf hinzugefügt",
+    "matchStays": "Der Treffer bleibt in dieser Liste, jetzt mit der Bewerbung verknüpft.",
+    "postingSaved": "Anzeige gespeichert",
+    "postingReading": "Die Anzeige wird gelesen, um die Details zu prüfen und auszufüllen – der Entwurf aktualisiert sich, wenn das fertig ist.",
+    "postingStays": "Die Anzeige bleibt hier gespeichert, jetzt mit der Bewerbung verknüpft.",
+    "postingRemoved": "Anzeige entfernt",
+    "pageNotSaved": "Die Seite der Anzeige wurde nicht gespeichert",
+    "pageSaved": "Seite der Anzeige gespeichert",
+    "pageSavedFiled": "{{title}} – bei der Bewerbung abgelegt.",
+    "pageSavedVault": "{{title}} – im Tresor unter Stellenanzeigen.",
+    "pipelineUpdated": "Pipeline aktualisiert",
+    "pipelineCreated": "Pipeline angelegt",
+    "pipelineCreatedPaused": "{{name}} – pausiert, bis ein Modell verbunden ist.",
+    "pipelineCreatedRunning": "{{name}} – sie beginnt in Kürze mit der Suche.",
+    "pipelineDeleted": "Pipeline gelöscht",
+    "pipelineDeletedDescription": "{{name}} beobachtet {{source}} nicht mehr."
+  }
+}

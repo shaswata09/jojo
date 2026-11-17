@@ -1,0 +1,122 @@
+{
+  "common": {
+    "connections_one": "{{count}} conexión",
+    "connections_many": "{{count}} conexiones",
+    "connections_other": "{{count}} conexiones",
+    "records_one": "{{count}} registro",
+    "records_many": "{{count}} registros",
+    "records_other": "{{count}} registros"
+  },
+  "legend": {
+    "show": "Mostrar {{name}}",
+    "hide": "Ocultar {{name}}",
+    "allHidden": "Todos los tipos de registro están ocultos.",
+    "showAll": "Mostrar todo",
+    "isA": "es un"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Grafo de conocimiento: {{records}}, {{connections}}",
+    "capped": "Se muestran los {{shown}} registros más conectados. Hay {{dropped}} más en el almacén que no están en este lienzo; acota con los filtros para verlos.",
+    "description": "Cada registro es un nodo y cada referencia entre registros es una línea. Los paneles junto a este grafo muestran la misma información como texto."
+  },
+  "answer": {
+    "title": "Respuesta",
+    "records_one": "{{count}} registro",
+    "records_many": "{{count}} registros",
+    "records_other": "{{count}} registros",
+    "prompt": "Elige un ejemplo o construye un patrón, y la respuesta aparecerá aquí y se iluminará en el grafo de arriba.",
+    "emptyTitle": "Ningún registro coincide",
+    "clear": "Borrar la consulta",
+    "caption": "Registros que coinciden con el patrón",
+    "columns": {
+      "record": "Registro",
+      "kind": "Tipo",
+      "matched": "Coincidencias"
+    },
+    "open": "Abrir",
+    "select": "Seleccionar en el grafo",
+    "via": "vía {{rel}}",
+    "more_one": "{{names}} y {{count}} más",
+    "more_many": "{{names}} y {{count}} más",
+    "more_other": "{{names}} y {{count}} más",
+    "showing": "Se muestran los primeros {{shown}} de {{total}}. Todos ellos están iluminados en el grafo de arriba."
+  },
+  "examples": {
+    "title": "Ejemplos resueltos",
+    "nothingToAsk": "Esta sesión no tiene nada a lo que preguntarle eso"
+  },
+  "query": {
+    "title": "Pregunta al grafo",
+    "hint": "Pregunta con una frase o construye la pregunta a mano",
+    "shape": "Forma de la pregunta",
+    "pattern": "Patrón",
+    "path": "Camino",
+    "generated": "Consulta generada",
+    "clear": "Borrar",
+    "sqlNote": "La forma de la pregunta, con palabras de SQL para que se lea mejor. La consulta que se ejecuta de verdad es la estructurada de arriba; nada analiza esta línea."
+  },
+  "fields": {
+    "records": "Registros",
+    "anyRecord": "Cualquier registro",
+    "ofKind": "De tipo",
+    "anyKind": "Cualquier tipo",
+    "reminder": "Recordatorio",
+    "condition": "Condición",
+    "quantifier": {
+      "has": "tiene",
+      "missing": "no tiene",
+      "atLeast": "tiene al menos"
+    },
+    "howMany": "Cuántos",
+    "orMore_one": "{{count}} o más",
+    "orMore_many": "{{count}} o más",
+    "orMore_other": "{{count}} o más",
+    "relationship": "Relación",
+    "anyRelationship": "cualquier relación",
+    "connectedTo": "Conectado con",
+    "anything": "cualquier cosa",
+    "keyword": "Con la palabra clave",
+    "anyKeyword": "cualquier palabra clave",
+    "from": "Desde",
+    "to": "Hasta"
+  },
+  "detail": {
+    "title": "Registro seleccionado",
+    "nothingSelected": "Nada seleccionado",
+    "pickHint": "Elige un nodo (haciendo clic o llegando a él con Tab y pulsando Intro) para ver con qué se conecta y dónde está en la app.",
+    "open": "Abrir {{type}}",
+    "openType": {
+      "application": "Abrir candidatura",
+      "organisation": "Abrir organización",
+      "role": "Abrir puesto",
+      "item": "Abrir elemento de la cronología",
+      "keyword": "Abrir palabra clave",
+      "link": "Abrir enlace",
+      "file": "Abrir archivo",
+      "snippet": "Abrir fragmento",
+      "posting": "Abrir oferta guardada",
+      "match": "Abrir coincidencia del explorador",
+      "source": "Abrir fuente",
+      "background": "Abrir «Sobre ti»",
+      "claim": "Abrir relación"
+    },
+    "derived": "Derivado de tus registros: no tiene página propia.",
+    "verbs": "Qué puedes hacer con él",
+    "noLinks": "Todavía nada apunta a este registro."
+  },
+  "ask": {
+    "notConnected": "Conecta un modelo local en <settings>Ajustes</settings> y podrás preguntarlo con una frase. El constructor de abajo funciona de todos modos.",
+    "label": "Haz una pregunta al grafo",
+    "stop": "Detener",
+    "submit": "Preguntar",
+    "again": "Preguntar otra cosa",
+    "suggestions": {
+      "noFollowUp": "¿Qué candidaturas no tienen ningún seguimiento programado?",
+      "unfiled": "¿Qué archivos no están archivados en nada?",
+      "busy": "¿Qué candidaturas tienen más de dos elementos en la cronología?"
+    }
+  }
+}

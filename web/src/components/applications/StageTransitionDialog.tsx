@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ClosedFields,
   InterviewFields,
@@ -30,11 +31,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { STAGE_LABEL, displayName } from '@/data/seed'
+import { displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
 import type { TimelineDraft } from '@jojo/service/react/use-timeline'
 import { TODAY } from '@/lib/today'
 import { contentModal } from '@/components/ui/dialog-width'
+import { useDomain } from '@/i18n/domain'
 
 export type StageTransitionDialogProps = {
   open: boolean
@@ -77,6 +79,8 @@ export function StageTransitionDialog({
   target,
   onApply,
 }: StageTransitionDialogProps) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const needs = stageNeedsDetails(application, target)
   const applied = useRef(false)
 
@@ -103,9 +107,12 @@ export function StageTransitionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={contentModal}>
         <DialogHeader>
-          <DialogTitle>Move to {STAGE_LABEL[target]}</DialogTitle>
+          <DialogTitle>{t('stageDialog.title', { stage: domain.stage(target) })}</DialogTitle>
           <DialogDescription>
-            {displayName(application)} · currently {STAGE_LABEL[application.stage]}
+            {t('stageDialog.description', {
+              name: displayName(application),
+              stage: domain.stage(application.stage),
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -145,13 +152,16 @@ function TransitionForm({
   // rules that read them lived in this file; now that they are a value handed
   // to `dialog/stage-policy.ts`, keeping them apart meant assembling the bag by
   // hand at three call sites and forgetting a field at one of them.
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const graph = useGraph()
   const [draft, setDraft] = useState<StageTransitionDraft>(() => ({
     ...initialStageDraft(application, TODAY),
     // The offer note's stored formatting, read off the node (the projection
     // carries no spans), so the editor opens on it and a save keeps it (Q268).
     offerNoteFormat:
-      encodeFormat(graph.node(application.id as NodeId, 'application')?.props.offerNoteFormat) ?? '',
+      encodeFormat(graph.node(application.id as NodeId, 'application')?.props.offerNoteFormat) ??
+      '',
   }))
   const set = <K extends keyof StageTransitionDraft>(key: K, value: StageTransitionDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
@@ -171,7 +181,7 @@ function TransitionForm({
 
   /** The stage change with nothing attached — including the offer, kept as-is. */
   const moveWithoutDetails = () => {
-    onApply(plainStageMove(target), undefined, ['Nothing else on the record changed.'])
+    onApply(plainStageMove(target), undefined, [t('stageDialog.nothingElse')])
     onClose()
   }
 
@@ -252,18 +262,18 @@ function TransitionForm({
           glance, which a footer of two identical outlines would not. */}
       <DialogFooter className="mt-4">
         {blocker ? (
-          <p className="text-xs text-text-3 sm:mr-auto sm:self-center">{blocker}</p>
+          <p className="text-xs text-text-3 sm:me-auto sm:self-center">{blocker}</p>
         ) : null}
         <DialogClose asChild>
           <Button type="button" variant="ghost">
-            Cancel
+            {t('common.cancel')}
           </Button>
         </DialogClose>
         <Button type="button" variant="outline" onClick={moveWithoutDetails}>
-          Move without details
+          {t('stageDialog.moveWithout')}
         </Button>
         <Button type="submit" disabled={Boolean(blocker)}>
-          Move to {STAGE_LABEL[target]}
+          {t('stageDialog.submit', { stage: domain.stage(target) })}
         </Button>
       </DialogFooter>
     </form>

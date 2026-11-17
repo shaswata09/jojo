@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import type { ScrollViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import { TourScrollContext, type Scroller } from '@/components/tour/registry'
 import { IconButton } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -67,6 +68,7 @@ export function Screen({
   wide?: boolean
   scroll?: boolean
 }) {
+  const { t } = useTranslation()
   const c = useColors()
   const insets = useSafeAreaInsets()
   const layout = useLayout(wide ? 2 : 1)
@@ -118,7 +120,7 @@ export function Screen({
         {options ? (
           <IconButton
             icon="sliders"
-            label="Page options"
+            label={t('pageOptions.title')}
             active={optionsOpen}
             onPress={() => setOptionsOpen(true)}
           />
@@ -169,8 +171,8 @@ export function Screen({
         <Sheet
           open={optionsOpen}
           onClose={() => setOptionsOpen(false)}
-          title="Page options"
-          description="These apply to this screen only, for this visit."
+          title={t('pageOptions.title')}
+          description={t('pageOptions.description')}
         >
           <View style={{ paddingBottom: space[2] }}>{options}</View>
         </Sheet>

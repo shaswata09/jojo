@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Smartphone } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -27,10 +28,8 @@ import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { settingsPath, useTitle } from '@/lib/links'
 
-const ROLES = [
-  { value: 'send', label: 'Send to phone' },
-  { value: 'receive', label: 'Receive from phone' },
-] as const satisfies readonly { value: TransferRole; label: string }[]
+/** The two roles; each label is `page.roles.<value>` in the catalog. */
+const ROLES = ['send', 'receive'] as const satisfies readonly TransferRole[]
 
 /**
  * Moving your jojo data to another device.
@@ -39,9 +38,8 @@ const ROLES = [
  * its life and is worth stating plainly.
  *
  * The key on screen is a genuine offer from `core/pairing.ts`, minted with real
- * X25519 on this device, and it is carried by the animation's own dots rather
- * than by a symbol laid over them — `core/pulse.ts` says which regions light,
- * `DataTransferScene` lights them, and a phone's camera reads them back.
+ * X25519 on this device, drawn as a QR code beside the copy (Q329) for the
+ * jojo app on a phone to scan. The animation behind it is decoration.
  * `ConnectPanel` then takes the address the phone shows, asks it for its half
  * of the handshake, and streams the backup in sealed chunks — over the local
  * network, to a private address, with no server and no relay anywhere in it.
@@ -68,7 +66,8 @@ const ROLES = [
  * point of showing them: what you are about to move is what you actually have.
  */
 export function Transfer() {
-  useTitle('Transfer')
+  const { t } = useTranslation('transfer')
+  useTitle(t('page.title'))
   const { all: applications } = useApplications()
   const { all: items, reminders } = useTimeline()
   const { links, files, snippets } = useVault()
@@ -144,23 +143,23 @@ export function Transfer() {
     () => [
       {
         id: 'applications',
-        label: 'Applications',
-        unit: 'applications',
-        hint: 'Every stage, note and outcome on each one',
+        label: t('groups.applications.label'),
+        hint: t('groups.applications.hint'),
         count: applications.length,
       },
       {
         id: 'timeline',
-        label: 'Reminders and events',
-        unit: 'reminders and events',
-        hint: `${reminders.length} remind you, ${items.length - reminders.length} are dated events`,
+        label: t('groups.timeline.label'),
+        hint: t('groups.timeline.hint', {
+          reminders: reminders.length,
+          events: items.length - reminders.length,
+        }),
         count: items.length,
       },
       {
         id: 'vault',
-        label: 'Links and snippets',
-        unit: 'links and snippets',
-        hint: `${links.length} links · ${snippets.length} snippets`,
+        label: t('groups.vault.label'),
+        hint: t('groups.vault.hint', { links: links.length, snippets: snippets.length }),
         count: links.length + snippets.length,
       },
       // Its own group rather than part of the vault, because it is the one the
@@ -168,16 +167,14 @@ export function Transfer() {
       // separable from its neighbours.
       {
         id: 'files',
-        label: 'Files',
-        unit: 'files',
-        hint: 'CVs, statements and anything else saved against an application',
+        label: t('groups.files.label'),
+        hint: t('groups.files.hint'),
         count: files.length,
       },
       {
         id: 'keywords',
-        label: 'Keywords',
-        unit: 'keywords',
-        hint: 'Your keyword list and every record it is attached to',
+        label: t('groups.keywords.label'),
+        hint: t('groups.keywords.hint'),
         count: labels.length,
       },
       // The audit found these three missing while the subtitle promised
@@ -186,23 +183,24 @@ export function Transfer() {
       // total that quietly excluded them.
       {
         id: 'scout',
-        label: 'Job scout',
-        unit: 'job scout records',
-        hint: `${pipelines.length} pipelines · ${postings.length} saved postings · ${matches.length} matches`,
+        label: t('groups.scout.label'),
+        hint: t('groups.scout.hint', {
+          pipelines: pipelines.length,
+          postings: postings.length,
+          matches: matches.length,
+        }),
         count: pipelines.length + postings.length + matches.length,
       },
       {
         id: 'notes',
-        label: 'Sticky notes',
-        unit: 'sticky notes',
-        hint: 'The notes to self on your dashboard board',
+        label: t('groups.notes.label'),
+        hint: t('groups.notes.hint'),
         count: stickyNotes.length,
       },
       {
         id: 'profile',
-        label: 'Profile',
-        unit: 'profile',
-        hint: 'Your name, links, match terms and the scout switches',
+        label: t('groups.profile.label'),
+        hint: t('groups.profile.hint'),
         // One record, so this is a 1 or a 0 rather than a count — and a 0 when
         // nothing has been filled in, which keeps it out of the run entirely
         // instead of offering to move a page of blank fields.
@@ -212,16 +210,14 @@ export function Transfer() {
       // until the transfer audit (2026-11-16) — `countByGroup`.
       {
         id: 'people',
-        label: 'People',
-        unit: 'people',
-        hint: 'Referees, hiring chairs and recruiters, and the applications they belong to',
+        label: t('groups.people.label'),
+        hint: t('groups.people.hint'),
         count: stored.people ?? 0,
       },
       {
         id: 'background',
-        label: 'Background',
-        unit: 'background facts',
-        hint: 'Degrees, posts, papers and skills read from your CV',
+        label: t('groups.background.label'),
+        hint: t('groups.background.hint'),
         count: stored.background ?? 0,
       },
     ],
@@ -239,6 +235,7 @@ export function Transfer() {
       stickyNotes.length,
       profileIsBlank,
       stored,
+      t,
     ],
   )
 
@@ -321,22 +318,23 @@ export function Transfer() {
    * stands in for the send role only.
    */
   const empty = role === 'send' && totalOf(groups) === 0
+  const roles = ROLES.map((value) => ({ value, label: t(`page.roles.${value}`) }))
 
   return (
     <>
       <PageHeader
-        title="Transfer"
-        subtitle="Move everything between this computer and your phone"
+        title={t('page.title')}
+        subtitle={t('page.subtitle')}
         settings={
           <>
             <PageOption
-              label="Show the animation"
-              hint="A WebGPU scene redrawing every frame — turn it off on battery"
+              label={t('page.showAnimation')}
+              hint={t('page.showAnimationHint')}
               control={
                 <Switch
                   checked={showScene}
                   onCheckedChange={setShowScene}
-                  aria-label="Show the animation"
+                  aria-label={t('page.showAnimation')}
                 />
               }
             />
@@ -350,7 +348,7 @@ export function Transfer() {
           /* Switchable at any point, including mid-run: the effect above puts
              the run back to the start, which is honest, where a control
              disabled halfway through a demonstration is just a dead end. */
-          <Segment label="This device's part" options={ROLES} value={role} onChange={setRole} />
+          <Segment label={t('page.roleLabel')} options={roles} value={role} onChange={setRole} />
         }
       />
 
@@ -363,15 +361,15 @@ export function Transfer() {
         <section className="surface rounded-lg px-4 py-4 sm:px-5 sm:py-5">
           <EmptyState
             icon={Smartphone}
-            title="Nothing to send yet"
-            description="This device holds no records, so there is nothing to send. To bring your records over from your phone, choose Receive from phone above. Or add something, or load the demo data, and it will show up here as a group you can send."
+            title={t('page.empty.title')}
+            description={t('page.empty.description')}
             action={
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => setRole('receive')}>
-                  Receive from phone
+                  {t('page.empty.receive')}
                 </Button>
                 <Button size="sm" variant="outline" asChild>
-                  <Link to={settingsPath()}>Load the demo data</Link>
+                  <Link to={settingsPath()}>{t('page.empty.loadDemo')}</Link>
                 </Button>
               </div>
             }
@@ -385,7 +383,7 @@ export function Transfer() {
             groups={offered}
             showScene={showScene}
             canStart={offered.length > 0}
-            frames={pairing.frames}
+            offer={pairing.offer}
           />
 
           <div className="flex flex-col gap-4 sm:gap-5">

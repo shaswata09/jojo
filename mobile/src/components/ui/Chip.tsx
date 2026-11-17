@@ -8,6 +8,7 @@ import { s } from '@/theme/styles'
 import { inkOf } from '@jojo/service/core/ink'
 import { useColors, useTheme } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { toneSkin } from '@/components/ui/tone-skin'
 
 export type ChipTone = LabelTone | 'neutral'
 
@@ -50,21 +51,7 @@ export function Chip({
   const { theme } = useTheme()
   const custom = ink === undefined || stage ? null : inkOf(ink, theme)
 
-  const tones: Record<ChipTone, { bg: string; border: string; fg: string }> = {
-    neutral: { bg: c.well, border: c.hairline, fg: c.text2 },
-    gray: { bg: c.well, border: c.hairline, fg: c.text2 },
-    teal: { bg: c.infoSoft, border: c.infoBorder, fg: c.info },
-    amber: { bg: c.warningSoft, border: c.warningBorder, fg: c.warning },
-    red: { bg: c.dangerSoft, border: c.dangerBorder, fg: c.danger },
-    green: { bg: c.successSoft, border: c.successBorder, fg: c.success },
-    // The three a keyword can take that no status owns. Same hexes as the web
-    // app's `--kw-*` tokens; `theme/tokens.ts` is where they are transcribed.
-    cyan: { bg: c.kwCyanSoft, border: c.kwCyanBorder, fg: c.kwCyan },
-    pink: { bg: c.kwPinkSoft, border: c.kwPinkBorder, fg: c.kwPink },
-    violet: { bg: c.kwVioletSoft, border: c.kwVioletBorder, fg: c.kwViolet },
-  }
-
-  const named = tones[tone]
+  const named = toneSkin(tone, c)
   // A hex that does not parse yields nothing and the chip wears its tone —
   // the fallback that field exists to be.
   const skin = custom === null ? named : { bg: custom.soft, border: custom.border, fg: custom.fg }

@@ -1,4 +1,5 @@
 import { Unlink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,12 +27,13 @@ export function UnfiledChip({
   count: number
   onChange: (on: boolean) => void
 }) {
+  const { t } = useTranslation('vault')
   return (
     <button
       type="button"
       aria-pressed={on}
       onClick={() => onChange(!on)}
-      title="Files not filed under any application"
+      title={t('files.unfiled.title')}
       className={cn(
         'flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors',
         // The bucket chips' rule, and for the bucket chips' reason: a chip wraps
@@ -43,7 +45,7 @@ export function UnfiledChip({
       )}
     >
       <Unlink className="size-3" aria-hidden />
-      Unfiled
+      {t('files.unfiled.label')}
       <span className={cn('tabular text-xs', on ? 'text-accent' : 'text-text-3')}>{count}</span>
     </button>
   )

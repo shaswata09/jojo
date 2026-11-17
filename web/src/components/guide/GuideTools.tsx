@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import type { ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { ToolGateDiagram } from '@/components/guide/diagrams/ToolGateDiagram'
@@ -35,9 +36,13 @@ import { assistantPath, guidePath, settingsPath, useTitle } from '@/lib/links'
  * this was written, it will not stay 82, and a number in prose that quietly
  * stops matching the software is the failure this whole page is arguing the app
  * avoids.
+ *
+ * Every sentence lives in the `guideReference` catalog under `tools.`; the
+ * counts reach it as placeholders, so no language can type one in either.
  */
 export function GuideTools() {
-  useTitle('The tools')
+  const { t } = useTranslation('guideReference')
+  useTitle(t('tools.pageTitle'))
 
   const reads = CATALOG.filter((e) => e.effect === 'read').length
   const destructive = CATALOG.filter((e) => e.destructive).length
@@ -56,288 +61,169 @@ export function GuideTools() {
    * counting the same tools.
    */
   const irreversible = CATALOG.filter((e) => e.alwaysAsks).length
+  const irreversibleKey =
+    irreversible === 1
+      ? 'tools.can.irreversibleOne'
+      : irreversible === 2
+        ? 'tools.can.irreversibleTwo'
+        : 'tools.can.irreversibleMany'
+
+  const P = 'text-sm text-text-2'
+  const P3 = 'mt-3 text-sm text-text-2'
+  const lead = <span className="text-text-1" />
 
   return (
     <>
-      <PageHeader
-        title="The tools"
-        subtitle="What the assistant can actually do, what it is stopped from doing, and how it finds the right one."
-      />
+      <PageHeader title={t('tools.pageTitle')} subtitle={t('tools.subtitle')} />
 
       {/* --------------------------- what exists --------------------------- */}
 
       <Panel>
-        <PanelTitle hint={`${String(CATALOG.length)} in total`}>
-          What the assistant can do
+        <PanelTitle hint={t('tools.can.hint', { total: String(CATALOG.length) })}>
+          {t('tools.can.title')}
         </PanelTitle>
-        <p className="text-sm text-text-2">
-          The <Go to={assistantPath()}>Assistant</Go> does not type into your screens. It calls the
-          same {String(CATALOG.length)} operations the buttons call — the identical code path, with
-          the identical checks. There is no second way in, which is why an assistant edit lands in
-          your history looking exactly like one you made yourself.
+        <p className={P}>
+          <Trans
+            t={t}
+            i18nKey="tools.can.intro"
+            values={{ total: String(CATALOG.length) }}
+            components={{ go: <Go to={assistantPath()} /> }}
+          />
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Stat n={reads} label="ways to look" hint="reading never changes anything" />
-          <Stat n={writes} label="ways to change" hint="every one of them undoable…" />
-          <Stat n={destructive} label="marked destructive" hint="…except two, which ask first" />
+          <Stat
+            n={reads}
+            label={t('tools.can.stats.readsLabel')}
+            hint={t('tools.can.stats.readsHint')}
+          />
+          <Stat
+            n={writes}
+            label={t('tools.can.stats.writesLabel')}
+            hint={t('tools.can.stats.writesHint')}
+          />
+          <Stat
+            n={destructive}
+            label={t('tools.can.stats.destructiveLabel')}
+            hint={t('tools.can.stats.destructiveHint')}
+          />
         </div>
 
         <p className="mt-4 text-sm text-text-2">
-          {irreversible === 1 ? 'One' : irreversible === 2 ? 'Two' : String(irreversible)} of those{' '}
-          {String(destructive)} cannot be undone at all — the ones that replace or empty the whole
-          store. Those are never offered to the assistant unless your own words ask for them, and
-          they stop for a confirmation even then, whichever approval mode the conversation is in.
-          Auto acts without asking on everything that can be undone; it still asks before these.
+          {t(irreversibleKey, {
+            irreversible: String(irreversible),
+            destructive: String(destructive),
+          })}{' '}
+          {t('tools.can.neverOffered')}
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          &ldquo;Your own words ask for them&rdquo; is a specific test, not a judgement call: the
-          sentence has to contain something that means erase, something that means the whole store,
-          and no mention of a particular kind of record. &ldquo;Clear everything&rdquo; qualifies.
-          &ldquo;Clear the tags off the Baylor application&rdquo; does not, and neither does
-          &ldquo;delete everything I wrote in that note&rdquo; — both name a thing, so both are
-          about that thing.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          It errs towards not offering. If you mean it and phrase it unusually, the assistant says
-          it cannot rather than guessing, and Settings still has the button.
-        </p>
+        <p className={P3}>{t('tools.can.ownWords')}</p>
+        <p className={P3}>{t('tools.can.errs')}</p>
       </Panel>
 
       {/* ---------------------------- the gates ---------------------------- */}
 
       <Panel>
-        <PanelTitle hint="the part that actually holds">
-          What stops the wrong one running
-        </PanelTitle>
-        <p className="text-sm text-text-2">
-          A language model can ask for anything. It can name a tool it was never shown, or invent
-          one that does not exist — smaller models do this regularly, and it is not a sign that
-          something has gone wrong. So jojo does not rely on the model being careful.
-        </p>
+        <PanelTitle hint={t('tools.gates.hint')}>{t('tools.gates.title')}</PanelTitle>
+        <p className={P}>{t('tools.gates.intro')}</p>
 
         <div className="mt-4">
           <ToolGateDiagram />
         </div>
 
-        <h3 className="mt-5 text-sm font-medium">The distinction that matters</h3>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.gates.distinctionTitle')}</h3>
         <p className="mt-1.5 text-sm text-text-2">
-          Choosing what to <em>show</em> the model is a hint. Checking what it actually{' '}
-          <em>called</em> is a rule, and the rule depends on who chose the set. Where the screen
-          fixes it — Ask the graph, a scout pipeline — a call to anything outside it is refused
-          before anything is looked up, let alone run. In a chat the set is jojo&rsquo;s guess at
-          what you need, so a call outside it is not refused: it goes to the same approval check as
-          every other call, which asks you first unless the conversation is set to run on its own.
-          The one exception is clearing your records, the only thing that cannot be undone: it is
-          refused unless you asked to wipe everything in so many words.
+          <Trans t={t} i18nKey="tools.gates.distinction" components={{ em: <em /> }} />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          This is why the &ldquo;Ask the graph&rdquo; card can safely offer two read-only tools. It
-          is not trusting the model to stay within them.
-        </p>
+        <p className={P3}>{t('tools.gates.askGraph')}</p>
       </Panel>
 
       {/* -------------------------- the workflow --------------------------- */}
 
       <Panel>
-        <PanelTitle hint="steps, not one long try">Work that takes several steps</PanelTitle>
-        <p className="text-sm text-text-2">
-          Reading a CV is not one question. jojo splits the document on its own headings, asks for
-          each section separately, asks once more what was missed, and finally asks how the facts
-          relate &mdash; five or six model calls for one upload. Written as a single block of code
-          that would be one <code className="font-mono text-xs">try</code> around the lot, and one
-          bad reply anywhere in it would lose the whole thing.
+        <PanelTitle hint={t('tools.workflow.hint')}>{t('tools.workflow.title')}</PanelTitle>
+        <p className={P}>
+          <Trans
+            t={t}
+            i18nKey="tools.workflow.p1"
+            components={{ code: <code className="font-mono text-xs" /> }}
+          />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          So a job like that is declared as <strong>steps with edges between them</strong>. Each
-          step says how many times it is worth retrying and whether the job can carry on without it;
-          the route from one step to the next is decided by what happened, never by asking the model
-          where to go. A step that fails is named in the result rather than disappearing into
-          &ldquo;reading your CV failed&rdquo;.
+        <p className={P3}>
+          <Trans t={t} i18nKey="tools.workflow.p2" components={{ strong: <strong /> }} />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          This matters most on a small model. A 7B does not usually fail by reasoning badly over
-          many steps &mdash; it fails by returning something malformed on one step out of six. The
-          useful answer is to try that step again and leave the other five alone.
-        </p>
-        <p className="mt-3 text-sm text-text-3">
-          A step that only improves the result, like working out how your facts connect, is marked
-          optional: if it fails you still get everything the earlier steps found. Loops are allowed
-          &mdash; a step may route backwards &mdash; and there is a hard cap on total steps so a
-          routing mistake stops with a readable trace instead of spinning against your GPU.
-        </p>
+        <p className={P3}>{t('tools.workflow.p3')}</p>
+        <p className="mt-3 text-sm text-text-3">{t('tools.workflow.p4')}</p>
       </Panel>
 
       {/* ------------------ when the model answers badly ------------------- */}
       <Panel>
-        <PanelTitle hint="a bad reply costs a pass, not the document">
-          When a small model answers badly
-        </PanelTitle>
-        <p className="text-sm text-text-2">
-          A smaller model runs out of room mid-sentence. Reading a CV asks for a list of facts, and
-          a reply cut off in the middle of that list has no closing bracket &mdash; so it is not
-          JSON, and the obvious thing to do with it is throw it away. jojo keeps everything up to
-          the last <strong>finished</strong> entry instead, and says how much was lost. Twenty facts
-          arrive instead of none.
+        <PanelTitle hint={t('tools.badReply.hint')}>{t('tools.badReply.title')}</PanelTitle>
+        <p className={P}>
+          <Trans t={t} i18nKey="tools.badReply.p1" components={{ strong: <strong /> }} />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          It stops at a finished entry on purpose. Half of a job title is worse than no job title:
-          it goes in front of you looking complete, and you approve it.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          The same care applies to searching. Asked to &ldquo;move my Rice application to
-          interview&rdquo; when there are two, a model that searched for one match and got one would
-          have no way to know there was a second &mdash; so it would move the wrong record
-          confidently. Every search reports how many matched as well as what it is showing, which is
-          what lets the assistant come back and ask you which you meant.
-        </p>
+        <p className={P3}>{t('tools.badReply.p2')}</p>
+        <p className={P3}>{t('tools.badReply.p3')}</p>
       </Panel>
 
       {/* --------------------------- the graph ----------------------------- */}
 
       <Panel>
-        <PanelTitle hint="so a request never stops halfway">How it picks the right one</PanelTitle>
-        <p className="text-sm text-text-2">
-          Showing a model all {String(CATALOG.length)} tools at once costs well over fifteen
-          thousand words of the space it has to think in — before you have typed anything. On a
-          small model running on your own machine, that can be more space than it has. So jojo
-          narrows the list to what your words point at.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          Narrowing carelessly is worse than not narrowing. Most operations need something to act
-          on: you cannot attach a keyword without a keyword, or update a document without a
-          document. Hide the tool that makes the thing, and the assistant stops halfway with nothing
-          on screen explaining why.
-        </p>
+        <PanelTitle hint={t('tools.picks.hint')}>{t('tools.picks.title')}</PanelTitle>
+        <p className={P}>{t('tools.picks.p1', { total: String(CATALOG.length) })}</p>
+        <p className={P3}>{t('tools.picks.p2')}</p>
 
         <div className="mt-4">
           <ToolGraphDiagram />
         </div>
 
-        <h3 className="mt-5 text-sm font-medium">When it is not sure, it does not narrow</h3>
-        <p className="mt-1.5 text-sm text-text-2">
-          &ldquo;Remind me about Baylor on Thursday&rdquo; is clear, and jojo offers about a fifth
-          of the catalog. &ldquo;Actually, that was the other one&rdquo; is not clear about anything
-          — so it offers everything, exactly as it would have before any of this existed. Being
-          unsure costs a little speed. Guessing would cost you your answer.
-        </p>
-        <h3 className="mt-5 text-sm font-medium">A second assistant does the choosing</h3>
-        <p className="mt-1.5 text-sm text-text-2">
-          Matching your words against a list is fast and free and cannot read intent. &ldquo;I heard
-          back from Rice&rdquo; names no tool and no verb, but it plainly means a stage changed. So
-          when a model is connected, a second and much smaller job runs first: it reads your request
-          — not the conversation, not the results, just what you asked — and answers with the tools
-          it thinks are needed.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          It is cheap because it does not need the full instructions for each tool, only a name and
-          a line: about a sixth of what handing over the whole catalog would cost, and it saves that
-          on every step rather than once. Measured over ten questions in a row, it took the first
-          message from roughly 8,000 words of context down to 2,900.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          It can only narrow. Whatever it picks goes through the same checks as before — the tools
-          that make a thing come along with the tools that change it, and the two that empty your
-          store are never included unless you asked for them in your own words. If it is slow or
-          unavailable, the word-matching runs instead and nothing is lost but a moment.
-        </p>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.picks.unsureTitle')}</h3>
+        <p className="mt-1.5 text-sm text-text-2">{t('tools.picks.unsure')}</p>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.picks.secondTitle')}</h3>
+        <p className="mt-1.5 text-sm text-text-2">{t('tools.picks.second1')}</p>
+        <p className={P3}>{t('tools.picks.second2')}</p>
+        <p className={P3}>{t('tools.picks.second3')}</p>
 
-        <h3 className="mt-5 text-sm font-medium">Long conversations</h3>
-        <p className="mt-1.5 text-sm text-text-2">
-          A model can only hold so much at once, and a conversation that outgrows it gets cut — by
-          the server, from the beginning, which is where the rules live. jojo does the cutting
-          itself instead, from the oldest end, and never touches its own instructions or your
-          current question.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          What it removes it first replaces with a short summary of what happened there, so the
-          assistant still knows you already told it which Rice application you meant. You are told
-          when this happens. Your records are never involved — this is only about what fits in one
-          message.
-        </p>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.picks.longTitle')}</h3>
+        <p className="mt-1.5 text-sm text-text-2">{t('tools.picks.long1')}</p>
+        <p className={P3}>{t('tools.picks.long2')}</p>
 
-        <p className="mt-3 text-sm text-text-2">
-          A conversation keeps the tools it has actually used. Ones it was merely offered and never
-          touched fall away, so a long chat does not slowly fill up with everything.
-        </p>
+        <p className={P3}>{t('tools.picks.long3')}</p>
       </Panel>
 
       {/* -------------------------- the evidence --------------------------- */}
 
       <Panel>
-        <PanelTitle hint="run against real models, not asserted">Does it actually work?</PanelTitle>
-        <p className="text-sm text-text-2">
-          Everything above is a design. Whether a given model can actually pick the right tool out
-          of jojo&rsquo;s catalog is a question about that model, and the only way to answer it is
-          to ask. So there is a suite of scenarios — reading, writing, chains that need a lookup
-          first, and cases where the right answer is to do nothing — and it runs against real
-          servers.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          Each scenario runs twice: once with the whole catalog, and once with the narrowed set.
-          That second run is the one that matters. Narrowing is meant to help a smaller model by
-          giving it fewer names to confuse — but it could just as easily hurt by removing something
-          needed, and a claim like that is worth nothing without the control beside it.
-        </p>
+        <PanelTitle hint={t('tools.evidence.hint')}>{t('tools.evidence.title')}</PanelTitle>
+        <p className={P}>{t('tools.evidence.p1')}</p>
+        <p className={P3}>{t('tools.evidence.p2')}</p>
 
         <div className="mt-4">
           <ToolEvalTable />
         </div>
 
-        <h3 className="mt-5 text-sm font-medium">What the suite is looking for</h3>
-        <p className="mt-1.5 text-sm text-text-2">
-          Not whether a model is clever. Whether it reaches for a document tool when you gave it a
-          URL, files a second application instead of updating the one you named, invents an id
-          rather than looking one up, or — the case that matters most — hears &ldquo;clear the
-          deadline&rdquo; and reaches for the operation that empties your whole store.
-        </p>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.evidence.suiteTitle')}</h3>
+        <p className="mt-1.5 text-sm text-text-2">{t('tools.evidence.suite')}</p>
       </Panel>
 
       {/* ------------------------ the harder benchmark --------------------- */}
 
       <Panel>
-        <PanelTitle hint="a real store, and what it looked like afterwards">
-          Can it hold a conversation?
-        </PanelTitle>
-        <p className="text-sm text-text-2">
-          The suite above asks a model one question and checks whether it named a sensible tool.
-          That is the easy half, and it flatters everyone. Real work is not one question: you ask
-          what stage something is at, then say &ldquo;move it to interview&rdquo; — and the record
-          you mean is in the previous answer, not in the sentence.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          So there is a second benchmark. It builds a real store — six applications, a calendar, a
-          vault, keywords — hands the assistant a script of {String(BENCH_CONVERSATIONS.length)}{' '}
-          conversations across {String(BENCH_GROUPS.length)} kinds of work, and lets the tool calls
-          actually run. Then it looks at what is in the store afterwards. Four things are scored
-          separately, because a model can pass one and fail another:
+        <PanelTitle hint={t('tools.conversation.hint')}>{t('tools.conversation.title')}</PanelTitle>
+        <p className={P}>{t('tools.conversation.p1')}</p>
+        <p className={P3}>
+          {t('tools.conversation.p2', {
+            conversations: String(BENCH_CONVERSATIONS.length),
+            groups: String(BENCH_GROUPS.length),
+          })}
         </p>
         <ul className="mt-3 space-y-1.5 text-sm text-text-2">
-          <li>
-            <span className="text-text-1">What it called</span> — was each turn defensible.
-          </li>
-          <li>
-            <span className="text-text-1">How it got there</span> — did it look a record up before
-            changing it, or write from the sentence alone.
-          </li>
-          <li>
-            <span className="text-text-1">The shape of the work</span> — every case carries a gold
-            graph of the calls it takes and which of them depend on which, and the run is scored
-            against it. Two calls the graph left independent may happen in either order; a write
-            before the read that finds what to write to may not.
-          </li>
-          <li>
-            <span className="text-text-1">What it left behind</span> — is the store right, and did
-            anything change that should not have.
-          </li>
+          {(['called', 'route', 'shape', 'left'] as const).map((axis) => (
+            <li key={axis}>
+              <Trans t={t} i18nKey={`tools.conversation.${axis}`} components={{ lead }} />
+            </li>
+          ))}
         </ul>
-        <p className="mt-3 text-sm text-text-2">
-          The third of those is the one benchmarks usually skip, and it is the reason a model can
-          score well here and disappoint in use: on a store this small, guessing often lands on the
-          right record. The graph says whether it was reasoning or whether it was lucky. It is
-          reported beside the headline rather than folded into it — reaching the right answer by a
-          route nobody anticipated is still the right answer.
-        </p>
+        <p className={P3}>{t('tools.conversation.p3')}</p>
 
         <div className="mt-4">
           <BenchAxesDiagram />
@@ -351,68 +237,37 @@ export function GuideTools() {
       {/* ------------------------------ reasoning ---------------------------- */}
 
       <Panel>
-        <PanelTitle hint="measured, with what it costs in time">Does reasoning help?</PanelTitle>
-        <p className="text-sm text-text-2">
-          A model can be asked to think before it answers — the Reasoning setting in{' '}
-          <Go to={settingsPath()}>Settings</Go>. Whether that makes it better at jojo&rsquo;s work
-          is a question about the model, so the conversation benchmark above was run twice with
-          reasoning on and twice with it off, on the same servers and the same code.
+        <PanelTitle hint={t('tools.reasoning.hint')}>{t('tools.reasoning.title')}</PanelTitle>
+        <p className={P}>
+          <Trans
+            t={t}
+            i18nKey="tools.reasoning.p1"
+            components={{ go: <Go to={settingsPath()} /> }}
+          />
         </p>
 
         <div className="mt-4">
           <ReasoningTables />
         </div>
 
-        <h3 className="mt-5 text-sm font-medium">What the numbers say</h3>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.reasoning.numbersTitle')}</h3>
         <p className="mt-1.5 text-sm text-text-2">
-          <span className="text-text-1">On Gemma, reasoning costs accuracy and a lot of time.</span>{' '}
-          It scored two to three conversations lower on average, and the median conversation took
-          about three times as long. The slowness is the thinking itself: Gemma generates about 31
-          tokens a second and thinks for a few hundred tokens before a reply, so a round takes
-          around six seconds longer on average and a long one fifteen or more. Across both passes it
-          reliably fixed three conversations and reliably broke three to four — among the broken,
-          filing a new document and declining a suggestion, which it gets right every time with
-          reasoning off.
+          <Trans t={t} i18nKey="tools.reasoning.gemma" components={{ lead }} />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          <span className="text-text-1">On GPT-OSS, the setting changes nothing</span> — and that is
-          expected rather than a finding. GPT-OSS always reasons; &ldquo;off&rdquo; can only ask it
-          for less, and both settings ran at its usual effort. It also generates about seven times
-          faster than Gemma, so its thinking costs under a second per reply.
+        <p className={P3}>
+          <Trans t={t} i18nKey="tools.reasoning.gptOss" components={{ lead }} />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          If replies feel slow on a model like Gemma, turn reasoning off: on this benchmark you lose
-          nothing for it. Either way, the two helpers — the one that picks which tools a turn may
-          use and the one that summarises a long conversation — never reason, because neither job is
-          improved by it and one summary once took nearly two minutes when they did.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          The first-token column is most of the wait on a long conversation: a reply cannot start
-          until the server has read everything it was sent. A prompt that repeats is far cheaper,
-          because the server keeps the start of it from last time — which is why the second turn of
-          a conversation usually answers faster than the first.
-        </p>
+        <p className={P3}>{t('tools.reasoning.advice')}</p>
+        <p className={P3}>{t('tools.reasoning.firstToken')}</p>
       </Panel>
 
       {/* --------------------------- the previewer ------------------------- */}
 
       <Panel>
-        <PanelTitle hint="every case, verbatim">What it was evaluated against</PanelTitle>
-        <p className="text-sm text-text-2">
-          A score is only worth what its cases are worth, and somebody chose the denominator. So the
-          whole benchmark is here to read: the store it ran against, every sentence the assistant
-          was sent, and what had to be true of your records afterwards.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          This is read from the same list the benchmark runs, not a description of it — so a case
-          added tomorrow appears here with its prompts, and one that is quietly dropped disappears.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          Pick a case to see what was said, the workflow it expects drawn as a real dependency
-          graph, what each turn may and may not call, and what each model actually did with it —
-          including what it wrote back, which is where a model that did nothing and announced
-          success gives itself away.
-        </p>
+        <PanelTitle hint={t('tools.previewer.hint')}>{t('tools.previewer.title')}</PanelTitle>
+        <p className={P}>{t('tools.previewer.p1')}</p>
+        <p className={P3}>{t('tools.previewer.p2')}</p>
+        <p className={P3}>{t('tools.previewer.p3')}</p>
 
         <div className="mt-4">
           <BenchExplorer />
@@ -422,60 +277,36 @@ export function GuideTools() {
       {/* ------------------------- the failure that matters ---------------- */}
 
       <Panel>
-        <PanelTitle hint="the reason the benchmark exists">When two records match</PanelTitle>
-        <p className="text-sm text-text-2">
-          The store deliberately holds two Rice applications and two UT campuses, because that is
-          what a real job search looks like after a few months — and it is the situation where an
-          assistant can do real damage while appearing to work perfectly.
-        </p>
+        <PanelTitle hint={t('tools.ambiguity.hint')}>{t('tools.ambiguity.title')}</PanelTitle>
+        <p className={P}>{t('tools.ambiguity.p1')}</p>
 
         <div className="mt-4">
           <BenchAmbiguityDiagram />
         </div>
 
-        <p className="mt-4 text-sm text-text-2">
-          This is why jojo is built the way the rest of this page describes. A model cannot be
-          relied on to stop, so the things that cannot be undone are never offered unless you ask
-          for them by name, every write is checked against what was actually offered, and every
-          change lands in your history where you can undo it.
-        </p>
-        <p className="mt-3 text-sm text-text-2">
-          It is also worth saying plainly: one pass of a benchmark ranks models loosely at best.
-          Scores moved between runs on the same hardware with the same settings. What does not move
-          is the shape of the failure — and that is the part worth designing against.
-        </p>
+        <p className="mt-4 text-sm text-text-2">{t('tools.ambiguity.p2')}</p>
+        <p className={P3}>{t('tools.ambiguity.p3')}</p>
       </Panel>
 
       {/* -------------------------- where it runs -------------------------- */}
 
       <Panel>
-        <PanelTitle hint="your choice, and it changes where your words go">
-          Which model does this
-        </PanelTitle>
-        <p className="text-sm text-text-2">
-          jojo talks to whatever you point it at in <Go to={settingsPath()}>Settings</Go>. A model
-          running on your own machine — Ollama, vLLM, LM Studio — is the default, and it is the only
-          arrangement where nothing you write leaves the device.
+        <PanelTitle hint={t('tools.model.hint')}>{t('tools.model.title')}</PanelTitle>
+        <p className={P}>
+          <Trans t={t} i18nKey="tools.model.p1" components={{ go: <Go to={settingsPath()} /> }} />
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          You can also use Claude, OpenAI and others with an API key. That is a real trade and the
-          screen says so plainly: your records go to that company and are billed to your account.
-          The key is kept in this browser, is never included in a backup, and is never sent anywhere
-          but the provider you chose.
-        </p>
+        <p className={P3}>{t('tools.model.p2')}</p>
 
-        <h3 className="mt-5 text-sm font-medium">If the assistant seems to have stopped reading</h3>
-        <p className="mt-1.5 text-sm text-text-2">
-          A local model with too little room silently drops the front of what it was sent, and then
-          answers confidently about a question it never fully saw. jojo now compares what the server
-          says it read against what was actually sent, and tells you when the two disagree — because
-          the alternative is an assistant that appears to be bad at its job rather than short of
-          room.
-        </p>
+        <h3 className="mt-5 text-sm font-medium">{t('tools.model.stoppedTitle')}</h3>
+        <p className="mt-1.5 text-sm text-text-2">{t('tools.model.stopped')}</p>
       </Panel>
 
       <p className="px-1 pb-2 text-sm text-text-3">
-        Next: <Go to={guidePath('built-with')}>what jojo is built with</Go>.
+        <Trans
+          t={t}
+          i18nKey="tools.next"
+          components={{ go: <Go to={guidePath('built-with')} /> }}
+        />
       </p>
     </>
   )
@@ -492,7 +323,8 @@ function Stat({ n, label, hint }: { n: number; label: string; hint: string }) {
   )
 }
 
-function Go({ to, children }: { to: string; children: ReactNode }) {
+/** Optional children: inside a `<Trans>` the catalog supplies the link text. */
+function Go({ to, children }: { to: string; children?: ReactNode }) {
   return (
     <Link
       to={to}

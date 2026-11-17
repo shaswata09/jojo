@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojo’s moves",
+    "hint": "Pick one, or draw its stroke on the robot.",
+    "trigger": "jojo's moves",
+    "triggerAria": "jojo's moves and credit",
+    "plays": "plays",
+    "modelCredit": "Robot model:"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "poke": "Poke jojo"
+}

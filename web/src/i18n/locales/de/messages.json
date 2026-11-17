@@ -1,0 +1,303 @@
+{
+  "readCancelled": "Das Lesen wurde abgebrochen.",
+  "backup": {
+    "prompt": {
+      "never_one": "{{count}} Eintrag in jojo ist noch in keiner Sicherung. Alles hier liegt nur in diesem Browser – wenn du ihn leerst oder dieses Gerät verlierst, wäre er weg. Lade eine Kopie herunter und bewahre sie woanders auf.",
+      "never_other": "{{count}} Einträge in jojo sind noch in keiner Sicherung. Alles hier liegt nur in diesem Browser – wenn du ihn leerst oder dieses Gerät verlierst, wären sie weg. Lade eine Kopie herunter und bewahre sie woanders auf.",
+      "since_one": "{{count}} Eintrag hat sich seit deiner letzten Sicherung am {{day}} geändert. Er liegt nur in diesem Browser, bis du eine Kopie herunterlädst und sie woanders aufbewahrst.",
+      "since_other": "{{count}} Einträge haben sich seit deiner letzten Sicherung am {{day}} geändert. Sie liegen nur in diesem Browser, bis du eine Kopie herunterlädst und sie woanders aufbewahrst."
+    },
+    "failedTitle": "Die Sicherung konnte nicht geschrieben werden",
+    "failedDescription": "Deine Einträge sind unverändert, und es wurde nichts gespeichert. Falls dein Browser den Download blockiert hat, prüfe seine Download-Einstellungen.",
+    "documentsNotReady": "Der Dokumentindex war noch nicht fertig geladen, daher würde eine jetzt erstellte Sicherung behaupten, du hättest keine Dokumente. Es wurde nichts geschrieben.",
+    "documentsUnreadable": "Keines der gespeicherten Dokumente konnte gelesen werden, daher hätte die Sicherung nur Einträge enthalten. Es wurde nichts geschrieben.",
+    "savedTitle": "Sicherung gespeichert",
+    "startedTitle": "Sicherung gestartet",
+    "savedAll": "{{name}} enthält deine Einträge und alle Dokumente, die du angehängt hast.",
+    "savedSome_one": "{{name}} enthält deine Einträge und {{written}} von deinen {{total}} Dokumenten – {{count}} konnte nicht gelesen werden und ist nicht enthalten.",
+    "savedSome_other": "{{name}} enthält deine Einträge und {{written}} von deinen {{total}} Dokumenten – {{count}} konnten nicht gelesen werden und sind nicht enthalten.",
+    "startedAll": "Suche in deinen Downloads nach {{name}}. Die Datei enthält deine Einträge und alle Dokumente, die du angehängt hast.",
+    "startedSome_one": "Suche in deinen Downloads nach {{name}}. Die Datei enthält deine Einträge und {{written}} von deinen {{total}} Dokumenten – {{count}} konnte nicht gelesen werden und ist nicht enthalten.",
+    "startedSome_other": "Suche in deinen Downloads nach {{name}}. Die Datei enthält deine Einträge und {{written}} von deinen {{total}} Dokumenten – {{count}} konnten nicht gelesen werden und sind nicht enthalten."
+  },
+  "extension": {
+    "stale": "Die jojo-Erweiterung in diesem Browser ist älter als diese Seite und kann die Anfrage nicht übermitteln. Aktualisiere sie: Klicke auf der Erweiterungsseite deines Browsers bei jojo auf „Neu laden“ – oder, falls du sie über die Einstellungen installiert hast, lade sie dort erneut herunter und lade den neuen Ordner anstelle des alten. Eine entpackte Erweiterung aktualisiert sich nie von selbst.",
+    "oldScanner": "(Die jojo-Erweiterung in diesem Browser ist eine ältere Version, die einer Jobbörse nicht auf ihre eigene Subdomain folgen und nicht auf „Load more“ klicken kann. Klicke auf der Erweiterungsseite deines Browsers bei jojo auf „Neu laden“.)",
+    "noAnswerBoard": "Die jojo-Browsererweiterung hat nicht geantwortet, daher konnte keine Jobbörse gelesen werden. Sie ermöglicht es jojo, eine Seite zu öffnen, auf der du angemeldet bist; das Installationsprogramm findest du in den Einstellungen.",
+    "boardUnreadable": "Diese Jobbörse konnte nicht gelesen werden.",
+    "pageUnsaved": "Diese Seite konnte nicht gespeichert werden.",
+    "hostDidNotLoad": "{{host}} wurde nicht geladen – der Link ist vielleicht falsch, die Website ist nicht erreichbar oder du bist offline. Öffne ihn in einem Tab, um zu sehen, was dort steht.",
+    "noAnswerPage": "Die jojo-Browsererweiterung hat nicht geantwortet, daher konnte die Seite nicht geöffnet werden. Das Installationsprogramm findest du in den Einstellungen.",
+    "captureTimeout": "Die jojo-Erweiterung hat die Seite geöffnet, sie aber nicht rechtzeitig gespeichert. Eine sehr umfangreiche Seite kann länger dauern – versuche es erneut, oder öffne sie und nutze die Schaltfläche „Capture“ der Erweiterung.",
+    "noAnswerReader": "Die jojo-Browsererweiterung hat nicht geantwortet, daher war der Reader nicht erreichbar. Sie ermöglicht es dieser Seite, mit einem Reader auf deinem eigenen Rechner zu sprechen; das Installationsprogramm findest du in den Einstellungen.",
+    "linkSwitchedOff": "Die Verbindung wurde ausgeschaltet.",
+    "noAnswerLink": "Die jojo-Browsererweiterung hat nicht geantwortet. Bei einer Kopie von jojo, die aus dem Web geladen wird, stellt sie die Verbindung zu jojo-bridge her; das Installationsprogramm findest du in den Einstellungen.",
+    "noAnswerProvider": "Die jojo-Browsererweiterung hat nicht geantwortet, daher war der Anbieter nicht erreichbar. Anbieter, die keine CORS-Header senden, lassen sich nur über sie aufrufen; das Installationsprogramm findest du in den Einstellungen."
+  },
+  "posting": {
+    "localTarget": "Diese Adresse liegt auf diesem Computer oder in deinem eigenen Netzwerk, nicht auf einer Jobbörse – solche Adressen öffnet jojo nicht.",
+    "nothingToReadWith": "Zum Lesen einer Stellenanzeige brauchst du die jojo-Browsererweiterung, die die Seite so öffnet wie du und sie speichert, oder den Dokument-Reader, der sie abruft. Keines davon ist in diesem Browser eingerichtet – beides findest du in den Einstellungen.",
+    "noBackgroundRoute": "Um Vorschläge zu lesen, bevor du sie dir ansiehst, braucht es die jojo-Browsererweiterung. Der Dokument-Reader wird nur für eine Stellenanzeige verwendet, die du selbst öffnest.",
+    "notStored": "Die Seite wurde gelesen, aber dieser Browser wollte sie nicht speichern – vielleicht hat jojo keinen Platz mehr. Es wurde nichts behalten; schaffe etwas Platz und versuche es erneut.",
+    "nearlyEmptyExtension": "Diese Seite kam fast leer zurück. Vielleicht war sie noch nicht fertig geladen, oder sie verlangt eine Anmeldung – öffne sie in einem Tab und versuche es erneut, sobald die Stellenanzeige angezeigt wird.",
+    "nearlyEmptyReader": "Diese Seite kam fast leer zurück. Jobbörsen, die mit JavaScript rendern, schicken allem außer einem Browser nur eine leere Hülle – installiere die jojo-Erweiterung, dann öffnet sie die Seite so wie du.",
+    "notSaved": "Diese Stellenanzeige ist nicht gespeichert, daher gibt es keine Seite, die dafür behalten werden könnte.",
+    "askedTwice": "Zweimal gefragt, mit demselben Ergebnis."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "Beide Stellenanzeigen haben dieselbe Anzeigen-ID.",
+      "url": "Beide haben dieselbe Anzeigenadresse.",
+      "name": "Gleicher Arbeitgeber und gleiche Stelle."
+    },
+    "deletedBefore": "Der Entwurf wurde gelöscht, bevor seine Stellenanzeige gelesen werden konnte.",
+    "deletedDuring": "Der Entwurf wurde gelöscht, während seine Stellenanzeige gelesen wurde.",
+    "updateFailed": "Der Entwurf konnte nicht aktualisiert werden."
+  },
+  "store": {
+    "remoteChangeTitle": "Aus einem anderen Tab aktualisiert",
+    "remoteChangeDescription": "Deine Einträge wurden neu geladen, daher wurde der Rückgängig-Verlauf in diesem Tab gelöscht.",
+    "heldTitle": "Ein anderer jojo-Tab hat die Datenbank geöffnet",
+    "heldDescription": "Sie wird gelöscht, sobald dieser Tab geschlossen ist. Schließe die anderen Tabs und versuche es dann erneut.",
+    "deleteFailedTitle": "Die Datenbank konnte nicht gelöscht werden",
+    "deleteFailedDescription": "{{error}}. Möglicherweise hat ein anderer Tab sie noch geöffnet.",
+    "demoNotLoaded": "Die Demodaten wurden nicht geladen",
+    "recordsNotCleared": "Die Einträge wurden nicht gelöscht",
+    "writeFailedDescription": "{{error}} Deine Einträge sind unverändert."
+  },
+  "fileDelete": {
+    "refusedTitle": "Das wurde nicht gelöscht",
+    "stillInVault": "{{name}} ist noch im Tresor.",
+    "deletedTitle": "{{name}} gelöscht",
+    "deletedUnknown": "Die Zeile, ihre Schlagwörter und jede von jojo behaltene Kopie werden entfernt. Das Original auf deinem Computer bleibt unberührt.",
+    "deletedWithCopy": "Die Zeile, ihre Schlagwörter und jojos Kopie des Dokuments werden entfernt. Das Original auf deinem Computer bleibt unberührt.",
+    "deletedNoCopy": "Die Zeile und ihre Schlagwörter werden entfernt. Von diesem Eintrag gab es keine gespeicherte Kopie, die verloren gehen könnte.",
+    "undo": "Rückgängig",
+    "lostTitle": "{{name}} ist ohne sein Dokument zurückgekommen",
+    "lostDescription": "Die Zeile und ihre Schlagwörter sind wiederhergestellt, die gespeicherte Kopie aber nicht. Zieh die Datei erneut hierher, um sie anzuhängen."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} ist fertig",
+    "readyDescription": "Unter der Bewerbung gespeichert, für die es geschrieben wurde.",
+    "failedTitle": "{{label}} wurde nicht abgeschlossen"
+  },
+  "pdf": {
+    "passwordNeeded": "Dieses PDF braucht zum Öffnen ein Passwort und kann daher hier nicht bearbeitet werden.",
+    "unreadable": "Diese Datei konnte nicht als PDF gelesen werden. {{detail}}",
+    "chooseOne": "Wähle mindestens ein PDF zum Zusammenführen aus.",
+    "pageNotIn_one": "{{name}} hat {{count}} Seite, Seite {{page}} ist also nicht enthalten.",
+    "pageNotIn_other": "{{name}} hat {{count}} Seiten, Seite {{page}} ist also nicht enthalten.",
+    "emptySelection": "Diese Auswahl enthält keine Seiten.",
+    "keepOnePage": "Ein Dokument muss mindestens eine Seite behalten.",
+    "planOutOfRange_one": "Dieses Dokument hat {{count}} Seite; der Plan verlangt Seite {{page}}.",
+    "planOutOfRange_other": "Dieses Dokument hat {{count}} Seiten; der Plan verlangt Seite {{page}}.",
+    "noCanvas": "Dieser Browser hat der Seite keine Zeichenfläche zur Verfügung gestellt.",
+    "range": {
+      "noPages": "Dieses Dokument hat keine Seiten.",
+      "emptyPart": "Zwischen zwei Kommas steht ein leerer Bereich.",
+      "partNamesNoPages": "„{{part}}“ bezeichnet keine Seiten.",
+      "backwards": "„{{part}}“ zählt rückwärts. Schreib es als {{to}}-{{from}}.",
+      "notANumber": "„{{part}}“ ist keine Seitenzahl.",
+      "namesNoPages": "Dieser Bereich bezeichnet keine Seiten.",
+      "fromOne": "Seiten werden ab 1 nummeriert.",
+      "pastEnd": "Dieses Dokument endet bei Seite {{count}}, Seite {{page}} ist also nicht enthalten."
+    },
+    "drop": {
+      "notPdf_one": "{{names}} ist kein PDF",
+      "notPdf_other": "{{names}} sind keine PDFs",
+      "leftOut_one": "{{names}} wurde ausgelassen – das funktioniert immer nur mit einem Dokument",
+      "leftOut_other": "{{names}} wurden ausgelassen – das funktioniert immer nur mit einem Dokument",
+      "one": "{{part}}.",
+      "both": "{{first}}, und {{second}}.",
+      "two": "{{first}} und {{second}}",
+      "three": "{{first}}, {{second}} und {{third}}",
+      "many": "{{count}} der Dateien"
+    },
+    "colour": {
+      "yellow": "Gelb",
+      "green": "Grün",
+      "blue": "Blau",
+      "pink": "Rosa",
+      "orange": "Orange"
+    }
+  },
+  "noteSize": {
+    "small": "Klein",
+    "normal": "Normal",
+    "large": "Groß",
+    "huge": "Riesig"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Bewerbung",
+      "organisation": "Organisation",
+      "role": "Stelle",
+      "item": "Zeitleisteneintrag",
+      "keyword": "Schlagwort",
+      "link": "Link",
+      "file": "Datei",
+      "snippet": "Textbaustein",
+      "posting": "Gespeicherte Stellenanzeige",
+      "match": "Scout-Treffer",
+      "source": "Quelle",
+      "background": "Über dich",
+      "claim": "Beziehung"
+    },
+    "savedAgo": "Gespeichert {{ago}}",
+    "fit": "{{fit}} % Passung",
+    "count": {
+      "matches": "Treffer",
+      "connections": "Verbindungen",
+      "hops": "Schritte",
+      "hop": "Schritt"
+    },
+    "empty": {
+      "noMatch": "Nichts in deinen Einträgen passt zu diesem Muster.",
+      "noneMissing": "Keinem Eintrag fehlt diese Verbindung – jeder Eintrag dieser Art hat eine.",
+      "noPath": "Kein Pfad – diese beiden Einträge sind durch nichts in deinen Daten verbunden.",
+      "noPathBetween": "Kein Pfad zwischen diesen beiden Einträgen."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Bewerbungen ohne geplantes Nachfassen",
+        "hint": "Die Lücke, die Leute Vorstellungsgespräche kostet."
+      },
+      "tagged": {
+        "label": "Alles mit dem Schlagwort Referral",
+        "hint": "Ein Schlagwort, über alle Arten von Einträgen hinweg."
+      },
+      "repeatOrgs": {
+        "label": "Organisationen, bei denen ich mich mehr als einmal beworben habe",
+        "hint": "Zwei Bewerbungen bei einem Arbeitgeber, von einem Organisationsknoten aus."
+      },
+      "looseReminders": {
+        "label": "Erinnerungen ohne Verknüpfung zu einer Bewerbung",
+        "hint": "Arbeit, die du erledigst, ohne zu wissen, wofür sie war."
+      },
+      "unusedFiles": {
+        "label": "Dateien, die keine Bewerbung verwendet",
+        "hint": "Dokumente, die ungenutzt im Tresor liegen."
+      },
+      "bareApplications": {
+        "label": "Bewerbungen ohne Ablage im Tresor",
+        "hint": "Kein Link, keine Datei, kein Textbaustein – meist eine noch nicht begonnene."
+      },
+      "path": {
+        "label": "Kürzester Pfad zwischen zwei Einträgen",
+        "hint": "Wie eine Datei und eine Stelle, auf die du dich beworben hast, zusammenhängen."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Arbeitgeber",
+      "position": "Stelle",
+      "postingLink": "Link zur Anzeige",
+      "location": "Ort",
+      "appliedOn": "Beworben am",
+      "stage": "Phase",
+      "highlight": "Hervorheben",
+      "notes": "Notizen für dich",
+      "materials": "Gesendete Unterlagen"
+    },
+    "fileStem": "{{person}} — Bewerbungen {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "In diesem Browser ist keine Kopie dieses Dokuments gespeichert, daher gibt es nichts zu lesen.",
+    "noReader": "Es ist kein Dokument-Reader verbunden, daher kann der Inhalt dieser Datei nicht gelesen werden. Seine Adresse trägst du in den Einstellungen ein.",
+    "noReaderToTryHarder": "{{reason}} Es ist kein Dokument-Reader verbunden, der es gründlicher versuchen könnte – seine Adresse trägst du in den Einstellungen ein.",
+    "maybeScan": "Aus diesem Dokument ließ sich nichts auslesen – vielleicht ist es ein Scan.",
+    "noAddress": "Noch keine Adresse. Siehe Einstellungen.",
+    "tooLarge": "Dieses Dokument ist {{size}} MB groß, der Reader verarbeitet bis zu {{max}} MB."
+  },
+  "network": {
+    "mixedPrivate": "Diese Seite läuft über https, und Browser verbieten ihr, eine einfache http-Adresse aufzurufen – installiere die jojo-Erweiterung, die diesen einen Schritt in dein eigenes Netzwerk für dich weiterleitet. Oder stelle jojo über http bereit.",
+    "mixedPublic": "Diese Seite läuft über https, und Browser verbieten ihr, eine einfache http-Adresse aufzurufen. Stelle jojo über http bereit, oder betreibe das Modell auf diesem Rechner, in deinem eigenen Netzwerk oder hinter https – die Erweiterung leitet diese weiter, aber keine einfache http-Adresse im öffentlichen Internet.",
+    "cors": "Sowohl diese Seite als auch diese Adresse laufen über https, es ist also keine Mixed-Content-Sperre. Die wahrscheinliche Ursache ist CORS: Der Server hat ohne die Header geantwortet, die ein Browser zum Lesen einer Antwort braucht. Cloud-Anbieter senden sie meist nicht, und genau dafür ist die jojo-Erweiterung da – prüfe, ob sie installiert und aktiviert ist.",
+    "unknown": "Der Browser hat den Grund nicht verraten. Entweder lauscht dort nichts, oder der Server hat ohne die CORS-Header geantwortet, die ein Browser zum Lesen einer Antwort braucht – was beide Dienste, mit denen diese App spricht, in manchen Fällen tun. Auch ein laufender Server kann also so scheitern."
+  },
+  "mcpLink": {
+    "notBridge": "Unter {{address}} antwortet etwas anderes als jojo-bridge (oder eine ältere Kopie davon).",
+    "displaced": "Ein anderer jojo-Tab hält die Verbindung.",
+    "bridgeStatus": "jojo-bridge hat mit {{status}} geantwortet.",
+    "otherTab": "Ein anderer jojo-Tab in diesem Browser hält die Verbindung; dieser übernimmt, sobald jener Tab geschlossen wird."
+  },
+  "roleScopeEmpty": {
+    "title": "Keine Bewerbungen für diese Stellen",
+    "description": "Der Stellenfilter in der oberen Leiste blendet alle Bewerbungen aus, die dieses Diagramm zählt.",
+    "showAll": "Alle Stellen anzeigen"
+  },
+  "create": {
+    "newApplication": "Neue Bewerbung",
+    "fromLink": {
+      "label": "Bewerbung aus einem Link",
+      "hint": "Das Modell liest die Stellenanzeige und füllt das Formular aus"
+    },
+    "newReminder": "Neue Erinnerung",
+    "newEvent": "Neuer Termin",
+    "draftMessage": {
+      "label": "Nachricht entwerfen",
+      "hint": "Aus deinen E-Mail-Textbausteinen – nichts wird generiert"
+    },
+    "saveLink": {
+      "label": "Link speichern",
+      "hint": "Öffnet im Tresor das Link-Werkzeug"
+    },
+    "savePosting": {
+      "label": "Stellenanzeige speichern",
+      "hint": "Öffnet den Job-Scout"
+    }
+  },
+  "stroke": {
+    "tap": "Tippen",
+    "doubleTap": "Doppeltippen",
+    "hold": "Gedrückt halten",
+    "up": "Nach oben wischen",
+    "down": "Nach unten wischen",
+    "side": "Seitwärts wischen",
+    "diagonal": "Diagonal schnippen",
+    "backForth": "Hin und her",
+    "zigzag": "Seitwärts im Zickzack",
+    "scribbleUp": "Auf und ab kritzeln",
+    "circle": "Kreis",
+    "square": "Quadrat",
+    "vee": "V (oder ein Häkchen)",
+    "peak": "Λ (eine Spitze)",
+    "zed": "Z",
+    "arc": "Bogen (ein C)",
+    "ell": "L",
+    "triangle": "Dreieck",
+    "other": "Alles andere"
+  },
+  "move": {
+    "nod": "Nicken",
+    "shake": "Kopfschütteln",
+    "hi": "Hallo",
+    "bow": "Verbeugen",
+    "leanIn": "Vorbeugen",
+    "wobble": "Wackeln",
+    "bounce": "Hüpfen",
+    "spin": "Drehen",
+    "recoil": "Zurückweichen",
+    "startle": "Erschrecken",
+    "dance": "Tanzen",
+    "shrug": "Schulterzucken",
+    "lookAround": "Umsehen",
+    "hopSpin": "Sprungdrehung",
+    "stretch": "Strecken",
+    "flex": "Muskeln zeigen",
+    "jab": "Schlagkombination",
+    "powerUp": "Aufladen",
+    "doze": "Eindösen",
+    "wink": "Zwinkern",
+    "love": "Liebe",
+    "robot": "Robotertanz",
+    "jazz": "Jazz Hands",
+    "point": "Zeigen",
+    "hero": "Heldenpose",
+    "handsUp": "Hände hoch",
+    "disco": "Disco",
+    "typing": "Tippen auf der Tastatur",
+    "drumroll": "Trommelwirbel"
+  }
+}

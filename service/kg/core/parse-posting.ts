@@ -138,6 +138,7 @@ const JOB_BOARDS = new Set([
   'monster',
   'higheredjobs',
   'academicjobsonline',
+  'academiccareers',
   'chronicle',
   'interfolio',
 ])
@@ -160,6 +161,7 @@ const AGGREGATORS = new Set([
   'monster',
   'higheredjobs',
   'academicjobsonline',
+  'academiccareers',
   'chronicle',
   'interfolio',
 ])
@@ -167,9 +169,11 @@ const AGGREGATORS = new Set([
 /**
  * Boards whose name is a whole host rather than one label. 'jobs.ac.uk' is the
  * UK academic aggregator, and none of its labels is distinctive on its own —
- * 'jobs' alone would make every careers subdomain a board.
+ * 'jobs' alone would make every careers subdomain a board. 'cra.org' is the
+ * CRA job board the scout reads (`cra.org/ads`, which now redirects to
+ * `careercenter.cra.org`); 'cra' as a label is too short to trust on any host.
  */
-const BOARD_HOSTS = ['jobs.ac.uk']
+const BOARD_HOSTS = ['jobs.ac.uk', 'cra.org']
 
 const onBoardHost = (hostname: string) => {
   const host = hostname.toLowerCase()

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
 import type { WebViewMessageEvent, WebViewNavigation } from 'react-native-webview'
@@ -14,7 +15,7 @@ import {
 import { sizeLabel } from '@jojo/service/core/files'
 import { Button } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
-import { captureScript } from '@/lib/capture-script'
+import { acceptsCapture, captureScript, newCaptureNonce } from '@/lib/capture-script'
 import { inlineCapture, writeCapture, type RawCapture } from '@/lib/capture'
 import type { RootStackParamList } from '@/navigation/types'
 import { useVault } from '@/lib/store-context'
@@ -50,6 +51,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PostingBrowser'>
  * to visit, it is the year-old markup opened later from a list.
  */
 export function PostingBrowserScreen({ route, navigation }: Props) {
+  const { t } = useTranslation('screens')
   const { applicationId } = route.params
   /*
    * Normalised before it is opened, not after. A LinkedIn job-alert link
@@ -84,6 +86,12 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
   const [current, setCurrent] = useState(url)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  /**
+   * The token of the capture Keep asked for, or null when none is pending.
+   * Without it any page could post a `jojo:capture` of its own and have the app
+   * fetch what it named, file it under the application and close the screen.
+   */
+  const pending = useRef<string | null>(null)
 
   const onNavigate = useCallback((event: WebViewNavigation) => {
     setCurrent(event.url)
@@ -114,16 +122,21 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
           setSaving(false)
           return
         }
+        // Only the answer to the capture Keep asked for, and only once. A page
+        // posting its own `jojo:capture` is ignored outright — not even the
+        // spinner is its to stop.
+        if (!acceptsCapture(raw, pending.current)) return
+        pending.current = null
 
         try {
           const outcome = await inlineCapture(raw, now())
           if (!outcome.ok) {
             toast({
               tone: 'danger',
-              title: 'That page could not be kept',
+              title: t('postingBrowser.failedTitle'),
               description:
                 outcome.reason === 'script-failed'
-                  ? (outcome.detail ?? 'The page did not answer.')
+                  ? (outcome.detail ?? t('postingBrowser.noAnswer'))
                   : CAPTURE_REJECTION_MESSAGE[outcome.reason],
             })
             return
@@ -163,17 +176,17 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
           updateFile(file.id, { uri })
 
           toast({
-            title: `${name} saved`,
+            title: t('postingBrowser.savedTitle', { name }),
             description:
               capture.dropped > 0
-                ? `Kept in your vault. ${String(capture.dropped)} ${capture.dropped === 1 ? 'asset' : 'assets'} could not be kept, so parts may look plain.`
-                : 'Kept in your vault, and readable with no connection.',
+                ? t('postingBrowser.savedDropped', { count: capture.dropped })
+                : t('postingBrowser.savedOffline'),
           })
           navigation.goBack()
         } catch (error) {
           toast({
             tone: 'danger',
-            title: 'That page could not be kept',
+            title: t('postingBrowser.failedTitle'),
             description: error instanceof Error ? error.message : String(error),
           })
         } finally {
@@ -181,12 +194,14 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
         }
       })()
     },
-    [addFile, updateFile, applicationId, navigation, toast],
+    [addFile, updateFile, applicationId, navigation, toast, t],
   )
 
   const onSave = () => {
+    const nonce = newCaptureNonce()
+    pending.current = nonce
     setSaving(true)
-    webRef.current?.injectJavaScript(captureScript())
+    webRef.current?.injectJavaScript(captureScript(nonce))
   }
 
   return (
@@ -201,12 +216,12 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
           </Txt>
         </View>
         <Button
-          label={saving ? 'Keeping…' : 'Keep a copy'}
+          label={saving ? t('postingBrowser.keeping') : t('postingBrowser.keep')}
           icon="download"
           size="sm"
           onPress={onSave}
           disabled={saving || loading}
-          blocker={loading ? 'Wait for the page to finish loading' : undefined}
+          blocker={loading ? t('postingBrowser.waitForLoad') : undefined}
         />
       </View>
 

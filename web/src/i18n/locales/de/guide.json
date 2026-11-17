@@ -1,0 +1,604 @@
+{
+  "nav": {
+    "rail": "Seiten der Anleitung",
+    "contents": "Inhalt der Anleitung",
+    "pager": "Weitere Seiten der Anleitung",
+    "youAreHere": "du bist hier",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "pageOf": "Seite {{current}} von {{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "So geht’s",
+      "blurb": "Was ein Eintrag ist, wo er gespeichert wird, was dich das kostet und die paar Tasten, die du kennen solltest, bevor du deine Jobsuche damit führst."
+    },
+    "screens": {
+      "label": "Jede Ansicht",
+      "blurb": "Jede Seite der Reihe nach – wofür sie da ist, die Mechanik, die man nicht auf den ersten Blick sieht, und was noch nicht angebunden ist."
+    },
+    "tools": {
+      "label": "Die Werkzeuge",
+      "blurb": "Was der Assistent tatsächlich tun kann, wie er daran gehindert wird, etwas anderes zu tun, und wie er aus dem ganzen Katalog das richtige Werkzeug wählt."
+    },
+    "graph": {
+      "label": "Der Graph",
+      "blurb": "Was die Graph-Seite zeichnet, wie aus einer Frage eine Abfrage wird und in welchem Datenmodell die ganze App gespeichert ist."
+    },
+    "builtWith": {
+      "label": "Gebaut mit",
+      "blurb": "Die Open-Source-Arbeit, aus der jojo besteht, die Lizenzen, die sie abdecken, und wie der Code aufgebaut ist."
+    },
+    "controlFlow": {
+      "label": "Kontrollflussgraph",
+      "blurb": "Jedes Modul und jeder Import als Graph, wie der Kontrollfluss durch sechs Abläufe wandert und wohin eine Änderung gehört."
+    },
+    "licence": {
+      "label": "Lizenz",
+      "blurb": "Was jojo kostet, was du damit tun darfst und welche Bedingungen für die Dienste gelten, die du anbinden kannst."
+    }
+  },
+  "onThisPage": "Auf dieser Seite",
+  "tour": {
+    "start": "Tour starten",
+    "resume": "Tour fortsetzen – Schritt {{step}} von {{total}}"
+  },
+  "gettingStarted": {
+    "title": "Erste Schritte",
+    "progress": "{{done}} von {{total}} erledigt",
+    "allDone": "Alle Schritte sind erledigt. Die Checkliste liest deine Einträge – wenn du sie löschst, zieht sie nach.",
+    "intro": "Jeder Schritt öffnet die echte Funktion und hakt sich selbst ab, sobald ein Eintrag existiert. Nichts davon ist ein Tutorial, das du absitzen musst.",
+    "done": "Erledigt",
+    "srDone": " – erledigt",
+    "srNotDone": " – noch nicht erledigt",
+    "steps": {
+      "application": {
+        "title": "Füge eine Bewerbung hinzu",
+        "body": "Eine Stelle, ihre Phase und ihre Frist. Alles andere in jojo hängt an diesem Eintrag.",
+        "action": "Neue Bewerbung"
+      },
+      "dated": {
+        "title": "Gib etwas ein Datum",
+        "body": "Fristen, Vorstellungsgespräche und Besuche vor Ort sind eine einzige Art von Eintrag – sie landen also gleichzeitig im Kalender, in der kommenden Woche und bei der Bewerbung.",
+        "action": "Neuer Termin"
+      },
+      "reminder": {
+        "title": "Plane eine Nachfrage",
+        "body": "Eine Erinnerung ist derselbe Eintrag mit eingeschaltetem Hinweis. Ist das Datum vorbei, bleibt sie im Dashboard markiert, bis du sie abhakst.",
+        "action": "Neue Erinnerung"
+      },
+      "posting": {
+        "title": "Sichere eine Stellenanzeige, bevor sie verschwindet",
+        "body": "Es wird nichts abgerufen und keine Kopie gespeichert – gespeichert werden die URL, der daraus abgeleitete Arbeitgeber und der Tag, an dem du sie gesichert hast. Das reicht, um die Anzeige wiederzufinden.",
+        "action": "Job scout öffnen"
+      },
+      "file": {
+        "title": "Lege deine Dokumente ab",
+        "body": "Zieh einen Lebenslauf oder ein Anschreiben in den Tresor. Namen, Größen und Typen werden gespeichert; eine Datei, die du in dieser Sitzung ablegst, hat außerdem eine Vorschau.",
+        "action": "Tresor öffnen"
+      },
+      "keyword": {
+        "title": "Versieh etwas mit einem Stichwort",
+        "body": "Stichwörter gehören dir und werden von Bewerbungen, Erinnerungen und allem im Tresor geteilt – anders als die festen Rollen-Tags in der oberen Leiste. Der Tag-Knopf in jeder Zeile fügt eines hinzu.",
+        "action": "Stichwörter verwalten"
+      },
+      "draft": {
+        "title": "Entwirf eine Nachricht",
+        "body": "Aus deinen eigenen E-Mail-Bausteinen gebaut, mit Stelle, Arbeitgeber und Daten aus dem Eintrag. Den Namen einer Person füllt nie jemand für dich aus. Nichts hier hält fest, dass du sie verschickt hast – dieser Schritt hakt sich also nicht selbst ab.",
+        "action": "Nachricht entwerfen"
+      }
+    }
+  },
+  "overview": {
+    "title": "So benutzt du jojo",
+    "subtitle": "Alles läuft auf deinem Rechner. Fang einfach an und leg mehr dazu, wenn du willst.",
+    "tourIntro": "Oder lass dich Schritt für Schritt durchführen, zum Mitmachen: ein Spotlight auf die echten Seiten, und du probierst alles direkt selbst aus. Die Tour tippt nie etwas für dich, speichert nie einen Eintrag und ändert nie eine Einstellung.",
+    "sections": {
+      "application": "Bewerbung verfolgen",
+      "dates": "Termine und Nachfragen",
+      "vault": "Der Tresor",
+      "profile": "Dein Profil",
+      "keys": "Tasten und Rückgängig",
+      "keywords": "Stichwörter",
+      "graph": "Den Graphen fragen",
+      "data": "Deine Daten",
+      "ladder": "Noch nicht angebunden"
+    },
+    "track": {
+      "hint": "der Eintrag, an dem alles andere hängt",
+      "title": "Verfolge eine Bewerbung vom Absenden bis zum Angebot",
+      "intro": "Eine Bewerbung ist eine Stelle bei einem Arbeitgeber. Termine, Notizen, Dokumente, Stichwörter und jede Zahl auf der Seite <stats>Statistiken</stats> verweisen auf eine davon – sie ist also der erste Eintrag, der sich lohnt. Bewerbungen liegen auf <board>dem Board</board>; um eine hinzuzufügen, drück überall in der App <kbd>n</kbd> oder nutze die Checkliste oben.",
+      "movesTitle": "Was jeder Wechsel abfragt",
+      "movesIntro": "Von wo aus du sie verschiebst, bestimmt, was du gefragt wirst. Auf dem Board oder in der Tabelle – per Ziehen, über das Etikett auf einer Karte oder den Chip in einer Zeile – passiert der Wechsel einfach, mit einem Rückgängig in der Meldung. Aus dem Eintrag heraus öffnen vier der sechs Ziele zuerst ein kurzes Formular; die anderen zwei passieren trotzdem direkt, denn ein Dialog, dessen einziger Inhalt ein Bestätigen-Knopf ist, ist eine Bremsschwelle und kein Schritt.",
+      "asks": {
+        "submitted": "Der Tag, an dem du sie abgeschickt hast, der Portal-Link und eine Bestätigungsnummer, falls du eine hast.",
+        "interview": "Das Datum und ob das Gespräch telefonisch, per Video oder vor Ort stattfindet. Es bietet an, den Termin mit einer Erinnerung in deinen Kalender einzutragen.",
+        "offer": "Eine Antwortfrist, das Paket und Notizen. Es bietet an, die Entscheidungsfrist in deinen Kalender einzutragen.",
+        "closed": "Wie es ausging: abgelehnt, zurückgezogen, angenommen, abgesagt oder keine Antwort. Genau das zählen die Statistiken."
+      },
+      "asksNothing": "Nichts – der Wechsel passiert, sobald du ihn machst.",
+      "offerQuestion": "Eine zusätzliche Frage, egal wohin: Wenn du eine Bewerbung verschiebst, die bereits ein Angebot hat, wirst du gefragt, ob die Angebotsdetails bleiben oder gelöscht werden sollen. Ein Angebot gehört zu der Runde, aus der es stammt – es fallen zu lassen ist also eine Entscheidung und keine Nebenwirkung.",
+      "onceTitle": "Wenn der Eintrag existiert",
+      "once": {
+        "open": "Beim Öffnen bleibt die Liste, wo sie war – der Eintrag öffnet sich darüber, und Zurück schließt ihn, ohne dass deine Filter verloren gehen. Die Adresse ist ein Name statt einer Nummer, ein Link auf eine Bewerbung übersteht also ein Neuladen.",
+        "note": "Die Notiz speichert sich, sobald du woanders hinklickst, und sagt das darunter. Es gibt keinen Speichern-Knopf, den man vergessen könnte.",
+        "duplicate": "<lead>Duplizieren</lead> ist für eine erneute Bewerbung: Die Kopie beginnt wieder bei Entwurf und übernimmt Rolle, Notiz, Ort und Link – bewusst aber nicht das Angebot, das Ergebnis oder die Termine. jojo hält fest, dass die beiden Kopien voneinander sind.",
+        "delete": "Eine Bewerbung zu löschen löscht die Bewerbung und ihre Notiz. Alles, was du darunter abgelegt hast – Erinnerungen, Dokumente, Stichwörter –, wird nur getrennt, nicht gelöscht, und die Bestätigung sagt, was genau.",
+        "address": "Ansicht, Suchfeld, Phasenfilter und Sortierung stehen alle in der Adressleiste, eine eingerichtete Ansicht ist also ein Link, den du behalten kannst: <bystage>die Tabelle, nach Phase sortiert</bystage> und <atoffer>alles im Angebotsstadium</atoffer> sind einfach URLs. Beide nennen bewusst die Tabelle: Die Phasen-Chips und die Spaltensortierung sind Steuerelemente der Tabelle, und das Board hat keinen Phasenfilter, weil es bereits aus sechs Phasenspalten besteht – eine Phase in der Adresse bewirkt also nichts, solange die Adresse nicht auch Tabelle sagt. Das Suchfeld funktioniert in beiden. Der Rollenfilter und die Stichwort-Chips daneben stehen in keiner: Sie sind die Auswahl dieses Tabs und nicht Teil der Adresse und werden beim Neuladen zurückgesetzt."
+      }
+    },
+    "stageRail": {
+      "title": "Die sechs Phasen, die eine Bewerbung durchläuft",
+      "desc": "Entwurf, Abgeschickt, Vorgespräch, Vorstellungsgespräch, Angebot und Abgeschlossen, der Reihe nach, auf einer Linie. Ein Wechsel zu Abgeschickt, Vorstellungsgespräch, Angebot oder Abgeschlossen öffnet ein kurzes Formular; ein Wechsel zu Entwurf oder Vorgespräch passiert sofort. Die Liste darunter sagt, was jedes Formular abfragt.",
+      "asks": "fragt"
+    },
+    "dates": {
+      "hint": "ein Eintragstyp, drei Namen",
+      "title": "Termine, Fristen und Nachfragen",
+      "intro": "Eine Abgabefrist, ein Vorstellungsgespräch, ein Besuch vor Ort und eine Notiz, bei jemandem nachzuhaken, sind dieselbe Art von Eintrag mit einem anderen Etikett, und eine Erinnerung ist dieser Eintrag mit eingeschaltetem Hinweis. Das ist das Einzige an jojo, das du wissen solltest, bevor du loslegst: Trag etwas einmal ein, und es erscheint gleichzeitig im <calendar>Kalender</calendar>, in der kommenden Woche unter <today>Heute</today> und bei der zugehörigen Bewerbung – denn es gibt nichts, was synchron gehalten werden müsste.",
+      "items": {
+        "grid": "Das Monatsraster und die Tagesliste sind eine Seite. Ziehst du einen Eintrag auf einen anderen Tag, wird er verschoben, und die Meldung bietet ein Rückgängig an.",
+        "colour": "Die Farbe richtet sich nur nach dem Datum – überfällig, fällig in 48 Stunden, erledigt –, sodass nichts veraltet, nur weil es dort liegt. Die Legende steht auf der Seite.",
+        "url": "Der angezeigte Monat, der ausgewählte Tag und der geöffnete Eintrag stehen alle in der URL, ein bestimmter Tag lässt sich also verlinken.",
+        "reminders": "Erinnerungen haben außerdem ihre eigene Liste im <reminders>Tresor</reminders>, wo das Abhaken die ganze Arbeit ist. Eine überfällige bleibt unter Heute markiert, bis sie abgehakt ist.",
+        "mint": "Wenn du eine Bewerbung zu Vorstellungsgespräch oder Angebot verschiebst, wird angeboten, den Termin für dich anzulegen – so musst du den gerade vereinbarten Termin nicht zweimal eintragen."
+      }
+    },
+    "vault": {
+      "hint": "fünf Werkzeuge, ein Regal",
+      "title": "Leg ab, was du wieder brauchst",
+      "reminders": {
+        "name": "Erinnerungen",
+        "body": "Alles mit einem Hinweis, in einer Liste, die überfälligen zuerst."
+      },
+      "links": {
+        "name": "Links",
+        "body": "Portale, Förderseiten, Menschen, die man sich merken sollte. Jeder Link kommt in eine Kategorie, und du kannst ihn später in eine andere verschieben."
+      },
+      "files": {
+        "name": "Dateien",
+        "body": "Name, Größe und Typ eines Dokuments werden gespeichert. <strong>Das Dokument selbst nicht</strong> – jojo hat keinen Platz auf deiner Festplatte, um es abzulegen. Eine Datei, die du bei diesem Besuch auswählst, hat bis zum Neuladen eine Vorschau; danach belegt die Zeile, dass es das Dokument gibt – genug, um zu wissen, was du wann verschickt hast."
+      },
+      "snippets": {
+        "name": "Bausteine",
+        "body": "Absätze, die du immer wieder neu schreibst. Der Dialog <strong>Nachricht entwerfen</strong> wird aus ihnen gebaut, mit Stelle, Arbeitgeber und Daten aus dem Eintrag – den Namen einer Person füllt nie jemand für dich aus, denn genau durch Raten geht eine Nachricht an den falschen Menschen."
+      },
+      "tools": {
+        "name": "Werkzeuge",
+        "body": "Ein Taschenrechner für die Gehaltsrechnerei, in die jedes Angebot mündet. Sein Verlauf gilt nur für diesen Besuch."
+      }
+    },
+    "profile": {
+      "hint": "das Profil ist nicht Teil der Checkliste",
+      "title": "Füll dein Profil aus",
+      "body": "Deine Grunddaten, Links, Zielpositionen und Suchbegriffe stehen unter <profile>Mein Profil</profile>. Dagegen würde der Scout bewerten und daraus würde der Assistent formulieren – sie sind also wichtig. Beim Speichern werden sie in diesen Browser geschrieben und behalten, genau wie jeder andere Eintrag. Die Checkliste oben lässt sie weg, weil es so oder so ein Profil gibt – und ein Schritt, der schon bei deiner Ankunft erledigt ist, ist kein Schritt.",
+      "documents": "Dokumente, die du im Profil angibst, werden in der Dokumente-Kategorie des Tresors abgelegt statt an einem zweiten Ort, der ihm widersprechen könnte, und das ganze Profil wird als eine Änderung gespeichert – ein einziges Rückgängig stellt es wieder her."
+    },
+    "keys": {
+      "hint": "drei Tasten und zwei verschiedene Rückgängig",
+      "title": "Ohne Maus arbeiten",
+      "find": "<lead>Finde alles und führ es aus.</lead> Tipp ein paar Wörter, und deine Bewerbungen, Erinnerungen und dein Kalender werden gefiltert – ganze Wörter in beliebiger Reihenfolge, „rice stat“ findet also die Statistik-Stelle in Rice. Unter den Einträgen steht eine Gruppe <strong>Werkzeuge</strong>: die benannten Operationen, aus denen jojo gebaut ist, jede mit einem Formular, das aus dem erzeugt wird, was die Operation tatsächlich erwartet. Wählst du eine, passiert das Echte mit deinen echten Einträgen: Es gibt eine Meldung, es landet im Prüfprotokoll, und es bietet genau das Rückgängig an, das dieselbe Operation von einer Karte aus anbietet. Darunter erreicht <strong>Gehe zu</strong> jede Seite, auch die sechs, die nicht in der Seitenleiste stehen.",
+      "make": "<lead>Etwas anlegen.</lead> Dieselben sechs Zeilen wie der Neu-Knopf: Bewerbung, Erinnerung, Termin, Nachricht entwerfen, Link sichern, Stellenanzeige sichern. Wird ignoriert, solange ein Dialog offen ist oder du tippst – der Buchstabe n bleibt also ein Buchstabe.",
+      "undo": "<lead>Rückgängig und Wiederholen, überall.</lead> Nicht pro Seite – die Tastenkombination gehört der App und macht auch den Phasenwechsel rückgängig, den du vor zwei Minuten in einer anderen Ansicht gemacht hast. Bewusst ignoriert, solange der Cursor in einem Textfeld steht: In einer halb getippten Notiz gewinnt das Rückgängig deines Browsers, und ein versehentliches ⌘Z kann nicht still einen anderen Eintrag hinter dem Dialog zurücksetzen.",
+      "twoUndosTitle": "Zwei Rückgängig, die Verschiedenes tun",
+      "twoUndos": "<kbd>⌘Z</kbd> nimmt zurück, was in dem Moment oben auf dem Stapel liegt, in dem du drückst. Das <strong>Rückgängig</strong> in einer Meldung nimmt <strong>diese</strong> Änderung zurück, auch wenn du seitdem drei andere Dinge getan hast – genau darum geht es, denn eine Meldung lebt nur Sekunden und du arbeitest weiter. Eine Nutzeraktion ist ein Rückgängig, egal wie viele Einträge sie berührt hat: Eine Bewerbung anzulegen schreibt die Bewerbung, ihre Stichwörter und die Frist, die das Formular erzeugt hat, und das Rückgängig nimmt alle drei zurück, statt eine Frist zurückzulassen, die ins Leere zeigt.",
+      "pile": "Der Stapel hält die letzten fünfzig Änderungen und ist bei jedem Besuch leer – ein Rückgängig-Stapel, der ein Neuladen überlebt, würde dir anbieten, letzten Dienstag rückgängig zu machen. Hast du jojo in zwei Tabs offen, liest der Tab, zu dem du zurückkehrst, die Datenbank neu ein und beginnt aus demselben Grund von vorn: Er kann nichts rückgängig machen, was der andere Tab getan hat. Alles steht weiterhin in <settings>Einstellungen → Prüfprotokoll</settings>, das Neueste zuerst, und die neueste Zeile lässt sich dort rückgängig machen."
+    },
+    "keywords": {
+      "hint": "deine, und von allem geteilt",
+      "title": "Stichwörter – und die Rollen-Tags, die sie nicht sind",
+      "intro": "Zwei Dinge in jojo sehen aus wie Tags und verhalten sich völlig unterschiedlich. Sie zu verwechseln ist der häufigste Weg zu einem Filter, der nicht findet, wovon du weißt, dass es da ist.",
+      "yoursTitle": "Stichwörter gehören dir",
+      "yours": "Du legst sie an, benennst sie, färbst sie ein und hängst sie an alles – eine Bewerbung, eine Erinnerung, einen Link, eine Datei, einen Baustein. Sie gehen quer durch jede Art von Eintrag, und genau das macht „zeig mir alles rund um die Empfehlung“ überhaupt zu einer Frage, die jojo beantworten kann.",
+      "record": "Ein Stichwort ist ein eigener Eintrag, kein Textschnipsel, der in Zeilen kopiert wird: Benennst du es um, ziehen alle Zeilen mit, die es tragen, und wenn du alle Einträge löschst, bleiben deine Stichwörter mit Zählerstand null bestehen. <settings>Einstellungen → Stichwörter</settings> benennt sie um, färbt sie neu ein und löscht sie – und sagt dir vor dem Löschen, an wie vielen Einträgen jedes hängt.",
+      "rolesTitle": "Rollen-Tags sind deine Liste",
+      "roles": "Ein neuer Datenbestand beginnt mit fünf – Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer – und unter <profile>Profil</profile> bearbeitest du sie. Früher waren sie fest, mit dem Argument, die Statistiken würden über sie hinweg vergleichen; tatsächlich bedeutete das, dass jeder außerhalb der akademischen Informatik seine ganze Suche unter einem Etikett ablegte, das nicht stimmte, und die Diagramme dieses Etikett dann so lasen, als stimme es. Entfernst du eines, bleibt jede Bewerbung, die es trägt, genau da, wo sie ist.",
+      "roleFilter": "Nur Bewerbungen tragen eines, und der Rollenfilter sitzt in der Werkzeugleiste von <applications>Bewerbungen</applications>, direkt neben der einzigen Liste, die er filtert – früher war er in der oberen Leiste angeheftet, wodurch jede Zahl anderswo unklar war: Zählte sie deine ganze Suche? Faustregel: Das Rollen-Tag sagt, was der Job ist, das Stichwort, warum er dir wichtig ist."
+    },
+    "graph": {
+      "hint": "keine Abfragesprache zu lernen",
+      "title": "Stell dem Graphen eine Frage",
+      "intro": "Jeder Eintrag in jojo ist ein Knoten, und jede Verbindung zwischen zwei Einträgen ist eine echte Kante zwischen ihnen – das ist kein Bild davon, wie es funktioniert, sondern genau so wird es gespeichert. Die Seite <graph>Graph</graph> zeichnet das, und ihr Abfragebereich lässt dich dem Datenbestand die Fragen stellen, die eine Liste nicht beantworten kann. Du erreichst sie über die Kachel <strong>Browserspeicher</strong> in der Seitenleiste, was keine offensichtliche Tür ist.",
+      "pickers": "Eine Frage besteht aus drei Auswahlfeldern: wonach du suchst, ob es eine Beziehung <strong>hat</strong> oder ob sie <strong>fehlt</strong>, und was am anderen Ende steht. Die Antwort aktualisiert sich, während du sie änderst – es gibt keinen Ausführen-Knopf, die Tabelle und die Steuerelemente darüber können sich also nie widersprechen.",
+      "examplesTitle": "Die Beispiele, die du zuerst anklicken solltest",
+      "examples": {
+        "noFollowUp": "Bewerbungen ohne geplante Nachfrage – die Lücke, die Leute Vorstellungsgespräche kostet.",
+        "keyword": "Alles mit einem bestimmten Stichwort, über alle Arten von Einträgen hinweg.",
+        "twice": "Organisationen, bei denen du dich mehr als einmal beworben hast.",
+        "unlinked": "Erinnerungen, die mit keiner Bewerbung verknüpft sind – Arbeit, die du erledigst, ohne zu wissen, wofür.",
+        "unusedFiles": "Dateien, die keine Bewerbung verwendet."
+      },
+      "path": "Jedes Beispiel wird anhand der Einträge gebaut, die du tatsächlich hast, und eines, zu dem dein Datenbestand nichts zu fragen hat, wird ausgeschaltet, statt mit einer leeren Tabelle zu antworten. Die zweite Form, <strong>Pfad</strong>, beantwortet „wie hängen diese beiden zusammen“ – und antwortet „gar nicht“, wenn sie es nicht tun, was ein echtes Ergebnis ist und kein Fehler.",
+      "illustrative": "Die Abfragezeile unter den Auswahlfeldern, die wie Code aussieht, ist auf der Seite als <strong>illustrativ</strong> gekennzeichnet, und das ist ernst gemeint: Nichts wertet sie aus, sie steht da, damit die Form neben den Worten die Auswahlfelder verständlich macht. Die Seite <guide>Der Graph</guide> dieser Anleitung erklärt, was gezeichnet wird und warum."
+    },
+    "data": {
+      "hint": "wo sie liegen und was schiefgehen kann",
+      "title": "Deine Daten",
+      "askedTitle": "Die Frage, die jojo einmal gestellt hat",
+      "asked": "Beim ersten Start fragt jojo, ob du mit Demodaten oder leer beginnen willst, und lässt dich die Frage nicht wegklicken – wer zwölf Bewerbungen bei Arbeitgebern sieht, die er nie kontaktiert hat, kann nicht erkennen, ob die App sie erfunden oder die eines anderen wiederhergestellt hat. Sie wird nur einmal gestellt, weil die Antwort gespeichert wird, und keine Antwort ist endgültig: <settings>Einstellungen → Deine Daten</settings> hat beide Hälften, und das Löschen der Demo-Einträge bringt die Frage nicht zurück.",
+      "diskTitle": "Nichts wartet auf die Festplatte",
+      "disk": "Eine Änderung ist in dem Moment auf dem Bildschirm, in dem du sie machst, und wird einen Augenblick später im Hintergrund in die Datenbank des Browsers geschrieben. Deshalb gibt es beim Speichern keine Ladeanzeigen, und deshalb ist es sicher, den Tab zu schließen – jojo schreibt weg, was es noch hält, wenn der Tab ausgeblendet oder geschlossen wird, auch auf einem Handy, das den Tab ohne Vorwarnung beendet. Und deshalb hat das Banner „kein Platz mehr“ weiter unten keinen Neu-laden-Knopf: Deine ungespeicherte Änderung steckt in dieser Warteschlange, und Neuladen ist genau das, was sie wegwerfen würde.",
+      "stripsTitle": "Wenn über der Seite ein Streifen erscheint",
+      "strips": "Keiner davon hält jojo an – was auf dem Bildschirm steht, ist echt und lässt sich weiterhin lesen und exportieren. Ein Streifen statt einer Meldung, weil eine Nachricht, dass deine Änderungen nicht gespeichert werden, nicht nach vier Sekunden verschwinden darf.",
+      "quoted": "„{{text}}“",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo konnte seine Datenbank nicht öffnen",
+          "means": "Ein anderer jojo-Tab ist mit einer anderen Version der App geöffnet. Deine Einträge sind noch auf der Festplatte – dieser Tab konnte sie nicht lesen, also zeigt er nichts an, statt zu raten. Schließ die anderen Tabs und lade neu."
+        },
+        "blocked": {
+          "says": "Dieser Browser lässt jojo seinen Speicher nicht öffnen",
+          "means": "Ein privates Fenster oder ein Browser, den deine Organisation verwaltet. jojo läuft trotzdem, aber als leerer Arbeitsbereich: Was auf diesem Gerät bereits gespeichert ist, wird nicht angezeigt, und alles, was du eingibst, ist weg, wenn du den Tab schließt. Exportiere, bevor du gehst, falls du etwas Behaltenswertes hinzufügst."
+        },
+        "updated": {
+          "says": "jojo wurde in einem anderen Tab aktualisiert",
+          "means": "Anderswo wurde eine neue Version geladen, und dieser Tab hat seine Datenbank geschlossen, um das Update durchzulassen. Nichts, was du hier änderst, wird gespeichert. Lade neu."
+        },
+        "full": {
+          "says": "Dieser Browser hat keinen Platz mehr",
+          "means": "Das Speichern hat aufgehört, und das Banner zählt die Änderungen, die auf dem Bildschirm, aber nicht geschrieben sind. Dieses hat bewusst keinen Neu-laden-Knopf – Neuladen ist genau das, wodurch sie verloren gingen. Exportiere zuerst, schaffe Platz und lade dann neu."
+        },
+        "unsaved": {
+          "says": "N Änderungen konnten nicht gespeichert werden",
+          "means": "jojo versucht es weiter, und die Warteschlange wird der Reihe nach abgearbeitet – die Zahl kann also von selbst sinken. Exportiere, wenn du jetzt eine Kopie brauchst."
+        },
+        "unreadable": {
+          "says": "N Einträge konnten nicht gelesen werden",
+          "means": "Etwas auf der Festplatte passte nicht zu dem, was jojo erwartet, also wird es weggelassen, statt halb gelesen angezeigt zu werden. Es wurde nichts gelöscht, und Einstellungen → Diagnose nennt die Einträge mit ihrer ID."
+        }
+      },
+      "recovery": "Es gibt noch einen, den du eigentlich nie sehen solltest. Ist die Datenbank vorhanden, aber nicht lesbar, zeigt jojo <strong>statt</strong> der App einen Wiederherstellungsbildschirm – es wird nichts geladen, was über das schreiben könnte, was noch auf der Festplatte liegt, und es fängt nie still von vorn an. Er bietet drei Dinge an, geordnet danach, was sie dich kosten: die Zeilen herunterladen, die gelesen werden konnten, es erneut versuchen oder neu anfangen – und nur Letzteres fragt vorher nach.",
+      "controlsTitle": "Die Steuerelemente in den Einstellungen",
+      "controls": {
+        "export": {
+          "name": "Sicherung exportieren",
+          "body": "Alles in einer versionierten Datei: Bewerbungen, Zeitleiste, Tresor, gesicherte Stellenanzeigen, deine Stichwörter samt Zuordnungen und dein Profil. Sie wird als <strong>{{file}}</strong> geschrieben, mit Datum, damit ein zweiter Export den ersten nicht überschreibt. Sie ist eine Kopie vom Moment des Klickens – sie hält nicht Schritt mit dem, was du danach tust, und sie ist die einzige Kopie deiner Daten, die nicht auf diesem Rechner liegt. Nach Excel exportieren und Importieren sind ausgeschaltet und sagen beim Darüberfahren, warum."
+        },
+        "demo": {
+          "name": "Demodaten laden",
+          "body": "Ersetzt, was da ist, statt es zusammenzuführen. Auf einem leeren Datenbestand lohnt sich der Klick, um zu sehen, wie ein gefüllter aussieht; ansonsten lohnt es sich, vorher zu exportieren."
+        },
+        "clear": {
+          "name": "Alle Einträge löschen",
+          "body": "Bewerbungen, Zeitleiste, Tresor, gesicherte Stellenanzeigen und dein Profil. <strong>Deine Stichwörter bleiben erhalten</strong> – sie sind eigene Einträge, und du hast sie benannt –, also fällt jeder Zähler im Stichwort-Bereich auf null, statt dass die Liste leer wird."
+        },
+        "clearStorage": {
+          "name": "Browserspeicher löschen",
+          "body": "Alles, was diese Website in deinem Browser abgelegt hat – die Einträge und ihre Datenbank, deine Design- und Ton-Einstellungen, Caches und Cookies –, danach ein Neuladen. jojo startet so wie auf einem neuen Rechner, samt Frage beim ersten Start. Es gibt keinen Server mit einer Kopie, das hier ist also wirklich alles."
+        }
+      },
+      "lastThree": "Diese letzten drei sind die einzigen Schreibvorgänge, die <kbd>⌘Z</kbd> nicht zurücknimmt – deshalb fragt jeder zuerst nach und sagt genau, was er betrifft. Sie erscheinen trotzdem im Prüfprotokoll. <strong>Diagnose</strong> auf derselben Seite zählt, was in deinem Datenbestand liegt, wie viel Platz der Browser jojo gibt, und nennt alles, was nicht gelesen werden konnte.",
+      "moveTitle": "Auf einen anderen Rechner umziehen",
+      "move": "<transfer>Übertragung</transfer> ist die Ansicht, um deine Einträge an ein zweites Gerät zu übergeben: Wähl eine Richtung, lies den Kopplungscode, sieh genau, was übertragen würde und wie viel davon, und entscheide, ob Dokumente mitkommen. <strong>In diesem Build wird nichts übertragen – es öffnet keine Verbindung und schreibt nichts.</strong> Es lohnt sich trotzdem, sie durchzugehen, weil sie wie die echte Übergabe aufgebaut ist und die Zahlen aus deinem tatsächlichen Datenbestand gelesen werden – aber heute ziehst du deine Daten mit dem Export oben um."
+    },
+    "browserDb": {
+      "title": "Dein Browser ist die Datenbank",
+      "body": "Jeder Eintrag wird während der Arbeit in die Datenbank in diesem Browser geschrieben, es ist also sicher, den Tab zu schließen. Nichts verlässt diesen Rechner und nichts wird synchronisiert – lösch deine Browserdaten, wechsle den Browser oder verliere die Festplatte, und alles ist mit weg. Exportiere in den <settings>Einstellungen</settings> eine <kbd>.json</kbd>-Sicherung für alles, was du woanders aufheben willst."
+    },
+    "savePath": {
+      "title": "Was passiert, wenn du etwas speicherst",
+      "desc": "Ein Klick auf Speichern ändert sofort, was auf dem Bildschirm steht; der Schreibvorgang kommt in eine Warteschlange und erreicht die Datenbank des Browsers einen Augenblick später. Schlägt er fehl, bleibt die Änderung in der Warteschlange und wird in einem Streifen über der Seite gemeldet, statt verworfen zu werden.",
+      "press": { "line1": "Du drückst", "line2": "Speichern" },
+      "screen": { "line1": "Auf dem Bildschirm,", "line2": "sofort" },
+      "saved": { "line1": "Gespeichert in", "line2": "diesem Browser" },
+      "fail": {
+        "line1": "Ein fehlgeschlagener Schreibvorgang",
+        "line2": "wird behalten und gemeldet."
+      }
+    },
+    "ladder": {
+      "title": "Was jojo mit mehr auf dem Rechner kann",
+      "aside": "jede Stufe ist echt; jede ist optional",
+      "intro": "Die ersten zwei Stufen sind ein Tracker, der nie etwas von dir verlangt. Ab der dritten wird er zum Assistenten, der mit dir an der Suche arbeitet – und jede Stufe darüber kannst du weiterhin auslassen.",
+      "layers": {
+        "browser": {
+          "name": "Nur der Browser",
+          "requires": "Nichts einzurichten",
+          "gives": "Bewerbungen und Fristen verfolgen und die angehängten Dokumente behalten"
+        },
+        "backup": {
+          "name": "+ Eine eigene Sicherung",
+          "requires": "Ein Ort für eine Datei",
+          "gives": "Eine Datei mit allen Einträgen und allen Dokumenten, mit einem Klick wiederherstellbar"
+        },
+        "model": {
+          "name": "+ Lokales Modell",
+          "requires": "Ollama, vLLM oder LM Studio – oder ein kostenloser NVIDIA-Schlüssel",
+          "gives": "Die agentische Hälfte: ein Assistent mit Verläufen, der deine Einträge mit deiner Zustimmung liest und schreibt, Job-Scout-Pipelines, die dein Profil vervollständigen und nach Stellenanzeigen Ausschau halten, „Den Graphen fragen“ in einem Satz und echte Scout-Bewertungen"
+        },
+        "reader": {
+          "name": "+ Dokumentenleser",
+          "requires": "MarkItDown, lokal laufend",
+          "gives": "Das Modell liest deine PDFs, Word-Dateien und Präsentationen – und Stellenanzeigen, sodass Neu → Bewerbung aus einem Link das Formular ausfüllt"
+        },
+        "extension": {
+          "name": "+ Die Erweiterung",
+          "requires": "Chrome, Edge, Brave oder Arc",
+          "gives": "Sichere eine Stellenanzeige genau so, wie sie dastand. Sie ist außerdem der einzige Teil von jojo, der keine Seite ist – genau das lässt eine Pipeline ein Jobportal durchkämmen und eine gehostete Kopie einen Dokumentenleser auf deinem eigenen Rechner erreichen"
+        }
+      },
+      "built": "gebaut",
+      "notBuilt": "nicht gebaut",
+      "outro": "Jede Seite sagt selbst, auf welcher Stufe sie steht, statt dich hierher zurückzuschicken. Der <assistant>Assistent</assistant> ist mit angebundenem Modell ein agentischer Chat mit Verläufen und ohne eins fünf ausgearbeitete Beispiele, in beiden Fällen gekennzeichnet, und <scout>Job scout</scout> bewertet tatsächlich anhand deines Profils und sagt, worauf es gepasst hat. <screens>Jede Ansicht</screens> geht den Rest Seite für Seite durch.",
+      "backup": {
+        "hint": "eingebaut",
+        "title": "Leg eine Sicherung an",
+        "storedTitle": "Deine Dokumente werden hier gespeichert",
+        "stored": "Lebensläufe und Anschreiben, die du anhängst, werden in diesem Browser gespeichert und überstehen das Schließen des Tabs. Nichts wird irgendwohin hochgeladen – und nichts verlässt diesen Rechner, außer du lädst es selbst herunter.",
+        "oneFileTitle": "Eine Datei enthält alles",
+        "oneFile": "In den <settings>Einstellungen</settings> wird eine Sicherung geschrieben, die jeden Eintrag, jede Verbindung zwischen ihnen und jedes Dokument enthält – alles in einer Datei. Beim Wiederherstellen kommt alles drei zurück.",
+        "whyTitle": "Warum das wichtig ist",
+        "why": "Ein Browser kann seinen eigenen Speicher leeren, wenn die Festplatte voll ist, und <kbd>Browserdaten löschen</kbd> tut es immer. Eine Sicherung, die du aufbewahrt hast, ist die einzige Kopie, die keinem von beidem ausgesetzt ist."
+      },
+      "model": {
+        "hint": "nicht angebunden",
+        "title": "Lokales Modell hinzufügen",
+        "connectTitle": "Anbinden",
+        "connect": "Starte vLLM, Ollama oder LM Studio und trag den Endpunkt in den <settings>Einstellungen</settings> ein. Jeder OpenAI-kompatible Server funktioniert. Keine GPU? Ein kostenloser Schlüssel von build.nvidia.com betreibt denselben Agenten aus derselben Ansicht – mit Ratenlimit statt Abrechnung, und der einzige Preis ist, dass deine Einträge das Gerät verlassen.",
+        "changesTitle": "Was sich ändert",
+        "changes": "Das Entwerfen ist dann keine Lückentext-Vorlage mehr, sondern liest dein Profil und deine Dokumente. Bis dahin zeigt die Seite <assistant>Assistent</assistant> die ausgearbeiteten Beispiele, mit denen er antwortet.",
+        "scoringTitle": "Scout-Pipelines fangen an zu bewerten",
+        "scoring": "Eine Pipeline ist eine gespeicherte Suche, die du schon heute anlegen kannst. Das Bewerten ist die Hälfte, die auf das Modell wartet, und das Banner auf der Seite sagt das, statt Zahlen anzuzeigen, die nichts erzeugt hat."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Jede Ansicht",
+    "title": "Jede Ansicht – was sie kann und was nicht",
+    "subtitle": "Ein Abschnitt pro Seite – wofür sie da ist, was nicht offensichtlich ist und was noch nicht angebunden ist.",
+    "caption": "Dreizehn Abschnitte – spring zu dem, weswegen du hier bist",
+    "sections": {
+      "doors": "Wo jede Seite ist",
+      "dashboard": "Heute",
+      "applications": "Bewerbungen",
+      "calendar": "Kalender",
+      "vault": "Tresor",
+      "scout": "Job-Scout",
+      "statistics": "Statistiken",
+      "graph": "Graph",
+      "transfer": "Übertragung",
+      "profile": "Mein Profil",
+      "assistant": "Assistent",
+      "settings": "Einstellungen",
+      "guide": "Diese Anleitung"
+    },
+    "parts": {
+      "notObvious": "Was nicht offensichtlich ist",
+      "whatIsReal": "Was echt ist",
+      "addressNothing": "<lead>Die Adressleiste</lead> enthält nichts."
+    },
+    "doors": {
+      "hint": "sechs Seiten stehen in der Seitenleiste, sechs nicht",
+      "title": "Wo jede Seite ist",
+      "intro": "Die Seitenleiste listet sechs Seiten. Sechs weitere erreichst du von ganz woanders: über ein Symbol in der oberen Leiste oder über eine der vier Statuskacheln am Fuß der Seitenleiste, die wie Anzeigen aussehen und zugleich Knöpfe sind. Unterhalb einer Laptop-Breite ist die Seitenleiste eine Schublade hinter dem Menüknopf oben links; die obere Leiste ist auf jedem Bildschirm in jeder Größe da.",
+      "listTitle": "Jede Route und das Element, das sie öffnet",
+      "where": {
+        "dashboard": "Seitenleiste, erste Zeile. Hier öffnet jojo auch.",
+        "applications": "Seitenleiste. Ihr Zähler zeigt Einträge, die du zum Nachfassen markiert hast.",
+        "calendar": "Seitenleiste. Ihr Zähler zeigt, was in den nächsten sieben Tagen ansteht.",
+        "vault": "Seitenleiste. Ihr Zähler zeigt überfällige Erinnerungen. <code>/reminders</code> leitet hierher um, denn dorthin ist diese Seite gewandert.",
+        "scout": "Seitenleiste. Ihr Zähler zeigt Treffer, aus denen noch niemand eine Bewerbung gemacht hat.",
+        "statistics": "Seitenleiste, letzte Zeile.",
+        "graph": "Die Kachel <strong>Browserspeicher</strong> am Fuß der Seitenleiste. Nirgendwo sonst in der App heißt sie Graph – deshalb ist das die Seite in jojo, die man am schwersten zufällig findet.",
+        "transfer": "Die Kachel <strong>Übertragung</strong> und <settings>Einstellungen → Deine Daten</settings>.",
+        "profile": "Das Personensymbol in der oberen Leiste.",
+        "assistant": "Das Robotersymbol in der oberen Leiste.",
+        "settings": "Das Zahnradsymbol in der oberen Leiste. Auch die Kachel <strong>Lokales Modell</strong> führt hierher – hier wird es eingerichtet.",
+        "guide": "Das Fragezeichen, das letzte Symbol in der oberen Leiste. Es steht nicht in der Seitenleiste."
+      },
+      "palette": "Es gibt eine Tür, die zu allen führt, und sie ist der Grund, warum die sechs versteckten Seiten eine Unannehmlichkeit sind und kein Problem: <kbd>⌘K</kbd> endet mit einer Gruppe <strong>Gehe zu</strong>, die jede Seite aufführt, auch jede der vier Seiten dieser Anleitung einzeln. <overview>So benutzt du jojo</overview> erklärt, was diese Palette sonst noch kann.",
+      "everyTitle": "Zwei Dinge, die für jede Seite gelten",
+      "switches": "Die Schalter hinter dem Zahnrad neben einem Seitentitel – Notizen zeigen, kompakte Zeilen, Punkte statt Titel, Zähler zeigen – ändern, was die Seite zeichnet, und gelten nur für diesen Besuch. Sie stehen nicht in der Adressleiste und werden nicht gespeichert; das Design und der Tonschalter in den Einstellungen schon – sie sind die Ausnahmen.",
+      "defaults": "Wo eine Seite Zustand in der Adresse hält, wird ein Wert weggelassen, der dem entspricht, was die Seite ohnehin zeigt. Deshalb sind <code>/applications</code> und <code>/applications?view=board&stage=all&sort=daysAgo</code> dieselbe Ansicht, und deshalb bekommst du die aufgeräumtere der beiden, wenn du einen Filter entfernst."
+    },
+    "doorsDiagram": {
+      "title": "Von wo aus jede Seite erreicht wird",
+      "desc": "Die sechs Zeilen in der Seitenleiste öffnen Dashboard, Bewerbungen, Kalender, Tresor, Job scout und Statistiken. Die vier Kacheln darunter öffnen Graph, Übertragung und – für die Brücke und das Modell – Einstellungen. Die vier Symbole rechts in der oberen Leiste öffnen Mein Profil, Einstellungen, den Assistenten und diese Anleitung. Nichts in der Liste der Seitenleiste führt zu diesen letzten sechs.",
+      "search": "Suchen…",
+      "new": "Neu",
+      "topBar": { "line1": "Mein Profil · Einstellungen ·", "line2": "Assistent · So geht’s" },
+      "sidebar": {
+        "line1": "Dashboard · Bewerbungen · Kalender",
+        "line2": "Tresor · Job scout · Statistiken"
+      },
+      "tiles": "Graph · Übertragung · Einstellungen"
+    },
+    "applications": {
+      "where": "Seitenleiste · Board, Tabelle und ein Eintrag",
+      "open": "Board öffnen",
+      "intro": "Jede Stelle, die du verfolgst, in einem von zwei Layouts über denselben Einträgen, dazu der Eintrag selbst unter seiner eigenen Adresse. Die sechs Phasen und was ein Wechsel zwischen ihnen abfragt, stehen in <overview>So benutzt du jojo</overview>; dies ist die Seite, auf der es passiert.",
+      "boardTitle": "Board und Tabelle sind nicht zweimal dieselbe Ansicht",
+      "board": {
+        "columns": "Das Board hat eine Spalte pro Phase, mit einem Zähler in jeder Kopfzeile. <strong>Hier hinzufügen</strong> am Fuß einer Spalte öffnet einen neuen Eintrag, der schon in dieser Phase steht – wer eine Stelle einträgt, für die er schon ein Gespräch hatte, sollte keinen Entwurf anlegen und vier Spalten weit ziehen müssen.",
+        "sort": "Die Tabelle sortiert nach Position, Phase und Letzter Aktivität; ein erneuter Klick auf dieselbe Kopfzeile kehrt die Reihenfolge um. Rolle und Nächster Termin sind Spalten, keine Sortierschlüssel.",
+        "chips": "Die Phasenfilter-Chips gibt es nur in der Tabelle. Das Board ist bereits nach Phasen gruppiert, es zu filtern würde fünf Spalten leeren statt eine Liste zu kürzen – ein Wechsel zum Board entfernt diesen Filter, statt ihn eingeschaltet zu verstecken.",
+        "search": "Das Suchfeld durchsucht Arbeitgeber, Position, Notiz, Rollen-Tag und Phasennamen, „Angebot“ zu tippen findet also auch einen Eintrag, bei dem nur ein Chip das Wort enthält. Die Zähler auf den Phasen-Chips beziehen sich auf das, was Suche und Stichwort-Chips übrig gelassen haben, nicht auf alles.",
+        "empty": "Ist die Liste leer, nennt sie die Filter, die dafür sorgen, und bietet an, alle auf einmal zu entfernen."
+      },
+      "moveTitle": "Eine Karte zwischen Phasen verschieben",
+      "move": "Der Griff sitzt am linken Rand einer Karte. Zieh daran, und die Karte löst sich aus ihrer Spalte – die Spalte, über der du bist, bekommt den Akzentrahmen und öffnet einen gestrichelten Platz, wo die Karte landen wird. Ziehen ist nicht der einzige Weg, und mit der Tastatur der langsame – zwei Spalten weiter sind ein Leerzeichen und zwanzig Pfeiltasten. Jede Karte hat unter ihrem eigenen Phasen-Etikett ein Phasenmenü, und in der Tabelle ist der Phasen-Chip einer Zeile dasselbe Menü; beides sind zwei Tastendrücke.",
+      "fromBoard": {
+        "name": "Vom Board oder aus der Tabelle",
+        "body": "Der Wechsel passiert, sobald du ihn machst, und die Meldung sagt, aus welcher Phase die Karte kam, und bietet Rückgängig an. Ziehen und Auswahl im Menü sind derselbe Schreibvorgang, ein falsches Ablegen lässt sich also genauso beheben wie ein falscher Klick – was erst so ist, seit das Ziehen denselben Weg nimmt wie alles andere."
+      },
+      "fromRecord": {
+        "name": "Aus dem Eintrag heraus",
+        "body": "Das Phasenmenü in der Kopfzeile des Eintrags ist dasjenige, das zuerst ein kurzes Formular öffnen kann, und es öffnet es nur, wenn der Wechsel etwas abzufragen hat: Abgeschickt, Vorstellungsgespräch, Angebot und Abgeschlossen ja, Entwurf und Vorgespräch nein. Einen Eintrag zu verlassen, der bereits ein Angebot hat, fragt immer nach, egal wohin, denn das Angebot muss bewusst behalten oder verworfen werden."
+      },
+      "exits": "Das Formular hat drei Ausgänge, und keiner ist ein Trick: <strong>Abbrechen</strong> schreibt nichts, <strong>Ohne Details verschieben</strong> ändert die Phase und berührt sonst nichts, und der letzte übernimmt, was du ausgefüllt hast. Wenn es angeboten hat, einen Termin in deinen Kalender einzutragen, sagt die Meldung danach, dass es das getan hat.",
+      "recordTitle": "Der Eintrag selbst",
+      "record": {
+        "opens": "Er öffnet sich über der Liste statt an ihrer Stelle. Auf einem Laptop ist er ein Panel rechts über dem Board, geschlossen mit Escape, über den Hintergrund oder das X in seiner eigenen Kopfzeile; unterhalb dieser Breite nimmt er die ganze Seite ein. So oder so schließt Zurück den Eintrag und lässt Ansicht, Suche, Phase und Sortierung genau so, wie sie waren.",
+        "address": "Seine Adresse ist ein Name – <code>/applications/rice</code> –, weil Eintrags-IDs pro Datenbestand vergeben werden und eine gemerkte ID nach dem erneuten Laden der Demodaten ins Leere führen würde. Ein Link mit einer ID funktioniert trotzdem.",
+        "note": "Die Notiz speichert sich, wenn du woanders hinklickst, und zeigt darunter „Notiz gespeichert“. Es gibt keinen Speichern-Knopf, den man vergessen könnte.",
+        "delete": "Beim Löschen wird vor der Nachfrage gezählt, was übrig bleibt – die Erinnerungen, Termine und gesicherten Dinge unter dem Eintrag bleiben erhalten und werden nur getrennt, nie gelöscht –, und das Rückgängig in der Meldung stellt auch diese Verknüpfungen wieder her, die du durch erneutes Anlegen der Bewerbung nicht zurückbekämst.",
+        "deleted": "Ein Link auf einen gelöschten Eintrag landet auf einem Panel, das genau das sagt, statt auf einem Fehler. Nichts anderes wurde mit entfernt."
+      },
+      "address": "<lead>Die Adressleiste</lead> enthält das Layout, den Suchtext und – weil beides Steuerelemente der Tabelle sind – den Phasenfilter und den Sortierschlüssel, also sind <bystage>die Tabelle nach Phase sortiert</bystage> und <atoffer>alles im Angebotsstadium</atoffer> Links, die du behalten kannst. Eine Phase in der Adresse bewirkt nichts, solange die Adresse nicht auch Tabelle sagt. Der Rollenfilter und die Stichwort-Chips daneben stehen gar nicht darin: Sie sind die Auswahl dieses Tabs und werden beim Neuladen zurückgesetzt."
+    },
+    "today": {
+      "where": "Seitenleiste, erste Zeile",
+      "open": "Heute öffnen",
+      "intro": "Was der Tag von dir will, und sonst nichts. Fünf Bereiche, alle aus deinen Einträgen in ihrem aktuellen Stand gezählt: <strong>Entscheidung nötig</strong> – ein Angebot, eine überfällige Bewerbung, die nächste Frist oder das nächste Gespräch mit tickender Uhr – neben einem Monatsstreifen und ein paar Zählern, dann <strong>Diese Woche fällig</strong>, <strong>Neueste Bewerbungen</strong> und die Aufschlüsselung der <strong>Pipeline</strong>.",
+      "items": {
+        "checklist": "Solange nichts verfolgt wird, ersetzt eine Checkliste mit drei Schritten den Entscheidungsbereich; sie öffnet die echten Dialoge und hakt sich anhand des Datenbestands selbst ab. Löschst du in den Einstellungen alle Einträge, kommt sie zurück, weil sie den Datenbestand liest, statt sich zu merken, dass du sie einmal abgeschlossen hast.",
+        "colour": "Die Farbe auf dieser Seite kommt nur vom Datum: Rot ist überfällig, Gelb ist fällig in 48 Stunden, und alles weiter Entfernte bleibt neutral, egal wie wichtig. Was du erledigt hast, wird grau statt grün – nichts hier ist eine Belohnung.",
+        "rows": "Zeilen lassen sich abhaken, um einen Tag, drei Tage oder eine Woche verschieben oder öffnen, ohne die Seite zu verlassen. Jede dieser Aktionen ist ein echter Schreibvorgang mit einem Rückgängig in der Meldung.",
+        "strip": "Der Monatsstreifen ist ein eigener kleiner Kalender – er blättert Monate, ohne die Seite <calendar>Kalender</calendar> zu bewegen, und ein Klick auf einen Tag öffnet diesen Tag dort."
+      },
+      "address": "<lead>Die Adressleiste</lead> enthält nichts. Diese Seite ist <code>/</code>, und jedes Element darauf ist entweder ein Link woandershin oder ein Schreibvorgang."
+    },
+    "calendar": {
+      "where": "Seitenleiste, dritte Zeile",
+      "open": "Kalender öffnen",
+      "intro": "Ein Monatsraster mit der Liste des ausgewählten Tages darunter, auf einer Seite. Fristen, Vorstellungsgespräche, Besuche vor Ort und Erinnerungen stehen alle hier, weil sie alle dieselbe Art von Eintrag sind – warum es sich lohnt, das zu wissen, steht in <overview>So benutzt du jojo</overview>.",
+      "items": {
+        "drag": "Ziehst du einen Eintrag auf einen anderen Tag, wird er verschoben, mit einem Rückgängig in der Meldung. Legst du ihn auf den Tag zurück, von dem er kam, wird nichts geschrieben und nichts gemeldet – eine Meldung über einen Wechsel, der nicht stattgefunden hat, ist schlimmer als Schweigen.",
+        "types": "Die Terminarten unter dem Raster sind Schalter, wie die Legende eines Diagramms: Schalte eine aus, und ihre Einträge verschwinden für diesen Besuch aus dem Raster und aus beiden Tageslisten. Ein Tag, dessen Einträge alle ausgeschaltet sind, sagt das, statt sich leer zu geben, und ein Link auf einen Eintrag einer ausgeblendeten Art schaltet diese Art wieder ein, damit er irgendwo landen kann.",
+        "key": "Die Legende unter dem Raster wird aus dem gebaut, was dieser Monat tatsächlich enthält. Ein Monat ohne Überfälliges zeigt keine Überfällig-Farbe, denn eine Legende, die eine Markierung verspricht, die nicht im Raster ist, schickt dich auf die Suche.",
+        "goTo": "<strong>Zum Monat</strong> blättert durch Jahre, ohne den Kalender dahinter zu bewegen, bis du einen auswählst, und markiert den tatsächlichen aktuellen Monat, während du in einem anderen Jahr bist. <strong>Heute</strong> kehrt zu heute zurück und bleibt optisch gedrückt, solange du schon dort bist.",
+        "paging": "Beim Blättern zwischen Monaten bleibt der Tag erhalten, den du angesehen hast, begrenzt auf den Monat, in dem du landest: Vom 31. Januar aus kommst du am letzten Februartag an statt an einem Datum, das es nicht gibt. Dieselbe Begrenzung greift bei einer von Hand getippten Adresse, <code>?m=2&d=31</code> antwortet also mit einem echten Tag statt mit einem leeren Raster.",
+        "add": "<strong>Termin hinzufügen</strong> ist mit dem angezeigten Tag vorausgefüllt, was in einem Kalender fast immer der gemeinte Tag ist.",
+        "export": "<strong>In meinen Kalender exportieren</strong> schreibt jedes Datum, das jojo kennt, als <code>.ics</code>, mit einer Erinnerung bei jedem. Das gibt es hier, weil jojo keine eigenen Benachrichtigungen verschickt: Der Kalender, von dem du ohnehin Hinweise bekommst, ist das Einzige, das dich vor einer Frist warnen kann, während diese App geschlossen ist. Es enthält auch die Antwortfrist jedes Angebots, die an der Bewerbung hängt statt in der Zeitleiste und deshalb nie in diesem Raster erschienen ist. Die Datei ist eine Momentaufnahme – änderst du ein Datum, exportiere erneut."
+      },
+      "address": "<lead>Die Adressleiste</lead> enthält Jahr, Monat, Tag und den Eintrag, über den du gekommen bist – das aktuelle Jahr und der aktuelle Monat werden weggelassen, wenn du dort bist, ein Link auf den nächsten Monat ist also <code>/calendar?m=11&d=3</code>. Der letzte der vier, <code>focus</code>, hebt eine Zeile für ein paar Sekunden hervor und entfernt sich dann selbst aus der Adresse, damit eine danach kopierte URL den Tag meint und nicht eine Zeile, die niemand mehr ansieht."
+    },
+    "vault": {
+      "where": "Seitenleiste · sechs Werkzeuge, eine Seite",
+      "open": "Tresor öffnen",
+      "intro": "Alles, was du dir für später zurücklegst. Das segmentierte Steuerelement in der Kopfzeile schaltet zwischen sechs Werkzeugen um, und immer nur eines ist zu sehen – das übersehen die meisten: Der Tresor ist keine Liste, und fünf seiner sechs Werkzeuge liegen hinter einem Tab.",
+      "rows": {
+        "reminders": {
+          "name": "Erinnerungen",
+          "body": "Gruppiert in Überfällig, Heute, Demnächst und Erledigt. Abhaken ist die ganze Arbeit, und jede Zeile hat dieselben Verschiebe-Optionen wie das Dashboard."
+        },
+        "links": {
+          "name": "Links",
+          "body": "Abgelegt unter Stellenanzeige, Institution, Person oder Leitfaden und später zwischen ihnen verschiebbar."
+        },
+        "files": {
+          "name": "Dateien",
+          "body": "Kategorien Zu lesen, Bewerbungen, Vorträge und Verwaltung. Zieh eine Datei auf die Liste oder wähl eine aus – unten steht, was tatsächlich behalten wird."
+        },
+        "snippets": {
+          "name": "Bausteine",
+          "body": "Markiert als Anschreiben, Bewerbungsformular, E-Mail oder Kurzbiografie. Aus ihnen wird der Dialog <strong>Nachricht entwerfen</strong> gebaut, und hier legt der Assistent eine Antwort ab, die du speicherst."
+        },
+        "people": {
+          "name": "Personen",
+          "body": "Referenzgeber, Kommissionsvorsitzende, Recruiter – alle, über die die Suche tatsächlich läuft. Sie werden unter einer Stelle abgelegt wie ein Lebenslauf, und aus demselben Grund ist es eine Liste und nicht eine einzelne ID: Ein Referenzgeber schreibt für jede Stelle, für die du ihn nennst. Vorher steckten sie im Text einer Erinnerung, weshalb nichts beantworten konnte, „wessen Gutachten noch aussteht“."
+        },
+        "tools": {
+          "name": "Werkzeuge",
+          "body": "Ein Taschenrechner, einfach oder wissenschaftlich, für die Rechnerei, in die jedes Angebot mündet. Er behält die letzten dreißig Zeilen für diesen Besuch und nichts, nachdem du den Tab schließt."
+        }
+      },
+      "items": {
+        "filter": "Der Stichwortfilter über der Liste gehört zum geöffneten Werkzeug, der Zähler neben einem Stichwort beschreibt also diesen Tab und nicht den ganzen Tresor. Auf Werkzeuge, das keine Einträge hat, und auf leeren Tabs wird er gar nicht angezeigt.",
+        "search": "Jede der vier Listen hat ihr eigenes Suchfeld und ihren eigenen Kategoriefilter, und keins davon steht in der Adresse – der geöffnete Tab und der Eintrag, über den du gekommen bist, schon.",
+        "redirect": "<code>/reminders</code> leitet hierher um. Erinnerungen waren eine eigene Seite, bevor sie ein Werkzeug wurden, und Links von damals funktionieren weiterhin."
+      },
+      "notConnectedTitle": "Dateien werden erfasst, nicht gespeichert",
+      "notConnected": "Eine Datei verrät ihren Namen, ihre Größe und ihren Typ, und das ist alles, was jojo behält – es gibt keinen Platz auf deiner Festplatte, um das Dokument selbst abzulegen. Eine Datei, die du bei diesem Besuch auswählst oder ablegst, hat eine echte Vorschau aus den Bytes, die der Browser übergeben hat, solange der Tab lebt; die Zeilen aus den Demodaten haben keine Bytes dahinter und zeigen stattdessen einen beschrifteten Platzhalter. Nichts wird hochgeladen und kein Inhalt gelesen.",
+      "address": "<lead>Die Adressleiste</lead> enthält das geöffnete Werkzeug und kurz den Eintrag, auf den ein Link zeigte: <code>/vault?tool=snippets</code>. Ein Tab-Wechsel entfernt die Hervorhebung."
+    },
+    "scout": {
+      "where": "Seitenleiste, fünfte Zeile",
+      "open": "Job scout öffnen",
+      "intro": "Drei Bereiche: die gespeicherten Suchen, die du gern laufen lassen würdest, die Treffer, die eine solche Suche liefern würde, und ein Feld, das eine selbst gefundene Stellenanzeige sichert. Der Streifen oben auf der Seite sagt, welcher davon auf etwas wartet, und steht genau deshalb als Erstes auf dem Bildschirm.",
+      "items": {
+        "pipelines": "<strong>Pipelines</strong> sind Einträge wie alle anderen – ein Portal zum Beobachten, die wichtigen Begriffe und wie oft nachgesehen wird. Anlegen, Bearbeiten und Löschen funktionieren und überstehen ein Neuladen. Eine Pipeline, die du einschaltest, zeigt <strong>pausiert</strong> statt aktiv, was das ehrliche Wort dafür ist.",
+        "save": "<strong>Stellenanzeige sichern</strong> funktioniert ohne jede Anbindung. Gespeichert werden die URL, der daraus abgeleitete Arbeitgeber und der Tag, an dem du sie gesichert hast – genug, um die Anzeige wiederzufinden und dich darauf zu bewerben. Nichts ruft die Seite ab.",
+        "add": "<strong>Zu Bewerbungen hinzufügen</strong> legt bei einem Treffer oder einer gesicherten Anzeige die Bewerbung an und verknüpft beide, statt die Zeile zu verschieben. Die Zeile sagt danach, wohin sie gegangen ist, du kannst den Weg also nicht zweimal gehen."
+      },
+      "notConnectedTitle": "Schnappschüsse warten auf ein lokales Modell. Die Bewertungen nicht.",
+      "notConnected": "Die Treffer sind noch die, die mit den Demodaten kamen – nichts hat ein Portal durchsucht –, aber der Prozentwert bei jedem wird hier berechnet, auf diesem Gerät, anhand der Suchbegriffe, Zielpositionen und Regionen in deinem Profil, und jede Zeile sagt, worauf sie gepasst hat. Ein leeres Profil zeigt <strong>nicht bewertet</strong> statt einer selbstsicheren Zahl über nichts. <strong>Schnappschuss öffnen</strong> ist der Teil, der tatsächlich wartet: Er ist bei jeder gesicherten Anzeige deaktiviert und sagt beim Darüberfahren, warum – es wurde nie eine Seite abgerufen, und eine anzuzeigen hieße, eine Datei zu behaupten, die jojo nicht hat.",
+      "address": "<lead>Die Adressleiste</lead> enthält die Zeile, auf die ein Link zeigte, benannt nach der Liste, in der sie steht – <code>/scout?focus=match:unt</code> oder <code>focus=posting:…</code>. Beide Listen vergeben ihre IDs getrennt, die Liste muss also Teil des Parameters sein, damit die richtige Zeile aufleuchtet."
+    },
+    "statistics": {
+      "where": "Seitenleiste, letzte Zeile",
+      "open": "Statistiken öffnen",
+      "intro": "Kernquoten, wann du dich beworben hast, woher jede Bewerbung kam, wie weit Bewerbungen gekommen sind, wie sie endeten, woran du als Nächstes arbeiten solltest, und Bewerbungen, Antworten, Gespräche und Angebote nach Art der Stelle aufgeschlüsselt. Jede Zahl wird in dem Moment, in dem du hinsiehst, aus deinen Bewerbungen gezählt.",
+      "items": {
+        "funnel": "Gespeichert wird nur die Phase, in der ein Eintrag jetzt steht, der Trichter zählt jede Bewerbung also so weit, wie sie es zeigt. Ein Eintrag, der nach einem Gespräch abgelehnt wurde, zählt anhand der Termine, die er trägt, und nicht weiter, und die beiden betroffenen Bereiche sagen in ihrer Überschrift <strong>soweit jeder Eintrag es zeigt</strong>, statt still eine Zahl auszugeben, für die sie nicht geradestehen können.",
+        "typical": "Als <strong>typisch</strong> markierte Zahlen sind eine Beispielsuche zum Vergleichen, nicht deine eigene Geschichte – der Schalter hinter dem Zahnrad blendet sie aus. jojo führt keinen Verlauf seiner eigenen Zahlen, deshalb zeigt hier nichts eine Veränderung über die Zeit.",
+        "legend": "Mit der Legende unter dem Ergebnisbalken lassen sich Abschnitte ausschalten, und die Überschrift sagt dann, wie viele vom Gesamten noch angezeigt werden. Die Prozentwerte werden auf das Übrige neu berechnet, statt stehen zu bleiben.",
+        "holds": "Die Seite hält sich zurück, statt einen Nenner zu erfinden. Ohne Abgeschicktes gibt es keine Kernquoten und keinen Trichter – eine Antwortquote über null Bewerbungen ist eine erfundene Zahl –, und ganz ohne Einträge ist die ganze Seite ein einziger leerer Zustand."
+      },
+      "address": "<lead>Die Adressleiste</lead> enthält nichts. Die Schalter und die Legende gelten für diesen Besuch."
+    },
+    "graph": {
+      "where": "die Kachel Browserspeicher in der Seitenleiste",
+      "open": "Graph öffnen",
+      "intro": "Deine Einträge so gezeichnet, wie sie gespeichert sind: ein Knoten für jeden, eine Kante für jeden Verweis zwischen zweien. Die Farbe ist die Art des Eintrags, die Größe zeigt, wie viel auf ihn verweist. Unter dem Bild liegt ein Abfragebereich, der die Fragen beantwortet, die eine Liste nicht kann, etwa welche Bewerbungen keine geplante Nachfrage haben. <guide>Der Graph</guide> geht das alles durch – dieser Abschnitt sagt nur, wo die Seite ist und was sie nicht tut.",
+      "items": {
+        "legend": "Die Zeilen der Legende blenden eine Art von Eintrag im Bild aus. Fragen laufen trotzdem über den ganzen Graphen – eine Antwort, die sich ändert, weil du etwas ausgeblendet hast, wäre schlimmer als gar keine.",
+        "illustrative": "Die Zeile unter den Auswahlfeldern, die wie Code aussieht, ist als <strong>illustrativ</strong> gekennzeichnet, und das ist ernst gemeint. Nichts wertet sie aus; sie steht da, damit die Form neben den Worten die Auswahlfelder verständlich macht.",
+        "fetched": "Diese Seite und Übertragung werden getrennt vom Rest von jojo geladen, beim ersten Aufruf siehst du also vielleicht kurz einen benannten Platzhalter, während der Code eintrifft. Er sagt das, statt sich zu drehen."
+      },
+      "address": "<lead>Die Adressleiste</lead> enthält nichts – nicht den ausgewählten Knoten, nicht die Frage, nicht die ausgeblendeten Arten. Eine Ansicht, die du hier einrichtest, kannst du niemandem schicken; die Abfragebeispiele im Bereich sind die teilbare Version."
+    },
+    "transfer": {
+      "where": "die Kachel Übertragung in der Seitenleiste und die Einstellungen",
+      "open": "Übertragung öffnen",
+      "intro": "Alles an ein zweites Gerät übergeben: Wähl, welches Ende dieser Rechner ist, lies den Kopplungscode vor, sieh genau, was übertragen würde und wie viel davon, und entscheide, ob Dokumente mitkommen. Die Zahlen werden Gruppe für Gruppe aus deinem eigenen Datenbestand gelesen – genau darum lohnt sich das Durchgehen: Was sie zu übertragen verspricht, ist das, was du wirklich hast.",
+      "notConnectedTitle": "Es wird nichts übertragen",
+      "notConnected": "Dieser Build öffnet keine Verbindung, fragt nach keiner Kamera und schreibt in keinen Datenbestand. Der Kopplungscode wird bei jedem Besuch neu erzeugt und koppelt mit nichts; der Fortschritt, den sie durchläuft, ist eine Demonstration davon, wie die echte Übergabe aussehen würde, und die Seite sagt das unter dem Code statt in einem Banner, an dem du vorbeiscrollen würdest. Heute ziehst du deine Einträge mit dem Export in <settings>Einstellungen → Deine Daten</settings> auf einen anderen Rechner um.",
+      "items": {
+        "files": "Dateien sind die einzige Gruppe, die standardmäßig ausgeschaltet ist – sie sind die schwere Hälfte einer Übergabe und die Hälfte, die du auf dem anderen Gerät höchstwahrscheinlich schon hast. Das empfangende Ende hat kein Mitspracherecht, denn ein Gerät, das still die Hälfte des Angekommenen verwirft, wäre die schlimmere Überraschung.",
+        "animation": "Die Animation ist eine WebGPU-Szene, die jedes Bild neu zeichnet. Hinter dem Zahnrad gibt es einen Schalter, um sie wegzuräumen – im Akkubetrieb lohnt sich das.",
+        "empty": "Bei einem leeren Datenbestand sagt die Seite, dass es nichts zu übertragen gibt, und verweist auf die Demodaten, statt anzubieten, von allem null zu schicken."
+      }
+    },
+    "profile": {
+      "where": "das Personensymbol, obere Leiste",
+      "open": "Dein Profil öffnen",
+      "intro": "Vier Bereiche: deine Grunddaten, deine Links, deine Interessen und Ziele sowie deine Dokumente. Es wird in diesen Browser geschrieben und behalten, genau wie jeder andere Eintrag – <overview>So benutzt du jojo</overview> erklärt, warum es trotzdem keiner der ersten Schritte ist.",
+      "items": {
+        "match": "<strong>Suchbegriffe</strong> sind keine Stichwörter, und der Bereich sagt das genau dort, wo du sie eintippst. Ein Stichwort ist etwas, unter dem du Einträge ablegst und nach dem du filterst; ein Suchbegriff ist eine Formulierung, anhand derer der Scout eine Stellenanzeige bewerten würde. Die beiden Listen hatten nie etwas miteinander zu tun.",
+        "documents": "Der Dokumentenbereich ist eine Ansicht der Kategorie Bewerbungen im <vault>Tresor</vault> statt einer zweiten eigenen Liste – ein Lebenslauf, der an einem der beiden Orte hinzugefügt wird, erscheint an beiden, weil es nur einen Ort gibt. Ein Upload hier erfasst Name, Größe und Typ, zu denselben Bedingungen wie im Tresor.",
+        "save": "Die ganze Seite wird als eine Änderung gespeichert, ein einziges Rückgängig stellt also alles wieder her. Wer ohne Bearbeitung auf Speichern drückt, schreibt nichts und bekommt kein Rückgängig angeboten, statt eine Änderung zu protokollieren, die nicht stattgefunden hat.",
+        "example": "Jedes Feld hat ein graues Beispiel. Bei einem leeren Datenbestand ist das wichtig: Diese Seite zeigte früher Name und E-Mail einer fremden Person als echte Werte an – in Feldern, die man vernünftigerweise für die eigenen Angaben halten würde."
+      }
+    },
+    "assistant": {
+      "where": "das Robotersymbol, obere Leiste",
+      "open": "Assistenten öffnen",
+      "intro": "Ein Chat mit Verläufen mit dem lokalen Modell, das du in den <settings>Einstellungen</settings> angebunden hast, und bis dahin eine Seite mit ausgearbeiteten Beispielen. Welches von beiden du bekommst, entscheidet sich daran, ob ein Endpunkt gespeichert ist – nichts ist versteckt, und es gibt keinen Schalter.",
+      "connectedTitle": "Mit angebundenem Modell",
+      "connected": {
+        "agentic": "Er ist <strong>agentisch</strong>: Das Modell bekommt die eigenen Werkzeuge der App und kann Einträge lesen und schreiben, um dir zu antworten. Jeder Aufruf erscheint in der Antwort, während er passiert – das Werkzeug, seine Argumente und was zurückkam –, ein Schreibvorgang ist also etwas, dem du zusiehst, statt es hinterher zu entdecken.",
+        "threads": "Gespräche sind <strong>Verläufe, und sie werden gespeichert</strong>. Sie liegen in der IndexedDB dieses Browsers neben allem anderen, das Schließen des Tabs behält sie also; die Verlaufsleiste wechselt zwischen ihnen, und jeder Verlauf lässt sich unter einer Bewerbung ablegen, damit zwei Suchen nicht zu einem Verlauf verschwimmen.",
+        "documents": "Ist zusätzlich der Dokumentenleser eingerichtet, kann er <strong>deine Dokumente lesen</strong> – ein PDF, eine Word-Datei, eine Präsentation – und aus ihrem Inhalt antworten."
+      },
+      "notConnectedTitle": "Ohne Modell sind die Antworten geschrieben, nicht generiert",
+      "notConnected": "Fünf Anliegen, die bei einer Jobsuche wirklich aufkommen – ein Anschreiben, einen Lebenslauf anpassen, eine Stellenanzeige lesen, eine Nachfrage-Mail, Gesprächsvorbereitung –, jedes mit einem vollständig ausgeschriebenen Beispiel beantwortet. Eine Nachricht, die zu keinem passt, bekommt eine Antwort, die zuerst sagt, dass sie vorgefertigt ist, statt eines plausiblen Absatzes zu deiner Frage, und jede Antwort trägt dasselbe Abzeichen – <strong>Beispielantwort · kein Modell angebunden</strong>.",
+      "items": {
+        "save": "<strong>In Bausteinen speichern</strong> legt eine Antwort im <vault>Tresor</vault> unter dem Tag ab, zu dem sie gehört, und die Meldung bietet an, sie dort zu öffnen.",
+        "copy": "Ein Browser kann das Kopieren rundweg verweigern, deshalb meldet der Knopf den Fehler, statt etwas zu bestätigen, das nicht passiert ist.",
+        "delete": "Das Löschen eines Verlaufs bietet ein Rückgängig statt einer Nachfrage."
+      }
+    },
+    "settings": {
+      "where": "das Zahnradsymbol, obere Leiste",
+      "open": "Einstellungen öffnen",
+      "intro": "Sieben Bereiche: deine Dokumente, ein lokales Modell, Darstellung, deine Daten, deine Stichwörter, Diagnose und das Prüfprotokoll. Die Laufzeit-Kachel am Fuß der Seitenleiste führt hierher – dafür ist sie da.",
+      "items": {
+        "export": "<strong>Sicherung exportieren</strong> schreibt eine vollständige, versionierte Sicherung nach <strong>{{file}}</strong>: Bewerbungen, Zeitleiste, Tresor, gesicherte Stellenanzeigen, deine Stichwörter samt Zuordnungen und dein Profil. Sie ist eine Kopie vom Moment des Klickens und hält nicht Schritt mit dem, was du danach tust.",
+        "clear": "<strong>Demodaten laden</strong>, <strong>Einträge löschen</strong> und <strong>Speicher löschen</strong> fragen jeweils zuerst nach und sagen genau, was sie betreffen. Einträge löschen behält die Stichwörter, die du benannt hast – es sei denn, der Datenbestand besteht noch aus unberührten Demodaten; dann gehen die mitgelieferten Stichwörter mit, und die Bestätigung sagt, welches von beidem gleich passiert.",
+        "keywords": "<strong>Stichwörter</strong> benennt sie um, färbt sie neu ein und löscht sie – und sagt dir vor dem Löschen, an wie vielen Einträgen jedes hängt.",
+        "diagnostics": "<strong>Diagnose</strong> macht aus „deine Einträge sind gespeichert“ etwas Überprüfbares: wie viele von jeder Art im Datenbestand liegen, welche Schemaversion auf der Festplatte ist, wie viel Platz der Browser jojo gibt und die ID von allem, was nicht gelesen werden konnte.",
+        "audit": "<strong>Prüfprotokoll</strong> listet jeden Schreibvorgang, das Neueste zuerst, bis zu zweihundert. Nur die neueste Zeile bietet ein Rückgängig, denn ein Eintrag von vor drei Stunden beschreibt Einträge, die seitdem ein Dutzend Mal bearbeitet wurden. Demodaten laden und Einträge löschen erscheinen dort wie alles andere und sind die beiden, die das Protokoll nicht rückgängig macht – das haben sie gesagt, bevor du sie gedrückt hast."
+      },
+      "notConnectedTitle": "Ein Bereich und ein Knopf sind ausgeschaltet",
+      "notConnected": "Der Endpunkt des lokalen Modells ist ein Feld, dazu ein Testen-Knopf, der sagt, warum er nicht laufen kann. Der Bereich, der früher daneben saß – eine Brückenadresse, ein Kopplungscode, ein Speicherpfad und drei Schalter, die alle annahmen, was du tipptest, und nichts erreichten –, ist weg; Dokumente werden jetzt wirklich gespeichert, und <strong>Deine Dokumente</strong> sagt, wo. <strong>Nach Excel exportieren</strong> und <strong>Importieren</strong> sind deaktiviert und nennen beim Darüberfahren ihre Gründe – es ist kein Tabellen-Writer eingebaut, und um eine Sicherung wieder einzulesen, braucht es einen Validator, der eine Datei ablehnen kann, die er nicht versteht. Was dir jedes davon bringen würde, steht in <overview>So benutzt du jojo</overview>."
+    },
+    "guide": {
+      "where": "das Fragezeichen, obere Leiste",
+      "open": "Erste Seite öffnen",
+      "intro": "Vier Seiten unter einer Adresse, mit der Seitenleiste oben und der Blätterleiste unten auf jeder davon. Ihr einziger Zugang in der Oberfläche ist das Hilfesymbol: beim Darüberfahren und für Screenreader benannt, aber ohne sichtbaren Text und ohne Zeile in der Seitenleiste – eine schmale Tür für die Seite, die man sucht, wenn etwas unklar ist. <kbd>⌘K</kbd> ist der zuverlässige Weg zurück und listet alle vier Seiten einzeln statt einer Zeile für den Abschnitt.",
+      "order": "Die Reihenfolge ist Absicht, kein Zufall: Jeder kann nach der ersten Seite aufhören und die App benutzen, und jeder kann direkt zur letzten springen.",
+      "address": "<lead>Die Adressleiste</lead> ist die Seite selbst. Die erste Seite ist <code>/guide</code> statt <code>/guide/overview</code>, damit jeder Link und jedes Lesezeichen aus der Zeit, als es noch nicht vier Seiten gab, weiterhin irgendwo Echtes landet."
+    }
+  }
+}

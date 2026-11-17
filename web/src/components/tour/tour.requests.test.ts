@@ -13,6 +13,7 @@ import shell from '@/components/layout/AppShell.tsx?raw'
 import onboarding from '@/components/common/Onboarding.tsx?raw'
 import launcher from '@/components/guide/GuidedTour.tsx?raw'
 import overlay from '@/components/tour/TourOverlay.tsx?raw'
+import tourCatalog from '@/i18n/locales/en/tour.json?raw'
 
 /**
  * Q324 — the guided tour: a spotlight on the real pages, hands-on steps that
@@ -188,7 +189,9 @@ describe('the whole app, end to end (Q325)', () => {
   })
 
   it('names the model providers the app really offers', () => {
-    const model = STEPS.find((s) => s.id === 'model')!.body
+    // The words are the `tour` catalog's now; English is the source.
+    expect(STEPS.find((s) => s.id === 'model')).toBeDefined()
+    const model: string = JSON.parse(tourCatalog).steps.model.body
     for (const name of ['vLLM', 'Ollama', 'OpenAI', 'Anthropic (Claude)', 'API key'])
       expect(model).toContain(name)
   })

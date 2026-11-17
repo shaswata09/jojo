@@ -10,7 +10,7 @@
  * is text for a human, generated from the same `GraphQuery` the engine ran.
  */
 
-import { NODE_TYPE_LABEL } from '@/lib/graph/model'
+import { NODE_TYPE_NAME } from '@/lib/graph/model'
 import type { Graph, GraphNodeType } from '@/lib/graph/model'
 import type { GraphQuery, ItemFacet } from '@/lib/graph/query'
 
@@ -18,7 +18,7 @@ const variableFor = (type: GraphNodeType | 'any') => (type === 'any' ? 'n' : typ
 
 /** '(a:Application)' · '(i:Timeline item {kind: "follow-up"})'. */
 function nodePattern(variable: string, type: GraphNodeType | 'any', facet?: ItemFacet) {
-  const label = type === 'any' ? '' : `:${NODE_TYPE_LABEL[type]}`
+  const label = type === 'any' ? '' : `:${NODE_TYPE_NAME[type]}`
   const props =
     !facet || facet === 'any'
       ? ''

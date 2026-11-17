@@ -1,6 +1,7 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { RootStackParamList, VaultTool } from '@/navigation/types'
+import { i18next } from '@/i18n/i18n'
 
 /** The navigator every screen in the app is pushed onto. */
 type Nav = NativeStackNavigationProp<RootStackParamList>
@@ -57,112 +58,196 @@ const push =
   (nav: Nav) =>
     nav.navigate(screen)
 
+/** Read when the row is drawn, so it follows the language jojo is in. */
+const text = (id: string, field: 'label' | 'hint') =>
+  i18next.t(`messages:destinations.${id}.${field}`)
+
 export const DESTINATIONS: Destination[] = [
-  { id: 'd-today', label: 'Today', hint: 'What needs a decision', icon: 'sun', go: tab('Today') },
+  {
+    id: 'd-today',
+    get label() {
+      return text('today', 'label')
+    },
+    get hint() {
+      return text('today', 'hint')
+    },
+    icon: 'sun',
+    go: tab('Today'),
+  },
   {
     id: 'd-apps',
-    label: 'Applications',
-    hint: 'The list and the stage board',
+    get label() {
+      return text('apps', 'label')
+    },
+    get hint() {
+      return text('apps', 'hint')
+    },
     icon: 'clipboard',
     go: tab('Applications'),
   },
   {
     id: 'd-cal',
-    label: 'Calendar',
-    hint: 'Deadlines, interviews and prep',
+    get label() {
+      return text('cal', 'label')
+    },
+    get hint() {
+      return text('cal', 'hint')
+    },
     icon: 'calendar',
     go: tab('Calendar'),
   },
   {
     id: 'd-reminders',
-    label: 'Reminders',
-    hint: 'Vault · what you owe and when',
+    get label() {
+      return text('reminders', 'label')
+    },
+    get hint() {
+      return text('reminders', 'hint')
+    },
     icon: 'bell',
     go: vault('reminders'),
   },
   {
     id: 'd-links',
-    label: 'Links',
-    hint: 'Vault · postings, people and pages',
+    get label() {
+      return text('links', 'label')
+    },
+    get hint() {
+      return text('links', 'hint')
+    },
     icon: 'link-2',
     go: vault('links'),
   },
   {
     id: 'd-files',
-    label: 'Files',
-    hint: 'Vault · documents you have recorded',
+    get label() {
+      return text('files', 'label')
+    },
+    get hint() {
+      return text('files', 'hint')
+    },
     icon: 'file-text',
     go: vault('files'),
   },
   {
     id: 'd-snippets',
-    label: 'Snippets',
-    hint: 'Vault · reusable paragraphs',
+    get label() {
+      return text('snippets', 'label')
+    },
+    get hint() {
+      return text('snippets', 'hint')
+    },
     icon: 'scissors',
     go: vault('snippets'),
   },
   {
     id: 'd-tools',
-    label: 'Tools',
-    hint: 'Vault · the calculator',
+    get label() {
+      return text('tools', 'label')
+    },
+    get hint() {
+      return text('tools', 'hint')
+    },
     icon: 'grid',
     go: vault('tools'),
   },
   {
     id: 'd-scout',
-    label: 'Job scout',
-    hint: 'Saved searches, matches and postings',
+    get label() {
+      return text('scout', 'label')
+    },
+    get hint() {
+      return text('scout', 'hint')
+    },
     icon: 'radio',
     go: (nav) => nav.navigate('JobScout'),
   },
   {
     id: 'd-stats',
-    label: 'Statistics',
-    hint: 'Rates, a funnel and what to work on',
+    get label() {
+      return text('stats', 'label')
+    },
+    get hint() {
+      return text('stats', 'hint')
+    },
     icon: 'bar-chart-2',
     go: push('Statistics'),
   },
   {
     id: 'd-graph',
-    label: 'Graph',
-    hint: 'Your records as the network they are',
+    get label() {
+      return text('graph', 'label')
+    },
+    get hint() {
+      return text('graph', 'hint')
+    },
     icon: 'share-2',
     go: push('Graph'),
   },
   {
     id: 'd-profile',
-    label: 'My profile',
-    hint: 'Basics, documents and match terms',
+    get label() {
+      return text('profile', 'label')
+    },
+    get hint() {
+      return text('profile', 'hint')
+    },
     icon: 'user',
     go: push('Profile'),
   },
   {
     id: 'd-assistant',
-    label: 'Assistant',
-    hint: 'Worked examples until a model is connected',
+    get label() {
+      return text('assistant', 'label')
+    },
+    get hint() {
+      return text('assistant', 'hint')
+    },
     icon: 'message-square',
     go: push('Assistant'),
   },
   {
     id: 'd-settings',
-    label: 'Settings',
-    hint: 'Connections, appearance, keywords and your data',
+    get label() {
+      return text('settings', 'label')
+    },
+    get hint() {
+      return text('settings', 'hint')
+    },
     icon: 'settings',
     go: push('Settings'),
   },
   {
     id: 'd-transfer',
-    label: 'Transfer',
-    hint: 'Move everything to or from your computer',
+    get label() {
+      return text('transfer', 'label')
+    },
+    get hint() {
+      return text('transfer', 'hint')
+    },
     icon: 'smartphone',
     go: push('Transfer'),
   },
   {
     id: 'd-guide',
-    label: 'How to use',
-    hint: 'The three layers, the screens and the graph',
+    get label() {
+      return text('guide', 'label')
+    },
+    get hint() {
+      return text('guide', 'hint')
+    },
     icon: 'help-circle',
     go: push('Guide'),
   },
-  { id: 'd-more', label: 'More', hint: 'The rest of jojo', icon: 'grid', go: tab('More') },
+  {
+    id: 'd-more',
+    get label() {
+      return text('more', 'label')
+    },
+    get hint() {
+      return text('more', 'hint')
+    },
+    icon: 'grid',
+    go: tab('More'),
+  },
 ]

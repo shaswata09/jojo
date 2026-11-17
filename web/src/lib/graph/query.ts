@@ -11,6 +11,7 @@
  */
 
 import type { TimelineKind } from '@/data/timeline'
+import { i18next } from '@/i18n/i18n'
 import type { Graph, GraphEdge, GraphNode, GraphNodeType, GraphRel } from '@/lib/graph/model'
 import { incidentEdges, otherEnd, shortestPath } from '@/lib/graph/traversal'
 
@@ -81,13 +82,14 @@ export type QueryResult = {
   emptyNote: string
 }
 
-const EMPTY_RESULT: QueryResult = {
+/** Built when asked for, so its words are in the language of the moment. */
+const emptyResult = (): QueryResult => ({
   rows: [],
   nodes: new Set(),
   edges: new Set(),
-  countLabel: 'Matches',
-  emptyNote: 'Nothing in your records matches that pattern.',
-}
+  countLabel: i18next.t('messages:graph.count.matches'),
+  emptyNote: i18next.t('messages:graph.empty.noMatch'),
+})
 
 function matchesFacet(node: GraphNode, facet: ItemFacet | undefined): boolean {
   if (!facet || facet === 'any') return true
@@ -156,11 +158,14 @@ function runPattern(graph: Graph, query: PatternQuery): QueryResult {
     rows,
     nodes,
     edges,
-    countLabel: query.quantifier === 'missing' ? 'Connections' : 'Matches',
+    countLabel:
+      query.quantifier === 'missing'
+        ? i18next.t('messages:graph.count.connections')
+        : i18next.t('messages:graph.count.matches'),
     emptyNote:
       query.quantifier === 'missing'
-        ? 'Nothing is missing that connection — every record of this kind has one.'
-        : 'Nothing in your records matches that pattern.',
+        ? i18next.t('messages:graph.empty.noneMissing')
+        : i18next.t('messages:graph.empty.noMatch'),
   }
 }
 
@@ -168,11 +173,9 @@ function runPath(graph: Graph, query: PathQuery): QueryResult {
   const path = shortestPath(graph, query.from, query.to)
   if (!path) {
     return {
-      ...EMPTY_RESULT,
-      nodes: new Set(),
-      edges: new Set(),
-      countLabel: 'Hops',
-      emptyNote: 'No path — these two records are not connected by anything in your store.',
+      ...emptyResult(),
+      countLabel: i18next.t('messages:graph.count.hops'),
+      emptyNote: i18next.t('messages:graph.empty.noPath'),
     }
   }
 
@@ -187,7 +190,7 @@ function runPath(graph: Graph, query: PathQuery): QueryResult {
     rows,
     nodes: new Set(path.nodes.map((n) => n.id)),
     edges: new Set(path.edges.map((e) => e.id)),
-    countLabel: 'Hop',
-    emptyNote: 'No path between those two records.',
+    countLabel: i18next.t('messages:graph.count.hop'),
+    emptyNote: i18next.t('messages:graph.empty.noPathBetween'),
   }
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Ref } from 'react'
 import {
   DndContext,
@@ -15,8 +16,9 @@ import { BoardCardBody } from '@/components/applications/board/BoardCard'
 import { BoardColumn } from '@/components/applications/board/BoardColumn'
 import { PanelScroll } from '@/components/common/Panel'
 import { STAGES, STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
-import { dragAnnouncements } from '@/components/common/drag-announcements'
+import { dragAnnouncements, dragInstructions } from '@/components/common/drag-announcements'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * The six stages, side by side, and the drag that moves a record between them.
@@ -43,6 +45,8 @@ export function ApplicationsBoard({
 }) {
   /** The card currently in the pointer's hand, rendered in the overlay. */
   const [activeId, setActiveId] = useState<string | null>(null)
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
 
   const sensors = useSensors(
     // A small activation distance so a click on the handle isn't read as a drag.
@@ -74,13 +78,16 @@ export function ApplicationsBoard({
       collisionDetection={closestCorners}
       // Names, not the UUIDs dnd-kit would otherwise read aloud.
       accessibility={{
+        screenReaderInstructions: dragInstructions(),
         announcements: dragAnnouncements({
           item: (id) => {
             const app = apps.find((a) => a.id === id)
             return app ? displayName(app) : undefined
           },
           target: (id) =>
-            Object.hasOwn(STAGE_LABEL, id) ? `the ${STAGE_LABEL[id as Stage]} column` : undefined,
+            Object.hasOwn(STAGE_LABEL, id)
+              ? t('board.column', { stage: domain.stage(id as Stage) })
+              : undefined,
         }),
       }}
       onDragStart={onDragStart}

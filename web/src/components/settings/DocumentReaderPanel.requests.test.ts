@@ -14,6 +14,7 @@
 import { describe, expect, it } from 'vitest'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import source from './DocumentReaderPanel.tsx?raw'
+import catalog from '@/i18n/locales/en/settings.json'
 
 const code = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 
@@ -26,16 +27,18 @@ describe('Q225 the reader’s setup commands, in a box with a copy button', () =
 
   it('shows that text and copies that same text, side by side', () => {
     expect(code).toMatch(
-      /<pre className="[^"]*font-mono[^"]*">\s*\{SETUP_COMMANDS\}\s*<\/pre>\s*<CopyButton text=\{SETUP_COMMANDS\} label="Copy the setup commands" \/>/,
+      /<pre className="[^"]*font-mono[^"]*">\s*\{SETUP_COMMANDS\}\s*<\/pre>\s*<CopyButton text=\{SETUP_COMMANDS\} label=\{t\('reader\.copySetup'\)\} \/>/,
     )
+    expect(catalog.reader.copySetup).toBe('Copy the setup commands')
   })
 })
 
 describe('Q115 MarkItDown is credited, with its licence, on the card', () => {
   it('renders the copyright and the licence beside the setting', () => {
     expect(code).toMatch(
-      /\{MARKITDOWN\.name\} is a separate program, not part of jojo\. \{MARKITDOWN\.copyright\}\{' '\}\s*\{MARKITDOWN\.licence\}\./,
+      /\{t\('reader\.separate', \{ name: MARKITDOWN\.name \}\)\} \{MARKITDOWN\.copyright\}\{' '\}\s*\{MARKITDOWN\.licence\}\./,
     )
+    expect(catalog.reader.separate).toBe('{{name}} is a separate program, not part of jojo.')
     expect(code).toMatch(/href=\{MARKITDOWN\.url\}/)
   })
 })

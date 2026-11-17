@@ -7,8 +7,10 @@
  * node come from".
  */
 
-import { EDGE_SCHEMA } from '@jojo/service/core/model'
+import type { Rel } from '@jojo/service/core/model'
 import type { TimelineKind } from '@/data/timeline'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 
 export const GRAPH_NODE_TYPES = [
   'application',
@@ -44,7 +46,17 @@ export type GraphNodeType = (typeof GRAPH_NODE_TYPES)[number]
  * in their heads, and a query that only walked one way would answer half the
  * question while looking like it answered all of it.
  */
-export const GRAPH_RELS = ['AT', 'IS', 'ABOUT', 'FILED_UNDER', 'TAGS', 'FROM', 'BECAME', 'SUBJECT', 'OBJECT'] as const
+export const GRAPH_RELS = [
+  'AT',
+  'IS',
+  'ABOUT',
+  'FILED_UNDER',
+  'TAGS',
+  'FROM',
+  'BECAME',
+  'SUBJECT',
+  'OBJECT',
+] as const
 
 export type GraphRel = (typeof GRAPH_RELS)[number]
 
@@ -87,7 +99,11 @@ export type Graph = {
   incident: ReadonlyMap<string, string[]>
 }
 
-export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
+/**
+ * Each type's name in English — what the illustrative query text in
+ * `pseudo-query.ts` writes, because a query language's labels are not prose.
+ */
+export const NODE_TYPE_NAME: Readonly<Record<GraphNodeType, string>> = {
   application: 'Application',
   organisation: 'Organisation',
   role: 'Role',
@@ -103,6 +119,17 @@ export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
   claim: 'Relation',
 }
 
+/** Each type's name as the person reads it, in their language, looked up when read. */
+export const NODE_TYPE_LABEL: Readonly<Record<GraphNodeType, string>> = Object.defineProperties(
+  {} as Record<GraphNodeType, string>,
+  Object.fromEntries(
+    Object.keys(NODE_TYPE_NAME).map((type) => [
+      type,
+      { enumerable: true, get: () => i18next.t(`messages:graph.nodeType.${type}`) },
+    ]),
+  ),
+)
+
 /**
  * How each relationship reads in a sentence, for the pattern builder.
  *
@@ -116,16 +143,23 @@ export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
  * `IS` is the exception because it is the one relation with no `EDGE_SCHEMA`
  * entry to read: an application IS a role tag is synthesised from a prop by
  * `buildGraph` and is never written down. It is spelled here because here is
- * the only place it exists.
+ * the only place it exists — so it has no `domain` key, and reads the graph
+ * page's own catalog instead (`graph:legend.isA`, the phone's `messages:graph.isA`).
+ *
+ * The others are getters onto `domain.rel`, looked up when read like
+ * `NODE_TYPE_LABEL`, so the legend, the detail panel and the Answer table speak
+ * the language on screen; the English they fall back to is still
+ * `EDGE_SCHEMA[rel].label`, which `domain-text.ts` generates the catalog from.
  */
-export const REL_LABEL: Record<GraphRel, string> = {
-  IS: 'is a',
-  AT: EDGE_SCHEMA.AT.label,
-  ABOUT: EDGE_SCHEMA.ABOUT.label,
-  FILED_UNDER: EDGE_SCHEMA.FILED_UNDER.label,
-  TAGS: EDGE_SCHEMA.TAGS.label,
-  SUBJECT: EDGE_SCHEMA.SUBJECT.label,
-  OBJECT: EDGE_SCHEMA.OBJECT.label,
-  FROM: EDGE_SCHEMA.FROM.label,
-  BECAME: EDGE_SCHEMA.BECAME.label,
-}
+export const REL_LABEL: Readonly<Record<GraphRel, string>> = Object.defineProperties(
+  {} as Record<GraphRel, string>,
+  Object.fromEntries(
+    GRAPH_RELS.map((rel) => [
+      rel,
+      {
+        enumerable: true,
+        get: () => (rel === 'IS' ? i18next.t('graph:legend.isA') : domain.rel(rel satisfies Rel)),
+      },
+    ]),
+  ),
+)

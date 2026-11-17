@@ -1,0 +1,98 @@
+{
+  "dialog": {
+    "title": {
+      "new": { "reminder": "New reminder", "event": "New event" },
+      "edit": { "reminder": "Edit reminder", "event": "Edit event" }
+    },
+    "description": "One record either way — it lands on the calendar for the date you give it, and in the Vault's reminders list while the switch beside the title is on."
+  },
+  "form": {
+    "title": {
+      "label": "Title",
+      "error": "Give it a title you will recognise.",
+      "placeholder": { "reminder": "e.g. Chase the recruiter", "event": "e.g. Committee Zoom" }
+    },
+    "remind": {
+      "label": "Show in reminders",
+      "on": "Listed in the Vault with a tick box, and on the calendar for its date.",
+      "off": "On the calendar for its date only — no tick box in the Vault."
+    },
+    "kind": {
+      "label": "Kind",
+      "hintFollowUp": "A follow-up also appears in Follow-ups due on the dashboard, until you tick it off.",
+      "hint": "The icon it carries on the calendar and in the reminders list."
+    },
+    "detail": {
+      "label": "Detail",
+      "hint": "One line of context, shown under the title."
+    },
+    "more": {
+      "label": "More details",
+      "empty": "note, keywords",
+      "filledNote": "note",
+      "filledKeywords": "keywords",
+      "filledBoth": "note · keywords"
+    },
+    "note": {
+      "label": "Note",
+      "hint": "Your own scribble. Kept apart from the detail, so an edit never clobbers it."
+    },
+    "keywords": {
+      "label": "Keywords",
+      "hint": "Shared with applications, files and links — filtering by one finds all of them."
+    },
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "add": { "reminder": "Add reminder", "event": "Add event" }
+  },
+  "schedule": {
+    "date": "Date",
+    "dateError": "Pick a date — an undated item has nowhere to appear.",
+    "quick": { "today": "Today", "tomorrow": "Tomorrow", "inWeek": "In 7 days" },
+    "allDay": {
+      "label": "All day",
+      "description": "Off gives it a start time and a length, and puts it on the calendar's hour grid."
+    },
+    "startTime": "Start time",
+    "length": "Length",
+    "durations": {
+      "min15": "15 min",
+      "min30": "30 min",
+      "min45": "45 min",
+      "hour1": "1 hour",
+      "hour1_5": "1.5 hours",
+      "hour2": "2 hours",
+      "hour3": "3 hours"
+    }
+  },
+  "application": {
+    "label": "Related application",
+    "hint": "Links them, so each application lists this and this leads back to any of them.",
+    "notLinked": "Not linked",
+    "count_one": "{{count}} application",
+    "count_other": "{{count}} applications",
+    "searchLabel": "Search applications to link",
+    "searchPlaceholder": "Search applications…",
+    "none": "No applications yet.",
+    "noMatch": "No application matches that.",
+    "clear": "Clear the linked applications",
+    "open": "Open {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} added",
+    "updated": "{{title}} updated",
+    "inReminders": "{{when}} — in reminders as a reminder",
+    "inRemindersAndFollowUps": "{{when}} — in reminders as a reminder — and in Follow-ups due",
+    "calendarOnly": "{{when}} — on the calendar only",
+    "undo": "Undo",
+    "deleteFailed": "That did not delete",
+    "stillThere": "{{title}} is still on the calendar.",
+    "stillThereUnnamed": "The reminder is still on the calendar.",
+    "deleted": "{{title}} deleted",
+    "deletedUnnamed": "Reminder deleted",
+    "goneBoth": "Gone from the reminders list and from the calendar.",
+    "goneCalendar": "Gone from the calendar."
+  }
+}

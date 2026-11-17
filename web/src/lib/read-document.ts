@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { i18next } from '@/i18n/i18n'
 import { convertFile } from '@/lib/markitdown'
 import { readHere } from '@/lib/read-here'
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
@@ -41,8 +42,7 @@ export function useReadDocument(): (
       if (!file) {
         return {
           ok: false as const,
-          reason:
-            'No copy of that document is stored in this browser, so there is nothing to read.',
+          reason: i18next.t('messages:read.noStoredCopy'),
         }
       }
       /*
@@ -59,14 +59,15 @@ export function useReadDocument(): (
           ok: false as const,
           reason:
             here === null
-              ? 'No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.'
-              : `${here.reason} No document reader is connected to try harder — Settings is where its address goes.`,
+              ? i18next.t('messages:read.noReader')
+              : i18next.t('messages:read.noReaderToTryHarder', { reason: here.reason }),
         }
       }
       // The agent's Stop is a flag with an optional callback; the reader's
       // transport wants an AbortSignal. Bridged here so a stopped run does not
       // leave a conversion running for most of a minute.
-      if (cancel?.aborted) return { ok: false as const, reason: 'The read was cancelled.' }
+      if (cancel?.aborted)
+        return { ok: false as const, reason: i18next.t('messages:readCancelled') }
       const controller = new AbortController()
       cancel?.onAbort?.(() => controller.abort())
       return convertFile(reader, file, controller.signal)

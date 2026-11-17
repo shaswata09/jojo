@@ -22,7 +22,12 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { pairPath, writeResponse } from '@jojo/service/core/handoff'
-import { startHandoffServer, type HandoffAnswer } from '@/lib/handoff-server'
+import {
+  IDLE_MS,
+  MAX_CONNECTIONS,
+  startHandoffServer,
+  type HandoffAnswer,
+} from '@/lib/handoff-server'
 
 const TOKEN = 'a1b2c3d4e5f60718293a4b5c6d7e8f90'
 
@@ -237,5 +242,101 @@ describe('on a runtime with no Buffer global, which is the phone', () => {
     // server that answered and then held the socket open would leave one per
     // request on somebody's home network until the screen went away.
     expect(socket.destroyed).toBe(true)
+  })
+})
+
+/**
+ * sec-1: the listener is bound to every interface and checks the token only
+ * once a header is whole, so a neighbour on the network could open sockets that
+ * never finish one and hold them for the length of the transfer.
+ */
+describe('a listener that strangers on the network cannot tie up', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  /** Half a header: no CRLFCRLF, so the parser can only say "incomplete". */
+  const partial = (): Uint8Array => request(`GET ${pairPath(TOKEN)}`).slice(0, 20)
+
+  it('closes connections past the cap on arrival', async () => {
+    await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
+    const held = Array.from({ length: MAX_CONNECTIONS }, () => new FakeSocket())
+    for (const socket of held) connect?.(socket)
+    const extra = new FakeSocket()
+    connect?.(extra)
+    expect(held.every((socket) => !socket.destroyed)).toBe(true)
+    expect(extra.destroyed).toBe(true)
+  })
+
+  it('takes a new connection once an earlier one has closed', async () => {
+    await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
+    const held = Array.from({ length: MAX_CONNECTIONS }, () => new FakeSocket())
+    for (const socket of held) connect?.(socket)
+    held[0]!.emit('close')
+    const next = new FakeSocket()
+    connect?.(next)
+    expect(next.destroyed).toBe(false)
+  })
+
+  it('drops a connection that goes quiet before finishing a request', async () => {
+    vi.useFakeTimers()
+    await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
+    const socket = new FakeSocket()
+    connect?.(socket)
+    socket.emit('data', partial())
+    vi.advanceTimersByTime(IDLE_MS - 1)
+    expect(socket.destroyed).toBe(false)
+    vi.advanceTimersByTime(1)
+    expect(socket.destroyed).toBe(true)
+  })
+
+  it('drops a connection that never sends a byte', async () => {
+    vi.useFakeTimers()
+    await startHandoffServer(TOKEN, () => Promise.resolve({ status: 204 }))
+    const socket = new FakeSocket()
+    connect?.(socket)
+    vi.advanceTimersByTime(IDLE_MS)
+    expect(socket.destroyed).toBe(true)
+  })
+
+  it('never cuts off a slow request that keeps sending', async () => {
+    vi.useFakeTimers()
+    const seen: string[] = []
+    await startHandoffServer(TOKEN, (read) => {
+      seen.push(read.route)
+      return Promise.resolve({ status: 204 })
+    })
+    const socket = new FakeSocket()
+    connect?.(socket)
+    // One byte just inside the window each time, for several windows' worth.
+    const whole = request(`GET ${pairPath(TOKEN)}`)
+    for (let i = 0; i < whole.length; i += 1) {
+      vi.advanceTimersByTime(IDLE_MS - 1)
+      expect(socket.destroyed).toBe(false)
+      socket.emit('data', whole.slice(i, i + 1))
+    }
+    await vi.runAllTimersAsync()
+    expect(seen).toHaveLength(1)
+    expect(socket.bytes()).toEqual(writeResponse(204))
+  })
+
+  it('does not time out a request while its answer is being built', async () => {
+    vi.useFakeTimers()
+    let finish: (answer: HandoffAnswer) => void = () => {}
+    await startHandoffServer(
+      TOKEN,
+      () =>
+        new Promise<HandoffAnswer>((resolve) => {
+          finish = resolve
+        }),
+    )
+    const socket = new FakeSocket()
+    connect?.(socket)
+    socket.emit('data', request(`GET ${pairPath(TOKEN)}`))
+    vi.advanceTimersByTime(IDLE_MS * 4)
+    expect(socket.destroyed).toBe(false)
+    finish({ status: 204 })
+    await vi.runAllTimersAsync()
+    expect(socket.bytes()).toEqual(writeResponse(204))
   })
 })

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Check, ListFilter, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Command,
   CommandEmpty,
@@ -31,6 +32,7 @@ const INLINE = 2
  * active filter is legible without opening anything.
  */
 export function RoleFilter() {
+  const { t } = useTranslation('layout')
   const [open, setOpen] = useState(false)
   const { selected, toggle, setAll, clear } = useRoles()
   const vocabulary = useRoleVocabulary()
@@ -64,7 +66,7 @@ export function RoleFilter() {
         <PopoverTrigger asChild>
           <button
             type="button"
-            aria-label="Filter by job role"
+            aria-label={t('roleFilter.label')}
             className={cn(
               'flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs transition-colors',
               selected.size > 0
@@ -74,16 +76,18 @@ export function RoleFilter() {
           >
             <ListFilter className="size-3.5" strokeWidth={1.8} aria-hidden />
             <span className="hidden sm:inline">
-              {selected.size === 0 ? 'All roles' : `${selected.size} selected`}
+              {selected.size === 0
+                ? t('roleFilter.all')
+                : t('roleFilter.selected', { count: selected.size })}
             </span>
           </button>
         </PopoverTrigger>
 
         <PopoverContent align="end" className="w-64 p-0">
-          <Command label="Find a role">
-            <CommandInput placeholder="Find a role…" className="h-9" />
+          <Command label={t('roleFilter.find')}>
+            <CommandInput placeholder={t('roleFilter.findPlaceholder')} className="h-9" />
             <CommandList>
-              <CommandEmpty>No role matches.</CommandEmpty>
+              <CommandEmpty>{t('roleFilter.empty')}</CommandEmpty>
               <CommandGroup>
                 {vocabulary.map((role) => {
                   const on = selected.has(role)
@@ -121,11 +125,11 @@ export function RoleFilter() {
                   onSelect={() => setAll([...vocabulary])}
                   className="justify-center text-xs"
                 >
-                  Select all
+                  {t('roleFilter.selectAll')}
                 </CommandItem>
                 {selected.size > 0 ? (
                   <CommandItem onSelect={clear} className="justify-center text-xs">
-                    Clear filter
+                    {t('roleFilter.clear')}
                   </CommandItem>
                 ) : null}
               </CommandGroup>
@@ -141,7 +145,7 @@ export function RoleFilter() {
           key={role}
           type="button"
           onClick={() => toggle(role)}
-          title={`Remove ${role}`}
+          title={t('roleFilter.remove', { role })}
           className="hidden h-8 max-w-[9rem] items-center gap-1 rounded-md border border-hairline bg-panel px-2 text-xs text-text-2 transition-colors hover:text-text-1 lg:flex"
         >
           <span className="truncate">{role}</span>

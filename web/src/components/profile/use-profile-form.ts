@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { ChangeEvent } from 'react'
 import type { ProfileText } from '@/data/profile'
 import { profileForm } from '@/lib/profile-draft'
@@ -34,6 +35,7 @@ export function useProfileForm() {
    * had typed, and Save wrote the mount-time copy back over the new one. A
    * clean form is a view of the record now; see `lib/profile-draft.ts`.
    */
+  const { t } = useTranslation('profile')
   const { profile, update } = useProfile()
   const saved = profile.text
   const [edit, setEdit] = useState<ProfileText | null>(null)
@@ -81,14 +83,14 @@ export function useProfileForm() {
     if (announceRefusal(value, toast)) return
     setEdit(null)
     toast({
-      title: 'Profile saved',
+      title: t('form.saved.title'),
       // Was "kept for this visit — the profile is not written to disk yet",
       // which stopped being true when the store went to IndexedDB. A save toast
       // that undersells the save is the one kind of false modesty that costs
       // something: it is the sentence that sends someone off to retype it
       // somewhere they trust more.
-      description: 'Written to this browser and kept.',
-      action: restore ? { label: 'Undo', onClick: restore } : undefined,
+      description: t('form.saved.description'),
+      action: restore ? { label: t('shared.undo'), onClick: restore } : undefined,
     })
   }
 

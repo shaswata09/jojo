@@ -116,8 +116,15 @@ export function PanelTitle({
       {...props}
     >
       {children}
+      {/* `ms-2` is the gap on the hint's reading-order start, and the isolate
+          keeps that side meaning "between the two". Without it, a Latin or
+          numeric title and hint on an Arabic page join one left-to-right run,
+          and the margin lands on the hint's outer edge instead — the same
+          rule every inline adornment after a value follows here. */}
       {hint ? (
-        <small className="ml-2 font-sans text-xs font-normal text-text-3">{hint}</small>
+        <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
+          {hint}
+        </small>
       ) : null}
     </h2>
   )

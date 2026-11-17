@@ -1,0 +1,137 @@
+{
+  "common": {
+    "connections_zero": "{{count}} رابط",
+    "connections_one": "{{count}} رابط",
+    "connections_two": "{{count}} رابطان",
+    "connections_few": "{{count}} روابط",
+    "connections_many": "{{count}} رابطًا",
+    "connections_other": "{{count}} رابط",
+    "records_zero": "{{count}} سجل",
+    "records_one": "{{count}} سجل",
+    "records_two": "{{count}} سجلان",
+    "records_few": "{{count}} سجلات",
+    "records_many": "{{count}} سجلًا",
+    "records_other": "{{count}} سجل"
+  },
+  "legend": {
+    "show": "إظهار {{name}}",
+    "hide": "إخفاء {{name}}",
+    "allHidden": "كل أنواع السجلات مخفية.",
+    "showAll": "إظهار الكل",
+    "isA": "من نوع"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}، {{connections}}"
+  },
+  "canvas": {
+    "label": "الرسم البياني المعرفي — {{records}}، {{connections}}",
+    "capped": "يُعرض {{shown}} من أكثر السجلات ارتباطًا. هناك {{dropped}} أخرى في المخزن لكنها ليست على هذه اللوحة — ضيّق النطاق بعوامل التصفية لرؤيتها.",
+    "description": "كل سجل عقدة، وكل إشارة بين سجلين خط. تعرض اللوحات المجاورة لهذا الرسم المعلومات نفسها نصًا."
+  },
+  "answer": {
+    "title": "الإجابة",
+    "records_zero": "{{count}} سجل",
+    "records_one": "{{count}} سجل",
+    "records_two": "{{count}} سجلان",
+    "records_few": "{{count}} سجلات",
+    "records_many": "{{count}} سجلًا",
+    "records_other": "{{count}} سجل",
+    "prompt": "اختر مثالًا، أو ابنِ نمطًا، فتظهر الإجابة هنا وتُضاء في الرسم البياني أعلاه.",
+    "emptyTitle": "لا سجلات مطابقة",
+    "clear": "مسح الاستعلام",
+    "caption": "السجلات المطابقة للنمط",
+    "columns": {
+      "record": "السجل",
+      "kind": "النوع",
+      "matched": "المطابق"
+    },
+    "open": "فتح",
+    "select": "التحديد في الرسم البياني",
+    "via": "عبر {{rel}}",
+    "more_zero": "{{names}} و{{count}} غيرها",
+    "more_one": "{{names}} و{{count}} غيرها",
+    "more_two": "{{names}} و{{count}} غيرها",
+    "more_few": "{{names}} و{{count}} غيرها",
+    "more_many": "{{names}} و{{count}} غيرها",
+    "more_other": "{{names}} و{{count}} غيرها",
+    "showing": "يُعرض أول {{shown}} من {{total}}. كلها مضاءة في الرسم البياني أعلاه."
+  },
+  "examples": {
+    "title": "أمثلة محلولة",
+    "nothingToAsk": "لا يوجد في هذه الجلسة ما يمكن طرح هذا السؤال عنه"
+  },
+  "query": {
+    "title": "اسأل الرسم البياني",
+    "hint": "اسأل بجملة، أو ابنِ السؤال يدويًا",
+    "shape": "شكل السؤال",
+    "pattern": "نمط",
+    "path": "مسار",
+    "generated": "الاستعلام المُنشأ",
+    "clear": "مسح",
+    "sqlNote": "شكل السؤال، بمفردات SQL لتسهيل القراءة. الاستعلام الذي يُنفَّذ فعلًا هو الاستعلام المنظّم أعلاه — لا شيء يحلّل هذا السطر."
+  },
+  "fields": {
+    "records": "السجلات",
+    "anyRecord": "أي سجل",
+    "ofKind": "من النوع",
+    "anyKind": "أي نوع",
+    "reminder": "تذكير",
+    "condition": "الشرط",
+    "quantifier": {
+      "has": "لديه",
+      "missing": "ليس لديه",
+      "atLeast": "لديه على الأقل"
+    },
+    "howMany": "العدد",
+    "orMore_zero": "{{count}} أو أكثر",
+    "orMore_one": "{{count}} أو أكثر",
+    "orMore_two": "{{count}} أو أكثر",
+    "orMore_few": "{{count}} أو أكثر",
+    "orMore_many": "{{count}} أو أكثر",
+    "orMore_other": "{{count}} أو أكثر",
+    "relationship": "العلاقة",
+    "anyRelationship": "أي علاقة",
+    "connectedTo": "مرتبط بـ",
+    "anything": "أي شيء",
+    "keyword": "يحمل الكلمة المفتاحية",
+    "anyKeyword": "أي كلمة مفتاحية",
+    "from": "من",
+    "to": "إلى"
+  },
+  "detail": {
+    "title": "السجل المحدد",
+    "nothingSelected": "لم يُحدَّد شيء",
+    "pickHint": "اختر عقدة — بالنقر عليها، أو بالانتقال إليها بمفتاح Tab والضغط على Enter — لترى ما ترتبط به وأين توجد في التطبيق.",
+    "open": "فتح {{type}}",
+    "openType": {
+      "application": "فتح طلب",
+      "organisation": "فتح جهة",
+      "role": "فتح وظيفة",
+      "item": "فتح عنصر في الجدول الزمني",
+      "keyword": "فتح كلمة مفتاحية",
+      "link": "فتح رابط",
+      "file": "فتح ملف",
+      "snippet": "فتح مقتطف",
+      "posting": "فتح إعلان محفوظ",
+      "match": "فتح نتيجة المستكشف",
+      "source": "فتح مصدر",
+      "background": "فتح عنك",
+      "claim": "فتح علاقة"
+    },
+    "derived": "مستمد من سجلاتك — ليست له صفحة خاصة.",
+    "verbs": "ما يمكنك فعله به",
+    "noLinks": "لا شيء يشير إلى هذا السجل بعد."
+  },
+  "ask": {
+    "notConnected": "صِل نموذجًا محليًا من <settings>الإعدادات</settings> وستتمكن من طرح هذا بجملة. أداة البناء أدناه تعمل في الحالتين.",
+    "label": "اسأل الرسم البياني سؤالًا",
+    "stop": "إيقاف",
+    "submit": "اسأل",
+    "again": "اسأل شيئًا آخر",
+    "suggestions": {
+      "noFollowUp": "أي الطلبات ليست لها متابعة مجدولة؟",
+      "unfiled": "أي الملفات غير محفوظة ضمن أي شيء؟",
+      "busy": "أي الطلبات لديها أكثر من عنصرين في الخط الزمني؟"
+    }
+  }
+}

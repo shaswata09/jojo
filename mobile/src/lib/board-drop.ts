@@ -27,3 +27,55 @@ export function dropStage(hovered: number, released: boolean): Stage | null {
   const column = STAGES[hovered]
   return column ? column.id : null
 }
+
+/*
+ * The board in a right-to-left language.
+ *
+ * Arabic mirrors the board: `STAGES[0]` is the rightmost column. The finger is
+ * reported in physical window x, so counting columns from the left named the
+ * mirror-image stage — the highlighted column and the stage written were both
+ * wrong. The three helpers below count from the board's START edge instead (the
+ * left in LTR, the right in RTL), so one formula serves both directions.
+ *
+ * The scroll offset is the awkward part, because the platforms disagree about
+ * it in RTL. iOS reports and accepts a logical offset (from the start edge;
+ * `RCTScrollViewComponentView` flips it), Android a physical one (`getScrollX`,
+ * which starts at its maximum). `physical` names which kind `native` is.
+ *
+ * Worklets: the gesture and the edge auto-scroll call them on the UI thread.
+ */
+
+/** A native scroll offset as distance scrolled from the start edge — and back. */
+export function startOffset(
+  native: number,
+  rtl: boolean,
+  physical: boolean,
+  contentW: number,
+  viewportW: number,
+): number {
+  'worklet'
+  if (!rtl || !physical) return native
+  return Math.max(0, contentW - viewportW) - native
+}
+
+/** How far the finger is from the viewport's start edge. */
+export function fromStartEdge(
+  pointerX: number,
+  viewportX: number,
+  viewportW: number,
+  rtl: boolean,
+): number {
+  'worklet'
+  return rtl ? viewportX + viewportW - pointerX : pointerX - viewportX
+}
+
+/** The logical column under a point `fromStart + scrolled` into the board. */
+export function columnAt(
+  fromStart: number,
+  scrolled: number,
+  stride: number,
+  count: number,
+): number {
+  'worklet'
+  return Math.min(count - 1, Math.max(0, Math.floor((fromStart + scrolled) / stride)))
+}

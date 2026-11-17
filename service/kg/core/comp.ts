@@ -109,6 +109,25 @@ const GROUPED = /^(?:\d{1,3}(?:[,\s.]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})$/
  */
 const RANGE_END = /^\s*(?:-|–|—|to\b)\s*[$£€¥₹]?\s*\d+(?:[,.\s]\d{3})*(?:\.\d+)?\s*(?:k\b|m\b)?/i
 
+/**
+ * A currency written AFTER the figures: `120.000,50 €`, or the `EUR` in
+ * `60000-70000 EUR` that closes a range. A symbol counts only when no digit
+ * follows it, or the `$` of the next amount (`Team of 12 $112k`) would label
+ * the headcount. A code counts only when it is a real one (`CODES`).
+ */
+const CURRENCY_AFTER = /^\s*(?:(?<symbol>[$£€¥₹])(?!\s*\d)|(?<code>[a-z]{3})\b)/i
+
+function currencyAfter(text: string | undefined): { currency: string; length: number } | undefined {
+  if (text === undefined) return undefined
+  const m = CURRENCY_AFTER.exec(text)
+  const symbol = m?.groups?.['symbol']
+  const code = m?.groups?.['code']?.toLowerCase()
+  if (m === null || (symbol === undefined && (code === undefined || !CODES.has(code))))
+    return undefined
+  const currency = symbol !== undefined ? SYMBOLS[symbol] : code?.toUpperCase()
+  return currency === undefined ? undefined : { currency, length: m[0].length }
+}
+
 /** The same pattern across the whole text rather than stopping at the first
  *  hit. See `parseComp`: the first hit is not the first AMOUNT. */
 const AMOUNT_SCAN = new RegExp(AMOUNT.source, 'gi')
@@ -249,7 +268,6 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
    */
   const candidates = [groups['code'], groups['before']].map((g) => g?.toLowerCase())
   const code = candidates.find((c) => c !== undefined && CODES.has(c))
-  const currency = symbol ? SYMBOLS[symbol] : code ? code.toUpperCase() : undefined
 
   /*
    * What follows the amount, for the "touching" period test — and two things
@@ -268,14 +286,38 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
   const trailing = groups['code']
   const giveBack =
     trailing !== undefined && !CODES.has(trailing.toLowerCase()) ? trailing.length : 0
-  const after = source.slice(hit.index + hit[0].length - giveBack)
-  const range = RANGE_END.exec(after)
-  const afterRange = range ? after.slice(range[0].length) : undefined
+  const rawAfter = source.slice(hit.index + hit[0].length - giveBack)
+  const range = RANGE_END.exec(rawAfter)
+  const rawAfterRange = range ? rawAfter.slice(range[0].length) : undefined
+  /*
+   * A currency written after the figures, or after the end of the range, is
+   * the whole range's — the same as a touching period. Without it `60000-70000
+   * EUR` passed over the unmarked 60000 and read the range as its TOP end,
+   * while `EUR 60000-70000` read it as its bottom, and the comparison screen
+   * set the top of one range against the bottom of another. The currency is
+   * stepped over for the period test, so `120.000 € per year` keeps its year.
+   */
+  const trailingCurrency =
+    symbol === undefined && code === undefined
+      ? (currencyAfter(rawAfter) ?? (range ? currencyAfter(rawAfterRange) : undefined))
+      : undefined
+  const skip = (text: string | undefined) => {
+    const c = currencyAfter(text)
+    return text === undefined || c === undefined ? text : text.slice(c.length)
+  }
+  const after = skip(rawAfter) ?? rawAfter
+  const afterRange = skip(rawAfterRange)
+  const currency = symbol
+    ? SYMBOLS[symbol]
+    : code
+      ? code.toUpperCase()
+      : trailingCurrency?.currency
   const touchingIn = (text: string | undefined) =>
     text === undefined ? -1 : PERIOD_AFTER.findIndex((p) => p.test(text))
   const signalled =
     symbol !== undefined ||
     code !== undefined ||
+    trailingCurrency !== undefined ||
     suffix !== undefined ||
     separated ||
     touchingIn(after) !== -1 ||

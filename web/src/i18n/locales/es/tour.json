@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Te presento a jojo",
+      "body": "Tu asistente vive aquí. Reacciona a lo que haces —un baile cuando sale una candidatura, un gesto de aprobación cuando terminas una tarea— y sigue tu puntero por la página.",
+      "task": "Toca a jojo o dibuja un círculo sobre él."
+    },
+    "moves": {
+      "title": "Cada movimiento y cómo dibujarlo",
+      "body": "Este botón muestra todos los movimientos de jojo, cada uno con el trazo que lo activa —deslizar hacia arriba para saltar, una Z para echar una cabezada— y da crédito al artista del modelo 3D."
+    },
+    "runtime": {
+      "title": "Dónde viven tus registros",
+      "body": "«Guardado aquí» es el almacenamiento del navegador: una base de datos dentro de este navegador, en este equipo; nada se envía a ningún sitio y nada se sincroniza. Las otras casillas indican si hay un modelo conectado y ofrecen pasar todo a otro dispositivo. Cada una abre el lugar donde se configura."
+    },
+    "applications": {
+      "title": "Tus candidaturas",
+      "body": "Un registro por empleo: el puesto, el empleador, su etapa y tus notas. Los plazos, las entrevistas y los documentos cuelgan de él, así que nada se escribe dos veces.",
+      "task": "Abre Candidaturas."
+    },
+    "layout": {
+      "title": "Tablero o tabla",
+      "body": "Los mismos registros, de dos maneras. El tablero muestra las etapas como columnas; la tabla ordena y busca. La elección queda en la dirección, así que un enlace se abre tal como lo dejaste.",
+      "task": "Cambia a Tabla."
+    },
+    "records": {
+      "title": "Seis etapas, y jojo celebra cada una",
+      "body": "Borrador, Enviada, Filtro, Entrevista, Oferta, Cerrada. En el tablero, arrastra una tarjeta a la siguiente columna: jojo baila cuando sale un borrador, se carga de energía para una entrevista y salta con una oferta. Todo movimiento se puede deshacer."
+    },
+    "keywords": {
+      "title": "Las palabras clave son tus etiquetas",
+      "body": "Un único conjunto de etiquetas para candidaturas, recordatorios y la bóveda. Etiqueta un registro con el botón de etiqueta de su fila, añade una palabra clave nueva con + y haz clic derecho en una para renombrarla, cambiarle el color o eliminarla.",
+      "task": "Elige una palabra clave para filtrar por ella."
+    },
+    "new": {
+      "title": "Crea lo que sea",
+      "body": "Nuevo crea una candidatura, un recordatorio, una entrada del calendario, un borrador de mensaje, un enlace guardado o una oferta guardada. La tecla n lo abre desde cualquier sitio donde no estés escribiendo.",
+      "task": "Abre el menú Nuevo."
+    },
+    "new-menu": {
+      "title": "Nada se guarda hasta que guardas",
+      "body": "Cada opción abre su propio formulario. Cerrar uno a medio rellenar no cuesta nada más que lo escrito.",
+      "task": "Cierra el menú: pulsa Esc."
+    },
+    "search": {
+      "title": "La forma más rápida de entrar",
+      "body": "Busca cualquier candidatura, recordatorio o entrada del calendario, salta a cualquier página —incluidas las que no aparecen en la barra lateral— o ejecuta una de las operaciones propias de la app.",
+      "task": "Pulsa ⌘K (Ctrl K) o haz clic en la barra de búsqueda."
+    },
+    "palette": {
+      "title": "Escribe para encontrar lo que sea",
+      "body": "Un puesto, una organización o una etapa. Las flechas eligen e Intro abre.",
+      "task": "Ciérrala con Esc cuando termines de mirar."
+    },
+    "calendar": {
+      "title": "Todas las fechas en un solo lugar",
+      "body": "Plazos, entrevistas y seguimientos son un mismo tipo de registro, así que una entrada aparece en el calendario, en el panel y en su candidatura. Arrástrala a otro día para reprogramarla.",
+      "task": "Abre el Calendario."
+    },
+    "vault": {
+      "title": "La bóveda",
+      "body": "Todo lo que se acumula en una búsqueda de empleo además de las candidaturas: recordatorios, enlaces guardados, archivos, los fragmentos que pegas en cada formulario, las personas que conoces y algunas herramientas.",
+      "task": "Abre la Bóveda."
+    },
+    "files": {
+      "title": "Archivos, con vista previa al momento",
+      "body": "Suelta un CV, una carta o una oferta. Los PDF, imágenes, textos y páginas web guardadas se abren aquí mismo, y cada archivo puede llevar una nota y palabras clave. Los archivos se guardan en este navegador, no se suben.",
+      "task": "Haz clic en un archivo para verlo."
+    },
+    "file-viewer": {
+      "title": "La vista previa",
+      "body": "Léelo sin salir de la página. Con el lector de documentos conectado (Ajustes), el asistente también puede leer su contenido."
+    },
+    "tools": {
+      "title": "Herramientas",
+      "body": "Una calculadora, básica o científica, que guarda el historial de sus cuentas, y un editor de PDF.",
+      "task": "Abre el editor de PDF."
+    },
+    "pdf": {
+      "title": "Herramientas PDF",
+      "body": "Une varios PDF en uno, reordena o elimina páginas y haz anotaciones, todo dentro de este navegador, así que ningún documento se sube nunca. Suelta los PDF directamente en este panel."
+    },
+    "scout": {
+      "title": "Explorador de empleo",
+      "body": "Búsquedas guardadas que vigilan los portales de empleo por ti.",
+      "task": "Abre el Explorador de empleo."
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "body": "Cada pipeline es una búsqueda en un portal (HigherEdJobs, AcademicCareers y otros). Se ejecuta según un horario o cuando pulsas Ejecutar ahora; lo que encuentra espera como sugerencias que apruebas o descartas, y una aprobada se convierte en un borrador de candidatura."
+    },
+    "statistics": {
+      "title": "Estadísticas",
+      "body": "Cómo va tu búsqueda, contado a partir de tus propios registros.",
+      "task": "Abre Estadísticas."
+    },
+    "stats": {
+      "title": "Tasas con márgenes de error honestos",
+      "body": "Tasas de respuesta y de entrevista, un embudo y un gráfico semana a semana, cada tasa con el rango en el que podría estar realmente, porque un puñado de candidaturas es una muestra pequeña. Sigue el filtro de puesto de la barra superior."
+    },
+    "graph": {
+      "title": "El grafo de conocimiento",
+      "body": "Cada registro —candidaturas, empleadores, personas, fechas, archivos— es un nodo, y sus conexiones son las aristas. Haz una pregunta con palabras o constrúyela, y los registros que coinciden se iluminan. No está en la barra lateral; ⌘K te trae aquí."
+    },
+    "chat": {
+      "title": "Chatea con jojo",
+      "body": "El asistente puede buscar, añadir y actualizar tus registros con las herramientas propias de la app, y pregunta antes de cambiar nada salvo que le digas que no lo haga. Necesita un modelo, que es el siguiente paso."
+    },
+    "settings": {
+      "title": "Ajustes",
+      "body": "Modelos, el lector de documentos, palabras clave, tus datos… y cada gesto que conoce jojo.",
+      "task": "Abre Ajustes."
+    },
+    "model": {
+      "title": "Conecta un modelo",
+      "body": "Elige dónde se ejecuta el modelo del asistente. Un servidor local —vLLM, LM Studio, llama.cpp u Ollama— usa su dirección y mantiene tus registros en este equipo. OpenAI, Anthropic (Claude), OpenRouter, Groq o NVIDIA usan una API key. Probar conexión lo comprueba antes de guardar nada."
+    },
+    "reader": {
+      "title": "Deja que lea tus documentos",
+      "body": "MarkItDown convierte PDF, archivos de Word, presentaciones y hojas de cálculo en texto que el asistente puede leer. Copia aquí los dos comandos en una terminal —uno lo instala y otro lo inicia— y pulsa Probar conexión."
+    },
+    "keyword-manager": {
+      "title": "Gestiona tus palabras clave",
+      "body": "Añade palabras clave, renómbralas, dales cualquier color o elimínalas. Un cambio de nombre se aplica en todos los sitios donde aparece la palabra clave."
+    },
+    "backup": {
+      "title": "Guarda una copia de seguridad",
+      "body": "Borrar los datos del navegador se lleva tus registros, así que exporta una copia de vez en cuando: un archivo con todo. jojo saca músculo cuando lo haces."
+    },
+    "done": {
+      "title": "Fin del recorrido",
+      "body": "Deshacer es ⌘Z en cualquier sitio, y cada cambio queda en el registro de auditoría al final de Ajustes. La guía cubre cada pantalla por orden —Cómo usar, en la barra superior— y el recorrido está ahí para repetirlo."
+    }
+  },
+  "overlay": {
+    "progress": "Paso {{n}} de {{total}}",
+    "endLabel": "Terminar el recorrido (se guarda dónde ibas)",
+    "end": "Terminar el recorrido",
+    "nice": "¡Bien, eso es!",
+    "tryIt": "Pruébalo: {{task}}",
+    "done": "Hecho.",
+    "announce": "Paso {{n}} de {{total}}: {{title}}.",
+    "announceTask": "Paso {{n}} de {{total}}: {{title}}. Pruébalo: {{task}}",
+    "back": "Atrás",
+    "notNow": "Ahora no",
+    "finish": "Terminar",
+    "skip": "Saltar este",
+    "next": "Siguiente"
+  }
+}

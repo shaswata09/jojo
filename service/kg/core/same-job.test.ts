@@ -152,6 +152,15 @@ describe('a posting ID on its own', () => {
     expect(findDuplicate([{ id: 'b', ...leeds }], york)).toBeUndefined()
   })
 
+  it('does not count the AcademicCareers or CRA board as the site both agree on', () => {
+    const rice = { org: 'Rice University', role: 'x', url: 'https://www.academiccareers.com/job/111/a/', postingId: 'Req 2041' }
+    const baylor = { org: 'Baylor University', role: 'y', url: 'https://www.academiccareers.com/job/222/b/', postingId: '2041' }
+    expect(sameJob(rice, baylor)).toBeNull()
+    expect(findDuplicate([{ id: 'c', ...rice }], baylor)).toBeUndefined()
+    const onCra = (u: typeof rice, n: string) => ({ ...u, url: `https://careercenter.cra.org/job/${n}` })
+    expect(sameJob(onCra(rice, 'a-1'), onCra(baylor, 'b-2'))).toBeNull()
+  })
+
   it('still counts one tenant of a board as one site', () => {
     expect(
       sameJob(

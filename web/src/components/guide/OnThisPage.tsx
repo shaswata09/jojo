@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 /**
  * The jump list both guide pages open with.
  *
@@ -20,8 +22,9 @@ export function OnThisPage({
   sections: readonly { id: string; label: string }[]
   caption: string
 }) {
+  const { t } = useTranslation('guide')
   return (
-    <nav aria-label="On this page" className="surface rounded-lg px-4 py-3 sm:px-5">
+    <nav aria-label={t('onThisPage')} className="surface rounded-lg px-4 py-3 sm:px-5">
       <p className="mb-2 text-xs text-text-3">{caption}</p>
       <ul className="flex flex-wrap gap-1.5">
         {sections.map((section) => (

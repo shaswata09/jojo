@@ -96,7 +96,7 @@ export function CodeStructure() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           Which layer a change belongs in
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             the differences the drawing cannot show
           </small>
         </h2>
@@ -128,7 +128,7 @@ export function CodeStructure() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           Why the boundary is there at all
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             one service layer, three platforms
           </small>
         </h2>
@@ -184,7 +184,7 @@ export function CodeStructure() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           What holds the rule up
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             three scripts, and the compiler
           </small>
         </h2>
@@ -281,7 +281,7 @@ export function CodeStructure() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           One feature, traced through the layers
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             adding an application
           </small>
         </h2>
@@ -337,7 +337,7 @@ export function CodeStructure() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           The shape of what you are walking into
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             measured, each directory&rsquo;s own tests included
           </small>
         </h2>
@@ -349,17 +349,17 @@ export function CodeStructure() {
                 Files, test files and lines per directory, with what each one holds
               </caption>
               <thead>
-                <tr className="border-b border-hairline text-left text-xs text-text-3">
-                  <th scope="col" className="py-2 pr-3 font-normal">
+                <tr className="border-b border-hairline text-start text-xs text-text-3">
+                  <th scope="col" className="py-2 pe-3 font-normal">
                     Directory
                   </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-normal">
+                  <th scope="col" className="py-2 pe-3 text-end font-normal">
                     Files
                   </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-normal">
+                  <th scope="col" className="py-2 pe-3 text-end font-normal">
                     Tests
                   </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-normal">
+                  <th scope="col" className="py-2 pe-3 text-end font-normal">
                     Lines
                   </th>
                   <th scope="col" className="py-2 font-normal">
@@ -372,15 +372,15 @@ export function CodeStructure() {
                   <tr key={row.dir}>
                     <th
                       scope="row"
-                      className="py-2 pr-3 text-left font-mono text-xs font-normal whitespace-nowrap text-text-1"
+                      className="py-2 pe-3 text-start font-mono text-xs font-normal whitespace-nowrap text-text-1"
                     >
                       {row.dir}
                     </th>
-                    <td className="py-2 pr-3 text-right text-text-2 tabular-nums">{row.files}</td>
-                    <td className="py-2 pr-3 text-right text-text-3 tabular-nums">
+                    <td className="py-2 pe-3 text-end text-text-2 tabular-nums">{row.files}</td>
+                    <td className="py-2 pe-3 text-end text-text-3 tabular-nums">
                       {row.tests === 0 ? '—' : row.tests}
                     </td>
-                    <td className="py-2 pr-3 text-right text-text-2 tabular-nums">
+                    <td className="py-2 pe-3 text-end text-text-2 tabular-nums">
                       {row.lines.toLocaleString('en-GB')}
                     </td>
                     <td className="py-2 text-text-2">{row.what}</td>
@@ -404,7 +404,7 @@ export function CodeStructure() {
       <section>
         <h2 className="mb-3 text-base font-medium">
           What the tests actually pin
-          <small className="ml-2 font-sans text-xs font-normal text-text-3">
+          <small className="ms-2 font-sans text-xs font-normal text-text-3 [unicode-bidi:isolate]">
             73 files, 915 tests, about five seconds
           </small>
         </h2>
@@ -437,7 +437,7 @@ export function CodeStructure() {
               <div key={group.title} className="py-3 first:pt-0 last:pb-0">
                 <dt className="font-medium">
                   {group.title}
-                  <span className="ml-2 font-mono text-xs font-normal text-text-3">
+                  <span className="ms-2 font-mono text-xs font-normal text-text-3 [unicode-bidi:isolate]">
                     {group.files}
                   </span>
                 </dt>

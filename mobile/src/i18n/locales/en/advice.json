@@ -1,0 +1,130 @@
+{
+  "days_one": "{{count}} day",
+  "days_other": "{{count}} days",
+  "rec": {
+    "segment": {
+      "labelCase": "lower",
+      "headline": "Put more of your effort into {{label}}.",
+      "because": {
+        "source": {
+          "replied_one": "{{count}} of {{of}} replied there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by where they came from.",
+          "replied_other": "{{count}} of {{of}} replied there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by where they came from.",
+          "interview_one": "{{count}} of {{of}} reached an interview there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by where they came from.",
+          "interview_other": "{{count}} of {{of}} reached an interview there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by where they came from."
+        },
+        "role": {
+          "replied_one": "{{count}} of {{of}} replied there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by the kind of role.",
+          "replied_other": "{{count}} of {{of}} replied there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by the kind of role.",
+          "interview_one": "{{count}} of {{of}} reached an interview there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by the kind of role.",
+          "interview_other": "{{count}} of {{of}} reached an interview there ({{rate}}%, likely {{low}}–{{high}}%), against {{worstCount}} of {{worstOf}} for {{worst}} ({{worstRate}}%, likely {{worstLow}}–{{worstHigh}}%). Split by the kind of role."
+        }
+      }
+    },
+    "late": {
+      "headline_one": "Clear {{count}} overdue follow-up.",
+      "headline_other": "Clear {{count}} overdue follow-ups.",
+      "because": "These are chases you already decided were worth making, on applications an employer has already seen. Nothing else on this list is as close to done."
+    },
+    "silent": {
+      "headline_one": "Chase {{count}} application that has gone quiet.",
+      "headline_other": "Chase {{count}} applications that have gone quiet.",
+      "because_one": "Replies to you arrive in {{days}} typically, and this one has passed that with nothing back. That is your own figure, not a rule of thumb.",
+      "because_other": "Replies to you arrive in {{days}} typically, and these have passed that with nothing back. That is your own figure, not a rule of thumb."
+    },
+    "stale": {
+      "headline_one": "Record what happened on {{count}} application.",
+      "headline_other": "Record what happened on {{count}} applications.",
+      "because_one": "It has had nothing written against it in a fortnight. Every rate on this page is only as good as what has been written down.",
+      "because_other": "They have had nothing written against them in a fortnight. Every rate on this page is only as good as what has been written down."
+    },
+    "drafts": {
+      "headlineSingle": "Finish the draft or drop it.",
+      "headline_one": "Finish the closest of {{count}} drafts, or drop them.",
+      "headline_other": "Finish the closest of {{count}} drafts, or drop them.",
+      "because_one": "A draft does nothing until it goes out. The oldest has been open {{count}} day.",
+      "because_other": "A draft does nothing until it goes out. The oldest has been open {{count}} days."
+    },
+    "background": {
+      "headline": "Let jojo read your CV.",
+      "because": "Nothing about your own background is recorded, so no application can be weighed against what a posting asks for. It is one document and one confirmation."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Rework the opening paragraph before you send the next one.",
+        "because": "Replies are where this search loses most against a typical one. {{got}} of {{of}} ({{rate}}%), against {{typical}}% for a typical search — a figure jojo chose as a round comparison, not one measured from anybody."
+      },
+      "interviews": {
+        "headline": "Make the fit obvious in the first three lines.",
+        "because": "Replies that stall before a call are the biggest gap here — the interest is there and the case is not landing. {{got}} of {{of}} ({{rate}}%), against {{typical}}% for a typical search — a figure jojo chose as a round comparison, not one measured from anybody."
+      }
+    },
+    "clear": {
+      "headline": "Nothing here needs chasing.",
+      "because_one": "Every follow-up is on time, nothing has gone quiet, and there are no drafts waiting. {{count}} application is out.",
+      "because_other": "Every follow-up is on time, nothing has gone quiet, and there are no drafts waiting. {{count}} applications are out."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Sent",
+      "replies": "Replies",
+      "interviews": "Interviews",
+      "referrals": "Referrals",
+      "followUps": "Follow-ups",
+      "keptMoving": "Kept moving"
+    },
+    "basis": {
+      "sent_one": "{{count}} of {{of}} out of draft",
+      "sent_other": "{{count}} of {{of}} out of draft",
+      "replies_one": "{{count}} of {{of}} replied",
+      "replies_other": "{{count}} of {{of}} replied",
+      "interviews_one": "{{count}} of {{of}} reached an interview",
+      "interviews_other": "{{count}} of {{of}} reached an interview",
+      "referrals_one": "{{count}} of {{of}} came through a referral",
+      "referrals_other": "{{count}} of {{of}} came through a referral",
+      "followUpsNone": "nothing open",
+      "followUps_one": "{{count}} of {{of}} open follow-ups are late",
+      "followUps_other": "{{count}} of {{of}} open follow-ups are late",
+      "keptMovingNone": "nothing live",
+      "keptMoving_one": "{{count}} of {{of}} touched in the last fortnight",
+      "keptMoving_other": "{{count}} of {{of}} touched in the last fortnight"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Nothing is sitting in draft. Worth protecting the care in each one rather than adding more.",
+        "some_one": "{{count}} application is still in draft. A draft does nothing until it goes out, and the one closest to done is the cheapest to finish.",
+        "some_other": "{{count}} applications are still in draft. A draft does nothing until it goes out, and the one closest to done is the cheapest to finish."
+      },
+      "replies": {
+        "nothingSent": "Nothing has gone out yet, so there is nothing to measure a reply against.",
+        "none_one": "None of the {{count}} application sent has had a reply. That is the step to work on before sending more — tailoring the opening paragraph to each posting moves it more than anything else.",
+        "none_other": "None of the {{count}} applications sent has had a reply. That is the step to work on before sending more — tailoring the opening paragraph to each posting moves it more than anything else.",
+        "all": "Every application sent has had a reply. Whatever the opening paragraph is doing, keep doing it.",
+        "some_one": "{{count}} of {{of}} came back. Tailoring the opening paragraph to each posting moves this more than anything else.",
+        "some_other": "{{count}} of {{of}} came back. Tailoring the opening paragraph to each posting moves this more than anything else."
+      },
+      "interviews": {
+        "noReply": "No reply has arrived yet, so nothing has had the chance to stall before a call.",
+        "none_one": "{{count}} reply has arrived and none has become a call. That gap is usually the fit not being obvious in the first paragraph.",
+        "none_other": "{{count}} replies have arrived and none has become a call. That gap is usually the fit not being obvious in the first paragraph.",
+        "some_one": "{{interviewed}} of the {{count}} reply became a call. Replies that stall before one usually mean the fit is not obvious early enough.",
+        "some_other": "{{interviewed}} of the {{count}} replies became a call. Replies that stall before one usually mean the fit is not obvious early enough."
+      },
+      "referrals": {
+        "none": "None of these came through an introduction. A referred application is several times likelier to get a reply, so one is worth several cold sends.",
+        "some_one": "{{count}} of {{of}} came through an introduction. It is the highest-yield thing on this list, and the one that scales worst — which is why it is worth asking before the next cold send rather than after.",
+        "some_other": "{{count}} of {{of}} came through an introduction. It is the highest-yield thing on this list, and the one that scales worst — which is why it is worth asking before the next cold send rather than after."
+      },
+      "followUps": {
+        "none": "Nothing is late. A chase a week or so after sending is usually the one that lands.",
+        "late_one": "{{count}} follow-up is overdue. Clearing those usually pays off faster than applying somewhere new.",
+        "late_other": "{{count}} follow-ups are overdue. Clearing those usually pays off faster than applying somewhere new."
+      },
+      "keptMoving": {
+        "none": "Nothing has gone quiet. Recording what happened as it happens is what keeps this honest.",
+        "stale_one": "{{count}} live application has had no activity in a fortnight. A short nudge costs less than starting somewhere new.",
+        "stale_other": "{{count}} live applications have had no activity in a fortnight. A short nudge costs less than starting somewhere new."
+      }
+    }
+  }
+}

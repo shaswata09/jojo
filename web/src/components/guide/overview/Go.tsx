@@ -9,10 +9,16 @@ import type { ReactNode } from 'react'
  * accent-underline class trio was written out eleven times in the first draft.
  * Eleven copies is eleven chances for one of them to lose `underline-offset-4`
  * and read as a different kind of link than the one beside it.
+ *
+ * `children` is optional because most of these sit inside a translated sentence:
+ * `<Trans>` fills the link text in from the catalog.
  */
-export function Go({ to, children }: { to: string; children: ReactNode }) {
+export function Go({ to, children }: { to: string; children?: ReactNode }) {
   return (
-    <Link to={to} className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2">
+    <Link
+      to={to}
+      className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2"
+    >
       {children}
     </Link>
   )

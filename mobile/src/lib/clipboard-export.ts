@@ -37,6 +37,7 @@
  */
 
 import { sizeLabel } from '@jojo/service/core/files'
+import { i18next } from '@/i18n/i18n'
 import { byteLengthOf } from '@/lib/text'
 import type { ToastOptions } from '@/lib/toast-context'
 
@@ -97,10 +98,11 @@ export function copyExport(
      * `documents: []` note below), so detaching one shrinks it by a row.
      */
     return {
-      title: 'Too big for the clipboard',
-      description: `Your records come to ${sizeLabel(byteLengthOf(json))} and Android's clipboard takes about ${sizeLabel(
-        CLIPBOARD_MAX_BYTES / 2,
-      )} of text. Nothing was copied. Use Transfer to send everything to your computer over your local network.`,
+      title: i18next.t('messages:clipboard.tooBig'),
+      description: i18next.t('messages:clipboard.tooBigBody', {
+        size: sizeLabel(byteLengthOf(json)),
+        max: sizeLabel(CLIPBOARD_MAX_BYTES / 2),
+      }),
       tone: 'danger',
     }
   }
@@ -121,8 +123,7 @@ export function copyExport(
    * Clear. Keep the two sentences saying the same thing.
    */
   return {
-    title: 'Copied to the clipboard',
-    description:
-      'A backup you can paste into a note or a file. The documents you attached stay on this phone — their rows come back without their contents.',
+    title: i18next.t('messages:clipboard.copied'),
+    description: i18next.t('messages:clipboard.copiedBody'),
   }
 }

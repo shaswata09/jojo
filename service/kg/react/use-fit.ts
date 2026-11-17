@@ -90,6 +90,8 @@ export type FitView = {
   stale: Stale | null
   /** 'Read by gemma_4_31b · 3 days ago', or null when nothing is stored. */
   readNote: string | null
+  /** What `readNote` is made of, for an app to say in its own language (`domain.readBy`). */
+  readBy: { model: string; day: string; today: string } | null
   /** The step a read is on, or null when nothing is running. */
   step: FitStep | null
   /**
@@ -314,6 +316,10 @@ export function useFit<S extends Cancellation>({
     reading === undefined || isCleared(reading)
       ? null
       : `Read by ${reading.model} · ${agoLabel(dayOf(reading.readAt), today)}`
+  const readBy =
+    reading === undefined || isCleared(reading)
+      ? null
+      : { model: reading.model, day: dayOf(reading.readAt), today }
 
   return {
     source,
@@ -342,6 +348,7 @@ export function useFit<S extends Cancellation>({
     guidance,
     stale: staleOf(reading, settings.model),
     readNote,
+    readBy,
     step,
     queued,
     error,

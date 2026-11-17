@@ -9,10 +9,9 @@
  * ## What this page does NOT do
  *
  * Decode. It grabs a frame, shrinks it, turns it grey, and posts the bytes to
- * React Native — where `core/pulse-read.ts` reads them, in TypeScript, in the
- * one copy the desktop browser also runs. Putting the decoder in here would
- * mean bundling it into a string and maintaining a second build path for it, so
- * that a phone and a laptop could disagree about what a frame says.
+ * React Native — where `lib/pairing-qr.ts` reads the QR code in them with an
+ * ordinary imported library. Putting the decoder in here would mean bundling
+ * it into a string and maintaining a second build path for it.
  *
  * ## The one prop that makes it work
  *
@@ -25,17 +24,31 @@
  *
  * ## Why it downsamples here
  *
- * Because the alternative is sending a megapixel over a bridge eight times a
- * second. The reader works from a small image anyway — it averages regions a
- * twelfth of the picture wide — so shrinking to `SIDE` before crossing costs
- * nothing and takes the payload to about nine kilobytes a frame.
+ * Because the alternative is sending a megapixel over a bridge several times a
+ * second. The pairing code is a version-5 QR code, 37 modules across (45 with
+ * its quiet zone), and the decoder wants three or four pixels a module.
+ *
+ * ## Near and far, alternately
+ *
+ * Shrinking the whole view to `SIDE` gives a code four pixels a module only
+ * once it fills about half the view — the phone held close. Held at a normal
+ * distance from a laptop the code fills a quarter of it, which shrinks to under
+ * two pixels a module and never reads. So the frames alternate: the whole view,
+ * for a code held close, and the middle half of it at about the camera's own
+ * resolution, for one held further off and aimed at. Measured with
+ * `lib/pairing-qr.test.ts`: a code spanning 40% of `SIDE` reads with a little
+ * blur; the zoomed frame puts a code that spans a quarter of the view there.
  */
 
 /** Edge of the grayscale buffer handed to React Native. */
-export const SIDE = 128
+export const SIDE = 320
 
-/** Frames a second. Matched to what the pulse animation actually shows. */
-export const SCAN_FPS = 8
+/**
+ * Frames a second, the two views together. The code on the computer is still,
+ * so there is nothing to keep up with: this is how quickly a phone that has
+ * just been lined up notices. Six keeps the bridge to about 800 KB a second.
+ */
+export const SCAN_FPS = 6
 
 /**
  * Why the camera did not start.
@@ -100,20 +113,21 @@ export const SCANNER_HTML = `<!doctype html>
       video.srcObject = stream;
       post({ kind: 'ready' });
 
+      var zoomed = false;
       setInterval(function () {
         if (video.readyState < 2) return;
-        // Square centre crop, so the animation keeps its aspect and the reader
-        // is not handed a stretched picture.
+        // Square centre crop, so the code keeps its aspect and the reader is
+        // not handed a stretched picture — the whole view, then the middle
+        // half of it, in turn (see "Near and far" in scanner-page.ts).
         var w = video.videoWidth;
         var h = video.videoHeight;
-        var side = Math.min(w, h);
+        var side = Math.min(w, h) * (zoomed ? 0.5 : 1);
+        zoomed = !zoomed;
         ctx.drawImage(video, (w - side) / 2, (h - side) / 2, side, side, 0, 0, SIDE, SIDE);
 
         var pixels = ctx.getImageData(0, 0, SIDE, SIDE).data;
-        // Rec. 601 luma. The pulse is red on a dark field, and weighting green
-        // the way the eye does would throw away most of the signal — but the
-        // reader thresholds against the picture's own levels, so a consistent
-        // grey is all it needs.
+        // Rec. 601 luma. The code is black on white, so any consistent grey
+        // will do; the decoder thresholds against the picture's own levels.
         var out = new Uint8Array(SIDE * SIDE);
         for (var i = 0, p = 0; i < out.length; i++, p += 4) {
           out[i] = (pixels[p] * 77 + pixels[p + 1] * 150 + pixels[p + 2] * 29) >> 8;

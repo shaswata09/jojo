@@ -1,0 +1,382 @@
+{
+  "stage": {
+    "draft": "초안",
+    "submitted": "제출됨",
+    "screen": "전화 스크리닝",
+    "interview": "면접",
+    "offer": "합격 제안",
+    "closed": "종료"
+  },
+  "kind": {
+    "deadline": "마감일",
+    "interview": "면접",
+    "visit": "방문",
+    "call": "통화",
+    "prep": "준비",
+    "admin": "행정",
+    "follow-up": "후속 연락"
+  },
+  "outcome": {
+    "rejected": "불합격",
+    "withdrawn": "철회함",
+    "accepted": "수락함",
+    "declined": "거절함",
+    "ghosted": "연락 두절 — 응답 없음"
+  },
+  "outcomeAction": {
+    "rejected": "불합격",
+    "withdrawn": "철회함",
+    "accepted": "합격 제안 수락",
+    "declined": "합격 제안 거절",
+    "ghosted": "응답 없이 종료"
+  },
+  "format": {
+    "phone": "전화",
+    "video": "화상",
+    "onsite": "대면"
+  },
+  "verdict": {
+    "strong": "잘 맞음",
+    "worth-tailoring": "맞춤 수정할 만함",
+    "a-stretch": "다소 도전적",
+    "not-measured": "아직 평가하지 않음"
+  },
+  "background": {
+    "education": "학력",
+    "employment": "경력",
+    "publication": "출판물",
+    "patent": "특허",
+    "grant": "연구비",
+    "leadership": "리더십",
+    "outreach": "대외 활동",
+    "training": "직무 역량 개발",
+    "other": "기타",
+    "award": "수상",
+    "teaching": "강의",
+    "service": "봉사",
+    "project": "프로젝트",
+    "certification": "자격증",
+    "skill": "기술",
+    "language": "언어",
+    "volunteering": "자원봉사",
+    "membership": "회원 활동"
+  },
+  "tone": {
+    "teal": "파랑",
+    "cyan": "청록",
+    "green": "초록",
+    "amber": "호박색",
+    "red": "빨강",
+    "pink": "분홍",
+    "violet": "보라",
+    "gray": "회색"
+  },
+  "mark": {
+    "bold": "이 공고에 맞춰 새로 쓰거나 다시 씀",
+    "italic": "표현을 바꿈",
+    "underline": "위로 옮기거나 비중을 높임"
+  },
+  "document": {
+    "cv": "이력서",
+    "research-statement": "연구 진술서",
+    "teaching-statement": "강의 진술서",
+    "cover-letter": "자기소개서",
+    "other": "문서"
+  },
+  "how": {
+    "filed-under": "이 지원 아래에 정리됨",
+    "same-url": "웹 주소로 일치",
+    "via-posting": "스카우트가 찾은 공고에서 가져옴"
+  },
+  "contactRole": {
+    "recommender": "추천인",
+    "contact": "담당자"
+  },
+  "approval": {
+    "manual": "수동",
+    "semi": "반자동",
+    "auto": "자동"
+  },
+  "approvalSaid": {
+    "manual": "이 대화에서 무언가를 기록하기 전에 매번 물어봐요.",
+    "semi": "수정은 바로 반영돼요. 삭제하거나 비우기 전에는 물어봐요.",
+    "auto": "삭제를 포함해 모든 작업이 바로 실행돼요. 저장소 전체를 비우거나 교체할 때만 확인해요."
+  },
+  "funnel": {
+    "0": "지원",
+    "1": "응답",
+    "2": "전화 스크리닝",
+    "3": "면접",
+    "4": "합격 제안"
+  },
+  "band": {
+    "0": "진행 중",
+    "1": "합격 제안",
+    "2": "불합격",
+    "3": "철회함",
+    "4": "응답 없음"
+  },
+  "dimension": {
+    "source": "지원 경로",
+    "role": "직무 유형"
+  },
+  "kpi": {
+    "label": {
+      "response": "응답률",
+      "interview": "면접 전환율",
+      "offer": "합격 제안율",
+      "reply": "응답 시간 중앙값"
+    },
+    "note": {
+      "response_other": "{{of}}건 중 {{count}}건 응답",
+      "interview_other": "{{of}}건 중 {{count}}건 면접 진행",
+      "offer_other": "{{of}}건 중 {{count}}건 합격 제안",
+      "replyNone": "두 날짜가 모두 기록된 응답이 아직 없어요",
+      "reply_other": "응답 {{count}}건 기준"
+    },
+    "days_other": "{{count}}일",
+    "typicalRate": "일반적으로 {{value}}%",
+    "typicalDays": "일반적으로 {{days}}"
+  },
+  "rel": {
+    "AT": "소속",
+    "ABOUT": "관련 대상",
+    "FILED_UNDER": "정리 위치",
+    "TAGS": "태그 대상",
+    "FROM": "출처",
+    "BECAME": "전환 결과",
+    "COPY_OF": "원본",
+    "SUBJECT": "관련 대상",
+    "OBJECT": "가리키는 대상"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "로컬 서버 (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) — 무료, 사용량 제한 있음"
+  },
+  "month": {
+    "1": "1월",
+    "2": "2월",
+    "3": "3월",
+    "4": "4월",
+    "5": "5월",
+    "6": "6월",
+    "7": "7월",
+    "8": "8월",
+    "9": "9월",
+    "10": "10월",
+    "11": "11월",
+    "12": "12월"
+  },
+  "monthShort": {
+    "1": "1월",
+    "2": "2월",
+    "3": "3월",
+    "4": "4월",
+    "5": "5월",
+    "6": "6월",
+    "7": "7월",
+    "8": "8월",
+    "9": "9월",
+    "10": "10월",
+    "11": "11월",
+    "12": "12월"
+  },
+  "weekdayShort": {
+    "0": "월",
+    "1": "화",
+    "2": "수",
+    "3": "목",
+    "4": "금",
+    "5": "토",
+    "6": "일"
+  },
+  "weekday": {
+    "0": "일요일",
+    "1": "월요일",
+    "2": "화요일",
+    "3": "수요일",
+    "4": "목요일",
+    "5": "금요일",
+    "6": "토요일"
+  },
+  "dayMonth": "{{month}} {{day}}일",
+  "monthYear": "{{year}}년 {{month}}",
+  "quarter": "{{year}}년 {{quarter}}분기",
+  "weekdayNarrow": {
+    "0": "월",
+    "1": "화",
+    "2": "수",
+    "3": "목",
+    "4": "금",
+    "5": "토",
+    "6": "일"
+  },
+  "action": {
+    "detailsEdited": "세부 정보 수정됨",
+    "draftCreated": "초안 작성됨",
+    "offerReceived": "합격 제안 받음",
+    "duplicated": "복제됨",
+    "addedFromScout": "채용 스카우트에서 추가됨",
+    "addedFromPosting": "저장한 공고에서 추가됨",
+    "noteEdited": "메모 수정됨",
+    "offerCleared": "합격 제안 세부 정보 삭제됨",
+    "flagged": "후속 조치 표시됨",
+    "flagCleared": "표시 해제됨",
+    "movedTo": {
+      "draft": "초안으로 이동",
+      "submitted": "제출됨으로 이동",
+      "screen": "전화 스크리닝으로 이동",
+      "interview": "면접으로 이동",
+      "offer": "합격 제안으로 이동",
+      "closed": "종료로 이동"
+    },
+    "addedAt": {
+      "draft": "초안 단계에서 추가됨",
+      "submitted": "제출됨 단계에서 추가됨",
+      "screen": "전화 스크리닝 단계에서 추가됨",
+      "interview": "면접 단계에서 추가됨",
+      "offer": "합격 제안 단계에서 추가됨",
+      "closed": "종료 단계에서 추가됨"
+    },
+    "interviewScheduled": {
+      "phone": "전화 면접 일정 잡힘",
+      "video": "화상 면접 일정 잡힘",
+      "onsite": "대면 면접 일정 잡힘"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "오늘",
+      "yesterday": "어제",
+      "days_other": "{{count}}일 전"
+    },
+    "when": {
+      "today": "오늘",
+      "tomorrow": "내일",
+      "inDays_other": "{{count}}일 후",
+      "overdue_other": "{{count}}일 지남"
+    },
+    "inline": {
+      "today": "오늘",
+      "tomorrow": "내일"
+    },
+    "completed": {
+      "today": "오늘 완료",
+      "yesterday": "어제 완료",
+      "days_other": "{{count}}일 전 완료",
+      "on": "{{date}} 완료"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "합격 제안",
+      "overdue": "기한 지남",
+      "deadline": "마감일",
+      "interview": "면접"
+    },
+    "headline": {
+      "reply": "{{org}}에 답장하기",
+      "submitOrLetGo": "{{org}}에 제출하거나 포기하기",
+      "recordInterview": "{{org}} 면접 기록하기",
+      "recordVisit": "{{org}} 방문 기록하기",
+      "recordCall": "{{org}} 통화 기록하기",
+      "catchUp": "{{org}} 밀린 일 처리하기",
+      "submit": "{{org}}에 제출하기",
+      "prepare": "{{org}} 준비하기",
+      "dateInterview": "{{org}} 면접 날짜 정하기"
+    },
+    "timing": {
+      "respondBy": "{{date}}까지 답변 · {{when}}",
+      "wasDue": "{{date}} 마감이었음 · {{when}}",
+      "due": "{{date}} 마감 · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "날짜 없음"
+    },
+    "button": {
+      "draftReply": "답장 초안 쓰기",
+      "recordOutcome": "결과 기록하기",
+      "acceptOrDecline": "수락 또는 거절",
+      "openApplication": "지원 열기",
+      "draftMessage": "메시지 초안 작성"
+    },
+    "undatedInterview": "면접 단계인데 날짜가 하나도 없어서, 이번 주 일정에도 캘린더에도 표시할 수 없어요.",
+    "unfiled": "이 마감일은 어떤 지원에도 정리되어 있지 않아요",
+    "unknownOrg": "알 수 없음"
+  },
+  "filed": {
+    "none": "정리 안 됨",
+    "one": "{{a}}에 정리됨",
+    "two": "{{a}}, {{b}}에 정리됨",
+    "many_other": "지원 {{count}}건에 정리됨"
+  },
+  "readBy": "{{model}}이(가) 읽음 · {{ago}}",
+  "missingSource": "보관함에 더 이상 없는 문서",
+  "undo": {
+    "nothing": {
+      "undo": "실행 취소할 게 없어요.",
+      "redo": "다시 실행할 게 없어요."
+    },
+    "changed": {
+      "undo": "실행 취소할 게 없어요 — 그 사이에 바뀌었어요",
+      "redo": "다시 실행할 게 없어요 — 그 사이에 바뀌었어요"
+    },
+    "done": {
+      "undo": "실행 취소했어요",
+      "redo": "다시 실행했어요"
+    },
+    "journal": "hidden",
+    "action": "실행 취소",
+    "superseded": {
+      "nothing": "되돌린 것이 없어요",
+      "part": "일부는 그대로 두었어요",
+      "named": "{{labels}} — 그 뒤로 이 기록을 바꿨기 때문에, 지금 되돌리면 그 변경도 함께 사라졌을 거예요.",
+      "unnamed": "그 뒤로 이 기록을 바꿨기 때문에, 지금 되돌리면 그 변경도 함께 사라졌을 거예요.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "저장되지 않았어요",
+    "didNotFit": "이 기록에 맞지 않는 내용이 있었어요."
+  },
+  "announce": {
+    "stickyRemoved": "메모를 삭제했어요"
+  },
+  "handover": {
+    "never": "이 기기는 전송한 적이 없어서, 이 기기 외에는 이 기록의 사본이 없어요.",
+    "clean": {
+      "today": "마지막 전송은 오늘이었고, 그 뒤로 여기에 기록된 것이 없어요. 다른 기기에도 같은 기록이 있어요.",
+      "yesterday": "마지막 전송은 어제였고, 그 뒤로 여기에 기록된 것이 없어요. 다른 기기에도 같은 기록이 있어요.",
+      "daysAgo": "마지막 전송은 {{ago}}이었고, 그 뒤로 여기에 기록된 것이 없어요. 다른 기기에도 같은 기록이 있어요."
+    },
+    "drifted": {
+      "today_other": "마지막 전송은 오늘이었고, 그 뒤로 여기서 {{count}}건이 변경됐어요. 다른 기기는 그만큼 뒤처져 있어요.",
+      "yesterday_other": "마지막 전송은 어제였고, 그 뒤로 여기서 {{count}}건이 변경됐어요. 다른 기기는 그만큼 뒤처져 있어요.",
+      "daysAgo_other": "마지막 전송은 {{ago}}이었고, 그 뒤로 여기서 {{count}}건이 변경됐어요. 다른 기기는 그만큼 뒤처져 있어요."
+    }
+  },
+  "backup": {
+    "records_other": "기록 {{count}}개",
+    "links_other": "연결 {{count}}개",
+    "documents_zero": "문서 없음",
+    "documents_other": "문서 {{count}}개",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}}(이 중 {{loss}})",
+    "both": "{{a}}와 {{b}}",
+    "leftOut": "{{what}}는 읽을 수 없어 제외돼요",
+    "changed_other": "기록 {{count}}개는 변경된 상태로 돌아와요",
+    "leftOutAndChanged": "{{leftOut}}. 그리고 {{changed}}",
+    "replacesAll": {
+      "computer": "복원하면 지금 있는 모든 기록과 모든 문서가 대체돼요",
+      "phone": "복원하면 이 휴대폰의 모든 기록과 모든 문서가 대체돼요"
+    },
+    "replacesKept": {
+      "computer_other": "복원하면 지금 있는 모든 기록과 모든 문서가 대체돼요. 단, 문서 없이 도착하는 기록 {{count}}개는 여기 이미 있는 사본을 그대로 유지해요",
+      "phone_other": "복원하면 이 휴대폰의 모든 기록과 모든 문서가 대체돼요. 단, 문서 없이 도착하는 기록 {{count}}개는 여기 이미 있는 사본을 그대로 유지해요"
+    }
+  }
+}

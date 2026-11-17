@@ -4,5 +4,40 @@
     "description": "The language jojo is shown in. Your records stay in the language you wrote them in.",
     "system": "Same as this device ({{name}})",
     "restartForDirection": "Arabic reads right to left once jojo restarts."
+  },
+  "actions": {
+    "undo": "Undo",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "tryAgain": "Try again",
+    "preview": "Preview",
+    "moreFor": "More actions for {{name}}",
+    "save": "Save",
+    "done": "Done",
+    "openNamed": "Open {{name}}",
+    "clear": "Clear",
+    "clearNamed": "Clear {{name}}",
+    "notNow": "Not now",
+    "duplicate": "Duplicate",
+    "remove": "Remove",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "clearSearch": "Clear search",
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "discard": {
+    "title": "Discard unsaved changes?",
+    "description": "What you have typed here has not been saved anywhere, so leaving throws it away — and that cannot be undone.",
+    "confirm": "Discard"
+  },
+  "filter": {
+    "all": "All"
+  },
+  "pageOptions": {
+    "title": "Page options",
+    "description": "These apply to this screen only, for this visit."
   }
 }

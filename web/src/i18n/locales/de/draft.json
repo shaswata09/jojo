@@ -1,0 +1,57 @@
+{
+  "defaultTitle": "E-Mail-Entwurf",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Nachricht entwerfen",
+    "for": "Für {{name}}.",
+    "forItem": "Für {{name}} · {{item}}.",
+    "unlinked": "Nicht mit einer Bewerbung verknüpft, daher bleiben [ROLE] und [DATE] leer.",
+    "body": "Nichts wird generiert und nichts wird gesendet – füll die Lücken aus, kopier den Text in dein Mailprogramm und markier ihn dann als gesendet."
+  },
+  "picker": {
+    "hint": "Starte mit einem deiner E-Mail-Textbausteine.",
+    "searchLabel": "Textbausteine suchen",
+    "searchPlaceholder": "Textbausteine suchen …",
+    "noMatch": "Kein Textbaustein passt dazu.",
+    "emailGroup": "E-Mail-Textbausteine",
+    "freshGroup": "Neu beginnen",
+    "blank": "Leerer Entwurf"
+  },
+  "editor": {
+    "placeholder": "Schreib die Nachricht oder wähl einen Textbaustein als Start …",
+    "label": "Nachrichtenentwurf",
+    "nothing": "Noch nichts entworfen.",
+    "noBlanks": "Keine Lücken mehr.",
+    "blanksLeft_one": "{{count}} Lücke übrig — {{names}}",
+    "blanksLeft_other": "{{count}} Lücken übrig — {{names}}",
+    "nameNote": " · der Name einer Person wird nie für dich ausgefüllt",
+    "copyBlocked": "Der Browser hat das Kopieren blockiert",
+    "copied": "Entwurf in die Zwischenablage kopiert"
+  },
+  "empty": {
+    "title": "Noch keine E-Mail-Textbausteine",
+    "description": "Textbausteine mit dem Tag Email erscheinen hier als Ausgangspunkt. Es gibt nichts zu laden, aber der Entwurf muss auch nicht von einem ausgehen.",
+    "action": "Mit leerem Entwurf beginnen"
+  },
+  "footer": {
+    "writeFirst": "Schreib zuerst etwas",
+    "saveHint": "Diesen Entwurf im Tresor behalten, mit dem Tag Email",
+    "save": "Als Textbaustein speichern",
+    "assistantHint": "Der Assistent hat eine eigene Seite – öffne sie über die Seitenleiste",
+    "assistant": "Im Assistenten öffnen",
+    "copyHint": "Nachricht in die Zwischenablage kopieren",
+    "markNoItem": "Öffne dies über eine Erinnerung, um sie hier abzuhaken",
+    "markDone": "Diese Erinnerung ist bereits abgehakt",
+    "markSent": "Als gesendet markieren"
+  },
+  "toast": {
+    "replaced": "Entwurf ersetzt",
+    "loaded": "{{title}} geladen.",
+    "startedBlank": "Neu mit leerem Entwurf begonnen.",
+    "undo": "Rückgängig",
+    "saved": "In Textbausteinen gespeichert",
+    "savedDescription": "{{title}} · mit dem Tag Email, im Tresor",
+    "markedSent": "Als gesendet markiert",
+    "markedSentDescription": "{{title}} — in den Erinnerungen abgehakt"
+  }
+}

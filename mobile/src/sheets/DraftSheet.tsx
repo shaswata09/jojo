@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -99,6 +100,7 @@ export type DraftSheetProps = {
  * a liability there rather than a feature.
  */
 export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftSheetProps) {
+  const { t } = useTranslation('sheets')
   const c = useColors()
   const { get, update } = useTimeline()
   const { byId } = useApplications()
@@ -148,10 +150,12 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
 
     if (!dirty || empty) return
     toast({
-      title: 'Draft replaced',
-      description: snippet ? `Loaded ${snippet.title}.` : 'Started again from blank.',
+      title: t('draft.toast.replaced'),
+      description: snippet
+        ? t('draft.toast.loaded', { title: snippet.title })
+        : t('draft.toast.blank'),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => {
           setText(previous.text)
           setChosenId(previous.chosenId)
@@ -164,8 +168,8 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
   const saveAsSnippet = () => {
     // Named after the template it came from and the employer it was aimed at,
     // because a vault full of "Draft" is a vault you cannot search.
-    const base = emailSnippets.find((s) => s.id === chosenId)?.title ?? 'Draft email'
-    const title = app ? `${base} — ${app.org}` : base
+    const base = emailSnippets.find((s) => s.id === chosenId)?.title ?? t('draft.defaultTitle')
+    const title = app ? t('draft.titleForOrg', { title: base, org: app.org }) : base
     const saved = addSnippet({
       title,
       tag: 'Email',
@@ -173,8 +177,8 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
       applicationIds: app ? [app.id] : [],
     })
     toast({
-      title: 'Saved to snippets',
-      description: `${saved.title} · tagged Email, in the Vault`,
+      title: t('draft.toast.saved'),
+      description: t('draft.toast.savedDescription', { title: saved.title }),
     })
   }
 
@@ -186,9 +190,9 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
     toast({
       // Nothing was sent from here, and the copy says only what happened: the
       // reminder is ticked off, the same as ticking its box in the list.
-      title: 'Marked as sent',
-      description: `${item.title} — ticked off in reminders`,
-      action: { label: 'Undo', onPress: () => update(item.id, { completedOn: before }) },
+      title: t('draft.toast.sent'),
+      description: t('draft.toast.sentDescription', { title: item.title }),
+      action: { label: t('common.undo'), onPress: () => update(item.id, { completedOn: before }) },
     })
   }
 
@@ -199,23 +203,25 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
       open={open}
       onClose={() => onOpenChange(false)}
       size="tall"
-      title="Draft a message"
-      description={`${
+      title={t('draft.title')}
+      description={
         app
-          ? `For ${displayName(app)}${item ? ` · ${item.title}` : ''}.`
-          : 'Not linked to an application, so [ROLE] and [DATE] stay blank.'
-      } Nothing is generated and nothing is sent — fill the blanks, copy it into your mail client, then mark it sent.`}
+          ? item
+            ? t('draft.description.forItem', { name: displayName(app), item: item.title })
+            : t('draft.description.forApp', { name: displayName(app) })
+          : t('draft.description.unlinked')
+      }
       footer={
         <>
           <Button
-            label="Save as snippet"
+            label={t('draft.saveAsSnippet')}
             variant="ghost"
             size="md"
-            blocker={empty ? 'Write something first' : undefined}
+            blocker={empty ? t('draft.writeFirst') : undefined}
             onPress={saveAsSnippet}
           />
           <Button
-            label={isCopied() ? 'Copied' : 'Copy'}
+            label={isCopied() ? t('draft.copied') : t('draft.copy')}
             icon={isCopied() ? 'check' : 'copy'}
             variant="outline"
             size="md"
@@ -223,14 +229,14 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
             onPress={() => copy(text)}
           />
           <Button
-            label="Mark sent"
+            label={t('draft.markSent')}
             icon="send"
             size="md"
             blocker={
               !item
-                ? 'Open this from a reminder to tick it off'
+                ? t('draft.openFromReminder')
                 : item.completedOn
-                  ? 'Already ticked off'
+                  ? t('draft.alreadyTicked')
                   : undefined
             }
             onPress={markSent}
@@ -241,11 +247,11 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
       {nothingToStartFrom ? (
         <EmptyState
           icon="mail"
-          title="No email snippets yet"
-          description="Snippets tagged Email show up here as starting points. There is nothing to load, but the draft does not have to start from one."
+          title={t('draft.empty.title')}
+          description={t('draft.empty.description')}
           action={
             <Button
-              label="Start from a blank draft"
+              label={t('draft.empty.startBlank')}
               icon="edit-2"
               variant="outline"
               size="md"
@@ -258,10 +264,10 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
           <Button
             label={
               chosenId
-                ? (emailSnippets.find((s) => s.id === chosenId)?.title ?? 'Blank draft')
+                ? (emailSnippets.find((s) => s.id === chosenId)?.title ?? t('draft.blank'))
                 : started
-                  ? 'Blank draft'
-                  : 'Start from one of your email snippets'
+                  ? t('draft.blank')
+                  : t('draft.startFromSnippet')
             }
             icon="mail"
             variant="outline"
@@ -278,9 +284,9 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
                 setText(next)
                 setDirty(true)
               }}
-              placeholder="Write the message, or pick a snippet to start from…"
+              placeholder={t('draft.placeholder')}
               placeholderTextColor={c.text3}
-              accessibilityLabel="Message draft"
+              accessibilityLabel={t('draft.editorLabel')}
               style={[
                 styles.editor,
                 { color: c.text1, backgroundColor: c.well, borderColor: c.hairline },
@@ -296,12 +302,15 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
             accessibilityLiveRegion="polite"
           >
             {empty
-              ? 'Nothing drafted yet.'
+              ? t('draft.status.empty')
               : blanks.count === 0
-                ? 'No blanks left.'
-                : `${blanks.count} ${blanks.count === 1 ? 'blank' : 'blanks'} left — ${blanks.names.join(', ')}`}
+                ? t('draft.status.noBlanks')
+                : t('draft.status.blanksLeft', {
+                    count: blanks.count,
+                    names: blanks.names.join(', '),
+                  })}
             {blanks.names.some((n) => n.includes('NAME') || n.includes('PERSON'))
-              ? " · a person's name is never filled in for you"
+              ? t('draft.status.nameNever')
               : ''}
           </Txt>
         </View>
@@ -310,8 +319,8 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
       <MenuSheet
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        title="Start from"
-        description="Your own email snippets, with what the records know already filled in."
+        title={t('draft.picker.title')}
+        description={t('draft.picker.description')}
         actions={[
           ...emailSnippets.map((s) => ({
             id: s.id,
@@ -322,7 +331,7 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
           })),
           {
             id: 'blank',
-            label: 'Blank draft',
+            label: t('draft.blank'),
             icon: 'edit-2' as const,
             checked: chosenId === null && started,
             onPress: () => load(undefined),

@@ -1,0 +1,295 @@
+{
+  "readCancelled": "읽기가 취소됐어요.",
+  "backup": {
+    "prompt": {
+      "never_other": "jojo의 기록 {{count}}개가 아직 어떤 백업에도 없어요. 여기 있는 모든 것은 이 브라우저에만 있어서, 브라우저를 지우거나 이 기기를 잃어버리면 함께 사라져요. 사본을 다운로드해서 다른 곳에 보관하세요.",
+      "since_other": "{{day}}의 마지막 백업 이후 기록 {{count}}개가 바뀌었어요. 사본을 다운로드해서 다른 곳에 보관하기 전까지는 이 브라우저에만 있어요."
+    },
+    "failedTitle": "백업을 쓸 수 없었어요",
+    "failedDescription": "기록은 그대로이고 아무것도 저장되지 않았어요. 브라우저가 다운로드를 차단했다면 다운로드 설정을 확인하세요.",
+    "documentsNotReady": "문서 색인이 아직 다 로드되지 않아서, 지금 백업하면 문서가 하나도 없다고 기록돼요. 아무것도 쓰지 않았어요.",
+    "documentsUnreadable": "저장된 문서를 하나도 읽을 수 없어서 백업에는 기록만 담겼을 거예요. 아무것도 쓰지 않았어요.",
+    "savedTitle": "백업을 저장했어요",
+    "startedTitle": "백업을 시작했어요",
+    "savedAll": "{{name}}에는 기록과 첨부한 모든 문서가 들어 있어요.",
+    "savedSome_other": "{{name}}에는 기록과 문서 {{total}}개 중 {{written}}개가 들어 있어요. {{count}}개는 읽을 수 없어서 포함되지 않았어요.",
+    "startedAll": "다운로드 폴더에서 {{name}}을(를) 찾아보세요. 기록과 첨부한 모든 문서가 들어 있어요.",
+    "startedSome_other": "다운로드 폴더에서 {{name}}을(를) 찾아보세요. 기록과 문서 {{total}}개 중 {{written}}개가 들어 있어요. {{count}}개는 읽을 수 없어서 포함되지 않았어요."
+  },
+  "extension": {
+    "stale": "이 브라우저의 jojo 확장 프로그램이 이 페이지보다 오래되어 요청을 전달할 수 없어요. 업데이트하세요. 브라우저의 확장 프로그램 페이지에서 jojo의 새로고침을 누르거나, 설정에서 설치했다면 그곳에서 다시 다운로드한 뒤 이전 폴더 대신 새 폴더를 로드하세요. 압축 해제된 확장 프로그램은 스스로 업데이트되지 않아요.",
+    "oldScanner": "(이 브라우저의 jojo 확장 프로그램은 이전 버전이라 채용 사이트의 자체 하위 도메인으로 따라가거나 “Load more”를 누를 수 없어요. 브라우저의 확장 프로그램 페이지에서 jojo의 새로고침을 누르세요.)",
+    "noAnswerBoard": "jojo 브라우저 확장 프로그램이 응답하지 않아 채용 사이트를 읽을 수 없었어요. 이 확장 프로그램이 있어야 jojo가 로그인된 페이지를 열 수 있어요. 설치 프로그램은 설정에 있어요.",
+    "boardUnreadable": "그 채용 사이트를 읽을 수 없었어요.",
+    "pageUnsaved": "그 페이지를 저장할 수 없었어요.",
+    "hostDidNotLoad": "{{host}}이(가) 로드되지 않았어요. 링크가 잘못됐거나, 사이트가 다운됐거나, 오프라인일 수 있어요. 탭에서 열어 무엇이 표시되는지 확인하세요.",
+    "noAnswerPage": "jojo 브라우저 확장 프로그램이 응답하지 않아 페이지를 열 수 없었어요. 설치 프로그램은 설정에 있어요.",
+    "captureTimeout": "jojo 확장 프로그램이 페이지를 열었지만 제시간에 저장을 마치지 못했어요. 아주 무거운 페이지는 더 오래 걸릴 수 있어요. 다시 시도하거나, 페이지를 연 뒤 확장 프로그램의 Capture 버튼을 사용하세요.",
+    "noAnswerReader": "jojo 브라우저 확장 프로그램이 응답하지 않아 리더에 연결할 수 없었어요. 이 확장 프로그램이 있어야 이 페이지가 내 컴퓨터의 리더와 통신할 수 있어요. 설치 프로그램은 설정에 있어요.",
+    "linkSwitchedOff": "연결이 꺼졌어요.",
+    "noAnswerLink": "jojo 브라우저 확장 프로그램이 응답하지 않았어요. 웹에서 제공되는 jojo에서는 이 확장 프로그램이 jojo-bridge까지 연결을 전달해요. 설치 프로그램은 설정에 있어요.",
+    "noAnswerProvider": "jojo 브라우저 확장 프로그램이 응답하지 않아 제공업체에 연결할 수 없었어요. CORS 헤더를 보내지 않는 제공업체는 이 확장 프로그램을 통해서만 호출할 수 있어요. 설치 프로그램은 설정에 있어요."
+  },
+  "posting": {
+    "localTarget": "그 주소는 이 컴퓨터나 내 네트워크에 있는 주소이지 채용 사이트가 아니에요. jojo는 그런 주소를 열지 않아요.",
+    "nothingToReadWith": "채용 공고를 읽으려면 내가 여는 것처럼 페이지를 열어 저장하는 jojo 브라우저 확장 프로그램이나, 페이지를 가져오는 문서 리더가 필요해요. 이 브라우저에는 둘 다 설정되어 있지 않아요. 둘 다 설정에서 찾을 수 있어요.",
+    "noBackgroundRoute": "추천을 보기 전에 미리 읽으려면 jojo 브라우저 확장 프로그램이 필요해요. 문서 리더는 직접 연 채용 공고에만 사용돼요.",
+    "notStored": "페이지는 읽었지만 이 브라우저가 저장하지 않았어요. jojo의 저장 공간이 부족할 수 있어요. 아무것도 보관하지 않았으니 공간을 확보한 뒤 다시 시도하세요.",
+    "nearlyEmptyExtension": "그 페이지가 거의 빈 상태로 돌아왔어요. 아직 다 로드되지 않았거나 로그인이 필요할 수 있어요. 탭에서 열고 채용 공고가 보이면 다시 시도하세요.",
+    "nearlyEmptyReader": "그 페이지가 거의 빈 상태로 돌아왔어요. JavaScript로 렌더링하는 채용 사이트는 브라우저가 아닌 곳에는 빈 껍데기만 보내요. jojo 확장 프로그램을 설치하면 내가 여는 것처럼 페이지를 열어요.",
+    "notSaved": "그 채용 공고는 저장되어 있지 않아서 보관할 페이지가 없어요.",
+    "askedTwice": "두 번 물어봤지만 결과가 같았어요."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "두 채용 공고의 공고 ID가 같아요.",
+      "url": "두 공고의 주소가 같아요.",
+      "name": "고용주와 직무가 같아요."
+    },
+    "deletedBefore": "채용 공고를 읽기 전에 초안이 삭제됐어요.",
+    "deletedDuring": "채용 공고를 읽는 동안 초안이 삭제됐어요.",
+    "updateFailed": "초안을 업데이트할 수 없었어요."
+  },
+  "store": {
+    "remoteChangeTitle": "다른 탭에서 업데이트됐어요",
+    "remoteChangeDescription": "기록을 다시 불러와서 이 탭의 실행 취소 기록이 지워졌어요.",
+    "heldTitle": "다른 jojo 탭이 데이터베이스를 열고 있어요",
+    "heldDescription": "그 탭이 닫히는 즉시 삭제돼요. 다른 탭을 닫은 뒤 다시 시도하세요.",
+    "deleteFailedTitle": "데이터베이스를 삭제할 수 없었어요",
+    "deleteFailedDescription": "{{error}}. 다른 탭이 아직 열고 있을 수 있어요.",
+    "demoNotLoaded": "데모 데이터를 불러오지 않았어요",
+    "recordsNotCleared": "기록을 지우지 않았어요",
+    "writeFailedDescription": "{{error}} 기록은 그대로예요."
+  },
+  "fileDelete": {
+    "refusedTitle": "삭제되지 않았어요",
+    "stillInVault": "{{name}}은(는) 아직 보관함에 있어요.",
+    "deletedTitle": "{{name}} 삭제됨",
+    "deletedUnknown": "행, 키워드, jojo가 보관한 모든 사본이 삭제돼요. 내 컴퓨터의 원본은 그대로예요.",
+    "deletedWithCopy": "행, 키워드, jojo가 보관한 문서 사본이 모두 삭제돼요. 내 컴퓨터의 원본은 그대로예요.",
+    "deletedNoCopy": "행과 키워드가 삭제돼요. 이 항목에는 잃을 저장된 사본이 없었어요.",
+    "undo": "실행 취소",
+    "lostTitle": "{{name}}이(가) 문서 없이 복원됐어요",
+    "lostDescription": "행과 키워드는 복원됐지만 저장된 사본은 복원할 수 없었어요. 파일을 다시 끌어다 놓아 첨부하세요."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} 준비 완료",
+    "readyDescription": "작성 대상 지원서 아래에 저장했어요.",
+    "failedTitle": "{{label}}을(를) 끝내지 못했어요"
+  },
+  "pdf": {
+    "passwordNeeded": "이 PDF는 열려면 비밀번호가 필요해서 여기서 편집할 수 없어요.",
+    "unreadable": "그 파일을 PDF로 읽을 수 없었어요. {{detail}}",
+    "chooseOne": "병합할 PDF를 하나 이상 선택하세요.",
+    "pageNotIn_other": "{{name}}은(는) {{count}}페이지라서 {{page}}페이지가 없어요.",
+    "emptySelection": "선택한 항목에 페이지가 없어요.",
+    "keepOnePage": "문서에는 적어도 한 페이지가 남아 있어야 해요.",
+    "planOutOfRange_other": "이 문서는 {{count}}페이지인데 계획은 {{page}}페이지를 요청해요.",
+    "noCanvas": "이 브라우저가 페이지에 그릴 캔버스를 제공하지 않았어요.",
+    "range": {
+      "noPages": "그 문서에는 페이지가 없어요.",
+      "emptyPart": "두 쉼표 사이에 빈 범위가 있어요.",
+      "partNamesNoPages": "'{{part}}'은(는) 어떤 페이지도 가리키지 않아요.",
+      "backwards": "'{{part}}'은(는) 거꾸로 되어 있어요. {{to}}-{{from}}(으)로 쓰세요.",
+      "notANumber": "'{{part}}'은(는) 페이지 번호가 아니에요.",
+      "namesNoPages": "그 범위는 어떤 페이지도 가리키지 않아요.",
+      "fromOne": "페이지 번호는 1부터 시작해요.",
+      "pastEnd": "이 문서는 {{count}}페이지에서 끝나서 {{page}}페이지가 없어요."
+    },
+    "drop": {
+      "notPdf_other": "{{names}}은(는) PDF가 아니에요",
+      "leftOut_other": "{{names}}은(는) 제외됐어요. 이 기능은 한 번에 문서 하나만 다뤄요",
+      "one": "{{part}}.",
+      "both": "{{first}}. 그리고 {{second}}.",
+      "two": "{{first}}, {{second}}",
+      "three": "{{first}}, {{second}}, {{third}}",
+      "many": "파일 {{count}}개"
+    },
+    "colour": {
+      "yellow": "노랑",
+      "green": "초록",
+      "blue": "파랑",
+      "pink": "분홍",
+      "orange": "주황"
+    }
+  },
+  "noteSize": {
+    "small": "작게",
+    "normal": "보통",
+    "large": "크게",
+    "huge": "아주 크게"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "지원서",
+      "organisation": "기관",
+      "role": "직무",
+      "item": "타임라인 항목",
+      "keyword": "키워드",
+      "link": "링크",
+      "file": "파일",
+      "snippet": "스니펫",
+      "posting": "저장한 채용 공고",
+      "match": "스카우트 매치",
+      "source": "출처",
+      "background": "내 소개",
+      "claim": "관계"
+    },
+    "savedAgo": "{{ago}} 저장",
+    "fit": "적합도 {{fit}}%",
+    "count": {
+      "matches": "일치",
+      "connections": "연결",
+      "hops": "홉",
+      "hop": "홉"
+    },
+    "empty": {
+      "noMatch": "기록 중에 그 패턴과 일치하는 것이 없어요.",
+      "noneMissing": "그 연결이 빠진 기록이 없어요. 이 종류의 기록은 모두 연결이 있어요.",
+      "noPath": "경로가 없어요. 저장된 데이터에서 이 두 기록을 잇는 것이 없어요.",
+      "noPathBetween": "두 기록 사이에 경로가 없어요."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "후속 조치가 예정되지 않은 지원서",
+        "hint": "면접 기회를 놓치게 만드는 빈틈이에요."
+      },
+      "tagged": {
+        "label": "Referral 태그가 붙은 모든 항목",
+        "hint": "키워드 하나로 모든 종류의 기록을 살펴봐요."
+      },
+      "repeatOrgs": {
+        "label": "두 번 이상 지원한 기관",
+        "hint": "하나의 기관 노드에서 본, 한 고용주에 대한 두 건의 지원이에요."
+      },
+      "looseReminders": {
+        "label": "어떤 지원서와도 연결되지 않은 리마인더",
+        "hint": "무엇을 위한 것인지 모른 채 하게 될 일이에요."
+      },
+      "unusedFiles": {
+        "label": "어떤 지원서에도 쓰이지 않는 파일",
+        "hint": "보관함에서 그냥 자리만 차지하는 문서예요."
+      },
+      "bareApplications": {
+        "label": "보관함에 아무것도 정리되지 않은 지원서",
+        "hint": "링크도, 파일도, 스니펫도 없어요. 대개 아직 시작하지 않은 지원서예요."
+      },
+      "path": {
+        "label": "두 기록 사이의 최단 경로",
+        "hint": "파일과 지원한 일자리가 어떻게 연결되는지 보여줘요."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "고용주",
+      "position": "직무",
+      "postingLink": "채용 공고 링크",
+      "location": "위치",
+      "appliedOn": "지원일",
+      "stage": "단계",
+      "highlight": "강조할 점",
+      "notes": "참고 메모",
+      "materials": "보낸 자료"
+    },
+    "fileStem": "{{person}} — 지원 목록 {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "이 브라우저에 그 문서의 사본이 저장되어 있지 않아서 읽을 것이 없어요.",
+    "noReader": "문서 리더가 연결되어 있지 않아 이 파일의 내용을 읽을 수 없어요. 리더 주소는 설정에서 입력해요.",
+    "noReaderToTryHarder": "{{reason}} 더 깊이 시도해 볼 문서 리더가 연결되어 있지 않아요. 리더 주소는 설정에서 입력해요.",
+    "maybeScan": "그 문서에서 아무것도 읽을 수 없었어요. 스캔본일 수 있어요.",
+    "noAddress": "아직 주소가 없어요. 설정을 확인하세요.",
+    "tooLarge": "그 문서는 {{size}}MB인데 리더는 최대 {{max}}MB까지 처리해요."
+  },
+  "network": {
+    "mixedPrivate": "이 페이지는 https로 열려 있어서 브라우저가 일반 http 주소 호출을 막아요. jojo 확장 프로그램을 설치하면 내 네트워크로 가는 그 한 단계를 대신 전달해 줘요. 또는 jojo를 http로 제공하세요.",
+    "mixedPublic": "이 페이지는 https로 열려 있어서 브라우저가 일반 http 주소 호출을 막아요. jojo를 http로 제공하거나, 모델을 이 컴퓨터나 내 네트워크, 또는 https 뒤에 두세요. 확장 프로그램은 그런 주소는 전달하지만 공용 인터넷의 일반 http 주소는 전달하지 않아요.",
+    "cors": "이 페이지와 그 주소가 모두 https라서 혼합 콘텐츠 차단은 아니에요. CORS가 원인일 가능성이 높아요. 서버가 브라우저가 응답을 읽는 데 필요한 헤더 없이 응답했어요. 클라우드 제공업체는 대개 이 헤더를 보내지 않으며, jojo 확장 프로그램이 바로 그럴 때 쓰여요. 설치되어 있고 켜져 있는지 확인하세요.",
+    "unknown": "브라우저가 이유를 알려 주지 않았어요. 그곳에서 아무것도 수신 대기하지 않거나, 서버가 브라우저가 응답을 읽는 데 필요한 CORS 헤더 없이 응답했을 수 있어요. 이 앱이 통신하는 두 서비스 모두 경우에 따라 그렇게 하므로, 실행 중인 서버도 이렇게 실패할 수 있어요."
+  },
+  "mcpLink": {
+    "notBridge": "{{address}}에서 jojo-bridge가 아닌 다른 것(또는 그 이전 사본)이 응답하고 있어요.",
+    "displaced": "다른 jojo 탭이 연결을 잡고 있어요.",
+    "bridgeStatus": "jojo-bridge가 {{status}}(으)로 응답했어요.",
+    "otherTab": "이 브라우저의 다른 jojo 탭이 연결을 맡고 있어요. 그 탭이 닫히면 이 탭이 이어받아요."
+  },
+  "roleScopeEmpty": {
+    "title": "이 직무에 대한 지원서가 없어요",
+    "description": "상단 바의 직무 필터가 이 차트에서 세는 모든 지원서를 숨기고 있어요.",
+    "showAll": "모든 직무 표시"
+  },
+  "create": {
+    "newApplication": "새 지원서",
+    "fromLink": {
+      "label": "링크로 지원서 만들기",
+      "hint": "모델이 채용 공고를 읽고 양식을 채워요"
+    },
+    "newReminder": "새 리마인더",
+    "newEvent": "새 일정",
+    "draftMessage": {
+      "label": "메시지 초안 작성",
+      "hint": "이메일 스니펫으로 작성해요. 생성되는 내용은 없어요"
+    },
+    "saveLink": {
+      "label": "링크 저장",
+      "hint": "보관함의 링크 도구를 열어요"
+    },
+    "savePosting": {
+      "label": "채용 공고 저장",
+      "hint": "채용 스카우트를 열어요"
+    }
+  },
+  "stroke": {
+    "tap": "탭",
+    "doubleTap": "두 번 탭",
+    "hold": "길게 누르기",
+    "up": "위로 스와이프",
+    "down": "아래로 스와이프",
+    "side": "옆으로 스와이프",
+    "diagonal": "대각선으로 튕기기",
+    "backForth": "왔다 갔다",
+    "zigzag": "옆으로 지그재그",
+    "scribbleUp": "위아래로 낙서",
+    "circle": "원",
+    "square": "사각형",
+    "vee": "V(또는 체크 표시)",
+    "peak": "Λ(봉우리)",
+    "zed": "Z",
+    "arc": "호(C 모양)",
+    "ell": "L",
+    "triangle": "삼각형",
+    "other": "그 밖의 모든 동작"
+  },
+  "move": {
+    "nod": "끄덕이기",
+    "shake": "고개 젓기",
+    "hi": "인사",
+    "bow": "절하기",
+    "leanIn": "몸 기울이기",
+    "wobble": "흔들거리기",
+    "bounce": "통통 튀기",
+    "spin": "돌기",
+    "recoil": "움찔 물러나기",
+    "startle": "깜짝 놀라기",
+    "dance": "춤추기",
+    "shrug": "어깨 으쓱",
+    "lookAround": "둘러보기",
+    "hopSpin": "점프 회전",
+    "stretch": "기지개",
+    "flex": "근육 자랑",
+    "jab": "펀치 콤보",
+    "powerUp": "파워 업",
+    "doze": "꾸벅 졸기",
+    "wink": "윙크",
+    "love": "사랑",
+    "robot": "로봇 춤",
+    "jazz": "재즈 핸즈",
+    "point": "가리키기",
+    "hero": "영웅 포즈",
+    "handsUp": "손 들기",
+    "disco": "디스코",
+    "typing": "타이핑",
+    "drumroll": "드럼롤"
+  }
+}

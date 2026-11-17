@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { AskBox } from '@/components/graph/AskBox'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
@@ -74,6 +75,7 @@ export function QueryPanel({
   /** Changes when the page clears the query, so the Ask box drops its trace. */
   askReset: number
 }) {
+  const { t } = useTranslation('graph')
   const fieldId = useId()
   const [mode, setMode] = useState<'pattern' | 'path'>('pattern')
   const [pattern, setPattern] = useState<PatternQuery>(DEFAULT_PATTERN)
@@ -141,10 +143,10 @@ export function QueryPanel({
           // since the builder shipped — and the other half stopped being true
           // when a model learned to write one. What IS illustrative is the
           // pseudo-SQL below, and that line now says so where it appears.
-          'Ask in a sentence, or build the question by hand'
+          t('query.hint')
         }
       >
-        Ask the graph
+        {t('query.title')}
       </PanelTitle>
 
       <div className="mb-4">
@@ -156,12 +158,12 @@ export function QueryPanel({
           <ExampleChips graph={graph} query={query} onQueryChange={onQueryChange} />
 
           <Segment
-            label="Question shape"
+            label={t('query.shape')}
             value={mode}
             onChange={switchMode}
             options={[
-              { value: 'pattern', label: 'Pattern' },
-              { value: 'path', label: 'Path' },
+              { value: 'pattern', label: t('query.pattern') },
+              { value: 'path', label: t('query.path') },
             ]}
             className="w-fit"
           />
@@ -186,14 +188,14 @@ export function QueryPanel({
 
           <div>
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-xs text-text-3">Generated query</h3>
+              <h3 className="text-xs text-text-3">{t('query.generated')}</h3>
               {query ? (
                 <button
                   type="button"
                   onClick={() => onQueryChange(null)}
                   className="pressable cursor-pointer rounded-sm border border-hairline bg-well px-2 py-0.5 text-xs text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
                 >
-                  Clear
+                  {t('query.clear')}
                 </button>
               ) : null}
             </div>
@@ -203,10 +205,7 @@ export function QueryPanel({
             <pre className="mt-1 rounded-md border border-hairline bg-well p-2.5 font-mono text-xs break-words whitespace-pre-wrap text-text-2">
               {describeQuery(graph, active)}
             </pre>
-            <p className="mt-1 text-xs text-text-3">
-              The shape of the question, in SQL's words for readability. The query that actually
-              runs is the structured one above it — nothing parses this line.
-            </p>
+            <p className="mt-1 text-xs text-text-3">{t('query.sqlNote')}</p>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
@@ -34,11 +35,8 @@ import { space } from '@/theme/tokens'
  * page, because a posting is worth keeping whether or not it becomes one.
  */
 
-const STEPS: { id: PostingStep; label: string }[] = [
-  { id: 'reading', label: 'Fetching the page' },
-  { id: 'asking', label: 'Reading it' },
-  { id: 'saving', label: 'Saving the posting' },
-]
+/** Each step's label is `addFromLink.steps.<id>` in the sheets catalog. */
+const STEPS: { id: PostingStep }[] = [{ id: 'reading' }, { id: 'asking' }, { id: 'saving' }]
 
 export function AddFromLinkSheet({
   open,
@@ -51,6 +49,7 @@ export function AddFromLinkSheet({
   /** Read it straight away: the person has already pressed a button for it once. */
   start?: boolean | undefined
 }) {
+  const { t } = useTranslation('sheets')
   const c = useColors()
   const { open: openSheet, close } = useSheets()
   const { settings, reader } = useModelSettings()
@@ -113,20 +112,16 @@ export function AddFromLinkSheet({
         const gaps = outcome.missing.length
         const tags = outcome.keywords.length
         toast({
-          title: 'Posting saved and read',
+          title: t('addFromLink.toast.title'),
           // Said in the same words web says them, and for the same reason: the
           // sheet changes fields the person did not fill in, so it has to
           // report which. The keyword line is omitted at zero — "0 keywords
           // matched" is a sentence about the feature, not about this posting —
           // and its noun stays plural because "N of your …" governs one.
           description: [
-            `${outcome.file.name} is in the Vault, and is filed under the application when you save it.`,
-            gaps === 0
-              ? ''
-              : `${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
-            tags === 0
-              ? ''
-              : `${String(tags)} of your keywords ${tags === 1 ? 'is' : 'are'} ticked.`,
+            t('addFromLink.toast.kept', { name: outcome.file.name }),
+            gaps === 0 ? '' : t('addFromLink.toast.gaps', { count: gaps }),
+            tags === 0 ? '' : t('addFromLink.toast.tags', { count: tags }),
           ]
             .filter(Boolean)
             .join(' '),
@@ -144,10 +139,10 @@ export function AddFromLinkSheet({
         .catch((thrown: unknown) => {
           abort.current = null
           setStep(null)
-          setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
+          setError(thrown instanceof Error ? thrown.message : t('addFromLink.failed'))
         })
     },
-    [url, busy, settings, reader, readPosting, close, openSheet, toast],
+    [url, busy, settings, reader, readPosting, close, openSheet, toast, t],
   )
 
   /*
@@ -174,16 +169,27 @@ export function AddFromLinkSheet({
     <Sheet
       open={open}
       onClose={dismiss}
-      title="Application from a link"
-      description="The model reads the posting and fills the form in, and ticks any of your own keywords the job is plainly about. The page is kept in the Vault under Job postings, and nothing is saved as an application until you say so."
+      title={t('addFromLink.title')}
+      description={t('addFromLink.description')}
       footer={
         <>
           {error && !busy ? (
-            <Button label="Use the address only" variant="ghost" size="md" onPress={fromAddress} />
+            <Button
+              label={t('addFromLink.addressOnly')}
+              variant="ghost"
+              size="md"
+              onPress={fromAddress}
+            />
           ) : null}
-          <Button label="Cancel" variant="ghost" size="md" onPress={dismiss} />
+          <Button label={t('common.cancel')} variant="ghost" size="md" onPress={dismiss} />
           <Button
-            label={busy ? 'Reading…' : error ? 'Try again' : 'Read and prefill'}
+            label={
+              busy
+                ? t('addFromLink.reading')
+                : error
+                  ? t('addFromLink.retry')
+                  : t('addFromLink.submit')
+            }
             size="md"
             disabled={!url.trim() || busy}
             onPress={() => submit()}
@@ -193,7 +199,7 @@ export function AddFromLinkSheet({
     >
       <View style={{ gap: space[3], paddingBottom: space[2] }}>
         <TextField
-          label="Job posting URL"
+          label={t('addFromLink.url')}
           required
           mono
           autoCapitalize="none"
@@ -222,7 +228,7 @@ export function AddFromLinkSheet({
                     color={done ? c.accent : active ? c.text1 : c.text3}
                   />
                   <Txt size="xs" tone={active ? 'primary' : done ? 'secondary' : 'muted'}>
-                    {entry.label}
+                    {t(`addFromLink.steps.${entry.id}`)}
                   </Txt>
                 </View>
               )

@@ -1,0 +1,63 @@
+{
+  "monthPicker": {
+    "goTo": "महीने पर जाएँ",
+    "previousYear": "पिछला साल",
+    "nextYear": "अगला साल"
+  },
+  "chip": {
+    "allDay": "पूरा दिन",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, पूरा हुआ —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} इवेंट",
+    "label_other": "{{label}}, {{count}} इवेंट",
+    "add": "{{label}} को इवेंट जोड़ें",
+    "more_one": "+{{count}} और",
+    "more_other": "+{{count}} और"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "पिछला महीना",
+    "nextMonth": "अगला महीना",
+    "today": "आज",
+    "backTo": "{{date}} पर वापस जाएँ",
+    "goTo": "{{month}} {{year}} पर जाएँ",
+    "hintTouch": "किसी दिन पर टैप करके देखें कि उस दिन क्या है।",
+    "hintPointer": "ग्रिड के बगल में सूची देखने के लिए कोई दिन चुनें। किसी इवेंट को संपादित करने के लिए उस पर क्लिक करें, या उसे किसी दूसरे दिन पर खींचें — खींचने के लिए पॉइंटर चाहिए, इसलिए कीबोर्ड से इवेंट के अंदर की तारीख वाली फ़ील्ड इस्तेमाल करें।",
+    "eventTypes": "इवेंट के प्रकार",
+    "showAll": "सब दिखाएँ",
+    "dateColours": "तारीख के रंग",
+    "marks": {
+      "overdue": "समय निकल गया",
+      "soon": "48 घंटों में देय",
+      "done": "पूरा हुआ"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "आज",
+    "selectedDay": "चुना गया दिन",
+    "hiddenTitle": "{{date}} को कुछ नहीं दिख रहा",
+    "hiddenDescription_one": "{{count}} इवेंट ऐसे प्रकार का है जो ग्रिड के नीचे बंद है।",
+    "hiddenDescription_other": "{{count}} इवेंट ऐसे प्रकार के हैं जो ग्रिड के नीचे बंद हैं।",
+    "showAllTypes": "सभी इवेंट प्रकार दिखाएँ",
+    "emptyTitle": "{{date}} को कुछ नहीं",
+    "emptyDescription": "कोई इंटरव्यू, डेडलाइन या तैयारी का समय जोड़ें — वह यहाँ और ग्रिड पर दिखेगा।",
+    "addEvent": "इवेंट जोड़ें",
+    "backTo": "{{month}} पर वापस जाएँ",
+    "delete": "इवेंट हटाएँ",
+    "deleteNamed": "{{title}} हटाएँ",
+    "restOf": "{{month}} का बाकी हिस्सा",
+    "lastDayTitle": "{{date}} महीने का आखिरी दिन है",
+    "nothingAfterTitle": "{{date}} के बाद कुछ नहीं",
+    "lastDayDescription": "इसके बाद कुछ नहीं है। {{month}} की योजना बनाने के लिए आगे बढ़ें।",
+    "nothingAfterDescription": "{{month}} का बाकी हिस्सा खाली है। इस दिन के बाद आप जो भी जोड़ेंगे, वह यहाँ दिखेगा।",
+    "goToMonth": "{{month}} पर जाएँ",
+    "goToDay": "{{label}} पर जाएँ",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "इस महीने बाद में +{{count}} और",
+    "moreLater_other": "इस महीने बाद में +{{count}} और"
+  }
+}

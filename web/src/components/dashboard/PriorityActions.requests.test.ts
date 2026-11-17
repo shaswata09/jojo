@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import en from '@/i18n/locales/en/dashboard.json'
 
 const sources = import.meta.glob('/src/components/dashboard/PriorityActions.tsx', {
   query: '?raw',
@@ -56,7 +57,9 @@ describe('overdue applications in the deck (Q280)', () => {
   })
 
   it('each become an Overdue card', () => {
-    expect(hook).toMatch(/overdue\.map\(\s*\(\{ application: a, item \}\)[\s\S]*?kindLabel: 'Overdue'/)
+    expect(hook).toMatch(
+      /overdue\.map\(\s*\(\{ application: a, item \}\)[\s\S]*?kindLabel: say\.kind\('overdue'\)/,
+    )
   })
 
   it('reach the dashboard deck', () => {
@@ -70,7 +73,8 @@ describe('the order of the carousel (Q281)', () => {
   })
 
   it('opens at the start, so the oldest is on the left', () => {
-    expect(source).toContain('aria-label="Decisions, earliest first"')
+    expect(source).toContain("aria-label={t('priority.listLabel')}")
+    expect(en.priority.listLabel).toBe('Decisions, earliest first')
     // Nothing scrolls the track to its end on mount.
     expect(source).not.toMatch(/scrollLeft\s*=\s*[^=]/)
     expect(source).not.toMatch(/scrollTo\(/)

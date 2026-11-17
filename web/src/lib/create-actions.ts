@@ -28,6 +28,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { ToolName } from '@jojo/service/tools/index'
 import { useDialogs } from '@/lib/dialogs-context'
+import { i18next } from '@/i18n/i18n'
 import type { DialogName } from '@/lib/dialogs-context'
 import { isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
@@ -105,22 +106,30 @@ export type CreateAction = {
 export const CREATE_ACTIONS: CreateAction[] = [
   {
     id: 'new-application',
-    label: 'New application',
+    get label() {
+      return i18next.t('messages:create.newApplication')
+    },
     icon: ClipboardList,
     dialog: { name: 'application' },
     tool: 'application.create',
   },
   {
     id: 'new-application-from-link',
-    label: 'Application from a link',
+    get label() {
+      return i18next.t('messages:create.fromLink.label')
+    },
     icon: Sparkles,
-    hint: 'The model reads the posting and fills the form in',
+    get hint() {
+      return i18next.t('messages:create.fromLink.hint')
+    },
     dialog: { name: 'applicationFromLink' },
     requires: 'model',
   },
   {
     id: 'new-reminder',
-    label: 'New reminder',
+    get label() {
+      return i18next.t('messages:create.newReminder')
+    },
     icon: BellRing,
     // Reminders and events are one record with one dialog — `mode` only picks
     // which fields lead, so the two rows cannot drift into two editors.
@@ -129,32 +138,46 @@ export const CREATE_ACTIONS: CreateAction[] = [
   },
   {
     id: 'new-event',
-    label: 'New event',
+    get label() {
+      return i18next.t('messages:create.newEvent')
+    },
     icon: CalendarDays,
     dialog: { name: 'timelineItem', props: { mode: 'event' } },
     tool: 'timeline.item.create',
   },
   {
     id: 'draft-message',
-    label: 'Draft a message',
+    get label() {
+      return i18next.t('messages:create.draftMessage.label')
+    },
     icon: Mail,
     // Opened with no record, so nothing is substituted and every blank stays on
     // the page. Reachable from a reminder as well, where it can also tick it off.
-    hint: 'From your email snippets — nothing is generated',
+    get hint() {
+      return i18next.t('messages:create.draftMessage.hint')
+    },
     dialog: { name: 'draft' },
   },
   {
     id: 'save-link',
-    label: 'Save a link',
+    get label() {
+      return i18next.t('messages:create.saveLink.label')
+    },
     icon: Link2,
-    hint: 'Opens the Vault, links tool',
+    get hint() {
+      return i18next.t('messages:create.saveLink.hint')
+    },
     to: vaultPath({ tool: 'links' }),
   },
   {
     id: 'save-posting',
-    label: 'Save a posting',
+    get label() {
+      return i18next.t('messages:create.savePosting.label')
+    },
     icon: Briefcase,
-    hint: 'Opens Job scout',
+    get hint() {
+      return i18next.t('messages:create.savePosting.hint')
+    },
     to: scoutPath(),
   },
 ]

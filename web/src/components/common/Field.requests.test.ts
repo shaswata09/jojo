@@ -20,11 +20,15 @@ describe('Q170 — revealing a secret field', () => {
   it('draws an eye button that toggles it, named for what it does', () => {
     const button = /\{secret \? \([\s\S]*?<\/button>/.exec(fieldSource)?.[0] ?? ''
     expect(button).toContain('setShown((was) => !was)')
-    expect(button).toContain('aria-label={shown ? `Hide ${label}` : `Show ${label}`}')
+    expect(button).toContain(
+      "aria-label={shown ? t('field.hide', { label }) : t('field.show', { label })}",
+    )
     expect(button).toMatch(/<EyeOff\b[\s\S]*<Eye\b/)
   })
 
   it('is what the model settings use for the API key', () => {
-    expect(localModelSource).toMatch(/label="API key"[\s\S]{0,80}type="password"/)
+    expect(localModelSource).toMatch(
+      /label=\{t\('model\.apiKey\.label'\)\}[\s\S]{0,80}type="password"/,
+    )
   })
 })

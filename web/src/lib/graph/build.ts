@@ -18,13 +18,21 @@
  */
 
 import { displayName } from '@/data/seed'
-import { agoLabel, partsOf, shortDate } from '@/data/timeline'
-import { BACKGROUND_LABEL } from '@jojo/service/core/model'
+import { partsOf } from '@/data/timeline'
+import { i18next } from '@/i18n/i18n'
+import { domain } from '@/i18n/domain'
 import type { NodeType, StoredNode } from '@jojo/service/core/model'
 import { labelOf } from '@jojo/service/core/ontology'
 import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import type { Graph, GraphEdge, GraphNode, GraphNodeType, GraphRel } from '@/lib/graph/model'
-import { applicationsPath, appPath, calendarPath, profilePath, scoutPath, vaultPath } from '@/lib/links'
+import {
+  applicationsPath,
+  appPath,
+  calendarPath,
+  profilePath,
+  scoutPath,
+  vaultPath,
+} from '@/lib/links'
 import { TODAY } from '@/lib/today'
 
 /**
@@ -196,7 +204,7 @@ function describe(
       return {
         ...base,
         label: node.props.title,
-        detail: shortDate(node.props.date),
+        detail: domain.shortDate(node.props.date),
         href: calendarPath({ y, m, d, focus: node.id }),
         itemKind: node.props.kind,
         reminder: node.props.remind,
@@ -229,14 +237,16 @@ function describe(
       return {
         ...base,
         label: node.props.title,
-        detail: `Saved ${agoLabel(node.props.savedOn, TODAY)}`,
+        detail: i18next.t('messages:graph.savedAgo', {
+          ago: domain.ago(node.props.savedOn, TODAY),
+        }),
         href: scoutPath({ focus: { kind: 'posting', id: node.id } }),
       }
     case 'match':
       return {
         ...base,
         label: node.props.role,
-        detail: `${node.props.fit}% fit`,
+        detail: i18next.t('messages:graph.fit', { fit: node.props.fit }),
         href: scoutPath({ focus: { kind: 'match', id: node.id } }),
       }
     case 'background':
@@ -248,7 +258,7 @@ function describe(
          * alone is useless on a canvas holding forty of them; "OSDI 2021" is
          * how somebody finds the paper they were looking for.
          */
-        detail: [BACKGROUND_LABEL[node.props.kind], node.props.where].filter(Boolean).join(' · '),
+        detail: [domain.background(node.props.kind), node.props.where].filter(Boolean).join(' · '),
         href: profilePath(),
       }
     case 'claim':

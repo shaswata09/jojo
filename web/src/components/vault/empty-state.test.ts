@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { emptyStateFor, KEYWORDS_HID_THEM, type VaultEmptyCopy } from './empty-state'
+import { emptyStateFor, keywordsHidThem, type VaultEmptyCopy } from './empty-state'
 
 /**
  * The precedence order, which is the whole reason this helper exists.
@@ -79,7 +79,7 @@ describe('the ladder, in order', () => {
       'Nothing matches both filters',
     )
     expect(state({ filteredByBucket: true }).title).toBe('Nothing in that bucket')
-    expect(state({ filteredByKeyword: true }).description).toBe(KEYWORDS_HID_THEM)
+    expect(state({ filteredByKeyword: true }).description).toBe(keywordsHidThem())
   })
 })
 

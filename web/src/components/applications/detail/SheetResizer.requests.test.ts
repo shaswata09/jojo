@@ -11,7 +11,9 @@ import resizer from './SheetResizer.tsx?raw'
 
 /** The class list of the grip: the span that holds the grid of dots. */
 const grip =
-  /<span\s+aria-hidden\s+className="([^"]*)"\s*>[\s\S]*?<span className="grid grid-cols-2/.exec(resizer)?.[1] ?? ''
+  /<span\s+aria-hidden\s+className="([^"]*)"\s*>[\s\S]*?<span className="grid grid-cols-2/.exec(
+    resizer,
+  )?.[1] ?? ''
 
 describe('Q270 — the resize handle is a capsule of grip dots on the edge', () => {
   it('is a vertical capsule, taller than it is wide', () => {
@@ -22,7 +24,13 @@ describe('Q270 — the resize handle is a capsule of grip dots on the edge', () 
   it('is centred on the panel edge, top to bottom and side to side', () => {
     const classes = grip.split(/\s+/)
     expect(classes).toEqual(
-      expect.arrayContaining(['absolute', 'top-1/2', 'left-1/2', '-translate-x-1/2', '-translate-y-1/2']),
+      expect.arrayContaining([
+        'absolute',
+        'top-1/2',
+        'left-1/2',
+        '-translate-x-1/2',
+        '-translate-y-1/2',
+      ]),
     )
   })
 
@@ -33,7 +41,8 @@ describe('Q270 — the resize handle is a capsule of grip dots on the edge', () 
   })
 
   it('sits on the edge and resizes along it', () => {
-    expect(resizer).toContain('style={{ right: width }}')
-    expect(resizer).toMatch(/'group fixed top-0 bottom-0 z-50 -mr-1\.5 w-3 cursor-col-resize/)
+    // The inline end, as the sheet is: the right, or the left in Arabic.
+    expect(resizer).toContain('style={{ insetInlineEnd: width }}')
+    expect(resizer).toMatch(/'group fixed top-0 bottom-0 z-50 -me-1\.5 w-3 cursor-col-resize/)
   })
 })

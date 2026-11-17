@@ -4,5 +4,276 @@
     "description": "La langue dans laquelle jojo s’affiche. Vos fiches restent dans la langue où vous les avez écrites.",
     "system": "Comme ce navigateur ({{name}})",
     "loadFailed": "Impossible de charger cette langue. jojo reste en {{name}}."
+  },
+  "buckets": {
+    "overdue": "En retard",
+    "today": "Aujourd’hui",
+    "upcoming": "À venir",
+    "done": "Terminés"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Demain",
+      "later": "Un jour plus tard",
+      "duration": "Un jour"
+    },
+    "threeDays": {
+      "soon": "Dans 3 jours",
+      "later": "Trois jours plus tard",
+      "duration": "Trois jours"
+    },
+    "week": {
+      "soon": "Dans 7 jours",
+      "later": "Une semaine plus tard",
+      "duration": "Une semaine"
+    }
+  },
+  "routeFailure": {
+    "title": "Cette page ne s’est pas chargée",
+    "subtitle": "Le reste de jojo fonctionne toujours.",
+    "emptyTitle": "Quelque chose s’est cassé dans cette vue",
+    "emptyDescription": "Allez ailleurs puis revenez pour la recharger. Si cela arrive à chaque fois, c’est du côté des enregistrements affichés par cette page qu’il faut chercher — les Paramètres permettent de faire une sauvegarde d’abord.",
+    "back": "Retour au tableau de bord"
+  },
+  "writeResult": {
+    "title": "Rien n’a été enregistré",
+    "refused": "La modification a été refusée."
+  },
+  "copy": {
+    "blocked": "Bloqué",
+    "copied": "Copié",
+    "copy": "Copier"
+  },
+  "drag": {
+    "theItem": "l’élément",
+    "aTarget": "une cible de dépôt",
+    "start": "{{name}} saisi.",
+    "over": "{{name}} est au-dessus de {{place}}.",
+    "notOver": "{{name}} n’est plus au-dessus d’une cible de dépôt.",
+    "dropped": "{{name}} a été déposé sur {{place}}.",
+    "droppedHome": "{{name}} a été déposé à son point de départ.",
+    "cancelled": "Glisser annulé. {{name}} a été remis à sa place.",
+    "instructions": "Pour saisir un élément déplaçable, appuyez sur la barre d’espace.\nPendant le déplacement, utilisez les touches fléchées pour déplacer l’élément.\nAppuyez de nouveau sur Espace pour le déposer à sa nouvelle position, ou sur Échap pour annuler."
+  },
+  "actions": {
+    "undo": "Annuler",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer"
+  },
+  "records_one": "{{count}} enregistrement",
+  "records_other": "{{count}} enregistrements",
+  "records_many": "{{count}} enregistrements",
+  "deleteKeyword": {
+    "failed": "La suppression a échoué",
+    "stillThere": "{{name}} est toujours un mot-clé.",
+    "deleted": "{{name}} supprimé",
+    "wasUnused": "Il n’était sur aucun enregistrement.",
+    "takenOff_one": "Retiré de {{count}} enregistrement et du filtre par mot-clé.",
+    "takenOff_other": "Retiré de {{count}} enregistrements et du filtre par mot-clé.",
+    "takenOff_many": "Retiré de {{count}} enregistrements et du filtre par mot-clé.",
+    "confirmTitle": "Supprimer {{name}} ?",
+    "confirmTitleAny": "Supprimer le mot-clé ?",
+    "unused": "Il n’est encore sur aucun enregistrement, rien d’autre ne change donc.",
+    "usedOn_one": "Utilisé sur {{count}} enregistrement. Il est conservé — il perd seulement ce mot-clé.",
+    "usedOn_other": "Utilisé sur {{count}} enregistrements. Ils sont conservés — ils perdent seulement ce mot-clé.",
+    "usedOn_many": "Utilisé sur {{count}} enregistrements. Ils sont conservés — ils perdent seulement ce mot-clé.",
+    "confirm": "Supprimer le mot-clé"
+  },
+  "bucketFilter": {
+    "all": "Tous"
+  },
+  "marks": {
+    "bold": "gras",
+    "italic": "italique",
+    "underlined": "souligné"
+  },
+  "pageHeader": {
+    "options": "Options : {{title}}"
+  },
+  "errorBoundary": {
+    "title": "Quelque chose s’est cassé",
+    "body": "Une vue n’a pas pu s’afficher. « Réessayer » la remonte sans recharger la page.",
+    "retry": "Réessayer"
+  },
+  "tone": {
+    "colourFor": "Couleur de {{label}}",
+    "anyColourFor": "Couleur libre pour {{label}}"
+  },
+  "boot": {
+    "takingLong": "Votre base de données locale met plus de temps que d’habitude à s’ouvrir. Un autre onglet jojo la retient peut-être — fermer les autres suffit généralement à la libérer.",
+    "opening": "Ouverture de votre base de données locale…"
+  },
+  "keywordPicker": {
+    "none": "Aucun pour l’instant",
+    "choose": "Choisir des mots-clés",
+    "heading": "Mots-clés",
+    "newPlaceholder": "Nouveau mot-clé…",
+    "new": "Nouveau mot-clé"
+  },
+  "rowMenu": {
+    "moreFor": "Plus d’actions pour {{name}}",
+    "more": "Plus d’actions"
+  },
+  "firstRun": {
+    "title": "Comment voulez-vous commencer ?",
+    "description": "jojo garde tout sur cet appareil, c’est donc à vous de décider. Aucun choix n’est définitif — vous pourrez charger les données de démonstration ou effacer tous les enregistrements plus tard, depuis les Paramètres.",
+    "demo": {
+      "title": "Explorer avec des données de démonstration",
+      "detail": "Une recherche d’emploi complète à explorer — douze candidatures, une chronologie, un coffre bien rempli. Rien de tout cela n’est à vous, et l’effacer plus tard ne prend qu’un clic.",
+      "working": "Chargement…"
+    },
+    "empty": {
+      "title": "Commencer à vide",
+      "detail": "Aucun enregistrement de démonstration. Chaque page s’ouvre sur son état vide, et la première chose dans jojo sera quelque chose que vous avez ajouté.",
+      "working": "Effacement…"
+    }
+  },
+  "recovery": {
+    "title": "jojo ne peut pas lire sa base de données",
+    "body": "Vos enregistrements sont toujours sur cet appareil. jojo n’a rien modifié ni remplacé, et ne chargera pas les données de démonstration par-dessus — un stockage qui se remplirait tout seul pour paraître sain transformerait ceci en perte de données définitive.",
+    "downloadHint": "Écrit dans un fichier les lignes qui ont pu être lues",
+    "downloadNothing": "La base de données n’a pas pu être lue du tout, il n’y a donc rien à écrire",
+    "download": "Télécharger ce qui a pu être lu",
+    "working": "En cours…",
+    "retry": "Réessayer",
+    "freshHint": "Supprime la base de données et démarre jojo comme s’il était neuf",
+    "fresh": "Repartir de zéro",
+    "readable_one": "{{count}} ligne était lisible — téléchargez-la avant toute chose, car repartir de zéro la supprime.",
+    "readable_other": "{{count}} lignes étaient lisibles — téléchargez-les avant toute chose, car repartir de zéro les supprime.",
+    "readable_many": "{{count}} lignes étaient lisibles — téléchargez-les avant toute chose, car repartir de zéro les supprime.",
+    "unreadable": "Rien n’a pu être lu dans le stockage, il n’y a donc rien à télécharger. Réessayez d’abord : une base de données qu’un autre onglet garde ouverte échoue de cette façon et se rétablit d’elle-même.",
+    "confirmTitle": "Supprimer la base de données et repartir de zéro ?",
+    "confirmBody": "Ceci supprime la base de données locale de jojo et tout ce qu’elle contient encore, puis recommence à partir de rien — y compris la question posée au premier lancement : commencer avec les données de démonstration ou à vide. Cela ne répare rien et ne peut pas être annulé. Si vous n’avez pas encore téléchargé les lignes lisibles, annulez et faites-le d’abord.",
+    "confirm": "Supprimer et repartir de zéro"
+  },
+  "labelFilter": {
+    "label": "Filtrer par mot-clé",
+    "none": "Aucun mot-clé pour l’instant — ajoutez-en un pour filtrer.",
+    "example": "p. ex. Développeur",
+    "add": "Ajouter le mot-clé",
+    "clear": "Effacer"
+  },
+  "labelPicker": {
+    "editOn": "Modifier les mots-clés de {{name}}",
+    "edit": "Modifier les mots-clés"
+  },
+  "keywordChip": {
+    "taken": "Un autre mot-clé porte déjà ce nom.",
+    "needsName": "Un mot-clé doit avoir un nom.",
+    "rename": "Renommer",
+    "colour": "Couleur",
+    "stopFiltering": "Ne plus filtrer par {{name}}",
+    "filterBy": "Filtrer par {{name}}",
+    "edit": "Modifier le mot-clé {{name}}",
+    "editHint": "Renommer, changer la couleur ou supprimer"
+  },
+  "welcome": {
+    "title": "Un peu sur vous",
+    "description": "Les brouillons sont signés de votre nom, et l’éclaireur note les offres selon ce que vous cherchez. Tout reste sur cet appareil et tout est facultatif — vous pourrez compléter plus tard dans Profil.",
+    "fullName": "Nom complet",
+    "fullNameExample": "p. ex. Lonardo Jenson",
+    "position": "Poste actuel",
+    "positionExample": "p. ex. Doctorant, informatique",
+    "location": "Lieu",
+    "locationExample": "p. ex. Santa Clara, CA",
+    "email": "E-mail",
+    "skip": "Passer pour l’instant",
+    "save": "Enregistrer et continuer",
+    "rest": "Le reste — liens, postes visés, termes recherchés par l’éclaireur — se trouve dans <anchor>Profil</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Envie d’une visite guidée pratique ?",
+    "tourDescription": "Un parcours des vraies pages — un projecteur sur chaque partie, à quoi elle sert, et vous essayez chaque chose au fur et à mesure. La visite ne tape, n’enregistre et ne modifie jamais rien à votre place, et garde votre position si vous vous arrêtez.",
+    "notNow": "Pas maintenant",
+    "start": "Commencer la visite",
+    "always": "Elle est toujours disponible sous <em>Mode d’emploi</em>, alors dire non maintenant ne coûte rien."
+  },
+  "setup": {
+    "skip": "Passer pour l’instant",
+    "continue": "Continuer",
+    "done": "Terminé",
+    "optional": "Chacune de ces étapes est facultative et peut être configurée plus tard dans les Paramètres.",
+    "model": {
+      "title": "Connecter un modèle",
+      "body": "C’est ce qui fait de jojo un agent plutôt qu’un classeur : il peut alors répondre à des questions sur votre recherche, rédiger relances et brouillons, et exécuter les pipelines de Job Scout qui complètent vos enregistrements et surveillent les offres. Pointez-le vers un modèle sur votre propre machine et rien ne quitte l’appareil."
+    },
+    "reader": {
+      "title": "Lui faire lire vos documents",
+      "body": "Sans cela, l’assistant ne voit que le nom d’un document. Lancez MarkItDown sur cette machine — deux commandes, ci-dessous — et il pourra lire le contenu de vos CV, lettres de motivation et offres enregistrées lorsqu’il rédige et répond."
+    },
+    "crash": {
+      "title": "Rapports de plantage et utilisation",
+      "description": "Deux choses distinctes, toutes deux activées — désactivez l’une ou l’autre ici ou plus tard dans les Paramètres. Aucune ne peut contenir vos enregistrements : ni candidature, ni document, ni note, ni profil, ni conversation.",
+      "inReport": "Ce que contient un rapport",
+      "inError": "Le message d’erreur et l’endroit de jojo où elle s’est produite.",
+      "inStack": "La pile d’appels, qui nomme le code qui a échoué.",
+      "never": "Ce qu’il ne contient jamais",
+      "neverRecords": "Vos candidatures, documents, notes, profil ou conversations.",
+      "neverSecrets": "Vos clés d’API, les adresses que vous utilisez, votre dossier personnel ou toute adresse e-mail — ils sont retirés avant l’écriture du rapport, pas avant son envoi.",
+      "where": "Dans ce navigateur et dans l’extension jojo, les rapports de plantage <em>restent sur cet appareil</em> : rien n’est envoyé, et une sauvegarde ne les contient pas. Vous les lisez vous-même dans les Paramètres. Sur l’application mobile jojo, le même rapport est aussi envoyé à Firebase Crashlytics de Google, qui ajoute le modèle de votre appareil, la version de son système d’exploitation et un id aléatoire servant à compter combien de personnes rencontrent le même plantage — sans nom, sans compte, rien qui vous soit lié. Les statistiques d’utilisation, le second interrupteur ci-dessous, vont à Google Analytics depuis toutes les versions, y compris celle-ci.",
+      "keep": "Conserver les rapports de plantage",
+      "keepHint": "L’erreur et où elle s’est produite. Reste sur cet appareil dans le navigateur.",
+      "share": "Partager les fonctions que j’utilise",
+      "shareHint": "Des comptages uniquement — quels écrans sont ouverts, à quelle fréquence. Jamais leur contenu.",
+      "usageNote": "Le second est la seule chose que jojo envoie sur ce que vous FAITES, et il ne peut dire que des choses tirées d’une liste fixe — « le coffre a été ouvert », « une candidature a été ajoutée », « il y en a de 6 à 20 ». Il ne peut nommer ni employeur, ni poste, ni fichier, ni rien de ce que vous avez tapé, car ces mots ne figurent pas dans la liste. Il va à Google Analytics pour que nous voyions quelles parties de jojo méritent plus de travail.",
+      "bothOff": "Désactiver les deux",
+      "save": "Enregistrer mes choix",
+      "continueOff": "Continuer avec les deux désactivés",
+      "later": "Vous pouvez modifier l’un ou l’autre à tout moment dans les Paramètres, et en désactiver un efface aussi ce qu’il avait conservé."
+    },
+    "extension": {
+      "title": "Conserver les offres auxquelles vous postulez",
+      "body": "Les annonces disparaissent, souvent avant que vous ayez une réponse. L’extension du navigateur enregistre une offre telle qu’elle se lit aujourd’hui, dans votre propre coffre — et c’est aussi ainsi que Job Scout lit les sites que vous suivez."
+    }
+  },
+  "spectrum": {
+    "saturation": "Saturation et luminosité",
+    "hue": "Teinte",
+    "hex": "Couleur hexadécimale",
+    "any": "Couleur libre"
+  },
+  "field": {
+    "openInTab": "Ouvrir {{label}} dans un nouvel onglet",
+    "hide": "Masquer {{label}}",
+    "show": "Afficher {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Petit",
+      "normal": "Normal",
+      "large": "Grand",
+      "huge": "Très grand"
+    },
+    "clearFormatting": "Effacer la mise en forme",
+    "bold": "Gras",
+    "italic": "Italique",
+    "underline": "Souligné",
+    "strikeThrough": "Barré",
+    "insertUnorderedList": "Liste à puces",
+    "insertOrderedList": "Liste numérotée",
+    "snippetText": "Texte de l’extrait",
+    "fontSize": "Taille du texte",
+    "insertTable": "Insérer un tableau",
+    "textColour": "Couleur du texte"
+  },
+  "toolForm": {
+    "aRecord": "un enregistrement",
+    "yourProfile": "Votre profil"
+  },
+  "toolRun": {
+    "choose": "Choisir…",
+    "none": "Aucun",
+    "omitted_one": "Absent de ce formulaire : {{fields}}. Ouvrez l’enregistrement pour le définir.",
+    "omitted_other": "Absents de ce formulaire : {{fields}}. Ouvrez l’enregistrement pour les définir.",
+    "omitted_many": "Absents de ce formulaire : {{fields}}. Ouvrez l’enregistrement pour les définir."
+  },
+  "toast": {
+    "notifications": "Notifications",
+    "dismiss": "Fermer — {{title}}"
+  },
+  "command": {
+    "title": "Palette de commandes",
+    "description": "Rechercher une commande à exécuter..."
   }
 }

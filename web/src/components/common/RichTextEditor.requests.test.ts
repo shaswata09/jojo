@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import editorSource from './RichTextEditor.tsx?raw'
+import commonCatalog from '@/i18n/locales/en/common.json?raw'
 import snippetEditorSource from '@/components/vault/snippets/SnippetEditor.tsx?raw'
 import filesToolSource from '@/components/vault/FilesTool.tsx?raw'
 import previewDialogSource from '@/components/vault/FilePreviewDialog.tsx?raw'
@@ -35,7 +36,9 @@ describe('the rich text toolbar (Q057)', () => {
     ['insertUnorderedList', 'Bullet list'],
   ])('has a %s button', (cmd, label) => {
     expect(editor).toContain(`{ cmd: '${cmd}', icon: `)
-    expect(editor).toContain(`label: '${label}' }`)
+    // The label is a `common` catalog key named for the command; English is the source.
+    expect(editor).toContain(`label: 'richText.${cmd}' }`)
+    expect(JSON.parse(commonCatalog).richText[cmd]).toBe(label)
   })
 
   it('sends each mark and list button its own command', () => {
@@ -44,11 +47,13 @@ describe('the rich text toolbar (Q057)', () => {
   })
 
   it('inserts a table', () => {
-    expect(editor).toMatch(/aria-label="Insert table"\s+onClick=\{\(\) => exec\('insertHTML', TABLE_HTML\)\}/)
+    expect(editor).toMatch(
+      /aria-label=\{t\('richText\.insertTable'\)\}\s+onClick=\{\(\) => exec\('insertHTML', TABLE_HTML\)\}/,
+    )
   })
 
   it('sets the text colour', () => {
-    expect(editor).toContain('aria-label="Text colour"')
+    expect(editor).toContain("aria-label={t('richText.textColour')}")
     expect(editor).toMatch(/exec\('foreColor', c\.value\)/)
   })
 })

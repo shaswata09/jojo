@@ -14,6 +14,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import timelineEn from '@/i18n/locales/en/timeline.json'
 
 const sources = import.meta.glob(
   [
@@ -38,14 +39,19 @@ describe('the reminder dialog from the dashboard (Q276)', () => {
   })
 
   it('offers the applications the record is saved under', () => {
-    expect(form).toMatch(/const filedUnder = \(stored\?\.applicationIds \?\? \[\]\)\s*\.map\(\(id\) => byId\.get\(id\)\)/)
-    expect(form).toMatch(/<ApplicationLinkField[\s\S]*?filedUnder=\{filedUnder\}\s*onOpen=\{closeAndGo\}/)
+    expect(form).toMatch(
+      /const filedUnder = \(stored\?\.applicationIds \?\? \[\]\)\s*\.map\(\(id\) => byId\.get\(id\)\)/,
+    )
+    expect(form).toMatch(
+      /<ApplicationLinkField[\s\S]*?filedUnder=\{filedUnder\}\s*onOpen=\{closeAndGo\}/,
+    )
   })
 
   it('draws a link to each of them', () => {
     expect(field).toMatch(/\{onOpen && filedUnder\.length > 0 \? \(/)
     expect(field).toMatch(/filedUnder\.map\(\(app\) => \{\s*const path = appPath\(app\)/)
     expect(field).toContain('href={hrefOutsideRouter(path)}')
-    expect(field).toContain('Open {displayName(app)}')
+    expect(field).toContain("t('application.open', { name: displayName(app) })")
+    expect(timelineEn.application.open).toBe('Open {{name}}')
   })
 })

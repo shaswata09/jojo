@@ -19,7 +19,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { LANDING_STOP_GRACE_MS, createLanding } from './receive-landing'
+import { LANDING_MAX_WAIT_MS, createLanding } from './receive-landing'
 import type { LandingSource } from './receive-landing'
 import type { RestorePlan } from '@jojo/service/core/backup'
 
@@ -47,10 +47,17 @@ const bytes = (text: string) => Uint8Array.from(text, (ch) => ch.charCodeAt(0))
  * A convoy that finishes after `until` ticks and then stays finished, which is
  * exactly what `core/convoy.ts` does: `done` is never cleared.
  */
-function session(payload: Uint8Array | null, until = 1): LandingSource & { stops: number } {
+function session(
+  payload: Uint8Array | null,
+  until = 1,
+): LandingSource & { stops: number; settled: string[] } {
   let ticks = 0
   const state = {
     stops: 0,
+    settled: [] as string[],
+    settle: (outcome: string) => {
+      state.settled.push(outcome)
+    },
     progress: () => {
       ticks += 1
       return { bytes: ticks * 100, complete: ticks >= until }
@@ -105,10 +112,15 @@ describe('createLanding — once the last chunk has authenticated', () => {
 
     expect(w.plans).toHaveLength(1)
     expect(w.plans[0]?.nodes).toHaveLength(1)
-    // Not at once: the last chunk's reply may still be writing.
+    // Not at once: the computer is asking over this socket what the person
+    // decides, and `settle` closes it when they answer. This only bounds a
+    // question nobody answers.
     expect(convoy.stops).toBe(0)
-    vi.advanceTimersByTime(LANDING_STOP_GRACE_MS)
+    vi.advanceTimersByTime(LANDING_MAX_WAIT_MS - 1)
+    expect(convoy.stops).toBe(0)
+    vi.advanceTimersByTime(1)
     expect(convoy.stops).toBe(1)
+    expect(convoy.settled).toEqual([])
     vi.useRealTimers()
   })
 
@@ -121,7 +133,7 @@ describe('createLanding — once the last chunk has authenticated', () => {
     // the sheet before deciding. `complete` is still true on every one of them.
     vi.useFakeTimers()
     for (let i = 0; i < 20; i += 1) tick()
-    vi.advanceTimersByTime(LANDING_STOP_GRACE_MS)
+    vi.advanceTimersByTime(LANDING_MAX_WAIT_MS)
     vi.useRealTimers()
 
     expect(w.plans).toHaveLength(1)
@@ -152,6 +164,17 @@ describe('createLanding — once the last chunk has authenticated', () => {
     expect(w.plans).toEqual([])
     expect(w.failures).toHaveLength(1)
     expect(w.failures[0]).toContain('not written by jojo')
+  })
+
+  it('tells the computer the transfer failed here, so it does not stamp a handover', () => {
+    const w = watch()
+    const convoy = session(bytes('{"format":"something else"}'), 1)
+    const tick = createLanding(convoy, w.report)
+
+    tick()
+    tick()
+
+    expect(convoy.settled).toEqual(['failed'])
   })
 })
 

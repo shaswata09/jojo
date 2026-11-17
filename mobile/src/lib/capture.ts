@@ -51,6 +51,8 @@ const cssSafe = (css: string) => css.replace(/</g, '\\3c ')
 /** What the injected script posts back, before anything trusts it. */
 export type RawCapture = {
   type: string
+  /** The token `captureScript` was given; see `acceptsCapture`. */
+  nonce?: string
   url?: string
   title?: string
   html?: string

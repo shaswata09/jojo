@@ -4,5 +4,40 @@
     "description": "jojo の表示言語です。記録は書いたときの言語のまま残ります。",
     "system": "このデバイスと同じ（{{name}}）",
     "restartForDirection": "jojo を再起動すると、アラビア語は右から左に表示されます。"
+  },
+  "actions": {
+    "undo": "元に戻す",
+    "edit": "編集",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "tryAgain": "再試行",
+    "preview": "プレビュー",
+    "moreFor": "{{name}} のその他の操作",
+    "save": "保存",
+    "done": "完了",
+    "openNamed": "{{name}} を開く",
+    "clear": "クリア",
+    "clearNamed": "{{name}} をクリア",
+    "notNow": "後で",
+    "duplicate": "複製",
+    "remove": "削除",
+    "back": "戻る",
+    "next": "次へ",
+    "close": "閉じる",
+    "clearSearch": "検索をクリア",
+    "copy": "コピー",
+    "copied": "コピーしました"
+  },
+  "discard": {
+    "title": "保存していない変更を破棄しますか？",
+    "description": "ここに入力した内容はどこにも保存されていません。離れると失われ、元に戻せません。",
+    "confirm": "破棄"
+  },
+  "filter": {
+    "all": "すべて"
+  },
+  "pageOptions": {
+    "title": "ページのオプション",
+    "description": "この画面の今回の表示にだけ適用されます。"
   }
 }

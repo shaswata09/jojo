@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertTriangle,
   Check,
@@ -35,10 +36,10 @@ const STATUS: Record<
   AgentStep['status'],
   { icon: LucideIcon; className: string; label: string; spin?: boolean }
 > = {
-  running: { icon: Loader2, className: 'text-text-3', label: 'Running', spin: true },
-  done: { icon: Check, className: 'text-success', label: 'Done' },
-  failed: { icon: X, className: 'text-danger', label: 'Failed' },
-  declined: { icon: SlashIcon, className: 'text-warning', label: 'Declined' },
+  running: { icon: Loader2, className: 'text-text-3', label: 'trace.status.running', spin: true },
+  done: { icon: Check, className: 'text-success', label: 'trace.status.done' },
+  failed: { icon: X, className: 'text-danger', label: 'trace.status.failed' },
+  declined: { icon: SlashIcon, className: 'text-warning', label: 'trace.status.declined' },
 }
 
 /**
@@ -48,16 +49,19 @@ const STATUS: Record<
  * distinction a person scanning this list needs at a glance is "did that change
  * anything". Delete and the two admin tools are red for the obvious reason.
  */
-const EFFECT: Record<AgentStep['effect'], { tone: 'gray' | 'teal' | 'amber' | 'red'; label: string }> = {
-  read: { tone: 'gray', label: 'read' },
+const EFFECT: Record<
+  AgentStep['effect'],
+  { tone: 'gray' | 'teal' | 'amber' | 'red'; label: string }
+> = {
+  read: { tone: 'gray', label: 'trace.effect.read' },
   // A tool that does not exist. Amber rather than grey: it is not a harmless
   // read, it is a call that never had a meaning.
-  unknown: { tone: 'amber', label: 'no such tool' },
-  create: { tone: 'teal', label: 'added' },
-  update: { tone: 'teal', label: 'changed' },
-  move: { tone: 'teal', label: 'moved' },
-  delete: { tone: 'red', label: 'deleted' },
-  admin: { tone: 'red', label: 'store' },
+  unknown: { tone: 'amber', label: 'trace.effect.unknown' },
+  create: { tone: 'teal', label: 'trace.effect.create' },
+  update: { tone: 'teal', label: 'trace.effect.update' },
+  move: { tone: 'teal', label: 'trace.effect.move' },
+  delete: { tone: 'red', label: 'trace.effect.delete' },
+  admin: { tone: 'red', label: 'trace.effect.admin' },
 }
 
 /**
@@ -78,6 +82,7 @@ export function StepRow({
   /** Set when this step is waiting on a decision. Renders the two buttons. */
   pending?: { allow: () => void; decline: () => void }
 }) {
+  const { t } = useTranslation('assistant')
   const [open, setOpen] = useState(false)
 
   /*
@@ -99,7 +104,7 @@ export function StepRow({
     <li className="rounded-lg border border-hairline">
       <button
         type="button"
-        className="flex w-full items-start gap-2.5 px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex w-full items-start gap-2.5 px-3 py-2 text-start focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         onClick={() => {
           setOpen((v) => !v)
         }}
@@ -107,14 +112,14 @@ export function StepRow({
       >
         <Disclosure className="mt-0.5 size-3.5 shrink-0 text-text-3" aria-hidden />
         <Icon
-          className={`mt-0.5 size-4 shrink-0 ${status.className}${status.spin ? ' animate-spin' : ''}`}
+          className={`mt-0.5 size-4 shrink-0 ${status.className}${status.spin ? 'animate-spin' : ''}`}
           aria-hidden
         />
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-text-1">{step.title}</span>
             <Chip tone={effect.tone} size="sm">
-              {effect.label}
+              {t(effect.label)}
             </Chip>
             {/* The registry name, because the title alone does not say WHICH
                 tool ran and the two are not one-to-one — five tools are called
@@ -130,7 +135,7 @@ export function StepRow({
             <span className="mt-0.5 block text-xs text-danger">{step.detail}</span>
           ) : null}
         </span>
-        <span className="sr-only">{status.label}</span>
+        <span className="sr-only">{t(status.label)}</span>
       </button>
 
       {/* The approval gate, inline on the step it is about. A modal here would
@@ -158,31 +163,33 @@ export function StepRow({
           role="group"
           tabIndex={-1}
           aria-live="assertive"
-          aria-label={`Approval needed: ${step.title}`}
-          className="flex flex-wrap items-center gap-2 border-t border-hairline bg-warning-soft px-3 py-2 outline-none ring-accent focus-visible:ring-2"
+          aria-label={t('trace.approvalNeeded', { title: step.title })}
+          className="flex flex-wrap items-center gap-2 border-t border-hairline bg-warning-soft px-3 py-2 ring-accent outline-none focus-visible:ring-2"
         >
           <AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden />
-          <p className="min-w-0 flex-1 text-xs text-warning">
-            The agent asked to do this. Nothing has changed yet.
-          </p>
+          <p className="min-w-0 flex-1 text-xs text-warning">{t('trace.asked')}</p>
           {/* Named, because "Allow" read on its own says nothing about what. */}
           <Button
             size="sm"
             variant="outline"
-            aria-label={`Don't ${step.title.toLowerCase()}`}
+            aria-label={t('trace.declineAria', { title: step.title })}
             onClick={pending.decline}
           >
-            Don&apos;t
+            {t('approval.decline')}
           </Button>
-          <Button size="sm" aria-label={`Allow: ${step.title}`} onClick={pending.allow}>
-            Allow
+          <Button
+            size="sm"
+            aria-label={t('trace.allowAria', { title: step.title })}
+            onClick={pending.allow}
+          >
+            {t('approval.allow')}
           </Button>
         </div>
       ) : null}
 
       {open ? (
         <div className="space-y-2 border-t border-hairline px-3 py-2">
-          <Field label="Arguments" value={JSON.stringify(step.args, null, 2)} />
+          <Field label={t('trace.arguments')} value={JSON.stringify(step.args, null, 2)} />
           <Result step={step} />
         </div>
       ) : null}
@@ -199,7 +206,7 @@ export function StepRow({
               onUndo(step)
             }}
           >
-            Undo this step
+            {t('trace.undoStep')}
           </Button>
         </div>
       ) : step.status === 'done' && wrote(step.effect) ? (
@@ -215,8 +222,7 @@ export function StepRow({
          * why one sentence covers both.
          */
         <p className="border-t border-hairline px-3 py-1.5 text-xs text-text-3">
-          This step cannot be undone from here. Settings → Records keeps a log of
-          what changed and can reverse the most recent one.
+          {t('trace.cannotUndo')}
         </p>
       ) : null}
     </li>
@@ -237,22 +243,19 @@ export function StepRow({
  * inside the box it reads as part of the data.
  */
 function Result({ step }: { step: AgentStep }) {
+  const { t } = useTranslation('assistant')
   const detail = readStepDetail(step)
   if (!detail) return null
 
-  if (detail.kind === 'text') return <Field label="Result" value={detail.value} />
+  if (detail.kind === 'text') return <Field label={t('trace.result')} value={detail.value} />
 
   return (
     <div>
-      <p className="text-xs font-medium text-text-3">Result</p>
+      <p className="text-xs font-medium text-text-3">{t('trace.result')}</p>
       <pre className="mt-0.5 max-h-64 overflow-auto rounded-md bg-well p-2 font-mono text-xs whitespace-pre text-text-2">
         {JSON.stringify(detail.value, null, 2)}
       </pre>
-      {detail.truncated ? (
-        <p className="mt-1 text-xs text-text-3">
-          Cut short — the agent was told to narrow the search to see the rest.
-        </p>
-      ) : null}
+      {detail.truncated ? <p className="mt-1 text-xs text-text-3">{t('trace.truncated')}</p> : null}
     </div>
   )
 }
@@ -271,10 +274,11 @@ function Field({ label, value }: { label: string; value: string }) {
 
 /** Shown while the model is deciding what to do, before any step exists. */
 export function Thinking({ model }: { model: string }) {
+  const { t } = useTranslation('assistant')
   return (
     <li className="flex items-center gap-2.5 rounded-lg border border-dashed border-hairline px-3 py-2">
       <Search className="size-4 shrink-0 animate-pulse text-text-3" aria-hidden />
-      <span className="text-sm text-text-3">Working — {model} is deciding what to do…</span>
+      <span className="text-sm text-text-3">{t('trace.working', { model })}</span>
     </li>
   )
 }

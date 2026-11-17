@@ -1,0 +1,152 @@
+{
+  "screen": {
+    "title": "Transferir",
+    "subtitle": "Mueve todo entre este teléfono y tu ordenador, por tu red local. Ambos deben estar en la misma red. Nada va a internet y nada se guarda en ningún otro sitio.",
+    "direction": "Dirección",
+    "roles": {
+      "send": "Enviar a un ordenador",
+      "receive": "Recibir de un ordenador"
+    },
+    "onPhone": "Lo que hay ahora en este teléfono",
+    "records_one": "{{count}} registro",
+    "records_other": "{{count}} registros",
+    "empty": "vacío",
+    "sendNote": "Enviar copia todo a tu ordenador, que pregunta antes de reemplazar lo que tiene. Nada cambia en este teléfono.",
+    "receiveNote": "Recibir lo reemplaza todo. Todo lo de arriba se sobrescribe con lo que llegue, y no se puede deshacer: exporta antes si quieres conservarlo."
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidaturas",
+      "hint": "Cada etapa, nota y resultado de cada una"
+    },
+    "timeline": {
+      "label": "Recordatorios y eventos",
+      "hint": "{{reminders}} te recuerdan algo, {{events}} son eventos con fecha"
+    },
+    "vault": {
+      "label": "Enlaces y fragmentos",
+      "hint": "{{links}} enlaces · {{snippets}} fragmentos"
+    },
+    "files": {
+      "label": "Archivos",
+      "hint": "CV, cartas de motivación y todo lo demás guardado en una candidatura"
+    },
+    "keywords": {
+      "label": "Palabras clave",
+      "hint": "Tu lista de palabras clave y cada registro al que están asociadas"
+    },
+    "scout": {
+      "label": "Buscador de empleo",
+      "hint": "{{pipelines}} búsquedas · {{postings}} ofertas guardadas · {{matches}} coincidencias"
+    },
+    "profile": {
+      "label": "Perfil",
+      "hint": "Tus datos básicos, enlaces, puestos objetivo y términos de coincidencia"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "no disponible en este dispositivo",
+    "noRandom": "Este dispositivo no tiene un generador seguro de números aleatorios, así que jojo no acordará una clave en él. El emparejamiento se desactiva en lugar de hacerse de forma insegura.",
+    "scan": "Escanear el código",
+    "retry": "Intentar de nuevo",
+    "cancel": "Cancelar"
+  },
+  "send": {
+    "title": "Enviar a un ordenador",
+    "hint": "apunta al código de tu ordenador",
+    "outcome": {
+      "applied": "Tu ordenador ya tiene tus registros",
+      "declined": "Tu ordenador conservó sus propios registros",
+      "failed": "Tu ordenador no pudo aceptar tus registros",
+      "handed": "Se ha entregado todo"
+    },
+    "detail": {
+      "waiting": "Tu ordenador pregunta antes de reemplazar nada: confirma allí para terminar. Nada ha cambiado en este teléfono.",
+      "unknown": "Tu ordenador no dijo si los aceptó. Nada ha cambiado en este teléfono.",
+      "applied": "Ambos dispositivos tienen ahora los mismos registros. Nada ha cambiado en este teléfono.",
+      "notReplaced": "Allí no se reemplazó nada. Nada ha cambiado en este teléfono."
+    },
+    "unreadable_one": "{{count}} documento no se pudo leer y se quedó aquí.",
+    "unreadable_other": "{{count}} documentos no se pudieron leer y se quedaron aquí.",
+    "again": "Enviar de nuevo",
+    "typeThis": "Escribe esto en tu ordenador",
+    "paired": "Emparejado. Este teléfono espera en tu red local a que tu ordenador lo solicite.",
+    "handing": "Entregando tus registros…",
+    "handingProgress": "Entregando tus registros: {{served}} de {{chunks}}.",
+    "intro": "En tu ordenador, abre Transferir, elige Recibir del teléfono y escanea el código que muestra. Ambos deben estar en la misma red local.",
+    "gatherFailed": "jojo no pudo reunir los registros de este teléfono, así que no se envió nada. Inténtalo de nuevo."
+  },
+  "receive": {
+    "title": "Recibir",
+    "hint": "apunta al código del otro dispositivo",
+    "complete": "Transferencia completada",
+    "done": "Listo",
+    "typeThis": "Escribe esto en tu otro dispositivo",
+    "paired": "Emparejado. Este teléfono escucha en tu red local y en ningún otro sitio.",
+    "progress": "Recibiendo: {{size}} hasta ahora. Nada cambia aquí hasta que lo aceptes.",
+    "intro": "Abre jojo en tu ordenador, elige Transferir y escanea el código que muestra.",
+    "confirm": {
+      "title": "¿Reemplazar todo en este teléfono?",
+      "description": "{{contents}}. {{replaces}}, y no se puede deshacer.",
+      "confirm": "Reemplazar"
+    },
+    "unrestorable": "Lo que llegó no se puede restaurar: {{reason}}. Nada ha cambiado en este teléfono."
+  },
+  "landed": {
+    "plain_one": "{{count}} registro está en este teléfono.",
+    "plain_other": "{{count}} registros están en este teléfono.",
+    "withDocuments_one": "{{count}} registro está en este teléfono, {{documents}}.",
+    "withDocuments_other": "{{count}} registros están en este teléfono, {{documents}}.",
+    "documents_one": "{{count}} documento",
+    "documents_other": "{{count}} documentos",
+    "skipped_one": "{{count}} no se pudo leer.",
+    "skipped_other": "{{count}} no se pudieron leer."
+  },
+  "scanner": {
+    "point": "Apunta esto al código de la página Transferir de tu otro dispositivo.",
+    "advice": {
+      "denied": "jojo necesita la cámara para leer el código de tu otro dispositivo. Permítelo, o escribe el código a mano.",
+      "unsupported": "Este teléfono no puede abrir la cámara para jojo.",
+      "failed": "La cámara no se inició. Cierra jojo y vuelve a abrirlo."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Leer el código de emparejamiento",
+      "message": "jojo necesita la cámara para leer el código que muestra tu otro dispositivo. No se graba nada y ninguna imagen sale de este teléfono.",
+      "allow": "Permitir",
+      "notNow": "Ahora no"
+    },
+    "refused": {
+      "denied": "jojo necesita la cámara para leer el código de tu otro dispositivo.",
+      "blocked": "La cámara está desactivada para jojo. Actívala en los Ajustes de tu teléfono, en Aplicaciones, para emparejar escaneando."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Ese código no es una oferta de emparejamiento de jojo. Escanea el de tu otro dispositivo.",
+      "noNetwork": "Este teléfono no está en una red local. jojo solo transfiere por tu red local, así que ambos dispositivos deben estar en la misma.",
+      "notLocal": "Este teléfono está en una red por la que jojo no transfiere. Solo se conecta a una dirección de red privada, así que tus registros nunca pasan por internet.",
+      "noSocket": "jojo no pudo abrir una conexión en este teléfono. Inténtalo de nuevo."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "El portapapeles está vacío. Copia primero una copia de seguridad de jojo y luego pégala aquí.",
+    "fileEmpty": "Ese archivo está vacío. Nada ha cambiado en este teléfono.",
+    "notBackup": "no es una copia de seguridad de jojo",
+    "unrestorable": {
+      "file": "Ese archivo no se puede restaurar: {{reason}}. Nada ha cambiado en este teléfono.",
+      "clipboard": "Lo que hay en el portapapeles no se puede restaurar: {{reason}}. Nada ha cambiado en este teléfono."
+    },
+    "noRecords": {
+      "file": "Ese archivo es una copia de seguridad sin registros. Nada ha cambiado en este teléfono: restaurarla lo habría vaciado.",
+      "clipboard": "Lo que hay en el portapapeles es una copia de seguridad sin registros. Nada ha cambiado en este teléfono: restaurarla lo habría vaciado."
+    },
+    "unreadable": "Ese archivo no se pudo leer. Nada ha cambiado en este teléfono.",
+    "noPicker": "Este teléfono no tiene nada que pueda elegir un archivo JSON o de texto.",
+    "openFailed": "No se pudo abrir el archivo: {{detail}}",
+    "failedTitle": "No se importó nada",
+    "restoredTitle": "Copia de seguridad restaurada"
+  }
+}

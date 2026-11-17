@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useApplications } from '@jojo/service/react/use-applications'
-import { displayName, filedUnderLabel } from '@/data/seed'
+import { displayName } from '@/data/seed'
 import { FileText, Plus, Upload } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
@@ -31,6 +32,7 @@ import { useGraph } from '@jojo/service/react/kg-context'
 import { requestProfileRead } from '@jojo/service/react/profile-read-request'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { announceRefusal } from '@/components/common/write-result'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Read-later files, in buckets.
@@ -51,6 +53,8 @@ import { announceRefusal } from '@/components/common/write-result'
  * a page captured on another device, or a write that failed.
  */
 export function FilesTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [bucket, setBucket] = useState<FileBucket | 'all'>('all')
   /** The "Unfiled" chip: only files not filed under any application. */
   const [unfiledOnly, setUnfiledOnly] = useState(false)
@@ -146,10 +150,10 @@ export function FilesTool({ focus }: { focus?: string }) {
   const target: FileBucket = bucket === 'all' ? 'To read' : bucket
 
   useEffect(() => {
-    if (openId === null) {
-      setOpenBlob(null)
-      return
-    }
+    // Cleared first, every time: until the new document's read resolves, the
+    // last one's bytes would otherwise sit under the new one's name.
+    setOpenBlob(null)
+    if (openId === null) return
     let alive = true
     void blobs.get(openId).then((file) => {
       // Guarded: the viewer can be closed, or another row opened, while a large
@@ -178,10 +182,10 @@ export function FilesTool({ focus }: { focus?: string }) {
     if (announceRefusal(updateFile(file.id, { name: next }), toast)) return
     setEditing(null)
     toast({
-      title: `${next} renamed`,
-      description: `Was ${before}.`,
+      title: t('files.toast.renamed', { name: next }),
+      description: t('files.toast.was', { name: before }),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => updateFile(file.id, { name: before }),
       },
     })
@@ -192,10 +196,12 @@ export function FilesTool({ focus }: { focus?: string }) {
     if (announceRefusal(updateFile(file.id, { note: next || undefined }), toast)) return
     setEditing(null)
     toast({
-      title: `${file.name} ${next ? 'note saved' : 'note cleared'}`,
-      description: next || 'The row keeps its name, bucket and keywords.',
+      title: next
+        ? t('files.toast.noteSaved', { name: file.name })
+        : t('files.toast.noteCleared', { name: file.name }),
+      description: next || t('files.toast.noteClearedDescription'),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => updateFile(file.id, { note: before }),
       },
     })
@@ -219,17 +225,18 @@ export function FilesTool({ focus }: { focus?: string }) {
     setEditing(null)
     const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      // `filedUnderLabel` names up to two and counts past that. It lives in the
-      // service because every surface that files a record — here, the phone's
-      // three vault tools, its file viewer — has the same sentence to build,
-      // and five copies is five places to draw that line differently.
-      title: `${file.name} ${filedUnderLabel(chosen)}`,
+      // `domain.filedUnder` names up to two and counts past that. It lives in
+      // the service because every surface that files a record — here, the
+      // phone's three vault tools, its file viewer — has the same sentence to
+      // build, and five copies is five places to draw that line differently.
+      title: t('files.toast.filed', {
+        name: file.name,
+        filed: domain.filedUnder(chosen.map(displayName)),
+      }),
       description:
-        chosen.length > 0
-          ? 'It shows on each of them, and the graph can find it from any.'
-          : 'It stays in the Vault, filed under nothing.',
+        chosen.length > 0 ? t('files.toast.filedDescription') : t('files.toast.unfiledDescription'),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => updateFile(file.id, { applicationIds: before }),
       },
     })
@@ -239,9 +246,12 @@ export function FilesTool({ focus }: { focus?: string }) {
     const before = file.bucket
     if (announceRefusal(updateFile(file.id, { bucket: next }), toast)) return
     toast({
-      title: `${file.name} moved`,
-      description: `Filed under ${next}${bucket !== 'all' && bucket !== next ? ` — out of the ${bucket} list you are looking at` : ''}.`,
-      action: { label: 'Undo', onClick: () => updateFile(file.id, { bucket: before }) },
+      title: t('reminders.toast.moved', { title: file.name }),
+      description:
+        bucket !== 'all' && bucket !== next
+          ? t('snippets.toast.movedOut', { tag: next, filter: bucket })
+          : t('snippets.toast.moved', { tag: next }),
+      action: { label: t('common.undo'), onClick: () => updateFile(file.id, { bucket: before }) },
     })
   }
 
@@ -269,7 +279,7 @@ export function FilesTool({ focus }: { focus?: string }) {
   const addButton = (
     <Button size="sm" onClick={() => pickerRef.current?.click()}>
       <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-      Add file
+      {t('files.add')}
     </Button>
   )
 
@@ -285,26 +295,29 @@ export function FilesTool({ focus }: { focus?: string }) {
     onClearUnfiled: () => setUnfiledOnly(false),
     copy: {
       zero: {
-        title: 'No files yet',
-        description: 'Drop a posting, a paper or a draft here — or add one from your computer.',
+        title: t('files.empty.zeroTitle'),
+        description: t('files.empty.zeroDescription'),
         action: addButton,
       },
-      search: (q) => `No file mentions "${q}" in its name, note or bucket.`,
-      both: `No file in ${bucket} carries the selected keywords.`,
+      search: (q) => t('files.empty.search', { query: q }),
+      both: t('files.empty.both', { bucket }),
       bucket: {
-        title: `Nothing in ${bucket}`,
-        description: `${files.length} files are filed under the other buckets.`,
-        clearLabel: 'Show all buckets',
+        title: t('files.empty.bucketTitle', { bucket }),
+        description: t('files.empty.bucketDescription', { count: files.length }),
+        clearLabel: t('files.empty.showAll'),
       },
-      keywords: { title: 'No files carry those keywords' },
+      keywords: { title: t('files.empty.keywordsTitle') },
       unfiled: {
         // Not a failure. Every file being filed is the state this list is for
         // getting to, and "no files" over a full vault would read as a bug.
         alone: {
-          title: 'Every file is filed under an application',
-          description: `All ${files.length} of them. Nothing is sitting loose.`,
+          title: t('files.empty.allFiledTitle'),
+          description: t('files.empty.allFiledDescription', { count: files.length }),
         },
-        withOthers: `No unfiled file is in ${bucket === 'all' ? 'the selected keywords' : bucket}.`,
+        withOthers:
+          bucket === 'all'
+            ? t('files.empty.unfiledKeywords')
+            : t('files.empty.unfiledBucket', { bucket }),
       },
     },
   })
@@ -349,7 +362,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                  taking a line of its own — and wraps with them when narrow. */
               <div className="flex flex-wrap items-center gap-1.5">
                 <BucketFilter
-                  label="Filter files by bucket"
+                  label={t('files.filterLabel')}
                   options={FILE_BUCKETS}
                   counts={counts}
                   value={bucket}
@@ -361,8 +374,8 @@ export function FilesTool({ focus }: { focus?: string }) {
             }
             search={
               <VaultSearch
-                label="Search files"
-                placeholder="Search name or note"
+                label={t('files.searchLabel')}
+                placeholder={t('files.searchPlaceholder')}
                 value={query}
                 onChange={setQuery}
               />
@@ -414,19 +427,17 @@ export function FilesTool({ focus }: { focus?: string }) {
           >
             <div>
               <Upload aria-hidden strokeWidth={1.7} className="mx-auto mb-2 size-5 text-accent" />
-              <p className="text-sm font-medium text-text-1">Drop to add to {target}</p>
-              <p className="mt-1 text-xs text-text-3">
-                Name, size and type are read. Nothing is uploaded.
+              <p className="text-sm font-medium text-text-1">
+                {t('files.drop.title', { bucket: target })}
               </p>
+              <p className="mt-1 text-xs text-text-3">{t('files.drop.description')}</p>
             </div>
           </div>
         ) : null}
 
         {/* The drop target is invisible until something is over it, so the one
             line that says it exists has to be here in the quiet state. */}
-        <p className="mt-3 text-xs text-text-3">
-          Drop files anywhere on this panel to add them to {target}.
-        </p>
+        <p className="mt-3 text-xs text-text-3">{t('files.drop.hint', { bucket: target })}</p>
       </Panel>
 
       {open ? (
@@ -435,6 +446,10 @@ export function FilesTool({ focus }: { focus?: string }) {
           // The stored bytes, once they have been read back. Absent for a seed
           // row, which falls back to the generated placeholder.
           blob={openBlob ?? undefined}
+          // Keyed by document: the viewer holds a note draft, and two files
+          // with the same stored note (both empty) would otherwise carry one
+          // file's unsaved note onto the next, where Save writes it.
+          key={open.id}
           onClose={() => setOpenId(null)}
         />
       ) : null}

@@ -1,5 +1,6 @@
 import type { NodeId } from '@jojo/service/core/model'
 import type { useThreads } from '@jojo/service/react/use-threads'
+import { useTranslation } from 'react-i18next'
 import { useToast } from '@/lib/toast-context'
 
 /** The thread bar's file and delete, with the toasts that answer them. */
@@ -7,6 +8,7 @@ export function useThreadActions(
   { file, remove }: Pick<ReturnType<typeof useThreads>, 'file' | 'remove'>,
   { clear, openThread }: { clear: () => void; openThread: (id: NodeId | null) => void },
 ) {
+  const { t } = useTranslation('assistant')
   const { toast } = useToast()
 
   const onFile = (id: NodeId, applicationId: Parameters<typeof file>[1]) => {
@@ -17,7 +19,7 @@ export function useThreadActions(
         ...(result.announcement.description === undefined
           ? {}
           : { description: result.announcement.description }),
-        ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
+        ...(result.undo ? { action: { label: t('common.undo'), onClick: result.undo } } : {}),
       })
     }
   }
@@ -30,9 +32,9 @@ export function useThreadActions(
     clear()
     openThread(null)
     toast({
-      title: 'Conversation deleted',
+      title: t('threads.deleted'),
       tone: 'danger',
-      ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
+      ...(result.undo ? { action: { label: t('common.undo'), onClick: result.undo } } : {}),
     })
   }
 

@@ -19,6 +19,7 @@
  */
 
 import { createContext, useContext, useSyncExternalStore } from 'react'
+import type { DomainText } from '../core/domain-text'
 import type { Instant } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { Repository } from '../repo/repository'
@@ -58,6 +59,12 @@ export type KgContextValue = {
   projections: Projections
   /** 'YYYY-MM-DD' from `now()`, read once so no two rows disagree about it. */
   today: string
+  /**
+   * The app's words for what this layer says itself — the ⌘Z toast and a
+   * shared tool's toast. `kg/react` may not import i18next, so the app hands
+   * its bound `domainText` in (`KgProvider`'s `text`); English when it does not.
+   */
+  text: DomainText
 }
 
 export const KgContext = createContext<KgContextValue | null>(null)

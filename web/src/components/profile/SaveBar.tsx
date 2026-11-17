@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -16,6 +17,7 @@ export function SaveBar({
   onDiscard: () => void
   onSave: () => void
 }) {
+  const { t } = useTranslation('profile')
   return (
     <div aria-live="polite" className="sticky bottom-3 z-10 sm:bottom-5">
       {dirty ? (
@@ -23,17 +25,15 @@ export function SaveBar({
           {/* Was "saving keeps them for this visit, not to disk". The bar
               exists to make someone press Save; describing the save as
               worthless was an argument against it. */}
-          <p className="text-sm text-text-2">
-            Unsaved changes — saving writes them to this browser.
-          </p>
+          <p className="text-sm text-text-2">{t('saveBar.unsaved')}</p>
           <div className="flex gap-2">
             {/* Back to the record, not to a remembered copy of it: dropping
                 the edit is what makes the form a view of the store again. */}
             <Button variant="outline" size="sm" onClick={onDiscard}>
-              Discard
+              {t('shared.discard')}
             </Button>
             <Button size="sm" onClick={onSave}>
-              Save
+              {t('shared.save')}
             </Button>
           </div>
         </div>

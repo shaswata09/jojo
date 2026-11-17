@@ -1,0 +1,168 @@
+{
+  "shared": {
+    "undo": "실행 취소",
+    "cancel": "취소",
+    "add": "추가",
+    "discard": "버리기",
+    "save": "저장",
+    "didNotSave": "저장되지 않았어요"
+  },
+  "saveBar": {
+    "unsaved": "저장하지 않은 변경이 있어요 — 저장하면 이 브라우저에 기록돼요."
+  },
+  "form": {
+    "saved": {
+      "title": "프로필을 저장했어요",
+      "description": "이 브라우저에 기록하고 보관했어요."
+    }
+  },
+  "fields": {
+    "basics": "기본 정보",
+    "fullName": {
+      "label": "이름",
+      "placeholder": "예: Lonardo Jenson"
+    },
+    "position": {
+      "label": "현재 직위",
+      "placeholder": "예: 박사 과정, 컴퓨터과학"
+    },
+    "location": {
+      "label": "지역",
+      "placeholder": "예: Santa Clara, CA"
+    },
+    "email": {
+      "label": "이메일"
+    },
+    "links": "링크",
+    "website": {
+      "label": "웹사이트"
+    }
+  },
+  "interests": {
+    "title": "관심 분야와 목표",
+    "hint": "스카우트 매칭에 쓰여요",
+    "matchTerms": {
+      "title": "매칭 용어",
+      "description": "스카우트가 찾는 연구 분야와 표현이에요. 기록을 분류하는 키워드와는 별개예요.",
+      "remove": "{{term}} 삭제",
+      "newLabel": "새 매칭 용어",
+      "placeholder": "매칭 용어 추가"
+    },
+    "targetRoles": {
+      "label": "희망 직무",
+      "placeholder": "예: 조교수(테뉴어 트랙) · 연구 과학자"
+    },
+    "regions": {
+      "label": "선호 지역",
+      "placeholder": "예: 텍사스 · 원격"
+    },
+    "academia": "학계 채용 공고 포함",
+    "industry": "산업계 채용 공고 포함"
+  },
+  "roleTags": {
+    "title": "직무 태그",
+    "description": "추적하고 있는 직무의 종류예요. 모든 지원서는 그중 하나로 분류되며, 직무 필터와 통계의 직무별 수치가 이를 사용해요. 여기서 삭제해도 그 태그가 붙은 지원서는 그대로 남아요.",
+    "remove_other": "{{role}} 삭제, 지원서 {{count}}개에 사용 중",
+    "newLabel": "새 직무 태그",
+    "placeholder": "예: 데이터 과학자"
+  },
+  "documents": {
+    "title": "문서",
+    "hint": "보관함의 {{bucket}} 분류",
+    "upload": "업로드",
+    "exportInSettings": "설정에서 내보내기",
+    "empty": {
+      "title": "아직 문서가 없어요",
+      "description": "이력서와 진술서를 여기에 끌어다 놓거나 선택하세요 — 보관함의 {{bucket}}에 저장되며, 앱의 다른 기능에서도 쓸 수 있어요.",
+      "upload": "문서 업로드"
+    },
+    "footer": "보관함의 <anchor>파일 도구</anchor>와 같은 파일을 {{bucket}}으로 거른 것이에요. 문서를 여기에 끌어다 놓거나 선택하면 파일 자체는 이 브라우저에 보관돼요 — 어디에도 업로드되지 않아요. 클릭하면 읽을 수 있어요."
+  },
+  "documentTile": {
+    "open": "{{name}} 열기",
+    "meta": "{{size}} · {{ago}} 저장",
+    "delete": "{{name}} 삭제"
+  },
+  "background": {
+    "title": "내 경력",
+    "hint_other": "{{count}}개 기록됨 · 채용 공고와 비교하는 기준",
+    "details_other": "세부 사항 {{count}}개",
+    "readFromDocument": "문서에서 읽음",
+    "edit": "{{title}} 편집",
+    "remove": "{{title}} 삭제",
+    "added": "{{title}} 추가됨",
+    "updated": "{{title}} 업데이트됨",
+    "removed": "{{title}} 삭제됨",
+    "addEntry": "항목 추가",
+    "form": {
+      "kind": "종류",
+      "title": "제목",
+      "titlePlaceholder": "무엇이었는지",
+      "where": "장소",
+      "optional": "선택 사항",
+      "when": "시기",
+      "whenPlaceholder": "적힌 그대로 — \"2021–2024\"",
+      "year": "연도",
+      "detail": "세부 내용",
+      "detailPlaceholder": "채용 공고와 비교해 볼 만한 내용(선택 사항)",
+      "highlights": "주요 성과",
+      "highlightsHint": "한 줄에 하나씩 — 만든 것, 출시한 것, 가르친 것, 발견한 것.",
+      "readKept": "문서에서 읽음 — 읽은 내용보다 내 편집이 우선해요",
+      "saveChanges": "변경 사항 저장"
+    },
+    "empty": {
+      "title": "아직 기록된 것이 없어요",
+      "configured": "이력서나 연구·강의 진술서를 보관함에 넣으면 jojo가 읽어 주겠다고 제안해요 — 찾은 내용은 저장하기 전에 먼저 보여 드려요. 직접 항목을 추가할 수도 있어요.",
+      "unconfigured": "문서를 읽으려면 모델이 필요해요. 설정에서 모델을 연결한 다음 이력서나 진술서를 보관함에 넣으면 jojo가 읽어 주겠다고 제안해요. 모델 없이도 직접 항목을 추가할 수 있어요."
+    },
+    "readMenu": {
+      "needsModel": "문서를 읽으려면 모델이 필요해요. 설정에서 연결하세요.",
+      "button": "문서 읽기",
+      "nothing": "보관함에 아직 읽을 수 있는 것이 없어요. 이력서나 진술서를 넣으면 여기에 나타나요.",
+      "allRead": "보관함의 읽을 수 있는 것은 모두 읽었어요.",
+      "read": "읽음"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "학력",
+      "employment": "경력",
+      "publication": "출판물",
+      "skill": "기술",
+      "teaching": "강의",
+      "award": "수상",
+      "service": "봉사",
+      "certification": "자격증",
+      "language": "언어",
+      "project": "프로젝트",
+      "volunteering": "자원봉사",
+      "membership": "회원 활동",
+      "grant": "연구비",
+      "patent": "특허"
+    },
+    "skipped_other": "항목 {{count}}개를 건너뛰었어요",
+    "readIt": "읽기",
+    "readFailed": "문서를 읽지 못했어요.",
+    "notNow": "나중에",
+    "discardEntries": "이 항목들 버리기",
+    "review": {
+      "single": "이 문서에서 항목 1개를 읽었어요",
+      "some": "{{total}}개 중 {{kept}}개 항목이 추가돼요",
+      "untick": "잘못 읽은 것은 체크를 해제하세요.",
+      "add": "{{title}} 추가",
+      "connections_other": "항목 간 연결 {{count}}개",
+      "addOne": "내 프로필에 추가",
+      "addMany": "{{total}}개를 내 프로필에 추가"
+    },
+    "toast": {
+      "already": "이미 프로필에 있어요",
+      "added_other": "프로필에 {{count}}개를 추가했어요",
+      "nothing": "아무것도 추가하지 못했어요",
+      "readFrom": "{{name}}에서 읽었어요.",
+      "known": "{{total}}개 중 {{known}}개는 이미 알고 있던 내용이에요.",
+      "related_other": "항목 간 연결 {{count}}개를 기록했어요.",
+      "weigh": "이제 jojo가 내가 해 온 일과 채용 공고를 비교할 수 있어요.",
+      "refused": "항목이 거부되었어요."
+    }
+  }
+}

@@ -1,0 +1,254 @@
+{
+  "screen": {
+    "title": "How to use jojo",
+    "pageLabel": "Guide page",
+    "takeTour": "Take the tour",
+    "pages": {
+      "overview": {
+        "label": "Overview",
+        "subtitle": "Everything runs on your device. Start simple, add power when you want it."
+      },
+      "screens": {
+        "label": "Screens",
+        "subtitle": "What each screen is for, and a way straight into it."
+      },
+      "graph": {
+        "label": "Graph",
+        "subtitle": "The record model underneath the seven lists."
+      },
+      "tools": {
+        "label": "Tools",
+        "subtitle": "What the assistant can do to your records, and what stops it."
+      },
+      "built": {
+        "label": "Built with",
+        "subtitle": "What this is made of, and what is still a placeholder."
+      }
+    }
+  },
+  "overview": {
+    "active": "active",
+    "notConnected": "not connected",
+    "layers": {
+      "device": {
+        "name": "This device only",
+        "requires": "Nothing to set up",
+        "gives": "Track applications, deadlines, follow-ups and documents"
+      },
+      "model": {
+        "name": "+ Local model",
+        "requires": "Ollama, vLLM or LM Studio — or a free NVIDIA key",
+        "gives": "A threaded assistant that reads and writes your records — every change shown to you first — and \"Ask the graph\" in a sentence"
+      },
+      "reader": {
+        "name": "+ Document reader",
+        "requires": "MarkItDown, at an address you type in",
+        "gives": "The assistant reads what is inside your CVs and saved postings, and a posting you add from a link fills its own form in"
+      },
+      "computer": {
+        "name": "+ Your computer",
+        "requires": "Both on the same network",
+        "gives": "Transfer moves the whole vault between this phone and your computer, with nothing in between"
+      }
+    },
+    "gettingStarted": "Getting started",
+    "progress": "{{done}} of {{total}} done",
+    "allDone": "Every step is done. The checklist reads your records, so it follows if you clear them.",
+    "howItWorks": "Each step opens the real thing, and ticks itself once a record exists. Nothing here is a tutorial you have to sit through.",
+    "done": "Done",
+    "steps": {
+      "application": {
+        "title": "Add an application",
+        "body": "A position, its stage and its deadline. Everything else in jojo hangs off this record.",
+        "label": "New application"
+      },
+      "dated": {
+        "title": "Give something a date",
+        "body": "Deadlines, interviews and campus visits are one kind of record, so they reach the calendar, the week ahead and the application at once.",
+        "label": "New event"
+      },
+      "reminder": {
+        "title": "Set a follow-up",
+        "body": "A reminder is the same record with a nudge switched on. Once its date passes it is flagged on Today until you tick it off.",
+        "label": "New reminder"
+      },
+      "posting": {
+        "title": "Keep a posting before it is taken down",
+        "body": "Nothing is fetched and no copy is stored — what is kept is the URL, the employer guessed from it and the day you saved it. That is enough to find the ad again.",
+        "label": "Open Job scout"
+      },
+      "file": {
+        "title": "File your documents",
+        "body": "Record a CV or a statement in the Vault. Names, sizes and types are kept; the file itself is never read.",
+        "label": "Open the Vault"
+      },
+      "keyword": {
+        "title": "Tag something with a keyword",
+        "body": "Keywords are yours, shared by applications, reminders and everything in the Vault — unlike the fixed role tags. The tag button on any row adds one.",
+        "label": "Manage keywords"
+      },
+      "draft": {
+        "title": "Draft a message",
+        "body": "Built from your own email snippets, with the role, employer and dates filled in from the record. A person’s name is never filled in for you. Nothing here records that you sent it, so this step does not tick itself.",
+        "label": "Draft a message"
+      }
+    },
+    "profile": {
+      "title": "Fill in your profile",
+      "hint": "the profile is not part of the checklist",
+      "body": "Your basics, links, target roles and match terms live under My profile. They are what the scout would score against and what the assistant would draft from, so they matter — but this build keeps them for the visit only rather than writing them anywhere, which is why the checklist above cannot tick for them.",
+      "open": "Open my profile"
+    },
+    "database": {
+      "title": "The app is the database",
+      "body": "Your records are saved on this device and survive a restart. Nothing is sent anywhere — no account, no sync, no network call. Settings is where you clear them, reload the demo data, or export a copy to the clipboard."
+    }
+  },
+  "screens": {
+    "intro": "Every screen in the app, and the one sentence that says what it is for. Tapping a row opens it — this page is a way in as well as a legend.",
+    "open": "Open {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "In the tab bar",
+        "hint": "always one tap away"
+      },
+      "vault": {
+        "title": "Inside the Vault",
+        "hint": "five tools, one tab"
+      },
+      "more": {
+        "title": "Behind More",
+        "hint": "the rest of jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Every list in this app is a view over one set of records. A record is a <b>node</b>; a connection between two records is an <b>edge</b> with a name. That is the whole model, and it is why a question that crosses two lists is answerable at all.",
+    "open": "Open the graph",
+    "kinds_one": "{{count}} kind",
+    "kinds_other": "{{count}} kinds",
+    "nodes": "Nodes",
+    "nodesIntro": "A node per record, plus three that exist only as connections — an employer, a role and a keyword are each a node so that everything filed under one can be found from it.",
+    "edges": "Edges",
+    "edgesIntro": "Each has a direction and a name. The name is what the Graph screen's question builder puts in its middle row.",
+    "relShape": {
+      "AT": "Application → Employer",
+      "IS": "Application → Role",
+      "ABOUT": "Date or reminder → Application",
+      "FILED_UNDER": "File, link or snippet → Application",
+      "TAGS": "Keyword → any record",
+      "BECAME": "Saved posting or match → Application"
+    },
+    "deleteTitle": "Deleting unlinks, it does not cascade",
+    "deleteBody": "Removing an application removes that node and the edges touching it. The reminders, files and saved postings that were filed under it stay — they are their own records, and they survive with nothing pointing at them. Every delete in the app says this, and the Graph screen's question builder is where you find what came loose: ask for files that do not have a link to an application."
+  },
+  "tools": {
+    "inTotal": "{{count}} in total",
+    "canDo": {
+      "title": "What the assistant can do",
+      "body_one": "The assistant does not tap your screens for you. It calls the same {{count}} operation the buttons call — the identical code path, with the identical checks. There is no second way in, which is why an assistant edit lands in your history looking exactly like one you made yourself.",
+      "body_other": "The assistant does not tap your screens for you. It calls the same {{count}} operations the buttons call — the identical code path, with the identical checks. There is no second way in, which is why an assistant edit lands in your history looking exactly like one you made yourself.",
+      "irreversible": "Two of those {{count}} cannot be undone at all — the ones that replace or empty the whole store. Those are never offered to the assistant unless your own words ask for them, and they stop for a confirmation even then.",
+      "open": "Open the assistant"
+    },
+    "stats": {
+      "reads": {
+        "label_one": "way to look",
+        "label_other": "ways to look",
+        "hint": "reading never changes anything"
+      },
+      "writes": {
+        "label_one": "way to change",
+        "label_other": "ways to change",
+        "hint": "every one of them undoable…"
+      },
+      "destructive": {
+        "label": "marked destructive",
+        "hint": "…except two, which ask first"
+      }
+    },
+    "gate": {
+      "title": "What stops the wrong one running",
+      "hint": "the part that actually holds",
+      "body": "A language model can ask for anything. It can name a tool it was never shown, or invent one that does not exist — smaller models do this regularly, and it is not a sign that something has gone wrong. So jojo does not rely on the model being careful.",
+      "distinctionTitle": "The distinction that matters",
+      "distinction": "Choosing what to show the model is a hint. Checking what it actually called is a rule, and the rule depends on who chose the set. Where the screen fixes it — Ask the graph, a scout pipeline — a call to anything outside it is refused before anything is looked up, let alone run. In a chat the set is jojo's guess at what you need, so a call outside it is not refused: it goes to the same approval check as every other call, which asks you first unless the conversation is set to run on its own. The one exception is clearing your records, the only thing that cannot be undone: it is refused unless you asked to wipe everything in so many words.",
+      "askGraph": "This is why the Graph screen's “Ask the graph” box can safely offer two read-only tools. It is not trusting the model to stay within them."
+    },
+    "pick": {
+      "title": "How it picks the right one",
+      "hint": "so a request never stops halfway",
+      "cost_one": "Showing a model all {{count}} tool at once costs about fifteen thousand words of the space it has to think in — before you have typed anything. On a small model running on your own machine, that can be more space than it has. So jojo narrows the list to what your words point at.",
+      "cost_other": "Showing a model all {{count}} tools at once costs about fifteen thousand words of the space it has to think in — before you have typed anything. On a small model running on your own machine, that can be more space than it has. So jojo narrows the list to what your words point at.",
+      "careless": "Narrowing carelessly is worse than not narrowing. Most operations need something to act on: you cannot attach a keyword without a keyword, or update a document without a document. Hide the tool that makes the thing, and the assistant stops halfway with nothing on screen explaining why.",
+      "unsureTitle": "When it is not sure, it does not narrow",
+      "unsure": "“Remind me about Baylor on Thursday” is clear, and jojo offers about a fifth of the catalog. “Actually, that was the other one” is not clear about anything — so it offers everything, exactly as it would have before any of this existed. Being unsure costs a little speed. Guessing would cost you your answer.",
+      "onlyGains": "A conversation only ever gains tools. Nothing you have already used is taken away by a later question."
+    },
+    "model": {
+      "title": "Which model does this",
+      "hint": "your choice, and it changes where your words go",
+      "local": "jojo talks to whatever you point it at in Settings. A model running on a machine you control — Ollama, vLLM, LM Studio — is the default, and it is the only arrangement where nothing you write leaves this device.",
+      "cloud": "You can also use Claude, OpenAI and others with an API key. That is a real trade and the screen says so plainly: your records go to that company and are billed to your account. The key is kept on this device, is never included in a backup, and is never sent anywhere but the provider you chose.",
+      "openSettings": "Open Settings",
+      "truncatedTitle": "If the assistant seems to have stopped reading",
+      "truncated": "A local model with too little room silently drops the front of what it was sent, and then answers confidently about a question it never fully saw. jojo compares what the server says it read against what was actually sent, and tells you when the two disagree — because the alternative is an assistant that appears to be bad at its job rather than short of room."
+    },
+    "gateFigure": {
+      "typed": "what you typed",
+      "pick": "pick the likely tools",
+      "pickNote": "unclear? offer all {{count}}",
+      "add": "add what those tools need",
+      "addNote": "so no chain dead-ends",
+      "choose": "the model chooses one",
+      "offered": "was it offered?",
+      "offeredNote": "no? refused, nothing runs",
+      "change": "your records change",
+      "description": "Six steps, top to bottom. One, what you typed. Two, jojo picks the tools your words point at — and if your words are unclear it offers all {{count}} rather than guessing. Three, it adds whatever those tools depend on, so no chain can dead-end. Four, the model chooses one tool. Five, jojo checks whether that tool was actually offered; if it was not, the call is refused and nothing runs. Six, only then do your records change. The fifth step is the one that enforces anything — the second is only a hint, because a model can name a tool it was never shown.",
+      "caption": "Step two saves you tokens. Step five is the one that keeps you safe — and it runs whether or not step two narrowed anything."
+    },
+    "graphFigure": {
+      "intro": "Three examples, in no order. Each is one tool your words asked for, what it cannot run without, and the tool jojo offers alongside it so the chain can finish.",
+      "description": "Three examples. Asking for keyword.attach also offers keyword.create, because attaching a keyword needs a keyword that already exists. Asking for vault.file.update also offers vault.file.add, because updating a document needs a document. Asking for scout.posting.promote also offers scout.posting.save, because promoting a saved posting needs a saved posting. In every case jojo works the dependency out from the tool’s own input, and offers both tools together — so the assistant is never handed a first step with no way to reach the second.",
+      "needs": {
+        "keyword": "needs a keyword, so jojo also offers",
+        "file": "needs a file, so jojo also offers",
+        "posting": "needs a posting, so jojo also offers"
+      },
+      "without": "Without this, the assistant could be offered the first tool and not the second — and would stop halfway with nothing on screen to say why.",
+      "derived": "jojo reads each requirement out of the tool's own definition, so a tool added tomorrow is covered without anybody updating a list."
+    }
+  },
+  "builtWith": {
+    "intro": "An interactive prototype of the same product as the web app, sharing every module with a rule in it — the date arithmetic, the statistics funnel, the keyword system and the seed — so the two cannot disagree about a date, a rate or a stage.",
+    "stackTitle": "Built with",
+    "stackHint": "what is actually running",
+    "unfinishedTitle": "What is still a placeholder",
+    "unfinishedHint": "stated, not hidden",
+    "unfinishedIntro": "A prototype that hides its edges is a prototype that gets believed. These three are the ones worth knowing before you judge anything else on screen.",
+    "placeholder": "placeholder",
+    "stack": {
+      "app": "The app itself, on both platforms",
+      "build": "The build. No Expo — we own android/ and ios/",
+      "documents": "Attaching a file, and opening it again",
+      "navigation": "The tab bar and the screen stack",
+      "drag": "The board's long-press drag, on the UI thread",
+      "charts": "The donut, the radar and the graph",
+      "type": "The type, bundled rather than fetched"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "The assistant needs a model you supply",
+        "detail": "Connect one in Settings and the assistant is a threaded, agentic chat: it calls the app’s own tools to answer, lists every call as it makes it, and saves each thread on this device. Without one, every reply is one of five worked examples and carries a badge saying so."
+      },
+      "scout": {
+        "title": "The scout finds nothing on its own",
+        "detail": "Fit percentages are real — computed on this device against the match terms, target roles and regions on your profile, and they say what they matched. What is missing is the crawl: nothing goes out and looks for postings, so the feed only holds what you put in it."
+      },
+      "network": {
+        "title": "Nothing leaves this device except where you point it",
+        "detail": "There is no account, no sync and no upload. Two addresses can be reached, both yours and both set in Settings: the model, and the document reader — which also fetches a job posting when you add an application from a link, so that URL goes to your reader rather than to us. Transfer moves a copy between your devices over the local network — on this phone it receives, and the computer is the side that sends. Nothing else goes anywhere."
+      }
+    }
+  }
+}

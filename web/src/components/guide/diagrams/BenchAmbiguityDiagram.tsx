@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DASH } from '@/components/guide/diagrams/marks'
 import { Box, Connector } from '@/components/guide/diagrams/parts'
 
@@ -28,6 +29,7 @@ const RIGHT = 218
 const CARDS_Y = 74
 
 export function BenchAmbiguityDiagram() {
+  const { t } = useTranslation('guideReference')
   const titleId = useId()
   const descId = useId()
 
@@ -39,26 +41,20 @@ export function BenchAmbiguityDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>One sentence, two records, and the wrong one changed</title>
-        <desc id={descId}>
-          At the top, the request: close the UT application, they turned me down. Below it, two
-          records that both match — UT Austin, still submitted and live, and UT Dallas, already
-          closed. Nothing in the sentence distinguishes them. The correct response is to ask which
-          one; four of six benchmark runs instead closed UT Austin, the live application. The tool
-          they chose was the right tool. The record they applied it to was not.
-        </desc>
+        <title id={titleId}>{t('diagrams.benchAmbiguity.title')}</title>
+        <desc id={descId}>{t('diagrams.benchAmbiguity.desc')}</desc>
 
         {/* The sentence. Quoted, because the ambiguity is a property of the
             words rather than of the store. */}
         <Box x={LEFT} y={8} w={388} h={34} fill="var(--well)" />
         <text x={LEFT + 12} y={30} fontSize={11.5} fill="var(--text-1)">
-          “Close the UT application — they turned me down.”
+          {t('diagrams.benchAmbiguity.quote')}
         </text>
 
         <Connector from={[LEFT + 94, 42]} to={[LEFT + 94, CARDS_Y]} dir="down" />
         <Connector from={[RIGHT + 88, 42]} to={[RIGHT + 88, CARDS_Y]} dir="down" />
         <text x={168} y={62} fontSize={9.5} fill="var(--text-3)">
-          matches both
+          {t('diagrams.benchAmbiguity.matchesBoth')}
         </text>
 
         {/* The live one, marked as damaged. */}
@@ -67,10 +63,10 @@ export function BenchAmbiguityDiagram() {
           UT Austin
         </text>
         <text x={LEFT + 12} y={CARDS_Y + 36} fontSize={10} fill="var(--text-2)">
-          submitted — still live
+          {t('diagrams.benchAmbiguity.austinState')}
         </text>
         <text x={LEFT + 12} y={CARDS_Y + 76} fontSize={10.5} fill="var(--danger)">
-          closed by 4 of 6 runs
+          {t('diagrams.benchAmbiguity.austinRuns')}
         </text>
 
         {/* The one that was already closed, and would have been harmless. */}
@@ -79,19 +75,18 @@ export function BenchAmbiguityDiagram() {
           UT Dallas
         </text>
         <text x={RIGHT + 12} y={CARDS_Y + 36} fontSize={10} fill="var(--text-2)">
-          already closed
+          {t('diagrams.benchAmbiguity.dallasState')}
         </text>
         <text x={RIGHT + 12} y={CARDS_Y + 76} fontSize={10.5} fill="var(--text-3)">
-          the one they meant
+          {t('diagrams.benchAmbiguity.dallasMeant')}
         </text>
 
         <text x={LEFT} y={194} fontSize={10} fill="var(--text-3)">
-          The tool was right. The record was not — and no tool-choice score can see the difference.
+          {t('diagrams.benchAmbiguity.footer')}
         </text>
       </svg>
       <figcaption className="mt-2 text-xs text-text-3">
-        jojo&rsquo;s own instruction tells the model to ask when a request could mean more than one
-        record. Two of the three models wrote anyway.
+        {t('diagrams.benchAmbiguity.caption')}
       </figcaption>
     </figure>
   )

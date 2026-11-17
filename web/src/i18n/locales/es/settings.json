@@ -1,0 +1,500 @@
+{
+  "shared": {
+    "thisBrowserOnly": "solo este navegador",
+    "optional": "opcional",
+    "undo": "Deshacer",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "testing": "Probando…",
+    "testAgain": "Probar de nuevo",
+    "testConnection": "Probar conexión",
+    "connected": "Conectado",
+    "noAnswer": "Sin respuesta",
+    "notConnected": "No conectado"
+  },
+  "appearance": {
+    "title": "Apariencia",
+    "theme": {
+      "label": "Tema",
+      "description": "Sistema sigue la configuración de tu sistema operativo",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "gestures": {
+      "label": "Gestos de la mascota",
+      "description": "jojo reacciona mientras trabajas. Prueba uno."
+    },
+    "draw": {
+      "label": "Dibuja un movimiento",
+      "description": "Dibuja sobre el robot de la tarjeta de la barra lateral. El botón del robot en su esquina también los muestra."
+    },
+    "sounds": {
+      "label": "Sonidos de la interfaz",
+      "description": "Un clic breve al accionar un interruptor"
+    }
+  },
+  "savedServers": {
+    "intro": "Conexiones guardadas: todo lo que ha respondido aquí, listo para cargarse completo de nuevo. La clave se guarda junto a la dirección en este dispositivo; nunca entra en una copia de seguridad.",
+    "inUse": "En uso",
+    "keyKept": "clave guardada",
+    "load": "Cargar {{name}}",
+    "loadWithKey": "Cargar {{name}}, con su clave",
+    "forget": "Olvidar {{name}}"
+  },
+  "model": {
+    "title": "Modelo",
+    "hint": "compatible con OpenAI",
+    "savedNone": "Aún no hay nada guardado: prueba una conexión y la dirección se conserva",
+    "savedServers": "Servidores guardados",
+    "intro": "Un modelo en este equipo, o uno que pagas. Local es la opción predeterminada porque es la única en la que tus registros nunca salen del dispositivo.",
+    "provider": "Proveedor",
+    "reasoningOptions": {
+      "on": "Activado",
+      "light": "Ligero",
+      "off": "Desactivado"
+    },
+    "endpoint": {
+      "label": "Endpoint",
+      "hintOllama": "El host y el puerto. Sin /v1: jojo usa el endpoint propio de Ollama para poder pedirle que no recorte.",
+      "hint": "La URL base, terminada en /v1."
+    },
+    "apiKey": {
+      "label": "Clave de API",
+      "hint": "Se guarda solo en este navegador. Nunca entra en una copia de seguridad ni se envía a ningún sitio salvo al proveedor."
+    },
+    "getKeyLink": "<anchor>Obtén una clave de {{provider}}</anchor>",
+    "getKeyFree": "<anchor>Obtén una clave de {{provider}}</anchor>: gratis, sin tarjeta.",
+    "modelField": {
+      "label": "Modelo",
+      "placeholder": "El id del modelo, de tu proveedor",
+      "hintConnected": "Lo que informó el servidor. Cámbialo si sirves más de uno.",
+      "hint": "Prueba la conexión para que el servidor lo rellene, o escribe el id tú mismo."
+    },
+    "savedAs": {
+      "label": "Guardado como",
+      "hint": "Cómo se llama este servidor en la lista. Por defecto, el modelo."
+    },
+    "contextWindow": {
+      "label": "Ventana de contexto",
+      "hintOllama": "Tokens. Déjalo vacío para usar {{tokens}} y que Ollama ajuste su tamaño; un número aquí también se envía como num_ctx.",
+      "hint": "Tokens que admite tu despliegue. Déjalo vacío para {{tokens}}."
+    },
+    "reasoning": {
+      "label": "Razonamiento",
+      "description": "Permite que los modelos que pueden pensar —gpt-oss, Gemma 4, Qwen3— razonen antes de responder. Desactívalo si las respuestas llegan vacías con un modelo pequeño."
+    },
+    "fillEndpoint": "Primero indica un endpoint",
+    "connectedNote": "Guardado en este navegador. El asistente usará este modelo."
+  },
+  "cloudTerms": {
+    "providerTerms": "Términos de {{provider}}",
+    "privacy": "Política de privacidad",
+    "licence": "Página de licencia de jojo"
+  },
+  "mcp": {
+    "title": "Conectar desde un cliente MCP",
+    "intro": "Deja que un asistente que ya usas —por ejemplo, Claude Code con tu propio plan— lea y actualice tus registros aquí, con las mismas herramientas que tiene el asistente de jojo. Llega a esta pestaña a través de un pequeño programa en tu ordenador, y cada cambio que hace aparece aquí con Deshacer.",
+    "allow": "Permitir que un cliente MCP de este ordenador use jojo",
+    "chip": {
+      "off": "Desactivado",
+      "searching": "Esperando a jojo-bridge",
+      "ready": "Enlazado",
+      "badToken": "Token rechazado",
+      "noExtension": "Necesita la extensión",
+      "staleExtension": "Recarga la extensión"
+    },
+    "explain": {
+      "searching": "Todavía no responde nada en 127.0.0.1:3002. Inicia jojo-bridge con el primer comando; jojo sigue buscando.",
+      "served_one": "Ha respondido {{count}} solicitud de tu cliente en esta sesión, la última {{method}}.",
+      "served_many": "Ha respondido {{count}} solicitudes de tu cliente en esta sesión, la última {{method}}.",
+      "served_other": "Ha respondido {{count}} solicitudes de tu cliente en esta sesión, la última {{method}}.",
+      "servedNoMethod_one": "Ha respondido {{count}} solicitud de tu cliente en esta sesión.",
+      "servedNoMethod_many": "Ha respondido {{count}} solicitudes de tu cliente en esta sesión.",
+      "servedNoMethod_other": "Ha respondido {{count}} solicitudes de tu cliente en esta sesión.",
+      "ready": "jojo-bridge está en marcha. Conecta tu cliente con el segundo comando.",
+      "badToken": "jojo-bridge se está ejecutando con otro token. Detenlo con Ctrl+C e inícialo de nuevo con el primer comando.",
+      "noExtension": "Esta copia de jojo se sirve desde la web, y Chrome mantiene las páginas web alejadas de 127.0.0.1. La extensión de jojo lleva el enlace: su instalador está en esta página, en Guardar ofertas.",
+      "staleExtension": "La extensión de jojo de este navegador es más antigua que esta página. Abre chrome://extensions y pulsa Recargar en jojo."
+    },
+    "start": {
+      "title": "Inicia jojo-bridge y déjalo en marcha",
+      "copy": "Copiar el comando que inicia jojo-bridge",
+      "notePowershell": "Necesita Node 18 o posterior. Pégalo en Windows PowerShell. El token entra por el entorno, así que nunca aparece en la lista de procesos. Un jojo-bridge descargado antes de esta versión debe descargarse de nuevo; el comando lo hace.",
+      "note": "Necesita Node 18 o posterior. El token entra por el entorno, así que nunca aparece en la lista de procesos. Un jojo-bridge descargado antes de esta versión debe descargarse de nuevo; el comando lo hace."
+    },
+    "connect": {
+      "title": "Conecta Claude Code, una sola vez",
+      "copy": "Copiar el comando que conecta Claude Code",
+      "note": "Luego pregúntale algo como «¿qué solicitudes mías están esperando a que haga algo?». Si tu terminal dice «command not found: claude», usas Claude Code dentro de VS Code, que trae su propia copia: ejecuta la misma línea con la ruta completa de esa copia (en la carpeta de extensiones de VS Code, en anthropic.claude-code-…/resources/native-binary/claude), o instala la CLI de Claude Code. Cualquier cliente que hable MCP sobre HTTP puede usar la misma dirección y el mismo token."
+    },
+    "honesty": "Tu cliente funciona con tu propio plan y tu propio inicio de sesión: jojo nunca ve ninguno de los dos y no envía nada a Anthropic ni a nadie más. Puede usar todas las herramientas del asistente de jojo excepto las dos que no se pueden deshacer, Reset y Clear. Claude Code pregunta antes de usar una herramienta salvo que le hayas dicho que no lo haga, y jojo marca cada eliminación como destructiva. Mantén esta pestaña abierta mientras lo usas: los registros viven aquí, y también el otro extremo del enlace.",
+    "newToken": "Nuevo token",
+    "newTokenNote": "Los comandos anteriores dejan de funcionar: vuelve a ejecutar ambos con el nuevo."
+  },
+  "reader": {
+    "title": "Leer mis documentos",
+    "intro": "El asistente solo ve el nombre de un documento hasta que algo lo convierte en texto. Ejecuta <anchor>{{name}}</anchor> en este equipo y podrá leer lo que hay dentro de tus PDF, archivos de Word, presentaciones y hojas de cálculo.",
+    "address": {
+      "label": "Dirección",
+      "hint": "Una ruta de este sitio en desarrollo, o la dirección propia del lector con la extensión instalada. Mira abajo."
+    },
+    "notRunning": "¿Aún no lo tienes en marcha?",
+    "copySetup": "Copiar los comandos de instalación",
+    "cors": "Escucha en <mono>{{endpoint}}</mono>, pero no envía cabeceras CORS, así que un navegador no deja que esta página lo llame entre puertos. El servidor de desarrollo de jojo reenvía <mono>{{path}}</mono> hacia él; por eso la dirección de arriba es una ruta y no una URL. La app del móvil habla con él directamente y no necesita nada de esto.",
+    "hosted": "<em>En una copia alojada, instala la extensión.</em> Una página servida desde la web no puede llamar a <mono>127.0.0.1</mono>: no hay proxy que reenvíe una ruta, y las páginas https:// tienen prohibida la red local. La extensión no es una página: llega al lector directamente, y jojo se lo pide. Pon arriba la dirección propia del lector y reenviará cada solicitud; solo reenvía a este equipo.",
+    "fillAddress": "Primero indica una dirección",
+    "connectedNote": "Los documentos se envían a esa dirección y a ninguna otra. No se sube nada.",
+    "separate": "{{name}} es un programa independiente, no forma parte de jojo.",
+    "notAffiliated": "jojo no está afiliado a Microsoft."
+  },
+  "capture": {
+    "title": "Guardar ofertas",
+    "intro": "Una oferta de empleo es el único documento de tu búsqueda que pertenece a otra persona. El anuncio desaparece la semana después de la entrevista y se lleva los requisitos con él. La extensión de jojo guarda una copia: la página tal como se veía el día que la archivaste, con cada imagen y hoja de estilos incluidas, para que abrirla un año después no dependa de nada ni necesite conexión.",
+    "checking": "Comprobando este navegador…",
+    "installed": "Instalada y conectada.",
+    "installedHint": "Abre una oferta y haz clic en el botón de jojo de la barra de herramientas; si no lo ves, está tras el menú de la pieza de puzle y hay que fijarlo. Luego vuelve a la Bóveda.",
+    "version": "Versión {{version}}.",
+    "safari": {
+      "title": "Safari no puede ejecutar esta extensión.",
+      "body": "Safari solo carga extensiones incluidas en una app de Mac firmada, así que aquí no hay nada que instalar. Usa Chrome, Edge, Brave o Firefox para guardar; todo lo demás de jojo funciona igual en Safari."
+    },
+    "download": "Descargar la extensión",
+    "firefox": {
+      "title": "Firefox necesita una copia firmada.",
+      "body": "Firefox es el único navegador donde esto podría ser un solo clic: un complemento firmado por Mozilla se puede instalar directamente desde un enlace aquí, sin ficha en la tienda. jojo aún no genera una versión firmada, así que por ahora cárgalo temporalmente desde <code>about:debugging</code> → Este Firefox → Cargar complemento temporal, y elige <code>manifest.json</code>. Firefox lo olvida al reiniciarse."
+    },
+    "steps": {
+      "unzip": "Descomprímelo en un lugar permanente, no en Descargas. <muted>El navegador lee la extensión de esa carpeta cada vez que arranca, así que borrarla o moverla desinstala la extensión.</muted>",
+      "open": "Abre la página de extensiones.",
+      "copied": "Copiado",
+      "copy": "Copiar",
+      "paste": "Pégalo en la barra de direcciones.",
+      "developer": "Activa el <strong>Modo de desarrollador</strong>, arriba a la derecha. <muted>Déjalo activado: desactivarlo inhabilita las extensiones cargadas así, sin avisar.</muted>",
+      "load": "Haz clic en <strong>Cargar descomprimida</strong> y elige la carpeta que descomprimiste.",
+      "pin": "<strong>Fíjala.</strong> Haz clic en el botón de la pieza de puzle de la barra de herramientas y fija jojo. <muted>Los navegadores Chromium esconden todas las extensiones tras ese menú por defecto, así que el botón existe pero no está en la barra; este es el paso que la gente se salta, y parece exactamente que la extensión no se instaló.</muted>",
+      "back": "Vuelve aquí. <muted>Este panel lo detecta solo y se pone verde.</muted>"
+    },
+    "yourBrowser": "tu navegador",
+    "noOneClick": "No hay instalación con un clic para {{browser}}, y es una decisión del navegador, no una función que falte aquí: la API que lo permitía se eliminó en 2018, y un paquete firmado tendría que venir igualmente de Chrome Web Store. Nada de esta extensión habla con un servidor: lee la página que estás viendo y entrega el resultado a esta pestaña."
+  },
+  "crash": {
+    "title": "Informes de errores",
+    "builtWithout": "Esta copia de jojo se compiló sin informes de errores ni analítica de uso, así que no se registra nada y no hay nada que activar. Una compilación los configura con <mono>{{crashFlag}}</mono> y <mono>{{analyticsFlag}}</mono>.",
+    "intro": "Cuando algo falla, jojo puede guardar el error para que lo releas, útil cuando lo que falló ya se ha desplazado fuera de la vista. Un informe contiene el mensaje de error, dónde ocurrió en jojo y la traza de la pila. Nunca contiene tus solicitudes, documentos, notas, perfil ni conversaciones, y las claves de API, las direcciones, tu carpeta personal y los correos electrónicos se eliminan antes de escribir el informe.",
+    "where": "En este navegador y en la extensión, los informes de errores <em>se quedan en este dispositivo</em>: no se sube nada, y una copia de seguridad no los incluye. La app del móvil también los envía a Firebase Crashlytics, que añade el modelo del dispositivo, su versión del sistema y un id aleatorio para contar cuántas personas tienen el mismo fallo. Los informes de errores tratan solo de fallos; lo que haces en jojo es la pregunta aparte de abajo, que se responde por separado.",
+    "keep": {
+      "label": "Guardar informes de errores",
+      "description": "Activado, para que un fallo que sufras sea uno que podamos ver. Desactívalo y no se registra nada."
+    },
+    "usage": {
+      "label": "Compartir qué funciones uso",
+      "description": "Solo recuentos, de una lista fija; nunca lo que hay en tus registros.",
+      "note": "Solo puede decir cosas de una lista fija: qué pantalla se abrió, que se añadió una solicitud, aproximadamente cuántas hay. No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito. Se envía a Google Analytics."
+    },
+    "kept_one": "{{count}} informe guardado",
+    "kept_many": "{{count}} informes guardados",
+    "kept_other": "{{count}} informes guardados",
+    "clear": "Borrar",
+    "stack": "Pila",
+    "emptyOn": "No ha fallado nada desde que lo activaste.",
+    "emptyOff": "No se está registrando nada."
+  },
+  "audit": {
+    "title": "Lo que ha hecho jojo",
+    "kept_one": "{{count}} guardado",
+    "kept_many": "{{count}} guardados",
+    "kept_other": "{{count}} guardados",
+    "records_one": "{{count}} registro",
+    "records_many": "{{count}} registros",
+    "records_other": "{{count}} registros",
+    "connections_one": "{{count}} conexión",
+    "connections_many": "{{count}} conexiones",
+    "connections_other": "{{count}} conexiones",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "sin cambios",
+    "undoTitle": {
+      "can": "Devuelve los registros a como estaban antes de este cambio",
+      "wholeStore": "Esto reemplazó todo el almacén, así que no hay nada que devolver",
+      "trimmed": "jojo guardó constancia de este cambio, pero no lo suficiente para revertirlo: fue una escritura en segundo plano (una lectura de encaje, los bytes de un archivo) o es demasiado antiguo"
+    },
+    "undoFailed": {
+      "title": "Ese cambio ya no se pudo deshacer",
+      "description": "Ya no está en el registro."
+    },
+    "empty": "Todavía no se ha escrito nada en este almacén. Cada cambio que hagas queda registrado aquí, y el registro sobrevive a una recarga.",
+    "showFewer": "Mostrar menos",
+    "showAll": "Mostrar los {{total}}",
+    "footer": "Se guardan los últimos 200 cambios; los más antiguos se descartan primero. Deshacer aquí es un cambio nuevo en sí mismo: se añade arriba de esta lista en lugar de quitar la fila que revierte."
+  },
+  "keywords": {
+    "title": "Palabras clave",
+    "hint": "compartidas por todos los registros",
+    "intro": "Un único conjunto para solicitudes, recordatorios y la Bóveda. Renombrar una la cambia en todas partes donde aparece; eliminar una la quita de todos los registros que la llevan.",
+    "usage": {
+      "none": "Aún no está en ningún registro",
+      "used_one": "Usada en {{count}} registro",
+      "used_many": "Usada en {{count}} registros",
+      "used_other": "Usada en {{count}} registros"
+    },
+    "errors": {
+      "taken": "Otra palabra clave ya tiene ese nombre.",
+      "blank": "Una palabra clave necesita un nombre.",
+      "exists": "Esa palabra clave ya existe."
+    },
+    "renameNamed": "Renombrar {{name}}",
+    "rename": "Renombrar",
+    "deleteNamed": "Eliminar {{name}}",
+    "delete": "Eliminar",
+    "empty": {
+      "title": "Aún no hay palabras clave",
+      "description": "Añade una abajo, o desde el filtro de palabras clave sobre cualquier lista. Las palabras clave son tuyas; no son las etiquetas de puesto fijas de la barra superior."
+    },
+    "newKeyword": "Nueva palabra clave",
+    "placeholder": "p. ej., Recomendación",
+    "add": "Añadir palabra clave"
+  },
+  "documents": {
+    "title": "Tus documentos",
+    "hint": "en este dispositivo",
+    "intro": "Los CV, cartas de presentación y declaraciones que adjuntas se guardan en este navegador, en este equipo. No se sube nada a ninguna parte.",
+    "count_one": "{{count}} documento",
+    "count_many": "{{count}} documentos",
+    "count_other": "{{count}} documentos",
+    "noneReadable": {
+      "title": "No se pudo leer ningún documento",
+      "description": "Este navegador ya no conserva los bytes de ninguno de ellos."
+    },
+    "savedAll_one": "{{count}} documento guardado",
+    "savedAll_many": "{{count}} documentos guardados",
+    "savedAll_other": "{{count}} documentos guardados",
+    "savedSome": "{{saved}} de {{total}} guardados",
+    "savedAllDescription": "Un archivo, {{name}}, en tu carpeta de descargas. Son los originales, no copias de los registros.",
+    "savedSomeDescription": "{{name}} está en tu carpeta de descargas, sin {{missing}} que este navegador ya no podía leer.",
+    "failed": {
+      "title": "No se pudo preparar la descarga",
+      "description": "No se guardó nada. Inténtalo de nuevo, o abre un documento y descárgalo por separado."
+    },
+    "none": "Aún no hay documentos",
+    "stored_one": "{{count}} documento guardado",
+    "stored_many": "{{count}} documentos guardados",
+    "stored_other": "{{count}} documentos guardados",
+    "usage": "{{used}} de {{quota}} en uso",
+    "notPermanent": "Este navegador no ha marcado el almacenamiento de jojo como permanente, así que puede borrar estos documentos si el disco se llena, y «Borrar datos de navegación» los eliminará diga lo que diga. Guarda tus propias copias de todo lo que no quieras volver a escribir.",
+    "saving": "Guardando…",
+    "downloadAll": "Descargar todos los documentos"
+  },
+  "diagnostics": {
+    "title": "Diagnóstico",
+    "types": {
+      "application": "Solicitudes",
+      "background": "Datos de trayectoria",
+      "claim": "Relaciones",
+      "thread": "Conversaciones",
+      "proposal": "Sugerencias",
+      "organisation": "Organizaciones",
+      "timelineItem": "Elementos de la cronología",
+      "keyword": "Palabras clave",
+      "link": "Enlaces",
+      "file": "Archivos",
+      "snippet": "Fragmentos",
+      "person": "Personas",
+      "stickyNote": "Notas adhesivas",
+      "posting": "Ofertas guardadas",
+      "match": "Coincidencias de Scout",
+      "pipeline": "Flujos de Scout",
+      "profile": "Perfil"
+    },
+    "dataSet": {
+      "demo": "los registros de demostración, sin tocar",
+      "empty": "vaciado a propósito, nunca rellenado",
+      "user": "con escrituras desde que se configuró"
+    },
+    "notReported": "no informado",
+    "checking": "comprobando…",
+    "storage": "Almacenamiento",
+    "durable": {
+      "label": "Los registros se escriben en disco",
+      "yes": "sí: IndexedDB",
+      "no": "no: solo esta pestaña"
+    },
+    "schema": {
+      "label": "Esquema de la base de datos",
+      "value": "v{{stored}} (la app espera v{{expected}})"
+    },
+    "persisted": {
+      "label": "El navegador promete conservarlo",
+      "unknown": "este navegador no lo dice",
+      "yes": "sí",
+      "no": "no: el navegador puede borrarlo en cualquier momento, y una ventana privada lo hará al cerrarse"
+    },
+    "space": {
+      "label": "Espacio usado",
+      "value": "{{used}} de {{quota}}"
+    },
+    "queue": {
+      "label": "Cola de escritura",
+      "idle": "en reposo: todo está guardado",
+      "writing_one": "guardando {{count}} cambio",
+      "writing_many": "guardando {{count}} cambios",
+      "writing_other": "guardando {{count}} cambios",
+      "degraded": "reintentando {{unsaved}} cambio(s), {{pending}} fila(s) (intento {{attempts}}): {{error}}",
+      "stopped": "detenida: {{reason}}"
+    },
+    "store": "Este almacén",
+    "contents": "Contenido",
+    "created": "Creado",
+    "seeded": "Rellenado",
+    "never": "nunca",
+    "lastOpened": "Última apertura",
+    "lastWrite": "Última escritura",
+    "nothingYet": "nada todavía",
+    "skipped": {
+      "label": "Registros que no se pudieron leer",
+      "none": "ninguno"
+    },
+    "integrity": {
+      "label": "Comprobaciones de integridad",
+      "failed": "{{total}} fallidas",
+      "passed": "todas superadas"
+    },
+    "records": "Registros ({{total}})",
+    "connections": "Conexiones ({{total}})",
+    "none": "Ninguna"
+  },
+  "data": {
+    "title": "Tus datos",
+    "export": {
+      "idle": "Descargar una copia de seguridad",
+      "progress": "Preparando la copia… {{done}} de {{total}} documentos",
+      "preparing": "Preparando la copia…"
+    },
+    "restoreButton": "Restaurar una copia de seguridad",
+    "excel": {
+      "label": "Exportar a Excel",
+      "title": "No se incluye ningún generador de hojas de cálculo; la exportación JSON contiene los mismos registros"
+    },
+    "import": {
+      "label": "Importar",
+      "title": "Volver a leer una copia necesita un validador que pueda rechazar un archivo que no entiende; mientras no exista, una importación solo podría adivinar"
+    },
+    "about": "Una copia de seguridad completa: todas las solicitudes, la cronología, la Bóveda, las ofertas guardadas, tus palabras clave y sus etiquetas, y tu perfil, en un único archivo versionado. Es una copia tomada ahora: no se mantiene al día con cambios posteriores, y es la única copia que no está en este equipo.",
+    "records": {
+      "label": "Registros",
+      "empty": "Todas las listas están vacías, así que cada página muestra su estado inicial.",
+      "emptyStays": "Seguirá vacío cuando vuelvas.",
+      "emptyKeywords": "Tus palabras clave siguen aquí, y cargar los datos de demostración las sustituye por las suyas.",
+      "demo": "La búsqueda de demostración que trae jojo: doce solicitudes, una cronología, una Bóveda llena. Nada de ello es tuyo todavía.",
+      "own": "Tus propios registros. Cargar los datos de demostración los sustituye, así que exporta una copia antes si quieres conservarlos.",
+      "loadDemo": "Cargar datos de demostración"
+    },
+    "clearRecords": {
+      "label": "Borrar todos los registros",
+      "demo": "Quita los datos de demostración y deja jojo vacío. Nada de esto es tuyo todavía, así que las palabras clave incluidas se van también.",
+      "own": "Quita todas las solicitudes, elementos de la cronología, entradas de la Bóveda, ofertas guardadas, contactos, notas, conversaciones y datos del CV, y vacía tu perfil. Tus palabras clave se conservan.",
+      "nothingLeft": "No queda nada que borrar",
+      "deletes": "Elimina todos los registros",
+      "button": "Borrar registros"
+    },
+    "move": {
+      "label": "Pasar a otro dispositivo",
+      "description": "Empareja un segundo dispositivo y pásale todo. Es una demostración en esta versión: no se transmite nada.",
+      "open": "Abrir Transferencia"
+    },
+    "clearStorage": {
+      "label": "Borrar el almacenamiento del navegador",
+      "description": "Vacía todo lo que este sitio ha guardado en tu navegador —tus registros y su base de datos, cada documento que has adjuntado, preferencias, cachés y cookies— y luego recarga jojo como si fuera nuevo. Los documentos solo están aquí; descárgalos antes si quieres conservarlos.",
+      "clearing": "Borrando…",
+      "button": "Borrar almacenamiento"
+    },
+    "footer": {
+      "durable": "Tus registros se escriben en la base de datos de este navegador mientras trabajas, así que cerrar la pestaña es seguro. Esa base de datos sigue estando solo en este equipo: un navegador puede borrarla y un disco puede fallar, así que un archivo exportado y guardado en otro sitio es la única copia de seguridad real.",
+      "memory": "Tus registros no se están guardando ahora mismo; el aviso de la parte superior de la página explica por qué. Exporta una copia antes de cerrar la pestaña."
+    },
+    "confirm": {
+      "fallbackTitle": "¿Cambiar los datos?",
+      "continue": "Continuar"
+    },
+    "restoreConfirm": {
+      "title": "¿Reemplazar todo con esta copia de seguridad?",
+      "description": "Ese archivo contiene {{contents}}. {{replaces}}, y no se puede deshacer: el historial se va con ellos. Descarga antes una copia de seguridad si no estás seguro.",
+      "confirm": "Reemplazar todo"
+    },
+    "restoreFailed": "La restauración falló",
+    "reload": "Recargar jojo",
+    "demoLoaded": {
+      "title": "Datos de demostración cargados",
+      "durable": "Doce solicitudes, una cronología, una Bóveda llena y un perfil, escritos en tu base de datos tal como venían.",
+      "memory": "Doce solicitudes, una cronología, una Bóveda llena y un perfil, tal como venían. Ahora mismo no se guarda nada, así que duran lo que dure esta pestaña."
+    },
+    "cleared": {
+      "title": "Todo borrado",
+      "demoDurable": "Todos los registros de demostración han desaparecido, palabras clave incluidas, y así seguirá tras recargar.",
+      "demoMemory": "Todos los registros de demostración han desaparecido, palabras clave incluidas, aunque ahora mismo no se guarda nada, así que al recargar se vuelve a empezar con los datos de demostración.",
+      "ownDurable": "Todos los registros han desaparecido, tu perfil incluido, y así seguirá tras recargar. Tus palabras clave siguen aquí.",
+      "ownMemory": "Todos los registros han desaparecido, tu perfil incluido, aunque ahora mismo no se guarda nada, así que al recargar se vuelve a empezar con los datos de demostración. Tus palabras clave siguen aquí."
+    }
+  },
+  "pending": {
+    "exportFirst": "Exportar antes una copia de seguridad",
+    "empty": {
+      "title": "¿Borrar todos los registros?",
+      "demoDurable": "Las solicitudes, la cronología, la Bóveda, las ofertas guardadas, las palabras clave y el perfil de demostración desaparecen, y así seguirá tras recargar. Nada de esto era tuyo: no se ha escrito en este almacén desde que se cargaron los datos de demostración.",
+      "demoMemory": "Las solicitudes, la cronología, la Bóveda, las ofertas guardadas, las palabras clave y el perfil de demostración desaparecen, aunque ahora mismo no se guarda nada, así que al recargar se vuelve a empezar con los datos de demostración. Nada de esto era tuyo: no se ha escrito en este almacén desde que se cargaron los datos de demostración.",
+      "ownDurable": "Las solicitudes, la cronología, la Bóveda, las ofertas guardadas, los contactos, las notas, las conversaciones, los datos del CV y tu perfil desaparecen, incluido todo lo que añadiste en esta sesión, y así seguirá tras recargar. No se puede deshacer. Tus palabras clave se conservan —son registros propios—, pero nada las lleva ya, así que todos los recuentos del panel de palabras clave quedan en cero.",
+      "ownMemory": "Las solicitudes, la cronología, la Bóveda, las ofertas guardadas, los contactos, las notas, las conversaciones, los datos del CV y tu perfil desaparecen, incluido todo lo que añadiste en esta sesión, aunque ahora mismo no se guarda nada, así que al recargar se vuelve a empezar con los datos de demostración. No se puede deshacer. Tus palabras clave se conservan —son registros propios—, pero nada las lleva ya, así que todos los recuentos del panel de palabras clave quedan en cero.",
+      "confirm": "Borrar todo"
+    },
+    "demo": {
+      "title": "¿Cargar los datos de demostración?",
+      "fillDurable": "Se escriben en tu base de datos doce solicitudes, una cronología, una Bóveda llena y un perfil, etiquetados con las palabras clave con las que venían. Borrarlos de nuevo es un clic.",
+      "fillMemory": "Se cargan doce solicitudes, una cronología, una Bóveda llena y un perfil, etiquetados con las palabras clave con las que venían. Borrarlos de nuevo es un clic.",
+      "replace": "Todo lo que hay en jojo se sustituye por los registros de demostración: tus solicitudes, cronología, Bóveda, ofertas guardadas, contactos, notas, conversaciones, datos del CV, palabras clave y perfil, todo, reemplazado y no combinado. No se puede deshacer.",
+      "confirm": "Cargar datos de demostración"
+    },
+    "storage": {
+      "title": "¿Borrar todo lo que este sitio ha guardado?",
+      "description": "Vacía este navegador de todo lo que jojo ha guardado en él —tus registros y su base de datos, tus preferencias de tema y sonido, cachés y cookies— y luego recarga. No hay ningún servidor con una copia, y nada de esto ha salido nunca de este equipo, así que esto es todo. jojo vuelve como en un equipo nuevo: con el tema del sistema y la pregunta del primer inicio sobre si empezar con los datos de demostración o vacío. No se puede deshacer.",
+      "confirm": "Borrar almacenamiento"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_one": "{{count}} registro",
+      "records_many": "{{count}} registros",
+      "records_other": "{{count}} registros",
+      "documents_one": "{{count}} documento",
+      "documents_many": "{{count}} documentos",
+      "documents_other": "{{count}} documentos",
+      "links_one": "{{count}} vínculo",
+      "links_many": "{{count}} vínculos",
+      "links_other": "{{count}} vínculos"
+    },
+    "lost": {
+      "title": "Algunos registros no se pudieron restaurar",
+      "description": "Ese archivo contenía {{held}}. Hay {{kept}} en este dispositivo y {{lost}} no se pudieron leer: esos se han perdido. El archivo en sí no ha cambiado, así que una versión que sepa leerlos aún puede restaurarlo.",
+      "descriptionWithDocuments": "Ese archivo contenía {{held}}. Hay {{kept}} y {{documents}} en este dispositivo y {{lost}} no se pudieron leer: esos se han perdido. El archivo en sí no ha cambiado, así que una versión que sepa leerlos aún puede restaurarlo."
+    },
+    "withoutLinks": {
+      "title": "Restaurado, sin algunos vínculos",
+      "description": "Han vuelto los {{held}}. No se pudieron leer {{links}} entre ellos, así que algunos documentos, recordatorios u ofertas puede que no estén archivados bajo el puesto al que pertenecían. No falta nada más.",
+      "descriptionWithDocuments": "Han vuelto los {{held}} y {{documents}}. No se pudieron leer {{links}} entre ellos, así que algunos documentos, recordatorios u ofertas puede que no estén archivados bajo el puesto al que pertenecían. No falta nada más."
+    },
+    "done": {
+      "title": "Restaurado",
+      "description": "Han vuelto {{records}}, exactamente como los guardaba el archivo.",
+      "descriptionWithDocuments": "Han vuelto {{records}} y {{documents}}, exactamente como los guardaba el archivo."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "No se pudo leer ese archivo",
+      "description": "Tu navegador no pudo leer ese archivo: puede que se haya movido, renombrado o desconectado desde que lo elegiste. No se ha cambiado nada; vuelve a elegirlo cuando esté de nuevo disponible."
+    },
+    "refused": {
+      "title": "Ese archivo no se puede restaurar",
+      "notBackup": "Ese archivo no es una copia de seguridad de jojo. No se ha cambiado nada.",
+      "reason": "{{reason}}. No se ha cambiado nada."
+    }
+  }
+}

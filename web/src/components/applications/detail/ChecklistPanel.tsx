@@ -32,6 +32,7 @@
 
 import { useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check, Info, ListChecks, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
 import type { ChecklistItem } from '@jojo/service/core/model'
 import { Panel } from '@/components/common/Panel'
@@ -41,10 +42,13 @@ import { Button } from '@/components/ui/button'
 import { useChecklist } from '@/lib/checklist-agent'
 import { useToast } from '@/lib/toast-context'
 import { supersededToast } from '@jojo/service/react/undo'
+import { useKg } from '@jojo/service/react/kg-context'
 import { cn } from '@/lib/utils'
 import { isCommitEnter } from '@/components/common/enter-key'
 
 export function ChecklistPanel({ applicationId }: { applicationId: string }) {
+  const { t } = useTranslation('applications')
+  const { text } = useKg()
   const c = useChecklist(applicationId)
   const { toast } = useToast()
   const [draft, setDraft] = useState('')
@@ -63,7 +67,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     if (result.ok) setDraft('')
     else
       toast({
-        title: 'That step was not added',
+        title: t('checklist.notAdded'),
         description: result.errors[0]?.message ?? '',
         tone: 'danger',
       })
@@ -73,14 +77,14 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     const done = c.remove(item.id)
     if (!done) return
     toast({
-      title: 'Step deleted',
+      title: t('checklist.deleted'),
       description: item.text,
       action: done.restore
         ? {
-            label: 'Undo',
+            label: t('common.undo'),
             onClick: () => {
               const outcome = done.restore?.()
-              if (outcome && outcome.superseded.length > 0) toast(supersededToast(outcome))
+              if (outcome && outcome.superseded.length > 0) toast(supersededToast(outcome, text))
             },
           }
         : undefined,
@@ -92,10 +96,10 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id={`checklist-${applicationId}`} className="flex items-center gap-2 font-medium">
           <ListChecks aria-hidden className="size-4 text-muted-foreground" />
-          Checklist
+          {t('checklist.title')}
           {c.items.length > 0 && (
             <span className="text-sm font-normal text-text-3">
-              {c.open} open · {c.items.length} total
+              {t('checklist.count', { open: c.open, total: c.items.length })}
             </span>
           )}
         </h2>
@@ -104,7 +108,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         {c.blocked === null && !busy && (
           <Button size="sm" variant="outline" onClick={c.draft}>
             <Sparkles aria-hidden className="size-3.5" strokeWidth={1.8} />
-            {c.items.length === 0 ? 'Draft a checklist' : 'Draft more'}
+            {c.items.length === 0 ? t('checklist.draft') : t('checklist.draftMore')}
           </Button>
         )}
       </div>
@@ -114,8 +118,8 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden className="size-3.5 animate-spin" />
           {c.step}…
-          <Button variant="ghost" size="sm" className="ml-auto" onClick={c.cancel}>
-            Cancel
+          <Button variant="ghost" size="sm" className="ms-auto" onClick={c.cancel}>
+            {t('common.cancel')}
           </Button>
         </p>
       )}
@@ -148,7 +152,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                 <input
                   autoFocus
                   defaultValue={item.text}
-                  aria-label="Step"
+                  aria-label={t('checklist.step')}
                   className="min-w-0 flex-1 border-b border-accent bg-transparent text-sm outline-none"
                   onBlur={(e) => {
                     const next = e.currentTarget.value.trim()
@@ -175,8 +179,8 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                   {item.text}
                   {item.by && (
                     <span
-                      className="ml-1.5 align-middle text-[11px] text-text-3"
-                      title={`Drafted by ${item.by.model}`}
+                      className="ms-1.5 align-middle text-[11px] text-text-3"
+                      title={t('checklist.draftedBy', { model: item.by.model })}
                     >
                       jojo
                     </span>
@@ -185,9 +189,9 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
               )}
 
               <RowMenu name={item.text} className="-my-1 shrink-0">
-                <MenuItem onSelect={() => setEditing(item.id)}>Edit</MenuItem>
+                <MenuItem onSelect={() => setEditing(item.id)}>{t('common.edit')}</MenuItem>
                 <MenuItem icon={Trash2} danger onSelect={() => onDelete(item)}>
-                  Delete
+                  {t('common.delete')}
                 </MenuItem>
               </RowMenu>
             </li>
@@ -197,13 +201,13 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         !busy && (
           <EmptyState
             icon={ListChecks}
-            title="Nothing on the list yet"
+            title={t('checklist.emptyTitle')}
             description={
               c.blocked === 'no-posting'
-                ? 'There is no saved posting behind this application, so jojo cannot read what it asks you to send. You can still add your own steps.'
+                ? t('checklist.noPosting')
                 : c.blocked === 'no-model'
-                  ? 'Drafting a checklist needs a model. Connect one in Settings, or add your own steps below.'
-                  : 'Ask jojo to read the posting for what you have to send, or add your own steps below.'
+                  ? t('checklist.noModel')
+                  : t('checklist.ask')
             }
           />
         )
@@ -215,8 +219,8 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         <input
           value={draft}
           onChange={(e) => setDraft(e.currentTarget.value)}
-          placeholder="Add a step"
-          aria-label="Add a step"
+          placeholder={t('checklist.addStep')}
+          aria-label={t('checklist.addStep')}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-placeholder placeholder:italic"
           onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
             if (isCommitEnter(e)) commit()
@@ -236,7 +240,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
         <div className="mt-3 text-sm">
           <p className="text-danger">{c.error}</p>
           <Button className="mt-2" size="sm" variant="ghost" onClick={c.draft}>
-            Try again
+            {t('common.tryAgain')}
           </Button>
         </div>
       )}

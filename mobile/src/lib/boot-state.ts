@@ -34,6 +34,7 @@
  */
 
 import type { Instant } from '@jojo/service/core/model'
+import { i18next } from '@/i18n/i18n'
 import { bootInMemory } from '@jojo/service/repo/boot'
 import type { BootResult, Session } from '@jojo/service/repo/boot'
 import type { StorePhase } from '@jojo/service/react/status-context'
@@ -77,7 +78,7 @@ export function stateFor(result: BootResult, now: () => Instant): StoreState {
   if (result.outcome === 'corrupt') {
     return {
       session: standIn(now),
-      why: `the saved records could not be read (${result.detail}).`,
+      why: i18next.t('messages:boot.corrupt', { detail: result.detail }),
       // `rescued` is what the recovery panel offers to download before anything
       // else, so whether there is anything to offer is part of the reading.
       status: { phase: 'corrupt', detail: result.detail, rescued: result.rescued !== null },
@@ -90,8 +91,8 @@ export function stateFor(result: BootResult, now: () => Instant): StoreState {
       session: result.session,
       why:
         result.reason === 'blocked'
-          ? 'storage is locked by something else on this device.'
-          : 'this device has no storage this app can use.',
+          ? i18next.t('messages:boot.blocked')
+          : i18next.t('messages:boot.unsupported'),
       // Carried through rather than flattened: 'blocked' means there IS a
       // database on disk with the user's records in it, which is a different
       // thing to say and a different thing to do about it.
@@ -129,7 +130,7 @@ export function stateFor(result: BootResult, now: () => Instant): StoreState {
 export function stateForThrow(now: () => Instant): StoreState {
   return {
     session: standIn(now),
-    why: 'the store could not be opened at all.',
+    why: i18next.t('messages:boot.threw'),
     status: { phase: 'unavailable', reason: 'unsupported' },
     firstRun: false,
   }

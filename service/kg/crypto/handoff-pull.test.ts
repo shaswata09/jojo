@@ -21,6 +21,7 @@ import {
   encodePullRequest,
   runPull,
 } from '../core/handoff-pull'
+import { OUTCOME_BYTES, openOutcome, outcomeByte, sealOutcome } from '../core/handoff'
 import {
   acceptPairing,
   beginPairing,
@@ -308,5 +309,49 @@ describe('the phone writes ASCII JSON', () => {
     const out = asciiJsonBytes(json)
     expect(out.every((b) => b < 0x80)).toBe(true)
     expect(JSON.parse(decodeUtf8(out))).toEqual(value)
+  })
+})
+
+describe('the receiver says what became of the transfer, with a proof', () => {
+  /*
+   * The phone takes the first outcome it hears. Under the path token alone,
+   * anything that saw the URL on the network could post `applied` before the
+   * computer's own answer, and the phone would stamp a handover its person
+   * declined. The proof is keyed by the session, which never crossed the wire.
+   */
+  it('reads an outcome only under the proof of the device that received', async () => {
+    const { computer, phone } = await pair()
+    for (const outcome of ['pending', 'applied', 'declined', 'failed'] as const) {
+      // pull: the computer received and tells the phone.
+      const told = await sealOutcome(secrets, computer, outcome, 'pull')
+      expect(told.byteLength).toBe(OUTCOME_BYTES)
+      expect(await openOutcome(secrets, phone, told, 'pull')).toBe(outcome)
+      // push: the phone received and answers the computer.
+      const answered = await sealOutcome(secrets, phone, outcome, 'push')
+      expect(await openOutcome(secrets, computer, answered, 'push')).toBe(outcome)
+    }
+  })
+
+  it('refuses a forged, altered, reflected or foreign outcome', async () => {
+    const { computer, phone } = await pair()
+    const told = await sealOutcome(secrets, computer, 'declined', 'pull')
+
+    // The bare byte, and a guessed proof.
+    expect(await openOutcome(secrets, phone, outcomeByte('applied'), 'pull')).toBeNull()
+    const guessed = new Uint8Array(OUTCOME_BYTES)
+    guessed.set(outcomeByte('applied'), 0)
+    expect(await openOutcome(secrets, phone, guessed, 'pull')).toBeNull()
+
+    // A real proof over a different outcome byte.
+    const flipped = told.slice()
+    flipped[0] = outcomeByte('applied')[0]!
+    expect(await openOutcome(secrets, phone, flipped, 'pull')).toBeNull()
+
+    // The computer's own words played back as the phone's, the other way.
+    expect(await openOutcome(secrets, computer, told, 'push')).toBeNull()
+
+    // Another session's keys.
+    const other = await pair()
+    expect(await openOutcome(secrets, other.phone, told, 'pull')).toBeNull()
   })
 })

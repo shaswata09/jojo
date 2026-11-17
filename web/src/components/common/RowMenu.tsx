@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 import { MoreHorizontal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { LucideIcon } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
@@ -38,13 +39,14 @@ export function RowMenu({
   className?: string
   children: ReactNode
 }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        aria-label={`More actions for ${name}`}
-        title="More actions"
+        aria-label={t('rowMenu.moreFor', { name })}
+        title={t('rowMenu.more')}
         className={cn(
           'grid size-7 shrink-0 cursor-pointer place-items-center rounded-md border border-transparent text-text-3 transition-colors',
           'hover:border-hairline hover:bg-well hover:text-text-1',

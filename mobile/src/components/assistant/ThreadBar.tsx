@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { ApprovalMode, NodeId } from '@jojo/service/core/model'
-import { APPROVAL_LABEL, APPROVAL_MODES, APPROVAL_SAID } from '@jojo/service/core/model'
+import { APPROVAL_MODES } from '@jojo/service/core/model'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
@@ -13,6 +14,7 @@ import { TextField } from '@/components/ui/Field'
 import { Txt } from '@/components/ui/Text'
 import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Which conversation you are in, and what it is about.
@@ -49,7 +51,9 @@ export function ThreadBar({
   onSetApproval: (id: NodeId, mode: ApprovalMode) => void
   busy: boolean
 }) {
-  const active = threads.find((t) => t.id === activeId) ?? null
+  const { t } = useTranslation(['components', 'common'])
+  const domain = useDomain()
+  const active = threads.find((th) => th.id === activeId) ?? null
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [filing, setFiling] = useState(false)
@@ -64,7 +68,7 @@ export function ThreadBar({
           about three threads. */}
       <View style={[s.row, { gap: space[2] }]}>
         <Button
-          label={active ? 'Conversations' : 'New conversation'}
+          label={active ? t('threads.conversations') : t('threads.new')}
           icon="message-square"
           variant="outline"
           disabled={busy}
@@ -72,7 +76,7 @@ export function ThreadBar({
         />
         {threads.length > 0 ? (
           <Txt size="xs" tone="muted" numberOfLines={1} style={s.fill}>
-            {threads.length} kept
+            {t('threads.kept', { count: threads.length })}
           </Txt>
         ) : null}
       </View>
@@ -81,7 +85,7 @@ export function ThreadBar({
         editing ? (
           <View style={{ gap: space[2] }}>
             <TextField
-              label="Conversation title"
+              label={t('threads.titleField')}
               value={draft}
               autoFocus
               onChangeText={setDraft}
@@ -91,9 +95,13 @@ export function ThreadBar({
               }}
             />
             <View style={[s.row, { justifyContent: 'flex-end', gap: space[2] }]}>
-              <Button label="Cancel" variant="ghost" onPress={() => setEditing(false)} />
               <Button
-                label="Save"
+                label={t('common:actions.cancel')}
+                variant="ghost"
+                onPress={() => setEditing(false)}
+              />
+              <Button
+                label={t('common:actions.save')}
                 onPress={() => {
                   onRename(active.id, draft)
                   setEditing(false)
@@ -101,7 +109,7 @@ export function ThreadBar({
               />
             </View>
 
-          {/* Per conversation, not per app: the granularity people want is
+            {/* Per conversation, not per app: the granularity people want is
               "this one is a cleanup session, stop asking me", and the safe
               default has to be the one you get without choosing.
 
@@ -113,19 +121,19 @@ export function ThreadBar({
 
               Mirrors `components/assistant/ThreadBar.tsx` on the web, down to
               the wording, because the two are one feature. */}
-          <View style={styles.approval}>
-            <Segment
-              label="How much this conversation may do without asking"
-              options={APPROVAL_MODES.map((m) => ({ value: m, label: APPROVAL_LABEL[m] }))}
-              value={active.approval}
-              onChange={(mode) => {
-                onSetApproval(active.id, mode)
-              }}
-            />
-            <Txt size="xs" tone="muted">
-              {APPROVAL_SAID[active.approval]}
-            </Txt>
-          </View>
+            <View style={styles.approval}>
+              <Segment
+                label={t('threads.approvalLabel')}
+                options={APPROVAL_MODES.map((m) => ({ value: m, label: domain.approval(m) }))}
+                value={active.approval}
+                onChange={(mode) => {
+                  onSetApproval(active.id, mode)
+                }}
+              />
+              <Txt size="xs" tone="muted">
+                {domain.approvalSaid(active.approval)}
+              </Txt>
+            </View>
           </View>
         ) : (
           <View style={[s.row, { gap: space[2] }]}>
@@ -134,7 +142,7 @@ export function ThreadBar({
             </Txt>
             <IconButton
               icon="edit-3"
-              label="Rename this conversation"
+              label={t('threads.rename')}
               onPress={() => {
                 setDraft(active.title)
                 setEditing(true)
@@ -142,13 +150,13 @@ export function ThreadBar({
             />
             <IconButton
               icon="briefcase"
-              label={filedUnder ? 'Change the job this is about' : 'File under a job'}
+              label={filedUnder ? t('threads.changeJob') : t('threads.fileUnder')}
               active={Boolean(filedUnder)}
               onPress={() => setFiling(true)}
             />
             <IconButton
               icon="trash-2"
-              label="Delete this conversation"
+              label={t('threads.delete')}
               tone="danger"
               disabled={busy}
               onPress={() => {

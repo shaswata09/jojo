@@ -9,17 +9,18 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { CalendarArrowDown, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DayRail } from '@/components/calendar/DayRail'
 import { EventChip } from '@/components/calendar/EventChip'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
 import { kindToReveal, shownKinds } from '@/components/calendar/kind-filter'
 import { DAY_DROP_PREFIX, dayDropLabel, dropTarget } from '@/components/calendar/drop-target'
-import { dragAnnouncements } from '@/components/common/drag-announcements'
+import { dragAnnouncements, dragInstructions } from '@/components/common/drag-announcements'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { MONTH_LABELS, buildMonth } from '@/data/calendar'
-import { compareItems, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { buildMonth } from '@/data/calendar'
+import { compareItems, isoOf, partsOf } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
@@ -34,8 +35,10 @@ import { useReducedMotion } from '@/lib/use-media-query'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { announceRefusal } from '@/components/common/write-result'
+import { domain } from '@/i18n/domain'
 
 export function Calendar() {
+  const { t, i18n } = useTranslation('pages')
   // The month and the selected day live in the URL, not in state: a search
   // result for an interview links to the day it falls on, and a calendar that
   // held its position locally would open on today and leave the reader to find
@@ -46,7 +49,16 @@ export function Calendar() {
   const view = useMemo(() => ({ year: y, month: m }), [y, m])
   // The month is the whole point of this tab — 'Calendar' alone tells a
   // person with three tabs open nothing about which one they left here.
-  useTitle(`Calendar — ${MONTH_LABELS[m - 1]} ${y}`)
+  useTitle(
+    t('calendar.tabTitle', {
+      month:
+        i18n.language === 'en'
+          ? `${domain.month(m)} ${y}`
+          : new Intl.DateTimeFormat(i18n.language, { month: 'long', year: 'numeric' }).format(
+              new Date(y, m - 1, 1),
+            ),
+    }),
+  )
   const selected = d
   const { open } = useDialogs()
   const { toast } = useToast()
@@ -151,15 +163,15 @@ export function Calendar() {
   const exportCalendar = () => {
     if (!calendar.download()) {
       toast({
-        title: 'The calendar file could not be written',
-        description: 'The browser refused the download. Nothing has changed here.',
+        title: t('calendar.exportFailedTitle'),
+        description: t('calendar.exportFailedDescription'),
         tone: 'danger',
       })
       return
     }
     toast({
-      title: `${String(calendar.count)} date${calendar.count === 1 ? '' : 's'} exported`,
-      description: `${ICS_FILENAME} is in your downloads. Open it and your calendar will offer to import them, with a reminder on each.`,
+      title: t('calendar.exported', { count: calendar.count }),
+      description: t('calendar.exportedDescription', { file: ICS_FILENAME }),
     })
   }
 
@@ -167,8 +179,8 @@ export function Calendar() {
     const removed = remove(item.id)
     if (!removed.ok) {
       toast({
-        title: 'That did not delete',
-        description: removed.refusal ?? `${item.title} is still on the calendar.`,
+        title: t('calendar.deleteFailed'),
+        description: removed.refusal ?? t('calendar.stillOnCalendar', { title: item.title }),
         tone: 'danger',
       })
       return
@@ -178,10 +190,10 @@ export function Calendar() {
     // them retyped in seconds. An undo is the right guard; a confirmation
     // dialog on every row of a day list would be a tax on the common case.
     toast({
-      title: 'Event deleted',
-      description: `${item.title} — ${shortDate(item.date)}`,
+      title: t('calendar.deleted'),
+      description: `${item.title} — ${domain.shortDate(item.date)}`,
       tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
+      action: { label: t('calendar.undo'), onClick: restore },
     })
   }
 
@@ -198,12 +210,12 @@ export function Calendar() {
     const from = item.date
     if (announceRefusal(reschedule(item.id, iso), toast)) return
     toast({
-      title: `Moved to ${shortDate(iso)}`,
+      title: t('calendar.movedTo', { date: domain.shortDate(iso) }),
       description: item.title,
       // The undo is a write too, and can be refused (the item deleted since, a
       // date the tool rejects); say so rather than leave the toast's promise.
       action: {
-        label: 'Undo',
+        label: t('calendar.undo'),
         onClick: () => {
           announceRefusal(reschedule(item.id, from), toast)
         },
@@ -214,29 +226,29 @@ export function Calendar() {
   return (
     <>
       <PageHeader
-        title="Calendar"
-        subtitle="Deadlines, interviews and prep in one view"
+        title={t('calendar.title')}
+        subtitle={t('calendar.subtitle')}
         settings={
           <>
             <PageOption
-              label="Dots instead of titles"
-              hint="Denser month grid — detail and dragging move to the day you select"
+              label={t('calendar.dotsOnly')}
+              hint={t('calendar.dotsOnlyHint')}
               control={
                 <Switch
                   checked={dotsOnly}
                   onCheckedChange={setDotsOnly}
-                  aria-label="Dots instead of titles"
+                  aria-label={t('calendar.dotsOnly')}
                 />
               }
             />
             <PageOption
-              label="Tall day cells"
-              hint="More room per day in the grid"
+              label={t('calendar.tallCells')}
+              hint={t('calendar.tallCellsHint')}
               control={
                 <Switch
                   checked={tallCells}
                   onCheckedChange={setTallCells}
-                  aria-label="Tall day cells"
+                  aria-label={t('calendar.tallCells')}
                 />
               }
             />
@@ -252,7 +264,7 @@ export function Calendar() {
             */}
             <Button variant="outline" size="sm" onClick={exportCalendar}>
               <CalendarArrowDown className="size-3.5" strokeWidth={2} aria-hidden />
-              Export to my calendar
+              {t('calendar.export')}
             </Button>
             <Button
               size="sm"
@@ -261,7 +273,7 @@ export function Calendar() {
               onClick={() => addOn(selectedISO)}
             >
               <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-              Add event
+              {t('calendar.addEvent')}
             </Button>
           </>
         }
@@ -272,6 +284,7 @@ export function Calendar() {
         collisionDetection={dropTarget}
         // Event titles and day names, not the ids dnd-kit would read aloud.
         accessibility={{
+          screenReaderInstructions: dragInstructions(),
           announcements: dragAnnouncements({
             item: (id) => get(id)?.title,
             target: dayDropLabel,

@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Compass } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
@@ -16,7 +17,10 @@ import { dashboardPath, useTitle } from '@/lib/links'
  * sidebar is a drawer below `lg`, so on a phone there was nothing on screen to
  * press.
  */
-export function Placeholder({ title, subtitle }: { title: string; subtitle: string }) {
+export function Placeholder(props: { title?: string; subtitle?: string }) {
+  const { t } = useTranslation('pages')
+  const title = props.title ?? t('notFound.title')
+  const subtitle = props.subtitle ?? t('notFound.subtitle')
   // Every other route titles itself, so a mistyped URL was the one page that
   // left the tab reading "jojo — agentic job-search assistant" while the page
   // itself said "Not found". A background tab has nothing but its title.
@@ -28,11 +32,11 @@ export function Placeholder({ title, subtitle }: { title: string; subtitle: stri
       <Panel>
         <EmptyState
           icon={Compass}
-          title="Nothing lives at this address"
-          description="Check the link, or start again from the dashboard. Nothing was lost — the address simply does not match a page."
+          title={t('notFound.emptyTitle')}
+          description={t('notFound.emptyDescription')}
           action={
             <Button size="sm" asChild>
-              <Link to={dashboardPath()}>Back to the dashboard</Link>
+              <Link to={dashboardPath()}>{t('notFound.back')}</Link>
             </Button>
           }
         />

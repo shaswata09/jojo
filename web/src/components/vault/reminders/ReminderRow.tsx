@@ -1,5 +1,6 @@
 import type { Ref } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Check, Copy, Pencil, Trash2 } from 'lucide-react'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { Button } from '@/components/ui/button'
@@ -11,8 +12,9 @@ import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
 import type { TimelineItem } from '@/data/timeline'
 import { appPath } from '@/lib/links'
-import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
+import { KIND_ICON } from '@/lib/timeline-visuals'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 export function ReminderRow({
   item,
@@ -43,6 +45,8 @@ export function ReminderRow({
 }) {
   // Everything below reads the previewed record, so the outcome is on the row
   // before the store knows about it.
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const shown = transit?.preview ? { ...item, ...transit.preview } : item
   const Icon = KIND_ICON[shown.kind]
   const done = Boolean(shown.completedOn)
@@ -90,7 +94,11 @@ export function ReminderRow({
             role="checkbox"
             aria-checked={done}
             onClick={() => actions.toggle(item)}
-            aria-label={done ? `Mark "${item.title}" as not done` : `Mark "${item.title}" done`}
+            aria-label={
+              done
+                ? t('reminders.row.markNotDone', { title: item.title })
+                : t('reminders.row.markDone', { title: item.title })
+            }
             className={cn(
               // `touch-target` for the catch area: an 18px arbitrary size
               // matches none of the `size-6/7/8` selectors in `index.css`, so
@@ -117,7 +125,7 @@ export function ReminderRow({
                 // so an undone title — which is --text-1 — changed nothing at
                 // all under the pointer. A done one is --text-3 and did move,
                 // which is exactly why this went unnoticed.
-                'block max-w-full cursor-pointer truncate text-left text-sm underline-offset-2 transition-colors hover:text-accent hover:underline',
+                'block max-w-full cursor-pointer truncate text-start text-sm underline-offset-2 transition-colors hover:text-accent hover:underline',
                 done && 'text-text-3 line-through',
               )}
             >
@@ -131,7 +139,7 @@ export function ReminderRow({
                   says whether this is a chase or a piece of prep. */}
               <Icon
                 role="img"
-                aria-label={KIND_LABEL[shown.kind]}
+                aria-label={domain.kind(shown.kind)}
                 className="size-3.5 shrink-0"
                 strokeWidth={1.7}
               />
@@ -152,7 +160,7 @@ export function ReminderRow({
                   </Link>
                 ))
               ) : (
-                <span className="shrink-0">Unfiled</span>
+                <span className="shrink-0">{t('files.unfiled.label')}</span>
               )}
               {shown.note ? <span className="truncate">· {shown.note}</span> : null}
               <LabelChips recordId={item.id} className="shrink-0" />
@@ -165,7 +173,7 @@ export function ReminderRow({
                 a different place on every other row of the list. */}
             {shown.kind === 'follow-up' && !done ? (
               <Button variant="ghost" size="sm" onClick={() => actions.draft(item)}>
-                Draft a reply
+                {t('reminders.row.draftReply')}
               </Button>
             ) : null}
 
@@ -173,7 +181,7 @@ export function ReminderRow({
                 snooze: moving a finished reminder into next week is not a thing
                 anyone means to do. Untick it first and the menu comes back. */}
             {done ? (
-              <div className="px-1.5 py-0.5 text-right">
+              <div className="px-1.5 py-0.5 text-end">
                 <DateLines item={shown} />
               </div>
             ) : (
@@ -183,14 +191,14 @@ export function ReminderRow({
             <LabelPicker recordId={item.id} />
             <RowMenu name={item.title}>
               <MenuItem icon={Pencil} onSelect={() => actions.edit(item)}>
-                Edit
+                {t('common.edit')}
               </MenuItem>
               <MenuItem icon={Copy} onSelect={() => actions.duplicate(item)}>
-                Duplicate
+                {t('common.duplicate')}
               </MenuItem>
               <MenuSection>
                 <MenuItem icon={Trash2} danger onSelect={() => actions.remove(item)}>
-                  Delete
+                  {t('common.delete')}
                 </MenuItem>
               </MenuSection>
             </RowMenu>

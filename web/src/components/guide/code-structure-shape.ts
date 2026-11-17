@@ -53,14 +53,20 @@ export const SHAPE: DirRow[] = [
     // `locale.ts` and `locale-catalog.ts`, each with a test: which languages
     // both apps offer and which one a device gets, and the rule that holds
     // every translation catalog to English's keys and placeholders.
-    files: 189,
+    // Five fewer with jojo's own animated pairing code gone (Q329): `pulse.ts`,
+    // `pulse-read.ts` and their three tests. The computer shows a QR code now.
+    // Four more on 2026-11-16 (i18n): `domain-text.ts` and `advice-text.ts`
+    // with a test each — the model's own words in any language, the translator
+    // passed in, the English held to core's word for word.
+    files: 190,
     tests: 79,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    // Re-measured 2026-10-22 with `backup-stream.ts`.
-    lines: 45282,
+    // Re-measured 2026-10-22 with `backup-stream.ts`, and 2026-11-16 without
+    // the pulse code.
+    lines: 45791,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8461, what: 'transactions, journal, boot' },
@@ -179,17 +185,17 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
     // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    // `transfer/PulseOverlay.tsx` and `transfer/pulse-paint.ts`, with a test
-    // that the phone's reader decodes it: the pairing key drawn with Canvas2D
-    // wherever the WebGPU scene cannot draw it.
-    files: 492,
-    tests: 134,
-    lines: 71267,
+    // `transfer/PairingQrCard.tsx`: the pairing key as a QR code (Q329), in
+    // place of `PulseOverlay.tsx` and `pulse-paint.ts` and its test.
+    files: 495,
+    tests: 137,
+    lines: 72307,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
-  // shared pieces the chat dock draws too.
-  { dir: 'web/src/routes', files: 25, tests: 10, lines: 3770, what: 'fifteen pages' },
+  // shared pieces the chat dock draws too. Longer again (2026-11-16) with the
+  // pages' text moved into translation catalogs behind `useTranslation`.
+  { dir: 'web/src/routes', files: 25, tests: 10, lines: 3936, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -230,9 +236,10 @@ export const SHAPE: DirRow[] = [
     // 175 with `scout-reading.tsx`: each suggested posting read while it waits
     // for an answer, so the card shows the employer, role and place, and
     // approving does not open the page a second time.
-    files: 209,
-    tests: 94,
-    lines: 35406,
+    // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
+    files: 214,
+    tests: 97,
+    lines: 35461,
     what: 'web-only adapters and URL state',
   },
   {
@@ -262,4 +269,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 249
+export const WEB_TEST_FILES = 255

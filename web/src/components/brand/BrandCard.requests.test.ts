@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import brandCard from '@/components/brand/BrandCard.tsx?raw'
 import topbar from '@/components/layout/Topbar.tsx?raw'
+import en from '@/i18n/locales/en/brand.json'
 
 /**
  * The sidebar's brand card (G6). Protected design: the card, its robot and its
@@ -92,7 +93,8 @@ describe('the moves button and the gesture pad', () => {
     expect(pad).toMatch(/play\(poseForStroke\('hold'\)\)/)
     expect(pad).toMatch(/poseForStroke\(double \? 'doubleTap' : id\)/)
     // A finger draws instead of scrolling the drawer.
-    expect(body).toMatch(/aria-label="Poke jojo"\s*className="[^"]*touch-none/)
+    expect(body).toMatch(/aria-label=\{t\('poke'\)\}\s*className="[^"]*touch-none/)
+    expect(en.poke).toBe('Poke jojo')
   })
 
   it('still lets the keyboard poke the robot (Q315)', () => {

@@ -1,3 +1,5 @@
+import { i18next } from '@/i18n/i18n'
+
 /**
  * What a drop actually contained, and what to say about it.
  *
@@ -70,22 +72,39 @@ export function sortDroppedPdfs(
 export function dropMessage(sorted: SortedDrop): string | null {
   const parts: string[] = []
   if (sorted.rejected.length > 0) {
-    const many = sorted.rejected.length > 1
-    parts.push(`${nameList(sorted.rejected)} ${many ? 'are not PDFs' : 'is not a PDF'}`)
-  }
-  if (sorted.ignored.length > 0) {
-    const many = sorted.ignored.length > 1
     parts.push(
-      `${nameList(sorted.ignored)} ${many ? 'were' : 'was'} left out — this works on one document at a time`,
+      i18next.t('messages:pdf.drop.notPdf', {
+        names: nameList(sorted.rejected),
+        count: sorted.rejected.length,
+      }),
     )
   }
-  if (parts.length === 0) return null
-  return `${parts.join(', and ')}.`
+  if (sorted.ignored.length > 0) {
+    parts.push(
+      i18next.t('messages:pdf.drop.leftOut', {
+        names: nameList(sorted.ignored),
+        count: sorted.ignored.length,
+      }),
+    )
+  }
+  const [first, second] = parts
+  if (first === undefined) return null
+  return second === undefined
+    ? i18next.t('messages:pdf.drop.one', { part: first })
+    : i18next.t('messages:pdf.drop.both', { first, second })
 }
 
 function nameList(names: readonly string[]): string {
   if (names.length === 1) return names[0] ?? ''
-  if (names.length === 2) return `${names[0]} and ${names[1]}`
-  if (names.length === 3) return `${names[0]}, ${names[1]} and ${names[2]}`
-  return `${names.length} of the files`
+  if (names.length === 2) {
+    return i18next.t('messages:pdf.drop.two', { first: names[0], second: names[1] })
+  }
+  if (names.length === 3) {
+    return i18next.t('messages:pdf.drop.three', {
+      first: names[0],
+      second: names[1],
+      third: names[2],
+    })
+  }
+  return i18next.t('messages:pdf.drop.many', { count: names.length })
 }

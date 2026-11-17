@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Archive, Eye, FileText, Link2, MessageSquare, Scissors } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
@@ -44,9 +45,9 @@ import { assistantPath, vaultPath } from '@/lib/links'
  */
 
 const SECTIONS = [
-  { key: 'files', tool: 'files', label: 'Files', icon: FileText },
-  { key: 'links', tool: 'links', label: 'Links', icon: Link2 },
-  { key: 'snippets', tool: 'snippets', label: 'Snippets', icon: Scissors },
+  { key: 'files', tool: 'files', label: 'filed.files', icon: FileText },
+  { key: 'links', tool: 'links', label: 'filed.links', icon: Link2 },
+  { key: 'snippets', tool: 'snippets', label: 'filed.snippets', icon: Scissors },
   // People used to be listed here too, read-only, because they arrive on the
   // same `FILED_UNDER` edge a CV does. They have their own panel now
   // (`PeoplePanel`), because a person on a job has a ROLE there and can be
@@ -59,6 +60,7 @@ const SECTIONS = [
 }[]
 
 export function FiledPanel({ applicationId }: { applicationId: string }) {
+  const { t } = useTranslation('applications')
   const { forApplication } = useVault()
   const { threads } = useThreads()
   const filed = forApplication(applicationId)
@@ -72,7 +74,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
    * panel headed "everything filed here" that quietly left one kind out would
    * make the filing look like it had not worked.
    */
-  const conversations = threads.filter((t) => t.applicationId === applicationId)
+  const conversations = threads.filter((thread) => thread.applicationId === applicationId)
 
   /**
    * The document being previewed, or `null`.
@@ -89,13 +91,15 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
 
   return (
     <Panel>
-      <PanelTitle hint={total > 0 ? `${total} filed here` : undefined}>From the Vault</PanelTitle>
+      <PanelTitle hint={total > 0 ? t('filed.hint', { count: total }) : undefined}>
+        {t('filed.title')}
+      </PanelTitle>
 
       {total === 0 ? (
         <EmptyState
           icon={Archive}
-          title="Nothing filed under this yet"
-          description="Documents, links and snippets can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
+          title={t('filed.emptyTitle')}
+          description={t('filed.emptyBody')}
         />
       ) : (
         <div className="space-y-4">
@@ -103,18 +107,20 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
             <li>
               <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-text-3">
                 <MessageSquare className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Conversations
+                {t('filed.conversations')}
               </h3>
               <ul className="space-y-1">
-                {conversations.map((t) => (
-                  <li key={t.id}>
+                {conversations.map((thread) => (
+                  <li key={thread.id}>
                     <Link
-                      to={assistantPath({ thread: t.id })}
+                      to={assistantPath({ thread: thread.id })}
                       className="pressable block truncate rounded-md border border-hairline bg-well px-2.5 py-1.5 text-sm text-text-1 transition-colors hover:border-hairline-strong"
                     >
-                      {t.title}
-                      <span className="ml-2 text-xs text-text-3">
-                        {t.entries.filter((e) => e.kind === 'you').length} asked
+                      {thread.title}
+                      <span className="ms-2 text-xs text-text-3 [unicode-bidi:isolate]">
+                        {t('filed.asked', {
+                          count: thread.entries.filter((e) => e.kind === 'you').length,
+                        })}
                       </span>
                     </Link>
                   </li>
@@ -130,7 +136,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
               <section key={section.key}>
                 <h3 className="mb-1.5 flex items-center gap-1.5 text-xs text-text-3">
                   <section.icon aria-hidden strokeWidth={1.8} className="size-3.5" />
-                  {section.label}
+                  {t(section.label)}
                   <span className="tabular">{rows.length}</span>
                 </h3>
                 <ul className="space-y-0.5">
@@ -188,12 +194,12 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                           // files otherwise offers three buttons all called
                           // "Preview". It opens with the visible word, so the
                           // spoken name still contains the one on screen.
-                          aria-label={`Preview ${row.name}`}
-                          title={`Preview ${row.name}`}
+                          aria-label={t('filed.previewName', { name: row.name })}
+                          title={t('filed.previewName', { name: row.name })}
                           onClick={() => setPreview(row)}
                         >
                           <Eye aria-hidden strokeWidth={1.9} />
-                          Preview
+                          {t('common.preview')}
                         </Button>
                       ) : null}
                     </li>

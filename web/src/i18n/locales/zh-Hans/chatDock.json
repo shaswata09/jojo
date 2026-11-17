@@ -1,0 +1,49 @@
+{
+  "chatWithJojo": "与 jojo 聊天",
+  "newConversation": "新对话",
+  "newAboutOpen": "关于当前打开的申请的新对话",
+  "hideConversations": "隐藏对话",
+  "showConversations": "显示对话",
+  "undo": "撤销",
+  "overflow_other": "还有 {{count}} 个打开的对话",
+  "grip": {
+    "labelCorner": "左右移动聊天窗口——在角落。方向键可移动它；双击可让它回到角落。",
+    "labelFarLeft": "左右移动聊天窗口——在最左侧。方向键可移动它；双击可让它回到角落。",
+    "labelFarRight": "左右移动聊天窗口——在最右侧。方向键可移动它；双击可让它回到角落。",
+    "labelPartWay": "左右移动聊天窗口——向左移动了 {{percent}}%。方向键可移动它；双击可让它回到角落。",
+    "labelPartWayRight": "左右移动聊天窗口——向右移动了 {{percent}}%。方向键可移动它；双击可让它回到角落。",
+    "title": "拖动可把聊天窗口挪开 · 双击可让它回到角落"
+  },
+  "prompts": {
+    "about": {
+      "left": "这份申请还有什么要做的？",
+      "followUp": "为这份申请起草一封跟进邮件",
+      "summarise": "总结这份申请"
+    },
+    "general": {
+      "waiting": "我在等哪些回复？",
+      "noDeadline": "哪些申请没有截止日期？"
+    }
+  },
+  "window": {
+    "label": "对话：{{title}}",
+    "back": "返回对话列表",
+    "working": "处理中",
+    "openInAssistant": "在助手中打开",
+    "open": "打开此对话",
+    "minimise": "最小化此对话",
+    "close": "关闭此对话",
+    "closeTitle": "关闭——它仍保留在你的对话中",
+    "about": "关于 <name>{{name}}</name>",
+    "detachAria": "将此对话改为不针对特定内容",
+    "unfileAria": "将此对话从该申请中取消归档",
+    "detachTitle": "与此申请无关",
+    "unfileTitle": "从此申请中取消归档",
+    "notConfigured": "在<settings>设置</settings>中连接模型，即可在这里与 jojo 聊天。所有内容都保留在本设备上。",
+    "askAbout": "关于 {{name}} 随便问——jojo 知道你指的是这份申请。",
+    "askGeneral": "让 jojo 查找东西、添加申请或推进某份申请。",
+    "composerLabel": "在 {{title}} 中给 jojo 发消息",
+    "placeholderAbout": "问问关于 {{org}} 的事……",
+    "placeholder": "问问 jojo……"
+  }
+}

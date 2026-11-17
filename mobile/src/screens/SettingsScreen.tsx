@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { listModels } from '@/lib/llm'
 import { testReader } from '@/lib/markitdown'
@@ -33,7 +34,7 @@ import {
   type ImportPlan,
 } from '@/lib/import-backup'
 import { applyPlan } from '@/lib/restore-received'
-import { describeBackup, replacesClause, type RestorePlan } from '@jojo/service/core/backup'
+import type { RestorePlan } from '@jojo/service/core/backup'
 import { keepLocalCopy, pick, types } from '@react-native-documents/picker'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
@@ -56,7 +57,7 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { LABEL_TONE_VALUES, TONE_LABEL } from '@jojo/service/core/model'
+import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import { useLabels } from '@/lib/labels-context'
 import { useStoreAdmin, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -68,17 +69,13 @@ import { radius, space } from '@/theme/tokens'
 import { TourTarget } from '@/components/tour/TourTarget'
 import { report } from '@/lib/analytics'
 import { reportableProvider } from '@jojo/service/core/analytics'
+import { useDomain } from '@/i18n/domain'
 
-const THEMES = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-] as const satisfies readonly { value: ThemePref; label: string }[]
+// The option tables below are values only; their labels are catalog keys
+// under `settings.*`, translated where the segment is drawn.
+const THEMES = ['light', 'dark', 'system'] as const satisfies readonly ThemePref[]
 
-const DATA_SETS = [
-  { value: 'demo', label: 'Demo data' },
-  { value: 'empty', label: 'Empty' },
-] as const
+const DATA_SETS = ['demo', 'empty'] as const
 
 /** Which destructive data action is waiting on a confirmation. */
 type PendingData = 'demo' | 'empty' | 'reset'
@@ -87,13 +84,14 @@ type PendingData = 'demo' | 'empty' | 'reset'
  * The reasoning choices offered, the web form's three. `server-default` is the
  * benchmark's escape hatch and not a choice a person can make here.
  */
-const REASONING = [
-  { value: 'on', label: 'On' },
-  { value: 'low', label: 'Light' },
-  { value: 'off', label: 'Off' },
-] as const satisfies readonly { value: Thinking; label: string }[]
+const REASONING = ['on', 'low', 'off'] as const satisfies readonly Thinking[]
 
 export function SettingsScreen() {
+  const { t, i18n } = useTranslation('screens')
+  const domain = useDomain()
+  const themes = THEMES.map((value) => ({ value, label: t(`settings.themes.${value}`) }))
+  const dataSets = DATA_SETS.map((value) => ({ value, label: t(`settings.dataSets.${value}`) }))
+  const reasoning = REASONING.map((value) => ({ value, label: t(`settings.reasoning.${value}`) }))
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { pref, setPref } = useTheme()
@@ -351,7 +349,7 @@ export function SettingsScreen() {
   const [restoring, setRestoring] = useState(false)
 
   const refuseImport = (description: string) =>
-    toast({ title: 'Nothing was imported', description, tone: 'danger' })
+    toast({ title: t('settings.import.refused'), description, tone: 'danger' })
 
   const offerImport = (planned: ImportPlan) => {
     if (!planned.ok) {
@@ -375,7 +373,7 @@ export function SettingsScreen() {
         destination: 'cachesDirectory',
       })
       if (copy.status !== 'success') {
-        refuseImport(`The file could not be opened: ${copy.copyError}`)
+        refuseImport(t('settings.import.fileFailed', { reason: copy.copyError }))
         return
       }
       const path = pathOfUri(copy.localUri)
@@ -397,7 +395,9 @@ export function SettingsScreen() {
       offerImport(planImport(await Clipboard.getString(), 'clipboard'))
     } catch (error) {
       refuseImport(
-        `The clipboard could not be read: ${error instanceof Error ? error.message : String(error)}`,
+        t('settings.import.clipboardFailed', {
+          reason: error instanceof Error ? error.message : String(error),
+        }),
       )
     }
   }
@@ -421,7 +421,7 @@ export function SettingsScreen() {
       })
       .catch((error: unknown) =>
         toast({
-          title: 'The import did not finish',
+          title: t('settings.import.unfinished'),
           description: error instanceof Error ? error.message : String(error),
           tone: 'danger',
         }),
@@ -457,9 +457,8 @@ export function SettingsScreen() {
       clearAll()
       void forgetDocuments(attached)
       toast({
-        title: 'Everything cleared',
-        description:
-          'Every record is gone, your profile included, and any documents you attached have been deleted from this device. Load the demo data again from here.',
+        title: t('settings.data.cleared'),
+        description: t('settings.data.clearedDescription'),
         tone: 'danger',
       })
       return
@@ -467,36 +466,32 @@ export function SettingsScreen() {
     reset()
     void forgetDocuments(attached)
     toast({
-      title: pending === 'reset' ? 'Demo data reset' : 'Demo data loaded',
-      description:
-        'The seeded applications, timeline, vault, postings and profile are back as they shipped.',
+      title: pending === 'reset' ? t('settings.data.resetDone') : t('settings.data.loaded'),
+      description: t('settings.data.loadedDescription'),
     })
   }
 
   const pendingCopy: Record<PendingData, { title: string; description: string; confirm: string }> =
     {
       empty: {
-        title: 'Clear every record?',
-        description:
-          'Applications, the timeline, the vault, saved postings and your profile all go, including anything you added this session, and any documents you attached are deleted from this device with them. There is no undo — export first if you want them back. Your keywords are kept, but nothing is left carrying them.',
-        confirm: 'Clear everything',
+        title: t('settings.confirm.empty.title'),
+        description: t('settings.confirm.empty.description'),
+        confirm: t('settings.confirm.empty.confirm'),
       },
       demo: {
-        title: 'Load the demo data?',
-        description:
-          'The seeded records come back, tagged with the keywords they shipped with. Anything you have added this session is replaced, not merged, and any documents you attached are deleted from this device. There is no undo.',
-        confirm: 'Load demo data',
+        title: t('settings.confirm.demo.title'),
+        description: t('settings.confirm.demo.description'),
+        confirm: t('settings.confirm.demo.confirm'),
       },
       reset: {
-        title: 'Reset to the demo data?',
-        description:
-          'Every edit, addition and deletion from this session is discarded and the seeded records come back exactly as they shipped, so any documents you attached are deleted from this device. Your keyword list itself is left alone. There is no undo.',
-        confirm: 'Reset data',
+        title: t('settings.confirm.reset.title'),
+        description: t('settings.confirm.reset.description'),
+        confirm: t('settings.confirm.reset.confirm'),
       },
     }
 
   return (
-    <Screen title="Settings" subtitle="Connections, sync and your data" wide>
+    <Screen title={t('settings.title')} subtitle={t('settings.subtitle')} wide>
       {/* Setting groups. The confirm sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
         <TourTarget id="device">
@@ -514,20 +509,16 @@ export function SettingsScreen() {
              * A switch that does nothing is worse than an absent feature: it is
              * a promise the app has already broken by the time anybody notices.
              */}
-            <PanelTitle hint="where your records actually live">On this device</PanelTitle>
+            <PanelTitle hint={t('settings.device.hint')}>{t('settings.device.title')}</PanelTitle>
             <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-              Everything you add is written straight to this phone&rsquo;s own storage as you work —
-              there is nothing to switch on, and nothing leaves the device. Documents you attach are
-              copied into jojo&rsquo;s own folder, so they survive the original being moved or
-              deleted.
+              {t('settings.device.body')}
             </Txt>
             {/* Both ways out. The phone is still always the side that listens —
               a browser cannot accept an inbound connection — but since
               2026-11-15 the computer can connect and PULL the phone's backup,
               so Transfer sends from here as well as receiving. */}
             <Txt size="sm" tone="secondary">
-              To get a copy out, use Export below, or Transfer to send everything to your computer
-              over your local network.
+              {t('settings.device.copyOut')}
             </Txt>
           </Panel>
         </TourTarget>
@@ -541,17 +532,16 @@ export function SettingsScreen() {
               right={
                 <IconButton
                   icon="link"
-                  label="Saved servers"
+                  label={t('settings.servers.title')}
                   onPress={() => setPicking(true)}
                   disabled={shown.length === 0}
                 />
               }
             >
-              Model
+              {t('settings.model.title')}
             </PanelTitle>
             <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-              A model on a machine you can reach, or one you pay for. Local is the default because
-              it is the only arrangement where your records never leave this device.
+              {t('settings.model.intro')}
             </Txt>
 
             {/* The provider first, because every field under it depends on the
@@ -564,8 +554,8 @@ export function SettingsScreen() {
               they become a row you have to swipe to discover, which is the one
               thing a picker must not be. */}
             <SettingRow
-              label="Provider"
-              description={provider.label}
+              label={t('settings.provider.title')}
+              description={domain.provider(provider.id)}
               onPress={() => setChoosing(true)}
             />
             {provider.cloud ? <CloudTerms provider={provider} /> : null}
@@ -575,7 +565,7 @@ export function SettingsScreen() {
                 ignore is a field that can only mislead. */}
               {provider.fixedEndpoint ? null : (
                 <TextField
-                  label="Endpoint"
+                  label={t('settings.model.endpoint')}
                   mono
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -599,10 +589,10 @@ export function SettingsScreen() {
                      * and been told it does not work.
                      */
                     isLoopbackEndpoint(endpoint || provider.endpoint)
-                      ? 'That address means “this device”, so on a phone it points at the phone. Use the computer’s address on your network instead — something like 192.168.1.20, or its .local name.'
+                      ? t('settings.model.loopback')
                       : provider.dialect === 'ollama'
-                        ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
-                        : 'The base URL, ending in /v1.'
+                        ? t('settings.model.endpointOllama')
+                        : t('settings.model.endpointHint')
                   }
                   onChangeText={onEndpointChange}
                 />
@@ -616,7 +606,7 @@ export function SettingsScreen() {
                 to the keychain, and a provider key is not the user's password. */}
               {provider.needsKey ? (
                 <TextField
-                  label="API key"
+                  label={t('settings.model.apiKey')}
                   mono
                   secureTextEntry
                   autoCapitalize="none"
@@ -625,7 +615,7 @@ export function SettingsScreen() {
                   textContentType="none"
                   value={settings.apiKey ?? ''}
                   placeholder="sk-…"
-                  hint="Kept on this device only. It is never put in a backup and never sent anywhere but the provider."
+                  hint={t('settings.model.apiKeyHint')}
                   onChangeText={(next) => {
                     save({ ...settings, apiKey: cleanKey(next) })
                   }}
@@ -635,18 +625,14 @@ export function SettingsScreen() {
                 the server's to state, not the user's to guess, and a field
                 offering to take a guess is a field inviting a 404 later. */}
               <TextField
-                label="Model"
+                label={t('settings.model.title')}
                 mono
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={model}
                 editable={connected}
-                placeholder={connected ? '' : 'Found when you test the connection'}
-                hint={
-                  connected
-                    ? 'What the server reported. Change it if you serve more than one.'
-                    : undefined
-                }
+                placeholder={connected ? '' : t('settings.model.modelPlaceholder')}
+                hint={connected ? t('settings.model.modelHint') : undefined}
                 onChangeText={setModel}
                 onBlur={() => {
                   save({ ...settings, endpoint: endpoint.trim(), model: model.trim() })
@@ -656,12 +642,12 @@ export function SettingsScreen() {
                 label for a connection that does not exist. */}
               {connected ? (
                 <TextField
-                  label="Saved as"
+                  label={t('settings.model.savedAs')}
                   autoCapitalize="none"
                   autoCorrect={false}
                   value={name}
                   placeholder={model}
-                  hint="What this server is called in the list. Defaults to the model."
+                  hint={t('settings.model.savedAsHint')}
                   onChangeText={setNameEdit}
                   onBlur={onRename}
                 />
@@ -682,7 +668,7 @@ export function SettingsScreen() {
                * number the user guessed.
                */}
               <TextField
-                label="Context window"
+                label={t('settings.model.context')}
                 mono
                 keyboardType="number-pad"
                 autoCorrect={false}
@@ -690,8 +676,12 @@ export function SettingsScreen() {
                 placeholder={String(provider.defaultContext)}
                 hint={
                   provider.dialect === 'ollama'
-                    ? `Tokens. Empty uses ${provider.defaultContext.toLocaleString()} and lets Ollama size itself; a number here is also sent as num_ctx.`
-                    : `Tokens your deployment can hold. Empty uses ${provider.defaultContext.toLocaleString()}.`
+                    ? t('settings.model.contextOllama', {
+                        tokens: provider.defaultContext.toLocaleString(i18n.language),
+                      })
+                    : t('settings.model.contextHint', {
+                        tokens: provider.defaultContext.toLocaleString(i18n.language),
+                      })
                 }
                 onChangeText={(next) => {
                   setWindowEdit(next.replace(/[^0-9]/g, ''))
@@ -708,13 +698,13 @@ export function SettingsScreen() {
               {sendsThinking(provider.id, 'on') ? (
                 <>
                   <SettingRow
-                    label="Reasoning"
-                    description="Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
+                    label={t('settings.model.reasoning')}
+                    description={t('settings.model.reasoningDescription')}
                     control={null}
                   />
                   <Segment
-                    label="Reasoning"
-                    options={REASONING}
+                    label={t('settings.model.reasoning')}
+                    options={reasoning}
                     value={
                       settings.thinking === undefined || settings.thinking === 'server-default'
                         ? DEFAULT_THINKING
@@ -737,18 +727,26 @@ export function SettingsScreen() {
             </View>
             <View style={styles.testRow}>
               <Button
-                label={testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
+                label={
+                  testing
+                    ? t('settings.test.testing')
+                    : connected
+                      ? t('settings.test.again')
+                      : t('settings.test.test')
+                }
                 variant="outline"
                 disabled={testing || endpoint.trim().length === 0}
-                blocker={endpoint.trim().length === 0 ? 'Fill in an endpoint first.' : undefined}
+                blocker={
+                  endpoint.trim().length === 0 ? t('settings.model.endpointFirst') : undefined
+                }
                 onPress={onTest}
               />
               {connected ? (
-                <Chip tone="green">Connected</Chip>
+                <Chip tone="green">{t('settings.test.connected')}</Chip>
               ) : failure ? (
-                <Chip tone="red">No answer</Chip>
+                <Chip tone="red">{t('settings.test.noAnswer')}</Chip>
               ) : (
-                <Chip tone="gray">Not connected</Chip>
+                <Chip tone="gray">{t('settings.test.notConnected')}</Chip>
               )}
             </View>
             {/* The server's own words, not a paraphrase. A wrong port and a path
@@ -760,7 +758,7 @@ export function SettingsScreen() {
               </Txt>
             ) : connected ? (
               <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-                Kept on this device. The assistant will use this model.
+                {t('settings.model.kept')}
               </Txt>
             ) : null}
           </Panel>
@@ -768,32 +766,31 @@ export function SettingsScreen() {
 
         <TourTarget id="reader">
           <Panel>
-            <PanelTitle hint="PDFs only">Read my documents</PanelTitle>
+            <PanelTitle hint={t('settings.reader.hint')}>{t('settings.reader.title')}</PanelTitle>
             {/* The honest split, because the old copy asked for a server before
               anything could be read and that is no longer true. Saying what
               already works is what stops somebody setting up a reader they do
               not need — and naming PDF plainly is what stops the opposite. */}
             <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-              This phone already reads Word files, OpenDocument files, decks, saved pages and plain
-              text on its own — nothing to set up and nothing sent anywhere.
+              {t('settings.reader.already')}
             </Txt>
             <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-              <Txt size="sm" tone="primary">
-                PDFs are the exception.
-              </Txt>{' '}
-              Turning one back into text needs the font tables inside it, which is more than this
-              app carries. For those, run {MARKITDOWN.name} on a machine this phone can reach and
-              give its address below.
+              <Trans
+                t={t}
+                i18nKey="settings.reader.pdf"
+                values={{ name: MARKITDOWN.name }}
+                components={{ strong: <Txt size="sm" tone="primary" /> }}
+              />
             </Txt>
             <TextField
-              label="Address"
+              label={t('settings.reader.address')}
               mono
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="url"
               value={readerAt}
               placeholder={MARKITDOWN.defaultEndpoint}
-              hint="Where markitdown-mcp is listening. The path ends in /mcp."
+              hint={t('settings.reader.addressHint')}
               onChangeText={(next) => {
                 setReaderAt(next)
                 setReaderOk(false)
@@ -802,7 +799,7 @@ export function SettingsScreen() {
             />
             <View style={{ marginTop: space[3], gap: space[1] }}>
               <Txt size="xs" tone="muted">
-                Not running it yet?
+                {t('settings.reader.notRunning')}
               </Txt>
               <Txt size="xs" tone="secondary" mono>
                 {MARKITDOWN.install}
@@ -813,18 +810,26 @@ export function SettingsScreen() {
             </View>
             <View style={styles.testRow}>
               <Button
-                label={readerTesting ? 'Testing…' : readerOk ? 'Test again' : 'Test connection'}
+                label={
+                  readerTesting
+                    ? t('settings.test.testing')
+                    : readerOk
+                      ? t('settings.test.again')
+                      : t('settings.test.test')
+                }
                 variant="outline"
                 disabled={readerTesting || readerAt.trim().length === 0}
-                blocker={readerAt.trim().length === 0 ? 'Fill in an address first.' : undefined}
+                blocker={
+                  readerAt.trim().length === 0 ? t('settings.reader.addressFirst') : undefined
+                }
                 onPress={onTestReader}
               />
               {readerOk ? (
-                <Chip tone="green">Connected</Chip>
+                <Chip tone="green">{t('settings.test.connected')}</Chip>
               ) : readerFailure ? (
-                <Chip tone="red">No answer</Chip>
+                <Chip tone="red">{t('settings.test.noAnswer')}</Chip>
               ) : (
-                <Chip tone="gray">Not connected</Chip>
+                <Chip tone="gray">{t('settings.test.notConnected')}</Chip>
               )}
             </View>
             {readerFailure ? (
@@ -833,47 +838,60 @@ export function SettingsScreen() {
               </Txt>
             ) : readerOk ? (
               <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-                Documents are sent to that address and nowhere else. Nothing is uploaded.
+                {t('settings.reader.ok')}
               </Txt>
             ) : null}
             {/* The notice the licence asks for, where the choice is made. */}
             <Divider style={{ marginVertical: space[3] }} />
             <Txt size="xs" tone="muted">
-              {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
-              {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
+              {t('settings.reader.notice', {
+                name: MARKITDOWN.name,
+                copyright: MARKITDOWN.copyright,
+                licence: MARKITDOWN.licence,
+              })}
             </Txt>
           </Panel>
         </TourTarget>
 
         <Panel>
-          <PanelTitle>Appearance</PanelTitle>
+          <PanelTitle>{t('settings.appearance.title')}</PanelTitle>
           <SettingRow
-            label="Theme"
-            description="System follows your device setting"
+            label={t('settings.appearance.theme')}
+            description={t('settings.appearance.themeDescription')}
             control={null}
           />
-          <Segment label="Theme" options={THEMES} value={pref} onChange={setPref} />
+          <Segment
+            label={t('settings.appearance.theme')}
+            options={themes}
+            value={pref}
+            onChange={setPref}
+          />
           <LanguageRow />
         </Panel>
 
         <Panel>
-          <PanelTitle>Your data</PanelTitle>
+          <PanelTitle>{t('settings.data.title')}</PanelTitle>
           <View style={styles.dataRow}>
-            <Button label="Export as JSON" icon="upload" variant="outline" onPress={onExport} />
+            <Button
+              label={t('settings.data.export')}
+              icon="upload"
+              variant="outline"
+              onPress={onExport}
+            />
             {/* Was disabled behind three successive blockers; the last said the
                 picker was not wired, and it is now. A .json or .txt backup from
                 wherever the person keeps it, or Export's own clipboard backup
                 pasted back — both through the same plan, question and restore
                 as a transfer. Disabled only while a restore is writing. */}
             <Button
-              label="Import"
+              label={t('settings.data.import')}
               icon="download"
               variant="outline"
               disabled={restoring}
               onPress={() => void onImportFile()}
             />
             <Button
-              label="Paste a backup"
+              label={t('settings.data.paste')}
               icon="clipboard"
               variant="outline"
               disabled={restoring}
@@ -896,26 +914,20 @@ export function SettingsScreen() {
               record is told to export first, and they are entitled to know that
               the attached documents themselves stay on the phone. */}
           <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-            The export covers applications, the timeline, the vault, saved postings, your keywords
-            and what they tag, and your profile. It is a backup this app can read back — but the
-            documents you attached stay on this phone, so their rows come back without their
-            contents. Transfer, under More, moves everything to a computer with the documents
-            included.
+            {t('settings.data.exportNote')}
           </Txt>
 
           <View style={{ marginTop: space[3] }}>
             <SettingRow
-              label="Records"
+              label={t('settings.data.records')}
               description={
-                isEmpty
-                  ? 'Every list is empty, so every screen is showing its first-run state.'
-                  : 'The seeded search — twelve applications, a timeline, a stocked vault.'
+                isEmpty ? t('settings.data.recordsEmpty') : t('settings.data.recordsDemo')
               }
               control={null}
             />
             <Segment
-              label="Records"
-              options={DATA_SETS}
+              label={t('settings.data.records')}
+              options={dataSets}
               value={dataSet}
               // The segment reflects the store rather than a local flag, so it
               // does not flip until the confirmation behind it has been taken.
@@ -925,19 +937,19 @@ export function SettingsScreen() {
             <Divider style={{ marginVertical: space[3] }} />
 
             <SettingRow
-              label="Move to another device"
-              description="Pair with your computer over your local network and move everything, documents included."
+              label={t('settings.data.move')}
+              description={t('settings.data.moveDescription')}
               onPress={() => navigation.navigate('Transfer')}
             />
             <SettingRow
-              label="Reset the demo data"
-              description="Puts back everything as it shipped, discarding this session's edits."
+              label={t('settings.data.reset')}
+              description={t('settings.data.resetDescription')}
               control={
                 <Button
-                  label="Reset"
+                  label={t('settings.data.resetButton')}
                   icon="rotate-ccw"
                   variant="outline"
-                  blocker={isEmpty ? 'Switch Records back to Demo data first' : undefined}
+                  blocker={isEmpty ? t('settings.data.resetBlocker') : undefined}
                   onPress={() => setPending('reset')}
                 />
               }
@@ -951,9 +963,7 @@ export function SettingsScreen() {
             ]}
           >
             <Txt size="sm" tone="warning">
-              Your records are saved on this device and survive closing the app. There is no account
-              and no sync, and no record ever leaves the phone — not through the model, not through
-              a crash report. Export writes a copy to the clipboard if you want one somewhere else.
+              {t('settings.data.warning')}
             </Txt>
           </View>
         </Panel>
@@ -971,9 +981,9 @@ export function SettingsScreen() {
       <ConfirmSheet
         open={pending !== null}
         onClose={() => setPending(null)}
-        title={pending ? pendingCopy[pending].title : 'Change the data?'}
+        title={pending ? pendingCopy[pending].title : t('settings.confirm.fallbackTitle')}
         description={pending ? pendingCopy[pending].description : ''}
-        confirmLabel={pending ? pendingCopy[pending].confirm : 'Continue'}
+        confirmLabel={pending ? pendingCopy[pending].confirm : t('settings.confirm.continue')}
         tone="danger"
         onConfirm={applyPending}
       />
@@ -983,13 +993,16 @@ export function SettingsScreen() {
       <ConfirmSheet
         open={importing !== null}
         onClose={() => setImporting(null)}
-        title="Replace everything on this phone?"
+        title={t('settings.import.replaceTitle')}
         description={
           importing === null
             ? ''
-            : `${describeBackup(importing)}. ${replacesClause(importing, 'on this phone')}, and that cannot be undone.`
+            : t('settings.import.replaceDescription', {
+                described: domain.backup(importing),
+                replaces: domain.replaces(importing, 'phone'),
+              })
         }
-        confirmLabel="Replace"
+        confirmLabel={t('settings.import.replace')}
         tone="danger"
         onConfirm={() => {
           if (importing !== null) applyImport(importing)
@@ -1038,20 +1051,22 @@ function ProviderPicker({
   onClose: () => void
   onPick: (next: ProviderId) => void
 }) {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   return (
     <MenuSheet
       open={open}
       onClose={onClose}
-      title="Provider"
-      description="Choosing one sets its address for you. The cloud ones need a key, and your records go to them."
+      title={t('settings.provider.title')}
+      description={t('settings.provider.description')}
       actions={PROVIDERS.map((p) => ({
         id: p.id,
-        label: p.label,
+        label: domain.provider(p.id),
         hint: p.cloud
-          ? 'Your words go to this company, and are billed to you'
+          ? t('settings.provider.cloud')
           : p.needsKey
-            ? 'On a machine you control. Needs a key.'
-            : 'On a machine you control. Nothing leaves it.',
+            ? t('settings.provider.localKey')
+            : t('settings.provider.local'),
         checked: p.id === current,
         onPress: () => {
           onPick(p.id)
@@ -1077,6 +1092,7 @@ function ProviderPicker({
  * production use, which is what the bill buys.
  */
 function CloudTerms({ provider }: { provider: ProviderMeta }) {
+  const { t } = useTranslation('screens')
   const { colors: c } = useTheme()
   const terms = cloudTerms(provider)
   const name = provider.label.split(' \u2014')[0]
@@ -1130,10 +1146,10 @@ function CloudTerms({ provider }: { provider: ProviderMeta }) {
 
       <View style={[s.row, { gap: space[4] }]}>
         <Txt size="xs" tone="info" onPress={() => open(provider.termsUrl)}>
-          {short} terms
+          {t('settings.cloud.terms', { name: short })}
         </Txt>
         <Txt size="xs" tone="info" onPress={() => open(provider.privacyUrl)}>
-          Privacy policy
+          {t('settings.cloud.privacy')}
         </Txt>
       </View>
     </View>
@@ -1178,18 +1194,19 @@ function SavedServers({
   onLoad: (server: ModelServer) => void
   onForget: (id: string) => void
 }) {
+  const { t } = useTranslation('screens')
   return (
     <Sheet
       open={open}
       onClose={onClose}
-      title="Saved servers"
-      description="Addresses that have answered on this device."
-      footer={<Button label="Done" onPress={onClose} />}
+      title={t('settings.servers.title')}
+      description={t('settings.servers.description')}
+      footer={<Button label={t('settings.servers.done')} onPress={onClose} />}
     >
       <View>
         {servers.length === 0 ? (
           <Txt size="sm" tone="muted">
-            Nothing saved yet. Test a connection and the address is kept here.
+            {t('settings.servers.empty')}
           </Txt>
         ) : (
           servers.map((server, i) => (
@@ -1198,7 +1215,7 @@ function SavedServers({
               <View style={[s.row, { paddingVertical: space[2] }]}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Load ${server.name}`}
+                  accessibilityLabel={t('settings.servers.load', { name: server.name })}
                   style={s.fill}
                   onPress={() => {
                     onLoad(server)
@@ -1213,7 +1230,7 @@ function SavedServers({
                         near-identical URLs with nothing marked is a list you
                         have to read character by character. */}
                     {server.endpoint === current.endpoint && server.model === current.model ? (
-                      <Chip tone="green">In use</Chip>
+                      <Chip tone="green">{t('settings.servers.inUse')}</Chip>
                     ) : null}
                   </View>
                   <Txt size="xs" tone="muted" mono numberOfLines={1}>
@@ -1225,7 +1242,7 @@ function SavedServers({
                 </Pressable>
                 <IconButton
                   icon="trash-2"
-                  label={`Forget ${server.name}`}
+                  label={t('settings.servers.forget', { name: server.name })}
                   tone="danger"
                   onPress={() => {
                     onForget(server.id)
@@ -1249,7 +1266,8 @@ function SavedServers({
  * stored colour with a different name on each screen, which is the kind of
  * disagreement nobody notices until they are looking at both. `TONE_LABEL` in
  * `core/model.ts` is beside the union it names, so the palette is described
- * once and spoken the same way in both apps.
+ * once and spoken the same way in both apps — through `domain.tone`, in the
+ * language on screen.
  */
 
 /**
@@ -1261,6 +1279,8 @@ function SavedServers({
  * back, which is why this is an undo rather than a confirmation.
  */
 function KeywordManager() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const { labels, addLabel, renameLabel, removeLabel, setTone, countFor } = useLabels()
   const { toast } = useToast()
@@ -1289,23 +1309,28 @@ function KeywordManager() {
     setDeleting(null)
     const { restore } = removeLabel(target.id)
     toast({
-      title: `${target.name} deleted`,
+      title: t('rowActions.deletedTitle', { name: target.name }),
       description:
-        target.used > 0
-          ? `Taken off ${target.used} record${target.used === 1 ? '' : 's'}.`
-          : undefined,
+        target.used > 0 ? t('settings.keywords.takenOff', { count: target.used }) : undefined,
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('shared.undo'), onPress: restore },
     })
   }
 
   return (
     <Panel>
       <PanelTitle
-        hint="shared by applications, reminders and the Vault"
-        right={<Button label="New" icon="plus" variant="outline" onPress={() => setAdding(true)} />}
+        hint={t('settings.keywords.hint')}
+        right={
+          <Button
+            label={t('applications.new')}
+            icon="plus"
+            variant="outline"
+            onPress={() => setAdding(true)}
+          />
+        }
       >
-        Keywords
+        {t('settings.keywords.title')}
       </PanelTitle>
 
       {labels.map((l, i) => (
@@ -1316,11 +1341,11 @@ function KeywordManager() {
               {l.name}
             </Chip>
             <Txt size="xs" tone="muted" style={{ flex: 1 }}>
-              Used on {countFor(l.id)} {countFor(l.id) === 1 ? 'record' : 'records'}
+              {t('settings.keywords.usedOn', { count: countFor(l.id) })}
             </Txt>
             <IconButton
               icon="edit-2"
-              label={`Rename ${l.name}`}
+              label={t('settings.keywords.rename', { name: l.name })}
               onPress={() => {
                 setDraftName(l.name)
                 setEditing(l)
@@ -1329,7 +1354,7 @@ function KeywordManager() {
             <IconButton
               icon="trash-2"
               tone="danger"
-              label={`Delete ${l.name}`}
+              label={t('jobScout.pipelines.delete', { name: l.name })}
               onPress={() => onDelete(l.id, l.name)}
             />
           </View>
@@ -1339,13 +1364,22 @@ function KeywordManager() {
       <Sheet
         open={editing !== null}
         onClose={() => setEditing(null)}
-        title={editing ? `Edit ${editing.name}` : 'Edit keyword'}
-        description="Renaming leaves the id alone, so every record carrying this keyword follows."
+        title={
+          editing
+            ? t('settings.keywords.editTitle', { name: editing.name })
+            : t('settings.keywords.editGeneric')
+        }
+        description={t('settings.keywords.editDescription')}
         footer={
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={() => setEditing(null)} />
             <Button
-              label="Save"
+              label={t('shared.cancel')}
+              variant="ghost"
+              size="md"
+              onPress={() => setEditing(null)}
+            />
+            <Button
+              label={t('profile.save')}
               size="md"
               onPress={() => {
                 if (!editing) return
@@ -1355,8 +1389,8 @@ function KeywordManager() {
                 const ok = renameLabel(editing.id, draftName)
                 if (!ok) {
                   toast({
-                    title: 'That name is taken',
-                    description: 'Another keyword already answers to it.',
+                    title: t('settings.keywords.taken'),
+                    description: t('settings.keywords.takenDescription'),
                     tone: 'danger',
                   })
                   return
@@ -1368,10 +1402,14 @@ function KeywordManager() {
         }
       >
         <View style={{ gap: space[3.5], paddingBottom: space[2] }}>
-          <TextField label="Name" value={draftName} onChangeText={setDraftName} />
+          <TextField
+            label={t('jobScout.editor.name')}
+            value={draftName}
+            onChangeText={setDraftName}
+          />
           <View>
             <Txt size="xs" tone="secondary" style={{ marginBottom: space[2] }}>
-              Colour
+              {t('settings.keywords.colour')}
             </Txt>
             {/*
               The VOCABULARY, not the rotation.
@@ -1404,7 +1442,7 @@ function KeywordManager() {
                     selected: editing?.tone === tone,
                     checked: editing?.tone === tone,
                   }}
-                  accessibilityLabel={TONE_LABEL[tone]}
+                  accessibilityLabel={domain.tone(tone)}
                   onPress={() => editing && setTone(editing.id, tone)}
                   style={[
                     styles.toneOption,
@@ -1414,7 +1452,7 @@ function KeywordManager() {
                   ]}
                 >
                   <Chip tone={tone} shape="capsule" size="sm">
-                    {TONE_LABEL[tone]}
+                    {domain.tone(tone)}
                   </Chip>
                 </Pressable>
               ))}
@@ -1426,13 +1464,18 @@ function KeywordManager() {
       <Sheet
         open={adding}
         onClose={() => setAdding(false)}
-        title="New keyword"
-        description="Keywords are yours. The same one works on an application, a reminder, a file and a link."
+        title={t('settings.keywords.newTitle')}
+        description={t('settings.keywords.newDescription')}
         footer={
           <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={() => setAdding(false)} />
             <Button
-              label="Add"
+              label={t('shared.cancel')}
+              variant="ghost"
+              size="md"
+              onPress={() => setAdding(false)}
+            />
+            <Button
+              label={t('profile.add')}
               size="md"
               onPress={() => {
                 const name = newName.trim()
@@ -1440,7 +1483,7 @@ function KeywordManager() {
                 addLabel(name)
                 setNewName('')
                 setAdding(false)
-                toast({ title: `${name} added` })
+                toast({ title: t('settings.keywords.added', { name }) })
               }}
             />
           </>
@@ -1448,10 +1491,10 @@ function KeywordManager() {
       >
         <View style={{ paddingBottom: space[2] }}>
           <TextField
-            label="Name"
+            label={t('jobScout.editor.name')}
             value={newName}
             autoFocus
-            placeholder="e.g. Waiting on them"
+            placeholder={t('settings.keywords.placeholder')}
             onChangeText={setNewName}
           />
         </View>
@@ -1463,15 +1506,15 @@ function KeywordManager() {
       <ConfirmSheet
         open={deleting !== null}
         onClose={() => setDeleting(null)}
-        title={deleting === null ? '' : `Delete ${deleting.name}?`}
+        title={deleting === null ? '' : t('rowActions.confirmTitle', { name: deleting.name })}
         description={
           deleting === null
             ? ''
             : deleting.used > 0
-              ? `It comes off ${String(deleting.used)} record${deleting.used === 1 ? '' : 's'}. Those records stay; only the keyword goes.`
-              : 'Nothing is tagged with it, so nothing else changes.'
+              ? t('settings.keywords.confirmUsed', { count: deleting.used })
+              : t('settings.keywords.confirmUnused')
         }
-        confirmLabel="Delete"
+        confirmLabel={t('shared.delete')}
         tone="danger"
         onConfirm={confirmDelete}
       />

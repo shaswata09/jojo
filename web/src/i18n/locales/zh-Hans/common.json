@@ -4,5 +4,266 @@
     "description": "jojo 的显示语言。你的记录会保留你书写时使用的语言。",
     "system": "与此浏览器相同（{{name}}）",
     "loadFailed": "无法加载该语言。jojo 仍使用{{name}}。"
+  },
+  "buckets": {
+    "overdue": "已逾期",
+    "today": "今天",
+    "upcoming": "即将到来",
+    "done": "已完成"
+  },
+  "snooze": {
+    "day": {
+      "soon": "明天",
+      "later": "推迟一天",
+      "duration": "一天"
+    },
+    "threeDays": {
+      "soon": "3 天后",
+      "later": "推迟三天",
+      "duration": "三天"
+    },
+    "week": {
+      "soon": "7 天后",
+      "later": "推迟一周",
+      "duration": "一周"
+    }
+  },
+  "routeFailure": {
+    "title": "此页面未能加载",
+    "subtitle": "jojo 的其余部分仍在运行。",
+    "emptyTitle": "此视图出了问题",
+    "emptyDescription": "去别的页面再回来即可重新加载。如果每次都这样，问题出在此页面显示的记录上——可以先在设置中做一次备份。",
+    "back": "返回仪表板"
+  },
+  "writeResult": {
+    "title": "未能保存",
+    "refused": "更改被拒绝。"
+  },
+  "copy": {
+    "blocked": "已阻止",
+    "copied": "已复制",
+    "copy": "复制"
+  },
+  "drag": {
+    "theItem": "该项目",
+    "aTarget": "放置目标",
+    "start": "已拿起 {{name}}。",
+    "over": "{{name}} 位于 {{place}} 上方。",
+    "notOver": "{{name}} 已不在任何放置目标上方。",
+    "dropped": "{{name}} 已放到 {{place}}。",
+    "droppedHome": "{{name}} 已放回起始位置。",
+    "cancelled": "拖动已取消。{{name}} 已放回原处。",
+    "instructions": "要拿起可拖动的项目，请按空格键。\n拖动时，用方向键移动该项目。\n再按一次空格键将其放到新位置，或按 Esc 键取消。"
+  },
+  "actions": {
+    "undo": "撤销",
+    "cancel": "取消",
+    "save": "保存",
+    "close": "关闭"
+  },
+  "records_other": "{{count}} 条记录",
+  "deleteKeyword": {
+    "failed": "未能删除",
+    "stillThere": "{{name}} 仍是关键词。",
+    "deleted": "已删除 {{name}}",
+    "wasUnused": "它不在任何记录上。",
+    "takenOff_other": "已从 {{count}} 条记录和关键词筛选中移除。",
+    "confirmTitle": "删除 {{name}}？",
+    "confirmTitleAny": "删除关键词？",
+    "unused": "尚未用于任何记录，因此其他内容不会变化。",
+    "usedOn_other": "已用于 {{count}} 条记录。这些记录会保留——只是失去这个关键词。",
+    "confirm": "删除关键词"
+  },
+  "bucketFilter": {
+    "all": "全部"
+  },
+  "marks": {
+    "bold": "粗体",
+    "italic": "斜体",
+    "underlined": "下划线"
+  },
+  "pageHeader": {
+    "options": "{{title}}选项"
+  },
+  "errorBoundary": {
+    "title": "出了点问题",
+    "body": "某个视图未能渲染。“重试”会在不重新加载页面的情况下重新挂载它。",
+    "retry": "重试"
+  },
+  "tone": {
+    "colourFor": "{{label}} 的颜色",
+    "anyColourFor": "为 {{label}} 选任意颜色"
+  },
+  "boot": {
+    "takingLong": "本地数据库打开得比平时慢。可能是另一个 jojo 标签页占用了它——关闭其他标签页通常就能释放。",
+    "opening": "正在打开本地数据库…"
+  },
+  "keywordPicker": {
+    "none": "暂无",
+    "choose": "选择关键词",
+    "heading": "关键词",
+    "newPlaceholder": "新关键词…",
+    "new": "新关键词"
+  },
+  "rowMenu": {
+    "moreFor": "{{name}} 的更多操作",
+    "more": "更多操作"
+  },
+  "firstRun": {
+    "title": "你想怎样开始？",
+    "description": "jojo 把所有内容都保存在这台设备上，所以由你决定。两个选项都不是最终的——之后可以在设置中加载演示数据或清除所有记录。",
+    "demo": {
+      "title": "用演示数据体验",
+      "detail": "一份完整的求职示例供你浏览——十二份申请、一条时间线、一个装满的保险库。这些都不是你的，之后一键即可清除。",
+      "working": "正在加载…"
+    },
+    "empty": {
+      "title": "从空白开始",
+      "detail": "完全没有演示记录。每个页面都以空状态打开，jojo 里的第一样东西会是你自己添加的。",
+      "working": "正在清除…"
+    }
+  },
+  "recovery": {
+    "title": "jojo 无法读取其数据库",
+    "body": "你的记录仍在这台设备上。jojo 没有更改或替换任何内容，也不会在其上加载演示数据——为了看起来正常而自行重新填充的存储，会把这变成永久的数据丢失。",
+    "downloadHint": "将能读取的行写入文件",
+    "downloadNothing": "数据库完全无法读取，因此没有可写出的内容",
+    "download": "下载能读取的内容",
+    "working": "处理中…",
+    "retry": "重试",
+    "freshHint": "删除数据库，并像全新安装一样启动 jojo",
+    "fresh": "重新开始",
+    "readable_other": "有 {{count}} 行可以读取——请先下载，因为重新开始会删除它们。",
+    "unreadable": "存储中什么都读不出来，因此没有可下载的内容。请先重试：被另一个标签页占用的数据库会这样失败，之后会自行恢复。",
+    "confirmTitle": "删除数据库并重新开始？",
+    "confirmBody": "这会删除 jojo 的本地数据库及其中剩余的全部内容，然后从零开始——包括首次运行时询问用演示数据还是空白开始的问题。它不会修复任何东西，也无法撤销。如果你还没有下载可读取的行，请取消并先下载。",
+    "confirm": "删除并重新开始"
+  },
+  "labelFilter": {
+    "label": "按关键词筛选",
+    "none": "还没有关键词——添加一个即可用它筛选。",
+    "example": "例如：开发者",
+    "add": "添加关键词",
+    "clear": "清除"
+  },
+  "labelPicker": {
+    "editOn": "编辑 {{name}} 的关键词",
+    "edit": "编辑关键词"
+  },
+  "keywordChip": {
+    "taken": "已有同名关键词。",
+    "needsName": "关键词需要名称。",
+    "rename": "重命名",
+    "colour": "颜色",
+    "stopFiltering": "停止按 {{name}} 筛选",
+    "filterBy": "按 {{name}} 筛选",
+    "edit": "编辑关键词 {{name}}",
+    "editHint": "重命名、改色或删除"
+  },
+  "welcome": {
+    "title": "简单介绍一下你自己",
+    "description": "草稿会以你的名字落款，侦察员会根据你在找的工作打分。这些都只保存在这台设备上，而且全是可选的——之后也可以在“个人资料”中填写。",
+    "fullName": "全名",
+    "fullNameExample": "例如：Lonardo Jenson",
+    "position": "当前职位",
+    "positionExample": "例如：计算机科学博士生",
+    "location": "所在地",
+    "locationExample": "例如：Santa Clara, CA",
+    "email": "电子邮件",
+    "skip": "暂时跳过",
+    "save": "保存并继续",
+    "rest": "其余内容——链接、目标职位、侦察员匹配的关键词——在<anchor>个人资料</anchor>中。"
+  },
+  "onboarding": {
+    "tourTitle": "想来一次动手导览吗？",
+    "tourDescription": "带你走一遍真实的页面——聚光灯照亮每个部分，说明它的用途，你边走边亲手试。它从不替你输入、保存或更改任何内容，中途停下也会记住进度。",
+    "notNow": "以后再说",
+    "start": "开始导览",
+    "always": "导览随时都在<em>使用指南</em>里，所以现在拒绝也没关系。"
+  },
+  "setup": {
+    "skip": "暂时跳过",
+    "continue": "继续",
+    "done": "完成",
+    "optional": "以上每项都是可选的，之后可以在设置中配置。",
+    "model": {
+      "title": "连接模型",
+      "body": "这让 jojo 成为一个智能体，而不只是文件柜：它可以回答关于你求职的问题、撰写跟进邮件和草稿，并运行 Job Scout 流水线来补全记录、留意新职位。指向你自己机器上的模型，任何内容都不会离开设备。"
+    },
+    "reader": {
+      "title": "让它读取你的文档",
+      "body": "没有这一步，助手只能看到文档的名称。在这台机器上运行 MarkItDown——下面有两条命令——它在起草和回答时就能读取你的简历、求职信和已保存职位的内容。"
+    },
+    "crash": {
+      "title": "崩溃报告与使用情况",
+      "description": "两件不同的事，都已开启——可以在这里或之后在设置中关闭任意一项。两者都不会包含你的记录：申请、文档、笔记、个人资料或对话都不会。",
+      "inReport": "报告包含什么",
+      "inError": "错误信息，以及它发生在 jojo 的哪里。",
+      "inStack": "堆栈跟踪，指出出错的代码。",
+      "never": "报告绝不包含什么",
+      "neverRecords": "你的申请、文档、笔记、个人资料或对话。",
+      "neverSecrets": "你的 API 密钥、你使用的地址、你的主目录或任何电子邮件地址——这些在写报告之前就会被删除，而不是在发送之前。",
+      "where": "在此浏览器和 jojo 扩展中，崩溃报告<em>留在这台设备上</em>：不会上传任何内容，备份文件也不包含它们。你可以自己在设置中查看。在 jojo 手机应用中，同样的报告还会发送到 Google 的 Firebase Crashlytics，它会附加你的设备型号、操作系统版本，以及一个用来统计有多少人遇到同一崩溃的随机 id——没有姓名、没有账户，没有任何与你相关的信息。使用情况统计（下面的第二个开关）会从所有版本（包括此版本）发送到 Google Analytics。",
+      "keep": "保留崩溃报告",
+      "keepHint": "错误及其发生位置。在浏览器中保留在这台设备上。",
+      "share": "分享我使用的功能",
+      "shareHint": "仅计数——打开了哪些页面、多频繁。绝不包括其中的内容。",
+      "usageNote": "第二项是 jojo 唯一会发送的、关于你“做了什么”的信息，而且只能说固定列表中的内容——“打开了保险库”“添加了一份申请”“有 6–20 份”。它无法说出雇主、职位、文件或你输入的任何内容，因为这些词不在列表里。它会发送到 Google Analytics，让我们看到 jojo 的哪些部分值得投入更多工作。",
+      "bothOff": "全部关闭",
+      "save": "保存选择",
+      "continueOff": "全部关闭并继续",
+      "later": "你可以随时在设置中更改任意一项，关闭某项也会丢弃它保存的内容。"
+    },
+    "extension": {
+      "title": "保存你申请过的职位",
+      "body": "招聘广告会下架，往往在你收到回复之前。浏览器扩展会把职位按今天的样子保存到你自己的保险库——Job Scout 也是通过它读取你关注的招聘网站。"
+    }
+  },
+  "spectrum": {
+    "saturation": "饱和度和亮度",
+    "hue": "色相",
+    "hex": "十六进制颜色",
+    "any": "任意颜色"
+  },
+  "field": {
+    "openInTab": "在新标签页中打开 {{label}}",
+    "hide": "隐藏 {{label}}",
+    "show": "显示 {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "小",
+      "normal": "正常",
+      "large": "大",
+      "huge": "特大"
+    },
+    "clearFormatting": "清除格式",
+    "bold": "粗体",
+    "italic": "斜体",
+    "underline": "下划线",
+    "strikeThrough": "删除线",
+    "insertUnorderedList": "项目符号列表",
+    "insertOrderedList": "编号列表",
+    "snippetText": "片段文本",
+    "fontSize": "字号",
+    "insertTable": "插入表格",
+    "textColour": "文字颜色"
+  },
+  "toolForm": {
+    "aRecord": "一条记录",
+    "yourProfile": "你的个人资料"
+  },
+  "toolRun": {
+    "choose": "选择…",
+    "none": "无",
+    "omitted_other": "此表单中没有：{{fields}}。请打开记录进行设置。"
+  },
+  "toast": {
+    "notifications": "通知",
+    "dismiss": "关闭——{{title}}"
+  },
+  "command": {
+    "title": "命令面板",
+    "description": "搜索要运行的命令..."
   }
 }

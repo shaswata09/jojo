@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TODAY, TODAY_PARTS } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
@@ -6,11 +7,12 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/Field'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
-import { MONTH_LABELS, WEEKDAYS, buildMonth, stepMonth } from '@jojo/service/core/calendar'
-import { addDays, isoOf, partsOf, shortDate } from '@jojo/service/data/timeline'
+import { WEEKDAYS, buildMonth, stepMonth } from '@jojo/service/core/calendar'
+import { addDays, isoOf, partsOf } from '@jojo/service/data/timeline'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * A date, picked from a month rather than typed.
@@ -46,20 +48,25 @@ export function DateField({
   quick?: boolean
   clearable?: boolean
 }) {
+  const domain = useDomain()
+  const { t } = useTranslation(['components', 'common'])
   const c = useColors()
   const [open, setOpen] = useState(false)
 
   const quickDates = [
-    { label: 'Today', iso: TODAY },
-    { label: 'Tomorrow', iso: addDays(TODAY, 1) },
-    { label: 'In 7 days', iso: addDays(TODAY, 7) },
+    { label: t('date.today'), iso: TODAY },
+    { label: t('date.tomorrow'), iso: addDays(TODAY, 1) },
+    { label: t('date.inSevenDays'), iso: addDays(TODAY, 7) },
   ]
 
   return (
     <FormField label={label} hint={hint} error={error} required={required}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${label}: ${value ? shortDate(value) : 'not set'}. Pick a date`}
+        accessibilityLabel={t('date.triggerLabel', {
+          label,
+          value: value ? domain.shortDate(value) : t('date.notSet'),
+        })}
         onPress={() => setOpen(true)}
         style={[
           styles.trigger,
@@ -71,10 +78,15 @@ export function DateField({
       >
         <Feather name="calendar" size={16} color={c.text3} />
         <Txt size="base" tone={value ? 'primary' : 'muted'} style={s.fill}>
-          {value ? `${shortDate(value)} · ${value}` : 'Pick a date'}
+          {value ? `${domain.shortDate(value)} · ${value}` : t('date.pick')}
         </Txt>
         {clearable && value ? (
-          <IconButton icon="x" label={`Clear ${label}`} size={32} onPress={() => onChange('')} />
+          <IconButton
+            icon="x"
+            label={t('common:actions.clearNamed', { name: label })}
+            size={32}
+            onPress={() => onChange('')}
+          />
         ) : (
           <Feather name="chevron-right" size={16} color={c.text3} />
         )}
@@ -136,6 +148,8 @@ export function MonthPickerSheet({
   value: string
   onPick: (iso: string) => void
 }) {
+  const { t } = useTranslation('components')
+  const domain = useDomain()
   const c = useColors()
   const start = partsOf(value)
   const [view, setView] = useState({ year: start.y, month: start.m })
@@ -152,36 +166,38 @@ export function MonthPickerSheet({
   // at the same call in `screens/CalendarScreen.tsx`. Without it the date
   // picker draws a month with no today marker.
   const month = buildMonth(view.year, view.month, TODAY_PARTS)
+  // Not `month.label`: that is core's English, and this reads the language on screen.
+  const monthName = domain.month(month.month)
   const cells: (number | null)[] = [
     ...Array.from({ length: month.startsOn }, () => null),
     ...Array.from({ length: month.days }, (_, i) => i + 1),
   ]
 
   return (
-    <Sheet open={open} onClose={onClose} title="Pick a date">
+    <Sheet open={open} onClose={onClose} title={t('date.pick')}>
       <View style={styles.monthHeader}>
         <IconButton
           icon="chevron-left"
-          label="Previous month"
+          label={t('date.previousMonth')}
           onPress={() => setView(stepMonth(view.year, view.month, -1))}
         />
         <Txt size="md" weight="medium">
-          {month.label}{' '}
+          {monthName}{' '}
           <Txt size="md" tone="muted">
             {month.year}
           </Txt>
         </Txt>
         <IconButton
           icon="chevron-right"
-          label="Next month"
+          label={t('date.nextMonth')}
           onPress={() => setView(stepMonth(view.year, view.month, 1))}
         />
       </View>
 
       <View style={styles.weekdays}>
-        {WEEKDAYS.map((d) => (
+        {WEEKDAYS.map((d, i) => (
           <Txt key={d} size="xs" tone="muted" center style={styles.cell}>
-            {d.slice(0, 1)}
+            {domain.weekdayNarrow(i)}
           </Txt>
         ))}
       </View>
@@ -201,7 +217,7 @@ export function MonthPickerSheet({
               key={day}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={`${month.label} ${day}`}
+              accessibilityLabel={`${monthName} ${day}`}
               onPress={() => onPick(iso)}
               style={styles.cell}
             >
@@ -227,7 +243,7 @@ export function MonthPickerSheet({
 
       <View style={styles.monthFooter}>
         <Button
-          label={`Back to ${MONTH_LABELS[TODAY_PARTS.month - 1]}`}
+          label={t('date.backTo', { month: domain.month(TODAY_PARTS.month) })}
           variant="outline"
           size="md"
           onPress={() => setView({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}

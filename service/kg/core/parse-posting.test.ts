@@ -8,7 +8,13 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { draftFromShare, draftFromText, draftFromUrl, roleFromTitle } from './parse-posting'
+import {
+  draftFromShare,
+  draftFromText,
+  draftFromUrl,
+  employerSite,
+  roleFromTitle,
+} from './parse-posting'
 
 describe('draftFromText', () => {
   it('splits on the first separator only', () => {
@@ -90,6 +96,27 @@ describe('draftFromUrl', () => {
     // Not even when the path leads with a name, which a tenant board reads
     // as the employer.
     expect(draftFromUrl('https://www.jobs.ac.uk/lecturer-in-statistics/ABC123').org).toBeUndefined()
+  })
+
+  // The scout's four boards, at the link shapes measured on each. None of them
+  // carries the employer in the address, so none may name one, and none is
+  // one employer's site — two jobs there with the same requisition number are
+  // at two employers.
+  it.each([
+    ['https://www.higheredjobs.com/faculty/details.cfm?JobCode=180000001&Title=Lecturer'],
+    ['https://academicjobsonline.org/ajo/jobs/29411'],
+    ['https://www.academiccareers.com/job/123456/assistant-professor-of-computer-science/'],
+    ['https://careercenter.cra.org/job/assistant-professor/71234567/'],
+    ['https://cra.org/ads/12345'],
+  ])('treats the scout board %s as a board that does not carry the employer', (url) => {
+    const draft = draftFromUrl(url)
+    expect(draft.org).toBeUndefined()
+    expect(draft.source).toBe('Job board')
+    expect(employerSite(url)).toBeUndefined()
+  })
+
+  it('keeps a CRA look-alike host an employer site', () => {
+    expect(employerSite('https://evil-cra.org/jobs/1')).toBe('evil-cra.org')
   })
 
   it('reads a second-level label as a suffix only before a country code', () => {

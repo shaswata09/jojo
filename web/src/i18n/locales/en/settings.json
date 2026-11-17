@@ -1,0 +1,486 @@
+{
+  "shared": {
+    "thisBrowserOnly": "this browser only",
+    "optional": "optional",
+    "undo": "Undo",
+    "save": "Save",
+    "cancel": "Cancel",
+    "testing": "Testing…",
+    "testAgain": "Test again",
+    "testConnection": "Test connection",
+    "connected": "Connected",
+    "noAnswer": "No answer",
+    "notConnected": "Not connected"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "theme": {
+      "label": "Theme",
+      "description": "System follows your operating system setting",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "gestures": {
+      "label": "Mascot gestures",
+      "description": "jojo reacts as you work. Try one."
+    },
+    "draw": {
+      "label": "Draw a move",
+      "description": "Draw on the robot in the sidebar card. The robot button in its corner lists these too."
+    },
+    "sounds": {
+      "label": "Interface sounds",
+      "description": "A short click when you flip a switch"
+    }
+  },
+  "savedServers": {
+    "intro": "Saved connections — everything that has answered here, ready to load back whole. A key is kept beside the address on this device; it never enters a backup.",
+    "inUse": "In use",
+    "keyKept": "key kept",
+    "load": "Load {{name}}",
+    "loadWithKey": "Load {{name}}, including its key",
+    "forget": "Forget {{name}}"
+  },
+  "model": {
+    "title": "Model",
+    "hint": "OpenAI-compatible",
+    "savedNone": "Nothing saved yet — test a connection and the address is kept",
+    "savedServers": "Saved servers",
+    "intro": "A model on this machine, or one you pay for. Local is the default because it is the only option where your records never leave the device.",
+    "provider": "Provider",
+    "reasoningOptions": {
+      "on": "On",
+      "light": "Light",
+      "off": "Off"
+    },
+    "endpoint": {
+      "label": "Endpoint",
+      "hintOllama": "The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.",
+      "hint": "The base URL, ending in /v1."
+    },
+    "apiKey": {
+      "label": "API key",
+      "hint": "Kept in this browser only. It is never put in a backup and never sent anywhere but the provider."
+    },
+    "getKeyLink": "<anchor>Get a key from {{provider}}</anchor>",
+    "getKeyFree": "<anchor>Get a key from {{provider}}</anchor> — free, no card.",
+    "modelField": {
+      "label": "Model",
+      "placeholder": "The model id, from your provider",
+      "hintConnected": "What the server reported. Change it if you serve more than one.",
+      "hint": "Test the connection to fill this from the server, or type the id yourself."
+    },
+    "savedAs": {
+      "label": "Saved as",
+      "hint": "What this server is called in the list. Defaults to the model."
+    },
+    "contextWindow": {
+      "label": "Context window",
+      "hintOllama": "Tokens. Leave empty to use {{tokens}} and let Ollama size itself; a number here is also sent as num_ctx.",
+      "hint": "Tokens your deployment can hold. Leave empty for {{tokens}}."
+    },
+    "reasoning": {
+      "label": "Reasoning",
+      "description": "Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
+    },
+    "fillEndpoint": "Fill in an endpoint first",
+    "connectedNote": "Kept in this browser. The assistant will use this model."
+  },
+  "cloudTerms": {
+    "providerTerms": "{{provider}} terms",
+    "privacy": "Privacy policy",
+    "licence": "jojo’s licence page"
+  },
+  "mcp": {
+    "title": "Connect from an MCP client",
+    "intro": "Let an assistant you already use — Claude Code on your own plan, say — read and update your records here, with the same tools jojo's own assistant has. It reaches this tab through a small program on your computer, and every change it makes shows up here with Undo.",
+    "allow": "Allow an MCP client on this computer to use jojo",
+    "chip": {
+      "off": "Off",
+      "searching": "Waiting for jojo-bridge",
+      "ready": "Linked",
+      "badToken": "Token refused",
+      "noExtension": "Needs the extension",
+      "staleExtension": "Reload the extension"
+    },
+    "explain": {
+      "searching": "Nothing is answering at 127.0.0.1:3002 yet. Start jojo-bridge with the first command — jojo keeps looking.",
+      "served_one": "Answered {{count}} request from your client this session, most recently {{method}}.",
+      "served_other": "Answered {{count}} requests from your client this session, most recently {{method}}.",
+      "servedNoMethod_one": "Answered {{count}} request from your client this session.",
+      "servedNoMethod_other": "Answered {{count}} requests from your client this session.",
+      "ready": "jojo-bridge is running. Connect your client with the second command.",
+      "badToken": "jojo-bridge is running with a different token. Stop it with Ctrl+C and start it again with the first command.",
+      "noExtension": "This copy of jojo is served from the web, and Chrome keeps web pages away from 127.0.0.1. The jojo extension carries the link — its installer is on this page, under Keeping postings.",
+      "staleExtension": "The jojo extension in this browser is older than this page. Open chrome://extensions and press Reload on jojo."
+    },
+    "start": {
+      "title": "Start jojo-bridge, and leave it running",
+      "copy": "Copy the command that starts jojo-bridge",
+      "notePowershell": "Needs Node 18 or newer. Paste it into Windows PowerShell. The token goes in through the environment, so it never shows in the process list. A jojo-bridge downloaded before this version must be downloaded again — the command does that.",
+      "note": "Needs Node 18 or newer. The token goes in through the environment, so it never shows in the process list. A jojo-bridge downloaded before this version must be downloaded again — the command does that."
+    },
+    "connect": {
+      "title": "Connect Claude Code to it, once",
+      "copy": "Copy the command that connects Claude Code",
+      "note": "Then ask it something like “which of my applications are waiting on me?”. If your terminal says “command not found: claude”, you use Claude Code inside VS Code, which ships its own copy — run the same line with that copy’s full path (in the VS Code extensions folder, under anthropic.claude-code-…/resources/native-binary/claude), or install the Claude Code CLI. Any client that speaks MCP over HTTP can use the same address and token."
+    },
+    "honesty": "Your client runs on your own plan and your own login — jojo never sees either, and sends nothing to Anthropic or anyone else. It can use every tool jojo's assistant can except the two that cannot be undone, Reset and Clear. Claude Code asks before it uses a tool unless you have told it not to, and jojo marks every delete as destructive. Keep this tab open while you use it: the records live here, and so does the other end of the link.",
+    "newToken": "New token",
+    "newTokenNote": "The old commands stop working — run both again with the new one."
+  },
+  "reader": {
+    "title": "Read my documents",
+    "intro": "The assistant can only see a document's name until something turns it into text. Run <anchor>{{name}}</anchor> on this machine and it can read what is inside your PDFs, Word files, decks and spreadsheets.",
+    "address": {
+      "label": "Address",
+      "hint": "A path on this site in development, or the reader’s own address with the extension installed. See below."
+    },
+    "notRunning": "Not running it yet?",
+    "copySetup": "Copy the setup commands",
+    "cors": "It listens on <mono>{{endpoint}}</mono>, but it sends no CORS headers — so a browser will not let this page call it across ports. jojo's dev server forwards <mono>{{path}}</mono> to it, which is why the address above is a path rather than a URL. The phone app talks to it directly and needs none of this.",
+    "hosted": "<em>On a hosted copy, install the extension.</em> A page served from the web cannot call <mono>127.0.0.1</mono> — there is no proxy to forward a path, and https:// pages are barred from the local network. The extension is not a page: it reaches the reader directly, and jojo asks it to. Put the reader's own address above and it relays each request; it will only ever relay to this machine.",
+    "fillAddress": "Fill in an address first",
+    "connectedNote": "Documents are sent to that address and nowhere else. Nothing is uploaded.",
+    "separate": "{{name}} is a separate program, not part of jojo.",
+    "notAffiliated": "jojo is not affiliated with Microsoft."
+  },
+  "capture": {
+    "title": "Keeping postings",
+    "intro": "A job posting is the one document in your search that belongs to somebody else. The listing comes down the week after the interview and takes the requirements with it. The jojo extension saves a copy — the page as it read the day you filed it, with every image and stylesheet folded in, so opening it a year later reaches nothing and needs no connection.",
+    "checking": "Checking this browser…",
+    "installed": "Installed and connected.",
+    "installedHint": "Open a posting and click the jojo button in the toolbar — if you cannot see it, it is behind the jigsaw-piece menu and needs pinning. Then come back to the Vault.",
+    "version": "Version {{version}}.",
+    "safari": {
+      "title": "Safari cannot run this extension.",
+      "body": "Safari only loads extensions that ship inside a signed Mac app, so there is nothing to install here. Use Chrome, Edge, Brave or Firefox for capturing; everything else in jojo works the same in Safari."
+    },
+    "download": "Download the extension",
+    "firefox": {
+      "title": "Firefox needs a signed copy.",
+      "body": "Firefox is the one browser where this could be a single click — a Mozilla-signed add-on can be installed straight from a link here, with no store listing. jojo does not produce a signed build yet, so for now load it temporarily from <code>about:debugging</code> → This Firefox → Load Temporary Add-on, and pick <code>manifest.json</code>. Firefox forgets it when it restarts."
+    },
+    "steps": {
+      "unzip": "Unzip it somewhere permanent — not Downloads. <muted>The browser reads the extension from that folder every time it starts, so deleting or moving it uninstalls the extension.</muted>",
+      "open": "Open the extensions page.",
+      "copied": "Copied",
+      "copy": "Copy",
+      "paste": "Paste it into the address bar.",
+      "developer": "Turn on <strong>Developer mode</strong>, top right. <muted>Leave it on — turning it off disables extensions loaded this way, without saying so.</muted>",
+      "load": "Click <strong>Load unpacked</strong> and choose the folder you unzipped.",
+      "pin": "<strong>Pin it.</strong> Click the jigsaw-piece button in the toolbar and pin jojo. <muted>Chromium browsers hide every extension behind that menu by default, so the button exists but is not on the toolbar — this is the step people miss, and it looks exactly like the extension failing to install.</muted>",
+      "back": "Come back here. <muted>This panel notices on its own and turns green.</muted>"
+    },
+    "yourBrowser": "your browser",
+    "noOneClick": "There is no one-click install for {{browser}}, and that is a browser decision rather than a missing feature here: the API that allowed it was removed in 2018, and a signed package would still have to come from the Chrome Web Store. Nothing about this extension talks to a server — it reads the page you are looking at and hands the result to this tab."
+  },
+  "crash": {
+    "title": "Crash reports",
+    "builtWithout": "This copy of jojo was built without crash reporting or usage analytics, so nothing is recorded and there is nothing to turn on. A build sets those with <mono>{{crashFlag}}</mono> and <mono>{{analyticsFlag}}</mono>.",
+    "intro": "When something breaks, jojo can keep the error so you can read it back — useful when the thing that failed has already scrolled away. A report holds the error message, where in jojo it happened, and the stack trace. It never holds your applications, documents, notes, profile or conversations, and API keys, addresses, your home directory and email addresses are stripped out before a report is written.",
+    "where": "In this browser and in the extension, crash reports <em>stay on this device</em> — nothing is uploaded, and a backup file does not carry them. The phone app also sends them to Firebase Crashlytics, which adds the device model, its OS version and a random id used to count how many people hit the same crash. Crash reports are about crashes only — what you do in jojo is the separate question below, answered separately.",
+    "keep": {
+      "label": "Keep crash reports",
+      "description": "On, so a crash you hit is one we can see. Turn it off and nothing is recorded."
+    },
+    "usage": {
+      "label": "Share which features I use",
+      "description": "Counts only, from a fixed list — never what is in your records.",
+      "note": "It can only say things from a fixed list — which screen was opened, that an application was added, roughly how many there are. It cannot name an employer, a role, a file or anything you typed. Goes to Google Analytics."
+    },
+    "kept_one": "{{count}} report kept",
+    "kept_other": "{{count}} reports kept",
+    "clear": "Clear",
+    "stack": "Stack",
+    "emptyOn": "Nothing has broken since you turned this on.",
+    "emptyOff": "Nothing is being recorded."
+  },
+  "audit": {
+    "title": "What jojo has done",
+    "kept_one": "{{count}} kept",
+    "kept_other": "{{count}} kept",
+    "records_one": "{{count}} record",
+    "records_other": "{{count}} records",
+    "connections_one": "{{count}} connection",
+    "connections_other": "{{count}} connections",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "no change",
+    "undoTitle": {
+      "can": "Puts the records back as they were before this change",
+      "wholeStore": "This one replaced the whole store, so there is nothing to put back",
+      "trimmed": "jojo kept a record of this change but not enough to put it back — it was a background write (a fit reading, a file's bytes) or is too far back"
+    },
+    "undoFailed": {
+      "title": "That change could no longer be undone",
+      "description": "It is no longer in the journal."
+    },
+    "empty": "Nothing has been written to this store yet. Every change you make is recorded here, and the record survives a reload.",
+    "showFewer": "Show fewer",
+    "showAll": "Show all {{total}}",
+    "footer": "The last 200 changes are kept, oldest dropped first. Undoing here is a new change of its own — it is added to the top of this list rather than removing the row it reverses."
+  },
+  "keywords": {
+    "title": "Keywords",
+    "hint": "shared by every record",
+    "intro": "One set across applications, reminders and the vault. Renaming one carries everywhere it is shown; deleting one takes it off every record that carries it.",
+    "usage": {
+      "none": "Not on any record yet",
+      "used_one": "Used on {{count}} record",
+      "used_other": "Used on {{count}} records"
+    },
+    "errors": {
+      "taken": "Another keyword already has that name.",
+      "blank": "A keyword needs a name.",
+      "exists": "That keyword already exists."
+    },
+    "renameNamed": "Rename {{name}}",
+    "rename": "Rename",
+    "deleteNamed": "Delete {{name}}",
+    "delete": "Delete",
+    "empty": {
+      "title": "No keywords yet",
+      "description": "Add one below, or from the keyword filter above any list. Keywords are yours — they are not the fixed role tags in the top bar."
+    },
+    "newKeyword": "New keyword",
+    "placeholder": "e.g. Referral",
+    "add": "Add keyword"
+  },
+  "documents": {
+    "title": "Your documents",
+    "hint": "on this device",
+    "intro": "The CVs, cover letters and statements you attach are saved in this browser, on this machine. Nothing is uploaded anywhere.",
+    "count_one": "{{count}} document",
+    "count_other": "{{count}} documents",
+    "noneReadable": {
+      "title": "No documents could be read",
+      "description": "This browser no longer holds the bytes for any of them."
+    },
+    "savedAll_one": "{{count}} document saved",
+    "savedAll_other": "{{count}} documents saved",
+    "savedSome": "{{saved}} of {{total}} saved",
+    "savedAllDescription": "One file, {{name}}, in your downloads folder. These are the originals, not copies of the records.",
+    "savedSomeDescription": "{{name}} is in your downloads folder, without {{missing}} this browser could no longer read.",
+    "failed": {
+      "title": "Could not build the download",
+      "description": "Nothing was saved. Try again, or open a document and download it on its own."
+    },
+    "none": "No documents yet",
+    "stored_one": "{{count}} document stored",
+    "stored_other": "{{count}} documents stored",
+    "usage": "{{used}} of {{quota}} used",
+    "notPermanent": "This browser has not marked jojo’s storage as permanent, so it may clear these documents if the disk fills up — and “Clear browsing data” will remove them whatever it says. Keep your own copies of anything you would not want to rewrite.",
+    "saving": "Saving…",
+    "downloadAll": "Download every document"
+  },
+  "diagnostics": {
+    "title": "Diagnostics",
+    "types": {
+      "application": "Applications",
+      "background": "Background facts",
+      "claim": "Relations",
+      "thread": "Conversations",
+      "proposal": "Suggestions",
+      "organisation": "Organisations",
+      "timelineItem": "Timeline items",
+      "keyword": "Keywords",
+      "link": "Links",
+      "file": "Files",
+      "snippet": "Snippets",
+      "person": "People",
+      "stickyNote": "Sticky notes",
+      "posting": "Saved postings",
+      "match": "Scout matches",
+      "pipeline": "Scout pipelines",
+      "profile": "Profile"
+    },
+    "dataSet": {
+      "demo": "the demo records, untouched",
+      "empty": "emptied on purpose, never seeded",
+      "user": "written to since it was set up"
+    },
+    "notReported": "not reported",
+    "checking": "checking…",
+    "storage": "Storage",
+    "durable": {
+      "label": "Records are written to disk",
+      "yes": "yes — IndexedDB",
+      "no": "no — this tab only"
+    },
+    "schema": {
+      "label": "Database schema",
+      "value": "v{{stored}} (app expects v{{expected}})"
+    },
+    "persisted": {
+      "label": "Browser promises to keep it",
+      "unknown": "this browser will not say",
+      "yes": "yes",
+      "no": "no — the browser may clear it at any time, and a private window will when it closes"
+    },
+    "space": {
+      "label": "Space used",
+      "value": "{{used}} of {{quota}}"
+    },
+    "queue": {
+      "label": "Write queue",
+      "idle": "idle — everything is saved",
+      "writing_one": "saving {{count}} change",
+      "writing_other": "saving {{count}} changes",
+      "degraded": "retrying {{unsaved}} change(s), {{pending}} row(s) (attempt {{attempts}}): {{error}}",
+      "stopped": "stopped — {{reason}}"
+    },
+    "store": "This store",
+    "contents": "Contents",
+    "created": "Created",
+    "seeded": "Seeded",
+    "never": "never",
+    "lastOpened": "Last opened",
+    "lastWrite": "Last write",
+    "nothingYet": "nothing yet",
+    "skipped": {
+      "label": "Records that could not be read",
+      "none": "none"
+    },
+    "integrity": {
+      "label": "Integrity checks",
+      "failed": "{{total}} failed",
+      "passed": "all passed"
+    },
+    "records": "Records ({{total}})",
+    "connections": "Connections ({{total}})",
+    "none": "None"
+  },
+  "data": {
+    "title": "Your data",
+    "export": {
+      "idle": "Download a backup",
+      "progress": "Preparing backup… {{done}} of {{total}} documents",
+      "preparing": "Preparing backup…"
+    },
+    "restoreButton": "Restore a backup",
+    "excel": {
+      "label": "Export to Excel",
+      "title": "No spreadsheet writer is bundled — the JSON export holds the same records"
+    },
+    "import": {
+      "label": "Import",
+      "title": "Reading a backup back in needs a validator that can refuse a file it does not understand — until that exists, an import could only guess"
+    },
+    "about": "A full backup: every application, the timeline, the vault, saved postings, your keywords and their tags, and your profile, in one versioned file. It is a copy taken now — it does not keep up with later changes, and it is the only copy that is not on this machine.",
+    "records": {
+      "label": "Records",
+      "empty": "Every list is empty, so every page is showing its first-run state.",
+      "emptyStays": "It stays empty when you come back.",
+      "emptyKeywords": "Your keywords are still here, and loading the demo data replaces them with its own.",
+      "demo": "The demo search jojo ships with — twelve applications, a timeline, a stocked vault. None of it is yours yet.",
+      "own": "Your own records. Loading the demo data replaces them, so export a backup first if you want them.",
+      "loadDemo": "Load demo data"
+    },
+    "clearRecords": {
+      "label": "Clear every record",
+      "demo": "Removes the demo data and leaves jojo empty. Nothing here is yours yet, so the seeded keywords go with it.",
+      "own": "Removes every application, timeline item, vault entry, saved posting, contact, note, conversation and CV fact, and blanks your profile. Your keywords are kept.",
+      "nothingLeft": "There is nothing left to clear",
+      "deletes": "Deletes every record",
+      "button": "Clear records"
+    },
+    "move": {
+      "label": "Move to another device",
+      "description": "Pair with a second device and hand over everything. A demonstration in this build — nothing is transmitted.",
+      "open": "Open Transfer"
+    },
+    "clearStorage": {
+      "label": "Clear browser storage",
+      "description": "Empties everything this site has stored in your browser — your records and their database, every document you have attached, preferences, caches and cookies — then reloads jojo as if it were new. Documents are only here; download them first if you want to keep them.",
+      "clearing": "Clearing…",
+      "button": "Clear storage"
+    },
+    "footer": {
+      "durable": "Your records are written to this browser's database as you work, so closing the tab is safe. That database is still on this one machine: a browser can clear it and a disk can fail, so an exported file kept somewhere else is the only real backup.",
+      "memory": "Your records are not being saved right now — the banner at the top of the page says why. Export a copy before you close the tab."
+    },
+    "confirm": {
+      "fallbackTitle": "Change the data?",
+      "continue": "Continue"
+    },
+    "restoreConfirm": {
+      "title": "Replace everything with this backup?",
+      "description": "That file holds {{contents}}. {{replaces}}, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.",
+      "confirm": "Replace everything"
+    },
+    "restoreFailed": "The restore failed",
+    "reload": "Reload jojo",
+    "demoLoaded": {
+      "title": "Demo data loaded",
+      "durable": "Twelve applications, a timeline, a stocked vault and a profile, written to your database as they shipped.",
+      "memory": "Twelve applications, a timeline, a stocked vault and a profile, as they shipped. Nothing is being saved right now, so they last as long as this tab does."
+    },
+    "cleared": {
+      "title": "Everything cleared",
+      "demoDurable": "Every demo record is gone, keywords included, and it stays that way across a reload.",
+      "demoMemory": "Every demo record is gone, keywords included, though nothing is being saved right now, so a reload starts over from the demo data.",
+      "ownDurable": "Every record is gone, your profile included, and it stays that way across a reload. Your keywords are still here.",
+      "ownMemory": "Every record is gone, your profile included, though nothing is being saved right now, so a reload starts over from the demo data. Your keywords are still here."
+    }
+  },
+  "pending": {
+    "exportFirst": "Export a backup first",
+    "empty": {
+      "title": "Clear every record?",
+      "demoDurable": "The demo applications, timeline, vault, saved postings, keywords and profile all go, and it stays that way across a reload. Nothing here was yours — this store has not been written to since the demo data was loaded.",
+      "demoMemory": "The demo applications, timeline, vault, saved postings, keywords and profile all go, though nothing is being saved right now, so a reload starts over from the demo data. Nothing here was yours — this store has not been written to since the demo data was loaded.",
+      "ownDurable": "Applications, the timeline, the vault, saved postings, contacts, notes, conversations, CV facts and your profile all go, including anything you added this session, and it stays that way across a reload. There is no undo. Your keywords are kept — they are records of their own — but nothing is left carrying them, so every count in the keyword panel goes to zero.",
+      "ownMemory": "Applications, the timeline, the vault, saved postings, contacts, notes, conversations, CV facts and your profile all go, including anything you added this session, though nothing is being saved right now, so a reload starts over from the demo data. There is no undo. Your keywords are kept — they are records of their own — but nothing is left carrying them, so every count in the keyword panel goes to zero.",
+      "confirm": "Clear everything"
+    },
+    "demo": {
+      "title": "Load the demo data?",
+      "fillDurable": "Twelve applications, a timeline, a stocked vault and a profile are written to your database, tagged with the keywords they shipped with. Clearing them again is one press.",
+      "fillMemory": "Twelve applications, a timeline, a stocked vault and a profile are loaded, tagged with the keywords they shipped with. Clearing them again is one press.",
+      "replace": "Everything in jojo is replaced by the seeded records — your applications, timeline, vault, saved postings, contacts, notes, conversations, CV facts, keywords and profile, all of it, replaced rather than merged. There is no undo.",
+      "confirm": "Load demo data"
+    },
+    "storage": {
+      "title": "Clear everything this site has stored?",
+      "description": "Empties this browser of everything jojo has put in it — your records and their database, your theme and sound preferences, any caches and cookies — and then reloads. There is no server holding a copy, and nothing here has ever left this machine, so this is all of it. jojo comes back as it would on a new machine: the system theme, and the question it asks on a first run about whether to start with the demo data or empty. There is no undo.",
+      "confirm": "Clear storage"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_one": "{{count}} record",
+      "records_other": "{{count}} records",
+      "documents_one": "{{count}} document",
+      "documents_other": "{{count}} documents",
+      "links_one": "{{count}} link",
+      "links_other": "{{count}} links"
+    },
+    "lost": {
+      "title": "Some records could not be restored",
+      "description": "That file held {{held}}. {{kept}} are on this device and {{lost}} could not be read — those are gone. The file itself is unchanged, so a build that can read them can still restore it.",
+      "descriptionWithDocuments": "That file held {{held}}. {{kept}} and {{documents}} are on this device and {{lost}} could not be read — those are gone. The file itself is unchanged, so a build that can read them can still restore it."
+    },
+    "withoutLinks": {
+      "title": "Restored, without some links",
+      "description": "All {{held}} are back. {{links}} between them could not be read, so a few documents, reminders or postings may not be filed under the job they belonged to. Nothing else is missing.",
+      "descriptionWithDocuments": "All {{held}} and {{documents}} are back. {{links}} between them could not be read, so a few documents, reminders or postings may not be filed under the job they belonged to. Nothing else is missing."
+    },
+    "done": {
+      "title": "Restored",
+      "description": "{{records}} are back, exactly as the file held them.",
+      "descriptionWithDocuments": "{{records}} and {{documents}} are back, exactly as the file held them."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "That file could not be read",
+      "description": "Your browser could not read that file — it may have been moved, renamed or disconnected since you chose it. Nothing has been changed; choose it again once it is back."
+    },
+    "refused": {
+      "title": "That file cannot be restored",
+      "notBackup": "That file isn't a jojo backup. Nothing has been changed.",
+      "reason": "{{reason}}. Nothing has been changed."
+    }
+  }
+}

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
@@ -11,16 +13,16 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
 import type { Stage } from '@jojo/service/data/seed'
-import { shortDate, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem, TimelineKind } from '@jojo/service/data/timeline'
 import { useLabels } from '@/lib/labels-context'
 import { canSaveTimelineItem, clockValue, minutesOf, timelineFormErrors } from '@/lib/timeline-form'
 import { useApplications, useTimeline } from '@/lib/store-context'
-import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
+import { KIND_ICON, TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Write a reminder or a calendar entry. One sheet, because they are one record.
@@ -39,15 +41,13 @@ export type TimelineItemSheetProps = {
   initial?: Partial<TimelineItem>
 }
 
-const DURATIONS = [
-  { mins: 15, label: '15 min' },
-  { mins: 30, label: '30 min' },
-  { mins: 45, label: '45 min' },
-  { mins: 60, label: '1 hour' },
-  { mins: 90, label: '1.5 hours' },
-  { mins: 120, label: '2 hours' },
-  { mins: 180, label: '3 hours' },
-]
+const DURATIONS = [15, 30, 45, 60, 90, 120, 180]
+
+/** "15 min" under an hour, "1.5 hours" from one up — read at render, in the current language. */
+const durationLabel = (t: TFunction<'sheets'>, mins: number) =>
+  mins < 60
+    ? t('timeline.duration.minutes', { count: mins })
+    : t('timeline.duration.hours', { count: mins / 60 })
 
 /**
  * What a reminder about an application at this stage almost always is.
@@ -81,6 +81,8 @@ const DEFAULT_START_MINS = 9 * 60
 const DEFAULT_DURATION_MINS = 30
 
 export function TimelineItemSheet({ open, onOpenChange, mode, initial }: TimelineItemSheetProps) {
+  const { t } = useTranslation('sheets')
+  const domain = useDomain()
   const c = useColors()
   const { byId } = useApplications()
   const { get, add, update, remove } = useTimeline()
@@ -90,7 +92,6 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
   const editingId = initial?.id
   const stored = editingId ? get(editingId) : undefined
   const editing = Boolean(editingId)
-  const noun = mode === 'reminder' ? 'reminder' : 'event'
 
   const [title, setTitle] = useState(initial?.title ?? '')
   const [applicationIds, setApplicationIds] = useState<readonly string[]>(
@@ -214,18 +215,20 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
     // "show in reminders" off in reminder mode means it is not a reminder, and
     // saying otherwise sends the user to a list it is not in.
     toast({
-      title: `${saved.title} ${editingId ? 'updated' : 'added'}`,
+      title: editingId
+        ? t('timeline.toast.updated', { title: saved.title })
+        : t('timeline.toast.added', { title: saved.title }),
       description: [
-        `${shortDate(saved.date)} · ${whenLabel(saved, TODAY)}`,
-        saved.remind ? 'in reminders' : 'on the calendar only',
+        `${domain.shortDate(saved.date)} · ${domain.when(saved, TODAY)}`,
+        saved.remind ? t('timeline.toast.inReminders') : t('timeline.toast.calendarOnly'),
         saved.kind === 'follow-up' && saved.remind && !saved.completedOn
-          ? 'and owed this week'
+          ? t('timeline.toast.owed')
           : null,
       ]
         .filter(Boolean)
         .join(' — '),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => {
           if (editingId) {
             // The whole stored record, plus every key this save wrote. `update`
@@ -267,13 +270,15 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
     onOpenChange(false)
 
     toast({
-      title: `${stored?.title ?? initial?.title ?? 'Reminder'} deleted`,
+      title: t('timeline.toast.deleted', {
+        title: stored?.title ?? initial?.title ?? t('timeline.reminderFallback'),
+      }),
       description: stored?.remind
-        ? 'Gone from the reminders list and from the calendar.'
-        : 'Gone from the calendar.',
+        ? t('timeline.toast.goneFromBoth')
+        : t('timeline.toast.goneFromCalendar'),
       tone: 'danger',
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => {
           restore()
           if (stashed.length > 0) setRecord(editingId, stashed)
@@ -284,18 +289,26 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
 
   const scheduleFields = (
     <>
-      <DateField label="Date" required value={date} error={dateError} onChange={setDate} />
+      <DateField
+        label={t('timeline.fields.date')}
+        required
+        value={date}
+        error={dateError}
+        onChange={setDate}
+      />
 
       <SettingRow
-        label="All day"
-        description="Off gives it a start time and a length."
-        control={<Toggle value={allDay} onValueChange={setAllDay} label="All day" />}
+        label={t('timeline.fields.allDay')}
+        description={t('timeline.fields.allDayDescription')}
+        control={
+          <Toggle value={allDay} onValueChange={setAllDay} label={t('timeline.fields.allDay')} />
+        }
       />
 
       {allDay ? null : (
         <View style={styles.timeRow}>
           <TextField
-            label="Start time"
+            label={t('timeline.fields.startTime')}
             value={time}
             onChangeText={setTime}
             placeholder="09:00"
@@ -304,9 +317,9 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
             error={errors.time}
             style={s.fill}
           />
-          <FormField label="Length" style={s.fill}>
+          <FormField label={t('timeline.fields.length')} style={s.fill}>
             <Button
-              label={DURATIONS.find((d) => d.mins === duration)?.label ?? `${duration} min`}
+              label={durationLabel(t, duration)}
               variant="outline"
               size="md"
               full
@@ -322,7 +335,7 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
     <ApplicationField
       values={applicationIds}
       onChange={linkApplications}
-      hint="Links them, so each application lists this and this leads back to any of them."
+      hint={t('timeline.fields.applicationHint')}
     />
   )
 
@@ -331,18 +344,42 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
       open={open}
       onClose={() => onOpenChange(false)}
       size="tall"
-      title={editing ? `Edit ${noun}` : `New ${noun}`}
+      title={
+        mode === 'reminder'
+          ? editing
+            ? t('timeline.title.editReminder')
+            : t('timeline.title.newReminder')
+          : editing
+            ? t('timeline.title.editEvent')
+            : t('timeline.title.newEvent')
+      }
       // Identical in both modes on purpose: explaining that these are the same
       // record is the whole reason there is one form.
-      description="One record either way — it lands on the calendar for the date you give it, and in the Vault's reminders list while the switch is on."
+      description={t('timeline.description')}
       footer={
         <>
           {editing ? (
-            <Button label="Delete" variant="destructive" size="md" onPress={onDelete} />
+            <Button
+              label={t('timeline.delete')}
+              variant="destructive"
+              size="md"
+              onPress={onDelete}
+            />
           ) : null}
-          <Button label="Cancel" variant="ghost" size="md" onPress={() => onOpenChange(false)} />
           <Button
-            label={editing ? 'Save' : mode === 'reminder' ? 'Add reminder' : 'Add event'}
+            label={t('common.cancel')}
+            variant="ghost"
+            size="md"
+            onPress={() => onOpenChange(false)}
+          />
+          <Button
+            label={
+              editing
+                ? t('timeline.save')
+                : mode === 'reminder'
+                  ? t('timeline.addReminder')
+                  : t('timeline.addEvent')
+            }
             size="md"
             onPress={onSave}
           />
@@ -354,11 +391,15 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
         contentContainerStyle={{ gap: space[3.5], paddingBottom: space[2] }}
       >
         <TextField
-          label="Title"
+          label={t('timeline.fields.title')}
           required
           value={title}
           error={titleError}
-          placeholder={mode === 'reminder' ? 'e.g. Chase the recruiter' : 'e.g. Committee Zoom'}
+          placeholder={
+            mode === 'reminder'
+              ? t('timeline.fields.reminderPlaceholder')
+              : t('timeline.fields.eventPlaceholder')
+          }
           onChangeText={setTitle}
         />
 
@@ -368,13 +409,11 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
             just made this, which is the only way an unlabelled toggle earns its
             place. */}
         <SettingRow
-          label="Show in reminders"
-          description={
-            remind
-              ? 'Listed in the Vault with a tick box, and on the calendar for its date.'
-              : 'On the calendar for its date only — no tick box in the Vault.'
+          label={t('timeline.fields.remind')}
+          description={remind ? t('timeline.fields.remindOn') : t('timeline.fields.remindOff')}
+          control={
+            <Toggle value={remind} onValueChange={setRemind} label={t('timeline.fields.remind')} />
           }
-          control={<Toggle value={remind} onValueChange={setRemind} label="Show in reminders" />}
         />
 
         {/* The only ordering `mode` touches. A reminder is nearly always *about*
@@ -394,11 +433,9 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
         )}
 
         <FormField
-          label="Kind"
+          label={t('timeline.fields.kind')}
           hint={
-            kind === 'follow-up'
-              ? 'A follow-up is also counted as owed on Today, until you tick it off.'
-              : 'The icon it carries on the calendar and in the reminders list.'
+            kind === 'follow-up' ? t('timeline.fields.kindFollowUp') : t('timeline.fields.kindHint')
           }
         >
           <View style={styles.kindGrid}>
@@ -429,7 +466,7 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
                 >
                   <Feather name={KIND_ICON[k]} size={17} color={on ? c.accent : c.text2} />
                   <Txt size="xs" tone={on ? 'accent' : 'secondary'} numberOfLines={1}>
-                    {KIND_LABEL[k]}
+                    {domain.kind(k)}
                   </Txt>
                 </Pressable>
               )
@@ -438,8 +475,8 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
         </FormField>
 
         <TextField
-          label="Detail"
-          hint="One line of context, shown under the title."
+          label={t('timeline.fields.detail')}
+          hint={t('timeline.fields.detailHint')}
           value={detail}
           onChangeText={setDetail}
         />
@@ -453,12 +490,15 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
           style={[styles.moreToggle, { borderColor: c.hairline }]}
         >
           <Txt size="sm" tone="secondary">
-            More details
+            {t('timeline.more.title')}
           </Txt>
           <Txt size="xs" tone="muted">
-            {[note.trim() ? 'note' : null, keywords.length > 0 ? 'keywords' : null]
+            {[
+              note.trim() ? t('timeline.more.note') : null,
+              keywords.length > 0 ? t('timeline.more.keywords') : null,
+            ]
               .filter(Boolean)
-              .join(' · ') || 'note, keywords'}
+              .join(' · ') || t('timeline.more.empty')}
           </Txt>
           <Feather name={more ? 'chevron-up' : 'chevron-down'} size={16} color={c.text3} />
         </Pressable>
@@ -466,15 +506,15 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
         {more ? (
           <>
             <TextField
-              label="Note"
-              hint="Your own scribble. Kept apart from the detail, so an edit never clobbers it."
+              label={t('timeline.fields.note')}
+              hint={t('timeline.fields.noteHint')}
               value={note}
               multiline
               onChangeText={setNote}
             />
             <FormField
-              label="Keywords"
-              hint="Shared with applications, files and links — filtering by one finds all of them."
+              label={t('timeline.fields.keywords')}
+              hint={t('timeline.fields.keywordsHint')}
             >
               <StagedKeywordPicker value={keywords} onChange={setKeywords} />
             </FormField>
@@ -485,12 +525,12 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
       <MenuSheet
         open={durationOpen}
         onClose={() => setDurationOpen(false)}
-        title="Length"
-        actions={DURATIONS.map((d) => ({
-          id: String(d.mins),
-          label: d.label,
-          checked: d.mins === duration,
-          onPress: () => setDuration(d.mins),
+        title={t('timeline.fields.length')}
+        actions={DURATIONS.map((mins) => ({
+          id: String(mins),
+          label: durationLabel(t, mins),
+          checked: mins === duration,
+          onPress: () => setDuration(mins),
         }))}
       />
     </Sheet>

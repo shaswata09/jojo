@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "显示{{label}}",
+    "hide": "隐藏{{label}}"
+  },
+  "allHidden": {
+    "withReset": "图例中的所有系列都已关闭。",
+    "noReset": "所有系列都已隐藏——在图例中选择一个即可重新显示。",
+    "showAll": "显示所有系列"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "雷达图：在{{axes}}上比较{{series}}"
+  }
+}

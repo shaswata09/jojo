@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { BellRing, Check, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { BUCKETS, BUCKET_LABEL } from '@/components/common/timeline-buckets'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -12,7 +13,7 @@ import { COLLAPSE_MS, HOLD_MS, anchorOf } from '@/components/vault/reminders/mod
 import type { RowActions, Transit } from '@/components/vault/reminders/model'
 import { ReminderRow } from '@/components/vault/reminders/ReminderRow'
 import { displayName } from '@/data/seed'
-import { addDays, bucketOf, shortDate, whenLabel } from '@/data/timeline'
+import { addDays, bucketOf } from '@/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
@@ -27,6 +28,7 @@ import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
 import { useMascot } from '@/lib/mascot-context'
 import { CUES } from '@/lib/mascot-cues'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Everything flagged to come back to, off the one timeline.
@@ -36,6 +38,8 @@ import { CUES } from '@/lib/mascot-cues'
  * `doneIds` set this used to keep could never reach past the tab.
  */
 export function RemindersTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [bucket, setBucket] = useState<TimelineBucket | 'all'>('all')
   const [query, setQuery] = useState('')
   const [transits, setTransits] = useState<Record<string, Transit>>({})
@@ -153,14 +157,19 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const relatedName = (item: TimelineItem) => {
     const apps = relatedTo(item)
     if (apps.length === 0) return undefined
-    if (apps.length <= 2) return apps.map((a) => displayName(a)).join(' and ')
-    return `${String(apps.length)} applications`
+    if (apps.length === 1) return displayName(apps[0])
+    if (apps.length === 2)
+      return t('reminders.relatedTwo', {
+        first: displayName(apps[0]),
+        second: displayName(apps[1]),
+      })
+    return t('reminders.relatedMany', { count: apps.length })
   }
 
   /** 'Chase recruiter reply · Databricks — ML engineer', for a toast. */
   const describe = (item: TimelineItem) => {
     const related = relatedName(item)
-    return related ? `${item.title} · ${related}` : item.title
+    return related ? t('reminders.describe', { title: item.title, related }) : item.title
   }
 
   const actions: RowActions = {
@@ -172,12 +181,14 @@ export function RemindersTool({ focus }: { focus?: string }) {
         if (announceRefusal(toggleDone(item.id), toast)) return
         if (!done) mascot.play(CUES.taskDone)
         toast({
-          title: `${item.title} ${done ? 'reopened' : 'completed'}`,
+          title: done
+            ? t('reminders.toast.reopened', { title: item.title })
+            : t('reminders.toast.completed', { title: item.title }),
           description: done
-            ? 'Back under its own date, and back on the dashboard if it is a follow-up.'
-            : 'Filed under Completed, and off the dashboard.',
+            ? t('reminders.toast.reopenedDescription')
+            : t('reminders.toast.completedDescription'),
           action: {
-            label: 'Undo',
+            label: t('common.undo'),
             // Not `toggleDone` again: by the time this is pressed the user may
             // have changed the row by hand, and a second toggle would flip it
             // back the wrong way.
@@ -193,11 +204,14 @@ export function RemindersTool({ focus }: { focus?: string }) {
       play(item.id, { preview: { date: after }, arrive: true }, () => {
         if (announceRefusal(snooze(item.id, days), toast)) return
         toast({
-          title: `${item.title} moved`,
-          description: `Now due ${shortDate(after)} · ${whenLabel({ ...item, date: after }, TODAY)}`,
+          title: t('reminders.toast.moved', { title: item.title }),
+          description: t('reminders.toast.nowDue', {
+            date: domain.shortDate(after),
+            when: domain.when({ ...item, date: after }, TODAY),
+          }),
           // The date it came from is the one thing a second snooze cannot get
           // back, so undo restores it exactly rather than counting days again.
-          action: { label: 'Undo', onClick: () => reschedule(item.id, before) },
+          action: { label: t('common.undo'), onClick: () => reschedule(item.id, before) },
         })
       })
     },
@@ -207,9 +221,12 @@ export function RemindersTool({ focus }: { focus?: string }) {
       play(item.id, { preview: { date: iso }, arrive: true }, () => {
         if (announceRefusal(reschedule(item.id, iso), toast)) return
         toast({
-          title: `${item.title} moved`,
-          description: `Now due ${shortDate(iso)} · ${whenLabel({ ...item, date: iso }, TODAY)}`,
-          action: { label: 'Undo', onClick: () => reschedule(item.id, before) },
+          title: t('reminders.toast.moved', { title: item.title }),
+          description: t('reminders.toast.nowDue', {
+            date: domain.shortDate(iso),
+            when: domain.when({ ...item, date: iso }, TODAY),
+          }),
+          action: { label: t('common.undo'), onClick: () => reschedule(item.id, before) },
         })
       })
     },
@@ -218,7 +235,11 @@ export function RemindersTool({ focus }: { focus?: string }) {
       // The copy starts open even when the original is ticked off: "the same
       // chase, again" is the only reason to duplicate a reminder, and one that
       // arrived already completed would be filed straight out of sight.
-      const copy = add({ ...item, title: `${item.title} (copy)`, completedOn: undefined })
+      const copy = add({
+        ...item,
+        title: t('reminders.copyTitle', { title: item.title }),
+        completedOn: undefined,
+      })
       // Timeline items are keyed by their bare id in the label store, while
       // applications answer to `refKey('app', id)` — the asymmetry is spelled
       // out in data/labels.ts, and a prefixed key here files the copy's
@@ -226,10 +247,12 @@ export function RemindersTool({ focus }: { focus?: string }) {
       const keywords = labelIdsOf(item.id)
       if (keywords.length > 0) setRecord(copy.id, keywords)
       toast({
-        title: `${item.title} duplicated`,
-        description: `The copy is open and due ${shortDate(copy.date)}.`,
+        title: t('reminders.toast.duplicated', { title: item.title }),
+        description: t('reminders.toast.duplicatedDescription', {
+          date: domain.shortDate(copy.date),
+        }),
         action: {
-          label: 'Undo',
+          label: t('common.undo'),
           onClick: () => {
             remove(copy.id)
             removeRecord(copy.id)
@@ -250,8 +273,8 @@ export function RemindersTool({ focus }: { focus?: string }) {
         const removed = remove(item.id)
         if (!removed.ok) {
           toast({
-            title: 'That did not delete',
-            description: removed.refusal ?? `${item.title} is still on the list.`,
+            title: t('common.deleteFailed'),
+            description: removed.refusal ?? t('reminders.toast.stillOnList', { title: item.title }),
             tone: 'danger',
           })
           return
@@ -259,11 +282,11 @@ export function RemindersTool({ focus }: { focus?: string }) {
         const { restore } = removed
         removeRecord(item.id)
         toast({
-          title: `${item.title} deleted`,
-          description: `${describe(item)} — gone from the calendar as well as this list.`,
+          title: t('common.deleted', { title: item.title }),
+          description: t('reminders.toast.deletedDescription', { description: describe(item) }),
           tone: 'danger',
           action: {
-            label: 'Undo',
+            label: t('common.undo'),
             onClick: () => {
               restore()
               // Guarded: `setRecord` with an empty list files the record as
@@ -290,7 +313,15 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const visible = reminders.filter(
     (r) =>
       labelMatches(r.id) &&
-      matchesQuery(query, r.title, r.detail, r.note, KIND_LABEL[r.kind], relatedName(r)),
+      matchesQuery(
+        query,
+        r.title,
+        r.detail,
+        r.note,
+        domain.kind(r.kind),
+        KIND_LABEL[r.kind],
+        relatedName(r),
+      ),
   )
 
   /**
@@ -321,35 +352,33 @@ export function RemindersTool({ focus }: { focus?: string }) {
     copy: {
       icon: BellRing,
       zero: {
-        title: 'No reminders yet',
-        description:
-          'A reminder is a dated nudge — chase a referee, check a portal, send a thank-you. Ones you mark as follow-ups also show on the dashboard until you tick them off.',
+        title: t('reminders.empty.zeroTitle'),
+        description: t('reminders.empty.zeroDescription'),
         action: (
           <Button size="sm" onClick={() => open('timelineItem', { mode: 'reminder' })}>
             <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            Add reminder
+            {t('reminders.add')}
           </Button>
         ),
       },
-      search: (q) => `No reminder mentions "${q}" in its title, note, kind or application.`,
-      both: `No ${bucketWord} reminder carries the selected keywords.`,
+      search: (q) => t('reminders.empty.search', { query: q }),
+      both: t('reminders.empty.both', { bucket: bucketWord }),
       // Done is the one bucket that is not a deadline passing: an empty Done
       // list is not a filter hiding work, so it says something else.
       bucket:
         bucket === 'done'
           ? {
               icon: Check,
-              title: 'Nothing completed yet',
-              description:
-                'Reminders you tick off collect here, so one ticked by mistake is still findable.',
-              clearLabel: 'Show all reminders',
+              title: t('reminders.empty.doneTitle'),
+              description: t('reminders.empty.doneDescription'),
+              clearLabel: t('reminders.empty.showAll'),
             }
           : {
-              title: `Nothing ${bucketWord}`,
-              description: `${reminders.length} reminders are filed under the other groups.`,
-              clearLabel: 'Show all reminders',
+              title: t('reminders.empty.bucketTitle', { bucket: bucketWord }),
+              description: t('reminders.empty.bucketDescription', { count: reminders.length }),
+              clearLabel: t('reminders.empty.showAll'),
             },
-      keywords: { title: 'No reminders carry those keywords' },
+      keywords: { title: t('reminders.empty.keywordsTitle') },
     },
   })
 
@@ -362,7 +391,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
         <VaultToolbar
           filter={
             <BucketFilter
-              label="Filter reminders by when they are due"
+              label={t('reminders.filterLabel')}
               options={BUCKETS}
               labels={BUCKET_LABEL}
               counts={counts}
@@ -373,8 +402,8 @@ export function RemindersTool({ focus }: { focus?: string }) {
           }
           search={
             <VaultSearch
-              label="Search reminders"
-              placeholder="Search title, note or job"
+              label={t('reminders.searchLabel')}
+              placeholder={t('reminders.searchPlaceholder')}
               value={query}
               onChange={setQuery}
             />
@@ -382,7 +411,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
           action={
             <Button size="sm" onClick={() => open('timelineItem', { mode: 'reminder' })}>
               <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-              Add reminder
+              {t('reminders.add')}
             </Button>
           }
         />

@@ -1,0 +1,583 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "undo": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "duplicate": "Dupliquer",
+    "deleteFailed": "La suppression a échoué",
+    "deleted": "{{title}} supprimé",
+    "unsaved": "Modifications non enregistrées",
+    "saved": "{{title}} enregistré",
+    "showIt": "L’afficher",
+    "copyBlocked": "Le navigateur a bloqué la copie",
+    "updated": "{{title}} mis à jour",
+    "saveChanges": "Enregistrer les modifications"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Fichiers rattachés à aucune candidature",
+      "label": "Non classés"
+    },
+    "inlineEdit": {
+      "needsName": "Un fichier doit avoir un nom"
+    },
+    "intake": {
+      "tooLarge": "{{name}} était trop volumineux pour être vérifié",
+      "tooLargeDescription": "Il est classé, et jojo l’affiche avec toutes ses adresses web bloquées et ses liens désactivés : le consulter ici n’accède pas au réseau — mais tout ce qu’il charge depuis le web sera absent.",
+      "addresses_one": "{{name}} cite {{count}} adresse web",
+      "addresses_many": "{{name}} cite {{count}} adresses web",
+      "addresses_other": "{{name}} cite {{count}} adresses web",
+      "addressesDescription_one": "Il est classé tel que vous l’avez déposé, et jojo l’affiche avec cette adresse bloquée et ses liens désactivés : le consulter ici n’accède pas au réseau. Les images ou styles chargés depuis le web seront absents.",
+      "addressesDescription_many": "Il est classé tel que vous l’avez déposé, et jojo l’affiche avec toutes ces adresses bloquées et ses liens désactivés : le consulter ici n’accède pas au réseau. Les images ou styles chargés depuis le web seront absents.",
+      "addressesDescription_other": "Il est classé tel que vous l’avez déposé, et jojo l’affiche avec toutes ces adresses bloquées et ses liens désactivés : le consulter ici n’accède pas au réseau. Les images ou styles chargés depuis le web seront absents.",
+      "folders_one": "Cela ressemble à un dossier",
+      "folders_many": "Cela ressemble à des dossiers",
+      "folders_other": "Cela ressemble à des dossiers",
+      "foldersDescription": "jojo classe les documents un par un. Ouvrez le dossier et déposez les fichiers qu’il contient.",
+      "reattached": "{{name}} est de nouveau joint",
+      "reattachedDescription": "La ligne était déjà là sans son document. Elle l’a maintenant.",
+      "stillUnsaved": "{{name}} n’a toujours pas pu être enregistré",
+      "stillUnsavedDescription": "Ce navigateur a de nouveau refusé de le stocker — son espace de stockage est probablement toujours plein.",
+      "unsaved": "{{name}} a été classé, mais pas enregistré",
+      "unsavedDescription": "La ligne est là, mais ce navigateur a refusé de stocker le document — généralement parce que son espace de stockage est plein. Libérez de l’espace et déposez de nouveau le même fichier ; il sera joint à cette ligne au lieu d’en créer une autre.",
+      "alreadyHere_one": "Ce fichier est déjà là",
+      "alreadyHere_many": "Ces fichiers sont déjà là",
+      "alreadyHere_other": "Ces fichiers sont déjà là",
+      "alreadyHereDescription": "Un fichier du même nom est déjà dans le Coffre.",
+      "addedOne": "{{name}} ajouté",
+      "addedMany_one": "{{count}} fichier ajouté",
+      "addedMany_many": "{{count}} fichiers ajoutés",
+      "addedMany_other": "{{count}} fichiers ajoutés",
+      "addedHidden": "Classé dans {{bucket}} — masqué tant que le filtre par mots-clés est actif.",
+      "addedHiddenVault": "Classé dans le Coffre, sous {{bucket}} — masqué tant que le filtre par mots-clés est actif.",
+      "addedDescription": "Classé dans {{bucket}} et enregistré dans ce navigateur. Rien n’a été envoyé nulle part.",
+      "addedDescriptionVault": "Classé dans le Coffre, sous {{bucket}} et enregistré dans ce navigateur. Rien n’a été envoyé nulle part.",
+      "skipped_one": "{{count}} ignoré",
+      "skipped_many": "{{count}} ignorés",
+      "skipped_other": "{{count}} ignorés",
+      "skippedDescription": "Un fichier du même nom était déjà dans le Coffre.",
+      "foldersSkipped_one": "{{count}} dossier ignoré",
+      "foldersSkipped_many": "{{count}} dossiers ignorés",
+      "foldersSkipped_other": "{{count}} dossiers ignorés"
+    },
+    "row": {
+      "fileName": "Nom du fichier",
+      "renameHint": "Renommer ce fichier",
+      "onDevice": "sur cet appareil",
+      "viewing": "Affiché",
+      "preview": "Aperçu",
+      "rename": "Renommer",
+      "editNote": "Modifier la note",
+      "addNote": "Ajouter une note",
+      "changeApplications": "Changer les candidatures",
+      "fileUnder": "Rattacher à une candidature",
+      "readIntoProfile": "Lire dans votre profil"
+    },
+    "add": "Ajouter un fichier",
+    "filterLabel": "Filtrer les fichiers par groupe",
+    "searchLabel": "Rechercher des fichiers",
+    "searchPlaceholder": "Rechercher un nom ou une note",
+    "toast": {
+      "renamed": "{{name}} renommé",
+      "was": "Ancien nom : {{name}}.",
+      "noteSaved": "Note de {{name}} enregistrée",
+      "noteCleared": "Note de {{name}} effacée",
+      "noteClearedDescription": "La ligne garde son nom, son groupe et ses mots-clés.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "Il apparaît dans chacune d’elles, et le graphe peut le retrouver depuis n’importe laquelle.",
+      "unfiledDescription": "Il reste dans le Coffre, rattaché à rien."
+    },
+    "empty": {
+      "zeroTitle": "Aucun fichier pour l’instant",
+      "zeroDescription": "Déposez ici une offre, un article ou un brouillon — ou ajoutez-en un depuis votre ordinateur.",
+      "search": "Aucun fichier ne mentionne « {{query}} » dans son nom, sa note ou son groupe.",
+      "both": "Aucun fichier de {{bucket}} ne porte les mots-clés sélectionnés.",
+      "bucketTitle": "Rien dans {{bucket}}",
+      "bucketDescription_one": "{{count}} fichier est classé dans les autres groupes.",
+      "bucketDescription_many": "{{count}} fichiers sont classés dans les autres groupes.",
+      "bucketDescription_other": "{{count}} fichiers sont classés dans les autres groupes.",
+      "showAll": "Afficher tous les groupes",
+      "keywordsTitle": "Aucun fichier ne porte ces mots-clés",
+      "allFiledTitle": "Chaque fichier est rattaché à une candidature",
+      "allFiledDescription_one": "Le seul ({{count}}). Rien ne traîne.",
+      "allFiledDescription_many": "Les {{count}}. Rien ne traîne.",
+      "allFiledDescription_other": "Les {{count}}. Rien ne traîne.",
+      "unfiledKeywords": "Aucun fichier non classé ne porte les mots-clés sélectionnés.",
+      "unfiledBucket": "Aucun fichier non classé n’est dans {{bucket}}."
+    },
+    "drop": {
+      "title": "Déposez pour ajouter à {{bucket}}",
+      "description": "Le nom, la taille et le type sont lus. Rien n’est envoyé.",
+      "hint": "Déposez des fichiers n’importe où sur ce panneau pour les ajouter à {{bucket}}."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Tout ce que vous avez déposé n’a pas été utilisé",
+      "nothing": "Rien à ouvrir"
+    },
+    "save": {
+      "nameLabel": "Nom du nouveau fichier",
+      "working": "Traitement…",
+      "alsoDownload": "Télécharger aussi",
+      "footnote": "Le résultat est classé comme un nouveau document — rien de ce dont vous êtes parti n’est modifié. Il est créé ici, dans votre navigateur, et aucune partie n’est envoyée.",
+      "workingSpoken": "Traitement du document en cours"
+    },
+    "thumb": {
+      "turned": "{{label}}, pivotée de {{degrees}} degrés",
+      "noPreview": "Pas d’aperçu"
+    },
+    "source": {
+      "fromVault": "{{label}} depuis le Coffre",
+      "noneInVault": "Aucun PDF dans le Coffre pour l’instant",
+      "choose": "Choisir dans le Coffre…",
+      "device": "Depuis cet appareil",
+      "fromDevice": "{{label}} depuis cet appareil",
+      "dropHintEmpty": "Ou déposez un PDF n’importe où sur cette carte. Les fichiers enregistrés ici apparaissent dans cette liste.",
+      "dropHint": "Ou déposez un PDF n’importe où sur cette carte."
+    },
+    "modes": {
+      "merge": "Fusionner",
+      "pages": "Pages",
+      "annotate": "Annoter"
+    },
+    "editor": {
+      "title": "Éditeur PDF",
+      "hint": "Fusionnez, réorganisez et annotez des PDF. Tout s’exécute dans ce navigateur — aucun document n’est envoyé.",
+      "operation": "Opération PDF",
+      "dropMerge": "Déposez des PDF pour les ajouter à la fusion",
+      "dropOpen": "Déposez un PDF pour l’ouvrir"
+    },
+    "errors": {
+      "gone": "{{name}} n’est plus stocké, il ne peut donc pas être ouvert.",
+      "noRoom": "{{name}} a été classé, mais son contenu ne tenait pas dans l’espace de stockage de ce navigateur."
+    },
+    "saved": "{{name}} enregistré",
+    "merge": {
+      "move": "Déplacer {{name}}, {{position}} sur {{total}}",
+      "dragToReorder": "Faites glisser pour réordonner",
+      "fromDevice": "· depuis cet appareil",
+      "allPages": "Toutes les pages",
+      "rangeLabel": "Pages à prendre dans {{name}}",
+      "remove": "Retirer {{name}} de la fusion",
+      "rangeError": "{{name}} : {{reason}}",
+      "savedDescription": "{{pages}} provenant de {{documents}}, classé dans {{bucket}}. Les originaux sont intacts.",
+      "pages_one": "{{count}} page",
+      "pages_many": "{{count}} pages",
+      "pages_other": "{{count}} pages",
+      "documents_one": "{{count}} document",
+      "documents_many": "{{count}} documents",
+      "documents_other": "{{count}} documents",
+      "addLabel": "Ajouter un PDF à fusionner",
+      "empty": "Ajoutez deux PDF ou plus, ou déposez-les sur cette carte. Ils sont assemblés de haut en bas — faites glisser une ligne par son bord gauche pour changer l’ordre — et les originaux restent tels quels.",
+      "position": "position {{position}} sur {{total}}, {{name}}",
+      "hint": "Des plages comme 1-3, 7, 9- prennent une partie d’un document. Laissez une case vide pour le prendre en entier.",
+      "action": "Fusionner et enregistrer"
+    },
+    "pages": {
+      "savedDescription_one": "{{count}} page, classée dans {{bucket}}. {{name}} est inchangé.",
+      "savedDescription_many": "{{count}} pages, classées dans {{bucket}}. {{name}} est inchangé.",
+      "savedDescription_other": "{{count}} pages, classées dans {{bucket}}. {{name}} est inchangé.",
+      "chooseLabel": "Choisir un PDF à organiser",
+      "empty": "Choisissez un PDF. Vous pouvez faire pivoter des pages, en supprimer, changer leur ordre et n’en garder qu’une partie.",
+      "kept_one": "· {{kept}} page sur {{count}} conservée",
+      "kept_many": "· {{kept}} pages sur {{count}} conservées",
+      "kept_other": "· {{kept}} pages sur {{count}} conservées",
+      "startOver": "Recommencer",
+      "page": "Page {{number}}",
+      "was": " · anciennement {{number}}",
+      "earlier": "Avancer la page {{number}}",
+      "anticlockwise": "Faire pivoter la page {{number}} vers la gauche",
+      "clockwise": "Faire pivoter la page {{number}} vers la droite",
+      "remove": "Supprimer la page {{number}}",
+      "later": "Reculer la page {{number}}",
+      "hint": "Faites pivoter, déplacez ou supprimez une page pour activer ceci.",
+      "action": "Enregistrer les pages"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Surligner",
+        "comment": "Commentaire"
+      },
+      "savedDescription": "{{summary}}, classé dans {{bucket}}. {{name}} est inchangé.",
+      "chooseLabel": "Choisir un PDF à annoter",
+      "empty": "Choisissez un PDF. Sélectionnez du texte sur la page pour le surligner, ou passez à Commentaire et cliquez à l’endroit voulu pour la note.",
+      "toolLabel": "Outil d’annotation",
+      "colour": "Couleur de surlignage",
+      "previousPage": "Page précédente",
+      "pageOf": "Page {{page}} sur {{total}}",
+      "nextPage": "Page suivante",
+      "zoom": "Zoom",
+      "highlightHint": "Sélectionnez des mots sur la page — sur plusieurs lignes si besoin — et ils sont surlignés quand vous relâchez.",
+      "commentHint": "Cliquez sur la page à l’endroit du commentaire.",
+      "commentPlaceholder": "Quel est le commentaire ?",
+      "notePlaceholder": "Ajouter une note…",
+      "commentLabel": "Commentaire page {{number}}",
+      "noteLabel": "Note sur le surlignage de {{excerpt}}",
+      "removeMark": "Supprimer cette annotation",
+      "hintEmpty": "Surlignez du texte ou ajoutez d’abord un commentaire.",
+      "hint": "{{summary}} sera inscrit dans le document.",
+      "action": "Enregistrer avec les annotations"
+    }
+  },
+  "instruments": {
+    "calculator": "Calculatrice",
+    "pdf": "Éditeur PDF",
+    "label": "Quel outil",
+    "loading": "Préparation des outils PDF…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Cette offre n’a pas de copie enregistrée sur cet appareil. Les captures restent là où elles ont été faites : celle prise sur votre téléphone n’est pas ici — et une ligne restaurée depuis une sauvegarde contient l’enregistrement sans la page.",
+      "stored": "Les navigateurs affichent les PDF nativement, mais pas les fichiers {{kind}}. Le document est stocké — Enregistrer le transmet à votre propre application.",
+      "missing": "Les navigateurs affichent les PDF nativement, mais pas les fichiers {{kind}} — et aucun document n’est stocké derrière cette ligne pour être transmis ailleurs."
+    },
+    "dialogDescription": "Aperçu de {{name}}, rattaché à cette candidature. Appuyez sur Échap pour revenir à l’enregistrement.",
+    "noteSaved": "Note enregistrée sur {{name}}",
+    "noteSavedDescription": "Elle s’affiche avec ce fichier partout où le Coffre le liste.",
+    "noteEmptyDescription": "La note est maintenant vide : rien ne s’affiche avec ce fichier.",
+    "captured": "{{name}}, tel que capturé",
+    "previewTitle": "Aperçu de {{name}}",
+    "asText": "{{name}}, en texte",
+    "truncated": "Seul le premier mégaoctet est affiché. Enregistrer ouvre le fichier entier dans votre propre application.",
+    "failedTitle": "Ce navigateur n’a pas pu ouvrir l’aperçu",
+    "failedDescription": "{{error}}. L’enregistrement du fichier dans votre Coffre n’est pas affecté — seul l’aperçu n’a pas pu être créé.",
+    "noPreviewTitle": "Pas d’aperçu pour ce type",
+    "capturedFrom": "Capturé depuis {{host}}",
+    "fullScreen": "Ouvrir l’aperçu en plein écran",
+    "fullScreenDescription": "{{name}}, en plein écran, avec un panneau de notes. Appuyez sur Échap pour revenir.",
+    "notes": {
+      "title": "Notes",
+      "hide": "Masquer le panneau de notes",
+      "show": "Afficher le panneau de notes",
+      "hint": "Rattachées à {{name}}, et affichées partout où ce fichier est listé.",
+      "label": "Notes sur {{name}}",
+      "placeholder": "Ce qui compte dans ce document — l’échéance cachée en page 3, à qui poser la question…",
+      "saved": "Enregistré",
+      "save": "Enregistrer la note"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Reporter ou déplacer ce rappel",
+      "label": "Reporter « {{title}} » — {{when}}",
+      "heading": "Reporter",
+      "pickDate": "Choisir une date",
+      "move": "Déplacer"
+    },
+    "row": {
+      "markNotDone": "Marquer « {{title}} » comme non terminé",
+      "markDone": "Marquer « {{title}} » comme terminé",
+      "draftReply": "Rédiger une réponse"
+    },
+    "relatedTwo": "{{first}} et {{second}}",
+    "relatedMany_one": "{{count}} candidature",
+    "relatedMany_many": "{{count}} candidatures",
+    "relatedMany_other": "{{count}} candidatures",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (copie)",
+    "add": "Ajouter un rappel",
+    "filterLabel": "Filtrer les rappels par échéance",
+    "searchLabel": "Rechercher des rappels",
+    "searchPlaceholder": "Rechercher un titre, une note ou un poste",
+    "toast": {
+      "reopened": "{{title}} rouvert",
+      "completed": "{{title}} terminé",
+      "reopenedDescription": "De retour à sa date, et de retour sur le tableau de bord s’il s’agit d’une relance.",
+      "completedDescription": "Classé dans Terminés, et retiré du tableau de bord.",
+      "moved": "{{title}} déplacé",
+      "nowDue": "Échéance désormais le {{date}} · {{when}}",
+      "duplicated": "{{title}} dupliqué",
+      "duplicatedDescription": "La copie est ouverte, échéance le {{date}}.",
+      "stillOnList": "{{title}} est toujours dans la liste.",
+      "deletedDescription": "{{description}} — retiré du calendrier comme de cette liste."
+    },
+    "empty": {
+      "zeroTitle": "Aucun rappel pour l’instant",
+      "zeroDescription": "Un rappel est une relance datée — relancer un référent, vérifier un portail, envoyer un remerciement. Ceux que vous marquez comme relances apparaissent aussi sur le tableau de bord jusqu’à ce que vous les cochiez.",
+      "search": "Aucun rappel ne mentionne « {{query}} » dans son titre, sa note, son type ou sa candidature.",
+      "both": "Aucun rappel {{bucket}} ne porte les mots-clés sélectionnés.",
+      "doneTitle": "Rien de terminé pour l’instant",
+      "doneDescription": "Les rappels que vous cochez s’accumulent ici : un rappel coché par erreur reste retrouvable.",
+      "showAll": "Afficher tous les rappels",
+      "bucketTitle": "Rien {{bucket}}",
+      "bucketDescription_one": "{{count}} rappel est classé dans les autres groupes.",
+      "bucketDescription_many": "{{count}} rappels sont classés dans les autres groupes.",
+      "bucketDescription_other": "{{count}} rappels sont classés dans les autres groupes.",
+      "keywordsTitle": "Aucun rappel ne porte ces mots-clés"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "C’est le filtre par mots-clés en haut de la page qui les masque.",
+    "searchTitle": "Rien ne correspond à cette recherche",
+    "clearSearch": "Effacer la recherche",
+    "filtersTitle": "Rien ne correspond à ces filtres",
+    "clearFilters": "Effacer les filtres",
+    "showFiled": "Afficher aussi les fichiers classés",
+    "bothTitle": "Rien ne correspond aux deux filtres",
+    "clearBoth": "Effacer les deux filtres",
+    "clearKeywords": "Effacer les mots-clés"
+  },
+  "capture": {
+    "posting": "Offre",
+    "savedOne": "{{name}} enregistrée dans votre Coffre",
+    "savedMany_one": "{{count}} offre enregistrée dans votre Coffre",
+    "savedMany_many": "{{count}} offres enregistrées dans votre Coffre",
+    "savedMany_other": "{{count}} offres enregistrées dans votre Coffre",
+    "suggested": "Rattachée à aucune candidature. {{name}} semble correspondre — rattachez-la depuis sa ligne dans votre Coffre.",
+    "unfiled": "Rattachée à aucune candidature. Rattachez-la depuis sa ligne dans votre Coffre quand vous le souhaitez.",
+    "dropped_one": "{{count}} ressource n’a pas pu être conservée : certaines parties peuvent paraître sobres.",
+    "dropped_many": "{{count}} ressources n’ont pas pu être conservées : certaines parties peuvent paraître sobres.",
+    "dropped_other": "{{count}} ressources n’ont pas pu être conservées : certaines parties peuvent paraître sobres.",
+    "unstored_one": "{{count}} n’a pas pu être stockée sur cet appareil — l’enregistrement est là, pas la page.",
+    "unstored_many": "{{count}} n’ont pas pu être stockées sur cet appareil — l’enregistrement est là, pas la page.",
+    "unstored_other": "{{count}} n’ont pas pu être stockées sur cet appareil — l’enregistrement est là, pas la page.",
+    "refusedOne": "Une capture n’a pas pu être conservée",
+    "refusedMany_one": "{{count}} capture n’a pas pu être conservée",
+    "refusedMany_many": "{{count}} captures n’ont pas pu être conservées",
+    "refusedMany_other": "{{count}} captures n’ont pas pu être conservées",
+    "waitingOne": "Une offre attend d’être enregistrée ici.",
+    "waitingMany_one": "{{count}} offre attend d’être enregistrée ici.",
+    "waitingMany_many": "{{count}} offres attendent d’être enregistrées ici.",
+    "waitingMany_other": "{{count}} offres attendent d’être enregistrées ici.",
+    "source": "Capturées avec l’extension jojo, toujours sur cet appareil.",
+    "saving": "Enregistrement…",
+    "saveIt": "L’enregistrer",
+    "saveThem": "Les enregistrer"
+  },
+  "picker": {
+    "none": "Aucune candidature",
+    "label": "Candidatures liées",
+    "searchLabel": "Rechercher des candidatures",
+    "searchPlaceholder": "Rechercher des candidatures…",
+    "noneYet": "Aucune candidature pour l’instant.",
+    "noMatch": "Aucune candidature ne correspond.",
+    "unfile": {
+      "record": "Détacher cet enregistrement",
+      "file": "Détacher ce fichier",
+      "link": "Détacher ce lien",
+      "snippet": "Détacher cet extrait",
+      "person": "Détacher cette personne",
+      "conversation": "Détacher cette conversation"
+    }
+  },
+  "snippets": {
+    "openInVault": "Ouvrir dans le Coffre",
+    "card": {
+      "edit": "Modifier cet extrait",
+      "moveTo": "Déplacer vers"
+    },
+    "editor": {
+      "editTitle": "Modifier l’extrait",
+      "newTitle": "Nouvel extrait",
+      "title": {
+        "label": "Titre",
+        "placeholder": "ex. Pourquoi ce département"
+      },
+      "kind": {
+        "label": "Type",
+        "hint": "Où il est classé, et quelle étiquette la liste affiche."
+      },
+      "application": {
+        "label": "Candidature liée",
+        "hint": "Autant de postes que vous voulez. Il apparaît ensuite sur la page de chacun."
+      },
+      "text": {
+        "label": "Texte",
+        "hint": "La taille, la couleur, le gras, l’italique, le souligné et le barré sont enregistrés avec le texte. Les listes et tableaux sont conservés en lignes simples.",
+        "placeholder": "Écrivez le paragraphe que vous réécrivez sans cesse…"
+      },
+      "fullScreen": "Écrire en plein écran",
+      "keywords": {
+        "label": "Mots-clés",
+        "hint": "Partagés avec les candidatures, les rappels et les fichiers — filtrer sur l’un les retrouve tous."
+      },
+      "savedNote": "Enregistré dans la base de données de ce navigateur — il sera là à votre retour.",
+      "fullScreenDescription": "Modification de l’extrait en plein écran. Appuyez sur Échap pour revenir."
+    },
+    "errors": {
+      "title": "Donnez un nom à l’extrait.",
+      "body": "Écrivez le texte que vous voulez coller plus tard."
+    },
+    "toast": {
+      "filed": "Classé dans {{tag}}, prêt à être copié depuis la liste.",
+      "filedHidden": "Classé dans {{tag}} — masqué par les filtres au-dessus de la liste.",
+      "duplicated": "La copie est classée dans {{tag}}, prête à être réécrite.",
+      "moved": "Classé dans {{tag}}.",
+      "movedOut": "Classé dans {{tag}} — hors de la liste {{filter}} affichée.",
+      "stillThere": "{{title}} est toujours dans le Coffre.",
+      "stillThereUnnamed": "L’extrait est toujours dans le Coffre.",
+      "deletedUnnamed": "Extrait supprimé",
+      "deletedDescription": "Le texte et ses mots-clés disparaissent avec lui."
+    },
+    "empty": {
+      "zeroTitle": "Aucun extrait pour l’instant",
+      "zeroDescription": "Enregistrez les paragraphes que vous réécrivez sans cesse — la bio, le « pourquoi ce département », l’e-mail de relance.",
+      "search": "Aucun extrait ne mentionne « {{query}} » dans son nom, son texte ou son type.",
+      "both": "Aucun extrait {{tag}} ne porte les mots-clés sélectionnés.",
+      "bucketTitle": "Aucun extrait {{tag}}",
+      "bucketDescription_one": "{{count}} extrait est classé dans les autres types.",
+      "bucketDescription_many": "{{count}} extraits sont classés dans les autres types.",
+      "bucketDescription_other": "{{count}} extraits sont classés dans les autres types.",
+      "showAll": "Afficher tous les types",
+      "keywordsTitle": "Aucun extrait ne porte ces mots-clés"
+    },
+    "filterLabel": "Filtrer les extraits par type",
+    "searchLabel": "Rechercher des extraits",
+    "searchPlaceholder": "Rechercher un nom ou du texte",
+    "copied": "Extrait copié dans le presse-papiers",
+    "discard": {
+      "title": "Abandonner les modifications non enregistrées ?",
+      "description": "« {{title}} » contient des modifications non enregistrées. Partir maintenant les supprime, sans retour possible.",
+      "untitled": "Extrait sans titre",
+      "confirm": "Abandonner les modifications"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Standard",
+      "scientific": "Scientifique"
+    },
+    "mode": "Mode de la calculatrice",
+    "ops": {
+      "plus": "plus",
+      "minus": "moins",
+      "times": "fois",
+      "dividedBy": "divisé par",
+      "power": "puissance"
+    },
+    "history": "Historique",
+    "plusMinus": "plus ou moins",
+    "backspace": "Retour arrière",
+    "clear": "Effacer",
+    "empty": "Rien pour l’instant. Les calculs terminés apparaissent ici.",
+    "use": "Utiliser {{value}}"
+  },
+  "links": {
+    "newTab": "S’ouvre dans un nouvel onglet",
+    "errors": {
+      "title": "Donnez un titre au lien.",
+      "url": "Il faut un nom de domaine, comme jobs.rice.edu/postings.",
+      "empty": "Collez une URL pour l’enregistrer."
+    },
+    "fields": {
+      "title": "Titre",
+      "url": "URL",
+      "category": "Catégorie",
+      "applicationHint": "Rattache le lien à un poste, pour que chacun connaisse l’autre.",
+      "note": "Note",
+      "noteHint": "Une ligne sur ce qui le rend utile à garder."
+    },
+    "add": "Ajouter un lien",
+    "toast": {
+      "saved": "Classé dans {{category}}, avec un titre tiré de l’URL.",
+      "savedHidden": "Classé dans {{category}} — masqué tant que le filtre par mots-clés est actif.",
+      "duplicated": "La copie est classée dans {{category}}, prête à être modifiée.",
+      "deletedDescription": "Retiré du Coffre. La page vers laquelle il pointe n’est pas touchée."
+    },
+    "empty": {
+      "zeroTitle": "Aucun lien enregistré pour l’instant",
+      "zeroDescription": "Enregistrez une URL — une offre, la page d’un département, une personne qu’on vous a dit de contacter. Le titre est tiré de l’adresse.",
+      "search": "Aucun lien ne mentionne « {{query}} » dans son titre, son adresse, sa note ou sa catégorie.",
+      "both": "Aucun lien {{category}} ne porte les mots-clés sélectionnés.",
+      "bucketTitle": "Aucun lien dans {{category}}",
+      "bucketDescription_one": "{{count}} lien est classé dans les autres catégories.",
+      "bucketDescription_many": "{{count}} liens sont classés dans les autres catégories.",
+      "bucketDescription_other": "{{count}} liens sont classés dans les autres catégories.",
+      "showAll": "Afficher toutes les catégories",
+      "keywordsTitle": "Aucun lien ne porte ces mots-clés"
+    },
+    "filterLabel": "Filtrer les liens par catégorie",
+    "searchLabel": "Rechercher des liens",
+    "searchPlaceholder": "Rechercher un titre, une adresse ou une note",
+    "form": {
+      "label": "Enregistrer un lien",
+      "hint": "Enregistré dans {{category}}, avec un titre tiré de l’URL. Modifiez une ligne pour changer l’un ou l’autre.",
+      "placeholder": "Collez une URL…",
+      "save": "Enregistrer le lien"
+    }
+  },
+  "people": {
+    "add": "Ajouter une personne",
+    "searchLabel": "Rechercher des personnes",
+    "searchPlaceholder": "Rechercher un nom, un rôle ou une note",
+    "applicationsList": "Liste des candidatures",
+    "toast": {
+      "removed": "Personne supprimée",
+      "saved": "Personne enregistrée"
+    },
+    "empty": {
+      "zeroTitle": "Personne pour l’instant",
+      "zeroDescription": "Référents, présidents de comité, recruteurs — toute personne par qui passe votre recherche. Rattachez-les aux postes où ils sont mentionnés et ils apparaîtront aussi dans ces dossiers.",
+      "searchTitle": "Personne ne correspond",
+      "searchDescription": "Essayez une partie d’un nom, un rôle ou un lieu."
+    },
+    "namedOn": {
+      "recommender": "Référent pour {{names}}",
+      "contact": "Contact chez {{names}}",
+      "named": "Mentionné sur {{names}}"
+    },
+    "form": {
+      "name": "Nom",
+      "nameError": "Un nom est la seule chose requise.",
+      "namePlaceholder": "ex. Pr Ngozi Okafor",
+      "role": "Rôle",
+      "rolePlaceholder": "ex. référent, président du comité, recruteur",
+      "affiliation": "Affiliation",
+      "affiliationPlaceholder": "ex. Rice",
+      "affiliationHint": "Là où la personne se trouve. Non lié à un employeur auquel vous avez postulé.",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "namedOn": "Mentionné sur",
+      "namedOnHint": "Chaque poste pour lequel elle écrit, évalue ou préside.",
+      "notePlaceholder": "Ce qu’elle a dit, ce qu’elle vous doit, quand relancer.",
+      "save": "Enregistrer la personne"
+    }
+  },
+  "referee": {
+    "title": "Candidatures pour {{name}}",
+    "description": "Cochez celles à envoyer et indiquez ce que chaque lettre doit mettre en avant. Vos points forts et notes sont conservés sur {{name}} pour la prochaine fois.",
+    "include": "Inclure {{org}}, {{role}}",
+    "applied": "Envoyée le {{date}}",
+    "noMaterials": "Aucun document rattaché",
+    "materials_one": "{{count}} document",
+    "materials_many": "{{count}} documents",
+    "materials_other": "{{count}} documents",
+    "posting": "Offre",
+    "noPosting": "Pas de lien vers l’offre",
+    "highlight": "Points forts",
+    "highlightPlaceholder": "ex. enseignement, NSF CAREER, inférence causale",
+    "highlightHint": "Séparez par des virgules.",
+    "note": "Note pour cette personne",
+    "notePlaceholder": "Tout le reste : l’échéance, à qui l’adresser, ce qui compte pour le département.",
+    "format": "Format du fichier",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Inclure mes documents",
+    "withMaterialsCount": "Inclure mes documents ({{count}})",
+    "tickOne": "Cochez au moins une candidature.",
+    "chosen_one": "{{count}} candidature",
+    "chosen_many": "{{count}} candidatures",
+    "chosen_other": "{{count}} candidatures",
+    "chosenZip_one": "{{count}} candidature, dans un seul .zip",
+    "chosenZip_many": "{{count}} candidatures, dans un seul .zip",
+    "chosenZip_other": "{{count}} candidatures, dans un seul .zip",
+    "preparing": "Préparation…",
+    "download": "Télécharger",
+    "toast": {
+      "saved": "Liste pour {{name}} enregistrée",
+      "zip_one": "{{file}} : le tableau et {{count}} document, dans votre dossier de téléchargements.",
+      "zip_many": "{{file}} : le tableau et {{count}} documents, dans votre dossier de téléchargements.",
+      "zip_other": "{{file}} : le tableau et {{count}} documents, dans votre dossier de téléchargements.",
+      "zipMissing_one": "{{file}} est dans votre dossier de téléchargements, sans {{count}} document que ce navigateur ne pouvait plus lire.",
+      "zipMissing_many": "{{file}} est dans votre dossier de téléchargements, sans {{count}} documents que ce navigateur ne pouvait plus lire.",
+      "zipMissing_other": "{{file}} est dans votre dossier de téléchargements, sans {{count}} documents que ce navigateur ne pouvait plus lire.",
+      "sheet": "{{file}}, dans votre dossier de téléchargements.",
+      "failed": "Impossible de créer la liste",
+      "failedDescription": "Rien n’a été téléchargé. Vos points forts et notes ont été conservés.",
+      "highlights": "Points forts enregistrés"
+    }
+  }
+}

@@ -9,6 +9,7 @@
  */
 
 import { shortDate } from '../core/dates'
+import { ACTION_PHRASES } from '../core/domain-text'
 import { enteredStage } from '../core/stage-dates'
 import { OUTCOME_VALUES, STAGE_VALUES, TIMELINE_KIND_VALUES, URGENCY_VALUES } from '../core/model'
 import { s } from '../core/schema'
@@ -242,7 +243,7 @@ export const applicationOfferClear = defineTool({
     ctx.require('application', input.id)
     // The formatting on the offer's note goes with the note it was laid over.
     ctx.tx.patch<'application'>(input.id, { offer: undefined, offerNoteFormat: undefined })
-    touch(ctx, input.id, 'Offer details cleared')
+    touch(ctx, input.id, ACTION_PHRASES.offerCleared)
   },
 
   describe: (input, _output, m) => ({

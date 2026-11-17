@@ -27,7 +27,7 @@
  */
 
 import ReactNativeBlobUtil from 'react-native-blob-util'
-import { pathToken } from '@jojo/service/core/handoff'
+import { openOutcome, pathToken, type HandoffOutcome } from '@jojo/service/core/handoff'
 import { createPullServer, type PullServing } from '@jojo/service/core/handoff-pull'
 import { acceptPairing, decodeOffer } from '@jojo/service/core/pairing'
 import type { DialAddress } from '@jojo/service/core/dial'
@@ -48,11 +48,12 @@ import { localAddress, type ReceiveProblem } from '@/lib/handoff-receive'
 export const canServe = (): boolean => canPair()
 
 /**
- * Records that this phone handed its records over, once the last chunk went.
+ * Records that this phone handed its records over — once the computer has said
+ * its person TOOK them, not when the last chunk went.
  *
- * On this device, as the computer stamps its own when IT sends: `handoverAt`
- * is a fact about each store, and it is what lets each one say how far it has
- * drifted since.
+ * `handoverAt` is a fact about each store, and it is what lets each one say how
+ * far it has drifted since. Stamped on the last chunk, a transfer declined on
+ * the computer still left this phone saying the computer held the same records.
  */
 export function stampSent(repo: Repository, at: string): void {
   repo.setMeta(handedOver(repo.meta, at as Instant))
@@ -63,6 +64,8 @@ export type ServeSession = {
   address: DialAddress
   /** How much has been handed over, for the screen. */
   progress: () => PullServing
+  /** What the computer said its person did with the records; `pending` until it says. */
+  outcome: () => HandoffOutcome
   stop: () => void
 }
 
@@ -87,6 +90,7 @@ export async function beginServing(
 
   const token = await pathToken(secrets, read.value, 'pull')
   const pull = createPullServer(secrets, accepted.value.keys, build)
+  let outcome: HandoffOutcome = 'pending'
 
   let server: HandoffServer
   try {
@@ -98,6 +102,18 @@ export async function beginServing(
         // that did not see it, so it goes out in the clear, as when receiving.
         if (request.route === 'pair') return { status: 200, body: accepted.value.response }
         if (request.route === 'pull') return pull.answer(request.body)
+        // The computer, which received, telling this phone what its person
+        // decided. Only under its proof — the path alone is in the clear on the
+        // network, and this takes the first answer it hears — so a forgery gets
+        // the 404 a wrong token gets. Only after every chunk has gone — before
+        // that there is nothing for them to have decided about — and only once.
+        if (request.route === 'outcome') {
+          const told = await openOutcome(secrets, accepted.value.keys, request.body, 'pull')
+          if (told === null) return { status: 404 }
+          if (told === 'pending' || !pull.progress().finished) return { status: 400 }
+          if (outcome === 'pending') outcome = told
+          return { status: 204 }
+        }
         // The parser refuses chunks in this direction; this is the belt to it.
         return { status: 404 }
       },
@@ -113,7 +129,10 @@ export async function beginServing(
     return address
   }
 
-  return { ok: true, value: { address, progress: pull.progress, stop: server.stop } }
+  return {
+    ok: true,
+    value: { address, progress: pull.progress, outcome: () => outcome, stop: server.stop },
+  }
 }
 
 /**

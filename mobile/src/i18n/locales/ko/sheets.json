@@ -1,0 +1,243 @@
+{
+  "common": {
+    "undo": "실행 취소",
+    "cancel": "취소"
+  },
+  "addFromLink": {
+    "title": "링크로 지원서 추가",
+    "description": "모델이 공고를 읽고 양식을 채우며, 이 직무가 분명히 다루는 내 키워드에 체크해요. 페이지는 보관함의 채용 공고에 보관되고, 내가 정하기 전까지는 지원서로 저장되지 않아요.",
+    "url": "채용 공고 URL",
+    "addressOnly": "주소만 사용",
+    "reading": "읽는 중…",
+    "retry": "다시 시도",
+    "submit": "읽고 미리 채우기",
+    "failed": "공고를 읽지 못했어요.",
+    "steps": {
+      "reading": "페이지를 가져오는 중",
+      "asking": "읽는 중",
+      "saving": "공고를 저장하는 중"
+    },
+    "toast": {
+      "title": "공고를 저장하고 읽었어요",
+      "kept": "{{name}}이(가) 보관함에 있고, 지원서를 저장하면 그 지원서에 분류돼요.",
+      "gaps_other": "항목 {{count}}개는 페이지에 없었어요.",
+      "tags_other": "내 키워드 {{count}}개에 체크했어요."
+    }
+  },
+  "application": {
+    "newTitle": "새 지원서",
+    "editTitle": "{{name}} 편집",
+    "add": "지원서 추가",
+    "save": "변경 사항 저장",
+    "checking": "중복을 확인하는 중…",
+    "noRecord": "편집할 기록 없이 이 시트가 열렸어요",
+    "description": {
+      "edit": "변경 사항이 현재 정보를 대체하고, 마감일도 함께 옮겨져요.",
+      "prefilledTagged": "붙여 넣은 내용으로 미리 채웠어요. 저장하기 전에 고용주, 직무, 키워드를 확인하세요.",
+      "prefilled": "붙여 넣은 내용으로 미리 채웠어요. 저장하기 전에 고용주와 직무를 확인하세요.",
+      "create": "지원 중인 일자리를 관리해요. 별표 표시 항목은 필수예요."
+    },
+    "errors": {
+      "org": "고용주를 입력하세요. 기록이 그 아래에 분류돼요.",
+      "role": "직무를 입력하세요. 같은 곳에 낸 두 지원서를 구분할 수 있어요.",
+      "roleTag": "역할 태그를 고르세요. 역할 필터와 차트가 이걸 써요.",
+      "url": "브라우저가 열 수 있는 링크가 아니에요. https://를 포함하세요."
+    },
+    "fields": {
+      "org": "기관",
+      "orgPlaceholder": "고용주 또는 기관",
+      "role": "직무명",
+      "rolePlaceholder": "예: 시니어 데이터 분석가",
+      "roleTag": "역할 태그",
+      "pickRoleTag": "역할 태그 고르기",
+      "roleTagDescription": "역할 필터와 차트가 쓰는 기준이에요.",
+      "stage": "단계",
+      "deadline": "마감일",
+      "deadlineHint": "캘린더와 다가오는 한 주에 날짜 항목을 추가해요.",
+      "source": "출처",
+      "sourceNotSet": "설정 안 함",
+      "location": "위치",
+      "locationPlaceholder": "도시 또는 원격",
+      "comp": "보수",
+      "compPlaceholder": "예: $96k + 지분",
+      "url": "공고 URL",
+      "postingId": "공고 ID",
+      "postingIdHint": "공고에 적혀 있다면 그 채용 번호나 요청 번호.",
+      "postingIdPlaceholder": "예: R-2024-0312",
+      "note": "메모",
+      "notePlaceholder": "제출 전에 아직 해야 할 일.",
+      "keywords": "키워드"
+    },
+    "toast": {
+      "draftDiscarded": "초안을 버렸어요",
+      "changesDiscarded": "변경 사항을 버렸어요",
+      "nothingAdded": "아무것도 추가하지 않았어요. 실행 취소하면 양식이 두고 간 상태로 돌아와요.",
+      "unchanged": "{{name}}은(는) 바뀌지 않았어요. 실행 취소하면 편집한 내용이 돌아와요.",
+      "recordUnchanged": "기록은 바뀌지 않았어요. 실행 취소하면 편집한 내용이 돌아와요.",
+      "added": "{{name}}을(를) 추가했어요",
+      "deadlineOnCalendar": "마감일 {{date}}이(가) 캘린더에 있어요.",
+      "noDeadline": "아직 마감일이 없어요. 추가하면 다가오는 한 주에 표시돼요.",
+      "postingFiled": "공고가 여기에 분류돼 있어요.",
+      "saved": "변경 사항을 저장했어요",
+      "deadlineRemoved": "{{name}}: 마감일을 캘린더에서 뺐어요.",
+      "restoreDeadline": "마감일 복원"
+    },
+    "duplicate": {
+      "title": "이미 있는 일자리 같아요",
+      "modelSame": "모델은 둘을 같은 채용으로 읽었어요.",
+      "modelReading": " — 모델의 판단이니 아래에서 확인하세요.",
+      "existing": "이미 있는 것",
+      "adding": "추가하려는 것",
+      "untitled": "제목 없음",
+      "postingId": "공고 ID {{id}}",
+      "openYours": "기존 항목 열기",
+      "openExisting": "이미 있는 {{name}} 열기",
+      "tapToOpen": "탭해서 열거나, 계속해서 두 번째 기록으로 추가하세요.",
+      "editInstead": "대신 편집",
+      "discard": "버리기",
+      "addAnyway": "그래도 추가"
+    },
+    "since": {
+      "today": "오늘",
+      "yesterday": "어제",
+      "daysAgo_other": "{{count}}일 전"
+    }
+  },
+  "draft": {
+    "title": "메시지 초안 쓰기",
+    "description": {
+      "forApp": "{{name}}용이에요. 아무것도 생성하거나 보내지 않아요. 빈칸을 채우고 메일 앱에 복사한 다음 보낸 것으로 표시하세요.",
+      "forItem": "{{name}} · {{item}}용이에요. 아무것도 생성하거나 보내지 않아요. 빈칸을 채우고 메일 앱에 복사한 다음 보낸 것으로 표시하세요.",
+      "unlinked": "지원서와 연결되지 않아서 [ROLE]과 [DATE]는 빈칸으로 남아요. 아무것도 생성하거나 보내지 않아요. 빈칸을 채우고 메일 앱에 복사한 다음 보낸 것으로 표시하세요."
+    },
+    "defaultTitle": "이메일 초안",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "스니펫으로 저장",
+    "writeFirst": "먼저 내용을 쓰세요",
+    "copy": "복사",
+    "copied": "복사됨",
+    "markSent": "보낸 것으로 표시",
+    "openFromReminder": "체크하려면 리마인더에서 여세요",
+    "alreadyTicked": "이미 체크됨",
+    "blank": "빈 초안",
+    "startFromSnippet": "내 이메일 스니펫으로 시작",
+    "placeholder": "메시지를 쓰거나 시작할 스니펫을 고르세요…",
+    "editorLabel": "메시지 초안",
+    "empty": {
+      "title": "아직 이메일 스니펫이 없어요",
+      "description": "Email 태그가 붙은 스니펫이 여기에 시작점으로 나타나요. 불러올 건 없지만, 초안을 꼭 스니펫으로 시작할 필요는 없어요.",
+      "startBlank": "빈 초안으로 시작"
+    },
+    "status": {
+      "empty": "아직 쓴 내용이 없어요.",
+      "noBlanks": "남은 빈칸이 없어요.",
+      "blanksLeft_other": "빈칸 {{count}}개 남음 — {{names}}",
+      "nameNever": " · 사람 이름은 절대 대신 채우지 않아요"
+    },
+    "picker": {
+      "title": "시작할 스니펫",
+      "description": "기록이 이미 아는 내용을 채운 내 이메일 스니펫이에요."
+    },
+    "toast": {
+      "replaced": "초안을 바꿨어요",
+      "loaded": "{{title}}을(를) 불러왔어요.",
+      "blank": "빈 상태에서 다시 시작했어요.",
+      "saved": "스니펫에 저장했어요",
+      "savedDescription": "{{title}} · Email 태그, 보관함에 저장됨",
+      "sent": "보낸 것으로 표시했어요",
+      "sentDescription": "{{title}}: 리마인더에서 체크됨"
+    }
+  },
+  "stage": {
+    "moveTo": "{{stage}}(으)로 이동",
+    "currently": "{{name}} · 현재 {{stage}}",
+    "nothingElse": "기록의 다른 부분은 바뀌지 않았어요.",
+    "moveWithoutDetails": "세부 정보 없이 이동",
+    "outcome": "결과",
+    "submitted": {
+      "date": "제출일",
+      "portal": "포털 URL",
+      "portalHint": "지원서가 있는 곳이에요. 연락해야 할 때를 위해서요.",
+      "reference": "확인 번호",
+      "referencePlaceholder": "예: 4471-QZ"
+    },
+    "interview": {
+      "date": "면접 날짜",
+      "format": "형식",
+      "formatLabel": "면접 형식",
+      "mint": "타임라인에 추가",
+      "mintDescription": "그 날짜에 리마인더가 붙은 면접 항목을 만들어요."
+    },
+    "offer": {
+      "respondBy": "회신 기한",
+      "package": "조건",
+      "packagePlaceholder": "예: $112k + $15k 연구 정착금",
+      "note": "메모",
+      "notePlaceholder": "아직 협상 중인 것",
+      "mint": "기한을 타임라인에 추가",
+      "mintDescription": "아무도 지켜보지 않는 회신 기한이야말로 절대 놓치면 안 되는 마감일이에요."
+    },
+    "keepOffer": {
+      "label": "제안 세부 정보 유지",
+      "description": "회신 기한 {{date}}. 끄면 지워져요.",
+      "descriptionWithComp": "회신 기한 {{date}} · {{comp}}. 끄면 지워져요."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "새 리마인더",
+      "editReminder": "리마인더 편집",
+      "newEvent": "새 일정",
+      "editEvent": "일정 편집"
+    },
+    "description": "어느 쪽이든 하나의 기록이에요. 지정한 날짜에 캘린더에 나타나고, 스위치가 켜져 있는 동안 보관함의 리마인더 목록에도 나타나요.",
+    "delete": "삭제",
+    "save": "저장",
+    "addReminder": "리마인더 추가",
+    "addEvent": "일정 추가",
+    "reminderFallback": "리마인더",
+    "duration": {
+      "minutes_other": "{{count}}분",
+      "hours_other": "{{count}}시간"
+    },
+    "fields": {
+      "title": "제목",
+      "reminderPlaceholder": "예: 리크루터에게 연락하기",
+      "eventPlaceholder": "예: 위원회 Zoom 미팅",
+      "remind": "리마인더에 표시",
+      "remindOn": "보관함에 체크 상자와 함께 표시되고, 해당 날짜의 캘린더에도 나타나요.",
+      "remindOff": "해당 날짜의 캘린더에만 나타나요. 보관함에는 체크 상자가 없어요.",
+      "date": "날짜",
+      "allDay": "종일",
+      "allDayDescription": "끄면 시작 시간과 길이를 정할 수 있어요.",
+      "startTime": "시작 시간",
+      "length": "길이",
+      "applicationHint": "서로 연결해서, 각 지원서에 이 항목이 나타나고 이 항목에서 어느 지원서로든 돌아갈 수 있어요.",
+      "kind": "종류",
+      "kindFollowUp": "후속 연락은 체크할 때까지 오늘에서도 할 일로 계산돼요.",
+      "kindHint": "캘린더와 리마인더 목록에 표시되는 아이콘이에요.",
+      "detail": "세부 내용",
+      "detailHint": "제목 아래에 표시되는 한 줄 설명.",
+      "note": "메모",
+      "noteHint": "나만의 메모예요. 세부 내용과 따로 보관해서 편집해도 덮어쓰지 않아요.",
+      "keywords": "키워드",
+      "keywordsHint": "지원서, 파일, 링크와 공유돼요. 하나로 필터하면 모두 찾을 수 있어요."
+    },
+    "more": {
+      "title": "더 많은 세부 정보",
+      "note": "메모",
+      "keywords": "키워드",
+      "empty": "메모, 키워드"
+    },
+    "toast": {
+      "added": "{{title}}을(를) 추가했어요",
+      "updated": "{{title}}을(를) 업데이트했어요",
+      "inReminders": "리마인더에 있음",
+      "calendarOnly": "캘린더에만 있음",
+      "owed": "이번 주에 할 일",
+      "deleted": "{{title}}을(를) 삭제했어요",
+      "goneFromBoth": "리마인더 목록과 캘린더에서 사라졌어요.",
+      "goneFromCalendar": "캘린더에서 사라졌어요."
+    }
+  }
+}

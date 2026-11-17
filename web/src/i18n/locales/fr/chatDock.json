@@ -1,0 +1,51 @@
+{
+  "chatWithJojo": "Discuter avec jojo",
+  "newConversation": "Nouvelle conversation",
+  "newAboutOpen": "Nouvelle conversation sur la candidature ouverte",
+  "hideConversations": "Masquer les conversations",
+  "showConversations": "Afficher les conversations",
+  "undo": "Annuler",
+  "overflow_one": "{{count}} autre conversation ouverte",
+  "overflow_many": "{{count}} autres conversations ouvertes",
+  "overflow_other": "{{count}} autres conversations ouvertes",
+  "grip": {
+    "labelCorner": "Déplacer le chat latéralement — dans le coin. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "labelFarLeft": "Déplacer le chat latéralement — tout à gauche. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "labelFarRight": "Déplacer le chat latéralement — tout à droite. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "labelPartWay": "Déplacer le chat latéralement — à {{percent}} % vers la gauche. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "labelPartWayRight": "Déplacer le chat latéralement — à {{percent}} % vers la droite. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "title": "Faites glisser pour écarter le chat · double-cliquez pour le ramener dans le coin"
+  },
+  "prompts": {
+    "about": {
+      "left": "Que reste-t-il à faire pour cette candidature ?",
+      "followUp": "Rédige un e-mail de relance pour celle-ci",
+      "summarise": "Résume cette candidature"
+    },
+    "general": {
+      "waiting": "Qu’est-ce que j’attends ?",
+      "noDeadline": "Quelles candidatures n’ont pas d’échéance ?"
+    }
+  },
+  "window": {
+    "label": "Conversation : {{title}}",
+    "back": "Retour aux conversations",
+    "working": "En cours",
+    "openInAssistant": "Ouvrir dans l’Assistant",
+    "open": "Ouvrir cette conversation",
+    "minimise": "Réduire cette conversation",
+    "close": "Fermer cette conversation",
+    "closeTitle": "Fermer — elle reste dans vos conversations",
+    "about": "À propos de <name>{{name}}</name>",
+    "detachAria": "Commencer cette conversation sans sujet particulier",
+    "unfileAria": "Détacher cette conversation de la candidature",
+    "detachTitle": "Pas à propos de cette candidature",
+    "unfileTitle": "Détacher de cette candidature",
+    "notConfigured": "Connectez un modèle dans les <settings>Paramètres</settings> pour discuter ici avec jojo. Tout reste sur cet appareil.",
+    "askAbout": "Posez n’importe quelle question sur {{name}} — jojo sait que c’est la candidature dont vous parlez.",
+    "askGeneral": "Demandez à jojo de trouver quelque chose, d’ajouter une candidature ou d’en faire avancer une.",
+    "composerLabel": "Écrire à jojo dans {{title}}",
+    "placeholderAbout": "Une question sur {{org}}…",
+    "placeholder": "Demandez à jojo…"
+  }
+}

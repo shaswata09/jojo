@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { ComponentProps, ReactNode } from 'react'
 import { Eye, EyeOff, ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { openHref } from '@/components/vault/links/url'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,7 +26,7 @@ function FieldLabel({
     <Label htmlFor={htmlFor} className="text-xs font-normal text-text-2">
       {label}
       {required ? (
-        <span aria-hidden="true" className="-ml-1 text-danger">
+        <span aria-hidden="true" className="-ms-1 text-danger">
           *
         </span>
       ) : null}
@@ -84,7 +85,8 @@ function FieldMessages({
  * someone keeps their links is not the destination's business.
  */
 function OpenLink({ href, label }: { href: string; label: string }) {
-  const title = `Open ${label} in a new tab`
+  const { t } = useTranslation()
+  const title = t('field.openInTab', { label })
   return (
     <a
       href={href}
@@ -92,7 +94,7 @@ function OpenLink({ href, label }: { href: string; label: string }) {
       rel="noopener noreferrer"
       aria-label={title}
       title={title}
-      className="absolute top-1/2 right-1 grid size-6 -translate-y-1/2 place-items-center rounded-md border border-transparent text-text-3 transition-colors outline-none hover:bg-row-hover hover:text-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 [@media(pointer:coarse)]:size-9"
+      className="absolute end-1 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-md border border-transparent text-text-3 transition-colors outline-none hover:bg-row-hover hover:text-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 [@media(pointer:coarse)]:size-9"
     >
       <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
     </a>
@@ -141,6 +143,7 @@ export function Field({
   mono?: boolean
   id?: string
 }) {
+  const { t } = useTranslation()
   const generated = useId()
   const fieldId = id ?? generated
   const hintId = `${fieldId}-hint`
@@ -177,7 +180,7 @@ export function Field({
           // not there.
           className={cn(
             mono && 'font-mono text-xs',
-            button && 'pr-8 [@media(pointer:coarse)]:pr-11',
+            button && 'pe-8 [@media(pointer:coarse)]:pe-11',
           )}
           {...props}
           type={type}
@@ -188,12 +191,12 @@ export function Field({
             type="button"
             // Labelled by what pressing it DOES, not by what is on screen: a
             // control announced as "eye" tells a screen reader nothing.
-            aria-label={shown ? `Hide ${label}` : `Show ${label}`}
+            aria-label={shown ? t('field.hide', { label }) : t('field.show', { label })}
             aria-pressed={shown}
             onClick={() => {
               setShown((was) => !was)
             }}
-            className="absolute top-1/2 right-1.5 -translate-y-1/2 cursor-pointer rounded-sm p-1.5 text-text-3 transition-colors hover:text-text-1"
+            className="absolute end-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-sm p-1.5 text-text-3 transition-colors hover:text-text-1"
           >
             {shown ? (
               <EyeOff className="size-3.5" strokeWidth={1.8} aria-hidden />

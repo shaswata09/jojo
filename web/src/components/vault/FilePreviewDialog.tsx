@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { FileViewer } from '@/components/vault/FileViewer'
 import type { VaultFile } from '@/data/vault'
@@ -44,6 +45,7 @@ export function FilePreviewDialog({
    */
   description?: (name: string) => string
 }) {
+  const { t } = useTranslation('vault')
   const blobs = useVaultBlobs()
   const [blob, setBlob] = useState<File | null>(null)
 
@@ -130,7 +132,7 @@ export function FilePreviewDialog({
           <DialogDescription className="sr-only">
             {description
               ? description(shown.name)
-              : `A preview of ${shown.name}, filed under this application. Press Escape to go back to the record.`}
+              : t('viewer.dialogDescription', { name: shown.name })}
           </DialogDescription>
           <FileViewer file={shown} blob={blob ?? undefined} onClose={onClose} />
         </DialogContent>

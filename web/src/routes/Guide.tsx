@@ -1,4 +1,8 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router'
+import { Loader } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Panel } from '@/components/common/Panel'
 import { GuideNav, GuidePager } from '@/components/guide/GuideNav'
 import { useTitle } from '@/lib/links'
 
@@ -27,8 +31,29 @@ export function Guide() {
   return (
     <>
       <GuideNav />
-      <Outlet />
+      {/* The pages are lazy (App.tsx), so the boundary is here, between the
+          rail and the pager: those stay on screen while a page's chunk lands. */}
+      <Suspense fallback={<GuidePageFallback />}>
+        <Outlet />
+      </Suspense>
       <GuidePager />
     </>
+  )
+}
+
+/** What stands where a guide page is while its chunk is in flight. */
+function GuidePageFallback() {
+  const { t } = useTranslation('pages')
+  return (
+    <Panel>
+      <p className="flex items-center gap-2.5 text-sm text-text-2">
+        <Loader
+          className="size-4 shrink-0 animate-spin text-text-3"
+          strokeWidth={1.8}
+          aria-hidden
+        />
+        {t('routeFallback.loading')}
+      </p>
+    </Panel>
   )
 }

@@ -36,6 +36,7 @@ import type { Application, TimelineItem } from './model'
 import { daysBetween } from './dates'
 import { medianOf, REACH, reachedOf, replyGaps, TYPICAL } from './statistics'
 import { comparisonsFor, rangeLabel } from './segments'
+import type { Arm } from './segments'
 import { sentOn } from './sent-on'
 
 /** After a fortnight with no activity, a live application has gone quiet. */
@@ -57,7 +58,57 @@ export type Recommendation = {
   readonly strength: Strength
   /** Higher first. Only meaningful within a strength. */
   readonly weight: number
+  /**
+   * The figures `headline` and `because` are made of, so an app can say them in
+   * its own language (`advice-text.ts` renders them). The two English fields
+   * stay: the agent's tools and the tests read them.
+   */
+  readonly facts: RecommendationFacts
 }
+
+/** One side of a finding, as the sentence names it. `low`/`high` are whole percents. */
+export type ArmFacts = {
+  readonly label: string
+  readonly count: number
+  readonly of: number
+  readonly rate: number
+  readonly low: number
+  readonly high: number
+}
+
+/** What each kind of line says, by kind. */
+export type RecommendationFacts =
+  | {
+      readonly kind: 'segment'
+      /** `Comparison.dimension` and `.measure`, as `segments.ts` writes them. */
+      readonly dimension: string
+      readonly measure: string
+      readonly best: ArmFacts
+      readonly worst: ArmFacts
+    }
+  | { readonly kind: 'late'; readonly count: number }
+  | { readonly kind: 'silent'; readonly count: number; readonly median: number }
+  | { readonly kind: 'stale'; readonly count: number }
+  | { readonly kind: 'drafts'; readonly count: number; readonly oldestDays: number }
+  | { readonly kind: 'background' }
+  | {
+      readonly kind: 'funnel'
+      readonly step: 'replies' | 'interviews'
+      readonly got: number
+      readonly of: number
+      readonly rate: number
+      readonly typical: number
+    }
+  | { readonly kind: 'clear'; readonly sent: number }
+
+const armFacts = (arm: Arm): ArmFacts => ({
+  label: arm.label,
+  count: arm.count,
+  of: arm.of,
+  rate: arm.rate,
+  low: Math.round(arm.interval.low * 100),
+  high: Math.round(arm.interval.high * 100),
+})
 
 const plural = (n: number, one: string, many: string) => `${String(n)} ${n === 1 ? one : many}`
 
@@ -98,6 +149,13 @@ export function recommendationsFor(input: {
       because: `${String(c.best.count)} of ${String(c.best.of)} ${c.measure} there (${String(c.best.rate)}%, likely ${rangeLabel(c.best)}), against ${String(c.worst.count)} of ${String(c.worst.of)} for ${c.worst.label.toLowerCase()} (${String(c.worst.rate)}%, likely ${rangeLabel(c.worst)}). Split by ${c.dimension}.`,
       strength: 'measured',
       weight: 100 + (c.best.rate - c.worst.rate),
+      facts: {
+        kind: 'segment',
+        dimension: c.dimension,
+        measure: c.measure,
+        best: armFacts(c.best),
+        worst: armFacts(c.worst),
+      },
     })
   }
 
@@ -112,6 +170,7 @@ export function recommendationsFor(input: {
         'These are chases you already decided were worth making, on applications an employer has already seen. Nothing else on this list is as close to done.',
       strength: 'measured',
       weight: 90 + late.length,
+      facts: { kind: 'late', count: late.length },
     })
   }
 
@@ -135,10 +194,11 @@ export function recommendationsFor(input: {
     if (silent.length > 0) {
       out.push({
         id: 'silent:past-median',
-        headline: `Chase ${plural(silent.length, 'application', 'applications')} that have gone quiet.`,
-        because: `Replies to you arrive in ${plural(median, 'day', 'days')} typically, and these ${silent.length === 1 ? 'one has' : 'have'} passed that with nothing back. That is your own figure, not a rule of thumb.`,
+        headline: `Chase ${plural(silent.length, 'application', 'applications')} that ${silent.length === 1 ? 'has' : 'have'} gone quiet.`,
+        because: `Replies to you arrive in ${plural(median, 'day', 'days')} typically, and ${silent.length === 1 ? 'this one has' : 'these have'} passed that with nothing back. That is your own figure, not a rule of thumb.`,
         strength: 'measured',
         weight: 80 + silent.length,
+        facts: { kind: 'silent', count: silent.length, median },
       })
     }
   }
@@ -154,6 +214,7 @@ export function recommendationsFor(input: {
       because: `${stale.length === 1 ? 'It has' : 'They have'} had nothing written against ${stale.length === 1 ? 'it' : 'them'} in a fortnight. Every rate on this page is only as good as what has been written down.`,
       strength: 'measured',
       weight: 70,
+      facts: { kind: 'stale', count: stale.length },
     })
   }
 
@@ -161,17 +222,25 @@ export function recommendationsFor(input: {
 
   if (drafts.length > 0) {
     // The oldest is named because "five drafts" is a statistic and "the Rice
-    // one has been open since March" is a decision.
-    const oldest = drafts.reduce((a, b) => (a.daysAgo >= b.daysAgo ? a : b))
+    // one has been open since March" is a decision. Open since the day it was
+    // drafted, not since its last edit: `daysAgo` counts from `lastActionAt`,
+    // so a draft from March edited yesterday read as open one day. A record
+    // with no Draft date (one made before the dates existed) falls back to it.
+    const openFor = (a: Application) => {
+      const drafted = a.stageDates?.draft
+      return drafted === undefined ? a.daysAgo : Math.max(a.daysAgo, daysBetween(drafted, today))
+    }
+    const oldestDays = Math.max(...drafts.map(openFor))
     out.push({
       id: 'drafts:open',
       headline:
         drafts.length === 1
           ? 'Finish the draft or drop it.'
           : `Finish the closest of ${plural(drafts.length, 'draft', 'drafts')}, or drop them.`,
-      because: `A draft does nothing until it goes out. The oldest has been open ${plural(oldest.daysAgo, 'day', 'days')}.`,
+      because: `A draft does nothing until it goes out. The oldest has been open ${plural(oldestDays, 'day', 'days')}.`,
       strength: 'measured',
       weight: 60,
+      facts: { kind: 'drafts', count: drafts.length, oldestDays },
     })
   }
 
@@ -185,6 +254,7 @@ export function recommendationsFor(input: {
         'Nothing about your own background is recorded, so no application can be weighed against what a posting asks for. It is one document and one confirmation.',
       strength: 'measured',
       weight: 55,
+      facts: { kind: 'background' },
     })
   }
 
@@ -202,14 +272,14 @@ export function recommendationsFor(input: {
   if (sent.length >= ENOUGH_TO_DIAGNOSE) {
     const steps = [
       {
-        id: 'replies',
+        id: 'replies' as const,
         got: sent.filter((a) => reachedOf(a) >= REACH.replied).length,
         typical: TYPICAL.responseRate,
         headline: 'Rework the opening paragraph before you send the next one.',
         because: 'Replies are where this search loses most against a typical one.',
       },
       {
-        id: 'interviews',
+        id: 'interviews' as const,
         got: sent.filter((a) => reachedOf(a) >= REACH.interview).length,
         typical: TYPICAL.interviewRate,
         headline: 'Make the fit obvious in the first three lines.',
@@ -231,6 +301,14 @@ export function recommendationsFor(input: {
         because: `${worst.because} ${String(worst.got)} of ${String(sent.length)} (${String(worst.rate)}%), against ${String(worst.typical)}% for a typical search — a figure jojo chose as a round comparison, not one measured from anybody.`,
         strength: 'suggested',
         weight: 40 + worst.behind,
+        facts: {
+          kind: 'funnel',
+          step: worst.id,
+          got: worst.got,
+          of: sent.length,
+          rate: worst.rate,
+          typical: worst.typical,
+        },
       })
     }
   }
@@ -244,6 +322,7 @@ export function recommendationsFor(input: {
       because: `Every follow-up is on time, nothing has gone quiet, and there are no drafts waiting. ${plural(sent.length, 'application is', 'applications are')} out.`,
       strength: 'measured',
       weight: 0,
+      facts: { kind: 'clear', sent: sent.length },
     })
   }
 

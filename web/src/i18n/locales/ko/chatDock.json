@@ -1,0 +1,49 @@
+{
+  "chatWithJojo": "jojo와 채팅",
+  "newConversation": "새 대화",
+  "newAboutOpen": "열려 있는 지원에 관한 새 대화",
+  "hideConversations": "대화 숨기기",
+  "showConversations": "대화 보기",
+  "undo": "실행 취소",
+  "overflow_other": "열려 있는 대화 {{count}}개 더 있음",
+  "grip": {
+    "labelCorner": "채팅을 옆으로 이동 — 모서리에 있음. 화살표 키로 이동하고, 두 번 클릭하면 모서리로 돌아가요.",
+    "labelFarLeft": "채팅을 옆으로 이동 — 맨 왼쪽에 있음. 화살표 키로 이동하고, 두 번 클릭하면 모서리로 돌아가요.",
+    "labelFarRight": "채팅을 옆으로 이동 — 맨 오른쪽에 있음. 화살표 키로 이동하고, 두 번 클릭하면 모서리로 돌아가요.",
+    "labelPartWay": "채팅을 옆으로 이동 — 왼쪽으로 {{percent}}% 이동함. 화살표 키로 이동하고, 두 번 클릭하면 모서리로 돌아가요.",
+    "labelPartWayRight": "채팅을 옆으로 이동 — 오른쪽으로 {{percent}}% 이동함. 화살표 키로 이동하고, 두 번 클릭하면 모서리로 돌아가요.",
+    "title": "드래그해서 채팅을 옆으로 치우기 · 두 번 클릭하면 모서리로 돌아가요"
+  },
+  "prompts": {
+    "about": {
+      "left": "이 지원에서 남은 할 일은 뭐야?",
+      "followUp": "이 지원에 대한 후속 연락 이메일을 써 줘",
+      "summarise": "이 지원을 요약해 줘"
+    },
+    "general": {
+      "waiting": "내가 기다리고 있는 답이 뭐야?",
+      "noDeadline": "마감일이 없는 지원은 뭐야?"
+    }
+  },
+  "window": {
+    "label": "대화: {{title}}",
+    "back": "대화 목록으로 돌아가기",
+    "working": "작업 중",
+    "openInAssistant": "어시스턴트에서 열기",
+    "open": "이 대화 열기",
+    "minimise": "이 대화 최소화",
+    "close": "이 대화 닫기",
+    "closeTitle": "닫기 — 대화 목록에는 남아 있어요",
+    "about": "<name>{{name}}</name> 관련",
+    "detachAria": "특정 주제 없이 이 대화 시작하기",
+    "unfileAria": "이 대화를 지원에서 빼기",
+    "detachTitle": "이 지원에 관한 대화가 아님",
+    "unfileTitle": "이 지원에서 빼기",
+    "notConfigured": "<settings>설정</settings>에서 모델을 연결하면 여기서 jojo와 채팅할 수 있어요. 모든 내용은 이 기기에 남아요.",
+    "askAbout": "{{name}}에 대해 무엇이든 물어보세요 — jojo는 이 지원을 말하는 걸 알아요.",
+    "askGeneral": "jojo에게 뭔가를 찾거나, 지원을 추가하거나, 지원을 다음 단계로 옮겨 달라고 해 보세요.",
+    "composerLabel": "{{title}}에서 jojo에게 메시지 보내기",
+    "placeholderAbout": "{{org}}에 대해 물어보기…",
+    "placeholder": "jojo에게 물어보기…"
+  }
+}

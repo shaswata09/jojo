@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { QUERY_EXAMPLES } from '@/lib/graph/examples'
 import type { Graph } from '@/lib/graph/model'
 import type { GraphQuery } from '@/lib/graph/query'
@@ -20,14 +21,23 @@ export function ExampleChips({
   query: GraphQuery | null
   onQueryChange: (query: GraphQuery) => void
 }) {
-  const examples = useMemo(
-    () => QUERY_EXAMPLES.map((example) => ({ ...example, built: example.build(graph) })),
+  const { t } = useTranslation('graph')
+  // Not spread: `label` and `hint` are getters that word themselves in the
+  // language of the moment, and a spread would read them once and keep them.
+  const built = useMemo(
+    () => new Map(QUERY_EXAMPLES.map((example) => [example.id, example.build(graph)])),
     [graph],
   )
+  const examples = QUERY_EXAMPLES.map((example) => ({
+    id: example.id,
+    label: example.label,
+    hint: example.hint,
+    built: built.get(example.id) ?? null,
+  }))
 
   return (
     <div>
-      <h3 className="mb-1.5 text-xs text-text-3">Worked examples</h3>
+      <h3 className="mb-1.5 text-xs text-text-3">{t('examples.title')}</h3>
       <ul className="flex flex-wrap gap-1.5">
         {examples.map((example) => {
           const on = query !== null && example.built !== null && sameQuery(query, example.built)
@@ -36,9 +46,7 @@ export function ExampleChips({
               <button
                 type="button"
                 disabled={example.built === null}
-                title={
-                  example.built === null ? 'This session has nothing to ask that of' : example.hint
-                }
+                title={example.built === null ? t('examples.nothingToAsk') : example.hint}
                 onClick={() => example.built && onQueryChange(example.built)}
                 className={cn(
                   'pressable rounded-full border px-2.5 py-1 text-xs transition-colors',

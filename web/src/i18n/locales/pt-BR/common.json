@@ -4,5 +4,276 @@
     "description": "O idioma em que o jojo é exibido. Seus registros continuam no idioma em que você os escreveu.",
     "system": "Igual a este navegador ({{name}})",
     "loadFailed": "Não foi possível carregar esse idioma. O jojo continua em {{name}}."
+  },
+  "buckets": {
+    "overdue": "Atrasados",
+    "today": "Hoje",
+    "upcoming": "Próximos",
+    "done": "Concluídos"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Amanhã",
+      "later": "Um dia depois",
+      "duration": "Um dia"
+    },
+    "threeDays": {
+      "soon": "Em 3 dias",
+      "later": "Três dias depois",
+      "duration": "Três dias"
+    },
+    "week": {
+      "soon": "Em 7 dias",
+      "later": "Uma semana depois",
+      "duration": "Uma semana"
+    }
+  },
+  "routeFailure": {
+    "title": "Esta página não carregou",
+    "subtitle": "O resto do jojo continua funcionando.",
+    "emptyTitle": "Algo quebrou nesta visualização",
+    "emptyDescription": "Ir para outra página e voltar vai recarregá-la. Se acontecer sempre, o problema está nos registros que esta página mostra — em Configurações você pode fazer um backup antes.",
+    "back": "Voltar ao painel"
+  },
+  "writeResult": {
+    "title": "Isso não foi salvo",
+    "refused": "A alteração foi recusada."
+  },
+  "copy": {
+    "blocked": "Bloqueado",
+    "copied": "Copiado",
+    "copy": "Copiar"
+  },
+  "drag": {
+    "theItem": "o item",
+    "aTarget": "um destino",
+    "start": "{{name}} pego.",
+    "over": "{{name}} está sobre {{place}}.",
+    "notOver": "{{name}} não está mais sobre nenhum destino.",
+    "dropped": "{{name}} foi solto em {{place}}.",
+    "droppedHome": "{{name}} foi solto onde começou.",
+    "cancelled": "O arraste foi cancelado. {{name}} voltou para onde estava.",
+    "instructions": "Para pegar um item arrastável, pressione a barra de espaço.\nDurante o arraste, use as setas para mover o item.\nPressione espaço de novo para soltá-lo na nova posição, ou Esc para cancelar."
+  },
+  "actions": {
+    "undo": "Desfazer",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "close": "Fechar"
+  },
+  "records_one": "{{count}} registro",
+  "records_other": "{{count}} registros",
+  "records_many": "{{count}} registros",
+  "deleteKeyword": {
+    "failed": "Isso não foi excluído",
+    "stillThere": "{{name}} ainda é uma palavra-chave.",
+    "deleted": "{{name}} excluída",
+    "wasUnused": "Ela não estava em nenhum registro.",
+    "takenOff_one": "Removida de {{count}} registro e do filtro de palavras-chave.",
+    "takenOff_other": "Removida de {{count}} registros e do filtro de palavras-chave.",
+    "takenOff_many": "Removida de {{count}} registros e do filtro de palavras-chave.",
+    "confirmTitle": "Excluir {{name}}?",
+    "confirmTitleAny": "Excluir a palavra-chave?",
+    "unused": "Ainda não está em nenhum registro, então nada mais muda.",
+    "usedOn_one": "Usada em {{count}} registro. Ele continua — só perde esta palavra-chave.",
+    "usedOn_other": "Usada em {{count}} registros. Eles continuam — só perdem esta palavra-chave.",
+    "usedOn_many": "Usada em {{count}} registros. Eles continuam — só perdem esta palavra-chave.",
+    "confirm": "Excluir palavra-chave"
+  },
+  "bucketFilter": {
+    "all": "Todos"
+  },
+  "marks": {
+    "bold": "negrito",
+    "italic": "itálico",
+    "underlined": "sublinhado"
+  },
+  "pageHeader": {
+    "options": "Opções de {{title}}"
+  },
+  "errorBoundary": {
+    "title": "Algo quebrou",
+    "body": "Uma visualização não conseguiu ser exibida. “Tentar de novo” a remonta sem recarregar a página.",
+    "retry": "Tentar de novo"
+  },
+  "tone": {
+    "colourFor": "Cor de {{label}}",
+    "anyColourFor": "Qualquer cor para {{label}}"
+  },
+  "boot": {
+    "takingLong": "Seu banco de dados local está demorando mais que o normal para abrir. Outra aba do jojo pode estar usando-o — fechar as outras costuma liberá-lo.",
+    "opening": "Abrindo seu banco de dados local…"
+  },
+  "keywordPicker": {
+    "none": "Nenhuma ainda",
+    "choose": "Escolher palavras-chave",
+    "heading": "Palavras-chave",
+    "newPlaceholder": "Nova palavra-chave…",
+    "new": "Nova palavra-chave"
+  },
+  "rowMenu": {
+    "moreFor": "Mais ações para {{name}}",
+    "more": "Mais ações"
+  },
+  "firstRun": {
+    "title": "Como você quer começar?",
+    "description": "O jojo guarda tudo neste computador, então a decisão é sua. Nenhuma resposta é definitiva — você pode carregar os dados de demonstração ou apagar todos os registros depois, em Configurações.",
+    "demo": {
+      "title": "Explorar com dados de demonstração",
+      "detail": "Uma busca de emprego completa para explorar — doze candidaturas, uma linha do tempo, um cofre cheio. Nada disso é seu, e apagar tudo depois leva um clique.",
+      "working": "Carregando…"
+    },
+    "empty": {
+      "title": "Começar vazio",
+      "detail": "Nenhum registro de demonstração. Toda página abre vazia, e a primeira coisa no jojo será algo que você adicionou.",
+      "working": "Limpando…"
+    }
+  },
+  "recovery": {
+    "title": "O jojo não consegue ler o banco de dados",
+    "body": "Seus registros continuam neste computador. O jojo não alterou nem substituiu nada, e não vai carregar os dados de demonstração por cima — um armazenamento que se repovoasse para parecer saudável transformaria isso em perda permanente de dados.",
+    "downloadHint": "Grava em um arquivo as linhas que puderam ser lidas",
+    "downloadNothing": "Não foi possível ler nada do banco de dados, então não há nada para gravar",
+    "download": "Baixar o que deu para ler",
+    "working": "Processando…",
+    "retry": "Tentar de novo",
+    "freshHint": "Exclui o banco de dados e inicia o jojo como se fosse novo",
+    "fresh": "Começar do zero",
+    "readable_one": "{{count}} linha pôde ser lida — baixe-a antes de tudo, porque começar do zero a exclui.",
+    "readable_other": "{{count}} linhas puderam ser lidas — baixe-as antes de tudo, porque começar do zero as exclui.",
+    "readable_many": "{{count}} linhas puderam ser lidas — baixe-as antes de tudo, porque começar do zero as exclui.",
+    "unreadable": "Nada pôde ser lido do armazenamento, então não há nada para baixar. Tente de novo primeiro: um banco de dados que outra aba mantém aberto falha assim e se recupera sozinho.",
+    "confirmTitle": "Excluir o banco de dados e começar do zero?",
+    "confirmBody": "Isso exclui o banco de dados local do jojo e tudo o que ainda há nele, e recomeça do nada — incluindo a pergunta da primeira execução sobre começar com os dados de demonstração ou vazio. Não conserta nada e não pode ser desfeito. Se você ainda não baixou as linhas legíveis, cancele e faça isso primeiro.",
+    "confirm": "Excluir e começar do zero"
+  },
+  "labelFilter": {
+    "label": "Filtrar por palavra-chave",
+    "none": "Ainda não há palavras-chave — adicione uma para filtrar por ela.",
+    "example": "ex.: Desenvolvedor",
+    "add": "Adicionar palavra-chave",
+    "clear": "Limpar"
+  },
+  "labelPicker": {
+    "editOn": "Editar palavras-chave de {{name}}",
+    "edit": "Editar palavras-chave"
+  },
+  "keywordChip": {
+    "taken": "Outra palavra-chave já tem esse nome.",
+    "needsName": "Uma palavra-chave precisa de um nome.",
+    "rename": "Renomear",
+    "colour": "Cor",
+    "stopFiltering": "Parar de filtrar por {{name}}",
+    "filterBy": "Filtrar por {{name}}",
+    "edit": "Editar a palavra-chave {{name}}",
+    "editHint": "Renomear, mudar a cor ou excluir"
+  },
+  "welcome": {
+    "title": "Um pouco sobre você",
+    "description": "Os rascunhos são assinados com o seu nome, e o explorador pontua de acordo com o que você procura. Tudo fica neste computador e tudo é opcional — você pode preencher depois em Perfil.",
+    "fullName": "Nome completo",
+    "fullNameExample": "ex.: Lonardo Jenson",
+    "position": "Cargo atual",
+    "positionExample": "ex.: Doutorando, Ciência da Computação",
+    "location": "Localização",
+    "locationExample": "ex.: Santa Clara, CA",
+    "email": "E-mail",
+    "skip": "Pular por enquanto",
+    "save": "Salvar e continuar",
+    "rest": "O resto — links, cargos desejados, os termos que o explorador procura — fica em <anchor>Perfil</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Quer um tour prático?",
+    "tourDescription": "Um passeio pelas páginas reais — um destaque em cada parte, para que ela serve, e você experimenta cada coisa enquanto avança. Ele nunca digita, salva ou altera nada por você, e guarda o ponto onde você parou.",
+    "notNow": "Agora não",
+    "start": "Começar o tour",
+    "always": "Ele está sempre em <em>Como usar</em>, então dizer não agora não custa nada."
+  },
+  "setup": {
+    "skip": "Pular por enquanto",
+    "continue": "Continuar",
+    "done": "Concluído",
+    "optional": "Tudo isso é opcional e pode ser configurado depois em Configurações.",
+    "model": {
+      "title": "Conectar um modelo",
+      "body": "É isso que faz do jojo um agente e não um arquivo: ele passa a responder perguntas sobre sua busca, escrever follow-ups e rascunhos, e rodar os pipelines do Job Scout que completam seus registros e procuram vagas. Aponte-o para um modelo no seu próprio computador e nada sai do dispositivo."
+    },
+    "reader": {
+      "title": "Deixe-o ler seus documentos",
+      "body": "Sem isso, o assistente só vê o nome de um documento. Rode o MarkItDown neste computador — dois comandos, abaixo — e ele poderá ler o conteúdo dos seus currículos, cartas de apresentação e vagas salvas ao redigir e responder."
+    },
+    "crash": {
+      "title": "Relatórios de falhas e uso",
+      "description": "Duas coisas separadas, ambas ativadas — desative qualquer uma aqui ou depois em Configurações. Nenhuma pode levar seus registros: nem uma candidatura, um documento, uma nota, um perfil ou uma conversa.",
+      "inReport": "O que vai em um relatório",
+      "inError": "A mensagem de erro e onde no jojo ela aconteceu.",
+      "inStack": "O stack trace, que nomeia o código que falhou.",
+      "never": "O que nunca vai nele",
+      "neverRecords": "Suas candidaturas, documentos, notas, perfil ou conversas.",
+      "neverSecrets": "Suas chaves de API, os endereços que você usa, sua pasta pessoal ou qualquer e-mail — tudo isso é removido antes de o relatório ser escrito, não antes de ser enviado.",
+      "where": "Neste navegador e na extensão do jojo, os relatórios de falhas <em>ficam neste dispositivo</em>: nada é enviado, e um arquivo de backup não os inclui. Você mesmo os lê em Configurações. No app do jojo para celular, o mesmo relatório também é enviado ao Firebase Crashlytics do Google, que acrescenta o modelo do aparelho, a versão do sistema operacional e um id aleatório usado para contar quantas pessoas tiveram a mesma falha — sem nome, sem conta, nada ligado a você. As contagens de uso, o segundo botão abaixo, vão para o Google Analytics em todas as versões, inclusive esta.",
+      "keep": "Manter relatórios de falhas",
+      "keepHint": "O erro e onde ele aconteceu. No navegador, fica neste dispositivo.",
+      "share": "Compartilhar quais recursos eu uso",
+      "shareHint": "Só contagens — quais telas são abertas e com que frequência. Nunca o que há nelas.",
+      "usageNote": "O segundo é a única coisa que o jojo envia sobre o que você FAZ, e ele só consegue dizer coisas de uma lista fixa — “o cofre foi aberto”, “uma candidatura foi adicionada”, “há de 6 a 20”. Ele não consegue citar um empregador, um cargo, um arquivo ou qualquer coisa que você digitou, porque essas palavras não estão na lista. Vai para o Google Analytics para vermos quais partes do jojo merecem mais trabalho.",
+      "bothOff": "Desativar os dois",
+      "save": "Salvar escolhas",
+      "continueOff": "Continuar com os dois desativados",
+      "later": "Você pode mudar qualquer um deles a qualquer momento em Configurações, e desativar um também descarta o que ele guardou."
+    },
+    "extension": {
+      "title": "Guarde as vagas para as quais você se candidata",
+      "body": "Anúncios de vagas saem do ar, muitas vezes antes de você ter resposta. A extensão do navegador salva a vaga como ela está hoje, no seu próprio cofre — e é também por ela que o Job Scout lê os sites que você acompanha."
+    }
+  },
+  "spectrum": {
+    "saturation": "Saturação e brilho",
+    "hue": "Matiz",
+    "hex": "Cor hexadecimal",
+    "any": "Qualquer cor"
+  },
+  "field": {
+    "openInTab": "Abrir {{label}} em uma nova aba",
+    "hide": "Ocultar {{label}}",
+    "show": "Mostrar {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Pequeno",
+      "normal": "Normal",
+      "large": "Grande",
+      "huge": "Enorme"
+    },
+    "clearFormatting": "Limpar formatação",
+    "bold": "Negrito",
+    "italic": "Itálico",
+    "underline": "Sublinhado",
+    "strikeThrough": "Tachado",
+    "insertUnorderedList": "Lista com marcadores",
+    "insertOrderedList": "Lista numerada",
+    "snippetText": "Texto do trecho",
+    "fontSize": "Tamanho da fonte",
+    "insertTable": "Inserir tabela",
+    "textColour": "Cor do texto"
+  },
+  "toolForm": {
+    "aRecord": "um registro",
+    "yourProfile": "Seu perfil"
+  },
+  "toolRun": {
+    "choose": "Escolher…",
+    "none": "Nenhum",
+    "omitted_one": "Fora deste formulário: {{fields}}. Abra o registro para defini-lo.",
+    "omitted_other": "Fora deste formulário: {{fields}}. Abra o registro para defini-los.",
+    "omitted_many": "Fora deste formulário: {{fields}}. Abra o registro para defini-los."
+  },
+  "toast": {
+    "notifications": "Notificações",
+    "dismiss": "Dispensar — {{title}}"
+  },
+  "command": {
+    "title": "Paleta de comandos",
+    "description": "Procure um comando para executar..."
   }
 }

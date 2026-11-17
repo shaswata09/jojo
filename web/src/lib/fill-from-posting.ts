@@ -5,6 +5,7 @@ import { SOURCES } from '@jojo/service/core/model'
 import { postingIdentity } from '@jojo/service/core/capture'
 import type { ScoutReading } from '@jojo/service/core/proposal'
 import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
+import { i18next } from '@/i18n/i18n'
 import { useDuplicateCheck } from '@/lib/duplicate-agent'
 import { useUndoable } from '@/lib/undo'
 import { useKg } from '@jojo/service/react/kg-context'
@@ -153,12 +154,9 @@ export function knownRead(
   }
 }
 
-/** Why the static rule called it a duplicate, in a sentence. */
-const DUPLICATE_WHY = {
-  id: 'Both postings carry the same posting ID.',
-  url: 'Both are the same posting address.',
-  name: 'Same employer and role.',
-} as const
+/** Why the static rule called it a duplicate, in a sentence. Read when it is said. */
+const duplicateWhy = (reason: 'id' | 'url' | 'name'): string =>
+  i18next.t(`messages:fill.duplicate.${reason}`)
 
 export type FillOutcome =
   | {
@@ -235,7 +233,7 @@ export function useFillFromPosting(): (options: {
         return {
           ok: false,
           step: 'filling',
-          reason: 'The draft was deleted before its posting could be read.',
+          reason: i18next.t('messages:fill.deletedBefore'),
         }
 
       // A page already kept for this address is reused by `readPosting`
@@ -265,7 +263,7 @@ export function useFillFromPosting(): (options: {
         return {
           ok: false,
           step: 'filling',
-          reason: 'The draft was deleted while its posting was being read.',
+          reason: i18next.t('messages:fill.deletedDuring'),
         }
 
       /*
@@ -321,7 +319,7 @@ export function useFillFromPosting(): (options: {
           duplicate: {
             id: existing.id,
             name: existingName,
-            why: found.because ?? DUPLICATE_WHY[found.reason],
+            why: found.because ?? duplicateWhy(found.reason),
             restore: restore ?? (() => {}),
           },
         }
@@ -345,7 +343,7 @@ export function useFillFromPosting(): (options: {
           return {
             ok: false,
             step: 'filling',
-            reason: written.errors[0]?.message ?? 'The draft could not be updated.',
+            reason: written.errors[0]?.message ?? i18next.t('messages:fill.updateFailed'),
           }
         }
       }

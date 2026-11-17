@@ -1,5 +1,6 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -35,6 +36,7 @@ export function PdfMergeRow({
   onRange: (range: string) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation('vault')
   const { setNodeRef: dropRef, isOver, active } = useDroppable({ id: row.key })
   const { attributes, listeners, setNodeRef: dragRef, isDragging } = useDraggable({ id: row.key })
 
@@ -52,25 +54,25 @@ export function PdfMergeRow({
         // the question a person is asking mid-drag is "between which two", and
         // a filled row answers "on top of which".
         landing
-          ? 'before:absolute before:-top-1 before:right-0 before:left-0 before:h-0.5 before:rounded-full before:bg-accent'
+          ? 'before:absolute before:start-0 before:end-0 before:-top-1 before:h-0.5 before:rounded-full before:bg-accent'
           : '',
       )}
     >
       <div
         ref={dragRef}
         className={cn(
-          'group flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-hairline bg-well py-2 pr-2 pl-7 transition-opacity',
+          'group flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-hairline bg-well py-2 ps-7 pe-2 transition-opacity',
           isDragging ? 'opacity-40' : '',
         )}
       >
         <button
           type="button"
           className={cn(
-            'touch-target absolute inset-y-0 left-0 z-[1] w-5 cursor-grab touch-none rounded-l-lg py-1.5 text-text-3 transition-opacity active:cursor-grabbing',
+            'touch-target absolute inset-y-0 start-0 z-[1] w-5 cursor-grab touch-none rounded-s-lg py-1.5 text-text-3 transition-opacity active:cursor-grabbing',
             'opacity-40 group-hover:opacity-100 focus-visible:opacity-100',
           )}
-          aria-label={`Move ${row.choice.name}, ${position} of ${total}`}
-          title="Drag to reorder"
+          aria-label={t('pdf.merge.move', { name: row.choice.name, position, total })}
+          title={t('pdf.merge.dragToReorder')}
           {...attributes}
           {...listeners}
         >
@@ -88,21 +90,23 @@ export function PdfMergeRow({
         <span className="min-w-0 flex-1 truncate text-sm" title={row.choice.name}>
           {row.choice.name}
           {row.choice.kind === 'device' ? (
-            <span className="ml-1.5 text-xs text-text-3">· from this device</span>
+            <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
+              {t('pdf.merge.fromDevice')}
+            </span>
           ) : null}
         </span>
         <Input
           className="h-8 w-32 shrink-0"
           value={row.range}
-          placeholder="All pages"
-          aria-label={`Pages to take from ${row.choice.name}`}
+          placeholder={t('pdf.merge.allPages')}
+          aria-label={t('pdf.merge.rangeLabel', { name: row.choice.name })}
           onChange={(event) => onRange(event.target.value)}
         />
         <Button
           variant="outline"
           size="icon-sm"
           className="shrink-0"
-          aria-label={`Take ${row.choice.name} out of the merge`}
+          aria-label={t('pdf.merge.remove', { name: row.choice.name })}
           onClick={onRemove}
         >
           <X aria-hidden />
@@ -121,17 +125,20 @@ export function PdfMergeRow({
  * as the row in transit.
  */
 export function PdfMergeRowGhost({ row, position }: { row: MergeRow; position: number }) {
+  const { t } = useTranslation('vault')
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-accent bg-panel py-2 pr-2 pl-7 text-sm shadow-lg">
+    <div className="flex items-center gap-2 rounded-lg border border-accent bg-panel py-2 ps-7 pe-2 text-sm shadow-lg">
       <span className="w-4 shrink-0 text-center text-xs text-text-3 tabular-nums">{position}</span>
       <span className="min-w-0 flex-1 truncate">
         {row.choice.name}
         {row.choice.kind === 'device' ? (
-          <span className="ml-1.5 text-xs text-text-3">· from this device</span>
+          <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
+            {t('pdf.merge.fromDevice')}
+          </span>
         ) : null}
       </span>
       <span className="shrink-0 text-xs text-text-3">
-        {row.range.trim() === '' ? 'All pages' : row.range.trim()}
+        {row.range.trim() === '' ? t('pdf.merge.allPages') : row.range.trim()}
       </span>
     </div>
   )

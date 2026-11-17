@@ -27,20 +27,19 @@ export default defineConfig({
     include: ['kg/**/*.test.ts', 'data/**/*.test.ts', 'test/**/*.test.ts'],
 
     /**
-     * Thirty seconds, because two tests here do real work and the default is
+     * Thirty seconds, because some tests here do real work and the default is
      * five.
      *
      * `kg/crypto/end-to-end.test.ts` pushes a documents-sized backup through
-     * the real AES-GCM convoy, and `kg/core/pulse-read.test.ts` decodes
-     * synthetic camera frames. Measured on an idle machine they take about 2.8s
-     * and 1.5s — comfortably inside the default — and on a busy one they take
-     * six and a half, which is outside it. Both then fail for the machine's load
-     * rather than for anything in the code, and a suite that goes red when
+     * the real AES-GCM convoy. Measured on an idle machine it takes about 2.8s
+     * — comfortably inside the default — and on a busy one six and a half,
+     * which is outside it. It then fails for the machine's load rather than for
+     * anything in the code, and a suite that goes red when
      * something else is compiling teaches people to re-run it rather than read
      * it.
      *
      * It is also what made `npm run test:coverage` unrunnable: v8 instrumentation
-     * slows those two past five seconds every time, so the coverage script this
+     * slows it past five seconds every time, so the coverage script this
      * package ships could not complete on any machine.
      *
      * NOT A FIX FOR THE THROUGHPUT ITSELF. The convoy moves about 1.4 MB/s of

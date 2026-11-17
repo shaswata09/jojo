@@ -1,0 +1,168 @@
+{
+  "shared": {
+    "undo": "撤销",
+    "cancel": "取消",
+    "add": "添加",
+    "discard": "放弃",
+    "save": "保存",
+    "didNotSave": "未能保存"
+  },
+  "saveBar": {
+    "unsaved": "有未保存的更改——保存后会写入此浏览器。"
+  },
+  "form": {
+    "saved": {
+      "title": "个人资料已保存",
+      "description": "已写入此浏览器并保留。"
+    }
+  },
+  "fields": {
+    "basics": "基本信息",
+    "fullName": {
+      "label": "全名",
+      "placeholder": "例如:Lonardo Jenson"
+    },
+    "position": {
+      "label": "当前职位",
+      "placeholder": "例如:博士生,计算机科学"
+    },
+    "location": {
+      "label": "所在地",
+      "placeholder": "例如:Santa Clara, CA"
+    },
+    "email": {
+      "label": "电子邮件"
+    },
+    "links": "链接",
+    "website": {
+      "label": "网站"
+    }
+  },
+  "interests": {
+    "title": "兴趣与目标",
+    "hint": "用于 Scout 匹配",
+    "matchTerms": {
+      "title": "匹配词",
+      "description": "Scout 会寻找的研究领域和措辞。与你用来归档记录的关键词是分开的。",
+      "remove": "移除 {{term}}",
+      "newLabel": "新匹配词",
+      "placeholder": "添加匹配词"
+    },
+    "targetRoles": {
+      "label": "目标职位",
+      "placeholder": "例如:助理教授(终身轨)· 研究科学家"
+    },
+    "regions": {
+      "label": "偏好地区",
+      "placeholder": "例如:得克萨斯 · 远程"
+    },
+    "academia": "包含学术界职位",
+    "industry": "包含业界职位"
+  },
+  "roleTags": {
+    "title": "职位标签",
+    "description": "你正在关注的职位类型。每份申请都归档在其中一个标签下,职位筛选和统计中的分职位数据都会用到它。在这里移除一个标签,带有它的申请会原样保留。",
+    "remove_other": "移除 {{role}},用于 {{count}} 份申请",
+    "newLabel": "新职位标签",
+    "placeholder": "例如:数据科学家"
+  },
+  "documents": {
+    "title": "文档",
+    "hint": "资料库中的 {{bucket}} 分类",
+    "upload": "上传",
+    "exportInSettings": "在设置中导出",
+    "empty": {
+      "title": "还没有文档",
+      "description": "把你的简历和陈述拖到这里,或选择它们——它们会归档到资料库的 {{bucket}} 下,应用的其他部分都能访问。",
+      "upload": "上传文档"
+    },
+    "footer": "与资料库<anchor>文件工具</anchor>中的文件相同,按 {{bucket}} 筛选。把文档拖到这里或选择一份,文件本身会保存在此浏览器中——不会上传到任何地方。点击即可阅读。"
+  },
+  "documentTile": {
+    "open": "打开 {{name}}",
+    "meta": "{{size}} · {{ago}}保存",
+    "delete": "删除 {{name}}"
+  },
+  "background": {
+    "title": "你的背景",
+    "hint_other": "已记录 {{count}} 条 · 职位将以此为衡量依据",
+    "details_other": "{{count}} 条详情",
+    "readFromDocument": "从文档中读取",
+    "edit": "编辑 {{title}}",
+    "remove": "移除 {{title}}",
+    "added": "已添加 {{title}}",
+    "updated": "已更新 {{title}}",
+    "removed": "已移除 {{title}}",
+    "addEntry": "添加条目",
+    "form": {
+      "kind": "类型",
+      "title": "标题",
+      "titlePlaceholder": "是什么",
+      "where": "地点",
+      "optional": "可选",
+      "when": "时间",
+      "whenPlaceholder": "按原文填写——“2021–2024”",
+      "year": "年份",
+      "detail": "详情",
+      "detailPlaceholder": "任何值得拿来与职位比较的内容(可选)",
+      "highlights": "亮点",
+      "highlightsHint": "每行一条——构建、发布、教授或发现了什么。",
+      "readKept": "从文档中读取——你的编辑优先于读取结果",
+      "saveChanges": "保存更改"
+    },
+    "empty": {
+      "title": "还没有任何记录",
+      "configured": "把你的简历、研究或教学陈述放进资料库,jojo 会主动提出读取——找到的内容会在保存前先展示给你。你也可以手动添加条目。",
+      "unconfigured": "读取文档需要模型。请在设置中连接一个模型,然后把简历或陈述放进资料库,jojo 会主动提出读取。没有模型也可以手动添加条目。"
+    },
+    "readMenu": {
+      "needsModel": "读取文档需要模型。请在设置中连接一个。",
+      "button": "读取文档",
+      "nothing": "资料库中还没有可读取的内容。把你的简历或陈述放进去,它就会出现在这里。",
+      "allRead": "资料库中所有可读取的内容都已读取。",
+      "read": "已读取"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "教育",
+      "employment": "工作经历",
+      "publication": "出版物",
+      "skill": "技能",
+      "teaching": "教学",
+      "award": "奖项",
+      "service": "服务",
+      "certification": "证书",
+      "language": "语言",
+      "project": "项目",
+      "volunteering": "志愿活动",
+      "membership": "会员资格",
+      "grant": "资助",
+      "patent": "专利"
+    },
+    "skipped_other": "已跳过 {{count}} 个条目",
+    "readIt": "读取",
+    "readFailed": "读取文档失败。",
+    "notNow": "以后再说",
+    "discardEntries": "放弃这些条目",
+    "review": {
+      "single": "从此文档读取了 1 个条目",
+      "some": "将添加 {{kept}}/{{total}} 个条目",
+      "untick": "取消勾选读错的内容。",
+      "add": "添加 {{title}}",
+      "connections_other": "它们之间有 {{count}} 个关联",
+      "addOne": "添加到我的个人资料",
+      "addMany": "将 {{total}} 个添加到我的个人资料"
+    },
+    "toast": {
+      "already": "已在你的个人资料中",
+      "added_other": "已向你的个人资料添加 {{count}} 个",
+      "nothing": "没有可添加的内容",
+      "readFrom": "读取自 {{name}}。",
+      "known": "{{total}} 个中有 {{known}} 个已存在。",
+      "related_other": "已记录它们之间的 {{count}} 个关联。",
+      "weigh": "jojo 现在可以拿你的经历来衡量职位了。",
+      "refused": "这些条目被拒绝了。"
+    }
+  }
+}

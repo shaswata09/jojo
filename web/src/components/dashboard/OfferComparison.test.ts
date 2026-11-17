@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import en from '@/i18n/locales/en/dashboard.json'
 
 /**
  * The accessibility of the offers table, asserted on its source.
@@ -75,11 +76,13 @@ describe('the offers table', () => {
    */
   it('explains the empty figure to more than a mouse', () => {
     expect(source).toMatch(/<span aria-hidden>—<\/span>/)
-    expect(source).toMatch(/<span className="sr-only">No amount could be read/)
+    expect(source).toMatch(/<span className="sr-only">\{t\('offers\.noAmount'\)\}<\/span>/)
+    expect(en.offers.noAmount).toMatch(/^No amount could be read/)
   })
 
   /** The footnote marker is punctuation; the word behind it is the content. */
   it('spells out the annualised marker', () => {
-    expect(source).toMatch(/sr-only">\s*\(annualised\)/)
+    expect(source).toMatch(/sr-only">\s*\{t\('offers\.annualised'\)\}/)
+    expect(en.offers.annualised).toBe('(annualised)')
   })
 })

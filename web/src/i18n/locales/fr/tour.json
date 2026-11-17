@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Voici jojo",
+      "body": "Votre assistant habite ici. Il réagit à ce que vous faites — une danse quand une candidature part, un hochement de tête quand une tâche est terminée — et suit votre pointeur sur la page.",
+      "task": "Touchez jojo, ou dessinez un cercle dessus."
+    },
+    "moves": {
+      "title": "Chaque mouvement, et comment le dessiner",
+      "body": "Ce bouton liste tous les mouvements de jojo, chacun avec le tracé qui le déclenche — un glissement vers le haut pour sauter, un Z pour piquer un somme — et crédite l’artiste du modèle 3D."
+    },
+    "runtime": {
+      "title": "Où vivent vos enregistrements",
+      "body": "« Enregistré ici », c’est le stockage du navigateur : une base de données dans ce navigateur, sur cette machine — rien n’est envoyé nulle part et rien n’est synchronisé. Les autres tuiles indiquent si un modèle est connecté et proposent de tout déplacer vers un autre appareil. Chacune ouvre l’endroit où elle se configure."
+    },
+    "applications": {
+      "title": "Vos candidatures",
+      "body": "Un enregistrement par emploi : le poste, l’employeur, son étape et vos notes. Échéances, entretiens et documents s’y rattachent, donc rien n’est saisi deux fois.",
+      "task": "Ouvrez Candidatures."
+    },
+    "layout": {
+      "title": "Kanban ou tableau",
+      "body": "Les mêmes enregistrements, de deux façons. Le Kanban montre les étapes en colonnes ; le tableau trie et recherche. Le choix est dans l’adresse, donc un lien s’ouvre comme vous l’avez laissé.",
+      "task": "Passez à Tableau."
+    },
+    "records": {
+      "title": "Six étapes, et jojo fête chacune",
+      "body": "Brouillon, Envoyée, Présélection, Entretien, Offre, Close. Sur le Kanban, faites glisser une carte vers la colonne suivante : jojo danse quand un brouillon part, se recharge pour un entretien et bondit pour une offre. Chaque déplacement peut être annulé."
+    },
+    "keywords": {
+      "title": "Les mots-clés sont vos étiquettes",
+      "body": "Un seul jeu d’étiquettes pour les candidatures, les rappels et le coffre. Étiquetez un enregistrement avec le bouton d’étiquette de sa ligne, ajoutez un mot-clé avec +, et faites un clic droit sur une pastille pour la renommer, la recolorer ou la supprimer.",
+      "task": "Choisissez un mot-clé pour filtrer."
+    },
+    "new": {
+      "title": "Tout créer",
+      "body": "Nouveau crée une candidature, un rappel, une entrée de calendrier, un brouillon de message, un lien ou une offre enregistrés. La touche n l’ouvre depuis n’importe où, tant que vous n’êtes pas en train de taper.",
+      "task": "Ouvrez le menu Nouveau."
+    },
+    "new-menu": {
+      "title": "Rien n’est enregistré tant que vous n’enregistrez pas",
+      "body": "Chacun ouvre son propre formulaire. Fermer un formulaire à moitié rempli ne coûte que ce que vous avez tapé.",
+      "task": "Fermez le menu — appuyez sur Échap."
+    },
+    "search": {
+      "title": "Le chemin le plus rapide",
+      "body": "Recherchez n’importe quelle candidature, rappel ou entrée de calendrier, allez à n’importe quelle page — y compris celles que la barre latérale ne liste pas — ou lancez une des opérations de l’application.",
+      "task": "Appuyez sur ⌘K (Ctrl K) ou cliquez sur la barre de recherche."
+    },
+    "palette": {
+      "title": "Tapez pour tout trouver",
+      "body": "Un poste, une organisation ou une étape. Les flèches choisissent, Entrée valide.",
+      "task": "Fermez-la avec Échap quand vous avez fini."
+    },
+    "calendar": {
+      "title": "Toutes les dates au même endroit",
+      "body": "Échéances, entretiens et relances sont un même type d’enregistrement : une entrée apparaît donc dans le calendrier, sur le tableau de bord et sur sa candidature. Faites-la glisser vers un autre jour pour la reprogrammer.",
+      "task": "Ouvrez le Calendrier."
+    },
+    "vault": {
+      "title": "Le coffre",
+      "body": "Tout ce qu’une recherche d’emploi accumule en dehors des candidatures : rappels, liens enregistrés, fichiers, extraits que vous collez dans chaque formulaire, personnes que vous connaissez, et quelques outils.",
+      "task": "Ouvrez le Coffre."
+    },
+    "files": {
+      "title": "Des fichiers, prévisualisés sur place",
+      "body": "Déposez un CV, une lettre ou une offre. PDF, images, textes et pages web enregistrées s’ouvrent ici même, et chaque fichier peut porter une note et des mots-clés. Les fichiers sont stockés dans ce navigateur, pas envoyés en ligne.",
+      "task": "Cliquez sur un fichier pour le prévisualiser."
+    },
+    "file-viewer": {
+      "title": "L’aperçu",
+      "body": "Lisez-le sans quitter la page. Avec le lecteur de documents connecté (Paramètres), l’assistant peut aussi lire son contenu."
+    },
+    "tools": {
+      "title": "Outils",
+      "body": "Une calculatrice, simple ou scientifique, qui garde l’historique de ses calculs — et un éditeur PDF.",
+      "task": "Ouvrez l’éditeur PDF."
+    },
+    "pdf": {
+      "title": "Outils PDF",
+      "body": "Fusionnez plusieurs PDF en un, réorganisez ou supprimez des pages, annotez — le tout dans ce navigateur, donc aucun document n’est jamais envoyé. Déposez les PDF directement sur ce panneau."
+    },
+    "scout": {
+      "title": "Éclaireur d’emplois",
+      "body": "Des recherches enregistrées qui surveillent les sites d’emploi pour vous.",
+      "task": "Ouvrez l’Éclaireur d’emplois."
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "body": "Chaque pipeline est une recherche sur un site (HigherEdJobs, AcademicCareers et d’autres). Il s’exécute selon un calendrier ou quand vous appuyez sur Lancer maintenant ; ce qu’il trouve attend sous forme de suggestions que vous approuvez ou écartez, et une suggestion approuvée devient un brouillon de candidature."
+    },
+    "statistics": {
+      "title": "Statistiques",
+      "body": "Où en est votre recherche, d’après vos propres enregistrements.",
+      "task": "Ouvrez Statistiques."
+    },
+    "stats": {
+      "title": "Des taux, avec des marges d’erreur honnêtes",
+      "body": "Taux de réponse et d’entretien, un entonnoir et un graphique semaine par semaine — chaque taux avec la plage dans laquelle il pourrait vraiment se trouver, car une poignée de candidatures est un petit échantillon. Il suit le filtre de poste de la barre supérieure."
+    },
+    "graph": {
+      "title": "Le graphe de connaissances",
+      "body": "Chaque enregistrement — candidatures, employeurs, personnes, dates, fichiers — est un nœud, et leurs liens sont les arêtes. Posez une question en mots ou construisez-la, et les enregistrements correspondants s’allument. Il n’est pas dans la barre latérale ; ⌘K vous y mène."
+    },
+    "chat": {
+      "title": "Discutez avec jojo",
+      "body": "L’assistant peut trouver, ajouter et mettre à jour vos enregistrements avec les outils de l’application, et demande avant de modifier quoi que ce soit, sauf si vous lui dites le contraire. Il lui faut un modèle — c’est l’étape suivante."
+    },
+    "settings": {
+      "title": "Paramètres",
+      "body": "Modèles, lecteur de documents, mots-clés, vos données — et chaque geste que jojo connaît.",
+      "task": "Ouvrez les Paramètres."
+    },
+    "model": {
+      "title": "Connecter un modèle",
+      "body": "Choisissez où tourne le modèle de l’assistant. Un serveur local — vLLM, LM Studio, llama.cpp ou Ollama — prend son adresse et garde vos enregistrements sur cette machine. OpenAI, Anthropic (Claude), OpenRouter, Groq ou NVIDIA demandent une clé d’API. Tester la connexion vérifie tout avant d’enregistrer quoi que ce soit."
+    },
+    "reader": {
+      "title": "Lui faire lire vos documents",
+      "body": "MarkItDown transforme PDF, fichiers Word, présentations et tableurs en texte que l’assistant peut lire. Copiez les deux commandes d’ici dans un terminal — l’une l’installe, l’autre le lance — puis appuyez sur Tester la connexion."
+    },
+    "keyword-manager": {
+      "title": "Gérer vos mots-clés",
+      "body": "Ajoutez des mots-clés, renommez-les, donnez-leur n’importe quelle couleur ou supprimez-les. Un nouveau nom s’applique partout où le mot-clé apparaît."
+    },
+    "backup": {
+      "title": "Gardez une sauvegarde",
+      "body": "Vider le navigateur emporte vos enregistrements avec lui, alors exportez une sauvegarde de temps en temps — un seul fichier avec tout. jojo bombe le torse quand vous le faites."
+    },
+    "done": {
+      "title": "C’est la fin de la visite",
+      "body": "Annuler, c’est ⌘Z partout, et chaque modification figure dans le journal d’audit en bas des Paramètres. Le guide parcourt chaque écran — Mode d’emploi, dans la barre supérieure — et la visite est là pour être refaite."
+    }
+  },
+  "overlay": {
+    "progress": "Étape {{n}} sur {{total}}",
+    "endLabel": "Terminer la visite (votre position est conservée)",
+    "end": "Terminer la visite",
+    "nice": "Bravo — c’est ça.",
+    "tryIt": "À vous : {{task}}",
+    "done": "Fait.",
+    "announce": "Étape {{n}} sur {{total}} : {{title}}.",
+    "announceTask": "Étape {{n}} sur {{total}} : {{title}}. À vous : {{task}}",
+    "back": "Retour",
+    "notNow": "Pas maintenant",
+    "finish": "Terminer",
+    "skip": "Passer",
+    "next": "Suivant"
+  }
+}

@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Connector } from '@/components/guide/diagrams/parts'
 
 /**
@@ -32,19 +33,21 @@ const BOX_H = 34
 type Pull = {
   /** The tool somebody's words asked for. */
   asked: string
-  /** What it cannot run without. */
+  /** What it cannot run without — a catalog key under `diagrams.toolGraph`. */
   needs: string
   /** The tool that makes one. */
   pulled: string
 }
 
 const PULLS: Pull[] = [
-  { asked: 'keyword.attach', needs: 'a keyword', pulled: 'keyword.create' },
-  { asked: 'vault.file.update', needs: 'a file', pulled: 'vault.file.add' },
-  { asked: 'scout.posting.promote', needs: 'a posting', pulled: 'scout.posting.save' },
+  { asked: 'keyword.attach', needs: 'needsKeyword', pulled: 'keyword.create' },
+  { asked: 'vault.file.update', needs: 'needsFile', pulled: 'vault.file.add' },
+  { asked: 'scout.posting.promote', needs: 'needsPosting', pulled: 'scout.posting.save' },
 ]
 
 export function ToolGraphDiagram() {
+  const { t } = useTranslation('guideReference')
+  const [withoutFirst, withoutSecond] = t('diagrams.toolGraph.without').split('\n')
   const titleId = useId()
   const descId = useId()
   const height = TOP + PULLS.length * ROW + 54
@@ -57,25 +60,17 @@ export function ToolGraphDiagram() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>How one tool pulls in the tool that feeds it</title>
-        <desc id={descId}>
-          Three rows, each read left to right. In the first, asking for
-          keyword.attach pulls in keyword.create, because attaching a keyword needs a keyword that
-          already exists. In the second, vault.file.update pulls in vault.file.add, because updating
-          a document needs a document. In the third, scout.posting.promote pulls in
-          scout.posting.save, because promoting a saved posting needs a saved posting. In every
-          case jojo works the dependency out from the tool&rsquo;s own input, and offers both tools
-          together — so the assistant is never handed a first step with no way to reach the second.
-        </desc>
+        <title id={titleId}>{t('diagrams.toolGraph.title')}</title>
+        <desc id={descId}>{t('diagrams.toolGraph.desc')}</desc>
 
         <text x={8} y={18} fontSize={11} fill="var(--text-3)">
-          what you asked for
+          {t('diagrams.toolGraph.asked')}
         </text>
         <text x={186} y={18} fontSize={11} fill="var(--text-3)">
-          what it needs
+          {t('diagrams.toolGraph.needsHeader')}
         </text>
         <text x={300} y={18} fontSize={11} fill="var(--text-3)">
-          offered with it
+          {t('diagrams.toolGraph.offered')}
         </text>
 
         {PULLS.map((pull, i) => {
@@ -84,7 +79,13 @@ export function ToolGraphDiagram() {
           return (
             <g key={pull.asked}>
               <Box x={4} y={y} w={BOX_W} h={BOX_H} />
-              <text x={12} y={mid + 4} fontSize={10.5} fontFamily="ui-monospace, monospace" fill="var(--text-1)">
+              <text
+                x={12}
+                y={mid + 4}
+                fontSize={10.5}
+                fontFamily="ui-monospace, monospace"
+                fill="var(--text-1)"
+              >
                 {pull.asked}
               </text>
 
@@ -93,7 +94,7 @@ export function ToolGraphDiagram() {
                   row stops reading as one sentence. */}
               <Connector from={[BOX_W + 8, mid]} to={[298, mid]} dir="right" />
               <text x={190} y={mid - 6} fontSize={10} fill="var(--text-2)">
-                {pull.needs}
+                {t(`diagrams.toolGraph.${pull.needs}`)}
               </text>
 
               <Box x={298} y={y} w={BOX_W} h={BOX_H} stroke="var(--accent)" />
@@ -113,15 +114,14 @@ export function ToolGraphDiagram() {
         {/* The counterfactual, said once at the bottom rather than drawn as a
             fourth row: a broken chain has no picture, which is the problem. */}
         <text x={8} y={height - 22} fontSize={10.5} fill="var(--text-3)">
-          Without this, the assistant could be offered the first box and not the second —
+          {withoutFirst}
         </text>
         <text x={8} y={height - 8} fontSize={10.5} fill="var(--text-3)">
-          and would stop halfway with nothing on screen to say why.
+          {withoutSecond}
         </text>
       </svg>
       <figcaption className="mt-2 text-xs text-text-3">
-        jojo reads each requirement out of the tool&rsquo;s own definition, so a tool added tomorrow
-        is covered without anybody updating a list.
+        {t('diagrams.toolGraph.caption')}
       </figcaption>
     </figure>
   )

@@ -1,0 +1,254 @@
+{
+  "page": {
+    "title": "Transfer",
+    "subtitle": "Move everything between this computer and your phone",
+    "showAnimation": "Show the animation",
+    "showAnimationHint": "A WebGPU scene redrawing every frame — turn it off on battery",
+    "roleLabel": "This device's part",
+    "roles": {
+      "send": "Send to phone",
+      "receive": "Receive from phone"
+    },
+    "empty": {
+      "title": "Nothing to send yet",
+      "description": "This device holds no records, so there is nothing to send. To bring your records over from your phone, choose Receive from phone above. Or add something, or load the demo data, and it will show up here as a group you can send.",
+      "receive": "Receive from phone",
+      "loadDemo": "Load the demo data"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Applications",
+      "hint": "Every stage, note and outcome on each one",
+      "summary_one": "{{count}} application",
+      "summary_other": "{{count}} applications"
+    },
+    "timeline": {
+      "label": "Reminders and events",
+      "hint": "{{reminders}} remind you, {{events}} are dated events",
+      "summary_one": "{{count}} reminder or event",
+      "summary_other": "{{count}} reminders and events"
+    },
+    "vault": {
+      "label": "Links and snippets",
+      "hint": "{{links}} links · {{snippets}} snippets",
+      "summary_one": "{{count}} link or snippet",
+      "summary_other": "{{count}} links and snippets"
+    },
+    "files": {
+      "label": "Files",
+      "hint": "CVs, statements and anything else saved against an application",
+      "summary_one": "{{count}} file",
+      "summary_other": "{{count}} files"
+    },
+    "keywords": {
+      "label": "Keywords",
+      "hint": "Your keyword list and every record it is attached to",
+      "summary_one": "{{count}} keyword",
+      "summary_other": "{{count}} keywords"
+    },
+    "scout": {
+      "label": "Job scout",
+      "hint": "{{pipelines}} pipelines · {{postings}} saved postings · {{matches}} matches",
+      "summary_one": "{{count}} job scout record",
+      "summary_other": "{{count}} job scout records"
+    },
+    "notes": {
+      "label": "Sticky notes",
+      "hint": "The notes to self on your dashboard board",
+      "summary_one": "{{count}} sticky note",
+      "summary_other": "{{count}} sticky notes"
+    },
+    "profile": {
+      "label": "Profile",
+      "hint": "Your name, links, match terms and the scout switches",
+      "summary_one": "{{count}} profile",
+      "summary_other": "{{count}} profiles"
+    },
+    "people": {
+      "label": "People",
+      "hint": "Referees, hiring chairs and recruiters, and the applications they belong to",
+      "summary_one": "{{count}} person",
+      "summary_other": "{{count}} people"
+    },
+    "background": {
+      "label": "Background",
+      "hint": "Degrees, posts, papers and skills read from your CV",
+      "summary_one": "{{count}} background fact",
+      "summary_other": "{{count}} background facts"
+    },
+    "nothing": "nothing"
+  },
+  "stage": {
+    "sameNetwork": "Both devices need to be on the same local network — the records go straight between them, with no server and no relay.",
+    "send": {
+      "idle": {
+        "title": "Waiting for the other device",
+        "body": "Open jojo on your phone, choose Transfer, then Receive from a computer, and scan the code here. Scanning it agrees an encryption key between the two devices, and nothing is broadcast to do it. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Reaching your phone",
+        "body": "Asking the address you typed for its half of the handshake. Nothing has been sent yet."
+      },
+      "packing": {
+        "title": "Gathering your records",
+        "body": "Reading everything in the list below out of this device. Still nothing on the network."
+      },
+      "sending": {
+        "title": "Moving your records",
+        "body": "Sealed chunks, straight to your phone over the local network. Progress is beside the code you typed."
+      },
+      "done": {
+        "title": "Everything was sent",
+        "body": "Your phone asks before it replaces anything; what it decided is beside the code you typed. Nothing was removed from this device — a transfer is a copy."
+      },
+      "failed": {
+        "title": "The transfer stopped",
+        "body": "Nothing on this device has changed. What went wrong is written beside the code you typed."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "Waiting for your phone",
+        "body": "Open jojo on your phone, choose Transfer, then Send to a computer, and scan the code here. Your phone then shows a short code to type on the right. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Reaching your phone",
+        "body": "Asking the address you typed for its half of the handshake. Nothing has been received yet."
+      },
+      "receiving": {
+        "title": "Receiving your phone's records",
+        "body": "Sealed chunks, straight from your phone over the local network. Nothing on this computer changes until you agree to it."
+      },
+      "confirming": {
+        "title": "Everything arrived",
+        "body": "Your phone's records arrived and checked out. Nothing here has changed yet — say whether they should replace what is on this computer."
+      },
+      "restoring": {
+        "title": "Replacing the records here",
+        "body": "Writing what your phone sent over what was on this computer."
+      },
+      "done": {
+        "title": "Everything moved",
+        "body": "This computer now holds your phone's records. Nothing was removed from the phone — a transfer is a copy."
+      },
+      "failed": {
+        "title": "The transfer stopped",
+        "body": "Nothing on this computer has changed. What went wrong is written beside the code you typed."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} — that is what is on this computer now, and what your phone's records replace.",
+      "sent": "{{summary}} — that is what was sent.",
+      "willMove": "{{summary}} — that is what will move."
+    },
+    "scanHint": "Scan the code here with the jojo app on your phone — that is the key — and it then shows you a short code to type on the right.",
+    "chooseGroup": "Choose at least one group to send."
+  },
+  "qr": {
+    "label": "Pairing code. Scan it with the jojo app on your phone: open Transfer and point the camera at this square."
+  },
+  "details": {
+    "title": "Details",
+    "hint": "this handoff",
+    "records": "Records",
+    "recordsHint": "everything in the groups below",
+    "encryption": "Encryption",
+    "encryptionHint": "AES-256-GCM, key agreed by camera",
+    "keyAgreed": "Key agreed",
+    "notPaired": "Not yet paired",
+    "route": "Route",
+    "routeHint": "a private network address — never the internet",
+    "localNetwork": "Local network",
+    "servers": "Servers",
+    "serversHint": "no relay, no signalling, nothing hosted",
+    "none": "None"
+  },
+  "payload": {
+    "label": "Transfer files",
+    "noFiles": "No files on this device",
+    "files_one": "{{count}} file — the slowest part of a handoff",
+    "files_other": "{{count}} files — the slowest part of a handoff"
+  },
+  "connect": {
+    "title": "Connect",
+    "hintUnable": "not in this browser",
+    "unable": "This browser cannot connect to another device on your network — Safari and every browser on an iPhone or iPad cannot, and nor can Firefox from the published site. Use Chrome or Edge on a computer — or move everything with a backup file from Settings, which works everywhere and has no size limit.",
+    "hint": "from the other device",
+    "intro": "After scanning, your phone shows a short code. Type it here — it is how this computer learns where the phone is, which a browser cannot work out on its own.",
+    "codeLabel": "The code shown on your phone",
+    "send": "Send",
+    "progress": "Transfer progress",
+    "reaching": "Reaching your phone…",
+    "gathering": "Gathering your records…",
+    "percentSent": "{{percent}}% sent",
+    "cancel": "Cancel",
+    "another": "Send to another device"
+  },
+  "done": {
+    "applied": "Your phone now holds these records.",
+    "appliedAt": "Your phone at {{target}} now holds these records.",
+    "declined": "Everything was sent, and your phone kept its own records — nothing was replaced there.",
+    "failed": "Everything was sent, but your phone could not read it, so nothing was replaced there. Try again.",
+    "unknown": "Everything was sent. Your phone did not say whether it took the records — check it there.",
+    "unknownTo": "Everything was sent to {{target}}. Your phone did not say whether it took the records — check it there.",
+    "waiting": "Everything was sent. Your phone asks before it replaces anything — confirm there to finish.",
+    "waitingTo": "Everything was sent to {{target}}. Your phone asks before it replaces anything — confirm there to finish."
+  },
+  "receive": {
+    "title": "Receive from phone",
+    "hint": "from your phone",
+    "unable": "This browser cannot connect to another device on your network — Safari and every browser on an iPhone or iPad cannot, and nor can Firefox from the published site. Use Chrome or Edge on a computer — or export a backup on your phone and open it under Settings.",
+    "intro": "On your phone, open Transfer, choose Send to a computer, and scan the code on this page. It then shows a short code — type it here. Both devices need to be on the same local network.",
+    "codeLabel": "The code shown on your phone",
+    "receive": "Receive",
+    "reaching": "Reaching your phone…",
+    "progress": "{{size}} received so far. Nothing here changes until you agree to it.",
+    "cancel": "Cancel",
+    "restoring": "Replacing the records on this computer…",
+    "replaceWarning": "Receiving replaces everything on this computer with what is on your phone, once you agree to it. To keep a copy of what is here, download a backup first.",
+    "downloadFirst": "Download a backup first",
+    "twoBrowsers": {
+      "title": "Two browsers",
+      "hint": "between two computers",
+      "body": "A web page cannot accept a connection, and neither can the other computer’s, so two computers cannot connect to each other. Export a backup from one and open it on the other — it carries every record and every document.",
+      "export": "Export a backup"
+    },
+    "reload": "Reload jojo"
+  },
+  "pullConfirm": {
+    "title": "Replace everything with what your phone sent?",
+    "description": "Your phone sent {{contents}}. {{replaces}}, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.",
+    "confirm": "Replace everything"
+  },
+  "handover": {
+    "sendingAgain": "Sending again replaces everything there with everything here."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "This browser cannot connect to another device on your network — Safari cannot, no browser on an iPhone or iPad can, and Firefox cannot from the published site. Use Chrome or Edge on a computer, or move your records with a backup file instead.",
+      "notLocal": "That address is not on a local network. jojo only connects to a private address, so the transfer never crosses the internet.",
+      "unreachable": "No answer from that address. Check both devices are on the same local network, and that your browser was allowed to find devices on the local network. Some guest networks block devices from seeing each other.",
+      "refused": "That device refused the connection. Check the phone is set the other way round — Receive on the phone when this computer sends, Send when it receives — then show a new code and scan it again.",
+      "oversized": "That device answered with far more than jojo expects, so it stopped reading. Nothing on this computer has changed.",
+      "timeout": "That device stopped answering. Keep jojo open on the phone with the screen on, then show a new code and try again.",
+      "blocked": "Your browser has blocked this site from reaching devices on your local network. Allow it in the site settings (the icon left of the address), then try again.",
+      "cancelled": "Cancelled.",
+      "conflict": "Your phone could not gather its records to send. Check the message on the phone — nothing on this computer has changed."
+    },
+    "dial": {
+      "unreadable": "That code has characters jojo does not use. Check it against the other screen.",
+      "length": "That code is the wrong length. It is twelve characters, in three groups of four.",
+      "mistyped": "That code does not check out — a character is wrong somewhere. Try typing it again."
+    },
+    "pull": {
+      "forged": "Part of what arrived did not come from the phone you paired with, so jojo threw all of it away. Nothing on this computer has changed — show a new code and try again.",
+      "oversized": "Your phone sent more than jojo will take in one go, so it stopped reading. Nothing on this computer has changed.",
+      "unrestorable": "What your phone sent cannot be restored: {{reason}}. Nothing on this computer has changed.",
+      "declined": "Nothing was changed. What your phone sent has been thrown away."
+    },
+    "unexpected": "Something went wrong on this computer and the transfer stopped. Nothing was left behind on the other device — try again, or move your records with a backup file from Settings.",
+    "unproven": "That device could not prove it read the code on this screen. Show a new code and scan it again.",
+    "pairingFailed": "Something went wrong setting up a secure pairing on this device."
+  }
+}

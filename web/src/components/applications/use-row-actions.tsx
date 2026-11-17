@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
+import { displayName, type Application, type Stage } from '@/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { ACTION_PHRASES } from '@jojo/service/core/domain-text'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
@@ -9,6 +11,7 @@ import { report } from '@/lib/analytics'
 import { stageGesture } from '@/lib/mascot-cues'
 import { useMascot } from '@/lib/mascot-context'
 import { announceRefusal } from '@/components/common/write-result'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Everything a row or card can do to its record, in one place.
@@ -21,6 +24,8 @@ import { announceRefusal } from '@/components/common/write-result'
  * one.
  */
 export function useRowActions() {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const { open } = useDialogs()
   const { update, remove, duplicate, setStage } = useApplications()
   const { toast } = useToast()
@@ -34,9 +39,9 @@ export function useRowActions() {
     const copy = duplicate(a.id)
     if (!copy) return
     toast({
-      title: `${displayName(copy)} duplicated`,
-      description: 'The copy starts as a draft — the original stage, dates and offer stay behind.',
-      action: { label: 'Undo', onClick: () => remove(copy.id) },
+      title: t('rowActions.duplicated', { name: displayName(copy) }),
+      description: t('rowActions.duplicatedBody'),
+      action: { label: t('common.undo'), onClick: () => remove(copy.id) },
     })
   }
 
@@ -45,7 +50,7 @@ export function useRowActions() {
   const onFlag = (a: Application) =>
     update(a.id, {
       flagged: !a.flagged,
-      lastAction: a.flagged ? 'Flag cleared' : 'Flagged for follow-up',
+      lastAction: a.flagged ? ACTION_PHRASES.flagCleared : ACTION_PHRASES.flagged,
     })
 
   /** The single path a stage change takes — drag, board pill and table chip. */
@@ -81,12 +86,15 @@ export function useRowActions() {
       const gesture = stageGesture(from, stage, a.outcome)
       if (gesture) play(gesture)
       toast({
-        title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
-        description: `It was in ${STAGE_LABEL[from]}. The dashboard pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
-        ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
+        title: t('rowActions.moved', { name: displayName(a), stage: domain.stage(stage) }),
+        description: t('rowActions.movedBody', {
+          from: domain.stage(from),
+          stage: domain.stage(stage),
+        }),
+        ...(restore ? { action: { label: t('common.undo'), onClick: restore } } : {}),
       })
     },
-    [setStage, undoable, toast, play],
+    [setStage, undoable, toast, play, t, domain],
   )
 
   const onDelete = () => {
@@ -99,10 +107,10 @@ export function useRowActions() {
     // re-applies every edge the delete unlinked, which is not something the
     // user could reconstruct by adding the application again.
     toast({
-      title: `${displayName(a)} deleted`,
-      description: 'Reminders, files and saved postings filed under it were kept, unlinked.',
+      title: t('rowActions.deleted', { name: displayName(a) }),
+      description: t('rowActions.deletedBody'),
       tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
+      action: { label: t('common.undo'), onClick: restore },
     })
   }
 
@@ -113,9 +121,13 @@ export function useRowActions() {
       onOpenChange={(open) => {
         if (!open) setPendingDelete(null)
       }}
-      title={pendingDelete ? `Delete ${displayName(pendingDelete)}?` : 'Delete application?'}
-      description="The application and its note go. Anything filed under it — reminders, files, saved postings — is kept but unlinked."
-      confirmLabel="Delete application"
+      title={
+        pendingDelete
+          ? t('rowActions.confirmTitle', { name: displayName(pendingDelete) })
+          : t('rowActions.confirmTitleFallback')
+      }
+      description={t('rowActions.confirmBody')}
+      confirmLabel={t('rowActions.confirmLabel')}
       tone="danger"
       onConfirm={onDelete}
     />

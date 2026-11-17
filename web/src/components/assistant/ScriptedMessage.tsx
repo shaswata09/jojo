@@ -1,4 +1,5 @@
 import { Quote } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { Chip } from '@/components/common/Chip'
 import { CopyFeedback } from '@/components/common/CopyFeedback'
@@ -19,6 +20,7 @@ export function ScriptedMessage({
   onCopy: (id: string, text: string) => void
   onSave: (message: Message) => void
 }) {
+  const { t } = useTranslation('assistant')
   if (m.role === 'you')
     return (
       <li className="flex justify-end">
@@ -36,7 +38,7 @@ export function ScriptedMessage({
             reply cannot lose its badge by being drawn somewhere new.
             A model's answer wears nothing, which is what makes the
             badge mean anything at all. */}
-        <Chip tone="amber">Example response · no model connected</Chip>
+        <Chip tone="amber">{t('scripted.badge')}</Chip>
       </div>
 
       {/* whitespace-pre-line so the drafts keep their paragraphs. */}
@@ -48,7 +50,7 @@ export function ScriptedMessage({
         </Button>
         <Button variant="ghost" size="sm" onClick={() => onSave(m)}>
           <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
-          Save to snippets
+          {t('common.saveToSnippets')}
         </Button>
       </div>
     </li>

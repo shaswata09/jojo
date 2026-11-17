@@ -1,10 +1,12 @@
 import type { Ref } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BoardCard } from '@/components/applications/board/BoardCard'
 import { PanelScroll } from '@/components/common/Panel'
 import type { STAGES, Application, Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 export function BoardColumn({
   stage,
@@ -21,6 +23,8 @@ export function BoardColumn({
   openId?: string
   openRef: Ref<HTMLDivElement>
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
 
   return (
@@ -41,8 +45,10 @@ export function BoardColumn({
             between it and these, so h3 skipped a level and the board read as a
             gap in the outline to anyone navigating by heading. Size is a class,
             not the tag. */}
-        <h2 className="min-w-0 truncate text-xs font-medium text-text-2">{stage.label}</h2>
-        <span className="tabular ml-auto rounded-sm border border-hairline bg-panel px-1.5 text-xs text-text-3">
+        <h2 className="min-w-0 truncate text-xs font-medium text-text-2">
+          {domain.stage(stage.id)}
+        </h2>
+        <span className="tabular ms-auto rounded-sm border border-hairline bg-panel px-1.5 text-xs text-text-3">
           {items.length}
         </span>
       </div>
@@ -85,7 +91,7 @@ export function BoardColumn({
           className="flex w-full shrink-0 cursor-pointer items-center justify-center gap-1 rounded-md border border-dashed border-hairline-strong py-1.5 text-xs text-text-3 transition-colors hover:border-accent-border hover:bg-panel hover:text-text-1"
         >
           <Plus className="size-3" strokeWidth={2} aria-hidden />
-          Add here
+          {t('board.addHere')}
         </button>
       </PanelScroll>
     </div>

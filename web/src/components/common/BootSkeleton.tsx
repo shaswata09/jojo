@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * What is on screen between mount and "IndexedDB has answered".
@@ -40,6 +41,7 @@ function Block({ className }: { className: string }) {
 }
 
 export function BootSkeleton() {
+  const { t } = useTranslation()
   const [elapsed, setElapsed] = useState<0 | typeof SAY_SOMETHING_MS | typeof TAKING_LONG_MS>(0)
 
   useEffect(() => {
@@ -99,9 +101,9 @@ export function BootSkeleton() {
          */}
         <p aria-live="polite" className="min-h-5 px-1 text-sm text-text-3">
           {elapsed === TAKING_LONG_MS
-            ? 'Your local database is taking longer than usual to open. Another jojo tab may be holding it — closing the others usually frees it.'
+            ? t('boot.takingLong')
             : elapsed === SAY_SOMETHING_MS
-              ? 'Opening your local database…'
+              ? t('boot.opening')
               : null}
         </p>
       </div>

@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useTranslation } from 'react-i18next'
+import { i18next } from '@/i18n/i18n'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -10,12 +13,13 @@ import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { OfferComparison } from '@/components/dashboard/OfferComparison'
+import { StickyBoard } from '@/components/dashboard/StickyBoard'
+import { Segment } from '@/components/ui/Segment'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { MONTH_LABELS } from '@jojo/service/core/calendar'
-import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
+import { displayName } from '@jojo/service/data/seed'
 import type { Stage } from '@jojo/service/data/seed'
-import { partsOf, shortDate, timeLabel, whenLabel } from '@jojo/service/data/timeline'
+import { partsOf, timeLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 import { markColor, markOfDate, markTone } from '@/lib/marks'
@@ -31,8 +35,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
-
-const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+import { domain, useDomain } from '@/i18n/domain'
 
 /**
  * "Monday 12 October", computed once from the seed's pinned today.
@@ -56,7 +59,17 @@ const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
  */
 const todayLabel = (): string => {
   const { y, m, d } = partsOf(TODAY)
-  return `${WEEKDAY_NAMES[new Date(y, m - 1, d).getDay()]} ${d} ${MONTH_LABELS[m - 1]}`
+  // English keeps its own "Monday 12 October"; every other language takes the
+  // platform's long date, which knows each one's order and month names.
+  const lang = i18next.language
+  if (!lang || lang === 'en') {
+    return `${domain.weekday(new Date(y, m - 1, d).getDay())} ${d} ${domain.month(m)}`
+  }
+  return new Date(y, m - 1, d).toLocaleDateString(lang, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
 }
 
 /*
@@ -77,15 +90,16 @@ const todayLabel = (): string => {
 const LATER_SHOWN = 4
 
 export function TodayScreen() {
+  const { t } = useTranslation('screens')
   const { all } = useApplications()
 
   const subtitle =
     all.length === 0
-      ? `${todayLabel()} · nothing tracked yet — everything you add stays on this device.`
-      : `${todayLabel()} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this device.`
+      ? t('today.subtitleEmpty', { date: todayLabel() })
+      : t('today.subtitle', { date: todayLabel(), count: all.length })
 
   return (
-    <Screen title="Today" subtitle={subtitle} wide>
+    <Screen title={t('today.title')} subtitle={subtitle} wide>
       {/* Five independent panels with no reading order between them, which is
           what makes this screen safe to cut into two columns on a tablet. The
           order still holds down each column: the two things you act on first
@@ -115,6 +129,7 @@ export function TodayScreen() {
  * neither, rather than showing two controls with nothing to write to.
  */
 function ItemControls({ itemId }: { itemId: string }) {
+  const { t } = useTranslation('screens')
   const actions = useItemActions()
   const [snoozing, setSnoozing] = useState<TimelineItem | null>(null)
   const item = actions.get(itemId)
@@ -122,14 +137,25 @@ function ItemControls({ itemId }: { itemId: string }) {
 
   return (
     <>
-      <Button label="Done" icon="check" variant="ghost" onPress={() => actions.complete(item)} />
-      <Button label="Snooze" icon="clock" variant="ghost" onPress={() => setSnoozing(item)} />
+      <Button
+        label={t('today.decision.done')}
+        icon="check"
+        variant="ghost"
+        onPress={() => actions.complete(item)}
+      />
+      <Button
+        label={t('today.decision.snooze')}
+        icon="clock"
+        variant="ghost"
+        onPress={() => setSnoozing(item)}
+      />
       <SnoozeMenu item={snoozing} actions={actions} onClose={() => setSnoozing(null)} />
     </>
   )
 }
 
 function ActionButton({ action }: { action: PriorityAction['actions'][number] }) {
+  const { t } = useTranslation('screens')
   const { open } = useSheets()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -152,7 +178,7 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
       variant={action.primary ? 'default' : 'ghost'}
       // An action is a destination, a sheet, or a stated blocker. Anything added
       // without one of the first two says why rather than swallowing the tap.
-      blocker={action.blocker ?? (action.draft ? undefined : 'Nothing is connected to this yet')}
+      blocker={action.blocker ?? (action.draft ? undefined : t('today.decision.notConnected'))}
       onPress={action.draft ? () => open('draft', action.draft) : undefined}
     />
   )
@@ -226,6 +252,7 @@ function useFirstStepsProgress() {
 }
 
 function PriorityActions() {
+  const { t } = useTranslation('screens')
   const c = useColors()
   const actions = usePriorityActions()
   const progress = useFirstStepsProgress()
@@ -265,26 +292,26 @@ function PriorityActions() {
     const steps = [
       {
         id: 'application',
-        title: 'Add an application',
-        body: 'A position, its stage and its deadline. Everything else in jojo hangs off this record.',
+        title: t('today.firstSteps.application.title'),
+        body: t('today.firstSteps.application.body'),
         done: progress.application,
-        label: 'New application',
+        label: t('applications.newApplication'),
         onPress: () => open('application'),
       },
       {
         id: 'dated',
-        title: 'Give something a date',
-        body: 'Deadlines, interviews and visits are one kind of record, so a date reaches this screen, the calendar and the application at once.',
+        title: t('today.firstSteps.dated.title'),
+        body: t('today.firstSteps.dated.body'),
         done: progress.dated,
-        label: 'New event',
+        label: t('today.firstSteps.dated.label'),
         onPress: () => open('timelineItem', { mode: 'event', initial: { date: TODAY } }),
       },
       {
         id: 'reminder',
-        title: 'Set a follow-up',
-        body: 'A reminder is the same record with a nudge switched on. Once its date passes it is owed, and it stays here until you tick it off.',
+        title: t('today.firstSteps.reminder.title'),
+        body: t('today.firstSteps.reminder.body'),
         done: progress.reminder,
-        label: 'New reminder',
+        label: t('today.firstSteps.reminder.label'),
         onPress: () => open('timelineItem', { mode: 'reminder' }),
       },
     ]
@@ -293,11 +320,15 @@ function PriorityActions() {
 
     return (
       <Panel>
-        <PanelTitle hint={`${done} of ${steps.length} done`}>First steps</PanelTitle>
+        <PanelTitle hint={t('today.firstSteps.progress', { done, total: steps.length })}>
+          {t('today.firstSteps.title')}
+        </PanelTitle>
         <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
           {complete
-            ? 'All three are done. Anything you add from here reaches this screen, the calendar and the application it belongs to.'
-            : `${done === 0 ? 'Nothing is tracked yet. ' : ''}Each step opens the real thing and ticks itself once a record exists — none of it is a tutorial you have to sit through.`}
+            ? t('today.firstSteps.complete')
+            : done === 0
+              ? t('today.firstSteps.introEmpty')
+              : t('today.firstSteps.intro')}
         </Txt>
 
         {steps.map((step, i) => (
@@ -342,7 +373,7 @@ function PriorityActions() {
         {/* The way out, at either end of the journey. Without it the panel is a
             modal you cannot close. */}
         <Button
-          label={complete ? 'Close first steps' : 'Hide these steps'}
+          label={complete ? t('today.firstSteps.close') : t('today.firstSteps.hide')}
           variant={complete ? 'outline' : 'ghost'}
           onPress={hideChecklist}
           style={{ marginTop: space[4], alignSelf: 'flex-end' }}
@@ -356,14 +387,14 @@ function PriorityActions() {
   if (actions.length === 0) {
     return (
       <Panel>
-        <PanelTitle>Needs a decision</PanelTitle>
+        <PanelTitle>{t('today.decision.title')}</PanelTitle>
         <EmptyState
           icon="check-circle"
-          title="Nothing needs deciding today"
-          description="Offers, applications that are overdue, the next hard deadline and your next interview surface here. None of them is outstanding."
+          title={t('today.decision.emptyTitle')}
+          description={t('today.decision.emptyDescription')}
           action={
             <Button
-              label="Open applications"
+              label={t('statistics.openApplications')}
               variant="outline"
               onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
             />
@@ -377,8 +408,8 @@ function PriorityActions() {
 
   return (
     <Panel>
-      <PanelTitle hint={actions.length === 1 ? '1 open' : `${actions.length} open`}>
-        Needs a decision
+      <PanelTitle hint={t('today.decision.open', { count: actions.length })}>
+        {t('today.decision.title')}
       </PanelTitle>
       <View style={{ gap: space[2.5] }}>
         <DecisionCard action={first} hero />
@@ -401,6 +432,7 @@ function PriorityActions() {
  * for *Done today*, the only counter here that goes up as you work.
  */
 function GlancePanel() {
+  const { t } = useTranslation('screens')
   const { all, stageCounts } = useApplications()
   const { all: items, overdue } = useTimeline()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -410,12 +442,14 @@ function GlancePanel() {
 
   const stats = [
     {
-      label: 'Active',
+      id: 'active',
+      label: t('today.glance.active'),
       value: String(all.length - countOf('closed')),
       onPress: () => navigation.navigate('Tabs', { screen: 'Applications' }),
     },
     {
-      label: 'Screens & interviews',
+      id: 'interviews',
+      label: t('today.glance.interviews'),
       value: String(countOf('screen') + countOf('interview')),
       // The honest destination, not the exact one: no filter selects two stages
       // at once, so this opens the list sorted by stage, where they sit together.
@@ -423,7 +457,8 @@ function GlancePanel() {
         navigation.navigate('Tabs', { screen: 'Applications', params: { sort: 'stage' } }),
     },
     {
-      label: 'Overdue',
+      id: 'overdue',
+      label: t('today.glance.overdue'),
       value: String(overdue.length),
       alert: overdue.length > 0,
       onPress: () =>
@@ -433,7 +468,8 @@ function GlancePanel() {
         }),
     },
     {
-      label: 'Done today',
+      id: 'doneToday',
+      label: t('today.glance.doneToday'),
       value: String(items.filter((i) => i.completedOn === TODAY).length),
       onPress: () =>
         navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'reminders' } }),
@@ -445,9 +481,9 @@ function GlancePanel() {
       <View style={styles.glanceGrid}>
         {stats.map((s) => (
           <Pressable
-            key={s.label}
+            key={s.id}
             accessibilityRole="button"
-            accessibilityLabel={`${s.value} ${s.label}`}
+            accessibilityLabel={t('today.glance.a11y', { value: s.value, label: s.label })}
             onPress={s.onPress}
             style={styles.glanceCell}
           >
@@ -476,6 +512,8 @@ function GlancePanel() {
  * them on its own.
  */
 function OwedThisWeek() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const { all } = useTimeline()
   const { open } = useSheets()
@@ -533,23 +571,28 @@ function OwedThisWeek() {
 
   const newEvent = () => open('timelineItem', { mode: 'event', initial: { date: day } })
 
-  const hint = overdueCount > 0 ? `${overdueCount} overdue · ${dueCount} due` : `${dueCount} due`
+  const hint =
+    overdueCount > 0
+      ? t('today.owed.hintOverdue', { overdue: overdueCount, due: dueCount })
+      : t('today.owed.hintDue', { due: dueCount })
 
   return (
     <Panel>
       <PanelTitle
         hint={all.length > 0 ? hint : undefined}
-        right={<Button label="Add" icon="plus" variant="outline" onPress={newEvent} />}
+        right={
+          <Button label={t('calendar.add')} icon="plus" variant="outline" onPress={newEvent} />
+        }
       >
-        Owed this week
+        {t('today.owed.title')}
       </PanelTitle>
 
       {all.length === 0 ? (
         <EmptyState
           icon="calendar"
-          title="Nothing is owed"
-          description="Deadlines, interviews and follow-ups land here as soon as they have a date, and stay until you tick them off."
-          action={<Button label="Add an event" icon="plus" onPress={newEvent} />}
+          title={t('today.owed.emptyTitle')}
+          description={t('today.owed.emptyDescription')}
+          action={<Button label={t('today.owed.addEvent')} icon="plus" onPress={newEvent} />}
         />
       ) : (
         <>
@@ -562,7 +605,11 @@ function OwedThisWeek() {
                 <Pressable
                   key={day.iso}
                   accessibilityRole="button"
-                  accessibilityLabel={`${day.label} ${day.day}, ${events.length} items`}
+                  accessibilityLabel={t('today.owed.dayLabel', {
+                    day: day.label,
+                    date: day.day,
+                    count: events.length,
+                  })}
                   onPress={() =>
                     navigation.navigate('Tabs', {
                       screen: 'Calendar',
@@ -619,7 +666,9 @@ function OwedThisWeek() {
 
                 {group.items.length === 0 ? (
                   <Txt size="sm" tone="secondary">
-                    Today is clear{doneToday > 0 ? ` — ${doneToday} done` : ''}.
+                    {doneToday > 0
+                      ? t('today.owed.clearDone', { count: doneToday })
+                      : t('today.owed.clear')}
                   </Txt>
                 ) : (
                   group.items.map((e, i) => (
@@ -633,7 +682,7 @@ function OwedThisWeek() {
                         <Pressable
                           accessibilityRole="checkbox"
                           accessibilityState={{ checked: false }}
-                          accessibilityLabel={`Mark "${e.title}" done`}
+                          accessibilityLabel={t('calendar.markDone', { title: e.title })}
                           onPress={() => actions.complete(e)}
                           hitSlop={8}
                           style={[styles.checkbox, { borderColor: c.hairlineStrong }]}
@@ -663,7 +712,7 @@ function OwedThisWeek() {
                           tone={markTone[markOfDate(e.date)]}
                           style={styles.owedWhen}
                         >
-                          {whenLabel(e, day)}
+                          {domain.when(e, day)}
                         </Txt>
                         {/* One overflow rather than a row of icons. Edit,
                             duplicate, draft, reschedule and delete all live
@@ -672,7 +721,7 @@ function OwedThisWeek() {
                         <IconButton
                           icon="more-horizontal"
                           size={34}
-                          label={`More actions for ${e.title}`}
+                          label={t('calendar.moreActions', { title: e.title })}
                           onPress={() => setMenuFor(e)}
                         />
                       </View>
@@ -687,12 +736,12 @@ function OwedThisWeek() {
             <View style={{ marginTop: space[4] }}>
               <Divider style={{ marginBottom: space[3] }} />
               <Txt size="xs" tone="muted" uppercase style={{ marginBottom: space[2] }}>
-                Later
+                {t('today.owed.later')}
               </Txt>
               <View style={styles.laterRow}>
                 {later.slice(0, LATER_SHOWN).map((e) => (
                   <Pressable key={e.id} accessibilityRole="button" onPress={() => actions.edit(e)}>
-                    <Chip tone="gray">{`${e.title} · ${shortDate(e.date)}`}</Chip>
+                    <Chip tone="gray">{`${e.title} · ${domain.shortDate(e.date)}`}</Chip>
                   </Pressable>
                 ))}
                 {later.length > LATER_SHOWN ? (
@@ -705,7 +754,9 @@ function OwedThisWeek() {
                       })
                     }
                   >
-                    <Chip tone="gray">{`${later.length - LATER_SHOWN} more on the calendar`}</Chip>
+                    <Chip tone="gray">
+                      {t('today.owed.moreOnCalendar', { count: later.length - LATER_SHOWN })}
+                    </Chip>
                   </Pressable>
                 ) : null}
               </View>
@@ -731,34 +782,104 @@ function OwedThisWeek() {
 // the full list anyway.
 const HOW_MANY = 5
 
+type NotesView = 'notes' | 'recent'
+
+/** Which side of the card was showing, per device. A convenience, so storage may refuse it. */
+const NOTES_VIEW_KEY = 'jojo/today/notesCard'
+
+/**
+ * The card the web's dashboard calls Recent applications: the sticky notes, or
+ * the applications touched most recently.
+ *
+ * Notes first, and by default, as on the web: the recent list repeats what the
+ * Applications tab one tap away already shows, and a place to jot "ask Maria
+ * about the visa letter" is the thing Today had nowhere for. The choice is
+ * remembered on this device, so someone who prefers the list gets it back.
+ */
 function RecentApplications() {
+  const { t } = useTranslation('screens')
+  const { open } = useSheets()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const [view, setView] = useState<NotesView>('notes')
+
+  useEffect(() => {
+    let live = true
+    AsyncStorage.getItem(NOTES_VIEW_KEY)
+      .then((stored) => {
+        if (live && stored === 'recent') setView('recent')
+      })
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [])
+
+  const choose = (next: NotesView) => {
+    setView(next)
+    void AsyncStorage.setItem(NOTES_VIEW_KEY, next).catch(() => {})
+  }
+
+  return (
+    <Panel>
+      <PanelTitle
+        hint={view === 'recent' ? t('today.recent.hint') : undefined}
+        right={
+          view === 'notes' ? (
+            <Button
+              label={t('today.recent.addReminder')}
+              icon="bell"
+              variant="ghost"
+              onPress={() => open('timelineItem', { mode: 'reminder', initial: { date: TODAY } })}
+            />
+          ) : (
+            <Button
+              label={t('today.recent.viewAll')}
+              variant="ghost"
+              onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
+            />
+          )
+        }
+      >
+        {view === 'notes' ? t('today.recent.headingNotes') : t('today.recent.title')}
+      </PanelTitle>
+
+      <Segment
+        options={(['notes', 'recent'] as const).map((value) => ({
+          value,
+          label: t(`today.recent.views.${value}`),
+        }))}
+        value={view}
+        onChange={choose}
+        label={t('today.recent.control')}
+        style={styles.notesSwitch}
+      />
+
+      {view === 'notes' ? <StickyBoard /> : <RecentList />}
+    </Panel>
+  )
+}
+
+function RecentList() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const { recent } = useApplications()
   const { open } = useSheets()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const shown = recent.slice(0, HOW_MANY)
 
   return (
-    <Panel>
-      <PanelTitle
-        hint="latest activity"
-        right={
-          <Button
-            label="View all"
-            variant="ghost"
-            onPress={() => navigation.navigate('Tabs', { screen: 'Applications' })}
-          />
-        }
-      >
-        Recent applications
-      </PanelTitle>
-
+    <>
       {shown.length === 0 ? (
         <EmptyState
           icon="clipboard"
-          title="No applications yet"
-          description="Every position you track shows up here as you touch it, newest first."
+          title={t('applications.none.title')}
+          description={t('today.recent.emptyDescription')}
           action={
-            <Button label="New application" icon="plus" onPress={() => open('application')} />
+            <Button
+              label={t('applications.newApplication')}
+              icon="plus"
+              onPress={() => open('application')}
+            />
           }
         />
       ) : (
@@ -783,8 +904,10 @@ function RecentApplications() {
                   {displayName(a)}
                 </Txt>
                 <Txt size="xs" tone="muted" numberOfLines={1}>
-                  {a.lastAction} ·{' '}
-                  {a.daysAgo === 0 ? 'Today' : `${a.daysAgo} day${a.daysAgo === 1 ? '' : 's'} ago`}
+                  {domain.action(a.lastAction)} ·{' '}
+                  {a.daysAgo === 0
+                    ? t('calendar.today')
+                    : t('today.recent.daysAgo', { count: a.daysAgo })}
                 </Txt>
               </View>
               <View style={[s.chipRow, styles.recentChips]}>
@@ -794,14 +917,14 @@ function RecentApplications() {
                   {a.roleTag}
                 </Chip>
                 <Chip stage={a.stage} size="sm">
-                  {STAGE_LABEL[a.stage]}
+                  {domain.stage(a.stage)}
                 </Chip>
               </View>
             </Pressable>
           </View>
         ))
       )}
-    </Panel>
+    </>
   )
 }
 
@@ -828,6 +951,8 @@ function RecentApplications() {
  * this platform's business.
  */
 function PipelineBreakdown() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const { all, stageCounts } = useApplications()
   const { open } = useSheets()
@@ -835,24 +960,30 @@ function PipelineBreakdown() {
 
   return (
     <Panel>
-      <PanelTitle hint={`${all.length} tracked`}>Pipeline</PanelTitle>
+      <PanelTitle hint={t('statistics.sources.hint', { count: all.length })}>
+        {t('today.pipeline.title')}
+      </PanelTitle>
 
       {/* `stageCounts` always returns all six stages, so on an empty store this
           rendered six labelled rows of zero — technically true and useless. */}
       {all.length === 0 ? (
         <EmptyState
           icon="clipboard"
-          title="Nothing in the pipeline"
-          description="Each application sits in one stage, and this shows how they are spread across them. Add one and the first slice appears."
+          title={t('today.pipeline.emptyTitle')}
+          description={t('today.pipeline.emptyDescription')}
           action={
-            <Button label="New application" icon="plus" onPress={() => open('application')} />
+            <Button
+              label={t('applications.newApplication')}
+              icon="plus"
+              onPress={() => open('application')}
+            />
           }
         />
       ) : (
         <Pie
           data={stageCounts.map((stage) => ({
             key: stage.id,
-            label: stage.label,
+            label: domain.stage(stage.id),
             value: stage.count,
             color: c.stage[stage.id],
           }))}
@@ -922,4 +1053,5 @@ const styles = StyleSheet.create({
   laterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   recentRow: { paddingVertical: space[2.5] },
   recentChips: { marginTop: space[1.5] },
+  notesSwitch: { marginBottom: space[3] },
 })

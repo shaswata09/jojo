@@ -1,0 +1,243 @@
+{
+  "common": {
+    "undo": "撤销",
+    "cancel": "取消"
+  },
+  "addFromLink": {
+    "title": "从链接添加申请",
+    "description": "模型会读取招聘信息并填写表单，还会勾选这个职位明显涉及的你自己的关键词。页面会保存在保险库的“招聘信息”中，在你确认之前不会保存为申请。",
+    "url": "招聘信息 URL",
+    "addressOnly": "只使用地址",
+    "reading": "正在读取…",
+    "retry": "重试",
+    "submit": "读取并预填",
+    "failed": "读取招聘信息失败。",
+    "steps": {
+      "reading": "正在获取页面",
+      "asking": "正在阅读",
+      "saving": "正在保存招聘信息"
+    },
+    "toast": {
+      "title": "招聘信息已保存并读取",
+      "kept": "{{name}} 已在保险库中，保存申请时会归入该申请。",
+      "gaps_other": "有 {{count}} 个字段不在页面上。",
+      "tags_other": "已勾选你的 {{count}} 个关键词。"
+    }
+  },
+  "application": {
+    "newTitle": "新建申请",
+    "editTitle": "编辑 {{name}}",
+    "add": "添加申请",
+    "save": "保存更改",
+    "checking": "正在检查是否重复…",
+    "noRecord": "打开此面板时没有可编辑的记录",
+    "description": {
+      "edit": "更改会替换当前的详情，截止日期也会随之变动。",
+      "prefilledTagged": "已根据你粘贴的内容预填——保存前请检查雇主、职位和关键词。",
+      "prefilled": "已根据你粘贴的内容预填——保存前请检查雇主和职位。",
+      "create": "跟踪你正在申请的职位。带星号的字段为必填项。"
+    },
+    "errors": {
+      "org": "请填写雇主——记录会归在它名下。",
+      "role": "请填写职位，这样同一家单位的两个申请才能区分开。",
+      "roleTag": "请选择一个角色标签——角色筛选和图表都会用到它。",
+      "url": "这不是浏览器能打开的链接——请加上 https://。"
+    },
+    "fields": {
+      "org": "单位",
+      "orgPlaceholder": "雇主或机构",
+      "role": "职位名称",
+      "rolePlaceholder": "例如：高级数据分析师",
+      "roleTag": "角色标签",
+      "pickRoleTag": "选择角色标签",
+      "roleTagDescription": "角色筛选和图表所依据的维度。",
+      "stage": "阶段",
+      "deadline": "截止日期",
+      "deadlineHint": "在日历和未来一周中添加一条带日期的条目。",
+      "source": "来源",
+      "sourceNotSet": "未设置",
+      "location": "地点",
+      "locationPlaceholder": "城市，或远程",
+      "comp": "薪酬",
+      "compPlaceholder": "例如：$96k + 股权",
+      "url": "招聘信息 URL",
+      "postingId": "职位编号",
+      "postingIdHint": "职位或需求编号（如果招聘信息中有注明）。",
+      "postingIdPlaceholder": "例如：R-2024-0312",
+      "note": "备注",
+      "notePlaceholder": "发出之前还需要做的事。",
+      "keywords": "关键词"
+    },
+    "toast": {
+      "draftDiscarded": "已放弃草稿",
+      "changesDiscarded": "已放弃更改",
+      "nothingAdded": "没有添加任何内容。撤销可让表单恢复到你离开时的样子。",
+      "unchanged": "{{name}} 未更改。撤销可恢复你的编辑。",
+      "recordUnchanged": "记录未更改。撤销可恢复你的编辑。",
+      "added": "已添加 {{name}}",
+      "deadlineOnCalendar": "截止日期 {{date}} 已加入日历。",
+      "noDeadline": "还没有截止日期——添加后会显示在未来一周中。",
+      "postingFiled": "招聘信息已归入其下。",
+      "saved": "已保存更改",
+      "deadlineRemoved": "{{name}}——其截止日期已从日历中移除。",
+      "restoreDeadline": "恢复截止日期"
+    },
+    "duplicate": {
+      "title": "这看起来是你已有的职位",
+      "modelSame": "模型认为它们是同一个空缺职位。",
+      "modelReading": "——这是模型的判断，请在下方核对。",
+      "existing": "你已有的",
+      "adding": "你正在添加的",
+      "untitled": "未命名",
+      "postingId": "职位编号 {{id}}",
+      "openYours": "打开已有的那个",
+      "openExisting": "打开你已有的 {{name}}",
+      "tapToOpen": "点按即可打开，或继续将其作为第二条记录添加。",
+      "editInstead": "改为编辑",
+      "discard": "放弃",
+      "addAnyway": "仍然添加"
+    },
+    "since": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "daysAgo_other": "{{count}} 天前"
+    }
+  },
+  "draft": {
+    "title": "起草消息",
+    "description": {
+      "forApp": "用于 {{name}}。不会自动生成，也不会发送——填好空白，复制到你的邮件客户端，然后标为已发送。",
+      "forItem": "用于 {{name}} · {{item}}。不会自动生成，也不会发送——填好空白，复制到你的邮件客户端，然后标为已发送。",
+      "unlinked": "未关联到任何申请，所以 [ROLE] 和 [DATE] 会留空。不会自动生成，也不会发送——填好空白，复制到你的邮件客户端，然后标为已发送。"
+    },
+    "defaultTitle": "邮件草稿",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "存为片段",
+    "writeFirst": "请先写点内容",
+    "copy": "复制",
+    "copied": "已复制",
+    "markSent": "标为已发送",
+    "openFromReminder": "从提醒中打开才能勾选完成",
+    "alreadyTicked": "已勾选完成",
+    "blank": "空白草稿",
+    "startFromSnippet": "从你的某个邮件片段开始",
+    "placeholder": "写下消息，或选一个片段作为开头…",
+    "editorLabel": "消息草稿",
+    "empty": {
+      "title": "还没有邮件片段",
+      "description": "标记为 Email 的片段会作为起点显示在这里。现在没有可载入的内容，但草稿也不必从片段开始。",
+      "startBlank": "从空白草稿开始"
+    },
+    "status": {
+      "empty": "还没有起草任何内容。",
+      "noBlanks": "没有剩余空白。",
+      "blanksLeft_other": "还剩 {{count}} 处空白——{{names}}",
+      "nameNever": " · 绝不会替你填上某个人的名字"
+    },
+    "picker": {
+      "title": "开头选择",
+      "description": "你自己的邮件片段，已填入记录中已知的信息。"
+    },
+    "toast": {
+      "replaced": "已替换草稿",
+      "loaded": "已载入 {{title}}。",
+      "blank": "已从空白重新开始。",
+      "saved": "已存入片段",
+      "savedDescription": "{{title}} · 标签为 Email，在保险库中",
+      "sent": "已标为已发送",
+      "sentDescription": "{{title}}——已在提醒中勾选完成"
+    }
+  },
+  "stage": {
+    "moveTo": "移至{{stage}}",
+    "currently": "{{name}} · 当前为{{stage}}",
+    "nothingElse": "记录中的其他内容均未更改。",
+    "moveWithoutDetails": "不填详情直接移动",
+    "outcome": "结果",
+    "submitted": {
+      "date": "提交日期",
+      "portal": "门户 URL",
+      "portalHint": "申请所在的位置，方便你需要跟进时使用。",
+      "reference": "确认编号",
+      "referencePlaceholder": "例如：4471-QZ"
+    },
+    "interview": {
+      "date": "面试日期",
+      "format": "形式",
+      "formatLabel": "面试形式",
+      "mint": "添加到时间线",
+      "mintDescription": "在该日期创建一条面试条目，并附带提醒。"
+    },
+    "offer": {
+      "respondBy": "答复截止",
+      "package": "待遇",
+      "packagePlaceholder": "例如：$112k + $15k 启动经费",
+      "note": "备注",
+      "notePlaceholder": "仍在谈判中的内容",
+      "mint": "将截止日期添加到时间线",
+      "mintDescription": "没人盯着的答复截止日期，正是你最不能错过的那个。"
+    },
+    "keepOffer": {
+      "label": "保留录用详情",
+      "description": "答复截止 {{date}}。关闭此项即可清除。",
+      "descriptionWithComp": "答复截止 {{date}} · {{comp}}。关闭此项即可清除。"
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "新建提醒",
+      "editReminder": "编辑提醒",
+      "newEvent": "新建事件",
+      "editEvent": "编辑事件"
+    },
+    "description": "无论哪种都是同一条记录——它会出现在你所设日期的日历上，开关打开时还会出现在保险库的提醒列表中。",
+    "delete": "删除",
+    "save": "保存",
+    "addReminder": "添加提醒",
+    "addEvent": "添加事件",
+    "reminderFallback": "提醒",
+    "duration": {
+      "minutes_other": "{{count}} 分钟",
+      "hours_other": "{{count}} 小时"
+    },
+    "fields": {
+      "title": "标题",
+      "reminderPlaceholder": "例如：催一下招聘人员",
+      "eventPlaceholder": "例如：委员会 Zoom 会议",
+      "remind": "显示在提醒中",
+      "remindOn": "在保险库中列出并带复选框，也会出现在当天的日历上。",
+      "remindOff": "只出现在当天的日历上——保险库中没有复选框。",
+      "date": "日期",
+      "allDay": "全天",
+      "allDayDescription": "关闭后可设置开始时间和时长。",
+      "startTime": "开始时间",
+      "length": "时长",
+      "applicationHint": "将它们关联起来，这样每个申请都会列出这一项，这一项也能链接回其中任意一个申请。",
+      "kind": "类型",
+      "kindFollowUp": "跟进在勾选完成前，也会在“今天”中计为待办。",
+      "kindHint": "它在日历和提醒列表中显示的图标。",
+      "detail": "详情",
+      "detailHint": "一行背景说明，显示在标题下方。",
+      "note": "备注",
+      "noteHint": "你自己的随手记。与详情分开保存，所以编辑详情不会覆盖它。",
+      "keywords": "关键词",
+      "keywordsHint": "与申请、文件和链接共享——按其中一个筛选就能找到所有相关内容。"
+    },
+    "more": {
+      "title": "更多详情",
+      "note": "备注",
+      "keywords": "关键词",
+      "empty": "备注、关键词"
+    },
+    "toast": {
+      "added": "已添加 {{title}}",
+      "updated": "已更新 {{title}}",
+      "inReminders": "在提醒中",
+      "calendarOnly": "仅在日历上",
+      "owed": "且本周待办",
+      "deleted": "已删除 {{title}}",
+      "goneFromBoth": "已从提醒列表和日历中移除。",
+      "goneFromCalendar": "已从日历中移除。"
+    }
+  }
+}

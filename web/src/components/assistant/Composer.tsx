@@ -1,5 +1,6 @@
 import type { FormEvent, KeyboardEvent } from 'react'
 import { ArrowUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -43,6 +44,7 @@ export function Composer({
   disabled?: boolean
   compact?: boolean
 }) {
+  const { t } = useTranslation('assistant')
   const submit = (event: FormEvent) => {
     event.preventDefault()
     const clean = value.trim()
@@ -87,17 +89,17 @@ export function Composer({
           variant="outline"
           size={compact ? 'sm' : 'default'}
           onClick={onStop}
-          title="Stop the agent"
+          title={t('composer.stopTitle')}
         >
-          Stop
+          {t('composer.stop')}
         </Button>
       ) : (
         <Button
           type="submit"
           size="icon"
-          aria-label="Send"
+          aria-label={t('composer.send')}
           disabled={!value.trim() || disabled}
-          title={value.trim() ? 'Send' : 'Type a message first'}
+          title={value.trim() ? t('composer.send') : t('composer.typeFirst')}
         >
           <ArrowUp className="size-4" strokeWidth={2} aria-hidden />
         </Button>

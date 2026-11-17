@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { FileText, Info, Loader2, Trash2, Wand2 } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { MenuItem, RowMenu, menuItemClass } from '@/components/common/RowMenu'
@@ -8,12 +9,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { SnippetPreviewDialog } from '@/components/vault/SnippetPreviewDialog'
 import type { PreviewSnippet } from '@/components/vault/SnippetPreviewDialog'
 import { supersededToast } from '@jojo/service/react/undo'
+import { useKg } from '@jojo/service/react/kg-context'
 import type { TailorCandidate } from '@jojo/service/core/tailoring'
 import { useTailoring } from '@/lib/tailor-agent'
 import type { TailoredSnippet } from '@/lib/tailor-agent'
 import { profilePath, settingsPath, vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
+import { i18next } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
+import { domain } from '@/i18n/domain'
 
 /**
  * The person's own documents, rewritten for this posting.
@@ -65,7 +69,9 @@ import { cn } from '@/lib/utils'
  */
 
 export function TailoredPanel({ applicationId }: { applicationId: string }) {
-  const t = useTailoring(applicationId)
+  const { t } = useTranslation('applications')
+  const { text } = useKg()
+  const tailor = useTailoring(applicationId)
   const { toast } = useToast()
   const [choosing, setChoosing] = useState(false)
   /*
@@ -74,7 +80,7 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
    * body for as long as the dialog stayed open after an edit in the Vault.
    */
   const [previewing, setPreviewing] = useState<string | null>(null)
-  const preview = t.tailored.find((s) => s.id === previewing) ?? null
+  const preview = tailor.tailored.find((s) => s.id === previewing) ?? null
 
   /*
    * Queued, not awaited. The work belongs to the registry above the router —
@@ -84,35 +90,32 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
    */
   const begin = (candidate: TailorCandidate) => {
     setChoosing(false)
-    t.start(candidate)
+    tailor.start(candidate)
   }
 
-  const busy = t.running !== null
+  const busy = tailor.running !== null
 
   return (
     <Panel aria-labelledby={`tailored-${applicationId}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id={`tailored-${applicationId}`} className="flex items-center gap-2 font-medium">
           <Wand2 aria-hidden className="size-4 text-muted-foreground" />
-          Tailored materials
+          {t('tailored.title')}
         </h2>
         {/* The chooser IS the action: there is no "Tailor" without saying
             which document, so the button opens the list rather than doing
             anything, and the list's rows do the work. */}
-        {t.blocked === null && t.candidates.length > 0 && !busy && (
+        {tailor.blocked === null && tailor.candidates.length > 0 && !busy && (
           <Popover open={choosing} onOpenChange={setChoosing}>
             <PopoverTrigger asChild>
               <Button size="sm" variant="outline">
                 <Wand2 aria-hidden className="size-3.5" strokeWidth={1.8} />
-                Tailor a document
+                {t('tailored.tailor')}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-72 gap-1 p-1.5">
-              <p className="px-1.5 pt-1 pb-1.5 text-xs text-text-3">
-                Rewritten for this posting, with the changes marked. Takes a minute or two on a
-                local model.
-              </p>
-              {t.candidates.map((c) => (
+              <p className="px-1.5 pt-1 pb-1.5 text-xs text-text-3">{t('tailored.chooserIntro')}</p>
+              {tailor.candidates.map((c) => (
                 <button
                   key={c.id}
                   type="button"
@@ -123,7 +126,11 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
                 >
                   <span className="text-text-1">
                     {c.label.charAt(0).toUpperCase() + c.label.slice(1)}
-                    {c.already && <span className="ml-1.5 text-text-3">· tailored before</span>}
+                    {c.already && (
+                      <span className="ms-1.5 text-text-3 [unicode-bidi:isolate]">
+                        {t('tailored.before')}
+                      </span>
+                    )}
                   </span>
                   <span className="truncate text-text-3">{c.name}</span>
                 </button>
@@ -134,20 +141,18 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
       </div>
 
       {/* ------------------------ nothing to offer ------------------------ */}
-      {t.blocked === 'no-posting' && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          There is no saved posting behind this application, so there is nothing to tailor your
-          documents for. Add the application from its link, or capture the listing, and this offers
-          to.
-        </p>
+      {tailor.blocked === 'no-posting' && (
+        <p className="mt-3 text-sm text-muted-foreground">{t('tailored.noPosting')}</p>
       )}
-      {t.blocked === 'no-model' && (
+      {tailor.blocked === 'no-model' && (
         <p className="mt-3 text-sm text-muted-foreground">
-          Tailoring a document needs a model.{' '}
-          <Link className="underline underline-offset-2" to={settingsPath()}>
-            Connect one in Settings
-          </Link>
-          .
+          <Trans
+            t={t}
+            i18nKey="tailored.noModel"
+            components={{
+              anchor: <Link className="underline underline-offset-2" to={settingsPath()} />,
+            }}
+          />
         </p>
       )}
       {/* The bucket is NAMED, because "put it in the Vault" is no longer
@@ -155,18 +160,18 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           CV filed under To read would leave this panel saying the same thing
           after they had done what it asked. Both doors are given — the profile
           page is the one that files it in the right place by itself. */}
-      {t.blocked === 'no-documents' && (
+      {tailor.blocked === 'no-documents' && (
         <p className="mt-3 text-sm text-muted-foreground">
-          Nothing to tailor yet. Tailoring rewrites the documents you send with an application — add
-          your CV, statements or a cover letter on{' '}
-          <Link className="underline underline-offset-2" to={profilePath()}>
-            your profile
-          </Link>
-          , or file them in{' '}
-          <Link className="underline underline-offset-2" to={vaultPath({ tool: 'files' })}>
-            the Vault
-          </Link>{' '}
-          under Applications, and they appear here.
+          <Trans
+            t={t}
+            i18nKey="tailored.noDocuments"
+            components={{
+              profile: <Link className="underline underline-offset-2" to={profilePath()} />,
+              vault: (
+                <Link className="underline underline-offset-2" to={vaultPath({ tool: 'files' })} />
+              ),
+            }}
+          />
         </p>
       )}
 
@@ -179,17 +184,19 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
               'Queued' rather than a spinner with no words for a job waiting
               behind another: one model answers one question at a time. */}
           <span className="truncate">
-            {t.running?.state === 'queued' ? 'Queued' : (t.running?.step ?? 'Working')}
+            {tailor.running?.state === 'queued'
+              ? t('tailored.queued')
+              : (tailor.running?.step ?? t('tailored.working'))}
           </span>
-          <Button size="sm" variant="ghost" className="ml-auto" onClick={t.cancel}>
-            Cancel
+          <Button size="sm" variant="ghost" className="ms-auto" onClick={tailor.cancel}>
+            {t('common.cancel')}
           </Button>
         </p>
       )}
 
-      {t.error !== null && !busy && (
+      {tailor.error !== null && !busy && (
         <p className="mt-3 text-sm text-danger" role="alert">
-          {t.error}
+          {tailor.error}
         </p>
       )}
 
@@ -197,9 +204,9 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           are the things worth knowing before it is pasted into an application.
           They were computed and then dropped for as long as the run reported
           only ok-or-why, so a reply that marked nothing said nothing. */}
-      {t.notes.length > 0 && !busy && (
+      {tailor.notes.length > 0 && !busy && (
         <ul className="mt-3 space-y-1">
-          {t.notes.map((note) => (
+          {tailor.notes.map((note) => (
             <li key={note} className="flex items-start gap-2 text-sm text-text-3">
               <Info aria-hidden className="mt-0.5 size-3.5 shrink-0" />
               <span>{note}</span>
@@ -209,18 +216,15 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
       )}
 
       {/* --------------------------- the results --------------------------- */}
-      {t.tailored.length === 0 &&
-        t.blocked === null &&
-        t.candidates.length > 0 &&
+      {tailor.tailored.length === 0 &&
+        tailor.blocked === null &&
+        tailor.candidates.length > 0 &&
         !busy &&
-        t.error === null && (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Nothing tailored yet. Choose a document above and jojo writes a version for this
-            posting, with what it changed marked.
-          </p>
+        tailor.error === null && (
+          <p className="mt-3 text-sm text-muted-foreground">{t('tailored.emptyResults')}</p>
         )}
 
-      {t.tailored.length > 0 && (
+      {tailor.tailored.length > 0 && (
         /*
          * ONE CARD PER ROW, measured rather than chosen. Two to a row put the
          * cards at 209px inside the detail column, and a text Preview button
@@ -230,28 +234,30 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
          * the width this panel actually gets.
          */
         <ul className="mt-3 grid gap-2">
-          {t.tailored.map((s) => (
+          {tailor.tailored.map((s) => (
             <TailoredCard
               key={s.id}
               snippet={s}
               onPreview={() => setPreviewing(s.id)}
               onDelete={() => {
-                const gone = t.remove(s.id)
+                const gone = tailor.remove(s.id)
                 if (!gone) return
                 const { result, restore } = gone
                 toast({
-                  title: result.ok ? `${s.title} deleted` : 'That did not delete',
+                  title: result.ok
+                    ? t('tailored.deleted', { title: s.title })
+                    : t('tailored.notDeleted'),
                   ...(result.ok
                     ? {
-                        description: 'Gone from this application and from the Vault.',
+                        description: t('tailored.deletedBody'),
                         tone: 'danger' as const,
                         ...(restore
                           ? {
                               action: {
-                                label: 'Undo',
+                                label: t('common.undo'),
                                 onClick: () => {
                                   const done = restore()
-                                  if (done.superseded.length > 0) toast(supersededToast(done))
+                                  if (done.superseded.length > 0) toast(supersededToast(done, text))
                                 },
                               },
                             }
@@ -279,7 +285,7 @@ const asPreview = (s: TailoredSnippet): PreviewSnippet => ({
   title: s.title,
   tag: s.tag,
   body: s.body,
-  subtitle: `${s.tag} · from ${s.from} · ${s.model}${s.when ? ` · ${s.when}` : ''}`,
+  subtitle: `${i18next.t('applications:tailored.provenance', { tag: s.tag, from: s.fromName ?? domain.missingSource(), model: s.model })}${s.whenAt ? ` · ${domain.ago(s.whenAt.day, s.whenAt.today)}` : ''}`,
   // Everything this panel lists was written by a model, by construction:
   // `tailoredFor` filters on the record's own `tailored` stamp.
   marked: true,
@@ -294,6 +300,7 @@ function TailoredCard({
   onPreview: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation('applications')
   return (
     /*
      * TWO ROWS, and the second one is the whole card wide.
@@ -317,13 +324,18 @@ function TailoredCard({
           // Named in a tooltip as well: a long title still truncates on a
           // narrow window, and the tooltip is the only way to read the rest.
           title={s.title}
-          className="min-w-0 flex-1 cursor-pointer truncate text-left font-medium text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
+          className="min-w-0 flex-1 cursor-pointer truncate text-start font-medium text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
         >
           {s.title}
         </button>
         <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={onPreview} aria-label={`Preview ${s.title}`}>
-            Preview
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onPreview}
+            aria-label={t('filed.previewName', { name: s.title })}
+          >
+            {t('common.preview')}
           </Button>
           <RowMenu name={s.title}>
             <Link
@@ -331,10 +343,10 @@ function TailoredCard({
               className={menuItemClass}
               role="menuitem"
             >
-              Open in the Vault
+              {t('tailored.openInVault')}
             </Link>
             <MenuItem icon={Trash2} danger onSelect={onDelete}>
-              Delete
+              {t('common.delete')}
             </MenuItem>
           </RowMenu>
         </div>
@@ -344,8 +356,12 @@ function TailoredCard({
           truncates rather than wrapping: a card whose height depends on the
           length of a filename makes a grid of them ragged. */}
       <p className="mt-1 truncate text-xs text-text-3">
-        {s.tag} · from {s.from} · {s.model}
-        {s.when && ` · ${s.when}`}
+        {t('tailored.provenance', {
+          tag: s.tag,
+          from: s.fromName ?? domain.missingSource(),
+          model: s.model,
+        })}
+        {s.whenAt && ` · ${domain.ago(s.whenAt.day, s.whenAt.today)}`}
       </p>
     </li>
   )

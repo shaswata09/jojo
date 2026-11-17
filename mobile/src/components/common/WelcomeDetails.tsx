@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/Field'
 import { Sheet } from '@/components/ui/Sheet'
@@ -48,6 +49,7 @@ const BLANK_TEXT = {
  * leaves the rest.
  */
 export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () => void }) {
+  const { t } = useTranslation('components')
   const { profile, update } = useProfile()
   // Blank on a first run, whatever the store holds.
   //
@@ -113,39 +115,39 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
       open
       onClose={dismiss}
       size="tall"
-      title="A little about you"
-      description="Drafts sign off with your name, and the scout scores against what you are looking for. All of it stays on this device, and all of it is optional — Profile has the rest."
+      title={t('welcome.title')}
+      description={t('welcome.description')}
       footer={
         <>
-          <Button label="Skip for now" variant="ghost" size="md" onPress={dismiss} />
+          <Button label={t('welcome.skip')} variant="ghost" size="md" onPress={dismiss} />
           {/* Disabled only when there is nothing to write, so it never claims to
               have saved an empty form. Skip does the same thing honestly. */}
-          <Button label="Save and continue" size="md" disabled={!anything} onPress={save} />
+          <Button label={t('welcome.save')} size="md" disabled={!anything} onPress={save} />
         </>
       }
     >
       <View style={{ gap: space[3], paddingBottom: space[2] }}>
         <TextField
-          label="Full name"
+          label={t('welcome.fullName')}
           value={draft.fullName}
           autoComplete="name"
-          placeholder="e.g. Lonardo Jenson"
+          placeholder={t('welcome.fullNamePlaceholder')}
           onChangeText={set('fullName')}
         />
         <TextField
-          label="Current position"
+          label={t('welcome.position')}
           value={draft.position}
-          placeholder="e.g. PhD candidate, Computer Science"
+          placeholder={t('welcome.positionPlaceholder')}
           onChangeText={set('position')}
         />
         <TextField
-          label="Location"
+          label={t('welcome.location')}
           value={draft.location}
-          placeholder="e.g. Santa Clara, CA"
+          placeholder={t('welcome.locationPlaceholder')}
           onChangeText={set('location')}
         />
         <TextField
-          label="Email"
+          label={t('welcome.email')}
           value={draft.email}
           mono
           autoCapitalize="none"
@@ -155,8 +157,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
           onChangeText={set('email')}
         />
         <Txt size="xs" tone="muted">
-          The rest — links, target roles, the terms the scout matches on — lives under Profile, in
-          the More tab.
+          {t('welcome.rest')}
         </Txt>
       </View>
     </Sheet>

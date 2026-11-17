@@ -1,0 +1,256 @@
+{
+  "common": {
+    "newApplication": "새 지원",
+    "openBoard": "보드 열기",
+    "showAll": "모두 보기",
+    "undo": "실행 취소",
+    "pushOut": "'{{title}}' 미루기",
+    "pushOutBy": "미룰 기간",
+    "completed": "{{title}} 완료",
+    "rescheduled": "{{title}} 일정 변경"
+  },
+  "headlineRates": {
+    "emptyTitle": "아직 비율이 없어요",
+    "emptyDescription": "응답률, 면접률, 합격률은 실제로 보낸 지원만 세요. 지원 하나를 초안에서 옮기면 여기가 채워져요."
+  },
+  "pipeline": {
+    "emptyTitle": "파이프라인이 비어 있어요",
+    "emptyDescription": "지원은 각각 한 단계에 있고, 여기서 단계별 분포를 보여 줘요. 지원을 추가하면 첫 조각이 나타나요.",
+    "ariaLabel_other": "단계별 지원 {{count}}건"
+  },
+  "statsCard": {
+    "control": "통계",
+    "tracked_other": "{{count}}건 관리 중",
+    "views": {
+      "pipeline": "파이프라인",
+      "rates": "비율",
+      "when": "시기",
+      "next": "다음"
+    },
+    "titles": {
+      "pipeline": "파이프라인",
+      "rates": "주요 비율",
+      "when": "지원한 시기",
+      "next": "다음에 할 일"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "메모",
+      "recent": "최근 지원"
+    },
+    "headingNotes": "스티커 메모",
+    "headingRecent": "최근 지원",
+    "control": "이 카드에 표시",
+    "addReminder": "리마인더 추가",
+    "viewAll": "모두 보기",
+    "emptyTitle": "아직 지원이 없어요",
+    "emptyDescription": "관리하는 포지션은 손댈 때마다 최신순으로 여기에 나타나요.",
+    "today": "오늘",
+    "daysAgo_other": "{{count}}일 전"
+  },
+  "searchHealth": {
+    "title": "다음에 할 일",
+    "series": {
+      "you": "내 수치",
+      "target": "일반적"
+    },
+    "intro": "일반적인 구직 활동과 비교한 내 수치",
+    "sample": "예시",
+    "sampleTitle": "일반적인 값의 고리만 예시예요",
+    "emptyTitle": "아직 비교할 만큼 데이터가 없어요",
+    "emptyDescription": "응답, 면접, 추천, 후속 연락을 일반적인 구직 활동과 비교해요. 실제로 보낸 지원이 있어야 해요.",
+    "suggestions": "제안, 가장 유용한 것부터"
+  },
+  "sources": {
+    "title": "지원 경로",
+    "views": {
+      "bars": "막대",
+      "donut": "도넛"
+    },
+    "chartType": "차트 유형",
+    "unrecorded": "기록 없음",
+    "hintAll_other": "지원 {{count}}건",
+    "hintSome": "{{count}}건 중 {{shown}}건",
+    "emptyTitle": "아직 나눠 볼 게 없어요",
+    "emptyDescription": "지원마다 채용 사이트, 추천, 학과 페이지 등 어디서 찾았는지 기록돼요. 지원이 생기면 여기서 나눠 보여 줘요.",
+    "centerLabel": "건의 지원",
+    "show": "{{name}} 표시",
+    "hide": "{{name}} 숨기기",
+    "allOff": "모든 경로가 꺼져 있어요."
+  },
+  "offers": {
+    "title": "제안 나란히 보기",
+    "open_other": "{{count}}건 진행 중",
+    "caption": "진행 중인 채용 제안. 입력한 그대로의 보상 조건, 연 단위 환산액, 각각 답해야 하는 날짜",
+    "columns": {
+      "job": "직무",
+      "package": "보상 조건",
+      "year": "연간",
+      "respondBy": "회신 기한"
+    },
+    "notStated": "명시 안 됨",
+    "noAmount": "보상 조건에서 금액을 읽을 수 없었어요",
+    "readFrom": "'{{text}}'에서 읽음",
+    "highest": "— 여기서 가장 높음",
+    "annualised": "(연 단위 환산)",
+    "passed": "지남",
+    "today": "오늘",
+    "daysLeft_other": "{{count}}일",
+    "ranked": "연간 금액은 입력한 내용에서 읽어요. 금액 위에 마우스를 올리면 어떤 단어에서 나왔는지 볼 수 있어요.",
+    "unranked": "통화가 서로 달라서 순위를 매기지 않았어요. jojo에는 환율 정보가 없고, 환율을 찾으려고 네트워크 요청을 하지도 않아요.",
+    "annualisedNote": "* 12개월, 52주 또는 2,080시간 기준으로 연 단위 환산했어요. 이는 관례일 뿐 계약 내용이 아니에요."
+  },
+  "sticky": {
+    "newNote": "새 스티커 메모",
+    "placeholder": "나에게 메모 남기기… (Enter로 붙이기)",
+    "newColour": "새 메모 색상",
+    "stick": "붙이기",
+    "empty": "아직 붙인 메모가 없어요. 메모는 뗄 때까지 여기 남아 있고, 날짜가 생기면 리마인더로 바꿀 수 있어요.",
+    "listLabel": "스티커 메모",
+    "editNote": "메모 편집",
+    "clickToEdit": "클릭해서 편집",
+    "editAria": "메모 편집: {{text}}",
+    "colour": "색상",
+    "colourOf": "'{{text}}' 메모 색상",
+    "toReminder": "리마인더로 바꾸기",
+    "toReminderAria": "리마인더로 바꾸기: {{text}}",
+    "takeDown": "이 메모 떼기",
+    "removeAria": "메모 삭제: {{text}}"
+  },
+  "frequency": {
+    "title": "지원한 시기",
+    "period": "기간",
+    "periods": {
+      "week": "주",
+      "month": "월",
+      "quarter": "분기"
+    },
+    "chartType": "차트 유형",
+    "charts": {
+      "bar": "막대",
+      "line": "선"
+    },
+    "emptyTitle": "아직 차트로 그릴 게 없어요",
+    "emptyDescription": "보낸 지원을 주 단위로, 직무 유형별로 세요. 지원을 추가하면 첫 막대가 나타나요.",
+    "noDatesTitle": "아직 보낸 날짜가 기록되지 않았어요",
+    "noDates_other": "지원 {{count}}건 모두 아직 날짜가 없어요. 기록을 '제출함'으로 옮기면 날짜가 찍혀요.",
+    "perPeriod": {
+      "week": "주별로 보낸 지원, {{series}}별로 구분",
+      "month": "월별로 보낸 지원, {{series}}별로 구분",
+      "quarter": "분기별로 보낸 지원, {{series}}별로 구분"
+    },
+    "caption": {
+      "week": "주별로 보낸 지원",
+      "month": "월별로 보낸 지원",
+      "quarter": "분기별로 보낸 지원"
+    },
+    "countingUndated_other": "지원 {{total}}건 중 {{inWindow}}건을 세고 있어요 — {{count}}건은 아직 날짜가 없어요.",
+    "countingEarlier_other": "지원 {{total}}건 중 {{inWindow}}건을 세고 있어요 — {{count}}건은 {{first}} 이전이에요.",
+    "countingBoth": "지원 {{total}}건 중 {{inWindow}}건을 세고 있어요 — {{undated}}건은 아직 날짜가 없고, {{earlier}}건은 {{first}} 이전이에요."
+  },
+  "glance": {
+    "heading": "한눈에 보기",
+    "stats": {
+      "active": "진행 중",
+      "screens": "서류 심사 및 면접",
+      "overdue": "기한 지남",
+      "doneToday": "오늘 완료"
+    },
+    "previousMonth": "이전 달",
+    "currentMonth": "이번 달로 이동",
+    "currentMonthTitle": "{{date}} — 이번 달",
+    "nextMonth": "다음 달",
+    "openCalendar": "캘린더 열기",
+    "dayNone": "{{date}}, 일정 없음",
+    "day_other": "{{date}}, 일정 {{count}}개",
+    "dayAllDone_other": "{{date}}, 일정 {{count}}개, 모두 완료",
+    "today": "오늘",
+    "nothingPlanned": "계획된 일이 없어요. <add>뭔가 추가하기</add>."
+  },
+  "priority": {
+    "title": "결정이 필요해요",
+    "open_other": "{{count}}건",
+    "completedDescription": "카드 묶음과 이번 주에서 빠져요. 아무것도 삭제되지 않아요.",
+    "rescheduledDescription": "이제 {{date}}까지예요. 캘린더와 앞으로 일주일에 반영돼요.",
+    "tickOff": "'{{title}}' 완료로 표시",
+    "done": "완료",
+    "snooze": "미루기",
+    "notConnected": "아직 연결된 게 없어요",
+    "earlierAria": "이전 결정 보기",
+    "earlier": "이전",
+    "laterAria": "이후 결정 보기",
+    "later": "이후",
+    "listLabel": "결정, 오래된 것부터",
+    "emptyTitle": "오늘은 결정할 게 없어요",
+    "emptyDescription": "채용 제안, 기한이 지난 지원, 다음 확정 마감일, 다음 면접이 여기 나타나요. 지금은 남은 게 없어요."
+  },
+  "firstSteps": {
+    "title": "첫걸음",
+    "hint": "{{total}}개 중 {{done}}개 완료",
+    "application": {
+      "title": "지원 추가하기",
+      "body": "포지션, 단계, 마감일. jojo의 나머지는 모두 이 기록에 연결돼요."
+    },
+    "dated": {
+      "title": "날짜 정하기",
+      "body": "마감일, 면접, 방문은 한 종류의 기록이라서, 날짜 하나가 이 페이지와 캘린더와 지원에 한꺼번에 반영돼요.",
+      "action": "새 일정"
+    },
+    "reminder": {
+      "title": "후속 연락 설정하기",
+      "body": "리마인더는 알림을 켠 같은 기록이에요. 날짜가 지나면 할 일이 되고, 완료로 표시할 때까지 여기 남아요.",
+      "action": "새 리마인더"
+    },
+    "complete": "세 가지를 모두 마쳤어요. 이제부터 추가하는 건 모두 이 페이지와 캘린더, 그리고 해당 지원에 반영돼요.",
+    "intro": "각 단계는 실제 기능을 열고, 기록이 생기면 저절로 체크돼요. 참고 봐야 하는 튜토리얼이 아니에요.",
+    "introBare": "아직 관리 중인 게 없어요. 각 단계는 실제 기능을 열고, 기록이 생기면 저절로 체크돼요. 참고 봐야 하는 튜토리얼이 아니에요.",
+    "doneSr": "— 완료",
+    "notDoneSr": "— 아직 안 함",
+    "hideHint": "같은 단계가 가이드에도 나와 있어요",
+    "close": "첫걸음 닫기",
+    "hide": "이 단계 숨기기"
+  },
+  "owed": {
+    "title": "이번 주 할 일",
+    "add": "추가",
+    "addEvent": "일정 추가",
+    "emptyTitle": "할 일이 없어요",
+    "emptyDescription": "마감일, 면접, 후속 연락은 날짜가 생기면 바로 여기 나타나고, 완료로 표시할 때까지 남아 있어요.",
+    "hintOverdue": "기한 지남 {{overdue}} · 할 일 {{due}}",
+    "hintDue_other": "할 일 {{count}}",
+    "snoozeAria": "{{title}} 미루기",
+    "openAria": {
+      "reminder": "{{title}} 열기: 리마인더를 편집하거나 해당 지원으로 이동",
+      "event": "{{title}} 열기: 일정을 편집하거나 해당 지원으로 이동"
+    },
+    "edit": {
+      "reminder": "리마인더 편집",
+      "event": "일정 편집"
+    },
+    "openApplication": "<name>{{name}}</name> 열기",
+    "groups": {
+      "overdue": "기한 지남",
+      "today": "오늘",
+      "tomorrow": "내일",
+      "rest": "이번 주 나머지"
+    },
+    "completedDescription": "이 목록에서 빠지고 오늘 한 일로 세요. 아무것도 삭제되지 않아요.",
+    "rescheduledDescription": "이제 {{date}}까지예요. 여기와 캘린더에 반영돼요.",
+    "nextSeven": "앞으로 7일",
+    "items_other": "{{count}}개 항목",
+    "allDone": "모두 완료",
+    "nothingScheduled": "일정 없음",
+    "todayClear": "오늘은 할 일이 없어요.",
+    "todayClearDone": "오늘은 할 일이 없어요 — {{count}}개 완료.",
+    "markDoneAria": "'{{title}}' 완료로 표시",
+    "markDone": "완료로 표시",
+    "draftTitle": "이메일 스니펫 중 하나로 작성하기",
+    "draftAria": "{{title}} 초안 작성",
+    "later": "나중에",
+    "openTitle": "{{title}} 열기",
+    "more_other": "캘린더에 {{count}}개 더",
+    "showAll": "{{total}}개 모두 보기",
+    "showFewer": "간단히 보기"
+  }
+}

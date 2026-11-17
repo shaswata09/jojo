@@ -1,0 +1,50 @@
+{
+  "chatWithJojo": "Mit jojo chatten",
+  "newConversation": "Neue Unterhaltung",
+  "newAboutOpen": "Neue Unterhaltung zur geöffneten Bewerbung",
+  "hideConversations": "Unterhaltungen ausblenden",
+  "showConversations": "Unterhaltungen anzeigen",
+  "undo": "Rückgängig",
+  "overflow_one": "{{count}} weitere offene Unterhaltung",
+  "overflow_other": "{{count}} weitere offene Unterhaltungen",
+  "grip": {
+    "labelCorner": "Chat seitlich verschieben – in der Ecke. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "labelFarLeft": "Chat seitlich verschieben – ganz links. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "labelFarRight": "Chat seitlich verschieben – ganz rechts. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "labelPartWay": "Chat seitlich verschieben – {{percent}} % nach links. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "labelPartWayRight": "Chat seitlich verschieben – {{percent}} % nach rechts. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "title": "Ziehen, um den Chat aus dem Weg zu schieben · Doppelklick bringt ihn zurück in die Ecke"
+  },
+  "prompts": {
+    "about": {
+      "left": "Was ist bei dieser Bewerbung noch zu tun?",
+      "followUp": "Entwirf eine Nachfass-E-Mail für diese",
+      "summarise": "Fasse diese Bewerbung zusammen"
+    },
+    "general": {
+      "waiting": "Worauf warte ich gerade?",
+      "noDeadline": "Welche Bewerbungen haben keine Frist?"
+    }
+  },
+  "window": {
+    "label": "Unterhaltung: {{title}}",
+    "back": "Zurück zu den Unterhaltungen",
+    "working": "Arbeitet",
+    "openInAssistant": "Im Assistenten öffnen",
+    "open": "Diese Unterhaltung öffnen",
+    "minimise": "Diese Unterhaltung minimieren",
+    "close": "Diese Unterhaltung schließen",
+    "closeTitle": "Schließen – sie bleibt in deinen Unterhaltungen",
+    "about": "Zu <name>{{name}}</name>",
+    "detachAria": "Diese Unterhaltung ohne bestimmtes Thema beginnen",
+    "unfileAria": "Diese Unterhaltung von der Bewerbung lösen",
+    "detachTitle": "Nicht zu dieser Bewerbung",
+    "unfileTitle": "Von dieser Bewerbung lösen",
+    "notConfigured": "Verbinde in den <settings>Einstellungen</settings> ein Modell, um hier mit jojo zu chatten. Alles bleibt auf diesem Gerät.",
+    "askAbout": "Frag alles zu {{name}} – jojo weiß, dass du diese Bewerbung meinst.",
+    "askGeneral": "Bitte jojo, etwas zu finden, eine Bewerbung hinzuzufügen oder eine voranzubringen.",
+    "composerLabel": "jojo schreiben in {{title}}",
+    "placeholderAbout": "Frag zu {{org}} …",
+    "placeholder": "Frag jojo …"
+  }
+}

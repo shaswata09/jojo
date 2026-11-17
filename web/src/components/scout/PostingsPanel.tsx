@@ -1,6 +1,7 @@
 import type { Ref } from 'react'
 import { ExternalLink, FileText, LoaderCircle, Trash2 } from 'lucide-react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle, Row, RowList } from '@/components/common/Panel'
@@ -12,11 +13,11 @@ import type { SavedPosting } from '@/data/scout'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
 import type { VaultFile } from '@/data/vault'
-import { agoLabel } from '@/data/timeline'
 import { appPath } from '@/lib/links'
 import type { ScoutFocus } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Postings are stored the way they are typed, and the seeded ones carry no
@@ -61,19 +62,17 @@ export function PostingsPanel({
   /** Keep the page now — for a posting saved before pages were kept, or one that failed. */
   onKeepPage: (posting: SavedPosting) => void
 }) {
+  const { t } = useTranslation('scout')
+  const domain = useDomain()
   return (
     <Panel>
-      <PanelTitle hint="works without a model">Save a posting</PanelTitle>
-      <p className="mb-3 text-sm text-text-2">
-        Saving keeps the page too, in the Vault under Job postings — opened through the jojo
-        extension the way you would see it, or fetched by the document reader. Without either, what
-        is kept is the URL, the employer guessed from it, and the day you saved it.
-      </p>
+      <PanelTitle hint={t('postings.hint')}>{t('postings.title')}</PanelTitle>
+      <p className="mb-3 text-sm text-text-2">{t('postings.intro')}</p>
 
       <div className="flex flex-wrap gap-2">
         <div className="min-w-0 flex-1 basis-64">
           <Label htmlFor="posting-url" className="sr-only">
-            Job posting URL
+            {t('postings.urlLabel')}
           </Label>
           <Input
             id="posting-url"
@@ -88,10 +87,10 @@ export function PostingsPanel({
         <Button
           size="sm"
           disabled={!url.trim()}
-          title={url.trim() ? undefined : 'Paste a URL first'}
+          title={url.trim() ? undefined : t('postings.pasteFirst')}
           onClick={onSave}
         >
-          Save posting
+          {t('postings.save')}
         </Button>
       </div>
 
@@ -99,8 +98,8 @@ export function PostingsPanel({
         {postings.length === 0 ? (
           <EmptyState
             icon={ExternalLink}
-            title="No postings saved"
-            description="Paste the URL of an ad you want to come back to. Ads are taken down; the link and the date are yours."
+            title={t('postings.emptyTitle')}
+            description={t('postings.emptyDescription')}
           />
         ) : (
           <RowList>
@@ -144,7 +143,8 @@ export function PostingsPanel({
                           only the URL and the date, both real. Whether a page
                           was kept is the snapshot button's to say. */}
                       <span className="mt-0.5 block truncate font-mono text-xs text-text-3">
-                        {hostOf(p.url) ?? p.url} · saved {agoLabel(p.savedOn, TODAY)}
+                        {hostOf(p.url) ?? p.url} ·{' '}
+                        {t('postings.saved', { when: domain.ago(p.savedOn, TODAY) })}
                       </span>
                     </a>
                     {/* What the scout read on the board, kept once the posting
@@ -157,18 +157,24 @@ export function PostingsPanel({
                     ) : null}
                     {application ? (
                       <div className="mt-1 text-xs text-text-3">
-                        In applications as{' '}
-                        <Link
-                          to={appPath(application)}
-                          className="text-text-2 underline underline-offset-2 hover:text-text-1"
-                        >
-                          {displayName(application)}
-                        </Link>
+                        <Trans
+                          t={t}
+                          i18nKey="common.inApplicationsAs"
+                          values={{ name: displayName(application) }}
+                          components={{
+                            anchor: (
+                              <Link
+                                to={appPath(application)}
+                                className="text-text-2 underline underline-offset-2 hover:text-text-1"
+                              />
+                            ),
+                          }}
+                        />
                       </div>
                     ) : null}
                   </div>
                   <Chip tone={p.linked ? 'teal' : 'gray'}>
-                    {p.linked ? 'linked to application' : 'unscored'}
+                    {p.linked ? t('postings.linked') : t('postings.unscored')}
                   </Chip>
                   {/* Three states, each saying what is true: the page is kept,
                       it is being kept, or it is not — and then the button that
@@ -177,21 +183,25 @@ export function PostingsPanel({
                   {page ? (
                     <Button variant="ghost" size="sm" onClick={() => onOpenPage(page)}>
                       <FileText className="size-3.5" strokeWidth={1.8} aria-hidden />
-                      Open snapshot
+                      {t('postings.openSnapshot')}
                     </Button>
                   ) : keeping ? (
                     <Button variant="ghost" size="sm" disabled>
-                      <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" strokeWidth={1.8} aria-hidden />
-                      Saving page…
+                      <LoaderCircle
+                        className="size-3.5 animate-spin motion-reduce:animate-none"
+                        strokeWidth={1.8}
+                        aria-hidden
+                      />
+                      {t('postings.savingPage')}
                     </Button>
                   ) : (
                     <Button
                       variant="ghost"
                       size="sm"
-                      title="Open the posting and keep a copy in the Vault"
+                      title={t('postings.savePageTitle')}
                       onClick={() => onKeepPage(p)}
                     >
-                      Save page
+                      {t('postings.savePage')}
                     </Button>
                   )}
                   {/* The way out of the panel, and the thing its copy
@@ -200,14 +210,14 @@ export function PostingsPanel({
                       trip twice. */}
                   {p.linked ? null : (
                     <Button variant="ghost" size="sm" onClick={() => onPromote(p.id)}>
-                      Add to applications
+                      {t('common.addToApplications')}
                     </Button>
                   )}
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    title={`Remove ${p.title}`}
-                    aria-label={`Remove ${p.title}`}
+                    title={t('postings.remove', { title: p.title })}
+                    aria-label={t('postings.remove', { title: p.title })}
                     onClick={() => onRemove(p.id, p.title)}
                   >
                     <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />

@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
 import { space } from '@/theme/tokens'
@@ -30,10 +31,17 @@ export function ConfirmSheet({
   tone?: 'default' | 'danger'
   onConfirm: () => void
 }) {
+  const { t } = useTranslation()
   return (
     <Sheet open={open} onClose={onClose} title={title} description={description}>
       <View style={{ flexDirection: 'row', gap: space[2], paddingBottom: space[2] }}>
-        <Button label="Cancel" variant="outline" size="md" onPress={onClose} style={{ flex: 1 }} />
+        <Button
+          label={t('actions.cancel')}
+          variant="outline"
+          size="md"
+          onPress={onClose}
+          style={{ flex: 1 }}
+        />
         <Button
           label={confirmLabel}
           size="md"

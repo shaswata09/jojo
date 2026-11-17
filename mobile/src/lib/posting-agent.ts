@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { i18next } from '@/i18n/i18n'
 import {
   POSTING_BUDGET,
   postingDocument,
@@ -105,8 +106,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         return {
           ok: false,
           step: 'reading',
-          reason:
-            'This needs the document reader as well as the model — it is what fetches the page. Settings has the address.',
+          reason: i18next.t('messages:posting.needsReader'),
         }
       }
 
@@ -124,8 +124,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         return {
           ok: false,
           step: 'reading',
-          reason:
-            'That page came back nearly empty. Boards that render with JavaScript send a blank shell to anything but a browser — open it here and save the page instead.',
+          reason: i18next.t('messages:posting.empty'),
         }
       }
 
@@ -158,7 +157,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       if (!read.ok) {
         // Said, because otherwise the obvious response to a slow failure is to
         // press the button again — which is the thing that just happened twice.
-        const tried = read.attempts > 1 ? ' Asked twice, with the same result.' : ''
+        const tried = read.attempts > 1 ? ` ${i18next.t('messages:posting.askedTwice')}` : ''
         return { ok: false, step: 'asking', reason: `${read.reason}${tried}` }
       }
 
@@ -184,7 +183,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         sourceUrl: target,
         capturedAt: now(),
         savedOn: TODAY,
-        note: `Read by the model from ${target}`,
+        note: i18next.t('messages:posting.note', { url: target }),
       })
 
       // `updateFile` rather than a second create, exactly as `PostingBrowser`

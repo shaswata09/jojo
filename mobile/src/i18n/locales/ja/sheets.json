@@ -1,0 +1,243 @@
+{
+  "common": {
+    "undo": "元に戻す",
+    "cancel": "キャンセル"
+  },
+  "addFromLink": {
+    "title": "リンクから応募を追加",
+    "description": "モデルが求人を読んでフォームを埋め、その仕事が明らかに関係するあなたのキーワードにチェックを付けます。ページは保管庫の「求人」に保存され、あなたが決めるまで応募としては保存されません。",
+    "url": "求人の URL",
+    "addressOnly": "アドレスだけを使う",
+    "reading": "読み込み中…",
+    "retry": "再試行",
+    "submit": "読み込んで入力",
+    "failed": "求人を読み込めませんでした。",
+    "steps": {
+      "reading": "ページを取得中",
+      "asking": "内容を読み取り中",
+      "saving": "求人を保存中"
+    },
+    "toast": {
+      "title": "求人を保存して読み込みました",
+      "kept": "{{name}} は保管庫にあり、応募を保存すると応募に分類されます。",
+      "gaps_other": "{{count}} 個の項目はページにありませんでした。",
+      "tags_other": "あなたのキーワードのうち {{count}} 個にチェックを付けました。"
+    }
+  },
+  "application": {
+    "newTitle": "新しい応募",
+    "editTitle": "{{name}} を編集",
+    "add": "応募を追加",
+    "save": "変更を保存",
+    "checking": "重複を確認しています…",
+    "noRecord": "編集する記録がないままこのシートが開かれました",
+    "description": {
+      "edit": "変更は現在の詳細を置き換え、締め切りもそれに合わせて移動します。",
+      "prefilledTagged": "貼り付けた内容から入力しました。保存する前に雇用主、職種、キーワードを確認してください。",
+      "prefilled": "貼り付けた内容から入力しました。保存する前に雇用主と職種を確認してください。",
+      "create": "応募中の仕事を管理します。星印の項目は必須です。"
+    },
+    "errors": {
+      "org": "雇用主を入力してください。記録はその下に分類されます。",
+      "role": "職種を入力してください。同じ雇用主への 2 つの応募を区別できるようにします。",
+      "roleTag": "役割タグを選んでください。役割フィルターとグラフがこれを使います。",
+      "url": "ブラウザーで開けるリンクではありません。https:// を含めてください。"
+    },
+    "fields": {
+      "org": "組織",
+      "orgPlaceholder": "雇用主または機関",
+      "role": "職種名",
+      "rolePlaceholder": "例：シニアデータアナリスト",
+      "roleTag": "役割タグ",
+      "pickRoleTag": "役割タグを選ぶ",
+      "roleTagDescription": "役割フィルターとグラフが使う軸です。",
+      "stage": "段階",
+      "deadline": "締め切り",
+      "deadlineHint": "カレンダーと今後 1 週間に日付付きの項目を追加します。",
+      "source": "情報源",
+      "sourceNotSet": "未設定",
+      "location": "勤務地",
+      "locationPlaceholder": "都市名、またはリモート",
+      "comp": "報酬",
+      "compPlaceholder": "例：$96k + 株式",
+      "url": "求人の URL",
+      "postingId": "求人 ID",
+      "postingIdHint": "求人に記載があれば、その求人番号または募集番号。",
+      "postingIdPlaceholder": "例：R-2024-0312",
+      "note": "メモ",
+      "notePlaceholder": "提出前にまだ必要なこと。",
+      "keywords": "キーワード"
+    },
+    "toast": {
+      "draftDiscarded": "下書きを破棄しました",
+      "changesDiscarded": "変更を破棄しました",
+      "nothingAdded": "何も追加されていません。元に戻すと、フォームを離れたときの状態に戻ります。",
+      "unchanged": "{{name}} は変更されていません。元に戻すと編集内容が戻ります。",
+      "recordUnchanged": "記録は変更されていません。元に戻すと編集内容が戻ります。",
+      "added": "{{name}} を追加しました",
+      "deadlineOnCalendar": "締め切り {{date}} をカレンダーに追加しました。",
+      "noDeadline": "まだ締め切りがありません。追加すると今後 1 週間に表示されます。",
+      "postingFiled": "求人はこの応募に分類されています。",
+      "saved": "変更を保存しました",
+      "deadlineRemoved": "{{name}}：締め切りをカレンダーから外しました。",
+      "restoreDeadline": "締め切りを戻す"
+    },
+    "duplicate": {
+      "title": "すでにある求人のようです",
+      "modelSame": "モデルは同じ求人だと判断しました。",
+      "modelReading": "（モデルの判断です。下で確認してください）",
+      "existing": "すでにあるもの",
+      "adding": "追加しようとしているもの",
+      "untitled": "無題",
+      "postingId": "求人 ID {{id}}",
+      "openYours": "既存のものを開く",
+      "openExisting": "すでにある {{name}} を開く",
+      "tapToOpen": "タップして開くか、このまま 2 件目の記録として追加してください。",
+      "editInstead": "代わりに編集",
+      "discard": "破棄",
+      "addAnyway": "このまま追加"
+    },
+    "since": {
+      "today": "今日",
+      "yesterday": "昨日",
+      "daysAgo_other": "{{count}} 日前"
+    }
+  },
+  "draft": {
+    "title": "メッセージを下書き",
+    "description": {
+      "forApp": "{{name}} 宛て。何も生成せず、何も送信しません。空欄を埋めてメールアプリにコピーし、送信済みにしてください。",
+      "forItem": "{{name}} · {{item}} 宛て。何も生成せず、何も送信しません。空欄を埋めてメールアプリにコピーし、送信済みにしてください。",
+      "unlinked": "どの応募にも結び付いていないため、[ROLE] と [DATE] は空欄のままです。何も生成せず、何も送信しません。空欄を埋めてメールアプリにコピーし、送信済みにしてください。"
+    },
+    "defaultTitle": "メールの下書き",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "スニペットとして保存",
+    "writeFirst": "まず何か書いてください",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "markSent": "送信済みにする",
+    "openFromReminder": "チェックを付けるにはリマインダーから開いてください",
+    "alreadyTicked": "チェック済み",
+    "blank": "空の下書き",
+    "startFromSnippet": "メールスニペットから始める",
+    "placeholder": "メッセージを書くか、始めるスニペットを選んでください…",
+    "editorLabel": "メッセージの下書き",
+    "empty": {
+      "title": "まだメールスニペットがありません",
+      "description": "Email タグの付いたスニペットが、ここに出発点として表示されます。読み込めるものはありませんが、下書きはスニペットから始めなくても大丈夫です。",
+      "startBlank": "空の下書きから始める"
+    },
+    "status": {
+      "empty": "まだ何も書かれていません。",
+      "noBlanks": "空欄は残っていません。",
+      "blanksLeft_other": "空欄が {{count}} 個残っています — {{names}}",
+      "nameNever": " · 人の名前が勝手に入力されることはありません"
+    },
+    "picker": {
+      "title": "始め方",
+      "description": "記録からわかることを埋めた、あなた自身のメールスニペット。"
+    },
+    "toast": {
+      "replaced": "下書きを置き換えました",
+      "loaded": "{{title}} を読み込みました。",
+      "blank": "空の状態からやり直しました。",
+      "saved": "スニペットに保存しました",
+      "savedDescription": "{{title}} · Email タグ付きで保管庫に保存",
+      "sent": "送信済みにしました",
+      "sentDescription": "{{title}}：リマインダーでチェック済み"
+    }
+  },
+  "stage": {
+    "moveTo": "{{stage}} に移動",
+    "currently": "{{name}} · 現在は {{stage}}",
+    "nothingElse": "記録のほかの部分は変わっていません。",
+    "moveWithoutDetails": "詳細なしで移動",
+    "outcome": "結果",
+    "submitted": {
+      "date": "提出日",
+      "portal": "ポータルの URL",
+      "portalHint": "応募の場所です。催促が必要なときのために。",
+      "reference": "確認番号",
+      "referencePlaceholder": "例：4471-QZ"
+    },
+    "interview": {
+      "date": "面接日",
+      "format": "形式",
+      "formatLabel": "面接の形式",
+      "mint": "タイムラインに追加",
+      "mintDescription": "その日付にリマインダー付きの面接項目を作成します。"
+    },
+    "offer": {
+      "respondBy": "回答期限",
+      "package": "条件",
+      "packagePlaceholder": "例：$112k + $15k のスタートアップ資金",
+      "note": "メモ",
+      "notePlaceholder": "まだ交渉中のこと",
+      "mint": "期限をタイムラインに追加",
+      "mintDescription": "誰も見ていない回答期限こそ、絶対に逃せない締め切りです。"
+    },
+    "keepOffer": {
+      "label": "オファーの詳細を残す",
+      "description": "回答期限 {{date}}。オフにすると消去されます。",
+      "descriptionWithComp": "回答期限 {{date}} · {{comp}}。オフにすると消去されます。"
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "新しいリマインダー",
+      "editReminder": "リマインダーを編集",
+      "newEvent": "新しい予定",
+      "editEvent": "予定を編集"
+    },
+    "description": "どちらでも 1 つの記録です。指定した日付のカレンダーに表示され、スイッチがオンの間は保管庫のリマインダー一覧にも表示されます。",
+    "delete": "削除",
+    "save": "保存",
+    "addReminder": "リマインダーを追加",
+    "addEvent": "予定を追加",
+    "reminderFallback": "リマインダー",
+    "duration": {
+      "minutes_other": "{{count}} 分",
+      "hours_other": "{{count}} 時間"
+    },
+    "fields": {
+      "title": "タイトル",
+      "reminderPlaceholder": "例：リクルーターに催促する",
+      "eventPlaceholder": "例：委員会との Zoom",
+      "remind": "リマインダーに表示",
+      "remindOn": "保管庫にチェックボックス付きで表示され、その日付のカレンダーにも表示されます。",
+      "remindOff": "その日付のカレンダーにだけ表示されます。保管庫にチェックボックスは出ません。",
+      "date": "日付",
+      "allDay": "終日",
+      "allDayDescription": "オフにすると開始時刻と長さを設定できます。",
+      "startTime": "開始時刻",
+      "length": "長さ",
+      "applicationHint": "結び付けると、各応募にこれが表示され、ここからどの応募にも戻れます。",
+      "kind": "種類",
+      "kindFollowUp": "フォローアップは、チェックを付けるまで「今日」でも対応待ちとして数えられます。",
+      "kindHint": "カレンダーとリマインダー一覧で表示されるアイコンです。",
+      "detail": "詳細",
+      "detailHint": "タイトルの下に表示される 1 行の補足。",
+      "note": "メモ",
+      "noteHint": "自分用の書き留め。詳細とは別に保存されるので、編集で上書きされることはありません。",
+      "keywords": "キーワード",
+      "keywordsHint": "応募、ファイル、リンクと共有されます。1 つで絞り込めば、すべてが見つかります。"
+    },
+    "more": {
+      "title": "その他の詳細",
+      "note": "メモ",
+      "keywords": "キーワード",
+      "empty": "メモ、キーワード"
+    },
+    "toast": {
+      "added": "{{title}} を追加しました",
+      "updated": "{{title}} を更新しました",
+      "inReminders": "リマインダーに表示",
+      "calendarOnly": "カレンダーのみ",
+      "owed": "今週対応が必要",
+      "deleted": "{{title}} を削除しました",
+      "goneFromBoth": "リマインダー一覧とカレンダーから削除しました。",
+      "goneFromCalendar": "カレンダーから削除しました。"
+    }
+  }
+}

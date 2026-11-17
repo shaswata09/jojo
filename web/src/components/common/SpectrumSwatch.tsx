@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { Check, Pipette } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { hexOfHsv, hsvOf, normaliseHex } from '@jojo/service/core/ink'
 import type { Hsv } from '@jojo/service/core/ink'
@@ -50,6 +51,7 @@ export function SpectrumPicker({
   onCommit: (hex: string) => void
   className?: string
 }) {
+  const { t } = useTranslation()
   const [hsv, setHsv] = useState<Hsv>(() => hsvOf(value ?? '') ?? { h: 262, s: 0.76, v: 0.93 })
   const [typed, setTyped] = useState(() => hexOfHsv(hsv))
   const live = hexOfHsv(hsv)
@@ -165,7 +167,7 @@ export function SpectrumPicker({
         ref={area}
         role="slider"
         tabIndex={0}
-        aria-label="Saturation and brightness"
+        aria-label={t('spectrum.saturation')}
         aria-valuetext={live}
         // A 2D slider has no ARIA role of its own; these say what ONE arrow
         // pair does, and `aria-valuetext` says where the handle is.
@@ -199,7 +201,7 @@ export function SpectrumPicker({
         ref={strip}
         role="slider"
         tabIndex={0}
-        aria-label="Hue"
+        aria-label={t('spectrum.hue')}
         aria-valuemin={0}
         aria-valuemax={360}
         aria-valuenow={Math.round(hsv.h)}
@@ -246,7 +248,7 @@ export function SpectrumPicker({
               commitTyped()
             }
           }}
-          aria-label="Hex colour"
+          aria-label={t('spectrum.hex')}
           spellCheck={false}
           maxLength={7}
           className="h-7 w-full min-w-0 rounded-md border border-input bg-transparent px-2 font-mono text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -269,7 +271,7 @@ export function SpectrumSwatch({
   fill,
   onPick,
   selected,
-  label = 'Any colour',
+  label,
   className,
 }: {
   /** The custom colour as STORED — what the picker opens on and would re-save. */
@@ -286,11 +288,13 @@ export function SpectrumSwatch({
   label?: string
   className?: string
 }) {
+  const { t } = useTranslation()
+  const name = label ?? t('spectrum.any')
   return (
     <Popover>
       <PopoverTrigger
-        aria-label={label}
-        title={label}
+        aria-label={name}
+        title={name}
         className={cn(
           'group/swatch relative grid size-6 cursor-pointer place-items-center rounded-full',
           className,

@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "{{label}}を表示",
+    "hide": "{{label}}を非表示"
+  },
+  "allHidden": {
+    "withReset": "凡例ですべての系列がオフになっています。",
+    "noReset": "すべての系列が非表示です。凡例から選ぶと再表示できます。",
+    "showAll": "すべての系列を表示"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "{{axes}}で{{series}}を比較するレーダーチャート"
+  }
+}

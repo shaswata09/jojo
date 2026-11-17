@@ -1,15 +1,18 @@
 import { CalendarClock } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Input } from '@/components/ui/input'
-import { STAGE_DOT, STAGE_LABEL, displayName } from '@/data/seed'
+import { STAGE_DOT, displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
-import { shortDate } from '@/data/timeline'
 import { setStageDate, stageDateOf, stagesToDate } from '@jojo/service/core/stage-dates'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
 import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
+import { useDomain } from '@/i18n/domain'
+import { isWholeDate } from '@/lib/date-draft'
 
 /**
  * When this application reached each stage.
@@ -52,6 +55,8 @@ import { announceRefusal } from '@/components/common/write-result'
  * date something that has not happened.
  */
 export function StageDatesPanel({ application: a }: { application: Application }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const { update } = useApplications()
   const { toast } = useToast()
   const undoable = useUndoable()
@@ -61,10 +66,9 @@ export function StageDatesPanel({ application: a }: { application: Application }
   const commit = (stage: Stage, typed: string) => {
     const on = typed.trim() === '' ? undefined : typed
     const before = stageDateOf(a, stage)
-    // A date picker fires on every keystroke in the year box, so a half-typed
-    // '0026-09-14' arrives here as a value. Nothing to do when it matches what
-    // is already stored, which is also what makes tabbing through the panel
-    // free of writes.
+    // Nothing to do when it matches what is already stored, which is also
+    // what makes tabbing through the panel free of writes. Half-typed years
+    // never get this far: `StageDateInput` holds them as a draft.
     if (on === before) return
 
     /*
@@ -77,21 +81,27 @@ export function StageDatesPanel({ application: a }: { application: Application }
     if (announceRefusal(value, toast)) return
     toast({
       title: on
-        ? `${STAGE_LABEL[stage]} dated ${shortDate(on)}`
-        : `${STAGE_LABEL[stage]} has no date now`,
+        ? t('stageDates.dated', { stage: domain.stage(stage), date: domain.shortDate(on) })
+        : t('stageDates.undated', { stage: domain.stage(stage) }),
       description: on
-        ? `${displayName(a)} — this is the day the record says it reached ${STAGE_LABEL[stage].toLowerCase()}.`
-        : `${displayName(a)} — the stage is still on the record; only its date is gone.`,
-      ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
+        ? t('stageDates.datedBody', {
+            name: displayName(a),
+            stage: domain.stage(stage),
+          })
+        : t('stageDates.undatedBody', { name: displayName(a) }),
+      ...(restore ? { action: { label: t('common.undo'), onClick: restore } } : {}),
     })
   }
 
   return (
     <Panel className="min-w-0">
       <PanelTitle
-        hint={`${String(rows.filter((s) => stageDateOf(a, s) !== undefined).length)} of ${String(rows.length)} dated`}
+        hint={t('stageDates.hint', {
+          dated: rows.filter((s) => stageDateOf(a, s) !== undefined).length,
+          total: rows.length,
+        })}
       >
-        Stage dates
+        {t('stageDates.title')}
       </PanelTitle>
 
       <ul className="space-y-1.5">
@@ -110,20 +120,25 @@ export function StageDatesPanel({ application: a }: { application: Application }
                   here ? 'font-medium' : 'text-text-2',
                 )}
               >
-                {STAGE_LABEL[stage]}
+                {domain.stage(stage)}
                 {/* Where it is now, said once. The stage is on the header chip
                     too, and a second badge here would be decoration; this is
                     the word that tells you which row is still being lived. */}
-                {here ? <span className="ml-1.5 text-xs text-text-3">now</span> : null}
+                {here ? (
+                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
+                    {t('stageDates.now')}
+                  </span>
+                ) : null}
               </span>
-              <Input
-                type="date"
-                value={on ?? ''}
+              <StageDateInput
+                stored={on}
                 // Named with the stage, because six identical "Date" fields in
                 // one panel is one field announced six times.
-                aria-label={`Date ${displayName(a)} reached ${STAGE_LABEL[stage]}`}
-                className="h-7 w-[9.5rem] shrink-0 px-2 text-sm"
-                onChange={(event) => commit(stage, event.target.value)}
+                label={t('stageDates.dateLabel', {
+                  name: displayName(a),
+                  stage: domain.stage(stage),
+                })}
+                onCommit={(typed) => commit(stage, typed)}
               />
             </li>
           )
@@ -135,10 +150,68 @@ export function StageDatesPanel({ application: a }: { application: Application }
       {rows.every((s) => stageDateOf(a, s) === undefined) ? (
         <p className="mt-3 flex items-start gap-1.5 text-xs text-text-3">
           <CalendarClock className="mt-px size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
-          Moving this application to another stage dates it automatically. Anything it reached
-          before today can be filled in here.
+          {t('stageDates.explain')}
         </p>
       ) : null}
     </Panel>
+  )
+}
+
+/**
+ * One stage's date, held as a draft while it is being typed.
+ *
+ * A native date field reports a value as soon as every segment holds one, so
+ * typing a year digit by digit hands over '0002-09-14' first. Writing that is
+ * refused (year 2 is not a day), and a field bound straight to the stored date
+ * is then reset to empty — wiping the month and day already typed, so keyboard
+ * entry could never succeed. The draft keeps whatever is in the field; only a
+ * whole date writes as you go (which is also what a pick from the calendar
+ * gives), and Enter or leaving the field commits the rest — including an
+ * emptied field, which means "I do not know when this happened". A value the
+ * store refuses stays in the field to be corrected rather than vanishing.
+ */
+function StageDateInput({
+  stored,
+  label,
+  onCommit,
+}: {
+  stored: string | undefined
+  label: string
+  onCommit: (typed: string) => void
+}) {
+  const [draft, setDraft] = useState(stored ?? '')
+  // Re-seeded when the record changes underneath (an Undo, another tab), the
+  // render-time way rather than an effect, so the field never shows a stale
+  // date for a frame.
+  const [seen, setSeen] = useState(stored)
+  if (seen !== stored) {
+    setSeen(stored)
+    setDraft(stored ?? '')
+  }
+
+  const settle = (input: HTMLInputElement) => {
+    const typed = input.value
+    // A half-filled field also reads as '', and `badInput` is what tells it
+    // apart from one somebody emptied on purpose.
+    if (typed === '' ? !input.validity.badInput : isWholeDate(typed)) onCommit(typed)
+  }
+
+  return (
+    <Input
+      type="date"
+      value={draft}
+      aria-label={label}
+      aria-invalid={draft !== '' && !isWholeDate(draft) ? true : undefined}
+      className="h-7 w-[9.5rem] shrink-0 px-2 text-sm"
+      onChange={(event) => {
+        const typed = event.target.value
+        setDraft(typed)
+        if (isWholeDate(typed)) onCommit(typed)
+      }}
+      onBlur={(event) => settle(event.currentTarget)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') settle(event.currentTarget)
+      }}
+    />
   )
 }

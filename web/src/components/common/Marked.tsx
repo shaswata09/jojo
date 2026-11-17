@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
-import { MARK_LEGEND, parseMarks } from '@jojo/service/core/marks'
+import { useTranslation } from 'react-i18next'
+import { parseMarks } from '@jojo/service/core/marks'
 import type { Block, Run } from '@jojo/service/core/marks'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * A tailored snippet's body, with its marks drawn.
@@ -78,12 +80,16 @@ export function Marked({ body, className }: { body: string; className?: string }
 
 /** What the three marks mean, in one line under a list of tailored documents. */
 export function MarksLegend({ className }: { className?: string }) {
+  const { t } = useTranslation()
+  const domain = useDomain()
   return (
     <p className={cn('text-xs text-text-3', className)}>
-      <strong className="rounded-sm bg-accent-soft px-0.5 font-semibold text-text-1">bold</strong>{' '}
-      {MARK_LEGEND.bold} · <em>italic</em> {MARK_LEGEND.italic} ·{' '}
-      <u className="underline decoration-accent underline-offset-2">underlined</u>{' '}
-      {MARK_LEGEND.underline}
+      <strong className="rounded-sm bg-accent-soft px-0.5 font-semibold text-text-1">
+        {t('marks.bold')}
+      </strong>{' '}
+      {domain.mark('bold')} · <em>{t('marks.italic')}</em> {domain.mark('italic')} ·{' '}
+      <u className="underline decoration-accent underline-offset-2">{t('marks.underlined')}</u>{' '}
+      {domain.mark('underline')}
     </p>
   )
 }

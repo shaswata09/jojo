@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MatchesPanel } from '@/components/scout/MatchesPanel'
 import { PipelineDialog } from '@/components/scout/PipelineDialog'
 import { PipelinesPanel } from '@/components/scout/PipelinesPanel'
@@ -23,7 +24,8 @@ import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlig
 import { jobFromApproval } from '@jojo/service/core/proposal'
 
 export function JobScout() {
-  useTitle('Job scout')
+  const { t } = useTranslation('pages')
+  useTitle(t('jobScout.title'))
   // Page option: a long list of off pipelines buries the ones actually running.
   const [onlyActive, setOnlyActive] = useState(false)
 
@@ -142,9 +144,7 @@ export function JobScout() {
       <FilePreviewDialog
         file={snapshot}
         onClose={() => setSnapshot(null)}
-        description={(name) =>
-          `The page kept for this posting, ${name}. Press Escape to go back to Job scout.`
-        }
+        description={(name) => t('jobScout.snapshotDescription', { name })}
       />
 
       <RunsLocallyNote />

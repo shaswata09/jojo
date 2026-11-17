@@ -1,5 +1,6 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Field, FormField } from '@/components/common/Field'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { ExpandButton, FullScreenDialog } from '@/components/common/FullScreen'
@@ -48,6 +49,7 @@ export function SnippetEditor({
   requestClose: () => void
   onDelete: (id: string) => void
 }) {
+  const { t } = useTranslation('vault')
   const form = (
     /* noValidate: `required` stays on the fields for assistive tech,
        and without it the browser's own bubble fires over the message
@@ -58,8 +60,8 @@ export function SnippetEditor({
       className={cn('flex min-h-0 flex-col gap-3', full && 'flex-1 overflow-y-auto')}
     >
       <div className="flex items-start justify-between gap-3">
-        <PanelTitle className="mb-0" hint={dirty ? 'Unsaved changes' : undefined}>
-          {editing.id ? 'Edit snippet' : 'New snippet'}
+        <PanelTitle className="mb-0" hint={dirty ? t('common.unsaved') : undefined}>
+          {editing.id ? t('snippets.editor.editTitle') : t('snippets.editor.newTitle')}
         </PanelTitle>
         {/* Dropped full screen, where the dialog already puts an X in
             the same corner — two dismissals stacked on top of each
@@ -76,26 +78,26 @@ export function SnippetEditor({
             className="shrink-0"
           >
             <X className="size-3.5" strokeWidth={2} aria-hidden />
-            Close
+            {t('common.close')}
           </Button>
         )}
       </div>
 
       <Field
-        label="Title"
+        label={t('snippets.editor.title.label')}
         required
         error={titleError}
         value={editing.title}
         autoComplete="off"
-        placeholder="e.g. Why this department"
+        placeholder={t('snippets.editor.title.placeholder')}
         onChange={(event) =>
           setEditing((prev) => (prev ? { ...prev, title: event.target.value } : prev))
         }
       />
 
-      <FormField label="Kind" hint="Where it files, and which chip the list shows.">
+      <FormField label={t('snippets.editor.kind.label')} hint={t('snippets.editor.kind.hint')}>
         <Segment
-          label="Kind"
+          label={t('snippets.editor.kind.label')}
           options={TAG_OPTIONS}
           value={editing.tag}
           onChange={(next) => setEditing((prev) => (prev ? { ...prev, tag: next } : prev))}
@@ -104,23 +106,21 @@ export function SnippetEditor({
       </FormField>
 
       <FormField
-        label="Related application"
-        hint="Any number of jobs. It then shows on each of their pages."
+        label={t('snippets.editor.application.label')}
+        hint={t('snippets.editor.application.hint')}
       >
         <ApplicationPicker
           what="snippet"
           values={editing.applicationIds}
-          onChange={(ids) =>
-            setEditing((prev) => (prev ? { ...prev, applicationIds: ids } : prev))
-          }
+          onChange={(ids) => setEditing((prev) => (prev ? { ...prev, applicationIds: ids } : prev))}
         />
       </FormField>
 
       <FormField
-        label="Text"
+        label={t('snippets.editor.text.label')}
         required
         error={bodyError}
-        hint="Size, colour, bold, italic, underline and strikethrough are saved with the text. Lists and tables are kept as plain lines."
+        hint={t('snippets.editor.text.hint')}
       >
         <div className="relative">
           {/* Over the toolbar's right end rather than beside the field
@@ -130,22 +130,22 @@ export function SnippetEditor({
           {full ? null : (
             <ExpandButton
               onClick={() => setFullText(true)}
-              label="Write full screen"
-              className="absolute top-1.5 right-1.5 z-[1]"
+              label={t('snippets.editor.fullScreen')}
+              className="absolute end-1.5 top-1.5 z-[1]"
             />
           )}
           <RichTextEditor
             value={editing.html}
             onChange={(html) => setEditing((prev) => (prev ? { ...prev, html } : prev))}
-            placeholder="Write the paragraph you keep rewriting…"
+            placeholder={t('snippets.editor.text.placeholder')}
             className={full ? 'min-h-0 flex-1' : undefined}
           />
         </div>
       </FormField>
 
       <FormField
-        label="Keywords"
-        hint="Shared with applications, reminders and files — filtering by one finds all of them."
+        label={t('snippets.editor.keywords.label')}
+        hint={t('snippets.editor.keywords.hint')}
       >
         <KeywordPicker
           value={editing.keywords}
@@ -166,17 +166,17 @@ export function SnippetEditor({
             size="sm"
             onClick={() => onDelete(editing.id as string)}
           >
-            Delete
+            {t('common.delete')}
           </Button>
         ) : null}
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" onClick={requestClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           {/* Left enabled with a field empty: pressing it names the missing
           one, where a disabled button leaves the user hunting. */}
           <Button type="submit" size="sm">
-            Save
+            {t('common.save')}
           </Button>
         </div>
       </div>
@@ -186,9 +186,7 @@ export function SnippetEditor({
           records in the store now and a reload brings back what you
           wrote, so the line that is worth the space is the one about
           where they are usable. */}
-      <p className="text-xs text-text-3">
-        Saved to the database in this browser — it is here when you come back.
-      </p>
+      <p className="text-xs text-text-3">{t('snippets.editor.savedNote')}</p>
     </form>
   )
 
@@ -196,8 +194,8 @@ export function SnippetEditor({
     <FullScreenDialog
       open
       onOpenChange={(next) => setFullText(next)}
-      title={editing.title.trim() || 'New snippet'}
-      description="Editing the snippet full screen. Press Escape to go back."
+      title={editing.title.trim() || t('snippets.editor.newTitle')}
+      description={t('snippets.editor.fullScreenDescription')}
     >
       {form}
     </FullScreenDialog>

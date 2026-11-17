@@ -14,8 +14,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_BODY_BYTES,
+  OUTCOME_BYTES,
   PULL_REQUEST_BYTES,
   chunkPath,
+  outcomeByte,
+  outcomeOf,
+  outcomePath,
   pairPath,
   pullPath,
   readRequest,
@@ -265,5 +269,59 @@ describe('a phone that is sending (the pull direction)', () => {
       )
       expect(readRequest(head, TOKEN, 'pull'), String(size)).toBe('refused')
     }
+  })
+})
+
+describe('what became of the transfer on the receiving side', () => {
+  it('lets the computer ASK a receiving phone, and only with a GET', () => {
+    expect(readRequest(get(outcomePath(TOKEN)), TOKEN, 'push')).toEqual({
+      route: 'outcome',
+      body: new Uint8Array(0),
+    })
+    // A receiving phone is told nothing: a POST here is not a thing it answers.
+    expect(readRequest(post(outcomePath(TOKEN), outcomeByte('applied')), TOKEN, 'push')).toBe(
+      'refused',
+    )
+  })
+
+  it('lets the computer TELL a sending phone, in exactly one byte', () => {
+    // One outcome byte, then the 32-byte proof the phone checks
+    // (`openOutcome`; the crypto is `crypto/handoff-pull.test.ts`). The parser
+    // only holds the size.
+    const sealed = new Uint8Array(OUTCOME_BYTES)
+    sealed.set(outcomeByte('declined'), 0)
+    expect(readRequest(post(outcomePath(TOKEN), sealed), TOKEN, 'pull')).toEqual({
+      route: 'outcome',
+      body: sealed,
+    })
+    // A sending phone has nothing to report back, so a GET is refused.
+    expect(readRequest(get(outcomePath(TOKEN)), TOKEN, 'pull')).toBe('refused')
+    // The bare byte, with no proof, is not an outcome.
+    expect(readRequest(post(outcomePath(TOKEN), outcomeByte('applied')), TOKEN, 'pull')).toBe(
+      'refused',
+    )
+    for (const size of [0, 2, OUTCOME_BYTES - 1, OUTCOME_BYTES + 1, MAX_BODY_BYTES]) {
+      const head = request(
+        `POST ${outcomePath(TOKEN)} HTTP/1.1${NL}Content-Length: ${size}${NL}${NL}`,
+      )
+      expect(readRequest(head, TOKEN, 'pull'), String(size)).toBe('refused')
+    }
+  })
+
+  it("refuses an outcome under a different session's token", () => {
+    const other = 'fedcba9876543210fedcba9876543210'
+    expect(readRequest(get(outcomePath(other)), TOKEN, 'push')).toBe('refused')
+    expect(
+      readRequest(post(outcomePath(other), new Uint8Array(OUTCOME_BYTES)), TOKEN, 'pull'),
+    ).toBe('refused')
+  })
+
+  it('round-trips every outcome through its byte, and reads nothing else', () => {
+    for (const outcome of ['pending', 'applied', 'declined', 'failed'] as const) {
+      expect(outcomeOf(outcomeByte(outcome))).toBe(outcome)
+    }
+    expect(outcomeOf(Uint8Array.of(4))).toBeNull()
+    expect(outcomeOf(new Uint8Array(0))).toBeNull()
+    expect(outcomeOf(Uint8Array.of(1, 1))).toBeNull()
   })
 })

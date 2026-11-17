@@ -178,7 +178,7 @@ describe('applying a page plan', () => {
 
   it('refuses a plan naming a page the document does not have', async () => {
     await expect(applyPagePlan(await build([100]), [{ source: 4, rotation: 0 }])).rejects.toThrow(
-      'This document has 1 pages; the plan asks for page 5.',
+      'This document has 1 page; the plan asks for page 5.',
     )
   })
 })

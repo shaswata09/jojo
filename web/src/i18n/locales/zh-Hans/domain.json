@@ -1,0 +1,382 @@
+{
+  "stage": {
+    "draft": "草稿",
+    "submitted": "已提交",
+    "screen": "初筛电话",
+    "interview": "面试",
+    "offer": "录用",
+    "closed": "已结束"
+  },
+  "kind": {
+    "deadline": "截止日期",
+    "interview": "面试",
+    "visit": "参观",
+    "call": "电话",
+    "prep": "准备",
+    "admin": "行政事务",
+    "follow-up": "跟进"
+  },
+  "outcome": {
+    "rejected": "已被拒",
+    "withdrawn": "已撤回",
+    "accepted": "已接受",
+    "declined": "已婉拒",
+    "ghosted": "石沉大海——没有回音"
+  },
+  "outcomeAction": {
+    "rejected": "已被拒",
+    "withdrawn": "已撤回",
+    "accepted": "已接受录用",
+    "declined": "已婉拒录用",
+    "ghosted": "未获回复，已关闭"
+  },
+  "format": {
+    "phone": "电话",
+    "video": "视频",
+    "onsite": "现场"
+  },
+  "verdict": {
+    "strong": "非常匹配",
+    "worth-tailoring": "值得针对性修改",
+    "a-stretch": "有些勉强",
+    "not-measured": "尚未评估"
+  },
+  "background": {
+    "education": "教育",
+    "employment": "工作经历",
+    "publication": "出版物",
+    "patent": "专利",
+    "grant": "资助",
+    "leadership": "领导经历",
+    "outreach": "科普与推广",
+    "training": "职业发展",
+    "other": "其他",
+    "award": "奖项",
+    "teaching": "教学",
+    "service": "服务",
+    "project": "项目",
+    "certification": "证书",
+    "skill": "技能",
+    "language": "语言",
+    "volunteering": "志愿活动",
+    "membership": "会员资格"
+  },
+  "tone": {
+    "teal": "蓝色",
+    "cyan": "青色",
+    "green": "绿色",
+    "amber": "琥珀色",
+    "red": "红色",
+    "pink": "粉色",
+    "violet": "紫色",
+    "gray": "灰色"
+  },
+  "mark": {
+    "bold": "为这个职位新写或重写",
+    "italic": "换了措辞",
+    "underline": "上移或加重了分量"
+  },
+  "document": {
+    "cv": "简历",
+    "research-statement": "研究陈述",
+    "teaching-statement": "教学陈述",
+    "cover-letter": "求职信",
+    "other": "文档"
+  },
+  "how": {
+    "filed-under": "归档在这份申请下",
+    "same-url": "按网址匹配",
+    "via-posting": "来自职位侦察找到的职位信息"
+  },
+  "contactRole": {
+    "recommender": "推荐人",
+    "contact": "联系人"
+  },
+  "approval": {
+    "manual": "手动",
+    "semi": "半自动",
+    "auto": "自动"
+  },
+  "approvalSaid": {
+    "manual": "在这个对话中写入任何内容之前，都会先询问你。",
+    "semi": "编辑会立即生效。删除或清空任何内容之前，会先询问你。",
+    "auto": "所有操作都会立即生效，包括删除。只有清空或替换整个存储时才需要确认。"
+  },
+  "funnel": {
+    "0": "已申请",
+    "1": "已回复",
+    "2": "初筛电话",
+    "3": "面试",
+    "4": "录用"
+  },
+  "band": {
+    "0": "进行中",
+    "1": "录用",
+    "2": "已被拒",
+    "3": "已撤回",
+    "4": "无回复"
+  },
+  "dimension": {
+    "source": "来源",
+    "role": "职位类型"
+  },
+  "kpi": {
+    "label": {
+      "response": "回复率",
+      "interview": "面试率",
+      "offer": "录用率",
+      "reply": "回复时间中位数"
+    },
+    "note": {
+      "response_other": "{{of}} 份中有 {{count}} 份得到回复",
+      "interview_other": "{{of}} 份中有 {{count}} 份进入面试",
+      "offer_other": "{{of}} 份中有 {{count}} 份获得录用",
+      "replyNone": "还没有两个日期都已记录的回复",
+      "reply_other": "基于 {{count}} 条回复"
+    },
+    "days_other": "{{count}} 天",
+    "typicalRate": "典型值 {{value}}%",
+    "typicalDays": "典型值 {{days}}"
+  },
+  "rel": {
+    "AT": "属于",
+    "ABOUT": "关于",
+    "FILED_UNDER": "归档于",
+    "TAGS": "标记",
+    "FROM": "来自",
+    "BECAME": "转为",
+    "COPY_OF": "复制自",
+    "SUBJECT": "关于",
+    "OBJECT": "指向"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "本地服务器（vLLM, LM Studio, llama.cpp）",
+    "anthropic": "Anthropic（Claude）",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA（build.nvidia.com）——免费，有速率限制"
+  },
+  "month": {
+    "1": "一月",
+    "2": "二月",
+    "3": "三月",
+    "4": "四月",
+    "5": "五月",
+    "6": "六月",
+    "7": "七月",
+    "8": "八月",
+    "9": "九月",
+    "10": "十月",
+    "11": "十一月",
+    "12": "十二月"
+  },
+  "monthShort": {
+    "1": "1月",
+    "2": "2月",
+    "3": "3月",
+    "4": "4月",
+    "5": "5月",
+    "6": "6月",
+    "7": "7月",
+    "8": "8月",
+    "9": "9月",
+    "10": "10月",
+    "11": "11月",
+    "12": "12月"
+  },
+  "weekdayShort": {
+    "0": "周一",
+    "1": "周二",
+    "2": "周三",
+    "3": "周四",
+    "4": "周五",
+    "5": "周六",
+    "6": "周日"
+  },
+  "weekday": {
+    "0": "星期日",
+    "1": "星期一",
+    "2": "星期二",
+    "3": "星期三",
+    "4": "星期四",
+    "5": "星期五",
+    "6": "星期六"
+  },
+  "dayMonth": "{{month}}{{day}}日",
+  "monthYear": "{{year}}年{{month}}",
+  "quarter": "{{year}}年第{{quarter}}季度",
+  "weekdayNarrow": {
+    "0": "一",
+    "1": "二",
+    "2": "三",
+    "3": "四",
+    "4": "五",
+    "5": "六",
+    "6": "日"
+  },
+  "action": {
+    "detailsEdited": "已编辑详情",
+    "draftCreated": "已创建草稿",
+    "offerReceived": "已收到录用",
+    "duplicated": "已复制",
+    "addedFromScout": "从职位侦察添加",
+    "addedFromPosting": "从已保存的职位信息添加",
+    "noteEdited": "已编辑备注",
+    "offerCleared": "已清除录用详情",
+    "flagged": "已标记为待跟进",
+    "flagCleared": "已取消标记",
+    "movedTo": {
+      "draft": "已移到“草稿”",
+      "submitted": "已移到“已提交”",
+      "screen": "已移到“初筛电话”",
+      "interview": "已移到“面试”",
+      "offer": "已移到“录用”",
+      "closed": "已移到“已结束”"
+    },
+    "addedAt": {
+      "draft": "添加于“草稿”阶段",
+      "submitted": "添加于“已提交”阶段",
+      "screen": "添加于“初筛电话”阶段",
+      "interview": "添加于“面试”阶段",
+      "offer": "添加于“录用”阶段",
+      "closed": "添加于“已结束”阶段"
+    },
+    "interviewScheduled": {
+      "phone": "已安排电话面试",
+      "video": "已安排视频面试",
+      "onsite": "已安排现场面试"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "days_other": "{{count}} 天前"
+    },
+    "when": {
+      "today": "今天",
+      "tomorrow": "明天",
+      "inDays_other": "{{count}} 天后",
+      "overdue_other": "已逾期 {{count}} 天"
+    },
+    "inline": {
+      "today": "今天",
+      "tomorrow": "明天"
+    },
+    "completed": {
+      "today": "今天完成",
+      "yesterday": "昨天完成",
+      "days_other": "{{count}} 天前完成",
+      "on": "{{date}} 完成"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "录用",
+      "overdue": "已逾期",
+      "deadline": "截止日期",
+      "interview": "面试"
+    },
+    "headline": {
+      "reply": "回复 {{org}}",
+      "submitOrLetGo": "向 {{org}} 提交，或者放弃",
+      "recordInterview": "记录 {{org}} 的面试",
+      "recordVisit": "记录 {{org}} 的参观",
+      "recordCall": "记录与 {{org}} 的电话",
+      "catchUp": "跟进 {{org}}",
+      "submit": "向 {{org}} 提交",
+      "prepare": "为 {{org}} 做准备",
+      "dateInterview": "为 {{org}} 的面试定个日期"
+    },
+    "timing": {
+      "respondBy": "{{date}} 前答复 · {{when}}",
+      "wasDue": "原定 {{date}} 到期 · {{when}}",
+      "due": "{{date}} 到期 · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "未设日期"
+    },
+    "button": {
+      "draftReply": "起草回复",
+      "recordOutcome": "记录结果",
+      "acceptOrDecline": "接受或拒绝",
+      "openApplication": "打开申请",
+      "draftMessage": "起草消息"
+    },
+    "undatedInterview": "处于面试阶段，但没有任何日期，所以下周概览和日历都无法显示它。",
+    "unfiled": "此截止日期未归入任何申请",
+    "unknownOrg": "未知"
+  },
+  "filed": {
+    "none": "未归档",
+    "one": "已归档到 {{a}}",
+    "two": "已归档到 {{a}} 和 {{b}}",
+    "many_other": "已归档到 {{count}} 份申请"
+  },
+  "readBy": "由 {{model}} 读取 · {{ago}}",
+  "missingSource": "一份已不在保险库中的文档",
+  "undo": {
+    "nothing": {
+      "undo": "没有可撤销的内容。",
+      "redo": "没有可重做的内容。"
+    },
+    "changed": {
+      "undo": "没有可撤销的内容——之后已经发生了变化",
+      "redo": "没有可重做的内容——之后已经发生了变化"
+    },
+    "done": {
+      "undo": "已撤销",
+      "redo": "已重做"
+    },
+    "journal": "hidden",
+    "action": "撤销",
+    "superseded": {
+      "nothing": "没有撤销任何内容",
+      "part": "其中一部分保持原样",
+      "named": "{{labels}}——之后你修改过这些记录，现在撤销会把那些修改一起撤掉。",
+      "unnamed": "之后你修改过这些记录，现在撤销会把那些修改一起撤掉。",
+      "separator": "、"
+    }
+  },
+  "write": {
+    "refused": "未能保存",
+    "didNotFit": "这条记录有些内容不符合要求。"
+  },
+  "announce": {
+    "stickyRemoved": "已删除便签"
+  },
+  "handover": {
+    "never": "此设备从未参与过传输，因此除它之外没有任何地方保存这些记录的副本。",
+    "clean": {
+      "today": "上次传输在今天，此后这里没有写入任何内容——另一台设备保存着相同的记录。",
+      "yesterday": "上次传输在昨天，此后这里没有写入任何内容——另一台设备保存着相同的记录。",
+      "daysAgo": "上次传输在 {{ago}}，此后这里没有写入任何内容——另一台设备保存着相同的记录。"
+    },
+    "drifted": {
+      "today_other": "上次传输在今天，此后这里有 {{count}} 处更改。另一台设备落后了这么多。",
+      "yesterday_other": "上次传输在昨天，此后这里有 {{count}} 处更改。另一台设备落后了这么多。",
+      "daysAgo_other": "上次传输在 {{ago}}，此后这里有 {{count}} 处更改。另一台设备落后了这么多。"
+    }
+  },
+  "backup": {
+    "records_other": "{{count}} 条记录",
+    "links_other": "{{count}} 个关联",
+    "documents_zero": "没有文档",
+    "documents_other": "{{count}} 份文档",
+    "summary": "{{records}}，{{links}}，{{documents}}",
+    "summaryLoss": "{{records}}，{{links}}，{{documents}}——其中 {{loss}}",
+    "both": "{{a}}和 {{b}}",
+    "leftOut": "{{what}}无法读取，将被略去",
+    "changed_other": "{{count}} 条记录恢复后会有改动",
+    "leftOutAndChanged": "{{leftOut}}，另有 {{changed}}",
+    "replacesAll": {
+      "computer": "恢复会替换你现在的所有记录和所有文档",
+      "phone": "恢复会替换这部手机上的所有记录和所有文档"
+    },
+    "replacesKept": {
+      "computer_other": "恢复会替换你现在的所有记录和所有文档，但有 {{count}} 条记录到达时没有附带文档，这些记录在这里已有的副本会保留",
+      "phone_other": "恢复会替换这部手机上的所有记录和所有文档，但有 {{count}} 条记录到达时没有附带文档，这些记录在这里已有的副本会保留"
+    }
+  }
+}

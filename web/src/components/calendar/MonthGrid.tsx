@@ -1,17 +1,19 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DayCell } from '@/components/calendar/DayCell'
 import { MonthPicker } from '@/components/calendar/MonthPicker'
 import { KIND_LEGEND } from '@/components/calendar/kind-filter'
 import { ChartLegend } from '@/components/charts/ChartLegend'
 import { Panel } from '@/components/common/Panel'
-import { MONTH_LABELS, WEEKDAYS, stepMonth } from '@/data/calendar'
+import { WEEKDAYS, stepMonth } from '@/data/calendar'
 import type { CalendarMonth } from '@/data/calendar'
-import { isoOf, shortDate } from '@/data/timeline'
+import { isoOf } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import { markOf } from '@/lib/timeline-visuals'
 import type { Mark } from '@/lib/timeline-visuals'
 import { TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 export function MonthGrid({
   month,
@@ -62,6 +64,9 @@ export function MonthGrid({
    * beside a grid whose today marker had moved. One `isoOf` per render is not a
    * cost worth freezing a date for.
    */
+  const { t } = useTranslation('calendar')
+  const domain = useDomain()
+  const monthName = domain.month(month.month)
   const todayISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
 
   // Leading blanks so the 1st lands on its weekday, the days, then enough
@@ -90,19 +95,19 @@ export function MonthGrid({
     {
       key: 'overdue',
       swatch: 'border-danger-border bg-danger-soft',
-      label: 'Overdue',
+      label: t('grid.marks.overdue'),
       struck: false,
     },
     {
       key: 'soon',
       swatch: 'border-warning-border bg-warning-soft',
-      label: 'Due within 48 hours',
+      label: t('grid.marks.soon'),
       struck: false,
     },
     {
       key: 'done',
       swatch: 'border-hairline-strong bg-transparent',
-      label: 'Done',
+      label: t('grid.marks.done'),
       struck: true,
     },
   ].filter((entry) => marksPresent.has(entry.key as Mark))
@@ -111,18 +116,28 @@ export function MonthGrid({
     <Panel className="min-w-0">
       <div className="mb-3 flex items-center gap-3">
         <h2 className="text-base font-medium">
-          {month.label} <span className="text-text-3">{month.year}</span>
+          {/* In the order the language writes it — '2026年11月' puts the year
+              first — with the year muted wherever it falls. */}
+          {domain.monthYearParts(month.month, month.year).map((part) =>
+            part.isYear ? (
+              <span key="year" className="text-text-3">
+                {part.text}
+              </span>
+            ) : (
+              part.text
+            ),
+          )}
         </h2>
         <MonthPicker year={month.year} month={month.month} onPick={onGoTo} />
 
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="ms-auto flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => onGoTo(stepMonth(month.year, month.month, -1))}
-            aria-label="Previous month"
+            aria-label={t('grid.previousMonth')}
             className="grid size-7 cursor-pointer place-items-center rounded-full border border-hairline bg-well text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
           >
-            <ChevronLeft className="size-4" strokeWidth={1.8} />
+            <ChevronLeft className="size-4 rtl:-scale-x-100" strokeWidth={1.8} />
           </button>
 
           {/* A word, not a 6px dot between two arrows. The dot carried
@@ -140,8 +155,11 @@ export function MonthGrid({
             aria-current={isCurrentMonth ? 'date' : undefined}
             title={
               isCurrentMonth
-                ? `Back to ${shortDate(todayISO)}`
-                : `Go to ${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
+                ? t('grid.backTo', { date: domain.shortDate(todayISO) })
+                : t('grid.goTo', {
+                    month: domain.month(TODAY_PARTS.month),
+                    year: TODAY_PARTS.year,
+                  })
             }
             className={cn(
               'h-7 cursor-pointer rounded-full border px-2.5 text-xs transition-colors',
@@ -150,16 +168,16 @@ export function MonthGrid({
                 : 'border-hairline bg-well text-text-2 hover:border-hairline-strong hover:text-text-1',
             )}
           >
-            Today
+            {t('grid.today')}
           </button>
 
           <button
             type="button"
             onClick={() => onGoTo(stepMonth(month.year, month.month, 1))}
-            aria-label="Next month"
+            aria-label={t('grid.nextMonth')}
             className="grid size-7 cursor-pointer place-items-center rounded-full border border-hairline bg-well text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
           >
-            <ChevronRight className="size-4" strokeWidth={1.8} />
+            <ChevronRight className="size-4 rtl:-scale-x-100" strokeWidth={1.8} />
           </button>
         </div>
       </div>
@@ -168,19 +186,21 @@ export function MonthGrid({
           is not in below `lg`: there is no grid "beside" anything when
           the panels are stacked, no pointer to drag with, and no keyboard
           to fall back to. */}
-      <p className="mb-3 text-xs text-text-3 lg:hidden">Tap a day to see what is on it.</p>
-      <p className="mb-3 hidden text-xs text-text-3 lg:block">
-        Pick a day to list it beside the grid. Click an event to edit it, or drag it onto another
-        day — dragging needs a pointer, so the date field inside the event is the keyboard route.
-      </p>
+      <p className="mb-3 text-xs text-text-3 lg:hidden">{t('grid.hintTouch')}</p>
+      <p className="mb-3 hidden text-xs text-text-3 lg:block">{t('grid.hintPointer')}</p>
 
       <div className="grid grid-cols-7 gap-1" role="presentation">
-        {WEEKDAYS.map((label) => (
-          <div key={label} className="pb-1 text-center text-xs text-text-3 uppercase">
-            {label.slice(0, 1)}
-            <span className="hidden sm:inline">{label.slice(1)}</span>
-          </div>
-        ))}
+        {WEEKDAYS.map((english, i) => {
+          const label = domain.weekdayShort(i)
+          return (
+            <div key={english} className="pb-1 text-center text-xs text-text-3 uppercase">
+              {/* CLDR's one-glyph form when narrow: a first letter is
+                  ambiguous in Arabic and Hindi, where days share it. */}
+              <span className="sm:hidden">{domain.weekdayNarrow(i)}</span>
+              <span className="hidden sm:inline">{label}</span>
+            </div>
+          )
+        })}
 
         {cells.map((day, i) => {
           // Outline only, no fill: it completes the frame without
@@ -196,7 +216,7 @@ export function MonthGrid({
               key={day}
               day={day}
               iso={iso}
-              label={`${month.label} ${day}`}
+              label={t('grid.dayLabel', { month: monthName, day })}
               items={eventsFor.get(day) ?? []}
               isToday={day === month.today}
               isSelected={day === selected}
@@ -219,10 +239,10 @@ export function MonthGrid({
       <div className="mt-4 space-y-2 border-t border-hairline pt-3.5">
         <div
           role="group"
-          aria-label="Event types"
+          aria-label={t('grid.eventTypes')}
           className="flex flex-wrap items-center gap-x-2 gap-y-1"
         >
-          <span className="w-24 shrink-0 text-xs text-text-3">Event types</span>
+          <span className="w-24 shrink-0 text-xs text-text-3">{t('grid.eventTypes')}</span>
           <ChartLegend items={KIND_LEGEND} isHidden={kinds.isHidden} onToggle={kinds.toggle} />
           {kinds.hidden.size > 0 ? (
             <button
@@ -230,14 +250,14 @@ export function MonthGrid({
               onClick={kinds.showAll}
               className="cursor-pointer rounded-sm px-1 py-0.5 text-xs text-accent hover:underline hover:decoration-1 hover:underline-offset-2"
             >
-              Show all
+              {t('grid.showAll')}
             </button>
           ) : null}
         </div>
 
         {markKey.length > 0 ? (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="w-24 shrink-0 text-xs text-text-3">Date colours</span>
+            <span className="w-24 shrink-0 text-xs text-text-3">{t('grid.dateColours')}</span>
             <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1">
               {markKey.map((entry) => (
                 <li key={entry.key} className="flex items-center gap-1.5 text-xs text-text-2">

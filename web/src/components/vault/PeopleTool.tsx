@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { FileSpreadsheet, Mail, Pencil, Phone, Plus, Trash2, UserRound } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Field, FormField } from '@/components/common/Field'
 import { RichNoteField } from '@/components/common/RichTextEditorField'
@@ -45,6 +46,7 @@ import { announceRefusal } from '@/components/common/write-result'
  * by the second week.
  */
 export function PeopleTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
   const { people, addPerson, updatePerson, removePerson } = useVault()
   const { byId } = useApplications()
   const { toast } = useToast()
@@ -63,10 +65,11 @@ export function PeopleTool({ focus }: { focus?: string }) {
 
   /** A person's jobs, grouped by what they are on each. */
   const namedOn = (person: Person) => {
-    const groups: { lead: string; names: string[] }[] = [
-      { lead: 'Recommender for', names: [] },
-      { lead: 'Point of contact at', names: [] },
-      { lead: 'Named on', names: [] },
+    // Each group is one whole sentence in the catalog, the names its placeholder.
+    const groups: { lead: 'recommender' | 'contact' | 'named'; names: string[] }[] = [
+      { lead: 'recommender', names: [] },
+      { lead: 'contact', names: [] },
+      { lead: 'named', names: [] },
     ]
     for (const id of person.applicationIds) {
       const application = byId.get(id)
@@ -82,17 +85,17 @@ export function PeopleTool({ focus }: { focus?: string }) {
     const removed = removePerson(person.id)
     if (!removed.ok) {
       toast({
-        title: 'That did not delete',
-        description: removed.refusal ?? `${person.name} is still in the Vault.`,
+        title: t('common.deleteFailed'),
+        description: removed.refusal ?? t('snippets.toast.stillThere', { title: person.name }),
         tone: 'danger',
       })
       return
     }
     const { restore } = removed
     toast({
-      title: 'Person removed',
+      title: t('people.toast.removed'),
       description: person.name,
-      action: { label: 'Undo', onClick: restore },
+      action: { label: t('common.undo'), onClick: restore },
     })
   }
 
@@ -104,8 +107,8 @@ export function PeopleTool({ focus }: { focus?: string }) {
       <VaultToolbar
         search={
           <VaultSearch
-            label="Search people"
-            placeholder="Search name, role or note"
+            label={t('people.searchLabel')}
+            placeholder={t('people.searchPlaceholder')}
             value={query}
             onChange={setQuery}
           />
@@ -119,13 +122,17 @@ export function PeopleTool({ focus }: { focus?: string }) {
             }}
           >
             <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            Add person
+            {t('people.add')}
           </Button>
         }
       />
 
       {adding || editing ? (
         <PersonForm
+          // Keyed by its subject: the form seeds its draft once, so moving
+          // from one person's Edit to another's (or to Add) must remount it,
+          // or Save writes the first person's fields onto the second.
+          key={editing ? editing.id : 'new'}
           person={editing}
           onCancel={() => {
             setAdding(false)
@@ -142,7 +149,7 @@ export function PeopleTool({ focus }: { focus?: string }) {
             }
             setAdding(false)
             setEditing(null)
-            toast({ title: 'Person saved', description: draft.name })
+            toast({ title: t('people.toast.saved'), description: draft.name })
           }}
         />
       ) : null}
@@ -150,11 +157,11 @@ export function PeopleTool({ focus }: { focus?: string }) {
       {shown.length === 0 ? (
         <EmptyState
           icon={UserRound}
-          title={people.length === 0 ? 'Nobody yet' : 'No one matches that'}
+          title={people.length === 0 ? t('people.empty.zeroTitle') : t('people.empty.searchTitle')}
           description={
             people.length === 0
-              ? 'Referees, search chairs, recruiters — anyone the search runs through. File them under the jobs they are named on and they show up on those records too.'
-              : 'Try part of a name, a role, or where they are.'
+              ? t('people.empty.zeroDescription')
+              : t('people.empty.searchDescription')
           }
         />
       ) : (
@@ -202,7 +209,9 @@ export function PeopleTool({ focus }: { focus?: string }) {
                 {p.applicationIds.length > 0 ? (
                   <div className="mt-1 text-xs text-text-3">
                     {namedOn(p)
-                      .map(({ lead, names }) => `${lead} ${names.join(', ')}`)
+                      .map(({ lead, names }) =>
+                        t(`people.namedOn.${lead}`, { names: names.join(', ') }),
+                      )
                       .join(' · ')}
                   </div>
                 ) : null}
@@ -216,13 +225,13 @@ export function PeopleTool({ focus }: { focus?: string }) {
                 {p.applicationIds.length > 0 ? (
                   <Button variant="ghost" size="sm" onClick={() => setPackingId(p.id)}>
                     <FileSpreadsheet className="size-3.5" strokeWidth={1.8} aria-hidden />
-                    Applications list
+                    {t('people.applicationsList')}
                   </Button>
                 ) : null}
                 <RowMenu name={p.name}>
                   {p.applicationIds.length > 0 ? (
                     <MenuItem icon={FileSpreadsheet} onSelect={() => setPackingId(p.id)}>
-                      Applications list
+                      {t('people.applicationsList')}
                     </MenuItem>
                   ) : null}
                   <MenuItem
@@ -232,11 +241,11 @@ export function PeopleTool({ focus }: { focus?: string }) {
                       setEditing(p)
                     }}
                   >
-                    Edit
+                    {t('common.edit')}
                   </MenuItem>
                   <MenuSection>
                     <MenuItem icon={Trash2} danger onSelect={() => onDelete(p)}>
-                      Delete
+                      {t('common.delete')}
                     </MenuItem>
                   </MenuSection>
                 </RowMenu>
@@ -283,6 +292,7 @@ function PersonForm({
   onSave: (draft: Draft) => void
   onCancel: () => void
 }) {
+  const { t } = useTranslation('vault')
   const [draft, setDraft] = useState<Draft>({
     name: person?.name ?? '',
     role: person?.role ?? '',
@@ -321,30 +331,30 @@ function PersonForm({
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
-          label="Name"
+          label={t('people.form.name')}
           required
           autoFocus
           value={draft.name}
-          error={submitted && !named ? 'A name is the one thing this needs.' : undefined}
+          error={submitted && !named ? t('people.form.nameError') : undefined}
           announce
-          placeholder="e.g. Prof. Ngozi Okafor"
+          placeholder={t('people.form.namePlaceholder')}
           onChange={set('name')}
         />
         <Field
-          label="Role"
+          label={t('people.form.role')}
           value={draft.role ?? ''}
-          placeholder="e.g. Referee, search chair, recruiter"
+          placeholder={t('people.form.rolePlaceholder')}
           onChange={set('role')}
         />
         <Field
-          label="Affiliation"
+          label={t('people.form.affiliation')}
           value={draft.affiliation ?? ''}
-          placeholder="e.g. Rice"
-          hint="Where they are. Not linked to an employer you have applied to."
+          placeholder={t('people.form.affiliationPlaceholder')}
+          hint={t('people.form.affiliationHint')}
           onChange={set('affiliation')}
         />
         <Field
-          label="Email"
+          label={t('people.form.email')}
           type="email"
           mono
           value={draft.email ?? ''}
@@ -352,13 +362,13 @@ function PersonForm({
           onChange={set('email')}
         />
         <Field
-          label="Phone"
+          label={t('people.form.phone')}
           mono
           value={draft.phone ?? ''}
           placeholder="+1 555 0134"
           onChange={set('phone')}
         />
-        <FormField label="Named on" hint="Every job they write for, screen for or chair.">
+        <FormField label={t('people.form.namedOn')} hint={t('people.form.namedOnHint')}>
           <ApplicationPicker
             values={draft.applicationIds}
             what="person"
@@ -367,11 +377,11 @@ function PersonForm({
         </FormField>
         {/* The rich text editor, as on an application's note (Q268). */}
         <RichNoteField
-          label="Note"
+          label={t('links.fields.note')}
           className="sm:col-span-2"
           text={draft.note ?? ''}
           format={format}
-          placeholder="What they said, what they owe you, when to chase."
+          placeholder={t('people.form.notePlaceholder')}
           onChange={(text, next) => {
             setDraft((prev) => ({ ...prev, note: text }))
             setFormat(next)
@@ -381,10 +391,10 @@ function PersonForm({
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Button type="submit" size="sm">
-          {person ? 'Save person' : 'Add person'}
+          {person ? t('people.form.save') : t('people.add')}
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
+          {t('common.cancel')}
         </Button>
       </div>
     </form>

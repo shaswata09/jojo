@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Txt } from '@/components/ui/Text'
@@ -25,8 +26,8 @@ import { space } from '@/theme/tokens'
 type Field = 'start' | 'quantifier' | 'rel' | 'end' | null
 
 const QUANTIFIERS: { value: Quantifier; label: string; hint: string }[] = [
-  { value: 'has', label: 'that have', hint: 'At least one such link' },
-  { value: 'missing', label: 'that do not have', hint: 'No such link at all' },
+  { value: 'has', label: 'pattern.has', hint: 'pattern.hasHint' },
+  { value: 'missing', label: 'pattern.missing', hint: 'pattern.missingHint' },
 ]
 
 export function PatternBuilder({
@@ -36,43 +37,44 @@ export function PatternBuilder({
   value: PatternQuery
   onChange: (next: PatternQuery) => void
 }) {
+  const { t } = useTranslation('components')
   const [open, setOpen] = useState<Field>(null)
 
   const nodeOptions = (field: 'start' | 'end') => [
     {
       id: 'any',
-      label: 'Anything',
+      label: t('pattern.anything'),
       checked: value[field] === 'any',
       onPress: () => onChange({ ...value, [field]: 'any' }),
     },
-    ...GRAPH_NODE_TYPES.map((t) => ({
-      id: t,
-      label: NODE_TYPE_LABEL[t],
-      checked: value[field] === t,
-      onPress: () => onChange({ ...value, [field]: t as GraphNodeType }),
+    ...GRAPH_NODE_TYPES.map((type) => ({
+      id: type,
+      label: NODE_TYPE_LABEL[type],
+      checked: value[field] === type,
+      onPress: () => onChange({ ...value, [field]: type as GraphNodeType }),
     })),
   ]
 
   const rows: { field: Exclude<Field, null>; label: string; value: string }[] = [
     {
       field: 'start',
-      label: 'Look for',
-      value: value.start === 'any' ? 'Anything' : NODE_TYPE_LABEL[value.start],
+      label: t('pattern.lookFor'),
+      value: value.start === 'any' ? t('pattern.anything') : NODE_TYPE_LABEL[value.start],
     },
     {
       field: 'quantifier',
-      label: 'Records',
-      value: QUANTIFIERS.find((q) => q.value === value.quantifier)!.label,
+      label: t('pattern.records'),
+      value: t(QUANTIFIERS.find((q) => q.value === value.quantifier)!.label),
     },
     {
       field: 'rel',
-      label: 'A link',
-      value: value.rel === 'any' ? 'Of any kind' : REL_LABEL[value.rel],
+      label: t('pattern.aLink'),
+      value: value.rel === 'any' ? t('pattern.anyKind') : REL_LABEL[value.rel],
     },
     {
       field: 'end',
-      label: 'To',
-      value: value.end === 'any' ? 'Anything' : NODE_TYPE_LABEL[value.end],
+      label: t('pattern.to'),
+      value: value.end === 'any' ? t('pattern.anything') : NODE_TYPE_LABEL[value.end],
     },
   ]
 
@@ -90,19 +92,19 @@ export function PatternBuilder({
       <MenuSheet
         open={open === 'start'}
         onClose={() => setOpen(null)}
-        title="Look for"
-        description="The kind of record the answer is a list of."
+        title={t('pattern.lookFor')}
+        description={t('pattern.lookForHint')}
         actions={nodeOptions('start')}
       />
       <MenuSheet
         open={open === 'quantifier'}
         onClose={() => setOpen(null)}
-        title="Having, or missing"
-        description="Whether the link below has to be there or has to be absent."
+        title={t('pattern.quantifierTitle')}
+        description={t('pattern.quantifierHint')}
         actions={QUANTIFIERS.map((q) => ({
           id: q.value,
-          label: q.label,
-          hint: q.hint,
+          label: t(q.label),
+          hint: t(q.hint),
           checked: value.quantifier === q.value,
           onPress: () => onChange({ ...value, quantifier: q.value }),
         }))}
@@ -110,12 +112,12 @@ export function PatternBuilder({
       <MenuSheet
         open={open === 'rel'}
         onClose={() => setOpen(null)}
-        title="Which link"
-        description="How the two ends are joined. “Of any kind” asks about all six at once."
+        title={t('pattern.relTitle')}
+        description={t('pattern.relHint')}
         actions={[
           {
             id: 'any',
-            label: 'Of any kind',
+            label: t('pattern.anyKind'),
             checked: value.rel === 'any',
             onPress: () => onChange({ ...value, rel: 'any' }),
           },
@@ -131,8 +133,8 @@ export function PatternBuilder({
       <MenuSheet
         open={open === 'end'}
         onClose={() => setOpen(null)}
-        title="At the other end"
-        description="What the link has to point at."
+        title={t('pattern.endTitle')}
+        description={t('pattern.endHint')}
         actions={nodeOptions('end')}
       />
     </View>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
@@ -11,9 +12,9 @@ import { Screen } from '@/components/ui/Screen'
 import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { MONTH_LABELS, WEEKDAYS, buildMonth, stepMonth } from '@jojo/service/core/calendar'
+import { WEEKDAYS, buildMonth, stepMonth } from '@jojo/service/core/calendar'
 import { TODAY_PARTS } from '@/lib/today'
-import { compareItems, isoOf, partsOf, shortDate, timeLabel } from '@jojo/service/data/timeline'
+import { compareItems, isoOf, partsOf, timeLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { markColor, markOf } from '@/lib/marks'
 import type { Mark } from '@/lib/marks'
@@ -21,12 +22,13 @@ import { exportCalendar } from '@/lib/calendar-export'
 import { useSheets } from '@/lib/sheets-context'
 import { useToast } from '@/lib/toast-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
-import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
+import { KIND_ICON } from '@/lib/timeline-visuals'
 import { useItemActions } from '@/lib/use-item-actions'
 import type { TabParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { domain as domainWords, useDomain } from '@/i18n/domain'
 
 /*
  * FUNCTIONS, not constants, because `TODAY_PARTS` is a live binding.
@@ -39,9 +41,11 @@ import { radius, space } from '@/theme/tokens'
  * nothing on it looks wrong.
  */
 const todayIso = (): string => isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
-const todayMonth = (): string => `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
+const todayMonth = (): string => domainWords.monthYear(TODAY_PARTS.month, TODAY_PARTS.year)
 
 export function CalendarScreen() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const c = useColors()
   const route = useRoute<RouteProp<TabParamList, 'Calendar'>>()
   const { open } = useSheets()
@@ -89,6 +93,8 @@ export function CalendarScreen() {
    * the grid. Nothing in `tsc` or the suite can say so; the marker is the test.
    */
   const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
+  // Not `month.label`: that is core's English, and this reads the language on screen.
+  const monthName = domain.month(month.month)
   // `forMonth` matches the 'YYYY-MM' prefix, year included — a month-only match
   // would list next October's deadlines under this one.
   const monthItems = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
@@ -145,9 +151,9 @@ export function CalendarScreen() {
   const marksPresent = new Set(monthItems.map((item) => markOf(item)))
   const markKey = (
     [
-      { key: 'overdue', color: c.danger, label: 'Overdue' },
-      { key: 'soon', color: c.warning, label: 'Due within 48 hours' },
-      { key: 'done', color: c.text3, label: 'Done', hollow: true },
+      { key: 'overdue', color: c.danger, label: t('calendar.key.overdue') },
+      { key: 'soon', color: c.warning, label: t('calendar.key.soon') },
+      { key: 'done', color: c.text3, label: t('calendar.key.done'), hollow: true },
     ] as const
   ).filter((entry) => marksPresent.has(entry.key as Mark))
 
@@ -161,8 +167,8 @@ export function CalendarScreen() {
 
   return (
     <Screen
-      title="Calendar"
-      subtitle="Deadlines, interviews and prep in one view"
+      title={t('calendar.title')}
+      subtitle={t('calendar.subtitle')}
       actions={
         <>
           {/*
@@ -173,28 +179,26 @@ export function CalendarScreen() {
           */}
           <IconButton
             icon="share"
-            label="Export to my calendar"
+            label={t('calendar.export.label')}
             onPress={() => {
               void exportCalendar({ items: allItems, applications: allApplications })
                 .then((count) => {
                   toast({
-                    title: `${String(count)} date${count === 1 ? '' : 's'} exported`,
-                    description:
-                      'Your calendar will offer to import them, with a reminder on each.',
+                    title: t('calendar.export.done', { count }),
+                    description: t('calendar.export.doneDescription'),
                   })
                 })
                 .catch(() => {
                   toast({
-                    title: 'Nothing here opens a calendar file',
-                    description:
-                      'The file is saved on this phone. A calendar app that accepts .ics can open it.',
+                    title: t('calendar.export.failed'),
+                    description: t('calendar.export.failedDescription'),
                     tone: 'danger',
                   })
                 })
             }}
           />
           <Button
-            label="Add"
+            label={t('calendar.add')}
             icon="plus"
             // Prefilled with the day on screen: on a calendar, "add" almost always
             // means "add to the day I am looking at".
@@ -204,9 +208,15 @@ export function CalendarScreen() {
       }
       options={
         <SettingRow
-          label="Tall day cells"
-          description="More room per day in the grid"
-          control={<Toggle value={tallCells} onValueChange={setTallCells} label="Tall day cells" />}
+          label={t('calendar.tallCells')}
+          description={t('calendar.tallCellsDescription')}
+          control={
+            <Toggle
+              value={tallCells}
+              onValueChange={setTallCells}
+              label={t('calendar.tallCells')}
+            />
+          }
         />
       }
     >
@@ -217,21 +227,27 @@ export function CalendarScreen() {
               is the one thing a calendar must not make expensive. */}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${month.label} ${month.year}. Go to another month`}
+            accessibilityLabel={t('calendar.jump', { month: monthName, year: month.year })}
             onPress={() => setJumping(true)}
             style={s.fill}
           >
             <Txt size="md" weight="medium">
-              {month.label}{' '}
-              <Txt size="md" tone="muted">
-                {month.year}
-              </Txt>{' '}
+              {/* Year muted wherever the language puts it ('2026年11月'). */}
+              {domain.monthYearParts(month.month, month.year).map((part) =>
+                part.isYear ? (
+                  <Txt key="year" size="md" tone="muted">
+                    {part.text}
+                  </Txt>
+                ) : (
+                  part.text
+                ),
+              )}{' '}
               <Feather name="chevron-down" size={13} color={c.text3} />
             </Txt>
           </Pressable>
           <IconButton
             icon="chevron-left"
-            label="Previous month"
+            label={t('calendar.previous')}
             onPress={() => goTo(stepMonth(view.year, view.month, -1))}
           />
           {/* A word, not a 6px dot between two arrows. Not disabled on the
@@ -240,7 +256,9 @@ export function CalendarScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={
-              isCurrentMonth ? `Back to ${shortDate(todayIso())}` : `Go to ${todayMonth()}`
+              isCurrentMonth
+                ? t('calendar.backTo', { date: domain.shortDate(todayIso()) })
+                : t('calendar.goTo', { target: todayMonth() })
             }
             onPress={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
             style={[
@@ -252,24 +270,24 @@ export function CalendarScreen() {
             ]}
           >
             <Txt size="sm" tone={isCurrentMonth ? 'accent' : 'secondary'}>
-              Today
+              {t('calendar.today')}
             </Txt>
           </Pressable>
           <IconButton
             icon="chevron-right"
-            label="Next month"
+            label={t('calendar.next')}
             onPress={() => goTo(stepMonth(view.year, view.month, 1))}
           />
         </View>
 
         <Txt size="xs" tone="muted" style={{ marginBottom: space[2] }}>
-          Tap a day to list what is on it. Tap an event to edit or reschedule it.
+          {t('calendar.hint')}
         </Txt>
 
         <View style={styles.weekdays}>
-          {WEEKDAYS.map((label) => (
+          {WEEKDAYS.map((label, i) => (
             <Txt key={label} size="xs" tone="muted" center uppercase style={styles.cell}>
-              {label.slice(0, 1)}
+              {domain.weekdayNarrow(i)}
             </Txt>
           ))}
         </View>
@@ -301,9 +319,11 @@ export function CalendarScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={`${month.label} ${day}, ${items.length} ${
-                    items.length === 1 ? 'event' : 'events'
-                  }`}
+                  accessibilityLabel={t('calendar.dayLabel', {
+                    month: monthName,
+                    day,
+                    count: items.length,
+                  })}
                   onPress={() => setSelected(day)}
                   style={[
                     styles.dayCell,
@@ -374,24 +394,28 @@ export function CalendarScreen() {
       </Panel>
 
       <Panel>
-        <PanelTitle hint={shortDate(selectedISO)}>
-          {selected === month.today ? 'Today' : 'Selected day'}
+        <PanelTitle hint={domain.shortDate(selectedISO)}>
+          {selected === month.today ? t('calendar.today') : t('calendar.selectedDay')}
         </PanelTitle>
 
         {selectedEvents.length === 0 ? (
           <EmptyState
             compact
             icon="calendar"
-            title={`Nothing on ${shortDate(selectedISO)}`}
-            description="Add an interview, a deadline or a block of prep and it shows up here and on the grid."
+            title={t('calendar.nothingOn', { date: domain.shortDate(selectedISO) })}
+            description={t('calendar.nothingOnDescription')}
             action={
               <>
-                <Button label="Add event" icon="plus" onPress={() => addOn(selectedISO)} />
+                <Button
+                  label={t('calendar.addEvent')}
+                  icon="plus"
+                  onPress={() => addOn(selectedISO)}
+                />
                 {/* An empty day in a month you paged to is the easiest place to
                     get lost: nothing on screen names where "now" is. */}
                 {isCurrentMonth ? null : (
                   <Button
-                    label={`Back to ${todayMonth()}`}
+                    label={t('calendar.backTo', { date: todayMonth() })}
                     variant="outline"
                     onPress={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
                   />
@@ -422,13 +446,17 @@ export function CalendarScreen() {
                       {e.title}
                     </Txt>
                     <Txt size="xs" tone="muted" numberOfLines={1}>
-                      {[timeLabel(e) ?? 'All day', done ? 'Done' : null, e.detail]
+                      {[
+                        timeLabel(e) ?? t('calendar.allDay'),
+                        done ? t('calendar.key.done') : null,
+                        e.detail,
+                      ]
                         .filter(Boolean)
                         .join(' · ')}
                     </Txt>
                   </Pressable>
                   <Txt size="xs" tone="muted">
-                    {KIND_LABEL[e.kind]}
+                    {domain.kind(e.kind)}
                   </Txt>
                   {/* Tick it off here too: the calendar is where you notice a
                       thing is done, and walking to the Vault to say so is the
@@ -436,7 +464,11 @@ export function CalendarScreen() {
                   <IconButton
                     icon={done ? 'check-circle' : 'circle'}
                     size={34}
-                    label={done ? `Reopen ${e.title}` : `Mark "${e.title}" done`}
+                    label={
+                      done
+                        ? t('calendar.reopen', { title: e.title })
+                        : t('calendar.markDone', { title: e.title })
+                    }
                     active={done}
                     onPress={() => actions.complete(e)}
                   />
@@ -448,7 +480,7 @@ export function CalendarScreen() {
                   <IconButton
                     icon="more-horizontal"
                     size={34}
-                    label={`More actions for ${e.title}`}
+                    label={t('calendar.moreActions', { title: e.title })}
                     onPress={() => setMenuFor(e)}
                   />
                 </View>
@@ -459,7 +491,7 @@ export function CalendarScreen() {
       </Panel>
 
       <Panel>
-        <PanelTitle>Rest of {month.label}</PanelTitle>
+        <PanelTitle>{t('calendar.rest.title', { month: monthName })}</PanelTitle>
 
         {restOfMonth.length === 0 ? (
           <EmptyState
@@ -467,13 +499,15 @@ export function CalendarScreen() {
             icon="calendar"
             title={
               isLastDay
-                ? `${shortDate(selectedISO)} is the last day of the month`
-                : `Nothing after ${shortDate(selectedISO)}`
+                ? t('calendar.rest.lastDay', { date: domain.shortDate(selectedISO) })
+                : t('calendar.rest.nothingAfter', { date: domain.shortDate(selectedISO) })
             }
             description={
               isLastDay
-                ? `Nothing sits after it. Page forward to plan into ${MONTH_LABELS[nextMonth.month - 1]}.`
-                : `The rest of ${month.label} is clear. Anything you add after this day lands here.`
+                ? t('calendar.rest.lastDayDescription', {
+                    month: domain.month(nextMonth.month),
+                  })
+                : t('calendar.rest.clearDescription', { month: monthName })
             }
             action={
               // An "add" here has to land on a day this list would show, or
@@ -482,13 +516,13 @@ export function CalendarScreen() {
               // next month rather than a new event.
               isLastDay ? (
                 <Button
-                  label={`Go to ${MONTH_LABELS[nextMonth.month - 1]}`}
+                  label={t('calendar.goTo', { target: domain.month(nextMonth.month) })}
                   icon="chevron-right"
                   onPress={() => goTo(nextMonth)}
                 />
               ) : (
                 <Button
-                  label="Add event"
+                  label={t('calendar.addEvent')}
                   icon="plus"
                   onPress={() => addOn(isoOf(view.year, view.month, selected + 1))}
                 />
@@ -503,7 +537,7 @@ export function CalendarScreen() {
               <Pressable
                 key={e.id}
                 accessibilityRole="button"
-                accessibilityLabel={`Go to ${month.label} ${day}`}
+                accessibilityLabel={t('calendar.goToDay', { month: monthName, day })}
                 onPress={() => setSelected(day)}
                 style={styles.restRow}
               >
@@ -519,7 +553,7 @@ export function CalendarScreen() {
                   {e.title}
                 </Txt>
                 <Txt size="xs" tone="muted" mono>
-                  {month.label.slice(0, 3)} {day}
+                  {domain.dayMonth(month.month, day)}
                 </Txt>
               </Pressable>
             )
@@ -527,7 +561,7 @@ export function CalendarScreen() {
         )}
         {restOfMonth.length > 6 ? (
           <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-            +{restOfMonth.length - 6} more later this month
+            {t('calendar.rest.more', { count: restOfMonth.length - 6 })}
           </Txt>
         ) : null}
       </Panel>

@@ -41,7 +41,8 @@ const KIND_STYLE: Record<FlowNodeData['kind'], string> = {
  * are set because xyflow picks between them by `disableKeyboardA11y`, the
  * opposite way round to what their names say.
  */
-const DESCRIBE_BOX = 'A box in this flowchart. The list of steps after the chart says where each way out of it leads.'
+const DESCRIBE_BOX =
+  'A box in this flowchart. The list of steps after the chart says where each way out of it leads.'
 const ARIA_LABELS = {
   'node.a11yDescription.default': DESCRIBE_BOX,
   'node.a11yDescription.keyboardDisabled': DESCRIBE_BOX,
@@ -58,7 +59,9 @@ function FlowBox({ data }: NodeProps<Node<FlowNodeData>>) {
       <Handle type="target" position={Position.Top} className={HANDLE} />
       <Handle id="loop-in" type="target" position={Position.Right} className={HANDLE} />
       {data.kind === 'step' ? null : (
-        <div className="text-[9px] font-medium tracking-wide text-text-3 uppercase">{FLOW_KIND_WORD[data.kind]}</div>
+        <div className="text-[9px] font-medium tracking-wide text-text-3 uppercase">
+          {FLOW_KIND_WORD[data.kind]}
+        </div>
       )}
       <div className="text-[12px] leading-snug text-text-1">{data.label}</div>
       <div className="mt-0.5 truncate font-mono text-[9.5px] text-text-3">{short}</div>
@@ -67,7 +70,7 @@ function FlowBox({ data }: NodeProps<Node<FlowNodeData>>) {
           wrapper (the element that takes focus), set per node below. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-full left-0 z-10 mt-1 hidden max-w-[22rem] rounded border border-hairline-strong bg-panel px-1.5 py-0.5 font-mono text-[10px] break-all text-text-1 shadow-sm group-hover:block group-focus-visible:block"
+        className="pointer-events-none absolute start-0 top-full z-10 mt-1 hidden max-w-[22rem] rounded border border-hairline-strong bg-panel px-1.5 py-0.5 font-mono text-[10px] break-all text-text-1 shadow-sm group-hover:block group-focus-visible:block"
       >
         {data.path}
       </div>
@@ -110,7 +113,13 @@ export function ControlFlowGraph({ flow }: { flow: ControlFlow }) {
       source: e.from,
       target: e.to,
       ...(loop ? { sourceHandle: 'loop-out', targetHandle: 'loop-in', type: 'smoothstep' } : {}),
-      ...(e.label ? { label: e.label, labelStyle: { fontSize: 10 }, labelBgPadding: [4, 2] as [number, number] } : {}),
+      ...(e.label
+        ? {
+            label: e.label,
+            labelStyle: { fontSize: 10 },
+            labelBgPadding: [4, 2] as [number, number],
+          }
+        : {}),
       markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14 },
       style: {
         stroke: from?.kind === 'decision' ? 'var(--warning)' : 'var(--hairline-strong)',

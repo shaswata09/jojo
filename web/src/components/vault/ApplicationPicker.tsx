@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -44,6 +45,7 @@ export function ApplicationPicker({
   what?: string
   className?: string
 }) {
+  const { t } = useTranslation('vault')
   const { all, byId } = useApplications()
   const [open, setOpen] = useState(false)
 
@@ -52,12 +54,13 @@ export function ApplicationPicker({
   // count reads better — the same one the phone's picker and every filing
   // toast use, so the three cannot disagree about where two becomes 'three
   // applications'.
-  const label = chosen.length === 0 ? 'No application' : applicationsLabel(chosen)
+  const label = chosen.length === 0 ? t('picker.none') : applicationsLabel(chosen)
+  // `what` names the record — 'file', 'link' — and picks a whole sentence, so
+  // no language has to splice a noun into it. An unknown one reads generically.
+  const unfile = t(`picker.unfile.${what}`, { defaultValue: t('picker.unfile.record') })
 
   const toggle = (appId: string) => {
-    onChange(
-      values.includes(appId) ? values.filter((v) => v !== appId) : [...values, appId],
-    )
+    onChange(values.includes(appId) ? values.filter((v) => v !== appId) : [...values, appId])
   }
 
   return (
@@ -73,7 +76,7 @@ export function ApplicationPicker({
             // Named here as well as by the field label around it: in the header
             // form there is no label, and 'No application' on its own says what
             // the value is without saying what it is the value of.
-            aria-label="Related applications"
+            aria-label={t('picker.label')}
             className="h-8 min-w-0 flex-1 justify-between font-normal"
           >
             <span className="truncate">{label}</span>
@@ -81,11 +84,11 @@ export function ApplicationPicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
-          <Command label="Search applications">
-            <CommandInput placeholder="Search applications…" />
+          <Command label={t('picker.searchLabel')}>
+            <CommandInput placeholder={t('picker.searchPlaceholder')} />
             <CommandList>
               <CommandEmpty>
-                {all.length === 0 ? 'No applications yet.' : 'No application matches that.'}
+                {all.length === 0 ? t('picker.noneYet') : t('picker.noMatch')}
               </CommandEmpty>
               <CommandGroup>
                 {all.map((a) => {
@@ -124,8 +127,8 @@ export function ApplicationPicker({
           type="button"
           variant="ghost"
           size="icon-sm"
-          title={`Unfile this ${what}`}
-          aria-label={`Unfile this ${what}`}
+          title={unfile}
+          aria-label={unfile}
           onClick={() => onChange([])}
         >
           <X aria-hidden />

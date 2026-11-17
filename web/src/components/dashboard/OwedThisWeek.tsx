@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   Briefcase,
   CalendarCheck,
@@ -17,10 +18,9 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { SnoozeSteps } from '@/components/common/SnoozeSteps'
 import { snoozeAnchor } from '@/components/common/snooze'
-import { plural } from '@/components/common/text'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { addDays, partsOf, shortDate, timeLabel, whenLabel } from '@/data/timeline'
+import { addDays, partsOf, timeLabel } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
@@ -32,11 +32,22 @@ import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
 import { useMascot } from '@/lib/mascot-context'
 import { CUES } from '@/lib/mascot-cues'
-
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+import { useDomain } from '@/i18n/domain'
 
 /** How many of the items beyond the week the "Later" strip names. */
 const LATER_SHOWN = 4
+
+/**
+ * How many overdue rows render before "Show all".
+ *
+ * Overdue is the one group with no natural ceiling: every past deadline and
+ * unticked follow-up stays in it, and each row mounts two popovers and a
+ * store subscription. With a few hundred of them a single tick re-rendered
+ * all of them and held the main thread for hundreds of milliseconds on the
+ * page the app opens on. The oldest twenty are a backlog's worth of reading;
+ * the rest are one press away.
+ */
+const OVERDUE_SHOWN = 20
 
 /** Splits an ISO date into the params the calendar route reads. */
 const dayParams = (iso: string) => {
@@ -46,6 +57,7 @@ const dayParams = (iso: string) => {
 
 /** Three fixed steps, each printing the date it is about to write. */
 function SnoozeMenu({ item, onPush }: { item: TimelineItem; onPush: (by: number) => void }) {
+  const { t } = useTranslation('dashboard')
   // Controlled, because the steps are plain buttons: an uncontrolled popover
   // would stay open over a row that has already moved out from under it.
   const [open, setOpen] = useState(false)
@@ -53,8 +65,8 @@ function SnoozeMenu({ item, onPush }: { item: TimelineItem; onPush: (by: number)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        title={`Push "${item.title}" out`}
-        aria-label={`Snooze ${item.title}`}
+        title={t('common.pushOut', { title: item.title })}
+        aria-label={t('owed.snoozeAria', { title: item.title })}
         className={cn(
           'grid size-7 shrink-0 cursor-pointer place-items-center rounded-md text-text-3',
           'transition-colors hover:bg-well hover:text-text-1',
@@ -64,7 +76,9 @@ function SnoozeMenu({ item, onPush }: { item: TimelineItem; onPush: (by: number)
         <CalendarClock className="size-3.5" strokeWidth={1.8} aria-hidden />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-48 gap-1 p-1.5">
-        <div className="px-1 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Push out by</div>
+        <div className="px-1 pb-0.5 text-xs tracking-wide text-text-3 uppercase">
+          {t('common.pushOutBy')}
+        </div>
         {/* `duration`, not `dated`: the heading above already says these are
             offsets, and an offset is measured from the anchor whatever the
             anchor is — so unlike the reminders list this menu cannot name a day
@@ -108,6 +122,7 @@ function OpenItemMenu({
   title?: string
   children: ReactNode
 }) {
+  const { t } = useTranslation('dashboard')
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const { byId } = useApplications()
@@ -128,14 +143,14 @@ function OpenItemMenu({
 
   const noun = item.remind ? 'reminder' : 'event'
   const option =
-    'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-text-1 transition-colors hover:bg-well focus-visible:bg-well focus-visible:outline-none'
+    'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-start text-sm text-text-1 transition-colors hover:bg-well focus-visible:bg-well focus-visible:outline-none'
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         className={className}
         title={title}
-        aria-label={`Open ${item.title}: edit the ${noun} or go to its application`}
+        aria-label={t(`owed.openAria.${noun}`, { title: item.title })}
       >
         {children}
       </PopoverTrigger>
@@ -149,7 +164,7 @@ function OpenItemMenu({
           }}
         >
           <PencilLine className="size-3.5 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
-          Edit {noun}
+          {t(`owed.edit.${noun}`)}
         </button>
         {applications.map((a) => (
           <button
@@ -163,7 +178,12 @@ function OpenItemMenu({
           >
             <Briefcase className="size-3.5 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
             <span className="min-w-0 truncate">
-              Open <span className="text-text-2">{displayName(a)}</span>
+              <Trans
+                t={t}
+                i18nKey="owed.openApplication"
+                values={{ name: displayName(a) }}
+                components={{ name: <span className="text-text-2" /> }}
+              />
             </span>
           </button>
         ))}
@@ -185,10 +205,13 @@ function OpenItemMenu({
  * rescheduling anywhere in the app moves a row between them on its own.
  */
 export function OwedThisWeek() {
+  const { t, i18n } = useTranslation('dashboard')
+  const domain = useDomain()
   const { all, toggleDone, update, snooze, reschedule } = useTimeline()
   const { open } = useDialogs()
   const { toast } = useToast()
   const mascot = useMascot()
+  const [allOverdue, setAllOverdue] = useState(false)
 
   /*
    * The pin, sampled once per render and then used everywhere below.
@@ -215,9 +238,12 @@ export function OwedThisWeek() {
       Array.from({ length: 7 }, (_, i) => {
         const iso = addDays(today, i)
         const { y, m, d } = partsOf(iso)
-        return { iso, day: d, label: WEEKDAY_LABELS[new Date(y, m - 1, d).getDay()] }
+        const label = new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(
+          new Date(y, m - 1, d),
+        )
+        return { iso, day: d, label }
       }),
-    [today],
+    [today, i18n.language],
   )
 
   const { groups, later, doneToday, overdueCount, dueCount } = useMemo(() => {
@@ -233,17 +259,17 @@ export function OwedThisWeek() {
 
     return {
       groups: [
-        { id: 'overdue', label: 'Overdue', items: overdue },
-        { id: 'today', label: 'Today', items: dueToday },
-        { id: 'tomorrow', label: 'Tomorrow', items: tomorrow },
-        { id: 'rest', label: 'Rest of the week', items: rest },
+        { id: 'overdue', label: t('owed.groups.overdue'), items: overdue },
+        { id: 'today', label: t('owed.groups.today'), items: dueToday },
+        { id: 'tomorrow', label: t('owed.groups.tomorrow'), items: tomorrow },
+        { id: 'rest', label: t('owed.groups.rest'), items: rest },
       ],
       later: openItems.filter((i) => i.date > weekEnd),
       doneToday: all.filter((i) => i.completedOn === today).length,
       overdueCount: overdue.length,
       dueCount: dueToday.length + tomorrow.length + rest.length,
     }
-  }, [all, today])
+  }, [all, today, t])
 
   const edit = (item: TimelineItem) =>
     open('timelineItem', { mode: item.remind ? 'reminder' : 'event', initial: item })
@@ -261,9 +287,9 @@ export function OwedThisWeek() {
     if (announceRefusal(toggleDone(item.id), toast)) return
     mascot.play(CUES.taskDone)
     toast({
-      title: `${item.title} completed`,
-      description: 'It leaves this list and counts towards today — nothing is deleted.',
-      action: { label: 'Undo', onClick: () => update(item.id, { completedOn: null }) },
+      title: t('common.completed', { title: item.title }),
+      description: t('owed.completedDescription'),
+      action: { label: t('common.undo'), onClick: () => update(item.id, { completedOn: null }) },
     })
   }
 
@@ -271,43 +297,48 @@ export function OwedThisWeek() {
     const before = item.date
     if (announceRefusal(snooze(item.id, by), toast)) return
     toast({
-      title: `${item.title} rescheduled`,
-      description: `Now due ${shortDate(addDays(snoozeAnchor(item.date), by))}, here and on the calendar.`,
+      title: t('common.rescheduled', { title: item.title }),
+      description: t('owed.rescheduledDescription', {
+        date: domain.shortDate(addDays(snoozeAnchor(item.date), by)),
+      }),
       // The date it came from is the one thing a second snooze cannot recover.
-      action: { label: 'Undo', onClick: () => reschedule(item.id, before) },
+      action: { label: t('common.undo'), onClick: () => reschedule(item.id, before) },
     })
   }
 
-  const hint = overdueCount > 0 ? `${overdueCount} overdue · ${dueCount} due` : `${dueCount} due`
+  const hint =
+    overdueCount > 0
+      ? t('owed.hintOverdue', { overdue: overdueCount, due: dueCount })
+      : t('owed.hintDue', { count: dueCount })
 
   return (
     <Panel className="flex min-w-0 flex-col">
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2">
         <PanelTitle className="mb-0" hint={all.length > 0 ? hint : undefined}>
-          Owed this week
+          {t('owed.title')}
         </PanelTitle>
         <Button variant="outline" size="sm" onClick={newEvent}>
           <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-          Add
+          {t('owed.add')}
         </Button>
       </div>
 
       {all.length === 0 ? (
         <EmptyState
           icon={CalendarCheck}
-          title="Nothing is owed"
-          description="Deadlines, interviews and follow-ups land here as soon as they have a date, and stay until you tick them off."
+          title={t('owed.emptyTitle')}
+          description={t('owed.emptyDescription')}
           action={
             <Button size="sm" onClick={newEvent}>
               <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-              Add an event
+              {t('owed.addEvent')}
             </Button>
           }
         />
       ) : (
         <>
           {/* Day strip: the shape of the week before reading any detail. */}
-          <ol className="mb-4 grid grid-cols-7 gap-1" aria-label="Next seven days">
+          <ol className="mb-4 grid grid-cols-7 gap-1" aria-label={t('owed.nextSeven')}>
             {days.map((day, i) => {
               const events = all.filter((e) => !e.completedOn && e.date === day.iso)
               const cleared = all.filter((e) => e.completedOn === day.iso).length
@@ -347,10 +378,10 @@ export function OwedThisWeek() {
                       is the one thing that makes a screen reader user check. */}
                   <span className="sr-only">
                     {events.length > 0
-                      ? plural(events.length, 'item')
+                      ? t('owed.items', { count: events.length })
                       : cleared > 0
-                        ? 'all done'
-                        : 'nothing scheduled'}
+                        ? t('owed.allDone')
+                        : t('owed.nothingScheduled')}
                   </span>
                 </li>
               )
@@ -380,6 +411,9 @@ export function OwedThisWeek() {
                 // Today is the only group that renders empty. It is the question
                 // the page exists to answer, and "clear" is an answer.
                 if (group.items.length === 0 && group.id !== 'today') return null
+                const capped = group.id === 'overdue' && group.items.length > OVERDUE_SHOWN
+                const rows =
+                  capped && !allOverdue ? group.items.slice(0, OVERDUE_SHOWN) : group.items
 
                 return (
                   <section key={group.id}>
@@ -392,96 +426,112 @@ export function OwedThisWeek() {
 
                     {group.items.length === 0 ? (
                       <p className="pb-2.5 text-sm text-text-2">
-                        Today is clear{doneToday > 0 ? ` — ${doneToday} done` : ''}.
+                        {doneToday > 0
+                          ? t('owed.todayClearDone', { count: doneToday })
+                          : t('owed.todayClear')}
                       </p>
                     ) : (
-                      <ul className="divide-y divide-hairline">
-                        {group.items.map((e) => {
-                          const Icon = KIND_ICON[e.kind]
-                          const mark = dateMark(e.date)
-                          return (
-                            <li key={e.id} className="flex items-start gap-2.5 py-2.5">
-                              {/* A real checkbox role, so the state is announced
+                      <>
+                        <ul className="divide-y divide-hairline">
+                          {rows.map((e) => {
+                            const Icon = KIND_ICON[e.kind]
+                            const mark = dateMark(e.date)
+                            return (
+                              <li key={e.id} className="flex items-start gap-2.5 py-2.5">
+                                {/* A real checkbox role, so the state is announced
                                 and Space works. It sits before the icon rather
                                 than replacing it — the kind is what tells you
                                 whether ticking it off is a two-minute job or a
                                 submitted application. */}
-                              <button
-                                type="button"
-                                role="checkbox"
-                                aria-checked={false}
-                                aria-label={`Mark "${e.title}" done`}
-                                title="Mark done"
-                                onClick={() => complete(e)}
-                                // `touch-target`: 18px is below every size
-                                // class the coarse-pointer rule matches on.
-                                className="touch-target mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded-sm border border-hairline-strong text-transparent transition-colors hover:border-accent-border hover:text-accent"
-                              >
-                                <Check className="size-3" strokeWidth={2.5} aria-hidden />
-                              </button>
+                                <button
+                                  type="button"
+                                  role="checkbox"
+                                  aria-checked={false}
+                                  aria-label={t('owed.markDoneAria', { title: e.title })}
+                                  title={t('owed.markDone')}
+                                  onClick={() => complete(e)}
+                                  // `touch-target`: 18px is below every size
+                                  // class the coarse-pointer rule matches on.
+                                  className="touch-target mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded-sm border border-hairline-strong text-transparent transition-colors hover:border-accent-border hover:text-accent"
+                                >
+                                  <Check className="size-3" strokeWidth={2.5} aria-hidden />
+                                </button>
 
-                              <Icon
-                                className={cn('mt-0.5 size-4 shrink-0', MARK_TEXT[mark])}
-                                strokeWidth={1.7}
-                                aria-hidden
-                              />
+                                <Icon
+                                  className={cn('mt-0.5 size-4 shrink-0', MARK_TEXT[mark])}
+                                  strokeWidth={1.7}
+                                  aria-hidden
+                                />
 
-                              <div className="min-w-0 flex-1">
-                                {/* The title opens the item — or, when it is
+                                <div className="min-w-0 flex-1">
+                                  {/* The title opens the item — or, when it is
                                   filed under an application, asks which to
                                   open (`OpenItemMenu`). A row you can tick but
                                   not correct is where every wrong date on a
                                   dashboard starts. */}
-                                <OpenItemMenu
-                                  item={e}
-                                  onEdit={() => edit(e)}
-                                  /* `hover:underline` as well as the colour:
+                                  <OpenItemMenu
+                                    item={e}
+                                    onEdit={() => edit(e)}
+                                    /* `hover:underline` as well as the colour:
                                      in dark, --accent and --text-1 are the
                                      same #fafafa (see index.css), so the title
                                      of an owed item gave no sign it opened
                                      anything. The tick beside it survived on
                                      its border change. */
-                                  className="block max-w-full cursor-pointer truncate text-left text-sm underline-offset-2 transition-colors hover:text-accent hover:underline data-[state=open]:text-accent data-[state=open]:underline"
-                                >
-                                  {e.title}
-                                </OpenItemMenu>
-                                <div className="mt-0.5 truncate text-xs text-text-3">
-                                  {timeLabel(e) ? `${timeLabel(e)} · ` : ''}
-                                  {e.detail ?? e.note}
+                                    className="block max-w-full cursor-pointer truncate text-start text-sm underline-offset-2 transition-colors hover:text-accent hover:underline data-[state=open]:text-accent data-[state=open]:underline"
+                                  >
+                                    {e.title}
+                                  </OpenItemMenu>
+                                  <div className="mt-0.5 truncate text-xs text-text-3">
+                                    {timeLabel(e) ? `${timeLabel(e)} · ` : ''}
+                                    {e.detail ?? e.note}
+                                  </div>
                                 </div>
-                              </div>
 
-                              <span
-                                className={cn(
-                                  'mt-0.5 shrink-0 text-xs font-medium whitespace-nowrap',
-                                  MARK_TEXT[mark],
-                                )}
-                              >
-                                {whenLabel(e, today)}
-                              </span>
+                                <span
+                                  className={cn(
+                                    'mt-0.5 shrink-0 text-xs font-medium whitespace-nowrap',
+                                    MARK_TEXT[mark],
+                                  )}
+                                >
+                                  {domain.when(e, today)}
+                                </span>
 
-                              {/* Drafting stays on follow-up rows only — it is
+                                {/* Drafting stays on follow-up rows only — it is
                                 what the deleted Follow-ups panel existed for,
                                 and it makes no sense against a campus visit.
                                 The dialog needs no model: it starts from the
                                 user's own email snippets. */}
-                              {e.kind === 'follow-up' ? (
-                                <button
-                                  type="button"
-                                  onClick={() => open('draft', { itemId: e.id })}
-                                  title="Write this from one of your email snippets"
-                                  aria-label={`Draft ${e.title}`}
-                                  className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md text-text-3 transition-colors hover:bg-well hover:text-text-1"
-                                >
-                                  <Mail className="size-3.5" strokeWidth={1.8} aria-hidden />
-                                </button>
-                              ) : null}
+                                {e.kind === 'follow-up' ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => open('draft', { itemId: e.id })}
+                                    title={t('owed.draftTitle')}
+                                    aria-label={t('owed.draftAria', { title: e.title })}
+                                    className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md text-text-3 transition-colors hover:bg-well hover:text-text-1"
+                                  >
+                                    <Mail className="size-3.5" strokeWidth={1.8} aria-hidden />
+                                  </button>
+                                ) : null}
 
-                              <SnoozeMenu item={e} onPush={(by) => push(e, by)} />
-                            </li>
-                          )
-                        })}
-                      </ul>
+                                <SnoozeMenu item={e} onPush={(by) => push(e, by)} />
+                              </li>
+                            )
+                          })}
+                        </ul>
+                        {capped ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mb-2"
+                            onClick={() => setAllOverdue(!allOverdue)}
+                          >
+                            {allOverdue
+                              ? t('owed.showFewer')
+                              : t('owed.showAll', { total: group.items.length })}
+                          </Button>
+                        ) : null}
+                      </>
                     )}
                   </section>
                 )
@@ -491,7 +541,9 @@ export function OwedThisWeek() {
 
           {later.length > 0 ? (
             <div className="mt-4 border-t border-hairline pt-3.5">
-              <div className="mb-2 text-xs tracking-wide text-text-3 uppercase">Later</div>
+              <div className="mb-2 text-xs tracking-wide text-text-3 uppercase">
+                {t('owed.later')}
+              </div>
               {/* Capped: the timeline runs weeks past the strip, and a chip per
                   item turned a footnote into the tallest part of the panel. */}
               <ul className="flex flex-wrap gap-2">
@@ -522,11 +574,11 @@ export function OwedThisWeek() {
                       item={e}
                       onEdit={() => edit(e)}
                       className="block max-w-full cursor-pointer rounded-sm"
-                      title={`Open ${e.title}`}
+                      title={t('owed.openTitle', { title: e.title })}
                     >
                       <Chip tone="gray" className="max-w-full gap-1.5 hover:border-accent-border">
                         <span className="min-w-0 truncate">{e.title}</span>
-                        <span className="shrink-0 text-text-3">· {shortDate(e.date)}</span>
+                        <span className="shrink-0 text-text-3">· {domain.shortDate(e.date)}</span>
                       </Chip>
                     </OpenItemMenu>
                   </li>
@@ -541,7 +593,7 @@ export function OwedThisWeek() {
                       className="rounded-sm"
                     >
                       <Chip tone="gray" className="hover:border-accent-border">
-                        {later.length - LATER_SHOWN} more on the calendar
+                        {t('owed.more', { count: later.length - LATER_SHOWN })}
                       </Chip>
                     </Link>
                   </li>

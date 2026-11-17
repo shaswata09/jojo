@@ -1,0 +1,256 @@
+{
+  "common": {
+    "newApplication": "新建申请",
+    "openBoard": "打开看板",
+    "showAll": "全部显示",
+    "undo": "撤销",
+    "pushOut": "推迟“{{title}}”",
+    "pushOutBy": "推迟",
+    "completed": "已完成 {{title}}",
+    "rescheduled": "已重新安排 {{title}}"
+  },
+  "headlineRates": {
+    "emptyTitle": "还没有比率",
+    "emptyDescription": "回复率、面试率和录用率只统计真正发出去的申请。把一份申请移出草稿，这里就会有数据。"
+  },
+  "pipeline": {
+    "emptyTitle": "流程中还没有内容",
+    "emptyDescription": "每份申请都处于某个阶段，这里显示它们在各阶段的分布。添加一份，第一块扇形就会出现。",
+    "ariaLabel_other": "按阶段划分的 {{count}} 份申请"
+  },
+  "statsCard": {
+    "control": "统计",
+    "tracked_other": "已跟踪 {{count}} 份",
+    "views": {
+      "pipeline": "流程",
+      "rates": "比率",
+      "when": "时间",
+      "next": "下一步"
+    },
+    "titles": {
+      "pipeline": "流程",
+      "rates": "主要比率",
+      "when": "你的申请时间",
+      "next": "接下来该做什么"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "便签",
+      "recent": "最近的申请"
+    },
+    "headingNotes": "便签",
+    "headingRecent": "最近的申请",
+    "control": "在此卡片上显示",
+    "addReminder": "添加提醒",
+    "viewAll": "查看全部",
+    "emptyTitle": "还没有申请",
+    "emptyDescription": "你跟踪的每个职位在你处理后都会出现在这里，最新的排在最前。",
+    "today": "今天",
+    "daysAgo_other": "{{count}} 天前"
+  },
+  "searchHealth": {
+    "title": "接下来该做什么",
+    "series": {
+      "you": "你的",
+      "target": "典型"
+    },
+    "intro": "你的数据与一次典型求职的对比",
+    "sample": "示例",
+    "sampleTitle": "只有典型那一圈是示意性的",
+    "emptyTitle": "数据还不足以比较",
+    "emptyDescription": "这里会把你的回复、面试、内推和跟进与一次典型求职相比较。需要有真正发出去的申请。",
+    "suggestions": "建议，最有用的排在前面"
+  },
+  "sources": {
+    "title": "申请来源",
+    "views": {
+      "bars": "条形",
+      "donut": "环形"
+    },
+    "chartType": "图表类型",
+    "unrecorded": "未记录",
+    "hintAll_other": "{{count}} 份申请",
+    "hintSome": "{{shown}} / {{count}}",
+    "emptyTitle": "暂时没有可细分的内容",
+    "emptyDescription": "每份申请都会记录你是在哪里找到它的——招聘网站、内推、院系主页。有了申请之后，这里会把它们分类。",
+    "centerLabel": "份申请",
+    "show": "显示 {{name}}",
+    "hide": "隐藏 {{name}}",
+    "allOff": "所有来源都已关闭。"
+  },
+  "offers": {
+    "title": "录用通知对比",
+    "open_other": "{{count}} 个待处理",
+    "caption": "你待处理的录用通知，包括你输入的薪酬方案、按年计算的数额，以及每份需要答复的截止日期",
+    "columns": {
+      "job": "职位",
+      "package": "薪酬方案",
+      "year": "每年",
+      "respondBy": "答复截止"
+    },
+    "notStated": "未注明",
+    "noAmount": "无法从薪酬方案中读出金额",
+    "readFrom": "读取自“{{text}}”",
+    "highest": "——此处最高",
+    "annualised": "（按年折算）",
+    "passed": "已过期",
+    "today": "今天",
+    "daysLeft_other": "{{count}} 天",
+    "ranked": "年度金额是从你输入的内容中读出的——将鼠标悬停在某个数额上，可查看它来自哪些文字。",
+    "unranked": "这些没有排序：薪酬方案使用不同的货币，而 jojo 没有汇率，也不会发起网络请求去查找汇率。",
+    "annualisedNote": "* 按 12 个月、52 周或 2,080 小时折算为年，这只是惯例，并非你的合同。"
+  },
+  "sticky": {
+    "newNote": "新便签",
+    "placeholder": "给自己记一笔……（按 Enter 贴上）",
+    "newColour": "新便签的颜色",
+    "stick": "贴上",
+    "empty": "还没有贴任何便签。便签会一直留在这里，直到你把它撕下；任何一张有了日期后都可以变成提醒。",
+    "listLabel": "便签",
+    "editNote": "编辑便签",
+    "clickToEdit": "点击编辑",
+    "editAria": "编辑便签：{{text}}",
+    "colour": "颜色",
+    "colourOf": "便签“{{text}}”的颜色",
+    "toReminder": "转为提醒",
+    "toReminderAria": "转为提醒：{{text}}",
+    "takeDown": "撕下这张便签",
+    "removeAria": "移除便签：{{text}}"
+  },
+  "frequency": {
+    "title": "你的申请时间",
+    "period": "周期",
+    "periods": {
+      "week": "周",
+      "month": "月",
+      "quarter": "季度"
+    },
+    "chartType": "图表类型",
+    "charts": {
+      "bar": "条形",
+      "line": "折线"
+    },
+    "emptyTitle": "还没有可绘制的内容",
+    "emptyDescription": "这里按周统计你发出的申请，并按职位类型拆分。添加一份，第一根柱子就会出现。",
+    "noDatesTitle": "还没有记录发送日期",
+    "noDates_other": "你的 {{count}} 份申请都还没有日期。当你把记录移到“已提交”时会自动记录日期。",
+    "perPeriod": {
+      "week": "每周发出的申请，按 {{series}} 拆分",
+      "month": "每月发出的申请，按 {{series}} 拆分",
+      "quarter": "每季度发出的申请，按 {{series}} 拆分"
+    },
+    "caption": {
+      "week": "每周发出的申请",
+      "month": "每月发出的申请",
+      "quarter": "每季度发出的申请"
+    },
+    "countingUndated_other": "统计了 {{total}} 份申请中的 {{inWindow}} 份——有 {{count}} 份还没有日期。",
+    "countingEarlier_other": "统计了 {{total}} 份申请中的 {{inWindow}} 份——有 {{count}} 份早于 {{first}}。",
+    "countingBoth": "统计了 {{total}} 份申请中的 {{inWindow}} 份——{{undated}} 份还没有日期，{{earlier}} 份早于 {{first}}。"
+  },
+  "glance": {
+    "heading": "概览",
+    "stats": {
+      "active": "进行中",
+      "screens": "初筛和面试",
+      "overdue": "已逾期",
+      "doneToday": "今日完成"
+    },
+    "previousMonth": "上个月",
+    "currentMonth": "转到本月",
+    "currentMonthTitle": "{{date}}——本月",
+    "nextMonth": "下个月",
+    "openCalendar": "打开日历",
+    "dayNone": "{{date}}，没有事件",
+    "day_other": "{{date}}，{{count}} 个事件",
+    "dayAllDone_other": "{{date}}，{{count}} 个事件，全部完成",
+    "today": "今天",
+    "nothingPlanned": "没有安排。<add>添加点什么</add>。"
+  },
+  "priority": {
+    "title": "需要做决定",
+    "open_other": "{{count}} 项待处理",
+    "completedDescription": "它会离开这组卡片和本周——不会删除任何内容。",
+    "rescheduledDescription": "现在截止于 {{date}}，日历和未来一周中都会更新。",
+    "tickOff": "勾掉“{{title}}”",
+    "done": "完成",
+    "snooze": "推迟",
+    "notConnected": "目前还没有关联任何内容",
+    "earlierAria": "显示较早的决定",
+    "earlier": "较早",
+    "laterAria": "显示较晚的决定",
+    "later": "较晚",
+    "listLabel": "决定，从最早开始",
+    "emptyTitle": "今天没有需要决定的事",
+    "emptyDescription": "录用通知、逾期的申请、下一个硬性截止日期和你的下一场面试都会显示在这里。目前都没有待处理的。"
+  },
+  "firstSteps": {
+    "title": "入门步骤",
+    "hint": "已完成 {{done}}/{{total}}",
+    "application": {
+      "title": "添加一份申请",
+      "body": "一个职位、它的阶段和截止日期。jojo 中的其他一切都挂在这条记录上。"
+    },
+    "dated": {
+      "title": "给某件事定个日期",
+      "body": "截止日期、面试和拜访是同一种记录，所以一个日期会同时出现在本页、日历和申请中。",
+      "action": "新建事件"
+    },
+    "reminder": {
+      "title": "设置一次跟进",
+      "body": "提醒就是打开了提示的同一种记录。日期一过它就到期了，并会一直留在这里，直到你勾掉它。",
+      "action": "新建提醒"
+    },
+    "complete": "三步都完成了。从现在起你添加的任何内容都会出现在本页、日历以及它所属的申请中。",
+    "intro": "每一步都会打开真实的功能，一旦有了记录就会自动打勾——没有任何需要你硬着头皮看完的教程。",
+    "introBare": "目前还没有跟踪任何内容。每一步都会打开真实的功能，一旦有了记录就会自动打勾——没有任何需要你硬着头皮看完的教程。",
+    "doneSr": "——已完成",
+    "notDoneSr": "——尚未完成",
+    "hideHint": "同样的步骤在指南中也有说明",
+    "close": "关闭入门步骤",
+    "hide": "隐藏这些步骤"
+  },
+  "owed": {
+    "title": "本周待办",
+    "add": "添加",
+    "addEvent": "添加事件",
+    "emptyTitle": "没有待办",
+    "emptyDescription": "截止日期、面试和跟进一旦有了日期就会出现在这里，并一直留着，直到你勾掉它们。",
+    "hintOverdue": "{{overdue}} 项逾期 · {{due}} 项待办",
+    "hintDue_other": "{{count}} 项待办",
+    "snoozeAria": "推迟 {{title}}",
+    "openAria": {
+      "reminder": "打开 {{title}}：编辑提醒或前往其申请",
+      "event": "打开 {{title}}：编辑事件或前往其申请"
+    },
+    "edit": {
+      "reminder": "编辑提醒",
+      "event": "编辑事件"
+    },
+    "openApplication": "打开 <name>{{name}}</name>",
+    "groups": {
+      "overdue": "已逾期",
+      "today": "今天",
+      "tomorrow": "明天",
+      "rest": "本周其余时间"
+    },
+    "completedDescription": "它会离开这个列表并计入今天——不会删除任何内容。",
+    "rescheduledDescription": "现在截止于 {{date}}，这里和日历中都会更新。",
+    "nextSeven": "未来七天",
+    "items_other": "{{count}} 项",
+    "allDone": "全部完成",
+    "nothingScheduled": "没有安排",
+    "todayClear": "今天没有待办。",
+    "todayClearDone": "今天没有待办——已完成 {{count}} 项。",
+    "markDoneAria": "将“{{title}}”标记为完成",
+    "markDone": "标记为完成",
+    "draftTitle": "用你的一段邮件片段来写",
+    "draftAria": "起草 {{title}}",
+    "later": "以后",
+    "openTitle": "打开 {{title}}",
+    "more_other": "日历中还有 {{count}} 项",
+    "showAll": "显示全部 {{total}} 条",
+    "showFewer": "收起"
+  }
+}

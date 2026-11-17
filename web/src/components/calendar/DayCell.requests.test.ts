@@ -58,12 +58,13 @@ describe('a calendar day cell (Q051)', () => {
   })
 
   it('stacks from the top, with the date first and unconditional', () => {
-    expect(view).toMatch(/'group\/cell relative flex flex-col rounded-md border p-1\.5 text-left/)
+    expect(view).toMatch(/'group\/cell relative flex flex-col rounded-md border p-1\.5 text-start/)
     // The first element inside the cell is the date button, outside any
     // condition on the day's events.
-    const firstChild = /<div\s+ref=\{setNodeRef\}[\s\S]*?>\s*(?:\{\/\*[\s\S]*?\*\/\}\s*)*(<button[\s\S]*?<\/button>)/.exec(
-      view,
-    )?.[1] ?? ''
+    const firstChild =
+      /<div\s+ref=\{setNodeRef\}[\s\S]*?>\s*(?:\{\/\*[\s\S]*?\*\/\}\s*)*(<button[\s\S]*?<\/button>)/.exec(
+        view,
+      )?.[1] ?? ''
     expect(firstChild).toContain('{day}')
     expect(firstChild).toMatch(/className=\{cn\(\s*"grid size-5 shrink-0/)
   })

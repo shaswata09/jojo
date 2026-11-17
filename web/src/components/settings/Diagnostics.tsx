@@ -1,4 +1,6 @@
 import { forwardRef, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { ReactNode } from 'react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import type { NodeType } from '@jojo/service/core/model'
@@ -35,52 +37,55 @@ import { cn } from '@/lib/utils'
  * A new node type then fails to compile here rather than rendering its raw
  * identifier in a settings panel, which is how `pipeline` would have shown up as
  * "pipeline" next to "Saved posting" and stayed that way.
+ *
+ * The values are catalog keys, translated where the rows are drawn.
  */
 const TYPE_LABEL: Record<NodeType, string> = {
-  application: 'Applications',
+  application: 'diagnostics.types.application',
   // Plural and plain: what somebody would call the list, not what the type is
   // called. 'Background' reads as logins.
-  background: 'Background facts',
+  background: 'diagnostics.types.background',
   // What relates two of them. Named for what it holds rather than for the type,
   // on the same principle as the line above: 'Claims' reads as insurance.
-  claim: 'Relations',
-  thread: 'Conversations',
-  proposal: 'Suggestions',
-  organisation: 'Organisations',
-  timelineItem: 'Timeline items',
-  keyword: 'Keywords',
-  link: 'Links',
-  file: 'Files',
-  snippet: 'Snippets',
-  person: 'People',
-  stickyNote: 'Sticky notes',
-  posting: 'Saved postings',
-  match: 'Scout matches',
-  pipeline: 'Scout pipelines',
-  profile: 'Profile',
+  claim: 'diagnostics.types.claim',
+  thread: 'diagnostics.types.thread',
+  proposal: 'diagnostics.types.proposal',
+  organisation: 'diagnostics.types.organisation',
+  timelineItem: 'diagnostics.types.timelineItem',
+  keyword: 'diagnostics.types.keyword',
+  link: 'diagnostics.types.link',
+  file: 'diagnostics.types.file',
+  snippet: 'diagnostics.types.snippet',
+  person: 'diagnostics.types.person',
+  stickyNote: 'diagnostics.types.stickyNote',
+  posting: 'diagnostics.types.posting',
+  match: 'diagnostics.types.match',
+  pipeline: 'diagnostics.types.pipeline',
+  profile: 'diagnostics.types.profile',
 }
 
 const DATA_SET_LABEL: Record<DataSet, string> = {
-  demo: 'the demo records, untouched',
-  empty: 'emptied on purpose, never seeded',
-  user: 'written to since it was set up',
+  demo: 'diagnostics.dataSet.demo',
+  empty: 'diagnostics.dataSet.empty',
+  user: 'diagnostics.dataSet.user',
 }
 
-const NUMBER = new Intl.NumberFormat()
-
 /** Bytes as the browser reports them: MB to one decimal, because quotas are big. */
-function bytes(value: number | null): string {
-  if (value === null) return 'not reported'
+function bytes(value: number | null, t: TFunction<'settings'>): string {
+  if (value === null) return t('diagnostics.notReported')
   if (value < 1024) return `${value} B`
   if (value < 1024 * 1024) return `${(value / 1024).toFixed(0)} kB`
   return `${(value / (1024 * 1024)).toFixed(1)} MB`
 }
 
-/** An ISO instant as a local date and time, or a dash when there is not one. */
-function at(instant: string | null | undefined): string {
+/**
+ * An ISO instant as a local date and time, or a dash when there is not one —
+ * in the language jojo is showing, not the browser's.
+ */
+function at(instant: string | null | undefined, locale: string): string {
   if (!instant) return '—'
   const parsed = new Date(instant)
-  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString()
+  return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString(locale)
 }
 
 /**
@@ -113,7 +118,7 @@ const Line = forwardRef<
       </span>
       <span
         className={cn(
-          'min-w-0 text-right text-xs',
+          'min-w-0 text-end text-xs',
           tone === 'warning' ? 'wrap-anywhere text-text-1' : 'truncate text-text-2',
         )}
       >
@@ -124,6 +129,9 @@ const Line = forwardRef<
 })
 
 export function Diagnostics() {
+  const { t, i18n } = useTranslation('settings')
+  const locale = i18n.language
+  const numbers = new Intl.NumberFormat(locale)
   const { state } = useBoot()
   /*
    * The deep link from `StorageBanner`. Scrolled to and lit rather than merely
@@ -179,18 +187,21 @@ export function Diagnostics() {
 
   return (
     <Panel>
-      <PanelTitle hint="this browser only">Diagnostics</PanelTitle>
+      <PanelTitle hint={t('shared.thisBrowserOnly')}>{t('diagnostics.title')}</PanelTitle>
 
       <div className="grid grid-cols-1 gap-x-8 gap-y-5 lg:grid-cols-2">
         <div>
-          <h3 className="mb-1.5 text-xs font-medium text-text-2">Storage</h3>
+          <h3 className="mb-1.5 text-xs font-medium text-text-2">{t('diagnostics.storage')}</h3>
           <Line
-            label="Records are written to disk"
-            value={session?.durable ? 'yes — IndexedDB' : 'no — this tab only'}
+            label={t('diagnostics.durable.label')}
+            value={session?.durable ? t('diagnostics.durable.yes') : t('diagnostics.durable.no')}
           />
           <Line
-            label="Database schema"
-            value={`v${meta?.schemaVersion ?? '—'} (app expects v${SCHEMA_VERSION})`}
+            label={t('diagnostics.schema.label')}
+            value={t('diagnostics.schema.value', {
+              stored: meta?.schemaVersion ?? '—',
+              expected: SCHEMA_VERSION,
+            })}
           />
           {/*
            * Three states, and "not reported" is not "no". R-6: Safari evicts an
@@ -200,14 +211,14 @@ export function Diagnostics() {
            * this code cannot back up.
            */}
           <Line
-            label="Browser promises to keep it"
+            label={t('diagnostics.persisted.label')}
             value={
               persisted === 'asking'
-                ? 'checking…'
+                ? t('diagnostics.checking')
                 : persisted === null
-                  ? 'this browser will not say'
+                  ? t('diagnostics.persisted.unknown')
                   : persisted
-                    ? 'yes'
+                    ? t('diagnostics.persisted.yes')
                     : // Deliberately not "after 7 days": that is Safari's
                       // eviction window and reads as a floor, which it is not.
                       // A Chrome private window reports exactly this — `persist()`
@@ -216,35 +227,43 @@ export function Diagnostics() {
                       // private browsing, so this line cannot detect that case;
                       // what it can do is stop implying a week of safety it has
                       // no way to check.
-                      'no — the browser may clear it at any time, and a private window will when it closes'
+                      t('diagnostics.persisted.no')
             }
           />
           <Line
-            label="Space used"
+            label={t('diagnostics.space.label')}
             value={
               estimate === 'asking'
-                ? 'checking…'
+                ? t('diagnostics.checking')
                 : estimate === null
-                  ? 'not reported'
-                  : `${bytes(estimate.usage)} of ${bytes(estimate.quota)}`
+                  ? t('diagnostics.notReported')
+                  : t('diagnostics.space.value', {
+                      used: bytes(estimate.usage, t),
+                      quota: bytes(estimate.quota, t),
+                    })
             }
           />
           <Line
-            label="Write queue"
+            label={t('diagnostics.queue.label')}
             value={
               health.state === 'idle'
-                ? 'idle — everything is saved'
+                ? t('diagnostics.queue.idle')
                 : health.state === 'writing'
-                  ? `saving ${health.pending} change${health.pending === 1 ? '' : 's'}`
+                  ? t('diagnostics.queue.writing', { count: health.pending })
                   : health.state === 'degraded'
-                    ? `retrying ${health.unsaved} change(s), ${health.pending} row(s) (attempt ${health.attempts}): ${health.lastError}`
-                    : `stopped — ${health.reason}`
+                    ? t('diagnostics.queue.degraded', {
+                        unsaved: health.unsaved,
+                        pending: health.pending,
+                        attempts: health.attempts,
+                        error: health.lastError,
+                      })
+                    : t('diagnostics.queue.stopped', { reason: health.reason })
             }
           />
         </div>
 
         <div>
-          <h3 className="mb-1.5 text-xs font-medium text-text-2">This store</h3>
+          <h3 className="mb-1.5 text-xs font-medium text-text-2">{t('diagnostics.store')}</h3>
           {/*
            * Spelled out rather than printed raw, because the raw value reads as
            * the wrong claim. `dataSet` flips to 'user' on the FIRST write of any
@@ -255,13 +274,23 @@ export function Diagnostics() {
            * actually records is whether anything has been written since it was
            * seeded, which is what decides whether a reseed is ever on the table.
            */}
-          <Line label="Contents" value={meta ? DATA_SET_LABEL[meta.dataSet] : '—'} />
-          <Line label="Created" value={at(meta?.createdAt)} />
-          <Line label="Seeded" value={meta?.seededAt ? at(meta.seededAt) : 'never'} />
-          <Line label="Last opened" value={at(meta?.lastOpenedAt)} />
           <Line
-            label="Last write"
-            value={lastWrite ? `${lastWrite.label} · ${at(lastWrite.at)}` : 'nothing yet'}
+            label={t('diagnostics.contents')}
+            value={meta ? t(DATA_SET_LABEL[meta.dataSet]) : '—'}
+          />
+          <Line label={t('diagnostics.created')} value={at(meta?.createdAt, locale)} />
+          <Line
+            label={t('diagnostics.seeded')}
+            value={meta?.seededAt ? at(meta.seededAt, locale) : t('diagnostics.never')}
+          />
+          <Line label={t('diagnostics.lastOpened')} value={at(meta?.lastOpenedAt, locale)} />
+          <Line
+            label={t('diagnostics.lastWrite')}
+            value={
+              lastWrite
+                ? `${lastWrite.label} · ${at(lastWrite.at, locale)}`
+                : t('diagnostics.nothingYet')
+            }
           />
           {/*
            * Named, not just counted. A skipped record is a row that is on disk
@@ -291,45 +320,45 @@ export function Diagnostics() {
             ref={skippedRef}
             tone={skippedCount > 0 ? 'warning' : undefined}
             className={focus === 'skipped' ? 'arrival-highlight' : undefined}
-            label="Records that could not be read"
+            label={t('diagnostics.skipped.label')}
             value={
               skippedCount > 0
                 ? `${skippedCount} — ${(session?.skipped ?? []).map((d) => d.id).join(', ')}`
-                : 'none'
+                : t('diagnostics.skipped.none')
             }
           />
           <Line
-            label="Integrity checks"
+            label={t('diagnostics.integrity.label')}
             value={
               session && session.problems.length > 0
-                ? `${session.problems.length} failed`
-                : 'all passed'
+                ? t('diagnostics.integrity.failed', { total: session.problems.length })
+                : t('diagnostics.integrity.passed')
             }
           />
         </div>
 
         <div>
           <h3 className="mb-1.5 text-xs font-medium text-text-2">
-            Records ({NUMBER.format(graph.nodes().length)})
+            {t('diagnostics.records', { total: numbers.format(graph.nodes().length) })}
           </h3>
           {(Object.keys(TYPE_LABEL) as NodeType[]).map((type) => (
             <Line
               key={type}
-              label={TYPE_LABEL[type]}
-              value={NUMBER.format(counts.get(type) ?? 0)}
+              label={t(TYPE_LABEL[type])}
+              value={numbers.format(counts.get(type) ?? 0)}
             />
           ))}
         </div>
 
         <div>
           <h3 className="mb-1.5 text-xs font-medium text-text-2">
-            Connections ({NUMBER.format(edgeCount)})
+            {t('diagnostics.connections', { total: numbers.format(edgeCount) })}
           </h3>
           {rels.size === 0 ? (
-            <Line label="None" value="0" />
+            <Line label={t('diagnostics.none')} value="0" />
           ) : (
             [...rels.entries()].map(([rel, count]) => (
-              <Line key={rel} label={rel} value={NUMBER.format(count)} />
+              <Line key={rel} label={rel} value={numbers.format(count)} />
             ))
           )}
         </div>

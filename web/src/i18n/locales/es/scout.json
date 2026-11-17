@@ -1,0 +1,207 @@
+{
+  "common": {
+    "newPipeline": "Nuevo pipeline",
+    "addToApplications": "Añadir a candidaturas",
+    "inApplicationsAs": "En candidaturas como <anchor>{{name}}</anchor>",
+    "open": "Abrir",
+    "undo": "Deshacer"
+  },
+  "header": {
+    "title": "Explorador de empleo",
+    "subtitle": "Búsquedas guardadas que vigilarán bolsas de empleo por ti, y un sitio donde dejar ofertas hoy mismo",
+    "onlyActive": "Solo pipelines activos",
+    "onlyActiveHint": "Oculta los desactivados",
+    "paused": "No hay ningún modelo local conectado, así que los pipelines están en pausa. Aun así puedes crearlos y guardar ofertas abajo; empezarán a funcionar cuando haya un modelo disponible.",
+    "runsLocally": "Los pipelines se ejecutan en tu equipo mientras esta pestaña está abierta. No se envía nada a terceros."
+  },
+  "shutdown": {
+    "title": "¿Desactivar {{name}}?",
+    "description": "Se ha ejecutado dos veces sin encontrar nada que sugerir, y no hay nada esperando tu respuesta. Desactivarlo hace que deje de buscar; todo lo que ya encontró se queda donde está. Puedes volver a activarlo cuando quieras.",
+    "keep": "Mantenerlo activo",
+    "confirm": "Desactivarlo"
+  },
+  "matches": {
+    "title": "Coincidencias",
+    "hint": "puntuadas según tu perfil",
+    "emptyTitle": "No hay coincidencias",
+    "emptyDescription": "Los pipelines ponen aquí ofertas puntuadas en cuanto hay un modelo conectado. Hasta entonces, las ofertas que guardes abajo son la vía de entrada.",
+    "matched": "coincide en {{list}}",
+    "notScored": "sin puntuar",
+    "fit": "{{score}} % de encaje",
+    "added": "añadida"
+  },
+  "dialog": {
+    "editTitle": "Editar pipeline",
+    "description": "Un pipeline es una tarea permanente para el asistente. Se ejecuta en este dispositivo mientras jojo está abierto, y todo lo que quiera cambiar se te muestra antes.",
+    "kind": "Qué hace",
+    "kinds": {
+      "twin": "Completar registros",
+      "scout": "Buscar ofertas"
+    },
+    "kindHint": {
+      "twin": "Lee lo que tienes y sugiere lo que falta: notas, recordatorios, etiquetas, archivado.",
+      "scout": "Busca ofertas que merezcan tu atención y las deja para que las revises."
+    },
+    "name": "Nombre",
+    "nameError": "Ponle el nombre de lo que vigila.",
+    "namePlaceholder": {
+      "twin": "p. ej., Mantener ordenadas mis candidaturas",
+      "scout": "p. ej., Bolsa de empleo docente de CRA"
+    },
+    "sources": "Fuentes",
+    "sourcesHint": "La bolsa o página de empleo que vigila. Separa varias con comas.",
+    "sourceError": "Un explorador sin fuente no tiene nada que leer.",
+    "terms": {
+      "twin": "En qué centrarse",
+      "scout": "Términos de búsqueda"
+    },
+    "termsHint": {
+      "twin": "Cualquier cosa a la que deba prestar especial atención. Déjalo en blanco para que mire en todas partes.",
+      "scout": "Con qué se puntúa una oferta. Déjalo en blanco para conservar todo lo que publique la fuente."
+    },
+    "termsPlaceholder": {
+      "twin": "seguimientos y plazos",
+      "scout": "profesor asistente, CS/ECE"
+    },
+    "howOften": "Con qué frecuencia",
+    "howOftenHint": "Cuánto espera entre una ronda y otra.",
+    "schedules": {
+      "hourly": "Cada hora",
+      "daily": "A diario",
+      "weekly": "Semanal"
+    },
+    "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "create": "Crear pipeline"
+  },
+  "pipelines": {
+    "title": "Pipelines",
+    "hint": "se ejecutan en este dispositivo mientras jojo está abierto",
+    "caption": "Funcionan mientras esta pestaña está abierta; nada se ejecuta fuera de este equipo",
+    "kinds": {
+      "twin": "Gemelo digital",
+      "scout": "Explorador de empleo"
+    },
+    "status": {
+      "off": "desactivado",
+      "paused": "en pausa",
+      "running": "en marcha",
+      "watching": "vigilando"
+    },
+    "noneOnTitle": "No hay nada activado",
+    "noneOnDescription": "Todos tus pipelines están desactivados. Activa una o quita el filtro en las opciones de la página.",
+    "emptyTitle": "No hay pipelines",
+    "emptyDescription": "Un pipeline es una tarea permanente para el asistente: mantener completos tus registros o vigilar ofertas que merezcan tu atención.",
+    "showAll": "Mostrar todos los pipelines",
+    "auto": "auto",
+    "autoAria": "Ejecutar {{name}} sin preguntar",
+    "toReview_one": "{{count}} por revisar",
+    "toReview_many": "{{count}} por revisar",
+    "toReview_other": "{{count}} por revisar",
+    "runNow": "Ejecutar {{name}} ahora",
+    "edit": "Editar {{name}}",
+    "delete": "Eliminar {{name}}",
+    "enable": "Activar {{name}}"
+  },
+  "postings": {
+    "title": "Guardar una oferta",
+    "hint": "funciona sin modelo",
+    "intro": "Al guardar también se conserva la página, en la Bóveda, en Ofertas de empleo: abierta con la extensión de jojo tal como la verías, o descargada por el lector de documentos. Sin ninguno de los dos, se conserva la URL, el empleador deducido de ella y el día en que la guardaste.",
+    "urlLabel": "URL de la oferta de empleo",
+    "pasteFirst": "Pega primero una URL",
+    "save": "Guardar oferta",
+    "emptyTitle": "No hay ofertas guardadas",
+    "emptyDescription": "Pega la URL de un anuncio al que quieras volver. Los anuncios se retiran; el enlace y la fecha son tuyos.",
+    "saved": "guardada {{when}}",
+    "linked": "vinculada a una candidatura",
+    "unscored": "sin puntuar",
+    "openSnapshot": "Abrir copia",
+    "savingPage": "Guardando página…",
+    "savePage": "Guardar página",
+    "savePageTitle": "Abrir la oferta y guardar una copia en la Bóveda",
+    "remove": "Quitar {{title}}"
+  },
+  "proposals": {
+    "title": "Sugerencias",
+    "hint": "no pasa nada hasta que lo digas",
+    "aPipeline": "un pipeline",
+    "clearAnswered": "Quitar respondidas",
+    "approveAll": "Aprobar las {{count}}",
+    "clearAll": "Quitar todo",
+    "emptyTitle": "Nada que revisar",
+    "emptyDescription": "Cuando un pipeline está en marcha, todo lo que quiera cambiar aparece aquí primero. No tocará tus registros hasta que lo apruebes.",
+    "clearTitle": "¿Quitar todas las sugerencias?",
+    "clearPending_one": "{{count}} sugerencia sigue esperándote y se rechazará. No cambia nada en tus registros y los pipelines siguen funcionando, pero no volverán a ofrecerla.",
+    "clearPending_many": "{{count}} sugerencias siguen esperándote y se rechazarán. No cambia nada en tus registros y los pipelines siguen funcionando, pero no volverán a ofrecerlas.",
+    "clearPending_other": "{{count}} sugerencias siguen esperándote y se rechazarán. No cambia nada en tus registros y los pipelines siguen funcionando, pero no volverán a ofrecerlas.",
+    "clearAnsweredOnly": "Las tarjetas respondidas salen de la lista. No cambia nada en tus registros.",
+    "status": {
+      "applied": "aplicada",
+      "discarded": "descartada",
+      "failed": "no se pudo aplicar"
+    },
+    "noSummary": "Esta llegó sin resumen; abre la oferta para ver de qué se trata.",
+    "reading": "Leyendo la oferta para obtener sus detalles…",
+    "notALink": "No es una dirección web, así que no se ofrece como enlace",
+    "from": "de {{name}}",
+    "openPosting": "Abrir oferta",
+    "openPostingAria": "Abrir la oferta en una pestaña nueva: {{title}}",
+    "inApplications": "En candidaturas",
+    "approve": "Aprobar",
+    "discard": "Descartar esta sugerencia",
+    "discardAria": "Descartar: {{title}}",
+    "unreadable": "No se pudo leer la página: {{reason}}",
+    "unreadableKept": "No se pudo leer la página: {{reason}} La página en sí se guardó.",
+    "applyBy": "postular antes del {{date}}",
+    "pageSaved": "Página guardada"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Ya está en tus candidaturas; no se añadió de nuevo",
+    "alreadyHaveDescription": "Es {{name}}, publicada de nuevo en otra bolsa. La oferta está vinculada a ella y su página se archivó con ella.",
+    "duplicateDescription": "La oferta es {{name}}, que ya tienes. {{why}} Su página se archivó con esa.",
+    "keepBoth": "Conservar ambas",
+    "fillFailedTitle": "{{org}}: no se pudo leer la oferta",
+    "fillFailedKept": "{{reason}} La página en sí se guardó y se archivó con el borrador; ábrelo para completar el resto.",
+    "fillFailed": "{{reason}} El borrador conserva lo que dice su enlace; ábrelo para completar el resto.",
+    "filledTitle": "{{name}} completada a partir de la oferta",
+    "checkedTitle": "{{name}} comprobada con la oferta",
+    "filledIn": "Completado: {{list}}.",
+    "checked": "Comprobado con la página: {{list}}.",
+    "keptYours": "Se mantuvieron tus cambios en: {{list}}.",
+    "addedNothing": "La página no aportó nada que el borrador no tuviera.",
+    "missing": "No figura en la página: {{list}}.",
+    "filedUnder": "La página se archivó con ella.",
+    "approvedReading": "Leyendo la oferta para completar sus detalles; el borrador se actualizará cuando termine.",
+    "approvedFromLink": "Completada a partir de su enlace. Conecta un modelo en Ajustes para que se lea la propia oferta.",
+    "approvedOpen": "Ábrela para completar el resto.",
+    "allRepeatsTitle": "Ya está en tus candidaturas; no se añadió nada nuevo",
+    "allRepeats_one": "{{count}} es un puesto que ya tienes, publicado de nuevo en otra bolsa. Está vinculado a la candidatura que tienes.",
+    "allRepeats_many": "{{count}} son puestos que ya tienes, publicados de nuevo en otra bolsa. Están vinculados a las candidaturas que tienes.",
+    "allRepeats_other": "{{count}} son puestos que ya tienes, publicados de nuevo en otra bolsa. Están vinculados a las candidaturas que tienes.",
+    "added_one": "{{count}} añadida a tus candidaturas como borrador",
+    "added_many": "{{count}} añadidas a tus candidaturas como borradores",
+    "added_other": "{{count}} añadidas a tus candidaturas como borradores",
+    "addedWithRepeats_one": "{{count}} añadida a tus candidaturas como borrador · {{repeats}} ya estaban",
+    "addedWithRepeats_many": "{{count}} añadidas a tus candidaturas como borradores · {{repeats}} ya estaban",
+    "addedWithRepeats_other": "{{count}} añadidas a tus candidaturas como borradores · {{repeats}} ya estaban",
+    "addedReading": "Leyendo cada oferta por turno para completar sus detalles.",
+    "addedFromLinks": "Completadas a partir de sus enlaces. Conecta un modelo en Ajustes para que se lean las propias ofertas.",
+    "addedOne": "{{org}} añadida a tus candidaturas como borrador",
+    "addedAsDraft": "{{org}} añadida como borrador",
+    "matchStays": "La coincidencia se queda en esta lista, ahora vinculada a la candidatura.",
+    "postingSaved": "Oferta guardada",
+    "postingReading": "Leyendo la oferta para comprobar y completar sus detalles; el borrador se actualizará cuando termine.",
+    "postingStays": "La oferta sigue guardada aquí, ahora vinculada a la candidatura.",
+    "postingRemoved": "Oferta quitada",
+    "pageNotSaved": "No se guardó la página de la oferta",
+    "pageSaved": "Página de la oferta guardada",
+    "pageSavedFiled": "{{title}}: archivada con su candidatura.",
+    "pageSavedVault": "{{title}}: en la Bóveda, en Ofertas de empleo.",
+    "pipelineUpdated": "Pipeline actualizado",
+    "pipelineCreated": "Pipeline creado",
+    "pipelineCreatedPaused": "{{name}}: en pausa hasta que se conecte un modelo.",
+    "pipelineCreatedRunning": "{{name}}: empezará a buscar en breve.",
+    "pipelineDeleted": "Pipeline eliminado",
+    "pipelineDeletedDescription": "{{name}} deja de vigilar {{source}}."
+  }
+}

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { WEEKDAYS, buildMonth, stepMonth } from '@/data/calendar'
@@ -56,7 +57,26 @@ const partsAsParams = (iso: string) => {
  * something without ever saying what, so the only way to find out was to leave
  * the dashboard. Selecting a day now lists it beside the month.
  */
+/** A Monday, so `WEEKDAYS[i]` and `MONDAY + i` name the same day. */
+const MONDAY = new Date(2024, 0, 1)
+
 export function GlancePanel() {
+  const { t, i18n } = useTranslation('dashboard')
+  const lang = i18n.language
+  // Month and day names come from the reader's locale rather than from the
+  // English tables in `data/calendar`.
+  const monthName = (year: number, month: number) =>
+    new Intl.DateTimeFormat(lang, { month: 'long' }).format(new Date(year, month - 1, 1))
+  const dayName = (year: number, month: number, day: number) =>
+    new Intl.DateTimeFormat(lang, { month: 'long', day: 'numeric' }).format(
+      new Date(year, month - 1, day),
+    )
+  const narrowWeekdays = useMemo(() => {
+    const format = new Intl.DateTimeFormat(lang, { weekday: 'narrow' })
+    return WEEKDAYS.map((_, i) =>
+      format.format(new Date(MONDAY.getFullYear(), MONDAY.getMonth(), MONDAY.getDate() + i)),
+    )
+  }, [lang])
   const { all, stageCounts } = useApplications()
   const { all: items, forMonth, overdue } = useTimeline()
   const { open } = useDialogs()
@@ -112,7 +132,7 @@ export function GlancePanel() {
   const isCurrentMonth = view.year === todayParts.year && view.month === todayParts.month
 
   /** The current month and day, as the month button's tooltip spells it. */
-  const monthToday = `${buildMonth(todayParts.year, todayParts.month).label} ${todayParts.day}`
+  const monthToday = dayName(todayParts.year, todayParts.month, todayParts.day)
 
   /**
    * The counters, derived rather than written down — and every one of them a
@@ -139,17 +159,17 @@ export function GlancePanel() {
     const oldestOverdue = overdue[0]
     return [
       {
-        label: 'Active',
+        label: t('glance.stats.active'),
         value: String(all.length - countOf('closed')),
         to: applicationsPath(),
       },
       {
-        label: 'Screens & interviews',
+        label: t('glance.stats.screens'),
         value: String(countOf('screen') + countOf('interview')),
         to: applicationsPath({ view: 'table', sort: formatSort('stage', 'asc') }),
       },
       {
-        label: 'Overdue',
+        label: t('glance.stats.overdue'),
         value: String(overdue.length),
         // Lands on the day the oldest one was due rather than on this month,
         // which is where you have to go to deal with it.
@@ -157,12 +177,12 @@ export function GlancePanel() {
         alert: overdue.length > 0,
       },
       {
-        label: 'Done today',
+        label: t('glance.stats.doneToday'),
         value: String(items.filter((i) => i.completedOn === today).length),
         to: vaultPath({ tool: 'reminders' }),
       },
     ]
-  }, [all, items, stageCounts, overdue, today])
+  }, [all, items, stageCounts, overdue, today, t])
 
   const monthEvents = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
 
@@ -202,7 +222,7 @@ export function GlancePanel() {
 
   return (
     <Panel className="flex min-w-0 flex-col">
-      <h2 className="sr-only">At a glance</h2>
+      <h2 className="sr-only">{t('glance.heading')}</h2>
 
       {/* Row 1 — counters, two up. Each is one link covering the figure and its
           label: two adjacent links to the same place would be two tab stops
@@ -243,17 +263,17 @@ export function GlancePanel() {
       <div className="@container mt-4 border-t border-hairline pt-3.5">
         <div className="mb-2 flex items-center justify-between gap-1">
           <h3 className="min-w-0 truncate text-xs font-medium text-text-2">
-            {month.label} <span className="text-text-3">{month.year}</span>
+            {monthName(view.year, view.month)} <span className="text-text-3">{month.year}</span>
           </h3>
 
           <div className="flex shrink-0 items-center">
             <button
               type="button"
               onClick={() => goTo(stepMonth(view.year, view.month, -1))}
-              aria-label="Previous month"
+              aria-label={t('glance.previousMonth')}
               className="grid size-6 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-well hover:text-text-1"
             >
-              <ChevronLeft className="size-3.5" strokeWidth={2} aria-hidden />
+              <ChevronLeft className="size-3.5 rtl:-scale-x-100" strokeWidth={2} aria-hidden />
             </button>
 
             {/* The dot doubles as a state read: filled while you are on the
@@ -261,9 +281,9 @@ export function GlancePanel() {
             <button
               type="button"
               onClick={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
-              aria-label="Go to current month"
+              aria-label={t('glance.currentMonth')}
               aria-current={isCurrentMonth ? 'date' : undefined}
-              title={`${monthToday} — current month`}
+              title={t('glance.currentMonthTitle', { date: monthToday })}
               className="grid size-6 cursor-pointer place-items-center rounded-sm hover:bg-well"
             >
               <span
@@ -278,10 +298,10 @@ export function GlancePanel() {
             <button
               type="button"
               onClick={() => goTo(stepMonth(view.year, view.month, 1))}
-              aria-label="Next month"
+              aria-label={t('glance.nextMonth')}
               className="grid size-6 cursor-pointer place-items-center rounded-sm text-text-3 hover:bg-well hover:text-text-1"
             >
-              <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden />
+              <ChevronRight className="size-3.5 rtl:-scale-x-100" strokeWidth={2} aria-hidden />
             </button>
           </div>
 
@@ -292,7 +312,7 @@ export function GlancePanel() {
             to={calendarPath({ y: view.year, m: view.month, d: selected })}
             className="shrink-0 text-xs text-text-3 underline-offset-4 hover:text-accent hover:underline"
           >
-            Open calendar
+            {t('glance.openCalendar')}
           </Link>
         </div>
 
@@ -300,9 +320,9 @@ export function GlancePanel() {
           {/* gap-x is load-bearing: without it the columns are exactly the
               width of a marker and adjacent circles butt together. */}
           <div className="grid grid-cols-7 gap-x-0.5 gap-y-1" role="presentation">
-            {WEEKDAYS.map((d) => (
+            {WEEKDAYS.map((d, i) => (
               <div key={d} className="pb-0.5 text-center text-xs text-text-3">
-                {d.slice(0, 1)}
+                {narrowWeekdays[i]}
               </div>
             ))}
 
@@ -323,9 +343,14 @@ export function GlancePanel() {
                   // The visible label is a bare numeral, which tells a screen
                   // reader nothing about which month or what is on the day —
                   // including the hollow dot's "everything here is ticked off".
-                  aria-label={`${month.label} ${day}${
-                    count ? `, ${count} event${count > 1 ? 's' : ''}` : ', no events'
-                  }${mark === 'done' ? ', all done' : ''}`}
+                  aria-label={
+                    count === 0
+                      ? t('glance.dayNone', { date: dayName(view.year, view.month, day) })
+                      : t(mark === 'done' ? 'glance.dayAllDone' : 'glance.day', {
+                          date: dayName(view.year, view.month, day),
+                          count,
+                        })
+                  }
                   // `touch-target` for WCAG 2.5.8: the cell draws at about
                   // 21.7x30 in this narrow column, and the criterion wants 24
                   // in both directions for EVERY pointer, not just a finger.
@@ -385,38 +410,44 @@ export function GlancePanel() {
            */}
           <div
             aria-live="polite"
-            className="relative min-w-0 border-t border-hairline pt-3 @[21rem]:border-t-0 @[21rem]:border-l @[21rem]:pt-0 @[21rem]:pl-4"
+            className="relative min-w-0 border-t border-hairline pt-3 @[21rem]:border-s @[21rem]:border-t-0 @[21rem]:ps-4 @[21rem]:pt-0"
           >
-            <div className="flex flex-col @[21rem]:absolute @[21rem]:inset-y-0 @[21rem]:right-0 @[21rem]:left-4">
+            <div className="flex flex-col @[21rem]:absolute @[21rem]:inset-y-0 @[21rem]:start-4 @[21rem]:end-0">
               <h4 className="mb-2 shrink-0 text-xs font-medium text-text-2">
-                {month.label} {selected}
-                {selected === month.today ? <span className="text-text-3"> · today</span> : null}
+                {dayName(view.year, view.month, selected)}
+                {selected === month.today ? (
+                  <span className="text-text-3"> · {t('glance.today')}</span>
+                ) : null}
               </h4>
 
               {dayEvents.length === 0 ? (
                 <p className="text-xs text-text-3">
-                  Nothing planned.{' '}
-                  <button
-                    type="button"
-                    // The empty day is the moment you want to fill it, and until
-                    // now this was the one dead end left on the panel: a picker
-                    // that could select a day and then do nothing with it.
-                    onClick={() =>
-                      open('timelineItem', {
-                        mode: 'event',
-                        initial: { date: isoOf(view.year, view.month, selected) },
-                      })
-                    }
-                    className="cursor-pointer text-accent underline-offset-2 hover:underline"
-                  >
-                    Add something
-                  </button>
-                  .
+                  <Trans
+                    t={t}
+                    i18nKey="glance.nothingPlanned"
+                    components={{
+                      add: (
+                        <button
+                          type="button"
+                          // The empty day is the moment you want to fill it, and until
+                          // now this was the one dead end left on the panel: a picker
+                          // that could select a day and then do nothing with it.
+                          onClick={() =>
+                            open('timelineItem', {
+                              mode: 'event',
+                              initial: { date: isoOf(view.year, view.month, selected) },
+                            })
+                          }
+                          className="cursor-pointer text-accent underline-offset-2 hover:underline"
+                        />
+                      ),
+                    }}
+                  />
                 </p>
               ) : (
                 // Bleeds right by the panel's own padding, so the scrollbar rides
                 // the card's edge rather than the gap beside the text.
-                <ul className="-mr-4 flex max-h-44 min-h-0 flex-1 flex-col gap-2.5 overflow-x-hidden overflow-y-auto pr-4 sm:-mr-5 sm:pr-5 @[21rem]:max-h-none">
+                <ul className="-me-4 flex max-h-44 min-h-0 flex-1 flex-col gap-2.5 overflow-x-hidden overflow-y-auto pe-4 sm:-me-5 sm:pe-5 @[21rem]:max-h-none">
                   {dayEvents.map((e) => {
                     const Icon = KIND_ICON[e.kind]
                     const mark = markOf(e)
@@ -443,7 +474,7 @@ export function GlancePanel() {
                            index.css), so this row said nothing under the
                            pointer. The counters above it were never affected —
                            their <Link> underlines the whole group. */
-                          className="min-w-0 cursor-pointer rounded-sm text-left underline-offset-2 transition-colors hover:text-accent hover:underline"
+                          className="min-w-0 cursor-pointer rounded-sm text-start underline-offset-2 transition-colors hover:text-accent hover:underline"
                         >
                           {/* Struck and greyed once ticked off, the same as the
                             calendar draws it — the row stays because the day

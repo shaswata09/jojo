@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { Field, SettingRow } from '@/components/common/Field'
@@ -28,6 +29,7 @@ export function InterestsPanel({
   draft,
   set,
 }: Pick<ProfileFormState, 'profile' | 'update'> & { draft: ProfileText; set: Setter }) {
+  const { t } = useTranslation('profile')
   const { matchTerms, roles, includeAcademia, includeIndustry } = profile
 
   const addTerm = (typed: string) => {
@@ -37,28 +39,25 @@ export function InterestsPanel({
 
   return (
     <Panel>
-      <PanelTitle hint="drives scout matching">Interests and targets</PanelTitle>
+      <PanelTitle hint={t('interests.hint')}>{t('interests.title')}</PanelTitle>
 
       <div className="mb-4">
         {/* Renamed from "keywords", which is taken. A keyword in this app is
             something you file a record under and filter by; these are the
             terms the scout scores a posting against, and the two lists have
             never had anything to do with each other. */}
-        <p className="mb-1 text-xs text-text-2">Match terms</p>
-        <p className="mb-2 text-xs text-text-3">
-          Research areas and phrasings the scout looks for. Separate from the keywords you file
-          records under.
-        </p>
+        <p className="mb-1 text-xs text-text-2">{t('interests.matchTerms.title')}</p>
+        <p className="mb-2 text-xs text-text-3">{t('interests.matchTerms.description')}</p>
         <ul className="flex flex-wrap gap-1.5">
           {matchTerms.map((term) => (
             <li key={term}>
-              <Chip tone="teal" className="pr-1">
+              <Chip tone="teal" className="pe-1">
                 {term}
                 <button
                   type="button"
                   onClick={() => update({ matchTerms: without(matchTerms, term) })}
-                  aria-label={`Remove ${term}`}
-                  className="ml-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
+                  aria-label={t('interests.matchTerms.remove', { term })}
+                  className="ms-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
                 >
                   <X className="size-3" aria-hidden />
                 </button>
@@ -66,7 +65,11 @@ export function InterestsPanel({
             </li>
           ))}
           <li>
-            <ChipAdder label="New match term" placeholder="Add a match term" onAdd={addTerm} />
+            <ChipAdder
+              label={t('interests.matchTerms.newLabel')}
+              placeholder={t('interests.matchTerms.placeholder')}
+              onAdd={addTerm}
+            />
           </li>
         </ul>
       </div>
@@ -75,37 +78,37 @@ export function InterestsPanel({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field
-          label="Target roles"
+          label={t('interests.targetRoles.label')}
           value={draft.targetRoles}
-          placeholder="e.g. Assistant professor (TT) · Research scientist"
+          placeholder={t('interests.targetRoles.placeholder')}
           onChange={set('targetRoles')}
         />
         <Field
-          label="Preferred regions"
+          label={t('interests.regions.label')}
           value={draft.regions}
-          placeholder="e.g. Texas · remote"
+          placeholder={t('interests.regions.placeholder')}
           onChange={set('regions')}
         />
       </div>
 
       <div className="mt-4">
         <SettingRow
-          label="Include academia postings"
+          label={t('interests.academia')}
           control={
             <Switch
               checked={includeAcademia}
               onCheckedChange={(v) => update({ includeAcademia: v })}
-              aria-label="Include academia postings"
+              aria-label={t('interests.academia')}
             />
           }
         />
         <SettingRow
-          label="Include industry postings"
+          label={t('interests.industry')}
           control={
             <Switch
               checked={includeIndustry}
               onCheckedChange={(v) => update({ includeIndustry: v })}
-              aria-label="Include industry postings"
+              aria-label={t('interests.industry')}
             />
           }
         />

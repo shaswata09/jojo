@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -7,14 +8,14 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Screen } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
-import { shortDate, whenLabel } from '@jojo/service/data/timeline'
+import { displayName } from '@jojo/service/data/seed'
 import { useApplications, useTimeline, useVault } from '@/lib/store-context'
 import { useOrganisations } from '@jojo/service/react/use-organisations'
 import { TODAY } from '@/lib/today'
 import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Everything about one employer, on a phone.
@@ -28,6 +29,8 @@ import { space } from '@/theme/tokens'
  * code on a laptop or a link out of the assistant can name an employer now.
  */
 export function OrganisationScreen() {
+  const { t } = useTranslation('screens')
+  const domain = useDomain()
   const route = useRoute<RouteProp<RootStackParamList, 'Organisation'>>()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { get } = useOrganisations()
@@ -39,12 +42,12 @@ export function OrganisationScreen() {
 
   if (!organisation) {
     return (
-      <Screen title="Employer" subtitle="Nothing here answers to that address">
+      <Screen title={t('organisation.missing.title')} subtitle={t('organisation.missing.subtitle')}>
         <Panel>
           <EmptyState
             icon="briefcase"
-            title="No employer at this address"
-            description="An employer page exists for as long as an application names it. If every application to this one was deleted, so was this."
+            title={t('organisation.missing.emptyTitle')}
+            description={t('organisation.missing.emptyDescription')}
           />
         </Panel>
       </Screen>
@@ -72,12 +75,12 @@ export function OrganisationScreen() {
       title={organisation.name}
       subtitle={
         applications.length === 1
-          ? 'One application here'
-          : `${String(applications.length)} applications here, ${String(open)} still open`
+          ? t('organisation.subtitleOne')
+          : t('organisation.subtitleMany', { count: applications.length, open })
       }
     >
       <Panel>
-        <PanelTitle>Applications</PanelTitle>
+        <PanelTitle>{t('organisation.applications')}</PanelTitle>
         {applications.map((a, i) => (
           <View key={a.id}>
             {i > 0 ? <Divider /> : null}
@@ -96,7 +99,7 @@ export function OrganisationScreen() {
                   </Txt>
                 ) : null}
               </View>
-              <Chip size="sm">{STAGE_LABEL[a.stage]}</Chip>
+              <Chip size="sm">{domain.stage(a.stage)}</Chip>
             </View>
           </View>
         ))}
@@ -104,15 +107,15 @@ export function OrganisationScreen() {
 
       <Panel>
         <PanelTitle
-          hint={dates.length > 0 ? `${String(dates.length)} across these jobs` : undefined}
+          hint={dates.length > 0 ? t('organisation.datesHint', { count: dates.length }) : undefined}
         >
-          Dates
+          {t('organisation.dates')}
         </PanelTitle>
         {dates.length === 0 ? (
           <EmptyState
             icon="calendar"
-            title="Nothing dated here"
-            description="Deadlines, interviews and reminders about any of these jobs collect on this screen."
+            title={t('organisation.datesEmptyTitle')}
+            description={t('organisation.datesEmptyDescription')}
           />
         ) : (
           dates.map((item, i) => (
@@ -129,10 +132,10 @@ export function OrganisationScreen() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Txt size="xs" mono tone="secondary">
-                    {shortDate(item.date)}
+                    {domain.shortDate(item.date)}
                   </Txt>
                   <Txt size="xs" tone="muted">
-                    {whenLabel(item, TODAY)}
+                    {domain.when(item, TODAY)}
                   </Txt>
                 </View>
               </View>
@@ -142,14 +145,18 @@ export function OrganisationScreen() {
       </Panel>
 
       <Panel>
-        <PanelTitle hint={people.length > 0 ? `${String(people.length)} named` : undefined}>
-          People
+        <PanelTitle
+          hint={
+            people.length > 0 ? t('organisation.peopleHint', { count: people.length }) : undefined
+          }
+        >
+          {t('organisation.people')}
         </PanelTitle>
         {people.length === 0 ? (
           <EmptyState
             icon="user"
-            title="Nobody named yet"
-            description="Referees, search chairs and recruiters named on any of these jobs show up here."
+            title={t('organisation.peopleEmptyTitle')}
+            description={t('organisation.peopleEmptyDescription')}
           />
         ) : (
           people.map((p, i) => (

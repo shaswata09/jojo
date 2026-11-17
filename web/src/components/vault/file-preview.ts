@@ -3,6 +3,7 @@
  * the rule is a plain module a test can run without rendering anything.
  */
 import type { VaultFile } from '@/data/vault'
+import { i18next } from '@/i18n/i18n'
 
 /** Extensions a browser draws in an `<img>`. `svg` included: as an image it runs no script and fetches nothing. */
 const IMAGE_FILE = /\.(?:png|jpe?g|gif|webp|avif|bmp|ico|svg)$/i
@@ -36,9 +37,9 @@ export function noPreviewText(file: Pick<VaultFile, 'kind'>, stored: boolean): s
     // "browsers cannot render page files" would be nonsense — a browser is the
     // one thing that certainly can. What is missing here is the capture, not
     // the capability.
-    return 'This posting has no saved copy on this device. Captures are kept where they were taken, so one made on your phone is not here \u2014 and a row restored from a backup carries the record without the page.'
+    return i18next.t('vault:viewer.noPreview.page')
   }
   return stored
-    ? `Browsers render PDFs natively but not ${file.kind} files. The document is stored \u2014 Save hands it to your own application.`
-    : `Browsers render PDFs natively but not ${file.kind} files \u2014 and there is no stored document behind this row to hand to anything else.`
+    ? i18next.t('vault:viewer.noPreview.stored', { kind: file.kind })
+    : i18next.t('vault:viewer.noPreview.missing', { kind: file.kind })
 }

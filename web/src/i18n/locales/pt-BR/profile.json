@@ -1,0 +1,182 @@
+{
+  "shared": {
+    "undo": "Desfazer",
+    "cancel": "Cancelar",
+    "add": "Adicionar",
+    "discard": "Descartar",
+    "save": "Salvar",
+    "didNotSave": "Isso não foi salvo"
+  },
+  "saveBar": {
+    "unsaved": "Alterações não salvas — salvar grava tudo neste navegador."
+  },
+  "form": {
+    "saved": {
+      "title": "Perfil salvo",
+      "description": "Gravado neste navegador e mantido."
+    }
+  },
+  "fields": {
+    "basics": "Informações básicas",
+    "fullName": {
+      "label": "Nome completo",
+      "placeholder": "ex.: Lonardo Jenson"
+    },
+    "position": {
+      "label": "Cargo atual",
+      "placeholder": "ex.: Doutorando, Ciência da Computação"
+    },
+    "location": {
+      "label": "Localização",
+      "placeholder": "ex.: Santa Clara, CA"
+    },
+    "email": {
+      "label": "E-mail"
+    },
+    "links": "Links",
+    "website": {
+      "label": "Site"
+    }
+  },
+  "interests": {
+    "title": "Interesses e objetivos",
+    "hint": "orienta as correspondências do Scout",
+    "matchTerms": {
+      "title": "Termos de busca",
+      "description": "Áreas de pesquisa e expressões que o Scout procura. Separados das palavras-chave com que você arquiva registros.",
+      "remove": "Remover {{term}}",
+      "newLabel": "Novo termo de busca",
+      "placeholder": "Adicionar um termo"
+    },
+    "targetRoles": {
+      "label": "Cargos desejados",
+      "placeholder": "ex.: Professor assistente (TT) · Cientista pesquisador"
+    },
+    "regions": {
+      "label": "Regiões preferidas",
+      "placeholder": "ex.: Texas · remoto"
+    },
+    "academia": "Incluir vagas acadêmicas",
+    "industry": "Incluir vagas da indústria"
+  },
+  "roleTags": {
+    "title": "Tags de cargo",
+    "description": "Os tipos de cargo que você acompanha. Cada candidatura é arquivada em uma delas, e tanto o filtro de cargos quanto os números por cargo em Estatísticas a usam. Remover uma aqui deixa as candidaturas que a têm exatamente onde estão.",
+    "remove_one": "Remover {{role}}, usada em {{count}} candidatura",
+    "remove_many": "Remover {{role}}, usada em {{count}} candidaturas",
+    "remove_other": "Remover {{role}}, usada em {{count}} candidaturas",
+    "newLabel": "Nova tag de cargo",
+    "placeholder": "ex.: Cientista de dados"
+  },
+  "documents": {
+    "title": "Documentos",
+    "hint": "a seção {{bucket}} do Cofre",
+    "upload": "Enviar",
+    "exportInSettings": "Exportar em Configurações",
+    "empty": {
+      "title": "Nenhum documento ainda",
+      "description": "Solte aqui seu currículo e suas declarações, ou escolha-os — eles são arquivados no Cofre em {{bucket}}, onde o resto do app consegue acessá-los.",
+      "upload": "Enviar um documento"
+    },
+    "footer": "Os mesmos arquivos da <anchor>ferramenta Arquivos</anchor> do Cofre, filtrados por {{bucket}}. Solte um documento aqui ou escolha um, e o arquivo em si fica neste navegador — nada é enviado para lugar nenhum. Clique em um para lê-lo."
+  },
+  "documentTile": {
+    "open": "Abrir {{name}}",
+    "meta": "{{size}} · salvo {{ago}}",
+    "delete": "Excluir {{name}}"
+  },
+  "background": {
+    "title": "Sua trajetória",
+    "hint_one": "{{count}} registrado · o que é comparado com uma vaga",
+    "hint_many": "{{count}} registrados · o que é comparado com uma vaga",
+    "hint_other": "{{count}} registrados · o que é comparado com uma vaga",
+    "details_one": "{{count}} detalhe",
+    "details_many": "{{count}} detalhes",
+    "details_other": "{{count}} detalhes",
+    "readFromDocument": "lido de um documento",
+    "edit": "Editar {{title}}",
+    "remove": "Remover {{title}}",
+    "added": "{{title}} adicionado",
+    "updated": "{{title}} atualizado",
+    "removed": "{{title}} removido",
+    "addEntry": "Adicionar uma entrada",
+    "form": {
+      "kind": "Tipo",
+      "title": "Título",
+      "titlePlaceholder": "O que foi",
+      "where": "Onde",
+      "optional": "Opcional",
+      "when": "Quando",
+      "whenPlaceholder": "Como está escrito — “2021–2024”",
+      "year": "Ano",
+      "detail": "Detalhe",
+      "detailPlaceholder": "Qualquer coisa que valha comparar com uma vaga (opcional)",
+      "highlights": "Destaques",
+      "highlightsHint": "Um por linha — o que foi construído, lançado, ensinado ou descoberto.",
+      "readKept": "lido de um documento — sua edição prevalece sobre a leitura",
+      "saveChanges": "Salvar alterações"
+    },
+    "empty": {
+      "title": "Nada registrado ainda",
+      "configured": "Coloque seu currículo ou uma declaração de pesquisa ou de docência no Cofre e o jojo vai se oferecer para lê-lo — o que ele encontrar é mostrado a você antes de qualquer coisa ser salva. Ou adicione uma entrada à mão.",
+      "unconfigured": "Ler um documento exige um modelo. Conecte um em Configurações, depois coloque seu currículo ou uma declaração no Cofre e o jojo vai se oferecer para lê-lo. Você pode adicionar entradas à mão sem um modelo."
+    },
+    "readMenu": {
+      "needsModel": "Ler um documento exige um modelo. Conecte um em Configurações.",
+      "button": "Ler um documento",
+      "nothing": "Nada no Cofre pode ser lido ainda. Solte seu currículo ou uma declaração lá e ele aparece aqui.",
+      "allRead": "Tudo o que é legível no Cofre já foi lido.",
+      "read": "lido"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Formação",
+      "employment": "Emprego",
+      "publication": "Publicação",
+      "skill": "Habilidade",
+      "teaching": "Docência",
+      "award": "Prêmio",
+      "service": "Serviço",
+      "certification": "Certificação",
+      "language": "Idioma",
+      "project": "Projeto",
+      "volunteering": "Voluntariado",
+      "membership": "Associação",
+      "grant": "Bolsa",
+      "patent": "Patente"
+    },
+    "skipped_one": "{{count}} entrada foi ignorada",
+    "skipped_many": "{{count}} entradas foram ignoradas",
+    "skipped_other": "{{count}} entradas foram ignoradas",
+    "readIt": "Ler",
+    "readFailed": "A leitura do documento falhou.",
+    "notNow": "Agora não",
+    "discardEntries": "Descartar estas entradas",
+    "review": {
+      "single": "1 entrada lida deste documento",
+      "some": "{{kept}} de {{total}} entradas serão adicionadas",
+      "untick": "Desmarque o que estiver errado.",
+      "add": "Adicionar {{title}}",
+      "connections_one": "{{count}} conexão entre elas",
+      "connections_many": "{{count}} conexões entre elas",
+      "connections_other": "{{count}} conexões entre elas",
+      "addOne": "Adicionar ao meu perfil",
+      "addMany": "Adicionar {{total}} ao meu perfil"
+    },
+    "toast": {
+      "already": "Já está no seu perfil",
+      "added_one": "{{count}} adicionada ao seu perfil",
+      "added_many": "{{count}} adicionadas ao seu perfil",
+      "added_other": "{{count}} adicionadas ao seu perfil",
+      "nothing": "Nada pôde ser adicionado",
+      "readFrom": "Lido de {{name}}.",
+      "known": "{{known}} de {{total}} já eram conhecidas.",
+      "related_one": "{{count}} conexão entre elas registrada.",
+      "related_many": "{{count}} conexões entre elas registradas.",
+      "related_other": "{{count}} conexões entre elas registradas.",
+      "weigh": "O jojo agora pode comparar uma vaga com o que você já fez.",
+      "refused": "As entradas foram recusadas."
+    }
+  }
+}

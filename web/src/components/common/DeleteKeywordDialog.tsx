@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import { usage } from '@/components/common/label-display'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 
@@ -22,6 +22,7 @@ export function DeleteKeywordDialog({
   id: string | null
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation()
   const { labels, removeLabel, countFor } = useLabels()
   const { toast } = useToast()
 
@@ -33,21 +34,19 @@ export function DeleteKeywordDialog({
     const removed = removeLabel(label.id)
     if (!removed.ok) {
       toast({
-        title: 'That did not delete',
-        description: removed.refusal ?? `${label.name} is still a keyword.`,
+        title: t('deleteKeyword.failed'),
+        description: removed.refusal ?? t('deleteKeyword.stillThere', { name: label.name }),
         tone: 'danger',
       })
       return
     }
     const { restore } = removed
     toast({
-      title: `${label.name} deleted`,
+      title: t('deleteKeyword.deleted', { name: label.name }),
       description:
-        used === 0
-          ? 'It was not on any record.'
-          : `Taken off ${usage(used)}, and out of the keyword filter.`,
+        used === 0 ? t('deleteKeyword.wasUnused') : t('deleteKeyword.takenOff', { count: used }),
       tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
+      action: { label: t('actions.undo'), onClick: restore },
     })
   }
 
@@ -55,13 +54,15 @@ export function DeleteKeywordDialog({
     <ConfirmDialog
       open={label !== null}
       onOpenChange={onOpenChange}
-      title={label ? `Delete ${label.name}?` : 'Delete keyword?'}
-      description={
-        used === 0
-          ? 'Not on any record yet, so nothing else changes.'
-          : `Used on ${usage(used)}. Those records stay — they lose this keyword.`
+      title={
+        label
+          ? t('deleteKeyword.confirmTitle', { name: label.name })
+          : t('deleteKeyword.confirmTitleAny')
       }
-      confirmLabel="Delete keyword"
+      description={
+        used === 0 ? t('deleteKeyword.unused') : t('deleteKeyword.usedOn', { count: used })
+      }
+      confirmLabel={t('deleteKeyword.confirm')}
       tone="danger"
       onConfirm={onConfirm}
     />

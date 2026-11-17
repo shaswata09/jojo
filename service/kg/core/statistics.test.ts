@@ -164,6 +164,19 @@ describe('reachedOf', () => {
     const back = app({ stage: 'submitted', stageDates: { interview: '2026-09-25' } })
     expect(reachedOf(back)).toBe(REACH.sent)
   })
+
+  it('does not count an offer a card was dragged back out of', () => {
+    // Interview -> Offer -> Interview keeps both dates; the board shows an
+    // interview, so the funnel and the Offer band must too.
+    const back = app({
+      stage: 'interview',
+      stageDates: { interview: '2026-09-25', offer: '2026-10-02' },
+    })
+    expect(reachedOf(back)).toBe(REACH.interview)
+    expect(statsFor([back]).outcomes.find((b) => b.label === 'Offer')?.count).toBe(0)
+    // Closed after the offer, the same date still counts: that offer happened.
+    expect(reachedOf({ ...back, stage: 'closed' })).toBe(REACH.offer)
+  })
 })
 
 /* ---------------------------------- funnel -------------------------------- */

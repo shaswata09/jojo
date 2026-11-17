@@ -1,4 +1,5 @@
 import { Compass } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useTour } from '@/components/tour/tour-context'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils'
  * app shell (`components/tour`), so it can cross pages; this is only a way in.
  */
 export function TourLauncher({ className }: { className?: string }) {
+  const { t } = useTranslation('guide')
   const tour = useTour()
   const resume = tour.saved > 0
   return (
@@ -19,7 +21,7 @@ export function TourLauncher({ className }: { className?: string }) {
       disabled={tour.active}
     >
       <Compass aria-hidden />
-      {resume ? `Resume the tour — step ${tour.saved + 1} of ${tour.total}` : 'Take the tour'}
+      {resume ? t('tour.resume', { step: tour.saved + 1, total: tour.total }) : t('tour.start')}
     </Button>
   )
 }

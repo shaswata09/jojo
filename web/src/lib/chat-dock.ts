@@ -201,6 +201,30 @@ export function dockLayout(
   return { mode: 'compact', right, width: Math.max(0, Math.min(usable, WINDOW_WIDTH)) }
 }
 
+/**
+ * How far the navigation column reaches in from the inline START of the window
+ * — the `leftBound` the layout keeps clear of.
+ *
+ * Every distance here is measured from the inline END, the corner the dock
+ * docks in (`right` is a distance from that edge), so on a right-to-left page
+ * the whole layout mirrors with no change but this one: there the sidebar is on
+ * the right, and its reach is the window's width less its left edge. Taking
+ * `rect.right` in Arabic measured the sidebar from the wrong side, and the dock
+ * and every conversation opened over the nav and the Sync button.
+ *
+ * A drawer slid off either edge (the phone's closed navigation) bounds nothing.
+ */
+export function navBound(
+  rect: { left: number; right: number; width: number } | undefined,
+  viewport: number,
+  rtl: boolean,
+): number {
+  if (!rect || rect.width <= 0) return 0
+  if (rtl)
+    return rect.left < viewport && rect.right <= viewport + 1 ? Math.round(viewport - rect.left) : 0
+  return rect.left >= 0 && rect.right > 0 ? Math.round(rect.right) : 0
+}
+
 /* ------------------------------ where it sits ----------------------------- */
 
 /**

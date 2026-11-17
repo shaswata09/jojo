@@ -4,5 +4,266 @@
     "description": "jojo가 표시되는 언어입니다. 기록은 작성한 언어 그대로 남습니다.",
     "system": "이 브라우저와 동일({{name}})",
     "loadFailed": "해당 언어를 불러올 수 없습니다. jojo는 {{name}}(으)로 유지됩니다."
+  },
+  "buckets": {
+    "overdue": "기한 지남",
+    "today": "오늘",
+    "upcoming": "예정",
+    "done": "완료"
+  },
+  "snooze": {
+    "day": {
+      "soon": "내일",
+      "later": "하루 뒤",
+      "duration": "하루"
+    },
+    "threeDays": {
+      "soon": "3일 후",
+      "later": "사흘 뒤",
+      "duration": "사흘"
+    },
+    "week": {
+      "soon": "7일 후",
+      "later": "일주일 뒤",
+      "duration": "일주일"
+    }
+  },
+  "routeFailure": {
+    "title": "이 페이지를 불러오지 못했어요",
+    "subtitle": "jojo의 나머지 부분은 계속 작동하고 있어요.",
+    "emptyTitle": "이 화면에서 문제가 생겼어요",
+    "emptyDescription": "다른 곳에 갔다가 돌아오면 다시 불러와요. 매번 이런다면 이 페이지가 보여 주는 기록에 원인이 있어요. 설정에서 먼저 백업을 받아 둘 수 있어요.",
+    "back": "대시보드로 돌아가기"
+  },
+  "writeResult": {
+    "title": "저장되지 않았어요",
+    "refused": "변경이 거부되었어요."
+  },
+  "copy": {
+    "blocked": "차단됨",
+    "copied": "복사됨",
+    "copy": "복사"
+  },
+  "drag": {
+    "theItem": "항목",
+    "aTarget": "놓을 곳",
+    "start": "{{name}}을(를) 집었어요.",
+    "over": "{{name}}이(가) {{place}} 위에 있어요.",
+    "notOver": "{{name}}이(가) 더 이상 놓을 곳 위에 있지 않아요.",
+    "dropped": "{{name}}을(를) {{place}}에 놓았어요.",
+    "droppedHome": "{{name}}을(를) 처음 자리에 놓았어요.",
+    "cancelled": "끌기를 취소했어요. {{name}}을(를) 원래 자리로 되돌렸어요.",
+    "instructions": "끌 수 있는 항목을 집으려면 스페이스 바를 누르세요.\n끄는 동안 화살표 키로 항목을 옮기세요.\n스페이스 바를 다시 누르면 새 위치에 놓이고, Esc 키를 누르면 취소돼요."
+  },
+  "actions": {
+    "undo": "실행 취소",
+    "cancel": "취소",
+    "save": "저장",
+    "close": "닫기"
+  },
+  "records_other": "기록 {{count}}개",
+  "deleteKeyword": {
+    "failed": "삭제되지 않았어요",
+    "stillThere": "{{name}}은(는) 여전히 키워드예요.",
+    "deleted": "{{name}} 삭제됨",
+    "wasUnused": "어떤 기록에도 붙어 있지 않았어요.",
+    "takenOff_other": "기록 {{count}}개와 키워드 필터에서 뺐어요.",
+    "confirmTitle": "{{name}}을(를) 삭제할까요?",
+    "confirmTitleAny": "키워드를 삭제할까요?",
+    "unused": "아직 어떤 기록에도 없으니 다른 건 바뀌지 않아요.",
+    "usedOn_other": "기록 {{count}}개에 쓰이고 있어요. 기록은 남고 이 키워드만 빠져요.",
+    "confirm": "키워드 삭제"
+  },
+  "bucketFilter": {
+    "all": "전체"
+  },
+  "marks": {
+    "bold": "굵게",
+    "italic": "기울임",
+    "underlined": "밑줄"
+  },
+  "pageHeader": {
+    "options": "{{title}} 옵션"
+  },
+  "errorBoundary": {
+    "title": "문제가 생겼어요",
+    "body": "화면을 표시하지 못했어요. '다시 시도'를 누르면 페이지를 새로 고치지 않고 다시 만들어요.",
+    "retry": "다시 시도"
+  },
+  "tone": {
+    "colourFor": "{{label}} 색상",
+    "anyColourFor": "{{label}}에 쓸 임의 색상"
+  },
+  "boot": {
+    "takingLong": "로컬 데이터베이스를 여는 데 평소보다 오래 걸리고 있어요. 다른 jojo 탭이 붙잡고 있을 수 있어요. 다른 탭을 닫으면 보통 풀려요.",
+    "opening": "로컬 데이터베이스를 여는 중…"
+  },
+  "keywordPicker": {
+    "none": "아직 없음",
+    "choose": "키워드 선택",
+    "heading": "키워드",
+    "newPlaceholder": "새 키워드…",
+    "new": "새 키워드"
+  },
+  "rowMenu": {
+    "moreFor": "{{name}}에 대한 추가 작업",
+    "more": "추가 작업"
+  },
+  "firstRun": {
+    "title": "어떻게 시작할까요?",
+    "description": "jojo는 모든 것을 이 기기에 보관하니, 선택은 여러분의 몫이에요. 어느 쪽도 최종 결정은 아니에요. 나중에 설정에서 데모 데이터를 불러오거나 모든 기록을 지울 수 있어요.",
+    "demo": {
+      "title": "데모 데이터로 둘러보기",
+      "detail": "둘러볼 수 있는 구직 예시예요. 지원 12건, 타임라인, 가득 찬 보관함이 들어 있어요. 어느 것도 여러분의 것이 아니고, 나중에 클릭 한 번으로 지울 수 있어요.",
+      "working": "불러오는 중…"
+    },
+    "empty": {
+      "title": "빈 상태로 시작",
+      "detail": "데모 기록이 하나도 없어요. 모든 페이지가 빈 상태로 열리고, jojo의 첫 항목은 여러분이 직접 추가한 것이 돼요.",
+      "working": "지우는 중…"
+    }
+  },
+  "recovery": {
+    "title": "jojo가 데이터베이스를 읽을 수 없어요",
+    "body": "기록은 아직 이 기기에 있어요. jojo는 아무것도 바꾸거나 대체하지 않았고, 그 위에 데모 데이터를 불러오지도 않아요. 멀쩡해 보이려고 스스로 다시 채우는 저장소라면 이 상황을 영구적인 데이터 손실로 만들 테니까요.",
+    "downloadHint": "읽을 수 있었던 행을 파일로 저장해요",
+    "downloadNothing": "데이터베이스를 전혀 읽지 못해서 저장할 내용이 없어요",
+    "download": "읽은 만큼 다운로드",
+    "working": "처리 중…",
+    "retry": "다시 시도",
+    "freshHint": "데이터베이스를 삭제하고 jojo를 처음 상태로 시작해요",
+    "fresh": "새로 시작",
+    "readable_other": "{{count}}개 행을 읽을 수 있었어요. 새로 시작하면 삭제되니 무엇보다 먼저 다운로드하세요.",
+    "unreadable": "저장소에서 아무것도 읽지 못해서 다운로드할 것이 없어요. 먼저 다시 시도해 보세요. 다른 탭이 열어 둔 데이터베이스는 이렇게 실패했다가 저절로 회복돼요.",
+    "confirmTitle": "데이터베이스를 삭제하고 새로 시작할까요?",
+    "confirmBody": "jojo의 로컬 데이터베이스와 그 안에 남은 모든 것을 삭제하고 완전히 처음부터 다시 시작해요. 데모 데이터로 시작할지 빈 상태로 시작할지 묻는 첫 실행 질문도 포함이에요. 아무것도 고치지 않으며 되돌릴 수도 없어요. 읽을 수 있는 행을 아직 다운로드하지 않았다면 취소하고 먼저 다운로드하세요.",
+    "confirm": "삭제하고 새로 시작"
+  },
+  "labelFilter": {
+    "label": "키워드로 필터링",
+    "none": "아직 키워드가 없어요. 하나 추가하면 필터로 쓸 수 있어요.",
+    "example": "예: 개발자",
+    "add": "키워드 추가",
+    "clear": "지우기"
+  },
+  "labelPicker": {
+    "editOn": "{{name}}의 키워드 편집",
+    "edit": "키워드 편집"
+  },
+  "keywordChip": {
+    "taken": "같은 이름의 키워드가 이미 있어요.",
+    "needsName": "키워드에는 이름이 필요해요.",
+    "rename": "이름 바꾸기",
+    "colour": "색상",
+    "stopFiltering": "{{name}} 필터 해제",
+    "filterBy": "{{name}}(으)로 필터링",
+    "edit": "키워드 {{name}} 편집",
+    "editHint": "이름 바꾸기, 색 바꾸기, 삭제"
+  },
+  "welcome": {
+    "title": "나에 대해 조금만 알려 주세요",
+    "description": "초안 끝에는 이름이 들어가고, 스카우트는 찾고 있는 조건에 맞춰 점수를 매겨요. 모두 이 기기에 남고 전부 선택 사항이에요. 나중에 프로필에서 채워도 돼요.",
+    "fullName": "이름",
+    "fullNameExample": "예: Lonardo Jenson",
+    "position": "현재 직책",
+    "positionExample": "예: 컴퓨터공학 박사과정",
+    "location": "위치",
+    "locationExample": "예: Santa Clara, CA",
+    "email": "이메일",
+    "skip": "지금은 건너뛰기",
+    "save": "저장하고 계속",
+    "rest": "나머지(링크, 희망 직무, 스카우트가 맞춰 보는 용어)는 <anchor>프로필</anchor>에 있어요."
+  },
+  "onboarding": {
+    "tourTitle": "직접 해 보는 투어를 시작할까요?",
+    "tourDescription": "실제 페이지를 따라가며 각 부분을 스포트라이트로 비추고 용도를 알려 줘요. 여러분은 하나씩 직접 해 보면 돼요. 투어가 대신 입력하거나 저장하거나 바꾸는 일은 없고, 중간에 멈춰도 위치를 기억해요.",
+    "notNow": "나중에",
+    "start": "투어 시작",
+    "always": "투어는 언제든 <em>사용 방법</em>에 있으니 지금 거절해도 괜찮아요."
+  },
+  "setup": {
+    "skip": "지금은 건너뛰기",
+    "continue": "계속",
+    "done": "완료",
+    "optional": "모두 선택 사항이며 나중에 설정에서 설정할 수 있어요.",
+    "model": {
+      "title": "모델 연결",
+      "body": "이 설정이 jojo를 단순한 서류함이 아닌 에이전트로 만들어 줘요. 구직 활동에 관한 질문에 답하고, 후속 연락과 초안을 쓰고, 기록을 채우고 채용 공고를 지켜보는 Job Scout 파이프라인을 실행할 수 있어요. 내 컴퓨터의 모델을 지정하면 아무것도 기기 밖으로 나가지 않아요."
+    },
+    "reader": {
+      "title": "문서를 읽게 하기",
+      "body": "이게 없으면 어시스턴트는 문서 이름만 볼 수 있어요. 이 컴퓨터에서 MarkItDown을 실행하면(아래 명령 두 줄) 초안을 쓰고 답할 때 이력서, 자기소개서, 저장한 채용 공고의 내용을 읽을 수 있어요."
+    },
+    "crash": {
+      "title": "오류 보고서와 사용 현황",
+      "description": "서로 다른 두 가지이며 둘 다 켜져 있어요. 여기서나 나중에 설정에서 어느 쪽이든 끌 수 있어요. 어느 쪽도 지원서, 문서, 메모, 프로필, 대화 같은 기록을 담을 수 없어요.",
+      "inReport": "보고서에 들어가는 것",
+      "inError": "오류 메시지와 jojo의 어디에서 발생했는지.",
+      "inStack": "실패한 코드를 알려 주는 스택 트레이스.",
+      "never": "절대 들어가지 않는 것",
+      "neverRecords": "지원서, 문서, 메모, 프로필, 대화.",
+      "neverSecrets": "API 키, 사용하는 주소, 홈 디렉터리, 모든 이메일 주소. 이런 정보는 보내기 전이 아니라 보고서를 쓰기 전에 제거돼요.",
+      "where": "이 브라우저와 jojo 확장 프로그램에서는 오류 보고서가 <em>이 기기에만 남아요</em>. 아무것도 업로드되지 않고, 백업 파일에도 포함되지 않아요. 설정에서 직접 읽을 수 있어요. jojo 휴대폰 앱에서는 같은 보고서가 Google의 Firebase Crashlytics로도 전송되며, 기기 모델, 운영체제 버전, 같은 오류를 겪은 사람 수를 세기 위한 무작위 id가 추가돼요. 이름도 계정도 없고, 여러분과 연결되는 것은 없어요. 사용 현황 집계(아래 두 번째 스위치)는 이 버전을 포함한 모든 버전에서 Google Analytics로 전송돼요.",
+      "keep": "오류 보고서 보관",
+      "keepHint": "오류와 발생 위치. 브라우저에서는 이 기기에 남아요.",
+      "share": "사용하는 기능 공유",
+      "shareHint": "횟수만 보내요. 어떤 화면을 얼마나 자주 여는지. 화면 속 내용은 절대 보내지 않아요.",
+      "usageNote": "두 번째 항목은 jojo가 여러분의 '행동'에 대해 보내는 유일한 정보이고, 정해진 목록에 있는 말만 할 수 있어요. '보관함을 열었음', '지원서를 추가했음', '6~20개 있음' 같은 것이에요. 고용주, 직무, 파일이나 여러분이 입력한 어떤 내용도 그 단어들이 목록에 없으니 말할 수 없어요. jojo의 어느 부분에 더 공을 들일지 알기 위해 Google Analytics로 보내요.",
+      "bothOff": "둘 다 끄기",
+      "save": "선택 저장",
+      "continueOff": "둘 다 끈 채로 계속",
+      "later": "언제든 설정에서 둘 중 어느 것이든 바꿀 수 있고, 끄면 그동안 보관한 내용도 함께 버려요."
+    },
+    "extension": {
+      "title": "지원한 채용 공고 보관하기",
+      "body": "채용 공고는 답을 받기도 전에 내려가는 경우가 많아요. 브라우저 확장 프로그램은 공고를 오늘 모습 그대로 내 보관함에 저장해요. Job Scout가 팔로우하는 채용 게시판을 읽는 것도 이 확장 프로그램이에요."
+    }
+  },
+  "spectrum": {
+    "saturation": "채도와 밝기",
+    "hue": "색조",
+    "hex": "16진수 색상",
+    "any": "임의 색상"
+  },
+  "field": {
+    "openInTab": "{{label}}을(를) 새 탭에서 열기",
+    "hide": "{{label}} 숨기기",
+    "show": "{{label}} 표시"
+  },
+  "richText": {
+    "sizes": {
+      "small": "작게",
+      "normal": "보통",
+      "large": "크게",
+      "huge": "아주 크게"
+    },
+    "clearFormatting": "서식 지우기",
+    "bold": "굵게",
+    "italic": "기울임꼴",
+    "underline": "밑줄",
+    "strikeThrough": "취소선",
+    "insertUnorderedList": "글머리 기호 목록",
+    "insertOrderedList": "번호 매기기 목록",
+    "snippetText": "스니펫 텍스트",
+    "fontSize": "글꼴 크기",
+    "insertTable": "표 삽입",
+    "textColour": "글자 색"
+  },
+  "toolForm": {
+    "aRecord": "기록",
+    "yourProfile": "내 프로필"
+  },
+  "toolRun": {
+    "choose": "선택…",
+    "none": "없음",
+    "omitted_other": "이 양식에 없는 항목: {{fields}}. 설정하려면 기록을 여세요."
+  },
+  "toast": {
+    "notifications": "알림",
+    "dismiss": "닫기 — {{title}}"
+  },
+  "command": {
+    "title": "명령 팔레트",
+    "description": "실행할 명령 검색..."
   }
 }

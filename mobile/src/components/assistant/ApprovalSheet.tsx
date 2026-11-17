@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
@@ -28,13 +29,14 @@ import { report } from '@/lib/analytics'
  * stack of sheets is worse than answering them one at a time.
  */
 export function ApprovalSheet() {
+  const { t } = useTranslation('components')
   const waiting = useWaitingRuns()
   const runs = useAgentRuns()
   const { threads } = useThreads()
 
   const run = waiting[0]
   const step = run?.pending?.step
-  const named = threads.find((t) => t.id === run?.threadId)
+  const named = threads.find((th) => th.id === run?.threadId)
 
   /*
    * `null` when the tool takes no arguments worth showing — `memory.overview`
@@ -50,11 +52,15 @@ export function ApprovalSheet() {
         if (run) runs.decide(run.threadId, false)
       }}
       title={step?.title ?? ''}
-      description={`Asked by ${named?.title ?? 'a conversation'}. Nothing has changed yet.`}
+      description={
+        named?.title === undefined
+          ? t('approval.askedByUnnamed')
+          : t('approval.askedBy', { name: named.title })
+      }
       footer={
         <>
           <Button
-            label="Don’t"
+            label={t('trace.dont')}
             variant="ghost"
             size="md"
             onPress={() => {
@@ -66,7 +72,7 @@ export function ApprovalSheet() {
             }}
           />
           <Button
-            label="Allow"
+            label={t('trace.allow')}
             size="md"
             onPress={() => {
               if (run) runs.decide(run.threadId, true)

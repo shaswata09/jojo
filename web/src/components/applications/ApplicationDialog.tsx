@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useDuplicateCheck } from '@/lib/duplicate-agent'
 import type { DuplicateFound } from '@/lib/duplicate-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { STAGE_LABEL } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import type { FormEvent } from 'react'
+import type { TFunction } from 'i18next'
 import { ApplicationFields } from '@/components/applications/dialog/ApplicationFields'
 import {
   FIELD_ORDER,
@@ -42,6 +43,7 @@ import { appPath, hrefOutsideRouter } from '@/lib/links'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { contentModal } from '@/components/ui/dialog-width'
+import { useDomain } from '@/i18n/domain'
 
 export type { ApplicationInitial } from '@/components/applications/dialog/form-state'
 
@@ -67,6 +69,7 @@ export function ApplicationDialog({
   mode: 'create' | 'edit'
   initial?: ApplicationInitial
 }) {
+  const { t } = useTranslation('applications')
   const applications = useApplications()
   const { labelIdsOf } = useLabels()
   const { toast } = useToast()
@@ -137,8 +140,7 @@ export function ApplicationDialog({
   const record = mode === 'edit' && id ? applications.get(id) : undefined
   // An edit dialog with nothing to edit is a wiring mistake, not a user error,
   // so it says so on the button rather than failing at the point of save.
-  const blocker =
-    mode === 'edit' && !record ? 'This dialog was opened without a record to edit' : ''
+  const blocker = mode === 'edit' && !record ? t('dialog.noRecord') : ''
 
   /** Guessed values need checking; typed ones do not. See `draft-from.ts`. */
   const guessed = mode === 'create' && Boolean(initial?.org || initial?.role || initial?.url)
@@ -211,13 +213,15 @@ export function ApplicationDialog({
 
     const draft = asInitial()
     toast({
-      title: mode === 'create' ? 'Draft discarded' : 'Changes discarded',
+      title: mode === 'create' ? t('dialog.draftDiscarded') : t('dialog.changesDiscarded'),
       description:
         mode === 'create'
-          ? 'Nothing was added. Undo brings the form back as you left it.'
-          : `${record ? displayName(record) : 'The record'} is unchanged. Undo brings your edits back.`,
+          ? t('dialog.draftDiscardedBody')
+          : record
+            ? t('dialog.changesDiscardedBody', { name: displayName(record) })
+            : t('dialog.changesDiscardedBodyNoName'),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => openDialog('application', { mode, id, initial: draft }),
       },
     })
@@ -344,7 +348,7 @@ export function ApplicationDialog({
   const errors = check.attempted ? check.errors : {}
   // The stored name, not the one being typed — a heading that rewrites itself
   // on every keystroke in the organisation field is hard to read past.
-  const title = record ? `Edit ${displayName(record)}` : 'New application'
+  const title = record ? t('dialog.editTitle', { name: displayName(record) }) : t('dialog.newTitle')
 
   return (
     <Dialog
@@ -378,14 +382,14 @@ export function ApplicationDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {confirm
-              ? 'Nothing is saved yet. Compare the two, then decide.'
+              ? t('dialog.confirmDescription')
               : mode === 'edit'
-                ? 'Changes replace the current details, and the deadline moves with them.'
+                ? t('dialog.editDescription')
                 : guessed
                   ? tagged
-                    ? 'Prefilled from what you pasted — check the employer, role and keywords before saving.'
-                    : 'Prefilled from what you pasted — check the employer and role before saving.'
-                  : 'Track a job you are applying for. Starred fields are required.'}
+                    ? t('dialog.guessedTaggedDescription')
+                    : t('dialog.guessedDescription')
+                  : t('dialog.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -394,17 +398,24 @@ export function ApplicationDialog({
             here and once in the box below (seen 2026-09-12). */}
         {duplicate && confirm === null ? (
           <div className="rounded-lg border border-warning-border bg-warning-soft px-3 py-2 text-xs text-warning">
-            {duplicateMessage(duplicate.reason, displayName(duplicate.record))}{' '}
             {/* An anchor, not a `<Link>`: `DialogHost` mounts this outside the
                 router, where `<Link>` throws on a null context and takes the
                 app down with it. `hrefOutsideRouter` explains the basename. */}
-            <a
-              href={hrefOutsideRouter(appPath(duplicate.record))}
-              className="underline underline-offset-2"
-            >
-              Open the one you have
-            </a>
-            , or carry on and add this as a second record.
+            <Trans
+              t={t}
+              i18nKey="dialog.duplicateWarning"
+              values={{
+                message: duplicateMessage(duplicate.reason, displayName(duplicate.record)),
+              }}
+              components={{
+                anchor: (
+                  <a
+                    href={hrefOutsideRouter(appPath(duplicate.record))}
+                    className="underline underline-offset-2"
+                  />
+                ),
+              }}
+            />
           </div>
         ) : null}
 
@@ -421,27 +432,36 @@ export function ApplicationDialog({
         {/* Native validation is off: it fires its own bubble before the submit
             handler runs, which would pre-empt the errors written below. */}
         <form onSubmit={onSubmit} noValidate hidden={confirm !== null}>
-          <ApplicationFields
-            form={form}
-            errors={errors}
-            set={set}
-            revalidate={revalidate}
-            keywords={keywords}
-            onKeywordsChange={setKeywords}
-            onRoleTagSelect={selectRoleTag}
-            orgRef={orgRef}
-            roleRef={roleRef}
-            roleTagRef={roleTagRef}
-            deadlineRef={deadlineRef}
-            urlRef={urlRef}
-            noteFormat={form.noteFormat}
-            onNoteFormatChange={(format) => set('noteFormat', format)}
-          />
+          {/* Inert while the duplicate check runs. `create` is the one from the
+              render that handled Save, closed over that render's form, so a
+              field edited during a model judge's seconds would be dropped from
+              the saved record without a word. Freezing the fields also keeps
+              what was checked and what is saved the same record. `inert`
+              rather than a disabled fieldset because the note is a rich text
+              editor, which a fieldset does not reach. */}
+          <div inert={checking} aria-busy={checking || undefined}>
+            <ApplicationFields
+              form={form}
+              errors={errors}
+              set={set}
+              revalidate={revalidate}
+              keywords={keywords}
+              onKeywordsChange={setKeywords}
+              onRoleTagSelect={selectRoleTag}
+              orgRef={orgRef}
+              roleRef={roleRef}
+              roleTagRef={roleTagRef}
+              deadlineRef={deadlineRef}
+              urlRef={urlRef}
+              noteFormat={form.noteFormat}
+              onNoteFormatChange={(format) => set('noteFormat', format)}
+            />
+          </div>
 
           <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
+                {t('common.cancel')}
               </Button>
             </DialogClose>
             {/* Never disabled for invalid input: a dead button next to an empty
@@ -453,10 +473,10 @@ export function ApplicationDialog({
               title={blocker || undefined}
             >
               {checking
-                ? 'Checking for a duplicate…'
+                ? t('dialog.checking')
                 : mode === 'create'
-                  ? 'Add application'
-                  : 'Save changes'}
+                  ? t('dialog.add')
+                  : t('dialog.save')}
             </Button>
           </DialogFooter>
         </form>
@@ -466,8 +486,12 @@ export function ApplicationDialog({
 }
 
 /** "today", "yesterday", "12 days ago" — the projection counts the days. */
-const sinceDays = (days: number): string =>
-  days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${String(days)} days ago`
+const sinceDays = (days: number, t: TFunction): string =>
+  days <= 0
+    ? t('dialog.since.today')
+    : days === 1
+      ? t('dialog.since.yesterday')
+      : t('dialog.since.daysAgo', { count: days })
 
 /**
  * The original, beside what is about to be added, and what to do about it.
@@ -495,38 +519,41 @@ function DuplicateConfirm({
   onDiscard: () => void
   onAddAnyway: () => void
 }) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
   const original = found.record
   const why =
     found.how === 'model'
-      ? (found.because ?? 'The model read them as the same vacancy.')
+      ? (found.because ?? t('dialog.duplicate.modelSame'))
       : duplicateMessage(found.reason, displayName(original))
   return (
     <div className="space-y-4" role="alertdialog" aria-labelledby="duplicate-title">
       <div className="rounded-lg border border-warning-border bg-warning-soft px-3 py-2 text-sm text-warning">
         <p id="duplicate-title" className="font-medium">
-          This looks like a job you already have
+          {t('dialog.duplicate.title')}
         </p>
         <p className="mt-0.5 text-xs">
-          {why}
-          {found.how === 'model' ? ' — the model’s reading; check it below.' : ''}
+          {found.how === 'model' ? t('dialog.duplicate.modelWhy', { why }) : why}
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="rounded-lg border border-hairline p-3 text-sm">
           <h3 className="text-xs font-medium tracking-wide text-text-3 uppercase">
-            What you already have
+            {t('dialog.duplicate.have')}
           </h3>
           <p className="mt-1 font-medium">{displayName(original)}</p>
           <p className="text-text-2">
-            {STAGE_LABEL[original.stage]}
+            {domain.stage(original.stage)}
             {' · '}
-            {original.lastAction} {sinceDays(original.daysAgo)}
+            {domain.action(original.lastAction)} {sinceDays(original.daysAgo, t)}
           </p>
           {original.location !== undefined && <p className="text-text-2">{original.location}</p>}
           {original.comp !== undefined && <p className="text-text-2">{original.comp}</p>}
           {original.postingId !== undefined && (
-            <p className="text-xs text-text-3">Posting ID {original.postingId}</p>
+            <p className="text-xs text-text-3">
+              {t('dialog.duplicate.postingId', { id: original.postingId })}
+            </p>
           )}
           {original.url !== undefined && (
             <p className="truncate text-xs text-text-3" title={original.url}>
@@ -539,30 +566,31 @@ function DuplicateConfirm({
         </section>
         <section className="rounded-lg border border-hairline p-3 text-sm">
           <h3 className="text-xs font-medium tracking-wide text-text-3 uppercase">
-            What you are adding
+            {t('dialog.duplicate.adding')}
           </h3>
           <p className="mt-1 font-medium">
-            {[adding.org.trim(), adding.role.trim()].filter(Boolean).join(' — ') || 'Untitled'}
+            {[adding.org.trim(), adding.role.trim()].filter(Boolean).join(' — ') ||
+              t('dialog.duplicate.untitled')}
           </p>
           {adding.location.trim() !== '' && <p className="text-text-2">{adding.location}</p>}
         </section>
       </div>
 
       <DialogFooter>
-        <Button type="button" variant="ghost" className="sm:mr-auto" onClick={onBack}>
-          Edit instead
+        <Button type="button" variant="ghost" className="sm:me-auto" onClick={onBack}>
+          {t('dialog.duplicate.editInstead')}
         </Button>
         {/* An anchor, not a `<Link>`: this dialog is mounted outside the router. */}
         <Button type="button" variant="outline" asChild>
           <a href={hrefOutsideRouter(appPath(original))} onClick={onDiscard}>
-            Open the one you have
+            {t('dialog.duplicate.open')}
           </a>
         </Button>
         <Button type="button" variant="outline" onClick={onDiscard}>
-          Discard this one
+          {t('dialog.duplicate.discard')}
         </Button>
         <Button type="button" onClick={onAddAnyway}>
-          Add anyway
+          {t('dialog.duplicate.addAnyway')}
         </Button>
       </DialogFooter>
     </div>

@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { i18next } from '@/i18n/i18n'
 import { useVault } from '@jojo/service/react/use-vault'
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { convertDocument } from '@/lib/markitdown'
@@ -25,15 +26,14 @@ export function useReadDocument(): (fileId: string) => Promise<ConvertResult> {
       if (reader.trim() === '') {
         return {
           ok: false as const,
-          reason:
-            'No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.',
+          reason: i18next.t('messages:reader.notConnected'),
         }
       }
       const record = files.find((f) => f.id === fileId)
       if (!record?.uri) {
         return {
           ok: false as const,
-          reason: 'That record has no copy stored on this device, so there is nothing to read.',
+          reason: i18next.t('messages:reader.noCopy'),
         }
       }
       return convertDocument(reader, record.uri, record.name)

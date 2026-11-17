@@ -17,7 +17,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { UNEXPECTED_ADVICE, guardedTransfer } from '@/lib/handoff-send'
+import { guardedTransfer, unexpectedAdvice } from '@/lib/handoff-send'
 // `?raw`, the same way `reader-relay.test.ts` reads the extension: the wiring is
 // the claim, and the wiring is only visible in the source.
 import sendSource from './handoff-send.ts?raw'
@@ -40,7 +40,7 @@ describe('a transfer step that throws', () => {
     const advice = await guardedTransfer(() =>
       Promise.reject(new DOMException('quota', 'QuotaExceededError')),
     )
-    expect(advice).toBe(UNEXPECTED_ADVICE)
+    expect(advice).toBe(unexpectedAdvice())
   })
 
   it('is reported to the transfer site, since the sentence cannot name it', async () => {

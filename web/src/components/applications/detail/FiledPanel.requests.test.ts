@@ -7,16 +7,19 @@
 
 import { describe, expect, it } from 'vitest'
 import panel from './FiledPanel.tsx?raw'
+import en from '@/i18n/locales/en/applications.json'
 
 describe('Q251 — Preview on a filed document opens the dialog in place', () => {
   it('is the From the Vault list', () => {
-    expect(panel).toContain('>From the Vault</PanelTitle>')
+    expect(panel).toMatch(/>\s*\{t\('filed\.title'\)\}\s*<\/PanelTitle>/)
+    expect(en.filed.title).toBe('From the Vault')
   })
 
   it('offers a Preview button on every file row that sets the previewed file', () => {
     const button = /\{'bucket' in row \? \(\s*<Button[\s\S]*?<\/Button>/.exec(panel)?.[0] ?? ''
     expect(button).toContain('onClick={() => setPreview(row)}')
-    expect(button).toMatch(/Preview\s*<\/Button>$/)
+    expect(button).toMatch(/\{t\('common\.preview'\)\}\s*<\/Button>$/)
+    expect(en.common.preview).toBe('Preview')
     // A button, not a link: pressing it does not navigate to the Vault.
     expect(button).not.toContain('vaultPath(')
   })

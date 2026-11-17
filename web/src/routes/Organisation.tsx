@@ -1,17 +1,18 @@
 import { Link, useParams } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Building2, CalendarClock, UserRound } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle, Row, RowList } from '@/components/common/Panel'
-import { STAGE_LABEL, displayName } from '@/data/seed'
-import { shortDate, whenLabel } from '@jojo/service/core/dates'
+import { displayName } from '@/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useOrganisations } from '@jojo/service/react/use-organisations'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useVault } from '@jojo/service/react/use-vault'
 import { appPath, useTitle, vaultPath } from '@/lib/links'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Everything about one employer.
@@ -34,6 +35,8 @@ import { appPath, useTitle, vaultPath } from '@/lib/links'
  */
 export function Organisation() {
   const { key = '' } = useParams()
+  const { t } = useTranslation('pages')
+  const domain = useDomain()
   const { get } = useOrganisations()
   const { byId } = useApplications()
   const { forApplication: itemsFor } = useTimeline()
@@ -41,20 +44,23 @@ export function Organisation() {
   const { today } = useKg()
 
   const organisation = get(key)
-  useTitle(organisation ? organisation.name : 'Employer')
+  useTitle(organisation ? organisation.name : t('organisation.fallbackTitle'))
 
   if (!organisation) {
     return (
       <>
-        <PageHeader title="Employer" subtitle="Nothing here answers to that address" />
+        <PageHeader
+          title={t('organisation.fallbackTitle')}
+          subtitle={t('organisation.missingSubtitle')}
+        />
         <Panel>
           <EmptyState
             icon={Building2}
-            title="No employer at this address"
-            description="An employer page exists for as long as an application names it. If every application to this one was deleted, so was this."
+            title={t('organisation.missingTitle')}
+            description={t('organisation.missingDescription')}
             action={
               <Link to="/applications" className="text-accent underline underline-offset-2">
-                Back to applications
+                {t('organisation.backToApplications')}
               </Link>
             }
           />
@@ -91,13 +97,13 @@ export function Organisation() {
         title={organisation.name}
         subtitle={
           applications.length === 1
-            ? 'One application here'
-            : `${applications.length} applications here, ${open} still open`
+            ? t('organisation.subtitleOne')
+            : t('organisation.subtitleMany', { count: applications.length, open })
         }
       />
 
       <Panel>
-        <PanelTitle>Applications</PanelTitle>
+        <PanelTitle>{t('organisation.applications')}</PanelTitle>
         <RowList>
           {applications.map((a) => (
             <Row key={a.id}>
@@ -110,7 +116,7 @@ export function Organisation() {
                 </Link>
                 {a.note ? <div className="mt-0.5 text-xs text-text-3">{a.note}</div> : null}
               </div>
-              <Chip stage={a.stage}>{STAGE_LABEL[a.stage]}</Chip>
+              <Chip stage={a.stage}>{domain.stage(a.stage)}</Chip>
               <Chip tone="gray">{a.roleTag}</Chip>
             </Row>
           ))}
@@ -119,17 +125,21 @@ export function Organisation() {
 
       <div className="grid gap-3 md:grid-cols-2">
         <Panel>
-          <PanelTitle hint={dates.length > 0 ? `${dates.length} across these jobs` : undefined}>
+          <PanelTitle
+            hint={
+              dates.length > 0 ? t('organisation.datesHint', { count: dates.length }) : undefined
+            }
+          >
             <span className="inline-flex items-center gap-2">
               <CalendarClock className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-              Dates
+              {t('organisation.dates')}
             </span>
           </PanelTitle>
           {dates.length === 0 ? (
             <EmptyState
               icon={CalendarClock}
-              title="Nothing dated here"
-              description="Deadlines, interviews and reminders about any of these jobs collect on this page."
+              title={t('organisation.datesEmptyTitle')}
+              description={t('organisation.datesEmptyDescription')}
             />
           ) : (
             <RowList>
@@ -141,11 +151,11 @@ export function Organisation() {
                       <div className="mt-0.5 text-xs text-text-3">{item.detail}</div>
                     ) : null}
                   </div>
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-end">
                     <div className="tabular font-mono text-xs text-text-2">
-                      {shortDate(item.date)}
+                      {domain.shortDate(item.date)}
                     </div>
-                    <div className="text-xs text-text-3">{whenLabel(item, today)}</div>
+                    <div className="text-xs text-text-3">{domain.when(item, today)}</div>
                   </div>
                 </Row>
               ))}
@@ -154,23 +164,27 @@ export function Organisation() {
         </Panel>
 
         <Panel>
-          <PanelTitle hint={people.length > 0 ? `${people.length} named` : undefined}>
+          <PanelTitle
+            hint={
+              people.length > 0 ? t('organisation.peopleHint', { count: people.length }) : undefined
+            }
+          >
             <span className="inline-flex items-center gap-2">
               <UserRound className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-              People
+              {t('organisation.people')}
             </span>
           </PanelTitle>
           {people.length === 0 ? (
             <EmptyState
               icon={UserRound}
-              title="Nobody named yet"
-              description="Referees, search chairs and recruiters named on any of these jobs show up here."
+              title={t('organisation.peopleEmptyTitle')}
+              description={t('organisation.peopleEmptyDescription')}
               action={
                 <Link
                   to={vaultPath({ tool: 'people' })}
                   className="text-accent underline underline-offset-2"
                 >
-                  Add someone
+                  {t('organisation.addSomeone')}
                 </Link>
               }
             />

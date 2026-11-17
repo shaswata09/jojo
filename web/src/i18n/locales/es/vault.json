@@ -1,0 +1,583 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "undo": "Deshacer",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "duplicate": "Duplicar",
+    "deleteFailed": "No se pudo eliminar",
+    "deleted": "{{title}} eliminado",
+    "unsaved": "Cambios sin guardar",
+    "saved": "{{title}} guardado",
+    "showIt": "Mostrarlo",
+    "copyBlocked": "El navegador bloqueó la copia",
+    "updated": "{{title}} actualizado",
+    "saveChanges": "Guardar cambios"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Archivos que no están archivados en ninguna candidatura",
+      "label": "Sin archivar"
+    },
+    "inlineEdit": {
+      "needsName": "Un archivo necesita un nombre"
+    },
+    "intake": {
+      "tooLarge": "{{name}} era demasiado grande para revisarlo",
+      "tooLargeDescription": "Está archivado, y jojo lo muestra con todas sus direcciones web bloqueadas y sus enlaces desactivados, así que verlo aquí no accede a la red; pero faltará todo lo que cargue desde la web.",
+      "addresses_one": "{{name}} menciona {{count}} dirección web",
+      "addresses_many": "{{name}} menciona {{count}} direcciones web",
+      "addresses_other": "{{name}} menciona {{count}} direcciones web",
+      "addressesDescription_one": "Está archivado tal como lo soltaste, y jojo lo muestra con esa dirección bloqueada y sus enlaces desactivados, así que verlo aquí no accede a la red. Faltarán las imágenes o estilos que cargaba desde la web.",
+      "addressesDescription_many": "Está archivado tal como lo soltaste, y jojo lo muestra con todas ellas bloqueadas y sus enlaces desactivados, así que verlo aquí no accede a la red. Faltarán las imágenes o estilos que cargaba desde la web.",
+      "addressesDescription_other": "Está archivado tal como lo soltaste, y jojo lo muestra con todas ellas bloqueadas y sus enlaces desactivados, así que verlo aquí no accede a la red. Faltarán las imágenes o estilos que cargaba desde la web.",
+      "folders_one": "Eso parece una carpeta",
+      "folders_many": "Eso parecen carpetas",
+      "folders_other": "Eso parecen carpetas",
+      "foldersDescription": "jojo archiva los documentos de uno en uno. Abre la carpeta y suelta los archivos que contiene.",
+      "reattached": "{{name}} vuelve a estar adjunto",
+      "reattachedDescription": "La fila ya estaba aquí sin su documento. Ahora lo tiene.",
+      "stillUnsaved": "{{name}} sigue sin poder guardarse",
+      "stillUnsavedDescription": "Este navegador se negó a guardarlo de nuevo; probablemente su almacenamiento sigue lleno.",
+      "unsaved": "{{name}} se archivó, pero no se guardó",
+      "unsavedDescription": "La fila está aquí, pero este navegador se negó a guardar el documento, normalmente porque su almacenamiento está lleno. Libera espacio y vuelve a soltar el mismo archivo; se adjuntará a esta fila en lugar de crear otra.",
+      "alreadyHere_one": "Ese archivo ya está aquí",
+      "alreadyHere_many": "Esos archivos ya están aquí",
+      "alreadyHere_other": "Esos archivos ya están aquí",
+      "alreadyHereDescription": "Ya hay un archivo con el mismo nombre en la Bóveda.",
+      "addedOne": "{{name}} añadido",
+      "addedMany_one": "{{count}} archivo añadido",
+      "addedMany_many": "{{count}} archivos añadidos",
+      "addedMany_other": "{{count}} archivos añadidos",
+      "addedHidden": "Archivado en {{bucket}}; oculto mientras el filtro de palabras clave esté activo.",
+      "addedHiddenVault": "Archivado en la Bóveda, en {{bucket}}; oculto mientras el filtro de palabras clave esté activo.",
+      "addedDescription": "Archivado en {{bucket}} y guardado en este navegador. No se subió nada a ninguna parte.",
+      "addedDescriptionVault": "Archivado en la Bóveda, en {{bucket}} y guardado en este navegador. No se subió nada a ninguna parte.",
+      "skipped_one": "{{count}} omitido",
+      "skipped_many": "{{count}} omitidos",
+      "skipped_other": "{{count}} omitidos",
+      "skippedDescription": "Ya había un archivo con el mismo nombre en la Bóveda.",
+      "foldersSkipped_one": "{{count}} carpeta omitida",
+      "foldersSkipped_many": "{{count}} carpetas omitidas",
+      "foldersSkipped_other": "{{count}} carpetas omitidas"
+    },
+    "row": {
+      "fileName": "Nombre del archivo",
+      "renameHint": "Cambiar el nombre de este archivo",
+      "onDevice": "en este dispositivo",
+      "viewing": "Viéndolo",
+      "preview": "Vista previa",
+      "rename": "Cambiar nombre",
+      "editNote": "Editar nota",
+      "addNote": "Añadir nota",
+      "changeApplications": "Cambiar candidaturas",
+      "fileUnder": "Archivar en una candidatura",
+      "readIntoProfile": "Leer en tu perfil"
+    },
+    "add": "Añadir archivo",
+    "filterLabel": "Filtrar archivos por grupo",
+    "searchLabel": "Buscar archivos",
+    "searchPlaceholder": "Buscar nombre o nota",
+    "toast": {
+      "renamed": "{{name}} renombrado",
+      "was": "Antes: {{name}}.",
+      "noteSaved": "Nota de {{name}} guardada",
+      "noteCleared": "Nota de {{name}} borrada",
+      "noteClearedDescription": "La fila conserva su nombre, grupo y palabras clave.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "Aparece en cada una de ellas, y el grafo puede encontrarlo desde cualquiera.",
+      "unfiledDescription": "Se queda en la Bóveda, sin archivar en nada."
+    },
+    "empty": {
+      "zeroTitle": "Aún no hay archivos",
+      "zeroDescription": "Suelta aquí una oferta, un artículo o un borrador, o añade uno desde tu ordenador.",
+      "search": "Ningún archivo menciona «{{query}}» en su nombre, nota o grupo.",
+      "both": "Ningún archivo de {{bucket}} tiene las palabras clave seleccionadas.",
+      "bucketTitle": "Nada en {{bucket}}",
+      "bucketDescription_one": "{{count}} archivo está en los otros grupos.",
+      "bucketDescription_many": "{{count}} archivos están en los otros grupos.",
+      "bucketDescription_other": "{{count}} archivos están en los otros grupos.",
+      "showAll": "Mostrar todos los grupos",
+      "keywordsTitle": "Ningún archivo tiene esas palabras clave",
+      "allFiledTitle": "Todos los archivos están archivados en una candidatura",
+      "allFiledDescription_one": "Los {{count}}. No hay nada suelto.",
+      "allFiledDescription_many": "Los {{count}}. No hay nada suelto.",
+      "allFiledDescription_other": "Los {{count}}. No hay nada suelto.",
+      "unfiledKeywords": "Ningún archivo sin archivar tiene las palabras clave seleccionadas.",
+      "unfiledBucket": "Ningún archivo sin archivar está en {{bucket}}."
+    },
+    "drop": {
+      "title": "Suelta para añadir a {{bucket}}",
+      "description": "Se leen el nombre, el tamaño y el tipo. No se sube nada.",
+      "hint": "Suelta archivos en cualquier parte de este panel para añadirlos a {{bucket}}."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "No se usó todo lo que soltaste",
+      "nothing": "No hay nada que abrir"
+    },
+    "save": {
+      "nameLabel": "Nombre del nuevo archivo",
+      "working": "Procesando…",
+      "alsoDownload": "Descargar también",
+      "footnote": "El resultado se archiva como un documento nuevo: no se modifica nada de lo que usaste como punto de partida. Se crea aquí, en tu navegador, y no se sube ninguna parte.",
+      "workingSpoken": "Procesando el documento"
+    },
+    "thumb": {
+      "turned": "{{label}}, girada {{degrees}} grados",
+      "noPreview": "Sin vista previa"
+    },
+    "source": {
+      "fromVault": "{{label}} desde la Bóveda",
+      "noneInVault": "Aún no hay PDF en la Bóveda",
+      "choose": "Elegir de la Bóveda…",
+      "device": "Desde este dispositivo",
+      "fromDevice": "{{label}} desde este dispositivo",
+      "dropHintEmpty": "O suelta un PDF en cualquier parte de esta tarjeta. Los archivos que guardes aquí aparecerán en esta lista.",
+      "dropHint": "O suelta un PDF en cualquier parte de esta tarjeta."
+    },
+    "modes": {
+      "merge": "Combinar",
+      "pages": "Páginas",
+      "annotate": "Anotar"
+    },
+    "editor": {
+      "title": "Editor de PDF",
+      "hint": "Combina, reorganiza y anota PDF. Todo se ejecuta en este navegador: no se sube ningún documento.",
+      "operation": "Operación de PDF",
+      "dropMerge": "Suelta PDF para añadirlos a la combinación",
+      "dropOpen": "Suelta un PDF para abrirlo"
+    },
+    "errors": {
+      "gone": "{{name}} ya no está guardado, así que no se puede abrir.",
+      "noRoom": "{{name}} se archivó, pero su contenido no cabía en el almacenamiento de este navegador."
+    },
+    "saved": "{{name}} guardado",
+    "merge": {
+      "move": "Mover {{name}}, {{position}} de {{total}}",
+      "dragToReorder": "Arrastra para reordenar",
+      "fromDevice": "· desde este dispositivo",
+      "allPages": "Todas las páginas",
+      "rangeLabel": "Páginas que tomar de {{name}}",
+      "remove": "Quitar {{name}} de la combinación",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{pages}} de {{documents}}, archivado en {{bucket}}. Los originales no se han tocado.",
+      "pages_one": "{{count}} página",
+      "pages_many": "{{count}} páginas",
+      "pages_other": "{{count}} páginas",
+      "documents_one": "{{count}} documento",
+      "documents_many": "{{count}} documentos",
+      "documents_other": "{{count}} documentos",
+      "addLabel": "Añadir un PDF para combinar",
+      "empty": "Añade dos o más PDF, o suéltalos en esta tarjeta. Se unen de arriba abajo (arrastra una fila por su borde izquierdo para cambiar el orden) y los originales quedan como están.",
+      "position": "posición {{position}} de {{total}}, {{name}}",
+      "hint": "Rangos como 1-3, 7, 9- toman parte de un documento. Deja una casilla vacía para tomarlo entero.",
+      "action": "Combinar y guardar"
+    },
+    "pages": {
+      "savedDescription_one": "{{count}} página, archivada en {{bucket}}. {{name}} no ha cambiado.",
+      "savedDescription_many": "{{count}} páginas, archivadas en {{bucket}}. {{name}} no ha cambiado.",
+      "savedDescription_other": "{{count}} páginas, archivadas en {{bucket}}. {{name}} no ha cambiado.",
+      "chooseLabel": "Elige un PDF para organizar",
+      "empty": "Elige un PDF. Puedes girar páginas, quitarlas, cambiarlas de orden y quedarte solo con una parte.",
+      "kept_one": "· {{kept}} de {{count}} página conservada",
+      "kept_many": "· {{kept}} de {{count}} páginas conservadas",
+      "kept_other": "· {{kept}} de {{count}} páginas conservadas",
+      "startOver": "Empezar de nuevo",
+      "page": "Página {{number}}",
+      "was": " · antes {{number}}",
+      "earlier": "Mover la página {{number}} antes",
+      "anticlockwise": "Girar la página {{number}} a la izquierda",
+      "clockwise": "Girar la página {{number}} a la derecha",
+      "remove": "Quitar la página {{number}}",
+      "later": "Mover la página {{number}} después",
+      "hint": "Gira, mueve o quita una página y esto estará disponible.",
+      "action": "Guardar páginas"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Resaltar",
+        "comment": "Comentario"
+      },
+      "savedDescription": "{{summary}}, archivado en {{bucket}}. {{name}} no ha cambiado.",
+      "chooseLabel": "Elige un PDF para anotar",
+      "empty": "Elige un PDF. Selecciona texto en la página para resaltarlo, o cambia a Comentario y haz clic donde va la nota.",
+      "toolLabel": "Herramienta de marcado",
+      "colour": "Color de resaltado",
+      "previousPage": "Página anterior",
+      "pageOf": "Página {{page}} de {{total}}",
+      "nextPage": "Página siguiente",
+      "zoom": "Zoom",
+      "highlightHint": "Selecciona palabras en la página (puede abarcar varias líneas) y se marcarán al soltar.",
+      "commentHint": "Haz clic en la página donde va el comentario.",
+      "commentPlaceholder": "¿Cuál es el comentario?",
+      "notePlaceholder": "Añade una nota a esto…",
+      "commentLabel": "Comentario en la página {{number}}",
+      "noteLabel": "Nota sobre el resaltado de {{excerpt}}",
+      "removeMark": "Quitar esta marca",
+      "hintEmpty": "Primero resalta texto o añade un comentario.",
+      "hint": "Se escribirá {{summary}}.",
+      "action": "Guardar con anotaciones"
+    }
+  },
+  "instruments": {
+    "calculator": "Calculadora",
+    "pdf": "Editor de PDF",
+    "label": "Qué herramienta",
+    "loading": "Preparando las herramientas de PDF…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Esta oferta no tiene una copia guardada en este dispositivo. Las capturas se guardan donde se hicieron, así que una hecha en tu teléfono no está aquí; y una fila restaurada desde una copia de seguridad trae el registro sin la página.",
+      "stored": "Los navegadores muestran PDF de forma nativa, pero no archivos {{kind}}. El documento está guardado: Guardar lo pasa a tu propia aplicación.",
+      "missing": "Los navegadores muestran PDF de forma nativa, pero no archivos {{kind}}, y no hay ningún documento guardado detrás de esta fila para pasarlo a otra aplicación."
+    },
+    "dialogDescription": "Una vista previa de {{name}}, archivado en esta candidatura. Pulsa Escape para volver al registro.",
+    "noteSaved": "Nota guardada en {{name}}",
+    "noteSavedDescription": "Aparece junto a este archivo en todos los lugares donde la Bóveda lo muestra.",
+    "noteEmptyDescription": "La nota está vacía, así que no aparece nada junto a este archivo.",
+    "captured": "{{name}}, tal como se capturó",
+    "previewTitle": "Vista previa de {{name}}",
+    "asText": "{{name}}, como texto",
+    "truncated": "Solo se muestra el primer megabyte. Guardar abre el archivo completo en tu propia aplicación.",
+    "failedTitle": "Este navegador no pudo abrir la vista previa",
+    "failedDescription": "{{error}}. El registro del archivo en tu Bóveda no se ve afectado: solo no se pudo crear la vista previa.",
+    "noPreviewTitle": "No hay vista previa para este tipo",
+    "capturedFrom": "Capturado de {{host}}",
+    "fullScreen": "Abrir la vista previa a pantalla completa",
+    "fullScreenDescription": "{{name}}, a pantalla completa, con un panel de notas. Pulsa Escape para volver.",
+    "notes": {
+      "title": "Notas",
+      "hide": "Ocultar el panel de notas",
+      "show": "Mostrar el panel de notas",
+      "hint": "Se guardan con {{name}} y aparecen en todos los lugares donde se lista este archivo.",
+      "label": "Notas sobre {{name}}",
+      "placeholder": "Lo importante de este documento: la fecha límite escondida en la página 3, a quién preguntar…",
+      "saved": "Guardado",
+      "save": "Guardar nota"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Posponer o mover este recordatorio",
+      "label": "Posponer «{{title}}» — {{when}}",
+      "heading": "Posponer",
+      "pickDate": "Elige una fecha",
+      "move": "Mover"
+    },
+    "row": {
+      "markNotDone": "Marcar «{{title}}» como no hecho",
+      "markDone": "Marcar «{{title}}» como hecho",
+      "draftReply": "Redactar una respuesta"
+    },
+    "relatedTwo": "{{first}} y {{second}}",
+    "relatedMany_one": "{{count}} candidatura",
+    "relatedMany_many": "{{count}} candidaturas",
+    "relatedMany_other": "{{count}} candidaturas",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (copia)",
+    "add": "Añadir recordatorio",
+    "filterLabel": "Filtrar recordatorios por vencimiento",
+    "searchLabel": "Buscar recordatorios",
+    "searchPlaceholder": "Buscar título, nota o empleo",
+    "toast": {
+      "reopened": "{{title}} reabierto",
+      "completed": "{{title}} completado",
+      "reopenedDescription": "De vuelta en su fecha, y de vuelta en el panel si es un seguimiento.",
+      "completedDescription": "Archivado en Completados y fuera del panel.",
+      "moved": "{{title}} movido",
+      "nowDue": "Ahora vence el {{date}} · {{when}}",
+      "duplicated": "{{title}} duplicado",
+      "duplicatedDescription": "La copia está abierta y vence el {{date}}.",
+      "stillOnList": "{{title}} sigue en la lista.",
+      "deletedDescription": "{{description}} — eliminado del calendario y de esta lista."
+    },
+    "empty": {
+      "zeroTitle": "Aún no hay recordatorios",
+      "zeroDescription": "Un recordatorio es un aviso con fecha: insistir a un referente, revisar un portal, enviar un agradecimiento. Los que marques como seguimiento también aparecen en el panel hasta que los marques como hechos.",
+      "search": "Ningún recordatorio menciona «{{query}}» en su título, nota, tipo o candidatura.",
+      "both": "Ningún recordatorio {{bucket}} tiene las palabras clave seleccionadas.",
+      "doneTitle": "Aún no hay nada completado",
+      "doneDescription": "Los recordatorios que marques se acumulan aquí, así que uno marcado por error se puede encontrar.",
+      "showAll": "Mostrar todos los recordatorios",
+      "bucketTitle": "Nada {{bucket}}",
+      "bucketDescription_one": "{{count}} recordatorio está en los otros grupos.",
+      "bucketDescription_many": "{{count}} recordatorios están en los otros grupos.",
+      "bucketDescription_other": "{{count}} recordatorios están en los otros grupos.",
+      "keywordsTitle": "Ningún recordatorio tiene esas palabras clave"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "Es el filtro de palabras clave de la parte superior de la página lo que los oculta.",
+    "searchTitle": "Nada coincide con esa búsqueda",
+    "clearSearch": "Borrar búsqueda",
+    "filtersTitle": "Nada coincide con esos filtros",
+    "clearFilters": "Quitar filtros",
+    "showFiled": "Mostrar también los archivados",
+    "bothTitle": "Nada coincide con ambos filtros",
+    "clearBoth": "Quitar ambos filtros",
+    "clearKeywords": "Quitar palabras clave"
+  },
+  "capture": {
+    "posting": "Oferta",
+    "savedOne": "{{name}} guardada en tu Bóveda",
+    "savedMany_one": "{{count}} oferta guardada en tu Bóveda",
+    "savedMany_many": "{{count}} ofertas guardadas en tu Bóveda",
+    "savedMany_other": "{{count}} ofertas guardadas en tu Bóveda",
+    "suggested": "No está archivada en ninguna candidatura. {{name}} parece coincidir: archívala desde su fila en la Bóveda.",
+    "unfiled": "No está archivada en ninguna candidatura. Archívala desde su fila en la Bóveda cuando quieras.",
+    "dropped_one": "{{count}} recurso no se pudo conservar, así que algunas partes pueden verse simples.",
+    "dropped_many": "{{count}} recursos no se pudieron conservar, así que algunas partes pueden verse simples.",
+    "dropped_other": "{{count}} recursos no se pudieron conservar, así que algunas partes pueden verse simples.",
+    "unstored_one": "{{count}} no se pudo guardar en este dispositivo: el registro está, la página no.",
+    "unstored_many": "{{count}} no se pudieron guardar en este dispositivo: el registro está, la página no.",
+    "unstored_other": "{{count}} no se pudieron guardar en este dispositivo: el registro está, la página no.",
+    "refusedOne": "No se pudo conservar una captura",
+    "refusedMany_one": "No se pudo conservar {{count}} captura",
+    "refusedMany_many": "No se pudieron conservar {{count}} capturas",
+    "refusedMany_other": "No se pudieron conservar {{count}} capturas",
+    "waitingOne": "Hay una oferta esperando a guardarse aquí.",
+    "waitingMany_one": "Hay {{count}} oferta esperando a guardarse aquí.",
+    "waitingMany_many": "Hay {{count}} ofertas esperando a guardarse aquí.",
+    "waitingMany_other": "Hay {{count}} ofertas esperando a guardarse aquí.",
+    "source": "Capturadas con la extensión de jojo, aún en este dispositivo.",
+    "saving": "Guardando…",
+    "saveIt": "Guardarla",
+    "saveThem": "Guardarlas"
+  },
+  "picker": {
+    "none": "Ninguna candidatura",
+    "label": "Candidaturas relacionadas",
+    "searchLabel": "Buscar candidaturas",
+    "searchPlaceholder": "Buscar candidaturas…",
+    "noneYet": "Aún no hay candidaturas.",
+    "noMatch": "Ninguna candidatura coincide.",
+    "unfile": {
+      "record": "Desarchivar este registro",
+      "file": "Desarchivar este archivo",
+      "link": "Desarchivar este enlace",
+      "snippet": "Desarchivar este fragmento",
+      "person": "Desarchivar a esta persona",
+      "conversation": "Desarchivar esta conversación"
+    }
+  },
+  "snippets": {
+    "openInVault": "Abrir en la Bóveda",
+    "card": {
+      "edit": "Editar este fragmento",
+      "moveTo": "Mover a"
+    },
+    "editor": {
+      "editTitle": "Editar fragmento",
+      "newTitle": "Nuevo fragmento",
+      "title": {
+        "label": "Título",
+        "placeholder": "p. ej., Por qué este departamento"
+      },
+      "kind": {
+        "label": "Tipo",
+        "hint": "Dónde se archiva y qué etiqueta muestra la lista."
+      },
+      "application": {
+        "label": "Candidatura relacionada",
+        "hint": "Cualquier número de empleos. Luego aparece en la página de cada uno."
+      },
+      "text": {
+        "label": "Texto",
+        "hint": "El tamaño, el color, la negrita, la cursiva, el subrayado y el tachado se guardan con el texto. Las listas y tablas se conservan como líneas simples.",
+        "placeholder": "Escribe el párrafo que siempre acabas reescribiendo…"
+      },
+      "fullScreen": "Escribir a pantalla completa",
+      "keywords": {
+        "label": "Palabras clave",
+        "hint": "Compartidas con candidaturas, recordatorios y archivos: filtrar por una los encuentra todos."
+      },
+      "savedNote": "Se guarda en la base de datos de este navegador: estará aquí cuando vuelvas.",
+      "fullScreenDescription": "Editando el fragmento a pantalla completa. Pulsa Escape para volver."
+    },
+    "errors": {
+      "title": "Ponle un nombre al fragmento.",
+      "body": "Escribe el texto que quieras pegar más tarde."
+    },
+    "toast": {
+      "filed": "Archivado en {{tag}}, listo para copiar desde la lista.",
+      "filedHidden": "Archivado en {{tag}}; oculto por los filtros de encima de la lista.",
+      "duplicated": "La copia está archivada en {{tag}}, lista para reescribirse.",
+      "moved": "Archivado en {{tag}}.",
+      "movedOut": "Archivado en {{tag}}: fuera de la lista {{filter}} que estás viendo.",
+      "stillThere": "{{title}} sigue en la Bóveda.",
+      "stillThereUnnamed": "El fragmento sigue en la Bóveda.",
+      "deletedUnnamed": "Fragmento eliminado",
+      "deletedDescription": "El texto y sus palabras clave se van con él."
+    },
+    "empty": {
+      "zeroTitle": "Aún no hay fragmentos",
+      "zeroDescription": "Guarda los párrafos que siempre acabas reescribiendo: la biografía, el porqué de este departamento, el correo de seguimiento.",
+      "search": "Ningún fragmento menciona «{{query}}» en su nombre, texto o tipo.",
+      "both": "Ningún fragmento {{tag}} tiene las palabras clave seleccionadas.",
+      "bucketTitle": "No hay fragmentos {{tag}}",
+      "bucketDescription_one": "{{count}} fragmento está en los otros tipos.",
+      "bucketDescription_many": "{{count}} fragmentos están en los otros tipos.",
+      "bucketDescription_other": "{{count}} fragmentos están en los otros tipos.",
+      "showAll": "Mostrar todos los tipos",
+      "keywordsTitle": "Ningún fragmento tiene esas palabras clave"
+    },
+    "filterLabel": "Filtrar fragmentos por tipo",
+    "searchLabel": "Buscar fragmentos",
+    "searchPlaceholder": "Buscar nombre o texto",
+    "copied": "Fragmento copiado al portapapeles",
+    "discard": {
+      "title": "¿Descartar los cambios sin guardar?",
+      "description": "«{{title}}» tiene cambios sin guardar. Si sales ahora se perderán, y no se puede deshacer.",
+      "untitled": "Fragmento sin título",
+      "confirm": "Descartar cambios"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Básica",
+      "scientific": "Científica"
+    },
+    "mode": "Modo de la calculadora",
+    "ops": {
+      "plus": "más",
+      "minus": "menos",
+      "times": "por",
+      "dividedBy": "dividido entre",
+      "power": "elevado a"
+    },
+    "history": "Historial",
+    "plusMinus": "más o menos",
+    "backspace": "Retroceso",
+    "clear": "Borrar",
+    "empty": "Aún no hay nada. Los cálculos terminados aparecen aquí.",
+    "use": "Usar {{value}}"
+  },
+  "links": {
+    "newTab": "Se abre en una pestaña nueva",
+    "errors": {
+      "title": "Ponle un título al enlace.",
+      "url": "Necesita un dominio, como jobs.rice.edu/postings.",
+      "empty": "Pega una URL para guardarla."
+    },
+    "fields": {
+      "title": "Título",
+      "url": "URL",
+      "category": "Categoría",
+      "applicationHint": "Archiva el enlace en un empleo, para que cada uno sepa del otro.",
+      "note": "Nota",
+      "noteHint": "Una línea sobre por qué vale la pena guardarlo."
+    },
+    "add": "Añadir enlace",
+    "toast": {
+      "saved": "Archivado en {{category}}, con un título tomado de la URL.",
+      "savedHidden": "Archivado en {{category}}; oculto mientras el filtro de palabras clave esté activo.",
+      "duplicated": "La copia está archivada en {{category}}, lista para editarse.",
+      "deletedDescription": "Eliminado de la Bóveda. La página a la que apunta no se ha tocado."
+    },
+    "empty": {
+      "zeroTitle": "Aún no hay enlaces guardados",
+      "zeroDescription": "Guarda una URL: una oferta, la página de un departamento, una persona a la que te dijeron que contactaras. El título se toma de la dirección.",
+      "search": "Ningún enlace menciona «{{query}}» en su título, dirección, nota o categoría.",
+      "both": "Ningún enlace {{category}} tiene las palabras clave seleccionadas.",
+      "bucketTitle": "No hay enlaces en {{category}}",
+      "bucketDescription_one": "{{count}} enlace está en las otras categorías.",
+      "bucketDescription_many": "{{count}} enlaces están en las otras categorías.",
+      "bucketDescription_other": "{{count}} enlaces están en las otras categorías.",
+      "showAll": "Mostrar todas las categorías",
+      "keywordsTitle": "Ningún enlace tiene esas palabras clave"
+    },
+    "filterLabel": "Filtrar enlaces por categoría",
+    "searchLabel": "Buscar enlaces",
+    "searchPlaceholder": "Buscar título, dirección o nota",
+    "form": {
+      "label": "Guardar un enlace",
+      "hint": "Se guarda en {{category}}, con un título tomado de la URL. Edita cualquier fila para cambiar cualquiera de los dos.",
+      "placeholder": "Pega una URL…",
+      "save": "Guardar enlace"
+    }
+  },
+  "people": {
+    "add": "Añadir persona",
+    "searchLabel": "Buscar personas",
+    "searchPlaceholder": "Buscar nombre, rol o nota",
+    "applicationsList": "Lista de candidaturas",
+    "toast": {
+      "removed": "Persona eliminada",
+      "saved": "Persona guardada"
+    },
+    "empty": {
+      "zeroTitle": "Aún no hay nadie",
+      "zeroDescription": "Referentes, presidentes de comités de selección, reclutadores: cualquiera por quien pase tu búsqueda. Archívalos en los empleos en los que aparecen y también se mostrarán en esos registros.",
+      "searchTitle": "Nadie coincide",
+      "searchDescription": "Prueba con parte de un nombre, un rol o dónde están."
+    },
+    "namedOn": {
+      "recommender": "Referente para {{names}}",
+      "contact": "Persona de contacto en {{names}}",
+      "named": "Mencionado en {{names}}"
+    },
+    "form": {
+      "name": "Nombre",
+      "nameError": "Lo único que necesita es un nombre.",
+      "namePlaceholder": "p. ej., Prof. Ngozi Okafor",
+      "role": "Rol",
+      "rolePlaceholder": "p. ej., referente, presidente del comité, reclutador",
+      "affiliation": "Afiliación",
+      "affiliationPlaceholder": "p. ej., Rice",
+      "affiliationHint": "Dónde están. No se vincula a un empleador al que te hayas postulado.",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "namedOn": "Mencionado en",
+      "namedOnHint": "Cada empleo para el que escriben, evalúan o presiden.",
+      "notePlaceholder": "Qué dijeron, qué te deben, cuándo insistir.",
+      "save": "Guardar persona"
+    }
+  },
+  "referee": {
+    "title": "Candidaturas para {{name}}",
+    "description": "Marca las que quieras enviar e indica qué quieres que destaque cada carta. Tus puntos destacados y notas se guardan en {{name}} para la próxima vez.",
+    "include": "Incluir {{org}}, {{role}}",
+    "applied": "Enviada el {{date}}",
+    "noMaterials": "Sin materiales archivados",
+    "materials_one": "{{count}} material",
+    "materials_many": "{{count}} materiales",
+    "materials_other": "{{count}} materiales",
+    "posting": "Oferta",
+    "noPosting": "Sin enlace a la oferta",
+    "highlight": "Destacar",
+    "highlightPlaceholder": "p. ej., docencia, NSF CAREER, inferencia causal",
+    "highlightHint": "Sepáralos con comas.",
+    "note": "Nota para esa persona",
+    "notePlaceholder": "Cualquier otra cosa: la fecha límite, a quién dirigirla, qué le importa al departamento.",
+    "format": "Formato de archivo",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Incluir mis materiales",
+    "withMaterialsCount": "Incluir mis materiales ({{count}})",
+    "tickOne": "Marca al menos una candidatura.",
+    "chosen_one": "{{count}} candidatura",
+    "chosen_many": "{{count}} candidaturas",
+    "chosen_other": "{{count}} candidaturas",
+    "chosenZip_one": "{{count}} candidatura, en un solo .zip",
+    "chosenZip_many": "{{count}} candidaturas, en un solo .zip",
+    "chosenZip_other": "{{count}} candidaturas, en un solo .zip",
+    "preparing": "Preparando…",
+    "download": "Descargar",
+    "toast": {
+      "saved": "Lista para {{name}} guardada",
+      "zip_one": "{{file}}: la hoja y {{count}} documento, en tu carpeta de descargas.",
+      "zip_many": "{{file}}: la hoja y {{count}} documentos, en tu carpeta de descargas.",
+      "zip_other": "{{file}}: la hoja y {{count}} documentos, en tu carpeta de descargas.",
+      "zipMissing_one": "{{file}} está en tu carpeta de descargas, sin {{count}} documento que este navegador ya no podía leer.",
+      "zipMissing_many": "{{file}} está en tu carpeta de descargas, sin {{count}} documentos que este navegador ya no podía leer.",
+      "zipMissing_other": "{{file}} está en tu carpeta de descargas, sin {{count}} documentos que este navegador ya no podía leer.",
+      "sheet": "{{file}}, en tu carpeta de descargas.",
+      "failed": "No se pudo crear la lista",
+      "failedDescription": "No se descargó nada. Tus puntos destacados y notas se conservaron.",
+      "highlights": "Puntos destacados guardados"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { StyleSheet, TextInput, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { IconButton } from '@/components/ui/Button'
 import { useColors } from '@/theme/theme-context'
@@ -18,6 +19,7 @@ export function SearchInput({
   label: string
   autoFocus?: boolean
 }) {
+  const { t } = useTranslation()
   const c = useColors()
 
   return (
@@ -36,7 +38,12 @@ export function SearchInput({
         style={[styles.input, { color: c.text1 }]}
       />
       {value.length > 0 ? (
-        <IconButton icon="x" label="Clear search" size={32} onPress={() => onChange('')} />
+        <IconButton
+          icon="x"
+          label={t('actions.clearSearch')}
+          size={32}
+          onPress={() => onChange('')}
+        />
       ) : null}
     </View>
   )

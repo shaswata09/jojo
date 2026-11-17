@@ -1,0 +1,152 @@
+{
+  "screen": {
+    "title": "Übertragen",
+    "subtitle": "Übertrage alles zwischen diesem Handy und deinem Computer über dein lokales Netzwerk. Beide müssen im selben Netzwerk sein. Nichts geht ins Internet und nichts wird anderswo gespeichert.",
+    "direction": "Richtung",
+    "roles": {
+      "send": "An einen Computer senden",
+      "receive": "Von einem Computer empfangen"
+    },
+    "onPhone": "Was jetzt auf diesem Handy ist",
+    "records_one": "{{count}} Eintrag",
+    "records_other": "{{count}} Einträge",
+    "empty": "leer",
+    "sendNote": "Senden kopiert alles auf deinen Computer, der fragt, bevor er ersetzt, was er hat. Auf diesem Handy ändert sich nichts.",
+    "receiveNote": "Empfangen ersetzt alles. Alles oben wird von dem überschrieben, was ankommt, und das lässt sich nicht rückgängig machen – exportiere vorher, wenn du es behalten willst."
+  },
+  "groups": {
+    "applications": {
+      "label": "Bewerbungen",
+      "hint": "Jede Phase, Notiz und jedes Ergebnis zu jeder einzelnen"
+    },
+    "timeline": {
+      "label": "Erinnerungen und Termine",
+      "hint": "{{reminders}} erinnern dich, {{events}} sind datierte Termine"
+    },
+    "vault": {
+      "label": "Links und Textbausteine",
+      "hint": "{{links}} Links · {{snippets}} Textbausteine"
+    },
+    "files": {
+      "label": "Dateien",
+      "hint": "Lebensläufe, Anschreiben und alles andere, was zu einer Bewerbung gespeichert ist"
+    },
+    "keywords": {
+      "label": "Schlagwörter",
+      "hint": "Deine Schlagwortliste und jeder Eintrag, dem sie zugeordnet sind"
+    },
+    "scout": {
+      "label": "Jobsuche",
+      "hint": "{{pipelines}} Suchen · {{postings}} gespeicherte Stellen · {{matches}} Treffer"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Deine Basisdaten, Links, Zielpositionen und Suchbegriffe"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "auf diesem Gerät nicht verfügbar",
+    "noRandom": "Dieses Gerät hat keinen sicheren Zufallszahlengenerator, deshalb vereinbart jojo darauf keinen Schlüssel. Die Kopplung ist deaktiviert, statt unsicher zu erfolgen.",
+    "scan": "Code scannen",
+    "retry": "Erneut versuchen",
+    "cancel": "Abbrechen"
+  },
+  "send": {
+    "title": "An einen Computer senden",
+    "hint": "auf den Code an deinem Computer richten",
+    "outcome": {
+      "applied": "Dein Computer hat jetzt deine Einträge",
+      "declined": "Dein Computer hat seine eigenen Einträge behalten",
+      "failed": "Dein Computer konnte deine Einträge nicht übernehmen",
+      "handed": "Alles wurde übergeben"
+    },
+    "detail": {
+      "waiting": "Dein Computer fragt, bevor er etwas ersetzt – bestätige dort, um abzuschließen. Auf diesem Handy hat sich nichts geändert.",
+      "unknown": "Dein Computer hat nicht gemeldet, ob er sie übernommen hat. Auf diesem Handy hat sich nichts geändert.",
+      "applied": "Beide Geräte haben jetzt dieselben Einträge. Auf diesem Handy hat sich nichts geändert.",
+      "notReplaced": "Dort wurde nichts ersetzt. Auf diesem Handy hat sich nichts geändert."
+    },
+    "unreadable_one": "{{count}} Dokument konnte nicht gelesen werden und ist hiergeblieben.",
+    "unreadable_other": "{{count}} Dokumente konnten nicht gelesen werden und sind hiergeblieben.",
+    "again": "Erneut senden",
+    "typeThis": "Gib das an deinem Computer ein",
+    "paired": "Gekoppelt. Dieses Handy wartet in deinem lokalen Netzwerk darauf, dass dein Computer anfragt.",
+    "handing": "Übergebe deine Einträge …",
+    "handingProgress": "Übergebe deine Einträge – {{served}} von {{chunks}}.",
+    "intro": "Öffne auf deinem Computer Übertragen, wähle Vom Handy empfangen und scanne den angezeigten Code. Beide müssen im selben lokalen Netzwerk sein.",
+    "gatherFailed": "jojo konnte die Einträge auf diesem Handy nicht sammeln, deshalb wurde nichts gesendet. Versuch es noch einmal."
+  },
+  "receive": {
+    "title": "Empfangen",
+    "hint": "auf den Code am anderen Gerät richten",
+    "complete": "Übertragung abgeschlossen",
+    "done": "Fertig",
+    "typeThis": "Gib das an deinem anderen Gerät ein",
+    "paired": "Gekoppelt. Dieses Handy lauscht in deinem lokalen Netzwerk und sonst nirgends.",
+    "progress": "Empfange – bisher {{size}}. Hier ändert sich nichts, bis du zustimmst.",
+    "intro": "Öffne jojo auf deinem Computer, wähle Übertragen und scanne den angezeigten Code.",
+    "confirm": {
+      "title": "Alles auf diesem Handy ersetzen?",
+      "description": "{{contents}}. {{replaces}}, und das lässt sich nicht rückgängig machen.",
+      "confirm": "Ersetzen"
+    },
+    "unrestorable": "Was angekommen ist, kann nicht wiederhergestellt werden: {{reason}}. Auf diesem Handy hat sich nichts geändert."
+  },
+  "landed": {
+    "plain_one": "{{count}} Eintrag ist auf diesem Handy.",
+    "plain_other": "{{count}} Einträge sind auf diesem Handy.",
+    "withDocuments_one": "{{count}} Eintrag ist auf diesem Handy, {{documents}}.",
+    "withDocuments_other": "{{count}} Einträge sind auf diesem Handy, {{documents}}.",
+    "documents_one": "{{count}} Dokument",
+    "documents_other": "{{count}} Dokumente",
+    "skipped_one": "{{count}} konnte nicht gelesen werden.",
+    "skipped_other": "{{count}} konnten nicht gelesen werden."
+  },
+  "scanner": {
+    "point": "Richte das auf den Code auf der Übertragen-Seite deines anderen Geräts.",
+    "advice": {
+      "denied": "jojo braucht die Kamera, um den Code auf deinem anderen Gerät zu lesen. Erlaube sie oder gib den Code stattdessen von Hand ein.",
+      "unsupported": "Dieses Handy kann die Kamera für jojo nicht öffnen.",
+      "failed": "Die Kamera ist nicht gestartet. Schließe jojo und öffne es erneut."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Kopplungscode lesen",
+      "message": "jojo braucht die Kamera, um den Code auf deinem anderen Gerät zu lesen. Es wird nichts aufgezeichnet, und kein Bild verlässt dieses Handy.",
+      "allow": "Erlauben",
+      "notNow": "Nicht jetzt"
+    },
+    "refused": {
+      "denied": "jojo braucht die Kamera, um den Code auf deinem anderen Gerät zu lesen.",
+      "blocked": "Die Kamera ist für jojo ausgeschaltet. Schalte sie in den Einstellungen deines Handys unter Apps ein, um per Scan zu koppeln."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Dieser Code ist kein jojo-Kopplungsangebot. Scanne den auf deinem anderen Gerät.",
+      "noNetwork": "Dieses Handy ist in keinem lokalen Netzwerk. jojo überträgt nur über dein lokales Netzwerk, daher müssen beide Geräte im selben sein.",
+      "notLocal": "Dieses Handy ist in einem Netzwerk, über das jojo nicht überträgt. Es verbindet sich nur mit einer privaten Netzwerkadresse, damit deine Einträge nie über das Internet gehen.",
+      "noSocket": "jojo konnte auf diesem Handy keine Verbindung öffnen. Versuch es noch einmal."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "Die Zwischenablage ist leer. Kopiere zuerst eine jojo-Sicherung und füge sie dann hier ein.",
+    "fileEmpty": "Diese Datei ist leer. Auf diesem Handy hat sich nichts geändert.",
+    "notBackup": "es ist keine jojo-Sicherung",
+    "unrestorable": {
+      "file": "Diese Datei kann nicht wiederhergestellt werden: {{reason}}. Auf diesem Handy hat sich nichts geändert.",
+      "clipboard": "Der Inhalt der Zwischenablage kann nicht wiederhergestellt werden: {{reason}}. Auf diesem Handy hat sich nichts geändert."
+    },
+    "noRecords": {
+      "file": "Diese Datei ist eine Sicherung ohne Einträge. Auf diesem Handy hat sich nichts geändert – eine Wiederherstellung hätte es geleert.",
+      "clipboard": "Der Inhalt der Zwischenablage ist eine Sicherung ohne Einträge. Auf diesem Handy hat sich nichts geändert – eine Wiederherstellung hätte es geleert."
+    },
+    "unreadable": "Diese Datei konnte nicht gelesen werden. Auf diesem Handy hat sich nichts geändert.",
+    "noPicker": "Auf diesem Handy gibt es nichts, womit sich eine JSON- oder Textdatei auswählen lässt.",
+    "openFailed": "Die Datei konnte nicht geöffnet werden: {{detail}}",
+    "failedTitle": "Nichts wurde importiert",
+    "restoredTitle": "Sicherung wiederhergestellt"
+  }
+}

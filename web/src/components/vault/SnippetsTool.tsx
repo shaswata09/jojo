@@ -5,6 +5,7 @@ import { useGraph } from '@jojo/service/react/kg-context'
 import type { NodeId } from '@jojo/service/core/model'
 import type { FormEvent } from 'react'
 import { Plus, Quote } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -41,6 +42,7 @@ const COPIED_MS = 1600
  * discarded by the button that closed the panel.
  */
 export function SnippetsTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
   const graph = useGraph()
   const [tagFilter, setTagFilter] = useState<SnippetTag | 'all'>('all')
   const [query, setQuery] = useState('')
@@ -214,11 +216,9 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     dirty ? setPending({ kind: 'open', snippet: s }) : openEditor(s)
   const requestClose = () => (dirty ? setPending({ kind: 'close' }) : closeEditor())
 
-  const titleError = submitted && !editing?.title.trim() ? 'Give the snippet a name.' : undefined
+  const titleError = submitted && !editing?.title.trim() ? t('snippets.errors.title') : undefined
   const bodyError =
-    submitted && editing?.title.trim() && !body
-      ? 'Write the text you want to paste later.'
-      : undefined
+    submitted && editing?.title.trim() && !body ? t('snippets.errors.body') : undefined
 
   const save = (event: FormEvent) => {
     event.preventDefault()
@@ -257,10 +257,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         applicationIds: editing.applicationIds,
       })
       toast({
-        title: `${title} saved`,
-        description: `Filed under ${editing.tag}, ready to copy from the list.`,
+        title: t('common.saved', { title }),
+        description: t('snippets.toast.filed', { tag: editing.tag }),
         action: {
-          label: 'Undo',
+          label: t('common.undo'),
           onClick: () => {
             if (before) updateSnippet(id, before)
             commitKeywords(id, beforeKeywords)
@@ -327,13 +327,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       !matchesQuery(query, title, body, record.tag)
 
     toast({
-      title: `${title} saved`,
+      title: t('common.saved', { title }),
       description: hidden
-        ? `Filed under ${record.tag} — hidden by the filters above the list.`
-        : `Filed under ${record.tag}, ready to copy from the list.`,
+        ? t('snippets.toast.filedHidden', { tag: record.tag })
+        : t('snippets.toast.filed', { tag: record.tag }),
       action: hidden
         ? {
-            label: 'Show it',
+            label: t('common.showIt'),
             onClick: () => {
               setTagFilter('all')
               setQuery('')
@@ -341,7 +341,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
             },
           }
         : {
-            label: 'Undo',
+            label: t('common.undo'),
             onClick: () => {
               removeSnippet(record.id)
               removeRecord(record.id)
@@ -355,14 +355,14 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     // Through the tool, and in ONE write: a hand-made copy of a tailored
     // document must not keep the model's provenance nor its marks as literal
     // characters, and one press must be one thing to undo.
-    const copy = duplicateSnippet(s.id, `${s.title} (copy)`)
+    const copy = duplicateSnippet(s.id, t('reminders.copyTitle', { title: s.title }))
     const keywords = labelIdsOf(s.id)
     if (keywords.length > 0) setRecord(copy.id, keywords)
     toast({
-      title: `${s.title} duplicated`,
-      description: `The copy is filed under ${copy.tag}, ready to be rewritten.`,
+      title: t('reminders.toast.duplicated', { title: s.title }),
+      description: t('snippets.toast.duplicated', { tag: copy.tag }),
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => {
           removeSnippet(copy.id)
           removeRecord(copy.id)
@@ -376,9 +376,12 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     if (announceRefusal(updateSnippet(s.id, { tag: next }), toast)) return
     if (editing?.id === s.id) setEditing((prev) => (prev ? { ...prev, tag: next } : prev))
     toast({
-      title: `${s.title} moved`,
-      description: `Filed under ${next}${tagFilter !== 'all' && tagFilter !== next ? ` — out of the ${tagFilter} list you are looking at` : ''}.`,
-      action: { label: 'Undo', onClick: () => updateSnippet(s.id, { tag: before }) },
+      title: t('reminders.toast.moved', { title: s.title }),
+      description:
+        tagFilter !== 'all' && tagFilter !== next
+          ? t('snippets.toast.movedOut', { tag: next, filter: tagFilter })
+          : t('snippets.toast.moved', { tag: next }),
+      action: { label: t('common.undo'), onClick: () => updateSnippet(s.id, { tag: before }) },
     })
   }
 
@@ -396,8 +399,12 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     const removed = removeSnippet(id)
     if (!removed.ok) {
       toast({
-        title: 'That did not delete',
-        description: removed.refusal ?? `${doomed?.title ?? 'The snippet'} is still in the Vault.`,
+        title: t('common.deleteFailed'),
+        description:
+          removed.refusal ??
+          (doomed
+            ? t('snippets.toast.stillThere', { title: doomed.title })
+            : t('snippets.toast.stillThereUnnamed')),
         tone: 'danger',
       })
       return
@@ -407,11 +414,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     if (editing?.id === id) closeEditor()
 
     toast({
-      title: `${doomed?.title ?? 'Snippet'} deleted`,
-      description: 'The text and its keywords go with it.',
+      title: doomed
+        ? t('common.deleted', { title: doomed.title })
+        : t('snippets.toast.deletedUnnamed'),
+      description: t('snippets.toast.deletedDescription'),
       tone: 'danger',
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: () => {
           restore()
           // Guarded: `setRecord` with an empty list files the record as carrying
@@ -432,24 +441,23 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     onClearKeywords: clearSelected,
     copy: {
       zero: {
-        title: 'No snippets yet',
-        description:
-          'Save the paragraphs you keep rewriting — the bio, the why-this-department, the follow-up email.',
+        title: t('snippets.empty.zeroTitle'),
+        description: t('snippets.empty.zeroDescription'),
         action: (
           <Button size="sm" onClick={() => requestOpen()}>
             <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            New snippet
+            {t('snippets.editor.newTitle')}
           </Button>
         ),
       },
-      search: (q) => `No snippet mentions "${q}" in its name, text or kind.`,
-      both: `No ${tagFilter} snippet carries the selected keywords.`,
+      search: (q) => t('snippets.empty.search', { query: q }),
+      both: t('snippets.empty.both', { tag: tagFilter }),
       bucket: {
-        title: `No ${tagFilter} snippets`,
-        description: `${snippets.length} snippets are filed under the other kinds.`,
-        clearLabel: 'Show all kinds',
+        title: t('snippets.empty.bucketTitle', { tag: tagFilter }),
+        description: t('snippets.empty.bucketDescription', { count: snippets.length }),
+        clearLabel: t('snippets.empty.showAll'),
       },
-      keywords: { title: 'No snippets carry those keywords' },
+      keywords: { title: t('snippets.empty.keywordsTitle') },
     },
   })
 
@@ -460,7 +468,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           <VaultToolbar
             filter={
               <BucketFilter
-                label="Filter snippets by kind"
+                label={t('snippets.filterLabel')}
                 options={SNIPPET_TAGS}
                 counts={counts}
                 value={tagFilter}
@@ -470,8 +478,8 @@ export function SnippetsTool({ focus }: { focus?: string }) {
             }
             search={
               <VaultSearch
-                label="Search snippets"
-                placeholder="Search name or text"
+                label={t('snippets.searchLabel')}
+                placeholder={t('snippets.searchPlaceholder')}
                 value={query}
                 onChange={setQuery}
               />
@@ -479,7 +487,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
             action={
               <Button size="sm" onClick={() => requestOpen()}>
                 <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                New snippet
+                {t('snippets.editor.newTitle')}
               </Button>
             }
           />
@@ -517,11 +525,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         {/* Announced rather than only shown: the confirmation appears on a button
           the user has just left, and colour changes alone are easy to miss. */}
         <p aria-live="polite" className="sr-only">
-          {copiedId
-            ? failed
-              ? 'Copy was blocked by the browser'
-              : 'Snippet copied to clipboard'
-            : ''}
+          {copiedId ? (failed ? t('common.copyBlocked') : t('snippets.copied')) : ''}
         </p>
       </Panel>
 
@@ -548,9 +552,11 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         onOpenChange={(next) => {
           if (!next) setPending(null)
         }}
-        title="Discard unsaved changes?"
-        description={`"${editing?.title.trim() || 'Untitled snippet'}" has edits that have not been saved. Leaving now throws them away, and that cannot be undone.`}
-        confirmLabel="Discard changes"
+        title={t('snippets.discard.title')}
+        description={t('snippets.discard.description', {
+          title: editing?.title.trim() || t('snippets.discard.untitled'),
+        })}
+        confirmLabel={t('snippets.discard.confirm')}
         tone="danger"
         onConfirm={() => {
           if (pending?.kind === 'open') openEditor(pending.snippet)

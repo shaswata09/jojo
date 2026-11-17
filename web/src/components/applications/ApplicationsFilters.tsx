@@ -1,17 +1,21 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { LabelFilter } from '@/components/common/LabelFilter'
 import { Segment } from '@/components/common/Segment'
 import { Input } from '@/components/ui/input'
-import { STAGES, STAGE_LABEL, type Application } from '@/data/seed'
+import { STAGES, type Application } from '@/data/seed'
 import { refKey } from '@/lib/ids'
 import type { ApplicationsView } from '@/lib/links'
 import type { useApplicationsParams } from '@/lib/link-params'
+import { useDomain } from '@/i18n/domain'
+import { urlEcho } from '@/lib/url-echo'
 
+/** The two layouts; each label is a catalog key, translated where it is drawn. */
 const VIEWS = [
-  { value: 'table', label: 'Table' },
-  { value: 'board', label: 'Board' },
+  { value: 'table', label: 'filters.table' },
+  { value: 'board', label: 'filters.board' },
 ] as const satisfies readonly { value: ApplicationsView; label: string }[]
 
 /**
@@ -43,26 +47,28 @@ export function ApplicationsFilters({
    * every keystroke in the search box.
    */
   const scopeIds = useMemo(() => pool.map((a) => refKey('app', a.id)), [pool])
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
+  const views = VIEWS.map((v) => ({ value: v.value, label: t(v.label) }))
+  const { set } = params
+  const search = useCallback((q: string) => set({ q }), [set])
 
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="relative min-w-0 flex-1 basis-[220px]">
           <label htmlFor="applications-search" className="sr-only">
-            Search applications
+            {t('filters.searchLabel')}
           </label>
           <Search
             aria-hidden
             strokeWidth={1.8}
-            className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-text-3"
+            className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3"
           />
-          <Input
-            id="applications-search"
-            type="search"
-            value={params.q}
-            onChange={(e) => params.set({ q: e.target.value })}
-            placeholder="Search position, note or stage"
-            className="pl-8"
+          <SearchInput
+            q={params.q}
+            onSearch={search}
+            placeholder={t('filters.searchPlaceholder')}
           />
         </div>
       </div>
@@ -80,9 +86,9 @@ export function ApplicationsFilters({
             was worst at. */}
         {params.view === 'table' ? (
           <BucketFilter
-            label="Filter by stage"
+            label={t('filters.byStage')}
             options={STAGES.map((st) => st.id)}
-            labels={STAGE_LABEL}
+            labels={Object.fromEntries(STAGES.map((st) => [st.id, domain.stage(st.id)]))}
             counts={stageCounts}
             value={params.stage}
             onChange={(next) => params.set({ stage: next })}
@@ -91,10 +97,10 @@ export function ApplicationsFilters({
         ) : null}
 
         {/* Wrapped only to carry the guided tour's mark (components/tour). */}
-        <div data-tour="layout" className="ml-auto shrink-0">
+        <div data-tour="layout" className="ms-auto shrink-0">
           <Segment
-            label="Layout"
-            options={VIEWS}
+            label={t('filters.layout')}
+            options={views}
             value={params.view}
             // Only the board branch touches `stage`: `set` treats a key that
             // is present-but-undefined as "delete it", so passing it either
@@ -106,5 +112,57 @@ export function ApplicationsFilters({
         </div>
       </div>
     </div>
+  )
+}
+
+/** Long enough to coalesce a burst of typing, short enough to read as live. */
+const SEARCH_DEBOUNCE_MS = 150
+
+/**
+ * The search box: its own text, with the URL written behind it.
+ *
+ * Bound straight to `?q=` it dropped keystrokes. The router applies every
+ * location change inside a transition, React holds a controlled input at the
+ * last committed value until that transition lands, and re-rendering the
+ * whole pool takes long enough on a big record set or a slow device that the
+ * next key arrives first — "position 1" became "pition 1". Holding the text
+ * here keeps every keystroke; the URL, and the filtering it drives, follow a
+ * beat behind. A change from outside (Back, Clear filters) is still adopted —
+ * `urlEcho` is what tells it from the box's own writes landing late.
+ */
+function SearchInput({
+  q,
+  onSearch,
+  placeholder,
+}: {
+  q: string
+  onSearch: (q: string) => void
+  placeholder: string
+}) {
+  const [text, setText] = useState(q)
+  const [echo] = useState(urlEcho)
+
+  useEffect(() => {
+    if (!echo.isEcho(q)) setText(q)
+  }, [q, echo])
+
+  useEffect(() => {
+    if (text === q) return
+    const timer = setTimeout(() => {
+      echo.sent(text)
+      onSearch(text)
+    }, SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [text, q, onSearch, echo])
+
+  return (
+    <Input
+      id="applications-search"
+      type="search"
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      placeholder={placeholder}
+      className="ps-8"
+    />
   )
 }

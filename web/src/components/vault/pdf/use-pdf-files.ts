@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useVault } from '@jojo/service/react/use-vault'
+import { i18next } from '@/i18n/i18n'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { kindOfFile, sizeLabel } from '@/lib/files'
 import { safeName } from '@/lib/pdf/output-name'
@@ -72,7 +73,7 @@ export function usePdfFiles() {
   const bytesOf = useCallback(
     async (choice: PdfChoice): Promise<Uint8Array> => {
       const file = choice.kind === 'device' ? choice.file : await blobs.get(choice.id)
-      if (!file) throw new Error(`${choice.name} is no longer stored, so it cannot be opened.`)
+      if (!file) throw new Error(i18next.t('vault:pdf.errors.gone', { name: choice.name }))
       return new Uint8Array(await file.arrayBuffer())
     },
     [blobs],
@@ -101,9 +102,7 @@ export function usePdfFiles() {
       })
       const stored = await blobs.put(record.id, file)
       if (!stored) {
-        throw new Error(
-          `${finalName} was filed, but its bytes would not fit in this browser's storage.`,
-        )
+        throw new Error(i18next.t('vault:pdf.errors.noRoom', { name: finalName }))
       }
       return record
     },

@@ -4,5 +4,271 @@
     "description": "The language jojo is shown in. Your records stay in the language you wrote them in.",
     "system": "Same as this browser ({{name}})",
     "loadFailed": "That language could not be loaded. jojo stays in {{name}}."
+  },
+  "buckets": {
+    "overdue": "Overdue",
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "done": "Completed"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Tomorrow",
+      "later": "A day later",
+      "duration": "A day"
+    },
+    "threeDays": {
+      "soon": "In 3 days",
+      "later": "Three days later",
+      "duration": "Three days"
+    },
+    "week": {
+      "soon": "In 7 days",
+      "later": "A week later",
+      "duration": "A week"
+    }
+  },
+  "routeFailure": {
+    "title": "This page did not load",
+    "subtitle": "The rest of jojo is still running.",
+    "emptyTitle": "Something in this view broke",
+    "emptyDescription": "Going somewhere else and coming back will reload it. If it happens every time, the records this page draws are the place to look — Settings has a backup you can take first.",
+    "back": "Back to the dashboard"
+  },
+  "writeResult": {
+    "title": "That did not save",
+    "refused": "The change was refused."
+  },
+  "copy": {
+    "blocked": "Blocked",
+    "copied": "Copied",
+    "copy": "Copy"
+  },
+  "drag": {
+    "theItem": "the item",
+    "aTarget": "a drop target",
+    "start": "Picked up {{name}}.",
+    "over": "{{name}} is over {{place}}.",
+    "notOver": "{{name}} is no longer over a drop target.",
+    "dropped": "{{name}} was dropped on {{place}}.",
+    "droppedHome": "{{name}} was dropped where it started.",
+    "cancelled": "Dragging was cancelled. {{name}} was put back where it started.",
+    "instructions": "To pick up a draggable item, press the space bar.\nWhile dragging, use the arrow keys to move the item.\nPress space again to drop the item in its new position, or press escape to cancel."
+  },
+  "actions": {
+    "undo": "Undo",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close"
+  },
+  "records_one": "{{count}} record",
+  "records_other": "{{count}} records",
+  "deleteKeyword": {
+    "failed": "That did not delete",
+    "stillThere": "{{name}} is still a keyword.",
+    "deleted": "{{name}} deleted",
+    "wasUnused": "It was not on any record.",
+    "takenOff_one": "Taken off {{count}} record, and out of the keyword filter.",
+    "takenOff_other": "Taken off {{count}} records, and out of the keyword filter.",
+    "confirmTitle": "Delete {{name}}?",
+    "confirmTitleAny": "Delete keyword?",
+    "unused": "Not on any record yet, so nothing else changes.",
+    "usedOn_one": "Used on {{count}} record. Those records stay — they lose this keyword.",
+    "usedOn_other": "Used on {{count}} records. Those records stay — they lose this keyword.",
+    "confirm": "Delete keyword"
+  },
+  "bucketFilter": {
+    "all": "All"
+  },
+  "marks": {
+    "bold": "bold",
+    "italic": "italic",
+    "underlined": "underlined"
+  },
+  "pageHeader": {
+    "options": "{{title}} options"
+  },
+  "errorBoundary": {
+    "title": "Something broke",
+    "body": "A view failed to render. Try again re-mounts it without reloading the page.",
+    "retry": "Try again"
+  },
+  "tone": {
+    "colourFor": "Colour for {{label}}",
+    "anyColourFor": "Any colour for {{label}}"
+  },
+  "boot": {
+    "takingLong": "Your local database is taking longer than usual to open. Another jojo tab may be holding it — closing the others usually frees it.",
+    "opening": "Opening your local database…"
+  },
+  "keywordPicker": {
+    "none": "None yet",
+    "choose": "Choose keywords",
+    "heading": "Keywords",
+    "newPlaceholder": "New keyword…",
+    "new": "New keyword"
+  },
+  "rowMenu": {
+    "moreFor": "More actions for {{name}}",
+    "more": "More actions"
+  },
+  "firstRun": {
+    "title": "How would you like to start?",
+    "description": "jojo keeps everything on this machine, so this is yours to decide. Neither answer is final — you can load the demo data or clear every record later, from Settings.",
+    "demo": {
+      "title": "Explore with demo data",
+      "detail": "A worked job search to look around in — twelve applications, a timeline, a stocked vault. Nothing in it is yours, and clearing it later takes one press.",
+      "working": "Loading…"
+    },
+    "empty": {
+      "title": "Start empty",
+      "detail": "No demo records at all. Every page opens on its empty state, and the first thing in jojo is something you added.",
+      "working": "Clearing…"
+    }
+  },
+  "recovery": {
+    "title": "jojo cannot read its database",
+    "body": "Your records are still on this machine. jojo has not changed or replaced anything, and it will not load the demo data over them — a store that reseeded itself to look healthy would turn this into permanent data loss.",
+    "downloadHint": "Writes the rows that could be read to a file",
+    "downloadNothing": "The database could not be read at all, so there is nothing to write out",
+    "download": "Download what we could read",
+    "working": "Working…",
+    "retry": "Try again",
+    "freshHint": "Deletes the database and starts jojo as if it were new",
+    "fresh": "Start fresh",
+    "readable_one": "{{count}} row was readable — download it before anything else, since starting fresh deletes it.",
+    "readable_other": "{{count}} rows were readable — download them before anything else, since starting fresh deletes them.",
+    "unreadable": "Nothing could be read out of the store, so there is nothing to download. Try again first: a database another tab is holding open fails this way and recovers on its own.",
+    "confirmTitle": "Delete the database and start fresh?",
+    "confirmBody": "This deletes jojo's local database and everything still in it, then starts again from nothing — including the question a first run asks about whether to begin with the demo data or empty. It does not repair anything and there is no undo. If you have not downloaded the readable rows yet, cancel and do that first.",
+    "confirm": "Delete and start fresh"
+  },
+  "labelFilter": {
+    "label": "Filter by keyword",
+    "none": "No keywords yet — add one to filter by it.",
+    "example": "e.g. Developer",
+    "add": "Add keyword",
+    "clear": "Clear"
+  },
+  "labelPicker": {
+    "editOn": "Edit keywords on {{name}}",
+    "edit": "Edit keywords"
+  },
+  "keywordChip": {
+    "taken": "Another keyword already has that name.",
+    "needsName": "A keyword needs a name.",
+    "rename": "Rename",
+    "colour": "Colour",
+    "stopFiltering": "Stop filtering by {{name}}",
+    "filterBy": "Filter by {{name}}",
+    "edit": "Edit the keyword {{name}}",
+    "editHint": "Rename, recolour or delete"
+  },
+  "welcome": {
+    "title": "A little about you",
+    "description": "Drafts sign off with your name, and the scout scores against what you are looking for. All of it stays on this machine, and all of it is optional — you can fill it in later under Profile.",
+    "fullName": "Full name",
+    "fullNameExample": "e.g. Lonardo Jenson",
+    "position": "Current position",
+    "positionExample": "e.g. PhD candidate, Computer Science",
+    "location": "Location",
+    "locationExample": "e.g. Santa Clara, CA",
+    "email": "Email",
+    "skip": "Skip for now",
+    "save": "Save and continue",
+    "rest": "The rest — links, target roles, the terms the scout matches on — lives under <anchor>Profile</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Want a hands-on tour?",
+    "tourDescription": "A walk through the real pages — a spotlight on each part, what it is for, and you try each thing as you go. It never types, saves or changes anything for you, and it keeps your place if you stop.",
+    "notNow": "Not now",
+    "start": "Start the tour",
+    "always": "It is always there under <em>How to use</em>, so saying no now costs nothing."
+  },
+  "setup": {
+    "skip": "Skip for now",
+    "continue": "Continue",
+    "done": "Done",
+    "optional": "Every one of these is optional and you can set it up later under Settings.",
+    "model": {
+      "title": "Connect a model",
+      "body": "This is what makes jojo agentic rather than a filing cabinet: it can then answer questions about your search, write follow-ups and drafts, and run the Job Scout pipelines that keep your records complete and watch for postings. Point it at a model on your own machine and nothing leaves the device."
+    },
+    "reader": {
+      "title": "Let it read your documents",
+      "body": "Without this the assistant can see a document’s name and nothing else. Run MarkItDown on this machine — two commands, below — and it can read what is inside your CVs, cover letters and saved postings when it drafts and answers."
+    },
+    "crash": {
+      "title": "Crash reports and usage",
+      "description": "Two separate things, both on — turn off either one here or later in Settings. Neither can carry your records: not an application, a document, a note, a profile or a conversation.",
+      "inReport": "What is in a report",
+      "inError": "The error message and where in jojo it happened.",
+      "inStack": "The stack trace, which names the code that failed.",
+      "never": "What is never in one",
+      "neverRecords": "Your applications, documents, notes, profile or conversations.",
+      "neverSecrets": "Your API keys, the addresses you use, your home directory, or any email address — these are stripped out before a report is written, not before it is sent.",
+      "where": "In this browser and in the jojo extension, crash reports <em>stay on this device</em>: nothing is uploaded, and a backup file does not carry them. You read them yourself under Settings. On the jojo phone app the same report is also sent to Google's Firebase Crashlytics, which adds your device model, its operating system version, and a random id it uses to count how many people hit the same crash — no name, no account, nothing tied to you. Usage counts, the second switch below, go to Google Analytics from every version including this one.",
+      "keep": "Keep crash reports",
+      "keepHint": "The error and where it happened. Stays on this device in the browser.",
+      "share": "Share which features I use",
+      "shareHint": "Counts only — which screens are opened, how often. Never what is in them.",
+      "usageNote": "The second one is the only thing jojo sends about what you DO, and it can only ever say things from a fixed list — “the vault was opened”, “an application was added”, “there are 6–20 of them”. It cannot name an employer, a role, a file or anything you typed, because those words are not in the list. It goes to Google Analytics so we can see which parts of jojo are worth more work.",
+      "bothOff": "Turn both off",
+      "save": "Save choices",
+      "continueOff": "Continue with both off",
+      "later": "You can change either of these at any time under Settings, and turning one off also discards what it kept."
+    },
+    "extension": {
+      "title": "Keep the postings you apply to",
+      "body": "Job adverts come down, often before you hear back. The browser extension saves a posting as it reads today, into your own vault — and it is also how the Job Scout reads the boards you follow."
+    }
+  },
+  "spectrum": {
+    "saturation": "Saturation and brightness",
+    "hue": "Hue",
+    "hex": "Hex colour",
+    "any": "Any colour"
+  },
+  "field": {
+    "openInTab": "Open {{label}} in a new tab",
+    "hide": "Hide {{label}}",
+    "show": "Show {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Small",
+      "normal": "Normal",
+      "large": "Large",
+      "huge": "Huge"
+    },
+    "clearFormatting": "Clear formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "strikeThrough": "Strikethrough",
+    "insertUnorderedList": "Bullet list",
+    "insertOrderedList": "Numbered list",
+    "snippetText": "Snippet text",
+    "fontSize": "Font size",
+    "insertTable": "Insert table",
+    "textColour": "Text colour"
+  },
+  "toolForm": {
+    "aRecord": "a record",
+    "yourProfile": "Your profile"
+  },
+  "toolRun": {
+    "choose": "Choose…",
+    "none": "None",
+    "omitted_one": "Not on this form: {{fields}}. Open the record to set it.",
+    "omitted_other": "Not on this form: {{fields}}. Open the record to set them."
+  },
+  "toast": {
+    "notifications": "Notifications",
+    "dismiss": "Dismiss — {{title}}"
+  },
+  "command": {
+    "title": "Command Palette",
+    "description": "Search for a command to run..."
   }
 }

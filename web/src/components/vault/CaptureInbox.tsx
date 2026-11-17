@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Globe, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { CAPTURE_REJECTION_MESSAGE } from '@jojo/service/core/capture'
 import { useCaptureInbox } from '@/lib/capture-bridge'
@@ -24,6 +25,7 @@ import { useToast } from '@/lib/toast-context'
  * the notification; the button is the consent.
  */
 export function CaptureInbox() {
+  const { t } = useTranslation('vault')
   const { pending, collect, ack, refresh } = useCaptureInbox()
   const fileCapture = useFileCapture()
   const { toast } = useToast()
@@ -70,8 +72,8 @@ export function CaptureInbox() {
         toast({
           title:
             filed.length === 1
-              ? `${filed[0]?.file.name ?? 'Posting'} saved to your vault`
-              : `${String(filed.length)} postings saved to your vault`,
+              ? t('capture.savedOne', { name: filed[0]?.file.name ?? t('capture.posting') })
+              : t('capture.savedMany', { count: filed.length }),
           description: [
             /*
              * Always says it is unfiled, because it always is. It used to
@@ -83,14 +85,10 @@ export function CaptureInbox() {
              * the file is still attached to nothing until the person picks.
              */
             filed.length === 1 && suggested.length === 1 && suggested[0]
-              ? `Not filed under any application. ${displayName(suggested[0])} looks like a match — file it from the row in your Vault.`
-              : 'Not filed under any application. File it from the row in your Vault whenever you want to.',
-            dropped > 0
-              ? `${String(dropped)} ${dropped === 1 ? 'asset' : 'assets'} could not be kept, so parts may look plain.`
-              : null,
-            unstored.length > 0
-              ? `${String(unstored.length)} could not be stored on this device — the record is there, the page is not.`
-              : null,
+              ? t('capture.suggested', { name: displayName(suggested[0]) })
+              : t('capture.unfiled'),
+            dropped > 0 ? t('capture.dropped', { count: dropped }) : null,
+            unstored.length > 0 ? t('capture.unstored', { count: unstored.length }) : null,
           ]
             .filter(Boolean)
             .join(' '),
@@ -104,8 +102,8 @@ export function CaptureInbox() {
           tone: 'danger',
           title:
             refused.length === 1
-              ? 'One capture could not be kept'
-              : `${String(refused.length)} captures could not be kept`,
+              ? t('capture.refusedOne')
+              : t('capture.refusedMany', { count: refused.length }),
           description: [...new Set(refused.map((r) => CAPTURE_REJECTION_MESSAGE[r.reason]))].join(
             ' ',
           ),
@@ -121,14 +119,12 @@ export function CaptureInbox() {
     <div className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-info-border bg-info-soft px-3 py-2.5">
       <Globe className="size-4 shrink-0 text-info" strokeWidth={1.9} aria-hidden />
       <p className="min-w-0 flex-1 text-sm text-text-1">
-        {pending === 1
-          ? 'One posting is waiting to be saved here.'
-          : `${String(pending)} postings are waiting to be saved here.`}{' '}
-        <span className="text-text-3">Captured with the jojo extension, still on this device.</span>
+        {pending === 1 ? t('capture.waitingOne') : t('capture.waitingMany', { count: pending })}{' '}
+        <span className="text-text-3">{t('capture.source')}</span>
       </p>
       <Button size="sm" onClick={() => void onFile()} disabled={filing}>
         {filing ? <Loader2 className="size-3.5 animate-spin" strokeWidth={2} aria-hidden /> : null}
-        {filing ? 'Saving…' : pending === 1 ? 'Save it' : 'Save them'}
+        {filing ? t('capture.saving') : pending === 1 ? t('capture.saveIt') : t('capture.saveThem')}
       </Button>
     </div>
   )

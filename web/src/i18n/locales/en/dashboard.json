@@ -1,0 +1,271 @@
+{
+  "common": {
+    "newApplication": "New application",
+    "openBoard": "Open the board",
+    "showAll": "Show all",
+    "undo": "Undo",
+    "pushOut": "Push \"{{title}}\" out",
+    "pushOutBy": "Push out by",
+    "completed": "{{title}} completed",
+    "rescheduled": "{{title}} rescheduled"
+  },
+  "headlineRates": {
+    "emptyTitle": "No rates yet",
+    "emptyDescription": "Reply, interview and offer rates all count applications that have actually gone out. Move one out of Draft and this fills in."
+  },
+  "pipeline": {
+    "emptyTitle": "Nothing in the pipeline",
+    "emptyDescription": "Each application sits in one stage, and this shows how they are spread across them. Add one and the first slice appears.",
+    "ariaLabel_one": "{{count}} application by stage",
+    "ariaLabel_other": "{{count}} applications by stage"
+  },
+  "statsCard": {
+    "control": "Statistic",
+    "tracked_one": "{{count}} tracked",
+    "tracked_other": "{{count}} tracked",
+    "views": {
+      "pipeline": "Pipeline",
+      "rates": "Rates",
+      "when": "When",
+      "next": "Next"
+    },
+    "titles": {
+      "pipeline": "Pipeline",
+      "rates": "Headline rates",
+      "when": "When you applied",
+      "next": "What to work on next"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "Notes",
+      "recent": "Recent applications"
+    },
+    "headingNotes": "Sticky notes",
+    "headingRecent": "Recent applications",
+    "control": "Show on this card",
+    "addReminder": "Add reminder",
+    "viewAll": "View all",
+    "emptyTitle": "No applications yet",
+    "emptyDescription": "Every position you track shows up here as you touch it, newest first.",
+    "today": "Today",
+    "daysAgo_one": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago"
+  },
+  "searchHealth": {
+    "title": "What to work on next",
+    "series": {
+      "you": "Yours",
+      "target": "Typical"
+    },
+    "intro": "your figures against a typical search",
+    "sample": "Sample",
+    "sampleTitle": "Only the typical ring is illustrative",
+    "emptyTitle": "Not enough to compare yet",
+    "emptyDescription": "This weighs your replies, interviews, referrals and follow-ups against a typical search. It needs applications that have actually gone out.",
+    "suggestions": "Suggestions, most useful first"
+  },
+  "sources": {
+    "title": "Where they came from",
+    "views": {
+      "bars": "Bars",
+      "donut": "Donut"
+    },
+    "chartType": "Chart type",
+    "unrecorded": "Not recorded",
+    "hintAll_one": "{{count}} application",
+    "hintAll_other": "{{count}} applications",
+    "hintSome": "{{shown}} of {{count}}",
+    "emptyTitle": "Nothing to break down yet",
+    "emptyDescription": "Each application records where you found it — a job board, a referral, the department page. This splits them once there are some.",
+    "centerLabel": "applications",
+    "show": "Show {{name}}",
+    "hide": "Hide {{name}}",
+    "allOff": "Every source is switched off."
+  },
+  "offers": {
+    "title": "Offers, side by side",
+    "open_one": "{{count}} open",
+    "open_other": "{{count}} open",
+    "caption": "Your open offers, with the package as you typed it, a yearly reading of it, and the date each one has to be answered by",
+    "columns": {
+      "job": "Job",
+      "package": "Package",
+      "year": "A year",
+      "respondBy": "Respond by"
+    },
+    "notStated": "not stated",
+    "noAmount": "No amount could be read from the package",
+    "readFrom": "Read from “{{text}}”",
+    "highest": "— the highest here",
+    "annualised": "(annualised)",
+    "passed": "passed",
+    "today": "today",
+    "daysLeft_one": "{{count}} day",
+    "daysLeft_other": "{{count}} days",
+    "ranked": "The yearly figure is read from what you typed — hover one to see which words it came from.",
+    "unranked": "These are not ranked: the packages are in different currencies, and jojo has no exchange rate and makes no network call to find one.",
+    "annualisedNote": "* annualised at 12 months, 52 weeks or 2,080 hours, which is a convention rather than your contract."
+  },
+  "sticky": {
+    "newNote": "New sticky note",
+    "placeholder": "Jot a note to self… (Enter to stick it)",
+    "newColour": "Colour for the new note",
+    "stick": "Stick it",
+    "empty": "Nothing stuck up yet. Notes stay here until you take them down, and any of them can become a reminder once it has a date.",
+    "listLabel": "Sticky notes",
+    "editNote": "Edit note",
+    "clickToEdit": "Click to edit",
+    "editAria": "Edit note: {{text}}",
+    "colour": "Colour",
+    "colourOf": "Colour of the note \"{{text}}\"",
+    "toReminder": "Turn into a reminder",
+    "toReminderAria": "Turn into a reminder: {{text}}",
+    "takeDown": "Take this note down",
+    "removeAria": "Remove note: {{text}}"
+  },
+  "frequency": {
+    "title": "When you applied",
+    "period": "Period",
+    "periods": {
+      "week": "Week",
+      "month": "Month",
+      "quarter": "Quarter"
+    },
+    "chartType": "Chart type",
+    "charts": {
+      "bar": "Bars",
+      "line": "Line"
+    },
+    "emptyTitle": "Nothing to chart yet",
+    "emptyDescription": "This counts the applications you send, week by week, split by the kind of role. Add one and the first bar appears.",
+    "noDatesTitle": "No send dates recorded yet",
+    "noDates_one": "Your one application carries no date yet. One is stamped when you move a record to Submitted.",
+    "noDates_other": "None of your {{count}} applications carries a date yet. One is stamped when you move a record to Submitted.",
+    "perPeriod": {
+      "week": "Applications sent per week, split by {{series}}",
+      "month": "Applications sent per month, split by {{series}}",
+      "quarter": "Applications sent per quarter, split by {{series}}"
+    },
+    "caption": {
+      "week": "Applications sent per week",
+      "month": "Applications sent per month",
+      "quarter": "Applications sent per quarter"
+    },
+    "countingUndated_one": "Counting {{inWindow}} of {{total}} applications — {{count}} has no date yet.",
+    "countingUndated_other": "Counting {{inWindow}} of {{total}} applications — {{count}} have no date yet.",
+    "countingEarlier_one": "Counting {{inWindow}} of {{total}} applications — {{count}} falls before {{first}}.",
+    "countingEarlier_other": "Counting {{inWindow}} of {{total}} applications — {{count}} fall before {{first}}.",
+    "countingBoth": "Counting {{inWindow}} of {{total}} applications — {{undated}} without a date yet, and {{earlier}} before {{first}}."
+  },
+  "glance": {
+    "heading": "At a glance",
+    "stats": {
+      "active": "Active",
+      "screens": "Screens & interviews",
+      "overdue": "Overdue",
+      "doneToday": "Done today"
+    },
+    "previousMonth": "Previous month",
+    "currentMonth": "Go to current month",
+    "currentMonthTitle": "{{date}} — current month",
+    "nextMonth": "Next month",
+    "openCalendar": "Open calendar",
+    "dayNone": "{{date}}, no events",
+    "day_one": "{{date}}, {{count}} event",
+    "day_other": "{{date}}, {{count}} events",
+    "dayAllDone_one": "{{date}}, {{count}} event, all done",
+    "dayAllDone_other": "{{date}}, {{count}} events, all done",
+    "today": "today",
+    "nothingPlanned": "Nothing planned. <add>Add something</add>."
+  },
+  "priority": {
+    "title": "Needs a decision",
+    "open_one": "{{count}} open",
+    "open_other": "{{count}} open",
+    "completedDescription": "It leaves the deck and this week — nothing is deleted.",
+    "rescheduledDescription": "Now due {{date}}, on the calendar and the week ahead.",
+    "tickOff": "Tick \"{{title}}\" off",
+    "done": "Done",
+    "snooze": "Snooze",
+    "notConnected": "Nothing is connected to this yet",
+    "earlierAria": "Show earlier decisions",
+    "earlier": "Earlier",
+    "laterAria": "Show later decisions",
+    "later": "Later",
+    "listLabel": "Decisions, earliest first",
+    "emptyTitle": "Nothing needs deciding today",
+    "emptyDescription": "Offers, applications that are overdue, the next hard deadline and your next interview surface here. None of them is outstanding."
+  },
+  "firstSteps": {
+    "title": "First steps",
+    "hint": "{{done}} of {{total}} done",
+    "application": {
+      "title": "Add an application",
+      "body": "A position, its stage and its deadline. Everything else in jojo hangs off this record."
+    },
+    "dated": {
+      "title": "Give something a date",
+      "body": "Deadlines, interviews and visits are one kind of record, so a date reaches this page, the calendar and the application at once.",
+      "action": "New event"
+    },
+    "reminder": {
+      "title": "Set a follow-up",
+      "body": "A reminder is the same record with a nudge switched on. Once its date passes it is owed, and it stays here until you tick it off.",
+      "action": "New reminder"
+    },
+    "complete": "All three are done. Anything you add from here reaches this page, the calendar and the application it belongs to.",
+    "intro": "Each step opens the real thing and ticks itself once a record exists — none of it is a tutorial you have to sit through.",
+    "introBare": "Nothing is tracked yet. Each step opens the real thing and ticks itself once a record exists — none of it is a tutorial you have to sit through.",
+    "doneSr": "— done",
+    "notDoneSr": "— not done yet",
+    "hideHint": "The same steps are written out in the guide",
+    "close": "Close first steps",
+    "hide": "Hide these steps"
+  },
+  "owed": {
+    "title": "Owed this week",
+    "add": "Add",
+    "addEvent": "Add an event",
+    "emptyTitle": "Nothing is owed",
+    "emptyDescription": "Deadlines, interviews and follow-ups land here as soon as they have a date, and stay until you tick them off.",
+    "hintOverdue": "{{overdue}} overdue · {{due}} due",
+    "hintDue_one": "{{count}} due",
+    "hintDue_other": "{{count}} due",
+    "snoozeAria": "Snooze {{title}}",
+    "openAria": {
+      "reminder": "Open {{title}}: edit the reminder or go to its application",
+      "event": "Open {{title}}: edit the event or go to its application"
+    },
+    "edit": {
+      "reminder": "Edit reminder",
+      "event": "Edit event"
+    },
+    "openApplication": "Open <name>{{name}}</name>",
+    "groups": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "rest": "Rest of the week"
+    },
+    "completedDescription": "It leaves this list and counts towards today — nothing is deleted.",
+    "rescheduledDescription": "Now due {{date}}, here and on the calendar.",
+    "nextSeven": "Next seven days",
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "allDone": "all done",
+    "nothingScheduled": "nothing scheduled",
+    "todayClear": "Today is clear.",
+    "todayClearDone": "Today is clear — {{count}} done.",
+    "markDoneAria": "Mark \"{{title}}\" done",
+    "markDone": "Mark done",
+    "draftTitle": "Write this from one of your email snippets",
+    "draftAria": "Draft {{title}}",
+    "later": "Later",
+    "openTitle": "Open {{title}}",
+    "more_one": "{{count}} more on the calendar",
+    "more_other": "{{count}} more on the calendar",
+    "showAll": "Show all {{total}}",
+    "showFewer": "Show fewer"
+  }
+}

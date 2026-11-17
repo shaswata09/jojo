@@ -19,7 +19,9 @@ function handleClasses(): string {
 describe('Q240 — the card drag handle is a full-height bar on the left', () => {
   it('pins the handle to the whole left edge, top to bottom', () => {
     const classes = handleClasses().split(/\s+/)
-    expect(classes).toEqual(expect.arrayContaining(['absolute', 'inset-y-0', 'left-0', 'cursor-grab']))
+    expect(classes).toEqual(
+      expect.arrayContaining(['absolute', 'inset-y-0', 'start-0', 'cursor-grab']),
+    )
   })
 
   it('draws its grip dots down the whole height of the bar', () => {
@@ -27,7 +29,7 @@ describe('Q240 — the card drag handle is a full-height bar on the left', () =>
   })
 
   it('leaves the rail a gutter and starts the card text at the top', () => {
-    expect(card).toMatch(/'surface group relative rounded-md py-2\.5 pr-2\.5 pl-5'/)
+    expect(card).toMatch(/'surface group relative rounded-md py-2\.5 ps-5 pe-2\.5'/)
     expect(card).toContain('<div className="flex items-start gap-2">')
   })
 })

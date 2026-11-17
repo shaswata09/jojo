@@ -1,4 +1,5 @@
 import type { MascotPose } from '@/lib/mascot-context'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * The mascot card as a gesture pad: a stroke drawn on it with the mouse (or a
@@ -17,42 +18,155 @@ export type PadPoint = { x: number; y: number; t: number }
 
 /** Every stroke the pad knows, in the order the guide lists them. */
 export const PAD_STROKES = [
-  { id: 'tap', label: 'Tap', pose: 'nod', icon: 'M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5' },
+  {
+    id: 'tap',
+    get label() {
+      return i18next.t('messages:stroke.tap')
+    },
+    pose: 'nod',
+    icon: 'M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5',
+  },
   {
     id: 'doubleTap',
-    label: 'Double tap',
+    get label() {
+      return i18next.t('messages:stroke.doubleTap')
+    },
     pose: 'jab',
     icon: 'M7 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5M17 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5',
   },
   {
     id: 'hold',
-    label: 'Press and hold',
+    get label() {
+      return i18next.t('messages:stroke.hold')
+    },
     pose: 'love',
     icon: 'M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16',
   },
-  { id: 'up', label: 'Swipe up', pose: 'hopSpin', icon: 'M12 20V4M6 10l6-6 6 6' },
-  { id: 'down', label: 'Swipe down', pose: 'bow', icon: 'M12 4v16M6 14l6 6 6-6' },
-  { id: 'side', label: 'Swipe sideways', pose: 'lookAround', icon: 'M4 12h16M14 6l6 6-6 6' },
-  { id: 'diagonal', label: 'Flick diagonally', pose: 'wink', icon: 'M5 19L19 5M10 5h9v9' },
-  { id: 'backForth', label: 'Back and forth', pose: 'shake', icon: 'M4 9h15l-3-3M20 15H5l3 3' },
-  { id: 'zigzag', label: 'Zigzag sideways', pose: 'dance', icon: 'M3 8l4 8 4-8 4 8 4-8 2 4' },
+  {
+    id: 'up',
+    get label() {
+      return i18next.t('messages:stroke.up')
+    },
+    pose: 'hopSpin',
+    icon: 'M12 20V4M6 10l6-6 6 6',
+  },
+  {
+    id: 'down',
+    get label() {
+      return i18next.t('messages:stroke.down')
+    },
+    pose: 'bow',
+    icon: 'M12 4v16M6 14l6 6 6-6',
+  },
+  {
+    id: 'side',
+    get label() {
+      return i18next.t('messages:stroke.side')
+    },
+    pose: 'lookAround',
+    icon: 'M4 12h16M14 6l6 6-6 6',
+  },
+  {
+    id: 'diagonal',
+    get label() {
+      return i18next.t('messages:stroke.diagonal')
+    },
+    pose: 'wink',
+    icon: 'M5 19L19 5M10 5h9v9',
+  },
+  {
+    id: 'backForth',
+    get label() {
+      return i18next.t('messages:stroke.backForth')
+    },
+    pose: 'shake',
+    icon: 'M4 9h15l-3-3M20 15H5l3 3',
+  },
+  {
+    id: 'zigzag',
+    get label() {
+      return i18next.t('messages:stroke.zigzag')
+    },
+    pose: 'dance',
+    icon: 'M3 8l4 8 4-8 4 8 4-8 2 4',
+  },
   {
     id: 'scribbleUp',
-    label: 'Scribble up and down',
+    get label() {
+      return i18next.t('messages:stroke.scribbleUp')
+    },
     pose: 'bounce',
     icon: 'M6 20V4M12 20V4M18 20V4',
   },
-  { id: 'circle', label: 'Circle', pose: 'spin', icon: 'M12 4a8 8 0 1 0 8 8M20 4v8h-8' },
-  { id: 'square', label: 'Square', pose: 'robot', icon: 'M5 5h14v14H5z' },
-  { id: 'vee', label: 'V (or a tick)', pose: 'flex', icon: 'M4 5l8 14 8-14' },
-  { id: 'peak', label: 'Λ (a peak)', pose: 'powerUp', icon: 'M4 19l8-14 8 14' },
-  { id: 'zed', label: 'Z', pose: 'doze', icon: 'M5 5h14L5 19h14' },
-  { id: 'arc', label: 'Arc (a C)', pose: 'jazz', icon: 'M17 5a8 8 0 1 0 0 14' },
-  { id: 'ell', label: 'L', pose: 'point', icon: 'M7 4v15h12' },
-  { id: 'triangle', label: 'Triangle', pose: 'disco', icon: 'M12 4l8 15H4z' },
+  {
+    id: 'circle',
+    get label() {
+      return i18next.t('messages:stroke.circle')
+    },
+    pose: 'spin',
+    icon: 'M12 4a8 8 0 1 0 8 8M20 4v8h-8',
+  },
+  {
+    id: 'square',
+    get label() {
+      return i18next.t('messages:stroke.square')
+    },
+    pose: 'robot',
+    icon: 'M5 5h14v14H5z',
+  },
+  {
+    id: 'vee',
+    get label() {
+      return i18next.t('messages:stroke.vee')
+    },
+    pose: 'flex',
+    icon: 'M4 5l8 14 8-14',
+  },
+  {
+    id: 'peak',
+    get label() {
+      return i18next.t('messages:stroke.peak')
+    },
+    pose: 'powerUp',
+    icon: 'M4 19l8-14 8 14',
+  },
+  {
+    id: 'zed',
+    get label() {
+      return i18next.t('messages:stroke.zed')
+    },
+    pose: 'doze',
+    icon: 'M5 5h14L5 19h14',
+  },
+  {
+    id: 'arc',
+    get label() {
+      return i18next.t('messages:stroke.arc')
+    },
+    pose: 'jazz',
+    icon: 'M17 5a8 8 0 1 0 0 14',
+  },
+  {
+    id: 'ell',
+    get label() {
+      return i18next.t('messages:stroke.ell')
+    },
+    pose: 'point',
+    icon: 'M7 4v15h12',
+  },
+  {
+    id: 'triangle',
+    get label() {
+      return i18next.t('messages:stroke.triangle')
+    },
+    pose: 'disco',
+    icon: 'M12 4l8 15H4z',
+  },
   {
     id: 'other',
-    label: 'Anything else',
+    get label() {
+      return i18next.t('messages:stroke.other')
+    },
     pose: 'wobble',
     icon: 'M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.6V15M12 19h.01',
   },

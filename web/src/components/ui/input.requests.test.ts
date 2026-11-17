@@ -12,6 +12,7 @@ import input from './input.tsx?raw'
 import textarea from './textarea.tsx?raw'
 import field from '@/components/common/Field.tsx?raw'
 import background from '@/components/profile/BackgroundPanel.tsx?raw'
+import profileCatalog from '@/i18n/locales/en/profile.json'
 import indexCss from '@/index.css?raw'
 
 /** Every value one custom property is given in the stylesheet, in order. */
@@ -39,6 +40,7 @@ describe('Q298 — placeholders read as placeholders, not as entered values', ()
     expect(background).toMatch(/import \{ Field, TextareaField \} from '@\/components\/common\/Field'/)
     expect(field).toContain("import { Input } from '@/components/ui/input'")
     expect(field).toContain("import { Textarea } from '@/components/ui/textarea'")
-    expect(background).toMatch(/placeholder="As written — “2021–2024”"/)
+    expect(background).toMatch(/placeholder=\{t\('background\.form\.whenPlaceholder'\)\}/)
+    expect(profileCatalog.background.form.whenPlaceholder).toBe('As written — “2021–2024”')
   })
 })

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Marked } from '@/components/ui/Marked'
 import { stripMarks } from '@jojo/service/core/marks'
 import { StyleSheet, View } from 'react-native'
@@ -21,7 +22,7 @@ import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { Sheet } from '@/components/ui/Sheet'
 import { Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { filedUnderLabel } from '@jojo/service/data/seed'
+import { displayName } from '@jojo/service/data/seed'
 import { SNIPPET_TAGS } from '@jojo/service/data/vault'
 import type { Snippet, SnippetTag } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
@@ -35,6 +36,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 import { report } from '@/lib/analytics'
+import { useDomain } from '@/i18n/domain'
 
 const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record<SnippetTag, string>
 
@@ -46,6 +48,8 @@ const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record
  * lives behind the ⋯ in the order every list in the app uses.
  */
 export function SnippetsTool({ focus }: { focus?: string }) {
+  const { t } = useTranslation('vault')
+  const domain = useDomain()
   // Only the arrival highlight needs the palette here.
   const c = useColors()
   const { snippets, addSnippet, duplicateSnippet, updateSnippet, removeSnippet } = useVault()
@@ -82,10 +86,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
   const onDelete = (snippet: Snippet) => {
     const { restore } = removeSnippet(snippet.id)
     toast({
-      title: 'Snippet deleted',
+      title: t('snippets.toast.deleted'),
       description: snippet.title,
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: { label: t('common.undo'), onPress: restore },
     })
   }
 
@@ -93,11 +97,12 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     // Through the tool, for the reason `duplicateSnippet` gives: spreading the
     // record carried `tailored` and the raw marks into a copy the person made.
     // One write, so one Undo puts it back.
-    const made = duplicateSnippet(snippet.id, `${snippet.title} (copy)`)
+    const copyTitle = t('common.copyOf', { name: snippet.title })
+    const made = duplicateSnippet(snippet.id, copyTitle)
     toast({
-      title: 'Snippet duplicated',
-      description: `${snippet.title} (copy)`,
-      action: { label: 'Undo', onPress: () => removeSnippet(made.id) },
+      title: t('snippets.toast.duplicated'),
+      description: copyTitle,
+      action: { label: t('common.undo'), onPress: () => removeSnippet(made.id) },
     })
   }
 
@@ -107,10 +112,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     updateSnippet(record.id, { applicationIds })
     const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: capitalize(filedUnderLabel(chosen)),
+      title: capitalize(domain.filedUnder(chosen.map(displayName))),
       description: record.title,
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onPress: () => updateSnippet(record.id, { applicationIds: before }),
       },
     })
@@ -120,13 +125,18 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     const before = snippet.tag
     updateSnippet(snippet.id, { tag: next })
     toast({
-      title: `Filed under ${next}`,
+      title: t('snippets.toast.filedUnder', { tag: next }),
       description: snippet.title,
-      action: { label: 'Undo', onPress: () => updateSnippet(snippet.id, { tag: before }) },
+      action: {
+        label: t('common.undo'),
+        onPress: () => updateSnippet(snippet.id, { tag: before }),
+      },
     })
   }
 
-  const addButton = <Button label="New snippet" icon="plus" onPress={() => setEditing('new')} />
+  const addButton = (
+    <Button label={t('snippets.add')} icon="plus" onPress={() => setEditing('new')} />
+  )
 
   const empty = vaultEmptyState({
     total: snippets.length,
@@ -139,31 +149,30 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     copy: {
       icon: 'copy',
       zero: {
-        title: 'No snippets yet',
-        description:
-          'The answers you retype on every form — a short bio, a teaching paragraph, the follow-up email you always send.',
+        title: t('snippets.empty.zeroTitle'),
+        description: t('snippets.empty.zeroDescription'),
       },
-      search: (q) => `No snippet mentions "${q}" in its name, text or kind.`,
-      both: `No ${tag} snippet carries the selected keywords.`,
+      search: (q) => t('snippets.empty.search', { query: q }),
+      both: t('snippets.empty.both', { tag }),
       bucket: {
-        title: `No ${tag} snippets`,
-        description: `${String(snippets.length)} snippets are filed under the other kinds.`,
-        clearLabel: 'Show all kinds',
+        title: t('snippets.empty.bucketTitle', { tag }),
+        description: t('snippets.empty.bucketDescription', { count: snippets.length }),
+        clearLabel: t('snippets.empty.showAll'),
       },
-      keywords: { title: 'No snippets carry those keywords' },
+      keywords: { title: t('snippets.empty.keywordsTitle') },
     },
   })
 
   return (
     <>
       <SearchInput
-        label="Search snippets"
+        label={t('snippets.search.label')}
         value={query}
         onChange={setQuery}
-        placeholder="Search title or body"
+        placeholder={t('snippets.search.placeholder')}
       />
       <BucketFilter
-        label="Filter snippets"
+        label={t('snippets.filterLabel')}
         options={SNIPPET_TAGS}
         labels={TAG_LABELS}
         counts={counts}
@@ -171,7 +180,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         onChange={setTag}
         total={pool.length}
       />
-      <Button label="New snippet" icon="plus" onPress={() => setEditing('new')} />
+      <Button label={t('snippets.add')} icon="plus" onPress={() => setEditing('new')} />
 
       {rows.length === 0 ? (
         <Panel>
@@ -213,7 +222,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                   card. Delete is not: it costs a menu, like every other. */}
               <IconButton
                 icon={isCopied(snippet.id) ? 'check' : 'copy'}
-                label={`Copy ${snippet.title}`}
+                label={t('snippets.copyNamed', { name: snippet.title })}
                 active={isCopied(snippet.id)}
                 onPress={() =>
                   copy(snippet.tailored ? stripMarks(snippet.body) : snippet.body, snippet.id)
@@ -222,7 +231,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
               <LabelPicker recordId={snippet.id} name={snippet.title} />
               <IconButton
                 icon="more-horizontal"
-                label={`More actions for ${snippet.title}`}
+                label={t('common.moreActionsFor', { name: snippet.title })}
                 onPress={() => setMenuFor(snippet)}
               />
             </View>
@@ -258,25 +267,27 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           menuFor
             ? buildRecordMenu({
                 onEdit: () => setEditing(menuFor),
+                editLabel: t('common.edit'),
                 onDuplicate: () => onDuplicate(menuFor),
                 extra: [
                   {
                     id: 'file-under',
                     label:
                       menuFor.applicationIds.length > 0
-                        ? 'Change applications'
-                        : 'File under an application',
+                        ? t('common.changeApplications')
+                        : t('common.fileUnderApplication'),
                     icon: 'briefcase',
                     onPress: () => setFiling(menuFor.id),
                   },
                 ],
                 move: {
-                  label: 'Tag',
+                  label: t('snippets.tag'),
                   options: SNIPPET_TAGS,
                   current: menuFor.tag,
                   onMove: (next) => onMove(menuFor, next),
                 },
                 onDelete: () => onDelete(menuFor),
+                deleteLabel: t('common.delete'),
               })
             : []
         }
@@ -290,13 +301,16 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           onSave={(draft) => {
             if (editing !== 'new') {
               updateSnippet(editing.id, draft)
-              toast({ title: 'Snippet saved', description: draft.title })
+              toast({ title: t('snippets.toast.saved'), description: draft.title })
             } else {
               addSnippet(draft)
               void report('vault_item_added', { kind: 'snippet' })
               toast({
-                title: 'Snippet added',
-                description: `${draft.title} · filed under ${draft.tag}`,
+                title: t('snippets.toast.added'),
+                description: t('snippets.toast.addedDescription', {
+                  title: draft.title,
+                  tag: draft.tag,
+                }),
               })
             }
             setEditing(null)
@@ -316,6 +330,7 @@ function SnippetEditor({
   onClose: () => void
   onSave: (draft: Omit<Snippet, 'id'>) => void
 }) {
+  const { t } = useTranslation('vault')
   const [title, setTitle] = useState(initial?.title ?? '')
   const [body, setBody] = useState(initial?.body ?? '')
   const [tag, setTag] = useState<SnippetTag>(initial?.tag ?? 'Cover letter')
@@ -362,29 +377,29 @@ function SnippetEditor({
       open
       onClose={askOrClose}
       size="tall"
-      title={initial ? 'Edit snippet' : 'New snippet'}
-      description="Anything in [BRACKETS] stays a blank when the draft sheet loads this, so a person's name is never filled in for you."
+      title={initial ? t('snippets.editor.editTitle') : t('snippets.add')}
+      description={t('snippets.editor.description')}
       footer={
         <>
           {/* Through `askOrClose`, as the backdrop, the X and Back are: Cancel
               threw away a half-written snippet without asking, and there is no undo. */}
-          <Button label="Cancel" variant="ghost" size="md" onPress={askOrClose} />
-          <Button label="Save" size="md" onPress={submit} />
+          <Button label={t('common.cancel')} variant="ghost" size="md" onPress={askOrClose} />
+          <Button label={t('common.save')} size="md" onPress={submit} />
         </>
       }
     >
       <View style={{ gap: space[3.5], flex: 1, minHeight: 0 }}>
         <TextField
-          label="Title"
+          label={t('common.title')}
           required
           value={title}
-          error={attempted && !title.trim() ? 'Name it so you can find it again.' : undefined}
-          placeholder="e.g. Follow-up after no response"
+          error={attempted && !title.trim() ? t('common.titleRequired') : undefined}
+          placeholder={t('snippets.editor.titlePlaceholder')}
           onChangeText={setTitle}
         />
-        <FormField label="Tag">
+        <FormField label={t('snippets.tag')}>
           <Segment
-            label="Tag"
+            label={t('snippets.tag')}
             scroll
             options={SNIPPET_TAGS.map((t) => ({ value: t, label: t }))}
             value={tag}
@@ -394,17 +409,15 @@ function SnippetEditor({
         <ApplicationField
           values={applicationIds}
           onChange={setApplicationIds}
-          hint="Optional. A snippet written for particular employers can say which."
+          hint={t('snippets.editor.applicationHint')}
         />
         <TextField
-          label="Body"
+          label={t('snippets.editor.body')}
           required
           value={body}
           multiline
-          error={
-            attempted && !body.trim() ? 'A snippet with no text has nothing to paste.' : undefined
-          }
-          placeholder="Dear [NAME], …"
+          error={attempted && !body.trim() ? t('snippets.editor.bodyRequired') : undefined}
+          placeholder={t('snippets.editor.bodyPlaceholder')}
           onChangeText={setBody}
           style={{ flex: 1, minHeight: 0 }}
         />
@@ -416,9 +429,9 @@ function SnippetEditor({
       <ConfirmSheet
         open={discarding}
         onClose={() => setDiscarding(false)}
-        title="Discard unsaved changes?"
-        description="What you have typed here has not been saved anywhere, so leaving throws it away — and that cannot be undone."
-        confirmLabel="Discard"
+        title={t('snippets.discard.title')}
+        description={t('snippets.discard.description')}
+        confirmLabel={t('snippets.discard.confirm')}
         tone="danger"
         onConfirm={() => {
           setDiscarding(false)

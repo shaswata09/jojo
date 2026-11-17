@@ -1,8 +1,10 @@
 import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { KeyboardEvent } from 'react'
 import type { TimelineKind } from '@/data/timeline'
-import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
+import { KIND_ICON, TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * Kind, as a grid you can read rather than a row that wraps.
@@ -26,6 +28,8 @@ export function KindGrid({
   onChange: (next: TimelineKind) => void
   describedBy?: string
 }) {
+  const { t } = useTranslation('timeline')
+  const domain = useDomain()
   const groupRef = useRef<HTMLDivElement>(null)
   const COLUMNS = 4
 
@@ -60,7 +64,7 @@ export function KindGrid({
     <div
       ref={groupRef}
       role="radiogroup"
-      aria-label="Kind"
+      aria-label={t('form.kind.label')}
       aria-describedby={describedBy}
       onKeyDown={onKeyDown}
       className="grid grid-cols-4 gap-1.5"
@@ -84,7 +88,7 @@ export function KindGrid({
             )}
           >
             <Icon aria-hidden className="size-4" strokeWidth={1.7} />
-            <span className="truncate">{KIND_LABEL[k]}</span>
+            <span className="truncate">{domain.kind(k)}</span>
           </button>
         )
       })}

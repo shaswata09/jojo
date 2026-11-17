@@ -11,8 +11,10 @@
 
 import { describe, expect, it } from 'vitest'
 import dialog from './ApplicationDialog.tsx?raw'
+import en from '@/i18n/locales/en/applications.json'
 
-const confirmThenCreate = /async function confirmThenCreate\(\) \{[\s\S]*?\n {2}\}\n/.exec(dialog)?.[0] ?? ''
+const confirmThenCreate =
+  /async function confirmThenCreate\(\) \{[\s\S]*?\n {2}\}\n/.exec(dialog)?.[0] ?? ''
 const duplicateConfirm = /function DuplicateConfirm\([\s\S]*$/.exec(dialog)?.[0] ?? ''
 
 describe('Q249 — a duplicate stops at a dialog showing the original', () => {
@@ -31,14 +33,29 @@ describe('Q249 — a duplicate stops at a dialog showing the original', () => {
   it('shows the original record, its posting ID and its URL', () => {
     expect(duplicateConfirm).toContain('const original = found.record')
     expect(duplicateConfirm).toContain('{displayName(original)}')
-    expect(duplicateConfirm).toContain('Posting ID {original.postingId}')
+    expect(duplicateConfirm).toContain(
+      "t('dialog.duplicate.postingId', { id: original.postingId })",
+    )
+    expect(en.dialog.duplicate.postingId).toBe('Posting ID {{id}}')
     expect(duplicateConfirm).toContain('{original.url}')
   })
 
   it('lets the person discard the new one or keep it', () => {
-    expect(duplicateConfirm).toMatch(/onClick=\{onDiscard\}>\s*Discard this one/)
-    expect(duplicateConfirm).toMatch(/Add anyway/)
+    expect(duplicateConfirm).toMatch(
+      /onClick=\{onDiscard\}>\s*\{t\('dialog\.duplicate\.discard'\)\}/,
+    )
+    expect(en.dialog.duplicate.discard).toBe('Discard this one')
+    expect(duplicateConfirm).toContain("t('dialog.duplicate.addAnyway')")
+    expect(en.dialog.duplicate.addAnyway).toBe('Add anyway')
     expect(dialog).toContain('onDiscard={() => onOpenChange(false)}')
     expect(dialog).toContain('onAddAnyway={addAnyway}')
+  })
+})
+
+describe('the fields while the duplicate check runs (web-5)', () => {
+  it('freezes them, so what was checked is what is saved', () => {
+    // `create` is closed over the render that handled Save; an edit made while
+    // a model judge ran was dropped from the saved record.
+    expect(dialog).toMatch(/<div inert=\{checking\}[^>]*>\s*<ApplicationFields\b/)
   })
 })

@@ -1,8 +1,9 @@
 import { View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Txt } from '@/components/ui/Text'
-import { handoverSentence, handoverStatus } from '@jojo/service/core/handover'
+import { handoverStatus } from '@jojo/service/core/handover'
 import { useKg } from '@jojo/service/react/kg-context'
+import { useDomain } from '@/i18n/domain'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 
@@ -15,6 +16,8 @@ import { radius, space } from '@/theme/tokens'
  * the fact a replace-not-merge transfer never told anybody.
  */
 export function HandoverStatus() {
+  // Subscribes to the language, so the sentence re-renders when it changes.
+  const domain = useDomain()
   const { repo } = useKg()
   const c = useColors()
 
@@ -41,7 +44,7 @@ export function HandoverStatus() {
         style={{ marginTop: 2 }}
       />
       <Txt size="xs" tone="secondary" style={{ flex: 1 }}>
-        {handoverSentence(status)}
+        {domain.handover(status)}
       </Txt>
     </View>
   )

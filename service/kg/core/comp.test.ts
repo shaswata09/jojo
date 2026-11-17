@@ -350,3 +350,26 @@ describe('a pay range keeps its period (review 2026-11-16)', () => {
     expect(parseComp('$120k-$140k')).toMatchObject({ amount: 120000, period: 'year' })
   })
 })
+
+describe('a currency written after the figures', () => {
+  it('reads a range by its low end wherever the currency is written', () => {
+    expect(parseComp('Salary: 60000-70000 EUR')).toMatchObject({ amount: 60000, currency: 'EUR' })
+    expect(parseComp('EUR 60000-70000')).toMatchObject({ amount: 60000, currency: 'EUR' })
+    expect(parseComp('60,000-70,000 EUR per year')).toMatchObject({
+      amount: 60000,
+      currency: 'EUR',
+      period: 'year',
+      periodStated: true,
+    })
+    expect(parseComp('60.000-70.000 €')).toMatchObject({ amount: 60000, currency: '€' })
+  })
+
+  it('reads a symbol written after the amount, the usual European order', () => {
+    expect(parseComp('120.000,50 €')).toMatchObject({ amount: 120000.5, currency: '€' })
+    expect(parseComp('120.000 € per year')).toMatchObject({ currency: '€', periodStated: true })
+  })
+
+  it("does not lend the next amount's symbol to a number before it", () => {
+    expect(parseComp('Team of 12 $112k base')).toMatchObject({ amount: 112000, currency: '$' })
+  })
+})

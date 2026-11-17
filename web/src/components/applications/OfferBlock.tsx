@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Check, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
@@ -28,14 +30,13 @@ export type OfferDecision = 'accepted' | 'declined'
  * relative vocabulary, so "Expired 3 days ago" and "24 days left" are out:
  * every surface in jojo says overdue / Today / Tomorrow / in N days.
  */
-function countdown(daysLeft: number): { text: string; tone: string } {
+function countdown(daysLeft: number, t: TFunction): { text: string; tone: string } {
   if (daysLeft < 0) {
-    const late = -daysLeft
-    return { text: `${late} day${late === 1 ? '' : 's'} overdue`, tone: 'text-danger' }
+    return { text: t('offer.overdue', { count: -daysLeft }), tone: 'text-danger' }
   }
-  if (daysLeft === 0) return { text: 'Today', tone: 'text-warning' }
-  if (daysLeft === 1) return { text: 'Tomorrow', tone: 'text-warning' }
-  return { text: `in ${daysLeft} days`, tone: 'text-text-1' }
+  if (daysLeft === 0) return { text: t('offer.today'), tone: 'text-warning' }
+  if (daysLeft === 1) return { text: t('offer.tomorrow'), tone: 'text-warning' }
+  return { text: t('offer.inDays', { count: daysLeft }), tone: 'text-text-1' }
 }
 
 /**
@@ -47,11 +48,11 @@ function countdown(daysLeft: number): { text: string; tone: string } {
  * showing a live countdown and two decision buttons over a closed application.
  */
 const SETTLED: Record<Outcome, { label: string; tone: string }> = {
-  accepted: { label: 'Accepted', tone: 'text-success' },
-  declined: { label: 'Declined', tone: 'text-text-2' },
-  rejected: { label: 'Rejected', tone: 'text-text-2' },
-  withdrawn: { label: 'Withdrawn', tone: 'text-text-2' },
-  ghosted: { label: 'Closed with no reply', tone: 'text-text-2' },
+  accepted: { label: 'offer.settled.accepted', tone: 'text-success' },
+  declined: { label: 'offer.settled.declined', tone: 'text-text-2' },
+  rejected: { label: 'offer.settled.rejected', tone: 'text-text-2' },
+  withdrawn: { label: 'offer.settled.withdrawn', tone: 'text-text-2' },
+  ghosted: { label: 'offer.settled.ghosted', tone: 'text-text-2' },
 }
 
 /**
@@ -82,9 +83,10 @@ export function OfferBlock({
   /** The recorded outcome, once there is one. Its presence retires the buttons. */
   settled?: Outcome
 }) {
+  const { t } = useTranslation('applications')
   const [pending, setPending] = useState<OfferDecision | null>(null)
   const { offer } = application
-  const left = countdown(offerDaysLeft(offer, TODAY))
+  const left = countdown(offerDaysLeft(offer, TODAY), t)
 
   // Deliberately no accent border: `.surface` sets the border from the same
   // utilities layer, so a `border-*` class here would win or lose by source
@@ -93,24 +95,28 @@ export function OfferBlock({
     <Panel className="min-w-0">
       {/* No date in the hint: the line underneath already carries it, and the
           panel used to print "Nov 15" twice within 40px. */}
-      <PanelTitle>Offer</PanelTitle>
+      <PanelTitle>{t('offer.title')}</PanelTitle>
 
       {settled ? (
         <p className={cn('text-sm font-medium', SETTLED[settled].tone)}>
-          {SETTLED[settled].label}
-          <span className="ml-2 font-normal text-text-3">· respond by {respondByLabel(offer)}</span>
+          {t(SETTLED[settled].label)}
+          <span className="ms-2 font-normal text-text-3 [unicode-bidi:isolate]">
+            {t('offer.respondBy', { date: respondByLabel(offer) })}
+          </span>
         </p>
       ) : (
         <p className={cn('text-sm font-medium', left.tone)}>
           {left.text}
-          <span className="ml-2 font-normal text-text-3">· respond by {respondByLabel(offer)}</span>
+          <span className="ms-2 font-normal text-text-3 [unicode-bidi:isolate]">
+            {t('offer.respondBy', { date: respondByLabel(offer) })}
+          </span>
         </p>
       )}
 
       {offer.comp ? (
         <p className="mt-2.5 text-sm text-text-1">{offer.comp}</p>
       ) : (
-        <p className="mt-2.5 text-sm text-text-3">No package recorded</p>
+        <p className="mt-2.5 text-sm text-text-3">{t('offer.noPackage')}</p>
       )}
 
       {offer.note ? <p className="mt-1.5 text-xs text-text-2">{offer.note}</p> : null}
@@ -122,14 +128,14 @@ export function OfferBlock({
         <div className="mt-3.5 flex flex-wrap gap-2">
           <Button size="sm" onClick={() => setPending('accepted')}>
             <Check className="size-3.5" strokeWidth={2} aria-hidden />
-            Accept offer
+            {t('offer.accept')}
           </Button>
           {/* Outline, not destructive: turning a job down is a decision about
               your own career, and the red-tinted button that used to sit here
               spelled it as the same kind of act as deleting the record. */}
           <Button variant="outline" size="sm" onClick={() => setPending('declined')}>
             <X className="size-3.5" strokeWidth={2} aria-hidden />
-            Decline offer
+            {t('offer.decline')}
           </Button>
         </div>
       )}
@@ -139,13 +145,13 @@ export function OfferBlock({
         onOpenChange={(open) => {
           if (!open) setPending(null)
         }}
-        title={pending === 'accepted' ? 'Accept this offer?' : 'Decline this offer?'}
+        title={pending === 'accepted' ? t('offer.acceptTitle') : t('offer.declineTitle')}
         description={
           pending === 'accepted'
-            ? `${displayName(application)} moves to closed, with the outcome recorded as accepted. The offer details and every reminder on it are kept.`
-            : `${displayName(application)} moves to closed, with the outcome recorded as declined. Nothing is deleted — the offer details and its reminders stay where they are.`
+            ? t('offer.acceptBody', { name: displayName(application) })
+            : t('offer.declineBody', { name: displayName(application) })
         }
-        confirmLabel={pending === 'accepted' ? 'Accept offer' : 'Decline offer'}
+        confirmLabel={pending === 'accepted' ? t('offer.accept') : t('offer.decline')}
         onConfirm={() => {
           if (pending) onDecide(pending)
         }}

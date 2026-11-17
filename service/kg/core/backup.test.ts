@@ -252,7 +252,7 @@ describe('reading a backup, which must refuse rather than repair', () => {
     )
     expect(read.ok).toBe(true)
     if (!read.ok) return
-    expect(describeBackup(read.value)).toBe('1 records, 0 links, 1 document')
+    expect(describeBackup(read.value)).toBe('1 record, 0 links, 1 document')
     expect(read.value.loss).toEqual({ records: 0, links: 0, changed: 0 })
   })
 
@@ -279,7 +279,7 @@ describe('reading a backup, which must refuse rather than repair', () => {
     if (!read.ok) return
     expect(read.value.loss).toEqual({ records: 1, links: 1, changed: 1 })
     expect(describeBackup(read.value)).toBe(
-      '3 records, 1 links, no documents — of which 1 record and 1 link cannot be read and will be left out, and 1 record will come back changed',
+      '3 records, 1 link, no documents — of which 1 record and 1 link cannot be read and will be left out, and 1 record will come back changed',
     )
   })
 })

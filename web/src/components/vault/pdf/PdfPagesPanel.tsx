@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, RotateCcw, RotateCw, Scissors, Trash2, Undo2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/lib/toast-context'
 import { applyPagePlan } from '@/lib/pdf/document'
@@ -28,6 +29,7 @@ import type { FileBucket } from '@/data/vault'
  * nothing has been written yet.
  */
 export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
+  const { t } = useTranslation('vault')
   const { available, bytesOf, saveResult, download } = usePdfFiles()
   const { toast } = useToast()
   const [choice, setChoice] = useState<PdfChoice | null>(null)
@@ -85,8 +87,12 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
       const record = await saveResult(name.trim() || suggested, out, bucket)
       if (then === 'download') await download(record.id)
       toast({
-        title: `${record.name} saved`,
-        description: `${plan.length} pages, filed under ${bucket}. ${choice.name} is unchanged.`,
+        title: t('pdf.saved', { name: record.name }),
+        description: t('pdf.pages.savedDescription', {
+          count: plan.length,
+          bucket,
+          name: choice.name,
+        }),
       })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
@@ -103,21 +109,18 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
           const first = choices[0]
           if (first) void open(first)
         }}
-        label="Choose a PDF to organise"
+        label={t('pdf.pages.chooseLabel')}
       />
 
       {choice === null || document_ === null ? (
-        <p className="text-sm text-text-3">
-          Choose one PDF. You can turn pages, drop them, put them in a different order, and keep
-          only part of it.
-        </p>
+        <p className="text-sm text-text-3">{t('pdf.pages.empty')}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="min-w-0 truncate text-sm" title={choice.name}>
               <span className="font-medium">{choice.name}</span>
-              <span className="ml-1.5 text-text-3">
-                · {plan.length} of {document_.pageCount} pages kept
+              <span className="ms-1.5 text-text-3 [unicode-bidi:isolate]">
+                {t('pdf.pages.kept', { count: document_.pageCount, kept: plan.length })}
               </span>
             </p>
             <Button
@@ -126,7 +129,7 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
               disabled={!dirty}
               onClick={() => setPlan(planFor(document_.pageCount))}
             >
-              <Undo2 aria-hidden /> Start over
+              <Undo2 aria-hidden /> {t('pdf.pages.startOver')}
             </Button>
           </div>
 
@@ -140,12 +143,14 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
                   document_={document_}
                   page={page.source}
                   rotation={page.rotation}
-                  label={`Page ${page.source + 1}`}
+                  label={t('pdf.pages.page', { number: page.source + 1 })}
                 />
                 <div className="flex items-center justify-between gap-1">
                   <span className="truncate text-xs text-text-3">
                     {at + 1}
-                    <span className="text-text-3/70"> · was {page.source + 1}</span>
+                    <span className="text-text-3/70">
+                      {t('pdf.pages.was', { number: page.source + 1 })}
+                    </span>
                   </span>
                   <span className="text-xs text-text-3 tabular-nums">
                     {page.rotation === 0 ? '' : `${page.rotation}°`}
@@ -155,16 +160,16 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
                   <Button
                     variant="outline"
                     size="icon-xs"
-                    aria-label={`Move page ${at + 1} earlier`}
+                    aria-label={t('pdf.pages.earlier', { number: at + 1 })}
                     disabled={at === 0}
                     onClick={() => setPlan((current) => movePage(current, at, at - 1))}
                   >
-                    <ArrowLeft aria-hidden />
+                    <ArrowLeft className="rtl:-scale-x-100" aria-hidden />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon-xs"
-                    aria-label={`Turn page ${at + 1} anticlockwise`}
+                    aria-label={t('pdf.pages.anticlockwise', { number: at + 1 })}
                     onClick={() => setPlan((current) => rotatePage(current, at, -90))}
                   >
                     <RotateCcw aria-hidden />
@@ -172,7 +177,7 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
                   <Button
                     variant="outline"
                     size="icon-xs"
-                    aria-label={`Turn page ${at + 1} clockwise`}
+                    aria-label={t('pdf.pages.clockwise', { number: at + 1 })}
                     onClick={() => setPlan((current) => rotatePage(current, at, 90))}
                   >
                     <RotateCw aria-hidden />
@@ -180,7 +185,7 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
                   <Button
                     variant="outline"
                     size="icon-xs"
-                    aria-label={`Remove page ${at + 1}`}
+                    aria-label={t('pdf.pages.remove', { number: at + 1 })}
                     // A document has to keep something. Without this the last
                     // delete produces a file no reader will open.
                     disabled={plan.length === 1}
@@ -191,11 +196,11 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
                   <Button
                     variant="outline"
                     size="icon-xs"
-                    aria-label={`Move page ${at + 1} later`}
+                    aria-label={t('pdf.pages.later', { number: at + 1 })}
                     disabled={at === plan.length - 1}
                     onClick={() => setPlan((current) => movePage(current, at, at + 1))}
                   >
-                    <ArrowRight aria-hidden />
+                    <ArrowRight className="rtl:-scale-x-100" aria-hidden />
                   </Button>
                 </div>
               </li>
@@ -209,11 +214,11 @@ export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
             busy={busy}
             error={error}
             disabled={!dirty}
-            hint={dirty ? undefined : 'Turn, move or remove a page and this becomes available.'}
+            hint={dirty ? undefined : t('pdf.pages.hint')}
             onSave={() => void save('save')}
             onDownload={() => void save('download')}
             icon={Scissors}
-            verb="Save pages"
+            saveLabel={t('pdf.pages.action')}
           />
         </>
       )}

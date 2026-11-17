@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { FormEvent } from 'react'
 import { Field, FormField } from '@/components/common/Field'
 import { KeywordPicker } from '@/components/common/KeywordPicker'
@@ -17,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogFooter } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
-import { shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineItem, TimelineKind } from '@/data/timeline'
 import { encodeFormat } from '@jojo/service/core/note-format'
 import type { NodeId } from '@jojo/service/core/model'
@@ -30,6 +30,7 @@ import { useToast } from '@/lib/toast-context'
 import { announceRefusal, refusalToast } from '@/components/common/write-result'
 import { useUndoable } from '@/lib/undo'
 import { TODAY } from '@/lib/today'
+import { useDomain } from '@/i18n/domain'
 
 export function ItemForm({
   mode,
@@ -43,6 +44,8 @@ export function ItemForm({
   onOpenChange: (open: boolean) => void
   onSaved?: (item: TimelineItem) => void
 }) {
+  const { t } = useTranslation('timeline')
+  const domain = useDomain()
   const { all: applications, byId } = useApplications()
   const { get, add, update, remove } = useTimeline()
   const { labelIdsOf, setRecord, removeRecord } = useLabels()
@@ -99,9 +102,8 @@ export function ItemForm({
   const remindId = useId()
   const kindHintId = useId()
 
-  const titleError = submitted && !title.trim() ? 'Give it a title you will recognise.' : undefined
-  const dateError =
-    submitted && !date ? 'Pick a date — an undated item has nowhere to appear.' : undefined
+  const titleError = submitted && !title.trim() ? t('form.title.error') : undefined
+  const dateError = submitted && !date ? t('schedule.dateError') : undefined
 
   const selectedApps = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
 
@@ -229,27 +231,26 @@ export function ItemForm({
     // Named for what it will be, not for which button opened the dialog: turning
     // "show in reminders" off in reminder mode means it is not a reminder, and
     // saying otherwise sends the user to a list it is not in.
-    const noun = saved.remind ? 'reminder' : 'event'
+    const when = t('toast.when', {
+      date: domain.shortDate(saved.date),
+      when: domain.when(saved, TODAY),
+    })
     toast({
-      title: `${saved.title} ${editingId ? 'updated' : 'added'}`,
+      title: t(editingId ? 'toast.updated' : 'toast.added', { title: saved.title }),
       // The consequence you cannot see from here: which two lists it just
       // joined. A follow-up is the one kind that also lands on the dashboard.
-      description: [
-        `${shortDate(saved.date)} · ${whenLabel(saved, TODAY)}`,
-        saved.remind ? `in reminders as a ${noun}` : 'on the calendar only',
-        saved.kind === 'follow-up' && saved.remind && !saved.completedOn
-          ? 'and in Follow-ups due'
-          : null,
-      ]
-        .filter(Boolean)
-        .join(' — '),
+      description: !saved.remind
+        ? t('toast.calendarOnly', { when })
+        : saved.kind === 'follow-up' && !saved.completedOn
+          ? t('toast.inRemindersAndFollowUps', { when })
+          : t('toast.inReminders', { when }),
       // An edit that committed nothing (Save with nothing changed) offers no
       // Undo, rather than a button that would do nothing.
       ...(editingId && !restoreEdit
         ? {}
         : {
             action: {
-              label: 'Undo',
+              label: t('toast.undo'),
               onClick: () => {
                 if (restoreEdit) restoreEdit()
                 else {
@@ -277,8 +278,12 @@ export function ItemForm({
     const removed = remove(editingId)
     if (!removed.ok) {
       toast({
-        title: 'That did not delete',
-        description: removed.refusal ?? `${stored?.title ?? initial?.title ?? 'The reminder'} is still on the calendar.`,
+        title: t('toast.deleteFailed'),
+        description:
+          removed.refusal ??
+          ((stored?.title ?? initial?.title)
+            ? t('toast.stillThere', { title: stored?.title ?? initial?.title })
+            : t('toast.stillThereUnnamed')),
         tone: 'danger',
       })
       return
@@ -288,13 +293,14 @@ export function ItemForm({
     onOpenChange(false)
 
     toast({
-      title: `${stored?.title ?? initial?.title ?? 'Reminder'} deleted`,
-      description: stored?.remind
-        ? 'Gone from the reminders list and from the calendar.'
-        : 'Gone from the calendar.',
+      title:
+        (stored?.title ?? initial?.title)
+          ? t('toast.deleted', { title: stored?.title ?? initial?.title })
+          : t('toast.deletedUnnamed'),
+      description: stored?.remind ? t('toast.goneBoth') : t('toast.goneCalendar'),
       tone: 'danger',
       action: {
-        label: 'Undo',
+        label: t('toast.undo'),
         onClick: () => {
           restore()
           // Guarded, because `setRecord` with an empty list would file the
@@ -348,28 +354,26 @@ export function ItemForm({
             below the fold, under the one field nobody scrolls to. */}
         <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
           <Field
-            label="Title"
+            label={t('form.title.label')}
             required
             error={titleError}
             value={title}
             autoComplete="off"
             className="min-w-[12rem] flex-1"
-            placeholder={mode === 'reminder' ? 'e.g. Chase the recruiter' : 'e.g. Committee Zoom'}
+            placeholder={t(`form.title.placeholder.${mode}`)}
             onChange={(event) => setTitle(event.target.value)}
           />
           <div className="flex h-8 shrink-0 items-center gap-2">
             <Switch id={remindId} checked={remind} onCheckedChange={setRemind} />
             <label htmlFor={remindId} className="cursor-pointer text-sm text-text-2">
-              Show in reminders
+              {t('form.remind.label')}
             </label>
           </div>
         </div>
         {/* Live, not static: the sentence names what the switch has just made
             this, which is the only way an unlabelled toggle earns its place. */}
         <p className="-mt-2 text-xs text-text-3">
-          {remind
-            ? 'Listed in the Vault with a tick box, and on the calendar for its date.'
-            : 'On the calendar for its date only — no tick box in the Vault.'}
+          {remind ? t('form.remind.on') : t('form.remind.off')}
         </p>
 
         {/* The only ordering `mode` touches. A reminder is nearly always *about*
@@ -389,14 +393,12 @@ export function ItemForm({
         )}
 
         <FormField
-          label="Kind"
+          label={t('form.kind.label')}
           // The `required` marker was bogus — `kind` always has a value, so the
           // asterisk pointed at a field nobody could fail to fill in.
           hint={
             <span id={kindHintId}>
-              {kind === 'follow-up'
-                ? 'A follow-up also appears in Follow-ups due on the dashboard, until you tick it off.'
-                : 'The icon it carries on the calendar and in the reminders list.'}
+              {kind === 'follow-up' ? t('form.kind.hintFollowUp') : t('form.kind.hint')}
             </span>
           }
         >
@@ -414,8 +416,8 @@ export function ItemForm({
             allowed to paint one. The date is the urgency. */}
 
         <Field
-          label="Detail"
-          hint="One line of context, shown under the title."
+          label={t('form.detail.label')}
+          hint={t('form.detail.hint')}
           value={detail}
           autoComplete="off"
           onChange={(event) => setDetail(event.target.value)}
@@ -427,17 +429,21 @@ export function ItemForm({
             expanded/collapsed semantics and find-in-page still reaches inside. */}
         <details className="group rounded-lg border border-hairline">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-text-2 transition-colors hover:text-text-1">
-            More details
+            {t('form.more.label')}
             <span className="text-xs text-text-3">
-              {[note.trim() ? 'note' : null, keywords.length > 0 ? 'keywords' : null]
-                .filter(Boolean)
-                .join(' · ') || 'note, keywords'}
+              {note.trim() && keywords.length > 0
+                ? t('form.more.filledBoth')
+                : note.trim()
+                  ? t('form.more.filledNote')
+                  : keywords.length > 0
+                    ? t('form.more.filledKeywords')
+                    : t('form.more.empty')}
             </span>
           </summary>
           <div className="grid gap-3.5 border-t border-hairline px-3 py-3">
             <RichNoteField
-              label="Note"
-              hint="Your own scribble. Kept apart from the detail, so an edit never clobbers it."
+              label={t('form.note.label')}
+              hint={t('form.note.hint')}
               text={note}
               format={noteFormat}
               onChange={(text, format) => {
@@ -446,10 +452,7 @@ export function ItemForm({
               }}
             />
 
-            <FormField
-              label="Keywords"
-              hint="Shared with applications, files and links — filtering by one finds all of them."
-            >
+            <FormField label={t('form.keywords.label')} hint={t('form.keywords.hint')}>
               <KeywordPicker value={keywords} onChange={setKeywords} />
             </FormField>
           </div>
@@ -459,20 +462,18 @@ export function ItemForm({
       <DialogFooter className={editingId ? 'sm:justify-between' : undefined}>
         {editingId ? (
           <Button type="button" variant="destructive" onClick={onDelete}>
-            Delete
+            {t('form.delete')}
           </Button>
         ) : null}
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              {t('form.cancel')}
             </Button>
           </DialogClose>
           {/* Left enabled with the title empty: pressing it names the missing
               field where a disabled button leaves the user hunting for it. */}
-          <Button type="submit">
-            {editingId ? 'Save changes' : mode === 'reminder' ? 'Add reminder' : 'Add event'}
-          </Button>
+          <Button type="submit">{editingId ? t('form.save') : t(`form.add.${mode}`)}</Button>
         </div>
       </DialogFooter>
     </form>

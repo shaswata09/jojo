@@ -175,7 +175,9 @@ function creditedBundle(): Plugin {
           if (pkg === null || copies.has(pkg.dir)) continue
           let manifest: { version?: unknown; license?: unknown } = {}
           try {
-            manifest = JSON.parse(readManifest(`${pkg.dir}/package.json`, 'utf8')) as typeof manifest
+            manifest = JSON.parse(
+              readManifest(`${pkg.dir}/package.json`, 'utf8'),
+            ) as typeof manifest
           } catch {
             // No readable manifest: credited by name, with nothing stated.
           }
@@ -189,7 +191,9 @@ function creditedBundle(): Plugin {
       }
       const problems = creditProblems([...copies.values()])
       if (problems.length > 0) {
-        this.error(`jojo:credited-bundle — the bundle ships code the Built with page does not credit:\n  ${problems.join('\n  ')}`)
+        this.error(
+          `jojo:credited-bundle — the bundle ships code the Built with page does not credit:\n  ${problems.join('\n  ')}`,
+        )
       }
     },
   }
@@ -197,7 +201,8 @@ function creditedBundle(): Plugin {
 
 const envDir = fileURLToPath(new URL('..', import.meta.url))
 /** Same test as `ANALYTICS_CAPABILITY` needs at least: a measurement id to load gtag for. */
-const analyticsBuilt = (loadEnv('production', envDir, 'VITE_')['VITE_ANALYTICS_ID'] ?? '').trim() !== ''
+const analyticsBuilt =
+  (loadEnv('production', envDir, 'VITE_')['VITE_ANALYTICS_ID'] ?? '').trim() !== ''
 
 export default defineConfig({
   base,
@@ -266,6 +271,30 @@ export default defineConfig({
      * reason; this is the runtime half of that pair.
      */
     dedupe: ['react', 'react-dom'],
+  },
+  /**
+   * One chunk per language, not one per catalog file.
+   *
+   * `src/i18n/i18n.ts` loads a language's catalogs lazily, and each JSON file
+   * would otherwise be its own chunk: picking Japanese meant ~40 requests for
+   * files of a few kilobytes each. Grouped, it is one request per language,
+   * and English — bundled eagerly — is left where it is.
+   */
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: (id: string) => {
+                const locale = /\/src\/i18n\/locales\/([^/]+)\/[^/]+\.json$/.exec(id)?.[1]
+                return locale === undefined || locale === 'en' ? null : `locale-${locale}`
+              },
+            },
+          ],
+        },
+      },
+    },
   },
   /**
    * Vitest reads this file, so the `@/` alias above is the one the tests get —

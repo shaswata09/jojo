@@ -1,5 +1,6 @@
 import { useId, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Field, FormField, TextareaField } from '@/components/common/Field'
 import {
   buildInput,
@@ -70,6 +71,7 @@ function GeneratedField({
   /** Already-built record options — the picker never reads the store itself. */
   options: readonly RecordOption[]
 }) {
+  const { t } = useTranslation()
   const text = typeof value === 'string' ? value : ''
   const shared = {
     label: plan.label,
@@ -131,7 +133,7 @@ function GeneratedField({
               value={text}
               onChange={(event) => onChange(event.target.value)}
             >
-              <option value="">{plan.required ? 'Choose…' : 'None'}</option>
+              <option value="">{plan.required ? t('toolRun.choose') : t('toolRun.none')}</option>
               {(plan.options ?? []).map((option) => (
                 <option key={String(option)} value={String(option)}>
                   {optionLabel(option)}
@@ -151,7 +153,7 @@ function GeneratedField({
               value={text}
               onChange={(event) => onChange(event.target.value)}
             >
-              <option value="">{plan.required ? 'Choose…' : 'None'}</option>
+              <option value="">{plan.required ? t('toolRun.choose') : t('toolRun.none')}</option>
               {options.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.label}
@@ -202,6 +204,7 @@ export function ToolRunDialog({
   const run = useRun()
   const { toast } = useToast()
 
+  const { t, i18n } = useTranslation()
   const [values, setValues] = useState<FormValues>(() => initialValues(plan))
   const [touched, setTouched] = useState<ReadonlySet<string>>(() => new Set())
   const [problems, setProblems] = useState<readonly Problem[]>([])
@@ -213,7 +216,11 @@ export function ToolRunDialog({
    * would draw two of the same type; building the list inside the field would
    * walk and sort the whole type once for each of them on every keystroke.
    */
+  // Rebuilt when the language changes too: a record with no name of its own
+  // ("Your profile") is labelled in it.
+  const language = i18n.language
   const optionsByType = useMemo(() => {
+    void language
     const map = new Map<string, RecordOption[]>()
     for (const field of plan.fields) {
       if (field.nodeType && !map.has(field.nodeType)) {
@@ -221,7 +228,7 @@ export function ToolRunDialog({
       }
     }
     return map
-  }, [plan, memory])
+  }, [plan, memory, language])
 
   const drawn = useMemo(() => new Set(plan.fields.map((f) => f.key)), [plan])
   const errorFor = (key: string) => problems.find((p) => p.field === key)?.message
@@ -251,7 +258,7 @@ export function ToolRunDialog({
       title: announcement.title,
       ...(announcement.description === undefined ? {} : { description: announcement.description }),
       ...(announcement.tone === undefined ? {} : { tone: announcement.tone }),
-      ...(undo === null ? {} : { action: { label: 'Undo', onClick: undo } }),
+      ...(undo === null ? {} : { action: { label: t('actions.undo'), onClick: undo } }),
     })
     onOpenChange(false)
   }
@@ -303,14 +310,16 @@ export function ToolRunDialog({
                that dropped keywords without a word would look like one that had
                lost them. */
             <p className="text-xs text-text-3">
-              Not on this form: {plan.omitted.join(', ')}. Open the record to set{' '}
-              {plan.omitted.length === 1 ? 'it' : 'them'}.
+              {t('toolRun.omitted', {
+                count: plan.omitted.length,
+                fields: plan.omitted.join(', '),
+              })}
             </p>
           ) : null}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               type="submit"

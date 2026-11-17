@@ -35,6 +35,7 @@
  */
 
 import type { RestorePlan } from '@jojo/service/core/backup'
+import { i18next } from '@/i18n/i18n'
 import type { ReceiveSession } from '@/lib/handoff-receive'
 import { planReceived } from '@/lib/restore-received'
 
@@ -43,7 +44,7 @@ import { planReceived } from '@/lib/restore-received'
  * `ReceiveSession`, so that the address and the agreed keys are out of reach of
  * something whose job is to read a byte count.
  */
-export type LandingSource = Pick<ReceiveSession, 'progress' | 'payload' | 'stop'>
+export type LandingSource = Pick<ReceiveSession, 'progress' | 'payload' | 'stop' | 'settle'>
 
 /** Where a tick's findings go. Every one of these is a `setState` in the panel. */
 export type LandingReport = {
@@ -63,8 +64,13 @@ export type LandingReport = {
  * masquerade as a finished one, so acting earlier would mean replacing the
  * person's records with part of a backup.
  */
-/** How long the socket outlives the last chunk, so its reply can finish writing. */
-export const LANDING_STOP_GRACE_MS = 2_000
+/**
+ * The longest the socket waits, after the last chunk, for the person here to
+ * answer. They are looking at the confirmation, and the computer is asking
+ * every two seconds what they decided (`ReceiveSession.settle`); a phone left
+ * on that question does not keep a port open for ever.
+ */
+export const LANDING_MAX_WAIT_MS = 10 * 60_000
 
 export function createLanding(session: LandingSource, report: LandingReport): () => void {
   /*
@@ -83,12 +89,12 @@ export function createLanding(session: LandingSource, report: LandingReport): ()
 
     const payload = session.payload()
     if (payload === null) return
-    // Nothing more is coming, and a socket left listening after the transfer is
-    // a port open on somebody's phone with nothing on screen about it. Closed a
-    // moment later rather than now: the last chunk's "200" may still be on its
-    // way out, and destroying the socket under it made the computer report a
-    // finished transfer as "no answer" (transfer audit, 2026-11-16).
-    setTimeout(() => session.stop(), LANDING_STOP_GRACE_MS)
+    // Nothing more is coming, but the socket stays up while the person here
+    // decides: the computer asks over it what they chose, and stamps its own
+    // handover only if they took the records. `settle` closes it once they
+    // answer; this bounds a question nobody answers. (Closing at once also cut
+    // off the last chunk's "200" — transfer audit, 2026-11-16.)
+    setTimeout(() => session.stop(), LANDING_MAX_WAIT_MS)
 
     /*
      * Read, then ASK. Applying used to start here, and `replaceAll` took every
@@ -98,7 +104,10 @@ export function createLanding(session: LandingSource, report: LandingReport): ()
      */
     const read = planReceived(payload)
     if (!read.ok) {
-      report.onFailure(read.message)
+      session.settle('failed')
+      // One whole sentence in the language on screen, as Settings' import says
+      // it. The reason inside is `readBackup`'s own, which is core's English.
+      report.onFailure(i18next.t('transfer:receive.unrestorable', { reason: read.message }))
       return
     }
     report.onPlan(read.plan)

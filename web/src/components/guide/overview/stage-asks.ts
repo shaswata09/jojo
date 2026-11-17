@@ -17,15 +17,15 @@ import type { Stage } from '@/data/seed'
  * Read in two places — the rail draws a pill beside every stage this is
  * non-empty for, and the list beside it prints the text — so it sits in a file
  * of its own rather than in either of them.
+ *
+ * The value is the catalog key of the sentence, not the sentence: a table of
+ * words built at import time would stay in whatever language was showing then.
  */
 export const STAGE_ASKS: Record<Stage, string> = {
   draft: '',
-  submitted: 'The day you sent it, the portal link, and a confirmation reference if you have one.',
+  submitted: 'overview.track.asks.submitted',
   screen: '',
-  interview:
-    'The date, and whether it is a phone, video or onsite round. It offers to put the round on your calendar with a reminder.',
-  offer:
-    'A respond-by date, the package and any notes. It offers to add the decision deadline to your calendar.',
-  closed:
-    'How it ended: rejected, withdrawn, accepted, declined, or ghosted — no reply. That is what the statistics count.',
+  interview: 'overview.track.asks.interview',
+  offer: 'overview.track.asks.offer',
+  closed: 'overview.track.asks.closed',
 }

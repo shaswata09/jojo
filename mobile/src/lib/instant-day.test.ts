@@ -78,7 +78,9 @@ describe('every phone row that dates an instant against TODAY', () => {
      */
     const offenders = Object.entries(sources)
       .filter(([, code]) =>
-        /agoLabel\(\s*[^)]*\.slice\(\s*0\s*,\s*10\s*\)[^)]*,\s*TODAY/.test(withoutComments(code)),
+        /(?:agoLabel|\.ago)\(\s*[^)]*\.slice\(\s*0\s*,\s*10\s*\)[^)]*,\s*TODAY/.test(
+          withoutComments(code),
+        ),
       )
       .map(([path]) => path)
     expect(offenders, offenders.join('\n')).toEqual([])
@@ -90,7 +92,7 @@ describe('every phone row that dates an instant against TODAY', () => {
     expect(Object.keys(sources).length).toBeGreaterThan(30)
     const sheet = Object.entries(sources).find(([p]) => p.endsWith('ThreadListSheet.tsx'))
     expect(sheet, 'ThreadListSheet.tsx is not in the glob').toBeDefined()
-    expect(withoutComments(sheet![1])).toContain('agoLabel(dayOf(t.updatedAt), TODAY)')
+    expect(withoutComments(sheet![1])).toContain('domain.ago(dayOf(t.updatedAt), TODAY)')
   })
 })
 
@@ -121,7 +123,10 @@ describe('every phone row that dates an instant against TODAY', () => {
  * left the suite green. Matching whole lines sidesteps the nesting entirely.
  */
 const setThenSweep = (code: string): boolean => {
-  const lines = code.split('\n').map((l) => l.trim()).filter((l) => l !== '')
+  const lines = code
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l !== '')
   return lines.some((line, i) => {
     const next = lines[i + 1] ?? ''
     if (!line.includes('setRecord(') || !next.includes('removeRecord(')) return false
@@ -154,9 +159,9 @@ describe('writing a record`s keywords and then sweeping the same record', () => 
       setThenSweep("setRecord(refKey('app', created.id), keywords)\nif (form.deadline) mint()"),
     ).toBe(false)
     // The if/else pair TimelineItemSheet uses three times, which is correct.
-    expect(setThenSweep('if (keywords.length > 0) setRecord(id, keywords)\nelse removeRecord(id)')).toBe(
-      false,
-    )
+    expect(
+      setThenSweep('if (keywords.length > 0) setRecord(id, keywords)\nelse removeRecord(id)'),
+    ).toBe(false)
   })
 })
 
@@ -205,7 +210,10 @@ describe('what the phone tells the user about Transfer', () => {
       'Transfer brings a copy IN from your computer; it cannot send one from here.',
     ]
     for (const line of shipped) {
-      expect(MISLEADS_ABOUT_TRANSFER.some((r) => r.test(line)), line).toBe(true)
+      expect(
+        MISLEADS_ABOUT_TRANSFER.some((r) => r.test(line)),
+        line,
+      ).toBe(true)
     }
     // And does not fire on the copy that replaced them.
     expect(

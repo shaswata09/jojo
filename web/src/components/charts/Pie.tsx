@@ -74,7 +74,10 @@ export function Pie({
         })}
       </svg>
 
-      <ul className="min-w-0 flex-1 space-y-0.5">
+      {/* A real basis, so a narrow card puts the legend UNDER the chart. At
+          `flex-1` (basis 0) it never wrapped and was squeezed into whatever the
+          152px chart left: 2–9px per label at 1024px, one letter each. */}
+      <ul className="min-w-0 grow basis-40 space-y-0.5">
         {data.map((datum) => {
           const slice = byKey.get(datum.key)
           const empty = slice === undefined
@@ -105,7 +108,7 @@ export function Pie({
                 />
                 <span
                   className={cn(
-                    'min-w-0 flex-1 truncate text-left',
+                    'min-w-0 flex-1 truncate text-start',
                     empty ? 'text-text-3' : 'text-text-2',
                   )}
                 >
@@ -113,7 +116,7 @@ export function Pie({
                 </span>
                 <span className="tabular shrink-0 font-mono text-text-1">
                   {datum.value}
-                  <span className="ml-1.5 text-xs text-text-3">
+                  <span className="ms-1.5 text-xs text-text-3 [unicode-bidi:isolate]">
                     {total > 0 ? (slice?.percent ?? 0) : 0}%
                   </span>
                 </span>

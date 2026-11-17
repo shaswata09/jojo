@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { Columns } from '@/components/ui/Screen'
@@ -27,17 +28,13 @@ import { space } from '@/theme/tokens'
  * away, so this page points at it rather than illustrating it twice.
  */
 
-/** What each relationship joins, in the app's own words. */
-const REL_SHAPE: Record<(typeof GRAPH_RELS)[number], string> = {
-  AT: 'Application → Employer',
-  IS: 'Application → Role',
-  ABOUT: 'Date or reminder → Application',
-  FILED_UNDER: 'File, link or snippet → Application',
-  TAGS: 'Keyword → any record',
-  BECAME: 'Saved posting or match → Application',
-}
+/*
+ * What each relationship joins, in the app's own words, is `graph.relShape.<REL>`
+ * in the guide catalog — one entry per name in `GRAPH_RELS`.
+ */
 
 export function GuideGraph() {
+  const { t } = useTranslation('guide')
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -45,19 +42,14 @@ export function GuideGraph() {
     <>
       <Panel>
         <Txt size="sm" tone="secondary">
-          Every list in this app is a view over one set of records. A record is a{' '}
-          <Txt size="sm" weight="medium">
-            node
-          </Txt>
-          ; a connection between two records is an{' '}
-          <Txt size="sm" weight="medium">
-            edge
-          </Txt>{' '}
-          with a name. That is the whole model, and it is why a question that crosses two lists is
-          answerable at all.
+          <Trans
+            t={t}
+            i18nKey="graph.intro"
+            components={{ b: <Txt size="sm" weight="medium" /> }}
+          />
         </Txt>
         <Button
-          label="Open the graph"
+          label={t('graph.open')}
           icon="share-2"
           variant="outline"
           onPress={() => navigation.navigate('Graph')}
@@ -67,10 +59,11 @@ export function GuideGraph() {
 
       <Columns>
         <Panel>
-          <PanelTitle hint={`${GRAPH_NODE_TYPES.length} kinds`}>Nodes</PanelTitle>
+          <PanelTitle hint={t('graph.kinds', { count: GRAPH_NODE_TYPES.length })}>
+            {t('graph.nodes')}
+          </PanelTitle>
           <Txt size="xs" tone="muted" style={{ marginBottom: space[3] }}>
-            A node per record, plus three that exist only as connections — an employer, a role and a
-            keyword are each a node so that everything filed under one can be found from it.
+            {t('graph.nodesIntro')}
           </Txt>
           <View style={{ gap: space[2] }}>
             {GRAPH_NODE_TYPES.map((t) => (
@@ -92,10 +85,11 @@ export function GuideGraph() {
         </Panel>
 
         <Panel>
-          <PanelTitle hint={`${GRAPH_RELS.length} kinds`}>Edges</PanelTitle>
+          <PanelTitle hint={t('graph.kinds', { count: GRAPH_RELS.length })}>
+            {t('graph.edges')}
+          </PanelTitle>
           <Txt size="xs" tone="muted" style={{ marginBottom: space[3] }}>
-            Each has a direction and a name. The name is what the Graph screen&apos;s question
-            builder puts in its middle row.
+            {t('graph.edgesIntro')}
           </Txt>
           {GRAPH_RELS.map((r, i) => (
             <View key={r}>
@@ -110,7 +104,7 @@ export function GuideGraph() {
                   </Txt>
                 </View>
                 <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
-                  {REL_SHAPE[r]}
+                  {t(`graph.relShape.${r}`)}
                 </Txt>
               </View>
             </View>
@@ -118,13 +112,9 @@ export function GuideGraph() {
         </Panel>
 
         <Panel style={{ borderColor: c.warningBorder }}>
-          <PanelTitle>Deleting unlinks, it does not cascade</PanelTitle>
+          <PanelTitle>{t('graph.deleteTitle')}</PanelTitle>
           <Txt size="sm" tone="secondary">
-            Removing an application removes that node and the edges touching it. The reminders,
-            files and saved postings that were filed under it stay — they are their own records, and
-            they survive with nothing pointing at them. Every delete in the app says this, and the
-            Graph screen&apos;s question builder is where you find what came loose: ask for files
-            that do not have a link to an application.
+            {t('graph.deleteBody')}
           </Txt>
         </Panel>
       </Columns>

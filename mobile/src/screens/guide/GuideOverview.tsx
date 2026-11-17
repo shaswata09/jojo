@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { TODAY } from '@/lib/today'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
@@ -18,11 +19,10 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 
+/** `id` names the rung's `name`, `requires` and `gives` under `overview.layers` in the guide catalog. */
 type Layer = {
+  id: 'device' | 'model' | 'reader' | 'computer'
   icon: FeatherName
-  name: string
-  requires: string
-  gives: string
   active: boolean
 }
 
@@ -42,37 +42,10 @@ type Layer = {
  * install here.
  */
 const LAYERS: Layer[] = [
-  {
-    icon: 'smartphone',
-    name: 'This device only',
-    requires: 'Nothing to set up',
-    gives: 'Track applications, deadlines, follow-ups and documents',
-    active: true,
-  },
-  {
-    icon: 'cpu',
-    name: '+ Local model',
-    requires: 'Ollama, vLLM or LM Studio — or a free NVIDIA key',
-    gives:
-      'A threaded assistant that reads and writes your records — every change shown to you first — and "Ask the graph" in a sentence',
-    active: true,
-  },
-  {
-    icon: 'file-text',
-    name: '+ Document reader',
-    requires: 'MarkItDown, at an address you type in',
-    gives:
-      'The assistant reads what is inside your CVs and saved postings, and a posting you add from a link fills its own form in',
-    active: true,
-  },
-  {
-    icon: 'refresh-cw',
-    name: '+ Your computer',
-    requires: 'Both on the same network',
-    gives:
-      'Transfer moves the whole vault between this phone and your computer, with nothing in between',
-    active: true,
-  },
+  { id: 'device', icon: 'smartphone', active: true },
+  { id: 'model', icon: 'cpu', active: true },
+  { id: 'reader', icon: 'file-text', active: true },
+  { id: 'computer', icon: 'refresh-cw', active: true },
 ]
 
 /**
@@ -97,6 +70,7 @@ type Step = {
 }
 
 export function GuideOverview() {
+  const { t } = useTranslation('guide')
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { open } = useSheets()
@@ -109,59 +83,59 @@ export function GuideOverview() {
   const steps: Step[] = [
     {
       id: 'application',
-      title: 'Add an application',
-      body: 'A position, its stage and its deadline. Everything else in jojo hangs off this record.',
+      title: t('overview.steps.application.title'),
+      body: t('overview.steps.application.body'),
       done: applications.length > 0,
-      label: 'New application',
+      label: t('overview.steps.application.label'),
       onPress: () => open('application'),
     },
     {
       id: 'dated',
-      title: 'Give something a date',
-      body: 'Deadlines, interviews and campus visits are one kind of record, so they reach the calendar, the week ahead and the application at once.',
+      title: t('overview.steps.dated.title'),
+      body: t('overview.steps.dated.body'),
       done: items.some((i) => !i.remind),
-      label: 'New event',
+      label: t('overview.steps.dated.label'),
       onPress: () => open('timelineItem', { mode: 'event', initial: { date: TODAY } }),
     },
     {
       id: 'reminder',
-      title: 'Set a follow-up',
-      body: 'A reminder is the same record with a nudge switched on. Once its date passes it is flagged on Today until you tick it off.',
+      title: t('overview.steps.reminder.title'),
+      body: t('overview.steps.reminder.body'),
       done: reminders.length > 0,
-      label: 'New reminder',
+      label: t('overview.steps.reminder.label'),
       onPress: () => open('timelineItem', { mode: 'reminder' }),
     },
     {
       id: 'posting',
-      title: 'Keep a posting before it is taken down',
-      body: 'Nothing is fetched and no copy is stored — what is kept is the URL, the employer guessed from it and the day you saved it. That is enough to find the ad again.',
+      title: t('overview.steps.posting.title'),
+      body: t('overview.steps.posting.body'),
       done: postings.length > 0 || links.length > 0,
-      label: 'Open Job scout',
+      label: t('overview.steps.posting.label'),
       onPress: () => navigation.navigate('JobScout'),
     },
     {
       id: 'file',
-      title: 'File your documents',
-      body: 'Record a CV or a statement in the Vault. Names, sizes and types are kept; the file itself is never read.',
+      title: t('overview.steps.file.title'),
+      body: t('overview.steps.file.body'),
       done: files.length > 0,
-      label: 'Open the Vault',
+      label: t('overview.steps.file.label'),
       onPress: () => navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'files' } }),
     },
     {
       id: 'keyword',
-      title: 'Tag something with a keyword',
-      body: 'Keywords are yours, shared by applications, reminders and everything in the Vault — unlike the fixed role tags. The tag button on any row adds one.',
+      title: t('overview.steps.keyword.title'),
+      body: t('overview.steps.keyword.body'),
       done: labels.some((l) => countFor(l.id) > 0),
-      label: 'Manage keywords',
+      label: t('overview.steps.keyword.label'),
       onPress: () => navigation.navigate('Settings'),
     },
     {
       id: 'draft',
       // Nothing records that a message was written, so this row never ticks —
       // and says why rather than sitting permanently un-done for no reason.
-      title: 'Draft a message',
-      body: 'Built from your own email snippets, with the role, employer and dates filled in from the record. A person’s name is never filled in for you. Nothing here records that you sent it, so this step does not tick itself.',
-      label: 'Draft a message',
+      title: t('overview.steps.draft.title'),
+      body: t('overview.steps.draft.body'),
+      label: t('overview.steps.draft.label'),
       onPress: () => open('draft'),
     },
   ]
@@ -172,23 +146,23 @@ export function GuideOverview() {
   return (
     <>
       {LAYERS.map((l) => (
-        <Panel key={l.name} style={l.active ? { borderColor: c.accentBorder } : undefined}>
+        <Panel key={l.id} style={l.active ? { borderColor: c.accentBorder } : undefined}>
           <View style={s.row}>
             <Feather name={l.icon} size={17} color={l.active ? c.accent : c.text3} />
             <Txt size="base" weight="medium" style={s.fill}>
-              {l.name}
+              {t(`overview.layers.${l.id}.name`)}
             </Txt>
             {/* "optional" undersold it: neither of the lower two is present in
                 this build, and the tense of each `gives` line matches. */}
             <Txt size="xs" tone={l.active ? 'accent' : 'muted'}>
-              {l.active ? 'active' : 'not connected'}
+              {l.active ? t('overview.active') : t('overview.notConnected')}
             </Txt>
           </View>
           <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-            {l.requires}
+            {t(`overview.layers.${l.id}.requires`)}
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[1.5] }}>
-            {l.gives}
+            {t(`overview.layers.${l.id}.gives`)}
           </Txt>
         </Panel>
       ))}
@@ -196,11 +170,11 @@ export function GuideOverview() {
       {/* Explanatory panels with no order between them. Side by side on a tablet. */}
       <Columns>
         <Panel>
-          <PanelTitle hint={`${doneCount} of ${trackable.length} done`}>Getting started</PanelTitle>
+          <PanelTitle hint={t('overview.progress', { done: doneCount, total: trackable.length })}>
+            {t('overview.gettingStarted')}
+          </PanelTitle>
           <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            {doneCount === trackable.length
-              ? 'Every step is done. The checklist reads your records, so it follows if you clear them.'
-              : 'Each step opens the real thing, and ticks itself once a record exists. Nothing here is a tutorial you have to sit through.'}
+            {doneCount === trackable.length ? t('overview.allDone') : t('overview.howItWorks')}
           </Txt>
 
           {steps.map((step, i) => (
@@ -239,7 +213,7 @@ export function GuideOverview() {
                         reachable. */}
                     {step.done ? (
                       <Chip tone="green" size="sm">
-                        Done
+                        {t('overview.done')}
                       </Chip>
                     ) : null}
                   </View>
@@ -259,17 +233,12 @@ export function GuideOverview() {
         </Panel>
 
         <Panel>
-          <PanelTitle hint="the profile is not part of the checklist">
-            Fill in your profile
-          </PanelTitle>
+          <PanelTitle hint={t('overview.profile.hint')}>{t('overview.profile.title')}</PanelTitle>
           <Txt size="sm" tone="secondary">
-            Your basics, links, target roles and match terms live under My profile. They are what
-            the scout would score against and what the assistant would draft from, so they matter —
-            but this build keeps them for the visit only rather than writing them anywhere, which is
-            why the checklist above cannot tick for them.
+            {t('overview.profile.body')}
           </Txt>
           <Button
-            label="Open my profile"
+            label={t('overview.profile.open')}
             variant="outline"
             onPress={() => navigation.navigate('Profile')}
             style={{ marginTop: space[3], alignSelf: 'flex-start' }}
@@ -280,13 +249,11 @@ export function GuideOverview() {
           <View style={s.row}>
             <Feather name="alert-triangle" size={18} color={c.warning} />
             <Txt size="base" weight="medium" style={s.fill}>
-              The app is the database
+              {t('overview.database.title')}
             </Txt>
           </View>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[2] }}>
-            Your records are saved on this device and survive a restart. Nothing is sent anywhere —
-            no account, no sync, no network call. Settings is where you clear them, reload the demo
-            data, or export a copy to the clipboard.
+            {t('overview.database.body')}
           </Txt>
         </Panel>
       </Columns>

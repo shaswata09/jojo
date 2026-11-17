@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { i18next } from '@/i18n/i18n'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
@@ -37,8 +39,8 @@ const touchedBy = (entry: JournalEntry): string => {
   const records = entry.nodes.length
   const links = entry.edges.length
   const parts: string[] = []
-  if (records > 0) parts.push(`${records} record${records === 1 ? '' : 's'}`)
-  if (links > 0) parts.push(`${links} link${links === 1 ? '' : 's'}`)
+  if (records > 0) parts.push(i18next.t('components:audit.records', { count: records }))
+  if (links > 0) parts.push(i18next.t('components:audit.links', { count: links }))
   return parts.join(' · ')
 }
 
@@ -49,6 +51,7 @@ const timeOf = (iso: string) => {
 }
 
 export function AuditLog() {
+  const { t } = useTranslation('components')
   const { repo } = useKg()
   const { toast } = useToast()
   const [all, setAll] = useState(false)
@@ -73,8 +76,8 @@ export function AuditLog() {
       // second ago can be gone by the time the button is pressed. A throw out
       // of a press handler would take the screen down with it.
       toast({
-        title: 'That change could no longer be undone',
-        description: error instanceof Error ? error.message : 'It is no longer in the journal.',
+        title: t('audit.undoFailed'),
+        description: error instanceof Error ? error.message : t('audit.notInJournal'),
         tone: 'danger',
       })
     }
@@ -82,32 +85,32 @@ export function AuditLog() {
 
   return (
     <Panel>
-      <PanelTitle hint={entries.length > 0 ? `${entries.length} recorded` : undefined}>
-        What changed
+      <PanelTitle
+        hint={entries.length > 0 ? t('audit.recorded', { count: entries.length }) : undefined}
+      >
+        {t('audit.title')}
       </PanelTitle>
 
       {entries.length === 0 ? (
         <EmptyState
           icon="clock"
-          title="Nothing written yet"
-          description="Every add, edit and delete lands here as you make it — newest first, with the last one undoable."
+          title={t('audit.empty.title')}
+          description={t('audit.empty.description')}
           compact
         />
       ) : (
         <>
           <View style={[s.row, { marginBottom: space[3] }]}>
             <Txt size="xs" tone="muted" style={s.fill}>
-              The newest change can be put back. Older ones are a record, not a time machine.
+              {t('audit.explain')}
             </Txt>
             <Button
-              label="Undo the last"
+              label={t('audit.undoLast')}
               icon="rotate-ccw"
               variant="outline"
               onPress={onUndo}
               disabled={!canUndo}
-              blocker={
-                top && !canUndo ? 'Loading or clearing the data set cannot be undone.' : undefined
-              }
+              blocker={top && !canUndo ? t('audit.cannotUndo') : undefined}
             />
           </View>
 
@@ -136,7 +139,7 @@ export function AuditLog() {
 
           {!all && entries.length > FIRST_PAGE ? (
             <Button
-              label={`Show all ${entries.length}`}
+              label={t('audit.showAll', { count: entries.length })}
               variant="ghost"
               onPress={() => setAll(true)}
               style={{ alignSelf: 'flex-start', marginTop: space[2] }}

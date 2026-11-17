@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { GUIDE_PAGE_META } from '@/components/guide/pages'
 import { GUIDE_PAGES, guidePath } from '@/lib/links'
 import { useGuidePage } from '@/lib/link-params'
@@ -26,8 +27,9 @@ import { cn } from '@/lib/utils'
  * claims you are in two places.
  */
 export function GuideNav() {
+  const { t } = useTranslation('guide')
   return (
-    <nav aria-label="Guide pages">
+    <nav aria-label={t('nav.rail')}>
       <ol className="flex flex-wrap gap-1.5">
         {GUIDE_PAGE_META.map((page, index) => (
           <li key={page.id}>
@@ -73,10 +75,11 @@ export function GuideNav() {
  * cannot mistake three cards for the whole section.
  */
 export function GuideContents() {
+  const { t } = useTranslation('guide')
   const current = useGuidePage()
 
   return (
-    <nav aria-label="Guide contents">
+    <nav aria-label={t('nav.contents')}>
       <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5">
         {GUIDE_PAGE_META.map((page, index) => {
           const here = page.id === current
@@ -102,7 +105,9 @@ export function GuideContents() {
                   >
                     {page.label}
                   </span>
-                  {here ? <span className="ml-auto text-xs text-text-3">you are here</span> : null}
+                  {here ? (
+                    <span className="ms-auto text-xs text-text-3">{t('nav.youAreHere')}</span>
+                  ) : null}
                 </p>
                 <p className="mt-1.5 text-sm text-text-2">{page.blurb}</p>
               </Link>
@@ -134,6 +139,7 @@ export function GuideContents() {
  * way a page like this ends up scrolling sideways on a phone.
  */
 export function GuidePager() {
+  const { t } = useTranslation('guide')
   const current = useGuidePage()
   const index = GUIDE_PAGES.indexOf(current)
   const previous = index > 0 ? GUIDE_PAGE_META[index - 1] : undefined
@@ -141,7 +147,7 @@ export function GuidePager() {
 
   return (
     <nav
-      aria-label="More guide pages"
+      aria-label={t('nav.pager')}
       className="flex flex-wrap items-center gap-3 border-t border-hairline pt-4 sm:pt-5"
     >
       <div className="order-1 min-w-0 flex-1 basis-40">
@@ -150,9 +156,13 @@ export function GuidePager() {
             to={guidePath(previous.id)}
             className="group flex items-center gap-2 text-text-2 transition-colors duration-150 hover:text-text-1"
           >
-            <ArrowLeft className="size-4 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
+            <ArrowLeft
+              className="size-4 shrink-0 text-text-3 rtl:-scale-x-100"
+              strokeWidth={1.8}
+              aria-hidden
+            />
             <span className="min-w-0">
-              <span className="block text-xs text-text-3">Previous</span>
+              <span className="block text-xs text-text-3">{t('nav.previous')}</span>
               <span className="block truncate text-sm group-hover:text-accent">
                 {previous.label}
               </span>
@@ -161,8 +171,8 @@ export function GuidePager() {
         ) : null}
       </div>
 
-      <p className="tabular order-3 w-full shrink-0 text-center text-xs text-text-3 sm:order-2 sm:w-auto sm:text-left">
-        Page {index + 1} of {GUIDE_PAGES.length}
+      <p className="tabular order-3 w-full shrink-0 text-center text-xs text-text-3 sm:order-2 sm:w-auto sm:text-start">
+        {t('nav.pageOf', { current: index + 1, total: GUIDE_PAGES.length })}
       </p>
 
       <div className="order-2 flex min-w-0 flex-1 basis-40 justify-end sm:order-3">
@@ -171,11 +181,15 @@ export function GuidePager() {
             to={guidePath(next.id)}
             className="group flex items-center gap-2 text-text-2 transition-colors duration-150 hover:text-text-1"
           >
-            <span className="min-w-0 text-right">
-              <span className="block text-xs text-text-3">Next</span>
+            <span className="min-w-0 text-end">
+              <span className="block text-xs text-text-3">{t('nav.next')}</span>
               <span className="block truncate text-sm group-hover:text-accent">{next.label}</span>
             </span>
-            <ArrowRight className="size-4 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
+            <ArrowRight
+              className="size-4 shrink-0 text-text-3 rtl:-scale-x-100"
+              strokeWidth={1.8}
+              aria-hidden
+            />
           </Link>
         ) : null}
       </div>

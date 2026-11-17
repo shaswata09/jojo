@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { SettingRow } from '@/components/common/Field'
 import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
@@ -7,8 +8,8 @@ import { Switch } from '@/components/ui/switch'
  * What is about to move, and where.
  *
  * This card used to be a second copy of the pairing code. It is not needed there
- * any more — the code now lives inside the animation, which is where a person is
- * already looking — and a card whose only job was to duplicate something is a
+ * any more — the code is beside the copy on the stage card, which is where a
+ * person is already looking — and a card whose only job was to duplicate something is a
  * card that can say something instead.
  *
  * What it says is the set of facts somebody weighing "should I do this" actually
@@ -37,30 +38,41 @@ export function DetailsPanel({
   /** Where it is going, once that is known. */
   target: string | null
 }) {
+  const { t, i18n } = useTranslation('transfer')
   const records = totalOf(groups)
 
   return (
     <Panel>
-      <PanelTitle hint="this handoff">Details</PanelTitle>
+      <PanelTitle hint={t('details.hint')}>{t('details.title')}</PanelTitle>
       <SettingRow
-        label="Records"
-        description="everything in the groups below"
-        control={<span className="tabular text-sm text-text-1">{records.toLocaleString()}</span>}
+        label={t('details.records')}
+        description={t('details.recordsHint')}
+        control={
+          <span className="tabular text-sm text-text-1">
+            {records.toLocaleString(i18n.language)}
+          </span>
+        }
       />
       <SettingRow
-        label="Encryption"
-        description="AES-256-GCM, key agreed by camera"
-        control={<span className="text-sm text-text-1">{paired ? 'Key agreed' : 'Not yet paired'}</span>}
+        label={t('details.encryption')}
+        description={t('details.encryptionHint')}
+        control={
+          <span className="text-sm text-text-1">
+            {paired ? t('details.keyAgreed') : t('details.notPaired')}
+          </span>
+        }
       />
       <SettingRow
-        label="Route"
-        description="a private network address — never the internet"
-        control={<span className="tabular text-sm text-text-1">{target ?? 'Local network'}</span>}
+        label={t('details.route')}
+        description={t('details.routeHint')}
+        control={
+          <span className="tabular text-sm text-text-1">{target ?? t('details.localNetwork')}</span>
+        }
       />
       <SettingRow
-        label="Servers"
-        description="no relay, no signalling, nothing hosted"
-        control={<span className="text-sm text-text-1">None</span>}
+        label={t('details.servers')}
+        description={t('details.serversHint')}
+        control={<span className="text-sm text-text-1">{t('details.none')}</span>}
       />
     </Panel>
   )
@@ -78,21 +90,20 @@ export function PayloadPanel({
   locked: boolean
   fileCount: number
 }) {
+  const { t } = useTranslation('transfer')
   return (
     <Panel>
       <SettingRow
-        label="Transfer files"
+        label={t('payload.label')}
         description={
-          fileCount === 0
-            ? 'No files on this device'
-            : `${fileCount} file${fileCount === 1 ? '' : 's'} — the slowest part of a handoff`
+          fileCount === 0 ? t('payload.noFiles') : t('payload.files', { count: fileCount })
         }
         control={
           <Switch
             checked={sendFiles && fileCount > 0}
             disabled={locked || fileCount === 0}
             onCheckedChange={onToggleFiles}
-            aria-label="Transfer files"
+            aria-label={t('payload.label')}
           />
         }
       />

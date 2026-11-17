@@ -1,4 +1,5 @@
 import { Bot, Pencil, Play, Plus, Radio, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle, Row, RowList } from '@/components/common/Panel'
@@ -9,7 +10,8 @@ import { isAuto, kindOf } from '@jojo/service/react/use-pipelines'
 import { AUTO_CAPABLE } from '@jojo/service/core/proposal'
 import type { Pipeline } from '@/data/scout'
 
-const KIND_LABEL = { twin: 'Digital twin', scout: 'Job scout' } as const
+/** Catalog keys for each kind's chip. */
+const KIND_LABEL = { twin: 'pipelines.kinds.twin', scout: 'pipelines.kinds.scout' } as const
 
 /**
  * What each row's chip says, and it is now a claim about the world.
@@ -21,10 +23,13 @@ const KIND_LABEL = { twin: 'Digital twin', scout: 'Job scout' } as const
  * no model to run it.
  */
 function statusOf(p: Pipeline, running: boolean, paused: boolean) {
-  if (!p.enabled) return { label: 'off', tone: 'gray' as const, dot: 'off' as const }
-  if (paused) return { label: 'paused', tone: 'amber' as const, dot: 'warn' as const }
-  if (running) return { label: 'running', tone: 'teal' as const, dot: 'on' as const }
-  return { label: 'watching', tone: 'green' as const, dot: 'on' as const }
+  if (!p.enabled)
+    return { label: 'pipelines.status.off', tone: 'gray' as const, dot: 'off' as const }
+  if (paused)
+    return { label: 'pipelines.status.paused', tone: 'amber' as const, dot: 'warn' as const }
+  if (running)
+    return { label: 'pipelines.status.running', tone: 'teal' as const, dot: 'on' as const }
+  return { label: 'pipelines.status.watching', tone: 'green' as const, dot: 'on' as const }
 }
 
 export function PipelinesPanel({
@@ -60,39 +65,36 @@ export function PipelinesPanel({
   onSetAuto: (pipeline: Pipeline, auto: boolean) => void
   onRunNow: (pipelineId: string) => void
 }) {
+  const { t } = useTranslation('scout')
   return (
     <Panel>
       <div className="mb-3.5 flex flex-wrap items-baseline justify-between gap-2">
-        <PanelTitle className="mb-0" hint="run on this device while jojo is open">
-          Pipelines
+        <PanelTitle className="mb-0" hint={t('pipelines.hint')}>
+          {t('pipelines.title')}
         </PanelTitle>
         {/* The honest sentence, and the one people ask about. A pipeline cannot
             run with the app closed on either platform — no service worker on
             the web, no background task on the phone — so the caption says when
             they run rather than implying a daemon. */}
-        <p className="text-xs text-text-3">
-          They work while this tab is open — nothing runs off this machine
-        </p>
+        <p className="text-xs text-text-3">{t('pipelines.caption')}</p>
       </div>
 
       {pipelines.length === 0 ? (
         <EmptyState
           icon={Radio}
-          title={onlyActive ? 'Nothing switched on' : 'No pipelines'}
+          title={onlyActive ? t('pipelines.noneOnTitle') : t('pipelines.emptyTitle')}
           description={
-            onlyActive
-              ? 'Every pipeline you have is switched off. Turn one on, or drop the filter in the page options.'
-              : 'A pipeline is a standing job for the assistant: keeping your records complete, or watching for postings worth your attention.'
+            onlyActive ? t('pipelines.noneOnDescription') : t('pipelines.emptyDescription')
           }
           action={
             onlyActive ? (
               <Button size="sm" variant="outline" onClick={onShowAll}>
-                Show all pipelines
+                {t('pipelines.showAll')}
               </Button>
             ) : (
               <Button size="sm" onClick={onNew}>
                 <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                New pipeline
+                {t('common.newPipeline')}
               </Button>
             )
           }
@@ -112,12 +114,12 @@ export function PipelinesPanel({
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span>{p.name}</span>
                     <Chip tone="gray" size="sm">
-                      {KIND_LABEL[kind]}
+                      {t(KIND_LABEL[kind])}
                     </Chip>
                     {isAuto(p) ? (
                       <Chip tone="amber" size="sm">
                         <Bot className="size-3" strokeWidth={1.8} aria-hidden />
-                        auto
+                        {t('pipelines.auto')}
                       </Chip>
                     ) : null}
                   </div>
@@ -131,22 +133,20 @@ export function PipelinesPanel({
                 </div>
 
                 {pending > 0 ? (
-                  <Chip tone="teal">
-                    {pending} to review
-                  </Chip>
+                  <Chip tone="teal">{t('pipelines.toReview', { count: pending })}</Chip>
                 ) : null}
-                <Chip tone={state.tone}>{state.label}</Chip>
+                <Chip tone={state.tone}>{t(state.label)}</Chip>
 
                 {/* Auto is offered only where it exists. A scout never runs
                     unattended — see AUTO_CAPABLE — so rendering a disabled
                     switch would be advertising a setting that is not coming. */}
                 {AUTO_CAPABLE[kind] ? (
                   <label className="flex items-center gap-1.5 text-xs text-text-3">
-                    <span>auto</span>
+                    <span>{t('pipelines.auto')}</span>
                     <Switch
                       checked={isAuto(p)}
                       onCheckedChange={(auto) => onSetAuto(p, auto)}
-                      aria-label={`Run ${p.name} without asking`}
+                      aria-label={t('pipelines.autoAria', { name: p.name })}
                     />
                   </label>
                 ) : null}
@@ -154,8 +154,8 @@ export function PipelinesPanel({
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  title={`Run ${p.name} now`}
-                  aria-label={`Run ${p.name} now`}
+                  title={t('pipelines.runNow', { name: p.name })}
+                  aria-label={t('pipelines.runNow', { name: p.name })}
                   disabled={paused || running !== null}
                   onClick={() => onRunNow(p.id)}
                 >
@@ -164,8 +164,8 @@ export function PipelinesPanel({
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  title={`Edit ${p.name}`}
-                  aria-label={`Edit ${p.name}`}
+                  title={t('pipelines.edit', { name: p.name })}
+                  aria-label={t('pipelines.edit', { name: p.name })}
                   onClick={() => onEdit(p)}
                 >
                   <Pencil className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -173,8 +173,8 @@ export function PipelinesPanel({
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  title={`Delete ${p.name}`}
-                  aria-label={`Delete ${p.name}`}
+                  title={t('pipelines.delete', { name: p.name })}
+                  aria-label={t('pipelines.delete', { name: p.name })}
                   onClick={() => onDelete(p)}
                 >
                   <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -182,7 +182,7 @@ export function PipelinesPanel({
                 <Switch
                   checked={p.enabled}
                   onCheckedChange={(enabled) => onToggle(p, enabled)}
-                  aria-label={`Enable ${p.name}`}
+                  aria-label={t('pipelines.enable', { name: p.name })}
                 />
               </Row>
             )

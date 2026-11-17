@@ -24,7 +24,6 @@
 import { describe, expect, it } from 'vitest'
 import type { KeyPair, Secrets } from './secrets'
 import type { PairingOffer } from './pairing'
-import { PULSE_FPS, createPulseReceiver, planPulse } from './pulse'
 import {
   OFFER_BYTES,
   PAIRING_MAGIC,
@@ -167,38 +166,13 @@ describe('a pairing that works', () => {
     expect([...a.value.keys.offererToAnswerer]).not.toEqual([...b.value.keys.offererToAnswerer])
   })
 
-  it('fits in ten frames of the animation, which is about a second', async () => {
-    // The reason the handshake goes optically and the backup does not. An offer
-    // is 83 bytes and a frame of the animation carries nine, so the key is said
-    // in about a second and then said again for as long as the screen is up.
-    const secrets = fakeSecrets()
-    const state = await beginPairing(secrets, AT)
-    const plan = planPulse(encodeOffer(state.offer))
+  it('fits in one QR code a phone reads at arm’s length', () => {
+    // The reason the handshake goes through a camera and the backup does not.
+    // The offer is all the screen has to carry, and at 83 bytes it fits a
+    // version-5 QR code at error-correction level M (84 bytes in byte mode) —
+    // 37 modules across, readable from a laptop screen at arm's length (Q329).
     expect(OFFER_BYTES).toBe(83)
-    expect(plan.total).toBe(10)
-    // At the rate the sender actually shows them, not a rate nobody uses. Under
-    // two seconds is the number that decides whether this is worth doing.
-    expect(plan.lapSeconds(PULSE_FPS)).toBeCloseTo(1.67, 2)
-    expect(plan.lapSeconds(PULSE_FPS)).toBeLessThan(2)
-  })
-
-  it('survives the animation being read with frames missed', async () => {
-    // What a hand-held camera actually does. The frames cycle, so a miss costs
-    // part of another pass and never a restart.
-    const secrets = fakeSecrets()
-    const state = await beginPairing(secrets, AT)
-    const payload = encodeOffer(state.offer)
-    const plan = planPulse(payload)
-    const receiver = createPulseReceiver()
-
-    for (let i = 0; i < plan.total; i += 1) if (i % 2 === 0) receiver.accept(plan.frames[i]!)
-    expect(receiver.progress().complete).toBe(false)
-    for (const frame of plan.frames) receiver.accept(frame)
-
-    const read = receiver.payload()
-    expect(read).not.toBeNull()
-    const accepted = await acceptPairing(secrets, read!.subarray(0, payload.byteLength))
-    expect(accepted.ok).toBe(true)
+    expect(OFFER_BYTES).toBeLessThanOrEqual(84)
   })
 })
 

@@ -1,0 +1,197 @@
+{
+  "common": {
+    "newPipeline": "新しいパイプライン",
+    "addToApplications": "応募に追加",
+    "inApplicationsAs": "応募に <anchor>{{name}}</anchor> として登録済み",
+    "open": "開く",
+    "undo": "元に戻す"
+  },
+  "header": {
+    "title": "求人スカウト",
+    "subtitle": "求人サイトを見張ってくれる保存済み検索と、今すぐ求人を置いておける場所",
+    "onlyActive": "有効なパイプラインのみ",
+    "onlyActiveHint": "オフのものを非表示にします",
+    "paused": "ローカルモデルが接続されていないため、パイプラインは一時停止しています。パイプラインの作成や下での求人の保存はできます。モデルに接続できるようになると動き始めます。",
+    "runsLocally": "パイプラインは、このタブが開いている間、あなたのコンピューター上で動きます。第三者には何も送信されません。"
+  },
+  "shutdown": {
+    "title": "{{name}} をオフにしますか？",
+    "description": "2 回実行しましたが提案できるものが見つからず、あなたの回答を待っているものもありません。オフにすると探すのをやめます。これまでに見つけたものはそのまま残ります。いつでもオンに戻せます。",
+    "keep": "動かしたままにする",
+    "confirm": "オフにする"
+  },
+  "matches": {
+    "title": "マッチ",
+    "hint": "あなたのプロフィールで採点",
+    "emptyTitle": "マッチはありません",
+    "emptyDescription": "モデルが接続されると、パイプラインが採点済みの求人をここに置きます。それまでは、下で保存する求人が入り口です。",
+    "matched": "一致：{{list}}",
+    "notScored": "未採点",
+    "fit": "適合度 {{score}}%",
+    "added": "追加済み"
+  },
+  "dialog": {
+    "editTitle": "パイプラインを編集",
+    "description": "パイプラインはアシスタントに任せる常設の仕事です。jojo が開いている間このデバイスで動き、変更したいことはすべて先にあなたに見せます。",
+    "kind": "役割",
+    "kinds": {
+      "twin": "記録を充実させる",
+      "scout": "求人を探す"
+    },
+    "kindHint": {
+      "twin": "今ある記録を読み、足りないもの（メモ、リマインダー、タグ、整理）を提案します。",
+      "scout": "注目すべき求人を探し、確認できるように提示します。"
+    },
+    "name": "名前",
+    "nameError": "見張る対象にちなんだ名前を付けてください。",
+    "namePlaceholder": {
+      "twin": "例：応募を整理しておく",
+      "scout": "例：CRA の教員求人ボード"
+    },
+    "sources": "ソース",
+    "sourcesHint": "見張る求人サイトや採用ページ。複数ある場合はカンマで区切ります。",
+    "sourceError": "ソースのないスカウトには読むものがありません。",
+    "terms": {
+      "twin": "重点項目",
+      "scout": "一致させる語句"
+    },
+    "termsHint": {
+      "twin": "特に注意してほしいこと。空欄にするとすべてを見ます。",
+      "scout": "求人を採点する基準。空欄にするとソースの掲載内容をすべて残します。"
+    },
+    "termsPlaceholder": {
+      "twin": "フォローアップと締め切り",
+      "scout": "助教、CS/ECE"
+    },
+    "howOften": "頻度",
+    "howOftenHint": "次の巡回までどれだけ待つか。",
+    "schedules": {
+      "hourly": "1 時間ごと",
+      "daily": "毎日",
+      "weekly": "毎週"
+    },
+    "cancel": "キャンセル",
+    "save": "変更を保存",
+    "create": "パイプラインを作成"
+  },
+  "pipelines": {
+    "title": "パイプライン",
+    "hint": "jojo が開いている間このデバイスで実行",
+    "caption": "このタブが開いている間だけ動きます。このコンピューターの外では何も動きません",
+    "kinds": {
+      "twin": "デジタルツイン",
+      "scout": "求人スカウト"
+    },
+    "status": {
+      "off": "オフ",
+      "paused": "一時停止中",
+      "running": "実行中",
+      "watching": "監視中"
+    },
+    "noneOnTitle": "オンのものはありません",
+    "noneOnDescription": "すべてのパイプラインがオフです。どれかをオンにするか、ページのオプションでフィルターを外してください。",
+    "emptyTitle": "パイプラインはありません",
+    "emptyDescription": "パイプラインはアシスタントに任せる常設の仕事です。記録を充実させたり、注目すべき求人を見張ったりします。",
+    "showAll": "すべてのパイプラインを表示",
+    "auto": "自動",
+    "autoAria": "{{name}} を確認なしで実行",
+    "toReview_other": "確認待ち {{count}} 件",
+    "runNow": "{{name}} を今すぐ実行",
+    "edit": "{{name}} を編集",
+    "delete": "{{name}} を削除",
+    "enable": "{{name}} を有効にする"
+  },
+  "postings": {
+    "title": "求人を保存",
+    "hint": "モデルなしで使えます",
+    "intro": "保存するとページも保管庫の「求人」に残ります。jojo 拡張機能で見たままの状態で開くか、ドキュメントリーダーで取得します。どちらもない場合は、URL、そこから推測した雇用主、保存した日が残ります。",
+    "urlLabel": "求人の URL",
+    "pasteFirst": "先に URL を貼り付けてください",
+    "save": "求人を保存",
+    "emptyTitle": "保存した求人はありません",
+    "emptyDescription": "あとで見返したい求人の URL を貼り付けてください。求人は削除されますが、リンクと日付は手元に残ります。",
+    "saved": "{{when}}に保存",
+    "linked": "応募にリンク済み",
+    "unscored": "未採点",
+    "openSnapshot": "スナップショットを開く",
+    "savingPage": "ページを保存中…",
+    "savePage": "ページを保存",
+    "savePageTitle": "求人を開いて保管庫にコピーを残します",
+    "remove": "{{title}} を削除"
+  },
+  "proposals": {
+    "title": "提案",
+    "hint": "あなたが言うまで何も起きません",
+    "aPipeline": "パイプライン",
+    "clearAnswered": "回答済みを消去",
+    "approveAll": "{{count}} 件すべて承認",
+    "clearAll": "すべて消去",
+    "emptyTitle": "確認するものはありません",
+    "emptyDescription": "パイプラインが動いていると、変更したいことはまずここに表示されます。承認するまで記録には手を付けません。",
+    "clearTitle": "すべての提案を消去しますか？",
+    "clearPending_other": "{{count}} 件の提案がまだ回答を待っており、却下されます。記録は何も変わらず、パイプラインも動き続けますが、これらが再び提案されることはありません。",
+    "clearAnsweredOnly": "回答済みのカードが一覧から消えます。記録は何も変わりません。",
+    "status": {
+      "applied": "適用済み",
+      "discarded": "破棄済み",
+      "failed": "適用できませんでした"
+    },
+    "noSummary": "これには要約がありません。求人を開いて内容を確認してください。",
+    "reading": "求人を読んで詳細を取得しています…",
+    "notALink": "Web アドレスではないため、リンクにしていません",
+    "from": "提案元：{{name}}",
+    "openPosting": "求人を開く",
+    "openPostingAria": "求人を新しいタブで開く：{{title}}",
+    "inApplications": "応募に登録済み",
+    "approve": "承認",
+    "discard": "この提案を破棄",
+    "discardAria": "破棄：{{title}}",
+    "unreadable": "ページを読めませんでした：{{reason}}",
+    "unreadableKept": "ページを読めませんでした：{{reason}} ページ自体は保存されました。",
+    "applyBy": "応募期限 {{date}}",
+    "pageSaved": "ページを保存済み"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "すでに応募にあります。再追加はしていません",
+    "alreadyHaveDescription": "これは {{name}} で、別の求人サイトに再掲載されたものです。求人はそれにリンクされ、ページもその下に整理されています。",
+    "duplicateDescription": "この求人は、すでにある {{name}} です。{{why}} ページはそちらの下に整理されています。",
+    "keepBoth": "両方残す",
+    "fillFailedTitle": "{{org}}：求人を読めませんでした",
+    "fillFailedKept": "{{reason}} ページ自体は保存され、下書きの下に整理されました。開いて残りを入力してください。",
+    "fillFailed": "{{reason}} 下書きにはリンクからわかる情報が残っています。開いて残りを入力してください。",
+    "filledTitle": "{{name}} を求人から入力しました",
+    "checkedTitle": "{{name}} を求人と照合しました",
+    "filledIn": "入力：{{list}}。",
+    "checked": "ページと照合：{{list}}。",
+    "keptYours": "あなたの編集を保持：{{list}}。",
+    "addedNothing": "下書きにない情報はページにありませんでした。",
+    "missing": "ページに記載なし：{{list}}。",
+    "filedUnder": "ページはその下に整理されています。",
+    "approvedReading": "求人を読んで詳細を入力しています。終わると下書きが更新されます。",
+    "approvedFromLink": "リンクから入力しました。設定でモデルを接続すると、求人そのものを読み込めます。",
+    "approvedOpen": "開いて残りを入力してください。",
+    "allRepeatsTitle": "すでに応募にあります。新しく追加したものはありません",
+    "allRepeats_other": "{{count}} 件は、別の求人サイトに再掲載された、すでにある求人です。既存の応募にリンクされています。",
+    "added_other": "{{count}} 件を下書きとして応募に追加しました",
+    "addedWithRepeats_other": "{{count}} 件を下書きとして応募に追加しました · {{repeats}} 件は登録済み",
+    "addedReading": "各求人を順に読んで詳細を入力しています。",
+    "addedFromLinks": "それぞれのリンクから入力しました。設定でモデルを接続すると、求人そのものを読み込めます。",
+    "addedOne": "{{org}} を下書きとして応募に追加しました",
+    "addedAsDraft": "{{org}} を下書きとして追加しました",
+    "matchStays": "マッチはこの一覧に残り、応募にリンクされました。",
+    "postingSaved": "求人を保存しました",
+    "postingReading": "求人を読んで詳細を照合・入力しています。終わると下書きが更新されます。",
+    "postingStays": "求人はここに保存されたまま、応募にリンクされました。",
+    "postingRemoved": "求人を削除しました",
+    "pageNotSaved": "求人のページを保存できませんでした",
+    "pageSaved": "求人のページを保存しました",
+    "pageSavedFiled": "{{title}} — 応募の下に整理しました。",
+    "pageSavedVault": "{{title}} — 保管庫の「求人」にあります。",
+    "pipelineUpdated": "パイプラインを更新しました",
+    "pipelineCreated": "パイプラインを作成しました",
+    "pipelineCreatedPaused": "{{name}} — モデルが接続されるまで一時停止します。",
+    "pipelineCreatedRunning": "{{name}} — まもなく探し始めます。",
+    "pipelineDeleted": "パイプラインを削除しました",
+    "pipelineDeletedDescription": "{{name}} は {{source}} の監視をやめます。"
+  }
+}

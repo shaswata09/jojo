@@ -1,5 +1,6 @@
 import { Pressable, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -36,12 +37,12 @@ import { space } from '@/theme/tokens'
  */
 
 const SECTIONS = [
-  { key: 'files', tool: 'files', label: 'Files', icon: 'file-text' },
-  { key: 'links', tool: 'links', label: 'Links', icon: 'link-2' },
-  { key: 'snippets', tool: 'snippets', label: 'Snippets', icon: 'scissors' },
+  { key: 'files', tool: 'files', label: 'filed.sections.files', icon: 'file-text' },
+  { key: 'links', tool: 'links', label: 'filed.sections.links', icon: 'link-2' },
+  { key: 'snippets', tool: 'snippets', label: 'filed.sections.snippets', icon: 'scissors' },
   // People arrive on the same `FILED_UNDER` edge a CV does, so they belong on
   // the panel headed "everything filed here" rather than on one of their own.
-  { key: 'people', tool: 'people', label: 'People', icon: 'user' },
+  { key: 'people', tool: 'people', label: 'filed.sections.people', icon: 'user' },
 ] as const satisfies readonly {
   key: 'files' | 'links' | 'snippets' | 'people'
   tool: VaultTool
@@ -50,6 +51,7 @@ const SECTIONS = [
 }[]
 
 export function FiledPanel({ applicationId }: { applicationId: string }) {
+  const { t: tr } = useTranslation('components')
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { forApplication } = useVault()
@@ -75,13 +77,15 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
 
   return (
     <Panel>
-      <PanelTitle hint={total > 0 ? `${total} filed here` : undefined}>From the Vault</PanelTitle>
+      <PanelTitle hint={total > 0 ? tr('filed.count', { count: total }) : undefined}>
+        {tr('filed.title')}
+      </PanelTitle>
 
       {total === 0 ? (
         <EmptyState
           icon="archive"
-          title="Nothing filed under this yet"
-          description="Documents, links, snippets and people can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
+          title={tr('filed.empty.title')}
+          description={tr('filed.empty.description')}
         />
       ) : (
         <View style={{ gap: space[4] }}>
@@ -90,7 +94,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
               <View style={[s.row, { marginBottom: space[1.5] }]}>
                 <Feather name="message-square" size={13} color={c.text3} />
                 <Txt size="xs" tone="muted">
-                  Conversations
+                  {tr('filed.conversations')}
                 </Txt>
                 <Txt size="xs" tone="muted" mono>
                   {conversations.length}
@@ -100,7 +104,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                 <Pressable
                   key={t.id}
                   accessibilityRole="button"
-                  accessibilityLabel={`Open ${t.title} in the Assistant`}
+                  accessibilityLabel={tr('filed.openInAssistant', { name: t.title })}
                   onPress={() => navigation.navigate('Assistant')}
                   style={({ pressed }) => [
                     s.row,
@@ -130,7 +134,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                 <View style={[s.row, { marginBottom: space[1.5] }]}>
                   <Feather name={section.icon} size={13} color={c.text3} />
                   <Txt size="xs" tone="muted">
-                    {section.label}
+                    {tr(section.label)}
                   </Txt>
                   <Txt size="xs" tone="muted" mono>
                     {rows.length}
@@ -141,7 +145,9 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                   <Pressable
                     key={row.id}
                     accessibilityRole="button"
-                    accessibilityLabel={`Open ${'name' in row ? row.name : row.title} in the Vault`}
+                    accessibilityLabel={tr('filed.openInVault', {
+                      name: 'name' in row ? row.name : row.title,
+                    })}
                     // `focus` is what makes the Vault scroll to the row and
                     // light it — the same arrival the calendar already uses, so
                     // the highlight means one thing across the app.

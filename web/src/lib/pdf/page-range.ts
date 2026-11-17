@@ -1,3 +1,5 @@
+import { i18next } from '@/i18n/i18n'
+
 /**
  * "1-3, 7, 9-" -> the pages it names.
  *
@@ -31,7 +33,7 @@ export const ALL_PAGES = ''
  */
 export function parsePageRange(input: string, pageCount: number): PageRange {
   if (!Number.isInteger(pageCount) || pageCount < 1) {
-    return { ok: false, reason: 'That document has no pages.' }
+    return { ok: false, reason: i18next.t('messages:pdf.range.noPages') }
   }
   const text = input.trim()
   if (text === ALL_PAGES) return { ok: true, pages: Array.from({ length: pageCount }, (_, i) => i) }
@@ -39,7 +41,7 @@ export function parsePageRange(input: string, pageCount: number): PageRange {
   const pages: number[] = []
   for (const raw of text.split(',')) {
     const part = raw.trim()
-    if (part === '') return { ok: false, reason: 'There is an empty range between two commas.' }
+    if (part === '') return { ok: false, reason: i18next.t('messages:pdf.range.emptyPart') }
 
     // A single page, or a span. `9-` runs to the end, `-3` starts at the first
     // page; both are how every page-range box a person has used already behaves.
@@ -47,32 +49,34 @@ export function parsePageRange(input: string, pageCount: number): PageRange {
     if (span) {
       const [, fromText = '', toText = ''] = span
       if (fromText === '' && toText === '') {
-        return { ok: false, reason: `'${part}' names no pages.` }
+        return { ok: false, reason: i18next.t('messages:pdf.range.partNamesNoPages', { part }) }
       }
       const from = fromText === '' ? 1 : Number(fromText)
       const to = toText === '' ? pageCount : Number(toText)
       const bad = outOfRange(from, pageCount) ?? outOfRange(to, pageCount)
       if (bad) return { ok: false, reason: bad }
       if (from > to) {
-        return { ok: false, reason: `'${part}' counts backwards. Write it as ${to}-${from}.` }
+        return { ok: false, reason: i18next.t('messages:pdf.range.backwards', { part, to, from }) }
       }
       for (let page = from; page <= to; page++) pages.push(page - 1)
       continue
     }
 
-    if (!/^\d+$/.test(part)) return { ok: false, reason: `'${part}' is not a page number.` }
+    if (!/^\d+$/.test(part)) {
+      return { ok: false, reason: i18next.t('messages:pdf.range.notANumber', { part }) }
+    }
     const bad = outOfRange(Number(part), pageCount)
     if (bad) return { ok: false, reason: bad }
     pages.push(Number(part) - 1)
   }
-  if (pages.length === 0) return { ok: false, reason: 'That range names no pages.' }
+  if (pages.length === 0) return { ok: false, reason: i18next.t('messages:pdf.range.namesNoPages') }
   return { ok: true, pages }
 }
 
 function outOfRange(page: number, pageCount: number): string | null {
-  if (page < 1) return 'Pages are numbered from 1.'
+  if (page < 1) return i18next.t('messages:pdf.range.fromOne')
   if (page > pageCount) {
-    return `This document ends at page ${pageCount}, so page ${page} is not in it.`
+    return i18next.t('messages:pdf.range.pastEnd', { count: pageCount, page })
   }
   return null
 }

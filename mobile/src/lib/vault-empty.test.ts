@@ -13,7 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { KEYWORDS_HID_THEM, vaultEmptyState } from './vault-empty'
+import { keywordsHidThem, vaultEmptyState } from './vault-empty'
 import type { VaultEmptyCopy } from './vault-empty'
 
 const copy: VaultEmptyCopy = {
@@ -81,7 +81,7 @@ describe('which control gets the blame', () => {
     // at the top of the page used to say the category was to blame.
     expect(state({ filteredByKeyword: true })).toMatchObject({
       title: 'No links carry those keywords',
-      description: KEYWORDS_HID_THEM,
+      description: keywordsHidThem(),
       clear: { label: 'Clear keywords' },
     })
   })

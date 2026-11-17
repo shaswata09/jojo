@@ -1,15 +1,17 @@
 import { CalendarDays, ChevronRight, CircleCheck, Plus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { DAY_DOT, DAY_TEXT, startLabel } from '@/components/calendar/marks'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { MONTH_LABELS, stepMonth } from '@/data/calendar'
+import { stepMonth } from '@/data/calendar'
 import type { CalendarMonth } from '@/data/calendar'
-import { isoOf, partsOf, shortDate, timeLabel } from '@/data/timeline'
+import { isoOf, partsOf, timeLabel } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
-import { KIND_ICON, KIND_LABEL, markOf } from '@/lib/timeline-visuals'
+import { KIND_ICON, markOf } from '@/lib/timeline-visuals'
 import { TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /** The same trick `REVEAL_IN_CELL` plays in DayCell.tsx, on a list row. Written
     out twice because Tailwind scans for whole class names — a group name
@@ -62,15 +64,21 @@ export function DayRail({
    * "Back to October" to a button that calls `onGoTo` with the live parts and
    * lands you in November.
    */
-  const todayMonth = `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
+  const { t } = useTranslation('calendar')
+  const domain = useDomain()
+  const monthName = domain.month(month.month)
+  const todayMonth = t('rail.monthYear', {
+    month: domain.month(TODAY_PARTS.month),
+    year: TODAY_PARTS.year,
+  })
 
   const isLastDay = selected === month.days
   const nextMonth = stepMonth(month.year, month.month, 1)
 
   return (
     <Panel className="min-w-0">
-      <PanelTitle hint={shortDate(selectedISO)}>
-        {selected === month.today ? 'Today' : 'Selected day'}
+      <PanelTitle hint={domain.shortDate(selectedISO)}>
+        {selected === month.today ? t('rail.today') : t('rail.selectedDay')}
       </PanelTitle>
 
       {/* A day whose every event is switched off is not an empty day. Saying
@@ -81,12 +89,12 @@ export function DayRail({
         <EmptyState
           className="py-6"
           icon={CalendarDays}
-          title={`Nothing shown on ${shortDate(selectedISO)}`}
-          description={`${String(hiddenOnDay)} ${hiddenOnDay === 1 ? 'event is' : 'events are'} of a type switched off under the grid.`}
+          title={t('rail.hiddenTitle', { date: domain.shortDate(selectedISO) })}
+          description={t('rail.hiddenDescription', { count: hiddenOnDay })}
           action={
             onShowAllKinds ? (
               <Button variant="outline" size="sm" onClick={onShowAllKinds}>
-                Show all event types
+                {t('rail.showAllTypes')}
               </Button>
             ) : undefined
           }
@@ -95,13 +103,13 @@ export function DayRail({
         <EmptyState
           className="py-6"
           icon={CalendarDays}
-          title={`Nothing on ${shortDate(selectedISO)}`}
-          description="Add an interview, a deadline or a block of prep and it shows up here and on the grid."
+          title={t('rail.emptyTitle', { date: domain.shortDate(selectedISO) })}
+          description={t('rail.emptyDescription')}
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button size="sm" onClick={() => onAdd(selectedISO)}>
                 <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                Add event
+                {t('rail.addEvent')}
               </Button>
               {/* An empty day in a month you paged to is the easiest place
                   to get lost: nothing on screen names where "now" is. */}
@@ -111,7 +119,7 @@ export function DayRail({
                   size="sm"
                   onClick={() => onGoTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
                 >
-                  Back to {todayMonth}
+                  {t('rail.backTo', { month: todayMonth })}
                 </Button>
               )}
             </div>
@@ -148,25 +156,29 @@ export function DayRail({
                     type="button"
                     onClick={() => onOpen(e)}
                     className={cn(
-                      'block max-w-full cursor-pointer truncate text-left text-sm transition-colors hover:text-accent',
+                      'block max-w-full cursor-pointer truncate text-start text-sm transition-colors hover:text-accent',
                       done && 'text-text-3 line-through decoration-1',
                     )}
                   >
                     {e.title}
                   </button>
                   <div className="mt-0.5 text-xs text-text-3">
-                    {[timeLabel(e) ?? 'All day', done ? 'Done' : null, e.detail]
+                    {[
+                      timeLabel(e) ?? t('chip.allDay'),
+                      done ? t('grid.marks.done') : null,
+                      e.detail,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <span className="text-xs text-text-3">{KIND_LABEL[e.kind]}</span>
+                  <span className="text-xs text-text-3">{domain.kind(e.kind)}</span>
                   <button
                     type="button"
                     onClick={() => onDelete(e)}
-                    aria-label={`Delete ${e.title}`}
-                    title="Delete event"
+                    aria-label={t('rail.deleteNamed', { title: e.title })}
+                    title={t('rail.delete')}
                     className={cn(
                       'grid size-7 cursor-pointer place-items-center rounded-md border border-transparent text-text-3 hover:border-danger-border hover:bg-danger-soft hover:text-danger',
                       REVEAL_IN_ROW,
@@ -183,7 +195,7 @@ export function DayRail({
 
       <div className="mt-4 border-t border-hairline pt-3.5">
         <div className="mb-2 text-xs tracking-wide text-text-3 uppercase">
-          Rest of {month.label}
+          {t('rail.restOf', { month: monthName })}
         </div>
 
         {restOfMonth.length === 0 ? (
@@ -192,13 +204,13 @@ export function DayRail({
             icon={CalendarDays}
             title={
               isLastDay
-                ? `${shortDate(selectedISO)} is the last day of the month`
-                : `Nothing after ${shortDate(selectedISO)}`
+                ? t('rail.lastDayTitle', { date: domain.shortDate(selectedISO) })
+                : t('rail.nothingAfterTitle', { date: domain.shortDate(selectedISO) })
             }
             description={
               isLastDay
-                ? `Nothing sits after it. Page forward to plan into ${MONTH_LABELS[nextMonth.month - 1]}.`
-                : `The rest of ${month.label} is clear. Anything you add after this day lands here.`
+                ? t('rail.lastDayDescription', { month: domain.month(nextMonth.month) })
+                : t('rail.nothingAfterDescription', { month: monthName })
             }
             action={
               <div className="flex flex-wrap justify-center gap-2">
@@ -208,8 +220,12 @@ export function DayRail({
                     honest offer is the next month rather than a new event. */}
                 {isLastDay ? (
                   <Button size="sm" onClick={() => onGoTo(nextMonth)}>
-                    <ChevronRight className="size-3.5" strokeWidth={2} aria-hidden />
-                    Go to {MONTH_LABELS[nextMonth.month - 1]}
+                    <ChevronRight
+                      className="size-3.5 rtl:-scale-x-100"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                    {t('rail.goToMonth', { month: domain.month(nextMonth.month) })}
                   </Button>
                 ) : (
                   <Button
@@ -217,7 +233,7 @@ export function DayRail({
                     onClick={() => onAdd(isoOf(month.year, month.month, selected + 1))}
                   >
                     <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-                    Add event
+                    {t('rail.addEvent')}
                   </Button>
                 )}
               </div>
@@ -237,8 +253,10 @@ export function DayRail({
                   <button
                     type="button"
                     onClick={() => onSelectDay(day, e.id)}
-                    title={`Go to ${month.label} ${day}`}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1 py-1 text-left text-xs transition-colors hover:bg-row-hover"
+                    title={t('rail.goToDay', {
+                      label: t('grid.dayLabel', { month: monthName, day }),
+                    })}
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1 py-1 text-start text-xs transition-colors hover:bg-row-hover"
                   >
                     <span
                       className={cn('size-1.5 shrink-0 rounded-full', DAY_DOT[mark])}
@@ -254,7 +272,7 @@ export function DayRail({
                       {e.title}
                     </span>
                     <span className="tabular shrink-0 font-mono text-xs text-text-3">
-                      {month.label.slice(0, 3)} {day}
+                      {t('rail.shortDay', { month: domain.monthShort(month.month), day })}
                     </span>
                   </button>
                 </li>
@@ -262,7 +280,7 @@ export function DayRail({
             })}
             {restOfMonth.length > 4 ? (
               <li className="px-1 pt-1 text-xs text-text-3">
-                +{restOfMonth.length - 4} more later this month
+                {t('rail.moreLater', { count: restOfMonth.length - 4 })}
               </li>
             ) : null}
           </ul>

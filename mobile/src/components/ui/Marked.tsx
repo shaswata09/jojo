@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
 import { Text, View } from 'react-native'
-import { MARK_LEGEND, parseMarks } from '@jojo/service/core/marks'
+import { useTranslation } from 'react-i18next'
+import { parseMarks } from '@jojo/service/core/marks'
 import type { Block, Run } from '@jojo/service/core/marks'
 import { Txt } from '@/components/ui/Text'
 import { useColors } from '@/theme/theme-context'
 import { fonts, space } from '@/theme/tokens'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * A tailored snippet's body, with its marks drawn. The phone's half of web's
@@ -78,12 +80,18 @@ export function Marked({ body }: { body: string }) {
 
 /** What the three marks mean, in one line under a list of tailored documents. */
 export function MarksLegend() {
+  const { t } = useTranslation('components')
+  const domain = useDomain()
   const c = useColors()
   return (
     <Txt size="xs" tone="muted">
-      <Text style={{ fontFamily: fonts.semibold, backgroundColor: c.accentSoft }}>bold</Text>{' '}
-      {MARK_LEGEND.bold} · <Text style={{ fontStyle: 'italic' }}>italic</Text> {MARK_LEGEND.italic}{' '}
-      · <Text style={{ textDecorationLine: 'underline' }}>underlined</Text> {MARK_LEGEND.underline}
+      <Text style={{ fontFamily: fonts.semibold, backgroundColor: c.accentSoft }}>
+        {t('marks.bold')}
+      </Text>{' '}
+      {domain.mark('bold')} · <Text style={{ fontStyle: 'italic' }}>{t('marks.italic')}</Text>{' '}
+      {domain.mark('italic')} ·{' '}
+      <Text style={{ textDecorationLine: 'underline' }}>{t('marks.underlined')}</Text>{' '}
+      {domain.mark('underline')}
     </Txt>
   )
 }

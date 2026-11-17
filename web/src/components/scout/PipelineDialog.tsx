@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { FormEvent } from 'react'
 import { Field, FormField } from '@/components/common/Field'
 import { Segment } from '@/components/common/Segment'
@@ -27,15 +28,8 @@ export type PipelineDraft = {
   kind: PipelineKind
 }
 
-const FREQUENCIES = PIPELINE_SCHEDULES.map((value) => ({
-  value,
-  label: value.charAt(0).toUpperCase() + value.slice(1),
-}))
-
-const KINDS = [
-  { value: 'twin', label: 'Keep records complete' },
-  { value: 'scout', label: 'Find postings' },
-] as const
+/** The two kinds, labelled where they are rendered — `dialog.kinds.*` in the reader's language. */
+const KINDS = ['twin', 'scout'] as const
 
 export function PipelineDialog({
   open,
@@ -49,6 +43,12 @@ export function PipelineDialog({
   initial?: Pipeline
   onSave: (draft: PipelineDraft) => void
 }) {
+  const { t } = useTranslation('scout')
+  const frequencies = PIPELINE_SCHEDULES.map((value) => ({
+    value,
+    label: t(`dialog.schedules.${value}`),
+  }))
+  const kinds = KINDS.map((value) => ({ value, label: t(`dialog.kinds.${value}`) }))
   const [kind, setKind] = useState<PipelineKind>(initial?.kind ?? 'scout')
   const [name, setName] = useState(initial?.name ?? '')
   const [source, setSource] = useState(initial?.source === '—' ? '' : (initial?.source ?? ''))
@@ -64,11 +64,9 @@ export function PipelineDialog({
    * requirement it always had.
    */
   const needsSource = kind === 'scout'
-  const nameError = submitted && !name.trim() ? 'Name it after what it watches.' : undefined
+  const nameError = submitted && !name.trim() ? t('dialog.nameError') : undefined
   const sourceError =
-    submitted && needsSource && !source.trim()
-      ? 'A scout with no source has nothing to read.'
-      : undefined
+    submitted && needsSource && !source.trim() ? t('dialog.sourceError') : undefined
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -92,11 +90,8 @@ export function PipelineDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={contentModal}>
         <DialogHeader>
-          <DialogTitle>{initial ? 'Edit pipeline' : 'New pipeline'}</DialogTitle>
-          <DialogDescription>
-            A pipeline is a standing job for the assistant. It runs on this device while jojo is
-            open, and everything it wants to change is shown to you first.
-          </DialogDescription>
+          <DialogTitle>{initial ? t('dialog.editTitle') : t('common.newPipeline')}</DialogTitle>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
 
         {/* noValidate so the browser's own bubble cannot fire ahead of the
@@ -109,34 +104,32 @@ export function PipelineDialog({
               for the same reason; making a new one is the cheap alternative. */}
           {initial ? null : (
             <FormField
-              label="What it does"
-              hint={
-                kind === 'twin'
-                  ? 'Reads what you have and suggests what is missing — notes, reminders, tags, filing.'
-                  : 'Looks for postings worth your attention and puts them up for review.'
-              }
+              label={t('dialog.kind')}
+              hint={kind === 'twin' ? t('dialog.kindHint.twin') : t('dialog.kindHint.scout')}
             >
-              <Segment label="What it does" options={KINDS} value={kind} onChange={setKind} />
+              <Segment label={t('dialog.kind')} options={kinds} value={kind} onChange={setKind} />
             </FormField>
           )}
 
           <Field
-            label="Name"
+            label={t('dialog.name')}
             required
             error={nameError}
             value={name}
             autoComplete="off"
-            placeholder={kind === 'twin' ? 'e.g. Keep my applications tidy' : 'e.g. CRA faculty job board'}
+            placeholder={
+              kind === 'twin' ? t('dialog.namePlaceholder.twin') : t('dialog.namePlaceholder.scout')
+            }
             onChange={(event) => setName(event.target.value)}
           />
 
           {needsSource ? (
             <Field
-              label="Sources"
+              label={t('dialog.sources')}
               required
               mono
               error={sourceError}
-              hint="The board or careers page it watches. Separate several with commas."
+              hint={t('dialog.sourcesHint')}
               value={source}
               autoComplete="off"
               placeholder="cra.org/ads"
@@ -145,24 +138,22 @@ export function PipelineDialog({
           ) : null}
 
           <Field
-            label={kind === 'twin' ? 'What to focus on' : 'Match terms'}
-            hint={
-              kind === 'twin'
-                ? 'Anything it should pay particular attention to. Leave blank to let it look everywhere.'
-                : 'What a posting is scored against. Leave blank to keep everything the source lists.'
-            }
+            label={kind === 'twin' ? t('dialog.terms.twin') : t('dialog.terms.scout')}
+            hint={kind === 'twin' ? t('dialog.termsHint.twin') : t('dialog.termsHint.scout')}
             value={terms}
             autoComplete="off"
             placeholder={
-              kind === 'twin' ? 'follow-ups and deadlines' : 'assistant professor, CS/ECE'
+              kind === 'twin'
+                ? t('dialog.termsPlaceholder.twin')
+                : t('dialog.termsPlaceholder.scout')
             }
             onChange={(event) => setTerms(event.target.value)}
           />
 
-          <FormField label="How often" hint="How long it waits between rounds.">
+          <FormField label={t('dialog.howOften')} hint={t('dialog.howOftenHint')}>
             <Segment
-              label="How often"
-              options={FREQUENCIES}
+              label={t('dialog.howOften')}
+              options={frequencies}
               value={schedule}
               onChange={setSchedule}
             />
@@ -171,13 +162,13 @@ export function PipelineDialog({
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
+                {t('dialog.cancel')}
               </Button>
             </DialogClose>
             {/* Left enabled while the required fields are empty: pressing it
                 names the one that is missing, where a disabled button leaves
                 the reader hunting for it. */}
-            <Button type="submit">{initial ? 'Save changes' : 'Create pipeline'}</Button>
+            <Button type="submit">{initial ? t('dialog.save') : t('dialog.create')}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

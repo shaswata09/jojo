@@ -1,0 +1,254 @@
+{
+  "page": {
+    "title": "Transferir",
+    "subtitle": "Mova tudo entre este computador e o seu celular",
+    "showAnimation": "Mostrar a animação",
+    "showAnimationHint": "Uma cena WebGPU redesenhada a cada quadro — desative-a quando estiver na bateria",
+    "roleLabel": "Papel deste dispositivo",
+    "roles": {
+      "send": "Enviar para o celular",
+      "receive": "Receber do celular"
+    },
+    "empty": {
+      "title": "Nada para enviar ainda",
+      "description": "Este dispositivo não tem registros, então não há nada para enviar. Para trazer seus registros do celular, escolha Receber do celular acima. Ou adicione algo, ou carregue os dados de demonstração, e isso aparecerá aqui como um grupo que você pode enviar.",
+      "receive": "Receber do celular",
+      "loadDemo": "Carregar os dados de demonstração"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidaturas",
+      "hint": "Cada etapa, nota e resultado de cada uma",
+      "summary_one": "{{count}} candidatura",
+      "summary_other": "{{count}} candidaturas"
+    },
+    "timeline": {
+      "label": "Lembretes e eventos",
+      "hint": "{{reminders}} lembram você, {{events}} são eventos com data",
+      "summary_one": "{{count}} lembrete ou evento",
+      "summary_other": "{{count}} lembretes e eventos"
+    },
+    "vault": {
+      "label": "Links e trechos",
+      "hint": "{{links}} links · {{snippets}} trechos",
+      "summary_one": "{{count}} link ou trecho",
+      "summary_other": "{{count}} links e trechos"
+    },
+    "files": {
+      "label": "Arquivos",
+      "hint": "CVs, cartas de apresentação e tudo o mais salvo em uma candidatura",
+      "summary_one": "{{count}} arquivo",
+      "summary_other": "{{count}} arquivos"
+    },
+    "keywords": {
+      "label": "Palavras-chave",
+      "hint": "Sua lista de palavras-chave e todos os registros a que estão ligadas",
+      "summary_one": "{{count}} palavra-chave",
+      "summary_other": "{{count}} palavras-chave"
+    },
+    "scout": {
+      "label": "Busca de vagas",
+      "hint": "{{pipelines}} buscas · {{postings}} vagas salvas · {{matches}} correspondências",
+      "summary_one": "{{count}} registro da busca de vagas",
+      "summary_other": "{{count}} registros da busca de vagas"
+    },
+    "notes": {
+      "label": "Notas adesivas",
+      "hint": "Os lembretes para você mesmo no quadro do seu painel",
+      "summary_one": "{{count}} nota adesiva",
+      "summary_other": "{{count}} notas adesivas"
+    },
+    "profile": {
+      "label": "Perfil",
+      "hint": "Seu nome, links, termos de correspondência e as opções da busca de vagas",
+      "summary_one": "{{count}} perfil",
+      "summary_other": "{{count}} perfis"
+    },
+    "people": {
+      "label": "Pessoas",
+      "hint": "Referências, presidentes de comissão e recrutadores, e as candidaturas a que pertencem",
+      "summary_one": "{{count}} pessoa",
+      "summary_other": "{{count}} pessoas"
+    },
+    "background": {
+      "label": "Formação e experiência",
+      "hint": "Diplomas, cargos, publicações e habilidades lidos do seu CV",
+      "summary_one": "{{count}} fato de formação e experiência",
+      "summary_other": "{{count}} fatos de formação e experiência"
+    },
+    "nothing": "nada"
+  },
+  "stage": {
+    "sameNetwork": "Os dois dispositivos precisam estar na mesma rede local — os registros vão direto de um para o outro, sem servidor e sem intermediário.",
+    "send": {
+      "idle": {
+        "title": "Aguardando o outro dispositivo",
+        "body": "Abra o jojo no seu celular, escolha Transferir, depois Receber de um computador, e escaneie o código aqui. Escanear o código combina uma chave de criptografia entre os dois dispositivos, sem transmitir nada para isso. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Conectando ao seu celular",
+        "body": "Pedindo ao endereço que você digitou a metade dele do handshake. Nada foi enviado ainda."
+      },
+      "packing": {
+        "title": "Reunindo seus registros",
+        "body": "Lendo deste dispositivo tudo o que está na lista abaixo. Ainda nada na rede."
+      },
+      "sending": {
+        "title": "Movendo seus registros",
+        "body": "Blocos selados, direto para o seu celular pela rede local. O progresso aparece ao lado do código que você digitou."
+      },
+      "done": {
+        "title": "Tudo foi enviado",
+        "body": "Seu celular pergunta antes de substituir qualquer coisa; o que ele decidiu aparece ao lado do código que você digitou. Nada foi removido deste dispositivo — uma transferência é uma cópia."
+      },
+      "failed": {
+        "title": "A transferência parou",
+        "body": "Nada mudou neste dispositivo. O que deu errado está escrito ao lado do código que você digitou."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "Aguardando o seu celular",
+        "body": "Abra o jojo no seu celular, escolha Transferir, depois Enviar para um computador, e escaneie o código aqui. Seu celular então mostra um código curto para digitar à direita. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Conectando ao seu celular",
+        "body": "Pedindo ao endereço que você digitou a metade dele do handshake. Nada foi recebido ainda."
+      },
+      "receiving": {
+        "title": "Recebendo os registros do seu celular",
+        "body": "Blocos selados, direto do seu celular pela rede local. Nada neste computador muda até você concordar."
+      },
+      "confirming": {
+        "title": "Tudo chegou",
+        "body": "Os registros do seu celular chegaram e foram verificados. Nada mudou aqui ainda — diga se eles devem substituir o que está neste computador."
+      },
+      "restoring": {
+        "title": "Substituindo os registros aqui",
+        "body": "Gravando o que o seu celular enviou por cima do que havia neste computador."
+      },
+      "done": {
+        "title": "Tudo foi movido",
+        "body": "Este computador agora tem os registros do seu celular. Nada foi removido do celular — uma transferência é uma cópia."
+      },
+      "failed": {
+        "title": "A transferência parou",
+        "body": "Nada mudou neste computador. O que deu errado está escrito ao lado do código que você digitou."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} — é o que está neste computador agora, e o que os registros do seu celular substituem.",
+      "sent": "{{summary}} — foi isso que foi enviado.",
+      "willMove": "{{summary}} — é isso que será movido."
+    },
+    "scanHint": "Escaneie o código aqui com o app jojo no seu celular — essa é a chave — e ele então mostra um código curto para você digitar à direita.",
+    "chooseGroup": "Escolha pelo menos um grupo para enviar."
+  },
+  "qr": {
+    "label": "Código de pareamento. Escaneie com o app jojo no seu celular: abra Transferir e aponte a câmera para este quadrado."
+  },
+  "details": {
+    "title": "Detalhes",
+    "hint": "esta transferência",
+    "records": "Registros",
+    "recordsHint": "tudo nos grupos abaixo",
+    "encryption": "Criptografia",
+    "encryptionHint": "AES-256-GCM, chave combinada pela câmera",
+    "keyAgreed": "Chave combinada",
+    "notPaired": "Ainda não pareado",
+    "route": "Rota",
+    "routeHint": "um endereço de rede privada — nunca a internet",
+    "localNetwork": "Rede local",
+    "servers": "Servidores",
+    "serversHint": "sem intermediário, sem sinalização, nada hospedado",
+    "none": "Nenhum"
+  },
+  "payload": {
+    "label": "Transferir arquivos",
+    "noFiles": "Nenhum arquivo neste dispositivo",
+    "files_one": "{{count}} arquivo — a parte mais lenta de uma transferência",
+    "files_other": "{{count}} arquivos — a parte mais lenta de uma transferência"
+  },
+  "connect": {
+    "title": "Conectar",
+    "hintUnable": "não neste navegador",
+    "unable": "Este navegador não consegue se conectar a outro dispositivo na sua rede — o Safari e qualquer navegador em um iPhone ou iPad não conseguem, nem o Firefox a partir do site publicado. Use o Chrome ou o Edge em um computador — ou mova tudo com um arquivo de backup nas Configurações, que funciona em qualquer lugar e não tem limite de tamanho.",
+    "hint": "do outro dispositivo",
+    "intro": "Depois de escanear, seu celular mostra um código curto. Digite-o aqui — é assim que este computador descobre onde o celular está, algo que um navegador não consegue descobrir sozinho.",
+    "codeLabel": "O código mostrado no seu celular",
+    "send": "Enviar",
+    "progress": "Progresso da transferência",
+    "reaching": "Conectando ao seu celular…",
+    "gathering": "Reunindo seus registros…",
+    "percentSent": "{{percent}}% enviado",
+    "cancel": "Cancelar",
+    "another": "Enviar para outro dispositivo"
+  },
+  "done": {
+    "applied": "Seu celular agora tem estes registros.",
+    "appliedAt": "Seu celular em {{target}} agora tem estes registros.",
+    "declined": "Tudo foi enviado, e seu celular manteve os próprios registros — nada foi substituído lá.",
+    "failed": "Tudo foi enviado, mas seu celular não conseguiu ler, então nada foi substituído lá. Tente novamente.",
+    "unknown": "Tudo foi enviado. Seu celular não disse se aceitou os registros — confira lá.",
+    "unknownTo": "Tudo foi enviado para {{target}}. Seu celular não disse se aceitou os registros — confira lá.",
+    "waiting": "Tudo foi enviado. Seu celular pergunta antes de substituir qualquer coisa — confirme lá para concluir.",
+    "waitingTo": "Tudo foi enviado para {{target}}. Seu celular pergunta antes de substituir qualquer coisa — confirme lá para concluir."
+  },
+  "receive": {
+    "title": "Receber do celular",
+    "hint": "do seu celular",
+    "unable": "Este navegador não consegue se conectar a outro dispositivo na sua rede — o Safari e qualquer navegador em um iPhone ou iPad não conseguem, nem o Firefox a partir do site publicado. Use o Chrome ou o Edge em um computador — ou exporte um backup no seu celular e abra-o nas Configurações.",
+    "intro": "No seu celular, abra Transferir, escolha Enviar para um computador e escaneie o código nesta página. Ele então mostra um código curto — digite-o aqui. Os dois dispositivos precisam estar na mesma rede local.",
+    "codeLabel": "O código mostrado no seu celular",
+    "receive": "Receber",
+    "reaching": "Conectando ao seu celular…",
+    "progress": "{{size}} recebidos até agora. Nada aqui muda até você concordar.",
+    "cancel": "Cancelar",
+    "restoring": "Substituindo os registros neste computador…",
+    "replaceWarning": "Receber substitui tudo neste computador pelo que está no seu celular, depois que você concordar. Para manter uma cópia do que está aqui, baixe um backup antes.",
+    "downloadFirst": "Baixar um backup antes",
+    "twoBrowsers": {
+      "title": "Dois navegadores",
+      "hint": "entre dois computadores",
+      "body": "Uma página web não pode aceitar uma conexão, nem a do outro computador, então dois computadores não conseguem se conectar entre si. Exporte um backup de um e abra-o no outro — ele leva todos os registros e todos os documentos.",
+      "export": "Exportar um backup"
+    },
+    "reload": "Recarregar o jojo"
+  },
+  "pullConfirm": {
+    "title": "Substituir tudo pelo que o seu celular enviou?",
+    "description": "Seu celular enviou {{contents}}. {{replaces}}, e isso não pode ser desfeito — o histórico vai junto. Baixe um backup antes se não tiver certeza.",
+    "confirm": "Substituir tudo"
+  },
+  "handover": {
+    "sendingAgain": "Enviar de novo substitui tudo lá por tudo daqui."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Este navegador não consegue se conectar a outro dispositivo na sua rede — o Safari não consegue, nenhum navegador em um iPhone ou iPad consegue, e o Firefox não consegue a partir do site publicado. Use o Chrome ou o Edge em um computador, ou mova seus registros com um arquivo de backup.",
+      "notLocal": "Esse endereço não está em uma rede local. O jojo só se conecta a um endereço privado, então a transferência nunca passa pela internet.",
+      "unreachable": "Nenhuma resposta desse endereço. Verifique se os dois dispositivos estão na mesma rede local e se o seu navegador tem permissão para encontrar dispositivos na rede local. Algumas redes de convidados impedem que os dispositivos se vejam.",
+      "refused": "Esse dispositivo recusou a conexão. Verifique se o celular está no sentido oposto — Receber no celular quando este computador envia, Enviar quando ele recebe — depois mostre um novo código e escaneie novamente.",
+      "oversized": "Esse dispositivo respondeu com muito mais do que o jojo espera, então parou de ler. Nada mudou neste computador.",
+      "timeout": "Esse dispositivo parou de responder. Mantenha o jojo aberto no celular com a tela ligada, depois mostre um novo código e tente novamente.",
+      "blocked": "Seu navegador bloqueou este site de acessar dispositivos na sua rede local. Permita nas configurações do site (o ícone à esquerda do endereço) e tente novamente.",
+      "cancelled": "Cancelado.",
+      "conflict": "Seu celular não conseguiu reunir os registros para enviar. Veja a mensagem no celular — nada mudou neste computador."
+    },
+    "dial": {
+      "unreadable": "Esse código tem caracteres que o jojo não usa. Confira com a outra tela.",
+      "length": "Esse código tem o tamanho errado. São doze caracteres, em três grupos de quatro.",
+      "mistyped": "Esse código não confere — algum caractere está errado. Tente digitá-lo novamente."
+    },
+    "pull": {
+      "forged": "Parte do que chegou não veio do celular com o qual você pareou, então o jojo descartou tudo. Nada mudou neste computador — mostre um novo código e tente novamente.",
+      "oversized": "Seu celular enviou mais do que o jojo aceita de uma vez, então parou de ler. Nada mudou neste computador.",
+      "unrestorable": "O que seu celular enviou não pode ser restaurado: {{reason}}. Nada mudou neste computador.",
+      "declined": "Nada foi alterado. O que seu celular enviou foi descartado."
+    },
+    "unexpected": "Algo deu errado neste computador e a transferência parou. Nada ficou para trás no outro dispositivo — tente novamente, ou mova seus registros com um arquivo de backup nas Configurações.",
+    "unproven": "Esse dispositivo não conseguiu provar que leu o código desta tela. Mostre um novo código e escaneie novamente.",
+    "pairingFailed": "Algo deu errado ao configurar um pareamento seguro neste dispositivo."
+  }
+}

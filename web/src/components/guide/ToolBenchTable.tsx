@@ -211,41 +211,41 @@ export function ToolBenchTable() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[38rem] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-hairline text-left text-xs text-text-3">
-              <th className="py-1.5 pr-3 font-medium">Model</th>
-              <th className="py-1.5 pr-3 font-medium">Tools</th>
-              <th className="py-1.5 pr-3 font-medium">Clean</th>
-              <th className="py-1.5 pr-3 font-medium">Turns</th>
-              <th className="py-1.5 pr-3 font-medium">State</th>
+            <tr className="border-b border-hairline text-start text-xs text-text-3">
+              <th className="py-1.5 pe-3 font-medium">Model</th>
+              <th className="py-1.5 pe-3 font-medium">Tools</th>
+              <th className="py-1.5 pe-3 font-medium">Clean</th>
+              <th className="py-1.5 pe-3 font-medium">Turns</th>
+              <th className="py-1.5 pe-3 font-medium">State</th>
               <th
-                className="py-1.5 pr-3 font-medium"
+                className="py-1.5 pe-3 font-medium"
                 title="F1 against the gold workflow's tool calls, macro-averaged"
               >
                 Graph
               </th>
               <th
-                className="py-1.5 pr-3 font-medium"
+                className="py-1.5 pe-3 font-medium"
                 title="F1 on the orderings the gold graph constrains"
               >
                 Order
               </th>
               <th
-                className="py-1.5 pr-3 font-medium"
+                className="py-1.5 pe-3 font-medium"
                 title="Malformed tool arguments the loop repaired rather than refused — a small-model failure channel that used to end the call"
               >
                 Repaired
               </th>
-              <th className="py-1.5 pr-3 font-medium">Looked first</th>
-              <th className="py-1.5 pr-3 font-medium">Refused</th>
+              <th className="py-1.5 pe-3 font-medium">Looked first</th>
+              <th className="py-1.5 pe-3 font-medium">Refused</th>
               <th
-                className="py-1.5 pr-3 font-medium"
+                className="py-1.5 pe-3 font-medium"
                 title="Mean model calls per conversation, and mean prompt tokens per conversation"
               >
                 Cost
               </th>
               {SHOW_NOISE ? (
                 <th
-                  className="py-1.5 pr-3 font-medium"
+                  className="py-1.5 pe-3 font-medium"
                   title={`Clean conversations, mean ± sample deviation over ${String(RUNS)} passes, and how many cases flipped between passes`}
                 >
                   Noise
@@ -268,11 +268,11 @@ export function ToolBenchTable() {
                     key={`${r.model}-${r.condition}`}
                     className={i === 0 ? 'border-t border-hairline' : ''}
                   >
-                    <td className="py-1.5 pr-3">{i === 0 ? r.label : null}</td>
-                    <td className="py-1.5 pr-3 text-text-2">
+                    <td className="py-1.5 pe-3">{i === 0 ? r.label : null}</td>
+                    <td className="py-1.5 pe-3 text-text-2">
                       {r.condition === 'full' ? 'all of them' : 'narrowed'}
                     </td>
-                    <td className="tabular py-1.5 pr-3">
+                    <td className="tabular py-1.5 pe-3">
                       <span
                         className={
                           r.conversationsClean === r.conversations ? 'text-text-1' : 'text-warning'
@@ -281,15 +281,15 @@ export function ToolBenchTable() {
                         {r.conversationsClean}/{r.conversations}
                       </span>
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-2">
+                    <td className="tabular py-1.5 pe-3 text-text-2">
                       {r.turnsCorrect}/{r.turns}
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-2">
+                    <td className="tabular py-1.5 pe-3 text-text-2">
                       {r.stateChecksPassed}/{r.stateChecks}
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-2">{rate(r.graph?.nodeF1)}</td>
+                    <td className="tabular py-1.5 pe-3 text-text-2">{rate(r.graph?.nodeF1)}</td>
                     <td
-                      className="tabular py-1.5 pr-3 text-text-2"
+                      className="tabular py-1.5 pe-3 text-text-2"
                       title={
                         r.graph?.edges === undefined
                           ? undefined
@@ -299,7 +299,7 @@ export function ToolBenchTable() {
                       {rate(r.graph?.linkF1)}
                     </td>
                     <td
-                      className="tabular py-1.5 pr-3 text-text-2"
+                      className="tabular py-1.5 pe-3 text-text-2"
                       title={
                         r.repairs
                           ? Object.entries(r.repairs.byKind)
@@ -310,10 +310,10 @@ export function ToolBenchTable() {
                     >
                       {r.repairs ? String(r.repairs.total) : '—'}
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-2">
+                    <td className="tabular py-1.5 pe-3 text-text-2">
                       {Math.round(r.lookedFirst * 100)}%
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-3">
+                    <td className="tabular py-1.5 pe-3 text-text-3">
                       {Math.round(r.refusalRate * 100)}%
                     </td>
                     {/* Derived in bench-runs.ts, painted here. `—` is an absence. */}
@@ -321,11 +321,11 @@ export function ToolBenchTable() {
                       const t = rowTelemetry(r.model, r.condition)
                       return (
                         <>
-                          <td className="tabular py-1.5 pr-3 whitespace-nowrap text-text-2">
+                          <td className="tabular py-1.5 pe-3 whitespace-nowrap text-text-2">
                             {costText(t.cost)}
                           </td>
                           {SHOW_NOISE ? (
-                            <td className="tabular py-1.5 pr-3 whitespace-nowrap text-text-2">
+                            <td className="tabular py-1.5 pe-3 whitespace-nowrap text-text-2">
                               {noiseText(t.noise)}
                             </td>
                           ) : null}
@@ -362,9 +362,9 @@ export function ToolBenchTable() {
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[30rem] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-hairline text-left text-xs text-text-3">
-              <th className="py-1.5 pr-3 font-medium">Kind of work</th>
-              <th className="py-1.5 pr-3 font-medium">Clean</th>
+            <tr className="border-b border-hairline text-start text-xs text-text-3">
+              <th className="py-1.5 pe-3 font-medium">Kind of work</th>
+              <th className="py-1.5 pe-3 font-medium">Clean</th>
               <th className="py-1.5 font-medium" />
             </tr>
           </thead>
@@ -373,8 +373,8 @@ export function ToolBenchTable() {
               const rate = row.conversations === 0 ? 0 : row.clean / row.conversations
               return (
                 <tr key={row.group} className="border-t border-hairline">
-                  <td className="py-1.5 pr-3 text-text-1">{row.group}</td>
-                  <td className="tabular py-1.5 pr-3">
+                  <td className="py-1.5 pe-3 text-text-1">{row.group}</td>
+                  <td className="tabular py-1.5 pe-3">
                     <span className={rate === 1 ? 'text-text-1' : 'text-warning'}>
                       {row.clean}/{row.conversations}
                     </span>

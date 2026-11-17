@@ -28,6 +28,7 @@ import { readBackup } from '@jojo/service/core/backup'
 import type { BackupRead, RestorePlan } from '@jojo/service/core/backup'
 import { createBackupReader } from '@jojo/service/core/backup-stream'
 import { pacer } from '@/lib/backup'
+import { i18next } from '@/i18n/i18n'
 
 /**
  * The file read as a stream of text, parsed as it arrives.
@@ -93,13 +94,13 @@ export async function readPickedBackup(list: FileList | null): Promise<PickedBac
   try {
     // Streamed wherever the browser can; `text()` is kept for anything that
     // offers only that — an older engine, or a test's stand-in for a File.
-    read = typeof file.stream === 'function' ? await readStreamed(file) : readBackup(await file.text())
+    read =
+      typeof file.stream === 'function' ? await readStreamed(file) : readBackup(await file.text())
   } catch (thrown) {
     return {
       kind: 'unreadable',
-      title: 'That file could not be read',
-      description:
-        'Your browser could not read that file — it may have been moved, renamed or disconnected since you chose it. Nothing has been changed; choose it again once it is back.',
+      title: i18next.t('settings:pickBackup.unreadable.title'),
+      description: i18next.t('settings:pickBackup.unreadable.description'),
       thrown,
     }
   }
@@ -107,8 +108,8 @@ export async function readPickedBackup(list: FileList | null): Promise<PickedBac
   if (!read.ok && read.error.code === 'backup/unreadable') {
     return {
       kind: 'refused',
-      title: 'That file cannot be restored',
-      description: "That file isn't a jojo backup. Nothing has been changed.",
+      title: i18next.t('settings:pickBackup.refused.title'),
+      description: i18next.t('settings:pickBackup.refused.notBackup'),
       parseError: new Error(read.error.message),
     }
   }
@@ -116,8 +117,12 @@ export async function readPickedBackup(list: FileList | null): Promise<PickedBac
   if (!read.ok) {
     return {
       kind: 'refused',
-      title: 'That file cannot be restored',
-      description: `${read.error.message}. Nothing has been changed.`,
+      title: i18next.t('settings:pickBackup.refused.title'),
+      // The validator's reason is the service's own words (a later pass
+      // translates those); the sentence around it is this panel's.
+      description: i18next.t('settings:pickBackup.refused.reason', {
+        reason: read.error.message,
+      }),
     }
   }
   return { kind: 'plan', plan: read.value }

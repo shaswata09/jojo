@@ -1,4 +1,5 @@
 import { Plus, Radar, TriangleAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -13,19 +14,20 @@ export function ScoutHeader({
   onOnlyActive: (on: boolean) => void
   onNew: () => void
 }) {
+  const { t } = useTranslation('scout')
   return (
     <PageHeader
-      title="Job scout"
-      subtitle="Saved searches that will watch job boards for you — and somewhere to park postings today"
+      title={t('header.title')}
+      subtitle={t('header.subtitle')}
       settings={
         <PageOption
-          label="Only active pipelines"
-          hint="Hide the ones switched off"
+          label={t('header.onlyActive')}
+          hint={t('header.onlyActiveHint')}
           control={
             <Switch
               checked={onlyActive}
               onCheckedChange={onOnlyActive}
-              aria-label="Only active pipelines"
+              aria-label={t('header.onlyActive')}
             />
           }
         />
@@ -33,7 +35,7 @@ export function ScoutHeader({
       actions={
         <Button size="sm" onClick={onNew}>
           <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-          New pipeline
+          {t('common.newPipeline')}
         </Button>
       }
     />
@@ -44,26 +46,25 @@ export function ScoutHeader({
    read off the model settings rather than hardcoded, which is what it
    was while nothing could run either way. */
 export function PausedNotice() {
+  const { t } = useTranslation('scout')
   return (
     <div
       role="status"
       className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning"
     >
       <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
-      <p>
-        No local model is connected, so pipelines are paused. You can still write them and save
-        postings below — they start running once a model is reachable.
-      </p>
+      <p>{t('header.paused')}</p>
     </div>
   )
 }
 
 /** Where the pipelines run, said at the foot of the page. */
 export function RunsLocallyNote() {
+  const { t } = useTranslation('scout')
   return (
     <p className="flex items-center gap-2 text-xs text-text-3">
       <Radar className="size-3.5" strokeWidth={1.7} aria-hidden />
-      Pipelines run on your machine, while this tab is open. Nothing is sent to a third party.
+      {t('header.runsLocally')}
     </p>
   )
 }

@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import header from './DetailHeader.tsx?raw'
 import detail from '@/routes/ApplicationDetail.tsx?raw'
+import en from '@/i18n/locales/en/applications.json'
 
 describe('Q277 — the add-keyword control follows the last keyword on its row', () => {
   it('dissolves the capsules’ own box so they are items of the row, then puts the picker next', () => {
@@ -23,13 +24,17 @@ describe('Q277 — the add-keyword control follows the last keyword on its row',
 
 describe('Q296 — the application deadline shows at the top of its details', () => {
   it('is handed the application deadline by the details page', () => {
-    expect(detail).toMatch(/<DetailHeader\s+application=\{a\}\s+deadline=\{applicationDeadlineOf\(items\)\}/)
+    expect(detail).toMatch(
+      /<DetailHeader\s+application=\{a\}\s+deadline=\{applicationDeadlineOf\(items\)\}/,
+    )
   })
 
   it('draws it as a chip in the row with the stage, under the title', () => {
     const row = /<StageMenu[\s\S]*?<\/div>/.exec(header)?.[0] ?? ''
     expect(row).toMatch(/\{deadline \? \(\s*<Chip/)
-    expect(row).toContain('Deadline {shortDate(deadline.date)}')
+    expect(row).toContain('i18nKey="header.deadlineChip"')
+    expect(row).toContain('date: domain.shortDate(deadline.date)')
+    expect(en.header.deadlineChip).toContain('Deadline {{date}}')
     expect(header.indexOf('<StageMenu')).toBeGreaterThan(header.indexOf('{displayName(a)}'))
   })
 })
