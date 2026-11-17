@@ -1,0 +1,158 @@
+{
+  "screen": {
+    "title": "Trasferimento",
+    "subtitle": "Sposta tutto tra questo telefono e il tuo computer, sulla rete locale. Entrambi devono essere sulla stessa rete. Nulla va su internet e nulla viene memorizzato altrove.",
+    "direction": "Direzione",
+    "roles": {
+      "send": "Invia a un computer",
+      "receive": "Ricevi da un computer"
+    },
+    "onPhone": "Cosa c'è ora su questo telefono",
+    "records_one": "{{count}} record",
+    "records_many": "{{count}} di record",
+    "records_other": "{{count}} record",
+    "empty": "vuoto",
+    "sendNote": "Inviando, copi tutto sul tuo computer, che chiede prima di sostituire ciò che contiene. Su questo telefono non cambia nulla.",
+    "receiveNote": "Ricevendo, sostituisci tutto. Tutto ciò che è qui sopra viene sovrascritto da ciò che arriva, e non si può annullare: esporta prima se vuoi conservarlo."
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidature",
+      "hint": "Ogni fase, nota ed esito di ciascuna"
+    },
+    "timeline": {
+      "label": "Promemoria ed eventi",
+      "hint": "{{reminders}} ti ricordano qualcosa, {{events}} sono eventi con data"
+    },
+    "vault": {
+      "label": "Link e frammenti",
+      "hint": "{{links}} link · {{snippets}} frammenti"
+    },
+    "files": {
+      "label": "File",
+      "hint": "CV, dichiarazioni e qualsiasi altra cosa salvata per una candidatura"
+    },
+    "keywords": {
+      "label": "Parole chiave",
+      "hint": "Il tuo elenco di parole chiave e ogni record a cui sono associate"
+    },
+    "scout": {
+      "label": "Scout offerte",
+      "hint": "{{pipelines}} pipeline · {{postings}} annunci salvati · {{matches}} risultati"
+    },
+    "profile": {
+      "label": "Profilo",
+      "hint": "I tuoi dati di base, i link, i ruoli desiderati e i termini di ricerca"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "non disponibile su questo dispositivo",
+    "noRandom": "Questo dispositivo non ha un generatore sicuro di numeri casuali, quindi jojo non concorderà una chiave su di esso. L'abbinamento è disattivato anziché fatto in modo debole.",
+    "scan": "Scansiona il codice",
+    "retry": "Riprova",
+    "cancel": "Annulla"
+  },
+  "send": {
+    "title": "Invia a un computer",
+    "hint": "inquadra il codice sul tuo computer",
+    "outcome": {
+      "applied": "Il tuo computer ora ha i tuoi record",
+      "declined": "Il tuo computer ha mantenuto i propri record",
+      "failed": "Il tuo computer non ha potuto accettare i tuoi record",
+      "handed": "Tutto è stato consegnato"
+    },
+    "detail": {
+      "waiting": "Il tuo computer chiede prima di sostituire qualsiasi cosa: conferma lì per finire. Su questo telefono non è cambiato nulla.",
+      "unknown": "Il tuo computer non ha detto se li ha accettati. Su questo telefono non è cambiato nulla.",
+      "applied": "Ora entrambi i dispositivi hanno gli stessi record. Su questo telefono non è cambiato nulla.",
+      "notReplaced": "Lì non è stato sostituito nulla. Su questo telefono non è cambiato nulla."
+    },
+    "unreadable_one": "{{count}} documento non era leggibile ed è rimasto qui.",
+    "unreadable_many": "{{count}} di documenti non erano leggibili e sono rimasti qui.",
+    "unreadable_other": "{{count}} documenti non erano leggibili e sono rimasti qui.",
+    "again": "Invia di nuovo",
+    "typeThis": "Inserisci questo sul tuo computer",
+    "paired": "Abbinato. Questo telefono attende sulla rete locale che il tuo computer lo contatti.",
+    "handing": "Consegna dei tuoi record…",
+    "handingProgress": "Consegna dei tuoi record: {{served}} di {{chunks}}.",
+    "intro": "Sul computer, apri Trasferimento, scegli Ricevi dal telefono e scansiona il codice che mostra. Entrambi devono essere sulla stessa rete locale.",
+    "gatherFailed": "jojo non è riuscito a raccogliere i record su questo telefono, quindi non è stato inviato nulla. Riprova."
+  },
+  "receive": {
+    "title": "Ricevi",
+    "hint": "inquadra il codice sull'altro dispositivo",
+    "complete": "Trasferimento completato",
+    "done": "Fatto",
+    "typeThis": "Inserisci questo sull'altro dispositivo",
+    "paired": "Abbinato. Questo telefono è in ascolto sulla rete locale e da nessun'altra parte.",
+    "progress": "Ricezione: {{size}} finora. Qui non cambia nulla finché non sei d'accordo.",
+    "intro": "Apri jojo sul computer, scegli Trasferimento e scansiona il codice che mostra.",
+    "confirm": {
+      "title": "Sostituire tutto su questo telefono?",
+      "description": "{{contents}}. {{replaces}}, e non si può annullare.",
+      "confirm": "Sostituisci"
+    },
+    "unrestorable": "Ciò che è arrivato non può essere ripristinato: {{reason}}. Su questo telefono non è cambiato nulla."
+  },
+  "landed": {
+    "plain_one": "{{count}} record è su questo telefono.",
+    "plain_many": "{{count}} di record sono su questo telefono.",
+    "plain_other": "{{count}} record sono su questo telefono.",
+    "withDocuments_one": "{{count}} record è su questo telefono, {{documents}}.",
+    "withDocuments_many": "{{count}} di record sono su questo telefono, {{documents}}.",
+    "withDocuments_other": "{{count}} record sono su questo telefono, {{documents}}.",
+    "documents_one": "{{count}} documento",
+    "documents_many": "{{count}} di documenti",
+    "documents_other": "{{count}} documenti",
+    "skipped_one": "{{count}} non era leggibile.",
+    "skipped_many": "{{count}} non erano leggibili.",
+    "skipped_other": "{{count}} non erano leggibili."
+  },
+  "scanner": {
+    "point": "Inquadra il codice nella pagina Trasferimento dell'altro dispositivo.",
+    "advice": {
+      "denied": "jojo ha bisogno della fotocamera per leggere il codice sull'altro dispositivo. Consentila, oppure inserisci il codice a mano.",
+      "unsupported": "Questo telefono non può aprire la fotocamera per jojo.",
+      "failed": "La fotocamera non si è avviata. Chiudi jojo e riaprilo."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Leggi il codice di abbinamento",
+      "message": "jojo ha bisogno della fotocamera per leggere il codice mostrato sull'altro dispositivo. Non viene registrato nulla, e nessuna immagine lascia questo telefono.",
+      "allow": "Consenti",
+      "notNow": "Non ora"
+    },
+    "refused": {
+      "denied": "jojo ha bisogno della fotocamera per leggere il codice sull'altro dispositivo.",
+      "blocked": "La fotocamera è disattivata per jojo. Attivala nelle Impostazioni del telefono, in App, per abbinare tramite scansione."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Quel codice non è un'offerta di abbinamento di jojo. Scansiona quello sull'altro dispositivo.",
+      "noNetwork": "Questo telefono non è su una rete locale. jojo trasferisce solo sulla rete locale, quindi entrambi i dispositivi devono essere sulla stessa.",
+      "notLocal": "Questo telefono è su una rete su cui jojo non trasferisce. Si collega solo a un indirizzo di rete privato, così i tuoi record non attraversano mai internet.",
+      "noSocket": "jojo non è riuscito ad aprire una connessione su questo telefono. Riprova."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "Gli appunti sono vuoti. Copia prima un backup di jojo, poi incollalo qui.",
+    "fileEmpty": "Quel file è vuoto. Su questo telefono non è cambiato nulla.",
+    "notBackup": "non è un backup di jojo",
+    "unrestorable": {
+      "file": "Quel file non può essere ripristinato: {{reason}}. Su questo telefono non è cambiato nulla.",
+      "clipboard": "Ciò che è negli appunti non può essere ripristinato: {{reason}}. Su questo telefono non è cambiato nulla."
+    },
+    "noRecords": {
+      "file": "Quel file è un backup senza record. Su questo telefono non è cambiato nulla: ripristinarlo avrebbe svuotato questo telefono.",
+      "clipboard": "Ciò che è negli appunti è un backup senza record. Su questo telefono non è cambiato nulla: ripristinarlo avrebbe svuotato questo telefono."
+    },
+    "unreadable": "Non è stato possibile leggere quel file. Su questo telefono non è cambiato nulla.",
+    "noPicker": "Questo telefono non ha nulla che possa scegliere un file JSON o di testo.",
+    "openFailed": "Non è stato possibile aprire il file: {{detail}}",
+    "failedTitle": "Non è stato importato nulla",
+    "restoredTitle": "Backup ripristinato"
+  }
+}

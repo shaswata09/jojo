@@ -25,7 +25,12 @@ export function LanguageRow() {
         label={t('language.label')}
         description={
           restartPending
-            ? `${current} · ${t('language.restartForDirection')}`
+            ? // Said in the language just picked, about the direction it reads:
+              // to Arabic or Urdu, right to left; back from them, left to right.
+              `${current} · ${t(
+                localeInfo(locale).dir === 'rtl' ? 'language.restartRtl' : 'language.restartLtr',
+                { name: localeInfo(locale).native },
+              )}`
             : `${current} · ${t('language.description')}`
         }
         onPress={() => setOpen(true)}

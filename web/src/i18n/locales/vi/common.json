@@ -1,0 +1,269 @@
+{
+  "language": {
+    "label": "Ngôn ngữ",
+    "description": "Ngôn ngữ hiển thị của jojo. Các bản ghi của bạn vẫn giữ nguyên ngôn ngữ bạn đã viết.",
+    "system": "Giống trình duyệt này ({{name}})",
+    "loadFailed": "Không tải được ngôn ngữ đó. jojo vẫn dùng {{name}}."
+  },
+  "buckets": {
+    "overdue": "Quá hạn",
+    "today": "Hôm nay",
+    "upcoming": "Sắp tới",
+    "done": "Đã hoàn thành"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Ngày mai",
+      "later": "Một ngày sau",
+      "duration": "Một ngày"
+    },
+    "threeDays": {
+      "soon": "3 ngày nữa",
+      "later": "Ba ngày sau",
+      "duration": "Ba ngày"
+    },
+    "week": {
+      "soon": "7 ngày nữa",
+      "later": "Một tuần sau",
+      "duration": "Một tuần"
+    }
+  },
+  "routeFailure": {
+    "title": "Trang này không tải được",
+    "subtitle": "Các phần còn lại của jojo vẫn đang chạy.",
+    "emptyTitle": "Có gì đó trong phần này bị lỗi",
+    "emptyDescription": "Chuyển sang trang khác rồi quay lại sẽ tải lại nó. Nếu lần nào cũng bị, hãy kiểm tra các bản ghi mà trang này hiển thị — Cài đặt có chức năng sao lưu để bạn tạo trước.",
+    "back": "Quay lại Tổng quan"
+  },
+  "writeResult": {
+    "title": "Không lưu được",
+    "refused": "Thay đổi đã bị từ chối."
+  },
+  "copy": {
+    "blocked": "Bị chặn",
+    "copied": "Đã sao chép",
+    "copy": "Sao chép"
+  },
+  "drag": {
+    "theItem": "mục này",
+    "aTarget": "một vị trí thả",
+    "start": "Đã nhấc {{name}}.",
+    "over": "{{name}} đang ở trên {{place}}.",
+    "notOver": "{{name}} không còn ở trên vị trí thả nào.",
+    "dropped": "Đã thả {{name}} vào {{place}}.",
+    "droppedHome": "Đã thả {{name}} về chỗ ban đầu.",
+    "cancelled": "Đã hủy kéo. {{name}} được đặt lại chỗ ban đầu.",
+    "instructions": "Để nhấc một mục có thể kéo, hãy nhấn phím cách.\nTrong khi kéo, dùng các phím mũi tên để di chuyển mục.\nNhấn phím cách lần nữa để thả mục vào vị trí mới, hoặc nhấn Esc để hủy."
+  },
+  "actions": {
+    "undo": "Hoàn tác",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "close": "Đóng"
+  },
+  "records_other": "{{count}} bản ghi",
+  "deleteKeyword": {
+    "failed": "Không xóa được",
+    "stillThere": "{{name}} vẫn còn là từ khóa.",
+    "deleted": "Đã xóa {{name}}",
+    "wasUnused": "Nó chưa được gắn vào bản ghi nào.",
+    "takenOff_other": "Đã gỡ khỏi {{count}} bản ghi và khỏi bộ lọc từ khóa.",
+    "confirmTitle": "Xóa {{name}}?",
+    "confirmTitleAny": "Xóa từ khóa?",
+    "unused": "Chưa được gắn vào bản ghi nào, nên không có gì khác thay đổi.",
+    "usedOn_other": "Đang dùng cho {{count}} bản ghi. Các bản ghi đó vẫn được giữ — chúng chỉ mất từ khóa này.",
+    "confirm": "Xóa từ khóa"
+  },
+  "bucketFilter": {
+    "all": "Tất cả"
+  },
+  "marks": {
+    "bold": "in đậm",
+    "italic": "in nghiêng",
+    "underlined": "gạch chân"
+  },
+  "pageHeader": {
+    "options": "Tùy chọn {{title}}"
+  },
+  "errorBoundary": {
+    "title": "Đã xảy ra lỗi",
+    "body": "Một phần giao diện không hiển thị được. Thử lại sẽ dựng lại nó mà không tải lại trang.",
+    "retry": "Thử lại"
+  },
+  "tone": {
+    "colourFor": "Màu cho {{label}}",
+    "anyColourFor": "Màu bất kỳ cho {{label}}"
+  },
+  "boot": {
+    "takingLong": "Cơ sở dữ liệu cục bộ đang mở lâu hơn bình thường. Có thể một thẻ jojo khác đang giữ nó — đóng các thẻ kia thường sẽ giải phóng.",
+    "opening": "Đang mở cơ sở dữ liệu cục bộ…"
+  },
+  "keywordPicker": {
+    "none": "Chưa có",
+    "choose": "Chọn từ khóa",
+    "heading": "Từ khóa",
+    "newPlaceholder": "Từ khóa mới…",
+    "new": "Từ khóa mới"
+  },
+  "rowMenu": {
+    "moreFor": "Thao tác khác cho {{name}}",
+    "more": "Thao tác khác"
+  },
+  "firstRun": {
+    "title": "Bạn muốn bắt đầu thế nào?",
+    "description": "jojo giữ mọi thứ trên máy này, nên quyết định là của bạn. Không lựa chọn nào là cố định — bạn có thể tải dữ liệu mẫu hoặc xóa mọi bản ghi sau này, trong Cài đặt.",
+    "demo": {
+      "title": "Khám phá với dữ liệu mẫu",
+      "detail": "Một đợt tìm việc mẫu để xem thử — mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ. Không có gì trong đó là của bạn, và xóa nó sau này chỉ cần một lần nhấn.",
+      "working": "Đang tải…"
+    },
+    "empty": {
+      "title": "Bắt đầu trống",
+      "detail": "Hoàn toàn không có bản ghi mẫu. Mọi trang đều mở ở trạng thái trống, và thứ đầu tiên trong jojo là thứ bạn tự thêm.",
+      "working": "Đang xóa…"
+    }
+  },
+  "recovery": {
+    "title": "jojo không đọc được cơ sở dữ liệu",
+    "body": "Các bản ghi của bạn vẫn còn trên máy này. jojo chưa thay đổi hay thay thế gì, và sẽ không tải dữ liệu mẫu đè lên chúng — một kho dữ liệu tự tạo lại để trông có vẻ ổn sẽ biến chuyện này thành mất dữ liệu vĩnh viễn.",
+    "downloadHint": "Ghi các dòng đọc được ra một tệp",
+    "downloadNothing": "Hoàn toàn không đọc được cơ sở dữ liệu, nên không có gì để ghi ra",
+    "download": "Tải xuống những gì đọc được",
+    "working": "Đang xử lý…",
+    "retry": "Thử lại",
+    "freshHint": "Xóa cơ sở dữ liệu và khởi động jojo như mới",
+    "fresh": "Bắt đầu lại từ đầu",
+    "readable_other": "{{count}} dòng đọc được — hãy tải chúng xuống trước tiên, vì bắt đầu lại từ đầu sẽ xóa chúng.",
+    "unreadable": "Không đọc được gì từ kho dữ liệu, nên không có gì để tải xuống. Hãy thử lại trước: một cơ sở dữ liệu đang bị thẻ khác giữ sẽ lỗi theo cách này và tự phục hồi.",
+    "confirmTitle": "Xóa cơ sở dữ liệu và bắt đầu lại từ đầu?",
+    "confirmBody": "Thao tác này xóa cơ sở dữ liệu cục bộ của jojo cùng mọi thứ còn trong đó, rồi bắt đầu lại từ con số không — kể cả câu hỏi ở lần chạy đầu về việc bắt đầu với dữ liệu mẫu hay trống. Nó không sửa chữa gì và không thể hoàn tác. Nếu bạn chưa tải xuống các dòng đọc được, hãy hủy và làm việc đó trước.",
+    "confirm": "Xóa và bắt đầu lại từ đầu"
+  },
+  "labelFilter": {
+    "label": "Lọc theo từ khóa",
+    "none": "Chưa có từ khóa nào — thêm một từ khóa để lọc theo nó.",
+    "example": "vd. Developer",
+    "add": "Thêm từ khóa",
+    "clear": "Bỏ lọc"
+  },
+  "labelPicker": {
+    "editOn": "Sửa từ khóa của {{name}}",
+    "edit": "Sửa từ khóa"
+  },
+  "keywordChip": {
+    "taken": "Đã có từ khóa khác mang tên đó.",
+    "needsName": "Từ khóa cần có tên.",
+    "rename": "Đổi tên",
+    "colour": "Màu",
+    "stopFiltering": "Ngừng lọc theo {{name}}",
+    "filterBy": "Lọc theo {{name}}",
+    "edit": "Sửa từ khóa {{name}}",
+    "editHint": "Đổi tên, đổi màu hoặc xóa"
+  },
+  "welcome": {
+    "title": "Đôi điều về bạn",
+    "description": "Bản nháp sẽ ký tên bạn ở cuối, và trình tìm việc chấm điểm dựa trên những gì bạn đang tìm. Tất cả đều ở lại trên máy này, và tất cả đều không bắt buộc — bạn có thể điền sau trong Hồ sơ cá nhân.",
+    "fullName": "Họ và tên",
+    "fullNameExample": "vd. Lonardo Jenson",
+    "position": "Vị trí hiện tại",
+    "positionExample": "vd. Nghiên cứu sinh tiến sĩ, Khoa học máy tính",
+    "location": "Địa điểm",
+    "locationExample": "vd. Santa Clara, CA",
+    "email": "Email",
+    "skip": "Để sau",
+    "save": "Lưu và tiếp tục",
+    "rest": "Phần còn lại — liên kết, vị trí mục tiêu, từ khóa đối chiếu của trình tìm việc — nằm trong <anchor>Hồ sơ cá nhân</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Bạn muốn tham quan có hướng dẫn?",
+    "tourDescription": "Một lượt đi qua các trang thật — làm nổi bật từng phần, giải thích công dụng, và bạn tự thử từng thứ khi đi qua. Nó không bao giờ nhập, lưu hay thay đổi gì thay bạn, và sẽ nhớ chỗ bạn dừng.",
+    "notNow": "Để sau",
+    "start": "Bắt đầu tham quan",
+    "always": "Nó luôn có sẵn trong <em>Cách sử dụng</em>, nên từ chối lúc này cũng không sao."
+  },
+  "setup": {
+    "skip": "Để sau",
+    "continue": "Tiếp tục",
+    "done": "Xong",
+    "optional": "Mọi mục ở đây đều không bắt buộc và bạn có thể thiết lập sau trong Cài đặt.",
+    "model": {
+      "title": "Kết nối một mô hình",
+      "body": "Đây là thứ khiến jojo trở thành một tác tử thay vì chỉ là tủ hồ sơ: khi đó nó có thể trả lời câu hỏi về việc tìm việc của bạn, viết thư liên hệ lại và bản nháp, và chạy các quy trình của Trình tìm việc để giữ bản ghi đầy đủ và theo dõi tin tuyển dụng. Hãy trỏ nó tới một mô hình trên chính máy của bạn và không có gì rời khỏi thiết bị."
+    },
+    "reader": {
+      "title": "Cho phép đọc tài liệu của bạn",
+      "body": "Nếu không có phần này, trợ lý chỉ thấy được tên tài liệu và không gì khác. Hãy chạy MarkItDown trên máy này — hai lệnh, ở bên dưới — và nó có thể đọc nội dung bên trong CV, thư xin việc và tin tuyển dụng đã lưu khi soạn thảo và trả lời."
+    },
+    "crash": {
+      "title": "Báo cáo sự cố và mức sử dụng",
+      "description": "Hai thứ riêng biệt, cả hai đều đang bật — tắt từng cái ở đây hoặc sau này trong Cài đặt. Không cái nào có thể mang theo bản ghi của bạn: không đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện nào.",
+      "inReport": "Báo cáo gồm những gì",
+      "inError": "Thông báo lỗi và nơi xảy ra lỗi trong jojo.",
+      "inStack": "Dấu vết ngăn xếp, cho biết đoạn mã nào bị lỗi.",
+      "never": "Những gì không bao giờ có trong báo cáo",
+      "neverRecords": "Đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện của bạn.",
+      "neverSecrets": "Khóa API, các địa chỉ bạn dùng, thư mục chính của bạn, hay bất kỳ địa chỉ email nào — chúng bị loại bỏ trước khi báo cáo được ghi, chứ không phải trước khi gửi.",
+      "where": "Trong trình duyệt này và trong tiện ích mở rộng jojo, báo cáo sự cố <em>ở lại trên thiết bị này</em>: không có gì được tải lên, và tệp sao lưu không mang theo chúng. Bạn tự đọc chúng trong Cài đặt. Trên ứng dụng jojo cho điện thoại, báo cáo đó cũng được gửi tới Firebase Crashlytics của Google, kèm theo mẫu thiết bị, phiên bản hệ điều hành và một mã ngẫu nhiên dùng để đếm số người gặp cùng một sự cố — không tên, không tài khoản, không gì gắn với bạn. Số liệu sử dụng, công tắc thứ hai bên dưới, được gửi tới Google Analytics từ mọi phiên bản kể cả phiên bản này.",
+      "keep": "Giữ báo cáo sự cố",
+      "keepHint": "Lỗi và nơi xảy ra. Ở lại trên thiết bị này trong trình duyệt.",
+      "share": "Chia sẻ những tính năng tôi dùng",
+      "shareHint": "Chỉ là số đếm — màn hình nào được mở, bao nhiêu lần. Không bao giờ là nội dung bên trong.",
+      "usageNote": "Mục thứ hai là thứ duy nhất jojo gửi về những gì bạn LÀM, và nó chỉ có thể nói những điều trong một danh sách cố định — “Kho lưu trữ đã được mở”, “một đơn ứng tuyển đã được thêm”, “có 6–20 đơn”. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập, vì những từ đó không có trong danh sách. Dữ liệu được gửi tới Google Analytics để chúng tôi biết phần nào của jojo đáng đầu tư thêm.",
+      "bothOff": "Tắt cả hai",
+      "save": "Lưu lựa chọn",
+      "continueOff": "Tiếp tục với cả hai đều tắt",
+      "later": "Bạn có thể thay đổi bất kỳ mục nào bất cứ lúc nào trong Cài đặt, và tắt một mục cũng sẽ xóa những gì nó đã lưu."
+    },
+    "extension": {
+      "title": "Giữ lại các tin tuyển dụng bạn ứng tuyển",
+      "body": "Tin tuyển dụng thường bị gỡ xuống, nhiều khi trước khi bạn nhận được phản hồi. Tiện ích mở rộng của trình duyệt lưu tin tuyển dụng như nội dung hôm nay vào Kho lưu trữ của riêng bạn — và đó cũng là cách Trình tìm việc đọc các trang tuyển dụng bạn theo dõi."
+    }
+  },
+  "spectrum": {
+    "saturation": "Độ bão hòa và độ sáng",
+    "hue": "Sắc độ",
+    "hex": "Mã màu hex",
+    "any": "Màu bất kỳ"
+  },
+  "field": {
+    "openInTab": "Mở {{label}} trong thẻ mới",
+    "hide": "Ẩn {{label}}",
+    "show": "Hiện {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Nhỏ",
+      "normal": "Bình thường",
+      "large": "Lớn",
+      "huge": "Rất lớn"
+    },
+    "clearFormatting": "Xóa định dạng",
+    "bold": "In đậm",
+    "italic": "In nghiêng",
+    "underline": "Gạch chân",
+    "strikeThrough": "Gạch ngang",
+    "insertUnorderedList": "Danh sách dấu đầu dòng",
+    "insertOrderedList": "Danh sách đánh số",
+    "snippetText": "Nội dung đoạn văn bản",
+    "fontSize": "Cỡ chữ",
+    "insertTable": "Chèn bảng",
+    "textColour": "Màu chữ"
+  },
+  "toolForm": {
+    "aRecord": "một bản ghi",
+    "yourProfile": "Hồ sơ cá nhân của bạn"
+  },
+  "toolRun": {
+    "choose": "Chọn…",
+    "none": "Không có",
+    "omitted_other": "Không có trên biểu mẫu này: {{fields}}. Mở bản ghi để thiết lập."
+  },
+  "toast": {
+    "notifications": "Thông báo",
+    "dismiss": "Đóng — {{title}}"
+  },
+  "command": {
+    "title": "Bảng lệnh",
+    "description": "Tìm một lệnh để chạy..."
+  }
+}

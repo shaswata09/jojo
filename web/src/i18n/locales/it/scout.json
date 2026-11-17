@@ -1,0 +1,207 @@
+{
+  "common": {
+    "newPipeline": "Nuova pipeline",
+    "addToApplications": "Aggiungi alle candidature",
+    "inApplicationsAs": "Nelle candidature come <anchor>{{name}}</anchor>",
+    "open": "Apri",
+    "undo": "Annulla"
+  },
+  "header": {
+    "title": "Scout offerte",
+    "subtitle": "Ricerche salvate che terranno d'occhio i siti di lavoro per te, e un posto dove mettere da parte gli annunci di oggi",
+    "onlyActive": "Solo pipeline attive",
+    "onlyActiveHint": "Nascondi quelle disattivate",
+    "paused": "Nessun modello locale è collegato, quindi le pipeline sono in pausa. Puoi comunque scriverle e salvare annunci qui sotto: partono appena un modello è raggiungibile.",
+    "runsLocally": "Le pipeline girano sul tuo computer, mentre questa scheda è aperta. Nulla viene inviato a terzi."
+  },
+  "shutdown": {
+    "title": "Disattivare {{name}}?",
+    "description": "È stata eseguita due volte senza trovare nulla da suggerire, e non c'è nulla che attende una tua risposta. Disattivandola smette di cercare; tutto ciò che ha già trovato resta dov'è. Puoi riattivarla quando vuoi.",
+    "keep": "Lasciala attiva",
+    "confirm": "Disattivala"
+  },
+  "matches": {
+    "title": "Risultati",
+    "hint": "valutati sul tuo profilo",
+    "emptyTitle": "Nessun risultato",
+    "emptyDescription": "Le pipeline mettono qui gli annunci valutati quando un modello è collegato. Fino ad allora, gli annunci che salvi qui sotto sono il modo per iniziare.",
+    "matched": "corrisponde a {{list}}",
+    "notScored": "non valutato",
+    "fit": "{{score}}% di compatibilità",
+    "added": "aggiunto"
+  },
+  "dialog": {
+    "editTitle": "Modifica pipeline",
+    "description": "Una pipeline è un compito permanente per l'assistente. Gira su questo dispositivo mentre jojo è aperto, e tutto ciò che vuole cambiare ti viene mostrato prima.",
+    "kind": "Cosa fa",
+    "kinds": {
+      "twin": "Mantieni completi i record",
+      "scout": "Trova annunci"
+    },
+    "kindHint": {
+      "twin": "Legge ciò che hai e suggerisce ciò che manca: note, promemoria, etichette, archiviazione.",
+      "scout": "Cerca annunci che meritano la tua attenzione e te li propone da rivedere."
+    },
+    "name": "Nome",
+    "nameError": "Chiamala come ciò che tiene d'occhio.",
+    "namePlaceholder": {
+      "twin": "es. Tieni in ordine le mie candidature",
+      "scout": "es. Bacheca lavoro docenti CRA"
+    },
+    "sources": "Fonti",
+    "sourcesHint": "Il sito o la pagina carriere che tiene d'occhio. Separane più di una con virgole.",
+    "sourceError": "Uno scout senza fonte non ha nulla da leggere.",
+    "terms": {
+      "twin": "Su cosa concentrarsi",
+      "scout": "Termini di ricerca"
+    },
+    "termsHint": {
+      "twin": "Qualsiasi cosa a cui debba prestare particolare attenzione. Lascia vuoto per farle guardare ovunque.",
+      "scout": "Ciò con cui viene valutato un annuncio. Lascia vuoto per tenere tutto ciò che la fonte elenca."
+    },
+    "termsPlaceholder": {
+      "twin": "solleciti e scadenze",
+      "scout": "assistant professor, CS/ECE"
+    },
+    "howOften": "Ogni quanto",
+    "howOftenHint": "Quanto attende tra un giro e l'altro.",
+    "schedules": {
+      "hourly": "Ogni ora",
+      "daily": "Ogni giorno",
+      "weekly": "Ogni settimana"
+    },
+    "cancel": "Annulla",
+    "save": "Salva le modifiche",
+    "create": "Crea pipeline"
+  },
+  "pipelines": {
+    "title": "Pipeline",
+    "hint": "girano su questo dispositivo mentre jojo è aperto",
+    "caption": "Lavorano mentre questa scheda è aperta: nulla gira fuori da questo computer",
+    "kinds": {
+      "twin": "Gemello digitale",
+      "scout": "Scout offerte"
+    },
+    "status": {
+      "off": "disattivata",
+      "paused": "in pausa",
+      "running": "in esecuzione",
+      "watching": "in ascolto"
+    },
+    "noneOnTitle": "Nulla di attivo",
+    "noneOnDescription": "Tutte le tue pipeline sono disattivate. Attivane una, o togli il filtro nelle opzioni della pagina.",
+    "emptyTitle": "Nessuna pipeline",
+    "emptyDescription": "Una pipeline è un compito permanente per l'assistente: mantenere completi i tuoi record, o cercare annunci che meritano la tua attenzione.",
+    "showAll": "Mostra tutte le pipeline",
+    "auto": "auto",
+    "autoAria": "Esegui {{name}} senza chiedere",
+    "toReview_one": "{{count}} da rivedere",
+    "toReview_many": "{{count}} da rivedere",
+    "toReview_other": "{{count}} da rivedere",
+    "runNow": "Esegui {{name}} ora",
+    "edit": "Modifica {{name}}",
+    "delete": "Elimina {{name}}",
+    "enable": "Attiva {{name}}"
+  },
+  "postings": {
+    "title": "Salva un annuncio",
+    "hint": "funziona senza modello",
+    "intro": "Salvando si conserva anche la pagina, nella Cassaforte sotto Annunci di lavoro: aperta tramite l'estensione jojo come la vedresti tu, o scaricata dal lettore di documenti. Senza nessuno dei due, si conservano l'URL, il datore di lavoro dedotto da esso e il giorno in cui l'hai salvato.",
+    "urlLabel": "URL dell'annuncio",
+    "pasteFirst": "Prima incolla un URL",
+    "save": "Salva annuncio",
+    "emptyTitle": "Nessun annuncio salvato",
+    "emptyDescription": "Incolla l'URL di un annuncio su cui vuoi tornare. Gli annunci vengono rimossi; il link e la data restano tuoi.",
+    "saved": "salvato {{when}}",
+    "linked": "collegato a una candidatura",
+    "unscored": "non valutato",
+    "openSnapshot": "Apri la copia salvata",
+    "savingPage": "Salvataggio della pagina…",
+    "savePage": "Salva pagina",
+    "savePageTitle": "Apri l'annuncio e conservane una copia nella Cassaforte",
+    "remove": "Rimuovi {{title}}"
+  },
+  "proposals": {
+    "title": "Suggerimenti",
+    "hint": "non succede nulla finché non lo dici tu",
+    "aPipeline": "una pipeline",
+    "clearAnswered": "Rimuovi quelli già gestiti",
+    "approveAll": "Approva tutti e {{count}}",
+    "clearAll": "Rimuovi tutti",
+    "emptyTitle": "Nulla da rivedere",
+    "emptyDescription": "Quando una pipeline è in esecuzione, tutto ciò che vuole cambiare compare prima qui. Non tocca i tuoi record finché non approvi.",
+    "clearTitle": "Rimuovere tutti i suggerimenti?",
+    "clearPending_one": "{{count}} suggerimento è ancora in attesa e verrà rifiutato. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non lo riproporranno.",
+    "clearPending_many": "{{count}} di suggerimenti sono ancora in attesa e verranno rifiutati. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non li riproporranno.",
+    "clearPending_other": "{{count}} suggerimenti sono ancora in attesa e verranno rifiutati. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non li riproporranno.",
+    "clearAnsweredOnly": "Le schede già gestite escono dall'elenco. Nei tuoi record non cambia nulla.",
+    "status": {
+      "applied": "applicato",
+      "discarded": "scartato",
+      "failed": "non applicabile"
+    },
+    "noSummary": "Questo non è arrivato con un riepilogo: apri l'annuncio per vedere di cosa si tratta.",
+    "reading": "Lettura dei dettagli dell'annuncio…",
+    "notALink": "Non è un indirizzo web, quindi non viene proposto come link",
+    "from": "da {{name}}",
+    "openPosting": "Apri annuncio",
+    "openPostingAria": "Apri l'annuncio in una nuova scheda: {{title}}",
+    "inApplications": "Nelle candidature",
+    "approve": "Approva",
+    "discard": "Scarta questo suggerimento",
+    "discardAria": "Scarta: {{title}}",
+    "unreadable": "Non è stato possibile leggere la pagina: {{reason}}",
+    "unreadableKept": "Non è stato possibile leggere la pagina: {{reason}} La pagina in sé è stata salvata.",
+    "applyBy": "candidati entro il {{date}}",
+    "pageSaved": "Pagina salvata"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Già nelle tue candidature: non aggiunto di nuovo",
+    "alreadyHaveDescription": "Questo è {{name}}, ripubblicato su un altro sito. L'annuncio è collegato a esso e la sua pagina è archiviata sotto di esso.",
+    "duplicateDescription": "L'annuncio è {{name}}, che hai già. {{why}} La sua pagina è archiviata sotto quella.",
+    "keepBoth": "Tienili entrambi",
+    "fillFailedTitle": "{{org}}: non è stato possibile leggere l'annuncio",
+    "fillFailedKept": "{{reason}} La pagina in sé è stata salvata e archiviata sotto la bozza: aprila per compilare il resto.",
+    "fillFailed": "{{reason}} La bozza conserva ciò che dice il link: aprila per compilare il resto.",
+    "filledTitle": "{{name}} compilata dall'annuncio",
+    "checkedTitle": "{{name}} verificata con l'annuncio",
+    "filledIn": "Compilati: {{list}}.",
+    "checked": "Verificati con la pagina: {{list}}.",
+    "keptYours": "Mantenute le tue modifiche a: {{list}}.",
+    "addedNothing": "La pagina non ha aggiunto nulla che la bozza non avesse già.",
+    "missing": "Non presenti nella pagina: {{list}}.",
+    "filedUnder": "La pagina è archiviata sotto di essa.",
+    "approvedReading": "Lettura dell'annuncio per compilarne i dettagli: la bozza si aggiorna quando ha finito.",
+    "approvedFromLink": "Compilata dal suo link. Collega un modello in Impostazioni per far leggere l'annuncio stesso.",
+    "approvedOpen": "Aprila per compilare il resto.",
+    "allRepeatsTitle": "Già nelle tue candidature: nulla di nuovo aggiunto",
+    "allRepeats_one": "{{count}} è un lavoro che hai già, ripubblicato su un altro sito. È collegato alla candidatura che hai.",
+    "allRepeats_many": "{{count}} sono lavori che hai già, ripubblicati su un altro sito. Sono collegati alle candidature che hai.",
+    "allRepeats_other": "{{count}} sono lavori che hai già, ripubblicati su un altro sito. Sono collegati alle candidature che hai.",
+    "added_one": "{{count}} aggiunta alle tue candidature come bozza",
+    "added_many": "{{count}} aggiunte alle tue candidature come bozze",
+    "added_other": "{{count}} aggiunte alle tue candidature come bozze",
+    "addedWithRepeats_one": "{{count}} aggiunta alle tue candidature come bozza · {{repeats}} già presenti",
+    "addedWithRepeats_many": "{{count}} aggiunte alle tue candidature come bozze · {{repeats}} già presenti",
+    "addedWithRepeats_other": "{{count}} aggiunte alle tue candidature come bozze · {{repeats}} già presenti",
+    "addedReading": "Lettura di ciascun annuncio a turno per compilarne i dettagli.",
+    "addedFromLinks": "Compilate dai loro link. Collega un modello in Impostazioni per far leggere gli annunci stessi.",
+    "addedOne": "{{org}} aggiunta alle tue candidature come bozza",
+    "addedAsDraft": "{{org}} aggiunta come bozza",
+    "matchStays": "Il risultato resta in questo elenco, ora collegato alla candidatura.",
+    "postingSaved": "Annuncio salvato",
+    "postingReading": "Lettura dell'annuncio per verificarne e compilarne i dettagli: la bozza si aggiorna quando ha finito.",
+    "postingStays": "L'annuncio resta salvato qui, ora collegato alla candidatura.",
+    "postingRemoved": "Annuncio rimosso",
+    "pageNotSaved": "La pagina dell'annuncio non è stata salvata",
+    "pageSaved": "Pagina dell'annuncio salvata",
+    "pageSavedFiled": "{{title}} — archiviata sotto la sua candidatura.",
+    "pageSavedVault": "{{title}} — nella Cassaforte sotto Annunci di lavoro.",
+    "pipelineUpdated": "Pipeline aggiornata",
+    "pipelineCreated": "Pipeline creata",
+    "pipelineCreatedPaused": "{{name}} — in pausa finché non viene collegato un modello.",
+    "pipelineCreatedRunning": "{{name}} — inizierà a cercare a breve.",
+    "pipelineDeleted": "Pipeline eliminata",
+    "pipelineDeletedDescription": "{{name}} smette di tenere d'occhio {{source}}."
+  }
+}

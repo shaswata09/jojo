@@ -1,0 +1,290 @@
+{
+  "common": {
+    "undo": "Hoàn tác",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "remove": "Gỡ",
+    "done": "Xong",
+    "title": "Tiêu đề",
+    "note": "Ghi chú",
+    "changeApplications": "Đổi đơn ứng tuyển",
+    "fileUnderApplication": "Xếp vào một đơn ứng tuyển",
+    "moreActionsFor": "Thao tác khác cho {{name}}",
+    "openNamed": "Mở {{name}}",
+    "savedAgo": "đã lưu {{ago}}",
+    "copyOf": "{{name}} (bản sao)",
+    "movedTo": "Đã chuyển sang {{name}}",
+    "titleRequired": "Đặt tên để bạn có thể tìm lại."
+  },
+  "screen": {
+    "title": "Kho lưu trữ",
+    "subtitle": "Lời nhắc, liên kết, tệp, đoạn văn bản và người liên hệ",
+    "counts": {
+      "reminders_other": "{{count}} lời nhắc",
+      "links_other": "{{count}} liên kết",
+      "files_other": "{{count}} tệp",
+      "snippets_other": "{{count}} đoạn văn bản",
+      "people_other": "{{count}} người"
+    },
+    "showCounts": "Hiện số lượng",
+    "showCountsDescription": "Tổng số mục trong phụ đề, thay vì những gì các thẻ chứa",
+    "toolLabel": "Công cụ của Kho lưu trữ",
+    "tools": {
+      "reminders": "Lời nhắc",
+      "links": "Liên kết",
+      "files": "Tệp",
+      "snippets": "Đoạn văn bản",
+      "people": "Người liên hệ",
+      "tools": "Công cụ"
+    }
+  },
+  "files": {
+    "add": "Ghi lại một tài liệu",
+    "filterLabel": "Lọc tài liệu",
+    "editLabel": "Sửa tài liệu",
+    "bucket": "Nhóm",
+    "search": {
+      "label": "Tìm tài liệu",
+      "placeholder": "Tìm tên, ghi chú hoặc nhóm"
+    },
+    "empty": {
+      "zeroTitle": "Chưa có tài liệu nào",
+      "zeroDescription": "CV, bản trình bày, bài nói và bản quét giấy tờ hành chính. Tên, kích thước và loại được ghi lại — không có gì đọc nội dung tệp.",
+      "search": "Không có tài liệu nào nhắc đến \"{{query}}\" trong tên, ghi chú hoặc nhóm.",
+      "both": "Không có tài liệu nào trong {{bucket}} mang các từ khóa đã chọn.",
+      "bucketTitle": "Không có gì trong {{bucket}}",
+      "bucketDescription_other": "{{count}} tài liệu được xếp trong các nhóm khác.",
+      "showAll": "Hiện tất cả các nhóm",
+      "keywordsTitle": "Không có tài liệu nào mang các từ khóa đó"
+    },
+    "toast": {
+      "removed": "Đã gỡ tài liệu",
+      "duplicated": "Đã nhân bản tài liệu",
+      "updated": "Đã cập nhật tài liệu",
+      "recorded": "Đã ghi lại tài liệu",
+      "recordedDescription": "{{name}} · xếp vào {{bucket}}. Tên, kích thước và loại được giữ lại — bản thân tệp không được đọc."
+    }
+  },
+  "snippets": {
+    "add": "Đoạn văn bản mới",
+    "filterLabel": "Lọc đoạn văn bản",
+    "tag": "Nhãn",
+    "copyNamed": "Sao chép {{name}}",
+    "search": {
+      "label": "Tìm đoạn văn bản",
+      "placeholder": "Tìm tiêu đề hoặc nội dung"
+    },
+    "empty": {
+      "zeroTitle": "Chưa có đoạn văn bản nào",
+      "zeroDescription": "Những câu trả lời bạn gõ lại ở mọi biểu mẫu — một tiểu sử ngắn, một đoạn về giảng dạy, email liên hệ lại bạn luôn gửi.",
+      "search": "Không có đoạn văn bản nào nhắc đến \"{{query}}\" trong tên, nội dung hoặc loại.",
+      "both": "Không có đoạn văn bản {{tag}} nào mang các từ khóa đã chọn.",
+      "bucketTitle": "Không có đoạn văn bản {{tag}} nào",
+      "bucketDescription_other": "{{count}} đoạn văn bản được xếp trong các loại khác.",
+      "showAll": "Hiện tất cả các loại",
+      "keywordsTitle": "Không có đoạn văn bản nào mang các từ khóa đó"
+    },
+    "toast": {
+      "deleted": "Đã xóa đoạn văn bản",
+      "duplicated": "Đã nhân bản đoạn văn bản",
+      "filedUnder": "Đã xếp vào {{tag}}",
+      "saved": "Đã lưu đoạn văn bản",
+      "added": "Đã thêm đoạn văn bản",
+      "addedDescription": "{{title}} · xếp vào {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Sửa đoạn văn bản",
+      "description": "Mọi thứ trong [NGOẶC VUÔNG] vẫn là chỗ trống khi bảng soạn thảo tải đoạn này, nên tên người không bao giờ được điền sẵn cho bạn.",
+      "titlePlaceholder": "vd. Liên hệ lại khi chưa có phản hồi",
+      "applicationHint": "Không bắt buộc. Một đoạn văn bản viết cho các nhà tuyển dụng cụ thể có thể ghi rõ là ai.",
+      "body": "Nội dung",
+      "bodyRequired": "Một đoạn văn bản không có nội dung thì không có gì để dán.",
+      "bodyPlaceholder": "Kính gửi [NAME], …"
+    },
+    "discard": {
+      "title": "Bỏ các thay đổi chưa lưu?",
+      "description": "Những gì bạn đã nhập ở đây chưa được lưu ở đâu cả, nên rời đi sẽ làm mất chúng — và không thể hoàn tác.",
+      "confirm": "Bỏ"
+    }
+  },
+  "links": {
+    "add": "Lưu liên kết",
+    "filterLabel": "Lọc liên kết",
+    "category": "Danh mục",
+    "search": {
+      "label": "Tìm liên kết",
+      "placeholder": "Tìm tiêu đề, URL hoặc ghi chú"
+    },
+    "empty": {
+      "zeroTitle": "Chưa lưu gì",
+      "zeroDescription": "Tin tuyển dụng, trang của khoa, người liên hệ và hướng dẫn — bất cứ thứ gì bạn muốn quay lại sau.",
+      "search": "Không có liên kết nào nhắc đến \"{{query}}\" trong tiêu đề, địa chỉ, ghi chú hoặc danh mục.",
+      "both": "Không có liên kết {{category}} nào mang các từ khóa đã chọn.",
+      "bucketTitle": "Không có liên kết nào trong {{category}}",
+      "bucketDescription_other": "{{count}} liên kết được xếp trong các danh mục khác.",
+      "showAll": "Hiện tất cả danh mục",
+      "keywordsTitle": "Không có liên kết nào mang các từ khóa đó"
+    },
+    "menu": {
+      "open": "Mở liên kết",
+      "copy": "Sao chép URL"
+    },
+    "toast": {
+      "removed": "Đã gỡ liên kết",
+      "duplicated": "Đã nhân bản liên kết",
+      "copied": "Đã sao chép URL",
+      "updated": "Đã cập nhật liên kết",
+      "saved": "Đã lưu liên kết"
+    },
+    "editor": {
+      "editTitle": "Sửa liên kết",
+      "description": "Không có gì được tải về — những gì được giữ là tiêu đề, URL và ngày bạn lưu.",
+      "saveLink": "Lưu liên kết",
+      "titlePlaceholder": "vd. Rice — tin tuyển dụng Thống kê",
+      "url": "URL",
+      "urlRequired": "Liên kết không có URL thì không dẫn tới đâu.",
+      "applicationHint": "Liên kết hai thứ, để mỗi đơn ứng tuyển tính mục này vào những gì được xếp vào nó.",
+      "notePlaceholder": "Vì sao đáng để quay lại"
+    }
+  },
+  "reminders": {
+    "add": "Lời nhắc mới",
+    "filterLabel": "Lọc lời nhắc",
+    "markDone": "Đánh dấu \"{{title}}\" là đã xong",
+    "markNotDone": "Đánh dấu \"{{title}}\" là chưa xong",
+    "buckets": {
+      "overdue": "Quá hạn",
+      "today": "Hôm nay",
+      "upcoming": "Sắp tới",
+      "done": "Đã hoàn thành"
+    },
+    "search": {
+      "label": "Tìm lời nhắc",
+      "placeholder": "Tìm tiêu đề, ghi chú hoặc loại"
+    },
+    "empty": {
+      "zeroTitle": "Chưa có lời nhắc nào",
+      "zeroDescription": "Lời nhắc là một bản ghi có ngày với chế độ nhắc được bật. Khi qua ngày, nó trở thành việc cần làm và ở lại trang Hôm nay cho đến khi bạn đánh dấu hoàn thành.",
+      "search": "Không có lời nhắc nào nhắc đến \"{{query}}\" trong tiêu đề, ghi chú hoặc loại.",
+      "both": {
+        "overdue": "Không có lời nhắc quá hạn nào mang các từ khóa đã chọn.",
+        "today": "Không có lời nhắc nào đến hạn hôm nay mang các từ khóa đã chọn.",
+        "upcoming": "Không có lời nhắc sắp tới nào mang các từ khóa đã chọn.",
+        "done": "Không có lời nhắc đã hoàn thành nào mang các từ khóa đã chọn."
+      },
+      "nothingIn": {
+        "overdue": "Không có gì quá hạn",
+        "today": "Không có gì hôm nay",
+        "upcoming": "Không có gì sắp tới"
+      },
+      "doneTitle": "Chưa hoàn thành mục nào",
+      "doneDescription": "Các lời nhắc bạn đánh dấu hoàn thành được tập hợp ở đây, nên lỡ đánh dấu nhầm vẫn tìm lại được.",
+      "bucketDescription_other": "{{count}} lời nhắc được xếp trong các nhóm khác.",
+      "showAll": "Hiện tất cả lời nhắc",
+      "keywordsTitle": "Không có lời nhắc nào mang các từ khóa đó"
+    }
+  },
+  "people": {
+    "add": "Thêm",
+    "optionsFor": "Tùy chọn cho {{name}}",
+    "search": {
+      "label": "Tìm người liên hệ",
+      "placeholder": "Tìm tên, vai trò hoặc ghi chú"
+    },
+    "empty": {
+      "zeroTitle": "Chưa có ai",
+      "zeroDescription": "Người viết thư giới thiệu, trưởng hội đồng tuyển chọn, nhà tuyển dụng — bất kỳ ai liên quan đến việc tìm việc. Nêu tên họ trong các công việc họ viết thư và họ cũng sẽ hiện trên các bản ghi đó.",
+      "noMatchTitle": "Không có ai khớp",
+      "noMatchDescription": "Hãy thử một phần tên, vai trò, hoặc nơi họ làm việc."
+    },
+    "toast": {
+      "removed": "Đã gỡ người liên hệ",
+      "saved": "Đã lưu người liên hệ"
+    },
+    "editor": {
+      "editTitle": "Sửa người liên hệ",
+      "addTitle": "Thêm người liên hệ",
+      "save": "Lưu người liên hệ",
+      "description": "Tên là thông tin duy nhất bắt buộc. Phần còn lại là những gì sau này hóa ra quan trọng.",
+      "noApplication": "Không có đơn ứng tuyển",
+      "name": "Tên",
+      "namePlaceholder": "vd. GS. Ngozi Okafor",
+      "role": "Vai trò",
+      "rolePlaceholder": "vd. Người viết thư giới thiệu, trưởng hội đồng, nhà tuyển dụng",
+      "affiliation": "Đơn vị công tác",
+      "affiliationPlaceholder": "vd. Rice",
+      "affiliationHint": "Nơi họ làm việc. Không liên kết với nhà tuyển dụng bạn đã ứng tuyển.",
+      "email": "Email",
+      "phone": "Điện thoại",
+      "namedOn": "Được nêu tên trong",
+      "namedOnHint": "Mọi công việc họ viết thư, phỏng vấn sàng lọc hoặc chủ trì.",
+      "notePlaceholder": "Họ đã nói gì, họ còn nợ bạn gì, khi nào cần nhắc."
+    }
+  },
+  "calculator": {
+    "title": "Máy tính",
+    "hint": "hoạt động không cần bản ghi và không cần kết nối",
+    "copy": "Sao chép kết quả",
+    "mode": "Chế độ",
+    "modes": {
+      "basic": "Cơ bản",
+      "scientific": "Khoa học"
+    },
+    "plusMinus": "cộng hoặc trừ",
+    "history": "Lịch sử",
+    "kept": "Đã giữ {{count}}",
+    "clear": "Xóa",
+    "emptyTitle": "Chưa tính gì",
+    "emptyDescription": "Ba mươi kết quả gần nhất được giữ ở đây, để có thể so sánh con số thứ hai với con số thứ nhất. Chạm vào một kết quả để đưa nó trở lại màn hình hiển thị.",
+    "historyEntry": "{{expr}} bằng {{value}}. Đưa trở lại màn hình hiển thị"
+  },
+  "pageViewer": {
+    "capturedFrom": "Lưu từ {{host}}",
+    "missingTitle": "Không có bản lưu nào trên thiết bị này",
+    "missingDescription": "Bản lưu được giữ ở nơi tạo ra nó, nên bản tạo trong ứng dụng web không có ở đây. Bản ghi vẫn giữ tên và địa chỉ của nó."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · xếp {{ago}}",
+    "editDetails": "Sửa thông tin",
+    "openFailed": "Không có ứng dụng nào trên điện thoại này mở được nó.",
+    "facts": {
+      "type": "Loại",
+      "size": "Kích thước",
+      "filed": "Ngày xếp",
+      "bucket": "Nhóm"
+    },
+    "typed": {
+      "title": "Được ghi nhận, không được lưu trữ",
+      "description": "Mục này được nhập tay — tên, loại và kích thước của một tài liệu được giữ ở nơi khác. Sửa nó và chọn một tệp để giữ bản sao ở đây."
+    },
+    "checking": {
+      "title": "Đang tìm bản sao",
+      "description": "Đang kiểm tra xem tệp mà bản ghi này trỏ tới có còn trong bộ nhớ của ứng dụng không."
+    },
+    "kept": {
+      "title": "Được giữ trên thiết bị này",
+      "pageDescription": "Mở ngay tại đây, với script bị tắt và không kết nối — bản sao đúng như nội dung tin tuyển dụng vào ngày được lưu.",
+      "read": "Đọc",
+      "fileDescription": "Mở bằng ứng dụng nào trên điện thoại này xử lý được loại tệp đó. Không có gì được tải lên, và không có gì ở đây đọc nội dung bên trong.",
+      "open": "Mở"
+    },
+    "gone": {
+      "title": "Bản sao đã mất",
+      "description": "Bản ghi này trỏ tới một tệp không còn trong bộ nhớ của ứng dụng — nhiều khả năng đã bị hệ thống xóa. Bản ghi vẫn nguyên vẹn; hãy chọn lại tệp để đính kèm.",
+      "choose": "Chọn lại"
+    },
+    "attachedTo": "Đính kèm với",
+    "change": "Đổi",
+    "fileUnderJob": "Xếp vào một công việc",
+    "notFiled": "Chưa xếp vào đơn ứng tuyển nào. Xếp vào sẽ đưa nó lên các bản ghi đó và cho phép đồ thị tìm thấy nó từ bất kỳ bản ghi nào.",
+    "addNote": "Thêm ghi chú",
+    "notePlaceholder": "Tài liệu này dùng để làm gì?",
+    "saveNote": "Lưu ghi chú",
+    "noNote": "Chưa ghi gì về tài liệu này.",
+    "toast": {
+      "noteSaved": "Đã lưu ghi chú"
+    }
+  }
+}

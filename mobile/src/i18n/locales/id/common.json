@@ -1,0 +1,44 @@
+{
+  "language": {
+    "label": "Bahasa",
+    "description": "Bahasa yang digunakan untuk menampilkan jojo. Entri Anda tetap dalam bahasa yang Anda gunakan saat menulisnya.",
+    "system": "Sama dengan perangkat ini ({{name}})",
+    "restartRtl": "{{name}} akan ditampilkan dari kanan ke kiri setelah jojo dimulai ulang.",
+    "restartLtr": "{{name}} akan ditampilkan dari kiri ke kanan setelah jojo dimulai ulang."
+  },
+  "actions": {
+    "undo": "Urungkan",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "tryAgain": "Coba lagi",
+    "preview": "Pratinjau",
+    "moreFor": "Tindakan lain untuk {{name}}",
+    "save": "Simpan",
+    "done": "Selesai",
+    "openNamed": "Buka {{name}}",
+    "clear": "Hapus",
+    "clearNamed": "Hapus {{name}}",
+    "notNow": "Jangan sekarang",
+    "duplicate": "Duplikat",
+    "remove": "Hapus",
+    "back": "Kembali",
+    "next": "Berikutnya",
+    "close": "Tutup",
+    "clearSearch": "Hapus pencarian",
+    "copy": "Salin",
+    "copied": "Disalin"
+  },
+  "discard": {
+    "title": "Buang perubahan yang belum disimpan?",
+    "description": "Apa yang Anda ketik di sini belum disimpan di mana pun, jadi keluar akan membuangnya — dan itu tidak dapat diurungkan.",
+    "confirm": "Buang"
+  },
+  "filter": {
+    "all": "Semua"
+  },
+  "pageOptions": {
+    "title": "Opsi halaman",
+    "description": "Ini hanya berlaku untuk layar ini, selama kunjungan ini."
+  }
+}

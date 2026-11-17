@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "申請",
+      "org": "雇主",
+      "role": "職務",
+      "item": "日期或提醒",
+      "file": "檔案",
+      "link": "連結",
+      "snippet": "片段",
+      "posting": "已儲存的職缺",
+      "match": "符合結果",
+      "keyword": "關鍵字"
+    },
+    "isA": "是",
+    "fit": "契合度 {{fit}}%",
+    "query": {
+      "undated": {
+        "question": "沒有任何日期的申請",
+        "why": "不論它們多麼活躍，在行事曆和未來一週中都看不到。"
+      },
+      "untagged": {
+        "question": "沒有任何關鍵字的申請",
+        "why": "沒有人歸檔的紀錄，任何篩選條件都永遠找不到。"
+      },
+      "orphanFiles": {
+        "question": "沒有歸檔在任何申請下的檔案",
+        "why": "文件會越積越多；這能告訴你哪些沒有任何項目指向它們。"
+      },
+      "orphanLinks": {
+        "question": "沒有歸檔在任何申請下的連結",
+        "why": "針對你儲存起來準備日後再看的職缺和網頁，問同樣的問題。"
+      },
+      "busiest": {
+        "question": "和你往來最多的雇主",
+        "why": "同時計算所有集合——申請、日期、檔案和連結。"
+      },
+      "unpromoted": {
+        "question": "從未轉成申請的符合結果和職缺",
+        "why": "機會會悄悄過期；清單檢視中沒有任何地方會告訴你是哪些。"
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} 沒有{{rel}} {{end}}",
+      "startAny": "任何項目",
+      "relAny": "連結到",
+      "endAny": "任何項目",
+      "startType": {
+        "application": "申請",
+        "org": "雇主",
+        "role": "職務",
+        "item": "日期或提醒",
+        "file": "檔案",
+        "link": "連結",
+        "snippet": "片段",
+        "posting": "已儲存的職缺",
+        "match": "符合結果",
+        "keyword": "關鍵字"
+      },
+      "endType": {
+        "application": "申請",
+        "org": "雇主",
+        "role": "職務",
+        "item": "日期或提醒",
+        "file": "檔案",
+        "link": "連結",
+        "snippet": "片段",
+        "posting": "已儲存的職缺",
+        "match": "符合結果",
+        "keyword": "關鍵字"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "今天",
+      "hint": "需要做決定的事"
+    },
+    "apps": {
+      "label": "申請",
+      "hint": "清單和階段看板"
+    },
+    "cal": {
+      "label": "行事曆",
+      "hint": "截止日期、面試和準備工作"
+    },
+    "reminders": {
+      "label": "提醒",
+      "hint": "保管庫 · 你該做什麼、何時要做"
+    },
+    "links": {
+      "label": "連結",
+      "hint": "保管庫 · 職缺、聯絡人和網頁"
+    },
+    "files": {
+      "label": "檔案",
+      "hint": "保管庫 · 你記錄的文件"
+    },
+    "snippets": {
+      "label": "片段",
+      "hint": "保管庫 · 可重複使用的段落"
+    },
+    "tools": {
+      "label": "工具",
+      "hint": "保管庫 · 計算機"
+    },
+    "scout": {
+      "label": "職缺偵察",
+      "hint": "已儲存的搜尋、符合結果和職缺"
+    },
+    "stats": {
+      "label": "統計",
+      "hint": "比率、漏斗圖和接下來該做什麼"
+    },
+    "graph": {
+      "label": "圖譜",
+      "hint": "以網路的形式呈現你的紀錄"
+    },
+    "profile": {
+      "label": "我的個人檔案",
+      "hint": "基本資料、文件和比對關鍵詞"
+    },
+    "assistant": {
+      "label": "助理",
+      "hint": "連接模型之前提供範例"
+    },
+    "settings": {
+      "label": "設定",
+      "hint": "連線、外觀、關鍵字和你的資料"
+    },
+    "transfer": {
+      "label": "傳輸",
+      "hint": "與你的電腦互相搬移所有內容"
+    },
+    "guide": {
+      "label": "使用說明",
+      "hint": "三個層次、各個畫面和圖譜"
+    },
+    "more": {
+      "label": "更多",
+      "hint": "jojo 的其他功能"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "新增申請"
+    },
+    "newApplicationFromLink": {
+      "label": "從連結建立申請",
+      "hint": "模型會讀取職缺並填寫表單"
+    },
+    "newReminder": {
+      "label": "新增提醒"
+    },
+    "newEvent": {
+      "label": "新增活動"
+    },
+    "draftMessage": {
+      "label": "草擬訊息",
+      "hint": "從你的電子郵件片段開始——不會產生任何內容"
+    },
+    "saveLink": {
+      "label": "儲存連結",
+      "hint": "開啟保管庫的連結工具"
+    },
+    "recordDocument": {
+      "label": "記錄文件",
+      "hint": "開啟保管庫的檔案工具"
+    },
+    "savePosting": {
+      "label": "儲存職缺",
+      "hint": "開啟職缺偵察"
+    }
+  },
+  "snooze": {
+    "soon1": "明天",
+    "later1": "延後一天",
+    "soon3": "3 天後",
+    "later3": "延後三天",
+    "soon7": "7 天後",
+    "later7": "延後一週"
+  },
+  "itemActions": {
+    "reopened": "已重新開啟「{{title}}」",
+    "completed": "已完成「{{title}}」",
+    "reopenedBody": "回到未完成清單，並再次計為待辦。",
+    "completedBody": "它會從未完成清單中移除，並計入今天的完成項目——不會刪除任何內容。",
+    "rescheduled": "已重新排定「{{title}}」",
+    "nowDue": "現在改為 {{date}} 到期，會顯示在這裡和行事曆上。",
+    "movedTo": "已移至 {{date}}",
+    "copyTitle": "{{title}}（副本）",
+    "added": "已新增「{{title}}」",
+    "copyBody": "{{date}}——副本帶有相同的關鍵字。",
+    "deleted": "已刪除「{{title}}」",
+    "deletedReminder": "已從提醒清單和行事曆中移除。",
+    "deletedEvent": "已從行事曆中移除。"
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "是清單上方的關鍵字篩選將它們隱藏了。",
+    "noSearchMatch": "沒有符合這項搜尋的內容",
+    "noBothMatch": "沒有同時符合兩個篩選條件的內容",
+    "clearBoth": "清除兩個篩選條件",
+    "clearKeywords": "清除關鍵字"
+  },
+  "boardScan": {
+    "badAddress": "這不是我能開啟的位址。",
+    "timeout": "這個求職網站回應的時間太久。",
+    "unreachable": "無法連上這個求職網站。",
+    "status": "這個求職網站回應了 {{status}}。",
+    "browserOnly": "{{host}} 只會向真正的瀏覽器顯示職缺清單，所以無法從手機讀取。在電腦上，jojo 瀏覽器擴充功能可以讀取。"
+  },
+  "timelineForm": {
+    "title": "請取一個你認得出來的標題。",
+    "date": "請選擇日期——沒有日期的項目無處可顯示。",
+    "time": "請使用像 14:30 這樣的時間。"
+  },
+  "reader": {
+    "tooBig": "這份文件有 {{size}} MB，但讀取器最多只接受 {{max}} MB。",
+    "gone": "這份文件的副本已不在這部裝置上。",
+    "empty": "無法從這份文件讀出任何內容——它可能是掃描檔。",
+    "noAddress": "還沒有位址。請參閱「設定」。",
+    "notConnected": "沒有連接文件讀取器，所以無法讀取這個檔案的內容。可以在「設定」中填入它的位址。",
+    "noCopy": "這筆紀錄在這部裝置上沒有儲存副本，所以沒有內容可以讀取。"
+  },
+  "jobs": {
+    "ready": "「{{label}}」已完成",
+    "readyBody": "已儲存在它所針對的申請底下。",
+    "failed": "「{{label}}」沒有完成"
+  },
+  "boot": {
+    "corrupt": "無法讀取已儲存的紀錄（{{detail}}）。",
+    "blocked": "儲存空間被這部裝置上的其他程式鎖定了。",
+    "unsupported": "這部裝置沒有這個應用程式可以使用的儲存空間。",
+    "threw": "完全無法開啟儲存區。",
+    "banner": "目前沒有儲存到這部裝置——{{why}}"
+  },
+  "posting": {
+    "needsReader": "這除了模型之外，還需要文件讀取器——由它負責擷取頁面。位址在「設定」中。",
+    "empty": "這個頁面傳回的內容幾乎是空的。用 JavaScript 呈現的求職網站，對瀏覽器以外的程式只會傳回空白框架——請改在這裡開啟它並儲存頁面。",
+    "note": "由模型從 {{url}} 讀取",
+    "askedTwice": "詢問了兩次，結果相同。"
+  },
+  "localService": {
+    "stopped": "在傳送前就已停止。"
+  },
+  "clipboard": {
+    "tooBig": "內容太大，無法放進剪貼簿",
+    "tooBigBody": "你的紀錄共有 {{size}}，而 Android 的剪貼簿大約只能容納 {{max}} 的文字。沒有複製任何內容。請使用「傳輸」，透過區域網路將所有內容傳送到你的電腦。",
+    "copied": "已複製到剪貼簿",
+    "copiedBody": "一份可以貼到記事或檔案中的備份。你附加的文件會留在這支手機上——還原時它們的列會回來，但沒有內容。"
+  },
+  "documents": {
+    "incomplete": "複製沒有完成。",
+    "nothingCopied": "沒有複製任何內容。"
+  },
+  "weekday": {
+    "sun": "週日",
+    "mon": "週一",
+    "tue": "週二",
+    "wed": "週三",
+    "thu": "週四",
+    "fri": "週五",
+    "sat": "週六"
+  },
+  "owed": {
+    "overdue": "已逾期",
+    "today": "今天",
+    "tomorrow": "明天",
+    "rest": "本週其餘日子"
+  },
+  "receive": {
+    "declined": "沒有任何變更。請再次掃描 QR 碼以接收。"
+  }
+}

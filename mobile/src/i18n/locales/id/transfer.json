@@ -1,0 +1,146 @@
+{
+  "screen": {
+    "title": "Transfer",
+    "subtitle": "Pindahkan semuanya antara ponsel ini dan komputer Anda, melalui jaringan lokal Anda. Keduanya harus berada di jaringan yang sama. Tidak ada yang dikirim ke internet dan tidak ada yang disimpan di tempat lain.",
+    "direction": "Arah",
+    "roles": {
+      "send": "Kirim ke komputer",
+      "receive": "Terima dari komputer"
+    },
+    "onPhone": "Isi ponsel ini sekarang",
+    "records_other": "{{count}} entri",
+    "empty": "kosong",
+    "sendNote": "Mengirim menyalin semuanya ke komputer Anda, yang bertanya sebelum mengganti isinya. Tidak ada yang berubah di ponsel ini.",
+    "receiveNote": "Menerima mengganti semuanya. Semua yang ada di atas ditimpa oleh kiriman yang tiba, dan tidak dapat diurungkan — ekspor dulu jika Anda ingin menyimpannya."
+  },
+  "groups": {
+    "applications": {
+      "label": "Lamaran",
+      "hint": "Setiap tahap, catatan, dan hasil pada masing-masing"
+    },
+    "timeline": {
+      "label": "Pengingat dan acara",
+      "hint": "{{reminders}} mengingatkan Anda, {{events}} adalah acara bertanggal"
+    },
+    "vault": {
+      "label": "Tautan dan cuplikan",
+      "hint": "{{links}} tautan · {{snippets}} cuplikan"
+    },
+    "files": {
+      "label": "Berkas",
+      "hint": "CV, pernyataan, dan apa pun yang disimpan untuk sebuah lamaran"
+    },
+    "keywords": {
+      "label": "Kata kunci",
+      "hint": "Daftar kata kunci Anda dan setiap entri yang memakainya"
+    },
+    "scout": {
+      "label": "Pencari lowongan",
+      "hint": "{{pipelines}} alur kerja · {{postings}} lowongan tersimpan · {{matches}} kecocokan"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Data dasar, tautan, posisi yang dituju, dan istilah pencocokan Anda"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "tidak tersedia di perangkat ini",
+    "noRandom": "Perangkat ini tidak punya pembangkit bilangan acak yang aman, jadi jojo tidak akan menyepakati kunci di sini. Pemasangan dinonaktifkan alih-alih dilakukan dengan lemah.",
+    "scan": "Pindai kode",
+    "retry": "Coba lagi",
+    "cancel": "Batal"
+  },
+  "send": {
+    "title": "Kirim ke komputer",
+    "hint": "arahkan ke kode di komputer Anda",
+    "outcome": {
+      "applied": "Komputer Anda sekarang memiliki entri Anda",
+      "declined": "Komputer Anda mempertahankan entrinya sendiri",
+      "failed": "Komputer Anda tidak dapat menerima entri Anda",
+      "handed": "Semuanya sudah diserahkan"
+    },
+    "detail": {
+      "waiting": "Komputer Anda bertanya sebelum mengganti apa pun — konfirmasikan di sana untuk menyelesaikan. Tidak ada yang berubah di ponsel ini.",
+      "unknown": "Komputer Anda tidak memberi tahu apakah entri diterima. Tidak ada yang berubah di ponsel ini.",
+      "applied": "Kedua perangkat kini menyimpan entri yang sama. Tidak ada yang berubah di ponsel ini.",
+      "notReplaced": "Tidak ada yang diganti di sana. Tidak ada yang berubah di ponsel ini."
+    },
+    "unreadable_other": "{{count}} dokumen tidak dapat dibaca dan tertinggal.",
+    "again": "Kirim lagi",
+    "typeThis": "Ketik ini di komputer Anda",
+    "paired": "Terpasang. Ponsel ini menunggu di jaringan lokal Anda sampai komputer Anda meminta.",
+    "handing": "Menyerahkan entri Anda…",
+    "handingProgress": "Menyerahkan entri Anda — {{served}} dari {{chunks}}.",
+    "intro": "Di komputer Anda, buka Transfer, pilih Terima dari ponsel, dan pindai kode yang ditampilkannya. Keduanya harus berada di jaringan lokal yang sama.",
+    "gatherFailed": "jojo tidak dapat mengumpulkan entri di ponsel ini, jadi tidak ada yang dikirim. Coba lagi."
+  },
+  "receive": {
+    "title": "Terima",
+    "hint": "arahkan ke kode di perangkat lain",
+    "complete": "Transfer selesai",
+    "done": "Selesai",
+    "typeThis": "Ketik ini di perangkat lain Anda",
+    "paired": "Terpasang. Ponsel ini mendengarkan di jaringan lokal Anda dan tidak di tempat lain.",
+    "progress": "Menerima — {{size}} sejauh ini. Tidak ada yang berubah di sini sampai Anda menyetujuinya.",
+    "intro": "Buka jojo di komputer Anda, pilih Transfer, dan pindai kode yang ditampilkannya.",
+    "confirm": {
+      "title": "Ganti semua isi ponsel ini?",
+      "description": "{{contents}}. {{replaces}}, dan itu tidak dapat diurungkan.",
+      "confirm": "Ganti"
+    },
+    "unrestorable": "Kiriman yang tiba tidak dapat dipulihkan: {{reason}}. Tidak ada yang berubah di ponsel ini."
+  },
+  "landed": {
+    "plain_other": "{{count}} entri ada di ponsel ini.",
+    "withDocuments_other": "{{count}} entri ada di ponsel ini, {{documents}}.",
+    "documents_other": "{{count}} dokumen",
+    "skipped_other": "{{count}} tidak dapat dibaca."
+  },
+  "scanner": {
+    "point": "Arahkan ini ke kode di halaman Transfer perangkat lain Anda.",
+    "advice": {
+      "denied": "jojo memerlukan kamera untuk membaca kode di perangkat lain Anda. Izinkan, atau ketik kodenya secara manual.",
+      "unsupported": "Ponsel ini tidak dapat membuka kamera untuk jojo.",
+      "failed": "Kamera tidak menyala. Tutup jojo lalu buka lagi."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Baca kode pemasangan",
+      "message": "jojo memerlukan kamera untuk membaca kode yang tampil di perangkat lain Anda. Tidak ada yang direkam, dan tidak ada gambar yang keluar dari ponsel ini.",
+      "allow": "Izinkan",
+      "notNow": "Jangan sekarang"
+    },
+    "refused": {
+      "denied": "jojo memerlukan kamera untuk membaca kode di perangkat lain Anda.",
+      "blocked": "Kamera dimatikan untuk jojo. Aktifkan di Setelan ponsel Anda, di bawah Aplikasi, untuk memasangkan dengan memindai."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Kode itu bukan tawaran pemasangan jojo. Pindai kode di perangkat lain Anda.",
+      "noNetwork": "Ponsel ini tidak berada di jaringan lokal. jojo hanya mentransfer melalui jaringan lokal Anda, jadi kedua perangkat harus berada di jaringan yang sama.",
+      "notLocal": "Ponsel ini berada di jaringan yang tidak akan dipakai jojo untuk transfer. jojo hanya terhubung ke alamat jaringan pribadi, jadi entri Anda tidak pernah melewati internet.",
+      "noSocket": "jojo tidak dapat membuka koneksi di ponsel ini. Coba lagi."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "Papan klip kosong. Salin cadangan jojo dulu, lalu tempel di sini.",
+    "fileEmpty": "Berkas itu kosong. Tidak ada yang berubah di ponsel ini.",
+    "notBackup": "itu bukan cadangan jojo",
+    "unrestorable": {
+      "file": "Berkas itu tidak dapat dipulihkan: {{reason}}. Tidak ada yang berubah di ponsel ini.",
+      "clipboard": "Isi papan klip tidak dapat dipulihkan: {{reason}}. Tidak ada yang berubah di ponsel ini."
+    },
+    "noRecords": {
+      "file": "Berkas itu adalah cadangan tanpa entri. Tidak ada yang berubah di ponsel ini — memulihkannya akan mengosongkan ponsel ini.",
+      "clipboard": "Isi papan klip adalah cadangan tanpa entri. Tidak ada yang berubah di ponsel ini — memulihkannya akan mengosongkan ponsel ini."
+    },
+    "unreadable": "Berkas itu tidak dapat dibaca. Tidak ada yang berubah di ponsel ini.",
+    "noPicker": "Ponsel ini tidak punya aplikasi untuk memilih berkas JSON atau teks.",
+    "openFailed": "Berkas tidak dapat dibuka: {{detail}}",
+    "failedTitle": "Tidak ada yang diimpor",
+    "restoredTitle": "Cadangan dipulihkan"
+  }
+}

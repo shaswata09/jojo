@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Başvuru",
+      "org": "İşveren",
+      "role": "Rol",
+      "item": "Tarih ya da hatırlatıcı",
+      "file": "Dosya",
+      "link": "Bağlantı",
+      "snippet": "Metin parçası",
+      "posting": "Kayıtlı ilan",
+      "match": "Eşleşme",
+      "keyword": "Anahtar kelime"
+    },
+    "isA": "türü",
+    "fit": "%{{fit}} uyum",
+    "query": {
+      "undated": {
+        "question": "Hiçbir şeyin tarihlendirilmediği başvurular",
+        "why": "Ne kadar canlı olurlarsa olsunlar takvimde ve önümüzdeki haftada görünmezler."
+      },
+      "untagged": {
+        "question": "Hiç anahtar kelime taşımayan başvurular",
+        "why": "Kimsenin dosyalamadığı bir kaydı hiçbir filtre öne çıkarmaz."
+      },
+      "orphanFiles": {
+        "question": "Hiçbir başvurunun altında dosyalanmamış dosyalar",
+        "why": "Belgeler savrulur; hangilerine hiçbir şeyin işaret etmediğini söyleyen budur."
+      },
+      "orphanLinks": {
+        "question": "Hiçbir başvurunun altında dosyalanmamış bağlantılar",
+        "why": "Dönmek için kaydettiğiniz ilanlar ve sayfalar için aynı soru."
+      },
+      "busiest": {
+        "question": "En çok işinizin olduğu işverenler",
+        "why": "Tüm koleksiyonlarda aynı anda sayılır — başvurular, tarihler, dosyalar ve bağlantılar."
+      },
+      "unpromoted": {
+        "question": "Hiç başvuruya dönüşmeyen eşleşmeler ve ilanlar",
+        "why": "Fırsatlar sessizce eskir; liste görünümlerindeki hiçbir şey hangileri olduğunu söylemez."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} ({{rel}}) {{end}} ile bağlantılı",
+      "missing": "{{start}} ({{rel}}) {{end}} ile bağlantılı değil",
+      "startAny": "Herhangi bir şey",
+      "relAny": "herhangi bir ilişki",
+      "endAny": "herhangi bir şey",
+      "startType": {
+        "application": "Başvurular",
+        "org": "İşverenler",
+        "role": "Roller",
+        "item": "Tarihler ya da hatırlatıcılar",
+        "file": "Dosyalar",
+        "link": "Bağlantılar",
+        "snippet": "Metin parçaları",
+        "posting": "Kayıtlı ilanlar",
+        "match": "Eşleşmeler",
+        "keyword": "Anahtar kelimeler"
+      },
+      "endType": {
+        "application": "bir başvuru",
+        "org": "bir işveren",
+        "role": "bir rol",
+        "item": "bir tarih ya da hatırlatıcı",
+        "file": "bir dosya",
+        "link": "bir bağlantı",
+        "snippet": "bir metin parçası",
+        "posting": "kayıtlı bir ilan",
+        "match": "bir eşleşme",
+        "keyword": "bir anahtar kelime"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Bugün",
+      "hint": "Karar bekleyenler"
+    },
+    "apps": {
+      "label": "Başvurular",
+      "hint": "Liste ve aşama panosu"
+    },
+    "cal": {
+      "label": "Takvim",
+      "hint": "Son tarihler, mülakatlar ve hazırlık"
+    },
+    "reminders": {
+      "label": "Hatırlatıcılar",
+      "hint": "Kasa · neyi ne zaman yapmanız gerektiği"
+    },
+    "links": {
+      "label": "Bağlantılar",
+      "hint": "Kasa · ilanlar, kişiler ve sayfalar"
+    },
+    "files": {
+      "label": "Dosyalar",
+      "hint": "Kasa · kaydettiğiniz belgeler"
+    },
+    "snippets": {
+      "label": "Metin parçaları",
+      "hint": "Kasa · yeniden kullanılabilir paragraflar"
+    },
+    "tools": {
+      "label": "Araçlar",
+      "hint": "Kasa · hesap makinesi"
+    },
+    "scout": {
+      "label": "İş gözcüsü",
+      "hint": "Kayıtlı aramalar, eşleşmeler ve ilanlar"
+    },
+    "stats": {
+      "label": "İstatistikler",
+      "hint": "Oranlar, bir huni ve üzerinde çalışılacaklar"
+    },
+    "graph": {
+      "label": "Grafik",
+      "hint": "Kayıtlarınız, oldukları gibi bir ağ olarak"
+    },
+    "profile": {
+      "label": "Profilim",
+      "hint": "Temel bilgiler, belgeler ve eşleştirme terimleri"
+    },
+    "assistant": {
+      "label": "Asistan",
+      "hint": "Bir model bağlanana kadar örnekler"
+    },
+    "settings": {
+      "label": "Ayarlar",
+      "hint": "Bağlantılar, görünüm, anahtar kelimeler ve verileriniz"
+    },
+    "transfer": {
+      "label": "Aktarım",
+      "hint": "Her şeyi bilgisayarınıza ya da bilgisayarınızdan taşıyın"
+    },
+    "guide": {
+      "label": "Nasıl kullanılır",
+      "hint": "Üç katman, ekranlar ve grafik"
+    },
+    "more": {
+      "label": "Daha fazla",
+      "hint": "jojo'nun geri kalanı"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Yeni başvuru"
+    },
+    "newApplicationFromLink": {
+      "label": "Bağlantıdan başvuru",
+      "hint": "Model ilanı okur ve formu doldurur"
+    },
+    "newReminder": {
+      "label": "Yeni hatırlatıcı"
+    },
+    "newEvent": {
+      "label": "Yeni etkinlik"
+    },
+    "draftMessage": {
+      "label": "Mesaj taslağı hazırla",
+      "hint": "E-posta metin parçalarınızdan — hiçbir şey üretilmez"
+    },
+    "saveLink": {
+      "label": "Bağlantı kaydet",
+      "hint": "Kasa'nın bağlantılar aracını açar"
+    },
+    "recordDocument": {
+      "label": "Belge kaydet",
+      "hint": "Kasa'nın dosyalar aracını açar"
+    },
+    "savePosting": {
+      "label": "İlan kaydet",
+      "hint": "İş gözcüsünü açar"
+    }
+  },
+  "snooze": {
+    "soon1": "Yarın",
+    "later1": "Bir gün sonra",
+    "soon3": "3 gün içinde",
+    "later3": "Üç gün sonra",
+    "soon7": "7 gün içinde",
+    "later7": "Bir hafta sonra"
+  },
+  "itemActions": {
+    "reopened": "{{title}} yeniden açıldı",
+    "completed": "{{title}} tamamlandı",
+    "reopenedBody": "Yeniden açık listede ve yine yapılacak olarak sayılıyor.",
+    "completedBody": "Açık listelerden çıkar ve bugüne sayılır — hiçbir şey silinmez.",
+    "rescheduled": "{{title}} yeniden planlandı",
+    "nowDue": "Yeni son tarih {{date}}; burada ve takvimde.",
+    "movedTo": "Yeni tarih: {{date}}",
+    "copyTitle": "{{title}} (kopya)",
+    "added": "{{title}} eklendi",
+    "copyBody": "{{date}} — kopya aynı anahtar kelimeleri taşır.",
+    "deleted": "{{title}} silindi",
+    "deletedReminder": "Hatırlatıcılar listesinden ve takvimden kaldırıldı.",
+    "deletedEvent": "Takvimden kaldırıldı."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "Bunları gizleyen şey listenin üstündeki anahtar kelime filtresi.",
+    "noSearchMatch": "Bu aramayla eşleşen bir şey yok",
+    "noBothMatch": "İki filtreyle de eşleşen bir şey yok",
+    "clearBoth": "İki filtreyi de temizle",
+    "clearKeywords": "Anahtar kelimeleri temizle"
+  },
+  "boardScan": {
+    "badAddress": "Bu, açabileceğim bir adres değil.",
+    "timeout": "Bu site yanıt vermekte çok geç kaldı.",
+    "unreachable": "Bu siteye ulaşılamadı.",
+    "status": "Bu site şu yanıtı verdi: {{status}}.",
+    "browserOnly": "{{host}} ilanlarını yalnızca gerçek bir tarayıcıya gösteriyor; bu yüzden telefondan okunamaz. Bilgisayarda jojo tarayıcı uzantısı onu okuyabilir."
+  },
+  "timelineForm": {
+    "title": "Tanıyacağınız bir başlık verin.",
+    "date": "Bir tarih seçin — tarihsiz bir öğenin görünebileceği bir yer yok.",
+    "time": "14:30 gibi bir saat kullanın."
+  },
+  "reader": {
+    "tooBig": "Bu belge {{size}} MB; okuyucu en fazla {{max}} MB kabul eder.",
+    "gone": "Bu belgenin kopyası artık bu cihazda değil.",
+    "empty": "Bu belgeden hiçbir şey okunamadı — taranmış bir belge olabilir.",
+    "noAddress": "Henüz adres yok. Ayarlar'a bakın.",
+    "notConnected": "Bağlı bir belge okuyucu yok; bu yüzden bu dosyanın içeriği okunamıyor. Adresi Ayarlar'a girilir.",
+    "noCopy": "Bu kaydın bu cihazda saklanan bir kopyası yok; bu yüzden okunacak bir şey yok."
+  },
+  "jobs": {
+    "ready": "{{label}} hazır",
+    "readyBody": "Yazıldığı başvurunun altına kaydedildi.",
+    "failed": "{{label}} tamamlanamadı"
+  },
+  "boot": {
+    "corrupt": "kayıtlı kayıtlar okunamadı ({{detail}}).",
+    "blocked": "depolama bu cihazdaki başka bir şey tarafından kilitlendi.",
+    "unsupported": "bu cihazda bu uygulamanın kullanabileceği bir depolama yok.",
+    "threw": "depo hiç açılamadı.",
+    "banner": "Bu cihaza kaydedilmiyor — {{why}}"
+  },
+  "posting": {
+    "needsReader": "Bunun için modelin yanı sıra belge okuyucu da gerekir — sayfayı getiren odur. Adresi Ayarlar'da.",
+    "empty": "Bu sayfa neredeyse boş geldi. JavaScript ile çizilen siteler, tarayıcı dışındaki her şeye boş bir kabuk gönderir — sayfayı burada açın ve bunun yerine kaydedin.",
+    "note": "Model tarafından şu adresten okundu: {{url}}",
+    "askedTwice": "İki kez soruldu, aynı sonuç alındı."
+  },
+  "localService": {
+    "stopped": "Gönderilmeden önce durduruldu."
+  },
+  "clipboard": {
+    "tooBig": "Pano için çok büyük",
+    "tooBigBody": "Kayıtlarınız {{size}} tutuyor ve Android panosu yaklaşık {{max}} metin alabiliyor. Hiçbir şey kopyalanmadı. Her şeyi yerel ağınız üzerinden bilgisayarınıza göndermek için Aktarım'ı kullanın.",
+    "copied": "Panoya kopyalandı",
+    "copiedBody": "Bir nota ya da dosyaya yapıştırabileceğiniz bir yedek. Eklediğiniz belgeler bu telefonda kalır — satırları içerikleri olmadan geri gelir."
+  },
+  "documents": {
+    "incomplete": "Kopyalama tamamlanmadı.",
+    "nothingCopied": "Hiçbir şey kopyalanmadı."
+  },
+  "weekday": {
+    "sun": "Paz",
+    "mon": "Pzt",
+    "tue": "Sal",
+    "wed": "Çar",
+    "thu": "Per",
+    "fri": "Cum",
+    "sat": "Cmt"
+  },
+  "owed": {
+    "overdue": "Gecikmiş",
+    "today": "Bugün",
+    "tomorrow": "Yarın",
+    "rest": "Haftanın geri kalanı"
+  },
+  "receive": {
+    "declined": "Hiçbir şey değiştirilmedi. Almak için kodu yeniden tarayın."
+  }
+}

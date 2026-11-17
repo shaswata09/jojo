@@ -1,0 +1,59 @@
+{
+  "monthPicker": {
+    "goTo": "前往月份",
+    "previousYear": "上一年",
+    "nextYear": "下一年"
+  },
+  "chip": {
+    "allDay": "整天",
+    "tooltip": "{{start}}——{{title}}",
+    "spoken": "{{start}}——",
+    "spokenDone": "{{start}}，已完成——"
+  },
+  "dayCell": {
+    "label_other": "{{label}}，{{count}} 個活動",
+    "add": "在 {{label}} 新增活動",
+    "more_other": "另有 {{count}} 個"
+  },
+  "grid": {
+    "dayLabel": "{{month}}{{day}}日",
+    "previousMonth": "上個月",
+    "nextMonth": "下個月",
+    "today": "今天",
+    "backTo": "回到 {{date}}",
+    "goTo": "前往{{year}}年{{month}}",
+    "hintTouch": "輕觸某一天，查看當天的安排。",
+    "hintPointer": "選一天，就會在格狀檢視旁列出當天內容。按一下活動即可編輯，或把它拖曳到另一天——拖曳需要使用指標裝置，鍵盤使用者可以改用活動內的日期欄位。",
+    "eventTypes": "活動類型",
+    "showAll": "全部顯示",
+    "dateColours": "日期顏色",
+    "marks": {
+      "overdue": "已逾期",
+      "soon": "48 小時內到期",
+      "done": "已完成"
+    }
+  },
+  "rail": {
+    "monthYear": "{{year}}年{{month}}",
+    "today": "今天",
+    "selectedDay": "選取的日期",
+    "hiddenTitle": "{{date}} 沒有顯示任何內容",
+    "hiddenDescription_other": "有 {{count}} 個活動屬於在格狀檢視下方已關閉的類型。",
+    "showAllTypes": "顯示所有活動類型",
+    "emptyTitle": "{{date}} 沒有任何安排",
+    "emptyDescription": "新增面試、截止日期或一段準備時間，就會顯示在這裡和格狀檢視上。",
+    "addEvent": "新增活動",
+    "backTo": "回到{{month}}",
+    "delete": "刪除活動",
+    "deleteNamed": "刪除「{{title}}」",
+    "restOf": "{{month}}的其餘日子",
+    "lastDayTitle": "{{date}} 是這個月的最後一天",
+    "nothingAfterTitle": "{{date}} 之後沒有任何安排",
+    "lastDayDescription": "之後沒有任何安排。往後翻頁，即可規劃{{month}}的行程。",
+    "nothingAfterDescription": "{{month}}剩下的日子都沒有安排。在這天之後新增的任何項目都會顯示在這裡。",
+    "goToMonth": "前往{{month}}",
+    "goToDay": "前往 {{label}}",
+    "shortDay": "{{month}}{{day}}日",
+    "moreLater_other": "本月稍後還有 {{count}} 個"
+  }
+}

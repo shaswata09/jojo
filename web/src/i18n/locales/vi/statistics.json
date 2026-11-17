@@ -1,0 +1,27 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Đo được",
+        "hint": "Đếm từ chính các bản ghi của bạn"
+      },
+      "suggested": {
+        "label": "Gợi ý",
+        "hint": "Lời khuyên chung, hoặc so với một đợt tìm việc thông thường chứ không phải của bạn"
+      }
+    },
+    "title": "Nên làm gì tiếp theo",
+    "intro": "Sắp xếp theo mức độ được bản ghi của bạn ủng hộ, rồi theo chi phí thấp nhất."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}}/{{of}}",
+    "rate": "{{rate}}% · khả năng {{range}}",
+    "groupReplied": "Phản hồi, theo {{dimension}}",
+    "groupInterviews": "Phỏng vấn, theo {{dimension}}",
+    "confident": "Các khoảng không chồng lên nhau, nên đây là khác biệt thật — {{best}} đáng để bạn dồn thêm công sức.",
+    "unconfident": "Các khoảng chồng lên nhau, nên đây chỉ là hai con số chứ chưa phải một khác biệt. Thêm bản ghi sẽ tách chúng ra hoặc thu hẹp khoảng cách.",
+    "tooFew_other": "{{count}} nhóm khác có ít hơn {{min}} bản ghi nên không được so sánh.",
+    "title": "Điều gì đang hiệu quả",
+    "intro": "Thanh là vùng mà tỷ lệ thực có khả năng nằm trong đó; vạch là giá trị bạn đã đo được. Dải rộng nghĩa là chưa đủ bản ghi để chắc chắn."
+  }
+}

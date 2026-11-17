@@ -1,0 +1,112 @@
+{
+  "common": {
+    "connections_other": "{{count}} 個連結",
+    "records_other": "{{count}} 筆紀錄"
+  },
+  "legend": {
+    "show": "顯示「{{name}}」",
+    "hide": "隱藏「{{name}}」",
+    "allHidden": "所有類型的紀錄都已隱藏。",
+    "showAll": "全部顯示",
+    "isA": "是"
+  },
+  "node": {
+    "label": "{{label}}。{{type}}，{{connections}}"
+  },
+  "canvas": {
+    "label": "知識圖譜——{{records}}，{{connections}}",
+    "capped": "目前顯示連結最多的 {{shown}} 筆紀錄。另有 {{dropped}} 筆在儲存區中，但不在這張圖上——用篩選條件縮小範圍即可看到。",
+    "description": "每筆紀錄是一個節點，紀錄之間的每個指向是一條線。這張圖旁邊的面板以文字列出相同的資訊。"
+  },
+  "answer": {
+    "title": "答案",
+    "records_other": "{{count}} 筆紀錄",
+    "prompt": "選一個範例，或建立一個模式，答案就會顯示在這裡，並在上方的圖中標示出來。",
+    "emptyTitle": "沒有符合的紀錄",
+    "clear": "清除查詢",
+    "caption": "符合模式的紀錄",
+    "columns": {
+      "record": "紀錄",
+      "kind": "類型",
+      "matched": "符合依據"
+    },
+    "open": "開啟",
+    "select": "在圖中選取",
+    "via": "經由 {{rel}}",
+    "more_other": "{{names}}，另有 {{count}} 個",
+    "showing": "顯示 {{total}} 筆中的前 {{shown}} 筆。每一筆都已在上方的圖中標示出來。"
+  },
+  "examples": {
+    "title": "實作範例",
+    "nothingToAsk": "這個工作階段沒有可以這樣詢問的內容"
+  },
+  "query": {
+    "title": "詢問圖譜",
+    "hint": "用一句話提問，或手動建立問題",
+    "shape": "問題結構",
+    "pattern": "模式",
+    "path": "路徑",
+    "generated": "產生的查詢",
+    "clear": "清除",
+    "sqlNote": "問題的結構，為了方便閱讀而以 SQL 的用語呈現。實際執行的是上方的結構化查詢——不會有任何程式解析這一行。"
+  },
+  "fields": {
+    "records": "紀錄",
+    "anyRecord": "任何紀錄",
+    "ofKind": "類型為",
+    "anyKind": "任何類型",
+    "reminder": "提醒",
+    "condition": "條件",
+    "quantifier": {
+      "has": "有",
+      "missing": "沒有",
+      "atLeast": "至少有"
+    },
+    "howMany": "數量",
+    "orMore_other": "{{count}} 個以上",
+    "relationship": "關係",
+    "anyRelationship": "任何關係",
+    "connectedTo": "連結到",
+    "anything": "任何項目",
+    "keyword": "帶有關鍵字",
+    "anyKeyword": "任何關鍵字",
+    "from": "起點",
+    "to": "終點"
+  },
+  "detail": {
+    "title": "選取的紀錄",
+    "nothingSelected": "未選取任何項目",
+    "pickHint": "選取一個節點——按一下它，或用 Tab 鍵移到它上面再按 Enter——就能看到它連結到哪些項目，以及它在應用程式中的位置。",
+    "open": "開啟{{type}}",
+    "openType": {
+      "application": "開啟申請",
+      "organisation": "開啟機構",
+      "role": "開啟職務",
+      "item": "開啟時間軸項目",
+      "keyword": "開啟關鍵字",
+      "link": "開啟連結",
+      "file": "開啟檔案",
+      "snippet": "開啟片段",
+      "posting": "開啟已儲存的職缺",
+      "match": "開啟職缺偵察結果",
+      "source": "開啟來源",
+      "background": "開啟「關於你」",
+      "claim": "開啟關係"
+    },
+    "derived": "從你的紀錄推導而來——它沒有自己的頁面。",
+    "verbs": "你可以對它做什麼",
+    "noLinks": "目前還沒有任何項目指向這筆紀錄。"
+  },
+  "ask": {
+    "notConnected": "在<settings>設定</settings>中連接本機模型，就能用一句話提問。不論是否連接，下方的建立工具都能使用。",
+    "label": "向圖譜提問",
+    "stop": "停止",
+    "submit": "提問",
+    "again": "問別的問題",
+    "suggestions": {
+      "noFollowUp": "哪些申請沒有排定後續追蹤？",
+      "unfiled": "哪些檔案沒有歸檔在任何地方？",
+      "busy": "哪些申請有超過兩個時間軸項目？"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "chatWithJojo": "Trò chuyện với jojo",
+  "newConversation": "Cuộc trò chuyện mới",
+  "newAboutOpen": "Cuộc trò chuyện mới về đơn ứng tuyển đang mở",
+  "hideConversations": "Ẩn các cuộc trò chuyện",
+  "showConversations": "Hiện các cuộc trò chuyện",
+  "undo": "Hoàn tác",
+  "overflow_other": "Thêm {{count}} cuộc trò chuyện đang mở",
+  "grip": {
+    "labelCorner": "Di chuyển khung trò chuyện sang ngang — đang ở góc. Phím mũi tên để di chuyển; nhấp đúp để đưa về góc.",
+    "labelFarLeft": "Di chuyển khung trò chuyện sang ngang — đang ở sát bên trái. Phím mũi tên để di chuyển; nhấp đúp để đưa về góc.",
+    "labelFarRight": "Di chuyển khung trò chuyện sang ngang — đang ở sát bên phải. Phím mũi tên để di chuyển; nhấp đúp để đưa về góc.",
+    "labelPartWay": "Di chuyển khung trò chuyện sang ngang — đã sang trái {{percent}}%. Phím mũi tên để di chuyển; nhấp đúp để đưa về góc.",
+    "labelPartWayRight": "Di chuyển khung trò chuyện sang ngang — đã sang phải {{percent}}%. Phím mũi tên để di chuyển; nhấp đúp để đưa về góc.",
+    "title": "Kéo để dời khung trò chuyện sang chỗ khác · nhấp đúp để đưa về góc"
+  },
+  "prompts": {
+    "about": {
+      "left": "Đơn ứng tuyển này còn việc gì cần làm?",
+      "followUp": "Soạn email liên hệ lại cho đơn này",
+      "summarise": "Tóm tắt đơn ứng tuyển này"
+    },
+    "general": {
+      "waiting": "Tôi đang chờ những gì?",
+      "noDeadline": "Những đơn ứng tuyển nào chưa có hạn chót?"
+    }
+  },
+  "window": {
+    "label": "Cuộc trò chuyện: {{title}}",
+    "back": "Quay lại các cuộc trò chuyện",
+    "working": "Đang xử lý",
+    "openInAssistant": "Mở trong Trợ lý",
+    "open": "Mở cuộc trò chuyện này",
+    "minimise": "Thu nhỏ cuộc trò chuyện này",
+    "close": "Đóng cuộc trò chuyện này",
+    "closeTitle": "Đóng — nó vẫn còn trong các cuộc trò chuyện của bạn",
+    "about": "Về <name>{{name}}</name>",
+    "detachAria": "Bắt đầu cuộc trò chuyện này không về chủ đề cụ thể nào",
+    "unfileAria": "Gỡ cuộc trò chuyện này khỏi đơn ứng tuyển",
+    "detachTitle": "Không về đơn ứng tuyển này",
+    "unfileTitle": "Gỡ khỏi đơn ứng tuyển này",
+    "notConfigured": "Kết nối một mô hình trong <settings>Cài đặt</settings> để trò chuyện với jojo tại đây. Mọi thứ đều ở lại trên thiết bị này.",
+    "askAbout": "Hỏi bất cứ điều gì về {{name}} — jojo biết đây là đơn ứng tuyển bạn muốn nói tới.",
+    "askGeneral": "Nhờ jojo tìm thứ gì đó, thêm một đơn ứng tuyển, hoặc chuyển một đơn sang giai đoạn tiếp theo.",
+    "composerLabel": "Nhắn cho jojo trong {{title}}",
+    "placeholderAbout": "Hỏi về {{org}}…",
+    "placeholder": "Hỏi jojo…"
+  }
+}

@@ -1,0 +1,911 @@
+{
+  "shared": {
+    "undo": "Hoàn tác",
+    "delete": "Xóa",
+    "cancel": "Hủy",
+    "list": "{{items}} và {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "Hôm nay",
+    "subtitleEmpty": "{{date}} · chưa theo dõi gì — mọi thứ bạn thêm đều ở lại trên thiết bị này.",
+    "subtitle_other": "{{date}} · {{count}} đơn ứng tuyển, tất cả đều trên thiết bị này.",
+    "decision": {
+      "title": "Cần quyết định",
+      "done": "Xong",
+      "snooze": "Tạm hoãn",
+      "notConnected": "Chưa có gì được kết nối với mục này",
+      "emptyTitle": "Hôm nay không có gì cần quyết định",
+      "emptyDescription": "Lời mời làm việc, đơn ứng tuyển quá hạn, hạn chót cứng tiếp theo và buổi phỏng vấn tiếp theo sẽ hiện ở đây. Hiện không có mục nào cần xử lý.",
+      "open_other": "{{count}} đang mở"
+    },
+    "firstSteps": {
+      "title": "Những bước đầu tiên",
+      "progress": "Đã xong {{done}}/{{total}}",
+      "complete": "Cả ba bước đều đã xong. Mọi thứ bạn thêm từ giờ sẽ xuất hiện trên màn hình này, trên lịch và trong đơn ứng tuyển liên quan.",
+      "intro": "Mỗi bước mở đúng chức năng thật và tự đánh dấu khi đã có bản ghi — không có bước nào là bài hướng dẫn bắt buộc phải ngồi xem.",
+      "introEmpty": "Chưa theo dõi gì. Mỗi bước mở đúng chức năng thật và tự đánh dấu khi đã có bản ghi — không có bước nào là bài hướng dẫn bắt buộc phải ngồi xem.",
+      "close": "Đóng những bước đầu tiên",
+      "hide": "Ẩn các bước này",
+      "application": {
+        "title": "Thêm một đơn ứng tuyển",
+        "body": "Một vị trí, giai đoạn và hạn chót của nó. Mọi thứ khác trong jojo đều gắn với bản ghi này."
+      },
+      "dated": {
+        "title": "Đặt ngày cho một mục",
+        "body": "Hạn chót, phỏng vấn và chuyến thăm là cùng một loại bản ghi, nên một ngày sẽ xuất hiện cùng lúc trên màn hình này, trên lịch và trong đơn ứng tuyển.",
+        "label": "Sự kiện mới"
+      },
+      "reminder": {
+        "title": "Đặt lịch liên hệ lại",
+        "body": "Lời nhắc là cùng loại bản ghi đó nhưng bật thêm chế độ nhắc. Khi qua ngày, nó trở thành việc cần làm và ở lại đây cho đến khi bạn đánh dấu hoàn thành.",
+        "label": "Lời nhắc mới"
+      }
+    },
+    "glance": {
+      "active": "Đang hoạt động",
+      "interviews": "Sàng lọc & phỏng vấn",
+      "overdue": "Quá hạn",
+      "doneToday": "Xong hôm nay",
+      "a11y": "{{value}} {{label}}"
+    },
+    "owed": {
+      "title": "Việc cần làm tuần này",
+      "hintOverdue": "{{overdue}} quá hạn · {{due}} đến hạn",
+      "hintDue": "{{due}} đến hạn",
+      "emptyTitle": "Không có việc gì cần làm",
+      "emptyDescription": "Hạn chót, phỏng vấn và liên hệ lại sẽ hiện ở đây ngay khi có ngày, và ở lại cho đến khi bạn đánh dấu hoàn thành.",
+      "addEvent": "Thêm sự kiện",
+      "dayLabel_other": "{{day}}, {{date}}, {{count}} mục",
+      "clear": "Hôm nay không còn việc gì.",
+      "clearDone_other": "Hôm nay không còn việc gì — đã xong {{count}}.",
+      "later": "Sau",
+      "moreOnCalendar_other": "Còn {{count}} mục nữa trên lịch"
+    },
+    "recent": {
+      "title": "Đơn ứng tuyển gần đây",
+      "hint": "hoạt động mới nhất",
+      "viewAll": "Xem tất cả",
+      "emptyDescription": "Mỗi vị trí bạn theo dõi sẽ hiện ở đây khi bạn cập nhật nó, mới nhất trước.",
+      "daysAgo_other": "{{count}} ngày trước",
+      "views": {
+        "notes": "Ghi chú",
+        "recent": "Đơn ứng tuyển gần đây"
+      },
+      "control": "Hiện trên thẻ này",
+      "addReminder": "Thêm lời nhắc",
+      "headingNotes": "Ghi chú dán"
+    },
+    "pipeline": {
+      "title": "Quy trình",
+      "emptyTitle": "Chưa có gì trong quy trình",
+      "emptyDescription": "Mỗi đơn ứng tuyển nằm ở một giai đoạn, và phần này cho thấy chúng phân bố ra sao. Thêm một đơn và phần đầu tiên sẽ xuất hiện."
+    },
+    "sticky": {
+      "newNote": "Ghi chú dán mới",
+      "placeholder": "Ghi nhanh cho chính mình…",
+      "newColour": "Màu cho ghi chú mới",
+      "stick": "Dán lên",
+      "empty": "Chưa dán gì lên. Ghi chú ở lại đây cho đến khi bạn gỡ xuống, và ghi chú nào cũng có thể thành lời nhắc khi đã có ngày.",
+      "listLabel": "Ghi chú dán",
+      "editNote": "Sửa ghi chú",
+      "editAria": "Sửa ghi chú: {{text}}",
+      "colour": "Màu",
+      "colourOf": "Màu của ghi chú \"{{text}}\"",
+      "toReminderAria": "Chuyển thành lời nhắc: {{text}}",
+      "removeAria": "Gỡ ghi chú: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "Đơn ứng tuyển",
+    "subtitleEmpty": "Chưa theo dõi gì — mọi thứ bạn thêm đều ở lại trên thiết bị này.",
+    "subtitle": "Hiện {{shown}} · tổng {{total}}",
+    "new": "Mới",
+    "newApplication": "Đơn ứng tuyển mới",
+    "showNotes": "Hiện ghi chú",
+    "showNotesDescription": "Dòng thứ hai dưới mỗi vị trí",
+    "none": {
+      "title": "Chưa có đơn ứng tuyển nào",
+      "description": "Theo dõi một công việc bạn đang ứng tuyển và nó sẽ hiện ở đây, trên lịch và trong tuần tới."
+    },
+    "searchLabel": "Tìm đơn ứng tuyển",
+    "searchPlaceholder": "Tìm vị trí, ghi chú hoặc giai đoạn",
+    "layout": "Bố cục",
+    "views": {
+      "list": "Danh sách",
+      "board": "Bảng"
+    },
+    "filterByRole": "Lọc theo vị trí",
+    "filterByStage": "Lọc theo giai đoạn",
+    "sortButton": "Sắp xếp: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "Hoạt động gần nhất",
+        "asc": "Mới nhất trước",
+        "desc": "Cũ nhất trước"
+      },
+      "stage": {
+        "label": "Giai đoạn",
+        "asc": "Từ bản nháp đến đã đóng",
+        "desc": "Từ đã đóng đến bản nháp"
+      },
+      "position": {
+        "label": "Vị trí",
+        "asc": "A đến Z",
+        "desc": "Z đến A"
+      }
+    },
+    "sortMenu": {
+      "title": "Sắp xếp theo",
+      "description": "Chọn cột, rồi chọn đầu nào được đặt lên trên.",
+      "currently": "Hiện tại: {{order}}"
+    },
+    "empty": {
+      "title": "Không có đơn ứng tuyển nào khớp",
+      "nothing": "Không có gì để hiển thị.",
+      "carries": "Không có mục nào khớp với {{filters}}.",
+      "reasons": {
+        "search": "tìm kiếm đó",
+        "stage": "giai đoạn {{stage}}",
+        "keywords": "các từ khóa đã chọn",
+        "roles": "các vị trí đã chọn"
+      },
+      "showAll_other": "Hiện tất cả {{count}}"
+    },
+    "row": {
+      "moreActions": "Thao tác khác cho {{name}}",
+      "open": "Mở bản ghi",
+      "edit": "Sửa",
+      "flag": "Gắn cờ để liên hệ lại",
+      "unflag": "Bỏ cờ liên hệ lại",
+      "duplicate": "Nhân bản"
+    },
+    "roles": {
+      "description": "Không chọn gì nghĩa là chọn tất cả — bỏ bộ lọc cũng giống như chưa từng đặt.",
+      "tracked_other": "Đang theo dõi {{count}}",
+      "clear": "Hiện mọi vị trí"
+    },
+    "paste": {
+      "label": "URL tin tuyển dụng",
+      "placeholder": "Dán URL tin tuyển dụng",
+      "submit": "Từ liên kết"
+    }
+  },
+  "board": {
+    "cardHint": "Nhấn giữ để chuyển mục này sang giai đoạn khác",
+    "addAt": "Thêm đơn ứng tuyển ở giai đoạn {{stage}}",
+    "addHere": "Thêm vào đây"
+  },
+  "rowActions": {
+    "duplicatedTitle": "Đã nhân bản {{name}}",
+    "duplicatedDescription": "Bản sao bắt đầu là bản nháp — giai đoạn, ngày tháng và lời mời làm việc của bản gốc không được sao chép.",
+    "movedTitle": "Đã chuyển {{name}} sang {{stage}}",
+    "movedDescription": "Trước đó nó ở {{from}}. Từ giờ quy trình và phễu sẽ tính nó vào {{stage}}.",
+    "deletedTitle": "Đã xóa {{name}}",
+    "deletedDescription": "Lời nhắc, tệp và tin tuyển dụng đã lưu được xếp vào đơn này vẫn được giữ lại, không còn liên kết.",
+    "confirmTitle": "Xóa {{name}}?",
+    "confirmTitleGeneric": "Xóa đơn ứng tuyển?",
+    "confirmDescription": "Đơn ứng tuyển và ghi chú của nó sẽ bị xóa. Mọi thứ được xếp vào nó — lời nhắc, tệp, tin tuyển dụng đã lưu — vẫn được giữ nhưng không còn liên kết."
+  },
+  "detail": {
+    "missing": {
+      "title": "Đơn ứng tuyển",
+      "emptyTitle": "Đơn ứng tuyển này không còn tồn tại",
+      "emptyDescription": "Nó đã bị xóa, hoặc liên kết trỏ tới một mã chưa từng tồn tại. Không có gì khác bị xóa theo.",
+      "back": "Quay lại"
+    },
+    "kept": {
+      "reminders_other": "{{count}} lời nhắc",
+      "events_other": "{{count}} sự kiện",
+      "saved_other": "{{count}} mục đã lưu"
+    },
+    "closedTitle": "Đã đóng {{name}}",
+    "closedDescription": "Đã ghi nhận là {{outcome}}. Thông tin lời mời làm việc và các lời nhắc của nó được giữ lại.",
+    "outcomes": {
+      "rejected": "bị từ chối",
+      "withdrawn": "đã rút đơn",
+      "accepted": "đã nhận lời",
+      "declined": "đã từ chối",
+      "ghosted": "bị bỏ lơ"
+    },
+    "duplicatedDescription": "Bản sao bắt đầu ở Bản nháp, mang theo ghi chú và thông tin.",
+    "deletedKept": "{{kept}} được giữ lại, không còn liên kết.",
+    "facts": {
+      "employer": "Nhà tuyển dụng",
+      "employerJobs_other": "{{name}} · {{count}} công việc ở đây",
+      "source": "Nguồn",
+      "location": "Địa điểm",
+      "compensation": "Đãi ngộ",
+      "posting": "Tin tuyển dụng",
+      "postingId": "Mã tin tuyển dụng",
+      "appliedOn": "Ngày ứng tuyển",
+      "confirmationRef": "Mã xác nhận",
+      "outcome": "Kết quả"
+    },
+    "moreActions": "Thao tác khác",
+    "details": "Chi tiết",
+    "postingHint": "Mở tin tuyển dụng bên trong jojo, nơi bạn có thể giữ một bản sao",
+    "dates": {
+      "title": "Ngày và lời nhắc",
+      "hint": "{{open}} đang mở · tổng {{total}}",
+      "add": "Thêm ngày",
+      "emptyTitle": "Chưa lên lịch gì",
+      "emptyDescription": "Hạn chót, phỏng vấn và liên hệ lại được xếp vào đơn ứng tuyển này sẽ hiện ở đây."
+    },
+    "note": {
+      "title": "Ghi chú",
+      "hint": "Tự lưu khi bạn chạm ra ngoài",
+      "edit": "Sửa ghi chú này",
+      "placeholder": "Những gì còn tồn đọng, bạn đã nói chuyện với ai, cần hỏi gì tiếp theo",
+      "label": "Ghi chú cho {{name}}",
+      "formatKept": "Định dạng được giữ trên những từ bạn không thay đổi.",
+      "saved": "Đã lưu ghi chú"
+    },
+    "draftMessage": "Soạn tin nhắn",
+    "confirmDeleteKept": "Đơn ứng tuyển và ghi chú của nó sẽ bị xóa. {{kept}} sẽ được giữ lại nhưng không còn liên kết — không có gì bạn đã xếp vào đơn này bị xóa.",
+    "confirmDeleteAlone": "Đơn ứng tuyển và ghi chú của nó sẽ bị xóa. Không có gì khác trỏ tới nó.",
+    "offer": {
+      "title": "Lời mời làm việc",
+      "settled": "Đã đóng · ghi nhận là {{outcome}}",
+      "pastDeadline_other": "quá hạn {{count}} ngày",
+      "daysLeft_other": "còn {{count}} ngày",
+      "respondBy": "Trả lời trước {{date}}",
+      "accept": "Nhận lời",
+      "decline": "Từ chối"
+    },
+    "stageDates": {
+      "dated": "{{stage}} được ghi ngày {{date}}",
+      "undated": "{{stage}} hiện không có ngày",
+      "datedBody": "{{name}} — đây là ngày bản ghi cho biết đã đạt tới {{stage}}.",
+      "undatedBody": "{{name}} — giai đoạn vẫn còn trong bản ghi; chỉ có ngày bị xóa.",
+      "hint": "{{dated}}/{{total}} đã có ngày",
+      "title": "Ngày của các giai đoạn",
+      "now": "hiện tại",
+      "explain": "Chuyển đơn ứng tuyển này sang giai đoạn khác sẽ tự động ghi ngày. Những giai đoạn đạt tới trước hôm nay có thể điền ở đây."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "Nhà tuyển dụng",
+      "subtitle": "Không có gì ứng với địa chỉ đó",
+      "emptyTitle": "Không có nhà tuyển dụng nào ở địa chỉ này",
+      "emptyDescription": "Trang nhà tuyển dụng tồn tại chừng nào còn đơn ứng tuyển nêu tên họ. Nếu mọi đơn ứng tuyển gửi tới nơi này đã bị xóa, trang này cũng vậy."
+    },
+    "subtitleOne": "Một đơn ứng tuyển ở đây",
+    "subtitleMany_other": "{{count}} đơn ứng tuyển ở đây, {{open}} đơn còn mở",
+    "applications": "Đơn ứng tuyển",
+    "dates": "Ngày",
+    "datesHint_other": "{{count}} mục trong các công việc này",
+    "datesEmptyTitle": "Chưa có gì được ghi ngày ở đây",
+    "datesEmptyDescription": "Hạn chót, phỏng vấn và lời nhắc về bất kỳ công việc nào trong số này đều được tập hợp trên màn hình này.",
+    "people": "Người liên hệ",
+    "peopleHint_other": "{{count}} người được nêu tên",
+    "peopleEmptyTitle": "Chưa có ai được nêu tên",
+    "peopleEmptyDescription": "Người viết thư giới thiệu, trưởng hội đồng tuyển chọn và nhà tuyển dụng được nêu tên trong bất kỳ công việc nào ở đây sẽ hiện tại đây."
+  },
+  "calendar": {
+    "title": "Lịch",
+    "subtitle": "Hạn chót, phỏng vấn và chuẩn bị trong một màn hình",
+    "key": {
+      "overdue": "Quá hạn",
+      "soon": "Đến hạn trong 48 giờ",
+      "done": "Đã xong"
+    },
+    "export": {
+      "label": "Xuất sang lịch của tôi",
+      "done_other": "Đã xuất {{count}} ngày",
+      "doneDescription": "Ứng dụng lịch của bạn sẽ đề nghị nhập các ngày này, kèm lời nhắc cho từng ngày.",
+      "failed": "Không có ứng dụng nào ở đây mở được tệp lịch",
+      "failedDescription": "Tệp đã được lưu trên điện thoại này. Ứng dụng lịch nào nhận tệp .ics đều có thể mở nó."
+    },
+    "add": "Thêm",
+    "addEvent": "Thêm sự kiện",
+    "tallCells": "Ô ngày cao",
+    "tallCellsDescription": "Thêm chỗ cho mỗi ngày trong lưới",
+    "jump": "{{month}} năm {{year}}. Đi tới tháng khác",
+    "previous": "Tháng trước",
+    "next": "Tháng sau",
+    "backTo": "Quay lại {{date}}",
+    "goTo": "Đi tới {{target}}",
+    "goToDay": "Đi tới {{day}} {{month}}",
+    "today": "Hôm nay",
+    "selectedDay": "Ngày đã chọn",
+    "hint": "Chạm vào một ngày để liệt kê những gì có trong ngày đó. Chạm vào một sự kiện để sửa hoặc dời lịch.",
+    "dayLabel_other": "{{day}} {{month}}, {{count}} sự kiện",
+    "nothingOn": "Không có gì vào {{date}}",
+    "nothingOnDescription": "Thêm một buổi phỏng vấn, một hạn chót hoặc một khoảng thời gian chuẩn bị, và nó sẽ hiện ở đây và trên lưới.",
+    "allDay": "Cả ngày",
+    "reopen": "Mở lại {{title}}",
+    "markDone": "Đánh dấu \"{{title}}\" là đã xong",
+    "moreActions": "Thao tác khác cho {{title}}",
+    "rest": {
+      "title": "Phần còn lại của {{month}}",
+      "lastDay": "{{date}} là ngày cuối cùng của tháng",
+      "nothingAfter": "Không có gì sau {{date}}",
+      "lastDayDescription": "Không có gì sau ngày này. Chuyển sang trang sau để lên kế hoạch cho {{month}}.",
+      "clearDescription": "Phần còn lại của {{month}} đang trống. Mọi thứ bạn thêm sau ngày này sẽ hiện ở đây.",
+      "more_other": "+{{count}} mục nữa sau trong tháng này"
+    }
+  },
+  "search": {
+    "title": "Tìm kiếm",
+    "subtitle": "Đơn ứng tuyển, ngày tháng, Kho lưu trữ và trình tìm việc, tất cả cùng lúc",
+    "fieldLabel": "Tìm kiếm mọi thứ",
+    "placeholder": "Tìm đơn ứng tuyển, lời nhắc, tệp…",
+    "idleTitle": "Gõ để tìm kiếm",
+    "idleDescription": "Một ô nhập cho mọi tập hợp — vì “tôi để cái của Rice ở đâu” là câu hỏi về bản ghi, không phải về danh sách chứa nó.",
+    "create": "Tạo",
+    "createHint": "không tìm thấy? hãy tạo mới",
+    "noneTitle": "Không có gì khớp với “{{query}}”",
+    "noneDescription": "Tìm kiếm đọc tiêu đề, ghi chú và danh mục của mọi bản ghi. Không có gì ở đây được tải từ nơi khác.",
+    "fit": "Phù hợp {{fit}}%",
+    "results_other": "{{count}} kết quả",
+    "showAll_other": "Hiện tất cả {{count}}",
+    "groups": {
+      "applications": "Đơn ứng tuyển",
+      "reminders": "Lời nhắc",
+      "calendar": "Lịch",
+      "vault": "Kho lưu trữ",
+      "jobScout": "Trình tìm việc",
+      "goTo": "Đi tới"
+    }
+  },
+  "more": {
+    "title": "Thêm",
+    "subtitle": "Phần còn lại của jojo",
+    "newBadge_other": "{{count}} mới",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "Trình tìm việc",
+        "hint": "Tìm kiếm đã lưu, gợi ý và tin tuyển dụng bạn để dành"
+      },
+      "statistics": {
+        "label": "Thống kê",
+        "hint": "Tỷ lệ, phễu và nên tập trung vào đâu tiếp theo"
+      },
+      "graph": {
+        "label": "Đồ thị",
+        "hint": "Các bản ghi của bạn được vẽ thành mạng lưới"
+      },
+      "transfer": {
+        "label": "Chuyển dữ liệu",
+        "hint": "Chuyển mọi thứ sang hoặc từ máy tính của bạn"
+      },
+      "profile": {
+        "label": "Hồ sơ cá nhân",
+        "hint": "Thông tin cơ bản, tài liệu và từ khóa đối chiếu"
+      },
+      "assistant": {
+        "label": "Trợ lý",
+        "hint": "Ví dụ mẫu cho đến khi kết nối mô hình cục bộ"
+      },
+      "settings": {
+        "label": "Cài đặt",
+        "hint": "Kết nối, giao diện và dữ liệu của bạn"
+      },
+      "guide": {
+        "label": "Cách sử dụng",
+        "hint": "Tham quan có hướng dẫn, và mỗi màn hình dùng để làm gì"
+      }
+    },
+    "storage": {
+      "saved": "đã lưu",
+      "saving": "đang lưu",
+      "savingCount": "đang lưu {{count}}",
+      "unsaved_other": "{{count}} chưa lưu",
+      "off": "không lưu"
+    },
+    "runtime": {
+      "title": "Trạng thái hoạt động",
+      "hint": "những gì thực sự đang chạy",
+      "storage": "Bộ nhớ thiết bị",
+      "model": "Mô hình",
+      "modelConfigured": "{{model}} — đã cấu hình",
+      "modelNotSetUp": "chưa thiết lập",
+      "transfer": "Chuyển dữ liệu",
+      "transferNever": "chưa từng dùng",
+      "transferLast": "dùng lần cuối {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. Mọi thứ chạy trên thiết bị này.",
+    "overdue_other": "{{count}} lời nhắc quá hạn."
+  },
+  "statistics": {
+    "title": "Thống kê",
+    "emptySubtitle": "Chưa có gì để đo — màn hình này sẽ có số liệu khi bạn thêm đơn ứng tuyển.",
+    "emptyTitle": "Chưa có đơn ứng tuyển nào để đo",
+    "emptyDescription": "Tỷ lệ phản hồi, phễu và biểu đồ theo tuần đều cần bản ghi để đếm. Thêm bản ghi đầu tiên và phần này sẽ bắt đầu có số liệu.",
+    "subtitleSent": "Tính từ chính các bản ghi của bạn. Các số liệu gắn nhãn thông thường là một đợt tìm việc mẫu, dùng để so sánh.",
+    "subtitleNone": "Tính từ chính các bản ghi của bạn. Số liệu sẽ có dần khi đơn ứng tuyển được gửi đi.",
+    "compare": "So sánh với một đợt tìm việc thông thường",
+    "compareDescription": "Một số liệu mẫu bên cạnh mỗi con số chính",
+    "overTime": {
+      "title": "Đơn ứng tuyển theo thời gian",
+      "hint": "theo vị trí của từng đơn",
+      "period": "Khoảng thời gian",
+      "note": "Mỗi khoảng thời gian là một cửa sổ riêng, nên tổng số khác nhau giữa chúng — một quý bao gồm các đợt tìm việc trước, một tuần chỉ có mùa này."
+    },
+    "sources": {
+      "title": "Nguồn ứng tuyển",
+      "hint_other": "Đang theo dõi {{count}}",
+      "center": "đang theo dõi"
+    },
+    "asFarAsShown": "theo những gì mỗi bản ghi cho thấy",
+    "openApplications": "Mở Đơn ứng tuyển",
+    "showAll": "Hiện tất cả",
+    "funnel": {
+      "title": "Các đơn ứng tuyển đã đi được bao xa",
+      "emptyTitle": "Chưa gửi đi đơn nào",
+      "emptyDescription": "Tỷ lệ phản hồi, phỏng vấn và nhận lời mời đều chỉ tính những đơn ứng tuyển đã thực sự được gửi đi. Chuyển một đơn ra khỏi Bản nháp và phần này sẽ có số liệu.",
+      "carried": "{{pct}}% đi tiếp"
+    },
+    "outcomes": {
+      "title": "Kết quả",
+      "count_other": "{{count}} đơn ứng tuyển",
+      "partial": "{{shown}}/{{total}}",
+      "allOff": "Mọi kết quả đều đang tắt."
+    },
+    "health": {
+      "title": "Nên tập trung vào đâu tiếp theo",
+      "hint": "số liệu của bạn so với một đợt tìm việc thông thường",
+      "sample": "Mẫu",
+      "emptyTitle": "Chưa đủ để so sánh",
+      "emptyDescription": "Phần này so phản hồi, phỏng vấn, giới thiệu nội bộ và liên hệ lại của bạn với một đợt tìm việc thông thường. Cần có những đơn ứng tuyển đã thực sự được gửi đi.",
+      "allOff": "Cả hai chuỗi dữ liệu đều đang tắt.",
+      "yours": "Của bạn",
+      "typical": "Thông thường",
+      "suggestions": "Gợi ý, hữu ích nhất trước"
+    },
+    "roles": {
+      "title": "Tình hình theo từng loại vị trí",
+      "roles": "Vị trí",
+      "applied": "Đã ứng tuyển",
+      "replied": "Đã phản hồi",
+      "interviews": "Phỏng vấn",
+      "offers": "Lời mời"
+    }
+  },
+  "graph": {
+    "title": "Đồ thị",
+    "emptySubtitle": "Các bản ghi của bạn, được vẽ thành mạng lưới",
+    "emptyTitle": "Chưa có gì để vẽ",
+    "emptyDescription": "Mỗi nút ở đây là một bản ghi của chính bạn. Thêm một đơn ứng tuyển và nút đầu tiên sẽ xuất hiện.",
+    "subtitle": "Bản xem trước jojo trông thế nào khi các bản ghi không còn là bảy danh sách riêng lẻ",
+    "caption": "{{visible}}/{{total}} nút · {{edges}} cạnh. Chạm vào một nút để đọc; chạm vào một loại bên dưới để ẩn nó.",
+    "legend": "Chú giải",
+    "legendHint": "chạm để ẩn một loại",
+    "joinedTo": "Nối với",
+    "noEdges": "Chưa có gì trỏ tới mục này.",
+    "openRecord": "Mở bản ghi",
+    "ask": "Hỏi đồ thị",
+    "askHint": "hỏi bằng một câu, hoặc chọn một câu hỏi",
+    "andMore_other": "và {{count}} mục nữa",
+    "questions": "Câu hỏi",
+    "questionsHint": "những câu trả lời mà chế độ xem danh sách không đưa ra được",
+    "pattern": "Hỏi điều khác",
+    "patternHint": "tự dựng câu hỏi",
+    "patternNone": "Không có gì khớp với câu này.",
+    "records_other": "{{count}} bản ghi",
+    "exampleNone": "Không có gì khớp — đó là câu trả lời tốt cho câu hỏi này."
+  },
+  "jobScout": {
+    "title": "Trình tìm việc",
+    "subtitle": "Các tìm kiếm đã lưu sẽ thay bạn theo dõi các trang tuyển dụng — và là nơi lưu tạm tin tuyển dụng ngay hôm nay",
+    "onlyActive": "Chỉ quy trình đang bật",
+    "onlyActiveDescription": "Ẩn các quy trình đang tắt",
+    "paused": "Chưa có mô hình cục bộ nào được kết nối, nên các quy trình đang tạm dừng. Bạn vẫn có thể viết quy trình và lưu tin tuyển dụng bên dưới — chúng sẽ bắt đầu chạy khi kết nối được tới mô hình.",
+    "status": {
+      "off": "tắt",
+      "paused": "tạm dừng",
+      "running": "đang chạy",
+      "watching": "đang theo dõi"
+    },
+    "kinds": {
+      "twin": "Giữ bản ghi đầy đủ",
+      "scout": "Tìm tin tuyển dụng"
+    },
+    "kindLabel": {
+      "twin": "Bản sao số",
+      "scout": "Trình tìm việc"
+    },
+    "schedules": {
+      "hourly": "Mỗi giờ",
+      "daily": "Mỗi ngày",
+      "weekly": "Mỗi tuần"
+    },
+    "toast": {
+      "updated": "Đã cập nhật quy trình",
+      "created": "Đã tạo quy trình",
+      "createdPaused": "{{name}} — tạm dừng cho đến khi kết nối mô hình.",
+      "createdRunning": "{{name}} — sẽ sớm bắt đầu tìm kiếm.",
+      "deleted": "Đã xóa quy trình",
+      "deletedDescription": "{{name}} ngừng theo dõi {{source}}.",
+      "addedDraft": "Đã thêm {{org}} dưới dạng bản nháp",
+      "matchLinked": "Gợi ý vẫn ở trong danh sách này, giờ đã liên kết với đơn ứng tuyển.",
+      "postingSaved": "Đã lưu tin tuyển dụng",
+      "postingLinked": "Tin tuyển dụng vẫn được lưu ở đây, giờ đã liên kết với đơn ứng tuyển.",
+      "postingRemoved": "Đã gỡ tin tuyển dụng"
+    },
+    "pipelines": {
+      "title": "Quy trình",
+      "hint": "chạy cục bộ theo lịch",
+      "none": "Chưa có quy trình nào",
+      "noneOn": "Chưa bật quy trình nào",
+      "noneDescription": "Quy trình là một tìm kiếm đã lưu — một trang tuyển dụng để theo dõi, các từ khóa quan trọng, và tần suất xem.",
+      "noneOnDescription": "Mọi quy trình bạn có đều đang tắt. Hãy bật một quy trình, hoặc bỏ bộ lọc trong tùy chọn trang.",
+      "showAll": "Hiện tất cả quy trình",
+      "toReview_other": "{{count}} cần xem xét",
+      "auto": "tự động",
+      "autoLabel": "Chạy mà không cần hỏi",
+      "autoDescription": "Áp dụng những gì nó tìm thấy và chỉ báo cho bạn sau đó.",
+      "autoToggle": "Chạy {{name}} mà không cần hỏi",
+      "enable": "Bật {{name}}",
+      "runNow": "Chạy {{name}} ngay",
+      "edit": "Sửa {{name}}",
+      "delete": "Xóa {{name}}"
+    },
+    "matches": {
+      "title": "Gợi ý",
+      "hint": "chấm điểm theo hồ sơ cá nhân của bạn",
+      "emptyTitle": "Chưa có gợi ý nào",
+      "emptyDescription": "Các quy trình sẽ đưa tin tuyển dụng đã chấm điểm vào đây khi đã kết nối mô hình. Trước đó, các tin tuyển dụng bạn lưu bên dưới là cách để bắt đầu.",
+      "matched": "khớp với {{terms}}",
+      "notScored": "chưa chấm điểm",
+      "added": "đã thêm"
+    },
+    "inApplications": "Có trong Đơn ứng tuyển với tên {{name}}",
+    "save": {
+      "title": "Lưu tin tuyển dụng",
+      "hint": "hoạt động không cần mô hình",
+      "description": "Không có gì ở đây tải trang về, nên những gì được giữ là URL, nhà tuyển dụng đoán từ URL, và ngày bạn lưu — đủ để tìm lại tin tuyển dụng và ứng tuyển.",
+      "urlLabel": "URL tin tuyển dụng",
+      "button": "Lưu tin tuyển dụng",
+      "blocker": "Hãy dán URL trước",
+      "emptyTitle": "Chưa lưu tin tuyển dụng nào",
+      "emptyDescription": "Dán URL của tin tuyển dụng bạn muốn quay lại sau. Tin tuyển dụng có thể bị gỡ xuống; liên kết và ngày thì là của bạn.",
+      "meta": "{{url}} · đã lưu {{ago}}",
+      "linked": "đã liên kết với đơn ứng tuyển",
+      "unscored": "chưa chấm điểm"
+    },
+    "footer": "Các quy trình chạy trên thiết bị của bạn, trong khi jojo đang mở. Không có gì được gửi cho bên thứ ba.",
+    "shutdown": {
+      "title": "Tắt {{name}}?",
+      "description": "Nó đã chạy hai lần mà không tìm thấy gì để gợi ý, và không có gì đang chờ bạn trả lời. Tắt nó sẽ ngừng việc tìm kiếm; mọi thứ nó đã tìm thấy vẫn giữ nguyên.",
+      "keep": "Tiếp tục chạy",
+      "off": "Tắt"
+    },
+    "editor": {
+      "newTitle": "Quy trình mới",
+      "editTitle": "Sửa quy trình",
+      "description": "Quy trình là một công việc thường trực của trợ lý. Nó chạy trên thiết bị này khi jojo đang mở, và mọi thay đổi nó muốn thực hiện đều được hiển thị cho bạn trước.",
+      "create": "Tạo",
+      "kind": "Chức năng",
+      "kindTwinHint": "Đọc những gì bạn có và gợi ý những gì còn thiếu — ghi chú, lời nhắc, nhãn, xếp mục.",
+      "kindScoutHint": "Tìm các tin tuyển dụng đáng chú ý và đưa ra để bạn xem xét.",
+      "name": "Tên",
+      "nameError": "Đặt tên theo thứ nó theo dõi.",
+      "namePlaceholderTwin": "vd. Giữ các đơn ứng tuyển gọn gàng",
+      "namePlaceholderScout": "vd. Trang tuyển dụng giảng viên CRA",
+      "sources": "Nguồn",
+      "sourcesError": "Trình tìm việc không có nguồn thì không có gì để đọc.",
+      "sourcesHint": "Trang tuyển dụng hoặc trang nghề nghiệp mà nó theo dõi. Ngăn cách nhiều nguồn bằng dấu phẩy.",
+      "focus": "Cần tập trung vào đâu",
+      "focusHint": "Bất cứ điều gì nó nên đặc biệt chú ý. Để trống để nó xem mọi nơi.",
+      "termsHint": "Cơ sở để chấm điểm tin tuyển dụng. Để trống để giữ mọi thứ nguồn liệt kê.",
+      "focusPlaceholder": "liên hệ lại và hạn chót",
+      "termsPlaceholder": "phó giáo sư, CS/ECE",
+      "often": "Tần suất",
+      "oftenHint": "Thời gian chờ giữa các lượt."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "Không giữ được trang đó",
+    "noAnswer": "Trang không trả lời.",
+    "savedTitle": "Đã lưu {{name}}",
+    "savedDropped_other": "Đã giữ trong Kho lưu trữ. {{count}} tài nguyên không giữ lại được, nên một số phần có thể trông đơn giản hơn.",
+    "savedOffline": "Đã giữ trong Kho lưu trữ, và đọc được khi không có kết nối.",
+    "keep": "Giữ một bản sao",
+    "keeping": "Đang giữ…",
+    "waitForLoad": "Hãy chờ trang tải xong"
+  },
+  "profile": {
+    "title": "Hồ sơ cá nhân",
+    "subtitle": "Những gì trình tìm việc và trợ lý dùng để đối chiếu và soạn thảo. Không có gì rời khỏi thiết bị của bạn.",
+    "savedTitle": "Đã lưu hồ sơ cá nhân",
+    "savedDescription": "Đã lưu trên thiết bị này.",
+    "basics": {
+      "title": "Thông tin cơ bản",
+      "fullName": "Họ và tên",
+      "fullNamePlaceholder": "vd. Lonardo Jenson",
+      "position": "Vị trí hiện tại",
+      "positionPlaceholder": "vd. Nghiên cứu sinh tiến sĩ, Khoa học máy tính",
+      "location": "Địa điểm",
+      "locationPlaceholder": "vd. Santa Clara, CA",
+      "email": "Email"
+    },
+    "links": {
+      "title": "Liên kết",
+      "website": "Trang web"
+    },
+    "interests": {
+      "title": "Mối quan tâm và mục tiêu",
+      "hint": "định hướng việc tìm gợi ý của trình tìm việc",
+      "matchTerms": "Từ khóa đối chiếu",
+      "matchTermsDescription": "Các lĩnh vực nghiên cứu và cách diễn đạt mà trình tìm việc tìm kiếm. Tách biệt với các từ khóa bạn dùng để xếp bản ghi.",
+      "roleTags": "Nhãn vị trí",
+      "roleTagsDescription": "Các loại vị trí bạn đang theo dõi. Mỗi đơn ứng tuyển được xếp vào một loại, và bộ lọc vị trí cùng số liệu theo vị trí đều dựa vào đó.",
+      "targetRoles": "Vị trí mục tiêu",
+      "targetRolesPlaceholder": "vd. Phó giáo sư (TT) · Nhà khoa học nghiên cứu",
+      "regions": "Khu vực ưu tiên",
+      "regionsPlaceholder": "vd. Texas · từ xa",
+      "academia": "Bao gồm tin tuyển dụng học thuật",
+      "industry": "Bao gồm tin tuyển dụng doanh nghiệp"
+    },
+    "remove": "Gỡ {{name}}",
+    "add": "Thêm",
+    "documents": {
+      "title": "Tài liệu",
+      "hint": "nhóm {{bucket}} trong Kho lưu trữ",
+      "emptyTitle": "Chưa có tài liệu nào",
+      "emptyDescription": "Thêm CV và các bản trình bày — chúng được xếp trong Kho lưu trữ dưới nhóm {{bucket}}, nơi các phần khác của ứng dụng có thể dùng tới.",
+      "add": "Thêm tài liệu",
+      "openVault": "Mở Kho lưu trữ",
+      "meta": "{{size}} · lưu {{ago}}",
+      "footer": "Cùng các tệp với công cụ Tệp trong Kho lưu trữ, lọc theo {{bucket}}. Một bản ghi giữ tên, kích thước và loại của tài liệu — không bao giờ giữ nội dung.",
+      "addedTitle": "Đã thêm tài liệu",
+      "addedDescription": "Đã xếp vào Kho lưu trữ ở mục {{bucket}}. Tên, kích thước và loại được giữ lại — bản thân tệp không được đọc."
+    },
+    "unsaved": "Có thay đổi chưa lưu — lưu sẽ ghi chúng vào điện thoại này.",
+    "discard": "Bỏ",
+    "save": "Lưu",
+    "termSheet": {
+      "title": "Thêm từ khóa đối chiếu",
+      "description": "Một lĩnh vực nghiên cứu hoặc cách diễn đạt mà trình tìm việc nên tìm trong tin tuyển dụng.",
+      "label": "Từ khóa đối chiếu",
+      "placeholder": "vd. huấn luyện phân tán"
+    },
+    "roleSheet": {
+      "title": "Thêm nhãn vị trí",
+      "description": "Một loại vị trí bạn đang theo dõi. Nó trở thành một lựa chọn trong mọi đơn ứng tuyển.",
+      "label": "Nhãn vị trí",
+      "placeholder": "vd. Nhà khoa học dữ liệu"
+    }
+  },
+  "assistant": {
+    "title": "Trợ lý",
+    "undone": "Đã hoàn tác",
+    "saved": "Đã lưu vào đoạn văn bản",
+    "savedDescription": "{{title}} · xếp dưới nhãn {{tag}}",
+    "openVault": "Mở Kho lưu trữ",
+    "clear": "Xóa",
+    "emptyTitle": "Chưa hỏi gì",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "saveToSnippets": "Lưu vào đoạn văn bản",
+    "ask": "Hỏi trợ lý",
+    "send": "Gửi",
+    "stop": "Dừng",
+    "agent": {
+      "subtitle": "Đã kết nối với mô hình của bạn và có thể thao tác trên các bản ghi. Mọi việc nó làm đều được liệt kê ngay khi diễn ra.",
+      "intro": "Đang trả lời bằng <code>{{model}}</code> tại <code>{{endpoint}}</code>, mô hình này có thể gọi {{tools}} công cụ trên thiết bị này. Không có gì được gửi đi nơi khác, và mọi thay đổi đều hoàn tác được.",
+      "deleted": "Đã xóa cuộc trò chuyện",
+      "emptyDescription": "Nhờ nó tìm thứ gì đó, thêm một đơn ứng tuyển, hoặc chuyển một đơn sang giai đoạn tiếp theo. Mỗi công cụ nó chạy sẽ hiện bên dưới ngay khi diễn ra, kèm những gì đã gửi và những gì nhận về.",
+      "placeholder": "Tìm đơn ứng tuyển UT Austin của tôi, thêm một đơn, chuyển giai đoạn…",
+      "footer": "Nó đọc trước khi ghi, hỏi trước mỗi thay đổi trừ khi bạn tắt điều đó cho một cuộc trò chuyện, và mọi việc nó làm đều đi qua cùng cơ chế hoàn tác như khi bạn nhấn nút.",
+      "prompts": {
+        "waiting": "Tôi đang chờ những gì?",
+        "add": "Thêm đơn ứng tuyển: kỹ sư ML tại Stripe, đã nộp",
+        "noDeadline": "Những đơn ứng tuyển nào chưa có hạn chót?",
+        "flag": "Gắn cờ đơn ứng tuyển UT Austin của tôi"
+      }
+    },
+    "scripted": {
+      "subtitle": "Hiện là các ví dụ mẫu. Kết nối một mô hình cục bộ để nó vừa soạn thảo từ chính bản ghi của bạn vừa thao tác trên chúng.",
+      "cleared": "Đã xóa cuộc trò chuyện",
+      "messages_other": "{{count}} tin nhắn",
+      "connectLabel": "Kết nối một mô hình trong Cài đặt",
+      "banner": "Chưa có mô hình nào được kết nối, nên mọi câu trả lời ở đây là ví dụ mẫu chứ không phải câu trả lời thật.",
+      "connect": "Kết nối trong Cài đặt →",
+      "emptyDescription": "Chọn một gợi ý bên dưới, hoặc nhập bất cứ điều gì. Các câu trả lời là ví dụ viết sẵn — hữu ích để làm theo, và không bao giờ được trình bày như câu trả lời của mô hình.",
+      "badge": "Câu trả lời mẫu · chưa kết nối mô hình",
+      "placeholder": "Hỏi về thư xin việc, email liên hệ lại, phỏng vấn…",
+      "footer": "Khi đã kết nối mô hình, mỗi mục này đều đọc hồ sơ cá nhân và tài liệu của bạn làm ngữ cảnh. Vì suy luận chạy cục bộ, CV và ghi chú của bạn không bao giờ bị tải lên đâu cả."
+    },
+    "thought": {
+      "live": "Đang suy nghĩ…",
+      "done": "Đã suy nghĩ",
+      "liveLabel": "Đang suy nghĩ. Hiện những gì mô hình đang nghĩ",
+      "label": "Hiện những gì mô hình đã nghĩ"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "Soạn thư xin việc",
+        "title": "Thư xin việc — bố cục",
+        "reply": "Đây là bố cục tôi sẽ dùng cho [DEPARTMENT]:\n\nĐoạn 1 — bạn nghiên cứu về điều gì, trong một câu mà một thành viên hội đồng ngoài chuyên ngành cũng hiểu được.\nĐoạn 2 — hai kết quả làm nên lập luận, mỗi kết quả nêu kèm tác động thay vì phương pháp.\nĐoạn 3 — vì sao chọn khoa này: nhóm bạn sẽ hợp tác, và môn học bạn sẽ dạy.\nĐoạn 4 — thời điểm có thể bắt đầu, và ba năm đầu sẽ ra sao.\n\nGiữ trong một trang. Hội đồng đọc bốn mươi lá thư như thế trong một buổi tối."
+      },
+      "tailor-cv": {
+        "action": "Điều chỉnh CV cho một tin tuyển dụng",
+        "title": "Điều chỉnh CV — ba lượt",
+        "reply": "Ba lượt, theo thứ tự này:\n\n1. Cắt bỏ những gì tin tuyển dụng không yêu cầu. Một CV điều chỉnh cho mọi thứ là CV không điều chỉnh cho gì cả.\n2. Đưa phần mà tin tuyển dụng nhấn mạnh đầu tiên lên đầu trang một — tin tuyển dụng nặng về giảng dạy muốn thấy giảng dạy đứng trên công bố khoa học.\n3. Viết lại dòng tiêu đề bằng chính từ ngữ của tin tuyển dụng, nhưng không phóng đại phạm vi công việc.\n\nNhững gì giữ nguyên: công bố khoa học, người tham chiếu, ngày tháng. Đó là những phần hội đồng kiểm tra."
+      },
+      "parse-posting": {
+        "action": "Phân tích một tin tuyển dụng",
+        "title": "Cần rút ra gì từ một tin tuyển dụng",
+        "reply": "Từ một tin tuyển dụng, tôi sẽ rút ra: nhà tuyển dụng, vị trí, hạn chót, các tài liệu yêu cầu, người liên hệ được nêu tên, và bất cứ điều gì được diễn đạt như yêu cầu bắt buộc chứ không phải ưu tiên.\n\nĐiều cuối cùng là nơi các đơn ứng tuyển bị loại — \"phải có bằng trước ngày bắt đầu\" là một bộ lọc, còn \"ưu tiên có kinh nghiệm với hệ thống quy mô lớn\" thì không.\n\nTrình tìm việc đã làm phần đơn giản của việc này mà không cần mô hình: lưu URL ở đó và nó sẽ giữ liên kết và đoán nhà tuyển dụng từ liên kết đó."
+      },
+      "follow-up": {
+        "action": "Soạn email liên hệ lại",
+        "title": "Liên hệ lại khi chưa có phản hồi",
+        "reply": "Tiêu đề: Liên hệ lại — [ROLE], [DEPARTMENT]\n\nKính gửi [NAME],\n\nTôi đã ứng tuyển vị trí [ROLE] vào ngày [DATE] và muốn hỏi xem hội đồng đã có đủ mọi thứ cần từ tôi chưa. Tôi sẵn lòng gửi trực tiếp thư giới thiệu còn thiếu nếu điều đó thuận tiện hơn.\n\nTôi vẫn rất quan tâm đến vị trí này, và sẵn lòng trả lời mọi câu hỏi qua email.\n\nTrân trọng cảm ơn,\n[YOUR NAME]"
+      },
+      "interview": {
+        "action": "Giúp tôi chuẩn bị phỏng vấn",
+        "title": "Phỏng vấn — sáu câu hỏi cần có câu trả lời",
+        "reply": "Sáu câu hỏi nên có câu trả lời trước ngày phỏng vấn:\n\n— Công việc của bạn nói về điều gì, trong chín mươi giây, với một người ngoài chuyên ngành?\n— Khoản tài trợ đầu tiên của bạn sẽ là gì, và xin từ cơ quan nào?\n— Hai môn học nào bạn có thể dạy ngay học kỳ tới mà không cần báo trước?\n— Bạn sẽ hợp tác với ai ở đây, và về việc gì?\n— Điểm yếu trong kết quả của chính bạn là gì?\n— Bạn cần gì trong năm đầu tiên để làm được việc?\n\nHãy viết tay các câu trả lời ra. Điều quan trọng là việc tập dượt, không phải bản ghi chép."
+      },
+      "fallback": {
+        "title": "Trợ lý — câu trả lời mẫu",
+        "reply": "Chưa có mô hình nào được kết nối, nên đây là câu trả lời soạn sẵn chứ không phải phản hồi cho những gì bạn đã nhập.\n\nKhi đã kết nối mô hình, màn hình này sẽ đọc hồ sơ cá nhân, các tài liệu trong Kho lưu trữ và đơn ứng tuyển bạn nêu tên, rồi soạn thảo dựa trên chúng ngay trên thiết bị của bạn. Hãy trỏ jojo tới một máy chủ cục bộ tương thích OpenAI trong Cài đặt — vLLM, Ollama hoặc LM Studio.\n\nMỗi gợi ý trong năm gợi ý bên dưới đều có một ví dụ mẫu bạn có thể dùng trong lúc chờ."
+      }
+    }
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "subtitle": "Kết nối, đồng bộ và dữ liệu của bạn",
+    "themes": {
+      "light": "Sáng",
+      "dark": "Tối",
+      "system": "Hệ thống"
+    },
+    "dataSets": {
+      "demo": "Dữ liệu mẫu",
+      "empty": "Trống"
+    },
+    "reasoning": {
+      "on": "Bật",
+      "low": "Nhẹ",
+      "off": "Tắt"
+    },
+    "import": {
+      "refused": "Không có gì được nhập",
+      "fileFailed": "Không mở được tệp: {{reason}}",
+      "clipboardFailed": "Không đọc được bộ nhớ tạm: {{reason}}",
+      "unfinished": "Việc nhập chưa hoàn tất",
+      "replaceTitle": "Thay thế mọi thứ trên điện thoại này?",
+      "replaceDescription": "{{described}}. {{replaces}}, và không thể hoàn tác.",
+      "replace": "Thay thế"
+    },
+    "device": {
+      "title": "Trên thiết bị này",
+      "hint": "nơi các bản ghi của bạn thực sự nằm",
+      "body": "Mọi thứ bạn thêm được ghi thẳng vào bộ nhớ của điện thoại trong lúc bạn làm việc — không có gì phải bật, và không có gì rời khỏi thiết bị. Các tài liệu bạn đính kèm được sao chép vào thư mục riêng của jojo, nên vẫn còn khi bản gốc bị di chuyển hoặc xóa.",
+      "copyOut": "Để lấy một bản sao ra ngoài, hãy dùng Xuất bên dưới, hoặc Chuyển dữ liệu để gửi mọi thứ sang máy tính qua mạng cục bộ."
+    },
+    "model": {
+      "title": "Mô hình",
+      "intro": "Một mô hình trên máy mà bạn kết nối được, hoặc một mô hình bạn trả phí. Mặc định là cục bộ vì đó là cách bố trí duy nhất mà các bản ghi của bạn không bao giờ rời khỏi thiết bị này.",
+      "endpoint": "Điểm cuối",
+      "loopback": "Địa chỉ đó có nghĩa là “thiết bị này”, nên trên điện thoại nó trỏ tới chính điện thoại. Hãy dùng địa chỉ của máy tính trong mạng của bạn — kiểu như 192.168.1.20, hoặc tên .local của nó.",
+      "endpointOllama": "Máy chủ và cổng. Không có /v1 — jojo dùng điểm cuối riêng của Ollama để có thể yêu cầu không cắt ngắn.",
+      "endpointHint": "URL gốc, kết thúc bằng /v1.",
+      "apiKey": "Khóa API",
+      "apiKeyHint": "Chỉ được giữ trên thiết bị này. Nó không bao giờ được đưa vào bản sao lưu và không bao giờ được gửi tới đâu ngoài nhà cung cấp.",
+      "modelPlaceholder": "Được tìm thấy khi bạn kiểm tra kết nối",
+      "modelHint": "Giá trị máy chủ báo về. Hãy đổi nếu bạn phục vụ nhiều mô hình.",
+      "savedAs": "Lưu với tên",
+      "savedAsHint": "Tên của máy chủ này trong danh sách. Mặc định là tên mô hình.",
+      "context": "Cửa sổ ngữ cảnh",
+      "contextOllama": "Số token. Để trống sẽ dùng {{tokens}} và để Ollama tự điều chỉnh; con số ở đây cũng được gửi dưới dạng num_ctx.",
+      "contextHint": "Số token mà bản triển khai của bạn chứa được. Để trống sẽ dùng {{tokens}}.",
+      "reasoning": "Suy luận",
+      "reasoningDescription": "Cho phép các mô hình có khả năng suy nghĩ — gpt-oss, Gemma 4, Qwen3 — suy luận trước khi trả lời. Hãy tắt nếu câu trả lời trống khi dùng mô hình nhỏ.",
+      "endpointFirst": "Hãy điền điểm cuối trước.",
+      "kept": "Được giữ trên thiết bị này. Trợ lý sẽ dùng mô hình này."
+    },
+    "test": {
+      "testing": "Đang kiểm tra…",
+      "again": "Kiểm tra lại",
+      "test": "Kiểm tra kết nối",
+      "connected": "Đã kết nối",
+      "noAnswer": "Không trả lời",
+      "notConnected": "Chưa kết nối"
+    },
+    "reader": {
+      "title": "Đọc tài liệu của tôi",
+      "hint": "chỉ PDF",
+      "already": "Điện thoại này đã tự đọc được tệp Word, tệp OpenDocument, bản trình chiếu, trang đã lưu và văn bản thuần — không cần thiết lập gì và không gửi gì đi đâu cả.",
+      "pdf": "<strong>PDF là ngoại lệ.</strong> Chuyển PDF lại thành văn bản cần các bảng phông chữ bên trong nó, nhiều hơn những gì ứng dụng này mang theo. Với những tệp đó, hãy chạy {{name}} trên một máy mà điện thoại này kết nối được và nhập địa chỉ của nó bên dưới.",
+      "address": "Địa chỉ",
+      "addressHint": "Nơi markitdown-mcp đang lắng nghe. Đường dẫn kết thúc bằng /mcp.",
+      "notRunning": "Chưa chạy nó?",
+      "addressFirst": "Hãy điền địa chỉ trước.",
+      "ok": "Tài liệu được gửi tới địa chỉ đó và không nơi nào khác. Không có gì được tải lên.",
+      "notice": "{{name}} là một chương trình riêng, không thuộc jojo. {{copyright}} {{licence}}. jojo không liên kết với Microsoft."
+    },
+    "appearance": {
+      "title": "Giao diện",
+      "theme": "Chủ đề",
+      "themeDescription": "Hệ thống sẽ theo thiết lập của thiết bị"
+    },
+    "data": {
+      "title": "Dữ liệu của bạn",
+      "export": "Xuất dạng JSON",
+      "import": "Nhập",
+      "paste": "Dán bản sao lưu",
+      "exportNote": "Bản xuất bao gồm đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và những gì chúng gắn, và hồ sơ cá nhân. Đó là bản sao lưu mà ứng dụng này đọc lại được — nhưng các tài liệu bạn đính kèm vẫn ở trên điện thoại này, nên các hàng của chúng được khôi phục mà không có nội dung. Chuyển dữ liệu, trong mục Thêm, chuyển mọi thứ sang máy tính kèm cả tài liệu.",
+      "records": "Bản ghi",
+      "recordsEmpty": "Mọi danh sách đều trống, nên mọi màn hình đang hiển thị trạng thái lần chạy đầu.",
+      "recordsDemo": "Đợt tìm việc mẫu — mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ.",
+      "move": "Chuyển sang thiết bị khác",
+      "moveDescription": "Ghép nối với máy tính qua mạng cục bộ và chuyển mọi thứ, kể cả tài liệu.",
+      "reset": "Đặt lại dữ liệu mẫu",
+      "resetDescription": "Đưa mọi thứ về như ban đầu, bỏ đi các chỉnh sửa trong phiên này.",
+      "resetButton": "Đặt lại",
+      "resetBlocker": "Hãy chuyển Bản ghi về Dữ liệu mẫu trước",
+      "warning": "Các bản ghi của bạn được lưu trên thiết bị này và vẫn còn sau khi đóng ứng dụng. Không có tài khoản và không đồng bộ, và không bản ghi nào rời khỏi điện thoại — không qua mô hình, không qua báo cáo sự cố. Xuất sẽ ghi một bản sao vào bộ nhớ tạm nếu bạn muốn giữ ở nơi khác.",
+      "cleared": "Đã xóa mọi thứ",
+      "clearedDescription": "Mọi bản ghi đã bị xóa, kể cả hồ sơ cá nhân, và mọi tài liệu bạn đã đính kèm đã bị xóa khỏi thiết bị này. Bạn có thể tải lại dữ liệu mẫu từ đây.",
+      "resetDone": "Đã đặt lại dữ liệu mẫu",
+      "loaded": "Đã tải dữ liệu mẫu",
+      "loadedDescription": "Các đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng và hồ sơ cá nhân mẫu đã trở lại như ban đầu."
+    },
+    "confirm": {
+      "fallbackTitle": "Thay đổi dữ liệu?",
+      "continue": "Tiếp tục",
+      "empty": {
+        "title": "Xóa mọi bản ghi?",
+        "description": "Đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu và hồ sơ cá nhân đều bị xóa, kể cả những gì bạn thêm trong phiên này, và mọi tài liệu bạn đã đính kèm cũng bị xóa khỏi thiết bị này. Không thể hoàn tác — hãy xuất dữ liệu trước nếu bạn muốn lấy lại. Từ khóa của bạn được giữ lại, nhưng không còn gì mang chúng.",
+        "confirm": "Xóa mọi thứ"
+      },
+      "demo": {
+        "title": "Tải dữ liệu mẫu?",
+        "description": "Các bản ghi mẫu sẽ trở lại, gắn các từ khóa đi kèm. Mọi thứ bạn đã thêm trong phiên này sẽ bị thay thế chứ không gộp, và mọi tài liệu bạn đã đính kèm sẽ bị xóa khỏi thiết bị này. Không thể hoàn tác.",
+        "confirm": "Tải dữ liệu mẫu"
+      },
+      "reset": {
+        "title": "Đặt lại về dữ liệu mẫu?",
+        "description": "Mọi chỉnh sửa, thêm và xóa trong phiên này đều bị bỏ và các bản ghi mẫu trở lại đúng như ban đầu, nên mọi tài liệu bạn đã đính kèm sẽ bị xóa khỏi thiết bị này. Bản thân danh sách từ khóa được giữ nguyên. Không thể hoàn tác.",
+        "confirm": "Đặt lại dữ liệu"
+      }
+    },
+    "provider": {
+      "title": "Nhà cung cấp",
+      "description": "Chọn một nhà cung cấp sẽ tự đặt địa chỉ cho bạn. Các nhà cung cấp đám mây cần khóa, và các bản ghi của bạn sẽ được gửi tới họ.",
+      "cloud": "Lời bạn được gửi tới công ty này, và bạn bị tính phí",
+      "localKey": "Trên máy bạn kiểm soát. Cần khóa.",
+      "local": "Trên máy bạn kiểm soát. Không có gì rời khỏi đó."
+    },
+    "cloud": {
+      "terms": "Điều khoản của {{name}}",
+      "privacy": "Chính sách quyền riêng tư"
+    },
+    "servers": {
+      "title": "Máy chủ đã lưu",
+      "description": "Các địa chỉ đã từng trả lời trên thiết bị này.",
+      "done": "Xong",
+      "empty": "Chưa lưu gì. Kiểm tra một kết nối và địa chỉ sẽ được giữ ở đây.",
+      "load": "Tải {{name}}",
+      "inUse": "Đang dùng",
+      "forget": "Quên {{name}}"
+    },
+    "keywords": {
+      "title": "Từ khóa",
+      "hint": "dùng chung cho đơn ứng tuyển, lời nhắc và Kho lưu trữ",
+      "takenOff_other": "Đã gỡ khỏi {{count}} bản ghi.",
+      "usedOn_other": "Đang dùng cho {{count}} bản ghi",
+      "rename": "Đổi tên {{name}}",
+      "editTitle": "Sửa {{name}}",
+      "editGeneric": "Sửa từ khóa",
+      "editDescription": "Đổi tên giữ nguyên mã, nên mọi bản ghi mang từ khóa này đều thay đổi theo.",
+      "taken": "Tên đó đã được dùng",
+      "takenDescription": "Một từ khóa khác đã mang tên đó.",
+      "colour": "Màu",
+      "newTitle": "Từ khóa mới",
+      "newDescription": "Từ khóa là của bạn. Cùng một từ khóa dùng được cho đơn ứng tuyển, lời nhắc, tệp và liên kết.",
+      "added": "Đã thêm {{name}}",
+      "placeholder": "vd. Đang chờ họ",
+      "confirmUsed_other": "Nó sẽ được gỡ khỏi {{count}} bản ghi. Các bản ghi đó vẫn được giữ; chỉ có từ khóa bị gỡ.",
+      "confirmUnused": "Không có gì được gắn từ khóa này, nên không có gì khác thay đổi."
+    }
+  }
+}

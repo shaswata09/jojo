@@ -1,0 +1,616 @@
+{
+  "nav": {
+    "rail": "Pagine della guida",
+    "contents": "Indice della guida",
+    "pager": "Altre pagine della guida",
+    "youAreHere": "sei qui",
+    "previous": "Precedente",
+    "next": "Successiva",
+    "pageOf": "Pagina {{current}} di {{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "Come si usa",
+      "blurb": "Cos'è un record, dove viene conservato, cosa ti costa, e i pochi tasti da conoscere prima di affidargli una ricerca di lavoro."
+    },
+    "screens": {
+      "label": "Ogni schermata",
+      "blurb": "Ogni pagina una per una: a cosa serve, i meccanismi che non si notano guardandola, e cosa non è ancora collegato."
+    },
+    "tools": {
+      "label": "Gli strumenti",
+      "blurb": "Cosa può fare davvero l'assistente, come gli si impedisce di fare altro, e come sceglie quello giusto dall'intero catalogo."
+    },
+    "graph": {
+      "label": "Il grafo",
+      "blurb": "Cosa disegna la pagina Grafo, come una domanda diventa una query, e il modello di record con cui è memorizzata l'intera app."
+    },
+    "builtWith": {
+      "label": "Costruito con",
+      "blurb": "Il lavoro open source di cui è fatto jojo, le licenze che lo coprono e come è organizzato il codice."
+    },
+    "controlFlow": {
+      "label": "Grafo del flusso di controllo",
+      "blurb": "Ogni modulo e importazione come grafo, come si muove il controllo in sei percorsi, e dove va fatta una modifica."
+    },
+    "licence": {
+      "label": "Licenza",
+      "blurb": "Quanto costa jojo, cosa puoi farci, e i termini che accompagnano i servizi a cui puoi collegarlo."
+    }
+  },
+  "onThisPage": "In questa pagina",
+  "tour": {
+    "start": "Fai il tour",
+    "resume": "Riprendi il tour: passo {{step}} di {{total}}"
+  },
+  "gettingStarted": {
+    "title": "Per iniziare",
+    "progress": "{{done}} su {{total}} fatti",
+    "allDone": "Tutti i passi sono fatti. La lista di controllo legge i tuoi record, quindi si aggiorna se li cancelli.",
+    "intro": "Ogni passo apre la funzione vera, e si spunta da solo quando esiste un record. Nulla qui è un tutorial da sorbirsi.",
+    "done": "Fatto",
+    "srDone": " — fatto",
+    "srNotDone": " — non ancora fatto",
+    "steps": {
+      "application": {
+        "title": "Aggiungi una candidatura",
+        "body": "Una posizione, la sua fase e la sua scadenza. Tutto il resto in jojo dipende da questo record.",
+        "action": "Nuova candidatura"
+      },
+      "dated": {
+        "title": "Dai una data a qualcosa",
+        "body": "Scadenze, colloqui e visite in sede sono un unico tipo di record, quindi arrivano contemporaneamente al calendario, alla settimana in arrivo e alla candidatura.",
+        "action": "Nuovo evento"
+      },
+      "reminder": {
+        "title": "Imposta un sollecito",
+        "body": "Un promemoria è lo stesso record con un avviso attivato. Quando la sua data passa viene segnalato nel pannello finché non lo spunti.",
+        "action": "Nuovo promemoria"
+      },
+      "posting": {
+        "title": "Conserva un annuncio prima che venga rimosso",
+        "body": "Non viene scaricato nulla e non viene memorizzata nessuna copia: si conservano l'URL, il datore di lavoro dedotto da esso e il giorno in cui l'hai salvato. Basta per ritrovare l'annuncio.",
+        "action": "Apri Scout offerte"
+      },
+      "file": {
+        "title": "Archivia i tuoi documenti",
+        "body": "Trascina un CV o una dichiarazione nella Cassaforte. Vengono registrati nomi, dimensioni e tipi; un file che trascini in questa sessione ha anche l'anteprima.",
+        "action": "Apri la Cassaforte"
+      },
+      "keyword": {
+        "title": "Etichetta qualcosa con una parola chiave",
+        "body": "Le parole chiave sono tue, condivise da candidature, promemoria e tutto ciò che è nella Cassaforte, a differenza delle etichette di ruolo fisse della barra superiore. Il pulsante etichetta su qualsiasi riga ne aggiunge una.",
+        "action": "Gestisci le parole chiave"
+      },
+      "draft": {
+        "title": "Scrivi un messaggio",
+        "body": "Costruito dai tuoi frammenti email, con ruolo, datore di lavoro e date compilati dal record. Il nome di una persona non viene mai compilato al posto tuo. Nulla qui registra che l'hai inviato, quindi questo passo non si spunta da solo.",
+        "action": "Scrivi un messaggio"
+      }
+    }
+  },
+  "overview": {
+    "title": "Come si usa jojo",
+    "subtitle": "Tutto gira sul tuo computer. Inizia in modo semplice, aggiungi potenza quando ti serve.",
+    "tourIntro": "Oppure fatti guidare, in pratica: un riflettore sulle pagine vere, e provi ogni cosa man mano. Il tour non scrive mai nulla al posto tuo, non salva mai un record e non cambia mai un'impostazione.",
+    "sections": {
+      "application": "Segui una candidatura",
+      "dates": "Date e solleciti",
+      "vault": "La Cassaforte",
+      "profile": "Il tuo profilo",
+      "keys": "Tasti e annullamento",
+      "keywords": "Parole chiave",
+      "graph": "Interroga il grafo",
+      "data": "I tuoi dati",
+      "ladder": "Non ancora collegato"
+    },
+    "track": {
+      "hint": "il record da cui dipende tutto il resto",
+      "title": "Segui una candidatura dall'invio a un'offerta",
+      "intro": "Una candidatura è una posizione presso un datore di lavoro. Date, note, documenti, parole chiave e ogni dato della pagina <stats>statistiche</stats> rimandano a una di esse, quindi è il primo record da creare. Vivono sulla <board>bacheca</board>; per aggiungerne una, premi <kbd>n</kbd> in qualsiasi punto dell'app, o usa la lista di controllo qui sopra.",
+      "movesTitle": "Cosa chiede ogni spostamento",
+      "movesIntro": "Il punto da cui la sposti decide cosa ti viene chiesto. Sulla bacheca o nella tabella (un trascinamento, l'etichetta su una scheda, il chip su una riga) lo spostamento avviene e basta, con un Annulla nella notifica. Dall'interno del record, quattro delle sei destinazioni aprono prima un breve modulo; le altre due avvengono e basta, perché una finestra il cui unico contenuto è un pulsante Conferma è un dosso, non un passaggio.",
+      "asks": {
+        "submitted": "Il giorno in cui l'hai inviata, il link al portale e un riferimento di conferma, se ce l'hai.",
+        "interview": "La data, e se è un colloquio telefonico, video o in sede. Propone di mettere il colloquio nel calendario con un promemoria.",
+        "offer": "Una data entro cui rispondere, il pacchetto ed eventuali note. Propone di aggiungere la scadenza della decisione al calendario.",
+        "closed": "Come è finita: respinta, ritirata, accettata, rifiutata, o sparita senza risposta. È ciò che contano le statistiche."
+      },
+      "asksNothing": "Nulla: lo spostamento avviene mentre lo fai.",
+      "offerQuestion": "Una domanda in più, qualunque sia la destinazione: spostare una candidatura che ha già un'offerta chiede se conservare i dettagli dell'offerta o cancellarli. Un'offerta appartiene al giro che l'ha prodotta, quindi eliminarla è una decisione, non un effetto collaterale.",
+      "onceTitle": "Una volta che il record esiste",
+      "once": {
+        "open": "Aprirne una lascia l'elenco dov'era: il record si apre sopra di esso, e Indietro chiude il record invece di perdere i tuoi filtri. L'indirizzo è un nome e non un numero, quindi un link a una candidatura sopravvive a un ricaricamento.",
+        "note": "La nota si salva quando fai clic altrove, e lo dice sotto. Non c'è un pulsante Salva da dimenticare.",
+        "duplicate": "<lead>Duplica</lead> serve per candidarsi di nuovo: la copia riparte da Bozza con ruolo, nota, località e link, e di proposito senza l'offerta, l'esito o le date. jojo registra che le due sono copie l'una dell'altra.",
+        "delete": "Eliminare una candidatura elimina la candidatura e la sua nota. Tutto ciò che hai archiviato sotto di essa (promemoria, documenti, parole chiave) viene scollegato, non eliminato, e la conferma dice cosa.",
+        "address": "La vista, la casella di ricerca, il filtro per fase e l'ordinamento sono tutti nella barra degli indirizzi, quindi una vista che imposti è un link che puoi conservare: <bystage>la tabella, ordinata per fase</bystage> e <atoffer>tutto ciò che è in offerta</atoffer> sono semplici URL. Entrambi indicano di proposito la tabella: i chip delle fasi e l'ordinamento per colonna sono controlli della tabella, e la bacheca non ha un filtro per fase perché è già sei colonne di fasi, quindi una fase nell'indirizzo non fa nulla finché l'indirizzo non dice anche tabella. La casella di ricerca funziona in entrambe. Il filtro per ruolo e i chip delle parole chiave accanto non sono in nessuna delle due: sono una selezione di questa scheda, non parte dell'indirizzo, e si azzerano quando ricarichi."
+      }
+    },
+    "stageRail": {
+      "title": "Le sei fasi che attraversa una candidatura",
+      "desc": "Bozza, Inviata, Chiamata preliminare, Colloquio, Offerta e Chiusa, in ordine, su un'unica linea. Spostare in Inviata, Colloquio, Offerta o Chiusa apre un breve modulo; spostare in Bozza o Chiamata preliminare avviene subito. L'elenco sotto dice cosa chiede ogni modulo.",
+      "asks": "chiede"
+    },
+    "dates": {
+      "hint": "un tipo di record, tre nomi",
+      "title": "Date, scadenze e solleciti",
+      "intro": "Una scadenza di invio, un colloquio, una visita in sede e una nota per sollecitare qualcuno sono lo stesso tipo di record con un'etichetta diversa, e un promemoria è quel record con un avviso attivato. È l'unica cosa in jojo che conviene sapere prima di usarlo: aggiungi qualcosa una volta e arriva contemporaneamente al <calendar>calendario</calendar>, alla settimana in arrivo in <today>Oggi</today> e alla candidatura a cui appartiene, perché non c'è nulla da tenere sincronizzato.",
+      "items": {
+        "grid": "La griglia mensile e l'elenco del giorno sono un'unica pagina. Trascinare un elemento su un altro giorno lo riprogramma e offre un Annulla nella notifica.",
+        "colour": "Il colore segue la data e nient'altro (in ritardo, in scadenza entro 48 ore, fatto), quindi nulla diventa obsoleto restando lì. La legenda è nella pagina.",
+        "url": "Il mese che stai guardando, il giorno selezionato e l'elemento aperto sono tutti nell'URL, quindi si può creare un link a un giorno preciso.",
+        "reminders": "I promemoria hanno anche un loro elenco nella <reminders>Cassaforte</reminders>, dove spuntarli è tutto il lavoro. Uno in ritardo resta segnalato in Oggi finché non viene spuntato.",
+        "mint": "Spostare una candidatura in Colloquio o Offerta propone di creare la data per te, così il colloquio che hai appena fissato non va inserito due volte."
+      }
+    },
+    "vault": {
+      "hint": "cinque strumenti, un solo scaffale",
+      "title": "Archivia ciò che ti servirà di nuovo",
+      "reminders": {
+        "name": "Promemoria",
+        "body": "Tutto ciò che ha un avviso, in un unico elenco, con quelli in ritardo per primi."
+      },
+      "links": {
+        "name": "Link",
+        "body": "Portali, pagine di finanziamento, persone da ricordare. Ognuno va in una sezione, e in seguito puoi spostarlo in un'altra."
+      },
+      "files": {
+        "name": "File",
+        "body": "Vengono registrati il nome, la dimensione e il tipo di un documento. <strong>Il documento in sé no</strong>: jojo non ha un posto sul tuo disco dove metterlo. Un file che scegli durante questa visita ha l'anteprima finché non ricarichi; dopo, la riga è un record che attesta l'esistenza del documento, il che basta per sapere cosa hai inviato e quando."
+      },
+      "snippets": {
+        "name": "Frammenti",
+        "body": "Paragrafi che continui a riscrivere. La finestra <strong>Scrivi un messaggio</strong> è costruita con questi, con ruolo, datore di lavoro e date compilati dal record. Il nome di una persona non viene mai compilato al posto tuo, perché indovinarlo è il modo in cui un messaggio parte indirizzato alla persona sbagliata."
+      },
+      "tools": {
+        "name": "Strumenti",
+        "body": "Una calcolatrice, per i conti sullo stipendio in cui si trasforma ogni offerta. La sua cronologia vale solo per questa visita."
+      }
+    },
+    "profile": {
+      "hint": "il profilo non fa parte della lista di controllo",
+      "title": "Compila il tuo profilo",
+      "body": "I tuoi dati di base, i link, i ruoli desiderati e i termini di ricerca si trovano in <profile>Il mio profilo</profile>. Sono ciò su cui lo scout valuterebbe e ciò da cui l'assistente scriverebbe le bozze, quindi contano. Salvando li scrivi in questo browser e li conservi, esattamente come ogni altro record: la lista di controllo qui sopra li esclude perché c'è comunque un solo profilo, e un passo che è fatto nel momento in cui arrivi non è un passo.",
+      "documents": "I documenti che elenchi nel profilo vengono archiviati nella sezione documenti della Cassaforte anziché in un secondo posto che potrebbe non coincidere, e l'intero profilo si salva come un'unica modifica, quindi un solo Annulla lo ripristina."
+    },
+    "keys": {
+      "hint": "tre tasti, e due Annulla diversi",
+      "title": "Fare le cose senza il mouse",
+      "find": "<lead>Trova qualsiasi cosa, ed eseguila.</lead> Scrivi qualche parola e restringe candidature, promemoria e calendario: parole intere in qualsiasi ordine, quindi “rice stat” trova il posto in Statistica a Rice. Sotto i record c'è un gruppo <strong>Strumenti</strong>: le operazioni con nome di cui è fatto jojo, ciascuna con un modulo generato da ciò che quell'operazione richiede davvero. Sceglierne una agisce davvero sui tuoi record reali, quindi mostra una notifica, finisce nel registro delle modifiche e offre esattamente l'Annulla che offre la stessa operazione quando la raggiungi da una scheda. Sotto ancora, <strong>Vai a</strong> raggiunge ogni pagina, comprese le sei che la barra laterale non elenca.",
+      "make": "<lead>Crea qualcosa.</lead> Le stesse sei voci del pulsante Nuovo: candidatura, promemoria, evento, scrivi un messaggio, salva un link, salva un annuncio. Ignorato quando una finestra è già aperta e mentre stai scrivendo, così la lettera n resta una lettera.",
+      "undo": "<lead>Annulla e ripeti, ovunque.</lead> Non per pagina: la combinazione di tasti appartiene all'app, e annullerà il cambio di fase che hai fatto in un'altra schermata due minuti fa. Volutamente ignorato quando il cursore è in un campo di testo, così dentro una nota scritta a metà vince l'annullamento del browser e un ⌘Z accidentale non può annullare in silenzio qualche altro record dietro la finestra.",
+      "twoUndosTitle": "Due Annulla, e fanno cose diverse",
+      "twoUndos": "<kbd>⌘Z</kbd> annulla ciò che è in cima alla pila nel momento in cui lo premi. L'<strong>Annulla</strong> in una notifica annulla <strong>quella</strong> modifica, anche se nel frattempo hai fatto tre cose, ed è proprio questo il punto, perché una notifica dura pochi secondi e tu continui a lavorare. Un'azione dell'utente è un annullamento, per quanti record abbia toccato: creare una candidatura scrive la candidatura, le sue parole chiave e la scadenza creata dal modulo, e annullarla le toglie tutte e tre invece di lasciare una scadenza che punta al nulla.",
+      "pile": "La pila contiene le ultime cinquanta modifiche e parte vuota a ogni visita: una pila di annullamenti che sopravvivesse a un ricaricamento offrirebbe di annullare cose di martedì scorso. Se hai jojo aperto in due schede, quella a cui torni rilegge il database e riparte per lo stesso motivo: non può annullare qualcosa fatto dall'altra scheda. Tutto resta comunque elencato in <settings>Impostazioni → Registro delle modifiche</settings>, dalla più recente, e la riga più recente si può annullare da lì."
+    },
+    "keywords": {
+      "hint": "tue, e condivise da tutto",
+      "title": "Parole chiave, e le etichette di ruolo che non sono",
+      "intro": "In jojo due cose sembrano etichette e si comportano in modo completamente diverso. Confonderle è il modo più comune per ritrovarsi con un filtro che non trova ciò che sai che c'è.",
+      "yoursTitle": "Le parole chiave sono tue",
+      "yours": "Le crei, le nomini, le colori e le metti su qualsiasi cosa: una candidatura, un promemoria, un link, un file, un frammento. Attraversano ogni tipo di record, ed è questo che rende “mostrami tutto ciò che riguarda la segnalazione” una domanda a cui jojo può rispondere.",
+      "record": "Una parola chiave è un record a sé, non un pezzo di testo copiato sulle righe: rinominane una e ogni riga che la porta si aggiorna, e cancellare tutti i record lascia le tue parole chiave al loro posto con i conteggi a zero. <settings>Impostazioni → Parole chiave</settings> le rinomina, cambia loro colore e le elimina, e ti dice su quanti record si trova ciascuna prima di eliminarla.",
+      "rolesTitle": "Le etichette di ruolo sono il tuo elenco",
+      "roles": "Un nuovo archivio parte con cinque etichette (Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer) e <profile>Profilo</profile> le modifica. Prima erano fisse, e l'argomento a favore era che le statistiche le confrontano; in pratica significava che chiunque fuori dall'informatica accademica archiviava l'intera ricerca sotto un'etichetta non vera, e i grafici poi rileggevano quell'etichetta come se lo fosse. Rimuoverne una lascia esattamente dov'è ogni candidatura che la porta.",
+      "roleFilter": "Solo le candidature ne hanno una, e il filtro per ruolo si trova nella barra degli strumenti di <applications>Candidature</applications>, accanto all'unico elenco che filtra; prima era fissato nella barra superiore, il che rendeva ambiguo ogni numero altrove sul fatto che contasse o meno l'intera ricerca. Regola pratica: l'etichetta di ruolo è cos'è il lavoro, la parola chiave è perché ti interessa."
+    },
+    "graph": {
+      "hint": "nessun linguaggio di query da imparare",
+      "title": "Fai una domanda al grafo",
+      "intro": "Ogni record in jojo è un nodo, e ogni collegamento tra due record è un vero arco tra di essi: non è un'immagine di come funziona, è come viene memorizzato. La pagina <graph>Grafo</graph> lo disegna, e il suo pannello di interrogazione ti permette di fare all'archivio le domande a cui un elenco non sa rispondere. Ci si arriva dal riquadro <strong>Memoria del browser</strong> della barra laterale, che non è una porta ovvia.",
+      "pickers": "Una domanda è composta da tre selettori: cosa stai cercando, se <strong>ha</strong> o se <strong>manca</strong> una relazione, e cosa c'è all'altra estremità. La risposta si aggiorna mentre li cambi: non c'è un pulsante Esegui, quindi la tabella e i controlli sopra non possono mai essere in disaccordo.",
+      "examplesTitle": "Gli esempi da provare per primi",
+      "examples": {
+        "noFollowUp": "Candidature senza un sollecito in programma: la lacuna che fa perdere colloqui.",
+        "keyword": "Tutto ciò che ha una certa parola chiave, su ogni tipo di record.",
+        "twice": "Organizzazioni a cui ti sei candidato più di una volta.",
+        "unlinked": "Promemoria non collegati a nessuna candidatura: lavoro che farai senza sapere perché.",
+        "unusedFiles": "File non usati da nessuna candidatura."
+      },
+      "path": "Ognuno è costruito sui record che hai davvero, e uno su cui il tuo archivio non ha nulla da chiedere è disattivato anziché rispondere con una tabella vuota. La seconda forma, <strong>Percorso</strong>, risponde a “come sono collegati questi due”, e risponde “non lo sono” quando non lo sono, che è un risultato reale e non un errore.",
+      "illustrative": "La riga della query sotto i selettori, quella che sembra codice, è indicata come <strong>illustrativa</strong> nella pagina, e lo è davvero: nulla la interpreta, ed è lì perché vedere la forma accanto alle parole rende leggibili i selettori. La pagina <guide>Il grafo</guide> di questa guida spiega cosa viene disegnato e perché."
+    },
+    "data": {
+      "hint": "dove sono, e cosa può andare storto",
+      "title": "I tuoi dati",
+      "askedTitle": "La domanda che jojo ha fatto una volta",
+      "asked": "Al primo avvio jojo chiede se partire con i dati di esempio o da vuoto, e non ti lascia ignorare la domanda: un estraneo che vede dodici candidature per datori di lavoro mai contattati non ha modo di capire se l'app le ha inventate o ha ripristinato quelle di qualcun altro. Viene chiesto una sola volta perché la risposta viene registrata, e nessuna delle due è definitiva: <settings>Impostazioni → I tuoi dati</settings> ha entrambe le metà, e cancellare i record di esempio non fa ricomparire la domanda.",
+      "diskTitle": "Nulla aspetta il disco",
+      "disk": "Una modifica è sullo schermo nell'istante in cui la fai, e viene scritta nel database del browser un attimo dopo in background. È per questo che non ci sono indicatori di caricamento al salvataggio, ed è per questo che chiudere la scheda è sicuro: jojo scrive ciò che ha in sospeso quando la scheda viene nascosta o chiusa, anche su un telefono che chiude la scheda senza preavviso. È anche per questo che il banner “spazio esaurito” qui sotto non ha un pulsante Ricarica: la modifica non salvata è in quella coda, e ricaricare è esattamente ciò che la butterebbe via.",
+      "stripsTitle": "Se compare una striscia sopra la pagina",
+      "strips": "Nessuna di queste blocca jojo: ciò che è sullo schermo è reale, e si può ancora leggere ed esportare. Una striscia e non una notifica, perché un messaggio che dice che le tue modifiche non vengono salvate non deve sparire dopo quattro secondi.",
+      "quoted": "“{{text}}”",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo non è riuscito ad aprire il suo database",
+          "means": "È aperta un'altra scheda di jojo con una versione diversa dell'app. I tuoi record sono ancora sul disco: questa scheda non è riuscita a leggerli, quindi non mostra nulla anziché tirare a indovinare. Chiudi le altre schede e ricarica."
+        },
+        "blocked": {
+          "says": "Questo browser non permette a jojo di aprire la sua memoria",
+          "means": "Una finestra privata, o un browser gestito dalla tua organizzazione. jojo funziona comunque, ma come spazio di lavoro vuoto: ciò che è già salvato su questo dispositivo non viene mostrato, e ciò che scrivi sparisce quando chiudi la scheda. Se aggiungi qualcosa che vale la pena conservare, esporta prima di uscire."
+        },
+        "updated": {
+          "says": "jojo è stato aggiornato in un'altra scheda",
+          "means": "Una nuova versione si è caricata altrove e questa scheda ha chiuso il suo database per lasciar passare l'aggiornamento. Nulla di ciò che modifichi qui viene salvato. Ricarica."
+        },
+        "full": {
+          "says": "Questo browser ha esaurito lo spazio",
+          "means": "Il salvataggio si è fermato, e il banner conta le modifiche che sono sullo schermo ma non scritte. Di proposito questo non ha un pulsante Ricarica: ricaricare è esattamente ciò che le farebbe perdere. Prima esporta, libera un po' di spazio, poi ricarica."
+        },
+        "unsaved": {
+          "says": "N modifiche non sono state salvate",
+          "means": "jojo continua a riprovare e la coda si svuota in ordine, quindi è un numero che può scendere da solo. Esporta se ti serve subito una copia."
+        },
+        "unreadable": {
+          "says": "N record non sono leggibili",
+          "means": "Qualcosa sul disco non corrispondeva a ciò che jojo si aspetta, quindi viene escluso anziché mostrato letto a metà. Non è stato eliminato nulla, e Impostazioni → Diagnostica indica i record per id."
+        }
+      },
+      "recovery": "Ce n'è un'altra che non dovresti mai vedere. Se il database c'è ma non è leggibile, jojo mostra una schermata di recupero <strong>al posto</strong> dell'app: non viene caricato nulla che possa sovrascrivere ciò che è ancora sul disco, e non riparte mai da zero in silenzio. Offre tre cose nell'ordine in cui ti costano qualcosa: scarica le righe che è riuscito a leggere, riprova, o ricomincia da zero, che è l'unica che chiede prima.",
+      "controlsTitle": "I controlli in Impostazioni",
+      "controls": {
+        "export": {
+          "name": "Esporta un backup",
+          "body": "Tutto, in un unico file con versione: candidature, cronologia, Cassaforte, annunci salvati, le tue parole chiave e le relative etichette, e il tuo profilo. Viene scritto come <strong>{{file}}</strong>, con la data, così una seconda esportazione non sovrascrive la prima. È una copia fatta nel momento in cui premi: non segue ciò che fai dopo, ed è l'unica copia dei tuoi dati che non si trova su questo computer. Esporta in Excel e Importa sono disattivati e spiegano perché quando ci passi sopra."
+        },
+        "demo": {
+          "name": "Carica i dati di esempio",
+          "body": "Sostituisce ciò che c'è anziché unirsi a esso. Vale la pena premerlo su un archivio vuoto per vedere come appare uno pieno; altrimenti conviene prima esportare."
+        },
+        "clear": {
+          "name": "Cancella tutti i record",
+          "body": "Candidature, cronologia, Cassaforte, annunci salvati e il tuo profilo. <strong>Le tue parole chiave vengono conservate</strong> (sono record a sé e le hai nominate tu), quindi ogni conteggio nel pannello delle parole chiave va a zero anziché svuotarsi l'elenco."
+        },
+        "clearStorage": {
+          "name": "Cancella la memoria del browser",
+          "body": "Tutto ciò che questo sito ha messo nel tuo browser (i record e il loro database, le impostazioni di tema e audio, cache e cookie), poi un ricaricamento. jojo torna come su un computer nuovo, domanda iniziale compresa. Non c'è nessun server che conservi una copia, quindi è davvero tutto."
+        }
+      },
+      "lastThree": "Queste ultime tre sono le uniche scritture che <kbd>⌘Z</kbd> non annulla, ed è per questo che ognuna chiede prima e dice esattamente cosa tocca. Compaiono comunque nel registro delle modifiche. <strong>Diagnostica</strong>, nella stessa pagina, conta cosa c'è nel tuo archivio, quanto spazio il browser concede a jojo, e indica qualsiasi cosa si sia rifiutato di leggere.",
+      "moveTitle": "Passare a un altro computer",
+      "move": "<transfer>Trasferimento</transfer> è la schermata per consegnare i tuoi record a un secondo dispositivo: scegli una direzione, leggi il codice di abbinamento, vedi esattamente cosa verrebbe spostato e quanto, e scegli se includere i documenti. <strong>In questa build non viene trasmesso nulla: non apre connessioni e non scrive nulla.</strong> Vale la pena percorrerla perché ha la forma del vero passaggio e i conteggi sono letti dal tuo archivio reale, ma oggi il modo per spostare i tuoi dati è l'esportazione qui sopra."
+    },
+    "browserDb": {
+      "title": "Il tuo browser è il database",
+      "body": "Ogni record viene scritto nel database di questo browser mentre lavori, quindi chiudere la scheda è sicuro. Nulla lascia questo computer e nulla si sincronizza: cancella i dati del browser, cambia browser o perdi il disco e se ne vanno con loro. Esporta un backup <kbd>.json</kbd> da <settings>Impostazioni</settings> per tutto ciò che vuoi conservare altrove."
+    },
+    "savePath": {
+      "title": "Cosa succede quando salvi qualcosa",
+      "desc": "Premendo Salva, ciò che è sullo schermo cambia subito, e la scrittura viene messa in coda ed eseguita nel database del browser un attimo dopo. Se quella scrittura fallisce, la modifica resta in coda e viene segnalata in una striscia sopra la pagina anziché essere buttata via.",
+      "press": {
+        "line1": "Premi",
+        "line2": "Salva"
+      },
+      "screen": {
+        "line1": "Sullo schermo,",
+        "line2": "subito"
+      },
+      "saved": {
+        "line1": "Salvato in questo",
+        "line2": "browser"
+      },
+      "fail": {
+        "line1": "Una scrittura che fallisce viene conservata",
+        "line2": "e segnalata, non scartata."
+      }
+    },
+    "ladder": {
+      "title": "Cosa fa jojo con più strumenti sul computer",
+      "aside": "ogni gradino è reale; ognuno è facoltativo",
+      "intro": "I primi due gradini sono un tracker che non ti chiede mai nulla. Dal terzo diventa un assistente che lavora alla ricerca con te, e ogni gradino successivo resta comunque facoltativo.",
+      "layers": {
+        "browser": {
+          "name": "Solo browser",
+          "requires": "Nulla da configurare",
+          "gives": "Segui candidature e scadenze, e conserva i documenti che alleghi"
+        },
+        "backup": {
+          "name": "+ Un backup che conservi",
+          "requires": "Un posto dove mettere un file",
+          "gives": "Un unico file con ogni record e ogni documento, ripristinabile con un clic"
+        },
+        "model": {
+          "name": "+ Modello locale",
+          "requires": "Ollama, vLLM o LM Studio, oppure una chiave NVIDIA gratuita",
+          "gives": "La metà agentica: un assistente con conversazioni che legge e scrive i tuoi record con la tua approvazione, pipeline di Scout offerte che completano il tuo profilo e cercano annunci, \"Interroga il grafo\" con una frase, e una vera valutazione dello scout"
+        },
+        "reader": {
+          "name": "+ Lettore di documenti",
+          "requires": "MarkItDown, in esecuzione in locale",
+          "gives": "Il modello legge i tuoi PDF, file Word e presentazioni, e anche un annuncio di lavoro, così Nuovo → Candidatura da un link compila il modulo"
+        },
+        "extension": {
+          "name": "+ L'estensione",
+          "requires": "Chrome, Edge, Brave o Arc",
+          "gives": "Conserva un annuncio esattamente com'era. È anche l'unica parte di jojo che non è una pagina, ed è ciò che permette a una pipeline di scorrere un sito e a una copia ospitata di raggiungere un lettore di documenti sul tuo computer"
+        }
+      },
+      "built": "disponibile",
+      "notBuilt": "non disponibile",
+      "outro": "Ogni pagina dice da sé su quale gradino si trova, senza costringerti a tornare qui. L'<assistant>Assistente</assistant> è una chat agentica con conversazioni quando un modello è collegato, e cinque esempi svolti senza, con un'etichetta in entrambi i casi, e <scout>Scout offerte</scout> valuta davvero in base al tuo profilo e dice su cosa ha trovato corrispondenze. <screens>Ogni schermata</screens> descrive il resto, pagina per pagina.",
+      "backup": {
+        "hint": "integrato",
+        "title": "Fai un backup",
+        "storedTitle": "I tuoi documenti sono memorizzati qui",
+        "stored": "I CV e le lettere di presentazione che alleghi vengono salvati in questo browser e sopravvivono alla chiusura della scheda. Nulla viene caricato da nessuna parte, e nulla lascia questo computer a meno che non lo scarichi tu.",
+        "oneFileTitle": "Un unico file contiene tutto",
+        "oneFile": "<settings>Impostazioni</settings> scrive un backup con ogni record, ogni collegamento tra di essi e ogni documento, tutto in un unico file. Ripristinarlo rimette al loro posto tutte e tre le cose.",
+        "whyTitle": "Perché è importante",
+        "why": "Un browser può cancellare la propria memoria quando un disco si riempie, e <kbd>Cancella dati di navigazione</kbd> lo farà sempre. Un backup che hai conservato è l'unica copia che non è esposta a nessuna delle due cose."
+      },
+      "model": {
+        "hint": "non collegato",
+        "title": "Aggiungi un modello locale",
+        "connectTitle": "Collegalo",
+        "connect": "Esegui vLLM, Ollama o LM Studio e inserisci l'endpoint in <settings>Impostazioni</settings>. Funziona qualsiasi server compatibile con OpenAI. Niente GPU? Una chiave gratuita da build.nvidia.com esegue lo stesso agente dalla stessa schermata, con limiti di frequenza anziché a pagamento; l'unico costo è che i tuoi record lasciano il dispositivo.",
+        "changesTitle": "Cosa cambia",
+        "changes": "Scrivere bozze smette di essere un modello da compilare e inizia a leggere il tuo profilo e i tuoi documenti. La pagina <assistant>Assistente</assistant> mostra fino ad allora gli esempi svolti con cui risponde.",
+        "scoringTitle": "Le pipeline dello scout iniziano a valutare",
+        "scoring": "Una pipeline è una ricerca salvata che puoi scrivere già oggi. La valutazione è la metà che aspetta il modello, e il banner in quella pagina lo dice anziché mostrare cifre che nulla ha prodotto."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Ogni schermata",
+    "title": "Ogni schermata, e cosa fa e non fa",
+    "subtitle": "Una sezione per pagina: a cosa serve, cosa non è ovvio, e cosa non è ancora collegato.",
+    "caption": "Tredici sezioni: vai direttamente a quella che cerchi",
+    "sections": {
+      "doors": "Dove si trova ogni pagina",
+      "dashboard": "Oggi",
+      "applications": "Candidature",
+      "calendar": "Calendario",
+      "vault": "Cassaforte",
+      "scout": "Scout offerte",
+      "statistics": "Statistiche",
+      "graph": "Grafo",
+      "transfer": "Trasferimento",
+      "profile": "Il mio profilo",
+      "assistant": "Assistente",
+      "settings": "Impostazioni",
+      "guide": "Questa guida"
+    },
+    "parts": {
+      "notObvious": "Cosa non è ovvio",
+      "whatIsReal": "Cosa è reale",
+      "addressNothing": "<lead>La barra degli indirizzi</lead> non contiene nulla."
+    },
+    "doors": {
+      "hint": "sei pagine sono nella barra laterale; sei no",
+      "title": "Dove si trova ogni pagina",
+      "intro": "La barra laterale elenca sei pagine. Altre sei si raggiungono da tutt'altra parte: un'icona nella barra superiore, o uno dei quattro riquadri di stato in fondo alla barra laterale, che sembrano indicatori e sono anche pulsanti. Sotto la larghezza di un portatile, la barra laterale è un pannello dietro il pulsante del menu in alto a sinistra; la barra superiore è presente in ogni schermata e a ogni dimensione.",
+      "listTitle": "Ogni percorso, e il controllo che lo apre",
+      "where": {
+        "dashboard": "Barra laterale, prima riga. È anche la pagina con cui si apre jojo.",
+        "applications": "Barra laterale. Il suo badge conta i record che hai contrassegnato per un sollecito.",
+        "calendar": "Barra laterale. Il suo badge conta ciò che è in programma nei prossimi sette giorni.",
+        "vault": "Barra laterale. Il suo badge conta i promemoria scaduti. <code>/reminders</code> reindirizza qui, dove è finita quella pagina.",
+        "scout": "Barra laterale. Il suo badge conta i risultati che nessuno ha ancora trasformato in una candidatura.",
+        "statistics": "Barra laterale, ultima riga.",
+        "graph": "Il riquadro <strong>Memoria del browser</strong>, in fondo alla barra laterale. Nient'altro nell'app lo chiama Grafo, ed è per questo che è la pagina di jojo più difficile da trovare per caso.",
+        "transfer": "Il riquadro <strong>Trasferimento</strong>, e <settings>Impostazioni → I tuoi dati</settings>.",
+        "profile": "L'icona della persona nella barra superiore.",
+        "assistant": "L'icona del robot nella barra superiore.",
+        "settings": "L'icona dell'ingranaggio nella barra superiore. Anche il riquadro <strong>Modello locale</strong> porta qui: è dove si configura.",
+        "guide": "Il punto interrogativo, ultima icona nella barra superiore. Non è nella barra laterale."
+      },
+      "palette": "C'è una porta che le raggiunge tutte, ed è il motivo per cui le sei pagine nascoste sono un inconveniente e non un problema: <kbd>⌘K</kbd> termina con un gruppo <strong>Vai a</strong> che elenca ogni pagina, comprese le quattro di questa guida separatamente. <overview>Come si usa jojo</overview> spiega cos'altro fa quella tavolozza.",
+      "everyTitle": "Due cose che valgono per ogni pagina",
+      "switches": "Gli interruttori dietro l'ingranaggio accanto al titolo di una pagina (mostra note, righe compatte, punti al posto dei titoli, mostra i conteggi) cambiano ciò che quella pagina disegna e valgono solo per questa visita. Non sono nella barra degli indirizzi e non vengono salvati; il tema e l'interruttore dei suoni in Impostazioni sì, e sono le eccezioni.",
+      "defaults": "Dove una pagina conserva uno stato nell'indirizzo, un valore uguale a ciò che la pagina mostra comunque viene omesso. È per questo che <code>/applications</code> e <code>/applications?view=board&stage=all&sort=daysAgo</code> sono la stessa schermata, ed è per questo che, quando cancelli un filtro, ottieni il più ordinato dei due."
+    },
+    "doorsDiagram": {
+      "title": "Da dove si raggiunge ogni pagina",
+      "desc": "Le sei righe lungo la barra laterale aprono Pannello, Candidature, Calendario, Cassaforte, Scout offerte e Statistiche. I quattro riquadri sotto aprono il Grafo, Trasferimento e, per il bridge e il modello, Impostazioni. Le quattro icone a destra della barra superiore aprono Il mio profilo, Impostazioni, l'Assistente e questa guida. Nulla nell'elenco della barra laterale porta a queste ultime sei.",
+      "search": "Cerca…",
+      "new": "Nuovo",
+      "topBar": {
+        "line1": "Il mio profilo · Impostazioni ·",
+        "line2": "Assistente · Come si usa"
+      },
+      "sidebar": {
+        "line1": "Pannello · Candidature · Calendario",
+        "line2": "Cassaforte · Scout offerte · Statistiche"
+      },
+      "tiles": "Grafo · Trasferimento · Impostazioni"
+    },
+    "applications": {
+      "where": "barra laterale · bacheca, tabella e un record",
+      "open": "Apri la bacheca",
+      "intro": "Ogni posizione che stai seguendo, in uno di due layout sugli stessi record, più il record stesso al suo indirizzo. Le sei fasi e cosa chiede lo spostamento tra di esse sono in <overview>Come si usa jojo</overview>; questa è la pagina dove avviene.",
+      "boardTitle": "Bacheca e tabella non sono la stessa vista due volte",
+      "board": {
+        "columns": "La bacheca ha una colonna per fase con un conteggio in ogni intestazione. <strong>Aggiungi qui</strong> in fondo a una colonna apre un nuovo record già in quella fase: registrare un lavoro per cui hai già fatto il colloquio non dovrebbe significare aggiungere una bozza e trascinarla per quattro colonne.",
+        "sort": "La tabella ordina per Posizione, Fase e Ultima attività; facendo di nuovo clic sulla stessa intestazione si inverte l'ordine. Ruolo e Prossima data sono colonne, non chiavi di ordinamento.",
+        "chips": "I chip del filtro per fase esistono solo nella tabella. La bacheca è già raggruppata per fase, quindi filtrarla svuoterebbe cinque colonne anziché accorciare un elenco: passando a Bacheca quel filtro viene cancellato anziché restare attivo e nascosto.",
+        "search": "La casella di ricerca cerca nel datore di lavoro, nella posizione, nella nota, nell'etichetta di ruolo e nel nome della fase, quindi scrivendo “offerta” trovi un record in cui compare solo come chip. I conteggi sui chip delle fasi riguardano ciò che resta dopo la ricerca e i chip delle parole chiave, non tutto.",
+        "empty": "Quando l'elenco torna vuoto, indica i filtri che lo tengono così e propone di toglierli tutti insieme."
+      },
+      "moveTitle": "Spostare una scheda tra le fasi",
+      "move": "La maniglia si trova sul bordo sinistro di una scheda. Trascinala e la scheda si solleva dalla sua colonna: la colonna su cui ti trovi prende il bordo evidenziato e apre uno spazio tratteggiato dove la scheda atterrerà. Il trascinamento non è l'unico modo, e da tastiera è il più lento: attraversare due colonne richiede uno Spazio e venti pressioni di freccia. Ogni scheda ha un menu delle fasi sotto la propria etichetta di fase, e nella tabella il chip della fase su una riga è lo stesso menu; in entrambi i casi bastano due pressioni.",
+      "fromBoard": {
+        "name": "Dalla bacheca o dalla tabella",
+        "body": "Lo spostamento avviene mentre lo fai, e la notifica dice da quale fase proveniva e offre Annulla. Un trascinamento e una scelta dal menu sono la stessa scrittura, quindi un rilascio sbagliato si recupera come un clic sbagliato, cosa che non accadeva finché il trascinamento non è passato per lo stesso percorso di tutto il resto."
+      },
+      "fromRecord": {
+        "name": "Dall'interno del record",
+        "body": "Il menu delle fasi nell'intestazione del record è quello che può aprire prima un breve modulo, e lo apre solo quando quello spostamento ha qualcosa da chiedere: Inviata, Colloquio, Offerta e Chiusa sì, Bozza e Chiamata preliminare no. Lasciare un record che ha già un'offerta chiede sempre, qualunque sia la destinazione, perché l'offerta va conservata o eliminata deliberatamente."
+      },
+      "exits": "Il modulo ha tre uscite e nessuna è un trucco: <strong>Annulla</strong> non scrive nulla, <strong>Sposta senza dettagli</strong> cambia la fase e non tocca nient'altro, e l'ultima applica ciò che hai compilato. Dove ha proposto di mettere una data nel tuo calendario, la notifica successiva dice che l'ha fatto.",
+      "recordTitle": "Il record stesso",
+      "record": {
+        "opens": "Si apre sopra l'elenco anziché al suo posto. Su un portatile è un pannello sulla destra della bacheca, che si chiude con Esc, con lo sfondo o con la X nella sua intestazione; sotto quella larghezza occupa l'intera pagina. In entrambi i casi Indietro chiude il record e lascia la tua vista, ricerca, fase e ordinamento esattamente com'erano.",
+        "address": "Il suo indirizzo è un nome (<code>/applications/rice</code>) perché gli id dei record vengono generati per archivio e un id salvato nei preferiti non funzionerebbe più dopo aver ricaricato i dati di esempio. Un link costruito da un id viene comunque risolto.",
+        "note": "La nota si salva quando fai clic altrove e sotto dice “Nota salvata”. Non c'è un pulsante Salva da dimenticare.",
+        "delete": "L'eliminazione conta cosa sopravvive prima di chiedere (i promemoria, gli eventi e gli elementi salvati archiviati sotto il record vengono conservati e scollegati, mai eliminati) e l'Annulla nella notifica rimette anche quei collegamenti, che non potresti ricostruire aggiungendo di nuovo la candidatura.",
+        "deleted": "Un link a un record eliminato porta a un pannello che lo dice, anziché a un errore. Insieme a esso non è stato rimosso nient'altro."
+      },
+      "address": "<lead>La barra degli indirizzi</lead> contiene il layout, il testo di ricerca e, poiché sono entrambi controlli della tabella, il filtro per fase e la chiave di ordinamento, quindi <bystage>la tabella ordinata per fase</bystage> e <atoffer>tutto ciò che è in offerta</atoffer> sono link che puoi conservare. Una fase nell'indirizzo non fa nulla finché l'indirizzo non dice anche tabella. Il filtro per ruolo e i chip delle parole chiave accanto non ci sono affatto: sono una selezione di questa scheda e si azzerano quando ricarichi."
+    },
+    "today": {
+      "where": "barra laterale, prima riga",
+      "open": "Apri Oggi",
+      "intro": "Ciò che ti chiede la giornata, e nient'altro. Cinque pannelli, tutti calcolati dai tuoi record così come sono: <strong>Serve una decisione</strong> (un'offerta, una candidatura in ritardo, la prossima scadenza o il prossimo colloquio con un conto alla rovescia) accanto a una striscia mensile e a una serie di contatori, poi <strong>Da fare questa settimana</strong>, <strong>Candidature recenti</strong> e la ripartizione della <strong>Pipeline</strong>.",
+      "items": {
+        "checklist": "Finché non segui nulla, il mazzo delle decisioni è sostituito da una lista di controllo in tre passi che apre le finestre vere e si spunta da sola leggendo l'archivio. Cancellare tutti i record in Impostazioni la fa ricomparire, perché legge l'archivio anziché ricordare che una volta l'avevi completata.",
+        "colour": "Il colore in questa pagina dipende dalla data e da nient'altro: rosso è scaduto, ambra è in scadenza entro 48 ore, e tutto ciò che è più lontano è neutro per quanto importante sia. Ciò che hai completato diventa grigio, non verde: nulla qui è una ricompensa.",
+        "rows": "Le righe si possono spuntare, rimandare di un giorno, tre giorni o una settimana, o aprire, senza lasciare la pagina. Ognuna di queste è una vera scrittura con un Annulla nella notifica.",
+        "strip": "La striscia mensile è un piccolo calendario a sé: scorre i mesi senza spostare la pagina <calendar>Calendario</calendar>, e facendo clic su un giorno apre quel giorno lì."
+      },
+      "address": "<lead>La barra degli indirizzi</lead> non contiene nulla. Questa pagina è <code>/</code>, e ogni controllo è un link altrove o una scrittura."
+    },
+    "calendar": {
+      "where": "barra laterale, terza riga",
+      "open": "Apri il Calendario",
+      "intro": "Una griglia mensile con sotto l'elenco del giorno selezionato, in un'unica pagina. Scadenze, colloqui, visite in sede e promemoria sono tutti qui perché sono tutti lo stesso tipo di record; il motivo per cui conviene saperlo è in <overview>Come si usa jojo</overview>.",
+      "items": {
+        "drag": "Trascinare una voce su un altro giorno la riprogramma, con un Annulla nella notifica. Rilasciarla sul giorno da cui proveniva non scrive nulla e non dice nulla: una notifica che annuncia uno spostamento mai avvenuto è peggio del silenzio.",
+        "types": "I tipi di evento sotto la griglia sono interruttori, come la legenda di un grafico: disattivane uno e le sue voci escono dalla griglia e da entrambi gli elenchi del giorno, per questa visita. Un giorno le cui voci sono tutte disattivate lo dice anziché dichiararsi vuoto, e un link a una voce di un tipo nascosto riattiva quel tipo, così ha dove atterrare.",
+        "key": "La legenda sotto la griglia è costruita da ciò che questo mese contiene davvero. Un mese senza nulla in ritardo non elenca il colore del ritardo, perché una legenda che promette un segno che non è sulla griglia ti manda a cercarlo.",
+        "goTo": "<strong>Vai al mese</strong> scorre gli anni senza spostare il calendario dietro finché non ne scegli uno, e segna il vero mese corrente mentre sei in un altro anno. <strong>Oggi</strong> torna a oggi, e resta premuto quando ci sei già.",
+        "paging": "Passando da un mese all'altro si mantiene il giorno che stavi guardando, adattato al mese in cui arrivi: partendo dal 31 gennaio arrivi all'ultimo giorno di febbraio anziché a una data che non esiste. Lo stesso adattamento vale per un indirizzo scritto a mano, quindi <code>?m=2&d=31</code> risponde con un giorno reale invece che con una griglia vuota.",
+        "add": "<strong>Aggiungi evento</strong> è precompilato con il giorno sullo schermo, che in un calendario è quasi sempre il giorno che intendevi.",
+        "export": "<strong>Esporta nel mio calendario</strong> scrive ogni data che jojo contiene in un file <code>.ics</code>, con un promemoria su ciascuna. È qui perché jojo non invia notifiche proprie: il calendario da cui già ricevi avvisi è l'unica cosa che può avvisarti di una scadenza mentre questa app è chiusa. Include la data di risposta di ogni offerta, che si trova sulla candidatura e non nella cronologia e quindi non è mai comparsa su questa griglia. Il file è una copia fatta adesso: se cambi una data, esporta di nuovo."
+      },
+      "address": "<lead>La barra degli indirizzi</lead> contiene l'anno, il mese, il giorno e la voce a cui sei arrivato, omettendo l'anno e il mese correnti quando sei lì, quindi un link al mese prossimo è <code>/calendar?m=11&d=3</code>. L'ultimo dei quattro, <code>focus</code>, evidenzia una riga per un paio di secondi e poi si rimuove dall'indirizzo, così un URL che copi dopo indica il giorno anziché una riga che nessuno sta più guardando."
+    },
+    "vault": {
+      "where": "barra laterale · sei strumenti, una pagina",
+      "open": "Apri la Cassaforte",
+      "intro": "Tutto ciò che hai messo da parte per riprenderlo. Il controllo segmentato nell'intestazione passa tra sei strumenti e ne mostra uno alla volta, ed è la cosa che sfugge ai più: la Cassaforte non è un elenco, e cinque dei suoi sei strumenti sono dietro una scheda.",
+      "rows": {
+        "reminders": {
+          "name": "Promemoria",
+          "body": "Raggruppati in In ritardo, Oggi, In arrivo e Completati. Spuntarne uno è tutto il lavoro, e su ogni riga ci sono gli stessi passi di rinvio del pannello."
+        },
+        "links": {
+          "name": "Link",
+          "body": "Archiviati sotto Annuncio, Istituzione, Persona o Guida, e spostabili tra queste in seguito."
+        },
+        "files": {
+          "name": "File",
+          "body": "Sezioni Da leggere, Candidature, Presentazioni e Amministrazione. Trascina un file sull'elenco o sceglilo; sotto trovi cosa viene davvero conservato."
+        },
+        "snippets": {
+          "name": "Frammenti",
+          "body": "Con etichetta Lettera di presentazione, Modulo di candidatura, Email o Biografia. Sono ciò con cui è costruita la finestra <strong>Scrivi un messaggio</strong>, e dove l'Assistente archivia una risposta che salvi."
+        },
+        "people": {
+          "name": "Persone",
+          "body": "Referenti, presidenti di commissione, selezionatori: chiunque sia davvero coinvolto nella ricerca. Si archiviano sotto un lavoro esattamente come un CV, e per lo stesso motivo è un elenco e non un singolo id: un referente scrive per ogni posizione in cui lo indichi. Prima vivevano dentro il testo di un promemoria, ed è per questo che nulla poteva rispondere a “di chi manca ancora la lettera”."
+        },
+        "tools": {
+          "name": "Strumenti",
+          "body": "Una calcolatrice, base o scientifica, per i conti in cui si trasforma ogni offerta. Conserva le ultime trenta righe per questa visita e nulla dopo la chiusura della scheda."
+        }
+      },
+      "items": {
+        "filter": "Il filtro per parole chiave sopra l'elenco appartiene allo strumento aperto, quindi il conteggio accanto a una parola chiave descrive questa scheda e non l'intera Cassaforte. Non viene mostrato affatto in Strumenti, che non contiene record, né in una scheda vuota.",
+        "search": "Ognuno dei quattro elenchi ha la propria casella di ricerca e il proprio filtro per sezione, e nessuno dei due è nell'indirizzo: lo sono la scheda aperta e il record a cui sei arrivato.",
+        "redirect": "<code>/reminders</code> reindirizza qui. I promemoria erano una pagina a sé prima di diventare uno strumento, e i link creati allora funzionano ancora."
+      },
+      "notConnectedTitle": "I file vengono registrati, non memorizzati",
+      "notConnected": "Un file fornisce il suo nome, la sua dimensione e il suo tipo, ed è tutto ciò che jojo conserva: non ha un posto sul tuo disco dove mettere il documento stesso. Un file che scegli o trascini durante questa visita ha un'anteprima reale, dai dati che il browser ha fornito, finché la scheda resta aperta; le righe arrivate con i dati di esempio non hanno dati dietro e mostrano invece un segnaposto etichettato. Non viene caricato nulla e non viene letto alcun contenuto.",
+      "address": "<lead>La barra degli indirizzi</lead> contiene lo strumento aperto e, per un attimo, il record a cui puntava un link: <code>/vault?tool=snippets</code>. Cambiando scheda l'evidenziazione sparisce."
+    },
+    "scout": {
+      "where": "barra laterale, quinta riga",
+      "open": "Apri Scout offerte",
+      "intro": "Tre pannelli: le ricerche salvate che vorresti eseguire, i risultati che una tale ricerca produrrebbe, e una casella che salva un annuncio che hai trovato tu. La striscia in cima alla pagina dice quale di queste è in attesa di qualcosa, ed è la prima cosa sullo schermo proprio per questo.",
+      "items": {
+        "pipelines": "Le <strong>pipeline</strong> sono record come gli altri: un sito da tenere d'occhio, i termini che contano e ogni quanto guardare. Scriverle, modificarle ed eliminarle funziona e sopravvive a un ricaricamento. Una pipeline che attivi risulta <strong>in pausa</strong> anziché in esecuzione, che è la parola onesta.",
+        "save": "<strong>Salva un annuncio</strong> funziona senza nulla di collegato. Si conservano l'URL, il datore di lavoro dedotto da esso e il giorno in cui l'hai salvato: abbastanza per ritrovare l'annuncio e candidarti. Nulla scarica la pagina.",
+        "add": "<strong>Aggiungi alle candidature</strong>, su un risultato o su un annuncio salvato, crea la candidatura e collega i due anziché spostare la riga. La riga poi dice dove è andata, così non puoi fare il percorso due volte."
+      },
+      "notConnectedTitle": "Le copie salvate aspettano un modello locale. I punteggi no.",
+      "notConnected": "I risultati sono ancora quelli arrivati con i dati di esempio (nulla ha esplorato un sito), ma la percentuale su ciascuno è calcolata qui, su questo dispositivo, in base ai termini di ricerca, ai ruoli desiderati e alle regioni del tuo profilo, e ogni riga dice su cosa ha trovato corrispondenze. Un profilo vuoto risulta <strong>non valutato</strong> anziché mostrare un numero sicuro sul nulla. <strong>Apri la copia salvata</strong> è la parte che aspetta: è disattivata su ogni annuncio salvato e spiega perché quando ci passi sopra, perché nessuna pagina è mai stata scaricata e mostrarne una significherebbe dichiarare un file che jojo non ha.",
+      "address": "<lead>La barra degli indirizzi</lead> contiene la riga a cui puntava un link, indicata dall'elenco in cui si trova: <code>/scout?focus=match:unt</code> o <code>focus=posting:…</code>. I due elenchi generano i loro id separatamente, quindi l'elenco deve far parte del parametro perché si illumini la riga giusta."
+    },
+    "statistics": {
+      "where": "barra laterale, ultima riga",
+      "open": "Apri Statistiche",
+      "intro": "Tassi principali, quando ti sei candidato, da dove proviene ciascuna, fin dove sono arrivate le candidature, come sono finite, su cosa lavorare adesso, e candidature, risposte, colloqui e offerte suddivisi per tipo di ruolo. Ogni dato è calcolato dalle tue candidature nel momento in cui guardi.",
+      "items": {
+        "funnel": "Viene memorizzata solo la fase in cui si trova ora un record, quindi l'imbuto conta ogni candidatura fin dove la mostra. Un record respinto dopo un colloquio viene contato in base alle date che ha e non oltre, e i due pannelli interessati lo dicono nei loro titoli con <strong>per quanto mostra ciascun record</strong>, anziché riportare in silenzio un numero che non possono garantire.",
+        "typical": "I dati indicati come <strong>tipici</strong> provengono da una ricerca di esempio con cui confrontarti, non dalla tua storia: l'interruttore dietro l'ingranaggio li nasconde. jojo non conserva una cronologia dei propri numeri, ed è per questo che nulla qui riporta un cambiamento nel tempo.",
+        "legend": "La legenda sotto la barra degli esiti disattiva le fasce, e il titolo dice allora quante del totale sono ancora mostrate. Le percentuali vengono ricalcolate su ciò che resta anziché restare ferme.",
+        "holds": "La pagina si trattiene anziché inventare un denominatore. Senza nulla di inviato non ci sono tassi principali né imbuto (un tasso di risposta su zero candidature è un numero inventato) e senza alcun record l'intera pagina è un unico stato vuoto."
+      },
+      "address": "<lead>La barra degli indirizzi</lead> non contiene nulla. Gli interruttori e la legenda valgono per questa visita."
+    },
+    "graph": {
+      "where": "il riquadro Memoria del browser della barra laterale",
+      "open": "Apri il grafo",
+      "intro": "I tuoi record disegnati per come sono memorizzati: un nodo per ciascuno, un arco per ogni riferimento tra due di essi. Il colore è il tipo di record e la dimensione è quanto viene puntato. Sotto l'immagine c'è un pannello di interrogazione che risponde alle domande a cui un elenco non sa rispondere, come quali candidature non hanno un sollecito in programma. <guide>Il grafo</guide> spiega tutto; questa sezione serve solo a dire dove si trova la pagina e cosa non fa.",
+      "items": {
+        "legend": "Le righe della legenda nascondono un tipo di record dall'immagine. Le domande vengono comunque eseguite sull'intero grafo: una risposta che cambiasse perché hai nascosto qualcosa sarebbe peggio di nessuna risposta.",
+        "illustrative": "La riga sotto i selettori che sembra codice è indicata come <strong>illustrativa</strong>, e lo è davvero. Nulla la interpreta; è lì perché vedere la forma accanto alle parole rende leggibili i selettori.",
+        "fetched": "Questa pagina e Trasferimento vengono scaricate separatamente dal resto di jojo, quindi al primo caricamento potresti vedere per un attimo un pannello con il loro nome mentre arriva il codice. Lo dice, anziché mostrare un indicatore che gira."
+      },
+      "address": "<lead>La barra degli indirizzi</lead> non contiene nulla: né il nodo selezionato, né la domanda, né i tipi che hai nascosto. Una vista che imposti qui non si può inviare a nessuno; gli esempi di query nel pannello sono la versione condivisibile."
+    },
+    "transfer": {
+      "where": "il riquadro Trasferimento della barra laterale, e Impostazioni",
+      "open": "Apri Trasferimento",
+      "intro": "Consegnare tutto a un secondo dispositivo: scegli quale estremità è questo computer, leggi il codice di abbinamento, vedi esattamente cosa verrebbe spostato e quanto, e decidi se includere i documenti. I conteggi sono letti dal tuo archivio, gruppo per gruppo, ed è proprio questo il motivo per percorrerla: ciò che dice che sposterebbe è ciò che hai davvero.",
+      "notConnectedTitle": "Non viene trasmesso nulla",
+      "notConnected": "Questa build non apre connessioni, non chiede la fotocamera e non scrive in nessun archivio. Il codice di abbinamento viene generato a ogni visita e non si abbina a nulla; l'avanzamento che mostra è una dimostrazione della forma che avrebbe il vero passaggio, e la pagina lo dice sotto il codice anziché in un banner che scorreresti via. Oggi il modo per spostare i tuoi record su un altro computer è l'esportazione in <settings>Impostazioni → I tuoi dati</settings>.",
+      "items": {
+        "files": "I file sono l'unico gruppo disattivato per impostazione predefinita: sono la metà pesante di un passaggio e la metà che molto probabilmente hai già sull'altro dispositivo. Il dispositivo che riceve non ha voce in capitolo, perché un dispositivo che scartasse in silenzio metà di ciò che è arrivato sarebbe la sorpresa peggiore.",
+        "animation": "L'animazione è una scena WebGPU ridisegnata a ogni fotogramma. Dietro l'ingranaggio c'è un interruttore per disattivarla, cosa che conviene fare quando sei a batteria.",
+        "empty": "Con un archivio vuoto la pagina dice che non c'è nulla da spostare e rimanda ai dati di esempio, anziché proporre di inviare zero di tutto."
+      }
+    },
+    "profile": {
+      "where": "l'icona della persona, barra superiore",
+      "open": "Apri il tuo profilo",
+      "intro": "Quattro pannelli: i tuoi dati di base, i tuoi link, i tuoi interessi e obiettivi, e i tuoi documenti. Viene scritto in questo browser e conservato, esattamente come ogni altro record; <overview>Come si usa jojo</overview> spiega perché non è comunque uno dei passi iniziali.",
+      "items": {
+        "match": "I <strong>termini di ricerca</strong> non sono parole chiave, e il pannello lo dice dove li scrivi. Una parola chiave è qualcosa con cui archivi e filtri i record; un termine di ricerca è una formulazione con cui lo scout valuterebbe un annuncio. I due elenchi non hanno mai avuto nulla a che fare l'uno con l'altro.",
+        "documents": "Il pannello dei documenti è una vista della sezione Candidature della <vault>Cassaforte</vault>, non un secondo elenco a sé: un CV aggiunto in uno dei due posti compare in entrambi, perché il posto è uno solo. Caricando qui si registrano nome, dimensione e tipo, alle stesse condizioni della Cassaforte.",
+        "save": "L'intera pagina si salva come un'unica modifica, quindi un solo Annulla la ripristina tutta. Premere Salva senza aver modificato nulla non scrive nulla e non offre Annulla, anziché registrare una modifica mai avvenuta.",
+        "example": "Ogni campo ha un esempio in grigio. Su un archivio vuoto questo conta: questa pagina mostrava il nome e l'email di uno sconosciuto come valori reali, in caselle che un lettore avrebbe ragionevolmente preso per le proprie risposte."
+      }
+    },
+    "assistant": {
+      "where": "l'icona del robot, barra superiore",
+      "open": "Apri l'assistente",
+      "intro": "Una chat con conversazioni con il modello locale che hai collegato in <settings>Impostazioni</settings>, e una pagina di esempi svolti finché non lo fai. Quale delle due ottieni dipende dal fatto che sia salvato un endpoint: non c'è nulla di nascosto e non c'è un interruttore.",
+      "connectedTitle": "Con un modello collegato",
+      "connected": {
+        "agentic": "È <strong>agentico</strong>: il modello riceve gli strumenti dell'app e può leggere e scrivere record per risponderti. Ogni chiamata che fa viene elencata nella risposta mentre accade (lo strumento, i suoi argomenti e ciò che è tornato) così una scrittura è qualcosa che guardi, non che scopri.",
+        "threads": "Le conversazioni sono <strong>separate, e vengono salvate</strong>. Vivono nell'IndexedDB di questo browser accanto a tutto il resto, quindi chiudere la scheda le conserva; la barra delle conversazioni passa dall'una all'altra, e ognuna può essere archiviata sotto una candidatura così due ricerche non si confondono in un'unica cronologia.",
+        "documents": "Con anche il lettore di documenti configurato, può <strong>leggere i tuoi documenti</strong> (un PDF, un file Word, una presentazione) e rispondere in base al loro contenuto."
+      },
+      "notConnectedTitle": "Senza modello, le risposte sono scritte, non generate",
+      "notConnected": "Cinque richieste che una ricerca di lavoro solleva davvero (una lettera di presentazione, adattare un CV, leggere un annuncio, un'email di sollecito, prepararsi a un colloquio), ciascuna con un esempio svolto scritto per intero. Un messaggio che non corrisponde a nessuna di esse riceve una risposta che inizia dicendo di essere preimpostata, anziché un paragrafo plausibile su ciò che hai chiesto, e ogni risposta porta la stessa etichetta: <strong>Risposta di esempio · nessun modello collegato</strong>.",
+      "items": {
+        "save": "<strong>Salva nei frammenti</strong> archivia una risposta nella <vault>Cassaforte</vault> sotto l'etichetta a cui appartiene quella risposta, e la notifica propone di aprirla lì.",
+        "copy": "Un browser può rifiutare del tutto la copia, quindi il pulsante segnala l'errore anziché confermare qualcosa che non è avvenuto.",
+        "delete": "Eliminare una conversazione offre un Annulla anziché una conferma."
+      }
+    },
+    "settings": {
+      "where": "l'icona dell'ingranaggio, barra superiore",
+      "open": "Apri Impostazioni",
+      "intro": "Sette pannelli: i tuoi documenti, un modello locale, l'aspetto, i tuoi dati, le tue parole chiave, la diagnostica e il registro delle modifiche. Il riquadro di stato in fondo alla barra laterale porta qui, ed è a questo che serve.",
+      "items": {
+        "export": "<strong>Esporta un backup</strong> scrive un backup completo con versione in <strong>{{file}}</strong>: candidature, cronologia, Cassaforte, annunci salvati, le tue parole chiave e le relative etichette, e il tuo profilo. È una copia fatta nel momento in cui premi e non segue ciò che fai dopo.",
+        "clear": "<strong>Carica i dati di esempio</strong>, <strong>Cancella i record</strong> e <strong>Cancella la memoria</strong> chiedono tutti prima e dicono esattamente cosa toccano. Cancellare i record conserva le parole chiave che hai nominato, a meno che l'archivio non contenga ancora solo i dati di esempio intatti, nel qual caso se ne vanno anche le parole chiave di esempio, e la conferma dice quale delle due cose sta per fare.",
+        "keywords": "<strong>Parole chiave</strong> le rinomina, cambia loro colore e le elimina, e ti dice su quanti record si trova ciascuna prima di eliminarla.",
+        "diagnostics": "<strong>Diagnostica</strong> è ciò che trasforma “i tuoi record sono salvati” in qualcosa di verificabile: quanti ce ne sono di ogni tipo nell'archivio, quale versione dello schema è sul disco, quanto spazio il browser concede a jojo, e l'id di qualsiasi cosa si sia rifiutato di leggere.",
+        "audit": "<strong>Registro delle modifiche</strong> elenca ogni scrittura, dalla più recente, fino a duecento. Solo la riga più recente offre un Annulla, perché una voce di tre ore fa descrive record che sono stati modificati una dozzina di volte da allora. Carica i dati di esempio e Cancella i record compaiono lì come tutto il resto e sono le due che il registro non annulla: lo avevano detto prima che li premessi."
+      },
+      "notConnectedTitle": "Un pannello e un pulsante sono disattivati",
+      "notConnected": "L'endpoint del modello locale è un campo, con un pulsante Verifica che dice perché non può essere eseguito. Il pannello che c'era accanto (un indirizzo del bridge, un codice di abbinamento, un percorso di salvataggio e tre interruttori, che accettavano tutti ciò che scrivevi senza raggiungere nulla) non c'è più; ora i documenti vengono memorizzati davvero, e <strong>I tuoi documenti</strong> dice dove. <strong>Esporta in Excel</strong> e <strong>Importa</strong> sono disattivati e spiegano perché quando ci passi sopra: non è incluso nessun generatore di fogli di calcolo, e reimportare un backup richiede un validatore in grado di rifiutare un file che non capisce. Cosa ti darebbe ciascuno è in <overview>Come si usa jojo</overview>."
+    },
+    "guide": {
+      "where": "il punto interrogativo, barra superiore",
+      "open": "Apri la prima pagina",
+      "intro": "Quattro pagine sotto un unico indirizzo, con la barra di navigazione sopra e i pulsanti di pagina sotto in ognuna. Il suo unico accesso nell'interfaccia è l'icona di aiuto: ha un nome al passaggio del mouse e per uno screen reader, ma nessun testo visibile e nessuna riga nella barra laterale, una porta stretta per la pagina che vai a cercare quando qualcosa non è chiaro. <kbd>⌘K</kbd> è il modo affidabile per tornarci, ed elenca tutte e quattro le pagine separatamente anziché una riga per la sezione.",
+      "order": "L'ordine è una scelta, non un caso: chiunque può fermarsi dopo la prima pagina e usare l'app, e chiunque può saltare direttamente all'ultima.",
+      "address": "<lead>La barra degli indirizzi</lead> è la pagina stessa. La prima pagina è <code>/guide</code> anziché <code>/guide/overview</code>, così ogni link e preferito creato prima che le pagine fossero quattro porta ancora da qualche parte."
+    }
+  }
+}

@@ -1,0 +1,616 @@
+{
+  "nav": {
+    "rail": "Kılavuz sayfaları",
+    "contents": "Kılavuz içeriği",
+    "pager": "Diğer kılavuz sayfaları",
+    "youAreHere": "buradasınız",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "pageOf": "Sayfa {{current}} / {{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "Nasıl kullanılır",
+      "blurb": "Kaydın ne olduğu, nerede saklandığı, bunun size neye mal olduğu ve bir iş aramasını ona emanet etmeden önce bilmeye değer birkaç kısayol."
+    },
+    "screens": {
+      "label": "Tüm ekranlar",
+      "blurb": "Her sayfa sırayla — ne işe yaradığı, bakınca anlaşılmayan işleyişi ve henüz neyin bağlı olmadığı."
+    },
+    "tools": {
+      "label": "Araçlar",
+      "blurb": "Asistanın gerçekte neler yapabildiği, başka bir şey yapmasının nasıl engellendiği ve tüm katalogdan doğru aracı nasıl seçtiği."
+    },
+    "graph": {
+      "label": "Grafik",
+      "blurb": "Grafik sayfasının neyi çizdiği, bir sorunun nasıl sorguya dönüştüğü ve tüm uygulamanın saklandığı kayıt modeli."
+    },
+    "builtWith": {
+      "label": "Kullanılan yazılımlar",
+      "blurb": "jojo'yu oluşturan açık kaynak çalışmalar, bunları kapsayan lisanslar ve kodun nasıl düzenlendiği."
+    },
+    "controlFlow": {
+      "label": "Kontrol akışı grafiği",
+      "blurb": "Her modül ve içe aktarma bir grafik olarak, kontrolün altı yolculukta nasıl ilerlediği ve bir değişikliğin nereye ait olduğu."
+    },
+    "licence": {
+      "label": "Lisans",
+      "blurb": "jojo'nun maliyeti, onunla neler yapabileceğiniz ve yönlendirebileceğiniz hizmetlerle gelen koşullar."
+    }
+  },
+  "onThisPage": "Bu sayfada",
+  "tour": {
+    "start": "Turu başlat",
+    "resume": "Tura devam et — adım {{step}} / {{total}}"
+  },
+  "gettingStarted": {
+    "title": "Başlarken",
+    "progress": "{{total}} adımdan {{done}} tanesi tamamlandı",
+    "allDone": "Tüm adımlar tamamlandı. Kontrol listesi kayıtlarınızı okur; bu yüzden onları temizlerseniz o da buna uyar.",
+    "intro": "Her adım asıl özelliği açar ve bir kayıt oluşunca kendiliğinden işaretlenir. Burada baştan sona izlemeniz gereken bir eğitim yok.",
+    "done": "Tamamlandı",
+    "srDone": " — tamamlandı",
+    "srNotDone": " — henüz tamamlanmadı",
+    "steps": {
+      "application": {
+        "title": "Bir başvuru ekleyin",
+        "body": "Bir pozisyon, aşaması ve son tarihi. jojo'daki diğer her şey bu kayda bağlanır.",
+        "action": "Yeni başvuru"
+      },
+      "dated": {
+        "title": "Bir şeye tarih verin",
+        "body": "Son tarihler, mülakatlar ve kampüs ziyaretleri aynı tür kayıttır; bu yüzden aynı anda takvime, önümüzdeki haftaya ve başvuruya ulaşırlar.",
+        "action": "Yeni etkinlik"
+      },
+      "reminder": {
+        "title": "Bir takip ayarlayın",
+        "body": "Hatırlatıcı, uyarısı açık olan aynı kayıttır. Tarihi geçince, siz tamamlandı olarak işaretleyene kadar ana sayfada işaretli görünür.",
+        "action": "Yeni hatırlatıcı"
+      },
+      "posting": {
+        "title": "Bir ilanı kaldırılmadan önce saklayın",
+        "body": "Hiçbir şey getirilmez ve kopya saklanmaz — saklanan şey URL, ondan tahmin edilen işveren ve kaydettiğiniz gündür. İlanı yeniden bulmak için bu yeterlidir.",
+        "action": "İş gözcüsünü aç"
+      },
+      "file": {
+        "title": "Belgelerinizi dosyalayın",
+        "body": "Kasa'ya bir CV ya da beyan bırakın. Adlar, boyutlar ve türler kaydedilir; bu oturumda bıraktığınız bir dosya önizlenebilir de.",
+        "action": "Kasa'yı aç"
+      },
+      "keyword": {
+        "title": "Bir şeyi anahtar kelimeyle etiketleyin",
+        "body": "Anahtar kelimeler sizindir; başvurular, hatırlatıcılar ve Kasa'daki her şey tarafından paylaşılır — üst çubuktaki sabit rol etiketlerinin aksine. Herhangi bir satırdaki etiket düğmesi bir tane ekler.",
+        "action": "Anahtar kelimeleri yönet"
+      },
+      "draft": {
+        "title": "Bir mesaj taslağı hazırlayın",
+        "body": "Kendi e-posta metin parçalarınızdan oluşturulur; rol, işveren ve tarihler kayıttan doldurulur. Kişi adları sizin yerinize asla doldurulmaz. Burada gönderdiğinizi kaydeden bir şey yok; bu yüzden bu adım kendiliğinden işaretlenmez.",
+        "action": "Mesaj taslağı hazırla"
+      }
+    }
+  },
+  "overview": {
+    "title": "jojo nasıl kullanılır",
+    "subtitle": "Her şey sizin bilgisayarınızda çalışır. Basit başlayın, istediğinizde güç ekleyin.",
+    "tourIntro": "Ya da uygulamalı olarak adım adım gezdirilin: gerçek sayfalara bir spot ışığı tutulur ve ilerledikçe her şeyi kendiniz denersiniz. Tur sizin yerinize asla bir şey yazmaz, asla kayıt kaydetmez ve asla bir ayarı değiştirmez.",
+    "sections": {
+      "application": "Bir başvuruyu izleyin",
+      "dates": "Tarihler ve takipler",
+      "vault": "Kasa",
+      "profile": "Profiliniz",
+      "keys": "Kısayollar ve geri alma",
+      "keywords": "Anahtar kelimeler",
+      "graph": "Grafiğe sorun",
+      "data": "Verileriniz",
+      "ladder": "Henüz bağlı değil"
+    },
+    "track": {
+      "hint": "diğer her şeyin bağlandığı kayıt",
+      "title": "Bir başvuruyu başvurudan teklife kadar izleyin",
+      "intro": "Bir başvuru, bir işverendeki tek bir pozisyondur. Tarihler, notlar, belgeler, anahtar kelimeler ve <stats>istatistikler</stats> sayfasındaki her rakam bunlardan birine geri işaret eder; bu yüzden oluşturmaya değer ilk kayıt budur. <board>Panoda</board> dururlar; bir tane eklemek için uygulamanın herhangi bir yerinde <kbd>n</kbd> tuşuna basın ya da yukarıdaki kontrol listesini kullanın.",
+      "movesTitle": "Her taşımanın istedikleri",
+      "movesIntro": "Size ne sorulacağını, taşımayı nereden yaptığınız belirler. Panoda ya da tabloda — bir sürükleme, karttaki etiket, satırdaki çip — taşıma hemen gerçekleşir ve bildirimde bir Geri al seçeneği çıkar. Kaydın içinden ise altı hedeften dördü önce kısa bir form açar; diğer ikisi yine hemen gerçekleşir, çünkü tek içeriği bir Onayla düğmesi olan bir pencere bir adım değil, bir hız tümseğidir.",
+      "asks": {
+        "submitted": "Gönderdiğiniz gün, portal bağlantısı ve varsa onay numarası.",
+        "interview": "Tarih ve turun telefon, video ya da yüz yüze olup olmadığı. Turu bir hatırlatıcıyla takviminize eklemeyi önerir.",
+        "offer": "Son yanıt tarihi, paket ve notlar. Karar son tarihini takviminize eklemeyi önerir.",
+        "closed": "Nasıl sonuçlandığı: reddedildi, geri çekildi, kabul edildi, geri çevrildi ya da ses çıkmadı — yanıt yok. İstatistiklerin saydığı budur."
+      },
+      "asksNothing": "Hiçbir şey — taşıma siz yaptıkça gerçekleşir.",
+      "offerQuestion": "Hedef ne olursa olsun fazladan bir soru: zaten teklifi olan bir başvuruyu taşımak, teklif ayrıntılarının tutulup tutulmayacağını ya da temizlenip temizlenmeyeceğini sorar. Bir teklif onu doğuran tura aittir; bu yüzden onu bırakmak bir yan etki değil, bir karardır.",
+      "onceTitle": "Kayıt oluştuktan sonra",
+      "once": {
+        "open": "Birini açmak listeyi olduğu yerde tutar — kayıt listenin üzerinde açılır ve Geri, filtrelerinizi kaybettirmek yerine kaydı kapatır. Adres bir sayı değil bir addır; bu yüzden bir başvurunun bağlantısı yeniden yüklemeden sonra da çalışır.",
+        "note": "Not, başka yere tıkladığınızda kaydedilir ve altında bunu belirtir. Unutulacak bir Kaydet düğmesi yoktur.",
+        "duplicate": "<lead>Kopyala</lead> yeniden başvurmak içindir: kopya; rolü, notu, konumu ve bağlantıyı taşıyarak yeniden Taslak aşamasında başlar ve bilerek teklifi, sonucu ya da tarihleri taşımaz. jojo ikisinin birbirinin kopyası olduğunu kaydeder.",
+        "delete": "Bir başvuruyu silmek başvuruyu ve notunu siler. Altında dosyaladığınız her şey — hatırlatıcılar, belgeler, anahtar kelimeler — silinmez, bağlantısı kaldırılır ve onay penceresi hangilerinin olduğunu söyler.",
+        "address": "Görünüm, arama kutusu, aşama filtresi ve sıralama adres çubuğunda durur; böylece kurduğunuz bir görünüm saklayabileceğiniz bir bağlantıdır: <bystage>aşamaya göre sıralanmış tablo</bystage> ve <atoffer>teklif aşamasındaki her şey</atoffer> yalnızca birer URL'dir. İkisi de bilerek tabloyu adlandırır: aşama çipleri ve sütun sıralaması tablonun kendi kontrolleridir ve panonun aşama filtresi yoktur, çünkü zaten altı aşama sütunundan oluşur — bu yüzden adresteki bir aşama, adres tabloyu da belirtmedikçe hiçbir şey yapmaz. Arama kutusu ikisinde de çalışır. Rol filtresi ve yanındaki anahtar kelime çipleri hiçbirinde yoktur: adresin parçası değil, bu sekmenin seçimidir ve yeniden yüklediğinizde sıfırlanır."
+      }
+    },
+    "stageRail": {
+      "title": "Bir başvurunun geçtiği altı aşama",
+      "desc": "Taslak, Gönderildi, Ön görüşme, Mülakat, Teklif ve Kapandı, sırayla, tek bir hat üzerinde. Gönderildi, Mülakat, Teklif ya da Kapandı aşamasına taşımak kısa bir form açar; Taslak ya da Ön görüşme aşamasına taşımak hemen gerçekleşir. Aşağıdaki liste her formun ne istediğini söyler.",
+      "asks": "ister"
+    },
+    "dates": {
+      "hint": "tek kayıt türü, üç ad",
+      "title": "Tarihler, son tarihler ve takipler",
+      "intro": "Bir başvuru son tarihi, bir mülakat, bir kampüs ziyareti ve birine hatırlatma yapma notu, üzerinde farklı bir etiket olan aynı tür kayıttır; hatırlatıcı da uyarısı açık olan bu kayıttır. jojo'da kullanmadan önce bilmeye değer tek şey budur: bir şeyi bir kez ekleyin; aynı anda <calendar>takvime</calendar>, <today>Bugün</today> sayfasındaki önümüzdeki haftaya ve ait olduğu başvuruya ulaşır, çünkü eşitlenmesi gereken bir şey yoktur.",
+      "items": {
+        "grid": "Ay ızgarası ve gün listesi tek bir sayfadır. Bir öğeyi başka bir güne sürüklemek onu yeniden planlar ve bildirimde bir Geri al seçeneği sunar.",
+        "colour": "Renk yalnızca tarihi izler — gecikmiş, 48 saat içinde, tamamlandı — bu yüzden hiçbir şey orada durarak eskimez. Gösterge sayfada.",
+        "url": "Baktığınız ay, seçtiğiniz gün ve açtığınız öğe URL'de durur; böylece belirli bir güne bağlantı verilebilir.",
+        "reminders": "Hatırlatıcıların <reminders>Kasa</reminders>'da kendi listeleri de vardır; orada tek iş onları tamamlandı olarak işaretlemektir. Gecikmiş bir hatırlatıcı, işaretlenene kadar Bugün sayfasında işaretli kalır.",
+        "mint": "Bir başvuruyu Mülakat ya da Teklif aşamasına taşımak tarihi sizin için oluşturmayı önerir; böylece az önce planladığınız turu iki kez girmeniz gerekmez."
+      }
+    },
+    "vault": {
+      "hint": "beş araç, tek raf",
+      "title": "Yeniden ihtiyaç duyacaklarınızı dosyalayın",
+      "reminders": {
+        "name": "Hatırlatıcılar",
+        "body": "Uyarısı olan her şey, tek bir listede, gecikmiş olanlar önce."
+      },
+      "links": {
+        "name": "Bağlantılar",
+        "body": "Portallar, fon sayfaları, hatırlanmaya değer kişiler. Her biri bir bölüme girer ve daha sonra başka bir bölüme taşıyabilirsiniz."
+      },
+      "files": {
+        "name": "Dosyalar",
+        "body": "Bir belgenin adı, boyutu ve türü kaydedilir. <strong>Belgenin kendisi kaydedilmez</strong> — jojo'nun onu diskinizde koyacak bir yeri yoktur. Bu ziyaret sırasında seçtiğiniz bir dosya, yeniden yükleyene kadar önizlenir; sonrasında satır, belgenin var olduğunun kaydıdır ve neyi ne zaman gönderdiğinizi bilmek için bu yeterlidir."
+      },
+      "snippets": {
+        "name": "Metin parçaları",
+        "body": "Sürekli yeniden yazdığınız paragraflar. <strong>Mesaj taslağı hazırla</strong> penceresi bunlardan oluşturulur; rol, işveren ve tarihler kayıttan doldurulur — kişi adları sizin yerinize asla doldurulmaz, çünkü bir adı tahmin etmek, bir mesajın yanlış kişiye hitaben gitmesinin yoludur."
+      },
+      "tools": {
+        "name": "Araçlar",
+        "body": "Her teklifin dönüştüğü maaş hesapları için bir hesap makinesi. Geçmişi yalnızca bu ziyaret içindir."
+      }
+    },
+    "profile": {
+      "hint": "profil kontrol listesinin parçası değil",
+      "title": "Profilinizi doldurun",
+      "body": "Temel bilgileriniz, bağlantılarınız, hedef rolleriniz ve eşleştirme terimleriniz <profile>Profilim</profile> altında durur. Gözcünün puanlarken baktığı ve asistanın taslak hazırlarken yararlandığı şey bunlardır; bu yüzden önemlidirler. Kaydetmek, tıpkı diğer tüm kayıtlar gibi, bunları bu tarayıcıya yazar ve saklar — yukarıdaki kontrol listesi bunları dışarıda bırakır, çünkü her durumda tek bir profil vardır ve siz gelir gelmez tamamlanan bir adım, adım değildir.",
+      "documents": "Profilde listelediğiniz belgeler, onunla çelişebilecek ikinci bir yerde değil, Kasa'nın belgeler bölümünde dosyalanır ve tüm profil tek bir değişiklik olarak kaydedilir; böylece tek bir Geri al onu eski hâline getirir."
+    },
+    "keys": {
+      "hint": "üç kısayol ve iki farklı Geri al",
+      "title": "Fare olmadan iş yapmak",
+      "find": "<lead>Her şeyi bulun ve çalıştırın.</lead> Birkaç sözcük yazın; başvurularınızı, hatırlatıcılarınızı ve takviminizi daraltır — herhangi bir sırada tam sözcükler; böylece “rice stat”, Rice'taki İstatistik pozisyonunu bulur. Kayıtların altında bir <strong>Araçlar</strong> grubu vardır: jojo'nun yapıldığı adlandırılmış işlemler; her biri o işlemin gerçekte aldığı şeylerden oluşturulmuş bir formla. Birini seçmek gerçek kayıtlarınıza gerçek işlemi uygular; bu yüzden bildirim gösterir, denetim günlüğüne düşer ve aynı işleme bir karttan ulaştığınızda sunulan Geri al'ın aynısını sunar. Onun altında <strong>Git</strong>, kenar çubuğunun listelemediği altı sayfa dahil her sayfaya ulaşır.",
+      "make": "<lead>Bir şey oluşturun.</lead> Yeni düğmesindeki altı satırın aynısı: başvuru, hatırlatıcı, etkinlik, mesaj taslağı, bağlantı kaydet, ilan kaydet. Bir pencere zaten açıkken ve siz yazı yazarken yok sayılır; böylece n harfi yine bir harf olarak kalır.",
+      "undo": "<lead>Her yerde geri alın ve yineleyin.</lead> Sayfa başına değil — tuş kombinasyonu uygulamaya aittir ve iki dakika önce başka bir ekranda yaptığınız aşama değişikliğini geri alır. İmleç bir metin alanındayken bilerek yok sayılır; böylece yarım yazılmış bir notun içinde tarayıcınızın kendi geri alması kazanır ve rastgele bir ⌘Z pencerenin arkasındaki başka bir kaydı sessizce geri alamaz.",
+      "twoUndosTitle": "İki Geri al, ve farklı şeyler yaparlar",
+      "twoUndos": "<kbd>⌘Z</kbd>, bastığınız anda yığının en üstünde ne varsa onu geri alır. Bir bildirimdeki <strong>Geri al</strong> ise, o göründüğünden beri üç şey daha yapmış olsanız bile <strong>o</strong> değişikliği geri alır — asıl mesele budur, çünkü bir bildirim birkaç saniye yaşar ve siz çalışmaya devam edersiniz. Bir kullanıcı eylemi, kaç kayda dokunursa dokunsun tek bir geri almadır: başvuru oluşturmak başvuruyu, anahtar kelimelerini ve formun oluşturduğu son tarihi yazar; onu geri almak, hiçbir şeye işaret etmeyen bir son tarih bırakmak yerine üçünü birden alır.",
+      "pile": "Yığın son elli değişikliği tutar ve her ziyarette boş başlar — yeniden yüklemeden sonra da kalan bir geri alma yığını, geçen salıyı geri almayı önerirdi. jojo iki sekmede açıksa, döndüğünüz sekme aynı nedenle veritabanını yeniden okur ve baştan başlar: diğer sekmenin yaptığı bir şeyi geri alamaz. Her şey yine <settings>Ayarlar → Denetim günlüğü</settings> içinde en yenisi önce listelenir ve oradaki en yeni satır oradan geri alınabilir."
+    },
+    "keywords": {
+      "hint": "sizin ve her şey tarafından paylaşılan",
+      "title": "Anahtar kelimeler ve onlarla karıştırılmaması gereken rol etiketleri",
+      "intro": "jojo'da iki şey etiket gibi görünür ama hiç benzer davranmaz. Bunları karıştırmak, orada olduğunu bildiğiniz şeyi bulmayan bir filtreyle karşılaşmanın en yaygın yoludur.",
+      "yoursTitle": "Anahtar kelimeler sizindir",
+      "yours": "Onları siz oluşturur, adlandırır, renklendirir ve her şeye koyarsınız — bir başvuru, hatırlatıcı, bağlantı, dosya, metin parçası. Tüm kayıt türlerini keserler; “referansla ilgili her şeyi göster” sorusunu jojo'nun yanıtlayabilmesini sağlayan budur.",
+      "record": "Bir anahtar kelime, satırlara kopyalanan bir metin parçası değil, kendi başına bir kayıttır: birini yeniden adlandırın, onu taşıyan her satır da değişir; tüm kayıtları temizlemek anahtar kelimelerinizi sayıları sıfırlanmış olarak bırakır. <settings>Ayarlar → Anahtar kelimeler</settings> bunları yeniden adlandırır, yeniden renklendirir ve siler; silmeden önce her birinin kaç kayıtta olduğunu söyler.",
+      "rolesTitle": "Rol etiketleri sizin listenizdir",
+      "roles": "Yeni bir depo beş tane ile başlar — Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer — ve <profile>Profil</profile> bunları düzenler. Eskiden sabittiler; bunun gerekçesi istatistiklerin bunlar arasında karşılaştırma yapmasıydı. Gerçekte anlamı ise, akademik bilgisayar bilimleri dışındaki herkesin tüm aramasını doğru olmayan bir etiketin altında dosyalaması ve grafiklerin de o etiketi doğruymuş gibi okumasıydı. Birini kaldırmak, onu taşıyan her başvuruyu olduğu yerde bırakır.",
+      "roleFilter": "Yalnızca başvurular rol etiketi taşır ve rol filtresi, filtrelediği tek listenin yanında, <applications>Başvurular</applications> araç çubuğunda durur — eskiden üst çubuğa sabitlenmişti; bu da başka yerlerdeki her rakamı, tüm aramanızı sayıp saymadığı konusunda belirsiz yapıyordu. Pratik kural: rol etiketi işin ne olduğudur, anahtar kelime ise onu neden önemsediğinizdir."
+    },
+    "graph": {
+      "hint": "öğrenilecek bir sorgu dili yok",
+      "title": "Grafiğe bir soru sorun",
+      "intro": "jojo'daki her kayıt bir düğümdür ve iki kayıt arasındaki her bağlantı aralarında gerçek bir kenardır — bu, nasıl çalıştığının bir resmi değil, nasıl saklandığıdır. <graph>Grafik</graph> sayfası bunu çizer ve sorgu paneli, bir listenin yanıtlayamayacağı soruları depoya sormanızı sağlar. Ona kenar çubuğundaki <strong>Tarayıcı depolaması</strong> kutucuğundan ulaşılır; bu da pek belirgin bir kapı değildir.",
+      "pickers": "Bir soru üç seçiciden oluşur: ne aradığınız, bir ilişkiye <strong>sahip</strong> olup olmadığı ya da onun <strong>eksik</strong> olup olmadığı ve diğer uçta ne olduğu. Siz değiştirdikçe yanıt güncellenir — Çalıştır düğmesi yoktur; böylece tablo ile üstündeki kontroller asla çelişemez.",
+      "examplesTitle": "Önce tıklamaya değer örnekler",
+      "examples": {
+        "noFollowUp": "Planlanmış takibi olmayan başvurular — insanlara mülakat kaybettiren boşluk.",
+        "keyword": "Tek bir anahtar kelimeyle etiketlenmiş her şey, tüm kayıt türlerinde.",
+        "twice": "Birden fazla kez başvurduğunuz kurumlar.",
+        "unlinked": "Hiçbir başvuruya bağlı olmayan hatırlatıcılar — neden yaptığınızı bilmeden yapacağınız işler.",
+        "unusedFiles": "Hiçbir başvuruda kullanılmayan dosyalar."
+      },
+      "path": "Her biri gerçekte sahip olduğunuz kayıtlara göre oluşturulur ve deponuzda sorulacak bir şey olmayan örnek, boş bir tabloyla yanıt vermek yerine kapatılır. İkinci biçim olan <strong>Yol</strong>, “bu ikisi nasıl bağlı” sorusunu yanıtlar — bağlı değillerse “bağlı değiller” der; bu bir başarısızlık değil, gerçek bir sonuçtur.",
+      "illustrative": "Seçicilerin altındaki, koda benzeyen sorgu satırı sayfada <strong>temsili</strong> olarak etiketlenmiştir ve bu doğrudur: hiçbir şey onu ayrıştırmaz; biçimi sözcüklerin yanında görmek seçicileri okunur kılsın diye oradadır. Bu kılavuzun <guide>Grafik</guide> sayfası neyin neden çizildiğini anlatır."
+    },
+    "data": {
+      "hint": "nerede olduğu ve neyin ters gidebileceği",
+      "title": "Verileriniz",
+      "askedTitle": "jojo'nun bir kez sorduğu soru",
+      "asked": "İlk açılışta jojo demo verileriyle mi yoksa boş mu başlanacağını sorar ve sorunun geçiştirilmesine izin vermez — hiç iletişime geçmediği işverenlere yapılmış on iki başvuruya bakan bir yabancı, uygulamanın bunları uydurup uydurmadığını ya da başka birininkini geri yükleyip yüklemediğini anlayamaz. Yanıt kaydedildiği için bir kez sorulur ve hiçbir yanıt kesin değildir: <settings>Ayarlar → Verileriniz</settings> her iki yarıyı da içerir ve demo kayıtlarını temizlemek soruyu geri getirmez.",
+      "diskTitle": "Hiçbir şey diski beklemez",
+      "disk": "Bir değişiklik, yaptığınız anda ekranda olur ve bir an sonra arka planda tarayıcının veritabanına yazılır. Kaydederken dönen simge olmamasının ve sekmeyi kapatmanın güvenli olmasının nedeni budur — jojo, sekme gizlendiğinde ya da kapandığında, sekmeyi uyarmadan kapatan bir telefonda bile, elinde tuttuğunu yazar. Aşağıdaki “yer kalmadı” bandında Yeniden yükle düğmesi olmamasının nedeni de budur: kaydedilmemiş değişikliğiniz o kuyrukta bekliyor ve yeniden yüklemek tam da onu atacak şeydir.",
+      "stripsTitle": "Sayfanın üstünde bir bant görünürse",
+      "strips": "Bunların hiçbiri jojo'nun çalışmasını durdurmaz — ekrandakiler gerçektir, hâlâ okunabilir ve dışa aktarılabilir. Bildirim değil bant, çünkü değişikliklerinizin kaydedilmediğini söyleyen bir mesaj dört saniye sonra kaybolmamalıdır.",
+      "quoted": "“{{text}}”",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo veritabanını açamadı",
+          "means": "Başka bir jojo sekmesi uygulamanın farklı bir sürümüyle açık. Kayıtlarınız hâlâ diskte — bu sekme onları okuyamadı; bu yüzden tahmin yürütmek yerine hiçbir şey göstermiyor. Diğer sekmeleri kapatıp yeniden yükleyin."
+        },
+        "blocked": {
+          "says": "Bu tarayıcı jojo'nun depolamasını açmasına izin vermiyor",
+          "means": "Gizli bir pencere ya da kurumunuzun yönettiği bir tarayıcı. jojo yine çalışır ama boş bir çalışma alanı olarak: bu cihazda önceden kaydedilmiş olanlar gösterilmez ve yazdığınız her şey sekmeyi kapattığınızda kaybolur. Saklamaya değer bir şey eklerseniz ayrılmadan önce dışa aktarın."
+        },
+        "updated": {
+          "says": "jojo başka bir sekmede güncellendi",
+          "means": "Başka bir yerde yeni bir sürüm yüklendi ve bu sekme güncellemenin geçebilmesi için veritabanını kapattı. Burada değiştirdiğiniz hiçbir şey kaydedilmiyor. Yeniden yükleyin."
+        },
+        "full": {
+          "says": "Bu tarayıcıda yer kalmadı",
+          "means": "Kaydetme durdu ve bant, ekranda olup yazılmamış değişiklikleri sayar. Bunda bilerek Yeniden yükle düğmesi yoktur — yeniden yüklemek tam da onları kaybettirecek şeydir. Önce dışa aktarın, biraz yer açın, ardından yeniden yükleyin."
+        },
+        "unsaved": {
+          "says": "N değişiklik kaydedilemedi",
+          "means": "jojo yeniden denemeye devam ediyor ve kuyruk sırayla boşalıyor; bu yüzden bu sayı kendiliğinden azalabilir. Şimdi bir kopyaya ihtiyacınız varsa dışa aktarın."
+        },
+        "unreadable": {
+          "says": "N kayıt okunamadı",
+          "means": "Diskteki bir şey jojo'nun beklediğiyle eşleşmedi; bu yüzden yarım okunmuş olarak gösterilmek yerine dışarıda bırakılıyor. Hiçbir şey silinmedi ve Ayarlar → Tanılama kayıtları kimlikleriyle adlandırır."
+        }
+      },
+      "recovery": "Görmeniz gerekmemesi gereken bir tane daha var. Veritabanı oradaysa ama okunamıyorsa jojo, uygulama <strong>yerine</strong> bir kurtarma ekranı gösterir — diskte hâlâ duranların üzerine yazabilecek hiçbir şey yüklenmez ve asla sessizce sıfırdan başlamaz. Size maliyetine göre sıralanmış üç şey sunar: okuyabildiği satırları indirmek, yeniden denemek ya da sıfırdan başlamak; yalnızca sonuncusu önce sorar.",
+      "controlsTitle": "Ayarlar'daki kontroller",
+      "controls": {
+        "export": {
+          "name": "Yedeği dışa aktar",
+          "body": "Her şey, sürümlü tek bir dosyada: başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, anahtar kelimeleriniz ve etiketleri ile profiliniz. <strong>{{file}}</strong> olarak yazılır; tarihli olduğu için ikinci bir dışa aktarma ilkinin üzerine yazmaz. Bastığınız anda alınan bir kopyadır — sonra yaptıklarınızı izlemez ve verilerinizin bu bilgisayarda olmayan tek kopyasıdır. Excel'e aktar ve İçe aktar kapalıdır; üzerlerine geldiğinizde nedenini söylerler."
+        },
+        "demo": {
+          "name": "Demo verilerini yükle",
+          "body": "Var olanla birleştirmez, yerine geçer. Dolu bir deponun nasıl göründüğünü görmek için boş bir depoda basmaya değer; aksi hâlde önce dışa aktarmaya değer."
+        },
+        "clear": {
+          "name": "Tüm kayıtları temizle",
+          "body": "Başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar ve profiliniz. <strong>Anahtar kelimeleriniz korunur</strong> — kendi başlarına kayıttırlar ve onları siz adlandırdınız — bu yüzden liste boşalmaz, anahtar kelime panelindeki her sayı sıfıra iner."
+        },
+        "clearStorage": {
+          "name": "Tarayıcı depolamasını temizle",
+          "body": "Bu sitenin tarayıcınıza koyduğu her şey — kayıtlar ve veritabanları, tema ve ses ayarlarınız, önbellekler ve çerezler — ardından yeniden yükleme. jojo yeni bir bilgisayardaki gibi, ilk açılış sorusu dahil geri gelir. Kopya tutan bir sunucu yoktur; yani gerçekten hepsi bu kadar."
+        }
+      },
+      "lastThree": "Son üçü, <kbd>⌘Z</kbd> tuşunun geri almayacağı tek yazma işlemleridir; bu yüzden her biri önce sorar ve tam olarak neye ulaştığını söyler. Denetim günlüğünde yine görünürler. Aynı sayfadaki <strong>Tanılama</strong>, deponuzda ne olduğunu, tarayıcının jojo'ya ne kadar yer verdiğini sayar ve okumayı reddettiği her şeyi adlandırır.",
+      "moveTitle": "Başka bir bilgisayara taşımak",
+      "move": "<transfer>Aktarım</transfer>, kayıtlarınızı ikinci bir cihaza vermek için kullanılan ekrandır: bir yön seçin, eşleştirme kodunu okuyun, tam olarak neyin ve ne kadarının gideceğini görün ve belgelerin de gelip gelmeyeceğini seçin. <strong>Bu derlemede hiçbir şey iletilmez — hiçbir bağlantı açmaz ve hiçbir şey yazmaz.</strong> Gerçek aktarım gibi şekillendirildiği ve üzerindeki sayılar gerçek deponuzdan okunduğu için adım adım gezmeye değer; ama bugün verilerinizi taşımanın yolu yukarıdaki dışa aktarmadır."
+    },
+    "browserDb": {
+      "title": "Tarayıcınız veritabanıdır",
+      "body": "Her kayıt siz çalışırken bu tarayıcının içindeki veritabanına yazılır; bu yüzden sekmeyi kapatmak güvenlidir. Hiçbir şey bu bilgisayardan çıkmaz ve hiçbir şey eşitlenmez — tarayıcı verilerinizi temizlerseniz, tarayıcı değiştirirseniz ya da diski kaybederseniz onunla birlikte gider. Başka bir yerde saklamak istediğiniz her şey için <settings>Ayarlar</settings> bölümünden bir <kbd>.json</kbd> yedeği dışa aktarın."
+    },
+    "savePath": {
+      "title": "Bir şeyi kaydettiğinizde ne olur",
+      "desc": "Kaydet'e basmak ekrandakini hemen değiştirir; yazma işlemi kuyruğa alınır ve bir an sonra tarayıcının veritabanına yapılır. Bu yazma başarısız olursa değişiklik atılmaz, kuyrukta tutulur ve sayfanın üstündeki bir bantta bildirilir.",
+      "press": {
+        "line1": "Siz",
+        "line2": "Kaydet'e basarsınız"
+      },
+      "screen": {
+        "line1": "Ekranda,",
+        "line2": "hemen"
+      },
+      "saved": {
+        "line1": "Bu tarayıcıya",
+        "line2": "kaydedilir"
+      },
+      "fail": {
+        "line1": "Başarısız bir yazma tutulur",
+        "line2": "ve bildirilir, atılmaz."
+      }
+    },
+    "ladder": {
+      "title": "Bilgisayarda daha fazlası olduğunda jojo ne yapar",
+      "aside": "her basamak gerçek; her biri isteğe bağlı",
+      "intro": "İlk iki basamak sizden hiçbir şey istemeyen bir izleyicidir. Üçüncüden itibaren aramada sizinle birlikte çalışan bir asistana dönüşür — ve onun üstündeki her basamağı atlamak yine size kalmıştır.",
+      "layers": {
+        "browser": {
+          "name": "Yalnızca tarayıcı",
+          "requires": "Kurulacak bir şey yok",
+          "gives": "Başvuruları ve son tarihleri izleyin, eklediğiniz belgeleri saklayın"
+        },
+        "backup": {
+          "name": "+ Sakladığınız bir yedek",
+          "requires": "Bir dosyayı koyacak bir yer",
+          "gives": "Tüm kayıtları ve tüm belgeleri içeren, tek tıkla geri yüklenebilen tek bir dosya"
+        },
+        "model": {
+          "name": "+ Yerel model",
+          "requires": "Ollama, vLLM ya da LM Studio — veya ücretsiz bir NVIDIA anahtarı",
+          "gives": "Ajan yarısı: onayınızla kayıtlarınızı okuyan ve yazan konuşma tabanlı bir asistan, profilinizi tamamlayan ve ilanları izleyen İş gözcüsü işlem hatları, tek cümleyle \"Grafiğe sor\" ve gerçek gözcü puanlaması"
+        },
+        "reader": {
+          "name": "+ Belge okuyucu",
+          "requires": "Yerel olarak çalışan MarkItDown",
+          "gives": "Model PDF'lerinizi, Word dosyalarınızı ve sunumlarınızı okur — bir iş ilanını da; böylece Yeni → Bağlantıdan başvuru formu doldurur"
+        },
+        "extension": {
+          "name": "+ Uzantı",
+          "requires": "Chrome, Edge, Brave ya da Arc",
+          "gives": "Bir ilanı tam okunduğu hâliyle saklayın. Ayrıca jojo'nun sayfa olmayan tek parçasıdır — bir işlem hattının bir siteyi taramasını ve barındırılan bir kopyanın kendi bilgisayarınızdaki belge okuyucuya ulaşmasını sağlayan budur"
+        }
+      },
+      "built": "hazır",
+      "notBuilt": "hazır değil",
+      "outro": "Her sayfa hangi basamakta olduğunu kendisi söyler; sizi buraya geri döndürmez. <assistant>Asistan</assistant>, bağlı bir modelle konuşma tabanlı bir ajan sohbeti, model olmadan ise beş örnektir; her iki durumda da rozetlidir. <scout>İş gözcüsü</scout> profilinize göre gerçekten puanlar ve neyle eşleştiğini söyler. <screens>Tüm ekranlar</screens> geri kalanını sayfa sayfa anlatır.",
+      "backup": {
+        "hint": "yerleşik",
+        "title": "Bir yedek tutun",
+        "storedTitle": "Belgeleriniz burada saklanır",
+        "stored": "Eklediğiniz CV'ler ve ön yazılar bu tarayıcıda saklanır ve sekmeyi kapattıktan sonra da kalır. Hiçbir yere bir şey yüklenmez — ve kendiniz indirmedikçe hiçbir şey bu bilgisayardan çıkmaz.",
+        "oneFileTitle": "Her şeyi tek bir dosya tutar",
+        "oneFile": "<settings>Ayarlar</settings>, tüm kayıtları, aralarındaki tüm bağlantıları ve tüm belgeleri taşıyan bir yedeği tek bir dosyaya yazar. Geri yüklemek üçünü de geri koyar.",
+        "whyTitle": "Neden önemli",
+        "why": "Bir tarayıcı, disk dolduğunda kendi depolamasını temizleyebilir; <kbd>Tarama verilerini temizle</kbd> ise her zaman temizler. Sakladığınız bir yedek, ikisinden de etkilenmeyen tek kopyadır."
+      },
+      "model": {
+        "hint": "bağlı değil",
+        "title": "Yerel bir model ekleyin",
+        "connectTitle": "Bağlayın",
+        "connect": "vLLM, Ollama ya da LM Studio çalıştırın ve uç noktayı <settings>Ayarlar</settings> bölümüne girin. OpenAI uyumlu her sunucu çalışır. GPU yok mu? build.nvidia.com'dan alınan ücretsiz bir anahtar aynı ajanı aynı ekrandan çalıştırır — ücretlendirilmez, hız sınırlıdır; tek bedeli kayıtlarınızın cihazdan çıkmasıdır.",
+        "changesTitle": "Ne değişir",
+        "changes": "Taslak hazırlamak boşluk doldurmalı bir şablon olmaktan çıkar ve profilinizi ve belgelerinizi okumaya başlar. <assistant>Asistan</assistant> sayfası o zamana kadar yanıt olarak verdiği örnekleri gösterir.",
+        "scoringTitle": "Gözcü işlem hatları puanlamaya başlar",
+        "scoring": "İşlem hattı, bugün yazabileceğiniz kayıtlı bir aramadır. Puanlama, modeli bekleyen yarısıdır ve o sayfadaki bant, hiçbir şeyin üretmediği rakamlar göstermek yerine bunu söyler."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Tüm ekranlar",
+    "title": "Tüm ekranlar ve ne yapıp ne yapmadıkları",
+    "subtitle": "Her sayfa için bir bölüm — ne işe yaradığı, neyin belirgin olmadığı ve henüz neyin bağlı olmadığı.",
+    "caption": "On üç bölüm — aradığınıza doğrudan geçin",
+    "sections": {
+      "doors": "Her sayfa nerede",
+      "dashboard": "Bugün",
+      "applications": "Başvurular",
+      "calendar": "Takvim",
+      "vault": "Kasa",
+      "scout": "İş gözcüsü",
+      "statistics": "İstatistikler",
+      "graph": "Grafik",
+      "transfer": "Aktarım",
+      "profile": "Profilim",
+      "assistant": "Asistan",
+      "settings": "Ayarlar",
+      "guide": "Bu kılavuz"
+    },
+    "parts": {
+      "notObvious": "Belirgin olmayanlar",
+      "whatIsReal": "Gerçek olanlar",
+      "addressNothing": "<lead>Adres çubuğu</lead> hiçbir şey taşımaz."
+    },
+    "doors": {
+      "hint": "altı sayfa kenar çubuğunda; altısı değil",
+      "title": "Her sayfa nerede",
+      "intro": "Kenar çubuğu altı sayfayı listeler. Altı sayfaya daha bambaşka bir yerden ulaşılır: üst çubuktaki bir simgeden ya da kenar çubuğunun altındaki, gösterge gibi görünen ama aynı zamanda düğme olan dört durum kutucuğundan birinden. Dizüstü bilgisayar genişliğinin altında kenar çubuğu, sol üstteki menü düğmesinin arkasında bir çekmecedir; üst çubuk her boyutta her ekranda vardır.",
+      "listTitle": "Her yol ve onu açan kontrol",
+      "where": {
+        "dashboard": "Kenar çubuğu, ilk satır. jojo'nun açıldığı sayfa da budur.",
+        "applications": "Kenar çubuğu. Rozeti, takip için işaretlediğiniz kayıtları sayar.",
+        "calendar": "Kenar çubuğu. Rozeti, önümüzdeki yedi gün içinde planlananları sayar.",
+        "vault": "Kenar çubuğu. Rozeti, tarihi geçmiş hatırlatıcıları sayar. <code>/reminders</code> buraya yönlendirir; o sayfa buraya taşındı.",
+        "scout": "Kenar çubuğu. Rozeti, henüz kimsenin başvuruya dönüştürmediği eşleşmeleri sayar.",
+        "statistics": "Kenar çubuğu, son satır.",
+        "graph": "Kenar çubuğunun altındaki <strong>Tarayıcı depolaması</strong> kutucuğu. Uygulamada başka hiçbir şey ona Grafik demez; jojo'da tesadüfen bulunması en zor sayfa olmasının nedeni budur.",
+        "transfer": "<strong>Aktarım</strong> kutucuğu ve <settings>Ayarlar → Verileriniz</settings>.",
+        "profile": "Üst çubuktaki kişi simgesi.",
+        "assistant": "Üst çubuktaki robot simgesi.",
+        "settings": "Üst çubuktaki dişli simgesi. <strong>Yerel model</strong> kutucuğu da buraya götürür — modelin yapılandırıldığı yer burasıdır.",
+        "guide": "Üst çubuktaki son simge olan soru işareti. Kenar çubuğunda yoktur."
+      },
+      "palette": "Hepsine ulaşan bir kapı var ve gizli altı sayfanın bir sorun değil de yalnızca bir zahmet olmasının nedeni budur: <kbd>⌘K</kbd>, bu kılavuzun dört sayfasının her biri dahil tüm sayfaları listeleyen bir <strong>Git</strong> grubuyla biter. Bu paletin başka neler yaptığını <overview>jojo nasıl kullanılır</overview> anlatır.",
+      "everyTitle": "Her sayfa için geçerli iki şey",
+      "switches": "Sayfa başlığının yanındaki dişlinin arkasındaki anahtarlar — notları göster, sıkışık satırlar, başlıklar yerine noktalar, sayıları göster — o sayfanın neyi çizdiğini değiştirir ve yalnızca bu ziyaret boyunca geçerlidir. Adres çubuğunda değildirler ve kaydedilmezler; Ayarlar'daki tema ve ses anahtarı kaydedilir ve istisna bunlardır.",
+      "defaults": "Bir sayfa durumu adreste tuttuğunda, sayfanın zaten gösterdiğine eşit bir değer adresin dışında bırakılır. <code>/applications</code> ile <code>/applications?view=board&stage=all&sort=daysAgo</code> adreslerinin aynı ekran olmasının ve bir filtreyi temizlediğinizde ikisinden daha düzenli olanını almanızın nedeni budur."
+    },
+    "doorsDiagram": {
+      "title": "Her sayfaya nereden ulaşılır",
+      "desc": "Kenar çubuğundaki altı satır Ana sayfa, Başvurular, Takvim, Kasa, İş gözcüsü ve İstatistikler'i açar. Altındaki dört kutucuk Grafik, Aktarım ve — köprü ile model için — Ayarlar'ı açar. Üst çubuğun sağındaki dört simge Profilim, Ayarlar, Asistan ve bu kılavuzu açar. Kenar çubuğu listesindeki hiçbir şey son altısına götürmez.",
+      "search": "Ara…",
+      "new": "Yeni",
+      "topBar": {
+        "line1": "Profilim · Ayarlar ·",
+        "line2": "Asistan · Nasıl kullanılır"
+      },
+      "sidebar": {
+        "line1": "Ana sayfa · Başvurular · Takvim",
+        "line2": "Kasa · İş gözcüsü · İstatistikler"
+      },
+      "tiles": "Grafik · Aktarım · Ayarlar"
+    },
+    "applications": {
+      "where": "kenar çubuğu · pano, tablo ve tek kayıt",
+      "open": "Panoyu aç",
+      "intro": "İzlediğiniz her pozisyon, aynı kayıtlar üzerinde iki düzenden birinde, ayrıca kendi adresindeki kaydın kendisi. Altı aşama ve aralarında taşımanın sizden ne istediği <overview>jojo nasıl kullanılır</overview> sayfasında; bu da bunların gerçekleştiği sayfa.",
+      "boardTitle": "Pano ve tablo, aynı görünümün iki kopyası değildir",
+      "board": {
+        "columns": "Pano, her aşama için bir sütundur ve her başlıkta bir sayı vardır. Bir sütunun altındaki <strong>Buraya ekle</strong>, o aşamada başlayan yeni bir kayıt açar — mülakatına çoktan girdiğiniz bir işi kaydetmek, bir taslak ekleyip onu dört sütun sürüklemek anlamına gelmemeli.",
+        "sort": "Tablo Pozisyon, Aşama ve Son etkinliğe göre sıralar; aynı başlığa yeniden tıklamak sırayı tersine çevirir. Rol ve Sonraki tarih sütundur, sıralama anahtarı değildir.",
+        "chips": "Aşama filtresi çipleri yalnızca tabloda vardır. Pano zaten aşamaya göre gruplanmıştır; bu yüzden onu filtrelemek bir listeyi kısaltmak yerine beş sütunu boşaltırdı — Pano'ya geçmek, o filtreyi açık hâlde gizlemek yerine temizler.",
+        "search": "Arama kutusu işvereni, pozisyonu, notu, rol etiketini ve aşama adını eşleştirir; bu yüzden “teklif” yazmak, bu sözcüğün yalnızca bir çipte geçtiği bir kaydı bulur. Aşama çiplerindeki sayılar her şeyin değil, aramanın ve anahtar kelime çiplerinin bıraktıklarının üzerindendir.",
+        "empty": "Liste boş geldiğinde onu böyle tutan filtreleri adlandırır ve hepsini birden kaldırmayı önerir."
+      },
+      "moveTitle": "Bir kartı aşamalar arasında taşımak",
+      "move": "Tutamak kartın sol kenarındadır. Sürükleyin; kart sütunundan kalkar — üzerinde olduğunuz sütun vurgu kenarlığı alır ve kartın ineceği yerde kesik çizgili bir yuva açar. Sürüklemek tek yol değildir ve klavyeyle en yavaş yoldur — iki sütun geçmek bir Boşluk ve yirmi ok tuşu demektir. Her kartın kendi aşama etiketinin altında bir aşama menüsü vardır ve tabloda bir satırdaki aşama çipi de aynı menüdür; ikisi de iki tuşa basmaktır.",
+      "fromBoard": {
+        "name": "Panodan ya da tablodan",
+        "body": "Taşıma siz yaptıkça gerçekleşir; bildirim hangi aşamadan geldiğini söyler ve Geri al sunar. Sürükleme ile menüden seçme aynı yazma işlemidir; bu yüzden yanlış bırakma, yanlış tıklama kadar kolay düzeltilir — sürükleme diğer her şeyle aynı yoldan geçene kadar böyle değildi."
+      },
+      "fromRecord": {
+        "name": "Kaydın içinden",
+        "body": "Kaydın kendi başlığındaki aşama menüsü önce kısa bir form açabilen menüdür ve yalnızca o taşımanın soracak bir şeyi olduğunda açar: Gönderildi, Mülakat, Teklif ve Kapandı sorar; Taslak ve Ön görüşme sormaz. Zaten teklifi olan bir kayıttan ayrılmak, hedef ne olursa olsun her zaman sorar, çünkü teklif bilerek tutulmalı ya da bırakılmalıdır."
+      },
+      "exits": "Formun üç çıkışı vardır ve hiçbiri bir hile değildir: <strong>İptal</strong> hiçbir şey yazmaz, <strong>Ayrıntı olmadan taşı</strong> aşamayı değiştirir ve başka hiçbir şeye dokunmaz, sonuncusu ise doldurduklarınızı uygular. Takviminize bir tarih koymayı önerdiyse, sonrasındaki bildirim bunu yaptığını söyler.",
+      "recordTitle": "Kaydın kendisi",
+      "record": {
+        "opens": "Listenin yerine değil, üzerinde açılır. Dizüstü bilgisayarda panonun sağında bir sayfadır; Escape ile, arka plana tıklayarak ya da kendi başlığındaki X ile kapanır; bu genişliğin altında tüm sayfayı kaplar. Her iki durumda da Geri kaydı kapatır ve görünümünüzü, aramanızı, aşamanızı ve sıralamanızı tam olarak olduğu gibi bırakır.",
+        "address": "Adresi bir addır — <code>/applications/rice</code> — çünkü kayıt kimlikleri her depo için yeniden üretilir ve yer imine eklenmiş bir kimlik, demo verileri yeniden yüklendikten sonra işe yaramaz. Kimlikle oluşturulmuş bir bağlantı yine de çözümlenir.",
+        "note": "Not, başka yere tıkladığınızda kaydedilir ve altında “Not kaydedildi” yazar. Unutulacak bir Kaydet düğmesi yoktur.",
+        "delete": "Silme, sormadan önce neyin kalacağını sayar — kaydın altında dosyalanan hatırlatıcılar, etkinlikler ve kayıtlı öğeler korunur ve bağlantısı kaldırılır, asla silinmez — ve bildirimdeki Geri al bu bağlantıları da geri koyar; başvuruyu yeniden ekleyerek bunları yeniden kuramazdınız.",
+        "deleted": "Silinmiş bir kaydın bağlantısı, bir hata yerine bunu söyleyen bir panele çıkar. Onunla birlikte başka hiçbir şey kaldırılmadı."
+      },
+      "address": "<lead>Adres çubuğu</lead> düzeni, arama metnini ve — ikisi de tablonun kendi kontrolleri olduğu için — aşama filtresini ve sıralama anahtarını taşır; böylece <bystage>aşamaya göre sıralanmış tablo</bystage> ve <atoffer>teklif aşamasındaki her şey</atoffer> saklayabileceğiniz bağlantılardır. Adresteki bir aşama, adres tabloyu da belirtmedikçe hiçbir şey yapmaz. Rol filtresi ve yanındaki anahtar kelime çipleri hiç adreste değildir: bu sekmenin seçimidir ve yeniden yüklediğinizde sıfırlanır."
+    },
+    "today": {
+      "where": "kenar çubuğu, ilk satır",
+      "open": "Bugün'ü aç",
+      "intro": "Günün sizden beklediği şeyler, başka hiçbir şey değil. Beş panel, hepsi kayıtlarınızın şu anki hâlinden sayılır: <strong>Karar bekleyenler</strong> — bir teklif, gecikmiş bir başvuru, süresi işleyen sıradaki son tarih ya da mülakat — yanında bir ay şeridi ve sayaçlar, ardından <strong>Bu hafta yapılacaklar</strong>, <strong>Son başvurular</strong> ve <strong>Süreç</strong> dağılımı.",
+      "items": {
+        "checklist": "Hiçbir şey izlenmezken karar destesinin yerini, gerçek pencereleri açan ve depoya bakarak kendini işaretleyen üç adımlı bir kontrol liste alır. Ayarlar'da tüm kayıtları temizlemek onu geri getirir, çünkü bir zamanlar bitirdiğinizi hatırlamaz, depoyu okur.",
+        "colour": "Bu sayfadaki renk yalnızca tarihten gelir: kırmızı süresi geçmiş, kehribar 48 saat içinde, daha ileridekiler ise ne kadar önemli olursa olsun sadedir. Bitirdiğiniz bir şey yeşile değil griye döner — burada hiçbir şey ödül değildir.",
+        "rows": "Satırlar sayfadan ayrılmadan tamamlandı olarak işaretlenebilir, bir gün, üç gün ya da bir hafta ertelenebilir veya açılabilir. Bunların her biri bildirimde Geri al seçeneği olan gerçek bir yazma işlemidir.",
+        "strip": "Ay şeridi kendi başına küçük bir takvimdir — <calendar>Takvim</calendar> sayfasını oynatmadan aylar arasında ilerler ve bir güne tıklamak o günü orada açar."
+      },
+      "address": "<lead>Adres çubuğu</lead> hiçbir şey taşımaz. Bu sayfa <code>/</code> adresidir ve üzerindeki her kontrol ya başka bir yere bağlantıdır ya da bir yazma işlemidir."
+    },
+    "calendar": {
+      "where": "kenar çubuğu, üçüncü satır",
+      "open": "Takvim'i aç",
+      "intro": "Bir ay ızgarası ve altında seçili günün listesi, tek bir sayfada. Son tarihler, mülakatlar, kampüs ziyaretleri ve hatırlatıcıların hepsi buradadır, çünkü hepsi aynı tür kayıttır — bunun neden bilmeye değer olduğu <overview>jojo nasıl kullanılır</overview> sayfasında.",
+      "items": {
+        "drag": "Bir kaydı başka bir güne sürüklemek onu yeniden planlar ve bildirimde bir Geri al sunar. Onu geldiği güne geri bırakmak hiçbir şey yazmaz ve hiçbir şey söylemez — olmayan bir taşımayı iddia eden bir bildirim, sessizlikten kötüdür.",
+        "types": "Izgaranın altındaki etkinlik türleri, bir grafiğin göstergesi gibi anahtarlardır: birini kapatın; kayıtları bu ziyaret boyunca ızgaradan ve iki gün listesinden çıkar. Tüm kayıtları kapalı olan bir gün boş olduğunu iddia etmek yerine bunu söyler ve gizli türdeki bir kaydın bağlantısı, inecek bir yeri olsun diye o türü yeniden açar.",
+        "key": "Izgaranın altındaki açıklama, bu ayın gerçekte içerdiklerinden oluşturulur. Gecikmiş hiçbir şey olmayan bir ay gecikmiş rengini listelemez, çünkü ızgarada olmayan bir işareti vaat eden açıklama sizi onu aramaya gönderir.",
+        "goTo": "<strong>Aya git</strong>, siz birini seçene kadar arkadaki takvimi oynatmadan yıllar arasında gezinir ve siz başka bir yıldayken gerçek bu ayı işaretler. <strong>Bugün</strong> bugüne döner ve zaten oradayken basılı görünmeye devam eder.",
+        "paging": "Aylar arasında geçiş yapmak baktığınız günü korur, indiğiniz aya sığacak şekilde sınırlar: 31 Ocak'tan ilerleyin, var olmayan bir tarih yerine Şubat'ın son gününe varırsınız. Aynı sınırlama elle yazılmış bir adresi de yakalar; böylece <code>?m=2&d=31</code> boş bir ızgara yerine gerçek bir günle yanıt verir.",
+        "add": "<strong>Etkinlik ekle</strong>, ekrandaki günle önceden doldurulur; bir takvimde bu neredeyse her zaman kastettiğiniz gündür.",
+        "export": "<strong>Takvimime aktar</strong>, jojo'nun tuttuğu her tarihi, her birinde bir hatırlatıcıyla <code>.ics</code> olarak yazar. Burada olmasının nedeni jojo'nun kendi bildirimlerini göndermemesidir: zaten uyarı aldığınız takvim, bu uygulama kapalıyken sizi bir son tarih hakkında uyarabilecek tek şeydir. Her teklifin son yanıt tarihini de içerir; bu tarih zaman çizelgesinde değil başvuruda durur ve bu yüzden bu ızgarada hiç görünmemiştir. Dosya şu anda alınan bir kopyadır — bir tarihi değiştirin ve yeniden dışa aktarın."
+      },
+      "address": "<lead>Adres çubuğu</lead> yılı, ayı, günü ve geldiğiniz kaydı taşır — bulunduğunuz yer bu yıl ve bu ay ise bunlar dışarıda bırakılır; böylece gelecek ayın bağlantısı <code>/calendar?m=11&d=3</code> olur. Dördün sonuncusu olan <code>focus</code>, bir satırı birkaç saniye vurgular, ardından kendini adresten kaldırır; böylece sonra kopyaladığınız bir URL, artık kimsenin bakmadığı bir satır değil, gündür."
+    },
+    "vault": {
+      "where": "kenar çubuğu · altı araç, tek sayfa",
+      "open": "Kasa'yı aç",
+      "intro": "Daha sonra dönmek için ayırdığınız her şey. Başlıktaki bölümlü kontrol altı araç arasında geçiş yapar ve ekranda aynı anda yalnızca biri bulunur; çoğu kişinin gözden kaçırdığı şey budur: Kasa bir liste değildir ve altı aracından beşi bir sekmenin arkasındadır.",
+      "rows": {
+        "reminders": {
+          "name": "Hatırlatıcılar",
+          "body": "Gecikmiş, Bugün, Yaklaşan ve Tamamlanan olarak gruplanır. Tek iş birini tamamlandı olarak işaretlemektir ve ana sayfadaki erteleme adımlarının aynısı her satırda vardır."
+        },
+        "links": {
+          "name": "Bağlantılar",
+          "body": "İlan, Kurum, Kişi ya da Rehber altında dosyalanır ve sonradan bunlar arasında taşınabilir."
+        },
+        "files": {
+          "name": "Dosyalar",
+          "body": "Okunacak, Başvurular, Sunumlar ve İdari bölümleri. Listeye bir dosya bırakın ya da seçin — gerçekte neyin saklandığı aşağıda."
+        },
+        "snippets": {
+          "name": "Metin parçaları",
+          "body": "Ön yazı, Başvuru formu, E-posta ya da Biyografi olarak etiketlenir. <strong>Mesaj taslağı hazırla</strong> penceresi bunlardan oluşturulur ve Asistan kaydettiğiniz bir yanıtı buraya dosyalar."
+        },
+        "people": {
+          "name": "Kişiler",
+          "body": "Referanslar, arama komitesi başkanları, işe alım uzmanları — aramanın gerçekten geçtiği herkes. Tıpkı bir CV gibi bir işin altında dosyalanırlar ve aynı nedenle tek bir kimlik değil bir listedir: bir referans, adını verdiğiniz her pozisyon için yazar. Bundan önce bir hatırlatıcının metninin içinde yaşıyorlardı; “kimin mektubu hâlâ bekleniyor” sorusunu hiçbir şeyin yanıtlayamamasının nedeni buydu."
+        },
+        "tools": {
+          "name": "Araçlar",
+          "body": "Her teklifin dönüştüğü hesaplar için temel ya da bilimsel bir hesap makinesi. Bu ziyaret boyunca son otuz satırı tutar, sekmeyi kapattıktan sonra hiçbir şeyi tutmaz."
+        }
+      },
+      "items": {
+        "filter": "Listenin üstündeki anahtar kelime filtresi açık olan araca aittir; bu yüzden bir anahtar kelimenin yanındaki sayı tüm Kasa'yı değil bu sekmeyi anlatır. Kayıt tutmayan Araçlar'da ya da içinde hiçbir şey olmayan bir sekmede hiç çizilmez.",
+        "search": "Dört listenin her birinin kendi arama kutusu ve bölüm filtresi vardır ve ikisi de adreste değildir — açık sekme ve geldiğiniz kayıt adrestedir.",
+        "redirect": "<code>/reminders</code> buraya yönlendirir. Hatırlatıcılar bir araç olmadan önce kendi sayfalarıydı ve o zamanlar alınan bağlantılar hâlâ çalışır."
+      },
+      "notConnectedTitle": "Dosyalar kaydedilir, saklanmaz",
+      "notConnected": "Bir dosya adını, boyutunu ve türünü verir ve jojo'nun tuttuğu yalnızca budur — belgenin kendisini koyacak diskinizde bir yer yoktur. Bu ziyaret sırasında seçtiğiniz ya da bıraktığınız bir dosya, sekme açık kaldığı sürece tarayıcının verdiği baytlardan gerçekten önizlenir; demo verileriyle gelen satırların arkasında bayt yoktur ve bunun yerine etiketli bir yer tutucu gösterirler. Hiçbir şey yüklenmez ve hiçbir içerik okunmaz.",
+      "address": "<lead>Adres çubuğu</lead> açık aracı ve kısa bir süre için bir bağlantının işaret ettiği kaydı taşır: <code>/vault?tool=snippets</code>. Sekme değiştirmek vurguyu da onunla birlikte kaldırır."
+    },
+    "scout": {
+      "where": "kenar çubuğu, beşinci satır",
+      "open": "İş gözcüsünü aç",
+      "intro": "Üç panel: çalıştırılmasını istediğiniz kayıtlı aramalar, böyle bir aramanın üreteceği eşleşmeler ve kendiniz bulduğunuz bir ilanı kaydeden bir kutu. Sayfanın üstündeki bant bunlardan hangisinin bir şey beklediğini söyler ve bu yüzden ekrandaki ilk şeydir.",
+      "items": {
+        "pipelines": "<strong>İşlem hatları</strong> diğerleri gibi kayıtlardır — izlenecek bir site, önemli terimler ve ne sıklıkla bakılacağı. Yazmak, düzenlemek ve silmek çalışır ve yeniden yüklemeden sonra da kalır. Açtığınız bir işlem hattı çalışıyor yerine <strong>duraklatıldı</strong> yazar; bunun için dürüst sözcük budur.",
+        "save": "<strong>İlan kaydet</strong>, hiçbir şey bağlı olmadan çalışır. Saklanan şey URL, ondan tahmin edilen işveren ve kaydettiğiniz gündür — ilanı yeniden bulmak ve başvurmak için yeterlidir. Hiçbir şey sayfayı getirmez.",
+        "add": "Bir eşleşmedeki ya da kayıtlı ilandaki <strong>Başvurulara ekle</strong>, başvuruyu oluşturur ve satırı taşımak yerine ikisini birbirine bağlar. Satır sonra nereye gittiğini söyler; böylece aynı yolu iki kez yapamazsınız."
+      },
+      "notConnectedTitle": "Anlık görüntüler yerel bir modeli bekler. Puanlar beklemez.",
+      "notConnected": "Eşleşmeler hâlâ demo verileriyle gelenlerdir — hiçbir şey bir siteyi taramadı — ama her birindeki yüzde burada, bu cihazda, profilinizdeki eşleştirme terimlerine, hedef rollere ve bölgelere göre hesaplanır ve her satır neyle eşleştiğini söyler. Boş bir profil, hiçliğin üzerine kendinden emin bir sayı yerine <strong>puanlanmadı</strong> yazar. Bekleyen kısım <strong>Anlık görüntüyü aç</strong>'tır: her kayıtlı ilanda devre dışıdır ve üzerine geldiğinizde nedenini söyler, çünkü hiçbir sayfa getirilmedi ve bir tane göstermek jojo'nun sahip olmadığı bir dosyayı iddia etmek olurdu.",
+      "address": "<lead>Adres çubuğu</lead>, bir bağlantının işaret ettiği satırı, hangi listede olduğuna göre adlandırarak taşır — <code>/scout?focus=match:unt</code> ya da <code>focus=posting:…</code>. İki liste kimliklerini ayrı üretir; bu yüzden doğru satırın vurgulanması için listenin de parametrenin parçası olması gerekir."
+    },
+    "statistics": {
+      "where": "kenar çubuğu, son satır",
+      "open": "İstatistikler'i aç",
+      "intro": "Temel oranlar, ne zaman başvurduğunuz, her birinin nereden geldiği, başvuruların ne kadar ilerlediği, nasıl sonuçlandığı, sırada ne üzerinde çalışılacağı ve rol türüne göre ayrılmış başvurular, yanıtlar, mülakatlar ve teklifler. Her rakam, baktığınız anda başvurularınızdan sayılır.",
+      "items": {
+        "funnel": "Yalnızca bir kaydın şu anda bulunduğu aşama saklanır; bu yüzden huni her başvuruyu gösterdiği kadarıyla sayar. Mülakattan sonra reddedilen bir kayıt taşıdığı tarihlere göre sayılır, daha ötesine değil; bundan etkilenen iki panel, arkasında duramayacakları bir sayıyı sessizce bildirmek yerine başlıklarında <strong>her kaydın gösterdiği kadarıyla</strong> der.",
+        "typical": "<strong>Tipik</strong> olarak işaretlenen rakamlar kendi geçmişiniz değil, kendinizi karşılaştırmanız için örnek bir aramadır — dişlinin arkasındaki anahtar bunları gizler. jojo kendi rakamlarının geçmişini tutmaz; burada hiçbir şeyin zaman içindeki değişimi bildirmemesinin nedeni budur.",
+        "legend": "Sonuçlar çubuğunun altındaki gösterge bantları kapatır ve başlık toplamın ne kadarının hâlâ gösterildiğini söyler. Yüzdeler sabit kalmak yerine kalanlara göre yeniden hesaplanır.",
+        "holds": "Sayfa bir payda uydurmak yerine kendini geri tutar. Hiçbir şey gönderilmemişken temel oranlar ve huni yoktur — sıfır başvuru üzerinden yanıt oranı uydurma bir sayıdır — ve hiç kayıt yokken tüm sayfa tek bir boş durumdur."
+      },
+      "address": "<lead>Adres çubuğu</lead> hiçbir şey taşımaz. Anahtarlar ve gösterge bu ziyaret içindir."
+    },
+    "graph": {
+      "where": "kenar çubuğundaki Tarayıcı depolaması kutucuğu",
+      "open": "Grafiği aç",
+      "intro": "Kayıtlarınız, saklandıkları şekliyle çizilmiş hâlde: her biri için bir düğüm, ikisi arasındaki her işaret için bir kenar. Renk kayıt türünü, boyut ise ona ne kadar şeyin işaret ettiğini gösterir. Resmin altında, bir listenin yanıtlayamayacağı soruları yanıtlayan bir sorgu paneli vardır; örneğin hangi başvuruların planlanmış takibi olmadığı. <guide>Grafik</guide> hepsini anlatır — bu bölüm yalnızca sayfanın nerede olduğunu ve neyi yapmadığını söylemek için burada.",
+      "items": {
+        "legend": "Gösterge satırları bir kayıt türünü resimden gizler. Sorular yine tüm grafik üzerinde çalışır — bir şeyi gizlediğiniz için değişen bir yanıt, hiç yanıt olmamasından kötü olurdu.",
+        "illustrative": "Seçicilerin altındaki, koda benzeyen satır <strong>temsili</strong> olarak etiketlenmiştir ve bu doğrudur. Hiçbir şey onu ayrıştırmaz; biçimi sözcüklerin yanında görmek seçicileri okunur kılsın diye oradadır.",
+        "fetched": "Bu sayfa ve Aktarım, jojo'nun geri kalanından ayrı olarak getirilir; bu yüzden ilk yüklemede kod gelirken bir an için adlandırılmış bir panel görebilirsiniz. Dönen bir simge yerine bunu söyler."
+      },
+      "address": "<lead>Adres çubuğu</lead> hiçbir şey taşımaz — ne seçili düğümü, ne soruyu, ne de gizlediğiniz türleri. Burada kurduğunuz bir görünüm kimseye gönderilemez; paneldeki sorgu örnekleri paylaşılabilir sürümdür."
+    },
+    "transfer": {
+      "where": "kenar çubuğundaki Aktarım kutucuğu ve Ayarlar",
+      "open": "Aktarım'ı aç",
+      "intro": "Her şeyi ikinci bir cihaza vermek: bu bilgisayarın hangi uç olduğunu seçin, eşleştirme kodunu okuyun, tam olarak neyin ve ne kadarının gideceğini görün ve belgelerin de gelip gelmeyeceğine karar verin. Sayılar grup grup kendi deponuzdan okunur; adım adım gezmenin amacı da budur — taşıyacağını söylediği şey, gerçekte sahip olduğunuz şeydir.",
+      "notConnectedTitle": "Hiçbir şey iletilmez",
+      "notConnected": "Bu derleme hiçbir bağlantı açmaz, kamera istemez ve hiçbir depoya yazmaz. Eşleştirme kodu her ziyarette yeniden üretilir ve hiçbir şeyle eşleşmez; gezdirdiği ilerleme, gerçek aktarımın alacağı biçimin bir gösterimidir ve sayfa bunu, kaydırıp geçeceğiniz bir bantta değil, kodun altında söyler. Bugün kayıtlarınızı başka bir bilgisayara taşımanın yolu <settings>Ayarlar → Verileriniz</settings> içindeki dışa aktarmadır.",
+      "items": {
+        "files": "Dosyalar varsayılan olarak kapalı olan tek gruptur — aktarımın ağır yarısıdır ve büyük olasılıkla diğer cihazda zaten sahip olduğunuz yarıdır. Alıcı tarafın söz hakkı yoktur, çünkü gelenlerin yarısını sessizce atan bir cihaz daha kötü bir sürpriz olurdu.",
+        "animation": "Animasyon, her karede yeniden çizilen bir WebGPU sahnesidir. Dişlinin arkasında onu kapatan bir anahtar vardır; pildeyken buna değer.",
+        "empty": "Depo boşken sayfa, her şeyden sıfır tane göndermeyi önermek yerine taşınacak bir şey olmadığını söyler ve demo verilerini gösterir."
+      }
+    },
+    "profile": {
+      "where": "üst çubuktaki kişi simgesi",
+      "open": "Profilinizi açın",
+      "intro": "Dört panel: temel bilgileriniz, bağlantılarınız, ilgi alanlarınız ve hedefleriniz ile belgeleriniz. Diğer tüm kayıtlar gibi bu tarayıcıya yazılır ve saklanır — neden hâlâ başlangıç adımlarından biri olmadığını <overview>jojo nasıl kullanılır</overview> söyler.",
+      "items": {
+        "match": "<strong>Eşleştirme terimleri</strong> anahtar kelime değildir ve panel bunu, onları yazdığınız yerde söyler. Anahtar kelime, kayıtları altında dosyaladığınız ve filtrelediğiniz bir şeydir; eşleştirme terimi ise gözcünün bir ilanı puanlarken baktığı bir ifadedir. İki listenin birbiriyle hiçbir zaman ilgisi olmadı.",
+        "documents": "Belgeler paneli, kendine ait ikinci bir liste değil, <vault>Kasa</vault>'nın Başvurular bölümünün bir görünümüdür — iki yerden birine eklenen bir CV ikisinde de görünür, çünkü tek bir yer vardır. Buradan yüklemek; adı, boyutu ve türü Kasa ile aynı koşullarda kaydeder.",
+        "save": "Tüm sayfa tek bir değişiklik olarak kaydedilir; böylece tek bir Geri al hepsini eski hâline getirir. Hiçbir şey düzenlenmemişken Kaydet'e basmak, olmamış bir değişikliği günlüğe yazmak yerine hiçbir şey yazmaz ve Geri al sunmaz.",
+        "example": "Her alanda gri bir örnek vardır. Boş bir depoda bu önemlidir: bu sayfa eskiden bir yabancının adını ve e-postasını, okuyanın makul olarak kendi yanıtları sanacağı kutularda gerçek değerler olarak gösteriyordu."
+      }
+    },
+    "assistant": {
+      "where": "üst çubuktaki robot simgesi",
+      "open": "Asistanı aç",
+      "intro": "<settings>Ayarlar</settings>'da bağladığınız yerel modelle konuşma tabanlı bir sohbet; siz bağlayana kadar ise örneklerden oluşan bir sayfa. Hangisini alacağınızı, kayıtlı bir uç nokta olup olmadığı belirler — hiçbir şey gizli değildir ve bir anahtar yoktur.",
+      "connectedTitle": "Bir model bağlıyken",
+      "connected": {
+        "agentic": "<strong>Ajan</strong> olarak çalışır: modele uygulamanın kendi araçları verilir ve size yanıt vermek için kayıtları okuyup yazabilir. Yaptığı her çağrı, olduğu anda yanıtta listelenir — araç, argümanları ve geri gelen sonuç — böylece bir yazma işlemi sonradan keşfettiğiniz değil, izlediğiniz bir şeydir.",
+        "threads": "Konuşmalar <strong>ayrı başlıklardır ve kaydedilir</strong>. Diğer her şeyin yanında bu tarayıcının IndexedDB'sinde dururlar; bu yüzden sekmeyi kapatmak onları korur. Konuşma çubuğu aralarında geçiş yapar ve her biri bir başvurunun altında dosyalanabilir; böylece iki arama tek bir geçmişte birbirine karışmaz.",
+        "documents": "Belge okuyucu da yapılandırılmışsa <strong>belgelerinizi okuyabilir</strong> — bir PDF, Word dosyası, sunum — ve içindekilere göre yanıt verebilir."
+      },
+      "notConnectedTitle": "Model olmadan yanıtlar üretilmez, yazılmıştır",
+      "notConnected": "Bir iş aramasının gerçekten gündeme getirdiği beş istek — ön yazı, CV uyarlama, ilan okuma, takip e-postası, mülakat hazırlığı — her biri baştan sona yazılmış bir örnekle yanıtlanır. Hiçbiriyle eşleşmeyen bir mesaj, sorduğunuz şey hakkında makul görünen bir paragraf yerine hazır bir yanıt olduğunu söyleyerek başlayan bir yanıt döndürür ve her yanıt aynı rozeti taşır — <strong>Örnek yanıt · bağlı model yok</strong>.",
+      "items": {
+        "save": "<strong>Metin parçalarına kaydet</strong>, bir yanıtı <vault>Kasa</vault>'da o yanıtın ait olduğu etiket altında dosyalar ve bildirim onu orada açmayı önerir.",
+        "copy": "Kopyalama bir tarayıcı tarafından doğrudan reddedilebilir; bu yüzden düğme olmamış bir şeyi onaylamak yerine başarısızlığı bildirir.",
+        "delete": "Bir konuşmayı silmek onay istemek yerine Geri al sunar."
+      }
+    },
+    "settings": {
+      "where": "üst çubuktaki dişli simgesi",
+      "open": "Ayarlar'ı aç",
+      "intro": "Yedi panel: belgeleriniz, yerel model, görünüm, verileriniz, anahtar kelimeleriniz, tanılama ve denetim günlüğü. Kenar çubuğunun altındaki çalışma durumu kutucuğu buraya götürür; amacı da budur.",
+      "items": {
+        "export": "<strong>Yedeği dışa aktar</strong>, sürümlü tam bir yedeği <strong>{{file}}</strong> dosyasına yazar: başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, anahtar kelimeleriniz ve etiketleri ile profiliniz. Bastığınız anda alınan bir kopyadır ve sonra yaptıklarınızı izlemez.",
+        "clear": "<strong>Demo verilerini yükle</strong>, <strong>Kayıtları temizle</strong> ve <strong>Depolamayı temizle</strong>'nin her biri önce sorar ve tam olarak neye ulaştığını söyler. Kayıtları temizlemek adlandırdığınız anahtar kelimeleri korur — depo hâlâ dokunulmamış demo verileri değilse; öyleyse hazır gelen anahtar kelimeler de gider ve onay penceresi ikisinden hangisini yapmak üzere olduğunu söyler.",
+        "keywords": "<strong>Anahtar kelimeler</strong> onları yeniden adlandırır, yeniden renklendirir ve siler; silmeden önce her birinin kaç kayıtta olduğunu söyler.",
+        "diagnostics": "<strong>Tanılama</strong>, “kayıtlarınız kaydedildi” sözünü denetlenebilir bir şeye dönüştürür: depoda her türden kaç tane olduğu, diskte hangi şema sürümünün bulunduğu, tarayıcının jojo'ya ne kadar yer verdiği ve okumayı reddettiği her şeyin kimliği.",
+        "audit": "<strong>Denetim günlüğü</strong>, iki yüze kadar her yazma işlemini en yenisi önce listeler. Yalnızca en yeni satır Geri al sunar, çünkü üç saat önceki bir giriş, o zamandan beri onlarca kez düzenlenmiş kayıtları anlatır. Demo verilerini yükle ve Kayıtları temizle de diğer her şey gibi orada görünür ve günlüğün geri almayacağı iki işlemdir — siz basmadan önce bunu söylemişlerdi."
+      },
+      "notConnectedTitle": "Bir panel ve bir düğme kapalı",
+      "notConnected": "Yerel model uç noktası bir alandır ve neden çalışamadığını söyleyen bir Test düğmesi vardır. Eskiden yanında duran panel — bir köprü adresi, bir eşleştirme kodu, bir kayıt yolu ve yazdığınızı kabul edip hiçbir yere ulaşmayan üç anahtar — kaldırıldı; belgeler artık gerçekten saklanıyor ve <strong>Belgeleriniz</strong> nerede olduklarını söylüyor. <strong>Excel'e aktar</strong> ve <strong>İçe aktar</strong> devre dışıdır ve üzerlerine gelindiğinde nedenlerini söyler — paketle birlikte gelen bir tablo yazıcısı yoktur ve bir yedeği geri okumak, anlamadığı bir dosyayı reddedebilen bir doğrulayıcı gerektirir. Bunların her birinin size ne kazandıracağı <overview>jojo nasıl kullanılır</overview> sayfasında."
+    },
+    "guide": {
+      "where": "üst çubuktaki soru işareti",
+      "open": "İlk sayfayı aç",
+      "intro": "Tek bir adres altında dört sayfa; her birinde üstte bir şerit, altta bir sayfa gezgini. Arayüzdeki tek girişi yardım simgesidir: üzerine gelindiğinde ve ekran okuyucuya adı söylenir, ama görünür bir metni ya da kenar çubuğunda bir satırı yoktur; bir şey belirsiz olduğunda aradığınız sayfa için ince bir kapıdır. Geri dönmenin güvenilir yolu <kbd>⌘K</kbd>'dir ve bölüm için tek bir satır yerine dört sayfanın hepsini ayrı ayrı listeler.",
+      "order": "Sıralama tesadüf değil, bir gerekçedir: herkes ilk sayfadan sonra durup uygulamayı kullanabilir ve herkes doğrudan sonuncusuna atlayabilir.",
+      "address": "<lead>Adres çubuğu</lead> sayfanın kendisidir. İlk sayfa <code>/guide/overview</code> değil <code>/guide</code>'dır; böylece dört sayfa olmadan önce alınan her bağlantı ve yer imi hâlâ gerçek bir yere çıkar."
+    }
+  }
+}

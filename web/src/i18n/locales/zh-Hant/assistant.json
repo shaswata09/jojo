@@ -1,0 +1,153 @@
+{
+  "common": {
+    "title": "助理",
+    "undo": "復原",
+    "nothingAsked": "還沒有提出任何問題",
+    "askLabel": "詢問助理",
+    "saveToSnippets": "儲存到片段",
+    "savedToSnippets": "已儲存到片段",
+    "filedUnder": "{{title}} · 歸檔在「{{tag}}」下",
+    "openVault": "開啟保管庫",
+    "copyBlocked": "瀏覽器封鎖了複製動作",
+    "copied": "已複製回覆",
+    "newConversation": "新對話"
+  },
+  "header": {
+    "subtitle": "已連接到你的模型，可以對你的紀錄採取動作。它所做的每件事都會即時列出。",
+    "clear": "清除",
+    "connected_other": "回答來自 <mono>{{endpoint}}</mono> 上的 <mono>{{model}}</mono>，它可以在這部裝置上呼叫 <tools>{{count}} 個工具</tools>。不會傳送任何資料到其他地方。"
+  },
+  "composer": {
+    "send": "傳送",
+    "typeFirst": "請先輸入訊息",
+    "stop": "停止",
+    "stopTitle": "停止代理程式"
+  },
+  "approval": {
+    "waiting": "{{title}}——等候你的決定",
+    "askedBy": "由「{{name}}」提出。目前還沒有任何變更。",
+    "askedByUnnamed": "由某段對話提出。目前還沒有任何變更。",
+    "decline": "不要",
+    "allow": "允許"
+  },
+  "scripted": {
+    "subtitle": "目前是範例示範。連接本機模型後，它就能根據你自己的紀錄草擬內容，並對紀錄採取動作。",
+    "clear": "清除對話",
+    "notConnected": "沒有連接模型，所以下方的每則回覆都是範例，而不是真正的回答。請在<settings>設定</settings>中將 jojo 指向與 OpenAI 相容的本機伺服器——vLLM、Ollama 或 LM Studio。",
+    "emptyDescription": "從下方的提示中選一個，或輸入任何內容。回覆是事先寫好的範例——可以作為參考，但絕不會當作模型的回答呈現。",
+    "placeholder": "詢問求職信、追蹤信、面試…",
+    "footer": "連接模型後，這些功能都會讀取你的個人檔案和文件作為背景資料。由於推論在本機進行，你的履歷和備註絕不會上傳到任何地方。",
+    "badge": "範例回覆 · 未連接模型",
+    "cleared": "已清除對話",
+    "messages_other": "{{count}} 則訊息"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "草擬求職信",
+      "title": "求職信——架構",
+      "reply": "以下是我會為 [DEPARTMENT] 採用的架構：\n\n第 1 段——你的研究主題，用一句連領域外的委員都能理解的話說明。\n第 2 段——最能支持你的兩項成果，每一項都說明它帶來的影響，而不是方法。\n第 3 段——為什麼選擇這個系所：你會和哪個團隊有交集，以及你會教授哪門課。\n第 4 段——可到職時間，以及前三年的規劃。\n\n控制在一頁以內。委員會一個晚上要讀四十封這樣的信。"
+    },
+    "tailorCv": {
+      "action": "依職缺調整我的履歷",
+      "title": "調整履歷——三個步驟",
+      "reply": "三個步驟，依照這個順序：\n\n1. 刪掉徵才廣告沒有要求的內容。一份想迎合所有職缺的履歷，等於沒有迎合任何職缺。\n2. 把廣告最先強調的部分移到第一頁最上方——重視教學的廣告，會希望教學經歷排在著作發表之前。\n3. 用廣告本身的用語改寫標題，但不要誇大工作的範圍。\n\n保持不動的部分：著作發表、推薦人、日期。這些是委員會會核對的部分。"
+    },
+    "parsePosting": {
+      "action": "解析職缺",
+      "title": "要從職缺中擷取什麼",
+      "reply": "我會從徵才廣告中擷取：雇主、職務、截止日期、要求的文件、指定的聯絡人，以及任何以硬性要求（而非偏好）表述的條件。\n\n最後一項正是申請失敗的原因——「到職前必須取得學位」是篩選條件，「具大型系統經驗者佳」則不是。\n\n職缺偵察不需要模型就已經能完成其中較簡單的一半：把網址存在那裡，它就會保留連結，並從中推測雇主。"
+    },
+    "followUp": {
+      "action": "草擬追蹤信",
+      "title": "未獲回覆時的追蹤信",
+      "reply": "主旨：申請進度詢問——[ROLE]，[DEPARTMENT]\n\n[NAME] 您好：\n\n我已於 [DATE] 申請 [ROLE]，想確認委員會是否已收到我所有需要提供的資料。如果比較方便，我很樂意直接寄送尚未送達的推薦信。\n\n我對這個職位依然非常有興趣，也很樂意透過電子郵件回答任何問題。\n\n謝謝您，\n[YOUR NAME]"
+    },
+    "interview": {
+      "action": "幫我準備面試",
+      "title": "面試——六個要先想好答案的問題",
+      "reply": "面試前值得先想好答案的六個問題：\n\n——用九十秒向領域外的人說明，你的研究是關於什麼？\n——你的第一筆研究經費會是什麼，向哪個機構申請？\n——如果下學期臨時要你開課，你能教哪兩門？\n——你會和這裡的誰合作，合作什麼？\n——你自己的研究成果有什麼弱點？\n——第一年你需要什麼才能展開工作？\n\n把答案一字一句寫下來。重點在於演練，而不是筆記。"
+    },
+    "fallback": {
+      "title": "助理——範例回覆",
+      "reply": "沒有連接模型，所以這是預先寫好的回答，而不是針對你輸入內容的回覆。\n\n連接模型後，這個頁面會讀取你的個人檔案、保管庫中的文件和你指定的申請，然後在你自己的電腦上據此草擬內容。請在「設定」中將 jojo 指向與 OpenAI 相容的本機伺服器——vLLM、Ollama 或 LM Studio。\n\n清除對話即可再次查看範例。"
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "我在等哪些回音？",
+      "add": "新增申請：Stripe 的機器學習工程師，已送出",
+      "noDeadline": "哪些申請沒有截止日期？",
+      "flag": "標記我的 UT Austin 申請"
+    },
+    "emptyDescription": "請它找東西、新增申請，或推進某份申請的進度。它執行的每個工具都會即時顯示在下方，包括傳送了什麼、傳回了什麼。",
+    "placeholder": "找出我的 UT Austin 申請、新增一份申請，或把它移到面試…"
+  },
+  "threadBar": {
+    "titleLabel": "對話標題",
+    "saveTitle": "儲存標題",
+    "cancel": "取消",
+    "rename": "重新命名這段對話",
+    "changeJob": "變更職缺",
+    "fileUnder": "歸檔在某個職缺下",
+    "approval": "核准",
+    "approvalLabel": "這段對話不經詢問可以做多少事",
+    "delete": "刪除"
+  },
+  "threads": {
+    "deleted": "已刪除對話"
+  },
+  "threadList": {
+    "title": "對話",
+    "kept_other": "這裡保留了 {{count}} 段",
+    "noJob": "尚未關聯任何職缺",
+    "searchLabel": "搜尋對話",
+    "searchPlaceholder": "搜尋對話內容",
+    "clearSearch": "清除搜尋",
+    "noMention": "沒有提到這個",
+    "mentionsIn": "{{conversations}}中有 {{mentions}}",
+    "mentions_other": "{{count}} 處提及",
+    "conversationCount_other": "{{count}} 段對話",
+    "empty": "還沒有任何對話。提出問題後，對話就會保留在這裡，在這部裝置上。",
+    "noResults": "沒有任何內容提到「{{query}}」。這會搜尋每段對話的內容，而不只是名稱。",
+    "working": "處理中…",
+    "matches_other": "{{count}} 個符合項目",
+    "questions_other": "{{count}} 個問題"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "無法復原——之後內容已有變動",
+      "alreadyUndone": "已經復原過了",
+      "outOfReach": "時間太久，無法從這裡復原",
+      "undone": "已復原"
+    },
+    "thinking": "思考中…",
+    "thought": "思考過程"
+  },
+  "trace": {
+    "status": {
+      "running": "執行中",
+      "done": "完成",
+      "failed": "失敗",
+      "declined": "已拒絕"
+    },
+    "effect": {
+      "read": "讀取",
+      "unknown": "沒有這個工具",
+      "create": "新增",
+      "update": "變更",
+      "move": "移動",
+      "delete": "刪除",
+      "admin": "儲存區"
+    },
+    "approvalNeeded": "需要核准：{{title}}",
+    "asked": "代理程式要求執行這項動作。目前還沒有任何變更。",
+    "declineAria": "不要：{{title}}",
+    "allowAria": "允許：{{title}}",
+    "arguments": "參數",
+    "result": "結果",
+    "undoStep": "復原這個步驟",
+    "cannotUndo": "這個步驟無法從這裡復原。「設定 → 紀錄」保留了變更記錄，可以撤銷最近一次變更。",
+    "truncated": "內容已截斷——已要求代理程式縮小搜尋範圍以查看其餘部分。",
+    "working": "處理中——{{model}} 正在決定要做什麼…"
+  }
+}

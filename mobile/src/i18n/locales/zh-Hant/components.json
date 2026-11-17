@@ -1,0 +1,613 @@
+{
+  "checklist": {
+    "title": "檢查清單",
+    "titleCount": "檢查清單 · 共 {{total}} 項，{{open}} 項未完成",
+    "notAdded": "沒有新增這個步驟",
+    "deleted": "已刪除步驟",
+    "draft": "草擬",
+    "draftMore": "再草擬一些",
+    "actionsFor": "「{{step}}」的動作",
+    "empty": {
+      "title": "清單上還沒有任何項目",
+      "noPosting": "這份申請沒有已儲存的職缺，所以 jojo 無法讀取它要求你寄送哪些資料。你仍然可以新增自己的步驟。",
+      "noModel": "草擬檢查清單需要模型。請在「設定」中連接模型，或在下方新增自己的步驟。",
+      "ready": "請 jojo 讀取職缺，找出你需要寄送的資料，或在下方新增自己的步驟。"
+    },
+    "addStep": "新增步驟",
+    "step": "步驟"
+  },
+  "fit": {
+    "title": "你的契合度",
+    "step": {
+      "reading": "正在開啟職缺…",
+      "asking": "正在讀取職缺的要求…"
+    },
+    "measure": "評估這個職缺",
+    "rerun": "重新執行",
+    "rerunHint": "重新讀取職缺並重新評估",
+    "clear": "清除這次評估",
+    "clearHint": "在你要求之前，jojo 不會再評估這個職缺",
+    "cleared": "已清除契合度評估",
+    "notCleared": "沒有清除成功",
+    "clearedBody": "除非你要求，否則 jojo 不會再讀取這個職缺。",
+    "options": "契合度選項",
+    "blocked": {
+      "noPosting": "這份申請沒有已儲存的職缺，所以沒有可以拿來和你比較的依據。擷取職缺頁面，或從連結新增這份申請，這裡就會顯示結果。",
+      "noModel": "讀取職缺的要求需要模型。請在「更多 → 設定」中連接模型。",
+      "noBackground": "jojo 還沒有讀取任何關於你背景的資料，所以無法拿這個職缺和你比較。請把你的履歷放進保管庫，並在它提議讀取時同意。"
+    },
+    "clearedNote": "你已清除這次評估，所以 jojo 不會再處理這個職缺。",
+    "queued": "排隊中…",
+    "leadWith": "優先強調",
+    "answers": "回應「{{requirement}}」",
+    "beReadyFor": "準備好面對",
+    "required": "——必要",
+    "skipped_other": " · 略過了 {{count}} 行"
+  },
+  "tailored": {
+    "title": "量身修改的資料",
+    "hint": "針對這個職缺改寫，並標示出修改之處。",
+    "tailor": "量身修改",
+    "tailoredBefore": "{{label}} · 先前已修改過",
+    "blocked": {
+      "noPosting": "這份申請沒有已儲存的職缺，所以沒有可以據以修改文件的依據。從連結新增這份申請，或擷取職缺頁面，這裡就會提供這項功能。",
+      "noModel": "量身修改文件需要模型。請在「更多 → 設定」中連接模型。",
+      "noDocuments": "還沒有可以修改的內容。量身修改會改寫你隨申請寄出的文件——請在「更多 → 我的個人檔案」中新增履歷、陳述或求職信，或將它們歸檔在保管庫的「申請」下，它們就會顯示在這裡。"
+    },
+    "queued": "排隊中…",
+    "working": "處理中…",
+    "empty": "還沒有量身修改任何內容。按「量身修改」並選擇一份文件，jojo 就會為這個職缺寫一個版本，並標示出修改之處。",
+    "deleted": "已刪除「{{title}}」",
+    "notDeleted": "沒有刪除成功",
+    "deletedBody": "已從這份申請和保管庫中移除。",
+    "provenance": "{{tag}} · 來自 {{from}} · {{model}}",
+    "chooseTitle": "量身修改文件",
+    "chooseHint": "在本機模型上需要一兩分鐘。",
+    "openInVault": "在保管庫中開啟",
+    "previewNamed": "預覽「{{title}}」"
+  },
+  "trace": {
+    "status": {
+      "running": "執行中",
+      "done": "完成",
+      "failed": "失敗",
+      "declined": "已拒絕"
+    },
+    "effect": {
+      "read": "讀取",
+      "unknown": "沒有這個工具",
+      "create": "新增",
+      "update": "變更",
+      "move": "移動",
+      "delete": "刪除",
+      "admin": "儲存區"
+    },
+    "asked": "代理程式要求執行這項動作。目前還沒有任何變更。",
+    "dont": "不要",
+    "allow": "允許",
+    "arguments": "參數",
+    "result": "結果",
+    "undoStep": "復原這個步驟",
+    "cannotUndo": "這個步驟無法從這裡復原。「更多 → 設定 → 紀錄」保留了變更記錄，可以撤銷最近一次變更。",
+    "truncated": "內容已截斷——已要求代理程式縮小搜尋範圍以查看其餘部分。",
+    "thinking": "處理中——{{model}} 正在決定要做什麼…"
+  },
+  "approval": {
+    "askedBy": "由「{{name}}」提出。目前還沒有任何變更。",
+    "askedByUnnamed": "由某段對話提出。目前還沒有任何變更。"
+  },
+  "threads": {
+    "conversations": "對話",
+    "new": "新對話",
+    "kept_other": "已保留 {{count}} 段",
+    "titleField": "對話標題",
+    "approvalLabel": "這段對話不經詢問可以做多少事",
+    "rename": "重新命名這段對話",
+    "changeJob": "變更這段對話關聯的職缺",
+    "fileUnder": "歸檔在某個職缺下",
+    "delete": "刪除這段對話",
+    "noJob": "尚未關聯任何職缺",
+    "listEmpty": "還沒有任何對話——提出問題後，對話就會保留在這裡，在這部裝置上。",
+    "keptOnDevice_other": "這部裝置上保留了 {{count}} 段。",
+    "filter": "篩選",
+    "filterPlaceholder": "依名稱或職缺",
+    "noMatch": "沒有符合的對話。",
+    "working": "處理中…",
+    "questions_other": "{{count}} 個問題"
+  },
+  "picker": {
+    "title": "相關申請",
+    "description": "它所屬的每一個職缺。一份履歷會用在你寄出它的每一份申請上，所以這是一份清單，而不是單一欄位。",
+    "notLinked": "未連結",
+    "none": "還沒有任何申請",
+    "noneHint": "新增一份申請後，就可以把這個項目歸檔在它底下。"
+  },
+  "audit": {
+    "records_other": "{{count}} 筆紀錄",
+    "links_other": "{{count}} 個關聯",
+    "undoFailed": "這項變更已經無法復原",
+    "notInJournal": "它已經不在日誌中。",
+    "recorded_other": "已記錄 {{count}} 項",
+    "title": "變更紀錄",
+    "empty": {
+      "title": "尚未寫入任何內容",
+      "description": "每次新增、編輯和刪除都會即時記錄在這裡——最新的排在最前面，最後一項可以復原。"
+    },
+    "explain": "最新的變更可以還原。較舊的只是紀錄，不是時光機。",
+    "undoLast": "復原最後一項",
+    "cannotUndo": "載入或清除資料集無法復原。",
+    "showAll_other": "顯示全部 {{count}} 項"
+  },
+  "crash": {
+    "title": "當機報告",
+    "thisPhone": "這支手機",
+    "notBuilt": "這個版本的 jojo 在建置時沒有加入當機報告或使用分析，所以不會記錄任何內容，也沒有可以開啟的選項。",
+    "what": "出問題時，jojo 可以保留錯誤內容讓你回頭查看——當出錯的地方早已消失時特別有用。報告包含錯誤訊息、它在 jojo 中發生的位置，以及堆疊追蹤。報告絕不會包含你的申請、文件、備註、個人檔案或對話，而 API 金鑰、位址和電子郵件地址都會在寫入報告前移除。",
+    "where": "報告會保留在這支手機上，也會傳送到 Firebase Crashlytics，並附上你的裝置型號、作業系統版本，以及一個用來計算有多少人遇到相同當機的隨機 ID。Google 會保留這些資料 90 天。你的紀錄都不會隨之傳送。",
+    "report": "回報當機",
+    "reportHint": "開啟後，你遇到的當機我們才看得到。關閉則不會記錄任何內容。",
+    "usage": "分享我使用哪些功能",
+    "usageHint": "只有次數，且來自固定清單——絕不包含你紀錄中的內容。",
+    "usageDetail": "它只能從固定清單中挑選說法——開啟了哪個畫面、新增了一份申請、大約有多少份。它無法說出雇主、職務、檔案或你輸入的任何內容。資料會傳送到 Google Analytics。關閉這項功能時，jojo 也會一併關閉 Firebase 原本會自行收集的畫面瀏覽和工作階段計數。",
+    "kept_other": "已保留 {{count}} 份報告",
+    "nothingBroken": "自從你開啟這項功能以來，沒有發生任何問題。",
+    "notRecording": "目前沒有記錄任何內容。"
+  },
+  "date": {
+    "today": "今天",
+    "tomorrow": "明天",
+    "inSevenDays": "7 天後",
+    "triggerLabel": "{{label}}：{{value}}。選擇日期",
+    "notSet": "未設定",
+    "pick": "選擇日期",
+    "previousMonth": "上個月",
+    "nextMonth": "下個月",
+    "backTo": "回到{{month}}"
+  },
+  "errorBoundary": {
+    "title": "出了點問題",
+    "body": "有個畫面無法繪製。你的紀錄仍在這部裝置上，也沒有傳送到任何地方，但 jojo 無法確定你剛才進行的變更是否已完成。",
+    "noMessage": "這個錯誤沒有附上任何訊息。",
+    "hint": "如果再次出錯，請從應用程式切換器關閉 jojo 再重新開啟。"
+  },
+  "fileEditor": {
+    "editTitle": "編輯文件",
+    "newTitle": "記錄文件",
+    "keptHere": "保存在這部裝置的這個應用程式中。不會上傳任何內容，也不會讀取它的內容。",
+    "chooseOrType": "選擇一個檔案以保留副本，或手動填寫，記錄一份存放在其他地方的文件。",
+    "record": "記錄",
+    "choosing": "選擇中…",
+    "chooseDifferent": "選擇其他檔案",
+    "choose": "選擇檔案",
+    "copyKept": "這個應用程式中會保留一份副本。解除安裝應用程式時就會一併移除。",
+    "fileName": "檔案名稱",
+    "nameRequired": "請填寫名稱，包括副檔名。",
+    "nameHint": "副檔名決定顯示的圖示——.pdf、.doc、.pptx、.md。",
+    "size": "大小",
+    "sizePlaceholder": "例如：212 KB",
+    "sizeHint": "選填——留白時會顯示為未知，而不是零。",
+    "bucket": "分類",
+    "applicationsHint": "個人檔案的「文件」面板和圖譜會讀取這裡，說明什麼歸檔在哪裡。可以選擇這份文件寄往的所有職缺。",
+    "note": "備註"
+  },
+  "filed": {
+    "sections": {
+      "files": "檔案",
+      "links": "連結",
+      "snippets": "片段",
+      "people": "聯絡人"
+    },
+    "count_other": "這裡歸檔了 {{count}} 個",
+    "title": "來自保管庫",
+    "empty": {
+      "title": "這裡還沒有歸檔任何內容",
+      "description": "文件、連結、片段和聯絡人可以分別歸檔在所有相關的職缺底下。從保管庫中該項目的列選單，將它歸檔在這個職缺底下，就會顯示在這裡。"
+    },
+    "conversations": "對話",
+    "openInAssistant": "在助理中開啟 {{name}}",
+    "openInVault": "在保管庫中開啟 {{name}}"
+  },
+  "firstRun": {
+    "title": "你想如何開始？",
+    "description": "不論選哪一個，所有內容都會保留在這部裝置上，不會傳送到任何地方。",
+    "demo": {
+      "title": "用示範紀錄探索",
+      "detail": "十二份申請、填滿的行事曆和裝滿內容的保管庫，讓每個畫面都有東西可看。之後可以在「設定」中清除。",
+      "action": "使用示範紀錄"
+    },
+    "empty": {
+      "title": "從空白開始",
+      "detail": "只有你自己的紀錄。需要資料的畫面會說明缺少什麼，而不是顯示範例。"
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "延後",
+    "currently": "{{title}} · 目前為 {{date}}",
+    "pickDate": "選擇日期…",
+    "duplicate": "複製",
+    "duplicateHint": "相同的日期和關鍵字，新增為第二列",
+    "draft": "草擬訊息",
+    "draftHint": "從你的電子郵件片段開始——不會產生任何內容",
+    "reschedule": "重新排定"
+  },
+  "keywords": {
+    "on": "{{name}} 的關鍵字",
+    "none": "還沒有",
+    "choose": "選擇",
+    "title": "關鍵字",
+    "description": "關鍵字由你自訂，申請、提醒、檔案和連結都可以共用——用其中一個關鍵字篩選，就能找到所有相關項目。",
+    "newPlaceholder": "新關鍵字…",
+    "new": "新關鍵字",
+    "add": "新增",
+    "countHere_other": "{{name}}，這裡有 {{count}} 個"
+  },
+  "onboarding": {
+    "model": {
+      "title": "要連接模型嗎？",
+      "description": "這是讓 jojo 成為代理程式、而不只是檔案櫃的關鍵。連接後，它可以回答關於你求職的問題、根據你自己的紀錄草擬追蹤信，並讀取你新增的文件。",
+      "action": "設定模型",
+      "local": "將它指向你自己電腦上的伺服器——vLLM、Ollama 或 LM Studio——任何資料都不會離開這部裝置。",
+      "later": "沒有模型，其他功能也都能使用。你隨時可以在「更多 → 設定」中找到它。"
+    },
+    "tour": {
+      "title": "想要實際操作導覽嗎？",
+      "description": "帶你實際走過真正的畫面——逐一標示每個部分、說明用途，並讓你邊看邊試。",
+      "action": "開始導覽",
+      "safe": "它不會變更任何內容——不會寫入任何紀錄，也不會動到任何設定。",
+      "later": "導覽隨時都在「更多 → 使用說明」中，所以現在拒絕也不會有任何損失。"
+    }
+  },
+  "pattern": {
+    "has": "有",
+    "hasHint": "至少有一個這樣的連結",
+    "missing": "沒有",
+    "missingHint": "完全沒有這樣的連結",
+    "anything": "任何項目",
+    "lookFor": "尋找",
+    "records": "紀錄",
+    "aLink": "連結",
+    "anyKind": "任何類型",
+    "to": "連到",
+    "lookForHint": "答案清單中的紀錄類型。",
+    "quantifierTitle": "有，或沒有",
+    "quantifierHint": "下方的連結必須存在，還是必須不存在。",
+    "relTitle": "哪種連結",
+    "relHint": "兩端如何相連。「任何類型」會同時詢問全部六種。",
+    "endTitle": "另一端",
+    "endHint": "連結必須指向什麼。"
+  },
+  "reporting": {
+    "title": "當機報告與使用情形",
+    "description": "這是兩件獨立的事，預設都已開啟。可以在這裡或之後在「設定」中關閉其中任一項。兩者都無法帶走你的紀錄：不論是申請、文件、備註、個人檔案或對話。",
+    "bothOff": "兩項都關閉",
+    "save": "儲存選擇",
+    "inReport": "當機報告中包含什麼",
+    "in": {
+      "message": "· 錯誤訊息，以及它在 jojo 中發生的位置。",
+      "stack": "· 堆疊追蹤，其中會列出出錯的程式碼。",
+      "device": "· 你的裝置型號、作業系統版本，以及一個用來計算有多少人遇到相同當機的隨機 ID——沒有姓名，也沒有帳號。"
+    },
+    "notInReport": "報告中絕不會包含什麼",
+    "notIn": {
+      "records": "· 你的申請、文件、備註、個人檔案或對話。",
+      "secrets": "· 你的 API 金鑰、你使用的位址，或任何電子郵件地址——這些會在報告寫入前就移除，而不是在傳送前才移除。"
+    },
+    "crashHint": "錯誤內容和發生位置。會傳送到 Firebase Crashlytics。",
+    "usageHint": "只有次數——開啟了哪些畫面、開啟頻率。絕不包含畫面中的內容。",
+    "usageDetail": "第二項是 jojo 唯一會傳送、關於你「做了什麼」的資料，而且只能從固定清單中挑選說法——「開啟了保管庫」、「新增了一份申請」、「共有 6–20 份」。它無法說出雇主、職務、檔案或你輸入的任何內容，因為這些字詞不在清單中。關閉它也會停止 Firebase 原本會自行收集的畫面瀏覽紀錄。",
+    "later": "你隨時可以在「設定」中變更這兩項，關閉其中一項時，也會一併捨棄它已保留的內容。"
+  },
+  "stagePicker": {
+    "label": "{{name}} 的階段：{{stage}}。變更階段",
+    "title": "移至"
+  },
+  "welcome": {
+    "title": "簡單介紹一下你自己",
+    "description": "草稿會以你的名字署名，職缺偵察也會依你想找的內容評分。這些資料全都保留在這部裝置上，而且都是選填——其餘資料在「個人檔案」中。",
+    "skip": "先略過",
+    "save": "儲存並繼續",
+    "fullName": "全名",
+    "fullNamePlaceholder": "例如：Lonardo Jenson",
+    "position": "目前職位",
+    "positionPlaceholder": "例如：資訊工程博士候選人",
+    "location": "所在地",
+    "locationPlaceholder": "例如：Santa Clara, CA",
+    "email": "電子郵件",
+    "rest": "其他資料——連結、目標職務、職缺偵察比對的關鍵詞——都在「更多」分頁的「個人檔案」中。"
+  },
+  "offers": {
+    "open_other": "{{count}} 個待決定",
+    "title": "錄取並排比較",
+    "noPackage": "未註明薪酬方案",
+    "respondBy": "請在 {{date}} 前回覆",
+    "passed": "已過期",
+    "today": "今天",
+    "days_other": "{{count}} 天",
+    "ranked": "年薪是從你輸入的內容讀出的。",
+    "notRanked": "沒有排名——薪酬方案使用不同的幣別，而 jojo 沒有匯率。",
+    "annualised": " * 以 12 個月、52 週或 2,080 小時換算為年薪。"
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "哪些申請沒有排定後續追蹤？",
+      "unfiled": "哪些檔案沒有歸檔在任何地方？"
+    },
+    "notConnected": "在「設定」中連接本機模型，就能用一句話提問。不論是否連接，下方的問題都能使用。",
+    "placeholder": "哪些申請沒有後續追蹤？",
+    "label": "向圖譜提問",
+    "stop": "停止",
+    "ask": "提問",
+    "again": "問別的問題"
+  },
+  "background": {
+    "details_other": "{{count}} 項詳細資料",
+    "fromDocument": "從文件讀取",
+    "editNamed": "編輯「{{title}}」",
+    "removeNamed": "移除「{{title}}」",
+    "added": "已新增「{{title}}」",
+    "updated": "已更新「{{title}}」",
+    "removed": "已移除「{{title}}」",
+    "notSaved": "沒有儲存成功",
+    "editTitle": "編輯這個項目",
+    "addTitle": "加入你的背景",
+    "editRead": "從文件讀取。你的編輯會優先於讀取結果保留。",
+    "editHint": "在你按下「儲存」之前，不會儲存任何內容。",
+    "addHint": "任何值得拿來和職缺比較的內容。這裡的內容不會傳送到任何地方。",
+    "add": "新增",
+    "kind": "類型",
+    "title": "標題",
+    "titlePlaceholder": "內容是什麼",
+    "where": "地點",
+    "optional": "選填",
+    "when": "時間",
+    "whenPlaceholder": "照原樣填寫——「2021–2024」",
+    "year": "年份",
+    "detail": "詳細說明",
+    "highlights": "重點",
+    "highlightsHint": "每行一項——建立、推出、教授或發現了什麼。",
+    "kindHint": "這屬於你背景中的哪個部分。",
+    "recorded_other": "已記錄 {{count}} 項 · 用來和職缺做比較",
+    "panelTitle": "你的背景",
+    "read": "讀取文件",
+    "addEntry": "新增項目",
+    "readTitle": "將文件讀入你的個人檔案",
+    "nothingReadable": "保管庫中還沒有可以讀取的內容",
+    "nothingReadableHint": "新增你的履歷或陳述後，就會顯示在這裡。",
+    "alreadyRead": "已讀取",
+    "empty": {
+      "title": "尚未記錄任何內容",
+      "ready": "把你的履歷、研究陳述或教學陳述放進保管庫，jojo 就會提議讀取——在儲存任何內容之前，會先讓你看到它找到了什麼。你也可以手動新增項目。",
+      "noModel": "讀取文件需要模型。請在「更多 → 設定」中連接模型，再把你的履歷或陳述放進保管庫。沒有模型也可以手動新增項目。"
+    },
+    "removeTitle": "要移除「{{title}}」嗎？",
+    "removeBody": "它會從你的背景中移除，職缺也不再拿它來比較。它的來源文件不受影響。"
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "學歷",
+      "employment": "工作經歷",
+      "publication": "著作發表",
+      "skill": "技能",
+      "teaching": "教學",
+      "award": "獎項",
+      "service": "服務",
+      "certification": "證照",
+      "language": "語言",
+      "project": "專案",
+      "volunteering": "志工服務",
+      "membership": "會員資格",
+      "grant": "研究經費",
+      "patent": "專利"
+    },
+    "skipped_other": "略過了 {{count}} 個項目",
+    "alreadyThere": "已在你的個人檔案中",
+    "added_other": "已將 {{count}} 個項目加入你的個人檔案",
+    "nothingAdded": "沒有可以新增的內容",
+    "readFrom": "讀取自 {{name}}。",
+    "alreadyKnown_other": "{{count}} 個中有 {{known}} 個已經記錄過。",
+    "connectionsRecorded_other": "已記錄 {{count}} 個關聯。",
+    "refused": "這些項目遭到拒絕。",
+    "readIt": "讀取",
+    "readFailed": "讀取文件失敗。",
+    "entriesRead_other": "從這份文件讀出 {{count}} 個項目",
+    "addNamed": "新增「{{title}}」",
+    "connections_other": "它們之間有 {{count}} 個關聯",
+    "addCount_other": "新增 {{count}} 項"
+  },
+  "proposals": {
+    "aPipeline": "某個管線",
+    "hint": "在你同意之前，什麼都不會發生",
+    "title": "建議",
+    "empty": {
+      "title": "沒有需要審閱的內容",
+      "description": "管線執行時，任何它想變更的內容都會先顯示在這裡。在你核准之前，它不會動到你的紀錄。"
+    },
+    "applied": "已套用",
+    "discarded": "已捨棄",
+    "failed": "無法套用",
+    "from": "{{tool}} · 來自 {{pipeline}}",
+    "approve": "核准",
+    "discardNamed": "捨棄：{{title}}",
+    "clearAnswered": "清除已回覆項目",
+    "clearAll": "全部清除",
+    "confirmTitle": "要清除所有建議嗎？",
+    "confirmPending_other": "有 {{count}} 項建議仍在等待回覆，將會被婉拒。你的紀錄不會有任何變更，管線也會繼續執行——但它們不會再提出這些建議。",
+    "confirmAnswered": "已回覆的卡片會從清單中移除。你的紀錄不會有任何變更。"
+  },
+  "nextSteps": {
+    "measured": "實測",
+    "suggested": "建議",
+    "hint": "先依紀錄所支持的程度，再依花費最少的排序",
+    "title": "下一步該做什麼"
+  },
+  "working": {
+    "arm": "{{of}} 份中有 {{count}} 份 · {{rate}}% · 可能介於 {{range}}",
+    "repliesBy": "回覆，依{{dimension}}",
+    "interviewsBy": "面試，依{{dimension}}",
+    "confident": "這些區間沒有重疊，所以這是真正的差異——「{{best}}」值得你投入更多心力。",
+    "overlap": "這些區間有重疊，所以這只是兩個數字，還稱不上差異。更多紀錄會讓它們分開，或縮小差距。",
+    "tooFew_other": "另有 {{count}} 個群組的紀錄少於 {{min}} 筆，不列入比較。",
+    "hint": "色帶表示真實比率可能落在的範圍",
+    "title": "哪些做法有效"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "jojo 實際操作導覽",
+        "body": "它會指向實際的畫面，並請你邊看邊試。它絕不會替你輸入、儲存或變更任何內容。隨時都可以關閉——會記住你的進度，「使用說明」會從那裡繼續。"
+      },
+      "today": {
+        "title": "今天",
+        "body": "目前的待辦事項：哪些已逾期、哪些即將到期，以及等你做的決定。這是最先要開啟的畫面。"
+      },
+      "applications": {
+        "title": "你的申請",
+        "body": "每個職缺一筆紀錄：雇主、職務、階段和你的備註。它的日期、文件和對話都附屬於它，所以不必重複輸入。",
+        "say": "開啟「申請」。"
+      },
+      "layout": {
+        "title": "清單或看板",
+        "body": "同樣的紀錄，兩種檢視方式。清單可排序和搜尋；看板則以欄位呈現各個階段。",
+        "say": "切換到「看板」。"
+      },
+      "records": {
+        "title": "六個階段",
+        "body": "草稿、已送出、電話初談、面試、錄取、已結束。在看板上，長按卡片，然後拖曳到下一欄；每張卡片也都有階段選單。每個動作都可以復原。"
+      },
+      "search": {
+        "title": "搜尋所有內容",
+        "body": "在任何分頁都能搜尋申請、提醒和行事曆項目。",
+        "say": "開啟搜尋。"
+      },
+      "searchScreen": {
+        "title": "輸入文字即可找到任何內容",
+        "body": "職務、雇主或階段都可以。點一下結果即可開啟，看完後返回即可。"
+      },
+      "new": {
+        "title": "建立任何內容",
+        "body": "「+」可以建立申請、提醒、行事曆項目、訊息草稿、已儲存的連結或已儲存的職缺。在你儲存之前，什麼都不會儲存，關閉填到一半的表單也沒有任何損失。"
+      },
+      "calendar": {
+        "title": "所有日期集中一處",
+        "body": "截止日期、面試和後續追蹤都是同一種紀錄，所以一個項目會同時顯示在行事曆、「今天」和它的申請上。",
+        "say": "開啟「行事曆」。"
+      },
+      "vault": {
+        "title": "保管庫",
+        "body": "申請以外的一切：提醒、連結、檔案、你每份表單都要貼上的片段、你認識的人，以及一台計算機。",
+        "say": "開啟「保管庫」。"
+      },
+      "vaultTools": {
+        "title": "一次一種工具",
+        "body": "每一種都是獨立的清單，而關鍵字在每份清單中的意義都相同。",
+        "say": "選擇「檔案」。"
+      },
+      "files": {
+        "title": "檔案，保存在手機上",
+        "body": "履歷、陳述、職缺——都會複製到 jojo 自己的資料夾中，所以即使原始檔案被移動也不受影響。點一下即可在這裡閱讀；可以歸檔在所有相關的申請下。"
+      },
+      "more": {
+        "title": "更多",
+        "body": "其他所有功能：職缺偵察、統計、圖譜、傳輸、你的個人檔案、助理、設定和這份使用說明。",
+        "say": "開啟「更多」。"
+      },
+      "scout": {
+        "title": "職缺偵察",
+        "body": "替你留意求職網站的已儲存搜尋。",
+        "say": "開啟「職缺偵察」。"
+      },
+      "scoutScreen": {
+        "title": "管線與建議",
+        "body": "每個管線都是在某個求職網站上的一項搜尋，依排程或在你要求時執行。找到的內容會以建議的形式等你核准或捨棄，核准後就會成為申請草稿。"
+      },
+      "statistics": {
+        "title": "統計",
+        "body": "根據你自己的紀錄計算出的求職進展。",
+        "say": "開啟「統計」。"
+      },
+      "statisticsScreen": {
+        "title": "比率，附上誠實的範圍",
+        "body": "回覆率和面試率、漏斗圖，以及接下來該做什麼——每個比率都附上它實際可能落在的範圍，因為少數幾份申請只是很小的樣本。"
+      },
+      "graph": {
+        "title": "知識圖譜",
+        "body": "每筆紀錄——申請、雇主、聯絡人、日期、檔案——都以它本來的網路形式繪製出來。",
+        "say": "開啟「圖譜」。"
+      },
+      "graphScreen": {
+        "title": "一切，全都連在一起",
+        "body": "點一下節點即可查看它連結到什麼，提出問題即可讓符合的紀錄亮起來。"
+      },
+      "assistant": {
+        "title": "助理",
+        "body": "與 jojo 對話：它會用應用程式本身的工具尋找、新增和更新你的紀錄，並在變更任何內容之前先詢問你。在連接模型之前，它會顯示範例。"
+      },
+      "transfer": {
+        "title": "手機與電腦",
+        "body": "「傳輸」會透過你的區域網路，在這支手機和你電腦上的 jojo 之間搬移所有內容，不經過任何第三方。"
+      },
+      "settings": {
+        "title": "設定",
+        "body": "連線、外觀和你的資料。",
+        "say": "開啟「設定」。"
+      },
+      "device": {
+        "title": "你的紀錄存放在這支手機上",
+        "body": "你在操作時，紀錄會直接寫入手機本身的儲存空間——沒有帳號、沒有同步，也不會上傳任何內容。可以匯出一份副本，或「傳輸」到你的電腦。"
+      },
+      "model": {
+        "title": "連接模型",
+        "body": "助理的模型在哪裡執行。你自己電腦上的伺服器——vLLM、Ollama 或 LM Studio——只需要填入位址，你的紀錄會保留在你的裝置上。OpenAI、Anthropic（Claude）和其他雲端供應商則需要 API 金鑰。「測試連線」會在儲存任何內容之前先做檢查。"
+      },
+      "reader": {
+        "title": "讓它讀取你的文件",
+        "body": "手機可以自行讀取 Word 檔案、簡報、已儲存的網頁和文字。PDF 則需要你電腦上的 MarkItDown：用上方的兩個指令啟動它，然後按「測試連線」。"
+      },
+      "done": {
+        "title": "導覽到此結束",
+        "body": "每一項變更都可以復原，「更多」中的「使用說明」會逐一介紹每個畫面。你也可以隨時重新導覽。"
+      }
+    },
+    "stepOf": "第 {{step}} 步，共 {{total}} 步",
+    "end": "結束導覽",
+    "nice": "很好——就是這樣。",
+    "tryIt": "試試看：{{task}}",
+    "finish": "完成",
+    "skip": "略過這一步"
+  },
+  "marks": {
+    "bold": "粗體",
+    "italic": "斜體",
+    "underlined": "底線"
+  },
+  "nav": {
+    "tabs": {
+      "today": "今天",
+      "applications": "申請",
+      "calendar": "行事曆",
+      "vault": "保管庫",
+      "more": "更多"
+    },
+    "badge": {
+      "applications_other": "申請，{{count}} 個已標記為待追蹤",
+      "calendar_other": "行事曆，未來七天內有 {{count}} 項",
+      "vault_other": "保管庫，{{count}} 則提醒已過期",
+      "more_other": "更多，{{count}} 個符合結果尚未加入申請"
+    },
+    "create": "建立",
+    "search": "搜尋",
+    "titles": {
+      "application": "申請",
+      "employer": "雇主",
+      "search": "搜尋",
+      "jobScout": "職缺偵察",
+      "statistics": "統計",
+      "profile": "我的個人檔案",
+      "assistant": "助理",
+      "settings": "設定",
+      "guide": "使用說明",
+      "graph": "圖譜",
+      "transfer": "傳輸"
+    }
+  }
+}

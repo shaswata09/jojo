@@ -1,0 +1,63 @@
+{
+  "monthPicker": {
+    "goTo": "Aya git",
+    "previousYear": "Önceki yıl",
+    "nextYear": "Sonraki yıl"
+  },
+  "chip": {
+    "allDay": "Tüm gün",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, tamamlandı —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} etkinlik",
+    "label_other": "{{label}}, {{count}} etkinlik",
+    "add": "{{label}} tarihine etkinlik ekle",
+    "more_one": "+{{count}} tane daha",
+    "more_other": "+{{count}} tane daha"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "Önceki ay",
+    "nextMonth": "Sonraki ay",
+    "today": "Bugün",
+    "backTo": "Şu tarihe dön: {{date}}",
+    "goTo": "Git: {{month}} {{year}}",
+    "hintTouch": "Bir günde neler olduğunu görmek için o güne dokunun.",
+    "hintPointer": "Bir günü seçerek ızgaranın yanında listeleyin. Bir etkinliği düzenlemek için üzerine tıklayın ya da başka bir güne sürükleyin — sürüklemek için işaretçi gerekir; klavyeyle ise etkinliğin içindeki tarih alanını kullanın.",
+    "eventTypes": "Etkinlik türleri",
+    "showAll": "Tümünü göster",
+    "dateColours": "Tarih renkleri",
+    "marks": {
+      "overdue": "Gecikmiş",
+      "soon": "48 saat içinde",
+      "done": "Tamamlandı"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Bugün",
+    "selectedDay": "Seçili gün",
+    "hiddenTitle": "Gösterilen bir şey yok: {{date}}",
+    "hiddenDescription_one": "{{count}} etkinlik, ızgaranın altında kapatılmış bir türde.",
+    "hiddenDescription_other": "{{count}} etkinlik, ızgaranın altında kapatılmış bir türde.",
+    "showAllTypes": "Tüm etkinlik türlerini göster",
+    "emptyTitle": "Bir şey yok: {{date}}",
+    "emptyDescription": "Bir mülakat, son tarih ya da hazırlık bloğu ekleyin; burada ve ızgarada görünür.",
+    "addEvent": "Etkinlik ekle",
+    "backTo": "Geri dön: {{month}}",
+    "delete": "Etkinliği sil",
+    "deleteNamed": "Sil: {{title}}",
+    "restOf": "{{month}} ayının geri kalanı",
+    "lastDayTitle": "{{date}}, ayın son günü",
+    "nothingAfterTitle": "{{date}} sonrasında bir şey yok",
+    "lastDayDescription": "Bundan sonra bir şey yok. {{month}} için plan yapmak üzere ileri gidin.",
+    "nothingAfterDescription": "{{month}} ayının geri kalanı boş. Bu günden sonra eklediğiniz her şey burada görünür.",
+    "goToMonth": "Git: {{month}}",
+    "goToDay": "Git: {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "Bu ay daha sonra +{{count}} tane daha",
+    "moreLater_other": "Bu ay daha sonra +{{count}} tane daha"
+  }
+}

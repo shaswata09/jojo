@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "Mostra {{label}}",
+    "hide": "Nascondi {{label}}"
+  },
+  "allHidden": {
+    "withReset": "Tutte le serie sono disattivate nella legenda.",
+    "noReset": "Tutte le serie sono nascoste: scegline una dalla legenda per farla ricomparire.",
+    "showAll": "Mostra tutte le serie"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "Radar che confronta {{series}} su {{axes}}"
+  }
+}

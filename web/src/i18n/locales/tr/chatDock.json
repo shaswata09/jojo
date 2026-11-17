@@ -1,0 +1,50 @@
+{
+  "chatWithJojo": "jojo ile sohbet et",
+  "newConversation": "Yeni konuşma",
+  "newAboutOpen": "Açık başvuru hakkında yeni konuşma",
+  "hideConversations": "Konuşmaları gizle",
+  "showConversations": "Konuşmaları göster",
+  "undo": "Geri al",
+  "overflow_one": "{{count}} açık konuşma daha",
+  "overflow_other": "{{count}} açık konuşma daha",
+  "grip": {
+    "labelCorner": "Sohbeti yana taşı — köşede. Ok tuşları taşır; çift tıklama köşeye geri getirir.",
+    "labelFarLeft": "Sohbeti yana taşı — en solda. Ok tuşları taşır; çift tıklama köşeye geri getirir.",
+    "labelFarRight": "Sohbeti yana taşı — en sağda. Ok tuşları taşır; çift tıklama köşeye geri getirir.",
+    "labelPartWay": "Sohbeti yana taşı — sola doğru yolun %{{percent}} kadarında. Ok tuşları taşır; çift tıklama köşeye geri getirir.",
+    "labelPartWayRight": "Sohbeti yana taşı — sağa doğru yolun %{{percent}} kadarında. Ok tuşları taşır; çift tıklama köşeye geri getirir.",
+    "title": "Sohbeti kenara çekmek için sürükleyin · köşeye geri getirmek için çift tıklayın"
+  },
+  "prompts": {
+    "about": {
+      "left": "Bu başvuru için yapılacak ne kaldı?",
+      "followUp": "Bunun için bir takip e-postası taslağı hazırla",
+      "summarise": "Bu başvuruyu özetle"
+    },
+    "general": {
+      "waiting": "Neyi bekliyorum?",
+      "noDeadline": "Hangi başvuruların son tarihi yok?"
+    }
+  },
+  "window": {
+    "label": "Konuşma: {{title}}",
+    "back": "Konuşmalara dön",
+    "working": "Çalışıyor",
+    "openInAssistant": "Asistanda aç",
+    "open": "Bu konuşmayı aç",
+    "minimise": "Bu konuşmayı küçült",
+    "close": "Bu konuşmayı kapat",
+    "closeTitle": "Kapat — konuşmalarınızda kalır",
+    "about": "Konu: <name>{{name}}</name>",
+    "detachAria": "Bu konuşmayı belirli bir konu olmadan başlat",
+    "unfileAria": "Bu konuşmayı başvurudan ayır",
+    "detachTitle": "Bu başvuruyla ilgili değil",
+    "unfileTitle": "Bu başvurudan ayır",
+    "notConfigured": "Burada jojo ile sohbet etmek için <settings>Ayarlar</settings> bölümünden bir model bağlayın. Her şey bu cihazda kalır.",
+    "askAbout": "{{name}} hakkında her şeyi sorun — jojo kastettiğiniz başvurunun bu olduğunu bilir.",
+    "askGeneral": "jojo'dan bir şey bulmasını, başvuru eklemesini ya da bir başvuruyu ilerletmesini isteyin.",
+    "composerLabel": "{{title}} içinde jojo'ya mesaj yazın",
+    "placeholderAbout": "{{org}} hakkında sorun…",
+    "placeholder": "jojo'ya sorun…"
+  }
+}

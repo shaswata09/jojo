@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Araçlar",
+    "subtitle": "Asistanın gerçekte neler yapabildiği, nelerin engellendiği ve doğru aracı nasıl bulduğu.",
+    "can": {
+      "hint": "toplam {{total}}",
+      "title": "Asistan neler yapabilir",
+      "intro": "<go>Asistan</go> ekranlarınıza yazı yazmaz. Düğmelerin çağırdığı {{total}} işlemin aynısını çağırır — aynı kod yolu, aynı denetimlerle. İkinci bir giriş yolu yoktur; asistanın yaptığı bir düzenlemenin geçmişinizde tam olarak sizin yaptığınız biri gibi görünmesinin nedeni budur.",
+      "stats": {
+        "readsLabel": "bakma yolu",
+        "readsHint": "okumak hiçbir şeyi değiştirmez",
+        "writesLabel": "değiştirme yolu",
+        "writesHint": "her biri geri alınabilir…",
+        "destructiveLabel": "yıkıcı olarak işaretli",
+        "destructiveHint": "…ikisi hariç; onlar önce sorar"
+      },
+      "irreversibleOne": "Bu {{destructive}} işlemden biri hiç geri alınamaz — deponun tamamını değiştiren ya da boşaltan işlemler.",
+      "irreversibleTwo": "Bu {{destructive}} işlemden ikisi hiç geri alınamaz — deponun tamamını değiştiren ya da boşaltan işlemler.",
+      "irreversibleMany": "Bu {{destructive}} işlemden {{irreversible}} tanesi hiç geri alınamaz — deponun tamamını değiştiren ya da boşaltan işlemler.",
+      "neverOffered": "Bunlar, kendi sözleriniz istemedikçe asistana asla sunulmaz ve o zaman bile, konuşma hangi onay modunda olursa olsun, onay için durur. Otomatik mod geri alınabilen her şeyde sormadan hareket eder; bunlardan önce yine sorar.",
+      "ownWords": "“Kendi sözleriniz istemedikçe” belirli bir testtir, bir yargı meselesi değil: cümlede silmek anlamına gelen bir şey, deponun tamamı anlamına gelen bir şey bulunmalı ve belirli bir kayıt türünden söz edilmemelidir. “Her şeyi temizle” buna uyar. “Baylor başvurusundaki etiketleri temizle” uymaz, “o notta yazdığım her şeyi sil” de uymaz — ikisi de bir şeyi adlandırır, yani ikisi de o şeyle ilgilidir.",
+      "errs": "Sunmama yönünde hata yapar. Bunu kastediyorsanız ve alışılmadık bir şekilde ifade ettiyseniz asistan tahmin yürütmek yerine yapamayacağını söyler; düğme yine Ayarlar'dadır."
+    },
+    "gates": {
+      "hint": "gerçekten tutan kısım",
+      "title": "Yanlış aracın çalışmasını ne engeller",
+      "intro": "Bir dil modeli her şeyi isteyebilir. Kendisine hiç gösterilmemiş bir aracı adlandırabilir ya da var olmayan bir araç uydurabilir — küçük modeller bunu düzenli olarak yapar ve bu bir şeylerin ters gittiğinin işareti değildir. Bu yüzden jojo modelin dikkatli olmasına güvenmez.",
+      "distinctionTitle": "Önemli olan ayrım",
+      "distinction": "Modele neyin <em>gösterileceğini</em> seçmek bir ipucudur. Gerçekte neyi <em>çağırdığını</em> denetlemek ise bir kuraldır ve kural, kümeyi kimin seçtiğine bağlıdır. Ekranın kümeyi sabitlediği yerlerde — Grafiğe sor, bir gözcü işlem hattı — küme dışındaki bir çağrı, çalıştırılmak bir yana, hiçbir şeye bakılmadan reddedilir. Bir sohbette ise küme, jojo'nun neye ihtiyaç duyduğunuza dair tahminidir; bu yüzden küme dışındaki bir çağrı reddedilmez: diğer her çağrıyla aynı onay denetimine gider ve konuşma kendi başına çalışacak şekilde ayarlanmadıkça önce size sorar. Tek istisna, geri alınamayan tek şey olan kayıtlarınızı temizlemektir: her şeyi silmeyi açıkça istemediyseniz reddedilir.",
+      "askGraph": "“Grafiğe sor” kartının iki salt okunur aracı güvenle sunabilmesinin nedeni budur. Modelin bunların içinde kalacağına güvenmez."
+    },
+    "workflow": {
+      "hint": "tek uzun deneme değil, adımlar",
+      "title": "Birkaç adım süren işler",
+      "p1": "Bir CV okumak tek bir soru değildir. jojo belgeyi kendi başlıklarına göre böler, her bölümü ayrı sorar, neyin atlandığını bir kez daha sorar ve son olarak bilgilerin birbiriyle nasıl ilişkili olduğunu sorar — tek bir yükleme için beş altı model çağrısı. Tek bir kod bloğu olarak yazılsaydı hepsinin etrafında tek bir <code>try</code> olurdu ve içindeki herhangi bir yerdeki tek kötü yanıt her şeyi kaybettirirdi.",
+      "p2": "Bu yüzden böyle bir iş <strong>aralarında kenarlar olan adımlar</strong> olarak tanımlanır. Her adım kaç kez yeniden denenmeye değer olduğunu ve iş onsuz devam edip edemeyeceğini söyler; bir adımdan diğerine giden yol modele nereye gideceği sorularak değil, ne olduğuna göre belirlenir. Başarısız olan bir adım, “CV'niz okunamadı” içinde kaybolmak yerine sonuçta adıyla belirtilir.",
+      "p3": "Bu en çok küçük bir modelde önemlidir. 7B bir model genellikle birçok adım boyunca kötü akıl yürüterek başarısız olmaz — altı adımdan birinde bozuk bir şey döndürerek başarısız olur. Yararlı yanıt, o adımı yeniden denemek ve diğer beşine dokunmamaktır.",
+      "p4": "Yalnızca sonucu iyileştiren bir adım, örneğin bilgilerinizin nasıl bağlandığını çıkarmak, isteğe bağlı olarak işaretlenir: başarısız olursa önceki adımların bulduğu her şeyi yine alırsınız. Döngülere izin verilir — bir adım geriye yönlendirebilir — ve toplam adım sayısının kesin bir sınırı vardır; böylece bir yönlendirme hatası GPU'nuzu boşuna döndürmek yerine okunabilir bir izle durur."
+    },
+    "badReply": {
+      "hint": "kötü bir yanıt belgeye değil, bir tura mal olur",
+      "title": "Küçük bir model kötü yanıt verdiğinde",
+      "p1": "Küçük bir modelin yeri cümlenin ortasında biter. CV okumak bir bilgi listesi ister ve o listenin ortasında kesilen bir yanıtın kapanış parantezi yoktur — yani JSON değildir ve akla gelen ilk şey onu atmaktır. jojo bunun yerine son <strong>tamamlanmış</strong> girişe kadar her şeyi tutar ve ne kadarının kaybolduğunu söyler. Hiç yerine yirmi bilgi gelir.",
+      "p2": "Bilerek tamamlanmış bir girişte durur. Bir iş unvanının yarısı, hiç unvan olmamasından kötüdür: önünüze tamamlanmış gibi gelir ve siz onu onaylarsınız.",
+      "p3": "Aynı özen arama için de geçerlidir. İki tane varken “Rice başvurumu mülakat aşamasına taşı” denen bir model, tek bir eşleşme arayıp bir tane bulduysa ikincinin varlığını bilemez — bu yüzden yanlış kaydı kendinden emin bir şekilde taşır. Her arama, gösterdiğinin yanı sıra kaç tanesinin eşleştiğini de bildirir; asistanın geri dönüp hangisini kastettiğinizi sorabilmesini sağlayan budur."
+    },
+    "picks": {
+      "hint": "bir istek asla yarıda kalmasın diye",
+      "title": "Doğru aracı nasıl seçer",
+      "p1": "Bir modele {{total}} aracın hepsini aynı anda göstermek, siz daha hiçbir şey yazmadan, düşünmek için sahip olduğu alanın on beş bin sözcükten fazlasını harcar. Kendi bilgisayarınızda çalışan küçük bir modelde bu, sahip olduğundan daha fazla alan olabilir. Bu yüzden jojo listeyi sözlerinizin işaret ettiği şeylere daraltır.",
+      "p2": "Özensiz daraltmak hiç daraltmamaktan kötüdür. Çoğu işlemin üzerinde çalışacağı bir şey gerekir: anahtar kelime olmadan anahtar kelime ekleyemezsiniz, belge olmadan belge güncelleyemezsiniz. O şeyi oluşturan aracı gizlerseniz asistan yarıda durur ve ekranda nedenini açıklayan hiçbir şey olmaz.",
+      "unsureTitle": "Emin olmadığında daraltmaz",
+      "unsure": "“Perşembe günü bana Baylor'u hatırlat” açıktır ve jojo kataloğun yaklaşık beşte birini sunar. “Aslında o öbürüydü” hiçbir konuda açık değildir — bu yüzden her şeyi sunar, tam olarak bunların hiçbiri yokken yapacağı gibi. Emin olmamak biraz hıza mal olur. Tahmin yürütmek size yanıtınıza mal olurdu.",
+      "secondTitle": "Seçimi ikinci bir asistan yapar",
+      "second1": "Sözlerinizi bir listeyle eşleştirmek hızlı ve ücretsizdir ama niyeti okuyamaz. “Rice'tan yanıt geldi” hiçbir aracı ve fiili adlandırmaz, ama açıkça bir aşamanın değiştiği anlamına gelir. Bu yüzden bir model bağlıyken önce ikinci ve çok daha küçük bir iş çalışır: isteğinizi okur — konuşmayı değil, sonuçları değil, yalnızca ne istediğinizi — ve gerekli olduğunu düşündüğü araçlarla yanıt verir.",
+      "second2": "Ucuzdur, çünkü her aracın tam talimatlarına değil, yalnızca bir ada ve bir satıra ihtiyaç duyar: tüm kataloğu vermenin maliyetinin yaklaşık altıda biri; ve bunu bir kez değil her adımda kazandırır. Arka arkaya on soru üzerinde ölçüldüğünde ilk mesajı yaklaşık 8.000 sözcüklük bağlamdan 2.900'e indirdi.",
+      "second3": "Yalnızca daraltabilir. Seçtiği her şey öncekiyle aynı denetimlerden geçer — bir şeyi oluşturan araçlar onu değiştiren araçlarla birlikte gelir ve deponuzu boşaltan iki araç, kendi sözlerinizle istemedikçe asla dahil edilmez. Yavaşsa ya da kullanılamıyorsa onun yerine sözcük eşleştirme çalışır ve bir an dışında hiçbir şey kaybedilmez.",
+      "longTitle": "Uzun konuşmalar",
+      "long1": "Bir model aynı anda ancak belirli bir miktarı tutabilir ve bunu aşan bir konuşma kesilir — sunucu tarafından, baştan, yani kuralların bulunduğu yerden. jojo bunun yerine kesmeyi kendisi yapar, en eski uçtan başlayarak, ve kendi talimatlarına ya da şu anki sorunuza asla dokunmaz.",
+      "long2": "Çıkardığı şeyin yerine önce orada ne olduğuna dair kısa bir özet koyar; böylece asistan, hangi Rice başvurusunu kastettiğinizi zaten söylediğinizi hâlâ bilir. Bu olduğunda size söylenir. Kayıtlarınız asla işin içinde değildir — bu yalnızca tek bir mesaja neyin sığdığıyla ilgilidir.",
+      "long3": "Bir konuşma gerçekten kullandığı araçları korur. Yalnızca sunulup hiç dokunulmayanlar düşer; böylece uzun bir sohbet yavaş yavaş her şeyle dolmaz."
+    },
+    "evidence": {
+      "hint": "iddia edilmedi, gerçek modellerle çalıştırıldı",
+      "title": "Gerçekten çalışıyor mu?",
+      "p1": "Yukarıdaki her şey bir tasarımdır. Belirli bir modelin jojo'nun kataloğundan doğru aracı gerçekten seçip seçemediği o modelle ilgili bir sorudur ve yanıtlamanın tek yolu sormaktır. Bu yüzden bir senaryo paketi var — okuma, yazma, önce bir arama gerektiren zincirler ve doğru yanıtın hiçbir şey yapmamak olduğu durumlar — ve gerçek sunuculara karşı çalışır.",
+      "p2": "Her senaryo iki kez çalışır: bir kez tüm katalogla, bir kez daraltılmış kümeyle. Önemli olan ikinci çalıştırmadır. Daraltmanın amacı, karıştıracağı adları azaltarak küçük bir modele yardım etmektir — ama gerekli bir şeyi kaldırarak zarar da verebilir ve böyle bir iddia, yanında kontrol grubu olmadan hiçbir şey ifade etmez.",
+      "suiteTitle": "Paketin aradığı şey",
+      "suite": "Bir modelin zeki olup olmadığı değil. Ona bir URL verdiğinizde belge aracına uzanıp uzanmadığı, adını verdiğiniz başvuruyu güncellemek yerine ikinci bir başvuru dosyalayıp dosyalamadığı, bir kimliği aramak yerine uydurup uydurmadığı ya da — en önemli durum — “son tarihi temizle” cümlesini duyup tüm deponuzu boşaltan işleme uzanıp uzanmadığı."
+    },
+    "conversation": {
+      "hint": "gerçek bir depo ve sonrasında nasıl göründüğü",
+      "title": "Bir konuşmayı sürdürebiliyor mu?",
+      "p1": "Yukarıdaki paket bir modele tek bir soru sorar ve makul bir aracı adlandırıp adlandırmadığını denetler. Bu kolay yarıdır ve herkesi olduğundan iyi gösterir. Gerçek iş tek bir soru değildir: bir şeyin hangi aşamada olduğunu sorarsınız, sonra “mülakat aşamasına taşı” dersiniz — ve kastettiğiniz kayıt cümlede değil, bir önceki yanıttadır.",
+      "p2": "Bu yüzden ikinci bir kıyaslama var. Gerçek bir depo kurar — altı başvuru, bir takvim, bir kasa, anahtar kelimeler — asistana {{groups}} iş türüne yayılan {{conversations}} konuşmalık bir senaryo verir ve araç çağrılarının gerçekten çalışmasına izin verir. Ardından depoda ne kaldığına bakar. Dört şey ayrı ayrı puanlanır, çünkü bir model birinden geçip diğerinden kalabilir:",
+      "called": "<lead>Neyi çağırdığı</lead> — her tur savunulabilir miydi.",
+      "route": "<lead>Oraya nasıl vardığı</lead> — bir kaydı değiştirmeden önce aradı mı, yoksa yalnızca cümleden yola çıkarak mı yazdı.",
+      "shape": "<lead>İşin biçimi</lead> — her durum, gerektirdiği çağrıların ve hangisinin hangisine bağlı olduğunun altın standart bir grafiğini taşır ve çalıştırma buna göre puanlanır. Grafiğin bağımsız bıraktığı iki çağrı herhangi bir sırada olabilir; yazılacak yeri bulan okumadan önce yapılan bir yazma olamaz.",
+      "left": "<lead>Geride ne bıraktığı</lead> — depo doğru mu ve değişmemesi gereken bir şey değişti mi.",
+      "p3": "Bunların üçüncüsü kıyaslamaların genellikle atladığı şeydir ve bir modelin burada iyi puan alıp kullanımda hayal kırıklığı yaratmasının nedenidir: bu kadar küçük bir depoda tahmin yürütmek çoğu zaman doğru kayda denk gelir. Grafik, akıl mı yürüttüğünü yoksa şanslı mı olduğunu söyler. Ana sonuca katılmaz, yanında bildirilir — kimsenin öngörmediği bir yoldan doğru yanıta ulaşmak yine doğru yanıttır."
+    },
+    "reasoning": {
+      "hint": "zamana maliyetiyle birlikte ölçüldü",
+      "title": "Akıl yürütme yardımcı oluyor mu?",
+      "p1": "Bir modelden yanıt vermeden önce düşünmesi istenebilir — <go>Ayarlar</go>'daki Akıl yürütme ayarı. Bunun onu jojo'nun işinde daha iyi yapıp yapmadığı modelle ilgili bir sorudur; bu yüzden yukarıdaki konuşma kıyaslaması aynı sunucularda ve aynı kodla iki kez akıl yürütme açık, iki kez kapalı çalıştırıldı.",
+      "numbersTitle": "Sayılar ne diyor",
+      "gemma": "<lead>Gemma'da akıl yürütme doğruluğa ve çok fazla zamana mal oluyor.</lead> Ortalama iki üç konuşma daha düşük puan aldı ve medyan konuşma yaklaşık üç kat uzun sürdü. Yavaşlığın nedeni düşünmenin kendisidir: Gemma saniyede yaklaşık 31 token üretir ve bir yanıttan önce birkaç yüz token düşünür; bu yüzden bir tur ortalama altı saniye, uzun bir tur on beş saniye ya da daha fazla uzar. İki geçişte de güvenilir şekilde üç konuşmayı düzeltti ve üç dört tanesini bozdu — bozulanlar arasında, akıl yürütme kapalıyken her seferinde doğru yaptığı yeni bir belge dosyalamak ve bir öneriyi reddetmek var.",
+      "gptOss": "<lead>GPT-OSS'ta ayar hiçbir şeyi değiştirmiyor</lead> — ve bu bir bulgu değil, beklenen bir sonuç. GPT-OSS her zaman akıl yürütür; “kapalı” yalnızca daha azını isteyebilir ve iki ayar da olağan çaba düzeyinde çalıştı. Ayrıca Gemma'dan yaklaşık yedi kat hızlı üretir; bu yüzden düşünmesi yanıt başına bir saniyeden az sürer.",
+      "advice": "Gemma gibi bir modelde yanıtlar yavaş geliyorsa akıl yürütmeyi kapatın: bu kıyaslamada bunun için hiçbir şey kaybetmezsiniz. Her durumda iki yardımcı — bir turun hangi araçları kullanabileceğini seçen ve uzun bir konuşmayı özetleyen — asla akıl yürütmez, çünkü ikisinin işi de bundan iyileşmez ve akıl yürüttüklerinde bir özet bir keresinde neredeyse iki dakika sürdü.",
+      "firstToken": "İlk token sütunu, uzun bir konuşmadaki beklemenin büyük kısmıdır: sunucu kendisine gönderilen her şeyi okumadan bir yanıt başlayamaz. Tekrar eden bir istem çok daha ucuzdur, çünkü sunucu başını bir önceki seferden saklar — bir konuşmanın ikinci turunun genellikle ilkinden daha hızlı yanıt vermesinin nedeni budur."
+    },
+    "previewer": {
+      "hint": "her durum, kelimesi kelimesine",
+      "title": "Neye göre değerlendirildi",
+      "p1": "Bir puan ancak durumları kadar değerlidir ve paydayı birisi seçmiştir. Bu yüzden kıyaslamanın tamamı burada okunabilir: çalıştığı depo, asistana gönderilen her cümle ve sonrasında kayıtlarınız hakkında neyin doğru olması gerektiği.",
+      "p2": "Bu, kıyaslamanın çalıştırdığı listenin aynısından okunur, onun bir tarifi değildir — bu yüzden yarın eklenen bir durum istemleriyle birlikte burada görünür ve sessizce çıkarılan bir durum kaybolur.",
+      "p3": "Ne söylendiğini, beklediği iş akışının gerçek bir bağımlılık grafiği olarak çizilmiş hâlini, her turun neyi çağırabileceğini ve çağıramayacağını ve her modelin bununla gerçekte ne yaptığını görmek için bir durum seçin — yazdığı yanıt dahil; hiçbir şey yapmayıp başarı ilan eden bir model kendini orada ele verir."
+    },
+    "ambiguity": {
+      "hint": "kıyaslamanın var olma nedeni",
+      "title": "İki kayıt eşleştiğinde",
+      "p1": "Depoda bilerek iki Rice başvurusu ve iki UT kampüsü var, çünkü birkaç aydan sonra gerçek bir iş araması böyle görünür — ve bu, bir asistanın kusursuz çalışıyor gibi görünürken gerçek zarar verebileceği durumdur.",
+      "p2": "jojo'nun bu sayfanın geri kalanında anlatıldığı şekilde yapılmasının nedeni budur. Bir modelin durmasına güvenilemez; bu yüzden geri alınamayan şeyler adıyla istemedikçe asla sunulmaz, her yazma gerçekte sunulana göre denetlenir ve her değişiklik geri alabileceğiniz şekilde geçmişinize düşer.",
+      "p3": "Açıkça söylemeye de değer: bir kıyaslamanın tek geçişi modelleri en iyi ihtimalle kabaca sıralar. Puanlar aynı donanımda aynı ayarlarla yapılan çalıştırmalar arasında değişti. Değişmeyen şey başarısızlığın biçimidir — ve tasarımda karşısına çıkılmaya değer olan kısım budur."
+    },
+    "model": {
+      "hint": "sizin seçiminiz ve sözlerinizin nereye gittiğini değiştirir",
+      "title": "Bunu hangi model yapar",
+      "p1": "jojo, <go>Ayarlar</go>'da neye yönlendirirseniz onunla konuşur. Kendi bilgisayarınızda çalışan bir model — Ollama, vLLM, LM Studio — varsayılandır ve yazdığınız hiçbir şeyin cihazdan çıkmadığı tek düzenleme budur.",
+      "p2": "Claude, OpenAI ve diğerlerini bir API anahtarıyla da kullanabilirsiniz. Bu gerçek bir ödünleşimdir ve ekran bunu açıkça söyler: kayıtlarınız o şirkete gider ve hesabınıza faturalanır. Anahtar bu tarayıcıda saklanır, asla bir yedeğe dahil edilmez ve seçtiğiniz sağlayıcı dışında hiçbir yere gönderilmez.",
+      "stoppedTitle": "Asistan okumayı bırakmış gibi görünüyorsa",
+      "stopped": "Yeterli alanı olmayan yerel bir model, kendisine gönderilenin başını sessizce düşürür ve sonra hiç tam olarak görmediği bir soru hakkında kendinden emin bir yanıt verir. jojo artık sunucunun okuduğunu söylediği ile gerçekte gönderileni karşılaştırır ve ikisi uyuşmadığında size söyler — çünkü alternatifi, alanı yetmeyen değil de işinde kötü görünen bir asistandır."
+    },
+    "next": "Sonraki: <go>jojo hangi yazılımlarla yapıldı</go>."
+  },
+  "graph": {
+    "pageTitle": "Alttaki grafik",
+    "subtitle": "Her kayıt bir düğüm, aralarındaki her bağlantı bir kenardır. Grafik sayfası tam olarak bunu çizer.",
+    "picture": {
+      "hint": "deponun bir çizimi değil — deponun kendisi",
+      "title": "Resim neyi gösteriyor",
+      "body": "<go>Grafik</go> sayfası, pano ve takvimin okuduğu kayıtların aynısını her çizimde dolaşır ve her kayıt için bir işaret, her işaretçi için bir çizgi çizer. O tuvaldeki hiçbir şey verilerinizin ikinci bir kopyası değildir ve hiçbiri bir maket değildir: panoda bir başvuruyu silin, siz geri dönmeden tuvalden kalkmış olur.",
+      "markTitle": "Bir işaret ne anlama gelir",
+      "colourTerm": "Renk",
+      "colour": "Kaydın türü. Bu sayfadaki hiçbir şey asla kırmızı ya da kehribar değildir — bu ikisi tüm uygulamada gecikmiş ve yakında süresi dolacak için ayrılmıştır ve burada kırmızı bir nokta bir tür olarak değil, bir son tarih olarak okunurdu.",
+      "shapeTerm": "Biçim",
+      "shape": "Aile. Daireler bir aramanın canlı kayıtlarıdır — başvurular, tarihli öğeler, ilanlar, eşleşmeler. Yuvarlatılmış kareler Kasa'da dosyaladıklarınızdır: bağlantılar, dosyalar, metin parçaları. Eşkenar dörtgenler birçok kaydın paylaştığı şeylerdir. Dört eşkenar dörtgenden ikisi kendi kimliği olan kayıtlardır — bir kurum ve bir anahtar kelime — diğer ikisi değildir; aşağıya bakın.",
+      "sizeTerm": "Boyut",
+      "size": "Ona kaç kenarın dokunduğu, karekök alınmış ve sınırlandırılmış olarak. Yirmi bağlantılı bir merkez, dört bağlantılı birinden okunur şekilde daha büyüktür ama beş kat alan kaplamaz; doğrudan sayıya göre boyutlandırmak tam da bunu üretiyordu: başvurular gezegene, diğer her şey toza dönüşüyordu.",
+      "lineTerm": "Bir çizgi",
+      "line": "İki kayıt arasındaki tek bir işaretçi, ok ucu olmadan çizilir. Yön saklanır ve bu sayfadaki her gezinme onu yok sayar — bir dosyayı bir işe neyin bağladığını soran biri kafasında bir yön tutmaz.",
+      "notDoTitle": "Tuvalin yapmadığı iki şey",
+      "notDo1": "Göstergedeki bir satıra basmak o kayıt türünü gizler ve bunu yaptığınızda hiçbir düğümün boyutu değişmez. Boyut, şu anda neye baktığınızla değil kayıtla ilgili bir gerçektir; bir gösterge satırını gizlediğiniz için küçülen bir düğüm size verilerinizi değil filtrenizi anlatıyor olurdu.",
+      "notDo2": "Ve deponuzdaki her şey tuvalde değildir. İş gözcüsündeki kayıtlı aramalar ve profiliniz kayıttır ve hiçbiri çizilmez: kayıtlı bir arama burada hiçbir kaydı adlandırmaz, profil ise her resmin bir köşesinde tek başına duracak tek bir satırdır. Her iki durumda da dışa aktarmada ve <go>Ayarlar</go>'daki kayıt sayılarında yer alırlar."
+    },
+    "question": {
+      "hint": "üç bölme ve biri hiçbir şey çalıştırmaz",
+      "title": "Ona bir soru sormak",
+      "intro": "Tuvalin altındaki panelin üç parçası vardır ve ondan gelen bir yanıta güvenmeden önce hangisinin hangisi olduğunu bilmeye değer.",
+      "pickers": "<lead>Seçiciler gerçektir.</lead> Ne aradığınız; bir ilişkiye <hi>sahip</hi> olup olmadığı, <hi>sahip olmadığı</hi> ya da <hi>en az</hi> iki tane taşıyıp taşımadığı; diğer uçta ne olduğu ve isteğe bağlı olarak her şeyin taşıması gereken bir anahtar kelime. Zaman çizelgesi öğeleri başka hiçbir şeyde olmayan ikinci bir seçici alır — bir tür ya da hatırlatıcı işareti — çünkü “takibi olmayan başvurular” ve “hiçbir şeye bağlı olmayan hatırlatıcılar” insanların gerçekten sorduğu iki sorudur ve hiçbiri yalnızca kayıt türleriyle ifade edilemez.",
+      "queryLine": "<lead>Sorgu satırı gerçek değildir.</lead> Seçicilerin altındaki koda benzeyen metin bloğu onlardan üretilir ve hiçbir şey tarafından ayrıştırılmaz. Sayfanın kendisinde temsili olarak etiketlenmiştir ve bu sayfa bunu yumuşatmayacak: jojo'da bir sorgu dili yoktur, o kutuya yazmak gelecek bir özellik değildir ve hiçbir yerdeki hiçbir giriş bir sorgu dili kabul etmez.",
+      "answer": "<lead>Yanıt gerçektir.</lead> Tablo eşleşen kayıtları listeler ve açar; aynı kayıtlar yukarıdaki tuvalde vurgulanır. Uzun yanıtlar tabloda kırk satırla sınırlandırılır ve bunu söyler — her eşleşme grafikte yine de vurgulu kalır.",
+      "whyTitle": "Ayrıştırılmayan satır neden orada",
+      "why": "Çünkü seçicileri okunur kılmanın en kısa yolu odur. <code>{{query}}</code> ifadesini “takibi olmayan başvurular” sözcüklerinin yanında görmek, üç açılır menüyü okuyabileceğiniz bir cümleye dönüştürür ve size yazacak hiçbir yeriniz olmayan bir sözdizimi yerine sorunun biçimini öğretir. Uyması gereken kural asla rol yapmamasıdır: kendi etiketini taşır, çalıştır düğmesi yoktur ve işi yapan kontrollerin üstünde değil altında durur.",
+      "answersTitle": "Yanıtlar hakkında bilmeye değer üç şey",
+      "answers1": "Bir soru her zaman tüm deponuz üzerinde çalışır, asla görünür kalanlar üzerinde değil. Bir gösterge satırına bastığınızda değişen bir yanıt, hiç yanıt olmamasından kötü olurdu.",
+      "answers2": "Çalıştır düğmesi yoktur. Her değişiklik hemen yeniden çalışır; böylece tablo ve üstündeki kontroller asla iki farklı soruyu anlatıyor olamaz.",
+      "answers3": "Boş bir sonuç sorunun kendi sözcükleriyle ifade edilir. Hangi başvuruların takibi eksik diye sorun ve hiçbir şey gelmesin; her birinin bir takibi olduğunu söyler — bu bir başarısızlık değil, bir yanıttır."
+    },
+    "model": {
+      "hint": "neyin kayıt olmayı hak ettiğinin kuralı",
+      "title": "On bir kayıt türü",
+      "intro": "Bir değer, onu yeniden adlandırabildiğiniz ya da üzerine not ekleyebildiğiniz durumda kendi başına bir kayıt olur, aksi hâlde bir alan olarak kalır. Bir işveren bu testi geçer: farklı yazabilirsiniz, başvurular onun altında birikir ve on iki ayrı metin yerine tek bir şey olmaya değer. Aşağıdaki on biri üreten ve diğer her şeyi reddeden bu tek testtir.",
+      "manyTitle": "Tek işaretçi ya da birçok",
+      "many": "Yedinin üçü çoklu ilişkidir: etiketleme, tarihli bir şeyin neyle <code>ABOUT</code> ilgili olduğu ve bir kasa kaydının neyin <code>FILED_UNDER</code> altında olduğu. Bir CV gönderdiğiniz her başvuruya gider ve bir referans son tarihi kapsadığı her işi kapsar; bu yüzden bunlar yuva değil listedir. Diğer dördü kayıt başına en fazla bir tanedir ve yeniden bağlamak, aynı yazma işleminde orada olanın yerini alır. Bir işaretçinin kimliği bağladığı üçlüdür; bu yüzden onu iki kez oluşturmak aynı işaretçidir ve aynı iki kayıt arasında iki özdeş çizgiyle karşılaşmanın hiçbir yolu yoktur — bir belgeyi zaten altında dosyalı olduğu bir işin altında dosyalamanın hiçbir şey yapmamasını sağlayan budur.",
+      "elevensTitle": "İki on bir ve iki yedi, ve aynı değiller",
+      "elevensIntro": "Grafik sayfasında da on bir düğüm türü ve yedi çizgi türü var; bu, arayan insanları yanılttığı için ayrıştırmaya değer bir tesadüf:",
+      "nineTerm": "On birin dokuzu örtüşür",
+      "nine": "Saklanan iki tür hiç çizilmez — kayıtlı arama ve profil — ve çizilen iki tür hiç saklanmaz; bu bir sonraki bölümün konusu.",
+      "fiveTerm": "Yedinin beşi örtüşür",
+      "five": "Saklanan iki ilişki de hiç çizilmez. Biri bir başvurunun diğerinin kopyası olduğunu söyler ve bir başvuruyu kopyaladığınızda yazılır; diğeri kayıtlı bir ilanı ya da eşleşmeyi geldiği aramaya bağlar ve uzak ucundaki şey çizilmediği için çizilmez. Çizilen iki ilişki hiç saklanmaz.",
+      "oneNameTerm": "Tek ad iki şey anlamına gelir",
+      "oneName": "İlişki seçicisi <code>came from</code> seçeneğini sunar ve tuvalde bu, bir başvurudan onu bulduğunuz yere giden çizgidir — deponun hiç tutmadığı bir çizgi. Aynı adlı saklanan ilişki bir ilanı kayıtlı bir aramaya bağlar ve hiçbir resimde görünmez."
+    },
+    "drawn": {
+      "hint": "rol ve kaynak",
+      "title": "Çizilen ama hiç saklanmayan iki şey",
+      "p1": "Bir başvuru, beş öğelik sabit bir listeden bir rol etiketi ve isteğe bağlı olarak dört öğelik sabit bir listeden onu nerede bulduğunuzu taşır. İkisi de kayıt değildir. Bir filtreyi ve bir gösterge sırasını yöneten kapalı listelerdir, yeniden adlandırabileceğiniz ya da üzerine not ekleyebileceğiniz şeyler değildir ve onları yükseltmek, karşılığında yapabileceğiniz hiçbir şey olmadan uygulamadaki her izdüşüme bir arama eklerdi.",
+      "p2": "Yine de çizilirler, çünkü bunlardan hangisinin referansla geldiğinin resmi sahip olmaya değerdir ve bir filtre çipi aynı resim değildir. Grafik sayfası bunları elinde zaten bulunan özelliklerden, onlara sahip olduğu anda üretir ve hiçbir şey yazmaz.",
+      "tellTitle": "Resimde onları nasıl ayırt edersiniz",
+      "tell": "Arkalarında işveren ya da anahtar kelime olmayan iki eşkenar dörtgendir ve meseleyi çözen test, okundukları şeyden daha uzun yaşayamamalarıdır. <hi>Postdoc</hi> etiketli son başvuruyu silin, o düğüm de onunla gider — jojo'da değerin bir şey olarak var olduğu başka bir yer yoktur. Bir işverendeki son başvuruyu silin, kurum kaydı kalır, çünkü bir kayıttır; aynısı anahtar kelime için de geçerlidir; <go>Ayarlar</go>'da tüm başvuruları temizlemenin anahtar kelimelerinizi geride bırakmasının nedeni budur.",
+      "source": "Bir kaynak düğümü de ancak bir şeyin nereden geldiğini söylediğinizde görünür. İsteğe bağlı bir alandır ve bu alanı boş olan bir başvurunun o yöne giden bir çizgisi yoktur."
+    },
+    "delete": {
+      "hint": "akılda tutulmaya değer tek gerçek",
+      "title": "Silmek bağlantıyı kaldırır, asla zincirleme silmez",
+      "intro": "Bir başvuruyu silin; jojo o kaydı ve ona giden işaretçileri kaldırır ve hiçbirinin uzak ucundaki hiçbir şeye dokunmaz. “Rice'ı sil” diyen bir pencere, birinin bir akşamını harcadığı dört dosyayı silmeye onay olarak okunamaz.",
+      "afterTitle": "Sonrasında gerçekte ne göreceksiniz",
+      "after": "Dosya hâlâ Kasa'da, hiçbir şeyin altında dosyalı değil. Hatırlatıcı hâlâ takvimde, hiçbir şeyle ilgili değil. Anahtar kelimelerinize dokunulmadı — her şey tarafından paylaşılırlar ve zaten hiçbir zaman o başvuruya ait değildiler. Grafik sayfasında bu kayıtlar bağlantısız düğümlere dönüşür; birkaç ölü aramayı temizledikten sonra <hi>Bağlantısız kayıtları gizle</hi> anahtarı tam da bunun içindir.",
+      "halfTitle": "Ve hiçbir kayıt asla yarı silinmez",
+      "half": "Bir kaydı kaldırılmış olarak işaretleyen gizli bir bayrak yoktur. Bu yaklaşım her okumada, her sayımda, her izdüşümde ve dışa aktarmada asla unutulmaması gereken bir filtreye mal olur ve onu unutan tek bir yer, silinmiş bir kaydın panonuza geri çizilmesi demektir. Gitti demek satır orada değil demektir — ve geri al onu işaretçileriyle birlikte geri koyar, çünkü yazma işlemi kendini nasıl tersine çevireceğine dair bir not değil, çalışmadan önce her kaydın nasıl göründüğünü kaydetti."
+    },
+    "source": {
+      "hint": "depoyu açan herkes için",
+      "title": "Tek eylem, tek işlem, tek günlük satırı, tek geri alma",
+      "p1": "jojo'daki her yazma, React dışında tanımlanmış, kendi şemasına göre doğrulanan ve tek bir işlem (transaction) içinde eşzamanlı çalışan adlandırılmış bir işlemdir. İşlemler birbirini çağırır ve iç içe bir çağrı kendi işlemini açmak yerine çağrıldığı işleme katılır. Tüm değişmez kural budur ve bu sayfanın geri kalanı ondan çıkar.",
+      "p2": "Bir başvuru eklemek üç yazmadır: kayıt, oradaki ilk başvuruysa işveren ve verdiyseniz son tarih. Tek bir işlem olarak düşerler; bu yüzden günlükte tek bir satır, tek bir bildirim ve tek bir geri al basışı üretirler. Birini silmek aynı biçimin tersten okunmasıdır — işlem dokunduğu her kaydın önceki ve sonraki hâlini yakaladı; bu yüzden onu tersine çevirmek, bir hatırlatıcının ve bir dosyanın işin içinde olduğunu bilen bir fonksiyonu kimse yazmadan hatırlatıcıyı ve dosyayı yeniden bağlar. Yukarıdaki bağlantı kaldırmanın bir geri alması olmasının nedeni budur ve önceki yaklaşımın — işlem başına elle yazılmış bir tersine çevirme — bu tür hataların eskiden yaşadığı yer olmasının da nedeni budur: birinin bir yazmanın neye dokunduğunu hatırlaması gerekiyordu ve beş koleksiyona dokunan yazma, dördüne dokunuyormuş gibi hatırlanıyordu.",
+      "p3": "Günlük saklanır. <go>Ayarlar</go> her yazmayı en yenisi önce listeler; en son iki yüzle sınırlıdır ve depo açıldığında budanır; en yeni satırda geri al sunar. Geri alma <em>yığını</em> farklı bir şeydir: oturumla sınırlı ve elli derinliğindedir, çünkü yeniden yüklemeden sonra da kalan bir yığın geçen salıdan bir şeyi geri almaya davet ederdi ve bu, bu uygulamada olmayan çakışma kuralları gerektirir.",
+      "p4": "İşlemlerin nerede durduğu, hangi katmanın hangisini içe aktarabileceği ve aynı başvuru ekleme izinin beşi boyunca çizilmiş hâli <go>Kullanılan yazılımlar</go> sayfasında."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "Bir soru ile kayıtlarınızdaki bir değişiklik arasındaki iki kapı",
+      "desc": "Yukarıdan aşağıya altı adım. Bir: yazdığınız. İki: jojo sözlerinizin işaret ettiği araçları seçer — sözleriniz belirsizse tahmin yürütmek yerine hepsini sunar. Üç: bu araçların bağlı olduğu her şeyi ekler; böylece hiçbir zincir çıkmaza girmez. Dört: model bir araç seçer. Beş: jojo o aracın gerçekten sunulup sunulmadığını denetler; sunulmadıysa çağrı reddedilir ve hiçbir şey çalışmaz. Altı: kayıtlarınız ancak o zaman değişir. Bir şeyi zorunlu kılan beşinci adımdır — ikinci adım yalnızca bir ipucudur, çünkü bir model kendisine hiç gösterilmemiş bir aracı adlandırabilir.",
+      "typed": "yazdığınız",
+      "pick": "olası araçları seç",
+      "pickNote": "belirsiz mi? {{total}} aracın hepsini sun",
+      "needs": "bu araçların ihtiyaçlarını ekle",
+      "needsNote": "hiçbir zincir çıkmaza girmesin",
+      "chooses": "model birini seçer",
+      "offered": "sunulmuş muydu?",
+      "offeredNote": "hayır mı? reddedilir, hiçbir şey çalışmaz",
+      "change": "kayıtlarınız değişir",
+      "caption": "İkinci adım size token kazandırır. Sizi güvende tutan beşinci adımdır — ve ikinci adım bir şeyi daraltmış olsun ya da olmasın çalışır."
+    },
+    "toolGraph": {
+      "title": "Bir araç onu besleyen aracı nasıl getirir",
+      "desc": "Her biri soldan sağa okunan üç satır. Birincide keyword.attach istemek keyword.create'i getirir, çünkü anahtar kelime eklemek zaten var olan bir anahtar kelime gerektirir. İkincide vault.file.update, vault.file.add'i getirir, çünkü bir belgeyi güncellemek bir belge gerektirir. Üçüncüde scout.posting.promote, scout.posting.save'i getirir, çünkü kayıtlı bir ilanı yükseltmek kayıtlı bir ilan gerektirir. Her durumda jojo bağımlılığı aracın kendi girdisinden çıkarır ve iki aracı birlikte sunar — böylece asistana asla ikinciye ulaşma yolu olmayan bir ilk adım verilmez.",
+      "asked": "istediğiniz",
+      "needsHeader": "ihtiyacı olan",
+      "offered": "onunla birlikte sunulan",
+      "needsKeyword": "bir anahtar kelime",
+      "needsFile": "bir dosya",
+      "needsPosting": "bir ilan",
+      "without": "Bu olmasaydı asistana ilk kutu sunulup ikincisi sunulmayabilirdi —\nve ekranda nedenini söyleyen hiçbir şey olmadan yarıda dururdu.",
+      "caption": "jojo her gereksinimi aracın kendi tanımından okur; böylece yarın eklenen bir araç, kimse bir listeyi güncellemeden kapsanır."
+    },
+    "benchAmbiguity": {
+      "title": "Tek cümle, iki kayıt ve yanlış olan değişti",
+      "desc": "En üstte istek: UT başvurusunu kapat, beni reddettiler. Altında ikisi de eşleşen iki kayıt — UT Austin, hâlâ gönderildi aşamasında ve devam ediyor, ve UT Dallas, zaten kapanmış. Cümlede onları ayıran hiçbir şey yok. Doğru yanıt hangisi olduğunu sormaktır; altı kıyaslama çalıştırmasının dördü bunun yerine devam eden başvuru olan UT Austin'i kapattı. Seçtikleri araç doğru araçtı. Uyguladıkları kayıt değildi.",
+      "quote": "“UT başvurusunu kapat — beni reddettiler.”",
+      "matchesBoth": "ikisiyle de eşleşir",
+      "austinState": "gönderildi — hâlâ devam ediyor",
+      "austinRuns": "6 çalıştırmanın 4'ü kapattı",
+      "dallasState": "zaten kapanmış",
+      "dallasMeant": "kastedilen",
+      "footer": "Araç doğruydu. Kayıt değildi — ve hiçbir araç seçimi puanı bu farkı göremez.",
+      "caption": "jojo'nun kendi talimatı, bir istek birden fazla kayıt anlamına gelebiliyorsa modele sormasını söyler. Üç modelden ikisi yine de yazdı."
+    },
+    "benchAxes": {
+      "title": "Tur başına doğruluk ile konuşmanın bütününde başarı",
+      "desc": "Aynı kıyaslama çalıştırmaları üzerinde ölçülen üç çubuk. Savunulabilir bir şey çağıran turlar: {{turnsOf}} turdan {{turnsGot}}, yüzde {{turnsPct}}. Depo hakkında doğru çıkan tek tek iddialar: {{claimsOf}} iddiadan {{claimsGot}}, yüzde {{claimsPct}}. İçinde hiçbir hata olmayan konuşmaların tamamı: {{wholeOf}} konuşmadan {{wholeGot}}, yüzde {{wholePct}}. Üçüncüsü diğer ikisinden düşüktür, çünkü bir konuşma ancak her tur ve her iddia birlikte geçtiğinde temizdir; böylece iki yüksek sayı birleşerek düşük olanı oluşturur.",
+      "turnsLabel": "Savunulabilir bir şey çağıran turlar",
+      "turnsNote": "kolay soru",
+      "claimsLabel": "Depo hakkında doğru çıkan iddialar",
+      "claimsNote": "tek tek denetlendi",
+      "wholeLabel": "Hiçbir hatası olmayan konuşmaların tamamı",
+      "wholeNote": "her tur ve her iddia, birlikte",
+      "count": "{{of}} içinden {{got}} — {{note}}",
+      "bracket": "ikisi aynı anda\ndoğru olmalı",
+      "caption": "Yalnızca ilk çubuğu bildiren bir kıyaslama bu modelleri neredeyse kusursuz sayardı. İşin yapılıp yapılmadığını yanıtlayan üçüncüsüdür."
+    },
+    "toolTrace": {
+      "title": "Başvuru ekleme kodunun katman katman nerede durduğu",
+      "desc": "Yukarıdan aşağıya altı adım. Bir: paylaşılan katmanın dışında, src/components içinde, başvuru formu çalışma zamanına bir girdi nesnesi verir. İki: kg/react/use-tool.ts, application.create adlı aracı çalıştırır ve hiçbir şeyi beklemez. Üç: kg/tools/application.ts tek bir işlem açar ve org.ensure ile son tarih aracına yapılan iç içe çağrılar kendi işlemlerini açmak yerine buna katılır. Dört: kg/core girdiyi aracın şemasına göre ayrıştırır, kimliği ve kısa adı üretir. Beş: kg/repo bir kez işler: anlık görüntü güncellenir, günlüğe bir satır eklenir ve o satır tek geri almadır. Altı: kg/storage tek bir işlemde dört IndexedDB nesne deposuna yazar — ve yalnızca bu son adım kesikli bir okla çizilir, çünkü hiçbir şey onu beklemez. Kenardaki bir köşeli parantez üçten beşe kadar olan adımları tek işlem ve tek geri alma olarak işaretler.",
+      "webOnly": "yalnızca web",
+      "form": "form çalışma zamanına bir girdi nesnesi verir",
+      "run": "run('application.create') — hiçbir şey beklenmez",
+      "join": "org.ensure ve son tarih aynı çağrıya katılır",
+      "parse": "girdiyi ayrıştırır, kimliği ve kısa adı üretir",
+      "commit": "işle: anlık görüntü, bir günlük satırı, bir geri alma",
+      "stores": "dört nesne deposu, tek IndexedDB işlemi",
+      "bracket": "tek işlem · tek geri alma",
+      "nothingAwaits": "hiçbir şey bunu beklemez",
+      "caption": "Yığının sırası olarak değil, olayların gerçekleştiği sıra olarak yukarıdan aşağıya okuyun — <code>kg/core</code> L1'dir ve yukarıdaki şemada <code>kg/repo</code>'nun altında durur, çünkü bir araç ona aşağı doğru çağrı yapar ve herhangi bir şey işlenmeden önce geri döner."
+    },
+    "stack": {
+      "title": "jojo'nun kodu nasıl katmanlanmış",
+      "desc": "Üstte üç şey: tarayıcı uzantısı, web uygulaması ve telefon uygulaması. Uzantı web uygulamasıyla aktarılan mesajlarla konuşur ve hiçbir şey içe aktarmaz. Web uygulaması verileri yerel ağ üzerinden telefona gönderir. İki uygulama da paylaşılan hizmete React kancaları aracılığıyla çağrı yapar. Hizmet, her biri yalnızca altındaki katmanları kullanan altı katmandır: react, agent, tools, repo, core ve storage. Tools vurgulanmıştır: kayıtlardaki her değişiklik ondan geçer. En altta, web'de bir IndexedDB sürücüsü ve telefonda bir AsyncStorage sürücüsü depolama bağlantı noktasını uygular.",
+      "extension": "uzantı",
+      "webApp": "web uygulaması",
+      "phoneApp": "telefon uygulaması",
+      "relay": "aktarma",
+      "lan": "LAN",
+      "hooks": "kancalar",
+      "reactNote": "iki uygulamanın paylaştığı kancalar",
+      "agentNote": "model döngüsü · katalog · MCP",
+      "toolsNote": "her yazma · tek geri alma girdisi",
+      "repoNote": "işleme · günlük · yazma kuyruğu",
+      "coreNote": "saf kurallar · bugün bir parametredir",
+      "storageNote": "Driver ve FileStore bağlantı noktaları",
+      "idbDriver": "IndexedDB sürücüsü · web",
+      "asyncDriver": "AsyncStorage sürücüsü · telefon",
+      "caption": "Düz oklar kodun bağımlı olabileceği yönü gösterir: yalnızca aşağı. Kesikli çizgiler içe aktarma değildir — uzantı mesajları aktarır, web uygulaması verileri yerel ağ üzerinden telefona verir ve her depolama sürücüsü en alttaki bağlantı noktasını uygular. Uygulamalar core'un saf yardımcılarını doğrudan da kullanabilir; tools katmanının altına asla yazmamalıdırlar."
+    },
+    "recordModel": {
+      "title": "jojo'nun sakladığı on bir kayıt türü ve birinin diğerine işaret edebildiği yedi yol",
+      "desc": "Başvuru ortadadır ve neredeyse her şey ona işaret eder. Bir zaman çizelgesi öğesi bir başvuruyla ABOUT ilişkisindedir ve aynı anda birkaçıyla ilgili olabilir. Bir bağlantı, bir dosya ve bir metin parçasının her biri bir başvurunun FILED_UNDER altındadır ve birkaçının altında dosyalanabilir. Kayıtlı bir ilan ya da gözcü eşleşmesi bir başvuruya BECAME ilişkisiyle dönüşür. Bir başvuru bir kurumda AT ilişkisindedir ve başka bir başvurunun COPY_OF'u olabilir. Bir anahtar kelime beş kayıt türünü TAGS ile etiketler — başvurular, zaman çizelgesi öğeleri, bağlantılar, dosyalar ve metin parçaları. Yedi ilişkiden üçü birden fazla kez taşınabilir — ABOUT, FILED_UNDER ve TAGS; diğer dördü kayıt başına en fazla birdir, bu yüzden yeniden bağlamak oradaki bağlantının yerini alır. Saklanan iki tür Grafik sayfasında hiç çizilmez: kayıtlı bir ilanın ya da eşleşmenin FROM ile geldiği pipeline ve hiçbir ilişkinin hiçbir şeye bağlamadığı profile. COPY_OF ve o FROM saklanır ama aynı şekilde hiç çizilmez ve bu yüzden burada noktalıdır. Çizginin altında Grafik sayfasının çizdiği ama deponun hiç tutmadığı iki şey var: rol ve kaynak. Bunlar bir başvurunun özellikleridir — roleTag ve source — bir IS kenarıyla ve yine FROM adlı ikinci bir kenarla bağlanan düğümler olarak gösterilir; ikisi de hiçbir yere yazılmaz.",
+      "storedNotDrawn": "saklanır ama\nGrafik sayfasında çizilmez",
+      "drawnNeverStored": "Grafik sayfasında çizilir, hiçbir yere yazılmaz",
+      "roleTagProp": "roleTag özelliği",
+      "sourceProp": "source özelliği",
+      "caption": "On bir kayıt türü ve onları birleştiren yedi ilişki. <code>ABOUT</code>, <code>FILED_UNDER</code> ve <code>TAGS</code> her biri birden fazla kez taşınabilir — bir CV gönderdiğiniz her başvuruya gider — diğer dördü ise kayıt başına en fazla birdir; bu yüzden yeniden bağlamak ikinci bir bağlantı eklemek yerine bağlantının yerini alır. Saklanan iki tür Grafik sayfasında hiç çizilmez: kayıtlı bir ilanın ya da eşleşmenin geldiği <code>pipeline</code> ve hiçbir ilişkinin hiçbir şeye bağlamadığı <code>profile</code>. Çizginin altında Grafik sayfasının çizdiği ama hiç saklanmayan iki şey var: <code>role</code> ve <code>source</code> bir başvurunun özellikleridir; resim için düğüme yükseltilir ve hiçbir yere yazılmaz."
+    },
+    "unlink": {
+      "title": "Bir başvuruyu silmek ona giden işaretçileri kaldırır ve bir işaretçi taşıyan her kaydı bırakır",
+      "desc": "Biri diğerinin üstünde iki durum. Önce: bir başvuru; ona ABOUT kenarıyla işaret eden bir zaman çizelgesi öğesi, TAGS kenarıyla bir anahtar kelime ve FILED_UNDER kenarıyla bir dosya. application.delete aracı çalışır. Sonra: zaman çizelgesi öğesi, anahtar kelime ve dosya hâlâ aynı yerlerde, hiçbir şey taşımadan duruyor — zaman çizelgesi öğesi hiçbir şeyle ilgili değil, anahtar kelime hiçbir şeyi etiketlemiyor, dosya hiçbir şeyin altında dosyalı değil. Yalnızca başvuru ve üç kenar gitti. Bir kenarın uzak ucundaki hiçbir kayda dokunulmadı.",
+      "before": "Önce",
+      "after": "Sonra",
+      "gone": "gitti",
+      "aboutNothing": "hiçbir şeyle ilgili değil",
+      "taggingNothing": "hiçbir şeyi etiketlemiyor",
+      "filedNothing": "hiçbir şeyin altında değil",
+      "caption": "Başvuru ve ona giden üç işaretçi gitti. Zaman çizelgesi öğesi, anahtar kelime ve dosya gitmedi — aynı yerlerde, hiçbir şey taşımadan duruyorlar ve her biri hâlâ açmanız için sizin. Geri al kenarları geri koyar, çünkü yazma işlemi kendini nasıl tersine çevireceğine dair bir not değil, çalışmadan önce her kaydın nasıl göründüğünü kaydetti."
+    }
+  }
+}

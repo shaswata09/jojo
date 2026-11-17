@@ -1,0 +1,613 @@
+{
+  "checklist": {
+    "title": "Danh sách việc cần làm",
+    "titleCount": "Danh sách việc cần làm · {{open}}/{{total}} đang mở",
+    "notAdded": "Bước đó chưa được thêm",
+    "deleted": "Đã xóa bước",
+    "draft": "Soạn",
+    "draftMore": "Soạn thêm",
+    "actionsFor": "Thao tác cho {{step}}",
+    "empty": {
+      "title": "Danh sách chưa có gì",
+      "noPosting": "Đơn ứng tuyển này không có tin tuyển dụng đã lưu, nên jojo không đọc được những gì cần gửi. Bạn vẫn có thể tự thêm các bước.",
+      "noModel": "Soạn danh sách việc cần làm cần một mô hình. Hãy kết nối một mô hình trong Cài đặt, hoặc tự thêm các bước bên dưới.",
+      "ready": "Nhờ jojo đọc tin tuyển dụng để biết những gì bạn cần gửi, hoặc tự thêm các bước bên dưới."
+    },
+    "addStep": "Thêm một bước",
+    "step": "Bước"
+  },
+  "fit": {
+    "title": "Mức phù hợp của bạn",
+    "step": {
+      "reading": "Đang mở tin tuyển dụng…",
+      "asking": "Đang đọc các yêu cầu…"
+    },
+    "measure": "Đánh giá tin tuyển dụng này",
+    "rerun": "Chạy lại",
+    "rerunHint": "Đọc lại tin tuyển dụng và đánh giá lại",
+    "clear": "Xóa kết quả đánh giá này",
+    "clearHint": "jojo ngừng đánh giá tin tuyển dụng này cho đến khi bạn yêu cầu",
+    "cleared": "Đã xóa kết quả đánh giá mức phù hợp",
+    "notCleared": "Không xóa được",
+    "clearedBody": "jojo sẽ không đọc lại tin tuyển dụng này trừ khi bạn yêu cầu.",
+    "options": "Tùy chọn mức phù hợp",
+    "blocked": {
+      "noPosting": "Đơn ứng tuyển này không có tin tuyển dụng đã lưu, nên không có gì để so với bạn. Hãy lưu tin tuyển dụng, hoặc thêm đơn ứng tuyển từ liên kết của nó, và phần này sẽ có kết quả.",
+      "noModel": "Đọc yêu cầu của tin tuyển dụng cần một mô hình. Hãy kết nối trong Thêm → Cài đặt.",
+      "noBackground": "jojo chưa đọc gì về lý lịch của bạn, nên chưa thể so tin tuyển dụng này với nó. Hãy đặt CV vào Kho lưu trữ và đồng ý khi jojo đề nghị đọc."
+    },
+    "clearedNote": "Bạn đã xóa kết quả đánh giá này, nên jojo sẽ không động tới tin tuyển dụng này.",
+    "queued": "Đang chờ…",
+    "leadWith": "Nên nêu trước",
+    "answers": "đáp ứng “{{requirement}}”",
+    "beReadyFor": "Hãy chuẩn bị cho",
+    "required": " — bắt buộc",
+    "skipped_other": " · đã bỏ qua {{count}} dòng"
+  },
+  "tailored": {
+    "title": "Tài liệu điều chỉnh",
+    "hint": "Được viết lại cho tin tuyển dụng này, có đánh dấu các thay đổi.",
+    "tailor": "Điều chỉnh",
+    "tailoredBefore": "{{label}} · đã điều chỉnh trước đây",
+    "blocked": {
+      "noPosting": "Đơn ứng tuyển này không có tin tuyển dụng đã lưu, nên không có gì để điều chỉnh tài liệu theo. Hãy thêm đơn ứng tuyển từ liên kết của nó, hoặc lưu tin tuyển dụng, và tính năng này sẽ sẵn sàng.",
+      "noModel": "Điều chỉnh tài liệu cần một mô hình. Hãy kết nối trong Thêm → Cài đặt.",
+      "noDocuments": "Chưa có gì để điều chỉnh. Việc điều chỉnh viết lại các tài liệu bạn gửi kèm đơn ứng tuyển — hãy thêm CV, bản trình bày hoặc thư xin việc trong Thêm → Hồ sơ cá nhân, hoặc xếp chúng vào Kho lưu trữ ở mục Đơn ứng tuyển, và chúng sẽ hiện ở đây."
+    },
+    "queued": "Đang chờ…",
+    "working": "Đang xử lý…",
+    "empty": "Chưa điều chỉnh gì. Nhấn Điều chỉnh, chọn một tài liệu, và jojo sẽ viết một phiên bản cho tin tuyển dụng này, có đánh dấu những gì đã thay đổi.",
+    "deleted": "Đã xóa {{title}}",
+    "notDeleted": "Không xóa được",
+    "deletedBody": "Đã biến mất khỏi đơn ứng tuyển này và khỏi Kho lưu trữ.",
+    "provenance": "{{tag}} · từ {{from}} · {{model}}",
+    "chooseTitle": "Điều chỉnh một tài liệu",
+    "chooseHint": "Mất một hai phút với mô hình cục bộ.",
+    "openInVault": "Mở trong Kho lưu trữ",
+    "previewNamed": "Xem trước {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "Đang chạy",
+      "done": "Xong",
+      "failed": "Thất bại",
+      "declined": "Đã từ chối"
+    },
+    "effect": {
+      "read": "đọc",
+      "unknown": "không có công cụ này",
+      "create": "đã thêm",
+      "update": "đã thay đổi",
+      "move": "đã chuyển",
+      "delete": "đã xóa",
+      "admin": "kho dữ liệu"
+    },
+    "asked": "Tác tử đã yêu cầu làm việc này. Chưa có gì thay đổi.",
+    "dont": "Không",
+    "allow": "Cho phép",
+    "arguments": "Tham số",
+    "result": "Kết quả",
+    "undoStep": "Hoàn tác bước này",
+    "cannotUndo": "Không thể hoàn tác bước này từ đây. Thêm → Cài đặt → Bản ghi lưu nhật ký những gì đã thay đổi và có thể đảo ngược thay đổi gần nhất.",
+    "truncated": "Đã bị cắt ngắn — tác tử đã được yêu cầu thu hẹp tìm kiếm để xem phần còn lại.",
+    "thinking": "Đang xử lý — {{model}} đang quyết định cần làm gì…"
+  },
+  "approval": {
+    "askedBy": "Được yêu cầu bởi {{name}}. Chưa có gì thay đổi.",
+    "askedByUnnamed": "Được yêu cầu bởi một cuộc trò chuyện. Chưa có gì thay đổi."
+  },
+  "threads": {
+    "conversations": "Cuộc trò chuyện",
+    "new": "Cuộc trò chuyện mới",
+    "kept_other": "Đã lưu {{count}}",
+    "titleField": "Tiêu đề cuộc trò chuyện",
+    "approvalLabel": "Cuộc trò chuyện này được làm bao nhiêu việc mà không cần hỏi",
+    "rename": "Đổi tên cuộc trò chuyện này",
+    "changeJob": "Đổi công việc mà cuộc trò chuyện nói về",
+    "fileUnder": "Xếp vào một công việc",
+    "delete": "Xóa cuộc trò chuyện này",
+    "noJob": "Chưa gắn với công việc nào",
+    "listEmpty": "Chưa có gì — hãy hỏi một điều và nó sẽ được lưu ở đây, trên thiết bị này.",
+    "keptOnDevice_other": "Đã lưu {{count}} trên thiết bị này.",
+    "filter": "Lọc",
+    "filterPlaceholder": "Theo tên hoặc công việc",
+    "noMatch": "Không có cuộc trò chuyện nào khớp.",
+    "working": "Đang xử lý…",
+    "questions_other": "{{count}} câu hỏi"
+  },
+  "picker": {
+    "title": "Đơn ứng tuyển liên quan",
+    "description": "Bao nhiêu công việc mà nó thuộc về cũng được. Một CV đi tới mọi đơn ứng tuyển bạn gửi nó, nên đây là danh sách chứ không phải một ô.",
+    "notLinked": "Chưa liên kết",
+    "none": "Chưa có đơn ứng tuyển nào",
+    "noneHint": "Thêm một đơn và nó sẽ là nơi để xếp mục này."
+  },
+  "audit": {
+    "records_other": "{{count}} bản ghi",
+    "links_other": "{{count}} liên kết",
+    "undoFailed": "Thay đổi đó không còn hoàn tác được",
+    "notInJournal": "Nó không còn trong nhật ký.",
+    "recorded_other": "Đã ghi {{count}}",
+    "title": "Những gì đã thay đổi",
+    "empty": {
+      "title": "Chưa ghi gì",
+      "description": "Mọi thao tác thêm, sửa và xóa đều được ghi ở đây ngay khi bạn thực hiện — mới nhất trước, và thao tác cuối cùng có thể hoàn tác."
+    },
+    "explain": "Thay đổi mới nhất có thể được đưa về. Các thay đổi cũ hơn chỉ là bản ghi, không phải cỗ máy thời gian.",
+    "undoLast": "Hoàn tác thay đổi cuối",
+    "cannotUndo": "Không thể hoàn tác việc tải hoặc xóa bộ dữ liệu.",
+    "showAll_other": "Hiện tất cả {{count}}"
+  },
+  "crash": {
+    "title": "Báo cáo sự cố",
+    "thisPhone": "điện thoại này",
+    "notBuilt": "Bản jojo này được xây dựng mà không có báo cáo sự cố hay phân tích mức sử dụng, nên không có gì được ghi lại và không có gì để bật.",
+    "what": "Khi có lỗi, jojo có thể giữ lại lỗi đó để bạn đọc lại — hữu ích khi thứ bị lỗi đã biến mất. Một báo cáo chứa thông báo lỗi, nơi xảy ra lỗi trong jojo, và dấu vết ngăn xếp. Nó không bao giờ chứa đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện của bạn, và khóa API, địa chỉ và địa chỉ email đều bị loại bỏ trước khi báo cáo được ghi.",
+    "where": "Báo cáo được giữ trên điện thoại này, và cũng được gửi tới Firebase Crashlytics, kèm mẫu thiết bị, phiên bản hệ điều hành và một mã ngẫu nhiên dùng để đếm số người gặp cùng một sự cố. Google giữ chúng trong 90 ngày. Không bản ghi nào của bạn đi kèm.",
+    "report": "Báo cáo sự cố",
+    "reportHint": "Bật, để sự cố bạn gặp là thứ chúng tôi thấy được. Tắt đi thì không có gì được ghi lại.",
+    "usage": "Chia sẻ những tính năng tôi dùng",
+    "usageHint": "Chỉ là số đếm, từ một danh sách cố định — không bao giờ là nội dung trong bản ghi của bạn.",
+    "usageDetail": "Nó chỉ có thể nói những điều trong một danh sách cố định — màn hình nào được mở, một đơn ứng tuyển đã được thêm, có khoảng bao nhiêu đơn. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập. Dữ liệu được gửi tới Google Analytics. Khi tắt mục này, jojo cũng tắt số lượt xem màn hình và số phiên mà Firebase lẽ ra sẽ tự thu thập.",
+    "kept_other": "Đã giữ {{count}} báo cáo",
+    "nothingBroken": "Chưa có lỗi nào kể từ khi bạn bật tính năng này.",
+    "notRecording": "Không có gì đang được ghi lại."
+  },
+  "date": {
+    "today": "Hôm nay",
+    "tomorrow": "Ngày mai",
+    "inSevenDays": "7 ngày nữa",
+    "triggerLabel": "{{label}}: {{value}}. Chọn ngày",
+    "notSet": "chưa đặt",
+    "pick": "Chọn ngày",
+    "previousMonth": "Tháng trước",
+    "nextMonth": "Tháng sau",
+    "backTo": "Quay lại {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Đã xảy ra lỗi",
+    "body": "Một màn hình không hiển thị được. Các bản ghi của bạn vẫn ở trên thiết bị này và không có gì được gửi đi, nhưng jojo không thể cho bạn biết thay đổi bạn đang thực hiện đã hoàn tất hay chưa.",
+    "noMessage": "Lỗi không kèm thông báo nào.",
+    "hint": "Nếu lại bị lỗi, hãy đóng jojo từ trình chuyển ứng dụng rồi mở lại."
+  },
+  "fileEditor": {
+    "editTitle": "Sửa tài liệu",
+    "newTitle": "Ghi lại một tài liệu",
+    "keptHere": "Được giữ trên thiết bị này, trong ứng dụng này. Không có gì được tải lên và không có gì đọc nội dung bên trong.",
+    "chooseOrType": "Chọn một tệp để giữ bản sao, hoặc điền thông tin bằng tay để ghi lại một tài liệu bạn giữ ở nơi khác.",
+    "record": "Ghi lại",
+    "choosing": "Đang chọn…",
+    "chooseDifferent": "Chọn tệp khác",
+    "choose": "Chọn tệp",
+    "copyKept": "Một bản sao được giữ trong ứng dụng này. Nó sẽ mất khi gỡ cài đặt ứng dụng.",
+    "fileName": "Tên tệp",
+    "nameRequired": "Hãy đặt tên, kèm cả phần mở rộng.",
+    "nameHint": "Phần mở rộng quyết định biểu tượng — .pdf, .doc, .pptx, .md.",
+    "size": "Kích thước",
+    "sizePlaceholder": "vd. 212 KB",
+    "sizeHint": "Không bắt buộc — để trống sẽ được hiểu là không rõ chứ không phải bằng không.",
+    "bucket": "Nhóm",
+    "applicationsHint": "Thứ mà bảng Tài liệu trong Hồ sơ cá nhân và đồ thị dựa vào để biết cái gì được xếp ở đâu. Bao nhiêu công việc mà tài liệu đã được gửi tới cũng được.",
+    "note": "Ghi chú"
+  },
+  "filed": {
+    "sections": {
+      "files": "Tệp",
+      "links": "Liên kết",
+      "snippets": "Đoạn văn bản",
+      "people": "Người liên hệ"
+    },
+    "count_other": "{{count}} mục được xếp ở đây",
+    "title": "Từ Kho lưu trữ",
+    "empty": {
+      "title": "Chưa có gì được xếp vào đây",
+      "description": "Mỗi tài liệu, liên kết, đoạn văn bản và người liên hệ có thể được xếp vào bao nhiêu công việc tùy theo nơi chúng liên quan. Xếp một mục vào công việc này — từ menu của hàng đó trong Kho lưu trữ — và nó sẽ hiện ở đây."
+    },
+    "conversations": "Cuộc trò chuyện",
+    "openInAssistant": "Mở {{name}} trong Trợ lý",
+    "openInVault": "Mở {{name}} trong Kho lưu trữ"
+  },
+  "firstRun": {
+    "title": "Bạn muốn bắt đầu thế nào?",
+    "description": "Dù chọn cách nào, mọi thứ đều ở lại trên thiết bị này và không có gì được gửi đi.",
+    "demo": {
+      "title": "Khám phá với bản ghi mẫu",
+      "detail": "Mười hai đơn ứng tuyển, một lịch đầy đủ và một Kho lưu trữ có sẵn dữ liệu, để màn hình nào cũng có nội dung. Bạn có thể xóa chúng sau trong Cài đặt.",
+      "action": "Dùng bản ghi mẫu"
+    },
+    "empty": {
+      "title": "Bắt đầu trống",
+      "detail": "Chỉ có bản ghi của chính bạn. Các màn hình cần dữ liệu sẽ cho biết còn thiếu gì thay vì hiển thị ví dụ."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Dời lại",
+    "currently": "{{title}} · hiện là {{date}}",
+    "pickDate": "Chọn ngày…",
+    "duplicate": "Nhân bản",
+    "duplicateHint": "Cùng ngày và từ khóa, thành một hàng thứ hai",
+    "draft": "Soạn tin nhắn",
+    "draftHint": "Từ các đoạn văn bản email của bạn — không có gì được tự động tạo ra",
+    "reschedule": "Dời lịch"
+  },
+  "keywords": {
+    "on": "Từ khóa của {{name}}",
+    "none": "Chưa có",
+    "choose": "Chọn",
+    "title": "Từ khóa",
+    "description": "Từ khóa là của bạn, dùng chung cho đơn ứng tuyển, lời nhắc, tệp và liên kết — lọc theo một từ khóa sẽ tìm ra tất cả.",
+    "newPlaceholder": "Từ khóa mới…",
+    "new": "Từ khóa mới",
+    "add": "Thêm",
+    "countHere_other": "{{name}}, {{count}} ở đây"
+  },
+  "onboarding": {
+    "model": {
+      "title": "Kết nối một mô hình?",
+      "description": "Đây là thứ khiến jojo trở thành một tác tử thay vì chỉ là tủ hồ sơ. Khi đã kết nối, nó trả lời câu hỏi về việc tìm việc của bạn, soạn thư liên hệ lại dựa trên chính bản ghi của bạn, và đọc các tài liệu bạn thêm.",
+      "action": "Thiết lập",
+      "local": "Trỏ nó tới một máy chủ trên chính máy của bạn — vLLM, Ollama hoặc LM Studio — và không có gì rời khỏi thiết bị.",
+      "later": "Mọi thứ khác đều hoạt động mà không cần mô hình. Nó luôn ở trong Thêm → Cài đặt khi bạn cần."
+    },
+    "tour": {
+      "title": "Bạn muốn tham quan có hướng dẫn?",
+      "description": "Một lượt thực hành qua các màn hình thật — mỗi phần dùng để làm gì, được làm nổi bật, và bạn tự thử từng thứ khi đi qua.",
+      "action": "Bắt đầu tham quan",
+      "safe": "Nó không thay đổi gì — không bản ghi nào được ghi và không thiết lập nào bị động tới.",
+      "later": "Nó luôn có sẵn trong Thêm → Cách sử dụng, nên từ chối lúc này cũng không sao."
+    }
+  },
+  "pattern": {
+    "has": "có",
+    "hasHint": "Có ít nhất một liên kết như vậy",
+    "missing": "không có",
+    "missingHint": "Hoàn toàn không có liên kết như vậy",
+    "anything": "Bất kỳ thứ gì",
+    "lookFor": "Tìm",
+    "records": "Bản ghi",
+    "aLink": "Một liên kết",
+    "anyKind": "Loại bất kỳ",
+    "to": "Tới",
+    "lookForHint": "Loại bản ghi mà câu trả lời là danh sách của nó.",
+    "quantifierTitle": "Có, hoặc thiếu",
+    "quantifierHint": "Liên kết bên dưới phải có mặt hay phải vắng mặt.",
+    "relTitle": "Liên kết nào",
+    "relHint": "Hai đầu được nối với nhau thế nào. “Loại bất kỳ” hỏi về cả sáu loại cùng lúc.",
+    "endTitle": "Ở đầu kia",
+    "endHint": "Liên kết phải trỏ tới thứ gì."
+  },
+  "reporting": {
+    "title": "Báo cáo sự cố và mức sử dụng",
+    "description": "Hai thứ riêng biệt, cả hai đều đang bật. Tắt từng cái ở đây hoặc sau này trong Cài đặt. Không cái nào có thể mang theo bản ghi của bạn: không đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện nào.",
+    "bothOff": "Tắt cả hai",
+    "save": "Lưu lựa chọn",
+    "inReport": "Báo cáo sự cố gồm những gì",
+    "in": {
+      "message": "· Thông báo lỗi và nơi xảy ra lỗi trong jojo.",
+      "stack": "· Dấu vết ngăn xếp, cho biết đoạn mã nào bị lỗi.",
+      "device": "· Mẫu thiết bị, phiên bản hệ điều hành và một mã ngẫu nhiên dùng để đếm số người gặp cùng một sự cố — không tên, không tài khoản."
+    },
+    "notInReport": "Những gì không bao giờ có trong báo cáo",
+    "notIn": {
+      "records": "· Đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện của bạn.",
+      "secrets": "· Khóa API, các địa chỉ bạn dùng, hay bất kỳ địa chỉ email nào — bị loại bỏ trước khi báo cáo được ghi, chứ không phải trước khi gửi."
+    },
+    "crashHint": "Lỗi và nơi xảy ra. Được gửi tới Firebase Crashlytics.",
+    "usageHint": "Chỉ là số đếm — màn hình nào được mở, bao nhiêu lần. Không bao giờ là nội dung bên trong.",
+    "usageDetail": "Mục thứ hai là thứ duy nhất jojo gửi về những gì bạn LÀM, và nó chỉ có thể nói những điều trong một danh sách cố định — “Kho lưu trữ đã được mở”, “một đơn ứng tuyển đã được thêm”, “có 6–20 đơn”. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập, vì những từ đó không có trong danh sách. Tắt nó cũng dừng số lượt xem màn hình mà Firebase lẽ ra sẽ tự thu thập.",
+    "later": "Cả hai đều nằm trong Cài đặt khi bạn muốn thay đổi, và tắt một mục sẽ xóa những gì nó đã lưu."
+  },
+  "stagePicker": {
+    "label": "Giai đoạn của {{name}}: {{stage}}. Đổi giai đoạn",
+    "title": "Chuyển sang"
+  },
+  "welcome": {
+    "title": "Đôi điều về bạn",
+    "description": "Bản nháp sẽ ký tên bạn ở cuối, và trình tìm việc chấm điểm dựa trên những gì bạn đang tìm. Tất cả đều ở lại trên thiết bị này, và tất cả đều không bắt buộc — Hồ sơ cá nhân có phần còn lại.",
+    "skip": "Để sau",
+    "save": "Lưu và tiếp tục",
+    "fullName": "Họ và tên",
+    "fullNamePlaceholder": "vd. Lonardo Jenson",
+    "position": "Vị trí hiện tại",
+    "positionPlaceholder": "vd. Nghiên cứu sinh tiến sĩ, Khoa học máy tính",
+    "location": "Địa điểm",
+    "locationPlaceholder": "vd. Santa Clara, CA",
+    "email": "Email",
+    "rest": "Phần còn lại — liên kết, vị trí mục tiêu, từ khóa đối chiếu của trình tìm việc — nằm trong Hồ sơ cá nhân, ở thẻ Thêm."
+  },
+  "offers": {
+    "open_other": "{{count}} đang mở",
+    "title": "So sánh các lời mời làm việc",
+    "noPackage": "Không nêu gói đãi ngộ",
+    "respondBy": "Trả lời trước {{date}}",
+    "passed": "đã qua",
+    "today": "hôm nay",
+    "days_other": "{{count}} ngày",
+    "ranked": "Số liệu theo năm, đọc từ những gì bạn đã nhập.",
+    "notRanked": "Không xếp hạng — gói đãi ngộ dùng các loại tiền tệ khác nhau, và jojo không có tỷ giá hối đoái.",
+    "annualised": " * quy đổi theo năm với 12 tháng, 52 tuần hoặc 2.080 giờ."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "Những đơn ứng tuyển nào chưa lên lịch liên hệ lại?",
+      "unfiled": "Những tệp nào chưa được xếp vào đâu?"
+    },
+    "notConnected": "Kết nối một mô hình cục bộ trong Cài đặt để có thể hỏi điều này bằng một câu. Các câu hỏi bên dưới vẫn dùng được trong cả hai trường hợp.",
+    "placeholder": "Những đơn ứng tuyển nào chưa có liên hệ lại?",
+    "label": "Đặt câu hỏi cho đồ thị",
+    "stop": "Dừng",
+    "ask": "Hỏi",
+    "again": "Hỏi điều khác"
+  },
+  "background": {
+    "details_other": "{{count}} chi tiết",
+    "fromDocument": "đọc từ một tài liệu",
+    "editNamed": "Sửa {{title}}",
+    "removeNamed": "Gỡ {{title}}",
+    "added": "Đã thêm {{title}}",
+    "updated": "Đã cập nhật {{title}}",
+    "removed": "Đã gỡ {{title}}",
+    "notSaved": "Không lưu được",
+    "editTitle": "Sửa mục này",
+    "addTitle": "Thêm vào lý lịch",
+    "editRead": "Đọc từ một tài liệu. Bản chỉnh sửa của bạn được ưu tiên hơn kết quả đọc.",
+    "editHint": "Không có gì được lưu cho đến khi bạn nhấn Lưu.",
+    "addHint": "Bất cứ điều gì nên dùng để so với tin tuyển dụng. Không có gì ở đây được gửi đi đâu cả.",
+    "add": "Thêm",
+    "kind": "Loại",
+    "title": "Tiêu đề",
+    "titlePlaceholder": "Đó là gì",
+    "where": "Ở đâu",
+    "optional": "Không bắt buộc",
+    "when": "Khi nào",
+    "whenPlaceholder": "Ghi như cách bạn viết — “2021–2024”",
+    "year": "Năm",
+    "detail": "Chi tiết",
+    "highlights": "Điểm nổi bật",
+    "highlightsHint": "Mỗi dòng một ý — những gì đã xây dựng, phát hành, giảng dạy hoặc phát hiện.",
+    "kindHint": "Mục này thuộc phần nào trong lý lịch của bạn.",
+    "recorded_other": "đã ghi {{count}} mục · cơ sở để so với tin tuyển dụng",
+    "panelTitle": "Lý lịch của bạn",
+    "read": "Đọc một tài liệu",
+    "addEntry": "Thêm một mục",
+    "readTitle": "Đọc một tài liệu vào hồ sơ cá nhân",
+    "nothingReadable": "Chưa có gì trong Kho lưu trữ đọc được",
+    "nothingReadableHint": "Thêm CV hoặc một bản trình bày và nó sẽ hiện ở đây.",
+    "alreadyRead": "Đã đọc",
+    "empty": {
+      "title": "Chưa ghi lại gì",
+      "ready": "Đặt CV, bản trình bày nghiên cứu hoặc giảng dạy vào Kho lưu trữ và jojo sẽ đề nghị đọc nó — những gì tìm được sẽ hiện cho bạn xem trước khi lưu. Hoặc tự thêm một mục.",
+      "noModel": "Đọc tài liệu cần một mô hình. Hãy kết nối trong Thêm → Cài đặt, rồi đặt CV hoặc một bản trình bày vào Kho lưu trữ. Bạn vẫn có thể tự thêm mục mà không cần mô hình."
+    },
+    "removeTitle": "Gỡ {{title}}?",
+    "removeBody": "Mục này bị gỡ khỏi lý lịch, nên các tin tuyển dụng sẽ không còn được so với nó. Tài liệu gốc không bị ảnh hưởng."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Học vấn",
+      "employment": "Kinh nghiệm làm việc",
+      "publication": "Công bố khoa học",
+      "skill": "Kỹ năng",
+      "teaching": "Giảng dạy",
+      "award": "Giải thưởng",
+      "service": "Hoạt động phục vụ",
+      "certification": "Chứng chỉ",
+      "language": "Ngôn ngữ",
+      "project": "Dự án",
+      "volunteering": "Tình nguyện",
+      "membership": "Thành viên hội",
+      "grant": "Tài trợ nghiên cứu",
+      "patent": "Bằng sáng chế"
+    },
+    "skipped_other": "Đã bỏ qua {{count}} mục",
+    "alreadyThere": "Đã có trong hồ sơ cá nhân",
+    "added_other": "Đã thêm {{count}} mục vào hồ sơ cá nhân",
+    "nothingAdded": "Không thêm được gì",
+    "readFrom": "Đọc từ {{name}}.",
+    "alreadyKnown_other": "{{known}}/{{count}} mục đã có từ trước.",
+    "connectionsRecorded_other": "Đã ghi lại {{count}} kết nối.",
+    "refused": "Các mục đã bị từ chối.",
+    "readIt": "Đọc",
+    "readFailed": "Không đọc được tài liệu.",
+    "entriesRead_other": "Đã đọc {{count}} mục từ tài liệu này",
+    "addNamed": "Thêm {{title}}",
+    "connections_other": "{{count}} kết nối giữa chúng",
+    "addCount_other": "Thêm {{count}}"
+  },
+  "proposals": {
+    "aPipeline": "một quy trình",
+    "hint": "không có gì xảy ra cho đến khi bạn đồng ý",
+    "title": "Đề xuất",
+    "empty": {
+      "title": "Không có gì cần xem xét",
+      "description": "Khi một quy trình đang chạy, mọi thay đổi nó muốn thực hiện sẽ hiện ở đây trước. Nó sẽ không động vào bản ghi của bạn cho đến khi bạn phê duyệt."
+    },
+    "applied": "đã áp dụng",
+    "discarded": "đã loại bỏ",
+    "failed": "không áp dụng được",
+    "from": "{{tool}} · từ {{pipeline}}",
+    "approve": "Phê duyệt",
+    "discardNamed": "Loại bỏ: {{title}}",
+    "clearAnswered": "Xóa các mục đã trả lời",
+    "clearAll": "Xóa tất cả",
+    "confirmTitle": "Xóa tất cả đề xuất?",
+    "confirmPending_other": "{{count}} đề xuất vẫn đang chờ và sẽ bị từ chối. Không có gì trong bản ghi của bạn thay đổi, và các quy trình vẫn tiếp tục chạy — nhưng chúng sẽ không đề xuất lại những mục này.",
+    "confirmAnswered": "Các thẻ đã trả lời sẽ được gỡ khỏi danh sách. Không có gì trong bản ghi của bạn thay đổi."
+  },
+  "nextSteps": {
+    "measured": "Đo được",
+    "suggested": "Gợi ý",
+    "hint": "những gì bản ghi của bạn ủng hộ, rồi những gì tốn ít nhất",
+    "title": "Nên làm gì tiếp theo"
+  },
+  "working": {
+    "arm": "{{count}}/{{of}} · {{rate}}% · khả năng {{range}}",
+    "repliesBy": "Phản hồi, theo {{dimension}}",
+    "interviewsBy": "Phỏng vấn, theo {{dimension}}",
+    "confident": "Các khoảng không chồng lên nhau, nên đây là khác biệt thật — {{best}} đáng để bạn dồn thêm công sức.",
+    "overlap": "Các khoảng chồng lên nhau, nên đây chỉ là hai con số chứ chưa phải một khác biệt. Thêm bản ghi sẽ tách chúng ra hoặc thu hẹp khoảng cách.",
+    "tooFew_other": "{{count}} nhóm khác có ít hơn {{min}} bản ghi nên không được so sánh.",
+    "hint": "dải là vùng mà tỷ lệ thực có khả năng nằm trong đó",
+    "title": "Điều gì đang hiệu quả"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "Tham quan jojo, tự tay thực hành",
+        "body": "Nó chỉ vào các màn hình thật và mời bạn tự thử từng thứ khi đi qua. Nó không bao giờ nhập, lưu hay thay đổi gì thay bạn. Đóng bất cứ lúc nào — vị trí của bạn được giữ lại, và Cách sử dụng sẽ tiếp tục từ đó."
+      },
+      "today": {
+        "title": "Hôm nay",
+        "body": "Những việc cần làm ngay: việc quá hạn, việc đến hạn, và các quyết định đang chờ bạn. Màn hình nên mở đầu tiên."
+      },
+      "applications": {
+        "title": "Các đơn ứng tuyển của bạn",
+        "body": "Mỗi công việc một bản ghi: nhà tuyển dụng, vị trí, giai đoạn và ghi chú của bạn. Ngày tháng, tài liệu và cuộc trò chuyện đều gắn với nó, nên không có gì phải nhập hai lần.",
+        "say": "Mở Đơn ứng tuyển."
+      },
+      "layout": {
+        "title": "Danh sách hoặc bảng",
+        "body": "Cùng các bản ghi, hai cách xem. Danh sách cho phép sắp xếp và tìm kiếm; bảng hiển thị các giai đoạn thành cột.",
+        "say": "Chuyển sang Bảng."
+      },
+      "records": {
+        "title": "Sáu giai đoạn",
+        "body": "Bản nháp, Đã nộp, Cuộc gọi sàng lọc, Phỏng vấn, Lời mời làm việc, Đã đóng. Trên bảng, nhấn giữ một thẻ rồi kéo nó sang cột tiếp theo; mỗi thẻ cũng có menu giai đoạn. Mọi thao tác chuyển đều hoàn tác được."
+      },
+      "search": {
+        "title": "Tìm kiếm mọi thứ",
+        "body": "Đơn ứng tuyển, lời nhắc và mục lịch, từ bất kỳ thẻ nào.",
+        "say": "Mở tìm kiếm."
+      },
+      "searchScreen": {
+        "title": "Gõ để tìm mọi thứ",
+        "body": "Một vị trí, một nhà tuyển dụng hoặc một giai đoạn. Chạm vào một kết quả để mở, hoặc quay lại khi bạn xem xong."
+      },
+      "new": {
+        "title": "Tạo bất cứ thứ gì",
+        "body": "Nút + tạo một đơn ứng tuyển, một lời nhắc, một mục lịch, một tin nhắn nháp, một liên kết đã lưu hoặc một tin tuyển dụng đã lưu. Không có gì được lưu cho đến khi bạn lưu, và đóng một biểu mẫu điền dở chẳng mất gì."
+      },
+      "calendar": {
+        "title": "Mọi ngày tháng ở một nơi",
+        "body": "Hạn chót, phỏng vấn và liên hệ lại là cùng một loại bản ghi, nên một mục sẽ hiện trên lịch, ở trang Hôm nay và trong đơn ứng tuyển của nó.",
+        "say": "Mở Lịch."
+      },
+      "vault": {
+        "title": "Kho lưu trữ",
+        "body": "Mọi thứ không phải đơn ứng tuyển: lời nhắc, liên kết, tệp, các đoạn văn bản bạn dán vào mọi biểu mẫu, những người bạn quen, và một máy tính.",
+        "say": "Mở Kho lưu trữ."
+      },
+      "vaultTools": {
+        "title": "Mỗi lúc một công cụ",
+        "body": "Mỗi công cụ là một danh sách riêng, và một từ khóa có cùng ý nghĩa trong tất cả.",
+        "say": "Chọn Tệp."
+      },
+      "files": {
+        "title": "Tệp, được giữ trên điện thoại",
+        "body": "Một CV, một bản trình bày, một tin tuyển dụng — được sao chép vào thư mục riêng của jojo, nên vẫn còn khi bản gốc bị di chuyển. Chạm vào một tệp để đọc ngay tại đây; xếp nó vào bao nhiêu đơn ứng tuyển mà nó liên quan cũng được."
+      },
+      "more": {
+        "title": "Thêm",
+        "body": "Mọi thứ khác: Trình tìm việc, Thống kê, đồ thị, Chuyển dữ liệu, hồ sơ cá nhân, trợ lý, Cài đặt và hướng dẫn này.",
+        "say": "Mở Thêm."
+      },
+      "scout": {
+        "title": "Trình tìm việc",
+        "body": "Các tìm kiếm đã lưu thay bạn theo dõi các trang tuyển dụng.",
+        "say": "Mở Trình tìm việc."
+      },
+      "scoutScreen": {
+        "title": "Quy trình và đề xuất",
+        "body": "Mỗi quy trình là một lượt tìm kiếm trên một trang tuyển dụng, chạy theo lịch hoặc khi bạn yêu cầu. Những gì nó tìm thấy chờ dưới dạng đề xuất để bạn phê duyệt hoặc loại bỏ, và đề xuất được phê duyệt sẽ thành một đơn ứng tuyển nháp."
+      },
+      "statistics": {
+        "title": "Thống kê",
+        "body": "Việc tìm việc của bạn đang tiến triển ra sao, được tính từ chính các bản ghi của bạn.",
+        "say": "Mở Thống kê."
+      },
+      "statisticsScreen": {
+        "title": "Tỷ lệ, với khoảng giá trị trung thực",
+        "body": "Tỷ lệ phản hồi và phỏng vấn, phễu và nên tập trung vào đâu tiếp theo — mỗi tỷ lệ kèm khoảng giá trị thực sự có thể, vì vài đơn ứng tuyển chỉ là một mẫu nhỏ."
+      },
+      "graph": {
+        "title": "Đồ thị tri thức",
+        "body": "Mọi bản ghi — đơn ứng tuyển, nhà tuyển dụng, người liên hệ, ngày tháng, tệp — được vẽ thành mạng lưới đúng như bản chất của chúng.",
+        "say": "Mở Đồ thị."
+      },
+      "graphScreen": {
+        "title": "Mọi thứ, được kết nối",
+        "body": "Chạm vào một nút để xem nó kết nối với gì, và đặt câu hỏi để làm sáng các bản ghi khớp."
+      },
+      "assistant": {
+        "title": "Trợ lý",
+        "body": "Trò chuyện với jojo: nó tìm, thêm và cập nhật bản ghi của bạn bằng chính các công cụ của ứng dụng, và hỏi trước khi thay đổi bất cứ thứ gì. Cho đến khi kết nối mô hình, nó hiển thị các ví dụ mẫu."
+      },
+      "transfer": {
+        "title": "Điện thoại và máy tính",
+        "body": "Chuyển dữ liệu chuyển mọi thứ giữa điện thoại này và jojo trên máy tính của bạn qua mạng cục bộ, không đi qua bất kỳ ai khác."
+      },
+      "settings": {
+        "title": "Cài đặt",
+        "body": "Kết nối, giao diện và dữ liệu của bạn.",
+        "say": "Mở Cài đặt."
+      },
+      "device": {
+        "title": "Các bản ghi của bạn nằm trên điện thoại này",
+        "body": "Được ghi thẳng vào bộ nhớ của điện thoại trong lúc bạn làm việc — không tài khoản, không đồng bộ, không tải lên gì. Xuất một bản sao, hoặc Chuyển dữ liệu sang máy tính của bạn."
+      },
+      "model": {
+        "title": "Kết nối một mô hình",
+        "body": "Nơi mô hình của trợ lý chạy. Một máy chủ trên chính máy của bạn — vLLM, Ollama hoặc LM Studio — cần địa chỉ của nó và giữ các bản ghi trên thiết bị của bạn. OpenAI, Anthropic (Claude) và các nhà cung cấp đám mây khác cần khóa API. Kiểm tra kết nối sẽ kiểm tra trước khi lưu bất cứ thứ gì."
+      },
+      "reader": {
+        "title": "Cho phép đọc tài liệu của bạn",
+        "body": "Điện thoại tự đọc được tệp Word, bản trình chiếu, trang đã lưu và văn bản. PDF cần MarkItDown trên máy tính của bạn: khởi động nó bằng hai lệnh ở trên, rồi Kiểm tra kết nối."
+      },
+      "done": {
+        "title": "Chuyến tham quan đến đây là hết",
+        "body": "Mọi thay đổi đều hoàn tác được, và Cách sử dụng, trong mục Thêm, lần lượt giới thiệu mọi màn hình. Bạn có thể tham quan lại bất cứ lúc nào."
+      }
+    },
+    "stepOf": "Bước {{step}}/{{total}}",
+    "end": "Kết thúc tham quan",
+    "nice": "Tốt lắm — vậy là xong.",
+    "tryIt": "Thử xem: {{task}}",
+    "finish": "Hoàn tất",
+    "skip": "Bỏ qua bước này"
+  },
+  "marks": {
+    "bold": "in đậm",
+    "italic": "in nghiêng",
+    "underlined": "gạch chân"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Hôm nay",
+      "applications": "Đơn ứng tuyển",
+      "calendar": "Lịch",
+      "vault": "Kho lưu trữ",
+      "more": "Thêm"
+    },
+    "badge": {
+      "applications_other": "Đơn ứng tuyển, {{count}} đã gắn cờ để liên hệ lại",
+      "calendar_other": "Lịch, {{count}} mục trong bảy ngày tới",
+      "vault_other": "Kho lưu trữ, {{count}} lời nhắc đã quá ngày",
+      "more_other": "Thêm, {{count}} gợi ý chưa được thêm vào đơn ứng tuyển"
+    },
+    "create": "Tạo",
+    "search": "Tìm kiếm",
+    "titles": {
+      "application": "Đơn ứng tuyển",
+      "employer": "Nhà tuyển dụng",
+      "search": "Tìm kiếm",
+      "jobScout": "Trình tìm việc",
+      "statistics": "Thống kê",
+      "profile": "Hồ sơ cá nhân",
+      "assistant": "Trợ lý",
+      "settings": "Cài đặt",
+      "guide": "Cách sử dụng",
+      "graph": "Đồ thị",
+      "transfer": "Chuyển dữ liệu"
+    }
+  }
+}

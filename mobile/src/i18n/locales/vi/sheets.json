@@ -1,0 +1,243 @@
+{
+  "common": {
+    "undo": "Hoàn tác",
+    "cancel": "Hủy"
+  },
+  "addFromLink": {
+    "title": "Đơn ứng tuyển từ liên kết",
+    "description": "Mô hình đọc tin tuyển dụng và điền vào biểu mẫu, đồng thời chọn những từ khóa của bạn mà công việc rõ ràng liên quan tới. Trang được giữ trong Kho lưu trữ ở mục Tin tuyển dụng, và không có gì được lưu thành đơn ứng tuyển cho đến khi bạn đồng ý.",
+    "url": "URL tin tuyển dụng",
+    "addressOnly": "Chỉ dùng địa chỉ",
+    "reading": "Đang đọc…",
+    "retry": "Thử lại",
+    "submit": "Đọc và điền sẵn",
+    "failed": "Không đọc được tin tuyển dụng.",
+    "steps": {
+      "reading": "Đang tải trang",
+      "asking": "Đang đọc",
+      "saving": "Đang lưu tin tuyển dụng"
+    },
+    "toast": {
+      "title": "Đã lưu và đọc tin tuyển dụng",
+      "kept": "{{name}} đã có trong Kho lưu trữ, và sẽ được xếp vào đơn ứng tuyển khi bạn lưu.",
+      "gaps_other": "{{count}} trường không có trên trang.",
+      "tags_other": "{{count}} từ khóa của bạn đã được chọn."
+    }
+  },
+  "application": {
+    "newTitle": "Đơn ứng tuyển mới",
+    "editTitle": "Sửa {{name}}",
+    "add": "Thêm đơn ứng tuyển",
+    "save": "Lưu thay đổi",
+    "checking": "Đang kiểm tra trùng lặp…",
+    "noRecord": "Bảng này được mở mà không có bản ghi để sửa",
+    "description": {
+      "edit": "Các thay đổi sẽ thay thế thông tin hiện tại, và hạn chót cũng thay đổi theo.",
+      "prefilledTagged": "Đã điền sẵn từ những gì bạn dán — hãy kiểm tra nhà tuyển dụng, vị trí và từ khóa trước khi lưu.",
+      "prefilled": "Đã điền sẵn từ những gì bạn dán — hãy kiểm tra nhà tuyển dụng và vị trí trước khi lưu.",
+      "create": "Theo dõi một công việc bạn đang ứng tuyển. Các trường có dấu sao là bắt buộc."
+    },
+    "errors": {
+      "org": "Hãy nêu tên nhà tuyển dụng — đó là nơi bản ghi được xếp vào.",
+      "role": "Hãy nêu tên vị trí, để hai đơn ứng tuyển vào cùng một nơi được phân biệt.",
+      "roleTag": "Hãy chọn nhãn vị trí — bộ lọc vị trí và các biểu đồ dựa vào nó.",
+      "url": "Đó không phải liên kết mà trình duyệt mở được — hãy thêm https://."
+    },
+    "fields": {
+      "org": "Tổ chức",
+      "orgPlaceholder": "Nhà tuyển dụng hoặc cơ sở",
+      "role": "Chức danh",
+      "rolePlaceholder": "vd. Chuyên viên phân tích dữ liệu cấp cao",
+      "roleTag": "Nhãn vị trí",
+      "pickRoleTag": "Chọn nhãn vị trí",
+      "roleTagDescription": "Trục mà bộ lọc vị trí và các biểu đồ dựa vào.",
+      "stage": "Giai đoạn",
+      "deadline": "Hạn chót",
+      "deadlineHint": "Đặt một mục có ngày lên lịch và vào tuần tới.",
+      "source": "Nguồn",
+      "sourceNotSet": "Chưa đặt",
+      "location": "Địa điểm",
+      "locationPlaceholder": "Thành phố, hoặc Từ xa",
+      "comp": "Đãi ngộ",
+      "compPlaceholder": "vd. $96k + cổ phần",
+      "url": "URL tin tuyển dụng",
+      "postingId": "Mã tin tuyển dụng",
+      "postingIdHint": "Mã công việc hoặc mã yêu cầu tuyển dụng, nếu tin tuyển dụng có ghi.",
+      "postingIdPlaceholder": "vd. R-2024-0312",
+      "note": "Ghi chú",
+      "notePlaceholder": "Những gì còn phải làm trước khi gửi đơn này đi.",
+      "keywords": "Từ khóa"
+    },
+    "toast": {
+      "draftDiscarded": "Đã bỏ bản nháp",
+      "changesDiscarded": "Đã bỏ các thay đổi",
+      "nothingAdded": "Không có gì được thêm. Hoàn tác sẽ đưa biểu mẫu trở lại như lúc bạn rời đi.",
+      "unchanged": "{{name}} không thay đổi. Hoàn tác sẽ đưa các chỉnh sửa của bạn trở lại.",
+      "recordUnchanged": "Bản ghi không thay đổi. Hoàn tác sẽ đưa các chỉnh sửa của bạn trở lại.",
+      "added": "Đã thêm {{name}}",
+      "deadlineOnCalendar": "Hạn chót {{date}} đã có trên lịch.",
+      "noDeadline": "Chưa có hạn chót — thêm một hạn chót và nó sẽ hiện trong tuần tới.",
+      "postingFiled": "Tin tuyển dụng đã được xếp vào đơn này.",
+      "saved": "Đã lưu thay đổi",
+      "deadlineRemoved": "{{name}} — hạn chót của nó đã được gỡ khỏi lịch.",
+      "restoreDeadline": "Khôi phục hạn chót"
+    },
+    "duplicate": {
+      "title": "Có vẻ đây là công việc bạn đã có",
+      "modelSame": "Mô hình nhận định đây là cùng một vị trí tuyển dụng.",
+      "modelReading": " — nhận định của mô hình; hãy kiểm tra bên dưới.",
+      "existing": "Đơn bạn đã có",
+      "adding": "Đơn bạn đang thêm",
+      "untitled": "Chưa có tiêu đề",
+      "postingId": "Mã tin tuyển dụng {{id}}",
+      "openYours": "Mở đơn bạn đã có",
+      "openExisting": "Mở {{name}}, đơn bạn đã có",
+      "tapToOpen": "Chạm để mở, hoặc tiếp tục và thêm đơn này thành bản ghi thứ hai.",
+      "editInstead": "Sửa đơn đã có",
+      "discard": "Bỏ",
+      "addAnyway": "Vẫn thêm"
+    },
+    "since": {
+      "today": "hôm nay",
+      "yesterday": "hôm qua",
+      "daysAgo_other": "{{count}} ngày trước"
+    }
+  },
+  "draft": {
+    "title": "Soạn tin nhắn",
+    "description": {
+      "forApp": "Gửi {{name}}. Không có gì được tự động tạo ra và không có gì được gửi đi — điền vào chỗ trống, sao chép vào ứng dụng thư của bạn, rồi đánh dấu là đã gửi.",
+      "forItem": "Gửi {{name}} · {{item}}. Không có gì được tự động tạo ra và không có gì được gửi đi — điền vào chỗ trống, sao chép vào ứng dụng thư của bạn, rồi đánh dấu là đã gửi.",
+      "unlinked": "Chưa liên kết với đơn ứng tuyển nào, nên [ROLE] và [DATE] được để trống. Không có gì được tự động tạo ra và không có gì được gửi đi — điền vào chỗ trống, sao chép vào ứng dụng thư của bạn, rồi đánh dấu là đã gửi."
+    },
+    "defaultTitle": "Bản nháp email",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Lưu thành đoạn văn bản",
+    "writeFirst": "Hãy viết gì đó trước",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "markSent": "Đánh dấu đã gửi",
+    "openFromReminder": "Mở từ một lời nhắc để đánh dấu hoàn thành",
+    "alreadyTicked": "Đã đánh dấu hoàn thành",
+    "blank": "Bản nháp trống",
+    "startFromSnippet": "Bắt đầu từ một đoạn văn bản email của bạn",
+    "placeholder": "Viết tin nhắn, hoặc chọn một đoạn văn bản để bắt đầu…",
+    "editorLabel": "Bản nháp tin nhắn",
+    "empty": {
+      "title": "Chưa có đoạn văn bản email nào",
+      "description": "Các đoạn văn bản gắn nhãn Email sẽ hiện ở đây làm điểm bắt đầu. Hiện chưa có gì để tải, nhưng bản nháp không nhất thiết phải bắt đầu từ một đoạn.",
+      "startBlank": "Bắt đầu từ bản nháp trống"
+    },
+    "status": {
+      "empty": "Chưa soạn gì.",
+      "noBlanks": "Không còn chỗ trống nào.",
+      "blanksLeft_other": "Còn {{count}} chỗ trống — {{names}}",
+      "nameNever": " · tên người không bao giờ được điền sẵn cho bạn"
+    },
+    "picker": {
+      "title": "Bắt đầu từ",
+      "description": "Các đoạn văn bản email của chính bạn, với những gì bản ghi đã biết được điền sẵn."
+    },
+    "toast": {
+      "replaced": "Đã thay bản nháp",
+      "loaded": "Đã tải {{title}}.",
+      "blank": "Đã bắt đầu lại từ bản trống.",
+      "saved": "Đã lưu vào đoạn văn bản",
+      "savedDescription": "{{title}} · gắn nhãn Email, trong Kho lưu trữ",
+      "sent": "Đã đánh dấu là đã gửi",
+      "sentDescription": "{{title}} — đã đánh dấu hoàn thành trong lời nhắc"
+    }
+  },
+  "stage": {
+    "moveTo": "Chuyển sang {{stage}}",
+    "currently": "{{name}} · hiện ở {{stage}}",
+    "nothingElse": "Không có gì khác trong bản ghi thay đổi.",
+    "moveWithoutDetails": "Chuyển mà không thêm thông tin",
+    "outcome": "Kết quả",
+    "submitted": {
+      "date": "Ngày nộp",
+      "portal": "URL cổng nộp đơn",
+      "portalHint": "Nơi đơn ứng tuyển được lưu, để dùng khi bạn cần liên hệ lại.",
+      "reference": "Mã xác nhận",
+      "referencePlaceholder": "vd. 4471-QZ"
+    },
+    "interview": {
+      "date": "Ngày phỏng vấn",
+      "format": "Hình thức",
+      "formatLabel": "Hình thức phỏng vấn",
+      "mint": "Thêm vào dòng thời gian",
+      "mintDescription": "Tạo một mục phỏng vấn vào ngày đó, kèm lời nhắc."
+    },
+    "offer": {
+      "respondBy": "Trả lời trước",
+      "package": "Gói đãi ngộ",
+      "packagePlaceholder": "vd. $112k + $15k khởi động",
+      "note": "Ghi chú",
+      "notePlaceholder": "Những gì vẫn đang thương lượng",
+      "mint": "Thêm hạn chót vào dòng thời gian",
+      "mintDescription": "Hạn trả lời mà không có gì nhắc chính là hạn chót bạn không thể bỏ lỡ."
+    },
+    "keepOffer": {
+      "label": "Giữ thông tin lời mời làm việc",
+      "description": "Trả lời trước {{date}}. Tắt mục này để xóa chúng.",
+      "descriptionWithComp": "Trả lời trước {{date}} · {{comp}}. Tắt mục này để xóa chúng."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Lời nhắc mới",
+      "editReminder": "Sửa lời nhắc",
+      "newEvent": "Sự kiện mới",
+      "editEvent": "Sửa sự kiện"
+    },
+    "description": "Dù chọn cách nào cũng chỉ là một bản ghi — nó xuất hiện trên lịch vào ngày bạn đặt, và trong danh sách lời nhắc của Kho lưu trữ khi công tắc đang bật.",
+    "delete": "Xóa",
+    "save": "Lưu",
+    "addReminder": "Thêm lời nhắc",
+    "addEvent": "Thêm sự kiện",
+    "reminderFallback": "Lời nhắc",
+    "duration": {
+      "minutes_other": "{{count}} phút",
+      "hours_other": "{{count}} giờ"
+    },
+    "fields": {
+      "title": "Tiêu đề",
+      "reminderPlaceholder": "vd. Liên hệ lại với nhà tuyển dụng",
+      "eventPlaceholder": "vd. Zoom với hội đồng",
+      "remind": "Hiện trong lời nhắc",
+      "remindOn": "Được liệt kê trong Kho lưu trữ với ô đánh dấu, và trên lịch vào ngày của nó.",
+      "remindOff": "Chỉ hiện trên lịch vào ngày của nó — không có ô đánh dấu trong Kho lưu trữ.",
+      "date": "Ngày",
+      "allDay": "Cả ngày",
+      "allDayDescription": "Khi tắt, mục sẽ có giờ bắt đầu và thời lượng.",
+      "startTime": "Giờ bắt đầu",
+      "length": "Thời lượng",
+      "applicationHint": "Liên kết chúng với nhau, để mỗi đơn ứng tuyển liệt kê mục này và mục này dẫn về bất kỳ đơn nào trong số đó.",
+      "kind": "Loại",
+      "kindFollowUp": "Một lần liên hệ lại cũng được tính là việc cần làm ở Hôm nay, cho đến khi bạn đánh dấu hoàn thành.",
+      "kindHint": "Biểu tượng của nó trên lịch và trong danh sách lời nhắc.",
+      "detail": "Chi tiết",
+      "detailHint": "Một dòng ngữ cảnh, hiện dưới tiêu đề.",
+      "note": "Ghi chú",
+      "noteHint": "Ghi chép riêng của bạn. Được giữ tách khỏi phần chi tiết, nên việc sửa đổi không bao giờ ghi đè lên nó.",
+      "keywords": "Từ khóa",
+      "keywordsHint": "Dùng chung với đơn ứng tuyển, tệp và liên kết — lọc theo một từ khóa sẽ tìm ra tất cả."
+    },
+    "more": {
+      "title": "Thêm chi tiết",
+      "note": "ghi chú",
+      "keywords": "từ khóa",
+      "empty": "ghi chú, từ khóa"
+    },
+    "toast": {
+      "added": "Đã thêm {{title}}",
+      "updated": "Đã cập nhật {{title}}",
+      "inReminders": "có trong lời nhắc",
+      "calendarOnly": "chỉ trên lịch",
+      "owed": "và là việc cần làm tuần này",
+      "deleted": "Đã xóa {{title}}",
+      "goneFromBoth": "Đã biến mất khỏi danh sách lời nhắc và khỏi lịch.",
+      "goneFromCalendar": "Đã biến mất khỏi lịch."
+    }
+  }
+}

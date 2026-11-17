@@ -1,0 +1,254 @@
+{
+  "page": {
+    "title": "Aktarım",
+    "subtitle": "Her şeyi bu bilgisayarla telefonunuz arasında taşıyın",
+    "showAnimation": "Animasyonu göster",
+    "showAnimationHint": "Her karede yeniden çizilen bir WebGPU sahnesi — pildeyken kapatın",
+    "roleLabel": "Bu cihazın rolü",
+    "roles": {
+      "send": "Telefona gönder",
+      "receive": "Telefondan al"
+    },
+    "empty": {
+      "title": "Henüz gönderilecek bir şey yok",
+      "description": "Bu cihazda hiç kayıt yok; bu yüzden gönderilecek bir şey yok. Kayıtlarınızı telefonunuzdan almak için yukarıdan Telefondan al'ı seçin. Ya da bir şey ekleyin veya demo verilerini yükleyin; burada gönderebileceğiniz bir grup olarak görünür.",
+      "receive": "Telefondan al",
+      "loadDemo": "Demo verilerini yükle"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Başvurular",
+      "hint": "Her birinin tüm aşamaları, notları ve sonuçları",
+      "summary_one": "{{count}} başvuru",
+      "summary_other": "{{count}} başvuru"
+    },
+    "timeline": {
+      "label": "Hatırlatıcılar ve etkinlikler",
+      "hint": "{{reminders}} hatırlatıcı, {{events}} tarihli etkinlik",
+      "summary_one": "{{count}} hatırlatıcı ya da etkinlik",
+      "summary_other": "{{count}} hatırlatıcı ve etkinlik"
+    },
+    "vault": {
+      "label": "Bağlantılar ve metin parçaları",
+      "hint": "{{links}} bağlantı · {{snippets}} metin parçası",
+      "summary_one": "{{count}} bağlantı ya da metin parçası",
+      "summary_other": "{{count}} bağlantı ve metin parçası"
+    },
+    "files": {
+      "label": "Dosyalar",
+      "hint": "CV'ler, beyanlar ve bir başvuruya kaydedilmiş diğer her şey",
+      "summary_one": "{{count}} dosya",
+      "summary_other": "{{count}} dosya"
+    },
+    "keywords": {
+      "label": "Anahtar kelimeler",
+      "hint": "Anahtar kelime listeniz ve bağlı olduğu tüm kayıtlar",
+      "summary_one": "{{count}} anahtar kelime",
+      "summary_other": "{{count}} anahtar kelime"
+    },
+    "scout": {
+      "label": "İş gözcüsü",
+      "hint": "{{pipelines}} işlem hattı · {{postings}} kayıtlı ilan · {{matches}} eşleşme",
+      "summary_one": "{{count}} iş gözcüsü kaydı",
+      "summary_other": "{{count}} iş gözcüsü kaydı"
+    },
+    "notes": {
+      "label": "Yapışkan notlar",
+      "hint": "Ana sayfa panonuzdaki kendinize notlar",
+      "summary_one": "{{count}} yapışkan not",
+      "summary_other": "{{count}} yapışkan not"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Adınız, bağlantılarınız, eşleştirme terimleriniz ve gözcü anahtarları",
+      "summary_one": "{{count}} profil",
+      "summary_other": "{{count}} profil"
+    },
+    "people": {
+      "label": "Kişiler",
+      "hint": "Referanslar, işe alım komitesi başkanları, işe alım uzmanları ve ait oldukları başvurular",
+      "summary_one": "{{count}} kişi",
+      "summary_other": "{{count}} kişi"
+    },
+    "background": {
+      "label": "Geçmiş",
+      "hint": "CV'nizden okunan dereceler, görevler, makaleler ve beceriler",
+      "summary_one": "{{count}} geçmiş bilgisi",
+      "summary_other": "{{count}} geçmiş bilgisi"
+    },
+    "nothing": "hiçbir şey"
+  },
+  "stage": {
+    "sameNetwork": "İki cihazın da aynı yerel ağda olması gerekir — kayıtlar, sunucu ya da aktarıcı olmadan doğrudan aralarında gider.",
+    "send": {
+      "idle": {
+        "title": "Diğer cihaz bekleniyor",
+        "body": "Telefonunuzda jojo'yu açın, Aktarım'ı ve ardından Bilgisayardan al'ı seçin ve buradaki kodu tarayın. Kodu taramak iki cihaz arasında bir şifreleme anahtarı belirler ve bunun için hiçbir şey yayınlanmaz. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Telefonunuza ulaşılıyor",
+        "body": "Yazdığınız adresten el sıkışmanın kendi yarısı isteniyor. Henüz hiçbir şey gönderilmedi."
+      },
+      "packing": {
+        "title": "Kayıtlarınız toplanıyor",
+        "body": "Aşağıdaki listedeki her şey bu cihazdan okunuyor. Ağda hâlâ hiçbir şey yok."
+      },
+      "sending": {
+        "title": "Kayıtlarınız taşınıyor",
+        "body": "Mühürlü parçalar, yerel ağ üzerinden doğrudan telefonunuza. İlerleme, yazdığınız kodun yanında."
+      },
+      "done": {
+        "title": "Her şey gönderildi",
+        "body": "Telefonunuz bir şeyin yerini almadan önce sorar; ne karar verdiği yazdığınız kodun yanında. Bu cihazdan hiçbir şey kaldırılmadı — aktarım bir kopyadır."
+      },
+      "failed": {
+        "title": "Aktarım durdu",
+        "body": "Bu cihazda hiçbir şey değişmedi. Neyin yanlış gittiği, yazdığınız kodun yanında yazıyor."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "Telefonunuz bekleniyor",
+        "body": "Telefonunuzda jojo'yu açın, Aktarım'ı ve ardından Bilgisayara gönder'i seçin ve buradaki kodu tarayın. Telefonunuz sonra sağ tarafa yazmanız için kısa bir kod gösterir. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Telefonunuza ulaşılıyor",
+        "body": "Yazdığınız adresten el sıkışmanın kendi yarısı isteniyor. Henüz hiçbir şey alınmadı."
+      },
+      "receiving": {
+        "title": "Telefonunuzun kayıtları alınıyor",
+        "body": "Mühürlü parçalar, yerel ağ üzerinden doğrudan telefonunuzdan. Siz onaylayana kadar bu bilgisayarda hiçbir şey değişmez."
+      },
+      "confirming": {
+        "title": "Her şey ulaştı",
+        "body": "Telefonunuzun kayıtları ulaştı ve doğrulandı. Burada henüz hiçbir şey değişmedi — bu bilgisayardakilerin yerini alıp almayacaklarını söyleyin."
+      },
+      "restoring": {
+        "title": "Buradaki kayıtlar değiştiriliyor",
+        "body": "Telefonunuzun gönderdikleri, bu bilgisayardakilerin üzerine yazılıyor."
+      },
+      "done": {
+        "title": "Her şey taşındı",
+        "body": "Bu bilgisayarda artık telefonunuzun kayıtları var. Telefondan hiçbir şey kaldırılmadı — aktarım bir kopyadır."
+      },
+      "failed": {
+        "title": "Aktarım durdu",
+        "body": "Bu bilgisayarda hiçbir şey değişmedi. Neyin yanlış gittiği, yazdığınız kodun yanında yazıyor."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} — bu bilgisayarda şu anda olan ve telefonunuzun kayıtlarının yerini alacağı şey bu.",
+      "sent": "{{summary}} — gönderilen bu.",
+      "willMove": "{{summary}} — taşınacak olan bu."
+    },
+    "scanHint": "Buradaki kodu telefonunuzdaki jojo uygulamasıyla tarayın — anahtar odur — ardından size sağ tarafa yazmanız için kısa bir kod gösterir.",
+    "chooseGroup": "Göndermek için en az bir grup seçin."
+  },
+  "qr": {
+    "label": "Eşleştirme kodu. Telefonunuzdaki jojo uygulamasıyla tarayın: Aktarım'ı açın ve kamerayı bu kareye tutun."
+  },
+  "details": {
+    "title": "Ayrıntılar",
+    "hint": "bu aktarım",
+    "records": "Kayıtlar",
+    "recordsHint": "aşağıdaki gruplardaki her şey",
+    "encryption": "Şifreleme",
+    "encryptionHint": "AES-256-GCM, anahtar kamerayla belirlendi",
+    "keyAgreed": "Anahtar belirlendi",
+    "notPaired": "Henüz eşleştirilmedi",
+    "route": "Yol",
+    "routeHint": "özel bir ağ adresi — asla internet değil",
+    "localNetwork": "Yerel ağ",
+    "servers": "Sunucular",
+    "serversHint": "aktarıcı yok, sinyalleşme yok, barındırılan hiçbir şey yok",
+    "none": "Yok"
+  },
+  "payload": {
+    "label": "Dosyaları aktar",
+    "noFiles": "Bu cihazda dosya yok",
+    "files_one": "{{count}} dosya — aktarımın en yavaş kısmı",
+    "files_other": "{{count}} dosya — aktarımın en yavaş kısmı"
+  },
+  "connect": {
+    "title": "Bağlan",
+    "hintUnable": "bu tarayıcıda değil",
+    "unable": "Bu tarayıcı ağınızdaki başka bir cihaza bağlanamaz — Safari ve iPhone ya da iPad'deki hiçbir tarayıcı bağlanamaz; yayımlanan siteden Firefox da bağlanamaz. Bir bilgisayarda Chrome ya da Edge kullanın — ya da her şeyi Ayarlar'daki bir yedek dosyasıyla taşıyın; bu her yerde çalışır ve boyut sınırı yoktur.",
+    "hint": "diğer cihazdan",
+    "intro": "Taramadan sonra telefonunuz kısa bir kod gösterir. Onu buraya yazın — bu bilgisayar telefonun nerede olduğunu böyle öğrenir; bir tarayıcı bunu kendi başına bulamaz.",
+    "codeLabel": "Telefonunuzda gösterilen kod",
+    "send": "Gönder",
+    "progress": "Aktarım ilerlemesi",
+    "reaching": "Telefonunuza ulaşılıyor…",
+    "gathering": "Kayıtlarınız toplanıyor…",
+    "percentSent": "%{{percent}} gönderildi",
+    "cancel": "İptal",
+    "another": "Başka bir cihaza gönder"
+  },
+  "done": {
+    "applied": "Telefonunuzda artık bu kayıtlar var.",
+    "appliedAt": "{{target}} adresindeki telefonunuzda artık bu kayıtlar var.",
+    "declined": "Her şey gönderildi ve telefonunuz kendi kayıtlarını tuttu — orada hiçbir şeyin yerine bir şey konmadı.",
+    "failed": "Her şey gönderildi ama telefonunuz okuyamadı; bu yüzden orada hiçbir şeyin yerine bir şey konmadı. Yeniden deneyin.",
+    "unknown": "Her şey gönderildi. Telefonunuz kayıtları alıp almadığını söylemedi — orada kontrol edin.",
+    "unknownTo": "Her şey {{target}} adresine gönderildi. Telefonunuz kayıtları alıp almadığını söylemedi — orada kontrol edin.",
+    "waiting": "Her şey gönderildi. Telefonunuz bir şeyin yerini almadan önce sorar — bitirmek için orada onaylayın.",
+    "waitingTo": "Her şey {{target}} adresine gönderildi. Telefonunuz bir şeyin yerini almadan önce sorar — bitirmek için orada onaylayın."
+  },
+  "receive": {
+    "title": "Telefondan al",
+    "hint": "telefonunuzdan",
+    "unable": "Bu tarayıcı ağınızdaki başka bir cihaza bağlanamaz — Safari ve iPhone ya da iPad'deki hiçbir tarayıcı bağlanamaz; yayımlanan siteden Firefox da bağlanamaz. Bir bilgisayarda Chrome ya da Edge kullanın — ya da telefonunuzda bir yedek dışa aktarıp Ayarlar altında açın.",
+    "intro": "Telefonunuzda Aktarım'ı açın, Bilgisayara gönder'i seçin ve bu sayfadaki kodu tarayın. Telefon sonra kısa bir kod gösterir — onu buraya yazın. İki cihazın da aynı yerel ağda olması gerekir.",
+    "codeLabel": "Telefonunuzda gösterilen kod",
+    "receive": "Al",
+    "reaching": "Telefonunuza ulaşılıyor…",
+    "progress": "Şimdiye kadar {{size}} alındı. Siz onaylayana kadar burada hiçbir şey değişmez.",
+    "cancel": "İptal",
+    "restoring": "Bu bilgisayardaki kayıtlar değiştiriliyor…",
+    "replaceWarning": "Almak, siz onayladığınızda bu bilgisayardaki her şeyin yerine telefonunuzdakileri koyar. Buradakilerin bir kopyasını saklamak için önce bir yedek indirin.",
+    "downloadFirst": "Önce yedek indir",
+    "twoBrowsers": {
+      "title": "İki tarayıcı",
+      "hint": "iki bilgisayar arasında",
+      "body": "Bir web sayfası bağlantı kabul edemez, diğer bilgisayarınki de edemez; bu yüzden iki bilgisayar birbirine bağlanamaz. Birinden yedek dışa aktarıp diğerinde açın — tüm kayıtları ve tüm belgeleri taşır.",
+      "export": "Yedeği dışa aktar"
+    },
+    "reload": "jojo'yu yeniden yükle"
+  },
+  "pullConfirm": {
+    "title": "Her şeyin yerine telefonunuzun gönderdikleri konsun mu?",
+    "description": "Telefonunuz şunları gönderdi: {{contents}}. {{replaces}}; bu geri alınamaz — geçmiş de onlarla birlikte gider. Emin değilseniz önce bir yedek indirin.",
+    "confirm": "Her şeyi değiştir"
+  },
+  "handover": {
+    "sendingAgain": "Yeniden göndermek, oradaki her şeyin yerine buradaki her şeyi koyar."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Bu tarayıcı ağınızdaki başka bir cihaza bağlanamaz — Safari bağlanamaz, iPhone ya da iPad'deki hiçbir tarayıcı bağlanamaz ve Firefox yayımlanan siteden bağlanamaz. Bir bilgisayarda Chrome ya da Edge kullanın veya kayıtlarınızı bunun yerine bir yedek dosyasıyla taşıyın.",
+      "notLocal": "Bu adres bir yerel ağda değil. jojo yalnızca özel bir adrese bağlanır; böylece aktarım asla internetten geçmez.",
+      "unreachable": "Bu adresten yanıt yok. İki cihazın da aynı yerel ağda olduğunu ve tarayıcınızın yerel ağdaki cihazları bulmasına izin verildiğini kontrol edin. Bazı misafir ağları cihazların birbirini görmesini engeller.",
+      "refused": "Bu cihaz bağlantıyı reddetti. Telefonun ters yönde ayarlandığını kontrol edin — bu bilgisayar gönderirken telefonda Al, alırken Gönder — ardından yeni bir kod gösterip yeniden tarayın.",
+      "oversized": "Bu cihaz, jojo'nun beklediğinden çok daha fazlasıyla yanıt verdi; bu yüzden okumayı durdurdu. Bu bilgisayarda hiçbir şey değişmedi.",
+      "timeout": "Bu cihaz yanıt vermeyi bıraktı. Telefonda jojo'yu ekran açık şekilde açık tutun, ardından yeni bir kod gösterip yeniden deneyin.",
+      "blocked": "Tarayıcınız bu sitenin yerel ağınızdaki cihazlara ulaşmasını engelledi. Site ayarlarından (adresin solundaki simge) izin verin, ardından yeniden deneyin.",
+      "cancelled": "İptal edildi.",
+      "conflict": "Telefonunuz göndermek için kayıtlarını toplayamadı. Telefondaki mesajı kontrol edin — bu bilgisayarda hiçbir şey değişmedi."
+    },
+    "dial": {
+      "unreadable": "Bu kodda jojo'nun kullanmadığı karakterler var. Diğer ekranla karşılaştırın.",
+      "length": "Bu kodun uzunluğu yanlış. Dörder karakterlik üç gruptan oluşan on iki karakter olmalı.",
+      "mistyped": "Bu kod doğrulanmadı — bir yerde bir karakter yanlış. Yeniden yazmayı deneyin."
+    },
+    "pull": {
+      "forged": "Gelenlerin bir kısmı eşleştirdiğiniz telefondan gelmedi; bu yüzden jojo hepsini attı. Bu bilgisayarda hiçbir şey değişmedi — yeni bir kod gösterip yeniden deneyin.",
+      "oversized": "Telefonunuz, jojo'nun tek seferde alacağından fazlasını gönderdi; bu yüzden okumayı durdurdu. Bu bilgisayarda hiçbir şey değişmedi.",
+      "unrestorable": "Telefonunuzun gönderdikleri geri yüklenemez: {{reason}}. Bu bilgisayarda hiçbir şey değişmedi.",
+      "declined": "Hiçbir şey değiştirilmedi. Telefonunuzun gönderdikleri atıldı."
+    },
+    "unexpected": "Bu bilgisayarda bir şeyler ters gitti ve aktarım durdu. Diğer cihazda hiçbir şey geride kalmadı — yeniden deneyin ya da kayıtlarınızı Ayarlar'daki bir yedek dosyasıyla taşıyın.",
+    "unproven": "Bu cihaz, bu ekrandaki kodu okuduğunu kanıtlayamadı. Yeni bir kod gösterip yeniden tarayın.",
+    "pairingFailed": "Bu cihazda güvenli bir eşleştirme kurulurken bir şeyler ters gitti."
+  }
+}

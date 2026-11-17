@@ -1,0 +1,583 @@
+{
+  "common": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "undo": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "duplicate": "Duplica",
+    "deleteFailed": "Non è stato eliminato",
+    "deleted": "{{title}} eliminato",
+    "unsaved": "Modifiche non salvate",
+    "saved": "{{title}} salvato",
+    "showIt": "Mostralo",
+    "copyBlocked": "Il browser ha bloccato la copia",
+    "updated": "{{title}} aggiornato",
+    "saveChanges": "Salva le modifiche"
+  },
+  "files": {
+    "unfiled": {
+      "title": "File non archiviati sotto nessuna candidatura",
+      "label": "Non archiviati"
+    },
+    "inlineEdit": {
+      "needsName": "Un file ha bisogno di un nome"
+    },
+    "intake": {
+      "tooLarge": "{{name}} era troppo grande per essere controllato",
+      "tooLargeDescription": "È archiviato, e jojo lo mostra con tutti gli indirizzi web bloccati e i link disattivati, quindi visualizzarlo qui non raggiunge nulla in rete, ma tutto ciò che carica dal web mancherà.",
+      "addresses_one": "{{name}} contiene {{count}} indirizzo web",
+      "addresses_many": "{{name}} contiene {{count}} di indirizzi web",
+      "addresses_other": "{{name}} contiene {{count}} indirizzi web",
+      "addressesDescription_one": "È archiviato così come l'hai trascinato, e jojo lo mostra con quell'indirizzo bloccato e i link disattivati, quindi visualizzarlo qui non raggiunge nulla in rete. Immagini o stili caricati dal web mancheranno.",
+      "addressesDescription_many": "È archiviato così come l'hai trascinato, e jojo lo mostra con tutti quegli indirizzi bloccati e i link disattivati, quindi visualizzarlo qui non raggiunge nulla in rete. Immagini o stili caricati dal web mancheranno.",
+      "addressesDescription_other": "È archiviato così come l'hai trascinato, e jojo lo mostra con tutti quegli indirizzi bloccati e i link disattivati, quindi visualizzarlo qui non raggiunge nulla in rete. Immagini o stili caricati dal web mancheranno.",
+      "folders_one": "Sembra una cartella",
+      "folders_many": "Sembrano cartelle",
+      "folders_other": "Sembrano cartelle",
+      "foldersDescription": "jojo archivia i documenti uno alla volta. Apri la cartella e trascina i file che contiene.",
+      "reattached": "{{name}} è di nuovo allegato",
+      "reattachedDescription": "La riga era già qui senza il suo documento. Ora ce l'ha.",
+      "stillUnsaved": "{{name}} non è ancora stato possibile salvarlo",
+      "stillUnsavedDescription": "Questo browser si è di nuovo rifiutato di memorizzarlo: probabilmente la sua memoria è ancora piena.",
+      "unsaved": "{{name}} è stato archiviato, ma non salvato",
+      "unsavedDescription": "La riga è qui, ma questo browser si è rifiutato di memorizzare il documento, di solito perché la sua memoria è piena. Libera un po' di spazio e trascina di nuovo lo stesso file: verrà allegato a questa riga invece di crearne una seconda.",
+      "alreadyHere_one": "Quel file è già qui",
+      "alreadyHere_many": "Quei file sono già qui",
+      "alreadyHere_other": "Quei file sono già qui",
+      "alreadyHereDescription": "Nella Cassaforte c'è già un file con lo stesso nome.",
+      "addedOne": "{{name}} aggiunto",
+      "addedMany_one": "{{count}} file aggiunto",
+      "addedMany_many": "{{count}} di file aggiunti",
+      "addedMany_other": "{{count}} file aggiunti",
+      "addedHidden": "Archiviato sotto {{bucket}}: nascosto finché il filtro per parole chiave è attivo.",
+      "addedHiddenVault": "Archiviato nella Cassaforte sotto {{bucket}}: nascosto finché il filtro per parole chiave è attivo.",
+      "addedDescription": "Archiviato sotto {{bucket}} e salvato in questo browser. Non è stato caricato nulla da nessuna parte.",
+      "addedDescriptionVault": "Archiviato nella Cassaforte sotto {{bucket}} e salvato in questo browser. Non è stato caricato nulla da nessuna parte.",
+      "skipped_one": "{{count}} saltato",
+      "skipped_many": "{{count}} saltati",
+      "skipped_other": "{{count}} saltati",
+      "skippedDescription": "Nella Cassaforte c'era già un file con lo stesso nome.",
+      "foldersSkipped_one": "{{count}} cartella saltata",
+      "foldersSkipped_many": "{{count}} di cartelle saltate",
+      "foldersSkipped_other": "{{count}} cartelle saltate"
+    },
+    "row": {
+      "fileName": "Nome del file",
+      "renameHint": "Rinomina questo file",
+      "onDevice": "su questo dispositivo",
+      "viewing": "In visualizzazione",
+      "preview": "Anteprima",
+      "rename": "Rinomina",
+      "editNote": "Modifica nota",
+      "addNote": "Aggiungi nota",
+      "changeApplications": "Cambia candidature",
+      "fileUnder": "Archivia sotto una candidatura",
+      "readIntoProfile": "Leggi nel tuo profilo"
+    },
+    "add": "Aggiungi file",
+    "filterLabel": "Filtra i file per sezione",
+    "searchLabel": "Cerca file",
+    "searchPlaceholder": "Cerca nome o nota",
+    "toast": {
+      "renamed": "{{name}} rinominato",
+      "was": "Prima era {{name}}.",
+      "noteSaved": "Nota di {{name}} salvata",
+      "noteCleared": "Nota di {{name}} cancellata",
+      "noteClearedDescription": "La riga mantiene nome, sezione e parole chiave.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "Compare in ciascuna di esse, e il grafo può trovarlo da qualsiasi.",
+      "unfiledDescription": "Resta nella Cassaforte, non archiviato sotto nulla."
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun file",
+      "zeroDescription": "Trascina qui un annuncio, un articolo o una bozza, o aggiungine uno dal tuo computer.",
+      "search": "Nessun file menziona \"{{query}}\" nel nome, nella nota o nella sezione.",
+      "both": "Nessun file in {{bucket}} ha le parole chiave selezionate.",
+      "bucketTitle": "Nulla in {{bucket}}",
+      "bucketDescription_one": "{{count}} file è archiviato nelle altre sezioni.",
+      "bucketDescription_many": "{{count}} di file sono archiviati nelle altre sezioni.",
+      "bucketDescription_other": "{{count}} file sono archiviati nelle altre sezioni.",
+      "showAll": "Mostra tutte le sezioni",
+      "keywordsTitle": "Nessun file ha quelle parole chiave",
+      "allFiledTitle": "Ogni file è archiviato sotto una candidatura",
+      "allFiledDescription_one": "Tutti e {{count}}. Nulla è lasciato in giro.",
+      "allFiledDescription_many": "Tutti e {{count}}. Nulla è lasciato in giro.",
+      "allFiledDescription_other": "Tutti e {{count}}. Nulla è lasciato in giro.",
+      "unfiledKeywords": "Nessun file non archiviato ha le parole chiave selezionate.",
+      "unfiledBucket": "Nessun file non archiviato è in {{bucket}}."
+    },
+    "drop": {
+      "title": "Rilascia per aggiungere a {{bucket}}",
+      "description": "Vengono letti nome, dimensione e tipo. Non viene caricato nulla.",
+      "hint": "Trascina i file in qualsiasi punto di questo pannello per aggiungerli a {{bucket}}."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Non tutto ciò che hai trascinato è stato usato",
+      "nothing": "Non c'è nulla da aprire"
+    },
+    "save": {
+      "nameLabel": "Nome del nuovo file",
+      "working": "Al lavoro…",
+      "alsoDownload": "Scarica anche",
+      "footnote": "Il risultato viene archiviato come nuovo documento: nulla di ciò da cui sei partito viene modificato. Viene creato qui nel tuo browser, e nessuna parte viene caricata.",
+      "workingSpoken": "Elaborazione del documento in corso"
+    },
+    "thumb": {
+      "turned": "{{label}}, ruotata di {{degrees}} gradi",
+      "noPreview": "Nessuna anteprima"
+    },
+    "source": {
+      "fromVault": "{{label}} dalla Cassaforte",
+      "noneInVault": "Ancora nessun PDF nella Cassaforte",
+      "choose": "Scegli dalla Cassaforte…",
+      "device": "Da questo dispositivo",
+      "fromDevice": "{{label}} da questo dispositivo",
+      "dropHintEmpty": "Oppure trascina un PDF in qualsiasi punto di questa scheda. I file che salvi qui compaiono in questo elenco.",
+      "dropHint": "Oppure trascina un PDF in qualsiasi punto di questa scheda."
+    },
+    "modes": {
+      "merge": "Unisci",
+      "pages": "Pagine",
+      "annotate": "Annota"
+    },
+    "editor": {
+      "title": "Editor PDF",
+      "hint": "Unisci, riorganizza e annota PDF. Tutto avviene in questo browser: nessun documento viene caricato.",
+      "operation": "Operazione PDF",
+      "dropMerge": "Trascina i PDF per aggiungerli all'unione",
+      "dropOpen": "Trascina un PDF per aprirlo"
+    },
+    "errors": {
+      "gone": "{{name}} non è più memorizzato, quindi non può essere aperto.",
+      "noRoom": "{{name}} è stato archiviato, ma i suoi dati non entrano nella memoria di questo browser."
+    },
+    "saved": "{{name}} salvato",
+    "merge": {
+      "move": "Sposta {{name}}, {{position}} di {{total}}",
+      "dragToReorder": "Trascina per riordinare",
+      "fromDevice": "· da questo dispositivo",
+      "allPages": "Tutte le pagine",
+      "rangeLabel": "Pagine da prendere da {{name}}",
+      "remove": "Togli {{name}} dall'unione",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{pages}} da {{documents}}, archiviate sotto {{bucket}}. Gli originali non sono stati toccati.",
+      "pages_one": "{{count}} pagina",
+      "pages_many": "{{count}} di pagine",
+      "pages_other": "{{count}} pagine",
+      "documents_one": "{{count}} documento",
+      "documents_many": "{{count}} di documenti",
+      "documents_other": "{{count}} documenti",
+      "addLabel": "Aggiungi un PDF da unire",
+      "empty": "Aggiungi due o più PDF, o trascinali su questa scheda. Vengono uniti dall'alto verso il basso (trascina una riga dal bordo sinistro per cambiare l'ordine) e gli originali restano come sono.",
+      "position": "posizione {{position}} di {{total}}, {{name}}",
+      "hint": "Intervalli come 1-3, 7, 9- prendono parte di un documento. Lascia una casella vuota per prenderlo tutto.",
+      "action": "Unisci e salva"
+    },
+    "pages": {
+      "savedDescription_one": "{{count}} pagina, archiviata sotto {{bucket}}. {{name}} è invariato.",
+      "savedDescription_many": "{{count}} di pagine, archiviate sotto {{bucket}}. {{name}} è invariato.",
+      "savedDescription_other": "{{count}} pagine, archiviate sotto {{bucket}}. {{name}} è invariato.",
+      "chooseLabel": "Scegli un PDF da organizzare",
+      "empty": "Scegli un PDF. Puoi ruotare pagine, eliminarle, metterle in un ordine diverso e tenerne solo una parte.",
+      "kept_one": "· {{kept}} di {{count}} pagina conservate",
+      "kept_many": "· {{kept}} di {{count}} di pagine conservate",
+      "kept_other": "· {{kept}} di {{count}} pagine conservate",
+      "startOver": "Ricomincia",
+      "page": "Pagina {{number}}",
+      "was": " · prima era {{number}}",
+      "earlier": "Sposta la pagina {{number}} prima",
+      "anticlockwise": "Ruota la pagina {{number}} in senso antiorario",
+      "clockwise": "Ruota la pagina {{number}} in senso orario",
+      "remove": "Rimuovi la pagina {{number}}",
+      "later": "Sposta la pagina {{number}} dopo",
+      "hint": "Ruota, sposta o rimuovi una pagina e questa azione diventa disponibile.",
+      "action": "Salva le pagine"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Evidenzia",
+        "comment": "Commento"
+      },
+      "savedDescription": "{{summary}}, archiviato sotto {{bucket}}. {{name}} è invariato.",
+      "chooseLabel": "Scegli un PDF da annotare",
+      "empty": "Scegli un PDF. Seleziona il testo sulla pagina per evidenziarlo, o passa a Commento e fai clic dove va la nota.",
+      "toolLabel": "Strumento di annotazione",
+      "colour": "Colore dell'evidenziazione",
+      "previousPage": "Pagina precedente",
+      "pageOf": "Pagina {{page}} di {{total}}",
+      "nextPage": "Pagina successiva",
+      "zoom": "Zoom",
+      "highlightHint": "Seleziona le parole sulla pagina (anche su più righe) e vengono evidenziate quando rilasci.",
+      "commentHint": "Fai clic sulla pagina dove va il commento.",
+      "commentPlaceholder": "Qual è il commento?",
+      "notePlaceholder": "Aggiungi una nota…",
+      "commentLabel": "Commento a pagina {{number}}",
+      "noteLabel": "Nota sull'evidenziazione di {{excerpt}}",
+      "removeMark": "Rimuovi questa annotazione",
+      "hintEmpty": "Prima evidenzia del testo o aggiungi un commento.",
+      "hint": "{{summary}} verrà scritto nel file.",
+      "action": "Salva il PDF annotato"
+    }
+  },
+  "instruments": {
+    "calculator": "Calcolatrice",
+    "pdf": "Editor PDF",
+    "label": "Quale strumento",
+    "loading": "Preparazione degli strumenti PDF…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Questo annuncio non ha una copia salvata su questo dispositivo. Le catture restano dove sono state fatte, quindi una fatta sul telefono non è qui, e una riga ripristinata da un backup contiene il record senza la pagina.",
+      "stored": "I browser visualizzano i PDF in modo nativo, ma non i file {{kind}}. Il documento è memorizzato: Salva lo passa alla tua applicazione.",
+      "missing": "I browser visualizzano i PDF in modo nativo, ma non i file {{kind}}, e dietro questa riga non c'è nessun documento memorizzato da passare ad altro."
+    },
+    "dialogDescription": "Un'anteprima di {{name}}, archiviato sotto questa candidatura. Premi Esc per tornare al record.",
+    "noteSaved": "Nota salvata su {{name}}",
+    "noteSavedDescription": "Compare accanto a questo file ovunque la Cassaforte lo elenchi.",
+    "noteEmptyDescription": "Ora la nota è vuota, quindi accanto a questo file non compare nulla.",
+    "captured": "{{name}}, così come è stato catturato",
+    "previewTitle": "Anteprima di {{name}}",
+    "asText": "{{name}}, come testo",
+    "truncated": "Viene mostrato solo il primo megabyte. Salva apre l'intero file nella tua applicazione.",
+    "failedTitle": "Questo browser non ha aperto l'anteprima",
+    "failedDescription": "{{error}}. Il record del file nella tua Cassaforte non è interessato: solo l'anteprima non è stata creata.",
+    "noPreviewTitle": "Nessuna anteprima per questo tipo",
+    "capturedFrom": "Catturato da {{host}}",
+    "fullScreen": "Apri l'anteprima a schermo intero",
+    "fullScreenDescription": "{{name}}, a schermo intero, con un pannello per le note. Premi Esc per tornare indietro.",
+    "notes": {
+      "title": "Note",
+      "hide": "Nascondi il pannello delle note",
+      "show": "Mostra il pannello delle note",
+      "hint": "Conservate per {{name}}, e mostrate ovunque questo file sia elencato.",
+      "label": "Note su {{name}}",
+      "placeholder": "Cosa conta in questo documento: la scadenza nascosta a pagina 3, a chi chiedere…",
+      "saved": "Salvata",
+      "save": "Salva nota"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Rimanda o sposta questo promemoria",
+      "label": "Rimanda \"{{title}}\" — {{when}}",
+      "heading": "Rimanda",
+      "pickDate": "Scegli una data",
+      "move": "Sposta"
+    },
+    "row": {
+      "markNotDone": "Segna \"{{title}}\" come non fatto",
+      "markDone": "Segna \"{{title}}\" come fatto",
+      "draftReply": "Scrivi una risposta"
+    },
+    "relatedTwo": "{{first}} e {{second}}",
+    "relatedMany_one": "{{count}} candidatura",
+    "relatedMany_many": "{{count}} di candidature",
+    "relatedMany_other": "{{count}} candidature",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (copia)",
+    "add": "Aggiungi promemoria",
+    "filterLabel": "Filtra i promemoria per scadenza",
+    "searchLabel": "Cerca promemoria",
+    "searchPlaceholder": "Cerca titolo, nota o lavoro",
+    "toast": {
+      "reopened": "{{title}} riaperto",
+      "completed": "{{title}} completato",
+      "reopenedDescription": "Di nuovo alla sua data, e di nuovo nel pannello se è un sollecito.",
+      "completedDescription": "Archiviato in Completati, e tolto dal pannello.",
+      "moved": "{{title}} spostato",
+      "nowDue": "Ora scade il {{date}} · {{when}}",
+      "duplicated": "{{title}} duplicato",
+      "duplicatedDescription": "La copia è aperta e scade il {{date}}.",
+      "stillOnList": "{{title}} è ancora nell'elenco.",
+      "deletedDescription": "{{description}} — rimosso dal calendario oltre che da questo elenco."
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun promemoria",
+      "zeroDescription": "Un promemoria è un avviso con una data: sollecitare un referente, controllare un portale, inviare un ringraziamento. Quelli che segni come solleciti compaiono anche nel pannello finché non li spunti.",
+      "search": "Nessun promemoria menziona \"{{query}}\" nel titolo, nella nota, nel tipo o nella candidatura.",
+      "both": "Nessun promemoria {{bucket}} ha le parole chiave selezionate.",
+      "doneTitle": "Ancora nulla di completato",
+      "doneDescription": "I promemoria che spunti si raccolgono qui, così uno spuntato per errore si ritrova.",
+      "showAll": "Mostra tutti i promemoria",
+      "bucketTitle": "Nulla {{bucket}}",
+      "bucketDescription_one": "{{count}} promemoria è negli altri gruppi.",
+      "bucketDescription_many": "{{count}} di promemoria sono negli altri gruppi.",
+      "bucketDescription_other": "{{count}} promemoria sono negli altri gruppi.",
+      "keywordsTitle": "Nessun promemoria ha quelle parole chiave"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "È il filtro per parole chiave in cima alla pagina a nasconderli.",
+    "searchTitle": "Nulla corrisponde a quella ricerca",
+    "clearSearch": "Cancella ricerca",
+    "filtersTitle": "Nulla corrisponde a quei filtri",
+    "clearFilters": "Cancella i filtri",
+    "showFiled": "Mostra anche i file archiviati",
+    "bothTitle": "Nulla corrisponde a entrambi i filtri",
+    "clearBoth": "Cancella entrambi i filtri",
+    "clearKeywords": "Cancella le parole chiave"
+  },
+  "capture": {
+    "posting": "Annuncio",
+    "savedOne": "{{name}} salvato nella tua Cassaforte",
+    "savedMany_one": "{{count}} annuncio salvato nella tua Cassaforte",
+    "savedMany_many": "{{count}} di annunci salvati nella tua Cassaforte",
+    "savedMany_other": "{{count}} annunci salvati nella tua Cassaforte",
+    "suggested": "Non archiviato sotto nessuna candidatura. {{name}} sembra corrispondere: archivialo dalla riga nella tua Cassaforte.",
+    "unfiled": "Non archiviato sotto nessuna candidatura. Archivialo dalla riga nella tua Cassaforte quando vuoi.",
+    "dropped_one": "{{count}} risorsa non è stata conservata, quindi alcune parti potrebbero apparire spoglie.",
+    "dropped_many": "{{count}} di risorse non sono state conservate, quindi alcune parti potrebbero apparire spoglie.",
+    "dropped_other": "{{count}} risorse non sono state conservate, quindi alcune parti potrebbero apparire spoglie.",
+    "unstored_one": "{{count}} non è stato memorizzato su questo dispositivo: il record c'è, la pagina no.",
+    "unstored_many": "{{count}} non sono stati memorizzati su questo dispositivo: il record c'è, la pagina no.",
+    "unstored_other": "{{count}} non sono stati memorizzati su questo dispositivo: il record c'è, la pagina no.",
+    "refusedOne": "Una cattura non è stata conservata",
+    "refusedMany_one": "{{count}} cattura non è stata conservata",
+    "refusedMany_many": "{{count}} di catture non sono state conservate",
+    "refusedMany_other": "{{count}} catture non sono state conservate",
+    "waitingOne": "Un annuncio è in attesa di essere salvato qui.",
+    "waitingMany_one": "{{count}} annuncio è in attesa di essere salvato qui.",
+    "waitingMany_many": "{{count}} di annunci sono in attesa di essere salvati qui.",
+    "waitingMany_other": "{{count}} annunci sono in attesa di essere salvati qui.",
+    "source": "Catturato con l'estensione jojo, ancora su questo dispositivo.",
+    "saving": "Salvataggio…",
+    "saveIt": "Salvalo",
+    "saveThem": "Salvali"
+  },
+  "picker": {
+    "none": "Nessuna candidatura",
+    "label": "Candidature correlate",
+    "searchLabel": "Cerca candidature",
+    "searchPlaceholder": "Cerca candidature…",
+    "noneYet": "Ancora nessuna candidatura.",
+    "noMatch": "Nessuna candidatura corrisponde.",
+    "unfile": {
+      "record": "Scollega questo record",
+      "file": "Scollega questo file",
+      "link": "Scollega questo link",
+      "snippet": "Scollega questo frammento",
+      "person": "Scollega questa persona",
+      "conversation": "Scollega questa conversazione"
+    }
+  },
+  "snippets": {
+    "openInVault": "Apri nella Cassaforte",
+    "card": {
+      "edit": "Modifica questo frammento",
+      "moveTo": "Sposta in"
+    },
+    "editor": {
+      "editTitle": "Modifica frammento",
+      "newTitle": "Nuovo frammento",
+      "title": {
+        "label": "Titolo",
+        "placeholder": "es. Perché questo dipartimento"
+      },
+      "kind": {
+        "label": "Tipo",
+        "hint": "Dove viene archiviato, e quale etichetta mostra l'elenco."
+      },
+      "application": {
+        "label": "Candidatura correlata",
+        "hint": "Quanti lavori vuoi. Comparirà poi nella pagina di ciascuno."
+      },
+      "text": {
+        "label": "Testo",
+        "hint": "Dimensione, colore, grassetto, corsivo, sottolineato e barrato vengono salvati con il testo. Elenchi e tabelle vengono conservati come righe semplici.",
+        "placeholder": "Scrivi il paragrafo che continui a riscrivere…"
+      },
+      "fullScreen": "Scrivi a schermo intero",
+      "keywords": {
+        "label": "Parole chiave",
+        "hint": "Condivise con candidature, promemoria e file: filtrando per una le trovi tutte."
+      },
+      "savedNote": "Salvato nel database di questo browser: lo ritrovi qui quando torni.",
+      "fullScreenDescription": "Modifica del frammento a schermo intero. Premi Esc per tornare indietro."
+    },
+    "errors": {
+      "title": "Dai un nome al frammento.",
+      "body": "Scrivi il testo che vuoi incollare in seguito."
+    },
+    "toast": {
+      "filed": "Archiviato sotto {{tag}}, pronto da copiare dall'elenco.",
+      "filedHidden": "Archiviato sotto {{tag}}: nascosto dai filtri sopra l'elenco.",
+      "duplicated": "La copia è archiviata sotto {{tag}}, pronta per essere riscritta.",
+      "moved": "Archiviato sotto {{tag}}.",
+      "movedOut": "Archiviato sotto {{tag}}: fuori dall'elenco {{filter}} che stai guardando.",
+      "stillThere": "{{title}} è ancora nella Cassaforte.",
+      "stillThereUnnamed": "Il frammento è ancora nella Cassaforte.",
+      "deletedUnnamed": "Frammento eliminato",
+      "deletedDescription": "Il testo e le sue parole chiave vengono eliminati con esso."
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun frammento",
+      "zeroDescription": "Salva i paragrafi che continui a riscrivere: la biografia, il perché di questo dipartimento, l'email di sollecito.",
+      "search": "Nessun frammento menziona \"{{query}}\" nel nome, nel testo o nel tipo.",
+      "both": "Nessun frammento {{tag}} ha le parole chiave selezionate.",
+      "bucketTitle": "Nessun frammento {{tag}}",
+      "bucketDescription_one": "{{count}} frammento è archiviato negli altri tipi.",
+      "bucketDescription_many": "{{count}} di frammenti sono archiviati negli altri tipi.",
+      "bucketDescription_other": "{{count}} frammenti sono archiviati negli altri tipi.",
+      "showAll": "Mostra tutti i tipi",
+      "keywordsTitle": "Nessun frammento ha quelle parole chiave"
+    },
+    "filterLabel": "Filtra i frammenti per tipo",
+    "searchLabel": "Cerca frammenti",
+    "searchPlaceholder": "Cerca nome o testo",
+    "copied": "Frammento copiato negli appunti",
+    "discard": {
+      "title": "Scartare le modifiche non salvate?",
+      "description": "\"{{title}}\" ha modifiche non salvate. Uscendo adesso le perdi, e non si può annullare.",
+      "untitled": "Frammento senza titolo",
+      "confirm": "Scarta le modifiche"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Base",
+      "scientific": "Scientifica"
+    },
+    "mode": "Modalità della calcolatrice",
+    "ops": {
+      "plus": "più",
+      "minus": "meno",
+      "times": "per",
+      "dividedBy": "diviso",
+      "power": "elevato alla"
+    },
+    "history": "Cronologia",
+    "plusMinus": "più o meno",
+    "backspace": "Cancella",
+    "clear": "Azzera",
+    "empty": "Ancora nulla. I calcoli completati compaiono qui.",
+    "use": "Usa {{value}}"
+  },
+  "links": {
+    "newTab": "Si apre in una nuova scheda",
+    "errors": {
+      "title": "Dai un titolo al link.",
+      "url": "Serve un host, come jobs.rice.edu/postings.",
+      "empty": "Incolla un URL per salvarlo."
+    },
+    "fields": {
+      "title": "Titolo",
+      "url": "URL",
+      "category": "Categoria",
+      "applicationHint": "Archivia il link sotto un lavoro, così entrambi sono collegati tra loro.",
+      "note": "Nota",
+      "noteHint": "Una riga sul perché vale la pena conservarlo."
+    },
+    "add": "Aggiungi link",
+    "toast": {
+      "saved": "Archiviato sotto {{category}}, con un titolo ricavato dall'URL.",
+      "savedHidden": "Archiviato sotto {{category}}: nascosto finché il filtro per parole chiave è attivo.",
+      "duplicated": "La copia è archiviata sotto {{category}}, pronta per essere modificata.",
+      "deletedDescription": "Rimosso dalla Cassaforte. La pagina a cui punta non viene toccata."
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun link salvato",
+      "zeroDescription": "Salva un URL: un annuncio, la pagina di un dipartimento, una persona che ti hanno detto di contattare. Il titolo viene ricavato dall'indirizzo.",
+      "search": "Nessun link menziona \"{{query}}\" nel titolo, nell'indirizzo, nella nota o nella categoria.",
+      "both": "Nessun link {{category}} ha le parole chiave selezionate.",
+      "bucketTitle": "Nessun link in {{category}}",
+      "bucketDescription_one": "{{count}} link è archiviato nelle altre categorie.",
+      "bucketDescription_many": "{{count}} di link sono archiviati nelle altre categorie.",
+      "bucketDescription_other": "{{count}} link sono archiviati nelle altre categorie.",
+      "showAll": "Mostra tutte le categorie",
+      "keywordsTitle": "Nessun link ha quelle parole chiave"
+    },
+    "filterLabel": "Filtra i link per categoria",
+    "searchLabel": "Cerca link",
+    "searchPlaceholder": "Cerca titolo, indirizzo o nota",
+    "form": {
+      "label": "Salva un link",
+      "hint": "Salvato sotto {{category}}, con un titolo ricavato dall'URL. Modifica una riga per cambiare l'uno o l'altro.",
+      "placeholder": "Incolla un URL…",
+      "save": "Salva link"
+    }
+  },
+  "people": {
+    "add": "Aggiungi persona",
+    "searchLabel": "Cerca persone",
+    "searchPlaceholder": "Cerca nome, ruolo o nota",
+    "applicationsList": "Elenco delle candidature",
+    "toast": {
+      "removed": "Persona rimossa",
+      "saved": "Persona salvata"
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessuno",
+      "zeroDescription": "Referenti, presidenti di commissione, selezionatori: chiunque sia coinvolto nella ricerca. Archiviali sotto i lavori in cui sono indicati e compariranno anche in quei record.",
+      "searchTitle": "Nessuno corrisponde",
+      "searchDescription": "Prova con parte di un nome, un ruolo o dove si trovano."
+    },
+    "namedOn": {
+      "recommender": "Referente per {{names}}",
+      "contact": "Persona di contatto presso {{names}}",
+      "named": "Indicato in {{names}}"
+    },
+    "form": {
+      "name": "Nome",
+      "nameError": "Il nome è l'unica cosa necessaria.",
+      "namePlaceholder": "es. Prof. Ngozi Okafor",
+      "role": "Ruolo",
+      "rolePlaceholder": "es. Referente, presidente di commissione, selezionatore",
+      "affiliation": "Affiliazione",
+      "affiliationPlaceholder": "es. Rice",
+      "affiliationHint": "Dove si trovano. Non collegato a un datore di lavoro a cui ti sei candidato.",
+      "email": "Email",
+      "phone": "Telefono",
+      "namedOn": "Indicato in",
+      "namedOnHint": "Ogni lavoro per cui scrivono, selezionano o presiedono.",
+      "notePlaceholder": "Cosa hanno detto, cosa ti devono, quando sollecitarli.",
+      "save": "Salva persona"
+    }
+  },
+  "referee": {
+    "title": "Candidature per {{name}}",
+    "description": "Spunta quelle da inviare e indica cosa vuoi che ogni lettera metta in evidenza. I punti salienti e le note vengono conservati su {{name}} per la prossima volta.",
+    "include": "Includi {{org}}, {{role}}",
+    "applied": "Candidatura del {{date}}",
+    "noMaterials": "Nessun materiale archiviato",
+    "materials_one": "{{count}} materiale",
+    "materials_many": "{{count}} di materiali",
+    "materials_other": "{{count}} materiali",
+    "posting": "Annuncio",
+    "noPosting": "Nessun link all'annuncio",
+    "highlight": "Punto saliente",
+    "highlightPlaceholder": "es. didattica, NSF CAREER, inferenza causale",
+    "highlightHint": "Separa con virgole.",
+    "note": "Nota per loro",
+    "notePlaceholder": "Qualsiasi altra cosa: la scadenza, a chi indirizzarla, a cosa tiene il dipartimento.",
+    "format": "Formato del file",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Includi i miei materiali",
+    "withMaterialsCount": "Includi i miei materiali ({{count}})",
+    "tickOne": "Spunta almeno una candidatura.",
+    "chosen_one": "{{count}} candidatura",
+    "chosen_many": "{{count}} di candidature",
+    "chosen_other": "{{count}} candidature",
+    "chosenZip_one": "{{count}} candidatura, in un unico .zip",
+    "chosenZip_many": "{{count}} di candidature, in un unico .zip",
+    "chosenZip_other": "{{count}} candidature, in un unico .zip",
+    "preparing": "Preparazione…",
+    "download": "Scarica",
+    "toast": {
+      "saved": "Elenco per {{name}} salvato",
+      "zip_one": "{{file}}: il foglio e {{count}} documento, nella cartella dei download.",
+      "zip_many": "{{file}}: il foglio e {{count}} di documenti, nella cartella dei download.",
+      "zip_other": "{{file}}: il foglio e {{count}} documenti, nella cartella dei download.",
+      "zipMissing_one": "{{file}} è nella cartella dei download, senza {{count}} documento che questo browser non riusciva più a leggere.",
+      "zipMissing_many": "{{file}} è nella cartella dei download, senza {{count}} di documenti che questo browser non riusciva più a leggere.",
+      "zipMissing_other": "{{file}} è nella cartella dei download, senza {{count}} documenti che questo browser non riusciva più a leggere.",
+      "sheet": "{{file}}, nella cartella dei download.",
+      "failed": "Non è stato possibile creare l'elenco",
+      "failedDescription": "Non è stato scaricato nulla. I punti salienti e le note sono stati conservati.",
+      "highlights": "Punti salienti salvati"
+    }
+  }
+}

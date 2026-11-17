@@ -1,0 +1,641 @@
+{
+  "checklist": {
+    "title": "Kontrol listesi",
+    "titleCount": "Kontrol listesi · {{total}} adımdan {{open}} tanesi açık",
+    "notAdded": "Bu adım eklenmedi",
+    "deleted": "Adım silindi",
+    "draft": "Taslak hazırla",
+    "draftMore": "Daha fazla taslak hazırla",
+    "actionsFor": "{{step}} için eylemler",
+    "empty": {
+      "title": "Listede henüz bir şey yok",
+      "noPosting": "Bu başvurunun arkasında kayıtlı bir ilan yok; bu yüzden jojo sizden ne göndermenizi istediğini okuyamıyor. Yine de kendi adımlarınızı ekleyebilirsiniz.",
+      "noModel": "Kontrol listesi taslağı hazırlamak için bir model gerekir. Ayarlar'dan bir model bağlayın ya da aşağıya kendi adımlarınızı ekleyin.",
+      "ready": "jojo'dan ne göndermeniz gerektiğini ilandan okumasını isteyin ya da aşağıya kendi adımlarınızı ekleyin."
+    },
+    "addStep": "Adım ekle",
+    "step": "Adım"
+  },
+  "fit": {
+    "title": "Uyumunuz",
+    "step": {
+      "reading": "İlan açılıyor…",
+      "asking": "İstedikleri okunuyor…"
+    },
+    "measure": "Bu ilanı ölç",
+    "rerun": "Yeniden çalıştır",
+    "rerunHint": "İlanı yeniden okuyun ve yeniden ölçün",
+    "clear": "Bu değerlendirmeyi temizle",
+    "clearHint": "Siz isteyene kadar jojo bu ilanı ölçmeyi bırakır",
+    "cleared": "Uyum değerlendirmesi temizlendi",
+    "notCleared": "Temizlenmedi",
+    "clearedBody": "Siz istemedikçe jojo bu ilanı bir daha okumaz.",
+    "options": "Uyum seçenekleri",
+    "blocked": {
+      "noPosting": "Bu başvurunun arkasında kayıtlı bir ilan yok; bu yüzden sizi karşılaştıracak bir şey yok. İlanı yakalayın ya da başvuruyu bağlantısından ekleyin, burası dolsun.",
+      "noModel": "Bir ilanın ne istediğini okumak için bir model gerekir. Daha fazla → Ayarlar altından bir model bağlayın.",
+      "noBackground": "jojo henüz geçmişinize dair hiçbir şey okumadı; bu yüzden bu ilanı onunla karşılaştıramıyor. CV'nizi Kasa'ya koyun ve okumayı önerdiğinde evet deyin."
+    },
+    "clearedNote": "Bu değerlendirmeyi temizlediniz; bu yüzden jojo bu ilana dokunmuyor.",
+    "queued": "Sırada…",
+    "leadWith": "Öne çıkarın",
+    "answers": "karşıladığı şart: “{{requirement}}”",
+    "beReadyFor": "Hazırlıklı olun",
+    "required": " — zorunlu",
+    "skipped_one": " · {{count}} satır atlandı",
+    "skipped_other": " · {{count}} satır atlandı"
+  },
+  "tailored": {
+    "title": "Uyarlanmış materyaller",
+    "hint": "Bu ilan için yeniden yazıldı, değişiklikler işaretlendi.",
+    "tailor": "Uyarla",
+    "tailoredBefore": "{{label}} · daha önce uyarlandı",
+    "blocked": {
+      "noPosting": "Bu başvurunun arkasında kayıtlı bir ilan yok; bu yüzden belgelerinizi uyarlayacak bir şey yok. Başvuruyu bağlantısından ekleyin ya da ilanı yakalayın, bu seçenek sunulsun.",
+      "noModel": "Bir belgeyi uyarlamak için bir model gerekir. Daha fazla → Ayarlar altından bir model bağlayın.",
+      "noDocuments": "Henüz uyarlanacak bir şey yok. Uyarlama, başvuruyla gönderdiğiniz belgeleri yeniden yazar — CV'nizi, beyanlarınızı ya da ön yazınızı Daha fazla → Profilim altına ekleyin veya Kasa'da Başvurular altında dosyalayın; burada görünürler."
+    },
+    "queued": "Sırada…",
+    "working": "Çalışıyor…",
+    "empty": "Henüz uyarlanmış bir şey yok. Uyarla'ya basın, bir belge seçin; jojo bu ilan için bir sürüm yazar ve değiştirdiklerini işaretler.",
+    "deleted": "{{title}} silindi",
+    "notDeleted": "Silinmedi",
+    "deletedBody": "Bu başvurudan ve Kasa'dan kaldırıldı.",
+    "provenance": "{{tag}} · kaynak: {{from}} · {{model}}",
+    "chooseTitle": "Belge uyarla",
+    "chooseHint": "Yerel bir modelde bir iki dakika sürer.",
+    "openInVault": "Kasa'da aç",
+    "previewNamed": "Önizle: {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "Çalışıyor",
+      "done": "Tamamlandı",
+      "failed": "Başarısız",
+      "declined": "Reddedildi"
+    },
+    "effect": {
+      "read": "okundu",
+      "unknown": "böyle bir araç yok",
+      "create": "eklendi",
+      "update": "değiştirildi",
+      "move": "taşındı",
+      "delete": "silindi",
+      "admin": "depo"
+    },
+    "asked": "Ajan bunu yapmak istedi. Henüz hiçbir şey değişmedi.",
+    "dont": "Yapma",
+    "allow": "İzin ver",
+    "arguments": "Argümanlar",
+    "result": "Sonuç",
+    "undoStep": "Bu adımı geri al",
+    "cannotUndo": "Bu adım buradan geri alınamaz. Daha fazla → Ayarlar → Kayıtlar, nelerin değiştiğinin günlüğünü tutar ve en sonuncusunu geri alabilir.",
+    "truncated": "Kısaltıldı — ajana, geri kalanı görmek için aramayı daraltması söylendi.",
+    "thinking": "Çalışıyor — {{model}} ne yapacağına karar veriyor…"
+  },
+  "approval": {
+    "askedBy": "İsteyen: {{name}}. Henüz hiçbir şey değişmedi.",
+    "askedByUnnamed": "Bir konuşma tarafından istendi. Henüz hiçbir şey değişmedi."
+  },
+  "threads": {
+    "conversations": "Konuşmalar",
+    "new": "Yeni konuşma",
+    "kept_one": "{{count}} saklanıyor",
+    "kept_other": "{{count}} saklanıyor",
+    "titleField": "Konuşma başlığı",
+    "approvalLabel": "Bu konuşmanın sormadan ne kadarını yapabileceği",
+    "rename": "Bu konuşmayı yeniden adlandır",
+    "changeJob": "Bunun ilgili olduğu işi değiştir",
+    "fileUnder": "Bir işin altında dosyala",
+    "delete": "Bu konuşmayı sil",
+    "noJob": "Henüz bir işle ilgili değil",
+    "listEmpty": "Henüz bir şey yok — bir şey sorun; burada, bu cihazda saklanır.",
+    "keptOnDevice_one": "Bu cihazda {{count}} konuşma saklanıyor.",
+    "keptOnDevice_other": "Bu cihazda {{count}} konuşma saklanıyor.",
+    "filter": "Filtrele",
+    "filterPlaceholder": "Ada ya da işe göre",
+    "noMatch": "Bununla eşleşen konuşma yok.",
+    "working": "Çalışıyor…",
+    "questions_one": "{{count}} soru",
+    "questions_other": "{{count}} soru"
+  },
+  "picker": {
+    "title": "İlgili başvurular",
+    "description": "Ait olduğu kadar iş. Bir CV gönderdiğiniz her başvuruya gider; bu yüzden bu bir yuva değil, bir listedir.",
+    "notLinked": "Bağlı değil",
+    "none": "Henüz başvuru yok",
+    "noneHint": "Bir tane ekleyin; bunu dosyalayacak bir yer olsun."
+  },
+  "audit": {
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt",
+    "links_one": "{{count}} bağlantı",
+    "links_other": "{{count}} bağlantı",
+    "undoFailed": "Bu değişiklik artık geri alınamadı",
+    "notInJournal": "Artık günlükte değil.",
+    "recorded_one": "{{count}} kayıtlı",
+    "recorded_other": "{{count}} kayıtlı",
+    "title": "Neler değişti",
+    "empty": {
+      "title": "Henüz hiçbir şey yazılmadı",
+      "description": "Her ekleme, düzenleme ve silme yaptığınız anda buraya düşer — en yenisi önce, sonuncusu geri alınabilir."
+    },
+    "explain": "En yeni değişiklik geri alınabilir. Eskiler bir kayıttır, zaman makinesi değil.",
+    "undoLast": "Sonuncuyu geri al",
+    "cannotUndo": "Veri setini yüklemek ya da temizlemek geri alınamaz.",
+    "showAll_one": "Tümünü göster ({{count}})",
+    "showAll_other": "Tümünü göster ({{count}})"
+  },
+  "crash": {
+    "title": "Çökme raporları",
+    "thisPhone": "bu telefon",
+    "notBuilt": "Bu jojo derlemesi çökme raporlaması ya da kullanım analitiği olmadan yapıldı; bu yüzden hiçbir şey kaydedilmez ve açılacak bir şey yoktur.",
+    "what": "Bir şey bozulduğunda jojo hatayı saklayabilir; böylece sonradan okuyabilirsiniz — başarısız olan şey çoktan gittiğinde işe yarar. Bir rapor hata mesajını, hatanın jojo'nun neresinde oluştuğunu ve yığın izini içerir. Başvurularınızı, belgelerinizi, notlarınızı, profilinizi ya da konuşmalarınızı asla içermez; API anahtarları, adresler ve e-posta adresleri rapor yazılmadan önce çıkarılır.",
+    "where": "Raporlar bu telefonda saklanır ve ayrıca Firebase Crashlytics'e gönderilir; bu hizmet cihaz modelinizi, işletim sistemi sürümünü ve aynı çökmeyi kaç kişinin yaşadığını saymak için kullanılan rastgele bir kimliği ekler. Google bunları 90 gün saklar. Kayıtlarınızın hiçbiri onlarla birlikte gitmez.",
+    "report": "Çökmeleri bildir",
+    "reportHint": "Açık; böylece yaşadığınız bir çökmeyi görebiliriz. Kapatırsanız hiçbir şey kaydedilmez.",
+    "usage": "Hangi özellikleri kullandığımı paylaş",
+    "usageHint": "Yalnızca sabit bir listeden sayılar — kayıtlarınızın içeriği asla.",
+    "usageDetail": "Yalnızca sabit bir listedeki şeyleri söyleyebilir — hangi ekranın açıldığı, bir başvurunun eklendiği, kabaca kaç tane olduğu. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz. Google Analytics'e gider. Bu kapalıyken jojo, Firebase'in aksi hâlde kendiliğinden toplayacağı ekran görüntülemelerini ve oturum sayılarını da kapatır.",
+    "kept_one": "{{count}} rapor saklanıyor",
+    "kept_other": "{{count}} rapor saklanıyor",
+    "nothingBroken": "Bunu açtığınızdan beri hiçbir şey bozulmadı.",
+    "notRecording": "Hiçbir şey kaydedilmiyor."
+  },
+  "date": {
+    "today": "Bugün",
+    "tomorrow": "Yarın",
+    "inSevenDays": "7 gün içinde",
+    "triggerLabel": "{{label}}: {{value}}. Tarih seçin",
+    "notSet": "ayarlanmadı",
+    "pick": "Tarih seçin",
+    "previousMonth": "Önceki ay",
+    "nextMonth": "Sonraki ay",
+    "backTo": "Geri dön: {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Bir şey bozuldu",
+    "body": "Bir ekran çizilemedi. Kayıtlarınız bu cihazda ve hiçbir yere bir şey gönderilmedi, ama jojo yaptığınız değişikliğin tamamlanıp tamamlanmadığını söyleyemez.",
+    "noMessage": "Hataya bir mesaj eklenmemiş.",
+    "hint": "Yeniden bozulursa jojo'yu uygulama değiştiriciden kapatıp yeniden açın."
+  },
+  "fileEditor": {
+    "editTitle": "Belgeyi düzenle",
+    "newTitle": "Belge kaydet",
+    "keptHere": "Bu cihazda, bu uygulamada saklanır. Hiçbir şey yüklenmez ve hiçbir şey içeriğini okumaz.",
+    "chooseOrType": "Bir kopyasını saklamak için bir dosya seçin ya da başka bir yerde sakladığınız bir belgeyi kaydetmek için bunu elle doldurun.",
+    "record": "Kaydet",
+    "choosing": "Seçiliyor…",
+    "chooseDifferent": "Başka bir dosya seç",
+    "choose": "Dosya seç",
+    "copyKept": "Bu uygulamada bir kopya saklanır. Uygulama kaldırıldığında gider.",
+    "fileName": "Dosya adı",
+    "nameRequired": "Uzantısıyla birlikte adlandırın.",
+    "nameHint": "Simgeyi uzantı belirler — .pdf, .doc, .pptx, .md.",
+    "size": "Boyut",
+    "sizePlaceholder": "ör. 212 KB",
+    "sizeHint": "İsteğe bağlı — boş bırakılırsa sıfır olarak değil, bilinmiyor olarak okunur.",
+    "bucket": "Bölüm",
+    "applicationsHint": "Profilin Belgeler panelinin ve grafiğin neyin nerede dosyalı olduğunu söylemek için okuduğu şey. Belgenin gittiği kadar iş.",
+    "note": "Not"
+  },
+  "filed": {
+    "sections": {
+      "files": "Dosyalar",
+      "links": "Bağlantılar",
+      "snippets": "Metin parçaları",
+      "people": "Kişiler"
+    },
+    "count_one": "Burada {{count}} öğe dosyalı",
+    "count_other": "Burada {{count}} öğe dosyalı",
+    "title": "Kasa'dan",
+    "empty": {
+      "title": "Henüz bunun altında dosyalanan bir şey yok",
+      "description": "Belgeler, bağlantılar, metin parçaları ve kişiler, gönderildikleri her işin altında dosyalanabilir. Birini bu işin altında dosyalayın — Kasa'daki satır menüsünden — burada görünsün."
+    },
+    "conversations": "Konuşmalar",
+    "openInAssistant": "{{name}} konuşmasını Asistan'da aç",
+    "openInVault": "{{name}} öğesini Kasa'da aç"
+  },
+  "firstRun": {
+    "title": "Nasıl başlamak istersiniz?",
+    "description": "Her iki durumda da her şey bu cihazda kalır ve hiçbir yere bir şey gönderilmez.",
+    "demo": {
+      "title": "Demo kayıtlarıyla keşfedin",
+      "detail": "On iki başvuru, dolu bir takvim ve dolu bir kasa; böylece her ekranda bir şey olur. Bunları daha sonra Ayarlar'dan temizleyebilirsiniz.",
+      "action": "Demo kayıtlarını kullan"
+    },
+    "empty": {
+      "title": "Boş başla",
+      "detail": "Yalnızca kendi kayıtlarınız. Veri gerektiren ekranlar bir örnek göstermek yerine neyin eksik olduğunu söyler."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Erteleme süresi",
+    "currently": "{{title}} · şu anda: {{date}}",
+    "pickDate": "Tarih seçin…",
+    "duplicate": "Kopyala",
+    "duplicateHint": "Aynı tarih ve anahtar kelimelerle, ikinci bir satır olarak",
+    "draft": "Mesaj taslağı hazırla",
+    "draftHint": "E-posta metin parçalarınızdan — hiçbir şey üretilmez",
+    "reschedule": "Yeniden planla"
+  },
+  "keywords": {
+    "on": "{{name}} üzerindeki anahtar kelimeler",
+    "none": "Henüz yok",
+    "choose": "Seç",
+    "title": "Anahtar kelimeler",
+    "description": "Anahtar kelimeler sizindir; başvurular, hatırlatıcılar, dosyalar ve bağlantılar tarafından paylaşılır — birine göre filtrelemek hepsini bulur.",
+    "newPlaceholder": "Yeni anahtar kelime…",
+    "new": "Yeni anahtar kelime",
+    "add": "Ekle",
+    "countHere_one": "{{name}}, burada {{count}}",
+    "countHere_other": "{{name}}, burada {{count}}"
+  },
+  "onboarding": {
+    "model": {
+      "title": "Bir model bağlansın mı?",
+      "description": "jojo'yu bir dosya dolabından öte, bir ajan yapan şey budur. Bir model bağlıyken aramanızla ilgili soruları yanıtlar, kendi kayıtlarınıza göre takip mesajı taslakları hazırlar ve eklediğiniz belgeleri okur.",
+      "action": "Bir tane kur",
+      "local": "Onu kendi bilgisayarınızdaki bir sunucuya — vLLM, Ollama ya da LM Studio — yönlendirin; hiçbir şey cihazdan çıkmaz.",
+      "later": "Diğer her şey model olmadan çalışır. İstediğiniz zaman Daha fazla → Ayarlar altında."
+    },
+    "tour": {
+      "title": "Uygulamalı bir tur ister misiniz?",
+      "description": "Gerçek ekranlarda uygulamalı bir gezinti — her bölümün ne işe yaradığı, üzerinde bir spot ışığıyla, ve ilerledikçe her şeyi kendiniz denersiniz.",
+      "action": "Turu başlat",
+      "safe": "Hiçbir şeyi değiştirmez — hiçbir kayıt yazılmaz ve hiçbir ayara dokunulmaz.",
+      "later": "Tur her zaman Daha fazla → Nasıl kullanılır altında; bu yüzden şimdi hayır demenin bir bedeli yok."
+    }
+  },
+  "pattern": {
+    "has": "sahip olanlar",
+    "hasHint": "En az bir tane böyle bağlantı",
+    "missing": "sahip olmayanlar",
+    "missingHint": "Hiç böyle bağlantı yok",
+    "anything": "Herhangi bir şey",
+    "lookFor": "Aranan",
+    "records": "Kayıtlar",
+    "aLink": "Bağlantı",
+    "anyKind": "Herhangi bir türde",
+    "to": "Hedef",
+    "lookForHint": "Yanıtın listesini oluşturacak kayıt türü.",
+    "quantifierTitle": "Sahip olan ya da olmayan",
+    "quantifierHint": "Aşağıdaki bağlantının bulunması mı yoksa bulunmaması mı gerektiği.",
+    "relTitle": "Hangi bağlantı",
+    "relHint": "İki ucun nasıl bağlandığı. “Herhangi bir türde”, altısını birden sorar.",
+    "endTitle": "Diğer uçta",
+    "endHint": "Bağlantının neye işaret etmesi gerektiği."
+  },
+  "reporting": {
+    "title": "Çökme raporları ve kullanım",
+    "description": "İki ayrı şey, ikisi de açık. Birini ya da ikisini burada ya da daha sonra Ayarlar'da kapatabilirsiniz. Hiçbiri kayıtlarınızı taşıyamaz: ne bir başvuru, ne bir belge, ne bir not, ne bir profil, ne de bir konuşma.",
+    "bothOff": "İkisini de kapat",
+    "save": "Seçimleri kaydet",
+    "inReport": "Bir çökme raporunda neler var",
+    "in": {
+      "message": "· Hata mesajı ve hatanın jojo'nun neresinde oluştuğu.",
+      "stack": "· Başarısız olan kodu adlandıran yığın izi.",
+      "device": "· Cihaz modeliniz, işletim sistemi sürümü ve aynı çökmeyi kaç kişinin yaşadığını saymak için kullanılan rastgele bir kimlik — ad yok, hesap yok."
+    },
+    "notInReport": "Bir raporda asla olmayanlar",
+    "notIn": {
+      "records": "· Başvurularınız, belgeleriniz, notlarınız, profiliniz ya da konuşmalarınız.",
+      "secrets": "· API anahtarlarınız, kullandığınız adresler ya da herhangi bir e-posta adresi — rapor gönderilmeden önce değil, yazılmadan önce çıkarılır."
+    },
+    "crashHint": "Hata ve nerede oluştuğu. Firebase Crashlytics'e gider.",
+    "usageHint": "Yalnızca sayılar — hangi ekranların ne sıklıkla açıldığı. İçlerinde ne olduğu asla.",
+    "usageDetail": "İkincisi, jojo'nun sizin NE yaptığınız hakkında gönderdiği tek şeydir ve yalnızca sabit bir listedeki şeyleri söyleyebilir — “kasa açıldı”, “bir başvuru eklendi”, “6–20 tane var”. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz, çünkü bu sözcükler listede yok. Kapatmak, Firebase'in aksi hâlde kendiliğinden toplayacağı ekran görüntülemelerini de durdurur.",
+    "later": "İkisi de istediğiniz zaman değiştirmek için Ayarlar altında; birini kapatmak, onun sakladıklarını da siler."
+  },
+  "stagePicker": {
+    "label": "{{name}} aşaması: {{stage}}. Aşamayı değiştir",
+    "title": "Taşı"
+  },
+  "welcome": {
+    "title": "Biraz sizden bahsedin",
+    "description": "Taslaklar adınızla imzalanır ve gözcü, aradığınız şeye göre puanlar. Bunların hepsi bu cihazda kalır ve hepsi isteğe bağlıdır — geri kalanı Profil'de.",
+    "skip": "Şimdilik atla",
+    "save": "Kaydet ve devam et",
+    "fullName": "Ad soyad",
+    "fullNamePlaceholder": "ör. Lonardo Jenson",
+    "position": "Şu anki pozisyon",
+    "positionPlaceholder": "ör. Doktora adayı, Bilgisayar Bilimleri",
+    "location": "Konum",
+    "locationPlaceholder": "ör. Santa Clara, CA",
+    "email": "E-posta",
+    "rest": "Geri kalanı — bağlantılar, hedef roller, gözcünün eşleştirdiği terimler — Daha fazla sekmesinde, Profil altında."
+  },
+  "offers": {
+    "open_one": "{{count}} açık",
+    "open_other": "{{count}} açık",
+    "title": "Teklifler, yan yana",
+    "noPackage": "Paket belirtilmemiş",
+    "respondBy": "Son yanıt tarihi {{date}}",
+    "passed": "geçti",
+    "today": "bugün",
+    "days_one": "{{count}} gün",
+    "days_other": "{{count}} gün",
+    "ranked": "Yazdığınızdan okunan yıllık rakamlar.",
+    "notRanked": "Sıralanmadı — paketler farklı para birimlerinde ve jojo'nun bir döviz kuru yok.",
+    "annualised": " * 12 ay, 52 hafta ya da 2.080 saat üzerinden yıllığa çevrildi."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "Hangi başvuruların planlanmış bir takibi yok?",
+      "unfiled": "Hangi dosyalar hiçbir yerin altında dosyalı değil?"
+    },
+    "notConnected": "Ayarlar'dan yerel bir model bağlarsanız bunu bir cümleyle sorabilirsiniz. Aşağıdaki sorular her iki durumda da çalışır.",
+    "placeholder": "Hangi başvuruların takibi yok?",
+    "label": "Grafiğe bir soru sorun",
+    "stop": "Durdur",
+    "ask": "Sor",
+    "again": "Başka bir şey sor"
+  },
+  "background": {
+    "details_one": "{{count}} ayrıntı",
+    "details_other": "{{count}} ayrıntı",
+    "fromDocument": "bir belgeden okundu",
+    "editNamed": "Düzenle: {{title}}",
+    "removeNamed": "Kaldır: {{title}}",
+    "added": "{{title}} eklendi",
+    "updated": "{{title}} güncellendi",
+    "removed": "{{title}} kaldırıldı",
+    "notSaved": "Bu kaydedilmedi",
+    "editTitle": "Bu girişi düzenle",
+    "addTitle": "Geçmişinize ekleyin",
+    "editRead": "Bir belgeden okundu. Sizin düzenlemeniz okunanın yerine korunur.",
+    "editHint": "Kaydet'e basana kadar hiçbir şey kaydedilmez.",
+    "addHint": "Bir ilanla karşılaştırılması gereken her şey. Buradaki hiçbir şey bir yere gönderilmez.",
+    "add": "Ekle",
+    "kind": "Tür",
+    "title": "Başlık",
+    "titlePlaceholder": "Ne olduğu",
+    "where": "Nerede",
+    "optional": "İsteğe bağlı",
+    "when": "Ne zaman",
+    "whenPlaceholder": "Yazıldığı gibi — “2021–2024”",
+    "year": "Yıl",
+    "detail": "Ayrıntı",
+    "highlights": "Öne çıkanlar",
+    "highlightsHint": "Her satıra bir tane — ne inşa edildi, yayımlandı, öğretildi ya da bulundu.",
+    "kindHint": "Bunun geçmişinizin hangi kısmına ait olduğu.",
+    "recorded_one": "{{count}} kayıtlı · bir ilanın karşılaştırıldığı şey",
+    "recorded_other": "{{count}} kayıtlı · bir ilanın karşılaştırıldığı şey",
+    "panelTitle": "Geçmişiniz",
+    "read": "Belge oku",
+    "addEntry": "Giriş ekle",
+    "readTitle": "Bir belgeyi profilinize okutun",
+    "nothingReadable": "Kasa'da henüz okunabilecek bir şey yok",
+    "nothingReadableHint": "CV'nizi ya da bir beyanı ekleyin, burada görünsün.",
+    "alreadyRead": "Zaten okundu",
+    "empty": {
+      "title": "Henüz kayıtlı bir şey yok",
+      "ready": "CV'nizi, araştırma ya da öğretim beyanınızı Kasa'ya koyun; jojo onu okumayı önerir — bulduklarınız hiçbir şey kaydedilmeden önce size gösterilir. Ya da elle bir giriş ekleyin.",
+      "noModel": "Bir belgeyi okumak için bir model gerekir. Daha fazla → Ayarlar altından bir model bağlayın, ardından CV'nizi ya da bir beyanı Kasa'ya koyun. Model olmadan da elle giriş ekleyebilirsiniz."
+    },
+    "removeTitle": "{{title}} kaldırılsın mı?",
+    "removeBody": "Geçmişinizden çıkar; böylece ilanlar artık onunla karşılaştırılmaz. Geldiği belgeye dokunulmaz."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Eğitim",
+      "employment": "İş deneyimi",
+      "publication": "Yayın",
+      "skill": "Beceri",
+      "teaching": "Öğretim",
+      "award": "Ödül",
+      "service": "Hizmet",
+      "certification": "Sertifika",
+      "language": "Dil",
+      "project": "Proje",
+      "volunteering": "Gönüllülük",
+      "membership": "Üyelik",
+      "grant": "Hibe",
+      "patent": "Patent"
+    },
+    "skipped_one": "{{count}} giriş atlandı",
+    "skipped_other": "{{count}} giriş atlandı",
+    "alreadyThere": "Zaten profilinizde",
+    "added_one": "Profilinize {{count}} giriş eklendi",
+    "added_other": "Profilinize {{count}} giriş eklendi",
+    "nothingAdded": "Hiçbir şey eklenemedi",
+    "readFrom": "Okunan belge: {{name}}.",
+    "alreadyKnown_one": "{{count}} girişten {{known}} tanesi zaten biliniyordu.",
+    "alreadyKnown_other": "{{count}} girişten {{known}} tanesi zaten biliniyordu.",
+    "connectionsRecorded_one": "{{count}} bağlantı kaydedildi.",
+    "connectionsRecorded_other": "{{count}} bağlantı kaydedildi.",
+    "refused": "Girişler reddedildi.",
+    "readIt": "Oku",
+    "readFailed": "Belge okunamadı.",
+    "entriesRead_one": "Bu belgeden {{count}} giriş okundu",
+    "entriesRead_other": "Bu belgeden {{count}} giriş okundu",
+    "addNamed": "Ekle: {{title}}",
+    "connections_one": "Aralarında {{count}} bağlantı",
+    "connections_other": "Aralarında {{count}} bağlantı",
+    "addCount_one": "Ekle",
+    "addCount_other": "{{count}} girişi ekle"
+  },
+  "proposals": {
+    "aPipeline": "bir işlem hattı",
+    "hint": "siz söyleyene kadar hiçbir şey olmaz",
+    "title": "Öneriler",
+    "empty": {
+      "title": "İncelenecek bir şey yok",
+      "description": "Bir işlem hattı çalışırken değiştirmek istediği her şey önce burada görünür. Siz onaylayana kadar kayıtlarınıza dokunmaz."
+    },
+    "applied": "uygulandı",
+    "discarded": "atıldı",
+    "failed": "uygulanamadı",
+    "from": "{{tool}} · kaynak: {{pipeline}}",
+    "approve": "Onayla",
+    "discardNamed": "At: {{title}}",
+    "clearAnswered": "Yanıtlananları temizle",
+    "clearAll": "Tümünü temizle",
+    "confirmTitle": "Tüm öneriler temizlensin mi?",
+    "confirmPending_one": "{{count}} öneri hâlâ bekliyor ve reddedilecek. Kayıtlarınızda hiçbir şey değişmez ve işlem hatları çalışmaya devam eder — ama bunları bir daha önermezler.",
+    "confirmPending_other": "{{count}} öneri hâlâ bekliyor ve reddedilecek. Kayıtlarınızda hiçbir şey değişmez ve işlem hatları çalışmaya devam eder — ama bunları bir daha önermezler.",
+    "confirmAnswered": "Yanıtlanan kartlar listeden kalkar. Kayıtlarınızda hiçbir şey değişmez."
+  },
+  "nextSteps": {
+    "measured": "Ölçülmüş",
+    "suggested": "Önerilen",
+    "hint": "önce kayıtlarınızın desteklediği, sonra en az emek gerektiren",
+    "title": "Sırada ne yapmalı"
+  },
+  "working": {
+    "arm": "{{of}} içinden {{count}} · %{{rate}} · büyük olasılıkla {{range}}",
+    "repliesBy": "Yanıtlar, {{dimension}}",
+    "interviewsBy": "Mülakatlar, {{dimension}}",
+    "confident": "Aralıklar örtüşmüyor; bu gerçek bir fark — {{best}} emeğinizin daha fazlasını hak ediyor.",
+    "overlap": "Aralıklar örtüşüyor; bu bir fark değil, sadece iki sayı. Daha fazla kayıt bunları ya ayıracak ya da aradaki farkı kapatacak.",
+    "tooFew_one": "{{count}} diğer grupta {{min}} kayıttan az var ve karşılaştırılmıyor.",
+    "tooFew_other": "{{count}} diğer grupta {{min}} kayıttan az var ve karşılaştırılmıyor.",
+    "hint": "bant, gerçek oranın makul olarak bulunduğu yerdir",
+    "title": "Ne işe yarıyor"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "Uygulamalı bir jojo turu",
+        "body": "Gerçek ekranları gösterir ve ilerledikçe her şeyi denemenizi ister. Sizin yerinize asla bir şey yazmaz, kaydetmez ya da değiştirmez. İstediğiniz zaman kapatın — kaldığınız yer saklanır ve Nasıl kullanılır onu yeniden başlatır."
+      },
+      "today": {
+        "title": "Bugün",
+        "body": "Şu anda yapılması gerekenler: gecikmiş olanlar, süresi gelenler ve sizi bekleyen kararlar. İlk açılacak ekran."
+      },
+      "applications": {
+        "title": "Başvurularınız",
+        "body": "Her iş için bir kayıt: işveren, rol, aşaması ve notlarınız. Tarihleri, belgeleri ve konuşmaları hepsi ona bağlanır; böylece hiçbir şey iki kez yazılmaz.",
+        "say": "Başvurular'ı açın."
+      },
+      "layout": {
+        "title": "Liste ya da pano",
+        "body": "Aynı kayıtlar, iki şekilde. Liste sıralar ve arar; pano aşamaları sütunlar olarak gösterir.",
+        "say": "Pano'ya geçin."
+      },
+      "records": {
+        "title": "Altı aşama",
+        "body": "Taslak, Gönderildi, Ön görüşme, Mülakat, Teklif, Kapandı. Panoda bir karta basılı tutun, sonra onu sonraki sütununa sürükleyin; her kartın ayrıca bir aşama menüsü vardır. Her taşıma geri alınabilir."
+      },
+      "search": {
+        "title": "Her şeyde arayın",
+        "body": "Başvurular, hatırlatıcılar ve takvim kayıtları, herhangi bir sekmeden.",
+        "say": "Aramayı açın."
+      },
+      "searchScreen": {
+        "title": "Her şeyi bulmak için yazın",
+        "body": "Bir rol, işveren ya da aşama. Açmak için bir sonuca dokunun ya da bakmayı bitirdiğinizde geri dönün."
+      },
+      "new": {
+        "title": "Her şeyi oluşturun",
+        "body": "+ düğmesi bir başvuru, hatırlatıcı, takvim kaydı, mesaj taslağı, kayıtlı bağlantı ya da kayıtlı ilan oluşturur. Siz kaydedene kadar hiçbir şey kaydedilmez ve yarım doldurulmuş bir formu kapatmanın bir bedeli yoktur."
+      },
+      "calendar": {
+        "title": "Tüm tarihler tek yerde",
+        "body": "Son tarihler, mülakatlar ve takipler aynı tür kayıttır; bu yüzden tek bir kayıt takvimde, Bugün sayfasında ve başvurusunda görünür.",
+        "say": "Takvim'i açın."
+      },
+      "vault": {
+        "title": "Kasa",
+        "body": "Başvuru olmayan her şey: hatırlatıcılar, bağlantılar, dosyalar, her forma yapıştırdığınız metin parçaları, tanıdığınız kişiler ve bir hesap makinesi.",
+        "say": "Kasa'yı açın."
+      },
+      "vaultTools": {
+        "title": "Aynı anda tek araç",
+        "body": "Bunların her biri kendi listesidir ve bir anahtar kelime hepsinde aynı anlama gelir.",
+        "say": "Dosyalar'ı seçin."
+      },
+      "files": {
+        "title": "Telefonda saklanan dosyalar",
+        "body": "Bir CV, beyan, ilan — jojo'nun kendi klasörüne kopyalanır; böylece asıl dosya taşınsa da kalır. Burada okumak için birine dokunun; ait olduğu kadar başvurunun altında dosyalayın."
+      },
+      "more": {
+        "title": "Daha fazla",
+        "body": "Diğer her şey: İş gözcüsü, İstatistikler, grafik, Aktarım, profiliniz, asistan, Ayarlar ve bu kılavuz.",
+        "say": "Daha fazla'yı açın."
+      },
+      "scout": {
+        "title": "İş gözcüsü",
+        "body": "İş ilanı sitelerini sizin için izleyen kayıtlı aramalar.",
+        "say": "İş gözcüsünü açın."
+      },
+      "scoutScreen": {
+        "title": "İşlem hatları ve öneriler",
+        "body": "Her işlem hattı bir sitede yapılan, bir zamanlamaya göre ya da siz istediğinizde çalışan bir aramadır. Bulduğu şeyler onaylamanız ya da atmanız için öneri olarak bekler ve onaylanan bir öneri taslak başvuruya dönüşür."
+      },
+      "statistics": {
+        "title": "İstatistikler",
+        "body": "Aramanızın nasıl gittiği, kendi kayıtlarınızdan sayılmış olarak.",
+        "say": "İstatistikler'i açın."
+      },
+      "statisticsScreen": {
+        "title": "Dürüst aralıklarla oranlar",
+        "body": "Yanıt ve mülakat oranları, bir huni ve sırada ne üzerinde çalışılacağı — her oran gerçekte olabileceği aralıkla birlikte, çünkü birkaç başvuru küçük bir örneklemdir."
+      },
+      "graph": {
+        "title": "Bilgi grafiği",
+        "body": "Her kayıt — başvurular, işverenler, kişiler, tarihler, dosyalar — olduğu gibi bir ağ olarak çizilir.",
+        "say": "Grafik'i açın."
+      },
+      "graphScreen": {
+        "title": "Her şey, bağlantılı",
+        "body": "Neye bağlandığını görmek için bir düğüme dokunun; eşleşen kayıtları vurgulamak için bir soru sorun."
+      },
+      "assistant": {
+        "title": "Asistan",
+        "body": "jojo ile sohbet edin: uygulamanın kendi araçlarıyla kayıtlarınızı bulur, ekler ve günceller; bir şeyi değiştirmeden önce sorar. Bir model bağlanana kadar örnekler gösterir."
+      },
+      "transfer": {
+        "title": "Telefon ve bilgisayar",
+        "body": "Aktarım, her şeyi bu telefonla bilgisayarınızdaki jojo arasında, başka hiç kimseden geçmeden yerel ağınız üzerinden taşır."
+      },
+      "settings": {
+        "title": "Ayarlar",
+        "body": "Bağlantılar, görünüm ve verileriniz.",
+        "say": "Ayarlar'ı açın."
+      },
+      "device": {
+        "title": "Kayıtlarınız bu telefonda yaşar",
+        "body": "Siz çalışırken doğrudan telefonun kendi depolamasına yazılır — hesap yok, eşitleme yok, hiçbir şey yüklenmez. Bir kopya dışa aktarın ya da Aktarım ile bilgisayarınıza gönderin."
+      },
+      "model": {
+        "title": "Bir model bağlayın",
+        "body": "Asistanın modelinin nerede çalışacağı. Kendi bilgisayarınızdaki bir sunucu — vLLM, Ollama ya da LM Studio — adresini alır ve kayıtlarınızı cihazlarınızda tutar. OpenAI, Anthropic (Claude) ve diğer bulut sağlayıcıları bir API anahtarı alır. Bağlantıyı test et, hiçbir şey kaydedilmeden önce kontrol eder."
+      },
+      "reader": {
+        "title": "Belgelerinizi okuyabilsin",
+        "body": "Telefon Word dosyalarını, sunumları, kayıtlı sayfaları ve metinleri kendi başına okur. PDF'ler için bilgisayarınızda MarkItDown gerekir: yukarıdaki iki komutla başlatın, ardından Bağlantıyı test et'e basın."
+      },
+      "done": {
+        "title": "Tur bu kadar",
+        "body": "Her değişiklik geri alınabilir ve Daha fazla altındaki Nasıl kullanılır her ekranı sırayla anlatır. Tur her zaman yeniden alınabilir."
+      }
+    },
+    "stepOf": "Adım {{step}} / {{total}}",
+    "end": "Turu bitir",
+    "nice": "Güzel — bu kadar.",
+    "tryIt": "Deneyin: {{task}}",
+    "finish": "Bitir",
+    "skip": "Bunu atla"
+  },
+  "marks": {
+    "bold": "kalın",
+    "italic": "italik",
+    "underlined": "altı çizili"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Bugün",
+      "applications": "Başvurular",
+      "calendar": "Takvim",
+      "vault": "Kasa",
+      "more": "Daha fazla"
+    },
+    "badge": {
+      "applications_one": "Başvurular, {{count}} tanesi takip için işaretli",
+      "applications_other": "Başvurular, {{count}} tanesi takip için işaretli",
+      "calendar_one": "Takvim, önümüzdeki yedi günde {{count}} kayıt",
+      "calendar_other": "Takvim, önümüzdeki yedi günde {{count}} kayıt",
+      "vault_one": "Kasa, tarihi geçmiş {{count}} hatırlatıcı",
+      "vault_other": "Kasa, tarihi geçmiş {{count}} hatırlatıcı",
+      "more_one": "Daha fazla, henüz başvurulara eklenmemiş {{count}} eşleşme",
+      "more_other": "Daha fazla, henüz başvurulara eklenmemiş {{count}} eşleşme"
+    },
+    "create": "Oluştur",
+    "search": "Ara",
+    "titles": {
+      "application": "Başvuru",
+      "employer": "İşveren",
+      "search": "Ara",
+      "jobScout": "İş gözcüsü",
+      "statistics": "İstatistikler",
+      "profile": "Profilim",
+      "assistant": "Asistan",
+      "settings": "Ayarlar",
+      "guide": "Nasıl kullanılır",
+      "graph": "Grafik",
+      "transfer": "Aktarım"
+    }
+  }
+}

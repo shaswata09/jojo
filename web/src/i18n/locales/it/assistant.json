@@ -1,0 +1,167 @@
+{
+  "common": {
+    "title": "Assistente",
+    "undo": "Annulla",
+    "nothingAsked": "Ancora nessuna domanda",
+    "askLabel": "Chiedi all'assistente",
+    "saveToSnippets": "Salva nei frammenti",
+    "savedToSnippets": "Salvato nei frammenti",
+    "filedUnder": "{{title}} · archiviato sotto {{tag}}",
+    "openVault": "Apri la Cassaforte",
+    "copyBlocked": "Il browser ha bloccato la copia",
+    "copied": "Risposta copiata",
+    "newConversation": "Nuova conversazione"
+  },
+  "header": {
+    "subtitle": "Collegato al tuo modello e in grado di agire sui tuoi record. Tutto ciò che fa viene elencato mentre accade.",
+    "clear": "Cancella",
+    "connected_one": "Le risposte arrivano da <mono>{{model}}</mono> su <mono>{{endpoint}}</mono>, che può usare <tools>{{count}} strumento</tools> su questo dispositivo. Nulla viene inviato altrove.",
+    "connected_many": "Le risposte arrivano da <mono>{{model}}</mono> su <mono>{{endpoint}}</mono>, che può usare <tools>{{count}} di strumenti</tools> su questo dispositivo. Nulla viene inviato altrove.",
+    "connected_other": "Le risposte arrivano da <mono>{{model}}</mono> su <mono>{{endpoint}}</mono>, che può usare <tools>{{count}} strumenti</tools> su questo dispositivo. Nulla viene inviato altrove."
+  },
+  "composer": {
+    "send": "Invia",
+    "typeFirst": "Prima scrivi un messaggio",
+    "stop": "Interrompi",
+    "stopTitle": "Interrompi l'agente"
+  },
+  "approval": {
+    "waiting": "{{title}} — in attesa di te",
+    "askedBy": "Richiesto da {{name}}. Non è ancora cambiato nulla.",
+    "askedByUnnamed": "Richiesto da una conversazione. Non è ancora cambiato nulla.",
+    "decline": "No",
+    "allow": "Consenti"
+  },
+  "scripted": {
+    "subtitle": "Per ora esempi svolti. Collega un modello locale e scriverà bozze partendo dai tuoi record e agirà su di essi.",
+    "clear": "Cancella la conversazione",
+    "notConnected": "Nessun modello è collegato, quindi ogni risposta qui sotto è un esempio svolto e non una risposta vera. Indica a jojo un server locale compatibile con OpenAI (vLLM, Ollama o LM Studio) in <settings>Impostazioni</settings>.",
+    "emptyDescription": "Scegli uno dei suggerimenti qui sotto, o scrivi qualsiasi cosa. Le risposte sono esempi scritti: utili come base, e mai presentati come la risposta di un modello.",
+    "placeholder": "Chiedi di una lettera di presentazione, un'email di sollecito, un colloquio…",
+    "footer": "Con un modello collegato, ognuno di questi legge il tuo profilo e i tuoi documenti come contesto. Dato che l'elaborazione è locale, il tuo CV e le tue note non vengono mai caricati da nessuna parte.",
+    "badge": "Risposta di esempio · nessun modello collegato",
+    "cleared": "Conversazione cancellata",
+    "messages_one": "{{count}} messaggio",
+    "messages_many": "{{count}} di messaggi",
+    "messages_other": "{{count}} messaggi"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Scrivi una lettera di presentazione",
+      "title": "Lettera di presentazione — struttura",
+      "reply": "Ecco la struttura che userei per [DEPARTMENT]:\n\nParagrafo 1 — di cosa ti occupi, in una frase comprensibile anche a un membro della commissione esterno al tuo campo.\nParagrafo 2 — i due risultati che sostengono la tua candidatura, ciascuno presentato con le sue conseguenze anziché con il metodo.\nParagrafo 3 — perché questo dipartimento: il gruppo con cui avresti punti in comune e il corso che terresti.\nParagrafo 4 — disponibilità, e come sarebbero i primi tre anni.\n\nResta entro una pagina. La commissione ne legge quaranta in una sera."
+    },
+    "tailorCv": {
+      "action": "Adatta il mio CV a un annuncio",
+      "title": "Adattare un CV — tre passaggi",
+      "reply": "Tre passaggi, in quest'ordine:\n\n1. Togli ciò che l'annuncio non chiede. Un CV adattato a tutto non è adattato a nulla.\n2. Sposta in cima alla prima pagina la sezione con cui apre l'annuncio: un annuncio incentrato sulla didattica vuole la didattica prima delle pubblicazioni.\n3. Riscrivi il titolo con le parole stesse dell'annuncio, senza esagerare la portata del lavoro.\n\nCiò che resta intatto: pubblicazioni, referenze, date. Sono le parti che una commissione controlla."
+    },
+    "parsePosting": {
+      "action": "Analizza un annuncio di lavoro",
+      "title": "Cosa estrarre da un annuncio",
+      "reply": "Da un annuncio estrarrei: datore di lavoro, ruolo, scadenza, documenti richiesti, contatto indicato, e tutto ciò che è formulato come requisito obbligatorio anziché come preferenza.\n\nÈ sull'ultimo punto che si perdono candidature: \"deve aver conseguito il titolo entro la data di inizio\" è un filtro, \"gradita esperienza con sistemi su larga scala\" no.\n\nScout offerte fa già la parte più semplice senza un modello: salva lì l'URL e conserva il link, deducendone il datore di lavoro."
+    },
+    "followUp": {
+      "action": "Scrivi un'email di sollecito",
+      "title": "Sollecito dopo una mancata risposta",
+      "reply": "Oggetto: Sollecito — [ROLE], [DEPARTMENT]\n\nGentile [NAME],\n\nmi sono candidato/a per [ROLE] il [DATE] e volevo verificare che la commissione abbia tutto ciò che le serve da parte mia. Se è più semplice, posso inviare direttamente la lettera di referenza mancante.\n\nResto molto interessato/a alla posizione e sono disponibile a rispondere a qualsiasi domanda via email.\n\nCon i miei ringraziamenti,\n[YOUR NAME]"
+    },
+    "interview": {
+      "action": "Preparami a un colloquio",
+      "title": "Colloquio — sei domande a cui saper rispondere",
+      "reply": "Sei domande a cui conviene avere una risposta prima del giorno:\n\n— Di cosa tratta il tuo lavoro, in novanta secondi, per qualcuno esterno al tuo campo?\n— Quale sarebbe il tuo primo finanziamento, e da quale ente?\n— Quali due corsi potresti tenere il prossimo semestre senza preavviso?\n— Con chi collaboreresti qui, e su cosa?\n— Qual è il punto debole del tuo risultato?\n— Cosa ti serve nel primo anno per fare il lavoro?\n\nScrivi le risposte a mano. Conta l'esercizio, non gli appunti."
+    },
+    "fallback": {
+      "title": "Assistente — risposta di esempio",
+      "reply": "Nessun modello è collegato, quindi questa è una risposta preimpostata e non una risposta a ciò che hai scritto.\n\nCon un modello collegato, questa pagina leggerebbe il tuo profilo, i documenti nella tua Cassaforte e la candidatura che indichi, poi scriverebbe una bozza basata su di essi sul tuo computer. Indica a jojo un server locale compatibile con OpenAI in Impostazioni: vLLM, Ollama o LM Studio.\n\nCancella la conversazione per rivedere gli esempi svolti."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "Cosa sto aspettando?",
+      "add": "Aggiungi una candidatura: ML engineer presso Stripe, inviata",
+      "noDeadline": "Quali candidature non hanno una scadenza?",
+      "flag": "Contrassegna la mia candidatura a UT Austin"
+    },
+    "emptyDescription": "Chiedigli di trovare qualcosa, aggiungere una candidatura o farne avanzare una. Ogni strumento che usa compare qui sotto mentre accade, con ciò che ha inviato e ciò che è tornato.",
+    "placeholder": "Trova la mia candidatura a UT Austin, aggiungine una o spostala a colloquio…"
+  },
+  "threadBar": {
+    "titleLabel": "Titolo della conversazione",
+    "saveTitle": "Salva il titolo",
+    "cancel": "Annulla",
+    "rename": "Rinomina questa conversazione",
+    "changeJob": "Cambia lavoro",
+    "fileUnder": "Archivia sotto un lavoro",
+    "approval": "Approvazione",
+    "approvalLabel": "Quanto può fare questa conversazione senza chiedere",
+    "delete": "Elimina"
+  },
+  "threads": {
+    "deleted": "Conversazione eliminata"
+  },
+  "threadList": {
+    "title": "Conversazioni",
+    "kept_one": "{{count}} conservata qui",
+    "kept_many": "{{count}} conservate qui",
+    "kept_other": "{{count}} conservate qui",
+    "noJob": "Non ancora legata a un lavoro",
+    "searchLabel": "Cerca nelle conversazioni",
+    "searchPlaceholder": "Cerca ciò che è stato detto",
+    "clearSearch": "Cancella ricerca",
+    "noMention": "Nessuna menzione",
+    "mentionsIn": "{{mentions}} in {{conversations}}",
+    "mentions_one": "{{count}} menzione",
+    "mentions_many": "{{count}} di menzioni",
+    "mentions_other": "{{count}} menzioni",
+    "conversationCount_one": "{{count}} conversazione",
+    "conversationCount_many": "{{count}} di conversazioni",
+    "conversationCount_other": "{{count}} conversazioni",
+    "empty": "Ancora nulla. Chiedi qualcosa e verrà conservato qui, su questo dispositivo.",
+    "noResults": "Nulla menziona “{{query}}”. La ricerca riguarda ogni conversazione, non solo i titoli.",
+    "working": "Al lavoro…",
+    "matches_one": "{{count}} risultato",
+    "matches_many": "{{count}} di risultati",
+    "matches_other": "{{count}} risultati",
+    "questions_one": "{{count}} domanda",
+    "questions_many": "{{count}} di domande",
+    "questions_other": "{{count}} domande"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Niente da annullare — nel frattempo è cambiato",
+      "alreadyUndone": "Già annullato",
+      "outOfReach": "Troppo indietro per annullarlo da qui",
+      "undone": "Annullato"
+    },
+    "thinking": "Sto pensando…",
+    "thought": "Ragionamento"
+  },
+  "trace": {
+    "status": {
+      "running": "In esecuzione",
+      "done": "Fatto",
+      "failed": "Non riuscito",
+      "declined": "Rifiutato"
+    },
+    "effect": {
+      "read": "letto",
+      "unknown": "strumento inesistente",
+      "create": "aggiunto",
+      "update": "modificato",
+      "move": "spostato",
+      "delete": "eliminato",
+      "admin": "archivio"
+    },
+    "approvalNeeded": "Serve un'approvazione: {{title}}",
+    "asked": "L'agente ha chiesto di farlo. Non è ancora cambiato nulla.",
+    "declineAria": "No: {{title}}",
+    "allowAria": "Consenti: {{title}}",
+    "arguments": "Argomenti",
+    "result": "Risultato",
+    "undoStep": "Annulla questo passaggio",
+    "cannotUndo": "Questo passaggio non si può annullare da qui. Impostazioni → Record tiene un registro di ciò che è cambiato e può invertire la modifica più recente.",
+    "truncated": "Troncato: all'agente è stato detto di restringere la ricerca per vedere il resto.",
+    "working": "Al lavoro — {{model}} sta decidendo cosa fare…"
+  }
+}

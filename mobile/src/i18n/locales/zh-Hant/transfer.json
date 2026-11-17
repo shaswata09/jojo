@@ -1,0 +1,146 @@
+{
+  "screen": {
+    "title": "傳輸",
+    "subtitle": "透過你的區域網路，在這支手機和你的電腦之間搬移所有內容。兩者必須連上同一個網路。不會有任何資料傳到網際網路，也不會儲存在其他任何地方。",
+    "direction": "方向",
+    "roles": {
+      "send": "傳送到電腦",
+      "receive": "從電腦接收"
+    },
+    "onPhone": "這支手機目前的內容",
+    "records_other": "{{count}} 筆紀錄",
+    "empty": "空的",
+    "sendNote": "傳送會將所有內容複製到你的電腦，電腦在取代它保有的內容之前會先詢問。這支手機上的任何內容都不會變更。",
+    "receiveNote": "接收會取代所有內容。上方的一切都會被收到的內容覆寫，而且無法復原——如果想保留，請先匯出。"
+  },
+  "groups": {
+    "applications": {
+      "label": "申請",
+      "hint": "每份申請的所有階段、備註和結果"
+    },
+    "timeline": {
+      "label": "提醒與活動",
+      "hint": "{{reminders}} 則提醒、{{events}} 個有日期的活動"
+    },
+    "vault": {
+      "label": "連結與片段",
+      "hint": "{{links}} 個連結 · {{snippets}} 個片段"
+    },
+    "files": {
+      "label": "檔案",
+      "hint": "履歷、陳述，以及其他歸在申請底下的任何檔案"
+    },
+    "keywords": {
+      "label": "關鍵字",
+      "hint": "你的關鍵字清單，以及附有這些關鍵字的每筆紀錄"
+    },
+    "scout": {
+      "label": "職缺偵察",
+      "hint": "{{pipelines}} 個管線 · {{postings}} 個已儲存的職缺 · {{matches}} 個符合結果"
+    },
+    "profile": {
+      "label": "個人檔案",
+      "hint": "你的基本資料、連結、目標職務和比對關鍵詞"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "這部裝置無法使用",
+    "noRandom": "這部裝置沒有安全的亂數產生器，所以 jojo 不會在上面協議金鑰。寧可停用配對，也不以不安全的方式進行。",
+    "scan": "掃描 QR 碼",
+    "retry": "再試一次",
+    "cancel": "取消"
+  },
+  "send": {
+    "title": "傳送到電腦",
+    "hint": "對準電腦上的 QR 碼",
+    "outcome": {
+      "applied": "你的電腦現在有你的紀錄了",
+      "declined": "你的電腦保留了它自己的紀錄",
+      "failed": "你的電腦無法接收你的紀錄",
+      "handed": "已全部轉交"
+    },
+    "detail": {
+      "waiting": "你的電腦在取代任何內容之前都會先詢問——請在電腦上確認以完成。這支手機上沒有任何變更。",
+      "unknown": "你的電腦沒有表示是否已接收。這支手機上沒有任何變更。",
+      "applied": "現在兩部裝置保有相同的紀錄。這支手機上沒有任何變更。",
+      "notReplaced": "那裡沒有任何內容被取代。這支手機上沒有任何變更。"
+    },
+    "unreadable_other": "有 {{count}} 份文件無法讀取，沒有一起傳送。",
+    "again": "再傳送一次",
+    "typeThis": "在你的電腦上輸入這組代碼",
+    "paired": "已配對。這支手機正在你的區域網路上等候電腦發出要求。",
+    "handing": "正在轉交你的紀錄…",
+    "handingProgress": "正在轉交你的紀錄——{{chunks}} 個中的第 {{served}} 個。",
+    "intro": "在你的電腦上開啟「傳輸」，選擇「從手機接收」，然後掃描它顯示的 QR 碼。兩者必須連上同一個區域網路。",
+    "gatherFailed": "jojo 無法收集這支手機上的紀錄，所以沒有傳送任何內容。請再試一次。"
+  },
+  "receive": {
+    "title": "接收",
+    "hint": "對準另一部裝置上的 QR 碼",
+    "complete": "傳輸完成",
+    "done": "完成",
+    "typeThis": "在你的另一部裝置上輸入這組代碼",
+    "paired": "已配對。這支手機只在你的區域網路上接聽，不會在其他地方接聽。",
+    "progress": "接收中——目前已接收 {{size}}。在你同意之前，這裡的任何內容都不會變更。",
+    "intro": "在你的電腦上開啟 jojo，選擇「傳輸」，然後掃描它顯示的 QR 碼。",
+    "confirm": {
+      "title": "要取代這支手機上的所有內容嗎？",
+      "description": "{{contents}}。{{replaces}}，而且無法復原。",
+      "confirm": "取代"
+    },
+    "unrestorable": "無法還原收到的內容：{{reason}}。這支手機上沒有任何變更。"
+  },
+  "landed": {
+    "plain_other": "這支手機上有 {{count}} 筆紀錄。",
+    "withDocuments_other": "這支手機上有 {{count}} 筆紀錄，{{documents}}。",
+    "documents_other": "{{count}} 份文件",
+    "skipped_other": "有 {{count}} 筆無法讀取。"
+  },
+  "scanner": {
+    "point": "將相機對準另一部裝置「傳輸」頁面上的 QR 碼。",
+    "advice": {
+      "denied": "jojo 需要使用相機來讀取另一部裝置上的 QR 碼。請允許使用，或改為手動輸入代碼。",
+      "unsupported": "這支手機無法為 jojo 開啟相機。",
+      "failed": "相機沒有啟動。請關閉 jojo 後再重新開啟。"
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "讀取配對碼",
+      "message": "jojo 需要使用相機來讀取另一部裝置上顯示的 QR 碼。不會錄製任何內容，也不會有任何影像離開這支手機。",
+      "allow": "允許",
+      "notNow": "稍後再說"
+    },
+    "refused": {
+      "denied": "jojo 需要使用相機來讀取另一部裝置上的 QR 碼。",
+      "blocked": "jojo 的相機權限已關閉。若要掃描配對，請到手機的「設定」中，在「應用程式」下開啟。"
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "這不是 jojo 的配對 QR 碼。請掃描另一部裝置上的 QR 碼。",
+      "noNetwork": "這支手機沒有連上區域網路。jojo 只透過你的區域網路傳輸，所以兩部裝置必須連上同一個網路。",
+      "notLocal": "這支手機所在的網路是 jojo 不會用來傳輸的網路。它只會連線到私人網路位址，所以你的紀錄絕不會經過網際網路。",
+      "noSocket": "jojo 無法在這支手機上開啟連線。請再試一次。"
+    }
+  },
+  "import": {
+    "clipboardEmpty": "剪貼簿是空的。請先複製 jojo 備份，再貼到這裡。",
+    "fileEmpty": "這個檔案是空的。這支手機上沒有任何變更。",
+    "notBackup": "它不是 jojo 備份",
+    "unrestorable": {
+      "file": "無法還原這個檔案：{{reason}}。這支手機上沒有任何變更。",
+      "clipboard": "無法還原剪貼簿中的內容：{{reason}}。這支手機上沒有任何變更。"
+    },
+    "noRecords": {
+      "file": "這個檔案是一份沒有任何紀錄的備份。這支手機上沒有任何變更——還原它會清空這支手機。",
+      "clipboard": "剪貼簿中的內容是一份沒有任何紀錄的備份。這支手機上沒有任何變更——還原它會清空這支手機。"
+    },
+    "unreadable": "無法讀取這個檔案。這支手機上沒有任何變更。",
+    "noPicker": "這支手機沒有可以選取 JSON 或文字檔的工具。",
+    "openFailed": "無法開啟檔案：{{detail}}",
+    "failedTitle": "沒有匯入任何內容",
+    "restoredTitle": "已還原備份"
+  }
+}

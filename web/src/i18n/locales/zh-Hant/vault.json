@@ -1,0 +1,529 @@
+{
+  "common": {
+    "save": "儲存",
+    "cancel": "取消",
+    "undo": "復原",
+    "delete": "刪除",
+    "edit": "編輯",
+    "close": "關閉",
+    "duplicate": "複製",
+    "deleteFailed": "沒有刪除成功",
+    "deleted": "已刪除「{{title}}」",
+    "unsaved": "有未儲存的變更",
+    "saved": "已儲存「{{title}}」",
+    "showIt": "顯示",
+    "copyBlocked": "瀏覽器封鎖了複製動作",
+    "updated": "已更新「{{title}}」",
+    "saveChanges": "儲存變更"
+  },
+  "files": {
+    "unfiled": {
+      "title": "沒有歸檔在任何申請下的檔案",
+      "label": "未歸檔"
+    },
+    "inlineEdit": {
+      "needsName": "檔案需要名稱"
+    },
+    "intake": {
+      "tooLarge": "{{name}} 太大，無法檢查",
+      "tooLargeDescription": "它已歸檔，jojo 顯示時會封鎖其中的每個網址並停用連結，所以在這裡檢視不會連上網路——但它從網路載入的任何內容都會缺失。",
+      "addresses_other": "{{name}} 中有 {{count}} 個網址",
+      "addressesDescription_other": "它已依你拖放的原樣歸檔，jojo 顯示時會封鎖其中的每個網址並停用連結，所以在這裡檢視不會連上網路。它從網路載入的圖片或樣式將會缺失。",
+      "folders_other": "這看起來是資料夾",
+      "foldersDescription": "jojo 一次只能歸檔一份文件。請開啟資料夾，拖放其中的檔案。",
+      "reattached": "{{name}} 已重新附加",
+      "reattachedDescription": "這一列原本就在這裡，但沒有文件。現在已經有了。",
+      "stillUnsaved": "{{name}} 仍然無法儲存",
+      "stillUnsavedDescription": "這個瀏覽器再次拒絕儲存它——儲存空間可能仍然已滿。",
+      "unsaved": "{{name}} 已歸檔，但沒有儲存",
+      "unsavedDescription": "這一列已在這裡，但這個瀏覽器拒絕儲存文件——通常是因為儲存空間已滿。請釋出一些空間，再拖放同一個檔案一次；它會附加到這一列，而不會建立第二列。",
+      "alreadyHere_other": "這個檔案已經在這裡了",
+      "alreadyHereDescription": "保管庫中已有同名的檔案。",
+      "addedOne": "已新增 {{name}}",
+      "addedMany_other": "已新增 {{count}} 個檔案",
+      "addedHidden": "已歸檔在「{{bucket}}」下——關鍵字篩選開啟時會隱藏。",
+      "addedHiddenVault": "已歸檔在保管庫的「{{bucket}}」下——關鍵字篩選開啟時會隱藏。",
+      "addedDescription": "已歸檔在「{{bucket}}」下，並儲存在這個瀏覽器中。沒有上傳到任何地方。",
+      "addedDescriptionVault": "已歸檔在保管庫的「{{bucket}}」下，並儲存在這個瀏覽器中。沒有上傳到任何地方。",
+      "skipped_other": "已略過 {{count}} 個",
+      "skippedDescription": "保管庫中已有同名的檔案。",
+      "foldersSkipped_other": "已略過 {{count}} 個資料夾"
+    },
+    "row": {
+      "fileName": "檔案名稱",
+      "renameHint": "重新命名這個檔案",
+      "onDevice": "在這部裝置上",
+      "viewing": "檢視中",
+      "preview": "預覽",
+      "rename": "重新命名",
+      "editNote": "編輯備註",
+      "addNote": "新增備註",
+      "changeApplications": "變更申請",
+      "fileUnder": "歸檔在申請下",
+      "readIntoProfile": "讀入你的個人檔案"
+    },
+    "add": "新增檔案",
+    "filterLabel": "依分類篩選檔案",
+    "searchLabel": "搜尋檔案",
+    "searchPlaceholder": "搜尋名稱或備註",
+    "toast": {
+      "renamed": "已重新命名 {{name}}",
+      "was": "原名為 {{name}}。",
+      "noteSaved": "已儲存 {{name}} 的備註",
+      "noteCleared": "已清除 {{name}} 的備註",
+      "noteClearedDescription": "這一列保留它的名稱、分類和關鍵字。",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "它會顯示在每一份申請上，圖譜也能從任何一份找到它。",
+      "unfiledDescription": "它仍保留在保管庫中，沒有歸檔在任何地方。"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何檔案",
+      "zeroDescription": "把職缺、論文或草稿拖放到這裡——或從你的電腦新增。",
+      "search": "沒有任何檔案的名稱、備註或分類提到「{{query}}」。",
+      "both": "「{{bucket}}」中沒有帶有所選關鍵字的檔案。",
+      "bucketTitle": "「{{bucket}}」中沒有任何內容",
+      "bucketDescription_other": "有 {{count}} 個檔案歸檔在其他分類下。",
+      "showAll": "顯示所有分類",
+      "keywordsTitle": "沒有帶有這些關鍵字的檔案",
+      "allFiledTitle": "每個檔案都已歸檔在申請下",
+      "allFiledDescription_other": "全部 {{count}} 個都是。沒有任何檔案散落在外。",
+      "unfiledKeywords": "沒有符合所選關鍵字的未歸檔檔案。",
+      "unfiledBucket": "「{{bucket}}」中沒有未歸檔的檔案。"
+    },
+    "drop": {
+      "title": "放開即可新增到「{{bucket}}」",
+      "description": "只會讀取名稱、大小和類型。不會上傳任何內容。",
+      "hint": "將檔案拖放到這個面板上的任何位置，即可新增到「{{bucket}}」。"
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "拖放的內容沒有全部用上",
+      "nothing": "沒有可以開啟的內容"
+    },
+    "save": {
+      "nameLabel": "新檔案的名稱",
+      "working": "處理中…",
+      "alsoDownload": "同時下載",
+      "footnote": "結果會歸檔為一份新文件——原本的文件都不會變更。它是在你的瀏覽器中建立的，沒有任何部分會被上傳。",
+      "workingSpoken": "正在處理文件"
+    },
+    "thumb": {
+      "turned": "{{label}}，已旋轉 {{degrees}} 度",
+      "noPreview": "無法預覽"
+    },
+    "source": {
+      "fromVault": "來自保管庫的 {{label}}",
+      "noneInVault": "保管庫中還沒有 PDF",
+      "choose": "從保管庫選擇…",
+      "device": "從這部裝置",
+      "fromDevice": "來自這部裝置的 {{label}}",
+      "dropHintEmpty": "或將 PDF 拖放到這張卡片上的任何位置。你在這裡儲存的檔案會顯示在這份清單中。",
+      "dropHint": "或將 PDF 拖放到這張卡片上的任何位置。"
+    },
+    "modes": {
+      "merge": "合併",
+      "pages": "頁面",
+      "annotate": "標註"
+    },
+    "editor": {
+      "title": "PDF 編輯器",
+      "hint": "合併、重新整理和標註 PDF。所有作業都在這個瀏覽器中執行——不會上傳任何文件。",
+      "operation": "PDF 操作",
+      "dropMerge": "拖放 PDF 即可加入合併",
+      "dropOpen": "拖放 PDF 即可開啟"
+    },
+    "errors": {
+      "gone": "{{name}} 已不再儲存，所以無法開啟。",
+      "noRoom": "{{name}} 已歸檔，但它的內容無法放進這個瀏覽器的儲存空間。"
+    },
+    "saved": "已儲存 {{name}}",
+    "merge": {
+      "move": "移動 {{name}}，第 {{position}} 個，共 {{total}} 個",
+      "dragToReorder": "拖曳即可重新排序",
+      "fromDevice": "· 來自這部裝置",
+      "allPages": "所有頁面",
+      "rangeLabel": "要從 {{name}} 擷取的頁面",
+      "remove": "將 {{name}} 移出合併",
+      "rangeError": "{{name}}：{{reason}}",
+      "savedDescription": "來自{{documents}}的{{pages}}，已歸檔在「{{bucket}}」下。原始文件沒有變更。",
+      "pages_other": "{{count}} 頁",
+      "documents_other": "{{count}} 份文件",
+      "addLabel": "加入要合併的 PDF",
+      "empty": "加入兩份以上的 PDF，或將它們拖放到這張卡片上。它們會由上而下依序合併——拖曳某一列的左側邊緣即可變更順序——原始文件則保持原樣。",
+      "position": "第 {{position}} 個，共 {{total}} 個，{{name}}",
+      "hint": "像 1-3、7、9- 這樣的範圍可以只擷取文件的一部分。留白則表示全部。",
+      "action": "合併並儲存"
+    },
+    "pages": {
+      "savedDescription_other": "{{count}} 頁，已歸檔在「{{bucket}}」下。{{name}} 沒有變更。",
+      "chooseLabel": "選擇要整理的 PDF",
+      "empty": "選擇一份 PDF。你可以旋轉頁面、刪除頁面、變更頁面順序，或只保留其中一部分。",
+      "kept_other": "· 保留 {{count}} 頁中的 {{kept}} 頁",
+      "startOver": "重新開始",
+      "page": "第 {{number}} 頁",
+      "was": " · 原為第 {{number}} 頁",
+      "earlier": "將第 {{number}} 頁往前移",
+      "anticlockwise": "將第 {{number}} 頁逆時針旋轉",
+      "clockwise": "將第 {{number}} 頁順時針旋轉",
+      "remove": "移除第 {{number}} 頁",
+      "later": "將第 {{number}} 頁往後移",
+      "hint": "旋轉、移動或移除頁面後，這個按鈕就能使用。",
+      "action": "儲存頁面並存檔"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "醒目提示",
+        "comment": "註解"
+      },
+      "savedDescription": "{{summary}}，已歸檔在「{{bucket}}」下。{{name}} 沒有變更。",
+      "chooseLabel": "選擇要標註的 PDF",
+      "empty": "選擇一份 PDF。選取頁面上的文字即可醒目提示，或切換到「註解」並按一下要放註解的位置。",
+      "toolLabel": "標註工具",
+      "colour": "醒目提示顏色",
+      "previousPage": "上一頁",
+      "pageOf": "第 {{page}} 頁，共 {{total}} 頁",
+      "nextPage": "下一頁",
+      "zoom": "縮放",
+      "highlightHint": "選取頁面上的文字——跨行也沒問題——放開後就會標示出來。",
+      "commentHint": "在頁面上按一下要放註解的位置。",
+      "commentPlaceholder": "註解內容是什麼？",
+      "notePlaceholder": "為這裡加上備註…",
+      "commentLabel": "第 {{number}} 頁的註解",
+      "noteLabel": "醒目提示「{{excerpt}}」的備註",
+      "removeMark": "移除這個標註",
+      "hintEmpty": "請先醒目提示一些文字或新增註解。",
+      "hint": "將寫入{{summary}}。",
+      "action": "儲存標註並存檔"
+    }
+  },
+  "instruments": {
+    "calculator": "計算機",
+    "pdf": "PDF 編輯器",
+    "label": "工具",
+    "loading": "正在準備 PDF 工具…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "這個職缺在這部裝置上沒有已儲存的副本。擷取的頁面會保留在擷取時所用的裝置上，所以在手機上擷取的不會出現在這裡——而從備份還原的列只有紀錄，沒有頁面。",
+      "stored": "瀏覽器可以直接顯示 PDF，但無法顯示 {{kind}} 檔案。文件已儲存——按「儲存」即可交給你自己的應用程式開啟。",
+      "missing": "瀏覽器可以直接顯示 PDF，但無法顯示 {{kind}} 檔案——而且這一列沒有已儲存的文件可以交給其他程式開啟。"
+    },
+    "dialogDescription": "{{name}} 的預覽，歸檔在這份申請下。按 Esc 鍵即可返回紀錄。",
+    "noteSaved": "已儲存 {{name}} 的備註",
+    "noteSavedDescription": "保管庫在任何地方列出這個檔案時，都會一併顯示這則備註。",
+    "noteEmptyDescription": "備註現在是空的，所以這個檔案旁不會顯示任何內容。",
+    "captured": "{{name}}，擷取時的樣子",
+    "previewTitle": "{{name}} 預覽",
+    "asText": "{{name}}，純文字",
+    "truncated": "只顯示前 1 MB。按「儲存」即可在你自己的應用程式中開啟完整檔案。",
+    "failedTitle": "這個瀏覽器無法開啟預覽",
+    "failedDescription": "{{error}}。保管庫中這個檔案的紀錄不受影響——只是無法建立預覽。",
+    "noPreviewTitle": "這種類型無法預覽",
+    "capturedFrom": "擷取自 {{host}}",
+    "fullScreen": "以全螢幕開啟預覽",
+    "fullScreenDescription": "{{name}}，全螢幕顯示，附有備註面板。按 Esc 鍵即可返回。",
+    "notes": {
+      "title": "備註",
+      "hide": "隱藏備註面板",
+      "show": "顯示備註面板",
+      "hint": "保留在 {{name}} 上，並在任何列出這個檔案的地方顯示。",
+      "label": "{{name}} 的備註",
+      "placeholder": "這份文件的重點——藏在第 3 頁的截止日期、相關問題該問誰…",
+      "saved": "已儲存",
+      "save": "儲存備註"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "延後或移動這則提醒",
+      "label": "延後「{{title}}」——{{when}}",
+      "heading": "延後",
+      "pickDate": "選擇日期",
+      "move": "移動"
+    },
+    "row": {
+      "markNotDone": "將「{{title}}」標記為未完成",
+      "markDone": "將「{{title}}」標記為完成",
+      "draftReply": "草擬回覆"
+    },
+    "relatedTwo": "{{first}}和{{second}}",
+    "relatedMany_other": "{{count}} 份申請",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}}（副本）",
+    "add": "新增提醒",
+    "filterLabel": "依到期時間篩選提醒",
+    "searchLabel": "搜尋提醒",
+    "searchPlaceholder": "搜尋標題、備註或職缺",
+    "toast": {
+      "reopened": "已重新開啟「{{title}}」",
+      "completed": "已完成「{{title}}」",
+      "reopenedDescription": "回到它原本的日期下；如果是後續追蹤，也會回到儀表板上。",
+      "completedDescription": "已歸到「已完成」，並從儀表板移除。",
+      "moved": "已移動「{{title}}」",
+      "nowDue": "現在改為 {{date}} 到期 · {{when}}",
+      "duplicated": "已複製「{{title}}」",
+      "duplicatedDescription": "副本為未完成狀態，{{date}} 到期。",
+      "stillOnList": "「{{title}}」仍在清單上。",
+      "deletedDescription": "{{description}}——已從行事曆和這份清單中移除。"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何提醒",
+      "zeroDescription": "提醒是有日期的提示——追問推薦人、查看申請系統、寄出感謝信。標記為後續追蹤的提醒也會顯示在儀表板上，直到你勾選完成為止。",
+      "search": "沒有任何提醒的標題、備註、類型或申請提到「{{query}}」。",
+      "both": "沒有帶有所選關鍵字的「{{bucket}}」提醒。",
+      "doneTitle": "還沒有完成任何項目",
+      "doneDescription": "你勾選完成的提醒會集中在這裡，所以不小心勾選的也找得回來。",
+      "showAll": "顯示所有提醒",
+      "bucketTitle": "沒有「{{bucket}}」的項目",
+      "bucketDescription_other": "有 {{count}} 則提醒歸在其他群組下。",
+      "keywordsTitle": "沒有帶有這些關鍵字的提醒"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "是頁面頂端的關鍵字篩選將它們隱藏了。",
+    "searchTitle": "沒有符合這項搜尋的內容",
+    "clearSearch": "清除搜尋",
+    "filtersTitle": "沒有符合這些篩選條件的內容",
+    "clearFilters": "清除篩選條件",
+    "showFiled": "同時顯示已歸檔的檔案",
+    "bothTitle": "沒有同時符合兩個篩選條件的內容",
+    "clearBoth": "清除兩個篩選條件",
+    "clearKeywords": "清除關鍵字"
+  },
+  "capture": {
+    "posting": "職缺",
+    "savedOne": "已將 {{name}} 儲存到你的保管庫",
+    "savedMany_other": "已將 {{count}} 個職缺儲存到你的保管庫",
+    "suggested": "沒有歸檔在任何申請下。{{name}} 看起來相符——可以從保管庫中的該列將它歸檔。",
+    "unfiled": "沒有歸檔在任何申請下。你隨時可以從保管庫中的該列將它歸檔。",
+    "dropped_other": "有 {{count}} 個資源無法保留，所以部分內容可能看起來比較陽春。",
+    "unstored_other": "有 {{count}} 個無法儲存在這部裝置上——紀錄還在，但頁面沒有。",
+    "refusedOne": "有一個擷取的頁面無法保留",
+    "refusedMany_other": "有 {{count}} 個擷取的頁面無法保留",
+    "waitingOne": "有一個職缺等待儲存到這裡。",
+    "waitingMany_other": "有 {{count}} 個職缺等待儲存到這裡。",
+    "source": "透過 jojo 擴充功能擷取，仍在這部裝置上。",
+    "saving": "儲存中…",
+    "saveIt": "儲存",
+    "saveThem": "全部儲存"
+  },
+  "picker": {
+    "none": "沒有申請",
+    "label": "相關申請",
+    "searchLabel": "搜尋申請",
+    "searchPlaceholder": "搜尋申請…",
+    "noneYet": "還沒有任何申請。",
+    "noMatch": "沒有符合的申請。",
+    "unfile": {
+      "record": "取消歸檔這筆紀錄",
+      "file": "取消歸檔這個檔案",
+      "link": "取消歸檔這個連結",
+      "snippet": "取消歸檔這個片段",
+      "person": "取消歸檔這位聯絡人",
+      "conversation": "取消歸檔這段對話"
+    }
+  },
+  "snippets": {
+    "openInVault": "在保管庫中開啟",
+    "card": {
+      "edit": "編輯這個片段",
+      "moveTo": "移至"
+    },
+    "editor": {
+      "editTitle": "編輯片段",
+      "newTitle": "新增片段",
+      "title": {
+        "label": "標題",
+        "placeholder": "例如：為什麼選擇這個系所"
+      },
+      "kind": {
+        "label": "類型",
+        "hint": "它歸檔的位置，以及清單中顯示的標籤。"
+      },
+      "application": {
+        "label": "相關申請",
+        "hint": "可以選擇任意數量的職缺。之後它會顯示在每個職缺的頁面上。"
+      },
+      "text": {
+        "label": "內文",
+        "hint": "字級、顏色、粗體、斜體、底線和刪除線都會隨文字儲存。清單和表格會保留為純文字行。",
+        "placeholder": "寫下你一直在改寫的那段文字…"
+      },
+      "fullScreen": "全螢幕撰寫",
+      "keywords": {
+        "label": "關鍵字",
+        "hint": "與申請、提醒和檔案共用——用其中一個關鍵字篩選，就能找到所有相關項目。"
+      },
+      "savedNote": "已儲存到這個瀏覽器的資料庫——你回來時它還會在這裡。",
+      "fullScreenDescription": "正在以全螢幕編輯片段。按 Esc 鍵即可返回。"
+    },
+    "errors": {
+      "title": "請為片段命名。",
+      "body": "請寫下你日後要貼上的文字。"
+    },
+    "toast": {
+      "filed": "已歸檔在「{{tag}}」下，可以從清單中複製。",
+      "filedHidden": "已歸檔在「{{tag}}」下——被清單上方的篩選條件隱藏了。",
+      "duplicated": "副本已歸檔在「{{tag}}」下，可以開始改寫。",
+      "moved": "已歸檔在「{{tag}}」下。",
+      "movedOut": "已歸檔在「{{tag}}」下——已不在你正在查看的「{{filter}}」清單中。",
+      "stillThere": "「{{title}}」仍在保管庫中。",
+      "stillThereUnnamed": "這個片段仍在保管庫中。",
+      "deletedUnnamed": "已刪除片段",
+      "deletedDescription": "文字和它的關鍵字都會一併刪除。"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何片段",
+      "zeroDescription": "把你一直在改寫的段落存起來——個人簡介、為什麼選擇這個系所、追蹤信。",
+      "search": "沒有任何片段的名稱、內文或類型提到「{{query}}」。",
+      "both": "沒有帶有所選關鍵字的「{{tag}}」片段。",
+      "bucketTitle": "沒有「{{tag}}」片段",
+      "bucketDescription_other": "有 {{count}} 個片段歸檔在其他類型下。",
+      "showAll": "顯示所有類型",
+      "keywordsTitle": "沒有帶有這些關鍵字的片段"
+    },
+    "filterLabel": "依類型篩選片段",
+    "searchLabel": "搜尋片段",
+    "searchPlaceholder": "搜尋名稱或內文",
+    "copied": "已將片段複製到剪貼簿",
+    "discard": {
+      "title": "要捨棄未儲存的變更嗎？",
+      "description": "「{{title}}」有尚未儲存的編輯。現在離開會捨棄這些編輯，而且無法復原。",
+      "untitled": "未命名的片段",
+      "confirm": "捨棄變更"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "基本",
+      "scientific": "工程型"
+    },
+    "mode": "計算機模式",
+    "ops": {
+      "plus": "加",
+      "minus": "減",
+      "times": "乘",
+      "dividedBy": "除以",
+      "power": "的次方"
+    },
+    "history": "歷史紀錄",
+    "plusMinus": "正負號",
+    "backspace": "退格",
+    "clear": "清除",
+    "empty": "還沒有任何紀錄。完成的計算會顯示在這裡。",
+    "use": "使用 {{value}}"
+  },
+  "links": {
+    "newTab": "在新分頁中開啟",
+    "errors": {
+      "title": "請為連結加上標題。",
+      "url": "需要包含主機名稱，例如 jobs.rice.edu/postings。",
+      "empty": "請貼上網址以儲存。"
+    },
+    "fields": {
+      "title": "標題",
+      "url": "網址",
+      "category": "分類",
+      "applicationHint": "將連結歸檔在某個職缺下，讓兩邊都能找到彼此。",
+      "note": "備註",
+      "noteHint": "用一行說明為什麼值得保留。"
+    },
+    "add": "新增連結",
+    "toast": {
+      "saved": "已歸檔在「{{category}}」下，標題取自網址。",
+      "savedHidden": "已歸檔在「{{category}}」下——關鍵字篩選開啟時會隱藏。",
+      "duplicated": "副本已歸檔在「{{category}}」下，可以開始編輯。",
+      "deletedDescription": "已從保管庫中移除。它指向的網頁不受影響。"
+    },
+    "empty": {
+      "zeroTitle": "還沒有儲存任何連結",
+      "zeroDescription": "儲存一個網址——職缺、系所網頁、別人介紹你聯絡的人。標題會取自網址。",
+      "search": "沒有任何連結的標題、網址、備註或分類提到「{{query}}」。",
+      "both": "沒有帶有所選關鍵字的「{{category}}」連結。",
+      "bucketTitle": "「{{category}}」下沒有連結",
+      "bucketDescription_other": "有 {{count}} 個連結歸檔在其他分類下。",
+      "showAll": "顯示所有分類",
+      "keywordsTitle": "沒有帶有這些關鍵字的連結"
+    },
+    "filterLabel": "依分類篩選連結",
+    "searchLabel": "搜尋連結",
+    "searchPlaceholder": "搜尋標題、網址或備註",
+    "form": {
+      "label": "儲存連結",
+      "hint": "儲存在「{{category}}」下，標題取自網址。編輯任何一列即可變更兩者。",
+      "placeholder": "貼上網址…",
+      "save": "儲存連結"
+    }
+  },
+  "people": {
+    "add": "新增聯絡人",
+    "searchLabel": "搜尋聯絡人",
+    "searchPlaceholder": "搜尋姓名、角色或備註",
+    "applicationsList": "申請清單",
+    "toast": {
+      "removed": "已移除聯絡人",
+      "saved": "已儲存聯絡人"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何人",
+      "zeroDescription": "推薦人、遴選委員會主席、招募人員——求職過程中會經手的任何人。把他們歸檔在列有他們的職缺下，他們也會顯示在那些紀錄上。",
+      "searchTitle": "沒有符合的人",
+      "searchDescription": "試試姓名的一部分、角色，或他們所在的地方。"
+    },
+    "namedOn": {
+      "recommender": "{{names}} 的推薦人",
+      "contact": "{{names}} 的聯絡窗口",
+      "named": "列名於 {{names}}"
+    },
+    "form": {
+      "name": "姓名",
+      "nameError": "這裡唯一需要的就是姓名。",
+      "namePlaceholder": "例如：Prof. Ngozi Okafor",
+      "role": "角色",
+      "rolePlaceholder": "例如：推薦人、遴選委員會主席、招募人員",
+      "affiliation": "所屬單位",
+      "affiliationPlaceholder": "例如：Rice",
+      "affiliationHint": "他們所在的地方。不會連結到你申請過的雇主。",
+      "email": "電子郵件",
+      "phone": "電話",
+      "namedOn": "列名於",
+      "namedOnHint": "他們撰寫推薦信、參與篩選或擔任主席的每一個職缺。",
+      "notePlaceholder": "他們說了什麼、欠你什麼、何時該追問。",
+      "save": "儲存聯絡人"
+    }
+  },
+  "referee": {
+    "title": "{{name}} 的申請清單",
+    "description": "勾選要寄送的申請，並說明你希望每封推薦信強調什麼。你的重點和備註會保留在 {{name}} 上，供下次使用。",
+    "include": "包含 {{org}}，{{role}}",
+    "applied": "{{date}} 申請",
+    "noMaterials": "沒有歸檔的資料",
+    "materials_other": "{{count}} 份資料",
+    "posting": "職缺",
+    "noPosting": "沒有職缺連結",
+    "highlight": "重點",
+    "highlightPlaceholder": "例如：教學、NSF CAREER、因果推論",
+    "highlightHint": "請用逗號分隔。",
+    "note": "給他們的備註",
+    "notePlaceholder": "其他任何事項：截止日期、收件人、系所重視的事。",
+    "format": "檔案格式",
+    "excel": "Excel（.xlsx）",
+    "withMaterials": "包含我的資料",
+    "withMaterialsCount": "包含我的資料（{{count}}）",
+    "tickOne": "請至少勾選一份申請。",
+    "chosen_other": "{{count}} 份申請",
+    "chosenZip_other": "{{count}} 份申請，打包成一個 .zip",
+    "preparing": "準備中…",
+    "download": "下載",
+    "toast": {
+      "saved": "已儲存 {{name}} 的清單",
+      "zip_other": "{{file}}：工作表和 {{count}} 份文件，已在你的下載資料夾中。",
+      "zipMissing_other": "{{file}} 已在你的下載資料夾中，但少了 {{count}} 份這個瀏覽器已無法讀取的文件。",
+      "sheet": "{{file}}，已在你的下載資料夾中。",
+      "failed": "無法建立清單",
+      "failedDescription": "沒有下載任何內容。你的重點和備註都已保留。",
+      "highlights": "已儲存重點"
+    }
+  }
+}

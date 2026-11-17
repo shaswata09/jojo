@@ -1,0 +1,486 @@
+{
+  "shared": {
+    "thisBrowserOnly": "yalnızca bu tarayıcı",
+    "optional": "isteğe bağlı",
+    "undo": "Geri al",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "testing": "Test ediliyor…",
+    "testAgain": "Yeniden test et",
+    "testConnection": "Bağlantıyı test et",
+    "connected": "Bağlı",
+    "noAnswer": "Yanıt yok",
+    "notConnected": "Bağlı değil"
+  },
+  "appearance": {
+    "title": "Görünüm",
+    "theme": {
+      "label": "Tema",
+      "description": "Sistem, işletim sisteminizin ayarını izler",
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    },
+    "gestures": {
+      "label": "Maskot hareketleri",
+      "description": "jojo siz çalışırken tepki verir. Birini deneyin."
+    },
+    "draw": {
+      "label": "Bir hareket çizin",
+      "description": "Kenar çubuğu kartındaki robotun üzerine çizin. Köşesindeki robot düğmesi bunları da listeler."
+    },
+    "sounds": {
+      "label": "Arayüz sesleri",
+      "description": "Bir anahtarı çevirdiğinizde kısa bir tık sesi"
+    }
+  },
+  "savedServers": {
+    "intro": "Kayıtlı bağlantılar — burada yanıt vermiş her şey, olduğu gibi geri yüklenmeye hazır. Anahtar bu cihazda adresin yanında saklanır; asla bir yedeğe girmez.",
+    "inUse": "Kullanımda",
+    "keyKept": "anahtar saklı",
+    "load": "Yükle: {{name}}",
+    "loadWithKey": "Anahtarıyla birlikte yükle: {{name}}",
+    "forget": "Unut: {{name}}"
+  },
+  "model": {
+    "title": "Model",
+    "hint": "OpenAI uyumlu",
+    "savedNone": "Henüz kayıtlı bir şey yok — bir bağlantıyı test edin, adres saklansın",
+    "savedServers": "Kayıtlı sunucular",
+    "intro": "Bu bilgisayardaki bir model ya da ücretini ödediğiniz bir model. Varsayılan yereldir, çünkü kayıtlarınızın cihazdan hiç çıkmadığı tek seçenek budur.",
+    "provider": "Sağlayıcı",
+    "reasoningOptions": {
+      "on": "Açık",
+      "light": "Hafif",
+      "off": "Kapalı"
+    },
+    "endpoint": {
+      "label": "Uç nokta",
+      "hintOllama": "Sunucu ve bağlantı noktası. /v1 yok — jojo, kesmemesini isteyebilmek için Ollama'nın kendi uç noktasını kullanır.",
+      "hint": "/v1 ile biten temel URL."
+    },
+    "apiKey": {
+      "label": "API anahtarı",
+      "hint": "Yalnızca bu tarayıcıda saklanır. Asla bir yedeğe konmaz ve sağlayıcı dışında hiçbir yere gönderilmez."
+    },
+    "getKeyLink": "<anchor>{{provider}} üzerinden anahtar alın</anchor>",
+    "getKeyFree": "<anchor>{{provider}} üzerinden anahtar alın</anchor> — ücretsiz, kart gerekmez.",
+    "modelField": {
+      "label": "Model",
+      "placeholder": "Sağlayıcınızdan alınan model kimliği",
+      "hintConnected": "Sunucunun bildirdiği. Birden fazla model sunuyorsanız değiştirin.",
+      "hint": "Bunu sunucudan doldurmak için bağlantıyı test edin ya da kimliği kendiniz yazın."
+    },
+    "savedAs": {
+      "label": "Kayıt adı",
+      "hint": "Bu sunucunun listedeki adı. Varsayılan olarak model adıdır."
+    },
+    "contextWindow": {
+      "label": "Bağlam penceresi",
+      "hintOllama": "Token. {{tokens}} kullanmak ve Ollama'nın boyutu kendisinin belirlemesi için boş bırakın; buraya yazılan sayı num_ctx olarak da gönderilir.",
+      "hint": "Dağıtımınızın tutabileceği token sayısı. {{tokens}} için boş bırakın."
+    },
+    "reasoning": {
+      "label": "Akıl yürütme",
+      "description": "Düşünebilen modellerin — gpt-oss, Gemma 4, Qwen3 — yanıt vermeden önce akıl yürütmesini sağlar. Küçük bir modelde yanıtlar boş geliyorsa kapatın."
+    },
+    "fillEndpoint": "Önce bir uç nokta girin",
+    "connectedNote": "Bu tarayıcıda saklandı. Asistan bu modeli kullanacak."
+  },
+  "cloudTerms": {
+    "providerTerms": "{{provider}} koşulları",
+    "privacy": "Gizlilik politikası",
+    "licence": "jojo'nun lisans sayfası"
+  },
+  "mcp": {
+    "title": "Bir MCP istemcisinden bağlanın",
+    "intro": "Zaten kullandığınız bir asistanın — örneğin kendi planınızdaki Claude Code'un — buradaki kayıtlarınızı jojo'nun kendi asistanıyla aynı araçlarla okuyup güncellemesine izin verin. Bu sekmeye bilgisayarınızdaki küçük bir program aracılığıyla ulaşır ve yaptığı her değişiklik burada Geri al seçeneğiyle görünür.",
+    "allow": "Bu bilgisayardaki bir MCP istemcisinin jojo'yu kullanmasına izin ver",
+    "chip": {
+      "off": "Kapalı",
+      "searching": "jojo-bridge bekleniyor",
+      "ready": "Bağlandı",
+      "badToken": "Token reddedildi",
+      "noExtension": "Uzantı gerekli",
+      "staleExtension": "Uzantıyı yeniden yükleyin"
+    },
+    "explain": {
+      "searching": "127.0.0.1:3002 adresinde henüz yanıt veren bir şey yok. jojo-bridge'i ilk komutla başlatın — jojo aramaya devam ediyor.",
+      "served_one": "Bu oturumda istemcinizden gelen {{count}} isteği yanıtladı, en sonuncusu: {{method}}.",
+      "served_other": "Bu oturumda istemcinizden gelen {{count}} isteği yanıtladı, en sonuncusu: {{method}}.",
+      "servedNoMethod_one": "Bu oturumda istemcinizden gelen {{count}} isteği yanıtladı.",
+      "servedNoMethod_other": "Bu oturumda istemcinizden gelen {{count}} isteği yanıtladı.",
+      "ready": "jojo-bridge çalışıyor. İstemcinizi ikinci komutla bağlayın.",
+      "badToken": "jojo-bridge farklı bir token ile çalışıyor. Ctrl+C ile durdurun ve ilk komutla yeniden başlatın.",
+      "noExtension": "Bu jojo kopyası web'den sunuluyor ve Chrome web sayfalarını 127.0.0.1'den uzak tutar. Bağlantıyı jojo uzantısı taşır — yükleyicisi bu sayfada, İlanları saklama altında.",
+      "staleExtension": "Bu tarayıcıdaki jojo uzantısı bu sayfadan eski. chrome://extensions adresini açın ve jojo için Yeniden yükle'ye basın."
+    },
+    "start": {
+      "title": "jojo-bridge'i başlatın ve çalışır durumda bırakın",
+      "copy": "jojo-bridge'i başlatan komutu kopyala",
+      "notePowershell": "Node 18 veya daha yenisi gerekir. Windows PowerShell'e yapıştırın. Token ortam değişkeniyle aktarılır; böylece süreç listesinde asla görünmez. Bu sürümden önce indirilen bir jojo-bridge yeniden indirilmelidir — komut bunu yapar.",
+      "note": "Node 18 veya daha yenisi gerekir. Token ortam değişkeniyle aktarılır; böylece süreç listesinde asla görünmez. Bu sürümden önce indirilen bir jojo-bridge yeniden indirilmelidir — komut bunu yapar."
+    },
+    "connect": {
+      "title": "Claude Code'u buna bir kez bağlayın",
+      "copy": "Claude Code'u bağlayan komutu kopyala",
+      "note": "Ardından ona “hangi başvurularım beni bekliyor?” gibi bir şey sorun. Terminaliniz “command not found: claude” diyorsa, Claude Code'u kendi kopyasıyla gelen VS Code içinde kullanıyorsunuz demektir — aynı satırı o kopyanın tam yoluyla çalıştırın (VS Code uzantılar klasöründe, anthropic.claude-code-…/resources/native-binary/claude altında) ya da Claude Code CLI'yi kurun. HTTP üzerinden MCP konuşan her istemci aynı adresi ve token'ı kullanabilir."
+    },
+    "honesty": "İstemciniz kendi planınızda ve kendi oturumunuzla çalışır — jojo ikisini de asla görmez ve Anthropic'e ya da başka birine hiçbir şey göndermez. Geri alınamayan iki araç olan Sıfırla ve Temizle dışında, jojo'nun asistanının kullanabildiği her aracı kullanabilir. Claude Code, aksini söylemediğiniz sürece bir aracı kullanmadan önce sorar ve jojo her silme işlemini yıkıcı olarak işaretler. Kullanırken bu sekmeyi açık tutun: kayıtlar burada durur, bağlantının diğer ucu da.",
+    "newToken": "Yeni token",
+    "newTokenNote": "Eski komutlar çalışmayı bırakır — ikisini de yeni token ile yeniden çalıştırın."
+  },
+  "reader": {
+    "title": "Belgelerimi oku",
+    "intro": "Bir şey onu metne dönüştürene kadar asistan bir belgenin yalnızca adını görebilir. <anchor>{{name}}</anchor> programını bu bilgisayarda çalıştırın; PDF'lerinizin, Word dosyalarınızın, sunumlarınızın ve tablolarınızın içeriğini okuyabilsin.",
+    "address": {
+      "label": "Adres",
+      "hint": "Geliştirmede bu sitedeki bir yol ya da uzantı kuruluyken okuyucunun kendi adresi. Aşağıya bakın."
+    },
+    "notRunning": "Henüz çalıştırmıyor musunuz?",
+    "copySetup": "Kurulum komutlarını kopyala",
+    "cors": "<mono>{{endpoint}}</mono> adresini dinler, ama CORS başlığı göndermez — bu yüzden bir tarayıcı bu sayfanın onu farklı bir bağlantı noktası üzerinden çağırmasına izin vermez. jojo'nun geliştirme sunucusu <mono>{{path}}</mono> yolunu ona yönlendirir; yukarıdaki adresin bir URL değil de yol olmasının nedeni budur. Telefon uygulaması onunla doğrudan konuşur ve bunların hiçbirine ihtiyaç duymaz.",
+    "hosted": "<em>Barındırılan bir kopyada uzantıyı kurun.</em> Web'den sunulan bir sayfa <mono>127.0.0.1</mono> adresini çağıramaz — bir yolu yönlendirecek proxy yoktur ve https:// sayfalarının yerel ağa erişimi yasaktır. Uzantı bir sayfa değildir: okuyucuya doğrudan ulaşır ve jojo bunu ondan ister. Okuyucunun kendi adresini yukarıya girin; uzantı her isteği aktarır ve yalnızca bu bilgisayara aktarır.",
+    "fillAddress": "Önce bir adres girin",
+    "connectedNote": "Belgeler bu adrese gönderilir, başka hiçbir yere değil. Hiçbir şey yüklenmez.",
+    "separate": "{{name}} ayrı bir programdır, jojo'nun parçası değildir.",
+    "notAffiliated": "jojo'nun Microsoft ile bir bağlantısı yoktur."
+  },
+  "capture": {
+    "title": "İlanları saklama",
+    "intro": "İş ilanı, aramanızda başka birine ait olan tek belgedir. İlan mülakattan bir hafta sonra kaldırılır ve şartları da yanında götürür. jojo uzantısı bir kopya kaydeder — sayfanın dosyaladığınız gündeki hâli, tüm resimleri ve stil dosyaları içine katılmış olarak; böylece bir yıl sonra açmak hiçbir yere ulaşmaz ve bağlantı gerektirmez.",
+    "checking": "Bu tarayıcı kontrol ediliyor…",
+    "installed": "Kurulu ve bağlı.",
+    "installedHint": "Bir ilanı açın ve araç çubuğundaki jojo düğmesine tıklayın — göremiyorsanız yapboz parçası menüsünün arkasındadır ve sabitlenmesi gerekir. Ardından Kasa'ya geri dönün.",
+    "version": "Sürüm {{version}}.",
+    "safari": {
+      "title": "Safari bu uzantıyı çalıştıramaz.",
+      "body": "Safari yalnızca imzalı bir Mac uygulamasıyla gelen uzantıları yükler; bu yüzden burada kurulacak bir şey yok. Yakalama için Chrome, Edge, Brave ya da Firefox kullanın; jojo'daki diğer her şey Safari'de aynı şekilde çalışır."
+    },
+    "download": "Uzantıyı indir",
+    "firefox": {
+      "title": "Firefox imzalı bir kopya gerektirir.",
+      "body": "Firefox, bunun tek tıkla olabileceği tek tarayıcıdır — Mozilla imzalı bir eklenti, mağaza kaydı olmadan doğrudan buradaki bir bağlantıdan kurulabilir. jojo henüz imzalı bir derleme üretmiyor; bu yüzden şimdilik <code>about:debugging</code> → This Firefox → Load Temporary Add-on yoluyla geçici olarak yükleyin ve <code>manifest.json</code> dosyasını seçin. Firefox yeniden başladığında onu unutur."
+    },
+    "steps": {
+      "unzip": "Kalıcı bir yere açın — İndirilenler'e değil. <muted>Tarayıcı uzantıyı her başladığında o klasörden okur; bu yüzden klasörü silmek ya da taşımak uzantıyı kaldırır.</muted>",
+      "open": "Uzantılar sayfasını açın.",
+      "copied": "Kopyalandı",
+      "copy": "Kopyala",
+      "paste": "Adres çubuğuna yapıştırın.",
+      "developer": "Sağ üstteki <strong>Geliştirici modu</strong>nu açın. <muted>Açık bırakın — kapatmak bu şekilde yüklenen uzantıları hiçbir şey söylemeden devre dışı bırakır.</muted>",
+      "load": "<strong>Paketlenmemiş öğe yükle</strong>'ye tıklayın ve açtığınız klasörü seçin.",
+      "pin": "<strong>Sabitleyin.</strong> Araç çubuğundaki yapboz parçası düğmesine tıklayın ve jojo'yu sabitleyin. <muted>Chromium tarayıcıları varsayılan olarak her uzantıyı bu menünün arkasına gizler; düğme vardır ama araç çubuğunda değildir — insanların atladığı adım budur ve tam olarak uzantının kurulamaması gibi görünür.</muted>",
+      "back": "Buraya geri dönün. <muted>Bu panel bunu kendiliğinden fark eder ve yeşile döner.</muted>"
+    },
+    "yourBrowser": "tarayıcınız",
+    "noOneClick": "{{browser}} için tek tıkla kurulum yok; bu da burada eksik bir özellik değil, bir tarayıcı kararıdır: buna izin veren API 2018'de kaldırıldı ve imzalı bir paket yine de Chrome Web Store'dan gelmek zorunda olurdu. Bu uzantının hiçbir parçası bir sunucuyla konuşmaz — baktığınız sayfayı okur ve sonucu bu sekmeye verir."
+  },
+  "crash": {
+    "title": "Çökme raporları",
+    "builtWithout": "Bu jojo kopyası çökme raporlaması ya da kullanım analitiği olmadan derlendi; bu yüzden hiçbir şey kaydedilmez ve açılacak bir şey yoktur. Bir derleme bunları <mono>{{crashFlag}}</mono> ve <mono>{{analyticsFlag}}</mono> ile ayarlar.",
+    "intro": "Bir şey bozulduğunda jojo hatayı saklayabilir; böylece sonradan okuyabilirsiniz — başarısız olan şey çoktan kaydırılıp gittiğinde işe yarar. Bir rapor hata mesajını, hatanın jojo'nun neresinde oluştuğunu ve yığın izini içerir. Başvurularınızı, belgelerinizi, notlarınızı, profilinizi ya da konuşmalarınızı asla içermez; API anahtarları, adresler, ana dizininiz ve e-posta adresleri rapor yazılmadan önce çıkarılır.",
+    "where": "Bu tarayıcıda ve uzantıda çökme raporları <em>bu cihazda kalır</em> — hiçbir şey yüklenmez ve yedek dosyası bunları taşımaz. Telefon uygulaması bunları ayrıca Firebase Crashlytics'e gönderir; bu hizmet cihaz modelini, işletim sistemi sürümünü ve aynı çökmeyi kaç kişinin yaşadığını saymak için kullanılan rastgele bir kimliği ekler. Çökme raporları yalnızca çökmelerle ilgilidir — jojo'da ne yaptığınız aşağıdaki ayrı bir sorudur ve ayrı yanıtlanır.",
+    "keep": {
+      "label": "Çökme raporlarını sakla",
+      "description": "Açık; böylece yaşadığınız bir çökmeyi görebiliriz. Kapatırsanız hiçbir şey kaydedilmez."
+    },
+    "usage": {
+      "label": "Hangi özellikleri kullandığımı paylaş",
+      "description": "Yalnızca sabit bir listeden sayılar — kayıtlarınızın içeriği asla.",
+      "note": "Yalnızca sabit bir listedeki şeyleri söyleyebilir — hangi ekranın açıldığı, bir başvurunun eklendiği, kabaca kaç tane olduğu. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz. Google Analytics'e gider."
+    },
+    "kept_one": "{{count}} rapor saklanıyor",
+    "kept_other": "{{count}} rapor saklanıyor",
+    "clear": "Temizle",
+    "stack": "Yığın",
+    "emptyOn": "Bunu açtığınızdan beri hiçbir şey bozulmadı.",
+    "emptyOff": "Hiçbir şey kaydedilmiyor."
+  },
+  "audit": {
+    "title": "jojo'nun yaptıkları",
+    "kept_one": "{{count}} saklanıyor",
+    "kept_other": "{{count}} saklanıyor",
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt",
+    "connections_one": "{{count}} bağlantı",
+    "connections_other": "{{count}} bağlantı",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "değişiklik yok",
+    "undoTitle": {
+      "can": "Kayıtları bu değişiklikten önceki hâline geri getirir",
+      "wholeStore": "Bu değişiklik deponun tamamının yerini aldı; bu yüzden geri getirilecek bir şey yok",
+      "trimmed": "jojo bu değişikliğin kaydını tuttu ama geri getirmeye yetecek kadarını değil — arka planda yapılan bir yazma (bir uyum değerlendirmesi, bir dosyanın baytları) ya da çok eski"
+    },
+    "undoFailed": {
+      "title": "Bu değişiklik artık geri alınamadı",
+      "description": "Artık günlükte değil."
+    },
+    "empty": "Bu depoya henüz hiçbir şey yazılmadı. Yaptığınız her değişiklik burada kaydedilir ve kayıt yeniden yüklemeden sonra da kalır.",
+    "showFewer": "Daha az göster",
+    "showAll": "Tümünü göster ({{total}})",
+    "footer": "Son 200 değişiklik saklanır, en eskisi önce silinir. Burada geri almak kendi başına yeni bir değişikliktir — geri aldığı satırı kaldırmak yerine bu listenin en üstüne eklenir."
+  },
+  "keywords": {
+    "title": "Anahtar kelimeler",
+    "hint": "tüm kayıtlarda ortak",
+    "intro": "Başvurular, hatırlatıcılar ve kasa için tek bir set. Birini yeniden adlandırmak gösterildiği her yere yansır; birini silmek onu taşıyan her kayıttan kaldırır.",
+    "usage": {
+      "none": "Henüz hiçbir kayıtta yok",
+      "used_one": "{{count}} kayıtta kullanılıyor",
+      "used_other": "{{count}} kayıtta kullanılıyor"
+    },
+    "errors": {
+      "taken": "Başka bir anahtar kelime zaten bu adı taşıyor.",
+      "blank": "Bir anahtar kelimenin adı olmalı.",
+      "exists": "Bu anahtar kelime zaten var."
+    },
+    "renameNamed": "Yeniden adlandır: {{name}}",
+    "rename": "Yeniden adlandır",
+    "deleteNamed": "Sil: {{name}}",
+    "delete": "Sil",
+    "empty": {
+      "title": "Henüz anahtar kelime yok",
+      "description": "Aşağıdan ya da herhangi bir listenin üstündeki anahtar kelime filtresinden bir tane ekleyin. Anahtar kelimeler sizindir — üst çubuktaki sabit rol etiketleri değildir."
+    },
+    "newKeyword": "Yeni anahtar kelime",
+    "placeholder": "ör. Referans",
+    "add": "Anahtar kelime ekle"
+  },
+  "documents": {
+    "title": "Belgeleriniz",
+    "hint": "bu cihazda",
+    "intro": "Eklediğiniz CV'ler, ön yazılar ve beyanlar bu tarayıcıda, bu bilgisayarda saklanır. Hiçbir yere bir şey yüklenmez.",
+    "count_one": "{{count}} belge",
+    "count_other": "{{count}} belge",
+    "noneReadable": {
+      "title": "Hiçbir belge okunamadı",
+      "description": "Bu tarayıcı artık hiçbirinin baytlarını tutmuyor."
+    },
+    "savedAll_one": "{{count}} belge kaydedildi",
+    "savedAll_other": "{{count}} belge kaydedildi",
+    "savedSome": "{{total}} belgeden {{saved}} tanesi kaydedildi",
+    "savedAllDescription": "İndirilenler klasörünüzde tek bir dosya: {{name}}. Bunlar kayıtların kopyaları değil, asıl dosyalardır.",
+    "savedSomeDescription": "{{name}} indirilenler klasörünüzde; bu tarayıcının artık okuyamadığı şunlar olmadan: {{missing}}.",
+    "failed": {
+      "title": "İndirme oluşturulamadı",
+      "description": "Hiçbir şey kaydedilmedi. Yeniden deneyin ya da bir belgeyi açıp tek başına indirin."
+    },
+    "none": "Henüz belge yok",
+    "stored_one": "{{count}} belge saklanıyor",
+    "stored_other": "{{count}} belge saklanıyor",
+    "usage": "{{quota}} alanın {{used}} kadarı kullanılıyor",
+    "notPermanent": "Bu tarayıcı jojo'nun depolamasını kalıcı olarak işaretlemedi; bu yüzden disk dolarsa bu belgeleri temizleyebilir — “Tarama verilerini temizle” de ne derse desin bunları kaldırır. Yeniden yazmak istemeyeceğiniz her şeyin kendi kopyalarını saklayın.",
+    "saving": "Kaydediliyor…",
+    "downloadAll": "Tüm belgeleri indir"
+  },
+  "diagnostics": {
+    "title": "Tanılama",
+    "types": {
+      "application": "Başvurular",
+      "background": "Geçmiş bilgileri",
+      "claim": "İlişkiler",
+      "thread": "Konuşmalar",
+      "proposal": "Öneriler",
+      "organisation": "Kurumlar",
+      "timelineItem": "Zaman çizelgesi öğeleri",
+      "keyword": "Anahtar kelimeler",
+      "link": "Bağlantılar",
+      "file": "Dosyalar",
+      "snippet": "Metin parçaları",
+      "person": "Kişiler",
+      "stickyNote": "Yapışkan notlar",
+      "posting": "Kayıtlı ilanlar",
+      "match": "Gözcü eşleşmeleri",
+      "pipeline": "Gözcü işlem hatları",
+      "profile": "Profil"
+    },
+    "dataSet": {
+      "demo": "demo kayıtları, dokunulmamış",
+      "empty": "bilerek boşaltıldı, hiç doldurulmadı",
+      "user": "kurulduğundan beri yazıldı"
+    },
+    "notReported": "bildirilmedi",
+    "checking": "kontrol ediliyor…",
+    "storage": "Depolama",
+    "durable": {
+      "label": "Kayıtlar diske yazılıyor",
+      "yes": "evet — IndexedDB",
+      "no": "hayır — yalnızca bu sekme"
+    },
+    "schema": {
+      "label": "Veritabanı şeması",
+      "value": "v{{stored}} (uygulama v{{expected}} bekliyor)"
+    },
+    "persisted": {
+      "label": "Tarayıcı saklayacağını taahhüt ediyor",
+      "unknown": "bu tarayıcı söylemiyor",
+      "yes": "evet",
+      "no": "hayır — tarayıcı istediği zaman temizleyebilir; gizli pencere de kapanınca temizler"
+    },
+    "space": {
+      "label": "Kullanılan alan",
+      "value": "{{quota}} alanın {{used}} kadarı"
+    },
+    "queue": {
+      "label": "Yazma kuyruğu",
+      "idle": "boşta — her şey kaydedildi",
+      "writing_one": "{{count}} değişiklik kaydediliyor",
+      "writing_other": "{{count}} değişiklik kaydediliyor",
+      "degraded": "{{unsaved}} değişiklik, {{pending}} satır yeniden deneniyor ({{attempts}}. deneme): {{error}}",
+      "stopped": "durdu — {{reason}}"
+    },
+    "store": "Bu depo",
+    "contents": "İçerik",
+    "created": "Oluşturulma",
+    "seeded": "Doldurulma",
+    "never": "hiç",
+    "lastOpened": "Son açılış",
+    "lastWrite": "Son yazma",
+    "nothingYet": "henüz bir şey yok",
+    "skipped": {
+      "label": "Okunamayan kayıtlar",
+      "none": "yok"
+    },
+    "integrity": {
+      "label": "Bütünlük denetimleri",
+      "failed": "{{total}} başarısız",
+      "passed": "tümü geçti"
+    },
+    "records": "Kayıtlar ({{total}})",
+    "connections": "Bağlantılar ({{total}})",
+    "none": "Yok"
+  },
+  "data": {
+    "title": "Verileriniz",
+    "export": {
+      "idle": "Yedek indir",
+      "progress": "Yedek hazırlanıyor… {{total}} belgeden {{done}} tanesi",
+      "preparing": "Yedek hazırlanıyor…"
+    },
+    "restoreButton": "Yedeği geri yükle",
+    "excel": {
+      "label": "Excel'e aktar",
+      "title": "Paketle birlikte gelen bir tablo yazıcısı yok — JSON dışa aktarımı aynı kayıtları içerir"
+    },
+    "import": {
+      "label": "İçe aktar",
+      "title": "Bir yedeği geri okumak, anlamadığı bir dosyayı reddedebilen bir doğrulayıcı gerektirir — o var olana kadar bir içe aktarma ancak tahmin yürütebilir"
+    },
+    "about": "Tam bir yedek: tüm başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, anahtar kelimeleriniz ve etiketleri ile profiliniz, sürümlü tek bir dosyada. Şu anda alınan bir kopyadır — sonraki değişiklikleri izlemez ve bu bilgisayarda olmayan tek kopyadır.",
+    "records": {
+      "label": "Kayıtlar",
+      "empty": "Tüm listeler boş; bu yüzden her sayfa ilk açılış hâlini gösteriyor.",
+      "emptyStays": "Geri geldiğinizde de boş kalır.",
+      "emptyKeywords": "Anahtar kelimeleriniz hâlâ burada; demo verilerini yüklemek bunların yerine kendi anahtar kelimelerini koyar.",
+      "demo": "jojo ile gelen demo arama — on iki başvuru, bir zaman çizelgesi, dolu bir kasa. Henüz hiçbiri sizin değil.",
+      "own": "Kendi kayıtlarınız. Demo verilerini yüklemek bunların yerini alır; bu yüzden saklamak istiyorsanız önce bir yedek dışa aktarın.",
+      "loadDemo": "Demo verilerini yükle"
+    },
+    "clearRecords": {
+      "label": "Tüm kayıtları temizle",
+      "demo": "Demo verilerini kaldırır ve jojo'yu boş bırakır. Buradakilerin hiçbiri henüz sizin değil; bu yüzden hazır gelen anahtar kelimeler de onlarla birlikte gider.",
+      "own": "Tüm başvuruları, zaman çizelgesi öğelerini, kasa girişlerini, kayıtlı ilanları, kişileri, notları, konuşmaları ve CV bilgilerini kaldırır ve profilinizi boşaltır. Anahtar kelimeleriniz korunur.",
+      "nothingLeft": "Temizlenecek bir şey kalmadı",
+      "deletes": "Tüm kayıtları siler",
+      "button": "Kayıtları temizle"
+    },
+    "move": {
+      "label": "Başka bir cihaza taşı",
+      "description": "İkinci bir cihazla eşleştirin ve her şeyi aktarın. Bu derlemede bir gösterimdir — hiçbir şey iletilmez.",
+      "open": "Aktarım'ı aç"
+    },
+    "clearStorage": {
+      "label": "Tarayıcı depolamasını temizle",
+      "description": "Bu sitenin tarayıcınızda sakladığı her şeyi boşaltır — kayıtlarınızı ve veritabanlarını, eklediğiniz tüm belgeleri, tercihleri, önbellekleri ve çerezleri — ardından jojo'yu yeniymiş gibi yeniden yükler. Belgeler yalnızca burada; saklamak istiyorsanız önce indirin.",
+      "clearing": "Temizleniyor…",
+      "button": "Depolamayı temizle"
+    },
+    "footer": {
+      "durable": "Kayıtlarınız siz çalışırken bu tarayıcının veritabanına yazılır; bu yüzden sekmeyi kapatmak güvenlidir. Bu veritabanı yine de tek bir bilgisayarda: bir tarayıcı onu temizleyebilir, bir disk bozulabilir; bu yüzden başka bir yerde saklanan dışa aktarılmış bir dosya tek gerçek yedektir.",
+      "memory": "Kayıtlarınız şu anda kaydedilmiyor — nedeni sayfanın üstündeki bantta yazıyor. Sekmeyi kapatmadan önce bir kopya dışa aktarın."
+    },
+    "confirm": {
+      "fallbackTitle": "Veriler değiştirilsin mi?",
+      "continue": "Devam"
+    },
+    "restoreConfirm": {
+      "title": "Her şeyin yerine bu yedek konsun mu?",
+      "description": "Bu dosya şunları içeriyor: {{contents}}. {{replaces}}; bu geri alınamaz — geçmiş de onlarla birlikte gider. Emin değilseniz önce bir yedek indirin.",
+      "confirm": "Her şeyi değiştir"
+    },
+    "restoreFailed": "Geri yükleme başarısız oldu",
+    "reload": "jojo'yu yeniden yükle",
+    "demoLoaded": {
+      "title": "Demo verileri yüklendi",
+      "durable": "On iki başvuru, bir zaman çizelgesi, dolu bir kasa ve bir profil, geldikleri hâliyle veritabanınıza yazıldı.",
+      "memory": "On iki başvuru, bir zaman çizelgesi, dolu bir kasa ve bir profil, geldikleri hâliyle. Şu anda hiçbir şey kaydedilmiyor; bu yüzden bu sekme açık kaldığı sürece dururlar."
+    },
+    "cleared": {
+      "title": "Her şey temizlendi",
+      "demoDurable": "Anahtar kelimeler dahil tüm demo kayıtları silindi ve yeniden yüklemeden sonra da böyle kalır.",
+      "demoMemory": "Anahtar kelimeler dahil tüm demo kayıtları silindi; ancak şu anda hiçbir şey kaydedilmiyor, bu yüzden yeniden yükleme demo verileriyle baştan başlar.",
+      "ownDurable": "Profiliniz dahil tüm kayıtlar silindi ve yeniden yüklemeden sonra da böyle kalır. Anahtar kelimeleriniz hâlâ burada.",
+      "ownMemory": "Profiliniz dahil tüm kayıtlar silindi; ancak şu anda hiçbir şey kaydedilmiyor, bu yüzden yeniden yükleme demo verileriyle baştan başlar. Anahtar kelimeleriniz hâlâ burada."
+    }
+  },
+  "pending": {
+    "exportFirst": "Önce bir yedek dışa aktarın",
+    "empty": {
+      "title": "Tüm kayıtlar temizlensin mi?",
+      "demoDurable": "Demo başvuruları, zaman çizelgesi, kasa, kayıtlı ilanlar, anahtar kelimeler ve profil silinir ve yeniden yüklemeden sonra da böyle kalır. Buradakilerin hiçbiri sizin değildi — demo verileri yüklendiğinden beri bu depoya hiçbir şey yazılmadı.",
+      "demoMemory": "Demo başvuruları, zaman çizelgesi, kasa, kayıtlı ilanlar, anahtar kelimeler ve profil silinir; ancak şu anda hiçbir şey kaydedilmiyor, bu yüzden yeniden yükleme demo verileriyle baştan başlar. Buradakilerin hiçbiri sizin değildi — demo verileri yüklendiğinden beri bu depoya hiçbir şey yazılmadı.",
+      "ownDurable": "Başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, kişiler, notlar, konuşmalar, CV bilgileri ve profiliniz, bu oturumda eklediğiniz her şey dahil silinir ve yeniden yüklemeden sonra da böyle kalır. Geri alınamaz. Anahtar kelimeleriniz korunur — kendi başlarına kayıttırlar — ama onları taşıyan hiçbir şey kalmaz; bu yüzden anahtar kelime panelindeki her sayı sıfıra iner.",
+      "ownMemory": "Başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, kişiler, notlar, konuşmalar, CV bilgileri ve profiliniz, bu oturumda eklediğiniz her şey dahil silinir; ancak şu anda hiçbir şey kaydedilmiyor, bu yüzden yeniden yükleme demo verileriyle baştan başlar. Geri alınamaz. Anahtar kelimeleriniz korunur — kendi başlarına kayıttırlar — ama onları taşıyan hiçbir şey kalmaz; bu yüzden anahtar kelime panelindeki her sayı sıfıra iner.",
+      "confirm": "Her şeyi temizle"
+    },
+    "demo": {
+      "title": "Demo verileri yüklensin mi?",
+      "fillDurable": "On iki başvuru, bir zaman çizelgesi, dolu bir kasa ve bir profil, geldikleri anahtar kelimelerle etiketlenmiş olarak veritabanınıza yazılır. Yeniden temizlemek tek bir dokunuş.",
+      "fillMemory": "On iki başvuru, bir zaman çizelgesi, dolu bir kasa ve bir profil, geldikleri anahtar kelimelerle etiketlenmiş olarak yüklenir. Yeniden temizlemek tek bir dokunuş.",
+      "replace": "jojo'daki her şeyin yerine hazır kayıtlar konur — başvurularınız, zaman çizelgeniz, kasanız, kayıtlı ilanlarınız, kişileriniz, notlarınız, konuşmalarınız, CV bilgileriniz, anahtar kelimeleriniz ve profiliniz; hepsi birleştirilmez, yerine konur. Geri alınamaz.",
+      "confirm": "Demo verilerini yükle"
+    },
+    "storage": {
+      "title": "Bu sitenin sakladığı her şey temizlensin mi?",
+      "description": "Bu tarayıcıdan jojo'nun koyduğu her şeyi boşaltır — kayıtlarınızı ve veritabanlarını, tema ve ses tercihlerinizi, önbellekleri ve çerezleri — ardından yeniden yükler. Kopya tutan bir sunucu yoktur ve buradaki hiçbir şey bu bilgisayardan hiç çıkmadı; yani hepsi bu kadar. jojo yeni bir bilgisayardaki gibi geri gelir: sistem teması ve ilk açılışta sorulan, demo verileriyle mi yoksa boş mu başlanacağı sorusu. Geri alınamaz.",
+      "confirm": "Depolamayı temizle"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_one": "{{count}} kayıt",
+      "records_other": "{{count}} kayıt",
+      "documents_one": "{{count}} belge",
+      "documents_other": "{{count}} belge",
+      "links_one": "{{count}} bağlantı",
+      "links_other": "{{count}} bağlantı"
+    },
+    "lost": {
+      "title": "Bazı kayıtlar geri yüklenemedi",
+      "description": "Bu dosya şunları içeriyordu: {{held}}. {{kept}} bu cihazda; {{lost}} ise okunamadı — bunlar kayboldu. Dosyanın kendisi değişmedi; bu yüzden onları okuyabilen bir derleme dosyayı yine de geri yükleyebilir.",
+      "descriptionWithDocuments": "Bu dosya şunları içeriyordu: {{held}}. {{kept}} ve {{documents}} bu cihazda; {{lost}} ise okunamadı — bunlar kayboldu. Dosyanın kendisi değişmedi; bu yüzden onları okuyabilen bir derleme dosyayı yine de geri yükleyebilir."
+    },
+    "withoutLinks": {
+      "title": "Bazı bağlantılar olmadan geri yüklendi",
+      "description": "{{held}} — hepsi geri geldi. Aralarındaki {{links}} okunamadı; bu yüzden birkaç belge, hatırlatıcı ya da ilan ait olduğu işin altında dosyalanmamış olabilir. Başka hiçbir şey eksik değil.",
+      "descriptionWithDocuments": "{{held}} ve {{documents}} — hepsi geri geldi. Aralarındaki {{links}} okunamadı; bu yüzden birkaç belge, hatırlatıcı ya da ilan ait olduğu işin altında dosyalanmamış olabilir. Başka hiçbir şey eksik değil."
+    },
+    "done": {
+      "title": "Geri yüklendi",
+      "description": "{{records}} geri geldi, tam olarak dosyadaki gibi.",
+      "descriptionWithDocuments": "{{records}} ve {{documents}} geri geldi, tam olarak dosyadaki gibi."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "Bu dosya okunamadı",
+      "description": "Tarayıcınız bu dosyayı okuyamadı — seçtiğinizden beri taşınmış, yeniden adlandırılmış ya da bağlantısı kesilmiş olabilir. Hiçbir şey değişmedi; geri geldiğinde yeniden seçin."
+    },
+    "refused": {
+      "title": "Bu dosya geri yüklenemez",
+      "notBackup": "Bu dosya bir jojo yedeği değil. Hiçbir şey değişmedi.",
+      "reason": "{{reason}}. Hiçbir şey değişmedi."
+    }
+  }
+}

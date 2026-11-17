@@ -1,0 +1,243 @@
+{
+  "page": {
+    "title": "Chuyển dữ liệu",
+    "subtitle": "Chuyển mọi thứ giữa máy tính này và điện thoại của bạn",
+    "showAnimation": "Hiện hoạt ảnh",
+    "showAnimationHint": "Một cảnh WebGPU vẽ lại ở mỗi khung hình — hãy tắt khi dùng pin",
+    "roleLabel": "Vai trò của thiết bị này",
+    "roles": {
+      "send": "Gửi sang điện thoại",
+      "receive": "Nhận từ điện thoại"
+    },
+    "empty": {
+      "title": "Chưa có gì để gửi",
+      "description": "Thiết bị này chưa có bản ghi nào, nên không có gì để gửi. Để mang các bản ghi từ điện thoại sang, hãy chọn Nhận từ điện thoại ở trên. Hoặc thêm thứ gì đó, hay tải dữ liệu mẫu, và nó sẽ hiện ở đây thành một nhóm bạn có thể gửi.",
+      "receive": "Nhận từ điện thoại",
+      "loadDemo": "Tải dữ liệu mẫu"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Đơn ứng tuyển",
+      "hint": "Mọi giai đoạn, ghi chú và kết quả của từng đơn",
+      "summary_other": "{{count}} đơn ứng tuyển"
+    },
+    "timeline": {
+      "label": "Lời nhắc và sự kiện",
+      "hint": "{{reminders}} lời nhắc, {{events}} sự kiện có ngày",
+      "summary_other": "{{count}} lời nhắc và sự kiện"
+    },
+    "vault": {
+      "label": "Liên kết và đoạn văn bản",
+      "hint": "{{links}} liên kết · {{snippets}} đoạn văn bản",
+      "summary_other": "{{count}} liên kết và đoạn văn bản"
+    },
+    "files": {
+      "label": "Tệp",
+      "hint": "CV, bản trình bày và mọi thứ khác được lưu kèm một đơn ứng tuyển",
+      "summary_other": "{{count}} tệp"
+    },
+    "keywords": {
+      "label": "Từ khóa",
+      "hint": "Danh sách từ khóa của bạn và mọi bản ghi gắn với chúng",
+      "summary_other": "{{count}} từ khóa"
+    },
+    "scout": {
+      "label": "Trình tìm việc",
+      "hint": "{{pipelines}} quy trình · {{postings}} tin tuyển dụng đã lưu · {{matches}} gợi ý",
+      "summary_other": "{{count}} bản ghi của Trình tìm việc"
+    },
+    "notes": {
+      "label": "Ghi chú dán",
+      "hint": "Các ghi chú cho chính bạn trên bảng ở Tổng quan",
+      "summary_other": "{{count}} ghi chú dán"
+    },
+    "profile": {
+      "label": "Hồ sơ cá nhân",
+      "hint": "Tên, liên kết, từ khóa đối chiếu và các công tắc của trình tìm việc",
+      "summary_other": "{{count}} hồ sơ cá nhân"
+    },
+    "people": {
+      "label": "Người liên hệ",
+      "hint": "Người viết thư giới thiệu, trưởng hội đồng tuyển dụng, nhà tuyển dụng, và các đơn ứng tuyển liên quan đến họ",
+      "summary_other": "{{count}} người"
+    },
+    "background": {
+      "label": "Lý lịch",
+      "hint": "Bằng cấp, chức vụ, bài báo và kỹ năng đọc từ CV của bạn",
+      "summary_other": "{{count}} thông tin lý lịch"
+    },
+    "nothing": "không có gì"
+  },
+  "stage": {
+    "sameNetwork": "Cả hai thiết bị cần ở trên cùng một mạng cục bộ — các bản ghi đi thẳng giữa chúng, không qua máy chủ hay trạm trung chuyển nào.",
+    "send": {
+      "idle": {
+        "title": "Đang chờ thiết bị kia",
+        "body": "Mở jojo trên điện thoại, chọn Chuyển dữ liệu, rồi Nhận từ máy tính, và quét mã ở đây. Việc quét mã sẽ thống nhất một khóa mã hóa giữa hai thiết bị, mà không cần phát đi thứ gì. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Đang kết nối tới điện thoại",
+        "body": "Đang hỏi địa chỉ bạn đã nhập để lấy phần bắt tay của nó. Chưa có gì được gửi."
+      },
+      "packing": {
+        "title": "Đang tập hợp các bản ghi",
+        "body": "Đang đọc mọi thứ trong danh sách bên dưới từ thiết bị này. Vẫn chưa có gì trên mạng."
+      },
+      "sending": {
+        "title": "Đang chuyển các bản ghi",
+        "body": "Các khối dữ liệu đã niêm phong, đi thẳng tới điện thoại qua mạng cục bộ. Tiến độ hiện bên cạnh mã bạn đã nhập."
+      },
+      "done": {
+        "title": "Đã gửi xong mọi thứ",
+        "body": "Điện thoại sẽ hỏi trước khi thay thế bất cứ thứ gì; quyết định của nó hiện bên cạnh mã bạn đã nhập. Không có gì bị xóa khỏi thiết bị này — chuyển dữ liệu là sao chép."
+      },
+      "failed": {
+        "title": "Việc chuyển dữ liệu đã dừng",
+        "body": "Không có gì trên thiết bị này thay đổi. Lỗi xảy ra được ghi bên cạnh mã bạn đã nhập."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "Đang chờ điện thoại",
+        "body": "Mở jojo trên điện thoại, chọn Chuyển dữ liệu, rồi Gửi sang máy tính, và quét mã ở đây. Sau đó điện thoại sẽ hiện một mã ngắn để nhập ở bên phải. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Đang kết nối tới điện thoại",
+        "body": "Đang hỏi địa chỉ bạn đã nhập để lấy phần bắt tay của nó. Chưa nhận được gì."
+      },
+      "receiving": {
+        "title": "Đang nhận các bản ghi từ điện thoại",
+        "body": "Các khối dữ liệu đã niêm phong, đi thẳng từ điện thoại qua mạng cục bộ. Không có gì trên máy tính này thay đổi cho đến khi bạn đồng ý."
+      },
+      "confirming": {
+        "title": "Đã nhận đủ mọi thứ",
+        "body": "Các bản ghi từ điện thoại đã đến và hợp lệ. Chưa có gì ở đây thay đổi — hãy cho biết chúng có nên thay thế những gì đang có trên máy tính này không."
+      },
+      "restoring": {
+        "title": "Đang thay thế các bản ghi ở đây",
+        "body": "Đang ghi những gì điện thoại gửi đè lên những gì đã có trên máy tính này."
+      },
+      "done": {
+        "title": "Đã chuyển xong mọi thứ",
+        "body": "Máy tính này giờ đang giữ các bản ghi từ điện thoại của bạn. Không có gì bị xóa khỏi điện thoại — chuyển dữ liệu là sao chép."
+      },
+      "failed": {
+        "title": "Việc chuyển dữ liệu đã dừng",
+        "body": "Không có gì trên máy tính này thay đổi. Lỗi xảy ra được ghi bên cạnh mã bạn đã nhập."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} — đó là những gì đang có trên máy tính này, và sẽ bị thay thế bởi các bản ghi từ điện thoại.",
+      "sent": "{{summary}} — đó là những gì đã được gửi.",
+      "willMove": "{{summary}} — đó là những gì sẽ được chuyển."
+    },
+    "scanHint": "Quét mã ở đây bằng ứng dụng jojo trên điện thoại — đó chính là khóa — rồi điện thoại sẽ hiện một mã ngắn để bạn nhập ở bên phải.",
+    "chooseGroup": "Chọn ít nhất một nhóm để gửi."
+  },
+  "qr": {
+    "label": "Mã ghép nối. Quét bằng ứng dụng jojo trên điện thoại: mở Chuyển dữ liệu và hướng camera vào ô vuông này."
+  },
+  "details": {
+    "title": "Chi tiết",
+    "hint": "lần chuyển giao này",
+    "records": "Bản ghi",
+    "recordsHint": "mọi thứ trong các nhóm bên dưới",
+    "encryption": "Mã hóa",
+    "encryptionHint": "AES-256-GCM, khóa được thống nhất qua camera",
+    "keyAgreed": "Đã thống nhất khóa",
+    "notPaired": "Chưa ghép nối",
+    "route": "Đường truyền",
+    "routeHint": "một địa chỉ mạng riêng — không bao giờ qua internet",
+    "localNetwork": "Mạng cục bộ",
+    "servers": "Máy chủ",
+    "serversHint": "không trạm trung chuyển, không máy chủ báo hiệu, không lưu trữ ở đâu cả",
+    "none": "Không có"
+  },
+  "payload": {
+    "label": "Chuyển tệp",
+    "noFiles": "Không có tệp nào trên thiết bị này",
+    "files_other": "{{count}} tệp — phần chậm nhất của một lần chuyển giao"
+  },
+  "connect": {
+    "title": "Kết nối",
+    "hintUnable": "không hỗ trợ trong trình duyệt này",
+    "unable": "Trình duyệt này không thể kết nối với thiết bị khác trong mạng của bạn — Safari và mọi trình duyệt trên iPhone hoặc iPad đều không thể, Firefox cũng không thể khi dùng trang đã phát hành. Hãy dùng Chrome hoặc Edge trên máy tính — hoặc chuyển mọi thứ bằng tệp sao lưu từ Cài đặt, cách này dùng được ở mọi nơi và không giới hạn dung lượng.",
+    "hint": "từ thiết bị kia",
+    "intro": "Sau khi quét, điện thoại sẽ hiện một mã ngắn. Hãy nhập mã đó ở đây — đó là cách máy tính này biết điện thoại ở đâu, điều mà trình duyệt không tự tìm ra được.",
+    "codeLabel": "Mã hiện trên điện thoại của bạn",
+    "send": "Gửi",
+    "progress": "Tiến độ chuyển dữ liệu",
+    "reaching": "Đang kết nối tới điện thoại…",
+    "gathering": "Đang tập hợp các bản ghi…",
+    "percentSent": "Đã gửi {{percent}}%",
+    "cancel": "Hủy",
+    "another": "Gửi sang thiết bị khác"
+  },
+  "done": {
+    "applied": "Điện thoại của bạn giờ đang giữ các bản ghi này.",
+    "appliedAt": "Điện thoại của bạn tại {{target}} giờ đang giữ các bản ghi này.",
+    "declined": "Mọi thứ đã được gửi, và điện thoại đã giữ lại các bản ghi của chính nó — không có gì bị thay thế ở đó.",
+    "failed": "Mọi thứ đã được gửi, nhưng điện thoại không đọc được, nên không có gì bị thay thế ở đó. Hãy thử lại.",
+    "unknown": "Mọi thứ đã được gửi. Điện thoại không cho biết đã nhận các bản ghi hay chưa — hãy kiểm tra trên đó.",
+    "unknownTo": "Mọi thứ đã được gửi tới {{target}}. Điện thoại không cho biết đã nhận các bản ghi hay chưa — hãy kiểm tra trên đó.",
+    "waiting": "Mọi thứ đã được gửi. Điện thoại sẽ hỏi trước khi thay thế bất cứ thứ gì — hãy xác nhận trên đó để hoàn tất.",
+    "waitingTo": "Mọi thứ đã được gửi tới {{target}}. Điện thoại sẽ hỏi trước khi thay thế bất cứ thứ gì — hãy xác nhận trên đó để hoàn tất."
+  },
+  "receive": {
+    "title": "Nhận từ điện thoại",
+    "hint": "từ điện thoại của bạn",
+    "unable": "Trình duyệt này không thể kết nối với thiết bị khác trong mạng của bạn — Safari và mọi trình duyệt trên iPhone hoặc iPad đều không thể, Firefox cũng không thể khi dùng trang đã phát hành. Hãy dùng Chrome hoặc Edge trên máy tính — hoặc xuất một bản sao lưu trên điện thoại rồi mở nó trong Cài đặt.",
+    "intro": "Trên điện thoại, mở Chuyển dữ liệu, chọn Gửi sang máy tính, và quét mã trên trang này. Sau đó điện thoại sẽ hiện một mã ngắn — hãy nhập mã đó ở đây. Cả hai thiết bị cần ở trên cùng một mạng cục bộ.",
+    "codeLabel": "Mã hiện trên điện thoại của bạn",
+    "receive": "Nhận",
+    "reaching": "Đang kết nối tới điện thoại…",
+    "progress": "Đã nhận {{size}}. Không có gì ở đây thay đổi cho đến khi bạn đồng ý.",
+    "cancel": "Hủy",
+    "restoring": "Đang thay thế các bản ghi trên máy tính này…",
+    "replaceWarning": "Việc nhận sẽ thay thế mọi thứ trên máy tính này bằng những gì có trên điện thoại, sau khi bạn đồng ý. Để giữ một bản sao của những gì đang có ở đây, hãy tải xuống bản sao lưu trước.",
+    "downloadFirst": "Tải xuống bản sao lưu trước",
+    "twoBrowsers": {
+      "title": "Hai trình duyệt",
+      "hint": "giữa hai máy tính",
+      "body": "Một trang web không thể nhận kết nối, trang trên máy tính kia cũng vậy, nên hai máy tính không thể kết nối trực tiếp với nhau. Hãy xuất bản sao lưu từ một máy và mở nó trên máy kia — bản sao lưu mang theo mọi bản ghi và mọi tài liệu.",
+      "export": "Xuất bản sao lưu"
+    },
+    "reload": "Tải lại jojo"
+  },
+  "pullConfirm": {
+    "title": "Thay thế mọi thứ bằng những gì điện thoại đã gửi?",
+    "description": "Điện thoại đã gửi {{contents}}. {{replaces}}, và không thể hoàn tác — lịch sử cũng mất theo. Hãy tải xuống bản sao lưu trước nếu bạn chưa chắc.",
+    "confirm": "Thay thế mọi thứ"
+  },
+  "handover": {
+    "sendingAgain": "Gửi lại sẽ thay thế mọi thứ ở đó bằng mọi thứ ở đây."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Trình duyệt này không thể kết nối với thiết bị khác trong mạng của bạn — Safari không thể, không trình duyệt nào trên iPhone hoặc iPad có thể, và Firefox không thể khi dùng trang đã phát hành. Hãy dùng Chrome hoặc Edge trên máy tính, hoặc chuyển các bản ghi bằng tệp sao lưu.",
+      "notLocal": "Địa chỉ đó không thuộc mạng cục bộ. jojo chỉ kết nối tới địa chỉ riêng, nên việc chuyển dữ liệu không bao giờ đi qua internet.",
+      "unreachable": "Địa chỉ đó không trả lời. Hãy kiểm tra cả hai thiết bị có ở trên cùng một mạng cục bộ không, và trình duyệt đã được phép tìm thiết bị trong mạng cục bộ chưa. Một số mạng khách chặn các thiết bị nhìn thấy nhau.",
+      "refused": "Thiết bị đó đã từ chối kết nối. Hãy kiểm tra điện thoại có đang đặt theo chiều ngược lại không — Nhận trên điện thoại khi máy tính này gửi, Gửi khi máy tính này nhận — rồi hiện mã mới và quét lại.",
+      "oversized": "Thiết bị đó trả về nhiều dữ liệu hơn hẳn mức jojo mong đợi, nên jojo đã ngừng đọc. Không có gì trên máy tính này thay đổi.",
+      "timeout": "Thiết bị đó đã ngừng trả lời. Hãy giữ jojo mở trên điện thoại và để màn hình sáng, rồi hiện mã mới và thử lại.",
+      "blocked": "Trình duyệt của bạn đã chặn trang này truy cập các thiết bị trong mạng cục bộ. Hãy cho phép trong phần cài đặt trang (biểu tượng bên trái địa chỉ), rồi thử lại.",
+      "cancelled": "Đã hủy.",
+      "conflict": "Điện thoại không tập hợp được các bản ghi để gửi. Hãy xem thông báo trên điện thoại — không có gì trên máy tính này thay đổi."
+    },
+    "dial": {
+      "unreadable": "Mã đó có ký tự mà jojo không dùng. Hãy đối chiếu với màn hình kia.",
+      "length": "Mã đó sai độ dài. Mã gồm mười hai ký tự, chia thành ba nhóm bốn ký tự.",
+      "mistyped": "Mã đó không hợp lệ — có một ký tự bị sai ở đâu đó. Hãy thử nhập lại."
+    },
+    "pull": {
+      "forged": "Một phần dữ liệu nhận được không đến từ điện thoại bạn đã ghép nối, nên jojo đã loại bỏ toàn bộ. Không có gì trên máy tính này thay đổi — hãy hiện mã mới và thử lại.",
+      "oversized": "Điện thoại gửi nhiều hơn mức jojo nhận trong một lần, nên jojo đã ngừng đọc. Không có gì trên máy tính này thay đổi.",
+      "unrestorable": "Không thể khôi phục những gì điện thoại đã gửi: {{reason}}. Không có gì trên máy tính này thay đổi.",
+      "declined": "Không có gì thay đổi. Những gì điện thoại gửi đã bị loại bỏ."
+    },
+    "unexpected": "Đã xảy ra lỗi trên máy tính này và việc chuyển dữ liệu đã dừng. Không có gì bị để lại trên thiết bị kia — hãy thử lại, hoặc chuyển các bản ghi bằng tệp sao lưu từ Cài đặt.",
+    "unproven": "Thiết bị đó không chứng minh được đã đọc mã trên màn hình này. Hãy hiện mã mới và quét lại.",
+    "pairingFailed": "Đã xảy ra lỗi khi thiết lập ghép nối bảo mật trên thiết bị này."
+  }
+}

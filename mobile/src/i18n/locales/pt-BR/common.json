@@ -3,7 +3,8 @@
     "label": "Idioma",
     "description": "O idioma em que o jojo é exibido. Seus registros continuam no idioma em que você os escreveu.",
     "system": "Igual a este dispositivo ({{name}})",
-    "restartForDirection": "O árabe é lido da direita para a esquerda depois que o jojo reinicia."
+    "restartRtl": "{{name}} será lido da direita para a esquerda quando o jojo reiniciar.",
+    "restartLtr": "{{name}} será lido da esquerda para a direita quando o jojo reiniciar."
   },
   "actions": {
     "undo": "Desfazer",

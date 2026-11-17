@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "顯示「{{label}}」",
+    "hide": "隱藏「{{label}}」"
+  },
+  "allHidden": {
+    "withReset": "圖例中的每個數列都已關閉。",
+    "noReset": "所有數列都已隱藏——從圖例中選一個即可重新顯示。",
+    "showAll": "顯示所有數列"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "雷達圖，比較 {{series}} 在 {{axes}} 上的表現"
+  }
+}

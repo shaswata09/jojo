@@ -2745,3 +2745,15 @@ Guarded by:
 - `mobile/src/lib/notes-and-stage-dates.requests.test.ts` › "writes a picked or cleared date through the rule that overwrites, with an Undo"
 - `service/kg/core/sticky.test.ts` › "takes the first line as the title and the rest as the detail"
 Note: The owner's answer to the question Q328 left open. `reminderFromNote` moved from the web app's lib folder to `service/kg/core/sticky.ts` so both boards share it. Wording is the web's catalog entries copied into the phone's ten locales; the phone drops "(Enter to stick it)" from the placeholder, because Return adds a line on a phone keyboard.
+
+### Q332 — Add Bengali and other popular languages too.
+`feature` · 2026-11-16 · cross · active
+Must stay true: Both apps offer twenty languages from the one list in `service/kg/core/locale.ts` — the first ten plus Bengali, Russian, Urdu (right-to-left), Indonesian, Turkish, Vietnamese, Italian, Traditional Chinese, Marathi and Tamil — each with every key English has, its own CLDR plural forms, and the calendar words taken from CLDR. A Traditional Chinese device (zh-TW, zh-HK, zh-Hant) gets Traditional Chinese instead of English, and the phone's PluralRules shim answers every one of the twenty languages the way ICU does.
+Guarded by:
+- `service/kg/core/locale.test.ts` › "offers Bengali and the other most-spoken languages"
+- `service/kg/core/locale.test.ts` › "reads Chinese by script, and never shows Simplified to a Traditional reader"
+- `service/kg/core/locale.test.ts` › "marks Arabic and Urdu right-to-left and nothing else"
+- `web/src/i18n/catalogs.test.ts` › "has a folder for every offered language and none for anything else"
+- `mobile/src/i18n/catalogs.test.ts` › "has a folder for every offered language and none for anything else"
+- `mobile/src/lib/plural-rules.test.ts` › "gives i18next the right forms when the engine has no PluralRules"
+Note: Chosen by number of speakers among languages the app did not yet offer, plus Traditional Chinese, whose readers were sent to English. Translated by one agent per language against a shared brief and validator (keys, placeholders, CLDR plural sets, tags, the two setting values); none has been reviewed by a native speaker yet.

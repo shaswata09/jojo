@@ -1,0 +1,472 @@
+{
+  "shared": {
+    "thisBrowserOnly": "僅限這個瀏覽器",
+    "optional": "選填",
+    "undo": "復原",
+    "save": "儲存",
+    "cancel": "取消",
+    "testing": "測試中…",
+    "testAgain": "再次測試",
+    "testConnection": "測試連線",
+    "connected": "已連線",
+    "noAnswer": "沒有回應",
+    "notConnected": "未連線"
+  },
+  "appearance": {
+    "title": "外觀",
+    "theme": {
+      "label": "主題",
+      "description": "「系統」會依照你的作業系統設定",
+      "light": "淺色",
+      "dark": "深色",
+      "system": "系統"
+    },
+    "gestures": {
+      "label": "吉祥物手勢",
+      "description": "jojo 會隨著你的操作做出反應。試試看。"
+    },
+    "draw": {
+      "label": "畫出動作",
+      "description": "在側邊欄卡片中的機器人身上畫畫看。卡片角落的機器人按鈕也會列出這些動作。"
+    },
+    "sounds": {
+      "label": "介面音效",
+      "description": "切換開關時發出簡短的喀嚓聲"
+    }
+  },
+  "savedServers": {
+    "intro": "已儲存的連線——曾在這裡回應過的所有伺服器，隨時可以完整載入。金鑰會與位址一起保存在這部裝置上；它絕不會進入備份。",
+    "inUse": "使用中",
+    "keyKept": "已保存金鑰",
+    "load": "載入 {{name}}",
+    "loadWithKey": "載入 {{name}}，包含金鑰",
+    "forget": "忘記 {{name}}"
+  },
+  "model": {
+    "title": "模型",
+    "hint": "與 OpenAI 相容",
+    "savedNone": "尚未儲存任何連線——測試連線後就會保留位址",
+    "savedServers": "已儲存的伺服器",
+    "intro": "這台電腦上的模型，或你付費使用的模型。預設為本機，因為這是唯一能讓你的紀錄永遠不離開裝置的選項。",
+    "provider": "供應商",
+    "reasoningOptions": {
+      "on": "開啟",
+      "light": "輕量",
+      "off": "關閉"
+    },
+    "endpoint": {
+      "label": "端點",
+      "hintOllama": "主機和連接埠。不要加 /v1——jojo 使用 Ollama 自己的端點，才能要求它不要截斷內容。",
+      "hint": "基礎網址，以 /v1 結尾。"
+    },
+    "apiKey": {
+      "label": "API 金鑰",
+      "hint": "只保存在這個瀏覽器中。它絕不會放進備份，也只會傳送給供應商。"
+    },
+    "getKeyLink": "<anchor>向 {{provider}} 取得金鑰</anchor>",
+    "getKeyFree": "<anchor>向 {{provider}} 取得金鑰</anchor>——免費，不需要信用卡。",
+    "modelField": {
+      "label": "模型",
+      "placeholder": "供應商提供的模型 ID",
+      "hintConnected": "伺服器回報的模型。如果你提供多個模型，請在這裡變更。",
+      "hint": "測試連線即可從伺服器填入，或自行輸入 ID。"
+    },
+    "savedAs": {
+      "label": "儲存名稱",
+      "hint": "這部伺服器在清單中的名稱。預設為模型名稱。"
+    },
+    "contextWindow": {
+      "label": "脈絡視窗",
+      "hintOllama": "以 token 計。留白則使用 {{tokens}}，並由 Ollama 自行調整大小；在這裡填入數字時，也會以 num_ctx 傳送。",
+      "hint": "你的部署可以容納的 token 數。留白則使用 {{tokens}}。"
+    },
+    "reasoning": {
+      "label": "推理",
+      "description": "讓會思考的模型——gpt-oss、Gemma 4、Qwen3——在回答前先推理。如果小型模型的回覆是空白的，請關閉這項功能。"
+    },
+    "fillEndpoint": "請先填入端點",
+    "connectedNote": "已保存在這個瀏覽器中。助理會使用這個模型。"
+  },
+  "cloudTerms": {
+    "providerTerms": "{{provider}} 條款",
+    "privacy": "隱私權政策",
+    "licence": "jojo 的授權頁面"
+  },
+  "mcp": {
+    "title": "從 MCP 用戶端連線",
+    "intro": "讓你已經在使用的助理——例如你自己方案中的 Claude Code——讀取和更新你在這裡的紀錄，使用的工具與 jojo 自己的助理相同。它透過你電腦上的一個小程式連到這個分頁，它所做的每項變更都會顯示在這裡，並且可以復原。",
+    "allow": "允許這台電腦上的 MCP 用戶端使用 jojo",
+    "chip": {
+      "off": "關閉",
+      "searching": "等候 jojo-bridge",
+      "ready": "已連結",
+      "badToken": "權杖遭拒",
+      "noExtension": "需要擴充功能",
+      "staleExtension": "重新載入擴充功能"
+    },
+    "explain": {
+      "searching": "127.0.0.1:3002 目前還沒有任何回應。請用第一個指令啟動 jojo-bridge——jojo 會持續尋找。",
+      "served_other": "這個工作階段已回應你的用戶端 {{count}} 個要求，最近一次是 {{method}}。",
+      "servedNoMethod_other": "這個工作階段已回應你的用戶端 {{count}} 個要求。",
+      "ready": "jojo-bridge 正在執行。請用第二個指令連接你的用戶端。",
+      "badToken": "jojo-bridge 正以不同的權杖執行。請按 Ctrl+C 停止它，再用第一個指令重新啟動。",
+      "noExtension": "這份 jojo 是從網路提供的，而 Chrome 不允許網頁存取 127.0.0.1。jojo 擴充功能會負責傳遞連結——它的安裝程式在這個頁面的「保留職缺」下。",
+      "staleExtension": "這個瀏覽器中的 jojo 擴充功能比這個頁面舊。請開啟 chrome://extensions，對 jojo 按「重新載入」。"
+    },
+    "start": {
+      "title": "啟動 jojo-bridge，並讓它持續執行",
+      "copy": "複製啟動 jojo-bridge 的指令",
+      "notePowershell": "需要 Node 18 以上版本。請貼到 Windows PowerShell 中。權杖會透過環境變數傳入，所以絕不會出現在處理程序清單中。在這個版本之前下載的 jojo-bridge 必須重新下載——這個指令會處理。",
+      "note": "需要 Node 18 以上版本。權杖會透過環境變數傳入，所以絕不會出現在處理程序清單中。在這個版本之前下載的 jojo-bridge 必須重新下載——這個指令會處理。"
+    },
+    "connect": {
+      "title": "將 Claude Code 連接到它（只需一次）",
+      "copy": "複製連接 Claude Code 的指令",
+      "note": "接著問它類似「我的哪些申請正在等我處理？」的問題。如果終端機顯示「command not found: claude」，表示你是在 VS Code 中使用 Claude Code，它附有自己的副本——請用該副本的完整路徑執行同一行指令（在 VS Code 擴充功能資料夾中的 anthropic.claude-code-…/resources/native-binary/claude 底下），或安裝 Claude Code CLI。任何透過 HTTP 使用 MCP 的用戶端，都可以使用相同的位址和權杖。"
+    },
+    "honesty": "你的用戶端使用你自己的方案和你自己的登入——jojo 兩者都看不到，也不會傳送任何資料給 Anthropic 或其他人。jojo 助理能用的工具它都能用，只有兩個無法復原的工具除外：「重設」和「清除」。除非你告訴 Claude Code 不必詢問，否則它在使用工具前都會先詢問，而 jojo 會將每個刪除動作標示為破壞性操作。使用時請保持這個分頁開啟：紀錄在這裡，連結的另一端也在這裡。",
+    "newToken": "新權杖",
+    "newTokenNote": "舊的指令將會失效——請用新的權杖重新執行這兩個指令。"
+  },
+  "reader": {
+    "title": "讀取我的文件",
+    "intro": "在有工具把文件轉成文字之前，助理只能看到文件名稱。在這台電腦上執行 <anchor>{{name}}</anchor>，它就能讀取你的 PDF、Word 檔案、簡報和試算表的內容。",
+    "address": {
+      "label": "位址",
+      "hint": "開發環境中這個網站上的路徑，或安裝擴充功能後讀取器本身的位址。請參閱下方說明。"
+    },
+    "notRunning": "還沒有執行它嗎？",
+    "copySetup": "複製設定指令",
+    "cors": "它在 <mono>{{endpoint}}</mono> 上接聽，但不會傳送 CORS 標頭——所以瀏覽器不允許這個頁面跨連接埠呼叫它。jojo 的開發伺服器會將 <mono>{{path}}</mono> 轉送給它，這就是為什麼上方的位址是路徑而不是網址。手機應用程式會直接和它溝通，完全不需要這些設定。",
+    "hosted": "<em>若使用代管的版本，請安裝擴充功能。</em>從網路提供的頁面無法呼叫 <mono>127.0.0.1</mono>——沒有代理伺服器可以轉送路徑，而且 https:// 頁面禁止存取區域網路。擴充功能不是網頁：它可以直接連到讀取器，而 jojo 會請它代勞。在上方填入讀取器本身的位址，它就會轉送每一個要求；它只會轉送到這台電腦。",
+    "fillAddress": "請先填入位址",
+    "connectedNote": "文件只會傳送到該位址，不會傳到其他地方。不會上傳任何內容。",
+    "separate": "{{name}} 是獨立的程式，不屬於 jojo。",
+    "notAffiliated": "jojo 與 Microsoft 沒有任何關聯。"
+  },
+  "capture": {
+    "title": "保留職缺",
+    "intro": "職缺是你求職過程中唯一屬於別人的文件。面試完一週後，職缺頁面就下架了，連帶要求條件也一起消失。jojo 擴充功能會儲存一份副本——就是你歸檔當天看到的頁面，所有圖片和樣式表都包含在內，所以一年後再開啟也不必連上任何地方，也不需要網路連線。",
+    "checking": "正在檢查這個瀏覽器…",
+    "installed": "已安裝並連線。",
+    "installedHint": "開啟一個職缺，按一下工具列中的 jojo 按鈕——如果看不到，它就在拼圖形狀的選單裡，需要先釘選。然後再回到保管庫。",
+    "version": "版本 {{version}}。",
+    "safari": {
+      "title": "Safari 無法執行這個擴充功能。",
+      "body": "Safari 只會載入包裝在已簽署 Mac 應用程式中的擴充功能，所以這裡沒有可以安裝的東西。請使用 Chrome、Edge、Brave 或 Firefox 擷取職缺；jojo 的其他功能在 Safari 中都能正常使用。"
+    },
+    "download": "下載擴充功能",
+    "firefox": {
+      "title": "Firefox 需要已簽署的版本。",
+      "body": "Firefox 是唯一可以一鍵安裝的瀏覽器——經 Mozilla 簽署的附加元件可以直接從這裡的連結安裝，不必上架商店。jojo 目前還沒有產生已簽署的版本，所以暫時請從 <code>about:debugging</code> → 這個 Firefox → 載入臨時附加元件，然後選擇 <code>manifest.json</code>。Firefox 重新啟動後就會忘記它。"
+    },
+    "steps": {
+      "unzip": "解壓縮到一個固定的位置——不要放在「下載」中。<muted>瀏覽器每次啟動時都會從那個資料夾讀取擴充功能，所以刪除或移動資料夾就等於解除安裝。</muted>",
+      "open": "開啟擴充功能頁面。",
+      "copied": "已複製",
+      "copy": "複製",
+      "paste": "貼到網址列。",
+      "developer": "開啟右上角的<strong>開發人員模式</strong>。<muted>請保持開啟——關閉後，用這種方式載入的擴充功能會被停用，而且不會有任何提示。</muted>",
+      "load": "按一下<strong>載入未封裝項目</strong>，然後選擇你解壓縮的資料夾。",
+      "pin": "<strong>釘選它。</strong>按一下工具列中的拼圖按鈕，然後釘選 jojo。<muted>Chromium 瀏覽器預設會把所有擴充功能藏在那個選單中，所以按鈕雖然存在，卻不在工具列上——這是大家最常漏掉的步驟，看起來就跟擴充功能安裝失敗一模一樣。</muted>",
+      "back": "回到這裡。<muted>這個面板會自動偵測並變成綠色。</muted>"
+    },
+    "yourBrowser": "你的瀏覽器",
+    "noOneClick": "{{browser}} 沒有一鍵安裝的方式，這是瀏覽器的決定，而不是這裡少了什麼功能：允許這種安裝方式的 API 已在 2018 年移除，而且已簽署的套件仍然必須來自 Chrome 線上應用程式商店。這個擴充功能不會和任何伺服器溝通——它只會讀取你正在看的頁面，並把結果交給這個分頁。"
+  },
+  "crash": {
+    "title": "當機報告",
+    "builtWithout": "這份 jojo 在建置時沒有加入當機報告或使用分析，所以不會記錄任何內容，也沒有可以開啟的選項。建置時可以用 <mono>{{crashFlag}}</mono> 和 <mono>{{analyticsFlag}}</mono> 設定這兩項。",
+    "intro": "出問題時，jojo 可以保留錯誤內容讓你回頭查看——當出錯的地方早已捲出畫面時特別有用。報告包含錯誤訊息、它在 jojo 中發生的位置，以及堆疊追蹤。報告絕不會包含你的申請、文件、備註、個人檔案或對話，而 API 金鑰、位址、你的家目錄和電子郵件地址都會在寫入報告前移除。",
+    "where": "在這個瀏覽器和擴充功能中，當機報告會<em>保留在這部裝置上</em>——不會上傳任何內容，備份檔案也不會包含它們。手機應用程式還會將報告傳送到 Firebase Crashlytics，並附上裝置型號、作業系統版本，以及一個用來計算有多少人遇到相同當機的隨機 ID。當機報告只與當機有關——你在 jojo 中做了什麼是另一個問題，由下方另外決定。",
+    "keep": {
+      "label": "保留當機報告",
+      "description": "開啟後，你遇到的當機我們才看得到。關閉則不會記錄任何內容。"
+    },
+    "usage": {
+      "label": "分享我使用哪些功能",
+      "description": "只有次數，且來自固定清單——絕不包含你紀錄中的內容。",
+      "note": "它只能從固定清單中挑選說法——開啟了哪個畫面、新增了一份申請、大約有多少份。它無法說出雇主、職務、檔案或你輸入的任何內容。資料會傳送到 Google Analytics。"
+    },
+    "kept_other": "已保留 {{count}} 份報告",
+    "clear": "清除",
+    "stack": "堆疊",
+    "emptyOn": "自從你開啟這項功能以來，沒有發生任何問題。",
+    "emptyOff": "目前沒有記錄任何內容。"
+  },
+  "audit": {
+    "title": "jojo 做過的事",
+    "kept_other": "已保留 {{count}} 項",
+    "records_other": "{{count}} 筆紀錄",
+    "connections_other": "{{count}} 個連結",
+    "both": "{{records}}，{{connections}}",
+    "noChange": "沒有變更",
+    "undoTitle": {
+      "can": "將紀錄恢復成這次變更之前的樣子",
+      "wholeStore": "這次變更取代了整個儲存區，所以沒有可以恢復的內容",
+      "trimmed": "jojo 記錄了這次變更，但資訊不足以恢復——它是背景寫入（契合度評估、檔案內容），或時間太久遠"
+    },
+    "undoFailed": {
+      "title": "這項變更已經無法復原",
+      "description": "它已經不在日誌中。"
+    },
+    "empty": "這個儲存區還沒有寫入任何內容。你做的每一項變更都會記錄在這裡，重新載入後紀錄也會保留。",
+    "showFewer": "顯示較少",
+    "showAll": "顯示全部 {{total}} 項",
+    "footer": "只保留最近 200 項變更，最舊的會先移除。在這裡復原本身就是一項新的變更——它會加到這份清單的最上方，而不是移除它所撤銷的那一列。"
+  },
+  "keywords": {
+    "title": "關鍵字",
+    "hint": "所有紀錄共用",
+    "intro": "一組關鍵字通用於申請、提醒和保管庫。重新命名會套用到所有顯示它的地方；刪除則會從所有帶有它的紀錄中移除。",
+    "usage": {
+      "none": "尚未用在任何紀錄上",
+      "used_other": "用在 {{count}} 筆紀錄上"
+    },
+    "errors": {
+      "taken": "已有其他關鍵字使用這個名稱。",
+      "blank": "關鍵字需要名稱。",
+      "exists": "這個關鍵字已經存在。"
+    },
+    "renameNamed": "重新命名「{{name}}」",
+    "rename": "重新命名",
+    "deleteNamed": "刪除「{{name}}」",
+    "delete": "刪除",
+    "empty": {
+      "title": "還沒有任何關鍵字",
+      "description": "在下方新增，或從任何清單上方的關鍵字篩選新增。關鍵字由你自訂——它們不是頂端列中固定的職務標籤。"
+    },
+    "newKeyword": "新關鍵字",
+    "placeholder": "例如：推薦",
+    "add": "新增關鍵字"
+  },
+  "documents": {
+    "title": "你的文件",
+    "hint": "在這部裝置上",
+    "intro": "你附加的履歷、求職信和陳述都儲存在這台電腦的這個瀏覽器中。不會上傳到任何地方。",
+    "count_other": "{{count}} 份文件",
+    "noneReadable": {
+      "title": "無法讀取任何文件",
+      "description": "這個瀏覽器已經沒有保存任何一份文件的內容。"
+    },
+    "savedAll_other": "已儲存 {{count}} 份文件",
+    "savedSome": "已儲存 {{total}} 份中的 {{saved}} 份",
+    "savedAllDescription": "一個檔案 {{name}}，已在你的下載資料夾中。這些是原始文件，而不是紀錄的副本。",
+    "savedSomeDescription": "{{name}} 已在你的下載資料夾中，但少了這個瀏覽器已無法讀取的 {{missing}}。",
+    "failed": {
+      "title": "無法建立下載檔案",
+      "description": "沒有儲存任何內容。請再試一次，或開啟個別文件單獨下載。"
+    },
+    "none": "還沒有任何文件",
+    "stored_other": "已儲存 {{count}} 份文件",
+    "usage": "已使用 {{quota}} 中的 {{used}}",
+    "notPermanent": "這個瀏覽器沒有將 jojo 的儲存空間標示為永久保存，所以磁碟滿了時可能會清除這些文件——而且不論說明怎麼寫，「清除瀏覽資料」都會移除它們。任何你不想重寫的內容，請自行保留副本。",
+    "saving": "儲存中…",
+    "downloadAll": "下載所有文件"
+  },
+  "diagnostics": {
+    "title": "診斷",
+    "types": {
+      "application": "申請",
+      "background": "背景資料",
+      "claim": "關係",
+      "thread": "對話",
+      "proposal": "建議",
+      "organisation": "機構",
+      "timelineItem": "時間軸項目",
+      "keyword": "關鍵字",
+      "link": "連結",
+      "file": "檔案",
+      "snippet": "片段",
+      "person": "聯絡人",
+      "stickyNote": "便利貼",
+      "posting": "已儲存的職缺",
+      "match": "職缺偵察結果",
+      "pipeline": "職缺偵察管線",
+      "profile": "個人檔案"
+    },
+    "dataSet": {
+      "demo": "示範紀錄，未經變動",
+      "empty": "刻意清空，從未填入資料",
+      "user": "設定後已寫入過資料"
+    },
+    "notReported": "未回報",
+    "checking": "檢查中…",
+    "storage": "儲存空間",
+    "durable": {
+      "label": "紀錄會寫入磁碟",
+      "yes": "是——IndexedDB",
+      "no": "否——僅限這個分頁"
+    },
+    "schema": {
+      "label": "資料庫結構描述",
+      "value": "v{{stored}}（應用程式預期為 v{{expected}}）"
+    },
+    "persisted": {
+      "label": "瀏覽器承諾保留資料",
+      "unknown": "這個瀏覽器不肯說明",
+      "yes": "是",
+      "no": "否——瀏覽器隨時可能清除它，無痕視窗關閉時也會清除"
+    },
+    "space": {
+      "label": "已使用空間",
+      "value": "{{quota}} 中的 {{used}}"
+    },
+    "queue": {
+      "label": "寫入佇列",
+      "idle": "閒置——所有內容都已儲存",
+      "writing_other": "正在儲存 {{count}} 項變更",
+      "degraded": "正在重試 {{unsaved}} 項變更、{{pending}} 列資料（第 {{attempts}} 次嘗試）：{{error}}",
+      "stopped": "已停止——{{reason}}"
+    },
+    "store": "這個儲存區",
+    "contents": "內容",
+    "created": "建立時間",
+    "seeded": "填入資料時間",
+    "never": "從未",
+    "lastOpened": "上次開啟",
+    "lastWrite": "上次寫入",
+    "nothingYet": "尚無",
+    "skipped": {
+      "label": "無法讀取的紀錄",
+      "none": "無"
+    },
+    "integrity": {
+      "label": "完整性檢查",
+      "failed": "{{total}} 項失敗",
+      "passed": "全部通過"
+    },
+    "records": "紀錄（{{total}}）",
+    "connections": "連結（{{total}}）",
+    "none": "無"
+  },
+  "data": {
+    "title": "你的資料",
+    "export": {
+      "idle": "下載備份",
+      "progress": "正在準備備份…{{total}} 份文件中已完成 {{done}} 份",
+      "preparing": "正在準備備份…"
+    },
+    "restoreButton": "還原備份",
+    "excel": {
+      "label": "匯出到 Excel",
+      "title": "沒有內建試算表寫入工具——JSON 匯出檔包含相同的紀錄"
+    },
+    "import": {
+      "label": "匯入",
+      "title": "要讀回備份，需要一個能拒絕無法理解之檔案的驗證工具——在那之前，匯入只能靠猜測"
+    },
+    "about": "完整備份：每一份申請、時間軸、保管庫、已儲存的職缺、你的關鍵字和它們的標記，以及你的個人檔案，全都在一個有版本編號的檔案中。這是當下的副本——它不會隨之後的變更更新，而且是唯一不在這台電腦上的副本。",
+    "records": {
+      "label": "紀錄",
+      "empty": "每份清單都是空的，所以每個頁面都顯示首次執行時的狀態。",
+      "emptyStays": "你回來時它仍會是空的。",
+      "emptyKeywords": "你的關鍵字仍在這裡，載入示範資料時會以示範資料自己的關鍵字取代。",
+      "demo": "jojo 內建的示範求職資料——十二份申請、一條時間軸、一個裝滿內容的保管庫。其中沒有任何內容屬於你。",
+      "own": "你自己的紀錄。載入示範資料會取代它們，所以如果想保留，請先匯出備份。",
+      "loadDemo": "載入示範資料"
+    },
+    "clearRecords": {
+      "label": "清除所有紀錄",
+      "demo": "移除示範資料，讓 jojo 回到空白狀態。這裡還沒有屬於你的內容，所以預設的關鍵字也會一併移除。",
+      "own": "移除每一份申請、時間軸項目、保管庫項目、已儲存的職缺、聯絡人、備註、對話和履歷資料，並清空你的個人檔案。你的關鍵字會保留。",
+      "nothingLeft": "沒有剩下可以清除的內容",
+      "deletes": "刪除所有紀錄",
+      "button": "清除紀錄"
+    },
+    "move": {
+      "label": "搬移到另一部裝置",
+      "description": "與第二部裝置配對，並轉交所有內容。這個版本中僅為示範——不會傳輸任何內容。",
+      "open": "開啟「傳輸」"
+    },
+    "clearStorage": {
+      "label": "清除瀏覽器儲存空間",
+      "description": "清空這個網站儲存在你瀏覽器中的所有內容——你的紀錄和資料庫、你附加的每一份文件、偏好設定、快取和 Cookie——然後像全新安裝一樣重新載入 jojo。文件只存在這裡；如果想保留，請先下載。",
+      "clearing": "清除中…",
+      "button": "清除儲存空間"
+    },
+    "footer": {
+      "durable": "你的紀錄會在操作時即時寫入這個瀏覽器的資料庫，所以關閉分頁很安全。但那個資料庫仍只在這一台電腦上：瀏覽器可能會清除它，磁碟也可能故障，所以只有存放在其他地方的匯出檔案才是真正的備份。",
+      "memory": "你的紀錄目前沒有被儲存——頁面頂端的橫幅會說明原因。關閉分頁前請先匯出一份副本。"
+    },
+    "confirm": {
+      "fallbackTitle": "要變更資料嗎？",
+      "continue": "繼續"
+    },
+    "restoreConfirm": {
+      "title": "要用這份備份取代所有內容嗎？",
+      "description": "這個檔案包含{{contents}}。{{replaces}}，而且無法復原——歷史紀錄也會一併被取代。如果不確定，請先下載備份。",
+      "confirm": "取代所有內容"
+    },
+    "restoreFailed": "還原失敗",
+    "reload": "重新載入 jojo",
+    "demoLoaded": {
+      "title": "已載入示範資料",
+      "durable": "十二份申請、一條時間軸、一個裝滿內容的保管庫和一份個人檔案，已依原樣寫入你的資料庫。",
+      "memory": "十二份申請、一條時間軸、一個裝滿內容的保管庫和一份個人檔案，依原樣載入。目前沒有儲存任何內容，所以它們只會存在到這個分頁關閉為止。"
+    },
+    "cleared": {
+      "title": "已清除所有內容",
+      "demoDurable": "所有示範紀錄都已移除，包括關鍵字，重新載入後也會維持這樣。",
+      "demoMemory": "所有示範紀錄都已移除，包括關鍵字，但目前沒有儲存任何內容，所以重新載入後會從示範資料重新開始。",
+      "ownDurable": "所有紀錄都已移除，包括你的個人檔案，重新載入後也會維持這樣。你的關鍵字仍在這裡。",
+      "ownMemory": "所有紀錄都已移除，包括你的個人檔案，但目前沒有儲存任何內容，所以重新載入後會從示範資料重新開始。你的關鍵字仍在這裡。"
+    }
+  },
+  "pending": {
+    "exportFirst": "先匯出備份",
+    "empty": {
+      "title": "要清除所有紀錄嗎？",
+      "demoDurable": "示範的申請、時間軸、保管庫、已儲存的職缺、關鍵字和個人檔案都會移除，重新載入後也會維持這樣。這裡沒有任何內容屬於你——自從載入示範資料後，這個儲存區就沒有寫入過任何內容。",
+      "demoMemory": "示範的申請、時間軸、保管庫、已儲存的職缺、關鍵字和個人檔案都會移除，但目前沒有儲存任何內容，所以重新載入後會從示範資料重新開始。這裡沒有任何內容屬於你——自從載入示範資料後，這個儲存區就沒有寫入過任何內容。",
+      "ownDurable": "申請、時間軸、保管庫、已儲存的職缺、聯絡人、備註、對話、履歷資料和你的個人檔案都會移除，包括你在這個工作階段新增的任何內容，重新載入後也會維持這樣。這個動作無法復原。你的關鍵字會保留——它們本身就是紀錄——但不再有任何紀錄帶有它們，所以關鍵字面板中的每個計數都會歸零。",
+      "ownMemory": "申請、時間軸、保管庫、已儲存的職缺、聯絡人、備註、對話、履歷資料和你的個人檔案都會移除，包括你在這個工作階段新增的任何內容，但目前沒有儲存任何內容，所以重新載入後會從示範資料重新開始。這個動作無法復原。你的關鍵字會保留——它們本身就是紀錄——但不再有任何紀錄帶有它們，所以關鍵字面板中的每個計數都會歸零。",
+      "confirm": "清除所有內容"
+    },
+    "demo": {
+      "title": "要載入示範資料嗎？",
+      "fillDurable": "十二份申請、一條時間軸、一個裝滿內容的保管庫和一份個人檔案會寫入你的資料庫，並標上它們原本附帶的關鍵字。要再次清除只需按一下。",
+      "fillMemory": "會載入十二份申請、一條時間軸、一個裝滿內容的保管庫和一份個人檔案，並標上它們原本附帶的關鍵字。要再次清除只需按一下。",
+      "replace": "jojo 中的所有內容都會被預設紀錄取代——你的申請、時間軸、保管庫、已儲存的職缺、聯絡人、備註、對話、履歷資料、關鍵字和個人檔案，全部都會被取代，而不是合併。這個動作無法復原。",
+      "confirm": "載入示範資料"
+    },
+    "storage": {
+      "title": "要清除這個網站儲存的所有內容嗎？",
+      "description": "清空 jojo 在這個瀏覽器中存放的所有內容——你的紀錄和資料庫、你的主題和音效偏好、所有快取和 Cookie——然後重新載入。沒有任何伺服器保有副本，這裡的內容也從未離開過這台電腦，所以這就是全部了。jojo 會像在新電腦上一樣重新開始：使用系統主題，並在首次執行時詢問你要從示範資料還是從空白開始。這個動作無法復原。",
+      "confirm": "清除儲存空間"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_other": "{{count}} 筆紀錄",
+      "documents_other": "{{count}} 份文件",
+      "links_other": "{{count}} 個關聯"
+    },
+    "lost": {
+      "title": "部分紀錄無法還原",
+      "description": "這個檔案包含 {{held}}。其中 {{kept}} 已在這部裝置上，{{lost}} 無法讀取——那些已經遺失。檔案本身沒有變更，所以能讀取它們的版本仍然可以還原。",
+      "descriptionWithDocuments": "這個檔案包含 {{held}}。其中 {{kept}} 和 {{documents}} 已在這部裝置上，{{lost}} 無法讀取——那些已經遺失。檔案本身沒有變更，所以能讀取它們的版本仍然可以還原。"
+    },
+    "withoutLinks": {
+      "title": "已還原，但缺少部分關聯",
+      "description": "全部 {{held}} 都已還原。它們之間有 {{links}} 無法讀取，所以有些文件、提醒或職缺可能沒有歸檔在原本所屬的職缺下。沒有缺少其他內容。",
+      "descriptionWithDocuments": "全部 {{held}} 和 {{documents}} 都已還原。它們之間有 {{links}} 無法讀取，所以有些文件、提醒或職缺可能沒有歸檔在原本所屬的職缺下。沒有缺少其他內容。"
+    },
+    "done": {
+      "title": "已還原",
+      "description": "{{records}} 已依檔案中的原樣還原。",
+      "descriptionWithDocuments": "{{records}} 和 {{documents}} 已依檔案中的原樣還原。"
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "無法讀取這個檔案",
+      "description": "你的瀏覽器無法讀取這個檔案——在你選取之後，它可能已被移動、重新命名或中斷連線。沒有任何變更；等它恢復後再重新選取。"
+    },
+    "refused": {
+      "title": "無法還原這個檔案",
+      "notBackup": "這個檔案不是 jojo 備份。沒有任何變更。",
+      "reason": "{{reason}}。沒有任何變更。"
+    }
+  }
+}

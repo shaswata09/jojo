@@ -1,0 +1,134 @@
+{
+  "sidebar": {
+    "navigation": "Navigasi",
+    "close": "Tutup navigasi"
+  },
+  "nav": {
+    "dashboard": "Dasbor",
+    "applications": "Lamaran",
+    "calendar": "Kalender",
+    "vault": "Brankas",
+    "jobScout": "Pencari lowongan",
+    "statistics": "Statistik",
+    "flagged_other": "{{count}} ditandai",
+    "flaggedTitle": "Ditandai untuk tindak lanjut",
+    "weekTitle": "Terjadwal dalam tujuh hari ke depan",
+    "overdueTitle": "Pengingat yang lewat tanggalnya",
+    "fresh_other": "{{count}} baru",
+    "freshTitle": "Kecocokan yang belum ditambahkan ke lamaran"
+  },
+  "newMenu": {
+    "trigger": "Baru",
+    "find": "Cari sesuatu untuk ditambahkan",
+    "findPlaceholder": "Cari sesuatu untuk ditambahkan…",
+    "empty": "Tidak ada yang cocok untuk ditambahkan."
+  },
+  "roleFilter": {
+    "label": "Filter menurut posisi",
+    "all": "Semua posisi",
+    "selected_other": "{{count}} dipilih",
+    "find": "Cari posisi",
+    "findPlaceholder": "Cari posisi…",
+    "empty": "Tidak ada posisi yang cocok.",
+    "selectAll": "Pilih semua",
+    "clear": "Hapus filter",
+    "remove": "Hapus {{role}}"
+  },
+  "topbar": {
+    "openNav": "Buka navigasi",
+    "search": "Cari lamaran, pengingat, acara…",
+    "accountNav": "Akun dan dukungan",
+    "links": {
+      "profile": "Profil saya",
+      "settings": "Pengaturan",
+      "assistant": "Asisten",
+      "guide": "Cara menggunakan"
+    }
+  },
+  "runtime": {
+    "heading": "Runtime",
+    "tileTitle": "{{label}} — {{detail}}. Membuka {{destination}}",
+    "dest": {
+      "graph": "graf",
+      "transfer": "Transfer",
+      "settings": "Pengaturan"
+    },
+    "storage": {
+      "label": "Penyimpanan browser",
+      "notSaving": "tidak menyimpan",
+      "notSavingDetail": "entri Anda tidak sedang disimpan — spanduk di atas halaman menjelaskan alasannya",
+      "retrying": "mencoba lagi",
+      "retryingDetail_other": "{{count}} perubahan belum dapat disimpan, dan jojo masih mencoba lagi",
+      "saved": "tersimpan di sini",
+      "savedDetail": "entri Anda ditulis ke database browser ini sambil Anda bekerja"
+    },
+    "model": {
+      "label": "Model lokal",
+      "connected": "terhubung",
+      "connectedDetail": "model lokal menjawab — asisten dan penilaian pencari dapat menggunakannya",
+      "noAnswer": "tidak menjawab",
+      "noAnswerDetail": "model sudah dikonfigurasi tetapi tidak menjawab — pastikan model berjalan",
+      "checking": "memeriksa",
+      "checkingDetail": "menanyakan apakah model tersedia",
+      "unset": "belum diatur",
+      "unsetDetail": "belum ada endpoint model — aturlah di Pengaturan"
+    },
+    "transfer": {
+      "label": "Transfer",
+      "meta": "Sinkron dengan Perangkat Lain",
+      "detail": "belum ada perangkat yang dipasangkan — tambahkan di Transfer"
+    }
+  },
+  "banner": {
+    "reload": "Muat ulang",
+    "interrupted": "jojo diperbarui di tab lain, jadi tab ini menutup database-nya agar pembaruan itu dapat berjalan. Tidak ada perubahan di sini yang disimpan. Muat ulang untuk melanjutkan.",
+    "versionBlocked": "jojo tidak dapat membuka database-nya — tab jojo lain terbuka dengan versi aplikasi yang berbeda. <strong>Entri Anda masih ada di disk</strong>, tetapi tab ini tidak dapat membacanya, jadi tidak menampilkan apa pun alih-alih menebak. Tutup tab lain dan muat ulang untuk mendapatkannya kembali.",
+    "noStorage": "Browser ini tidak mengizinkan jojo membuka penyimpanannya, jadi tab ini adalah ruang kerja kosong: apa pun yang sudah tersimpan di perangkat ini tidak ditampilkan, dan apa pun yang Anda ketik di sini hilang saat tab ditutup. Jendela pribadi dan beberapa browser terkelola melakukan ini. Ekspor dari Pengaturan sebelum pergi jika Anda menambahkan sesuatu yang layak disimpan.",
+    "atRisk_other": "{{count}} perubahan ada di layar tetapi belum disimpan — ekspor dari Pengaturan untuk menyimpannya, karena memuat ulang atau menutup tab ini akan menghilangkannya.",
+    "safeBefore": "Semua yang Anda ubah sebelum itu sudah ada di disk.",
+    "corrupt": "jojo berhenti menyimpan: browser ini menolak perubahan pada entri Anda dan mencoba lagi tidak akan membantu. {{atRisk}} Ekspor dari Pengaturan sekarang — Pengaturan → Diagnostik berisi detailnya, dan memuat ulang sebelum mengekspor akan menghilangkan apa pun yang hanya ada di layar.",
+    "quota": "Browser ini sudah kehabisan ruang, jadi jojo berhenti menyimpan. {{atRisk}} Kosongkan sebagian ruang, lalu muat ulang.",
+    "otherTab": "jojo berhenti menyimpan karena tab lain sedang memakai database. Tutup tab lain, lalu ekspor dari Pengaturan jika ada yang di layar belum tersimpan — memuat ulang tab ini akan menghilangkannya.",
+    "degraded_other": "{{count}} perubahan tidak dapat disimpan dan jojo masih mencoba lagi. Ekspor dari Pengaturan jika Anda perlu salinan sekarang. ({{error}})",
+    "documentsBlocked": "Dokumen Anda masih ada di perangkat ini, tetapi tab jojo lain, yang terbuka dengan versi aplikasi lebih lama, sedang memakainya. Tutup tab jojo lain — tab ini akan mengambilnya dengan sendirinya.",
+    "skipped_other": "{{count}} entri di perangkat ini tidak dapat dibaca dan tidak ditampilkan. Tidak ada yang dihapus — <anchor>Diagnostik</anchor> menyebutkannya, dan ekspor dari sana mencakup semua yang dapat dibaca jojo.",
+    "nearlyFull": "Ruang browser ini untuk jojo hampir habis — sekitar {{percent}}% dari batasnya sudah terpakai. Penyimpanan berhenti berfungsi saat penuh, jadi sebaiknya ekspor dari Pengaturan dan kosongkan ruang sekarang, selagi entri Anda masih bisa ditulis.",
+    "backup": {
+      "busy": "Mencadangkan…",
+      "download": "Unduh cadangan",
+      "notNow": "Jangan sekarang"
+    }
+  },
+  "shell": {
+    "skipToMain": "Langsung ke konten utama"
+  },
+  "spotlight": {
+    "title": "Cari",
+    "label": "Cari lamaran, pengingat, acara, dan halaman",
+    "placeholder": "Cari lamaran, pengingat, acara…",
+    "emptyTitle": "Tidak ada yang cocok.",
+    "emptyHint": "Coba posisi, organisasi, atau tahap.",
+    "actions": "Tindakan",
+    "applications": "Lamaran",
+    "reminders": "Pengingat",
+    "calendar": "Kalender",
+    "tools": "Alat",
+    "goTo": "Buka",
+    "toOpen": "untuk membuka",
+    "toClose": "esc untuk menutup",
+    "pages": {
+      "dashboard": "Dasbor",
+      "applications": "Lamaran",
+      "calendar": "Kalender",
+      "vault": "Brankas",
+      "jobScout": "Pencari lowongan",
+      "statistics": "Statistik",
+      "graph": "Graf",
+      "transfer": "Transfer",
+      "transferDetail": "Pindahkan entri Anda ke perangkat lain",
+      "profile": "Profil saya",
+      "assistant": "Asisten",
+      "settings": "Pengaturan"
+    }
+  }
+}

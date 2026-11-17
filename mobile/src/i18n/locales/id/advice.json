@@ -1,0 +1,103 @@
+{
+  "days_other": "{{count}} hari",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Curahkan lebih banyak upaya pada {{label}}.",
+      "because": {
+        "source": {
+          "replied_other": "{{count}} dari {{of}} membalas di sana ({{rate}}%, kemungkinan {{low}}–{{high}}%), dibandingkan {{worstCount}} dari {{worstOf}} untuk {{worst}} ({{worstRate}}%, kemungkinan {{worstLow}}–{{worstHigh}}%). Dikelompokkan menurut asal lamaran.",
+          "interview_other": "{{count}} dari {{of}} sampai wawancara di sana ({{rate}}%, kemungkinan {{low}}–{{high}}%), dibandingkan {{worstCount}} dari {{worstOf}} untuk {{worst}} ({{worstRate}}%, kemungkinan {{worstLow}}–{{worstHigh}}%). Dikelompokkan menurut asal lamaran."
+        },
+        "role": {
+          "replied_other": "{{count}} dari {{of}} membalas di sana ({{rate}}%, kemungkinan {{low}}–{{high}}%), dibandingkan {{worstCount}} dari {{worstOf}} untuk {{worst}} ({{worstRate}}%, kemungkinan {{worstLow}}–{{worstHigh}}%). Dikelompokkan menurut jenis posisi.",
+          "interview_other": "{{count}} dari {{of}} sampai wawancara di sana ({{rate}}%, kemungkinan {{low}}–{{high}}%), dibandingkan {{worstCount}} dari {{worstOf}} untuk {{worst}} ({{worstRate}}%, kemungkinan {{worstLow}}–{{worstHigh}}%). Dikelompokkan menurut jenis posisi."
+        }
+      }
+    },
+    "late": {
+      "headline_other": "Selesaikan {{count}} tindak lanjut yang terlambat.",
+      "because": "Ini adalah tindak lanjut yang sudah Anda putuskan layak dilakukan, pada lamaran yang sudah dilihat pemberi kerja. Tidak ada hal lain di daftar ini yang sedekat ini dengan selesai."
+    },
+    "silent": {
+      "headline_other": "Tindak lanjuti {{count}} lamaran yang tidak ada kabarnya.",
+      "because_other": "Balasan untuk Anda biasanya datang dalam {{days}}, dan lamaran ini sudah melewatinya tanpa balasan. Itu angka Anda sendiri, bukan patokan umum."
+    },
+    "stale": {
+      "headline_other": "Catat yang terjadi pada {{count}} lamaran.",
+      "because_other": "Tidak ada yang ditulis untuk lamaran ini selama dua minggu. Setiap angka di halaman ini hanya sebaik apa yang sudah dicatat."
+    },
+    "drafts": {
+      "headlineSingle": "Selesaikan draf itu atau buang.",
+      "headline_other": "Selesaikan yang paling hampir jadi dari {{count}} draf, atau buang.",
+      "because_other": "Draf tidak berguna sampai dikirim. Yang tertua sudah terbuka {{count}} hari."
+    },
+    "background": {
+      "headline": "Biarkan jojo membaca CV Anda.",
+      "because": "Belum ada yang tercatat tentang latar belakang Anda, jadi tidak ada lamaran yang dapat ditimbang terhadap apa yang diminta lowongan. Cukup satu dokumen dan satu konfirmasi."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Perbaiki paragraf pembuka sebelum mengirim lamaran berikutnya.",
+        "because": "Balasan adalah titik di mana pencarian ini paling tertinggal dari pencarian pada umumnya. {{got}} dari {{of}} ({{rate}}%), dibandingkan {{typical}}% untuk pencarian pada umumnya — angka bulat yang dipilih jojo sebagai pembanding, bukan hasil pengukuran dari siapa pun."
+      },
+      "interviews": {
+        "headline": "Buat kecocokan Anda jelas dalam tiga baris pertama.",
+        "because": "Balasan yang berhenti sebelum panggilan adalah celah terbesar di sini — minatnya ada, tetapi alasannya belum sampai. {{got}} dari {{of}} ({{rate}}%), dibandingkan {{typical}}% untuk pencarian pada umumnya — angka bulat yang dipilih jojo sebagai pembanding, bukan hasil pengukuran dari siapa pun."
+      }
+    },
+    "clear": {
+      "headline": "Tidak ada yang perlu ditindaklanjuti di sini.",
+      "because_other": "Setiap tindak lanjut tepat waktu, tidak ada yang sepi kabar, dan tidak ada draf yang menunggu. {{count}} lamaran sudah terkirim."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Terkirim",
+      "replies": "Balasan",
+      "interviews": "Wawancara",
+      "referrals": "Rujukan",
+      "followUps": "Tindak lanjut",
+      "keptMoving": "Tetap berjalan"
+    },
+    "basis": {
+      "sent_other": "{{count}} dari {{of}} sudah bukan draf",
+      "replies_other": "{{count}} dari {{of}} membalas",
+      "interviews_other": "{{count}} dari {{of}} sampai wawancara",
+      "referrals_other": "{{count}} dari {{of}} lewat rujukan",
+      "followUpsNone": "tidak ada yang terbuka",
+      "followUps_other": "{{count}} dari {{of}} tindak lanjut terbuka terlambat",
+      "keptMovingNone": "tidak ada yang aktif",
+      "keptMoving_other": "{{count}} dari {{of}} disentuh dalam dua minggu terakhir"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Tidak ada yang tertahan di draf. Lebih baik menjaga kecermatan setiap lamaran daripada menambah jumlahnya.",
+        "some_other": "{{count}} lamaran masih berupa draf. Draf tidak berguna sampai dikirim, dan yang paling hampir jadi adalah yang paling mudah diselesaikan."
+      },
+      "replies": {
+        "nothingSent": "Belum ada yang dikirim, jadi belum ada yang bisa dijadikan ukuran balasan.",
+        "none_other": "Belum ada satu pun dari {{count}} lamaran terkirim yang dibalas. Itulah langkah yang perlu diperbaiki sebelum mengirim lebih banyak — menyesuaikan paragraf pembuka dengan setiap lowongan paling berpengaruh.",
+        "all": "Setiap lamaran yang dikirim sudah dibalas. Apa pun yang dilakukan paragraf pembuka Anda, teruskan.",
+        "some_other": "{{count}} dari {{of}} mendapat balasan. Menyesuaikan paragraf pembuka dengan setiap lowongan paling berpengaruh di sini."
+      },
+      "interviews": {
+        "noReply": "Belum ada balasan yang masuk, jadi belum ada yang sempat tertahan sebelum panggilan.",
+        "none_other": "{{count}} balasan sudah masuk dan belum ada yang menjadi panggilan. Celah ini biasanya karena kecocokan Anda tidak terlihat jelas di paragraf pertama.",
+        "some_other": "{{interviewed}} dari {{count}} balasan menjadi panggilan. Balasan yang berhenti sebelum panggilan biasanya berarti kecocokan Anda tidak terlihat cukup awal."
+      },
+      "referrals": {
+        "none": "Tidak satu pun dari lamaran ini datang lewat perkenalan. Lamaran dengan rujukan beberapa kali lebih mungkin dibalas, jadi satu rujukan sebanding dengan beberapa lamaran tanpa kenalan.",
+        "some_other": "{{count}} dari {{of}} datang lewat perkenalan. Ini hal yang paling besar hasilnya di daftar ini, sekaligus yang paling sulit diperbanyak — karena itu layak diminta sebelum lamaran tanpa kenalan berikutnya, bukan sesudahnya."
+      },
+      "followUps": {
+        "none": "Tidak ada yang terlambat. Tindak lanjut sekitar seminggu setelah mengirim biasanya yang berhasil.",
+        "late_other": "{{count}} tindak lanjut sudah terlambat. Menyelesaikannya biasanya lebih cepat membuahkan hasil daripada melamar ke tempat baru."
+      },
+      "keptMoving": {
+        "none": "Tidak ada yang sepi kabar. Mencatat kejadian saat terjadi adalah yang membuat angka ini tetap jujur.",
+        "stale_other": "{{count}} lamaran aktif tidak ada aktivitas selama dua minggu. Pengingat singkat lebih murah daripada memulai di tempat baru."
+      }
+    }
+  }
+}

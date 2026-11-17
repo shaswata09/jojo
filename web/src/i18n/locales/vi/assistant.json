@@ -1,0 +1,153 @@
+{
+  "common": {
+    "title": "Trợ lý",
+    "undo": "Hoàn tác",
+    "nothingAsked": "Chưa hỏi gì",
+    "askLabel": "Hỏi trợ lý",
+    "saveToSnippets": "Lưu vào đoạn văn bản",
+    "savedToSnippets": "Đã lưu vào đoạn văn bản",
+    "filedUnder": "{{title}} · xếp dưới nhãn {{tag}}",
+    "openVault": "Mở Kho lưu trữ",
+    "copyBlocked": "Trình duyệt đã chặn việc sao chép",
+    "copied": "Đã sao chép câu trả lời",
+    "newConversation": "Cuộc trò chuyện mới"
+  },
+  "header": {
+    "subtitle": "Đã kết nối với mô hình của bạn và có thể thao tác trên các bản ghi. Mọi việc nó làm đều được liệt kê ngay khi diễn ra.",
+    "clear": "Xóa",
+    "connected_other": "Câu trả lời đến từ <mono>{{model}}</mono> tại <mono>{{endpoint}}</mono>, mô hình này có thể gọi <tools>{{count}} công cụ</tools> trên thiết bị này. Không có gì được gửi đi nơi khác."
+  },
+  "composer": {
+    "send": "Gửi",
+    "typeFirst": "Hãy nhập tin nhắn trước",
+    "stop": "Dừng",
+    "stopTitle": "Dừng tác tử"
+  },
+  "approval": {
+    "waiting": "{{title}} — đang chờ bạn",
+    "askedBy": "Được yêu cầu bởi {{name}}. Chưa có gì thay đổi.",
+    "askedByUnnamed": "Được yêu cầu bởi một cuộc trò chuyện. Chưa có gì thay đổi.",
+    "decline": "Không",
+    "allow": "Cho phép"
+  },
+  "scripted": {
+    "subtitle": "Hiện là các ví dụ mẫu. Kết nối một mô hình cục bộ để nó vừa soạn thảo từ chính bản ghi của bạn vừa thao tác trên chúng.",
+    "clear": "Xóa cuộc trò chuyện",
+    "notConnected": "Chưa có mô hình nào được kết nối, nên mọi câu trả lời bên dưới là ví dụ mẫu chứ không phải câu trả lời thật. Hãy trỏ jojo tới một máy chủ cục bộ tương thích OpenAI — vLLM, Ollama hoặc LM Studio — trong <settings>Cài đặt</settings>.",
+    "emptyDescription": "Chọn một gợi ý bên dưới, hoặc nhập bất cứ điều gì. Các câu trả lời là ví dụ viết sẵn — hữu ích để làm theo, và không bao giờ được trình bày như câu trả lời của mô hình.",
+    "placeholder": "Hỏi về thư xin việc, email liên hệ lại, phỏng vấn…",
+    "footer": "Khi đã kết nối mô hình, mỗi mục này đều đọc hồ sơ cá nhân và tài liệu của bạn làm ngữ cảnh. Vì suy luận chạy cục bộ, CV và ghi chú của bạn không bao giờ bị tải lên đâu cả.",
+    "badge": "Câu trả lời mẫu · chưa kết nối mô hình",
+    "cleared": "Đã xóa cuộc trò chuyện",
+    "messages_other": "{{count}} tin nhắn"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Soạn thư xin việc",
+      "title": "Thư xin việc — bố cục",
+      "reply": "Đây là bố cục tôi sẽ dùng cho [DEPARTMENT]:\n\nĐoạn 1 — bạn nghiên cứu về điều gì, trong một câu mà một thành viên hội đồng ngoài chuyên ngành cũng hiểu được.\nĐoạn 2 — hai kết quả làm nên lập luận, mỗi kết quả nêu kèm tác động thay vì phương pháp.\nĐoạn 3 — vì sao chọn khoa này: nhóm bạn sẽ hợp tác, và môn học bạn sẽ dạy.\nĐoạn 4 — thời điểm có thể bắt đầu, và ba năm đầu sẽ ra sao.\n\nGiữ trong một trang. Hội đồng đọc bốn mươi lá thư như thế trong một buổi tối."
+    },
+    "tailorCv": {
+      "action": "Điều chỉnh CV cho một tin tuyển dụng",
+      "title": "Điều chỉnh CV — ba lượt",
+      "reply": "Ba lượt, theo thứ tự này:\n\n1. Cắt bỏ những gì tin tuyển dụng không yêu cầu. Một CV điều chỉnh cho mọi thứ là CV không điều chỉnh cho gì cả.\n2. Đưa phần mà tin tuyển dụng nhấn mạnh đầu tiên lên đầu trang một — tin tuyển dụng nặng về giảng dạy muốn thấy giảng dạy đứng trên công bố khoa học.\n3. Viết lại dòng tiêu đề bằng chính từ ngữ của tin tuyển dụng, nhưng không phóng đại phạm vi công việc.\n\nNhững gì giữ nguyên: công bố khoa học, người tham chiếu, ngày tháng. Đó là những phần hội đồng kiểm tra."
+    },
+    "parsePosting": {
+      "action": "Phân tích một tin tuyển dụng",
+      "title": "Cần rút ra gì từ một tin tuyển dụng",
+      "reply": "Từ một tin tuyển dụng, tôi sẽ rút ra: nhà tuyển dụng, vị trí, hạn chót, các tài liệu yêu cầu, người liên hệ được nêu tên, và bất cứ điều gì được diễn đạt như yêu cầu bắt buộc chứ không phải ưu tiên.\n\nĐiều cuối cùng là nơi các đơn ứng tuyển bị loại — \"phải có bằng trước ngày bắt đầu\" là một bộ lọc, còn \"ưu tiên có kinh nghiệm với hệ thống quy mô lớn\" thì không.\n\nTrình tìm việc đã làm phần đơn giản của việc này mà không cần mô hình: lưu URL ở đó và nó sẽ giữ liên kết và đoán nhà tuyển dụng từ liên kết đó."
+    },
+    "followUp": {
+      "action": "Soạn email liên hệ lại",
+      "title": "Liên hệ lại khi chưa có phản hồi",
+      "reply": "Tiêu đề: Liên hệ lại — [ROLE], [DEPARTMENT]\n\nKính gửi [NAME],\n\nTôi đã ứng tuyển vị trí [ROLE] vào ngày [DATE] và muốn hỏi xem hội đồng đã có đủ mọi thứ cần từ tôi chưa. Tôi sẵn lòng gửi trực tiếp thư giới thiệu còn thiếu nếu điều đó thuận tiện hơn.\n\nTôi vẫn rất quan tâm đến vị trí này, và sẵn lòng trả lời mọi câu hỏi qua email.\n\nTrân trọng cảm ơn,\n[YOUR NAME]"
+    },
+    "interview": {
+      "action": "Giúp tôi chuẩn bị phỏng vấn",
+      "title": "Phỏng vấn — sáu câu hỏi cần có câu trả lời",
+      "reply": "Sáu câu hỏi nên có câu trả lời trước ngày phỏng vấn:\n\n— Công việc của bạn nói về điều gì, trong chín mươi giây, với một người ngoài chuyên ngành?\n— Khoản tài trợ đầu tiên của bạn sẽ là gì, và xin từ cơ quan nào?\n— Hai môn học nào bạn có thể dạy ngay học kỳ tới mà không cần báo trước?\n— Bạn sẽ hợp tác với ai ở đây, và về việc gì?\n— Điểm yếu trong kết quả của chính bạn là gì?\n— Bạn cần gì trong năm đầu tiên để làm được việc?\n\nHãy viết tay các câu trả lời ra. Điều quan trọng là việc tập dượt, không phải bản ghi chép."
+    },
+    "fallback": {
+      "title": "Trợ lý — câu trả lời mẫu",
+      "reply": "Chưa có mô hình nào được kết nối, nên đây là câu trả lời soạn sẵn chứ không phải phản hồi cho những gì bạn đã nhập.\n\nKhi đã kết nối mô hình, trang này sẽ đọc hồ sơ cá nhân, các tài liệu trong Kho lưu trữ và đơn ứng tuyển bạn nêu tên, rồi soạn thảo dựa trên chúng ngay trên máy của bạn. Hãy trỏ jojo tới một máy chủ cục bộ tương thích OpenAI trong Cài đặt — vLLM, Ollama hoặc LM Studio.\n\nXóa cuộc trò chuyện để xem lại các ví dụ mẫu."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "Tôi đang chờ những gì?",
+      "add": "Thêm đơn ứng tuyển: kỹ sư ML tại Stripe, đã nộp",
+      "noDeadline": "Những đơn ứng tuyển nào chưa có hạn chót?",
+      "flag": "Gắn cờ đơn ứng tuyển UT Austin của tôi"
+    },
+    "emptyDescription": "Nhờ nó tìm thứ gì đó, thêm một đơn ứng tuyển, hoặc chuyển một đơn sang giai đoạn tiếp theo. Mỗi công cụ nó chạy sẽ hiện bên dưới ngay khi diễn ra, kèm những gì đã gửi và những gì nhận về.",
+    "placeholder": "Tìm đơn ứng tuyển UT Austin của tôi, hoặc thêm một đơn, hoặc chuyển nó sang phỏng vấn…"
+  },
+  "threadBar": {
+    "titleLabel": "Tiêu đề cuộc trò chuyện",
+    "saveTitle": "Lưu tiêu đề",
+    "cancel": "Hủy",
+    "rename": "Đổi tên cuộc trò chuyện này",
+    "changeJob": "Đổi công việc",
+    "fileUnder": "Xếp vào một công việc",
+    "approval": "Phê duyệt",
+    "approvalLabel": "Cuộc trò chuyện này được làm bao nhiêu việc mà không cần hỏi",
+    "delete": "Xóa"
+  },
+  "threads": {
+    "deleted": "Đã xóa cuộc trò chuyện"
+  },
+  "threadList": {
+    "title": "Cuộc trò chuyện",
+    "kept_other": "{{count}} được lưu ở đây",
+    "noJob": "Chưa gắn với công việc nào",
+    "searchLabel": "Tìm trong các cuộc trò chuyện",
+    "searchPlaceholder": "Tìm nội dung đã nói",
+    "clearSearch": "Xóa tìm kiếm",
+    "noMention": "Không có nhắc đến điều đó",
+    "mentionsIn": "{{mentions}} trong {{conversations}}",
+    "mentions_other": "{{count}} lần nhắc đến",
+    "conversationCount_other": "{{count}} cuộc trò chuyện",
+    "empty": "Chưa có gì. Hãy hỏi một điều và nó sẽ được lưu ở đây, trên thiết bị này.",
+    "noResults": "Không có gì nhắc đến “{{query}}”. Tìm kiếm này quét mọi cuộc trò chuyện, không chỉ tên của chúng.",
+    "working": "Đang xử lý…",
+    "matches_other": "{{count}} kết quả khớp",
+    "questions_other": "{{count}} câu hỏi"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Không có gì để hoàn tác — nội dung đã thay đổi kể từ đó",
+      "alreadyUndone": "Đã hoàn tác rồi",
+      "outOfReach": "Quá xa để hoàn tác từ đây",
+      "undone": "Đã hoàn tác"
+    },
+    "thinking": "Đang suy nghĩ…",
+    "thought": "Đã suy nghĩ"
+  },
+  "trace": {
+    "status": {
+      "running": "Đang chạy",
+      "done": "Xong",
+      "failed": "Thất bại",
+      "declined": "Đã từ chối"
+    },
+    "effect": {
+      "read": "đọc",
+      "unknown": "không có công cụ này",
+      "create": "đã thêm",
+      "update": "đã thay đổi",
+      "move": "đã chuyển",
+      "delete": "đã xóa",
+      "admin": "kho dữ liệu"
+    },
+    "approvalNeeded": "Cần phê duyệt: {{title}}",
+    "asked": "Tác tử đã yêu cầu làm việc này. Chưa có gì thay đổi.",
+    "declineAria": "Không: {{title}}",
+    "allowAria": "Cho phép: {{title}}",
+    "arguments": "Tham số",
+    "result": "Kết quả",
+    "undoStep": "Hoàn tác bước này",
+    "cannotUndo": "Không thể hoàn tác bước này từ đây. Cài đặt → Bản ghi lưu nhật ký những gì đã thay đổi và có thể đảo ngược thay đổi gần nhất.",
+    "truncated": "Đã bị cắt ngắn — tác tử đã được yêu cầu thu hẹp tìm kiếm để xem phần còn lại.",
+    "working": "Đang xử lý — {{model}} đang quyết định cần làm gì…"
+  }
+}

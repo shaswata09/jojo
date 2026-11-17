@@ -268,6 +268,10 @@ describe('labels and stored phrases', () => {
     expect(en.priority.unknownOrg()).toBe(p.unknownOrg)
   })
 
+  it('names the month beside a day the way English does', () => {
+    for (let m = 1; m <= 12; m++) expect(en.monthOfDay(m)).toBe(en.month(m))
+  })
+
   it('names months 1-based, as CalendarDay does', () => {
     expect(en.month(1)).toBe(MONTH_LABELS[0])
     expect(en.month(12)).toBe(MONTH_LABELS[11])

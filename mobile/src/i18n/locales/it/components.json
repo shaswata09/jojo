@@ -1,0 +1,669 @@
+{
+  "checklist": {
+    "title": "Lista di controllo",
+    "titleCount": "Lista di controllo · {{open}} aperti su {{total}}",
+    "notAdded": "Quel passo non è stato aggiunto",
+    "deleted": "Passo eliminato",
+    "draft": "Prepara",
+    "draftMore": "Aggiungine altri",
+    "actionsFor": "Azioni per {{step}}",
+    "empty": {
+      "title": "Ancora nulla nella lista",
+      "noPosting": "Dietro questa candidatura non c'è un annuncio salvato, quindi jojo non può leggere cosa ti chiede di inviare. Puoi comunque aggiungere i tuoi passi.",
+      "noModel": "Per preparare una lista di controllo serve un modello. Collegane uno in Impostazioni, o aggiungi i tuoi passi qui sotto.",
+      "ready": "Chiedi a jojo di leggere nell'annuncio cosa devi inviare, o aggiungi i tuoi passi qui sotto."
+    },
+    "addStep": "Aggiungi un passo",
+    "step": "Passo"
+  },
+  "fit": {
+    "title": "Quanto sei compatibile",
+    "step": {
+      "reading": "Apertura dell'annuncio…",
+      "asking": "Lettura di ciò che richiede…"
+    },
+    "measure": "Misura questo annuncio",
+    "rerun": "Ripeti",
+    "rerunHint": "Rileggi l'annuncio e misura di nuovo",
+    "clear": "Cancella questa lettura",
+    "clearHint": "jojo smette di misurare questo annuncio finché non glielo chiedi",
+    "cleared": "Lettura di compatibilità cancellata",
+    "notCleared": "Non è stata cancellata",
+    "clearedBody": "jojo non leggerà più questo annuncio, a meno che tu non glielo chieda.",
+    "options": "Opzioni di compatibilità",
+    "blocked": {
+      "noPosting": "Dietro questa candidatura non c'è un annuncio salvato, quindi non c'è nulla con cui confrontarti. Cattura l'annuncio, o aggiungi la candidatura dal suo link, e questa sezione si riempie.",
+      "noModel": "Per leggere cosa richiede un annuncio serve un modello. Collegane uno in Altro → Impostazioni.",
+      "noBackground": "jojo non ha ancora letto nulla sul tuo percorso, quindi non può confrontarlo con questo annuncio. Metti il tuo CV nella Cassaforte e rispondi sì quando si offre di leggerlo."
+    },
+    "clearedNote": "Hai cancellato questa lettura, quindi jojo lascia stare questo annuncio.",
+    "queued": "In coda…",
+    "leadWith": "Punta su",
+    "answers": "risponde a “{{requirement}}”",
+    "beReadyFor": "Preparati su",
+    "required": " — obbligatorio",
+    "skipped_one": " · {{count}} riga saltata",
+    "skipped_many": " · {{count}} di righe saltate",
+    "skipped_other": " · {{count}} righe saltate"
+  },
+  "tailored": {
+    "title": "Materiali adattati",
+    "hint": "Riscritti per questo annuncio, con le modifiche segnate.",
+    "tailor": "Adatta",
+    "tailoredBefore": "{{label}} · già adattato",
+    "blocked": {
+      "noPosting": "Dietro questa candidatura non c'è un annuncio salvato, quindi non c'è nulla a cui adattare i tuoi documenti. Aggiungi la candidatura dal suo link, o cattura l'annuncio, e questa sezione te lo proporrà.",
+      "noModel": "Per adattare un documento serve un modello. Collegane uno in Altro → Impostazioni.",
+      "noDocuments": "Ancora nulla da adattare. L'adattamento riscrive i documenti che invii con una candidatura: aggiungi il tuo CV, le dichiarazioni o una lettera di presentazione in Altro → Il mio profilo, o archiviali nella Cassaforte sotto Candidature, e compariranno qui."
+    },
+    "queued": "In coda…",
+    "working": "Al lavoro…",
+    "empty": "Ancora nulla di adattato. Premi Adatta, scegli un documento, e jojo ne scriverà una versione per questo annuncio con le modifiche segnate.",
+    "deleted": "{{title}} eliminato",
+    "notDeleted": "Non è stato eliminato",
+    "deletedBody": "Rimosso da questa candidatura e dalla Cassaforte.",
+    "provenance": "{{tag}} · da {{from}} · {{model}}",
+    "chooseTitle": "Adatta un documento",
+    "chooseHint": "Su un modello locale richiede un paio di minuti.",
+    "openInVault": "Apri nella Cassaforte",
+    "previewNamed": "Anteprima di {{title}}"
+  },
+  "trace": {
+    "status": {
+      "running": "In esecuzione",
+      "done": "Fatto",
+      "failed": "Non riuscito",
+      "declined": "Rifiutato"
+    },
+    "effect": {
+      "read": "letto",
+      "unknown": "strumento inesistente",
+      "create": "aggiunto",
+      "update": "modificato",
+      "move": "spostato",
+      "delete": "eliminato",
+      "admin": "archivio"
+    },
+    "asked": "L'agente ha chiesto di farlo. Non è ancora cambiato nulla.",
+    "dont": "No",
+    "allow": "Consenti",
+    "arguments": "Argomenti",
+    "result": "Risultato",
+    "undoStep": "Annulla questo passaggio",
+    "cannotUndo": "Questo passaggio non si può annullare da qui. Altro → Impostazioni → Record tiene un registro di ciò che è cambiato e può invertire la modifica più recente.",
+    "truncated": "Troncato: all'agente è stato detto di restringere la ricerca per vedere il resto.",
+    "thinking": "Al lavoro — {{model}} sta decidendo cosa fare…"
+  },
+  "approval": {
+    "askedBy": "Richiesto da {{name}}. Non è ancora cambiato nulla.",
+    "askedByUnnamed": "Richiesto da una conversazione. Non è ancora cambiato nulla."
+  },
+  "threads": {
+    "conversations": "Conversazioni",
+    "new": "Nuova conversazione",
+    "kept_one": "{{count}} conservata",
+    "kept_many": "{{count}} conservate",
+    "kept_other": "{{count}} conservate",
+    "titleField": "Titolo della conversazione",
+    "approvalLabel": "Quanto può fare questa conversazione senza chiedere",
+    "rename": "Rinomina questa conversazione",
+    "changeJob": "Cambia il lavoro a cui si riferisce",
+    "fileUnder": "Archivia sotto un lavoro",
+    "delete": "Elimina questa conversazione",
+    "noJob": "Non ancora legata a un lavoro",
+    "listEmpty": "Ancora nulla: chiedi qualcosa e verrà conservato qui, su questo dispositivo.",
+    "keptOnDevice_one": "{{count}} conservata su questo dispositivo.",
+    "keptOnDevice_many": "{{count}} conservate su questo dispositivo.",
+    "keptOnDevice_other": "{{count}} conservate su questo dispositivo.",
+    "filter": "Filtra",
+    "filterPlaceholder": "Per nome o lavoro",
+    "noMatch": "Nessuna conversazione corrisponde.",
+    "working": "Al lavoro…",
+    "questions_one": "{{count}} domanda",
+    "questions_many": "{{count}} di domande",
+    "questions_other": "{{count}} domande"
+  },
+  "picker": {
+    "title": "Candidature correlate",
+    "description": "Tutti i lavori a cui appartiene. Un CV va a ogni candidatura a cui lo invii, quindi è un elenco, non una casella.",
+    "notLinked": "Non collegato",
+    "none": "Ancora nessuna candidatura",
+    "noneHint": "Aggiungine una e diventerà un posto dove archiviarlo."
+  },
+  "audit": {
+    "records_one": "{{count}} record",
+    "records_many": "{{count}} di record",
+    "records_other": "{{count}} record",
+    "links_one": "{{count}} collegamento",
+    "links_many": "{{count}} di collegamenti",
+    "links_other": "{{count}} collegamenti",
+    "undoFailed": "Quella modifica non si può più annullare",
+    "notInJournal": "Non è più nel registro.",
+    "recorded_one": "{{count}} registrata",
+    "recorded_many": "{{count}} registrate",
+    "recorded_other": "{{count}} registrate",
+    "title": "Cosa è cambiato",
+    "empty": {
+      "title": "Ancora nulla di scritto",
+      "description": "Ogni aggiunta, modifica ed eliminazione arriva qui mentre la fai, dalla più recente, e l'ultima si può annullare."
+    },
+    "explain": "La modifica più recente si può annullare. Le più vecchie sono un registro, non una macchina del tempo.",
+    "undoLast": "Annulla l'ultima",
+    "cannotUndo": "Caricare o cancellare l'insieme di dati non si può annullare.",
+    "showAll_one": "Mostra {{count}}",
+    "showAll_many": "Mostra tutte e {{count}}",
+    "showAll_other": "Mostra tutte e {{count}}"
+  },
+  "crash": {
+    "title": "Segnalazioni di arresto anomalo",
+    "thisPhone": "questo telefono",
+    "notBuilt": "Questa build di jojo è stata creata senza segnalazioni di arresto anomalo né analisi di utilizzo, quindi non viene registrato nulla e non c'è nulla da attivare.",
+    "what": "Quando qualcosa si rompe, jojo può conservare l'errore così puoi rileggerlo: utile quando ciò che non ha funzionato è già sparito. Una segnalazione contiene il messaggio di errore, il punto di jojo in cui si è verificato e lo stack trace. Non contiene mai le tue candidature, documenti, note, profilo o conversazioni, e chiavi API, indirizzi e indirizzi email vengono rimossi prima che una segnalazione venga scritta.",
+    "where": "Le segnalazioni vengono conservate su questo telefono e inviate anche a Firebase Crashlytics, che aggiunge il modello del dispositivo, la versione del sistema operativo e un id casuale usato per contare quante persone incontrano lo stesso arresto anomalo. Google le conserva per 90 giorni. Nessuno dei tuoi record le accompagna.",
+    "report": "Segnala gli arresti anomali",
+    "reportHint": "Attivo, così un arresto anomalo che incontri è uno che possiamo vedere. Disattivalo e non viene registrato nulla.",
+    "usage": "Condividi quali funzioni uso",
+    "usageHint": "Solo conteggi, da un elenco fisso: mai cosa c'è nei tuoi record.",
+    "usageDetail": "Può dire solo cose tratte da un elenco fisso: quale schermata è stata aperta, che è stata aggiunta una candidatura, più o meno quante ce ne sono. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto. Va a Google Analytics. Con questa opzione disattivata, jojo disattiva anche le visualizzazioni di schermata e i conteggi di sessione che Firebase raccoglierebbe altrimenti da solo.",
+    "kept_one": "{{count}} segnalazione conservata",
+    "kept_many": "{{count}} di segnalazioni conservate",
+    "kept_other": "{{count}} segnalazioni conservate",
+    "nothingBroken": "Da quando l'hai attivato non si è rotto nulla.",
+    "notRecording": "Non viene registrato nulla."
+  },
+  "date": {
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "inSevenDays": "Tra 7 giorni",
+    "triggerLabel": "{{label}}: {{value}}. Scegli una data",
+    "notSet": "non impostata",
+    "pick": "Scegli una data",
+    "previousMonth": "Mese precedente",
+    "nextMonth": "Mese successivo",
+    "backTo": "Torna a {{month}}"
+  },
+  "errorBoundary": {
+    "title": "Qualcosa si è rotto",
+    "body": "Non è stato possibile disegnare una schermata. I tuoi record sono su questo dispositivo e nulla è stato inviato altrove, ma jojo non può dirti se la modifica che stavi facendo è stata completata.",
+    "noMessage": "All'errore non era allegato nessun messaggio.",
+    "hint": "Se si rompe di nuovo, chiudi jojo dal selettore delle app e riaprilo."
+  },
+  "fileEditor": {
+    "editTitle": "Modifica documento",
+    "newTitle": "Registra un documento",
+    "keptHere": "Conservato su questo dispositivo, in questa app. Non viene caricato nulla e nulla legge il contenuto.",
+    "chooseOrType": "Scegli un file per conservarne una copia, o compila a mano per registrarne uno che conservi altrove.",
+    "record": "Registralo",
+    "choosing": "Scelta…",
+    "chooseDifferent": "Scegli un altro file",
+    "choose": "Scegli un file",
+    "copyKept": "Una copia viene conservata in questa app. Sparisce quando l'app viene disinstallata.",
+    "fileName": "Nome del file",
+    "nameRequired": "Dagli un nome, estensione compresa.",
+    "nameHint": "L'estensione sceglie l'icona: .pdf, .doc, .pptx, .md.",
+    "size": "Dimensione",
+    "sizePlaceholder": "es. 212 KB",
+    "sizeHint": "Facoltativa: se lasciata vuota risulta sconosciuta anziché zero.",
+    "bucket": "Sezione",
+    "applicationsHint": "Ciò che il pannello Documenti del Profilo e il grafo leggono per dire cosa è archiviato dove. Tutti i lavori a cui è andato il documento.",
+    "note": "Nota"
+  },
+  "filed": {
+    "sections": {
+      "files": "File",
+      "links": "Link",
+      "snippets": "Frammenti",
+      "people": "Persone"
+    },
+    "count_one": "{{count}} archiviato qui",
+    "count_many": "{{count}} archiviati qui",
+    "count_other": "{{count}} archiviati qui",
+    "title": "Dalla Cassaforte",
+    "empty": {
+      "title": "Ancora nulla archiviato qui",
+      "description": "Documenti, link, frammenti e persone possono essere archiviati sotto tutti i lavori a cui sono andati. Archiviane uno sotto questo lavoro (dal menu della sua riga nella Cassaforte) e comparirà qui."
+    },
+    "conversations": "Conversazioni",
+    "openInAssistant": "Apri {{name}} nell'Assistente",
+    "openInVault": "Apri {{name}} nella Cassaforte"
+  },
+  "firstRun": {
+    "title": "Come vuoi iniziare?",
+    "description": "In entrambi i casi, tutto resta su questo dispositivo e nulla viene inviato altrove.",
+    "demo": {
+      "title": "Esplora con i record di esempio",
+      "detail": "Dodici candidature, un calendario pieno e una Cassaforte fornita, così ogni schermata ha qualcosa dentro. Puoi cancellarli in seguito in Impostazioni.",
+      "action": "Usa i record di esempio"
+    },
+    "empty": {
+      "title": "Inizia da zero",
+      "detail": "Solo i tuoi record. Le schermate che hanno bisogno di dati diranno cosa manca anziché mostrare un esempio."
+    }
+  },
+  "itemMenu": {
+    "pushOutBy": "Rimanda di",
+    "currently": "{{title}} · attualmente {{date}}",
+    "pickDate": "Scegli una data…",
+    "duplicate": "Duplica",
+    "duplicateHint": "Stessa data e parole chiave, come seconda riga",
+    "draft": "Scrivi un messaggio",
+    "draftHint": "Dai tuoi frammenti email: non viene generato nulla",
+    "reschedule": "Riprogramma"
+  },
+  "keywords": {
+    "on": "Parole chiave di {{name}}",
+    "none": "Ancora nessuna",
+    "choose": "Scegli",
+    "title": "Parole chiave",
+    "description": "Le parole chiave sono tue, e condivise da candidature, promemoria, file e link: filtrando per una le trovi tutte.",
+    "newPlaceholder": "Nuova parola chiave…",
+    "new": "Nuova parola chiave",
+    "add": "Aggiungi",
+    "countHere_one": "{{name}}, {{count}} qui",
+    "countHere_many": "{{name}}, {{count}} qui",
+    "countHere_other": "{{name}}, {{count}} qui"
+  },
+  "onboarding": {
+    "model": {
+      "title": "Collegare un modello?",
+      "description": "È ciò che rende jojo un agente e non un semplice schedario. Con un modello collegato risponde a domande sulla tua ricerca, scrive solleciti basati sui tuoi record e legge i documenti che aggiungi.",
+      "action": "Configurane uno",
+      "local": "Indicagli un server sul tuo computer (vLLM, Ollama o LM Studio) e nulla lascerà il dispositivo.",
+      "later": "Tutto il resto funziona anche senza. Lo trovi in Altro → Impostazioni quando vuoi."
+    },
+    "tour": {
+      "title": "Vuoi un tour pratico?",
+      "description": "Un giro pratico tra le schermate vere: a cosa serve ogni parte, con un riflettore puntato, e provi ogni cosa man mano.",
+      "action": "Inizia il tour",
+      "safe": "Non cambia nulla: non viene scritto nessun record e non viene toccata nessuna impostazione.",
+      "later": "È sempre disponibile in Altro → Come si usa, quindi dire di no adesso non costa nulla."
+    }
+  },
+  "pattern": {
+    "has": "che hanno",
+    "hasHint": "Almeno un collegamento di questo tipo",
+    "missing": "che non hanno",
+    "missingHint": "Nessun collegamento di questo tipo",
+    "anything": "Qualsiasi cosa",
+    "lookFor": "Cerca",
+    "records": "Record",
+    "aLink": "Un collegamento",
+    "anyKind": "Di qualsiasi tipo",
+    "to": "Verso",
+    "lookForHint": "Il tipo di record di cui la risposta è un elenco.",
+    "quantifierTitle": "Presente o assente",
+    "quantifierHint": "Se il collegamento qui sotto deve esserci o deve mancare.",
+    "relTitle": "Quale collegamento",
+    "relHint": "Come sono unite le due estremità. “Di qualsiasi tipo” chiede di tutti e sei insieme.",
+    "endTitle": "All'altra estremità",
+    "endHint": "Ciò a cui deve puntare il collegamento."
+  },
+  "reporting": {
+    "title": "Segnalazioni di arresto anomalo e utilizzo",
+    "description": "Due cose distinte, entrambe attive. Disattivane una qui o più tardi in Impostazioni. Nessuna delle due può contenere i tuoi record: né una candidatura, né un documento, né una nota, né un profilo, né una conversazione.",
+    "bothOff": "Disattiva entrambi",
+    "save": "Salva le scelte",
+    "inReport": "Cosa c'è in una segnalazione",
+    "in": {
+      "message": "· Il messaggio di errore e il punto di jojo in cui si è verificato.",
+      "stack": "· Lo stack trace, che indica il codice che non ha funzionato.",
+      "device": "· Il modello del dispositivo, la versione del sistema operativo e un id casuale usato per contare quante persone incontrano lo stesso arresto anomalo: nessun nome, nessun account."
+    },
+    "notInReport": "Cosa non c'è mai",
+    "notIn": {
+      "records": "· Le tue candidature, documenti, note, profilo o conversazioni.",
+      "secrets": "· Le tue chiavi API, gli indirizzi che usi o qualsiasi indirizzo email: vengono rimossi prima che una segnalazione venga scritta, non prima che venga inviata."
+    },
+    "crashHint": "L'errore e dove si è verificato. Va a Firebase Crashlytics.",
+    "usageHint": "Solo conteggi: quali schermate vengono aperte, e quanto spesso. Mai cosa contengono.",
+    "usageDetail": "Il secondo è l'unica cosa che jojo invia su ciò che FAI, e può dire solo cose tratte da un elenco fisso: “è stata aperta la Cassaforte”, “è stata aggiunta una candidatura”, “ce ne sono 6–20”. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto, perché quelle parole non sono nell'elenco. Disattivarlo ferma anche le visualizzazioni di schermata che Firebase raccoglierebbe altrimenti da solo.",
+    "later": "Li trovi entrambi in Impostazioni quando vuoi cambiarli, e disattivandone uno elimini ciò che ha conservato."
+  },
+  "stagePicker": {
+    "label": "Fase di {{name}}: {{stage}}. Cambia fase",
+    "title": "Sposta in"
+  },
+  "welcome": {
+    "title": "Qualcosa su di te",
+    "description": "Le bozze si chiudono con il tuo nome, e lo scout valuta in base a ciò che cerchi. Tutto resta su questo dispositivo, e tutto è facoltativo: il resto è in Profilo.",
+    "skip": "Salta per ora",
+    "save": "Salva e continua",
+    "fullName": "Nome e cognome",
+    "fullNamePlaceholder": "es. Lonardo Jenson",
+    "position": "Posizione attuale",
+    "positionPlaceholder": "es. Dottorando, Informatica",
+    "location": "Località",
+    "locationPlaceholder": "es. Santa Clara, CA",
+    "email": "Email",
+    "rest": "Il resto (link, ruoli desiderati, i termini su cui lo scout cerca corrispondenze) si trova in Profilo, nella scheda Altro."
+  },
+  "offers": {
+    "open_one": "{{count}} aperta",
+    "open_many": "{{count}} aperte",
+    "open_other": "{{count}} aperte",
+    "title": "Offerte a confronto",
+    "noPackage": "Pacchetto non indicato",
+    "respondBy": "Rispondi entro il {{date}}",
+    "passed": "scaduta",
+    "today": "oggi",
+    "days_one": "{{count}} giorno",
+    "days_many": "{{count}} di giorni",
+    "days_other": "{{count}} giorni",
+    "ranked": "Cifre annue, lette da ciò che hai scritto.",
+    "notRanked": "Non in classifica: i pacchetti sono in valute diverse, e jojo non ha un tasso di cambio.",
+    "annualised": " * su base annua calcolata su 12 mesi, 52 settimane o 2.080 ore."
+  },
+  "ask": {
+    "suggestions": {
+      "noFollowUp": "Quali candidature non hanno un sollecito in programma?",
+      "unfiled": "Quali file non sono archiviati sotto nulla?"
+    },
+    "notConnected": "Collega un modello locale in Impostazioni e potrai chiederlo con una frase. Le domande qui sotto funzionano in ogni caso.",
+    "placeholder": "Quali candidature non hanno un sollecito?",
+    "label": "Fai una domanda al grafo",
+    "stop": "Interrompi",
+    "ask": "Chiedi",
+    "again": "Chiedi qualcos'altro"
+  },
+  "background": {
+    "details_one": "{{count}} dettaglio",
+    "details_many": "{{count}} di dettagli",
+    "details_other": "{{count}} dettagli",
+    "fromDocument": "letto da un documento",
+    "editNamed": "Modifica {{title}}",
+    "removeNamed": "Rimuovi {{title}}",
+    "added": "{{title}} aggiunto",
+    "updated": "{{title}} aggiornato",
+    "removed": "{{title}} rimosso",
+    "notSaved": "Non è stato salvato",
+    "editTitle": "Modifica questa voce",
+    "addTitle": "Aggiungi al tuo percorso",
+    "editRead": "Letto da un documento. La tua modifica prevale sulla lettura.",
+    "editHint": "Non viene salvato nulla finché non premi Salva.",
+    "addHint": "Qualsiasi cosa con cui confrontare un annuncio. Nulla qui viene inviato altrove.",
+    "add": "Aggiungi",
+    "kind": "Tipo",
+    "title": "Titolo",
+    "titlePlaceholder": "Di cosa si trattava",
+    "where": "Dove",
+    "optional": "Facoltativo",
+    "when": "Quando",
+    "whenPlaceholder": "Come scritto — “2021–2024”",
+    "year": "Anno",
+    "detail": "Dettaglio",
+    "highlights": "Punti salienti",
+    "highlightsHint": "Uno per riga: cosa hai costruito, pubblicato, insegnato o scoperto.",
+    "kindHint": "A quale parte del tuo percorso appartiene.",
+    "recorded_one": "{{count}} registrato · ciò con cui si confronta un annuncio",
+    "recorded_many": "{{count}} registrati · ciò con cui si confronta un annuncio",
+    "recorded_other": "{{count}} registrati · ciò con cui si confronta un annuncio",
+    "panelTitle": "Il tuo percorso",
+    "read": "Leggi un documento",
+    "addEntry": "Aggiungi una voce",
+    "readTitle": "Leggi un documento nel tuo profilo",
+    "nothingReadable": "Nella Cassaforte non c'è ancora nulla da leggere",
+    "nothingReadableHint": "Aggiungi il tuo CV o una dichiarazione e comparirà qui.",
+    "alreadyRead": "Già letto",
+    "empty": {
+      "title": "Ancora nulla di registrato",
+      "ready": "Metti nella Cassaforte il tuo CV o una dichiarazione di ricerca o didattica e jojo si offrirà di leggerli: ciò che trova ti viene mostrato prima che venga salvato qualcosa. Oppure aggiungi una voce a mano.",
+      "noModel": "Per leggere un documento serve un modello. Collegane uno in Altro → Impostazioni, poi metti il tuo CV o una dichiarazione nella Cassaforte. Puoi aggiungere voci a mano anche senza."
+    },
+    "removeTitle": "Rimuovere {{title}}?",
+    "removeBody": "Viene tolto dal tuo percorso, quindi gli annunci non vengono più confrontati con esso. Il documento da cui proviene non viene toccato."
+  },
+  "profileOffer": {
+    "kind": {
+      "education": "Istruzione",
+      "employment": "Lavoro",
+      "publication": "Pubblicazione",
+      "skill": "Competenza",
+      "teaching": "Didattica",
+      "award": "Premio",
+      "service": "Servizio",
+      "certification": "Certificazione",
+      "language": "Lingua",
+      "project": "Progetto",
+      "volunteering": "Volontariato",
+      "membership": "Affiliazione",
+      "grant": "Finanziamento",
+      "patent": "Brevetto"
+    },
+    "skipped_one": "{{count}} voce è stata saltata",
+    "skipped_many": "{{count}} di voci sono state saltate",
+    "skipped_other": "{{count}} voci sono state saltate",
+    "alreadyThere": "Già nel tuo profilo",
+    "added_one": "{{count}} aggiunta al tuo profilo",
+    "added_many": "{{count}} aggiunte al tuo profilo",
+    "added_other": "{{count}} aggiunte al tuo profilo",
+    "nothingAdded": "Non è stato possibile aggiungere nulla",
+    "readFrom": "Letto da {{name}}.",
+    "alreadyKnown_one": "{{known}} su {{count}} era già noto.",
+    "alreadyKnown_many": "{{known}} su {{count}} erano già noti.",
+    "alreadyKnown_other": "{{known}} su {{count}} erano già noti.",
+    "connectionsRecorded_one": "{{count}} collegamento registrato.",
+    "connectionsRecorded_many": "{{count}} di collegamenti registrati.",
+    "connectionsRecorded_other": "{{count}} collegamenti registrati.",
+    "refused": "Le voci sono state rifiutate.",
+    "readIt": "Leggilo",
+    "readFailed": "La lettura del documento non è riuscita.",
+    "entriesRead_one": "{{count}} voce letta da questo documento",
+    "entriesRead_many": "{{count}} di voci lette da questo documento",
+    "entriesRead_other": "{{count}} voci lette da questo documento",
+    "addNamed": "Aggiungi {{title}}",
+    "connections_one": "{{count}} collegamento tra di esse",
+    "connections_many": "{{count}} di collegamenti tra di esse",
+    "connections_other": "{{count}} collegamenti tra di esse",
+    "addCount_one": "Aggiungila",
+    "addCount_many": "Aggiungine {{count}}",
+    "addCount_other": "Aggiungine {{count}}"
+  },
+  "proposals": {
+    "aPipeline": "una pipeline",
+    "hint": "non succede nulla finché non lo dici tu",
+    "title": "Suggerimenti",
+    "empty": {
+      "title": "Nulla da rivedere",
+      "description": "Quando una pipeline è in esecuzione, tutto ciò che vuole cambiare compare prima qui. Non tocca i tuoi record finché non approvi."
+    },
+    "applied": "applicato",
+    "discarded": "scartato",
+    "failed": "non applicabile",
+    "from": "{{tool}} · da {{pipeline}}",
+    "approve": "Approva",
+    "discardNamed": "Scarta: {{title}}",
+    "clearAnswered": "Rimuovi quelli già gestiti",
+    "clearAll": "Rimuovi tutti",
+    "confirmTitle": "Rimuovere tutti i suggerimenti?",
+    "confirmPending_one": "{{count}} suggerimento è ancora in attesa e verrà rifiutato. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non lo riproporranno.",
+    "confirmPending_many": "{{count}} di suggerimenti sono ancora in attesa e verranno rifiutati. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non li riproporranno.",
+    "confirmPending_other": "{{count}} suggerimenti sono ancora in attesa e verranno rifiutati. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non li riproporranno.",
+    "confirmAnswered": "Le schede già gestite escono dall'elenco. Nei tuoi record non cambia nulla."
+  },
+  "nextSteps": {
+    "measured": "Misurato",
+    "suggested": "Suggerito",
+    "hint": "ciò che confermano i tuoi record, poi ciò che costa meno",
+    "title": "Cosa fare adesso"
+  },
+  "working": {
+    "arm": "{{count}} su {{of}} · {{rate}}% · probabilmente {{range}}",
+    "repliesBy": "Risposte, per {{dimension}}",
+    "interviewsBy": "Colloqui, per {{dimension}}",
+    "confident": "Gli intervalli non si sovrappongono, quindi la differenza è reale: vale la pena concentrare più impegno su {{best}}.",
+    "overlap": "Gli intervalli si sovrappongono, quindi sono due numeri e non una differenza. Con più record si separeranno o il divario si chiuderà.",
+    "tooFew_one": "{{count}} altro gruppo ha meno di {{min}} record e non viene confrontato.",
+    "tooFew_many": "{{count}} di altri gruppi hanno meno di {{min}} record e non vengono confrontati.",
+    "tooFew_other": "{{count}} altri gruppi hanno meno di {{min}} record e non vengono confrontati.",
+    "hint": "la fascia indica dove si trova plausibilmente il tasso reale",
+    "title": "Cosa sta funzionando"
+  },
+  "tour": {
+    "steps": {
+      "welcome": {
+        "title": "Un tour pratico di jojo",
+        "body": "Indica le schermate vere e ti chiede di provare ogni cosa man mano. Non scrive, salva o modifica mai nulla al posto tuo. Chiudilo quando vuoi: il punto in cui sei viene ricordato, e Come si usa lo riprenderà."
+      },
+      "today": {
+        "title": "Oggi",
+        "body": "Ciò che c'è da fare ora: cosa è in ritardo, cosa è in scadenza e le decisioni che ti aspettano. La prima schermata da aprire."
+      },
+      "applications": {
+        "title": "Le tue candidature",
+        "body": "Un record per ogni lavoro: il datore di lavoro, il ruolo, la fase e le tue note. Date, documenti e conversazioni dipendono tutti da esso, così nulla va scritto due volte.",
+        "say": "Apri Candidature."
+      },
+      "layout": {
+        "title": "Elenco o bacheca",
+        "body": "Gli stessi record, in due modi. L'elenco ordina e cerca; la bacheca mostra le fasi come colonne.",
+        "say": "Passa a Bacheca."
+      },
+      "records": {
+        "title": "Sei fasi",
+        "body": "Bozza, Inviata, Chiamata preliminare, Colloquio, Offerta, Chiusa. Sulla bacheca, tieni premuta una scheda, poi trascinala nella colonna successiva; ogni scheda ha anche un menu delle fasi. Ogni spostamento si può annullare."
+      },
+      "search": {
+        "title": "Cerca ovunque",
+        "body": "Candidature, promemoria e voci di calendario, da qualsiasi scheda.",
+        "say": "Apri la ricerca."
+      },
+      "searchScreen": {
+        "title": "Scrivi per trovare qualsiasi cosa",
+        "body": "Un ruolo, un datore di lavoro o una fase. Tocca un risultato per aprirlo, o torna indietro quando hai finito."
+      },
+      "new": {
+        "title": "Crea qualsiasi cosa",
+        "body": "Il + crea una candidatura, un promemoria, una voce di calendario, un messaggio, un link salvato o un annuncio salvato. Nulla viene salvato finché non salvi, e chiudere un modulo compilato a metà non costa nulla."
+      },
+      "calendar": {
+        "title": "Tutte le date in un unico posto",
+        "body": "Scadenze, colloqui e solleciti sono un unico tipo di record, quindi una voce compare nel calendario, in Oggi e nella sua candidatura.",
+        "say": "Apri il Calendario."
+      },
+      "vault": {
+        "title": "La Cassaforte",
+        "body": "Tutto ciò che non è una candidatura: promemoria, link, file, i frammenti che incolli in ogni modulo, le persone che conosci e una calcolatrice.",
+        "say": "Apri la Cassaforte."
+      },
+      "vaultTools": {
+        "title": "Uno strumento alla volta",
+        "body": "Ognuno di questi è un elenco a sé, e una parola chiave significa la stessa cosa in tutti.",
+        "say": "Scegli File."
+      },
+      "files": {
+        "title": "File, conservati sul telefono",
+        "body": "Un CV, una dichiarazione, un annuncio: copiati nella cartella di jojo, così sopravvivono se l'originale viene spostato. Toccane uno per leggerlo qui; archivialo sotto tutte le candidature a cui appartiene."
+      },
+      "more": {
+        "title": "Altro",
+        "body": "Tutto il resto: Scout offerte, Statistiche, il grafo, Trasferimento, il tuo profilo, l'assistente, Impostazioni e questa guida.",
+        "say": "Apri Altro."
+      },
+      "scout": {
+        "title": "Scout offerte",
+        "body": "Ricerche salvate che tengono d'occhio i siti di lavoro per te.",
+        "say": "Apri Scout offerte."
+      },
+      "scoutScreen": {
+        "title": "Pipeline e suggerimenti",
+        "body": "Ogni pipeline è una ricerca su un sito, eseguita secondo una pianificazione o quando lo chiedi. Ciò che trova attende come suggerimento da approvare o scartare, e uno approvato diventa una candidatura in bozza."
+      },
+      "statistics": {
+        "title": "Statistiche",
+        "body": "Come sta andando la tua ricerca, calcolato dai tuoi record.",
+        "say": "Apri Statistiche."
+      },
+      "statisticsScreen": {
+        "title": "Tassi, con intervalli onesti",
+        "body": "Tassi di risposta e di colloquio, un imbuto e su cosa lavorare adesso, ogni tasso con l'intervallo in cui potrebbe davvero trovarsi, perché una manciata di candidature è un campione piccolo."
+      },
+      "graph": {
+        "title": "Il grafo della conoscenza",
+        "body": "Ogni record (candidature, datori di lavoro, persone, date, file) disegnato come la rete che è.",
+        "say": "Apri il Grafo."
+      },
+      "graphScreen": {
+        "title": "Tutto, collegato",
+        "body": "Tocca un nodo per vedere a cosa è collegato, e fai una domanda per illuminare i record corrispondenti."
+      },
+      "assistant": {
+        "title": "L'assistente",
+        "body": "Chatta con jojo: trova, aggiunge e aggiorna i tuoi record con gli strumenti dell'app, e chiede prima di modificare qualsiasi cosa. Finché non colleghi un modello mostra esempi svolti."
+      },
+      "transfer": {
+        "title": "Telefono e computer",
+        "body": "Trasferimento sposta tutto tra questo telefono e jojo sul tuo computer, sulla rete locale, senza passare da nessun altro."
+      },
+      "settings": {
+        "title": "Impostazioni",
+        "body": "Connessioni, aspetto e i tuoi dati.",
+        "say": "Apri Impostazioni."
+      },
+      "device": {
+        "title": "I tuoi record vivono su questo telefono",
+        "body": "Scritti direttamente nella memoria del telefono mentre lavori: nessun account, nessuna sincronizzazione, nulla di caricato. Esportane una copia, o trasferiscili sul tuo computer."
+      },
+      "model": {
+        "title": "Collega un modello",
+        "body": "Dove gira il modello dell'assistente. Un server sul tuo computer (vLLM, Ollama o LM Studio) richiede il suo indirizzo e tiene i tuoi record sui tuoi dispositivi. OpenAI, Anthropic (Claude) e gli altri fornitori cloud richiedono una chiave API. Verifica connessione lo controlla prima che venga salvato qualcosa."
+      },
+      "reader": {
+        "title": "Fagli leggere i tuoi documenti",
+        "body": "Il telefono legge da solo file Word, presentazioni, pagine salvate e testo. I PDF richiedono MarkItDown sul tuo computer: avvialo con i due comandi qui sopra, poi Verifica connessione."
+      },
+      "done": {
+        "title": "Il tour è finito",
+        "body": "Ogni modifica si può annullare, e Come si usa, in Altro, descrive ogni schermata una per una. Il tour è sempre lì da rifare."
+      }
+    },
+    "stepOf": "Passo {{step}} di {{total}}",
+    "end": "Termina il tour",
+    "nice": "Ottimo, è tutto.",
+    "tryIt": "Prova: {{task}}",
+    "finish": "Fine",
+    "skip": "Salta"
+  },
+  "marks": {
+    "bold": "grassetto",
+    "italic": "corsivo",
+    "underlined": "sottolineato"
+  },
+  "nav": {
+    "tabs": {
+      "today": "Oggi",
+      "applications": "Candidature",
+      "calendar": "Calendario",
+      "vault": "Cassaforte",
+      "more": "Altro"
+    },
+    "badge": {
+      "applications_one": "Candidature, {{count}} contrassegnata per un sollecito",
+      "applications_many": "Candidature, {{count}} contrassegnate per un sollecito",
+      "applications_other": "Candidature, {{count}} contrassegnate per un sollecito",
+      "calendar_one": "Calendario, {{count}} nei prossimi sette giorni",
+      "calendar_many": "Calendario, {{count}} nei prossimi sette giorni",
+      "calendar_other": "Calendario, {{count}} nei prossimi sette giorni",
+      "vault_one": "Cassaforte, {{count}} promemoria scaduto",
+      "vault_many": "Cassaforte, {{count}} di promemoria scaduti",
+      "vault_other": "Cassaforte, {{count}} promemoria scaduti",
+      "more_one": "Altro, {{count}} risultato non ancora aggiunto alle candidature",
+      "more_many": "Altro, {{count}} di risultati non ancora aggiunti alle candidature",
+      "more_other": "Altro, {{count}} risultati non ancora aggiunti alle candidature"
+    },
+    "create": "Crea",
+    "search": "Cerca",
+    "titles": {
+      "application": "Candidatura",
+      "employer": "Datore di lavoro",
+      "search": "Cerca",
+      "jobScout": "Scout offerte",
+      "statistics": "Statistiche",
+      "profile": "Il mio profilo",
+      "assistant": "Assistente",
+      "settings": "Impostazioni",
+      "guide": "Come si usa",
+      "graph": "Grafo",
+      "transfer": "Trasferimento"
+    }
+  }
+}

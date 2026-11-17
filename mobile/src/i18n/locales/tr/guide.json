@@ -1,0 +1,254 @@
+{
+  "screen": {
+    "title": "jojo nasıl kullanılır",
+    "pageLabel": "Kılavuz sayfası",
+    "takeTour": "Turu başlat",
+    "pages": {
+      "overview": {
+        "label": "Genel bakış",
+        "subtitle": "Her şey cihazınızda çalışır. Basit başlayın, istediğinizde güç ekleyin."
+      },
+      "screens": {
+        "label": "Ekranlar",
+        "subtitle": "Her ekranın ne işe yaradığı ve doğrudan ona giden bir yol."
+      },
+      "graph": {
+        "label": "Grafik",
+        "subtitle": "Yedi listenin altındaki kayıt modeli."
+      },
+      "tools": {
+        "label": "Araçlar",
+        "subtitle": "Asistanın kayıtlarınıza neler yapabildiği ve onu neyin durdurduğu."
+      },
+      "built": {
+        "label": "Kullanılan yazılımlar",
+        "subtitle": "Bunun neyden yapıldığı ve neyin hâlâ yer tutucu olduğu."
+      }
+    }
+  },
+  "overview": {
+    "active": "etkin",
+    "notConnected": "bağlı değil",
+    "layers": {
+      "device": {
+        "name": "Yalnızca bu cihaz",
+        "requires": "Kurulacak bir şey yok",
+        "gives": "Başvuruları, son tarihleri, takipleri ve belgeleri izleyin"
+      },
+      "model": {
+        "name": "+ Yerel model",
+        "requires": "Ollama, vLLM ya da LM Studio — veya ücretsiz bir NVIDIA anahtarı",
+        "gives": "Kayıtlarınızı okuyan ve yazan konuşma tabanlı bir asistan — her değişiklik önce size gösterilir — ve tek cümleyle \"Grafiğe sor\""
+      },
+      "reader": {
+        "name": "+ Belge okuyucu",
+        "requires": "Yazdığınız bir adreste çalışan MarkItDown",
+        "gives": "Asistan CV'lerinizin ve kayıtlı ilanlarınızın içeriğini okur; bir bağlantıdan eklediğiniz ilan kendi formunu doldurur"
+      },
+      "computer": {
+        "name": "+ Bilgisayarınız",
+        "requires": "İkisi de aynı ağda",
+        "gives": "Aktarım, tüm kasayı arada hiçbir şey olmadan bu telefonla bilgisayarınız arasında taşır"
+      }
+    },
+    "gettingStarted": "Başlarken",
+    "progress": "{{total}} adımdan {{done}} tanesi tamamlandı",
+    "allDone": "Tüm adımlar tamamlandı. Kontrol listesi kayıtlarınızı okur; bu yüzden onları temizlerseniz o da buna uyar.",
+    "howItWorks": "Her adım asıl özelliği açar ve bir kayıt oluşunca kendiliğinden işaretlenir. Burada baştan sona izlemeniz gereken bir eğitim yok.",
+    "done": "Tamamlandı",
+    "steps": {
+      "application": {
+        "title": "Bir başvuru ekleyin",
+        "body": "Bir pozisyon, aşaması ve son tarihi. jojo'daki diğer her şey bu kayda bağlanır.",
+        "label": "Yeni başvuru"
+      },
+      "dated": {
+        "title": "Bir şeye tarih verin",
+        "body": "Son tarihler, mülakatlar ve kampüs ziyaretleri aynı tür kayıttır; bu yüzden aynı anda takvime, önümüzdeki haftaya ve başvuruya ulaşırlar.",
+        "label": "Yeni etkinlik"
+      },
+      "reminder": {
+        "title": "Bir takip ayarlayın",
+        "body": "Hatırlatıcı, uyarısı açık olan aynı kayıttır. Tarihi geçince, siz tamamlandı olarak işaretleyene kadar Bugün sayfasında işaretli görünür.",
+        "label": "Yeni hatırlatıcı"
+      },
+      "posting": {
+        "title": "Bir ilanı kaldırılmadan önce saklayın",
+        "body": "Hiçbir şey getirilmez ve kopya saklanmaz — saklanan şey URL, ondan tahmin edilen işveren ve kaydettiğiniz gündür. İlanı yeniden bulmak için bu yeterlidir.",
+        "label": "İş gözcüsünü aç"
+      },
+      "file": {
+        "title": "Belgelerinizi dosyalayın",
+        "body": "Kasa'ya bir CV ya da beyan kaydedin. Adlar, boyutlar ve türler saklanır; dosyanın kendisi asla okunmaz.",
+        "label": "Kasa'yı aç"
+      },
+      "keyword": {
+        "title": "Bir şeyi anahtar kelimeyle etiketleyin",
+        "body": "Anahtar kelimeler sizindir; başvurular, hatırlatıcılar ve Kasa'daki her şey tarafından paylaşılır — sabit rol etiketlerinin aksine. Herhangi bir satırdaki etiket düğmesi bir tane ekler.",
+        "label": "Anahtar kelimeleri yönet"
+      },
+      "draft": {
+        "title": "Bir mesaj taslağı hazırlayın",
+        "body": "Kendi e-posta metin parçalarınızdan oluşturulur; rol, işveren ve tarihler kayıttan doldurulur. Kişi adları sizin yerinize asla doldurulmaz. Burada gönderdiğinizi kaydeden bir şey yok; bu yüzden bu adım kendiliğinden işaretlenmez.",
+        "label": "Mesaj taslağı hazırla"
+      }
+    },
+    "profile": {
+      "title": "Profilinizi doldurun",
+      "hint": "profil kontrol listesinin parçası değil",
+      "body": "Temel bilgileriniz, bağlantılarınız, hedef rolleriniz ve eşleştirme terimleriniz Profilim altında durur. Gözcünün puanlarken baktığı ve asistanın taslak hazırlarken yararlandığı şey bunlardır; bu yüzden önemlidirler — ama bu derleme onları bir yere yazmak yerine yalnızca ziyaret boyunca tutar; yukarıdaki kontrol listesinin onlar için işaretlenememesinin nedeni budur.",
+      "open": "Profilimi aç"
+    },
+    "database": {
+      "title": "Uygulama veritabanıdır",
+      "body": "Kayıtlarınız bu cihaza kaydedilir ve yeniden başlatmadan sonra da kalır. Hiçbir yere bir şey gönderilmez — hesap yok, eşitleme yok, ağ çağrısı yok. Onları temizleyeceğiniz, demo verilerini yeniden yükleyeceğiniz ya da panoya bir kopya dışa aktaracağınız yer Ayarlar'dır."
+    }
+  },
+  "screens": {
+    "intro": "Uygulamadaki her ekran ve ne işe yaradığını söyleyen tek cümle. Bir satıra dokunmak onu açar — bu sayfa bir açıklama olduğu kadar bir giriş yoludur da.",
+    "open": "Aç: {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "Sekme çubuğunda",
+        "hint": "her zaman bir dokunuş uzakta"
+      },
+      "vault": {
+        "title": "Kasa'nın içinde",
+        "hint": "beş araç, tek sekme"
+      },
+      "more": {
+        "title": "Daha fazla'nın arkasında",
+        "hint": "jojo'nun geri kalanı"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Bu uygulamadaki her liste, tek bir kayıt kümesinin bir görünümüdür. Bir kayıt bir <b>düğümdür</b>; iki kayıt arasındaki bağlantı ise adı olan bir <b>kenardır</b>. Modelin tamamı budur ve iki listeyi aşan bir sorunun yanıtlanabilmesinin nedeni de budur.",
+    "open": "Grafiği aç",
+    "kinds_one": "{{count}} tür",
+    "kinds_other": "{{count}} tür",
+    "nodes": "Düğümler",
+    "nodesIntro": "Her kayıt için bir düğüm, ayrıca yalnızca bağlantı olarak var olan üç düğüm — işveren, rol ve anahtar kelimenin her biri bir düğümdür; böylece birinin altında dosyalanan her şey ondan bulunabilir.",
+    "edges": "Kenarlar",
+    "edgesIntro": "Her birinin bir yönü ve adı vardır. Ad, Grafik ekranındaki soru oluşturucunun orta satırına koyduğu şeydir.",
+    "relShape": {
+      "AT": "Başvuru → İşveren",
+      "IS": "Başvuru → Rol",
+      "ABOUT": "Tarih ya da hatırlatıcı → Başvuru",
+      "FILED_UNDER": "Dosya, bağlantı ya da metin parçası → Başvuru",
+      "TAGS": "Anahtar kelime → herhangi bir kayıt",
+      "BECAME": "Kayıtlı ilan ya da eşleşme → Başvuru"
+    },
+    "deleteTitle": "Silmek bağlantıyı kaldırır, zincirleme silmez",
+    "deleteBody": "Bir başvuruyu kaldırmak o düğümü ve ona dokunan kenarları kaldırır. Altında dosyalanan hatırlatıcılar, dosyalar ve kayıtlı ilanlar kalır — kendi başlarına kayıttırlar ve hiçbir şey onlara işaret etmeden hayatta kalırlar. Uygulamadaki her silme işlemi bunu söyler ve gevşeyen şeyleri bulduğunuz yer Grafik ekranındaki soru oluşturucudur: bir başvuruya bağlantısı olmayan dosyaları sorun."
+  },
+  "tools": {
+    "inTotal": "toplam {{count}}",
+    "canDo": {
+      "title": "Asistan neler yapabilir",
+      "body_one": "Asistan sizin yerinize ekranlarınıza dokunmaz. Düğmelerin çağırdığı {{count}} işlemin aynısını çağırır — aynı kod yolu, aynı denetimlerle. İkinci bir giriş yolu yoktur; asistanın yaptığı bir düzenlemenin geçmişinizde tam olarak sizin yaptığınız biri gibi görünmesinin nedeni budur.",
+      "body_other": "Asistan sizin yerinize ekranlarınıza dokunmaz. Düğmelerin çağırdığı {{count}} işlemin aynısını çağırır — aynı kod yolu, aynı denetimlerle. İkinci bir giriş yolu yoktur; asistanın yaptığı bir düzenlemenin geçmişinizde tam olarak sizin yaptığınız biri gibi görünmesinin nedeni budur.",
+      "irreversible": "Bu {{count}} işlemden ikisi hiç geri alınamaz — deponun tamamını değiştiren ya da boşaltan işlemler. Bunlar, kendi sözleriniz istemedikçe asistana asla sunulmaz ve o zaman bile onay için durur.",
+      "open": "Asistanı aç"
+    },
+    "stats": {
+      "reads": {
+        "label_one": "bakma yolu",
+        "label_other": "bakma yolu",
+        "hint": "okumak hiçbir şeyi değiştirmez"
+      },
+      "writes": {
+        "label_one": "değiştirme yolu",
+        "label_other": "değiştirme yolu",
+        "hint": "her biri geri alınabilir…"
+      },
+      "destructive": {
+        "label": "yıkıcı olarak işaretli",
+        "hint": "…ikisi hariç; onlar önce sorar"
+      }
+    },
+    "gate": {
+      "title": "Yanlış aracın çalışmasını ne engeller",
+      "hint": "gerçekten tutan kısım",
+      "body": "Bir dil modeli her şeyi isteyebilir. Kendisine hiç gösterilmemiş bir aracı adlandırabilir ya da var olmayan bir araç uydurabilir — küçük modeller bunu düzenli olarak yapar ve bu bir şeylerin ters gittiğinin işareti değildir. Bu yüzden jojo modelin dikkatli olmasına güvenmez.",
+      "distinctionTitle": "Önemli olan ayrım",
+      "distinction": "Modele neyin gösterileceğini seçmek bir ipucudur. Gerçekte neyi çağırdığını denetlemek ise bir kuraldır ve kural, kümeyi kimin seçtiğine bağlıdır. Ekranın kümeyi sabitlediği yerlerde — Grafiğe sor, bir gözcü işlem hattı — küme dışındaki bir çağrı, çalıştırılmak bir yana, hiçbir şeye bakılmadan reddedilir. Bir sohbette ise küme, jojo'nun neye ihtiyaç duyduğunuza dair tahminidir; bu yüzden küme dışındaki bir çağrı reddedilmez: diğer her çağrıyla aynı onay denetimine gider ve konuşma kendi başına çalışacak şekilde ayarlanmadıkça önce size sorar. Tek istisna, geri alınamayan tek şey olan kayıtlarınızı temizlemektir: her şeyi silmeyi açıkça istemediyseniz reddedilir.",
+      "askGraph": "Grafik ekranındaki “Grafiğe sor” kutusunun iki salt okunur aracı güvenle sunabilmesinin nedeni budur. Modelin bunların içinde kalacağına güvenmez."
+    },
+    "pick": {
+      "title": "Doğru aracı nasıl seçer",
+      "hint": "bir istek asla yarıda kalmasın diye",
+      "cost_one": "Bir modele {{count}} aracın hepsini aynı anda göstermek, siz daha hiçbir şey yazmadan, düşünmek için sahip olduğu alanın yaklaşık on beş bin sözcüğünü harcar. Kendi bilgisayarınızda çalışan küçük bir modelde bu, sahip olduğundan daha fazla alan olabilir. Bu yüzden jojo listeyi sözlerinizin işaret ettiği şeylere daraltır.",
+      "cost_other": "Bir modele {{count}} aracın hepsini aynı anda göstermek, siz daha hiçbir şey yazmadan, düşünmek için sahip olduğu alanın yaklaşık on beş bin sözcüğünü harcar. Kendi bilgisayarınızda çalışan küçük bir modelde bu, sahip olduğundan daha fazla alan olabilir. Bu yüzden jojo listeyi sözlerinizin işaret ettiği şeylere daraltır.",
+      "careless": "Özensiz daraltmak hiç daraltmamaktan kötüdür. Çoğu işlemin üzerinde çalışacağı bir şey gerekir: anahtar kelime olmadan anahtar kelime ekleyemezsiniz, belge olmadan belge güncelleyemezsiniz. O şeyi oluşturan aracı gizlerseniz asistan yarıda durur ve ekranda nedenini açıklayan hiçbir şey olmaz.",
+      "unsureTitle": "Emin olmadığında daraltmaz",
+      "unsure": "“Perşembe günü bana Baylor'u hatırlat” açıktır ve jojo kataloğun yaklaşık beşte birini sunar. “Aslında o öbürüydü” hiçbir konuda açık değildir — bu yüzden her şeyi sunar, tam olarak bunların hiçbiri yokken yapacağı gibi. Emin olmamak biraz hıza mal olur. Tahmin yürütmek size yanıtınıza mal olurdu.",
+      "onlyGains": "Bir konuşma yalnızca araç kazanır. Daha önce kullandığınız hiçbir şey sonraki bir soruyla elinizden alınmaz."
+    },
+    "model": {
+      "title": "Bunu hangi model yapar",
+      "hint": "sizin seçiminiz ve sözlerinizin nereye gittiğini değiştirir",
+      "local": "jojo, Ayarlar'da neye yönlendirirseniz onunla konuşur. Kontrol ettiğiniz bir bilgisayarda çalışan bir model — Ollama, vLLM, LM Studio — varsayılandır ve yazdığınız hiçbir şeyin bu cihazdan çıkmadığı tek düzenleme budur.",
+      "cloud": "Claude, OpenAI ve diğerlerini bir API anahtarıyla da kullanabilirsiniz. Bu gerçek bir ödünleşimdir ve ekran bunu açıkça söyler: kayıtlarınız o şirkete gider ve hesabınıza faturalanır. Anahtar bu cihazda saklanır, asla bir yedeğe dahil edilmez ve seçtiğiniz sağlayıcı dışında hiçbir yere gönderilmez.",
+      "openSettings": "Ayarlar'ı aç",
+      "truncatedTitle": "Asistan okumayı bırakmış gibi görünüyorsa",
+      "truncated": "Yeterli alanı olmayan yerel bir model, kendisine gönderilenin başını sessizce düşürür ve sonra hiç tam olarak görmediği bir soru hakkında kendinden emin bir yanıt verir. jojo sunucunun okuduğunu söylediği ile gerçekte gönderileni karşılaştırır ve ikisi uyuşmadığında size söyler — çünkü alternatifi, alanı yetmeyen değil de işinde kötü görünen bir asistandır."
+    },
+    "gateFigure": {
+      "typed": "yazdığınız",
+      "pick": "olası araçları seç",
+      "pickNote": "belirsiz mi? {{count}} aracın hepsini sun",
+      "add": "bu araçların ihtiyaçlarını ekle",
+      "addNote": "hiçbir zincir çıkmaza girmesin",
+      "choose": "model birini seçer",
+      "offered": "sunulmuş muydu?",
+      "offeredNote": "hayır mı? reddedilir, hiçbir şey çalışmaz",
+      "change": "kayıtlarınız değişir",
+      "description": "Yukarıdan aşağıya altı adım. Bir: yazdığınız. İki: jojo sözlerinizin işaret ettiği araçları seçer — sözleriniz belirsizse tahmin yürütmek yerine {{count}} aracın hepsini sunar. Üç: bu araçların bağlı olduğu her şeyi ekler; böylece hiçbir zincir çıkmaza girmez. Dört: model bir araç seçer. Beş: jojo o aracın gerçekten sunulup sunulmadığını denetler; sunulmadıysa çağrı reddedilir ve hiçbir şey çalışmaz. Altı: kayıtlarınız ancak o zaman değişir. Bir şeyi zorunlu kılan beşinci adımdır — ikinci adım yalnızca bir ipucudur, çünkü bir model kendisine hiç gösterilmemiş bir aracı adlandırabilir.",
+      "caption": "İkinci adım size token kazandırır. Sizi güvende tutan beşinci adımdır — ve ikinci adım bir şeyi daraltmış olsun ya da olmasın çalışır."
+    },
+    "graphFigure": {
+      "intro": "Belirli bir sırası olmayan üç örnek. Her biri sözlerinizin istediği bir araç, onsuz çalışamayacağı şey ve zincir tamamlanabilsin diye jojo'nun yanında sunduğu araç.",
+      "description": "Üç örnek. keyword.attach istemek keyword.create'i de sunar, çünkü anahtar kelime eklemek zaten var olan bir anahtar kelime gerektirir. vault.file.update istemek vault.file.add'i de sunar, çünkü bir belgeyi güncellemek bir belge gerektirir. scout.posting.promote istemek scout.posting.save'i de sunar, çünkü kayıtlı bir ilanı yükseltmek kayıtlı bir ilan gerektirir. Her durumda jojo bağımlılığı aracın kendi girdisinden çıkarır ve iki aracı birlikte sunar — böylece asistana asla ikinciye ulaşma yolu olmayan bir ilk adım verilmez.",
+      "needs": {
+        "keyword": "bir anahtar kelime gerekir; bu yüzden jojo şunu da sunar",
+        "file": "bir dosya gerekir; bu yüzden jojo şunu da sunar",
+        "posting": "bir ilan gerekir; bu yüzden jojo şunu da sunar"
+      },
+      "without": "Bu olmasaydı asistana ilk araç sunulup ikincisi sunulmayabilirdi — ve ekranda nedenini söyleyen hiçbir şey olmadan yarıda dururdu.",
+      "derived": "jojo her gereksinimi aracın kendi tanımından okur; böylece yarın eklenen bir araç, kimse bir listeyi güncellemeden kapsanır."
+    }
+  },
+  "builtWith": {
+    "intro": "Web uygulamasıyla aynı ürünün etkileşimli bir prototipi; içinde kural olan her modülü paylaşır — tarih hesapları, istatistik hunisi, anahtar kelime sistemi ve başlangıç verileri — böylece ikisi bir tarih, oran ya da aşama konusunda çelişemez.",
+    "stackTitle": "Kullanılan yazılımlar",
+    "stackHint": "gerçekte çalışan",
+    "unfinishedTitle": "Hâlâ yer tutucu olanlar",
+    "unfinishedHint": "gizlenmedi, belirtildi",
+    "unfinishedIntro": "Eksiklerini gizleyen bir prototip, inanılan bir prototiptir. Ekrandaki başka bir şeyi değerlendirmeden önce bilmeye değer olanlar bu üçüdür.",
+    "placeholder": "yer tutucu",
+    "stack": {
+      "app": "Uygulamanın kendisi, iki platformda",
+      "build": "Derleme. Expo yok — android/ ve ios/ bizim",
+      "documents": "Bir dosya eklemek ve yeniden açmak",
+      "navigation": "Sekme çubuğu ve ekran yığını",
+      "drag": "Panonun uzun basmayla sürüklemesi, UI iş parçacığında",
+      "charts": "Halka, radar ve grafik",
+      "type": "Yazı tipleri, getirilmek yerine paketlenmiş"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "Asistan, sizin sağladığınız bir model gerektirir",
+        "detail": "Ayarlar'dan bir model bağlayın; asistan konuşma tabanlı, ajan bir sohbete dönüşür: yanıt vermek için uygulamanın kendi araçlarını çağırır, yaptığı her çağrıyı listeler ve her konuşmayı bu cihaza kaydeder. Model olmadan her yanıt beş örnekten biridir ve bunu söyleyen bir rozet taşır."
+      },
+      "scout": {
+        "title": "Gözcü kendi başına hiçbir şey bulmaz",
+        "detail": "Uyum yüzdeleri gerçektir — bu cihazda profilinizdeki eşleştirme terimlerine, hedef rollere ve bölgelere göre hesaplanır ve neyle eşleştiklerini söyler. Eksik olan tarama işidir: hiçbir şey dışarı çıkıp ilan aramaz; bu yüzden akış yalnızca sizin koyduklarınızı içerir."
+      },
+      "network": {
+        "title": "Siz yönlendirmedikçe hiçbir şey bu cihazdan çıkmaz",
+        "detail": "Hesap yok, eşitleme yok, yükleme yok. İki adrese ulaşılabilir, ikisi de sizin ve ikisi de Ayarlar'da belirlenir: model ve belge okuyucu — okuyucu, bir bağlantıdan başvuru eklediğinizde iş ilanını da getirir; böylece o URL bize değil okuyucunuza gider. Aktarım, yerel ağ üzerinden cihazlarınız arasında bir kopya taşır — bu telefonda alan taraftır, gönderen taraf bilgisayardır. Başka hiçbir şey hiçbir yere gitmez."
+      }
+    }
+  }
+}

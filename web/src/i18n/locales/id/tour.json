@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Kenalan dengan jojo",
+      "body": "Asisten Anda tinggal di sini. Ia bereaksi terhadap apa yang Anda lakukan — menari saat lamaran terkirim, mengangguk saat tugas selesai — dan mengikuti penunjuk Anda di halaman.",
+      "task": "Ketuk jojo, atau gambar lingkaran di atasnya."
+    },
+    "moves": {
+      "title": "Setiap gerakan, dan cara menggambarnya",
+      "body": "Tombol ini mencantumkan semua gerakan jojo, masing-masing dengan goresan yang memainkannya — usap ke atas untuk melompat, huruf Z untuk terkantuk — dan menyebut seniman pembuat model 3D-nya."
+    },
+    "runtime": {
+      "title": "Tempat entri Anda tersimpan",
+      "body": "“Tersimpan di sini” adalah penyimpanan browser: database di dalam browser ini, di perangkat ini — tidak ada yang dikirim ke mana pun dan tidak ada yang disinkronkan. Petak lainnya menunjukkan apakah model terhubung dan menawarkan pemindahan semuanya ke perangkat lain. Masing-masing membuka tempat pengaturannya."
+    },
+    "applications": {
+      "title": "Lamaran Anda",
+      "body": "Satu entri per pekerjaan: posisi, pemberi kerja, tahap, dan catatan Anda. Tenggat, wawancara, dan dokumen semuanya terkait dengannya, jadi tidak ada yang diketik dua kali.",
+      "task": "Buka Lamaran."
+    },
+    "layout": {
+      "title": "Papan atau tabel",
+      "body": "Entri yang sama, dua cara. Papan menampilkan tahap sebagai kolom; tabel bisa diurutkan dan dicari. Pilihannya tersimpan di alamat, jadi tautan terbuka seperti saat Anda meninggalkannya.",
+      "task": "Beralih ke Tabel."
+    },
+    "records": {
+      "title": "Enam tahap, dan jojo menyambut setiap tahapnya",
+      "body": "Draf, Terkirim, Seleksi, Wawancara, Tawaran, Ditutup. Di papan, seret kartu ke kolom berikutnya: jojo menari saat draf terkirim, mengisi tenaga untuk wawancara, dan melompat untuk tawaran. Setiap perpindahan bisa diurungkan."
+    },
+    "keywords": {
+      "title": "Kata kunci adalah label Anda",
+      "body": "Satu set label untuk lamaran, pengingat, dan brankas. Beri label pada entri lewat tombol label di barisnya, tambahkan kata kunci baru dengan +, dan klik kanan chip untuk mengganti nama, mengganti warna, atau menghapusnya.",
+      "task": "Pilih kata kunci untuk memfilter dengannya."
+    },
+    "new": {
+      "title": "Buat apa saja",
+      "body": "Baru membuat lamaran, pengingat, entri kalender, draf pesan, tautan tersimpan, atau lowongan tersimpan. Tombol n membukanya dari mana saja selama Anda tidak sedang mengetik.",
+      "task": "Buka menu Baru."
+    },
+    "new-menu": {
+      "title": "Tidak ada yang tersimpan sampai Anda menyimpannya",
+      "body": "Masing-masing membuka formulirnya sendiri. Menutup formulir yang baru setengah terisi hanya membuang ketikan Anda.",
+      "task": "Tutup menu — tekan Esc."
+    },
+    "search": {
+      "title": "Jalan tercepat",
+      "body": "Cari setiap lamaran, pengingat, dan entri kalender, lompat ke halaman mana pun — termasuk yang tidak tercantum di bilah samping — atau jalankan salah satu operasi aplikasi.",
+      "task": "Tekan ⌘K (Ctrl K), atau klik bilah pencarian."
+    },
+    "palette": {
+      "title": "Ketik untuk menemukan apa saja",
+      "body": "Posisi, organisasi, atau tahap. Tombol panah untuk memilih, Enter untuk membuka.",
+      "task": "Tutup dengan Esc setelah selesai melihat."
+    },
+    "calendar": {
+      "title": "Semua tanggal di satu tempat",
+      "body": "Tenggat, wawancara, dan tindak lanjut adalah satu jenis entri, jadi satu entri tampil di kalender, di dasbor, dan di lamarannya. Seret ke hari lain untuk menjadwalkan ulang.",
+      "task": "Buka Kalender."
+    },
+    "vault": {
+      "title": "Brankas",
+      "body": "Semua yang menumpuk selama mencari kerja selain lamaran: pengingat, tautan tersimpan, berkas, cuplikan yang Anda tempel ke setiap formulir, orang yang Anda kenal, dan beberapa alat.",
+      "task": "Buka Brankas."
+    },
+    "files": {
+      "title": "Berkas, dipratinjau langsung",
+      "body": "Letakkan CV, pernyataan, atau lowongan. PDF, gambar, teks, dan halaman web tersimpan terbuka langsung di sini, dan setiap berkas dapat membawa catatan dan kata kunci. Berkas disimpan di browser ini, tidak diunggah.",
+      "task": "Klik berkas untuk mempratinjaunya."
+    },
+    "file-viewer": {
+      "title": "Pratinjau",
+      "body": "Baca tanpa meninggalkan halaman. Jika pembaca dokumen terhubung (Pengaturan), asisten juga dapat membaca isinya."
+    },
+    "tools": {
+      "title": "Alat",
+      "body": "Kalkulator, dasar atau ilmiah, yang menyimpan riwayat hitungannya — dan editor PDF.",
+      "task": "Buka editor PDF."
+    },
+    "pdf": {
+      "title": "Alat PDF",
+      "body": "Gabungkan beberapa PDF menjadi satu, ubah urutan atau hapus halaman, dan beri anotasi — semuanya di dalam browser ini, jadi tidak ada dokumen yang diunggah. Letakkan PDF langsung di panel ini."
+    },
+    "scout": {
+      "title": "Pencari lowongan",
+      "body": "Pencarian tersimpan yang memantau papan lowongan untuk Anda.",
+      "task": "Buka Pencari lowongan."
+    },
+    "pipelines": {
+      "title": "Alur kerja",
+      "body": "Setiap alur kerja adalah pencarian di sebuah papan lowongan (HigherEdJobs, AcademicCareers, dan lainnya). Ia berjalan sesuai jadwal atau saat Anda menekan Jalankan sekarang; temuannya menunggu sebagai saran yang Anda setujui atau buang, dan saran yang disetujui menjadi draf lamaran."
+    },
+    "statistics": {
+      "title": "Statistik",
+      "body": "Perkembangan pencarian Anda, dihitung dari entri Anda sendiri.",
+      "task": "Buka Statistik."
+    },
+    "stats": {
+      "title": "Angka, dengan batas galat yang jujur",
+      "body": "Tingkat balasan dan wawancara, corong, dan grafik mingguan — setiap angka disertai rentang nilai sebenarnya yang mungkin, karena beberapa lamaran saja adalah sampel kecil. Mengikuti filter posisi di bilah atas."
+    },
+    "graph": {
+      "title": "Graf pengetahuan",
+      "body": "Setiap entri — lamaran, pemberi kerja, orang, tanggal, berkas — adalah simpul, dan hubungan di antaranya adalah sisi. Ajukan pertanyaan dengan kata-kata atau susun sendiri, dan entri yang cocok akan disorot. Graf tidak ada di bilah samping; ⌘K membawa Anda ke sini."
+    },
+    "chat": {
+      "title": "Mengobrol dengan jojo",
+      "body": "Asisten dapat mencari, menambah, dan memperbarui entri Anda dengan alat aplikasi itu sendiri, dan bertanya sebelum mengubah apa pun kecuali Anda memintanya tidak bertanya. Asisten memerlukan model — itulah langkah berikutnya."
+    },
+    "settings": {
+      "title": "Pengaturan",
+      "body": "Model, pembaca dokumen, kata kunci, data Anda — dan setiap gestur yang dikenal jojo.",
+      "task": "Buka Pengaturan."
+    },
+    "model": {
+      "title": "Hubungkan model",
+      "body": "Pilih tempat model asisten berjalan. Server lokal — vLLM, LM Studio, llama.cpp, atau Ollama — cukup alamatnya dan entri Anda tetap di perangkat ini. OpenAI, Anthropic (Claude), OpenRouter, Groq, atau NVIDIA memerlukan kunci API. Uji koneksi memeriksanya sebelum apa pun disimpan."
+    },
+    "reader": {
+      "title": "Izinkan membaca dokumen Anda",
+      "body": "MarkItDown mengubah PDF, berkas Word, presentasi, dan spreadsheet menjadi teks yang dapat dibaca asisten. Salin dua perintah di sini ke terminal — satu untuk memasang, satu untuk menjalankan — lalu tekan Uji koneksi."
+    },
+    "keyword-manager": {
+      "title": "Kelola kata kunci Anda",
+      "body": "Tambahkan kata kunci, ganti namanya, beri warna apa pun, atau hapus. Penggantian nama berlaku di semua tempat kata kunci itu ditampilkan."
+    },
+    "backup": {
+      "title": "Simpan cadangan",
+      "body": "Membersihkan browser akan ikut menghapus entri Anda, jadi sesekali ekspor cadangan — satu berkas berisi semuanya. jojo pamer otot saat Anda melakukannya."
+    },
+    "done": {
+      "title": "Itulah turnya",
+      "body": "Urungkan adalah ⌘Z di mana saja, dan setiap perubahan tercantum di log audit di bagian bawah Pengaturan. Panduan membahas setiap layar secara berurutan — Cara menggunakan, di bilah atas — dan tur ini bisa diulang kapan saja."
+    }
+  },
+  "overlay": {
+    "progress": "Langkah {{n}} dari {{total}}",
+    "endLabel": "Akhiri tur (posisi Anda disimpan)",
+    "end": "Akhiri tur",
+    "nice": "Bagus — begitu caranya.",
+    "tryIt": "Coba: {{task}}",
+    "done": "Selesai.",
+    "announce": "Langkah {{n}} dari {{total}}: {{title}}.",
+    "announceTask": "Langkah {{n}} dari {{total}}: {{title}}. Coba: {{task}}",
+    "back": "Kembali",
+    "notNow": "Jangan sekarang",
+    "finish": "Selesai",
+    "skip": "Lewati ini",
+    "next": "Berikutnya"
+  }
+}

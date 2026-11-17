@@ -1,0 +1,122 @@
+{
+  "common": {
+    "connections_one": "{{count}} collegamento",
+    "connections_many": "{{count}} di collegamenti",
+    "connections_other": "{{count}} collegamenti",
+    "records_one": "{{count}} record",
+    "records_many": "{{count}} di record",
+    "records_other": "{{count}} record"
+  },
+  "legend": {
+    "show": "Mostra {{name}}",
+    "hide": "Nascondi {{name}}",
+    "allHidden": "Tutti i tipi di record sono nascosti.",
+    "showAll": "Mostra tutti",
+    "isA": "è un"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Grafo della conoscenza — {{records}}, {{connections}}",
+    "capped": "Sono mostrati i {{shown}} record più collegati. Altri {{dropped}} sono nell'archivio ma non in quest'area: restringi con i filtri per vederli.",
+    "description": "Ogni record è un nodo e ogni riferimento tra record è una linea. I pannelli accanto a questo grafo elencano le stesse informazioni come testo."
+  },
+  "answer": {
+    "title": "Risposta",
+    "records_one": "{{count}} record",
+    "records_many": "{{count}} di record",
+    "records_other": "{{count}} record",
+    "prompt": "Scegli un esempio, o costruisci uno schema, e la risposta compare qui e si illumina nel grafo qui sopra.",
+    "emptyTitle": "Nessun record corrisponde",
+    "clear": "Cancella la query",
+    "caption": "Record che corrispondono allo schema",
+    "columns": {
+      "record": "Record",
+      "kind": "Tipo",
+      "matched": "Corrispondenza"
+    },
+    "open": "Apri",
+    "select": "Seleziona nel grafo",
+    "via": "tramite {{rel}}",
+    "more_one": "{{names}} +{{count}} altro",
+    "more_many": "{{names}} +{{count}} altri",
+    "more_other": "{{names}} +{{count}} altri",
+    "showing": "Sono mostrati i primi {{shown}} su {{total}}. Ognuno di essi è illuminato nel grafo qui sopra."
+  },
+  "examples": {
+    "title": "Esempi svolti",
+    "nothingToAsk": "In questa sessione non c'è nulla a cui chiederlo"
+  },
+  "query": {
+    "title": "Interroga il grafo",
+    "hint": "Chiedi con una frase, o costruisci la domanda a mano",
+    "shape": "Forma della domanda",
+    "pattern": "Schema",
+    "path": "Percorso",
+    "generated": "Query generata",
+    "clear": "Cancella",
+    "sqlNote": "La forma della domanda, con le parole di SQL per leggibilità. La query che viene davvero eseguita è quella strutturata qui sopra: nulla interpreta questa riga."
+  },
+  "fields": {
+    "records": "Record",
+    "anyRecord": "Qualsiasi record",
+    "ofKind": "Di tipo",
+    "anyKind": "Qualsiasi tipo",
+    "reminder": "Promemoria",
+    "condition": "Condizione",
+    "quantifier": {
+      "has": "ha",
+      "missing": "non ha",
+      "atLeast": "ha almeno"
+    },
+    "howMany": "Quanti",
+    "orMore_one": "{{count}} o più",
+    "orMore_many": "{{count}} o più",
+    "orMore_other": "{{count}} o più",
+    "relationship": "Relazione",
+    "anyRelationship": "qualsiasi relazione",
+    "connectedTo": "Collegato a",
+    "anything": "qualsiasi cosa",
+    "keyword": "Con la parola chiave",
+    "anyKeyword": "qualsiasi parola chiave",
+    "from": "Da",
+    "to": "A"
+  },
+  "detail": {
+    "title": "Record selezionato",
+    "nothingSelected": "Nessuna selezione",
+    "pickHint": "Scegli un nodo, facendo clic o raggiungendolo con Tab e premendo Invio, per vedere a cosa è collegato e dove si trova nell'app.",
+    "open": "Apri {{type}}",
+    "openType": {
+      "application": "Apri la candidatura",
+      "organisation": "Apri l'organizzazione",
+      "role": "Apri il ruolo",
+      "item": "Apri l'elemento della cronologia",
+      "keyword": "Apri la parola chiave",
+      "link": "Apri il link",
+      "file": "Apri il file",
+      "snippet": "Apri il frammento",
+      "posting": "Apri l'annuncio salvato",
+      "match": "Apri il risultato dello scout",
+      "source": "Apri la fonte",
+      "background": "Apri \"Su di te\"",
+      "claim": "Apri la relazione"
+    },
+    "derived": "Ricavato dai tuoi record: non ha una pagina propria.",
+    "verbs": "Cosa puoi farci",
+    "noLinks": "Ancora nulla punta a questo record."
+  },
+  "ask": {
+    "notConnected": "Collega un modello locale in <settings>Impostazioni</settings> e potrai chiederlo con una frase. Il costruttore qui sotto funziona in ogni caso.",
+    "label": "Fai una domanda al grafo",
+    "stop": "Interrompi",
+    "submit": "Chiedi",
+    "again": "Chiedi qualcos'altro",
+    "suggestions": {
+      "noFollowUp": "Quali candidature non hanno un sollecito in programma?",
+      "unfiled": "Quali file non sono archiviati sotto nulla?",
+      "busy": "Quali candidature hanno più di due elementi nella cronologia?"
+    }
+  }
+}

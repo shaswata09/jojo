@@ -1,0 +1,28 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Ölçülmüş",
+        "hint": "Kendi kayıtlarınızdan sayıldı"
+      },
+      "suggested": {
+        "label": "Önerilen",
+        "hint": "Genel bir öneri ya da sizinki yerine tipik bir aramayla karşılaştırılmış"
+      }
+    },
+    "title": "Sırada ne yapmalı",
+    "intro": "Önce kayıtlarınızın desteklediğine, sonra en az emek gerektirene göre sıralandı."
+  },
+  "whatIsWorking": {
+    "countOf": "{{of}} içinden {{count}}",
+    "rate": "%{{rate}} · büyük olasılıkla {{range}}",
+    "groupReplied": "Yanıtlar, {{dimension}}",
+    "groupInterviews": "Mülakatlar, {{dimension}}",
+    "confident": "Aralıklar örtüşmüyor; bu gerçek bir fark — {{best}} emeğinizin daha fazlasını hak ediyor.",
+    "unconfident": "Aralıklar örtüşüyor; bu bir fark değil, sadece iki sayı. Daha fazla kayıt bunları ya ayıracak ya da aradaki farkı kapatacak.",
+    "tooFew_one": "{{count}} diğer grupta {{min}} kayıttan az var ve karşılaştırılmıyor.",
+    "tooFew_other": "{{count}} diğer grupta {{min}} kayıttan az var ve karşılaştırılmıyor.",
+    "title": "Ne işe yarıyor",
+    "intro": "Çubuk, gerçek oranın makul olarak bulunduğu yeri; çizgi ise sizin ölçtüğünüzü gösterir. Geniş bir bant, henüz emin olmak için kayıt sayısının az olduğu anlamına gelir."
+  }
+}

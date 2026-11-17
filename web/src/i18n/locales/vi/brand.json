@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "Các động tác của jojo",
+    "hint": "Chọn một động tác, hoặc vẽ nét của nó lên robot.",
+    "trigger": "Các động tác của jojo",
+    "triggerAria": "Các động tác của jojo và ghi công",
+    "plays": "thực hiện",
+    "modelCredit": "Mô hình robot:"
+  },
+  "theme": {
+    "toggle": "Đổi giao diện",
+    "toLight": "Chuyển sang giao diện sáng",
+    "toDark": "Chuyển sang giao diện tối"
+  },
+  "poke": "Chọc jojo"
+}

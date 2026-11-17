@@ -1,0 +1,146 @@
+{
+  "screen": {
+    "title": "Chuyển dữ liệu",
+    "subtitle": "Chuyển mọi thứ giữa điện thoại này và máy tính của bạn qua mạng cục bộ. Cả hai cần ở trên cùng một mạng. Không có gì đi ra internet và không có gì được lưu ở nơi khác.",
+    "direction": "Chiều chuyển",
+    "roles": {
+      "send": "Gửi sang máy tính",
+      "receive": "Nhận từ máy tính"
+    },
+    "onPhone": "Những gì đang có trên điện thoại này",
+    "records_other": "{{count}} bản ghi",
+    "empty": "trống",
+    "sendNote": "Gửi sẽ sao chép toàn bộ sang máy tính của bạn, và máy tính sẽ hỏi trước khi thay thế những gì nó đang giữ. Không có gì trên điện thoại này thay đổi.",
+    "receiveNote": "Nhận sẽ thay thế toàn bộ. Mọi thứ ở trên sẽ bị ghi đè bởi những gì nhận được, và không thể hoàn tác — hãy xuất dữ liệu trước nếu bạn muốn giữ lại."
+  },
+  "groups": {
+    "applications": {
+      "label": "Đơn ứng tuyển",
+      "hint": "Mọi giai đoạn, ghi chú và kết quả của từng đơn"
+    },
+    "timeline": {
+      "label": "Lời nhắc và sự kiện",
+      "hint": "{{reminders}} lời nhắc, {{events}} sự kiện có ngày"
+    },
+    "vault": {
+      "label": "Liên kết và đoạn văn bản",
+      "hint": "{{links}} liên kết · {{snippets}} đoạn văn bản"
+    },
+    "files": {
+      "label": "Tệp",
+      "hint": "CV, bản trình bày và mọi thứ khác được lưu kèm một đơn ứng tuyển"
+    },
+    "keywords": {
+      "label": "Từ khóa",
+      "hint": "Danh sách từ khóa của bạn và mọi bản ghi gắn với chúng"
+    },
+    "scout": {
+      "label": "Trình tìm việc",
+      "hint": "{{pipelines}} quy trình · {{postings}} tin tuyển dụng đã lưu · {{matches}} gợi ý"
+    },
+    "profile": {
+      "label": "Hồ sơ cá nhân",
+      "hint": "Thông tin cơ bản, liên kết, vị trí mục tiêu và từ khóa đối chiếu"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "không có trên thiết bị này",
+    "noRandom": "Thiết bị này không có bộ sinh số ngẫu nhiên an toàn, nên jojo sẽ không thống nhất khóa trên đó. Tính năng ghép nối bị tắt thay vì thực hiện một cách kém an toàn.",
+    "scan": "Quét mã",
+    "retry": "Thử lại",
+    "cancel": "Hủy"
+  },
+  "send": {
+    "title": "Gửi sang máy tính",
+    "hint": "hướng vào mã trên máy tính của bạn",
+    "outcome": {
+      "applied": "Máy tính của bạn đã có các bản ghi",
+      "declined": "Máy tính của bạn đã giữ lại bản ghi của nó",
+      "failed": "Máy tính của bạn không nhận được các bản ghi",
+      "handed": "Đã chuyển giao mọi thứ"
+    },
+    "detail": {
+      "waiting": "Máy tính sẽ hỏi trước khi thay thế bất cứ thứ gì — hãy xác nhận trên đó để hoàn tất. Không có gì trên điện thoại này thay đổi.",
+      "unknown": "Máy tính không cho biết đã nhận chúng hay chưa. Không có gì trên điện thoại này thay đổi.",
+      "applied": "Cả hai thiết bị giờ đang giữ cùng các bản ghi. Không có gì trên điện thoại này thay đổi.",
+      "notReplaced": "Không có gì bị thay thế ở đó. Không có gì trên điện thoại này thay đổi."
+    },
+    "unreadable_other": "{{count}} tài liệu không đọc được và đã bị để lại.",
+    "again": "Gửi lại",
+    "typeThis": "Nhập mã này trên máy tính của bạn",
+    "paired": "Đã ghép nối. Điện thoại này đang chờ trong mạng cục bộ để máy tính gửi yêu cầu.",
+    "handing": "Đang chuyển giao các bản ghi…",
+    "handingProgress": "Đang chuyển giao các bản ghi — {{served}}/{{chunks}}.",
+    "intro": "Trên máy tính, mở Chuyển dữ liệu, chọn Nhận từ điện thoại, và quét mã hiện ra. Cả hai cần ở trên cùng một mạng cục bộ.",
+    "gatherFailed": "jojo không tập hợp được các bản ghi trên điện thoại này, nên không có gì được gửi. Hãy thử lại."
+  },
+  "receive": {
+    "title": "Nhận",
+    "hint": "hướng vào mã trên thiết bị kia",
+    "complete": "Đã chuyển dữ liệu xong",
+    "done": "Xong",
+    "typeThis": "Nhập mã này trên thiết bị kia",
+    "paired": "Đã ghép nối. Điện thoại này chỉ đang lắng nghe trong mạng cục bộ của bạn, không ở đâu khác.",
+    "progress": "Đang nhận — đã được {{size}}. Không có gì ở đây thay đổi cho đến khi bạn đồng ý.",
+    "intro": "Mở jojo trên máy tính, chọn Chuyển dữ liệu, và quét mã hiện ra.",
+    "confirm": {
+      "title": "Thay thế mọi thứ trên điện thoại này?",
+      "description": "{{contents}}. {{replaces}}, và không thể hoàn tác.",
+      "confirm": "Thay thế"
+    },
+    "unrestorable": "Không thể khôi phục những gì đã nhận: {{reason}}. Không có gì trên điện thoại này thay đổi."
+  },
+  "landed": {
+    "plain_other": "Có {{count}} bản ghi trên điện thoại này.",
+    "withDocuments_other": "Có {{count}} bản ghi trên điện thoại này, {{documents}}.",
+    "documents_other": "{{count}} tài liệu",
+    "skipped_other": "{{count}} mục không đọc được."
+  },
+  "scanner": {
+    "point": "Hướng camera vào mã trên trang Chuyển dữ liệu của thiết bị kia.",
+    "advice": {
+      "denied": "jojo cần camera để đọc mã trên thiết bị kia. Hãy cho phép, hoặc nhập mã bằng tay.",
+      "unsupported": "Điện thoại này không thể mở camera cho jojo.",
+      "failed": "Camera không khởi động được. Hãy đóng jojo rồi mở lại."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Đọc mã ghép nối",
+      "message": "jojo cần camera để đọc mã hiện trên thiết bị kia. Không có gì được ghi lại, và không hình ảnh nào rời khỏi điện thoại này.",
+      "allow": "Cho phép",
+      "notNow": "Để sau"
+    },
+    "refused": {
+      "denied": "jojo cần camera để đọc mã trên thiết bị kia.",
+      "blocked": "Camera đang bị tắt đối với jojo. Hãy bật trong Cài đặt của điện thoại, mục Ứng dụng, để ghép nối bằng cách quét mã."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Mã đó không phải lời mời ghép nối của jojo. Hãy quét mã trên thiết bị kia.",
+      "noNetwork": "Điện thoại này không ở trong mạng cục bộ nào. jojo chỉ chuyển dữ liệu qua mạng cục bộ, nên cả hai thiết bị cần ở trên cùng một mạng.",
+      "notLocal": "Điện thoại này đang ở trong một mạng mà jojo sẽ không chuyển dữ liệu qua. jojo chỉ kết nối tới địa chỉ mạng riêng, nên các bản ghi của bạn không bao giờ đi qua internet.",
+      "noSocket": "jojo không mở được kết nối trên điện thoại này. Hãy thử lại."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "Bộ nhớ tạm đang trống. Hãy sao chép một bản sao lưu jojo trước, rồi dán vào đây.",
+    "fileEmpty": "Tệp đó trống. Không có gì trên điện thoại này thay đổi.",
+    "notBackup": "đó không phải bản sao lưu jojo",
+    "unrestorable": {
+      "file": "Không thể khôi phục tệp đó: {{reason}}. Không có gì trên điện thoại này thay đổi.",
+      "clipboard": "Không thể khôi phục nội dung trong bộ nhớ tạm: {{reason}}. Không có gì trên điện thoại này thay đổi."
+    },
+    "noRecords": {
+      "file": "Tệp đó là một bản sao lưu không có bản ghi nào. Không có gì trên điện thoại này thay đổi — khôi phục nó sẽ làm trống điện thoại này.",
+      "clipboard": "Nội dung trong bộ nhớ tạm là một bản sao lưu không có bản ghi nào. Không có gì trên điện thoại này thay đổi — khôi phục nó sẽ làm trống điện thoại này."
+    },
+    "unreadable": "Không đọc được tệp đó. Không có gì trên điện thoại này thay đổi.",
+    "noPicker": "Điện thoại này không có ứng dụng nào để chọn tệp JSON hoặc tệp văn bản.",
+    "openFailed": "Không mở được tệp: {{detail}}",
+    "failedTitle": "Không có gì được nhập",
+    "restoredTitle": "Đã khôi phục bản sao lưu"
+  }
+}

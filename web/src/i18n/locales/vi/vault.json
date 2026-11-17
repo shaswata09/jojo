@@ -1,0 +1,529 @@
+{
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "undo": "Hoàn tác",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "close": "Đóng",
+    "duplicate": "Nhân bản",
+    "deleteFailed": "Không xóa được",
+    "deleted": "Đã xóa {{title}}",
+    "unsaved": "Có thay đổi chưa lưu",
+    "saved": "Đã lưu {{title}}",
+    "showIt": "Hiện nó",
+    "copyBlocked": "Trình duyệt đã chặn việc sao chép",
+    "updated": "Đã cập nhật {{title}}",
+    "saveChanges": "Lưu thay đổi"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Tệp chưa xếp vào đơn ứng tuyển nào",
+      "label": "Chưa xếp"
+    },
+    "inlineEdit": {
+      "needsName": "Tệp cần có tên"
+    },
+    "intake": {
+      "tooLarge": "{{name}} quá lớn để kiểm tra",
+      "tooLargeDescription": "Tệp đã được xếp, và jojo hiển thị nó với mọi địa chỉ web bên trong bị chặn và các liên kết bị tắt, nên việc xem ở đây không truy cập gì trên mạng — nhưng những gì nó tải từ web sẽ bị thiếu.",
+      "addresses_other": "{{name}} chứa {{count}} địa chỉ web",
+      "addressesDescription_other": "Tệp được xếp đúng như bạn thả vào, và jojo hiển thị nó với mọi địa chỉ đó bị chặn và các liên kết bị tắt, nên việc xem ở đây không truy cập gì trên mạng. Hình ảnh hoặc kiểu dáng nó tải từ web sẽ bị thiếu.",
+      "folders_other": "Có vẻ đó là thư mục",
+      "foldersDescription": "jojo xếp từng tài liệu một. Hãy mở thư mục và thả các tệp bên trong vào.",
+      "reattached": "{{name}} đã được đính kèm lại",
+      "reattachedDescription": "Hàng này đã có sẵn nhưng không có tài liệu. Giờ nó đã có.",
+      "stillUnsaved": "Vẫn không lưu được {{name}}",
+      "stillUnsavedDescription": "Trình duyệt này lại từ chối lưu nó — có lẽ bộ nhớ vẫn đầy.",
+      "unsaved": "{{name}} đã được xếp nhưng chưa được lưu",
+      "unsavedDescription": "Hàng đã có ở đây, nhưng trình duyệt này từ chối lưu tài liệu — thường là do bộ nhớ đã đầy. Hãy giải phóng dung lượng và thả lại cùng tệp đó; nó sẽ được đính kèm vào hàng này thay vì tạo hàng thứ hai.",
+      "alreadyHere_other": "Tệp đó đã có ở đây",
+      "alreadyHereDescription": "Một tệp cùng tên đã có trong Kho lưu trữ.",
+      "addedOne": "Đã thêm {{name}}",
+      "addedMany_other": "Đã thêm {{count}} tệp",
+      "addedHidden": "Đã xếp vào {{bucket}} — bị ẩn khi bộ lọc từ khóa đang bật.",
+      "addedHiddenVault": "Đã xếp vào Kho lưu trữ ở mục {{bucket}} — bị ẩn khi bộ lọc từ khóa đang bật.",
+      "addedDescription": "Đã xếp vào {{bucket}} và lưu trong trình duyệt này. Không có gì được tải lên đâu cả.",
+      "addedDescriptionVault": "Đã xếp vào Kho lưu trữ ở mục {{bucket}} và lưu trong trình duyệt này. Không có gì được tải lên đâu cả.",
+      "skipped_other": "Đã bỏ qua {{count}}",
+      "skippedDescription": "Một tệp cùng tên đã có trong Kho lưu trữ.",
+      "foldersSkipped_other": "Đã bỏ qua {{count}} thư mục"
+    },
+    "row": {
+      "fileName": "Tên tệp",
+      "renameHint": "Đổi tên tệp này",
+      "onDevice": "trên thiết bị này",
+      "viewing": "Đang xem",
+      "preview": "Xem trước",
+      "rename": "Đổi tên",
+      "editNote": "Sửa ghi chú",
+      "addNote": "Thêm ghi chú",
+      "changeApplications": "Đổi đơn ứng tuyển",
+      "fileUnder": "Xếp vào một đơn ứng tuyển",
+      "readIntoProfile": "Đọc vào hồ sơ cá nhân"
+    },
+    "add": "Thêm tệp",
+    "filterLabel": "Lọc tệp theo nhóm",
+    "searchLabel": "Tìm tệp",
+    "searchPlaceholder": "Tìm tên hoặc ghi chú",
+    "toast": {
+      "renamed": "Đã đổi tên {{name}}",
+      "was": "Tên cũ là {{name}}.",
+      "noteSaved": "Đã lưu ghi chú của {{name}}",
+      "noteCleared": "Đã xóa ghi chú của {{name}}",
+      "noteClearedDescription": "Hàng vẫn giữ tên, nhóm và từ khóa.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "Tệp hiện trong từng đơn đó, và đồ thị có thể tìm thấy nó từ bất kỳ đơn nào.",
+      "unfiledDescription": "Tệp vẫn ở trong Kho lưu trữ, không xếp vào đâu."
+    },
+    "empty": {
+      "zeroTitle": "Chưa có tệp nào",
+      "zeroDescription": "Thả một tin tuyển dụng, một bài báo hoặc một bản nháp vào đây — hoặc thêm từ máy tính của bạn.",
+      "search": "Không có tệp nào nhắc đến \"{{query}}\" trong tên, ghi chú hoặc nhóm.",
+      "both": "Không có tệp nào trong {{bucket}} mang các từ khóa đã chọn.",
+      "bucketTitle": "Không có gì trong {{bucket}}",
+      "bucketDescription_other": "{{count}} tệp được xếp trong các nhóm khác.",
+      "showAll": "Hiện tất cả các nhóm",
+      "keywordsTitle": "Không có tệp nào mang các từ khóa đó",
+      "allFiledTitle": "Mọi tệp đều đã được xếp vào một đơn ứng tuyển",
+      "allFiledDescription_other": "Cả {{count}} tệp. Không có tệp nào nằm lẻ loi.",
+      "unfiledKeywords": "Không có tệp chưa xếp nào mang các từ khóa đã chọn.",
+      "unfiledBucket": "Không có tệp chưa xếp nào trong {{bucket}}."
+    },
+    "drop": {
+      "title": "Thả để thêm vào {{bucket}}",
+      "description": "Tên, kích thước và loại tệp được đọc. Không có gì được tải lên.",
+      "hint": "Thả tệp vào bất kỳ đâu trên bảng này để thêm vào {{bucket}}."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Không phải mọi thứ thả vào đều được dùng",
+      "nothing": "Không có gì để mở"
+    },
+    "save": {
+      "nameLabel": "Tên cho tệp mới",
+      "working": "Đang xử lý…",
+      "alsoDownload": "Đồng thời tải xuống",
+      "footnote": "Kết quả được xếp thành một tài liệu mới — không có gì trong các tệp gốc bị thay đổi. Nó được tạo ngay trong trình duyệt của bạn, và không phần nào bị tải lên.",
+      "workingSpoken": "Đang xử lý tài liệu"
+    },
+    "thumb": {
+      "turned": "{{label}}, đã xoay {{degrees}} độ",
+      "noPreview": "Không có bản xem trước"
+    },
+    "source": {
+      "fromVault": "{{label}} từ Kho lưu trữ",
+      "noneInVault": "Chưa có PDF nào trong Kho lưu trữ",
+      "choose": "Chọn từ Kho lưu trữ…",
+      "device": "Từ thiết bị này",
+      "fromDevice": "{{label}} từ thiết bị này",
+      "dropHintEmpty": "Hoặc thả một PDF vào bất kỳ đâu trên thẻ này. Các tệp bạn lưu ở đây sẽ hiện trong danh sách này.",
+      "dropHint": "Hoặc thả một PDF vào bất kỳ đâu trên thẻ này."
+    },
+    "modes": {
+      "merge": "Gộp",
+      "pages": "Trang",
+      "annotate": "Chú thích"
+    },
+    "editor": {
+      "title": "Trình sửa PDF",
+      "hint": "Gộp, sắp xếp lại và chú thích PDF. Mọi thứ chạy trong trình duyệt này — không tài liệu nào bị tải lên.",
+      "operation": "Thao tác PDF",
+      "dropMerge": "Thả PDF để thêm vào bản gộp",
+      "dropOpen": "Thả một PDF để mở"
+    },
+    "errors": {
+      "gone": "{{name}} không còn được lưu trữ, nên không mở được.",
+      "noRoom": "{{name}} đã được xếp, nhưng dữ liệu của nó không vừa với bộ nhớ của trình duyệt này."
+    },
+    "saved": "Đã lưu {{name}}",
+    "merge": {
+      "move": "Di chuyển {{name}}, vị trí {{position}}/{{total}}",
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "fromDevice": "· từ thiết bị này",
+      "allPages": "Tất cả các trang",
+      "rangeLabel": "Các trang lấy từ {{name}}",
+      "remove": "Bỏ {{name}} khỏi bản gộp",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{pages}} từ {{documents}}, xếp vào {{bucket}}. Các bản gốc không bị thay đổi.",
+      "pages_other": "{{count}} trang",
+      "documents_other": "{{count}} tài liệu",
+      "addLabel": "Thêm một PDF để gộp",
+      "empty": "Thêm hai PDF trở lên, hoặc thả chúng vào thẻ này. Chúng được nối từ trên xuống dưới — kéo một hàng ở mép trái để đổi thứ tự — và các bản gốc được giữ nguyên.",
+      "position": "vị trí {{position}}/{{total}}, {{name}}",
+      "hint": "Các khoảng như 1-3, 7, 9- lấy một phần tài liệu. Để trống ô để lấy toàn bộ.",
+      "action": "Gộp và lưu"
+    },
+    "pages": {
+      "savedDescription_other": "{{count}} trang, xếp vào {{bucket}}. {{name}} không thay đổi.",
+      "chooseLabel": "Chọn một PDF để sắp xếp",
+      "empty": "Chọn một PDF. Bạn có thể xoay trang, bỏ trang, đổi thứ tự trang, và chỉ giữ lại một phần.",
+      "kept_other": "· giữ {{kept}}/{{count}} trang",
+      "startOver": "Làm lại từ đầu",
+      "page": "Trang {{number}}",
+      "was": " · trước là {{number}}",
+      "earlier": "Đưa trang {{number}} lên trước",
+      "anticlockwise": "Xoay trang {{number}} ngược chiều kim đồng hồ",
+      "clockwise": "Xoay trang {{number}} theo chiều kim đồng hồ",
+      "remove": "Bỏ trang {{number}}",
+      "later": "Đưa trang {{number}} ra sau",
+      "hint": "Xoay, di chuyển hoặc bỏ một trang thì nút này sẽ dùng được.",
+      "action": "Lưu các trang"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Tô sáng",
+        "comment": "Bình luận"
+      },
+      "savedDescription": "{{summary}}, xếp vào {{bucket}}. {{name}} không thay đổi.",
+      "chooseLabel": "Chọn một PDF để chú thích",
+      "empty": "Chọn một PDF. Chọn văn bản trên trang để tô sáng, hoặc chuyển sang Bình luận và nhấp vào chỗ cần ghi chú.",
+      "toolLabel": "Công cụ đánh dấu",
+      "colour": "Màu tô sáng",
+      "previousPage": "Trang trước",
+      "pageOf": "Trang {{page}}/{{total}}",
+      "nextPage": "Trang sau",
+      "zoom": "Thu phóng",
+      "highlightHint": "Chọn các từ trên trang — chọn qua nhiều dòng cũng được — và chúng sẽ được đánh dấu khi bạn thả chuột.",
+      "commentHint": "Nhấp vào chỗ trên trang cần đặt bình luận.",
+      "commentPlaceholder": "Bình luận là gì?",
+      "notePlaceholder": "Thêm ghi chú cho mục này…",
+      "commentLabel": "Bình luận ở trang {{number}}",
+      "noteLabel": "Ghi chú cho phần tô sáng {{excerpt}}",
+      "removeMark": "Bỏ dấu này",
+      "hintEmpty": "Hãy tô sáng văn bản hoặc thêm bình luận trước.",
+      "hint": "{{summary}} sẽ được ghi vào.",
+      "action": "Lưu bản đã chú thích"
+    }
+  },
+  "instruments": {
+    "calculator": "Máy tính",
+    "pdf": "Trình sửa PDF",
+    "label": "Công cụ nào",
+    "loading": "Đang chuẩn bị công cụ PDF…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Tin tuyển dụng này không có bản lưu nào trên thiết bị này. Bản lưu được giữ ở nơi tạo ra nó, nên bản tạo trên điện thoại sẽ không có ở đây — và một hàng khôi phục từ bản sao lưu chỉ mang theo bản ghi mà không có trang.",
+      "stored": "Trình duyệt hiển thị được PDF nhưng không hiển thị được tệp {{kind}}. Tài liệu đã được lưu — Lưu sẽ chuyển nó cho ứng dụng của bạn mở.",
+      "missing": "Trình duyệt hiển thị được PDF nhưng không hiển thị được tệp {{kind}} — và hàng này không có tài liệu lưu trữ nào để chuyển cho ứng dụng khác."
+    },
+    "dialogDescription": "Bản xem trước của {{name}}, được xếp vào đơn ứng tuyển này. Nhấn Escape để quay lại bản ghi.",
+    "noteSaved": "Đã lưu ghi chú cho {{name}}",
+    "noteSavedDescription": "Ghi chú hiện cạnh tệp này ở mọi nơi Kho lưu trữ liệt kê nó.",
+    "noteEmptyDescription": "Ghi chú giờ đã trống, nên không có gì hiện cạnh tệp này.",
+    "captured": "{{name}}, như lúc được lưu",
+    "previewTitle": "Bản xem trước {{name}}",
+    "asText": "{{name}}, dạng văn bản",
+    "truncated": "Chỉ hiển thị megabyte đầu tiên. Lưu sẽ mở toàn bộ tệp trong ứng dụng của bạn.",
+    "failedTitle": "Trình duyệt này không mở được bản xem trước",
+    "failedDescription": "{{error}}. Bản ghi của tệp trong Kho lưu trữ không bị ảnh hưởng — chỉ có bản xem trước là không tạo được.",
+    "noPreviewTitle": "Không có bản xem trước cho loại tệp này",
+    "capturedFrom": "Lưu từ {{host}}",
+    "fullScreen": "Mở bản xem trước toàn màn hình",
+    "fullScreenDescription": "{{name}}, toàn màn hình, kèm bảng ghi chú. Nhấn Escape để quay lại.",
+    "notes": {
+      "title": "Ghi chú",
+      "hide": "Ẩn bảng ghi chú",
+      "show": "Hiện bảng ghi chú",
+      "hint": "Được lưu kèm {{name}}, và hiển thị ở mọi nơi tệp này được liệt kê.",
+      "label": "Ghi chú về {{name}}",
+      "placeholder": "Điều quan trọng trong tài liệu này — hạn chót ẩn ở trang 3, cần hỏi ai về nó…",
+      "saved": "Đã lưu",
+      "save": "Lưu ghi chú"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Tạm hoãn hoặc dời lời nhắc này",
+      "label": "Tạm hoãn \"{{title}}\" — {{when}}",
+      "heading": "Tạm hoãn",
+      "pickDate": "Chọn ngày",
+      "move": "Dời"
+    },
+    "row": {
+      "markNotDone": "Đánh dấu \"{{title}}\" là chưa xong",
+      "markDone": "Đánh dấu \"{{title}}\" là đã xong",
+      "draftReply": "Soạn thư trả lời"
+    },
+    "relatedTwo": "{{first}} và {{second}}",
+    "relatedMany_other": "{{count}} đơn ứng tuyển",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (bản sao)",
+    "add": "Thêm lời nhắc",
+    "filterLabel": "Lọc lời nhắc theo thời hạn",
+    "searchLabel": "Tìm lời nhắc",
+    "searchPlaceholder": "Tìm tiêu đề, ghi chú hoặc công việc",
+    "toast": {
+      "reopened": "Đã mở lại {{title}}",
+      "completed": "Đã hoàn thành {{title}}",
+      "reopenedDescription": "Đã trở lại đúng ngày của nó, và trở lại Tổng quan nếu đó là một lần liên hệ lại.",
+      "completedDescription": "Đã xếp vào mục Đã hoàn thành, và rời khỏi Tổng quan.",
+      "moved": "Đã dời {{title}}",
+      "nowDue": "Giờ đến hạn {{date}} · {{when}}",
+      "duplicated": "Đã nhân bản {{title}}",
+      "duplicatedDescription": "Bản sao đang mở và đến hạn {{date}}.",
+      "stillOnList": "{{title}} vẫn còn trong danh sách.",
+      "deletedDescription": "{{description}} — đã biến mất khỏi lịch cũng như khỏi danh sách này."
+    },
+    "empty": {
+      "zeroTitle": "Chưa có lời nhắc nào",
+      "zeroDescription": "Lời nhắc là một lần nhắc có ngày — liên hệ lại người viết thư giới thiệu, kiểm tra cổng nộp đơn, gửi thư cảm ơn. Những lời nhắc bạn đánh dấu là liên hệ lại cũng hiện trên Tổng quan cho đến khi bạn đánh dấu hoàn thành.",
+      "search": "Không có lời nhắc nào nhắc đến \"{{query}}\" trong tiêu đề, ghi chú, loại hoặc đơn ứng tuyển.",
+      "both": "Không có lời nhắc nào ở mục {{bucket}} mang các từ khóa đã chọn.",
+      "doneTitle": "Chưa hoàn thành mục nào",
+      "doneDescription": "Các lời nhắc bạn đánh dấu hoàn thành được tập hợp ở đây, nên lỡ đánh dấu nhầm vẫn tìm lại được.",
+      "showAll": "Hiện tất cả lời nhắc",
+      "bucketTitle": "Không có gì ở mục {{bucket}}",
+      "bucketDescription_other": "{{count}} lời nhắc được xếp trong các nhóm khác.",
+      "keywordsTitle": "Không có lời nhắc nào mang các từ khóa đó"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "Bộ lọc từ khóa ở đầu trang là thứ đang ẩn chúng.",
+    "searchTitle": "Không có gì khớp với tìm kiếm đó",
+    "clearSearch": "Xóa tìm kiếm",
+    "filtersTitle": "Không có gì khớp với các bộ lọc đó",
+    "clearFilters": "Bỏ bộ lọc",
+    "showFiled": "Hiện cả các tệp đã xếp",
+    "bothTitle": "Không có gì khớp với cả hai bộ lọc",
+    "clearBoth": "Bỏ cả hai bộ lọc",
+    "clearKeywords": "Bỏ từ khóa"
+  },
+  "capture": {
+    "posting": "Tin tuyển dụng",
+    "savedOne": "Đã lưu {{name}} vào Kho lưu trữ",
+    "savedMany_other": "Đã lưu {{count}} tin tuyển dụng vào Kho lưu trữ",
+    "suggested": "Chưa xếp vào đơn ứng tuyển nào. {{name}} có vẻ phù hợp — hãy xếp nó từ hàng trong Kho lưu trữ.",
+    "unfiled": "Chưa xếp vào đơn ứng tuyển nào. Bạn có thể xếp nó từ hàng trong Kho lưu trữ bất cứ lúc nào.",
+    "dropped_other": "{{count}} tài nguyên không giữ lại được, nên một số phần có thể trông đơn giản hơn.",
+    "unstored_other": "{{count}} mục không lưu được trên thiết bị này — bản ghi thì có, nhưng trang thì không.",
+    "refusedOne": "Một bản lưu trang không giữ lại được",
+    "refusedMany_other": "{{count}} bản lưu trang không giữ lại được",
+    "waitingOne": "Một tin tuyển dụng đang chờ được lưu ở đây.",
+    "waitingMany_other": "{{count}} tin tuyển dụng đang chờ được lưu ở đây.",
+    "source": "Được lưu bằng tiện ích mở rộng jojo, vẫn còn trên thiết bị này.",
+    "saving": "Đang lưu…",
+    "saveIt": "Lưu",
+    "saveThem": "Lưu tất cả"
+  },
+  "picker": {
+    "none": "Không có đơn ứng tuyển",
+    "label": "Đơn ứng tuyển liên quan",
+    "searchLabel": "Tìm đơn ứng tuyển",
+    "searchPlaceholder": "Tìm đơn ứng tuyển…",
+    "noneYet": "Chưa có đơn ứng tuyển nào.",
+    "noMatch": "Không có đơn ứng tuyển nào khớp.",
+    "unfile": {
+      "record": "Gỡ bản ghi này khỏi đơn",
+      "file": "Gỡ tệp này khỏi đơn",
+      "link": "Gỡ liên kết này khỏi đơn",
+      "snippet": "Gỡ đoạn văn bản này khỏi đơn",
+      "person": "Gỡ người này khỏi đơn",
+      "conversation": "Gỡ cuộc trò chuyện này khỏi đơn"
+    }
+  },
+  "snippets": {
+    "openInVault": "Mở trong Kho lưu trữ",
+    "card": {
+      "edit": "Sửa đoạn văn bản này",
+      "moveTo": "Chuyển sang"
+    },
+    "editor": {
+      "editTitle": "Sửa đoạn văn bản",
+      "newTitle": "Đoạn văn bản mới",
+      "title": {
+        "label": "Tiêu đề",
+        "placeholder": "vd. Vì sao chọn khoa này"
+      },
+      "kind": {
+        "label": "Loại",
+        "hint": "Nơi nó được xếp, và nhãn nào hiển thị trong danh sách."
+      },
+      "application": {
+        "label": "Đơn ứng tuyển liên quan",
+        "hint": "Bao nhiêu công việc cũng được. Nó sẽ hiện trên trang của từng công việc đó."
+      },
+      "text": {
+        "label": "Nội dung",
+        "hint": "Cỡ chữ, màu, in đậm, in nghiêng, gạch chân và gạch ngang được lưu cùng nội dung. Danh sách và bảng được giữ dưới dạng các dòng văn bản thuần.",
+        "placeholder": "Viết đoạn văn mà bạn cứ phải viết lại mãi…"
+      },
+      "fullScreen": "Viết toàn màn hình",
+      "keywords": {
+        "label": "Từ khóa",
+        "hint": "Dùng chung với đơn ứng tuyển, lời nhắc và tệp — lọc theo một từ khóa sẽ tìm ra tất cả."
+      },
+      "savedNote": "Đã lưu vào cơ sở dữ liệu trong trình duyệt này — nó vẫn ở đây khi bạn quay lại.",
+      "fullScreenDescription": "Đang sửa đoạn văn bản ở chế độ toàn màn hình. Nhấn Escape để quay lại."
+    },
+    "errors": {
+      "title": "Hãy đặt tên cho đoạn văn bản.",
+      "body": "Hãy viết nội dung bạn muốn dán sau này."
+    },
+    "toast": {
+      "filed": "Đã xếp vào {{tag}}, sẵn sàng để sao chép từ danh sách.",
+      "filedHidden": "Đã xếp vào {{tag}} — bị ẩn bởi các bộ lọc phía trên danh sách.",
+      "duplicated": "Bản sao được xếp vào {{tag}}, sẵn sàng để viết lại.",
+      "moved": "Đã xếp vào {{tag}}.",
+      "movedOut": "Đã xếp vào {{tag}} — nằm ngoài danh sách {{filter}} bạn đang xem.",
+      "stillThere": "{{title}} vẫn còn trong Kho lưu trữ.",
+      "stillThereUnnamed": "Đoạn văn bản vẫn còn trong Kho lưu trữ.",
+      "deletedUnnamed": "Đã xóa đoạn văn bản",
+      "deletedDescription": "Nội dung và các từ khóa của nó cũng bị xóa theo."
+    },
+    "empty": {
+      "zeroTitle": "Chưa có đoạn văn bản nào",
+      "zeroDescription": "Lưu những đoạn văn bạn cứ phải viết lại — tiểu sử, lý do chọn khoa này, email liên hệ lại.",
+      "search": "Không có đoạn văn bản nào nhắc đến \"{{query}}\" trong tên, nội dung hoặc loại.",
+      "both": "Không có đoạn văn bản {{tag}} nào mang các từ khóa đã chọn.",
+      "bucketTitle": "Không có đoạn văn bản {{tag}} nào",
+      "bucketDescription_other": "{{count}} đoạn văn bản được xếp trong các loại khác.",
+      "showAll": "Hiện tất cả các loại",
+      "keywordsTitle": "Không có đoạn văn bản nào mang các từ khóa đó"
+    },
+    "filterLabel": "Lọc đoạn văn bản theo loại",
+    "searchLabel": "Tìm đoạn văn bản",
+    "searchPlaceholder": "Tìm tên hoặc nội dung",
+    "copied": "Đã sao chép đoạn văn bản vào bộ nhớ tạm",
+    "discard": {
+      "title": "Bỏ các thay đổi chưa lưu?",
+      "description": "\"{{title}}\" có chỉnh sửa chưa được lưu. Rời đi bây giờ sẽ làm mất chúng, và không thể hoàn tác.",
+      "untitled": "Đoạn văn bản chưa có tiêu đề",
+      "confirm": "Bỏ thay đổi"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Cơ bản",
+      "scientific": "Khoa học"
+    },
+    "mode": "Chế độ máy tính",
+    "ops": {
+      "plus": "cộng",
+      "minus": "trừ",
+      "times": "nhân",
+      "dividedBy": "chia cho",
+      "power": "mũ"
+    },
+    "history": "Lịch sử",
+    "plusMinus": "cộng hoặc trừ",
+    "backspace": "Xóa lùi",
+    "clear": "Xóa",
+    "empty": "Chưa có gì. Các phép tính đã xong sẽ hiện ở đây.",
+    "use": "Dùng {{value}}"
+  },
+  "links": {
+    "newTab": "Mở trong thẻ mới",
+    "errors": {
+      "title": "Hãy đặt tiêu đề cho liên kết.",
+      "url": "Cần có tên máy chủ, ví dụ jobs.rice.edu/postings.",
+      "empty": "Hãy dán một URL để lưu."
+    },
+    "fields": {
+      "title": "Tiêu đề",
+      "url": "URL",
+      "category": "Danh mục",
+      "applicationHint": "Xếp liên kết vào một công việc, để cả hai phía đều biết tới nhau.",
+      "note": "Ghi chú",
+      "noteHint": "Một dòng về lý do đáng lưu lại."
+    },
+    "add": "Thêm liên kết",
+    "toast": {
+      "saved": "Đã xếp vào {{category}}, với tiêu đề đọc từ URL.",
+      "savedHidden": "Đã xếp vào {{category}} — bị ẩn khi bộ lọc từ khóa đang bật.",
+      "duplicated": "Bản sao được xếp vào {{category}}, sẵn sàng để sửa.",
+      "deletedDescription": "Đã biến mất khỏi Kho lưu trữ. Trang mà nó trỏ tới không bị ảnh hưởng."
+    },
+    "empty": {
+      "zeroTitle": "Chưa lưu liên kết nào",
+      "zeroDescription": "Lưu một URL — một tin tuyển dụng, trang của khoa, một người bạn được khuyên nên liên hệ. Tiêu đề được đọc từ địa chỉ.",
+      "search": "Không có liên kết nào nhắc đến \"{{query}}\" trong tiêu đề, địa chỉ, ghi chú hoặc danh mục.",
+      "both": "Không có liên kết {{category}} nào mang các từ khóa đã chọn.",
+      "bucketTitle": "Không có liên kết nào trong {{category}}",
+      "bucketDescription_other": "{{count}} liên kết được xếp trong các danh mục khác.",
+      "showAll": "Hiện tất cả danh mục",
+      "keywordsTitle": "Không có liên kết nào mang các từ khóa đó"
+    },
+    "filterLabel": "Lọc liên kết theo danh mục",
+    "searchLabel": "Tìm liên kết",
+    "searchPlaceholder": "Tìm tiêu đề, địa chỉ hoặc ghi chú",
+    "form": {
+      "label": "Lưu liên kết",
+      "hint": "Được lưu vào {{category}}, với tiêu đề đọc từ URL. Sửa bất kỳ hàng nào để thay đổi.",
+      "placeholder": "Dán một URL…",
+      "save": "Lưu liên kết"
+    }
+  },
+  "people": {
+    "add": "Thêm người",
+    "searchLabel": "Tìm người liên hệ",
+    "searchPlaceholder": "Tìm tên, vai trò hoặc ghi chú",
+    "applicationsList": "Danh sách đơn ứng tuyển",
+    "toast": {
+      "removed": "Đã gỡ người liên hệ",
+      "saved": "Đã lưu người liên hệ"
+    },
+    "empty": {
+      "zeroTitle": "Chưa có ai",
+      "zeroDescription": "Người viết thư giới thiệu, trưởng hội đồng tuyển chọn, nhà tuyển dụng — bất kỳ ai liên quan đến việc tìm việc. Xếp họ vào các công việc họ được nêu tên và họ cũng sẽ hiện trên các bản ghi đó.",
+      "searchTitle": "Không có ai khớp",
+      "searchDescription": "Hãy thử một phần tên, vai trò, hoặc nơi họ làm việc."
+    },
+    "namedOn": {
+      "recommender": "Người viết thư giới thiệu cho {{names}}",
+      "contact": "Đầu mối liên hệ tại {{names}}",
+      "named": "Được nêu tên trong {{names}}"
+    },
+    "form": {
+      "name": "Tên",
+      "nameError": "Tên là thông tin duy nhất bắt buộc.",
+      "namePlaceholder": "vd. GS. Ngozi Okafor",
+      "role": "Vai trò",
+      "rolePlaceholder": "vd. Người viết thư giới thiệu, trưởng hội đồng, nhà tuyển dụng",
+      "affiliation": "Đơn vị công tác",
+      "affiliationPlaceholder": "vd. Rice",
+      "affiliationHint": "Nơi họ làm việc. Không liên kết với nhà tuyển dụng bạn đã ứng tuyển.",
+      "email": "Email",
+      "phone": "Điện thoại",
+      "namedOn": "Được nêu tên trong",
+      "namedOnHint": "Mọi công việc họ viết thư, phỏng vấn sàng lọc hoặc chủ trì.",
+      "notePlaceholder": "Họ đã nói gì, họ còn nợ bạn gì, khi nào cần nhắc.",
+      "save": "Lưu người liên hệ"
+    }
+  },
+  "referee": {
+    "title": "Đơn ứng tuyển cho {{name}}",
+    "description": "Chọn những đơn cần gửi và cho biết bạn muốn mỗi thư giới thiệu nhấn mạnh điều gì. Điểm nhấn và ghi chú của bạn được lưu kèm {{name}} cho lần sau.",
+    "include": "Bao gồm {{org}}, {{role}}",
+    "applied": "Ứng tuyển {{date}}",
+    "noMaterials": "Chưa xếp tài liệu nào",
+    "materials_other": "{{count}} tài liệu",
+    "posting": "Tin tuyển dụng",
+    "noPosting": "Không có liên kết tin tuyển dụng",
+    "highlight": "Điểm nhấn",
+    "highlightPlaceholder": "vd. giảng dạy, NSF CAREER, suy luận nhân quả",
+    "highlightHint": "Ngăn cách bằng dấu phẩy.",
+    "note": "Ghi chú cho họ",
+    "notePlaceholder": "Bất cứ điều gì khác: hạn chót, gửi thư cho ai, khoa quan tâm điều gì.",
+    "format": "Định dạng tệp",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Kèm tài liệu của tôi",
+    "withMaterialsCount": "Kèm tài liệu của tôi ({{count}})",
+    "tickOne": "Hãy chọn ít nhất một đơn ứng tuyển.",
+    "chosen_other": "{{count}} đơn ứng tuyển",
+    "chosenZip_other": "{{count}} đơn ứng tuyển, gộp thành một tệp .zip",
+    "preparing": "Đang chuẩn bị…",
+    "download": "Tải xuống",
+    "toast": {
+      "saved": "Đã lưu danh sách cho {{name}}",
+      "zip_other": "{{file}}: bảng tính và {{count}} tài liệu, trong thư mục tải xuống.",
+      "zipMissing_other": "{{file}} đã có trong thư mục tải xuống, nhưng thiếu {{count}} tài liệu mà trình duyệt này không còn đọc được.",
+      "sheet": "{{file}}, trong thư mục tải xuống.",
+      "failed": "Không tạo được danh sách",
+      "failedDescription": "Không có gì được tải xuống. Điểm nhấn và ghi chú của bạn đã được giữ lại.",
+      "highlights": "Đã lưu điểm nhấn"
+    }
+  }
+}

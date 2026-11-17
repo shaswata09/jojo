@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "Göster: {{label}}",
+    "hide": "Gizle: {{label}}"
+  },
+  "allHidden": {
+    "withReset": "Göstergedeki tüm seriler kapalı.",
+    "noReset": "Tüm seriler gizli — geri getirmek için göstergeden birini seçin.",
+    "showAll": "Tüm serileri göster"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "{{axes}} genelinde {{series}} karşılaştıran radar"
+  }
+}

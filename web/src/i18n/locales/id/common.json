@@ -1,0 +1,269 @@
+{
+  "language": {
+    "label": "Bahasa",
+    "description": "Bahasa yang digunakan untuk menampilkan jojo. Entri Anda tetap dalam bahasa yang Anda gunakan saat menulisnya.",
+    "system": "Sama dengan browser ini ({{name}})",
+    "loadFailed": "Bahasa itu tidak dapat dimuat. jojo tetap dalam {{name}}."
+  },
+  "buckets": {
+    "overdue": "Terlambat",
+    "today": "Hari ini",
+    "upcoming": "Mendatang",
+    "done": "Selesai"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Besok",
+      "later": "Sehari kemudian",
+      "duration": "Sehari"
+    },
+    "threeDays": {
+      "soon": "Dalam 3 hari",
+      "later": "Tiga hari kemudian",
+      "duration": "Tiga hari"
+    },
+    "week": {
+      "soon": "Dalam 7 hari",
+      "later": "Seminggu kemudian",
+      "duration": "Seminggu"
+    }
+  },
+  "routeFailure": {
+    "title": "Halaman ini tidak termuat",
+    "subtitle": "Bagian lain jojo masih berjalan.",
+    "emptyTitle": "Ada yang rusak di tampilan ini",
+    "emptyDescription": "Pindah ke halaman lain lalu kembali akan memuatnya ulang. Jika terjadi setiap kali, periksa entri yang ditampilkan halaman ini — di Pengaturan ada cadangan yang bisa Anda buat terlebih dahulu.",
+    "back": "Kembali ke dasbor"
+  },
+  "writeResult": {
+    "title": "Itu tidak tersimpan",
+    "refused": "Perubahan ditolak."
+  },
+  "copy": {
+    "blocked": "Diblokir",
+    "copied": "Disalin",
+    "copy": "Salin"
+  },
+  "drag": {
+    "theItem": "item",
+    "aTarget": "target lepas",
+    "start": "{{name}} diambil.",
+    "over": "{{name}} berada di atas {{place}}.",
+    "notOver": "{{name}} tidak lagi berada di atas target lepas.",
+    "dropped": "{{name}} dilepas di {{place}}.",
+    "droppedHome": "{{name}} dilepas di tempat asalnya.",
+    "cancelled": "Penyeretan dibatalkan. {{name}} dikembalikan ke tempat asalnya.",
+    "instructions": "Untuk mengambil item yang dapat diseret, tekan spasi.\nSaat menyeret, gunakan tombol panah untuk memindahkan item.\nTekan spasi lagi untuk melepas item di posisi barunya, atau tekan Escape untuk membatalkan."
+  },
+  "actions": {
+    "undo": "Urungkan",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "close": "Tutup"
+  },
+  "records_other": "{{count}} entri",
+  "deleteKeyword": {
+    "failed": "Itu tidak terhapus",
+    "stillThere": "{{name}} masih menjadi kata kunci.",
+    "deleted": "{{name}} dihapus",
+    "wasUnused": "Kata kunci ini tidak ada di entri mana pun.",
+    "takenOff_other": "Dilepas dari {{count}} entri, dan dari filter kata kunci.",
+    "confirmTitle": "Hapus {{name}}?",
+    "confirmTitleAny": "Hapus kata kunci?",
+    "unused": "Belum ada di entri mana pun, jadi tidak ada hal lain yang berubah.",
+    "usedOn_other": "Dipakai di {{count}} entri. Entri tersebut tetap ada — hanya kehilangan kata kunci ini.",
+    "confirm": "Hapus kata kunci"
+  },
+  "bucketFilter": {
+    "all": "Semua"
+  },
+  "marks": {
+    "bold": "tebal",
+    "italic": "miring",
+    "underlined": "bergaris bawah"
+  },
+  "pageHeader": {
+    "options": "Opsi {{title}}"
+  },
+  "errorBoundary": {
+    "title": "Ada yang rusak",
+    "body": "Sebuah tampilan gagal dirender. Coba lagi akan memasangnya ulang tanpa memuat ulang halaman.",
+    "retry": "Coba lagi"
+  },
+  "tone": {
+    "colourFor": "Warna untuk {{label}}",
+    "anyColourFor": "Warna bebas untuk {{label}}"
+  },
+  "boot": {
+    "takingLong": "Database lokal Anda membutuhkan waktu lebih lama dari biasanya untuk dibuka. Mungkin tab jojo lain sedang memakainya — menutup tab lain biasanya membebaskannya.",
+    "opening": "Membuka database lokal Anda…"
+  },
+  "keywordPicker": {
+    "none": "Belum ada",
+    "choose": "Pilih kata kunci",
+    "heading": "Kata kunci",
+    "newPlaceholder": "Kata kunci baru…",
+    "new": "Kata kunci baru"
+  },
+  "rowMenu": {
+    "moreFor": "Tindakan lain untuk {{name}}",
+    "more": "Tindakan lain"
+  },
+  "firstRun": {
+    "title": "Bagaimana Anda ingin memulai?",
+    "description": "jojo menyimpan semuanya di perangkat ini, jadi ini keputusan Anda. Tidak ada jawaban yang final — Anda dapat memuat data demo atau mengosongkan semua entri nanti, dari Pengaturan.",
+    "demo": {
+      "title": "Jelajahi dengan data demo",
+      "detail": "Contoh pencarian kerja lengkap untuk dilihat-lihat — dua belas lamaran, linimasa, dan brankas yang sudah terisi. Tidak ada yang milik Anda, dan mengosongkannya nanti cukup sekali tekan.",
+      "working": "Memuat…"
+    },
+    "empty": {
+      "title": "Mulai kosong",
+      "detail": "Tanpa entri demo sama sekali. Setiap halaman terbuka dalam keadaan kosong, dan hal pertama di jojo adalah sesuatu yang Anda tambahkan.",
+      "working": "Mengosongkan…"
+    }
+  },
+  "recovery": {
+    "title": "jojo tidak dapat membaca database-nya",
+    "body": "Entri Anda masih ada di perangkat ini. jojo tidak mengubah atau mengganti apa pun, dan tidak akan memuat data demo di atasnya — penyimpanan yang mengisi ulang dirinya agar tampak sehat akan mengubah ini menjadi kehilangan data permanen.",
+    "downloadHint": "Menulis baris yang bisa dibaca ke sebuah berkas",
+    "downloadNothing": "Database sama sekali tidak dapat dibaca, jadi tidak ada yang bisa ditulis",
+    "download": "Unduh yang bisa kami baca",
+    "working": "Memproses…",
+    "retry": "Coba lagi",
+    "freshHint": "Menghapus database dan memulai jojo seolah-olah baru",
+    "fresh": "Mulai baru",
+    "readable_other": "{{count}} baris dapat dibaca — unduh dulu sebelum melakukan hal lain, karena memulai baru akan menghapusnya.",
+    "unreadable": "Tidak ada yang dapat dibaca dari penyimpanan, jadi tidak ada yang bisa diunduh. Coba lagi dulu: database yang sedang dipakai tab lain gagal dengan cara ini dan pulih dengan sendirinya.",
+    "confirmTitle": "Hapus database dan mulai baru?",
+    "confirmBody": "Ini menghapus database lokal jojo beserta semua isinya, lalu memulai lagi dari nol — termasuk pertanyaan saat pertama kali dijalankan tentang apakah akan memulai dengan data demo atau kosong. Ini tidak memperbaiki apa pun dan tidak dapat diurungkan. Jika Anda belum mengunduh baris yang dapat dibaca, batalkan dan lakukan itu dulu.",
+    "confirm": "Hapus dan mulai baru"
+  },
+  "labelFilter": {
+    "label": "Filter menurut kata kunci",
+    "none": "Belum ada kata kunci — tambahkan satu untuk memfilter dengannya.",
+    "example": "mis. Developer",
+    "add": "Tambah kata kunci",
+    "clear": "Kosongkan"
+  },
+  "labelPicker": {
+    "editOn": "Edit kata kunci pada {{name}}",
+    "edit": "Edit kata kunci"
+  },
+  "keywordChip": {
+    "taken": "Sudah ada kata kunci lain dengan nama itu.",
+    "needsName": "Kata kunci memerlukan nama.",
+    "rename": "Ganti nama",
+    "colour": "Warna",
+    "stopFiltering": "Berhenti memfilter menurut {{name}}",
+    "filterBy": "Filter menurut {{name}}",
+    "edit": "Edit kata kunci {{name}}",
+    "editHint": "Ganti nama, ganti warna, atau hapus"
+  },
+  "welcome": {
+    "title": "Sedikit tentang Anda",
+    "description": "Draf ditutup dengan nama Anda, dan pencari menilai lowongan berdasarkan apa yang Anda cari. Semuanya tetap di perangkat ini, dan semuanya opsional — Anda dapat mengisinya nanti di Profil.",
+    "fullName": "Nama lengkap",
+    "fullNameExample": "mis. Lonardo Jenson",
+    "position": "Posisi saat ini",
+    "positionExample": "mis. Kandidat PhD, Ilmu Komputer",
+    "location": "Lokasi",
+    "locationExample": "mis. Santa Clara, CA",
+    "email": "Email",
+    "skip": "Lewati dulu",
+    "save": "Simpan dan lanjutkan",
+    "rest": "Sisanya — tautan, posisi yang dituju, istilah yang dicocokkan pencari — ada di <anchor>Profil</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Mau tur langsung?",
+    "tourDescription": "Penelusuran halaman-halaman yang sebenarnya — sorotan pada setiap bagian, kegunaannya, dan Anda mencoba setiap hal sambil berjalan. Tur ini tidak pernah mengetik, menyimpan, atau mengubah apa pun untuk Anda, dan mengingat posisi Anda jika berhenti.",
+    "notNow": "Jangan sekarang",
+    "start": "Mulai tur",
+    "always": "Tur selalu tersedia di <em>Cara menggunakan</em>, jadi menolaknya sekarang tidak ada ruginya."
+  },
+  "setup": {
+    "skip": "Lewati dulu",
+    "continue": "Lanjutkan",
+    "done": "Selesai",
+    "optional": "Semua ini opsional dan dapat Anda atur nanti di Pengaturan.",
+    "model": {
+      "title": "Hubungkan model",
+      "body": "Inilah yang menjadikan jojo agen, bukan sekadar lemari arsip: jojo dapat menjawab pertanyaan tentang pencarian Anda, menulis tindak lanjut dan draf, serta menjalankan alur Pencari lowongan yang menjaga entri Anda tetap lengkap dan memantau lowongan. Arahkan ke model di perangkat Anda sendiri dan tidak ada yang keluar dari perangkat."
+    },
+    "reader": {
+      "title": "Izinkan membaca dokumen Anda",
+      "body": "Tanpa ini, asisten hanya bisa melihat nama dokumen. Jalankan MarkItDown di perangkat ini — dua perintah, di bawah — dan asisten dapat membaca isi CV, surat pengantar, dan lowongan tersimpan Anda saat menulis draf dan menjawab."
+    },
+    "crash": {
+      "title": "Laporan kerusakan dan penggunaan",
+      "description": "Dua hal terpisah, keduanya aktif — matikan salah satunya di sini atau nanti di Pengaturan. Tidak satu pun dapat membawa entri Anda: baik lamaran, dokumen, catatan, profil, maupun percakapan.",
+      "inReport": "Isi sebuah laporan",
+      "inError": "Pesan kesalahan dan di bagian jojo mana itu terjadi.",
+      "inStack": "Stack trace, yang menyebutkan kode yang gagal.",
+      "never": "Yang tidak pernah ada di dalamnya",
+      "neverRecords": "Lamaran, dokumen, catatan, profil, atau percakapan Anda.",
+      "neverSecrets": "Kunci API Anda, alamat yang Anda gunakan, direktori home Anda, atau alamat email apa pun — semua ini dihapus sebelum laporan ditulis, bukan sebelum dikirim.",
+      "where": "Di browser ini dan di ekstensi jojo, laporan kerusakan <em>tetap di perangkat ini</em>: tidak ada yang diunggah, dan berkas cadangan tidak membawanya. Anda sendiri yang membacanya di Pengaturan. Di aplikasi ponsel jojo, laporan yang sama juga dikirim ke Firebase Crashlytics milik Google, yang menambahkan model perangkat Anda, versi sistem operasinya, dan id acak yang dipakai untuk menghitung berapa orang mengalami kerusakan yang sama — tanpa nama, tanpa akun, tidak ada yang terkait dengan Anda. Hitungan penggunaan, sakelar kedua di bawah, dikirim ke Google Analytics dari setiap versi, termasuk versi ini.",
+      "keep": "Simpan laporan kerusakan",
+      "keepHint": "Kesalahan dan tempat terjadinya. Tetap di perangkat ini di browser.",
+      "share": "Bagikan fitur yang saya gunakan",
+      "shareHint": "Hanya hitungan — layar mana yang dibuka, seberapa sering. Tidak pernah isinya.",
+      "usageNote": "Yang kedua adalah satu-satunya hal yang dikirim jojo tentang apa yang Anda LAKUKAN, dan hanya dapat menyebutkan hal dari daftar tetap — “brankas dibuka”, “sebuah lamaran ditambahkan”, “ada 6–20 lamaran”. Ia tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik, karena kata-kata itu tidak ada di daftar. Data ini dikirim ke Google Analytics agar kami dapat melihat bagian jojo mana yang layak dikembangkan lebih lanjut.",
+      "bothOff": "Matikan keduanya",
+      "save": "Simpan pilihan",
+      "continueOff": "Lanjutkan dengan keduanya mati",
+      "later": "Anda dapat mengubah keduanya kapan saja di Pengaturan, dan mematikan salah satunya juga membuang apa yang telah disimpannya."
+    },
+    "extension": {
+      "title": "Simpan lowongan yang Anda lamar",
+      "body": "Iklan lowongan diturunkan, sering kali sebelum Anda mendapat kabar. Ekstensi browser menyimpan lowongan sebagaimana isinya hari ini, ke brankas Anda sendiri — dan ekstensi ini juga cara Pencari lowongan membaca papan lowongan yang Anda ikuti."
+    }
+  },
+  "spectrum": {
+    "saturation": "Saturasi dan kecerahan",
+    "hue": "Rona",
+    "hex": "Warna heksa",
+    "any": "Warna bebas"
+  },
+  "field": {
+    "openInTab": "Buka {{label}} di tab baru",
+    "hide": "Sembunyikan {{label}}",
+    "show": "Tampilkan {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Kecil",
+      "normal": "Normal",
+      "large": "Besar",
+      "huge": "Sangat besar"
+    },
+    "clearFormatting": "Hapus format",
+    "bold": "Tebal",
+    "italic": "Miring",
+    "underline": "Garis bawah",
+    "strikeThrough": "Coret",
+    "insertUnorderedList": "Daftar berpoin",
+    "insertOrderedList": "Daftar bernomor",
+    "snippetText": "Teks cuplikan",
+    "fontSize": "Ukuran huruf",
+    "insertTable": "Sisipkan tabel",
+    "textColour": "Warna teks"
+  },
+  "toolForm": {
+    "aRecord": "sebuah entri",
+    "yourProfile": "Profil Anda"
+  },
+  "toolRun": {
+    "choose": "Pilih…",
+    "none": "Tidak ada",
+    "omitted_other": "Tidak ada di formulir ini: {{fields}}. Buka entrinya untuk mengaturnya."
+  },
+  "toast": {
+    "notifications": "Notifikasi",
+    "dismiss": "Tutup — {{title}}"
+  },
+  "command": {
+    "title": "Palet Perintah",
+    "description": "Cari perintah untuk dijalankan..."
+  }
+}

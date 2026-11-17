@@ -1,0 +1,290 @@
+{
+  "common": {
+    "undo": "復原",
+    "cancel": "取消",
+    "save": "儲存",
+    "edit": "編輯",
+    "delete": "刪除",
+    "remove": "移除",
+    "done": "完成",
+    "title": "標題",
+    "note": "備註",
+    "changeApplications": "變更申請",
+    "fileUnderApplication": "歸檔在申請下",
+    "moreActionsFor": "{{name}} 的更多動作",
+    "openNamed": "開啟 {{name}}",
+    "savedAgo": "{{ago}}儲存",
+    "copyOf": "{{name}}（副本）",
+    "movedTo": "已移至「{{name}}」",
+    "titleRequired": "請取個名稱，方便日後再找到它。"
+  },
+  "screen": {
+    "title": "保管庫",
+    "subtitle": "提醒、連結、檔案、片段和聯絡人",
+    "counts": {
+      "reminders_other": "{{count}} 則提醒",
+      "links_other": "{{count}} 個連結",
+      "files_other": "{{count}} 個檔案",
+      "snippets_other": "{{count}} 個片段",
+      "people_other": "{{count}} 位聯絡人"
+    },
+    "showCounts": "顯示數量",
+    "showCountsDescription": "在副標題中顯示項目總數，而不是各分頁的內容",
+    "toolLabel": "保管庫工具",
+    "tools": {
+      "reminders": "提醒",
+      "links": "連結",
+      "files": "檔案",
+      "snippets": "片段",
+      "people": "聯絡人",
+      "tools": "工具"
+    }
+  },
+  "files": {
+    "add": "記錄文件",
+    "filterLabel": "篩選文件",
+    "editLabel": "編輯文件",
+    "bucket": "分類",
+    "search": {
+      "label": "搜尋文件",
+      "placeholder": "搜尋名稱、備註或分類"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何文件",
+      "zeroDescription": "你的履歷、陳述、演講和行政文件掃描檔。會記錄名稱、大小和類型——不會讀取檔案本身。",
+      "search": "沒有任何文件的名稱、備註或分類提到「{{query}}」。",
+      "both": "「{{bucket}}」中沒有帶有所選關鍵字的文件。",
+      "bucketTitle": "「{{bucket}}」中沒有任何內容",
+      "bucketDescription_other": "有 {{count}} 份文件歸檔在其他分類下。",
+      "showAll": "顯示所有分類",
+      "keywordsTitle": "沒有帶有這些關鍵字的文件"
+    },
+    "toast": {
+      "removed": "已移除文件",
+      "duplicated": "已複製文件",
+      "updated": "已更新文件",
+      "recorded": "已記錄文件",
+      "recordedDescription": "{{name}} · 已歸檔在「{{bucket}}」下。會保留名稱、大小和類型——不會讀取檔案本身。"
+    }
+  },
+  "snippets": {
+    "add": "新增片段",
+    "filterLabel": "篩選片段",
+    "tag": "標籤",
+    "copyNamed": "複製「{{name}}」",
+    "search": {
+      "label": "搜尋片段",
+      "placeholder": "搜尋標題或內文"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何片段",
+      "zeroDescription": "你在每份表單上都要重打的答案——簡短的個人簡介、一段教學理念、你每次都會寄的追蹤信。",
+      "search": "沒有任何片段的名稱、內文或類型提到「{{query}}」。",
+      "both": "沒有帶有所選關鍵字的「{{tag}}」片段。",
+      "bucketTitle": "沒有「{{tag}}」片段",
+      "bucketDescription_other": "有 {{count}} 個片段歸檔在其他類型下。",
+      "showAll": "顯示所有類型",
+      "keywordsTitle": "沒有帶有這些關鍵字的片段"
+    },
+    "toast": {
+      "deleted": "已刪除片段",
+      "duplicated": "已複製片段",
+      "filedUnder": "已歸檔在「{{tag}}」下",
+      "saved": "已儲存片段",
+      "added": "已新增片段",
+      "addedDescription": "{{title}} · 已歸檔在「{{tag}}」下"
+    },
+    "editor": {
+      "editTitle": "編輯片段",
+      "description": "草稿面板載入這個片段時，[方括號] 中的內容都會保持空白，所以人名一律不會自動幫你填入。",
+      "titlePlaceholder": "例如：未獲回覆時的追蹤信",
+      "applicationHint": "選填。為特定雇主撰寫的片段可以註明是哪些雇主。",
+      "body": "內文",
+      "bodyRequired": "沒有文字的片段沒有可以貼上的內容。",
+      "bodyPlaceholder": "[NAME] 您好：…"
+    },
+    "discard": {
+      "title": "要捨棄未儲存的變更嗎？",
+      "description": "你在這裡輸入的內容還沒有儲存到任何地方，所以離開就會捨棄——而且無法復原。",
+      "confirm": "捨棄"
+    }
+  },
+  "links": {
+    "add": "儲存連結",
+    "filterLabel": "篩選連結",
+    "category": "分類",
+    "search": {
+      "label": "搜尋連結",
+      "placeholder": "搜尋標題、網址或備註"
+    },
+    "empty": {
+      "zeroTitle": "尚未儲存任何內容",
+      "zeroDescription": "職缺、系所網頁、聯絡人和指南——任何你想日後再看的東西。",
+      "search": "沒有任何連結的標題、網址、備註或分類提到「{{query}}」。",
+      "both": "沒有帶有所選關鍵字的「{{category}}」連結。",
+      "bucketTitle": "「{{category}}」下沒有連結",
+      "bucketDescription_other": "有 {{count}} 個連結歸檔在其他分類下。",
+      "showAll": "顯示所有分類",
+      "keywordsTitle": "沒有帶有這些關鍵字的連結"
+    },
+    "menu": {
+      "open": "開啟連結",
+      "copy": "複製網址"
+    },
+    "toast": {
+      "removed": "已移除連結",
+      "duplicated": "已複製連結",
+      "copied": "已複製網址",
+      "updated": "已更新連結",
+      "saved": "已儲存連結"
+    },
+    "editor": {
+      "editTitle": "編輯連結",
+      "description": "不會擷取任何內容——保留的是標題、網址和你儲存的日期。",
+      "saveLink": "儲存連結",
+      "titlePlaceholder": "例如：Rice——統計職缺",
+      "url": "網址",
+      "urlRequired": "沒有網址的連結哪裡都去不了。",
+      "applicationHint": "將兩者連結，讓每份申請都把它算在歸檔於其下的內容中。",
+      "notePlaceholder": "為什麼值得日後再看"
+    }
+  },
+  "reminders": {
+    "add": "新增提醒",
+    "filterLabel": "篩選提醒",
+    "markDone": "將「{{title}}」標記為完成",
+    "markNotDone": "將「{{title}}」標記為未完成",
+    "buckets": {
+      "overdue": "已逾期",
+      "today": "今天",
+      "upcoming": "即將到來",
+      "done": "已完成"
+    },
+    "search": {
+      "label": "搜尋提醒",
+      "placeholder": "搜尋標題、備註或類型"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何提醒",
+      "zeroDescription": "提醒是開啟了提示、有日期的紀錄。日期一過就算待辦，會一直留在「今天」中，直到你勾選完成為止。",
+      "search": "沒有任何提醒的標題、備註或類型提到「{{query}}」。",
+      "both": {
+        "overdue": "沒有帶有所選關鍵字的逾期提醒。",
+        "today": "沒有帶有所選關鍵字、今天到期的提醒。",
+        "upcoming": "沒有帶有所選關鍵字的即將到來提醒。",
+        "done": "沒有帶有所選關鍵字的已完成提醒。"
+      },
+      "nothingIn": {
+        "overdue": "沒有逾期項目",
+        "today": "今天沒有項目",
+        "upcoming": "沒有即將到來的項目"
+      },
+      "doneTitle": "還沒有完成任何項目",
+      "doneDescription": "你勾選完成的提醒會集中在這裡，所以不小心勾選的也找得回來。",
+      "bucketDescription_other": "有 {{count}} 則提醒歸在其他群組下。",
+      "showAll": "顯示所有提醒",
+      "keywordsTitle": "沒有帶有這些關鍵字的提醒"
+    }
+  },
+  "people": {
+    "add": "新增",
+    "optionsFor": "{{name}} 的選項",
+    "search": {
+      "label": "搜尋聯絡人",
+      "placeholder": "搜尋姓名、角色或備註"
+    },
+    "empty": {
+      "zeroTitle": "還沒有任何人",
+      "zeroDescription": "推薦人、遴選委員會主席、招募人員——求職過程中會經手的任何人。把他們列在他們撰寫推薦信的職缺上，他們也會顯示在那些紀錄上。",
+      "noMatchTitle": "沒有符合的人",
+      "noMatchDescription": "試試姓名的一部分、角色，或他們所在的地方。"
+    },
+    "toast": {
+      "removed": "已移除聯絡人",
+      "saved": "已儲存聯絡人"
+    },
+    "editor": {
+      "editTitle": "編輯聯絡人",
+      "addTitle": "新增聯絡人",
+      "save": "儲存聯絡人",
+      "description": "這裡唯一需要的就是姓名。其他欄位視日後需要再填。",
+      "noApplication": "沒有申請",
+      "name": "姓名",
+      "namePlaceholder": "例如：Prof. Ngozi Okafor",
+      "role": "角色",
+      "rolePlaceholder": "例如：推薦人、遴選委員會主席、招募人員",
+      "affiliation": "所屬單位",
+      "affiliationPlaceholder": "例如：Rice",
+      "affiliationHint": "他們所在的地方。不會連結到你申請過的雇主。",
+      "email": "電子郵件",
+      "phone": "電話",
+      "namedOn": "列名於",
+      "namedOnHint": "他們撰寫推薦信、參與篩選或擔任主席的每一個職缺。",
+      "notePlaceholder": "他們說了什麼、欠你什麼、何時該追問。"
+    }
+  },
+  "calculator": {
+    "title": "計算機",
+    "hint": "不需要任何紀錄或連線就能使用",
+    "copy": "複製結果",
+    "mode": "模式",
+    "modes": {
+      "basic": "基本",
+      "scientific": "工程型"
+    },
+    "plusMinus": "正負號",
+    "history": "歷史紀錄",
+    "kept": "已保留 {{count}} 筆",
+    "clear": "清除",
+    "emptyTitle": "還沒有任何計算",
+    "emptyDescription": "最近三十個結果會保留在這裡，方便拿第二個數字和第一個比較。點一下其中一個，即可放回顯示區。",
+    "historyEntry": "{{expr}} 等於 {{value}}。放回顯示區"
+  },
+  "pageViewer": {
+    "capturedFrom": "擷取自 {{host}}",
+    "missingTitle": "這部裝置上沒有已儲存的副本",
+    "missingDescription": "擷取的頁面會保留在擷取時所用的裝置上，所以在網頁應用程式中擷取的不會出現在這裡。紀錄保留了它的名稱和網址。"
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · {{ago}}歸檔",
+    "editDetails": "編輯詳細資料",
+    "openFailed": "這支手機上沒有任何應用程式可以開啟它。",
+    "facts": {
+      "type": "類型",
+      "size": "大小",
+      "filed": "歸檔時間",
+      "bucket": "分類"
+    },
+    "typed": {
+      "title": "只有記錄，沒有儲存",
+      "description": "這份文件是手動歸檔的——只有存放在其他地方之文件的名稱、類型和大小。編輯它並選擇一個檔案，即可在這裡保留一份副本。"
+    },
+    "checking": {
+      "title": "正在尋找副本",
+      "description": "正在檢查這筆紀錄指向的檔案是否仍在應用程式的儲存空間中。"
+    },
+    "kept": {
+      "title": "已保留在這部裝置上",
+      "pageDescription": "在這裡開啟，停用指令碼且不連線——是職缺在儲存當天的樣子。",
+      "read": "閱讀",
+      "fileDescription": "會用這支手機上能處理這種類型的應用程式開啟。不會上傳任何內容，這裡也不會讀取它的內容。",
+      "open": "開啟"
+    },
+    "gone": {
+      "title": "副本已經不見了",
+      "description": "這筆紀錄指向的檔案已不在應用程式的儲存空間中——很可能是被系統清除了。紀錄本身完好無缺；重新選擇檔案即可附加。",
+      "choose": "重新選擇"
+    },
+    "attachedTo": "附加於",
+    "change": "變更",
+    "fileUnderJob": "歸檔在某個職缺下",
+    "notFiled": "沒有歸檔在任何申請下。歸檔後它會出現在那些紀錄上，圖譜也能從其中任何一份找到它。",
+    "addNote": "新增備註",
+    "notePlaceholder": "這份文件是做什麼用的？",
+    "saveNote": "儲存備註",
+    "noNote": "還沒有為這份文件寫下任何內容。",
+    "toast": {
+      "noteSaved": "已儲存備註"
+    }
+  }
+}

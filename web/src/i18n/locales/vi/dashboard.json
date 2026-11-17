@@ -1,0 +1,256 @@
+{
+  "common": {
+    "newApplication": "Đơn ứng tuyển mới",
+    "openBoard": "Mở bảng",
+    "showAll": "Hiện tất cả",
+    "undo": "Hoàn tác",
+    "pushOut": "Dời \"{{title}}\" lại",
+    "pushOutBy": "Dời lại",
+    "completed": "Đã hoàn thành {{title}}",
+    "rescheduled": "Đã dời lịch {{title}}"
+  },
+  "headlineRates": {
+    "emptyTitle": "Chưa có tỷ lệ nào",
+    "emptyDescription": "Tỷ lệ phản hồi, phỏng vấn và nhận lời mời đều chỉ tính những đơn ứng tuyển đã thực sự được gửi đi. Chuyển một đơn ra khỏi Bản nháp và phần này sẽ có số liệu."
+  },
+  "pipeline": {
+    "emptyTitle": "Chưa có gì trong quy trình",
+    "emptyDescription": "Mỗi đơn ứng tuyển nằm ở một giai đoạn, và phần này cho thấy chúng phân bố ra sao. Thêm một đơn và phần đầu tiên sẽ xuất hiện.",
+    "ariaLabel_other": "{{count}} đơn ứng tuyển theo giai đoạn"
+  },
+  "statsCard": {
+    "control": "Số liệu",
+    "tracked_other": "Đang theo dõi {{count}}",
+    "views": {
+      "pipeline": "Quy trình",
+      "rates": "Tỷ lệ",
+      "when": "Thời điểm",
+      "next": "Tiếp theo"
+    },
+    "titles": {
+      "pipeline": "Quy trình",
+      "rates": "Tỷ lệ chính",
+      "when": "Thời điểm bạn ứng tuyển",
+      "next": "Nên tập trung vào đâu tiếp theo"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "Ghi chú",
+      "recent": "Đơn ứng tuyển gần đây"
+    },
+    "headingNotes": "Ghi chú dán",
+    "headingRecent": "Đơn ứng tuyển gần đây",
+    "control": "Hiện trên thẻ này",
+    "addReminder": "Thêm lời nhắc",
+    "viewAll": "Xem tất cả",
+    "emptyTitle": "Chưa có đơn ứng tuyển nào",
+    "emptyDescription": "Mỗi vị trí bạn theo dõi sẽ hiện ở đây khi bạn cập nhật nó, mới nhất trước.",
+    "today": "Hôm nay",
+    "daysAgo_other": "{{count}} ngày trước"
+  },
+  "searchHealth": {
+    "title": "Nên tập trung vào đâu tiếp theo",
+    "series": {
+      "you": "Của bạn",
+      "target": "Thông thường"
+    },
+    "intro": "số liệu của bạn so với một đợt tìm việc thông thường",
+    "sample": "Mẫu",
+    "sampleTitle": "Chỉ vòng thông thường là minh họa",
+    "emptyTitle": "Chưa đủ để so sánh",
+    "emptyDescription": "Phần này so phản hồi, phỏng vấn, giới thiệu nội bộ và liên hệ lại của bạn với một đợt tìm việc thông thường. Cần có những đơn ứng tuyển đã thực sự được gửi đi.",
+    "suggestions": "Gợi ý, hữu ích nhất trước"
+  },
+  "sources": {
+    "title": "Nguồn ứng tuyển",
+    "views": {
+      "bars": "Cột",
+      "donut": "Vành khuyên"
+    },
+    "chartType": "Loại biểu đồ",
+    "unrecorded": "Chưa ghi",
+    "hintAll_other": "{{count}} đơn ứng tuyển",
+    "hintSome": "{{shown}}/{{count}}",
+    "emptyTitle": "Chưa có gì để phân tích",
+    "emptyDescription": "Mỗi đơn ứng tuyển ghi lại nơi bạn tìm thấy nó — một trang tuyển dụng, một lời giới thiệu, trang của khoa. Phần này sẽ phân loại khi đã có vài đơn.",
+    "centerLabel": "đơn ứng tuyển",
+    "show": "Hiện {{name}}",
+    "hide": "Ẩn {{name}}",
+    "allOff": "Mọi nguồn đều đang tắt."
+  },
+  "offers": {
+    "title": "So sánh các lời mời làm việc",
+    "open_other": "{{count}} đang mở",
+    "caption": "Các lời mời làm việc đang mở, kèm gói đãi ngộ như bạn đã nhập, mức quy đổi theo năm, và ngày phải trả lời cho từng lời mời",
+    "columns": {
+      "job": "Công việc",
+      "package": "Gói đãi ngộ",
+      "year": "Theo năm",
+      "respondBy": "Trả lời trước"
+    },
+    "notStated": "không nêu",
+    "noAmount": "Không đọc được số tiền nào từ gói đãi ngộ",
+    "readFrom": "Đọc từ “{{text}}”",
+    "highest": "— cao nhất ở đây",
+    "annualised": "(quy đổi theo năm)",
+    "passed": "đã qua",
+    "today": "hôm nay",
+    "daysLeft_other": "{{count}} ngày",
+    "ranked": "Con số theo năm được đọc từ những gì bạn đã nhập — rê chuột lên một con số để xem nó lấy từ chữ nào.",
+    "unranked": "Các lời mời này không được xếp hạng: gói đãi ngộ dùng các loại tiền tệ khác nhau, và jojo không có tỷ giá hối đoái cũng không truy cập mạng để tìm.",
+    "annualisedNote": "* quy đổi theo năm với 12 tháng, 52 tuần hoặc 2.080 giờ, đây là quy ước chứ không phải hợp đồng của bạn."
+  },
+  "sticky": {
+    "newNote": "Ghi chú dán mới",
+    "placeholder": "Ghi nhanh cho chính mình… (Enter để dán)",
+    "newColour": "Màu cho ghi chú mới",
+    "stick": "Dán lên",
+    "empty": "Chưa dán gì lên. Ghi chú ở lại đây cho đến khi bạn gỡ xuống, và ghi chú nào cũng có thể thành lời nhắc khi đã có ngày.",
+    "listLabel": "Ghi chú dán",
+    "editNote": "Sửa ghi chú",
+    "clickToEdit": "Nhấp để sửa",
+    "editAria": "Sửa ghi chú: {{text}}",
+    "colour": "Màu",
+    "colourOf": "Màu của ghi chú \"{{text}}\"",
+    "toReminder": "Chuyển thành lời nhắc",
+    "toReminderAria": "Chuyển thành lời nhắc: {{text}}",
+    "takeDown": "Gỡ ghi chú này xuống",
+    "removeAria": "Gỡ ghi chú: {{text}}"
+  },
+  "frequency": {
+    "title": "Thời điểm bạn ứng tuyển",
+    "period": "Khoảng thời gian",
+    "periods": {
+      "week": "Tuần",
+      "month": "Tháng",
+      "quarter": "Quý"
+    },
+    "chartType": "Loại biểu đồ",
+    "charts": {
+      "bar": "Cột",
+      "line": "Đường"
+    },
+    "emptyTitle": "Chưa có gì để vẽ biểu đồ",
+    "emptyDescription": "Phần này đếm số đơn ứng tuyển bạn gửi theo từng tuần, chia theo loại vị trí. Thêm một đơn và cột đầu tiên sẽ xuất hiện.",
+    "noDatesTitle": "Chưa ghi ngày gửi nào",
+    "noDates_other": "Chưa đơn nào trong {{count}} đơn ứng tuyển của bạn có ngày. Ngày được đóng dấu khi bạn chuyển một bản ghi sang Đã nộp.",
+    "perPeriod": {
+      "week": "Số đơn ứng tuyển đã gửi mỗi tuần, chia theo {{series}}",
+      "month": "Số đơn ứng tuyển đã gửi mỗi tháng, chia theo {{series}}",
+      "quarter": "Số đơn ứng tuyển đã gửi mỗi quý, chia theo {{series}}"
+    },
+    "caption": {
+      "week": "Số đơn ứng tuyển đã gửi mỗi tuần",
+      "month": "Số đơn ứng tuyển đã gửi mỗi tháng",
+      "quarter": "Số đơn ứng tuyển đã gửi mỗi quý"
+    },
+    "countingUndated_other": "Đang tính {{inWindow}}/{{total}} đơn ứng tuyển — {{count}} đơn chưa có ngày.",
+    "countingEarlier_other": "Đang tính {{inWindow}}/{{total}} đơn ứng tuyển — {{count}} đơn rơi vào trước {{first}}.",
+    "countingBoth": "Đang tính {{inWindow}}/{{total}} đơn ứng tuyển — {{undated}} chưa có ngày, và {{earlier}} trước {{first}}."
+  },
+  "glance": {
+    "heading": "Tóm tắt nhanh",
+    "stats": {
+      "active": "Đang hoạt động",
+      "screens": "Sàng lọc & phỏng vấn",
+      "overdue": "Quá hạn",
+      "doneToday": "Xong hôm nay"
+    },
+    "previousMonth": "Tháng trước",
+    "currentMonth": "Về tháng hiện tại",
+    "currentMonthTitle": "{{date}} — tháng hiện tại",
+    "nextMonth": "Tháng sau",
+    "openCalendar": "Mở lịch",
+    "dayNone": "{{date}}, không có sự kiện",
+    "day_other": "{{date}}, {{count}} sự kiện",
+    "dayAllDone_other": "{{date}}, {{count}} sự kiện, đã xong hết",
+    "today": "hôm nay",
+    "nothingPlanned": "Chưa có kế hoạch nào. <add>Thêm một mục</add>."
+  },
+  "priority": {
+    "title": "Cần quyết định",
+    "open_other": "{{count}} đang mở",
+    "completedDescription": "Mục này rời khỏi chồng thẻ và tuần này — không có gì bị xóa.",
+    "rescheduledDescription": "Giờ đến hạn vào {{date}}, trên lịch và trong tuần tới.",
+    "tickOff": "Đánh dấu hoàn thành \"{{title}}\"",
+    "done": "Xong",
+    "snooze": "Tạm hoãn",
+    "notConnected": "Chưa có gì được kết nối với mục này",
+    "earlierAria": "Hiện các quyết định trước đó",
+    "earlier": "Trước",
+    "laterAria": "Hiện các quyết định sau",
+    "later": "Sau",
+    "listLabel": "Các quyết định, sớm nhất trước",
+    "emptyTitle": "Hôm nay không có gì cần quyết định",
+    "emptyDescription": "Lời mời làm việc, đơn ứng tuyển quá hạn, hạn chót cứng tiếp theo và buổi phỏng vấn tiếp theo sẽ hiện ở đây. Hiện không có mục nào cần xử lý."
+  },
+  "firstSteps": {
+    "title": "Những bước đầu tiên",
+    "hint": "Đã xong {{done}}/{{total}}",
+    "application": {
+      "title": "Thêm một đơn ứng tuyển",
+      "body": "Một vị trí, giai đoạn và hạn chót của nó. Mọi thứ khác trong jojo đều gắn với bản ghi này."
+    },
+    "dated": {
+      "title": "Đặt ngày cho một mục",
+      "body": "Hạn chót, phỏng vấn và chuyến thăm là cùng một loại bản ghi, nên một ngày sẽ xuất hiện cùng lúc trên trang này, trên lịch và trong đơn ứng tuyển.",
+      "action": "Sự kiện mới"
+    },
+    "reminder": {
+      "title": "Đặt lịch liên hệ lại",
+      "body": "Lời nhắc là cùng loại bản ghi đó nhưng bật thêm chế độ nhắc. Khi qua ngày, nó trở thành việc cần làm và ở lại đây cho đến khi bạn đánh dấu hoàn thành.",
+      "action": "Lời nhắc mới"
+    },
+    "complete": "Cả ba bước đều đã xong. Mọi thứ bạn thêm từ giờ sẽ xuất hiện trên trang này, trên lịch và trong đơn ứng tuyển liên quan.",
+    "intro": "Mỗi bước mở đúng chức năng thật và tự đánh dấu khi đã có bản ghi — không có bước nào là bài hướng dẫn bắt buộc phải ngồi xem.",
+    "introBare": "Chưa theo dõi gì. Mỗi bước mở đúng chức năng thật và tự đánh dấu khi đã có bản ghi — không có bước nào là bài hướng dẫn bắt buộc phải ngồi xem.",
+    "doneSr": "— đã xong",
+    "notDoneSr": "— chưa xong",
+    "hideHint": "Các bước tương tự được viết đầy đủ trong phần hướng dẫn",
+    "close": "Đóng những bước đầu tiên",
+    "hide": "Ẩn các bước này"
+  },
+  "owed": {
+    "title": "Việc cần làm tuần này",
+    "add": "Thêm",
+    "addEvent": "Thêm sự kiện",
+    "emptyTitle": "Không có việc gì cần làm",
+    "emptyDescription": "Hạn chót, phỏng vấn và liên hệ lại sẽ hiện ở đây ngay khi có ngày, và ở lại cho đến khi bạn đánh dấu hoàn thành.",
+    "hintOverdue": "{{overdue}} quá hạn · {{due}} đến hạn",
+    "hintDue_other": "{{count}} đến hạn",
+    "snoozeAria": "Tạm hoãn {{title}}",
+    "openAria": {
+      "reminder": "Mở {{title}}: sửa lời nhắc hoặc đi tới đơn ứng tuyển của nó",
+      "event": "Mở {{title}}: sửa sự kiện hoặc đi tới đơn ứng tuyển của nó"
+    },
+    "edit": {
+      "reminder": "Sửa lời nhắc",
+      "event": "Sửa sự kiện"
+    },
+    "openApplication": "Mở <name>{{name}}</name>",
+    "groups": {
+      "overdue": "Quá hạn",
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "rest": "Phần còn lại của tuần"
+    },
+    "completedDescription": "Mục này rời khỏi danh sách và được tính vào hôm nay — không có gì bị xóa.",
+    "rescheduledDescription": "Giờ đến hạn vào {{date}}, ở đây và trên lịch.",
+    "nextSeven": "Bảy ngày tới",
+    "items_other": "{{count}} mục",
+    "allDone": "đã xong hết",
+    "nothingScheduled": "chưa lên lịch gì",
+    "todayClear": "Hôm nay không còn việc gì.",
+    "todayClearDone": "Hôm nay không còn việc gì — đã xong {{count}}.",
+    "markDoneAria": "Đánh dấu \"{{title}}\" là đã xong",
+    "markDone": "Đánh dấu đã xong",
+    "draftTitle": "Viết từ một đoạn văn bản email của bạn",
+    "draftAria": "Soạn {{title}}",
+    "later": "Sau",
+    "openTitle": "Mở {{title}}",
+    "more_other": "Còn {{count}} mục nữa trên lịch",
+    "showAll": "Hiện tất cả {{total}}",
+    "showFewer": "Thu gọn"
+  }
+}

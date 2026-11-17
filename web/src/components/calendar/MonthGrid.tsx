@@ -66,7 +66,8 @@ export function MonthGrid({
    */
   const { t } = useTranslation('calendar')
   const domain = useDomain()
-  const monthName = domain.month(month.month)
+  // Beside a day number: «5 ноября», not «5 ноябрь».
+  const monthOfDay = domain.monthOfDay(month.month)
   const todayISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
 
   // Leading blanks so the 1st lands on its weekday, the days, then enough
@@ -216,7 +217,7 @@ export function MonthGrid({
               key={day}
               day={day}
               iso={iso}
-              label={t('grid.dayLabel', { month: monthName, day })}
+              label={t('grid.dayLabel', { month: monthOfDay, day })}
               items={eventsFor.get(day) ?? []}
               isToday={day === month.today}
               isSelected={day === selected}

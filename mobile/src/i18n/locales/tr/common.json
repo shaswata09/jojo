@@ -1,0 +1,44 @@
+{
+  "language": {
+    "label": "Dil",
+    "description": "jojo'nun gösterildiği dil. Kayıtlarınız, onları yazdığınız dilde kalır.",
+    "system": "Bu cihazla aynı ({{name}})",
+    "restartRtl": "jojo yeniden başlatıldığında {{name}} sağdan sola gösterilir.",
+    "restartLtr": "jojo yeniden başlatıldığında {{name}} soldan sağa gösterilir."
+  },
+  "actions": {
+    "undo": "Geri al",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "tryAgain": "Yeniden dene",
+    "preview": "Önizle",
+    "moreFor": "{{name}} için diğer eylemler",
+    "save": "Kaydet",
+    "done": "Bitti",
+    "openNamed": "Aç: {{name}}",
+    "clear": "Temizle",
+    "clearNamed": "Temizle: {{name}}",
+    "notNow": "Şimdi değil",
+    "duplicate": "Kopyala",
+    "remove": "Kaldır",
+    "back": "Geri",
+    "next": "İleri",
+    "close": "Kapat",
+    "clearSearch": "Aramayı temizle",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı"
+  },
+  "discard": {
+    "title": "Kaydedilmemiş değişiklikler atılsın mı?",
+    "description": "Burada yazdıklarınız hiçbir yere kaydedilmedi; bu yüzden ayrılmak onları atar — ve bu geri alınamaz.",
+    "confirm": "At"
+  },
+  "filter": {
+    "all": "Tümü"
+  },
+  "pageOptions": {
+    "title": "Sayfa seçenekleri",
+    "description": "Bunlar yalnızca bu ekran için, bu ziyaret boyunca geçerlidir."
+  }
+}

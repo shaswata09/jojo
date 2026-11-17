@@ -1,0 +1,243 @@
+{
+  "page": {
+    "title": "Transfer",
+    "subtitle": "Pindahkan semuanya antara komputer ini dan ponsel Anda",
+    "showAnimation": "Tampilkan animasi",
+    "showAnimationHint": "Adegan WebGPU yang digambar ulang setiap bingkai — matikan saat memakai baterai",
+    "roleLabel": "Peran perangkat ini",
+    "roles": {
+      "send": "Kirim ke ponsel",
+      "receive": "Terima dari ponsel"
+    },
+    "empty": {
+      "title": "Belum ada yang bisa dikirim",
+      "description": "Perangkat ini tidak menyimpan entri apa pun, jadi tidak ada yang bisa dikirim. Untuk membawa entri dari ponsel Anda, pilih Terima dari ponsel di atas. Atau tambahkan sesuatu, atau muat data demo, dan itu akan muncul di sini sebagai kelompok yang dapat Anda kirim.",
+      "receive": "Terima dari ponsel",
+      "loadDemo": "Muat data demo"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Lamaran",
+      "hint": "Setiap tahap, catatan, dan hasil pada masing-masing",
+      "summary_other": "{{count}} lamaran"
+    },
+    "timeline": {
+      "label": "Pengingat dan acara",
+      "hint": "{{reminders}} mengingatkan Anda, {{events}} adalah acara bertanggal",
+      "summary_other": "{{count}} pengingat dan acara"
+    },
+    "vault": {
+      "label": "Tautan dan cuplikan",
+      "hint": "{{links}} tautan · {{snippets}} cuplikan",
+      "summary_other": "{{count}} tautan dan cuplikan"
+    },
+    "files": {
+      "label": "Berkas",
+      "hint": "CV, pernyataan, dan apa pun yang disimpan untuk sebuah lamaran",
+      "summary_other": "{{count}} berkas"
+    },
+    "keywords": {
+      "label": "Kata kunci",
+      "hint": "Daftar kata kunci Anda dan setiap entri yang memakainya",
+      "summary_other": "{{count}} kata kunci"
+    },
+    "scout": {
+      "label": "Pencari lowongan",
+      "hint": "{{pipelines}} alur kerja · {{postings}} lowongan tersimpan · {{matches}} kecocokan",
+      "summary_other": "{{count}} entri pencari lowongan"
+    },
+    "notes": {
+      "label": "Catatan tempel",
+      "hint": "Catatan untuk diri sendiri di papan dasbor Anda",
+      "summary_other": "{{count}} catatan tempel"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Nama, tautan, istilah pencocokan, dan sakelar pencari Anda",
+      "summary_other": "{{count}} profil"
+    },
+    "people": {
+      "label": "Orang",
+      "hint": "Pemberi referensi, ketua panitia rekrutmen, dan perekrut, beserta lamaran terkaitnya",
+      "summary_other": "{{count}} orang"
+    },
+    "background": {
+      "label": "Latar belakang",
+      "hint": "Gelar, jabatan, makalah, dan keterampilan yang dibaca dari CV Anda",
+      "summary_other": "{{count}} fakta latar belakang"
+    },
+    "nothing": "tidak ada"
+  },
+  "stage": {
+    "sameNetwork": "Kedua perangkat harus berada di jaringan lokal yang sama — entri berpindah langsung di antara keduanya, tanpa server dan tanpa perantara.",
+    "send": {
+      "idle": {
+        "title": "Menunggu perangkat lain",
+        "body": "Buka jojo di ponsel Anda, pilih Transfer, lalu Terima dari komputer, dan pindai kode di sini. Memindainya menyepakati kunci enkripsi antara kedua perangkat, tanpa menyiarkan apa pun. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Menghubungi ponsel Anda",
+        "body": "Meminta separuh jabat tangan dari alamat yang Anda ketik. Belum ada yang dikirim."
+      },
+      "packing": {
+        "title": "Mengumpulkan entri Anda",
+        "body": "Membaca semua yang ada di daftar di bawah dari perangkat ini. Masih belum ada apa pun di jaringan."
+      },
+      "sending": {
+        "title": "Memindahkan entri Anda",
+        "body": "Potongan tersegel, langsung ke ponsel Anda melalui jaringan lokal. Kemajuannya ada di samping kode yang Anda ketik."
+      },
+      "done": {
+        "title": "Semuanya sudah dikirim",
+        "body": "Ponsel Anda bertanya sebelum mengganti apa pun; keputusannya ada di samping kode yang Anda ketik. Tidak ada yang dihapus dari perangkat ini — transfer adalah salinan."
+      },
+      "failed": {
+        "title": "Transfer berhenti",
+        "body": "Tidak ada yang berubah di perangkat ini. Penyebab kesalahannya tertulis di samping kode yang Anda ketik."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "Menunggu ponsel Anda",
+        "body": "Buka jojo di ponsel Anda, pilih Transfer, lalu Kirim ke komputer, dan pindai kode di sini. Ponsel Anda lalu menampilkan kode pendek untuk diketik di sebelah kanan. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Menghubungi ponsel Anda",
+        "body": "Meminta separuh jabat tangan dari alamat yang Anda ketik. Belum ada yang diterima."
+      },
+      "receiving": {
+        "title": "Menerima entri dari ponsel Anda",
+        "body": "Potongan tersegel, langsung dari ponsel Anda melalui jaringan lokal. Tidak ada yang berubah di komputer ini sampai Anda menyetujuinya."
+      },
+      "confirming": {
+        "title": "Semuanya sudah tiba",
+        "body": "Entri dari ponsel Anda sudah tiba dan lolos pemeriksaan. Belum ada yang berubah di sini — tentukan apakah entri itu akan menggantikan isi komputer ini."
+      },
+      "restoring": {
+        "title": "Mengganti entri di sini",
+        "body": "Menulis kiriman ponsel Anda di atas isi komputer ini."
+      },
+      "done": {
+        "title": "Semuanya sudah pindah",
+        "body": "Komputer ini sekarang menyimpan entri dari ponsel Anda. Tidak ada yang dihapus dari ponsel — transfer adalah salinan."
+      },
+      "failed": {
+        "title": "Transfer berhenti",
+        "body": "Tidak ada yang berubah di komputer ini. Penyebab kesalahannya tertulis di samping kode yang Anda ketik."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}} — itulah isi komputer ini sekarang, yang akan digantikan entri dari ponsel Anda.",
+      "sent": "{{summary}} — itulah yang dikirim.",
+      "willMove": "{{summary}} — itulah yang akan dipindahkan."
+    },
+    "scanHint": "Pindai kode di sini dengan aplikasi jojo di ponsel Anda — itulah kuncinya — lalu ponsel menampilkan kode pendek untuk diketik di sebelah kanan.",
+    "chooseGroup": "Pilih setidaknya satu kelompok untuk dikirim."
+  },
+  "qr": {
+    "label": "Kode pemasangan. Pindai dengan aplikasi jojo di ponsel Anda: buka Transfer dan arahkan kamera ke kotak ini."
+  },
+  "details": {
+    "title": "Detail",
+    "hint": "serah terima ini",
+    "records": "Entri",
+    "recordsHint": "semua yang ada di kelompok di bawah",
+    "encryption": "Enkripsi",
+    "encryptionHint": "AES-256-GCM, kunci disepakati lewat kamera",
+    "keyAgreed": "Kunci disepakati",
+    "notPaired": "Belum dipasangkan",
+    "route": "Rute",
+    "routeHint": "alamat jaringan pribadi — tidak pernah internet",
+    "localNetwork": "Jaringan lokal",
+    "servers": "Server",
+    "serversHint": "tanpa perantara, tanpa pensinyalan, tanpa hosting",
+    "none": "Tidak ada"
+  },
+  "payload": {
+    "label": "Transfer berkas",
+    "noFiles": "Tidak ada berkas di perangkat ini",
+    "files_other": "{{count}} berkas — bagian paling lambat dari serah terima"
+  },
+  "connect": {
+    "title": "Hubungkan",
+    "hintUnable": "tidak di browser ini",
+    "unable": "Browser ini tidak dapat terhubung ke perangkat lain di jaringan Anda — Safari dan semua browser di iPhone atau iPad tidak bisa, begitu pula Firefox dari situs yang dipublikasikan. Gunakan Chrome atau Edge di komputer — atau pindahkan semuanya dengan berkas cadangan dari Pengaturan, yang berfungsi di mana saja dan tanpa batas ukuran.",
+    "hint": "dari perangkat lain",
+    "intro": "Setelah memindai, ponsel Anda menampilkan kode pendek. Ketik di sini — dengan cara inilah komputer ini mengetahui lokasi ponsel, yang tidak dapat diketahui browser dengan sendirinya.",
+    "codeLabel": "Kode yang tampil di ponsel Anda",
+    "send": "Kirim",
+    "progress": "Kemajuan transfer",
+    "reaching": "Menghubungi ponsel Anda…",
+    "gathering": "Mengumpulkan entri Anda…",
+    "percentSent": "{{percent}}% terkirim",
+    "cancel": "Batal",
+    "another": "Kirim ke perangkat lain"
+  },
+  "done": {
+    "applied": "Ponsel Anda sekarang menyimpan entri ini.",
+    "appliedAt": "Ponsel Anda di {{target}} sekarang menyimpan entri ini.",
+    "declined": "Semuanya sudah dikirim, dan ponsel Anda mempertahankan entrinya sendiri — tidak ada yang diganti di sana.",
+    "failed": "Semuanya sudah dikirim, tetapi ponsel Anda tidak dapat membacanya, jadi tidak ada yang diganti di sana. Coba lagi.",
+    "unknown": "Semuanya sudah dikirim. Ponsel Anda tidak memberi tahu apakah entri diterima — periksa di sana.",
+    "unknownTo": "Semuanya sudah dikirim ke {{target}}. Ponsel Anda tidak memberi tahu apakah entri diterima — periksa di sana.",
+    "waiting": "Semuanya sudah dikirim. Ponsel Anda bertanya sebelum mengganti apa pun — konfirmasikan di sana untuk menyelesaikan.",
+    "waitingTo": "Semuanya sudah dikirim ke {{target}}. Ponsel Anda bertanya sebelum mengganti apa pun — konfirmasikan di sana untuk menyelesaikan."
+  },
+  "receive": {
+    "title": "Terima dari ponsel",
+    "hint": "dari ponsel Anda",
+    "unable": "Browser ini tidak dapat terhubung ke perangkat lain di jaringan Anda — Safari dan semua browser di iPhone atau iPad tidak bisa, begitu pula Firefox dari situs yang dipublikasikan. Gunakan Chrome atau Edge di komputer — atau ekspor cadangan di ponsel Anda dan buka di Pengaturan.",
+    "intro": "Di ponsel Anda, buka Transfer, pilih Kirim ke komputer, dan pindai kode di halaman ini. Ponsel lalu menampilkan kode pendek — ketik di sini. Kedua perangkat harus berada di jaringan lokal yang sama.",
+    "codeLabel": "Kode yang tampil di ponsel Anda",
+    "receive": "Terima",
+    "reaching": "Menghubungi ponsel Anda…",
+    "progress": "{{size}} sudah diterima. Tidak ada yang berubah di sini sampai Anda menyetujuinya.",
+    "cancel": "Batal",
+    "restoring": "Mengganti entri di komputer ini…",
+    "replaceWarning": "Menerima akan mengganti semua isi komputer ini dengan isi ponsel Anda, setelah Anda menyetujuinya. Untuk menyimpan salinan isi di sini, unduh cadangan terlebih dahulu.",
+    "downloadFirst": "Unduh cadangan dulu",
+    "twoBrowsers": {
+      "title": "Dua browser",
+      "hint": "antara dua komputer",
+      "body": "Halaman web tidak dapat menerima koneksi, begitu pula halaman di komputer lain, jadi dua komputer tidak dapat saling terhubung. Ekspor cadangan dari salah satunya dan buka di komputer lain — cadangan membawa setiap entri dan setiap dokumen.",
+      "export": "Ekspor cadangan"
+    },
+    "reload": "Muat ulang jojo"
+  },
+  "pullConfirm": {
+    "title": "Ganti semuanya dengan kiriman ponsel Anda?",
+    "description": "Ponsel Anda mengirim {{contents}}. {{replaces}}, dan ini tidak dapat diurungkan — riwayatnya ikut hilang. Unduh cadangan terlebih dahulu jika Anda ragu.",
+    "confirm": "Ganti semuanya"
+  },
+  "handover": {
+    "sendingAgain": "Mengirim lagi akan mengganti semua yang ada di sana dengan semua yang ada di sini."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Browser ini tidak dapat terhubung ke perangkat lain di jaringan Anda — Safari tidak bisa, tidak ada browser di iPhone atau iPad yang bisa, dan Firefox tidak bisa dari situs yang dipublikasikan. Gunakan Chrome atau Edge di komputer, atau pindahkan entri Anda dengan berkas cadangan.",
+      "notLocal": "Alamat itu tidak berada di jaringan lokal. jojo hanya terhubung ke alamat pribadi, jadi transfer tidak pernah melewati internet.",
+      "unreachable": "Tidak ada jawaban dari alamat itu. Pastikan kedua perangkat berada di jaringan lokal yang sama, dan browser Anda diizinkan menemukan perangkat di jaringan lokal. Beberapa jaringan tamu memblokir perangkat agar tidak saling melihat.",
+      "refused": "Perangkat itu menolak koneksi. Pastikan ponsel diatur sebaliknya — Terima di ponsel saat komputer ini mengirim, Kirim saat komputer ini menerima — lalu tampilkan kode baru dan pindai lagi.",
+      "oversized": "Perangkat itu menjawab dengan data yang jauh lebih banyak dari yang diharapkan jojo, jadi jojo berhenti membaca. Tidak ada yang berubah di komputer ini.",
+      "timeout": "Perangkat itu berhenti menjawab. Biarkan jojo tetap terbuka di ponsel dengan layar menyala, lalu tampilkan kode baru dan coba lagi.",
+      "blocked": "Browser Anda memblokir situs ini untuk menjangkau perangkat di jaringan lokal Anda. Izinkan di pengaturan situs (ikon di kiri alamat), lalu coba lagi.",
+      "cancelled": "Dibatalkan.",
+      "conflict": "Ponsel Anda tidak dapat mengumpulkan entrinya untuk dikirim. Periksa pesan di ponsel — tidak ada yang berubah di komputer ini."
+    },
+    "dial": {
+      "unreadable": "Kode itu berisi karakter yang tidak dipakai jojo. Cocokkan dengan layar lainnya.",
+      "length": "Panjang kode itu salah. Kodenya dua belas karakter, dalam tiga kelompok berisi empat.",
+      "mistyped": "Kode itu tidak valid — ada karakter yang salah di suatu tempat. Coba ketik lagi."
+    },
+    "pull": {
+      "forged": "Sebagian data yang tiba bukan dari ponsel yang Anda pasangkan, jadi jojo membuang semuanya. Tidak ada yang berubah di komputer ini — tampilkan kode baru dan coba lagi.",
+      "oversized": "Ponsel Anda mengirim lebih banyak dari yang dapat diterima jojo sekaligus, jadi jojo berhenti membaca. Tidak ada yang berubah di komputer ini.",
+      "unrestorable": "Kiriman ponsel Anda tidak dapat dipulihkan: {{reason}}. Tidak ada yang berubah di komputer ini.",
+      "declined": "Tidak ada yang diubah. Kiriman ponsel Anda sudah dibuang."
+    },
+    "unexpected": "Terjadi kesalahan di komputer ini dan transfer berhenti. Tidak ada yang tertinggal di perangkat lain — coba lagi, atau pindahkan entri Anda dengan berkas cadangan dari Pengaturan.",
+    "unproven": "Perangkat itu tidak dapat membuktikan bahwa ia membaca kode di layar ini. Tampilkan kode baru dan pindai lagi.",
+    "pairingFailed": "Terjadi kesalahan saat menyiapkan pemasangan aman di perangkat ini."
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "shared": {
+    "undo": "Annulla",
+    "cancel": "Annulla",
+    "add": "Aggiungi",
+    "discard": "Scarta",
+    "save": "Salva",
+    "didNotSave": "Non è stato salvato"
+  },
+  "saveBar": {
+    "unsaved": "Modifiche non salvate: salvando le scrivi in questo browser."
+  },
+  "form": {
+    "saved": {
+      "title": "Profilo salvato",
+      "description": "Scritto in questo browser e conservato."
+    }
+  },
+  "fields": {
+    "basics": "Dati di base",
+    "fullName": {
+      "label": "Nome e cognome",
+      "placeholder": "es. Lonardo Jenson"
+    },
+    "position": {
+      "label": "Posizione attuale",
+      "placeholder": "es. Dottorando, Informatica"
+    },
+    "location": {
+      "label": "Località",
+      "placeholder": "es. Santa Clara, CA"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "links": "Link",
+    "website": {
+      "label": "Sito web"
+    }
+  },
+  "interests": {
+    "title": "Interessi e obiettivi",
+    "hint": "guida i risultati dello scout",
+    "matchTerms": {
+      "title": "Termini di ricerca",
+      "description": "Aree di ricerca e formulazioni che lo scout cerca. Separati dalle parole chiave con cui archivi i record.",
+      "remove": "Rimuovi {{term}}",
+      "newLabel": "Nuovo termine di ricerca",
+      "placeholder": "Aggiungi un termine di ricerca"
+    },
+    "targetRoles": {
+      "label": "Ruoli desiderati",
+      "placeholder": "es. Professore associato (TT) · Ricercatore"
+    },
+    "regions": {
+      "label": "Regioni preferite",
+      "placeholder": "es. Texas · da remoto"
+    },
+    "academia": "Includi annunci accademici",
+    "industry": "Includi annunci aziendali"
+  },
+  "roleTags": {
+    "title": "Etichette di ruolo",
+    "description": "I tipi di ruolo che stai seguendo. Ogni candidatura è archiviata sotto uno di essi, e sia il filtro per ruolo sia i dati per ruolo in Statistiche lo usano. Rimuoverne uno qui lascia esattamente dove sono le candidature che lo riportano.",
+    "remove_one": "Rimuovi {{role}}, usato in {{count}} candidatura",
+    "remove_many": "Rimuovi {{role}}, usato in {{count}} di candidature",
+    "remove_other": "Rimuovi {{role}}, usato in {{count}} candidature",
+    "newLabel": "Nuova etichetta di ruolo",
+    "placeholder": "es. Data scientist"
+  },
+  "documents": {
+    "title": "Documenti",
+    "hint": "la sezione {{bucket}} della Cassaforte",
+    "upload": "Carica",
+    "exportInSettings": "Esporta in Impostazioni",
+    "empty": {
+      "title": "Ancora nessun documento",
+      "description": "Trascina qui il tuo CV e le tue dichiarazioni, o sceglili: vengono archiviati nella Cassaforte sotto {{bucket}}, dove il resto dell'app può raggiungerli.",
+      "upload": "Carica un documento"
+    },
+    "footer": "Gli stessi file dello <anchor>strumento File</anchor> della Cassaforte, filtrati su {{bucket}}. Trascina qui un documento o sceglilo e il file viene conservato in questo browser: nulla viene caricato altrove. Fai clic su uno per leggerlo."
+  },
+  "documentTile": {
+    "open": "Apri {{name}}",
+    "meta": "{{size}} · salvato {{ago}}",
+    "delete": "Elimina {{name}}"
+  },
+  "background": {
+    "title": "Il tuo percorso",
+    "hint_one": "{{count}} registrato · ciò con cui si confronta un annuncio",
+    "hint_many": "{{count}} registrati · ciò con cui si confronta un annuncio",
+    "hint_other": "{{count}} registrati · ciò con cui si confronta un annuncio",
+    "details_one": "{{count}} dettaglio",
+    "details_many": "{{count}} di dettagli",
+    "details_other": "{{count}} dettagli",
+    "readFromDocument": "letto da un documento",
+    "edit": "Modifica {{title}}",
+    "remove": "Rimuovi {{title}}",
+    "added": "{{title}} aggiunto",
+    "updated": "{{title}} aggiornato",
+    "removed": "{{title}} rimosso",
+    "addEntry": "Aggiungi una voce",
+    "form": {
+      "kind": "Tipo",
+      "title": "Titolo",
+      "titlePlaceholder": "Di cosa si trattava",
+      "where": "Dove",
+      "optional": "Facoltativo",
+      "when": "Quando",
+      "whenPlaceholder": "Come scritto — “2021–2024”",
+      "year": "Anno",
+      "detail": "Dettaglio",
+      "detailPlaceholder": "Qualsiasi cosa con cui valga la pena confrontare un annuncio (facoltativo)",
+      "highlights": "Punti salienti",
+      "highlightsHint": "Uno per riga: cosa hai costruito, pubblicato, insegnato o scoperto.",
+      "readKept": "letto da un documento: la tua modifica prevale sulla lettura",
+      "saveChanges": "Salva le modifiche"
+    },
+    "empty": {
+      "title": "Ancora nulla di registrato",
+      "configured": "Metti nella Cassaforte il tuo CV o una dichiarazione di ricerca o didattica e jojo si offrirà di leggerli: ciò che trova ti viene mostrato prima che venga salvato qualcosa. Oppure aggiungi una voce a mano.",
+      "unconfigured": "Per leggere un documento serve un modello. Collegane uno in Impostazioni, poi metti il tuo CV o una dichiarazione nella Cassaforte e jojo si offrirà di leggerli. Puoi aggiungere voci a mano anche senza."
+    },
+    "readMenu": {
+      "needsModel": "Per leggere un documento serve un modello. Collegane uno in Impostazioni.",
+      "button": "Leggi un documento",
+      "nothing": "Nella Cassaforte non c'è ancora nulla da leggere. Aggiungi il tuo CV o una dichiarazione e comparirà qui.",
+      "allRead": "Tutto ciò che è leggibile nella Cassaforte è stato letto.",
+      "read": "letto"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Istruzione",
+      "employment": "Lavoro",
+      "publication": "Pubblicazione",
+      "skill": "Competenza",
+      "teaching": "Didattica",
+      "award": "Premio",
+      "service": "Servizio",
+      "certification": "Certificazione",
+      "language": "Lingua",
+      "project": "Progetto",
+      "volunteering": "Volontariato",
+      "membership": "Affiliazione",
+      "grant": "Finanziamento",
+      "patent": "Brevetto"
+    },
+    "skipped_one": "{{count}} voce è stata saltata",
+    "skipped_many": "{{count}} di voci sono state saltate",
+    "skipped_other": "{{count}} voci sono state saltate",
+    "readIt": "Leggilo",
+    "readFailed": "La lettura del documento non è riuscita.",
+    "notNow": "Non ora",
+    "discardEntries": "Scarta queste voci",
+    "review": {
+      "single": "1 voce letta da questo documento",
+      "some": "Verranno aggiunte {{kept}} voci su {{total}}",
+      "untick": "Togli la spunta a ciò che è sbagliato.",
+      "add": "Aggiungi {{title}}",
+      "connections_one": "{{count}} collegamento tra di esse",
+      "connections_many": "{{count}} di collegamenti tra di esse",
+      "connections_other": "{{count}} collegamenti tra di esse",
+      "addOne": "Aggiungila al mio profilo",
+      "addMany": "Aggiungi {{total}} al mio profilo"
+    },
+    "toast": {
+      "already": "Già nel tuo profilo",
+      "added_one": "{{count}} aggiunta al tuo profilo",
+      "added_many": "{{count}} aggiunte al tuo profilo",
+      "added_other": "{{count}} aggiunte al tuo profilo",
+      "nothing": "Non è stato possibile aggiungere nulla",
+      "readFrom": "Letto da {{name}}.",
+      "known": "{{known}} su {{total}} erano già noti.",
+      "related_one": "{{count}} collegamento tra di esse registrato.",
+      "related_many": "{{count}} di collegamenti tra di esse registrati.",
+      "related_other": "{{count}} collegamenti tra di esse registrati.",
+      "weigh": "Ora jojo può confrontare un annuncio con ciò che hai fatto.",
+      "refused": "Le voci sono state rifiutate."
+    }
+  }
+}

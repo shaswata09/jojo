@@ -1,0 +1,396 @@
+{
+  "stage": {
+    "draft": "Bản nháp",
+    "submitted": "Đã nộp",
+    "screen": "Cuộc gọi sàng lọc",
+    "interview": "Phỏng vấn",
+    "offer": "Lời mời làm việc",
+    "closed": "Đã đóng"
+  },
+  "kind": {
+    "deadline": "Hạn chót",
+    "interview": "Phỏng vấn",
+    "visit": "Chuyến thăm",
+    "call": "Cuộc gọi",
+    "prep": "Chuẩn bị",
+    "admin": "Hành chính",
+    "follow-up": "Liên hệ lại"
+  },
+  "outcome": {
+    "rejected": "Bị từ chối",
+    "withdrawn": "Đã rút đơn",
+    "accepted": "Đã nhận lời",
+    "declined": "Đã từ chối",
+    "ghosted": "Bị bỏ lơ — không phản hồi"
+  },
+  "outcomeAction": {
+    "rejected": "Bị từ chối",
+    "withdrawn": "Đã rút đơn",
+    "accepted": "Đã nhận lời mời làm việc",
+    "declined": "Đã từ chối lời mời làm việc",
+    "ghosted": "Đã đóng mà không có phản hồi"
+  },
+  "format": {
+    "phone": "Điện thoại",
+    "video": "Video",
+    "onsite": "Trực tiếp"
+  },
+  "verdict": {
+    "strong": "Rất phù hợp",
+    "worth-tailoring": "Đáng để điều chỉnh",
+    "a-stretch": "Hơi quá sức",
+    "not-measured": "Chưa đánh giá"
+  },
+  "background": {
+    "education": "Học vấn",
+    "employment": "Kinh nghiệm làm việc",
+    "publication": "Công bố khoa học",
+    "patent": "Bằng sáng chế",
+    "grant": "Tài trợ nghiên cứu",
+    "leadership": "Vai trò lãnh đạo",
+    "outreach": "Hoạt động cộng đồng",
+    "training": "Phát triển chuyên môn",
+    "other": "Khác",
+    "award": "Giải thưởng",
+    "teaching": "Giảng dạy",
+    "service": "Hoạt động phục vụ",
+    "project": "Dự án",
+    "certification": "Chứng chỉ",
+    "skill": "Kỹ năng",
+    "language": "Ngôn ngữ",
+    "volunteering": "Tình nguyện",
+    "membership": "Thành viên hội"
+  },
+  "tone": {
+    "teal": "Xanh dương",
+    "cyan": "Xanh lơ",
+    "green": "Xanh lá",
+    "amber": "Hổ phách",
+    "red": "Đỏ",
+    "pink": "Hồng",
+    "violet": "Tím",
+    "gray": "Xám"
+  },
+  "mark": {
+    "bold": "mới hoặc viết lại cho tin tuyển dụng này",
+    "italic": "diễn đạt lại",
+    "underline": "đưa lên trước hoặc nhấn mạnh hơn"
+  },
+  "document": {
+    "cv": "CV",
+    "research-statement": "bản trình bày nghiên cứu",
+    "teaching-statement": "bản trình bày giảng dạy",
+    "cover-letter": "thư xin việc",
+    "other": "tài liệu"
+  },
+  "how": {
+    "filed-under": "được xếp vào đơn ứng tuyển này",
+    "same-url": "khớp theo địa chỉ web",
+    "via-posting": "từ tin tuyển dụng mà trình tìm việc tìm thấy"
+  },
+  "contactRole": {
+    "recommender": "Người viết thư giới thiệu",
+    "contact": "Đầu mối liên hệ"
+  },
+  "approval": {
+    "manual": "Thủ công",
+    "semi": "Bán tự động",
+    "auto": "Tự động"
+  },
+  "approvalSaid": {
+    "manual": "Bạn sẽ được hỏi trước khi bất cứ điều gì trong cuộc trò chuyện này được ghi lại.",
+    "semi": "Các chỉnh sửa diễn ra ngay. Bạn sẽ được hỏi trước khi có gì bị xóa hoặc xóa trắng.",
+    "auto": "Mọi thứ diễn ra ngay, kể cả việc xóa. Chỉ việc làm trống hoặc thay thế toàn bộ kho dữ liệu mới cần xác nhận."
+  },
+  "funnel": {
+    "0": "Đã ứng tuyển",
+    "1": "Đã phản hồi",
+    "2": "Cuộc gọi sàng lọc",
+    "3": "Phỏng vấn",
+    "4": "Lời mời làm việc"
+  },
+  "band": {
+    "0": "Đang tiến hành",
+    "1": "Lời mời làm việc",
+    "2": "Bị từ chối",
+    "3": "Đã rút đơn",
+    "4": "Không phản hồi"
+  },
+  "dimension": {
+    "source": "nguồn ứng tuyển",
+    "role": "loại vị trí"
+  },
+  "kpi": {
+    "label": {
+      "response": "Tỷ lệ phản hồi",
+      "interview": "Tỷ lệ phỏng vấn",
+      "offer": "Tỷ lệ nhận lời mời",
+      "reply": "Thời gian phản hồi trung vị"
+    },
+    "note": {
+      "response_other": "{{count}}/{{of}} đã phản hồi",
+      "interview_other": "{{count}}/{{of}} được phỏng vấn",
+      "offer_other": "{{count}}/{{of}} nhận được lời mời làm việc",
+      "replyNone": "chưa có phản hồi nào ghi đủ cả hai ngày",
+      "reply_other": "trên {{count}} phản hồi"
+    },
+    "days_other": "{{count}} ngày",
+    "typicalRate": "thường là {{value}}%",
+    "typicalDays": "thường là {{days}}"
+  },
+  "rel": {
+    "AT": "ở tại",
+    "ABOUT": "nói về",
+    "FILED_UNDER": "được xếp vào",
+    "TAGS": "gắn nhãn",
+    "FROM": "đến từ",
+    "BECAME": "đã trở thành",
+    "COPY_OF": "là bản sao của",
+    "SUBJECT": "nói về",
+    "OBJECT": "trỏ tới"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "Máy chủ cục bộ (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) — miễn phí, giới hạn tần suất"
+  },
+  "month": {
+    "1": "tháng 1",
+    "2": "tháng 2",
+    "3": "tháng 3",
+    "4": "tháng 4",
+    "5": "tháng 5",
+    "6": "tháng 6",
+    "7": "tháng 7",
+    "8": "tháng 8",
+    "9": "tháng 9",
+    "10": "tháng 10",
+    "11": "tháng 11",
+    "12": "tháng 12"
+  },
+  "monthOfDay": {
+    "1": "tháng 1",
+    "2": "tháng 2",
+    "3": "tháng 3",
+    "4": "tháng 4",
+    "5": "tháng 5",
+    "6": "tháng 6",
+    "7": "tháng 7",
+    "8": "tháng 8",
+    "9": "tháng 9",
+    "10": "tháng 10",
+    "11": "tháng 11",
+    "12": "tháng 12"
+  },
+  "monthShort": {
+    "1": "tháng 1",
+    "2": "tháng 2",
+    "3": "tháng 3",
+    "4": "tháng 4",
+    "5": "tháng 5",
+    "6": "tháng 6",
+    "7": "tháng 7",
+    "8": "tháng 8",
+    "9": "tháng 9",
+    "10": "tháng 10",
+    "11": "tháng 11",
+    "12": "tháng 12"
+  },
+  "weekdayShort": {
+    "0": "Th 2",
+    "1": "Th 3",
+    "2": "Th 4",
+    "3": "Th 5",
+    "4": "Th 6",
+    "5": "Th 7",
+    "6": "CN"
+  },
+  "weekday": {
+    "0": "Chủ Nhật",
+    "1": "Thứ Hai",
+    "2": "Thứ Ba",
+    "3": "Thứ Tư",
+    "4": "Thứ Năm",
+    "5": "Thứ Sáu",
+    "6": "Thứ Bảy"
+  },
+  "dayMonth": "{{day}} {{month}}",
+  "monthYear": "{{month}} năm {{year}}",
+  "quarter": "Quý {{quarter}} năm {{year}}",
+  "weekdayNarrow": {
+    "0": "T2",
+    "1": "T3",
+    "2": "T4",
+    "3": "T5",
+    "4": "T6",
+    "5": "T7",
+    "6": "CN"
+  },
+  "action": {
+    "detailsEdited": "Đã sửa thông tin",
+    "draftCreated": "Đã tạo bản nháp",
+    "offerReceived": "Đã nhận lời mời làm việc",
+    "duplicated": "Đã nhân bản",
+    "addedFromScout": "Đã thêm từ Trình tìm việc",
+    "addedFromPosting": "Đã thêm từ một tin tuyển dụng đã lưu",
+    "noteEdited": "Đã sửa ghi chú",
+    "offerCleared": "Đã xóa thông tin lời mời làm việc",
+    "flagged": "Đã gắn cờ để liên hệ lại",
+    "flagCleared": "Đã bỏ cờ",
+    "movedTo": {
+      "draft": "Đã chuyển sang Bản nháp",
+      "submitted": "Đã chuyển sang Đã nộp",
+      "screen": "Đã chuyển sang Cuộc gọi sàng lọc",
+      "interview": "Đã chuyển sang Phỏng vấn",
+      "offer": "Đã chuyển sang Lời mời làm việc",
+      "closed": "Đã chuyển sang Đã đóng"
+    },
+    "addedAt": {
+      "draft": "Đã thêm ở giai đoạn Bản nháp",
+      "submitted": "Đã thêm ở giai đoạn Đã nộp",
+      "screen": "Đã thêm ở giai đoạn Cuộc gọi sàng lọc",
+      "interview": "Đã thêm ở giai đoạn Phỏng vấn",
+      "offer": "Đã thêm ở giai đoạn Lời mời làm việc",
+      "closed": "Đã thêm ở giai đoạn Đã đóng"
+    },
+    "interviewScheduled": {
+      "phone": "Đã lên lịch phỏng vấn qua điện thoại",
+      "video": "Đã lên lịch phỏng vấn qua video",
+      "onsite": "Đã lên lịch phỏng vấn trực tiếp"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "hôm nay",
+      "yesterday": "hôm qua",
+      "days_other": "{{count}} ngày trước"
+    },
+    "when": {
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "inDays_other": "trong {{count}} ngày nữa",
+      "overdue_other": "quá hạn {{count}} ngày"
+    },
+    "inline": {
+      "today": "hôm nay",
+      "tomorrow": "ngày mai"
+    },
+    "completed": {
+      "today": "Hoàn thành hôm nay",
+      "yesterday": "Hoàn thành hôm qua",
+      "days_other": "Hoàn thành {{count}} ngày trước",
+      "on": "Hoàn thành ngày {{date}}"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "Lời mời làm việc",
+      "overdue": "Quá hạn",
+      "deadline": "Hạn chót",
+      "interview": "Phỏng vấn"
+    },
+    "headline": {
+      "reply": "Trả lời {{org}}",
+      "submitOrLetGo": "Nộp đơn cho {{org}} hoặc bỏ qua",
+      "recordInterview": "Ghi lại buổi phỏng vấn với {{org}}",
+      "recordVisit": "Ghi lại chuyến thăm {{org}}",
+      "recordCall": "Ghi lại cuộc gọi với {{org}}",
+      "catchUp": "Cập nhật tình hình với {{org}}",
+      "submit": "Nộp đơn cho {{org}}",
+      "prepare": "Chuẩn bị cho {{org}}",
+      "dateInterview": "Đặt ngày phỏng vấn với {{org}}"
+    },
+    "timing": {
+      "respondBy": "Trả lời trước {{date}} · {{when}}",
+      "wasDue": "Đã đến hạn {{date}} · {{when}}",
+      "due": "Hạn {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "Chưa đặt ngày"
+    },
+    "button": {
+      "draftReply": "Soạn thư trả lời",
+      "recordOutcome": "Ghi lại kết quả",
+      "acceptOrDecline": "Nhận lời hoặc từ chối",
+      "openApplication": "Mở đơn ứng tuyển",
+      "draftMessage": "Soạn tin nhắn"
+    },
+    "undatedInterview": "Đang ở giai đoạn phỏng vấn nhưng chưa có gì được ghi ngày, nên cả tuần tới lẫn lịch đều không thể hiển thị.",
+    "unfiled": "Hạn chót này chưa được xếp vào đơn ứng tuyển nào",
+    "unknownOrg": "Không rõ"
+  },
+  "filed": {
+    "none": "chưa xếp vào đâu",
+    "one": "được xếp vào {{a}}",
+    "two": "được xếp vào {{a}} và {{b}}",
+    "many_other": "được xếp vào {{count}} đơn ứng tuyển"
+  },
+  "readBy": "Được đọc bởi {{model}} · {{ago}}",
+  "missingSource": "một tài liệu không còn trong Kho lưu trữ",
+  "undo": {
+    "nothing": {
+      "undo": "Không có gì để hoàn tác.",
+      "redo": "Không có gì để làm lại."
+    },
+    "changed": {
+      "undo": "Không có gì để hoàn tác — nội dung đã thay đổi kể từ đó",
+      "redo": "Không có gì để làm lại — nội dung đã thay đổi kể từ đó"
+    },
+    "done": {
+      "undo": "Đã hoàn tác",
+      "redo": "Đã làm lại"
+    },
+    "journal": "hidden",
+    "action": "Hoàn tác",
+    "superseded": {
+      "nothing": "Không có gì được hoàn tác",
+      "part": "Một phần được giữ nguyên",
+      "named": "{{labels}} — bạn đã thay đổi các bản ghi đó kể từ lúc ấy, và hoàn tác bây giờ sẽ xóa luôn những thay đổi đó.",
+      "unnamed": "Bạn đã thay đổi các bản ghi đó kể từ lúc ấy, và hoàn tác bây giờ sẽ xóa luôn những thay đổi đó.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "Không lưu được",
+    "didNotFit": "Có điều gì đó trong bản ghi này không hợp lệ."
+  },
+  "announce": {
+    "stickyRemoved": "Đã gỡ ghi chú"
+  },
+  "handover": {
+    "never": "Thiết bị này chưa từng tham gia chuyển dữ liệu, nên ngoài nó ra không nơi nào có bản sao các bản ghi này.",
+    "clean": {
+      "today": "Lần chuyển gần nhất là hôm nay, và từ đó chưa có gì được ghi ở đây — thiết bị kia đang giữ đúng các bản ghi này.",
+      "yesterday": "Lần chuyển gần nhất là hôm qua, và từ đó chưa có gì được ghi ở đây — thiết bị kia đang giữ đúng các bản ghi này.",
+      "daysAgo": "Lần chuyển gần nhất là {{ago}}, và từ đó chưa có gì được ghi ở đây — thiết bị kia đang giữ đúng các bản ghi này."
+    },
+    "drifted": {
+      "today_other": "Lần chuyển gần nhất là hôm nay, và từ đó đã có {{count}} thay đổi ở đây. Thiết bị kia đang chậm hơn chừng ấy.",
+      "yesterday_other": "Lần chuyển gần nhất là hôm qua, và từ đó đã có {{count}} thay đổi ở đây. Thiết bị kia đang chậm hơn chừng ấy.",
+      "daysAgo_other": "Lần chuyển gần nhất là {{ago}}, và từ đó đã có {{count}} thay đổi ở đây. Thiết bị kia đang chậm hơn chừng ấy."
+    }
+  },
+  "backup": {
+    "records_other": "{{count}} bản ghi",
+    "links_other": "{{count}} liên kết",
+    "documents_zero": "không có tài liệu",
+    "documents_other": "{{count}} tài liệu",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}} — trong đó {{loss}}",
+    "both": "{{a}} và {{b}}",
+    "leftOut": "{{what}} không đọc được và sẽ bị bỏ qua",
+    "changed_other": "{{count}} bản ghi sẽ được khôi phục với nội dung đã thay đổi",
+    "leftOutAndChanged": "{{leftOut}}, và {{changed}}",
+    "replacesAll": {
+      "computer": "Khôi phục sẽ thay thế mọi bản ghi và mọi tài liệu bạn đang có",
+      "phone": "Khôi phục sẽ thay thế mọi bản ghi và mọi tài liệu trên điện thoại này"
+    },
+    "replacesKept": {
+      "computer_other": "Khôi phục sẽ thay thế mọi bản ghi bạn đang có và mọi tài liệu, trừ {{count}} bản ghi đến mà không kèm tài liệu — bản sao đã có ở đây của chúng sẽ được giữ lại",
+      "phone_other": "Khôi phục sẽ thay thế mọi bản ghi trên điện thoại này và mọi tài liệu, trừ {{count}} bản ghi đến mà không kèm tài liệu — bản sao đã có ở đây của chúng sẽ được giữ lại"
+    }
+  }
+}

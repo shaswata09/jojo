@@ -1,0 +1,249 @@
+{
+  "screen": {
+    "title": "Cara menggunakan jojo",
+    "pageLabel": "Halaman panduan",
+    "takeTour": "Ikuti tur",
+    "pages": {
+      "overview": {
+        "label": "Ikhtisar",
+        "subtitle": "Semuanya berjalan di perangkat Anda. Mulailah sederhana, tambahkan kemampuan saat Anda membutuhkannya."
+      },
+      "screens": {
+        "label": "Layar",
+        "subtitle": "Kegunaan setiap layar, dan jalan langsung ke sana."
+      },
+      "graph": {
+        "label": "Graf",
+        "subtitle": "Model entri di balik ketujuh daftar."
+      },
+      "tools": {
+        "label": "Alat",
+        "subtitle": "Apa yang dapat dilakukan asisten pada entri Anda, dan apa yang mencegahnya."
+      },
+      "built": {
+        "label": "Dibangun dengan",
+        "subtitle": "Bahan pembuatnya, dan apa yang masih berupa pengganti sementara."
+      }
+    }
+  },
+  "overview": {
+    "active": "aktif",
+    "notConnected": "belum terhubung",
+    "layers": {
+      "device": {
+        "name": "Hanya perangkat ini",
+        "requires": "Tidak ada yang perlu disiapkan",
+        "gives": "Pantau lamaran, tenggat, tindak lanjut, dan dokumen"
+      },
+      "model": {
+        "name": "+ Model lokal",
+        "requires": "Ollama, vLLM, atau LM Studio — atau kunci NVIDIA gratis",
+        "gives": "Asisten berutas yang membaca dan menulis entri Anda — setiap perubahan ditunjukkan kepada Anda lebih dulu — dan \"Tanya graf\" dalam satu kalimat"
+      },
+      "reader": {
+        "name": "+ Pembaca dokumen",
+        "requires": "MarkItDown, di alamat yang Anda ketik",
+        "gives": "Asisten membaca isi CV dan lowongan tersimpan Anda, dan lowongan yang Anda tambahkan dari tautan mengisi formulirnya sendiri"
+      },
+      "computer": {
+        "name": "+ Komputer Anda",
+        "requires": "Keduanya di jaringan yang sama",
+        "gives": "Transfer memindahkan seluruh brankas antara ponsel ini dan komputer Anda, tanpa perantara"
+      }
+    },
+    "gettingStarted": "Memulai",
+    "progress": "{{done}} dari {{total}} selesai",
+    "allDone": "Semua langkah selesai. Daftar periksa ini membaca entri Anda, jadi akan menyesuaikan jika Anda mengosongkannya.",
+    "howItWorks": "Setiap langkah membuka fitur yang sebenarnya, dan tercentang sendiri begitu entrinya ada. Tidak ada tutorial di sini yang harus Anda ikuti sampai habis.",
+    "done": "Selesai",
+    "steps": {
+      "application": {
+        "title": "Tambahkan lamaran",
+        "body": "Sebuah posisi, tahapnya, dan tenggatnya. Semua hal lain di jojo bergantung pada entri ini.",
+        "label": "Lamaran baru"
+      },
+      "dated": {
+        "title": "Beri tanggal pada sesuatu",
+        "body": "Tenggat, wawancara, dan kunjungan kampus adalah satu jenis entri, jadi semuanya sampai ke kalender, minggu mendatang, dan lamarannya sekaligus.",
+        "label": "Acara baru"
+      },
+      "reminder": {
+        "title": "Atur tindak lanjut",
+        "body": "Pengingat adalah entri yang sama dengan dorongan yang diaktifkan. Setelah tanggalnya lewat, pengingat ditandai di Hari ini sampai Anda mencentangnya.",
+        "label": "Pengingat baru"
+      },
+      "posting": {
+        "title": "Simpan lowongan sebelum diturunkan",
+        "body": "Tidak ada yang diambil dan tidak ada salinan yang disimpan — yang disimpan adalah URL, pemberi kerja yang ditebak dari URL itu, dan tanggal Anda menyimpannya. Itu cukup untuk menemukan iklannya lagi.",
+        "label": "Buka Pencari lowongan"
+      },
+      "file": {
+        "title": "Arsipkan dokumen Anda",
+        "body": "Catat CV atau pernyataan di Brankas. Nama, ukuran, dan jenisnya disimpan; isi berkasnya tidak pernah dibaca.",
+        "label": "Buka Brankas"
+      },
+      "keyword": {
+        "title": "Beri label dengan kata kunci",
+        "body": "Kata kunci adalah milik Anda, dipakai bersama oleh lamaran, pengingat, dan semua isi Brankas — tidak seperti label posisi tetap. Tombol label di baris mana pun menambahkannya.",
+        "label": "Kelola kata kunci"
+      },
+      "draft": {
+        "title": "Tulis draf pesan",
+        "body": "Disusun dari cuplikan email Anda sendiri, dengan posisi, pemberi kerja, dan tanggal yang diisi dari entri. Nama orang tidak pernah diisikan untuk Anda. Tidak ada yang mencatat bahwa Anda sudah mengirimnya, jadi langkah ini tidak tercentang sendiri.",
+        "label": "Tulis draf pesan"
+      }
+    },
+    "profile": {
+      "title": "Isi profil Anda",
+      "hint": "profil bukan bagian dari daftar periksa",
+      "body": "Data dasar, tautan, posisi yang dituju, dan istilah pencocokan Anda ada di Profil saya. Itulah dasar penilaian pencari dan bahan draf asisten, jadi semuanya penting — tetapi build ini hanya menyimpannya selama kunjungan, tidak menuliskannya ke mana pun, itulah sebabnya daftar periksa di atas tidak dapat mencentangnya.",
+      "open": "Buka profil saya"
+    },
+    "database": {
+      "title": "Aplikasi ini adalah database-nya",
+      "body": "Entri Anda disimpan di perangkat ini dan tetap ada setelah dimulai ulang. Tidak ada yang dikirim ke mana pun — tanpa akun, tanpa sinkronisasi, tanpa panggilan jaringan. Di Pengaturan Anda dapat mengosongkannya, memuat ulang data demo, atau mengekspor salinan ke papan klip."
+    }
+  },
+  "screens": {
+    "intro": "Setiap layar di aplikasi, dan satu kalimat yang menyebutkan kegunaannya. Mengetuk baris akan membukanya — halaman ini adalah jalan masuk sekaligus keterangan.",
+    "open": "Buka {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "Di bilah tab",
+        "hint": "selalu sekali ketuk"
+      },
+      "vault": {
+        "title": "Di dalam Brankas",
+        "hint": "lima alat, satu tab"
+      },
+      "more": {
+        "title": "Di balik Lainnya",
+        "hint": "bagian lain jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Setiap daftar di aplikasi ini adalah tampilan atas satu kumpulan entri. Sebuah entri adalah <b>simpul</b>; hubungan antara dua entri adalah <b>sisi</b> yang bernama. Itulah seluruh modelnya, dan itulah sebabnya pertanyaan yang melintasi dua daftar dapat dijawab.",
+    "open": "Buka graf",
+    "kinds_other": "{{count}} jenis",
+    "nodes": "Simpul",
+    "nodesIntro": "Satu simpul per entri, ditambah tiga yang hanya ada sebagai penghubung — pemberi kerja, posisi, dan kata kunci masing-masing adalah simpul agar semua yang diarsipkan di bawahnya dapat ditemukan darinya.",
+    "edges": "Sisi",
+    "edgesIntro": "Masing-masing punya arah dan nama. Nama itulah yang dimasukkan penyusun pertanyaan di layar Graf ke baris tengahnya.",
+    "relShape": {
+      "AT": "Lamaran → Pemberi kerja",
+      "IS": "Lamaran → Posisi",
+      "ABOUT": "Tanggal atau pengingat → Lamaran",
+      "FILED_UNDER": "Berkas, tautan, atau cuplikan → Lamaran",
+      "TAGS": "Kata kunci → entri apa pun",
+      "BECAME": "Lowongan tersimpan atau kecocokan → Lamaran"
+    },
+    "deleteTitle": "Menghapus melepas tautan, tidak berantai",
+    "deleteBody": "Menghapus lamaran menghapus simpul itu dan sisi yang menyentuhnya. Pengingat, berkas, dan lowongan tersimpan yang diarsipkan di bawahnya tetap ada — semuanya entri tersendiri, dan tetap bertahan tanpa ada yang menunjuk ke sana. Setiap penghapusan di aplikasi menyatakan hal ini, dan penyusun pertanyaan di layar Graf adalah tempat menemukan yang terlepas: tanyakan berkas yang tidak punya tautan ke lamaran."
+  },
+  "tools": {
+    "inTotal": "{{count}} secara keseluruhan",
+    "canDo": {
+      "title": "Yang dapat dilakukan asisten",
+      "body_other": "Asisten tidak mengetuk layar Anda. Asisten memanggil {{count}} operasi yang sama dengan yang dipanggil tombol — jalur kode yang identik, dengan pemeriksaan yang identik. Tidak ada jalan masuk kedua, itulah sebabnya suntingan asisten muncul di riwayat Anda persis seperti suntingan yang Anda buat sendiri.",
+      "irreversible": "Dua dari {{count}} itu sama sekali tidak dapat diurungkan — yang mengganti atau mengosongkan seluruh penyimpanan. Operasi itu tidak pernah ditawarkan kepada asisten kecuali kata-kata Anda sendiri memintanya, dan tetap berhenti untuk konfirmasi meskipun begitu.",
+      "open": "Buka asisten"
+    },
+    "stats": {
+      "reads": {
+        "label_other": "cara melihat",
+        "hint": "membaca tidak pernah mengubah apa pun"
+      },
+      "writes": {
+        "label_other": "cara mengubah",
+        "hint": "semuanya dapat diurungkan…"
+      },
+      "destructive": {
+        "label": "ditandai destruktif",
+        "hint": "…kecuali dua, yang bertanya lebih dulu"
+      }
+    },
+    "gate": {
+      "title": "Yang mencegah alat yang salah berjalan",
+      "hint": "bagian yang benar-benar menahan",
+      "body": "Model bahasa dapat meminta apa saja. Model dapat menyebut alat yang tidak pernah ditunjukkan kepadanya, atau mengarang alat yang tidak ada — model yang lebih kecil sering melakukannya, dan itu bukan tanda ada yang salah. Jadi jojo tidak bergantung pada kehati-hatian model.",
+      "distinctionTitle": "Perbedaan yang penting",
+      "distinction": "Memilih apa yang ditunjukkan kepada model adalah petunjuk. Memeriksa apa yang benar-benar dipanggilnya adalah aturan, dan aturannya bergantung pada siapa yang memilih kumpulannya. Jika layar yang menetapkannya — Tanya graf, alur kerja pencari — panggilan ke apa pun di luarnya ditolak sebelum apa pun dicari, apalagi dijalankan. Dalam obrolan, kumpulannya adalah tebakan jojo tentang apa yang Anda butuhkan, jadi panggilan di luarnya tidak ditolak: panggilan itu melewati pemeriksaan persetujuan yang sama dengan panggilan lain, yang bertanya kepada Anda lebih dulu kecuali percakapan diatur untuk berjalan sendiri. Satu-satunya pengecualian adalah mengosongkan entri Anda, satu-satunya hal yang tidak dapat diurungkan: ditolak kecuali Anda secara tegas meminta untuk menghapus semuanya.",
+      "askGraph": "Itulah sebabnya kotak “Tanya graf” di layar Graf dapat dengan aman menawarkan dua alat hanya-baca. Kotak itu tidak memercayai model untuk tetap berada di dalamnya."
+    },
+    "pick": {
+      "title": "Bagaimana ia memilih yang tepat",
+      "hint": "agar permintaan tidak pernah berhenti di tengah jalan",
+      "cost_other": "Menunjukkan semua {{count}} alat sekaligus kepada model menghabiskan sekitar lima belas ribu kata dari ruang yang dimilikinya untuk berpikir — sebelum Anda mengetik apa pun. Pada model kecil yang berjalan di perangkat Anda sendiri, itu bisa melebihi ruang yang dimilikinya. Jadi jojo mempersempit daftar ke apa yang ditunjuk kata-kata Anda.",
+      "careless": "Mempersempit dengan sembarangan lebih buruk daripada tidak mempersempit. Sebagian besar operasi memerlukan sesuatu untuk ditindaki: Anda tidak dapat memasang kata kunci tanpa kata kunci, atau memperbarui dokumen tanpa dokumen. Sembunyikan alat yang membuat hal itu, dan asisten berhenti di tengah jalan tanpa ada penjelasan di layar.",
+      "unsureTitle": "Saat tidak yakin, ia tidak mempersempit",
+      "unsure": "“Ingatkan saya tentang Baylor hari Kamis” jelas, dan jojo menawarkan sekitar seperlima katalog. “Sebenarnya, itu yang satunya” tidak jelas tentang apa pun — jadi jojo menawarkan semuanya, persis seperti sebelum semua ini ada. Ketidakyakinan memakan sedikit kecepatan. Menebak akan memakan jawaban Anda.",
+      "onlyGains": "Percakapan hanya bisa bertambah alat. Tidak ada yang sudah Anda pakai yang diambil oleh pertanyaan berikutnya."
+    },
+    "model": {
+      "title": "Model mana yang melakukan ini",
+      "hint": "pilihan Anda, dan menentukan ke mana kata-kata Anda pergi",
+      "local": "jojo berkomunikasi dengan apa pun yang Anda arahkan di Pengaturan. Model yang berjalan di perangkat yang Anda kendalikan — Ollama, vLLM, LM Studio — adalah bawaan, dan satu-satunya pengaturan di mana tidak ada yang Anda tulis keluar dari perangkat ini.",
+      "cloud": "Anda juga dapat memakai Claude, OpenAI, dan lainnya dengan kunci API. Itu pertukaran nyata dan layar menyatakannya terus terang: entri Anda dikirim ke perusahaan itu dan ditagihkan ke akun Anda. Kunci disimpan di perangkat ini, tidak pernah dimasukkan ke cadangan, dan tidak pernah dikirim ke mana pun selain penyedia yang Anda pilih.",
+      "openSettings": "Buka Pengaturan",
+      "truncatedTitle": "Jika asisten tampaknya berhenti membaca",
+      "truncated": "Model lokal dengan ruang yang terlalu sedikit diam-diam membuang bagian depan dari apa yang dikirim kepadanya, lalu menjawab dengan yakin tentang pertanyaan yang tidak pernah dilihatnya secara utuh. jojo membandingkan apa yang dinyatakan server telah dibacanya dengan apa yang benar-benar dikirim, dan memberi tahu Anda jika keduanya berbeda — karena alternatifnya adalah asisten yang tampak buruk dalam pekerjaannya padahal hanya kekurangan ruang."
+    },
+    "gateFigure": {
+      "typed": "apa yang Anda ketik",
+      "pick": "pilih alat yang mungkin",
+      "pickNote": "tidak jelas? tawarkan semua {{count}}",
+      "add": "tambahkan yang dibutuhkan alat itu",
+      "addNote": "agar tidak ada rangkaian yang buntu",
+      "choose": "model memilih satu",
+      "offered": "apakah ditawarkan?",
+      "offeredNote": "tidak? ditolak, tidak ada yang berjalan",
+      "change": "entri Anda berubah",
+      "description": "Enam langkah, dari atas ke bawah. Satu, apa yang Anda ketik. Dua, jojo memilih alat yang ditunjuk kata-kata Anda — dan jika kata-kata Anda tidak jelas, jojo menawarkan semua {{count}} alih-alih menebak. Tiga, jojo menambahkan apa pun yang dibutuhkan alat-alat itu, jadi tidak ada rangkaian yang buntu. Empat, model memilih satu alat. Lima, jojo memeriksa apakah alat itu benar-benar ditawarkan; jika tidak, panggilan ditolak dan tidak ada yang berjalan. Enam, baru kemudian entri Anda berubah. Langkah kelima adalah satu-satunya yang benar-benar menegakkan aturan — langkah kedua hanya petunjuk, karena model dapat menyebut alat yang tidak pernah ditunjukkan kepadanya.",
+      "caption": "Langkah dua menghemat token. Langkah lima yang menjaga Anda tetap aman — dan langkah itu berjalan entah langkah dua mempersempit sesuatu atau tidak."
+    },
+    "graphFigure": {
+      "intro": "Tiga contoh, tanpa urutan tertentu. Masing-masing adalah satu alat yang diminta kata-kata Anda, apa yang tidak dapat dijalankannya tanpa sesuatu, dan alat yang ditawarkan jojo bersamanya agar rangkaiannya dapat selesai.",
+      "description": "Tiga contoh. Meminta keyword.attach juga menawarkan keyword.create, karena memasang kata kunci memerlukan kata kunci yang sudah ada. Meminta vault.file.update juga menawarkan vault.file.add, karena memperbarui dokumen memerlukan dokumen. Meminta scout.posting.promote juga menawarkan scout.posting.save, karena mempromosikan lowongan tersimpan memerlukan lowongan tersimpan. Dalam setiap kasus, jojo menentukan dependensinya dari masukan alat itu sendiri, dan menawarkan kedua alat bersamaan — jadi asisten tidak pernah diberi langkah pertama tanpa cara mencapai langkah kedua.",
+      "needs": {
+        "keyword": "memerlukan kata kunci, jadi jojo juga menawarkan",
+        "file": "memerlukan berkas, jadi jojo juga menawarkan",
+        "posting": "memerlukan lowongan, jadi jojo juga menawarkan"
+      },
+      "without": "Tanpa ini, asisten bisa ditawari alat pertama tetapi tidak alat kedua — dan akan berhenti di tengah jalan tanpa ada penjelasan di layar.",
+      "derived": "jojo membaca setiap persyaratan dari definisi alat itu sendiri, jadi alat yang ditambahkan besok sudah tercakup tanpa ada yang memperbarui daftar."
+    }
+  },
+  "builtWith": {
+    "intro": "Prototipe interaktif dari produk yang sama dengan aplikasi web, berbagi setiap modul yang berisi aturan — aritmetika tanggal, corong statistik, sistem kata kunci, dan data awal — sehingga keduanya tidak bisa berbeda pendapat tentang tanggal, angka, atau tahap.",
+    "stackTitle": "Dibangun dengan",
+    "stackHint": "apa yang benar-benar berjalan",
+    "unfinishedTitle": "Yang masih berupa pengganti sementara",
+    "unfinishedHint": "dinyatakan, bukan disembunyikan",
+    "unfinishedIntro": "Prototipe yang menyembunyikan kekurangannya adalah prototipe yang dipercaya begitu saja. Tiga hal ini perlu diketahui sebelum Anda menilai apa pun di layar.",
+    "placeholder": "pengganti sementara",
+    "stack": {
+      "app": "Aplikasinya sendiri, di kedua platform",
+      "build": "Build-nya. Tanpa Expo — kami memegang android/ dan ios/",
+      "documents": "Melampirkan berkas, dan membukanya lagi",
+      "navigation": "Bilah tab dan tumpukan layar",
+      "drag": "Seret dengan tekan lama di papan, di thread UI",
+      "charts": "Donat, radar, dan graf",
+      "type": "Huruf, dibundel alih-alih diambil"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "Asisten memerlukan model yang Anda sediakan",
+        "detail": "Hubungkan satu di Pengaturan dan asisten menjadi obrolan agentik berutas: ia memanggil alat milik aplikasi untuk menjawab, mencantumkan setiap panggilan saat dilakukan, dan menyimpan setiap utas di perangkat ini. Tanpa model, setiap balasan adalah salah satu dari lima contoh yang dikerjakan dan membawa lencana yang menyatakannya."
+      },
+      "scout": {
+        "title": "Pencari tidak menemukan apa pun dengan sendirinya",
+        "detail": "Persentase kecocokan itu nyata — dihitung di perangkat ini berdasarkan istilah pencocokan, posisi yang dituju, dan wilayah di profil Anda, dan menyebutkan apa yang dicocokkan. Yang belum ada adalah penyisirannya: tidak ada yang keluar mencari lowongan, jadi umpan hanya berisi apa yang Anda masukkan."
+      },
+      "network": {
+        "title": "Tidak ada yang keluar dari perangkat ini kecuali ke tempat yang Anda tunjuk",
+        "detail": "Tidak ada akun, tidak ada sinkronisasi, dan tidak ada unggahan. Dua alamat dapat dijangkau, keduanya milik Anda dan keduanya diatur di Pengaturan: model, dan pembaca dokumen — yang juga mengambil lowongan kerja saat Anda menambahkan lamaran dari tautan, jadi URL itu dikirim ke pembaca Anda, bukan ke kami. Transfer memindahkan salinan antarperangkat Anda melalui jaringan lokal — di ponsel ini ia menerima, dan komputer adalah pihak yang mengirim. Tidak ada hal lain yang dikirim ke mana pun."
+      }
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "Yeni hatırlatıcı",
+        "event": "Yeni etkinlik"
+      },
+      "edit": {
+        "reminder": "Hatırlatıcıyı düzenle",
+        "event": "Etkinliği düzenle"
+      }
+    },
+    "description": "Her iki durumda da tek bir kayıt — verdiğiniz tarihte takvime düşer ve başlığın yanındaki anahtar açık olduğu sürece Kasa'nın hatırlatıcılar listesinde de yer alır."
+  },
+  "form": {
+    "title": {
+      "label": "Başlık",
+      "error": "Tanıyacağınız bir başlık verin.",
+      "placeholder": {
+        "reminder": "ör. İşe alım uzmanına hatırlat",
+        "event": "ör. Komite Zoom görüşmesi"
+      }
+    },
+    "remind": {
+      "label": "Hatırlatıcılarda göster",
+      "on": "Kasa'da onay kutusuyla listelenir ve tarihinde takvimde görünür.",
+      "off": "Yalnızca tarihinde takvimde görünür — Kasa'da onay kutusu yok."
+    },
+    "kind": {
+      "label": "Tür",
+      "hintFollowUp": "Bir takip, siz tamamlandı olarak işaretleyene kadar ana sayfadaki Bekleyen takipler bölümünde de görünür.",
+      "hint": "Takvimde ve hatırlatıcılar listesinde taşıdığı simge."
+    },
+    "detail": {
+      "label": "Ayrıntı",
+      "hint": "Başlığın altında gösterilen tek satırlık bağlam."
+    },
+    "more": {
+      "label": "Diğer ayrıntılar",
+      "empty": "not, anahtar kelimeler",
+      "filledNote": "not",
+      "filledKeywords": "anahtar kelimeler",
+      "filledBoth": "not · anahtar kelimeler"
+    },
+    "note": {
+      "label": "Not",
+      "hint": "Kendi karalamanız. Ayrıntıdan ayrı tutulur; böylece bir düzenleme onu asla ezmez."
+    },
+    "keywords": {
+      "label": "Anahtar kelimeler",
+      "hint": "Başvurular, dosyalar ve bağlantılarla ortak — birine göre filtrelemek hepsini bulur."
+    },
+    "delete": "Sil",
+    "cancel": "İptal",
+    "save": "Değişiklikleri kaydet",
+    "add": {
+      "reminder": "Hatırlatıcı ekle",
+      "event": "Etkinlik ekle"
+    }
+  },
+  "schedule": {
+    "date": "Tarih",
+    "dateError": "Bir tarih seçin — tarihsiz bir öğenin görünebileceği bir yer yok.",
+    "quick": {
+      "today": "Bugün",
+      "tomorrow": "Yarın",
+      "inWeek": "7 gün içinde"
+    },
+    "allDay": {
+      "label": "Tüm gün",
+      "description": "Kapalıyken bir başlangıç saati ve süre alır ve takvimin saat ızgarasına yerleşir."
+    },
+    "startTime": "Başlangıç saati",
+    "length": "Süre",
+    "durations": {
+      "min15": "15 dk",
+      "min30": "30 dk",
+      "min45": "45 dk",
+      "hour1": "1 saat",
+      "hour1_5": "1,5 saat",
+      "hour2": "2 saat",
+      "hour3": "3 saat"
+    }
+  },
+  "application": {
+    "label": "İlgili başvuru",
+    "hint": "Bunları birbirine bağlar; böylece her başvuru bunu listeler ve bu da her birine geri götürür.",
+    "notLinked": "Bağlı değil",
+    "count_one": "{{count}} başvuru",
+    "count_other": "{{count}} başvuru",
+    "searchLabel": "Bağlanacak başvuruları ara",
+    "searchPlaceholder": "Başvurularda ara…",
+    "none": "Henüz başvuru yok.",
+    "noMatch": "Bununla eşleşen başvuru yok.",
+    "clear": "Bağlı başvuruları temizle",
+    "open": "Aç: {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} eklendi",
+    "updated": "{{title}} güncellendi",
+    "inReminders": "{{when}} — hatırlatıcılarda hatırlatıcı olarak",
+    "inRemindersAndFollowUps": "{{when}} — hatırlatıcılarda hatırlatıcı olarak — ve Bekleyen takipler bölümünde",
+    "calendarOnly": "{{when}} — yalnızca takvimde",
+    "undo": "Geri al",
+    "deleteFailed": "Silinmedi",
+    "stillThere": "{{title}} hâlâ takvimde.",
+    "stillThereUnnamed": "Hatırlatıcı hâlâ takvimde.",
+    "deleted": "{{title}} silindi",
+    "deletedUnnamed": "Hatırlatıcı silindi",
+    "goneBoth": "Hatırlatıcılar listesinden ve takvimden kaldırıldı.",
+    "goneCalendar": "Takvimden kaldırıldı."
+  }
+}

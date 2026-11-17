@@ -1,6 +1,6 @@
 /**
- * `Intl.PluralRules` for the ten languages the phone ships, because Hermes has
- * none.
+ * `Intl.PluralRules` for the twenty languages the phone ships, because Hermes
+ * has none.
  *
  * Hermes 0.81 implements `Intl.Collator`, `DateTimeFormat` and `NumberFormat`
  * and nothing else. i18next picks a plural form with `new Intl.PluralRules(code)`
@@ -12,7 +12,7 @@
  * see it.
  *
  * Hand-written rather than `@formatjs/intl-pluralrules` because the whole need
- * is ten cardinal rules, and that package also wants an `Intl.Locale` polyfill
+ * is a handful of cardinal rules, and that package also wants an `Intl.Locale` polyfill
  * Hermes lacks. `plural-rules.test.ts` holds every rule here against Node's ICU
  * for 0..1000 and a set of decimals, so a mistake cannot hide.
  *
@@ -76,7 +76,43 @@ const RULES: Record<string, Rule> = {
     categories: ['one', 'other'],
     select: ({ i, n }) => (i === 0 || n === 1 ? 'one' : 'other'),
   },
+  // Bengali shares Hindi's rule. one: i = 0 or n = 1
+  bn: {
+    categories: ['one', 'other'],
+    select: ({ i, n }) => (i === 0 || n === 1 ? 'one' : 'other'),
+  },
+  // one: i = 1 and v = 0
+  ur: {
+    categories: ['one', 'other'],
+    select: ({ i, v }) => (i === 1 && v === 0 ? 'one' : 'other'),
+  },
+  // one: i = 1 and v = 0; many: millions; other
+  it: {
+    categories: ['many', 'one', 'other'],
+    select: (o) => (o.i === 1 && o.v === 0 ? 'one' : millions(o) ? 'many' : 'other'),
+  },
+  // one: n = 1
+  tr: { categories: ['one', 'other'], select: ({ n }) => (n === 1 ? 'one' : 'other') },
+  mr: { categories: ['one', 'other'], select: ({ n }) => (n === 1 ? 'one' : 'other') },
+  ta: { categories: ['one', 'other'], select: ({ n }) => (n === 1 ? 'one' : 'other') },
+  // one: v = 0 and i % 10 = 1 and i % 100 != 11;
+  // few: v = 0 and i % 10 = 2..4 and i % 100 != 12..14;
+  // many: v = 0 and (i % 10 = 0 or i % 10 = 5..9 or i % 100 = 11..14); other.
+  ru: {
+    categories: ['few', 'many', 'one', 'other'],
+    select: ({ i, v }) => {
+      if (v !== 0) return 'other'
+      const d = i % 10
+      const h = i % 100
+      if (d === 1 && h !== 11) return 'one'
+      if (d >= 2 && d <= 4 && (h < 12 || h > 14)) return 'few'
+      return 'many'
+    },
+  },
+  // Chinese (both scripts), Indonesian and Vietnamese have no plural forms.
   zh: { categories: ['other'], select: () => 'other' },
+  id: { categories: ['other'], select: () => 'other' },
+  vi: { categories: ['other'], select: () => 'other' },
   ja: { categories: ['other'], select: () => 'other' },
   ko: { categories: ['other'], select: () => 'other' },
   // zero: n = 0; one: n = 1; two: n = 2; few: n % 100 = 3..10;

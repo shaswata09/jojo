@@ -1,0 +1,97 @@
+{
+  "dialog": {
+    "title": {
+      "new": { "reminder": "Pengingat baru", "event": "Acara baru" },
+      "edit": { "reminder": "Edit pengingat", "event": "Edit acara" }
+    },
+    "description": "Satu entri apa pun jenisnya — muncul di kalender pada tanggal yang Anda berikan, dan di daftar pengingat Brankas selama sakelar di samping judul menyala."
+  },
+  "form": {
+    "title": {
+      "label": "Judul",
+      "error": "Beri judul yang akan Anda kenali.",
+      "placeholder": { "reminder": "mis. Hubungi lagi perekrut", "event": "mis. Zoom komite" }
+    },
+    "remind": {
+      "label": "Tampilkan di pengingat",
+      "on": "Tercantum di Brankas dengan kotak centang, dan di kalender pada tanggalnya.",
+      "off": "Hanya di kalender pada tanggalnya — tanpa kotak centang di Brankas."
+    },
+    "kind": {
+      "label": "Jenis",
+      "hintFollowUp": "Tindak lanjut juga muncul di Tindak lanjut jatuh tempo di dasbor, sampai Anda mencentangnya.",
+      "hint": "Ikon yang dibawanya di kalender dan di daftar pengingat."
+    },
+    "detail": {
+      "label": "Detail",
+      "hint": "Satu baris konteks, ditampilkan di bawah judul."
+    },
+    "more": {
+      "label": "Detail lainnya",
+      "empty": "catatan, kata kunci",
+      "filledNote": "catatan",
+      "filledKeywords": "kata kunci",
+      "filledBoth": "catatan · kata kunci"
+    },
+    "note": {
+      "label": "Catatan",
+      "hint": "Coretan Anda sendiri. Disimpan terpisah dari detail, jadi suntingan tidak pernah menimpanya."
+    },
+    "keywords": {
+      "label": "Kata kunci",
+      "hint": "Dipakai bersama oleh lamaran, berkas, dan tautan — memfilter dengan satu kata kunci menemukan semuanya."
+    },
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "save": "Simpan perubahan",
+    "add": { "reminder": "Tambah pengingat", "event": "Tambah acara" }
+  },
+  "schedule": {
+    "date": "Tanggal",
+    "dateError": "Pilih tanggal — item tanpa tanggal tidak punya tempat untuk muncul.",
+    "quick": { "today": "Hari ini", "tomorrow": "Besok", "inWeek": "Dalam 7 hari" },
+    "allDay": {
+      "label": "Sepanjang hari",
+      "description": "Jika dimatikan, item ini mendapat waktu mulai dan durasi, lalu ditempatkan di kisi jam kalender."
+    },
+    "startTime": "Waktu mulai",
+    "length": "Durasi",
+    "durations": {
+      "min15": "15 mnt",
+      "min30": "30 mnt",
+      "min45": "45 mnt",
+      "hour1": "1 jam",
+      "hour1_5": "1,5 jam",
+      "hour2": "2 jam",
+      "hour3": "3 jam"
+    }
+  },
+  "application": {
+    "label": "Lamaran terkait",
+    "hint": "Menautkan keduanya, jadi setiap lamaran mencantumkan item ini dan item ini mengarah kembali ke setiap lamaran tersebut.",
+    "notLinked": "Tidak ditautkan",
+    "count_other": "{{count}} lamaran",
+    "searchLabel": "Cari lamaran untuk ditautkan",
+    "searchPlaceholder": "Cari lamaran…",
+    "none": "Belum ada lamaran.",
+    "noMatch": "Tidak ada lamaran yang cocok.",
+    "clear": "Kosongkan lamaran yang ditautkan",
+    "open": "Buka {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} ditambahkan",
+    "updated": "{{title}} diperbarui",
+    "inReminders": "{{when}} — di daftar pengingat sebagai pengingat",
+    "inRemindersAndFollowUps": "{{when}} — di daftar pengingat sebagai pengingat — dan di Tindak lanjut jatuh tempo",
+    "calendarOnly": "{{when}} — hanya di kalender",
+    "undo": "Urungkan",
+    "deleteFailed": "Itu tidak terhapus",
+    "stillThere": "{{title}} masih ada di kalender.",
+    "stillThereUnnamed": "Pengingat masih ada di kalender.",
+    "deleted": "{{title}} dihapus",
+    "deletedUnnamed": "Pengingat dihapus",
+    "goneBoth": "Hilang dari daftar pengingat dan dari kalender.",
+    "goneCalendar": "Hilang dari kalender."
+  }
+}

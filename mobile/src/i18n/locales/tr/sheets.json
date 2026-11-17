@@ -1,0 +1,249 @@
+{
+  "common": {
+    "undo": "Geri al",
+    "cancel": "İptal"
+  },
+  "addFromLink": {
+    "title": "Bağlantıdan başvuru",
+    "description": "Model ilanı okur, formu doldurur ve işin açıkça ilgili olduğu kendi anahtar kelimelerinizi işaretler. Sayfa Kasa'da İş ilanları altında saklanır ve siz söyleyene kadar hiçbir şey başvuru olarak kaydedilmez.",
+    "url": "İş ilanı URL'si",
+    "addressOnly": "Yalnızca adresi kullan",
+    "reading": "Okunuyor…",
+    "retry": "Yeniden dene",
+    "submit": "Oku ve önceden doldur",
+    "failed": "İlan okunamadı.",
+    "steps": {
+      "reading": "Sayfa getiriliyor",
+      "asking": "Okunuyor",
+      "saving": "İlan kaydediliyor"
+    },
+    "toast": {
+      "title": "İlan kaydedildi ve okundu",
+      "kept": "{{name}} Kasa'da; başvuruyu kaydettiğinizde onun altında dosyalanır.",
+      "gaps_one": "{{count}} alan sayfada yoktu.",
+      "gaps_other": "{{count}} alan sayfada yoktu.",
+      "tags_one": "Anahtar kelimelerinizden {{count}} tanesi işaretlendi.",
+      "tags_other": "Anahtar kelimelerinizden {{count}} tanesi işaretlendi."
+    }
+  },
+  "application": {
+    "newTitle": "Yeni başvuru",
+    "editTitle": "Düzenle: {{name}}",
+    "add": "Başvuru ekle",
+    "save": "Değişiklikleri kaydet",
+    "checking": "Yinelenen kayıt kontrol ediliyor…",
+    "noRecord": "Bu sayfa düzenlenecek bir kayıt olmadan açıldı",
+    "description": {
+      "edit": "Değişiklikler mevcut ayrıntıların yerini alır ve son tarih de onlarla birlikte değişir.",
+      "prefilledTagged": "Yapıştırdığınızdan önceden dolduruldu — kaydetmeden önce işvereni, rolü ve anahtar kelimeleri kontrol edin.",
+      "prefilled": "Yapıştırdığınızdan önceden dolduruldu — kaydetmeden önce işvereni ve rolü kontrol edin.",
+      "create": "Başvurduğunuz bir işi izleyin. Yıldızlı alanlar zorunludur."
+    },
+    "errors": {
+      "org": "İşvereni adlandırın — kayıt onun altında dosyalanır.",
+      "role": "Rolü adlandırın; böylece aynı yere yapılan iki başvuru birbirinden ayrı kalır.",
+      "roleTag": "Bir rol etiketi seçin — rol filtresi ve grafikler bunu okur.",
+      "url": "Bu, bir tarayıcının açabileceği bir bağlantı değil — https:// ekleyin."
+    },
+    "fields": {
+      "org": "Kurum",
+      "orgPlaceholder": "İşveren ya da kurum",
+      "role": "Rol unvanı",
+      "rolePlaceholder": "ör. Kıdemli veri analisti",
+      "roleTag": "Rol etiketi",
+      "pickRoleTag": "Rol etiketi seçin",
+      "roleTagDescription": "Rol filtresinin ve grafiklerin okuduğu eksen.",
+      "stage": "Aşama",
+      "deadline": "Son tarih",
+      "deadlineHint": "Takvime ve önümüzdeki haftaya tarihli bir kayıt koyar.",
+      "source": "Kaynak",
+      "sourceNotSet": "Ayarlanmadı",
+      "location": "Konum",
+      "locationPlaceholder": "Şehir ya da Uzaktan",
+      "comp": "Ücret",
+      "compPlaceholder": "ör. 96 bin $ + hisse",
+      "url": "İlan URL'si",
+      "postingId": "İlan kimliği",
+      "postingIdHint": "İlanda belirtiliyorsa iş ya da talep numarası.",
+      "postingIdPlaceholder": "ör. R-2024-0312",
+      "note": "Not",
+      "notePlaceholder": "Bu gönderilmeden önce hâlâ yapılması gerekenler.",
+      "keywords": "Anahtar kelimeler"
+    },
+    "toast": {
+      "draftDiscarded": "Taslak atıldı",
+      "changesDiscarded": "Değişiklikler atıldı",
+      "nothingAdded": "Hiçbir şey eklenmedi. Geri al, formu bıraktığınız gibi geri getirir.",
+      "unchanged": "{{name}} değişmedi. Geri al, düzenlemelerinizi geri getirir.",
+      "recordUnchanged": "Kayıt değişmedi. Geri al, düzenlemelerinizi geri getirir.",
+      "added": "{{name}} eklendi",
+      "deadlineOnCalendar": "{{date}} son tarihi takvimde.",
+      "noDeadline": "Henüz son tarih yok — bir tane ekleyin, önümüzdeki haftada görünsün.",
+      "postingFiled": "İlan onun altında dosyalandı.",
+      "saved": "Değişiklikler kaydedildi",
+      "deadlineRemoved": "{{name}} — son tarihi takvimden kaldırıldı.",
+      "restoreDeadline": "Son tarihi geri yükle"
+    },
+    "duplicate": {
+      "title": "Bu, zaten sizde olan bir iş gibi görünüyor",
+      "modelSame": "Model bunları aynı pozisyon olarak okudu.",
+      "modelReading": " — modelin yorumu; aşağıda kontrol edin.",
+      "existing": "Zaten sizde olan",
+      "adding": "Eklediğiniz",
+      "untitled": "Başlıksız",
+      "postingId": "İlan kimliği {{id}}",
+      "openYours": "Mevcut olanı aç",
+      "openExisting": "Zaten sizde olan {{name}} kaydını aç",
+      "tapToOpen": "Açmak için dokunun ya da devam edip bunu ikinci bir kayıt olarak ekleyin.",
+      "editInstead": "Bunun yerine düzenle",
+      "discard": "At",
+      "addAnyway": "Yine de ekle"
+    },
+    "since": {
+      "today": "bugün",
+      "yesterday": "dün",
+      "daysAgo_one": "{{count}} gün önce",
+      "daysAgo_other": "{{count}} gün önce"
+    }
+  },
+  "draft": {
+    "title": "Mesaj taslağı hazırla",
+    "description": {
+      "forApp": "Alıcı: {{name}}. Hiçbir şey üretilmez ve hiçbir şey gönderilmez — boşlukları doldurun, e-posta programınıza kopyalayın, ardından gönderildi olarak işaretleyin.",
+      "forItem": "Alıcı: {{name}} · {{item}}. Hiçbir şey üretilmez ve hiçbir şey gönderilmez — boşlukları doldurun, e-posta programınıza kopyalayın, ardından gönderildi olarak işaretleyin.",
+      "unlinked": "Bir başvuruya bağlı değil; bu yüzden [ROLE] ve [DATE] boş kalır. Hiçbir şey üretilmez ve hiçbir şey gönderilmez — boşlukları doldurun, e-posta programınıza kopyalayın, ardından gönderildi olarak işaretleyin."
+    },
+    "defaultTitle": "E-posta taslağı",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Metin parçası olarak kaydet",
+    "writeFirst": "Önce bir şey yazın",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "markSent": "Gönderildi olarak işaretle",
+    "openFromReminder": "Tamamlandı olarak işaretlemek için bunu bir hatırlatıcıdan açın",
+    "alreadyTicked": "Zaten tamamlandı olarak işaretli",
+    "blank": "Boş taslak",
+    "startFromSnippet": "E-posta metin parçalarınızdan biriyle başlayın",
+    "placeholder": "Mesajı yazın ya da başlangıç için bir metin parçası seçin…",
+    "editorLabel": "Mesaj taslağı",
+    "empty": {
+      "title": "Henüz e-posta metin parçası yok",
+      "description": "Email etiketli metin parçaları burada başlangıç noktası olarak görünür. Yüklenecek bir şey yok, ama taslağın bunlardan biriyle başlaması da gerekmiyor.",
+      "startBlank": "Boş bir taslakla başla"
+    },
+    "status": {
+      "empty": "Henüz taslak yok.",
+      "noBlanks": "Boşluk kalmadı.",
+      "blanksLeft_one": "{{count}} boşluk kaldı — {{names}}",
+      "blanksLeft_other": "{{count}} boşluk kaldı — {{names}}",
+      "nameNever": " · kişi adları sizin yerinize asla doldurulmaz"
+    },
+    "picker": {
+      "title": "Başlangıç noktası",
+      "description": "Kendi e-posta metin parçalarınız; kayıtların zaten bildikleri doldurulmuş olarak."
+    },
+    "toast": {
+      "replaced": "Taslak değiştirildi",
+      "loaded": "Yüklendi: {{title}}.",
+      "blank": "Boş taslakla yeniden başlandı.",
+      "saved": "Metin parçalarına kaydedildi",
+      "savedDescription": "{{title}} · Email etiketli, Kasa'da",
+      "sent": "Gönderildi olarak işaretlendi",
+      "sentDescription": "{{title}} — hatırlatıcılarda tamamlandı olarak işaretlendi"
+    }
+  },
+  "stage": {
+    "moveTo": "Taşı: {{stage}}",
+    "currently": "{{name}} · şu anda: {{stage}}",
+    "nothingElse": "Kayıttaki başka hiçbir şey değişmedi.",
+    "moveWithoutDetails": "Ayrıntı olmadan taşı",
+    "outcome": "Sonuç",
+    "submitted": {
+      "date": "Gönderim tarihi",
+      "portal": "Portal URL'si",
+      "portalHint": "Başvurunun bulunduğu yer; takip etmeniz gerektiğinde.",
+      "reference": "Onay numarası",
+      "referencePlaceholder": "ör. 4471-QZ"
+    },
+    "interview": {
+      "date": "Mülakat tarihi",
+      "format": "Biçim",
+      "formatLabel": "Mülakat biçimi",
+      "mint": "Zaman çizelgesine ekle",
+      "mintDescription": "O tarihte bir hatırlatıcıyla birlikte mülakat kaydı oluşturur."
+    },
+    "offer": {
+      "respondBy": "Son yanıt tarihi",
+      "package": "Paket",
+      "packagePlaceholder": "ör. 112 bin $ + 15 bin $ başlangıç fonu",
+      "note": "Not",
+      "notePlaceholder": "Hâlâ pazarlığı süren şeyler",
+      "mint": "Son tarihi zaman çizelgesine ekle",
+      "mintDescription": "Hiçbir şeyin izlemediği bir son yanıt tarihi, kaçırmayı göze alamayacağınız tek son tarihtir."
+    },
+    "keepOffer": {
+      "label": "Teklif ayrıntılarını tut",
+      "description": "Son yanıt tarihi {{date}}. Bunları temizlemek için bunu kapatın.",
+      "descriptionWithComp": "Son yanıt tarihi {{date}} · {{comp}}. Bunları temizlemek için bunu kapatın."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Yeni hatırlatıcı",
+      "editReminder": "Hatırlatıcıyı düzenle",
+      "newEvent": "Yeni etkinlik",
+      "editEvent": "Etkinliği düzenle"
+    },
+    "description": "Her iki durumda da tek bir kayıt — verdiğiniz tarihte takvime düşer ve anahtar açık olduğu sürece Kasa'nın hatırlatıcılar listesinde de yer alır.",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "addReminder": "Hatırlatıcı ekle",
+    "addEvent": "Etkinlik ekle",
+    "reminderFallback": "Hatırlatıcı",
+    "duration": {
+      "minutes_one": "{{count}} dk",
+      "minutes_other": "{{count}} dk",
+      "hours_one": "{{count}} saat",
+      "hours_other": "{{count}} saat"
+    },
+    "fields": {
+      "title": "Başlık",
+      "reminderPlaceholder": "ör. İşe alım uzmanına hatırlat",
+      "eventPlaceholder": "ör. Komite Zoom görüşmesi",
+      "remind": "Hatırlatıcılarda göster",
+      "remindOn": "Kasa'da onay kutusuyla listelenir ve tarihinde takvimde görünür.",
+      "remindOff": "Yalnızca tarihinde takvimde görünür — Kasa'da onay kutusu yok.",
+      "date": "Tarih",
+      "allDay": "Tüm gün",
+      "allDayDescription": "Kapalıyken bir başlangıç saati ve süre alır.",
+      "startTime": "Başlangıç saati",
+      "length": "Süre",
+      "applicationHint": "Bunları birbirine bağlar; böylece her başvuru bunu listeler ve bu da her birine geri götürür.",
+      "kind": "Tür",
+      "kindFollowUp": "Bir takip, siz tamamlandı olarak işaretleyene kadar Bugün sayfasında da yapılacak olarak sayılır.",
+      "kindHint": "Takvimde ve hatırlatıcılar listesinde taşıdığı simge.",
+      "detail": "Ayrıntı",
+      "detailHint": "Başlığın altında gösterilen tek satırlık bağlam.",
+      "note": "Not",
+      "noteHint": "Kendi karalamanız. Ayrıntıdan ayrı tutulur; böylece bir düzenleme onu asla ezmez.",
+      "keywords": "Anahtar kelimeler",
+      "keywordsHint": "Başvurular, dosyalar ve bağlantılarla ortak — birine göre filtrelemek hepsini bulur."
+    },
+    "more": {
+      "title": "Diğer ayrıntılar",
+      "note": "not",
+      "keywords": "anahtar kelimeler",
+      "empty": "not, anahtar kelimeler"
+    },
+    "toast": {
+      "added": "{{title}} eklendi",
+      "updated": "{{title}} güncellendi",
+      "inReminders": "hatırlatıcılarda",
+      "calendarOnly": "yalnızca takvimde",
+      "owed": "ve bu hafta yapılacaklar arasında",
+      "deleted": "{{title}} silindi",
+      "goneFromBoth": "Hatırlatıcılar listesinden ve takvimden kaldırıldı.",
+      "goneFromCalendar": "Takvimden kaldırıldı."
+    }
+  }
+}

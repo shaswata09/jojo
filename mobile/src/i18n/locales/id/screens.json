@@ -1,0 +1,911 @@
+{
+  "shared": {
+    "undo": "Urungkan",
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "list": "{{items}} dan {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "Hari ini",
+    "subtitleEmpty": "{{date}} · belum ada yang dipantau — semua yang Anda tambahkan tetap di perangkat ini.",
+    "subtitle_other": "{{date}} · {{count}} lamaran, semuanya di perangkat ini.",
+    "decision": {
+      "title": "Perlu keputusan",
+      "done": "Selesai",
+      "snooze": "Tunda",
+      "notConnected": "Belum ada yang terhubung ke ini",
+      "emptyTitle": "Tidak ada yang perlu diputuskan hari ini",
+      "emptyDescription": "Tawaran, lamaran yang terlambat, tenggat pasti berikutnya, dan wawancara Anda berikutnya muncul di sini. Tidak satu pun yang tertunda.",
+      "open_other": "{{count}} terbuka"
+    },
+    "firstSteps": {
+      "title": "Langkah pertama",
+      "progress": "{{done}} dari {{total}} selesai",
+      "complete": "Ketiganya selesai. Apa pun yang Anda tambahkan mulai sekarang sampai ke layar ini, kalender, dan lamaran terkaitnya.",
+      "intro": "Setiap langkah membuka fitur yang sebenarnya dan tercentang sendiri begitu entrinya ada — tidak ada tutorial yang harus Anda ikuti sampai habis.",
+      "introEmpty": "Belum ada yang dipantau. Setiap langkah membuka fitur yang sebenarnya dan tercentang sendiri begitu entrinya ada — tidak ada tutorial yang harus Anda ikuti sampai habis.",
+      "close": "Tutup langkah pertama",
+      "hide": "Sembunyikan langkah ini",
+      "application": {
+        "title": "Tambahkan lamaran",
+        "body": "Sebuah posisi, tahapnya, dan tenggatnya. Semua hal lain di jojo bergantung pada entri ini."
+      },
+      "dated": {
+        "title": "Beri tanggal pada sesuatu",
+        "body": "Tenggat, wawancara, dan kunjungan adalah satu jenis entri, jadi sebuah tanggal langsung sampai ke layar ini, kalender, dan lamarannya sekaligus.",
+        "label": "Acara baru"
+      },
+      "reminder": {
+        "title": "Atur tindak lanjut",
+        "body": "Pengingat adalah entri yang sama dengan dorongan yang diaktifkan. Setelah tanggalnya lewat, ia menjadi kewajiban, dan tetap di sini sampai Anda mencentangnya.",
+        "label": "Pengingat baru"
+      }
+    },
+    "glance": {
+      "active": "Aktif",
+      "interviews": "Seleksi & wawancara",
+      "overdue": "Terlambat",
+      "doneToday": "Selesai hari ini",
+      "a11y": "{{value}} {{label}}"
+    },
+    "owed": {
+      "title": "Kewajiban minggu ini",
+      "hintOverdue": "{{overdue}} terlambat · {{due}} jatuh tempo",
+      "hintDue": "{{due}} jatuh tempo",
+      "emptyTitle": "Tidak ada kewajiban",
+      "emptyDescription": "Tenggat, wawancara, dan tindak lanjut masuk ke sini begitu bertanggal, dan tetap di sini sampai Anda mencentangnya.",
+      "addEvent": "Tambah acara",
+      "dayLabel_other": "{{day}} {{date}}, {{count}} item",
+      "clear": "Hari ini kosong.",
+      "clearDone_other": "Hari ini kosong — {{count}} selesai.",
+      "later": "Nanti",
+      "moreOnCalendar_other": "{{count}} lagi di kalender"
+    },
+    "recent": {
+      "title": "Lamaran terbaru",
+      "hint": "aktivitas terakhir",
+      "viewAll": "Lihat semua",
+      "emptyDescription": "Setiap posisi yang Anda pantau muncul di sini saat Anda menyentuhnya, yang terbaru di atas.",
+      "daysAgo_other": "{{count}} hari lalu",
+      "views": {
+        "notes": "Catatan",
+        "recent": "Lamaran terbaru"
+      },
+      "control": "Tampilkan di kartu ini",
+      "addReminder": "Tambah pengingat",
+      "headingNotes": "Catatan tempel"
+    },
+    "pipeline": {
+      "title": "Alur",
+      "emptyTitle": "Alur masih kosong",
+      "emptyDescription": "Setiap lamaran berada di satu tahap, dan bagian ini menunjukkan sebarannya di setiap tahap. Tambahkan satu dan potongan pertama akan muncul."
+    },
+    "sticky": {
+      "newNote": "Catatan tempel baru",
+      "placeholder": "Tulis catatan untuk diri sendiri…",
+      "newColour": "Warna untuk catatan baru",
+      "stick": "Tempelkan",
+      "empty": "Belum ada yang ditempel. Catatan tetap di sini sampai Anda mencabutnya, dan catatan mana pun dapat menjadi pengingat setelah punya tanggal.",
+      "listLabel": "Catatan tempel",
+      "editNote": "Edit catatan",
+      "editAria": "Edit catatan: {{text}}",
+      "colour": "Warna",
+      "colourOf": "Warna catatan \"{{text}}\"",
+      "toReminderAria": "Jadikan pengingat: {{text}}",
+      "removeAria": "Hapus catatan: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "Lamaran",
+    "subtitleEmpty": "Belum ada yang dipantau — semua yang Anda tambahkan tetap di perangkat ini.",
+    "subtitle": "{{shown}} ditampilkan · {{total}} total",
+    "new": "Baru",
+    "newApplication": "Lamaran baru",
+    "showNotes": "Tampilkan catatan",
+    "showNotesDescription": "Baris kedua di bawah setiap posisi",
+    "none": {
+      "title": "Belum ada lamaran",
+      "description": "Pantau pekerjaan yang Anda lamar dan itu akan muncul di sini, di kalender, dan di minggu mendatang."
+    },
+    "searchLabel": "Cari lamaran",
+    "searchPlaceholder": "Cari posisi, catatan, atau tahap",
+    "layout": "Tata letak",
+    "views": {
+      "list": "Daftar",
+      "board": "Papan"
+    },
+    "filterByRole": "Filter menurut posisi",
+    "filterByStage": "Filter menurut tahap",
+    "sortButton": "Urutan: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "Aktivitas terakhir",
+        "asc": "Terbaru dulu",
+        "desc": "Terlama dulu"
+      },
+      "stage": {
+        "label": "Tahap",
+        "asc": "Draf ke ditutup",
+        "desc": "Ditutup ke draf"
+      },
+      "position": {
+        "label": "Posisi",
+        "asc": "A ke Z",
+        "desc": "Z ke A"
+      }
+    },
+    "sortMenu": {
+      "title": "Urutkan menurut",
+      "description": "Pilih kolomnya, lalu ujung mana yang di atas.",
+      "currently": "Saat ini: {{order}}"
+    },
+    "empty": {
+      "title": "Tidak ada lamaran yang cocok",
+      "nothing": "Tidak ada yang bisa ditampilkan di sini.",
+      "carries": "Tidak ada yang cocok dengan {{filters}}.",
+      "reasons": {
+        "search": "pencarian itu",
+        "stage": "tahap {{stage}}",
+        "keywords": "kata kunci yang dipilih",
+        "roles": "posisi yang dipilih"
+      },
+      "showAll_other": "Tampilkan semua {{count}}"
+    },
+    "row": {
+      "moreActions": "Tindakan lain untuk {{name}}",
+      "open": "Buka entri",
+      "edit": "Edit",
+      "flag": "Tandai untuk tindak lanjut",
+      "unflag": "Hapus tanda tindak lanjut",
+      "duplicate": "Duplikat"
+    },
+    "roles": {
+      "description": "Tidak memilih apa pun berarti semuanya — menghapus filter sama dengan tidak pernah mengaturnya.",
+      "tracked_other": "{{count}} dipantau",
+      "clear": "Tampilkan semua posisi"
+    },
+    "paste": {
+      "label": "URL lowongan",
+      "placeholder": "Tempel URL lowongan",
+      "submit": "Dari tautan"
+    }
+  },
+  "board": {
+    "cardHint": "Tekan lama untuk memindahkan ini ke tahap lain",
+    "addAt": "Tambahkan lamaran di {{stage}}",
+    "addHere": "Tambah di sini"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} diduplikasi",
+    "duplicatedDescription": "Salinannya dimulai sebagai draf — tahap, tanggal, dan tawaran aslinya tidak ikut.",
+    "movedTitle": "{{name}} dipindah ke {{stage}}",
+    "movedDescription": "Sebelumnya di {{from}}. Alur dan corong menghitungnya di {{stage}} mulai sekarang.",
+    "deletedTitle": "{{name}} dihapus",
+    "deletedDescription": "Pengingat, berkas, dan lowongan tersimpan yang diarsipkan di bawahnya tetap disimpan, tanpa tautan.",
+    "confirmTitle": "Hapus {{name}}?",
+    "confirmTitleGeneric": "Hapus lamaran?",
+    "confirmDescription": "Lamaran dan catatannya akan dihapus. Apa pun yang diarsipkan di bawahnya — pengingat, berkas, lowongan tersimpan — tetap disimpan tetapi tanpa tautan."
+  },
+  "detail": {
+    "missing": {
+      "title": "Lamaran",
+      "emptyTitle": "Lamaran ini sudah tidak ada",
+      "emptyDescription": "Lamaran ini telah dihapus, atau tautannya menunjuk ke id yang tidak pernah ada. Tidak ada hal lain yang ikut terhapus.",
+      "back": "Kembali"
+    },
+    "kept": {
+      "reminders_other": "{{count}} pengingat",
+      "events_other": "{{count}} acara",
+      "saved_other": "{{count}} item tersimpan"
+    },
+    "closedTitle": "{{name}} ditutup",
+    "closedDescription": "Dicatat sebagai {{outcome}}. Detail tawaran dan pengingatnya tetap disimpan.",
+    "outcomes": {
+      "rejected": "ditolak pemberi kerja",
+      "withdrawn": "mengundurkan diri",
+      "accepted": "diterima",
+      "declined": "ditolak oleh Anda",
+      "ghosted": "tanpa kabar"
+    },
+    "duplicatedDescription": "Salinannya dimulai di Draf, dengan catatan dan detail yang ikut terbawa.",
+    "deletedKept": "{{kept}} tetap disimpan, tanpa tautan.",
+    "facts": {
+      "employer": "Pemberi kerja",
+      "employerJobs_other": "{{name}} · {{count}} pekerjaan di sini",
+      "source": "Sumber",
+      "location": "Lokasi",
+      "compensation": "Kompensasi",
+      "posting": "Lowongan",
+      "postingId": "ID lowongan",
+      "appliedOn": "Tanggal melamar",
+      "confirmationRef": "Nomor konfirmasi",
+      "outcome": "Hasil"
+    },
+    "moreActions": "Tindakan lain",
+    "details": "Detail",
+    "postingHint": "Membuka lowongan di dalam jojo, tempat Anda dapat menyimpan salinannya",
+    "dates": {
+      "title": "Tanggal dan pengingat",
+      "hint": "{{open}} terbuka · {{total}} total",
+      "add": "Tambah tanggal",
+      "emptyTitle": "Tidak ada jadwal",
+      "emptyDescription": "Tenggat, wawancara, dan tindak lanjut yang diarsipkan untuk lamaran ini muncul di sini."
+    },
+    "note": {
+      "title": "Catatan",
+      "hint": "Tersimpan saat Anda mengetuk di luar",
+      "edit": "Edit catatan ini",
+      "placeholder": "Yang masih tertunda, siapa yang Anda ajak bicara, apa yang perlu ditanyakan berikutnya",
+      "label": "Catatan pada {{name}}",
+      "formatKept": "Format dipertahankan pada kata-kata yang tidak Anda ubah.",
+      "saved": "Catatan disimpan"
+    },
+    "draftMessage": "Tulis draf pesan",
+    "confirmDeleteKept": "Lamaran dan catatannya akan dihapus. {{kept}} akan tetap disimpan tetapi tanpa tautan — tidak ada yang Anda arsipkan di bawahnya yang dihapus.",
+    "confirmDeleteAlone": "Lamaran dan catatannya akan dihapus. Tidak ada hal lain yang menunjuk ke lamaran ini.",
+    "offer": {
+      "title": "Tawaran",
+      "settled": "Ditutup · dicatat sebagai {{outcome}}",
+      "pastDeadline_other": "{{count}} hari lewat tenggat",
+      "daysLeft_other": "{{count}} hari lagi",
+      "respondBy": "Jawab paling lambat {{date}}",
+      "accept": "Terima",
+      "decline": "Tolak"
+    },
+    "stageDates": {
+      "dated": "{{stage}} bertanggal {{date}}",
+      "undated": "{{stage}} kini tanpa tanggal",
+      "datedBody": "{{name}} — inilah hari yang dicatat sebagai saat lamaran mencapai {{stage}}.",
+      "undatedBody": "{{name}} — tahapnya masih tercatat; hanya tanggalnya yang hilang.",
+      "hint": "{{dated}} dari {{total}} bertanggal",
+      "title": "Tanggal tahap",
+      "now": "sekarang",
+      "explain": "Memindahkan lamaran ini ke tahap lain akan memberi tanggal secara otomatis. Tahap yang dicapai sebelum hari ini dapat diisi di sini."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "Pemberi kerja",
+      "subtitle": "Tidak ada yang cocok dengan alamat itu",
+      "emptyTitle": "Tidak ada pemberi kerja di alamat ini",
+      "emptyDescription": "Halaman pemberi kerja ada selama ada lamaran yang menyebutnya. Jika semua lamaran ke pemberi kerja ini dihapus, halaman ini juga terhapus."
+    },
+    "subtitleOne": "Satu lamaran di sini",
+    "subtitleMany_other": "{{count}} lamaran di sini, {{open}} masih terbuka",
+    "applications": "Lamaran",
+    "dates": "Tanggal",
+    "datesHint_other": "{{count}} di seluruh pekerjaan ini",
+    "datesEmptyTitle": "Tidak ada yang bertanggal di sini",
+    "datesEmptyDescription": "Tenggat, wawancara, dan pengingat tentang pekerjaan mana pun di sini terkumpul di layar ini.",
+    "people": "Orang",
+    "peopleHint_other": "{{count}} disebut",
+    "peopleEmptyTitle": "Belum ada yang disebut",
+    "peopleEmptyDescription": "Pemberi referensi, ketua panitia seleksi, dan perekrut yang disebut di pekerjaan mana pun di sini akan muncul di sini."
+  },
+  "calendar": {
+    "title": "Kalender",
+    "subtitle": "Tenggat, wawancara, dan persiapan dalam satu tampilan",
+    "key": {
+      "overdue": "Terlambat",
+      "soon": "Jatuh tempo dalam 48 jam",
+      "done": "Selesai"
+    },
+    "export": {
+      "label": "Ekspor ke kalender saya",
+      "done_other": "{{count}} tanggal diekspor",
+      "doneDescription": "Kalender Anda akan menawarkan untuk mengimpornya, dengan pengingat pada masing-masing.",
+      "failed": "Tidak ada aplikasi di sini yang membuka berkas kalender",
+      "failedDescription": "Berkasnya tersimpan di ponsel ini. Aplikasi kalender yang menerima .ics dapat membukanya."
+    },
+    "add": "Tambah",
+    "addEvent": "Tambah acara",
+    "tallCells": "Sel hari tinggi",
+    "tallCellsDescription": "Lebih banyak ruang per hari di kisi",
+    "jump": "{{month}} {{year}}. Buka bulan lain",
+    "previous": "Bulan sebelumnya",
+    "next": "Bulan berikutnya",
+    "backTo": "Kembali ke {{date}}",
+    "goTo": "Buka {{target}}",
+    "goToDay": "Buka {{day}} {{month}}",
+    "today": "Hari ini",
+    "selectedDay": "Hari terpilih",
+    "hint": "Ketuk hari untuk menampilkan isinya. Ketuk acara untuk mengedit atau menjadwalkannya ulang.",
+    "dayLabel_other": "{{day}} {{month}}, {{count}} acara",
+    "nothingOn": "Tidak ada apa pun pada {{date}}",
+    "nothingOnDescription": "Tambahkan wawancara, tenggat, atau waktu persiapan, dan itu akan muncul di sini dan di kisi.",
+    "allDay": "Sepanjang hari",
+    "reopen": "Buka kembali {{title}}",
+    "markDone": "Tandai \"{{title}}\" selesai",
+    "moreActions": "Tindakan lain untuk {{title}}",
+    "rest": {
+      "title": "Sisa bulan {{month}}",
+      "lastDay": "{{date}} adalah hari terakhir bulan ini",
+      "nothingAfter": "Tidak ada apa pun setelah {{date}}",
+      "lastDayDescription": "Tidak ada apa pun setelahnya. Maju ke halaman berikutnya untuk merencanakan {{month}}.",
+      "clearDescription": "Sisa bulan {{month}} kosong. Apa pun yang Anda tambahkan setelah hari ini akan muncul di sini.",
+      "more_other": "+{{count}} lagi nanti bulan ini"
+    }
+  },
+  "search": {
+    "title": "Cari",
+    "subtitle": "Lamaran, tanggal, brankas, dan pencari, sekaligus",
+    "fieldLabel": "Cari semuanya",
+    "placeholder": "Cari lamaran, pengingat, berkas…",
+    "idleTitle": "Ketik untuk mencari",
+    "idleDescription": "Satu kolom untuk semua koleksi — karena “di mana saya menaruh urusan Rice itu” adalah pertanyaan tentang entrinya, bukan tentang daftar tempatnya berada.",
+    "create": "Buat",
+    "createHint": "tidak ada yang ditemukan? buat saja",
+    "noneTitle": "Tidak ada yang cocok dengan “{{query}}”",
+    "noneDescription": "Pencarian membaca judul, catatan, dan kategori setiap entri. Tidak ada yang diambil dari tempat lain.",
+    "fit": "Kecocokan {{fit}}%",
+    "results_other": "{{count}} hasil",
+    "showAll_other": "Tampilkan semua {{count}}",
+    "groups": {
+      "applications": "Lamaran",
+      "reminders": "Pengingat",
+      "calendar": "Kalender",
+      "vault": "Brankas",
+      "jobScout": "Pencari lowongan",
+      "goTo": "Buka"
+    }
+  },
+  "more": {
+    "title": "Lainnya",
+    "subtitle": "Bagian lain jojo",
+    "newBadge_other": "{{count}} baru",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "Pencari lowongan",
+        "hint": "Pencarian tersimpan, kecocokan, dan lowongan yang Anda simpan"
+      },
+      "statistics": {
+        "label": "Statistik",
+        "hint": "Angka, corong, dan yang perlu dikerjakan berikutnya"
+      },
+      "graph": {
+        "label": "Graf",
+        "hint": "Entri Anda digambar sebagai jaringan apa adanya"
+      },
+      "transfer": {
+        "label": "Transfer",
+        "hint": "Pindahkan semuanya ke atau dari komputer Anda"
+      },
+      "profile": {
+        "label": "Profil saya",
+        "hint": "Data dasar, dokumen, dan istilah pencocokan"
+      },
+      "assistant": {
+        "label": "Asisten",
+        "hint": "Contoh yang dikerjakan sampai model lokal terhubung"
+      },
+      "settings": {
+        "label": "Pengaturan",
+        "hint": "Koneksi, tampilan, dan data Anda"
+      },
+      "guide": {
+        "label": "Cara menggunakan",
+        "hint": "Tur terpandu, dan kegunaan setiap layar"
+      }
+    },
+    "storage": {
+      "saved": "tersimpan",
+      "saving": "menyimpan",
+      "savingCount": "menyimpan {{count}}",
+      "unsaved_other": "{{count}} belum tersimpan",
+      "off": "tidak menyimpan"
+    },
+    "runtime": {
+      "title": "Runtime",
+      "hint": "apa yang benar-benar berjalan",
+      "storage": "Penyimpanan perangkat",
+      "model": "Model",
+      "modelConfigured": "{{model}} — dikonfigurasi",
+      "modelNotSetUp": "belum diatur",
+      "transfer": "Transfer",
+      "transferNever": "belum pernah dipakai",
+      "transferLast": "terakhir dipakai {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. Semuanya berjalan di perangkat ini.",
+    "overdue_other": "{{count}} pengingat terlambat."
+  },
+  "statistics": {
+    "title": "Statistik",
+    "emptySubtitle": "Belum ada yang bisa diukur — layar ini terisi seiring Anda menambahkan lamaran.",
+    "emptyTitle": "Tidak ada lamaran untuk diukur",
+    "emptyDescription": "Tingkat balasan, corong, dan grafik mingguan semuanya memerlukan entri untuk dihitung. Tambahkan yang pertama dan layar ini mulai terisi.",
+    "subtitleSent": "Dihitung dari entri Anda sendiri. Angka berlabel umumnya adalah contoh pencarian, sebagai pembanding.",
+    "subtitleNone": "Dihitung dari entri Anda sendiri. Layar ini terisi seiring lamaran dikirim.",
+    "compare": "Bandingkan dengan pencarian pada umumnya",
+    "compareDescription": "Angka contoh di samping setiap angka utama",
+    "overTime": {
+      "title": "Lamaran dari waktu ke waktu",
+      "hint": "menurut posisi yang dilamar",
+      "period": "Periode",
+      "note": "Setiap periode punya jangka waktunya sendiri, jadi totalnya berbeda — kuartal mencakup pencarian sebelumnya, minggu hanya musim ini."
+    },
+    "sources": {
+      "title": "Asal lamaran",
+      "hint_other": "{{count}} dipantau",
+      "center": "dipantau"
+    },
+    "asFarAsShown": "sejauh yang ditunjukkan setiap entri",
+    "openApplications": "Buka lamaran",
+    "showAll": "Tampilkan semua",
+    "funnel": {
+      "title": "Sejauh mana lamaran melangkah",
+      "emptyTitle": "Belum ada yang dikirim",
+      "emptyDescription": "Tingkat balasan, wawancara, dan tawaran semuanya menghitung lamaran yang benar-benar sudah dikirim. Pindahkan satu lamaran keluar dari Draf dan bagian ini akan terisi.",
+      "carried": "{{pct}}% berlanjut"
+    },
+    "outcomes": {
+      "title": "Hasil",
+      "count_other": "{{count}} lamaran",
+      "partial": "{{shown}} dari {{total}}",
+      "allOff": "Semua hasil dimatikan."
+    },
+    "health": {
+      "title": "Yang perlu dikerjakan berikutnya",
+      "hint": "angka Anda dibandingkan pencarian pada umumnya",
+      "sample": "Contoh",
+      "emptyTitle": "Belum cukup untuk dibandingkan",
+      "emptyDescription": "Bagian ini menimbang balasan, wawancara, rujukan, dan tindak lanjut Anda terhadap pencarian pada umumnya. Diperlukan lamaran yang benar-benar sudah dikirim.",
+      "allOff": "Kedua seri dimatikan.",
+      "yours": "Anda",
+      "typical": "Umumnya",
+      "suggestions": "Saran, yang paling berguna lebih dulu"
+    },
+    "roles": {
+      "title": "Perkembangan setiap jenis posisi",
+      "roles": "Posisi",
+      "applied": "Melamar",
+      "replied": "Dibalas",
+      "interviews": "Wawancara",
+      "offers": "Tawaran"
+    }
+  },
+  "graph": {
+    "title": "Graf",
+    "emptySubtitle": "Entri Anda, digambar sebagai jaringan apa adanya",
+    "emptyTitle": "Tidak ada yang bisa digambar",
+    "emptyDescription": "Setiap simpul di sini adalah salah satu entri Anda sendiri. Tambahkan lamaran dan simpul pertama akan muncul.",
+    "subtitle": "Pratinjau seperti apa jojo begitu entri tidak lagi berupa tujuh daftar terpisah",
+    "caption": "{{visible}} dari {{total}} simpul · {{edges}} sisi. Ketuk simpul untuk membacanya; ketuk jenis di bawah untuk menyembunyikannya.",
+    "legend": "Legenda",
+    "legendHint": "ketuk untuk menyembunyikan jenis",
+    "joinedTo": "Terhubung ke",
+    "noEdges": "Belum ada yang menunjuk ke sini.",
+    "openRecord": "Buka entri",
+    "ask": "Tanya graf",
+    "askHint": "tanyakan dalam satu kalimat, atau pilih salah satu",
+    "andMore_other": "dan {{count}} lagi",
+    "questions": "Pertanyaan",
+    "questionsHint": "jawaban yang tidak dapat diberikan tampilan daftar",
+    "pattern": "Tanyakan hal lain",
+    "patternHint": "susun sendiri",
+    "patternNone": "Tidak ada yang cocok.",
+    "records_other": "{{count}} entri",
+    "exampleNone": "Tidak ada yang cocok — dan untuk pertanyaan ini, itu jawaban yang baik."
+  },
+  "jobScout": {
+    "title": "Pencari lowongan",
+    "subtitle": "Pencarian tersimpan yang akan memantau papan lowongan untuk Anda — dan tempat menyimpan lowongan hari ini",
+    "onlyActive": "Hanya alur kerja aktif",
+    "onlyActiveDescription": "Sembunyikan yang dimatikan",
+    "paused": "Tidak ada model lokal yang terhubung, jadi alur kerja dijeda. Anda tetap dapat menulisnya dan menyimpan lowongan di bawah — alur kerja mulai berjalan begitu model dapat dijangkau.",
+    "status": {
+      "off": "mati",
+      "paused": "dijeda",
+      "running": "berjalan",
+      "watching": "memantau"
+    },
+    "kinds": {
+      "twin": "Jaga entri tetap lengkap",
+      "scout": "Cari lowongan"
+    },
+    "kindLabel": {
+      "twin": "Kembaran digital",
+      "scout": "Pencari lowongan"
+    },
+    "schedules": {
+      "hourly": "Setiap jam",
+      "daily": "Setiap hari",
+      "weekly": "Setiap minggu"
+    },
+    "toast": {
+      "updated": "Alur kerja diperbarui",
+      "created": "Alur kerja dibuat",
+      "createdPaused": "{{name}} — dijeda sampai model terhubung.",
+      "createdRunning": "{{name}} — akan segera mulai mencari.",
+      "deleted": "Alur kerja dihapus",
+      "deletedDescription": "{{name}} berhenti memantau {{source}}.",
+      "addedDraft": "{{org}} ditambahkan sebagai draf",
+      "matchLinked": "Kecocokan tetap di umpan ini, kini ditautkan ke lamaran.",
+      "postingSaved": "Lowongan disimpan",
+      "postingLinked": "Lowongan tetap tersimpan di sini, kini ditautkan ke lamaran.",
+      "postingRemoved": "Lowongan dihapus"
+    },
+    "pipelines": {
+      "title": "Alur kerja",
+      "hint": "berjalan secara lokal sesuai jadwal",
+      "none": "Tidak ada alur kerja",
+      "noneOn": "Tidak ada yang menyala",
+      "noneDescription": "Alur kerja adalah pencarian tersimpan — papan yang dipantau, istilah yang penting, dan seberapa sering melihat.",
+      "noneOnDescription": "Semua alur kerja Anda dimatikan. Nyalakan satu, atau hapus filter di opsi halaman.",
+      "showAll": "Tampilkan semua alur kerja",
+      "toReview_other": "{{count}} untuk ditinjau",
+      "auto": "otomatis",
+      "autoLabel": "Jalankan tanpa bertanya",
+      "autoDescription": "Terapkan temuannya dan cukup beri tahu Anda sesudahnya.",
+      "autoToggle": "Jalankan {{name}} tanpa bertanya",
+      "enable": "Aktifkan {{name}}",
+      "runNow": "Jalankan {{name}} sekarang",
+      "edit": "Edit {{name}}",
+      "delete": "Hapus {{name}}"
+    },
+    "matches": {
+      "title": "Kecocokan",
+      "hint": "dinilai berdasarkan profil Anda",
+      "emptyTitle": "Tidak ada kecocokan",
+      "emptyDescription": "Alur kerja menaruh lowongan yang sudah dinilai di sini begitu model terhubung. Sampai saat itu, lowongan yang Anda simpan di bawah adalah jalan masuknya.",
+      "matched": "cocok dengan {{terms}}",
+      "notScored": "belum dinilai",
+      "added": "ditambahkan"
+    },
+    "inApplications": "Ada di lamaran sebagai {{name}}",
+    "save": {
+      "title": "Simpan lowongan",
+      "hint": "berfungsi tanpa model",
+      "description": "Tidak ada yang mengambil halamannya di sini, jadi yang disimpan adalah URL, pemberi kerja yang ditebak dari URL itu, dan tanggal Anda menyimpannya — cukup untuk menemukan iklannya lagi dan melamar dari sana.",
+      "urlLabel": "URL lowongan kerja",
+      "button": "Simpan lowongan",
+      "blocker": "Tempel URL dulu",
+      "emptyTitle": "Belum ada lowongan yang disimpan",
+      "emptyDescription": "Tempel URL iklan yang ingin Anda buka lagi nanti. Iklan bisa diturunkan; tautan dan tanggalnya tetap milik Anda.",
+      "meta": "{{url}} · disimpan {{ago}}",
+      "linked": "ditautkan ke lamaran",
+      "unscored": "belum dinilai"
+    },
+    "footer": "Alur kerja berjalan di perangkat Anda, selama jojo terbuka. Tidak ada yang dikirim ke pihak ketiga.",
+    "shutdown": {
+      "title": "Matikan {{name}}?",
+      "description": "Alur kerja ini sudah dua kali berjalan tanpa menemukan apa pun untuk disarankan, dan tidak ada yang menunggu jawaban Anda. Mematikannya menghentikan pencariannya; semua yang sudah ditemukannya tetap di tempatnya.",
+      "keep": "Biarkan berjalan",
+      "off": "Matikan"
+    },
+    "editor": {
+      "newTitle": "Alur kerja baru",
+      "editTitle": "Edit alur kerja",
+      "description": "Alur kerja adalah tugas tetap untuk asisten. Ia berjalan di perangkat ini selama jojo terbuka, dan semua yang ingin diubahnya ditampilkan kepada Anda terlebih dahulu.",
+      "create": "Buat",
+      "kind": "Fungsinya",
+      "kindTwinHint": "Membaca apa yang Anda miliki dan menyarankan yang kurang — catatan, pengingat, label, pengarsipan.",
+      "kindScoutHint": "Mencari lowongan yang layak Anda perhatikan dan mengajukannya untuk ditinjau.",
+      "name": "Nama",
+      "nameError": "Beri nama sesuai yang dipantaunya.",
+      "namePlaceholderTwin": "mis. Rapikan lamaran saya",
+      "namePlaceholderScout": "mis. Papan lowongan dosen CRA",
+      "sources": "Sumber",
+      "sourcesError": "Pencari tanpa sumber tidak punya apa pun untuk dibaca.",
+      "sourcesHint": "Papan lowongan atau halaman karier yang dipantaunya. Pisahkan beberapa dengan koma.",
+      "focus": "Yang menjadi fokus",
+      "focusHint": "Apa pun yang perlu diperhatikan secara khusus. Kosongkan agar ia melihat ke mana-mana.",
+      "termsHint": "Dasar penilaian lowongan. Kosongkan untuk menyimpan semua yang dicantumkan sumber.",
+      "focusPlaceholder": "tindak lanjut dan tenggat",
+      "termsPlaceholder": "asisten profesor, CS/ECE",
+      "often": "Seberapa sering",
+      "oftenHint": "Berapa lama ia menunggu di antara putaran."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "Halaman itu tidak dapat disimpan",
+    "noAnswer": "Halaman tidak menjawab.",
+    "savedTitle": "{{name}} disimpan",
+    "savedDropped_other": "Disimpan di brankas Anda. {{count}} aset tidak dapat disimpan, jadi sebagian tampilan mungkin polos.",
+    "savedOffline": "Disimpan di brankas Anda, dan dapat dibaca tanpa koneksi.",
+    "keep": "Simpan salinan",
+    "keeping": "Menyimpan…",
+    "waitForLoad": "Tunggu halaman selesai dimuat"
+  },
+  "profile": {
+    "title": "Profil saya",
+    "subtitle": "Yang dipakai pencari dan asisten untuk mencocokkan dan menulis draf. Tidak ada yang keluar dari perangkat Anda.",
+    "savedTitle": "Profil disimpan",
+    "savedDescription": "Disimpan di perangkat ini.",
+    "basics": {
+      "title": "Dasar",
+      "fullName": "Nama lengkap",
+      "fullNamePlaceholder": "mis. Lonardo Jenson",
+      "position": "Posisi saat ini",
+      "positionPlaceholder": "mis. Kandidat PhD, Ilmu Komputer",
+      "location": "Lokasi",
+      "locationPlaceholder": "mis. Santa Clara, CA",
+      "email": "Email"
+    },
+    "links": {
+      "title": "Tautan",
+      "website": "Situs web"
+    },
+    "interests": {
+      "title": "Minat dan sasaran",
+      "hint": "menentukan pencocokan pencari",
+      "matchTerms": "Istilah pencocokan",
+      "matchTermsDescription": "Bidang riset dan rumusan yang dicari pencari. Terpisah dari kata kunci yang Anda pakai untuk mengarsipkan entri.",
+      "roleTags": "Label posisi",
+      "roleTagsDescription": "Jenis posisi yang Anda pantau. Setiap lamaran diarsipkan di salah satunya, dan filter posisi serta angka per posisi membacanya.",
+      "targetRoles": "Posisi yang dituju",
+      "targetRolesPlaceholder": "mis. Asisten profesor (TT) · Ilmuwan riset",
+      "regions": "Wilayah pilihan",
+      "regionsPlaceholder": "mis. Texas · jarak jauh",
+      "academia": "Sertakan lowongan akademik",
+      "industry": "Sertakan lowongan industri"
+    },
+    "remove": "Hapus {{name}}",
+    "add": "Tambah",
+    "documents": {
+      "title": "Dokumen",
+      "hint": "kategori {{bucket}} di Brankas",
+      "emptyTitle": "Belum ada dokumen",
+      "emptyDescription": "Tambahkan CV dan pernyataan Anda — semuanya diarsipkan di Brankas di bawah {{bucket}}, tempat bagian lain aplikasi dapat menjangkaunya.",
+      "add": "Tambah dokumen",
+      "openVault": "Buka Brankas",
+      "meta": "{{size}} · disimpan {{ago}}",
+      "footer": "Berkas yang sama dengan alat Berkas di Brankas, difilter ke {{bucket}}. Entri menyimpan nama, ukuran, dan jenis dokumen — tidak pernah isinya.",
+      "addedTitle": "Dokumen ditambahkan",
+      "addedDescription": "Diarsipkan di Brankas di bawah {{bucket}}. Nama, ukuran, dan jenis disimpan — isi berkasnya tidak dibaca."
+    },
+    "unsaved": "Ada perubahan yang belum disimpan — menyimpan akan menulisnya ke ponsel ini.",
+    "discard": "Buang",
+    "save": "Simpan",
+    "termSheet": {
+      "title": "Tambahkan istilah pencocokan",
+      "description": "Bidang riset atau rumusan yang perlu dicari pencari di sebuah lowongan.",
+      "label": "Istilah pencocokan",
+      "placeholder": "mis. pelatihan terdistribusi"
+    },
+    "roleSheet": {
+      "title": "Tambahkan label posisi",
+      "description": "Jenis posisi yang Anda pantau. Label ini menjadi salah satu pilihan di setiap lamaran.",
+      "label": "Label posisi",
+      "placeholder": "mis. Ilmuwan data"
+    }
+  },
+  "assistant": {
+    "title": "Asisten",
+    "undone": "Diurungkan",
+    "saved": "Disimpan ke cuplikan",
+    "savedDescription": "{{title}} · diarsipkan di {{tag}}",
+    "openVault": "Buka brankas",
+    "clear": "Bersihkan",
+    "emptyTitle": "Belum ada pertanyaan",
+    "copy": "Salin",
+    "copied": "Disalin",
+    "saveToSnippets": "Simpan ke cuplikan",
+    "ask": "Tanya asisten",
+    "send": "Kirim",
+    "stop": "Berhenti",
+    "agent": {
+      "subtitle": "Terhubung ke model Anda, dan dapat bertindak atas entri Anda. Semua yang dilakukannya dicantumkan saat terjadi.",
+      "intro": "Menjawab dengan <code>{{model}}</code> di <code>{{endpoint}}</code>, yang dapat memanggil {{tools}} alat di perangkat ini. Tidak ada yang dikirim ke tempat lain, dan setiap perubahan dapat diurungkan.",
+      "deleted": "Percakapan dihapus",
+      "emptyDescription": "Minta asisten mencari sesuatu, menambahkan lamaran, atau memajukan lamaran. Setiap alat yang dijalankannya muncul di bawah saat terjadi, beserta apa yang dikirim dan apa yang kembali.",
+      "placeholder": "Cari lamaran saya ke UT Austin, tambahkan satu, majukan…",
+      "footer": "Asisten membaca sebelum menulis, bertanya sebelum setiap perubahan kecuali Anda mematikannya untuk sebuah percakapan, dan semua yang dilakukannya melewati urungkan yang sama dengan tekanan tombol.",
+      "prompts": {
+        "waiting": "Apa saja yang sedang saya tunggu?",
+        "add": "Tambahkan lamaran: ML engineer di Stripe, terkirim",
+        "noDeadline": "Lamaran mana yang tidak punya tenggat?",
+        "flag": "Tandai lamaran saya ke UT Austin"
+      }
+    },
+    "scripted": {
+      "subtitle": "Untuk sekarang, contoh yang dikerjakan. Hubungkan model lokal dan asisten akan menulis draf dari entri Anda sendiri sekaligus bertindak atasnya.",
+      "cleared": "Percakapan dibersihkan",
+      "messages_other": "{{count}} pesan",
+      "connectLabel": "Hubungkan model di Pengaturan",
+      "banner": "Tidak ada model yang terhubung, jadi setiap balasan di sini adalah contoh, bukan jawaban.",
+      "connect": "Hubungkan di Pengaturan →",
+      "emptyDescription": "Pilih salah satu perintah di bawah, atau ketik apa saja. Balasannya adalah contoh tertulis — berguna sebagai bahan, dan tidak pernah disajikan sebagai jawaban model.",
+      "badge": "Contoh respons · tidak ada model yang terhubung",
+      "placeholder": "Tanyakan tentang surat pengantar, email tindak lanjut, wawancara…",
+      "footer": "Jika model terhubung, masing-masing akan membaca profil dan dokumen Anda sebagai konteks. Karena inferensi berjalan lokal, CV dan catatan Anda tidak pernah diunggah ke mana pun."
+    },
+    "thought": {
+      "live": "Berpikir…",
+      "done": "Pemikiran",
+      "liveLabel": "Berpikir. Tampilkan apa yang dipikirkan model",
+      "label": "Tampilkan apa yang dipikirkan model"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "Tulis draf surat pengantar",
+        "title": "Surat pengantar — struktur",
+        "reply": "Berikut susunan yang akan saya gunakan untuk [DEPARTEMEN]:\n\nParagraf 1 — bidang yang Anda tekuni, dalam satu kalimat yang dapat diikuti anggota komite dari luar bidang Anda.\nParagraf 2 — dua hasil yang menjadi dasar argumen Anda, masing-masing disertai dampaknya, bukan metodenya.\nParagraf 3 — mengapa departemen ini: kelompok yang akan beririsan dengan Anda, dan mata kuliah yang akan Anda ajarkan.\nParagraf 4 — ketersediaan, dan gambaran tiga tahun pertama.\n\nCukup satu halaman. Komite membaca empat puluh surat seperti ini dalam satu malam."
+      },
+      "tailor-cv": {
+        "action": "Sesuaikan CV saya dengan lowongan",
+        "title": "Menyesuaikan CV — tiga putaran",
+        "reply": "Tiga putaran, dengan urutan ini:\n\n1. Buang yang tidak diminta iklan. CV yang disesuaikan untuk segalanya tidak disesuaikan untuk apa pun.\n2. Pindahkan bagian yang paling ditekankan iklan ke atas halaman pertama — iklan yang berat di pengajaran ingin pengajaran di atas publikasi.\n3. Tulis ulang judul utama dengan kata-kata iklan itu sendiri, tanpa membesar-besarkan cakupan pekerjaan.\n\nYang tetap tidak diubah: publikasi, referensi, tanggal. Bagian-bagian itulah yang diperiksa komite."
+      },
+      "parse-posting": {
+        "action": "Uraikan lowongan kerja",
+        "title": "Yang perlu diambil dari lowongan",
+        "reply": "Dari sebuah iklan saya akan mengambil: pemberi kerja, posisi, tenggat, dokumen yang diminta, narahubung yang disebut, dan apa pun yang dirumuskan sebagai syarat mutlak, bukan preferensi.\n\nYang terakhir itulah tempat lamaran gugur — \"harus sudah bergelar pada tanggal mulai\" adalah penyaring, \"pengalaman dengan sistem berskala besar diutamakan\" bukan.\n\nPencari lowongan sudah mengerjakan separuh yang mudah tanpa model: simpan URL-nya di sana dan ia menyimpan tautan serta menebak pemberi kerja dari tautan itu."
+      },
+      "follow-up": {
+        "action": "Tulis draf email tindak lanjut",
+        "title": "Tindak lanjut setelah tidak ada tanggapan",
+        "reply": "Subjek: Tindak lanjut — [POSISI], [DEPARTEMEN]\n\nYth. [NAMA],\n\nSaya melamar posisi [POSISI] pada [TANGGAL] dan ingin memastikan komite sudah memiliki semua yang dibutuhkan dari saya. Saya bersedia mengirimkan langsung surat referensi yang masih kurang jika itu lebih mudah.\n\nSaya tetap sangat tertarik dengan posisi ini, dan dengan senang hati menjawab pertanyaan apa pun melalui email.\n\nTerima kasih,\n[NAMA ANDA]"
+      },
+      "interview": {
+        "action": "Bantu saya bersiap untuk wawancara",
+        "title": "Wawancara — enam pertanyaan yang perlu dijawab",
+        "reply": "Enam pertanyaan yang sebaiknya sudah punya jawaban sebelum harinya:\n\n— Tentang apa pekerjaan Anda, dalam sembilan puluh detik, untuk orang di luar bidang Anda?\n— Apa hibah pertama Anda nanti, dan ke lembaga mana?\n— Dua mata kuliah apa yang bisa Anda ajarkan semester depan tanpa persiapan?\n— Dengan siapa di sini Anda akan berkolaborasi, dan tentang apa?\n— Apa kelemahan dalam hasil penelitian Anda sendiri?\n— Apa yang Anda butuhkan di tahun pertama untuk menjalankan pekerjaan itu?\n\nTulis jawabannya dengan tangan. Latihannya yang penting, bukan catatannya."
+      },
+      "fallback": {
+        "title": "Asisten — contoh respons",
+        "reply": "Tidak ada model yang terhubung, jadi ini jawaban siap pakai, bukan balasan atas yang Anda ketik.\n\nJika model terhubung, layar ini akan membaca profil Anda, dokumen di Brankas, dan lamaran yang Anda sebut, lalu menulis draf berdasarkan semua itu di perangkat Anda sendiri. Arahkan jojo ke server lokal yang kompatibel dengan OpenAI di Pengaturan — vLLM, Ollama, atau LM Studio.\n\nLima perintah di bawah masing-masing punya contoh yang dikerjakan yang dapat Anda pakai sementara itu."
+      }
+    }
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "subtitle": "Koneksi, sinkronisasi, dan data Anda",
+    "themes": {
+      "light": "Terang",
+      "dark": "Gelap",
+      "system": "Sistem"
+    },
+    "dataSets": {
+      "demo": "Data demo",
+      "empty": "Kosong"
+    },
+    "reasoning": {
+      "on": "Aktif",
+      "low": "Ringan",
+      "off": "Mati"
+    },
+    "import": {
+      "refused": "Tidak ada yang diimpor",
+      "fileFailed": "Berkas tidak dapat dibuka: {{reason}}",
+      "clipboardFailed": "Papan klip tidak dapat dibaca: {{reason}}",
+      "unfinished": "Impor tidak selesai",
+      "replaceTitle": "Ganti semua isi ponsel ini?",
+      "replaceDescription": "{{described}}. {{replaces}}, dan itu tidak dapat diurungkan.",
+      "replace": "Ganti"
+    },
+    "device": {
+      "title": "Di perangkat ini",
+      "hint": "tempat entri Anda sebenarnya tersimpan",
+      "body": "Semua yang Anda tambahkan ditulis langsung ke penyimpanan ponsel ini sambil Anda bekerja — tidak ada yang perlu diaktifkan, dan tidak ada yang keluar dari perangkat. Dokumen yang Anda lampirkan disalin ke folder milik jojo, jadi tetap ada meskipun berkas aslinya dipindah atau dihapus.",
+      "copyOut": "Untuk mendapatkan salinan, gunakan Ekspor di bawah, atau Transfer untuk mengirim semuanya ke komputer Anda melalui jaringan lokal."
+    },
+    "model": {
+      "title": "Model",
+      "intro": "Model di perangkat yang dapat Anda jangkau, atau model berbayar. Lokal adalah bawaan karena hanya pengaturan itulah yang membuat entri Anda tidak pernah keluar dari perangkat ini.",
+      "endpoint": "Endpoint",
+      "loopback": "Alamat itu berarti “perangkat ini”, jadi di ponsel alamat itu menunjuk ke ponsel. Gunakan alamat komputer di jaringan Anda — misalnya 192.168.1.20, atau nama .local-nya.",
+      "endpointOllama": "Host dan port. Tanpa /v1 — jojo memakai endpoint Ollama sendiri agar dapat memintanya tidak memotong.",
+      "endpointHint": "URL dasar, diakhiri dengan /v1.",
+      "apiKey": "Kunci API",
+      "apiKeyHint": "Hanya disimpan di perangkat ini. Tidak pernah dimasukkan ke cadangan dan tidak pernah dikirim ke mana pun selain ke penyedia.",
+      "modelPlaceholder": "Ditemukan saat Anda menguji koneksi",
+      "modelHint": "Yang dilaporkan server. Ubah jika Anda menyajikan lebih dari satu.",
+      "savedAs": "Disimpan sebagai",
+      "savedAsHint": "Nama server ini di daftar. Bawaannya nama model.",
+      "context": "Jendela konteks",
+      "contextOllama": "Token. Jika kosong, memakai {{tokens}} dan membiarkan Ollama menentukan ukurannya; angka di sini juga dikirim sebagai num_ctx.",
+      "contextHint": "Token yang dapat ditampung deployment Anda. Jika kosong, memakai {{tokens}}.",
+      "reasoning": "Penalaran",
+      "reasoningDescription": "Mengizinkan model yang bisa berpikir — gpt-oss, Gemma 4, Qwen3 — bernalar sebelum menjawab. Matikan jika balasan kembali kosong pada model kecil.",
+      "endpointFirst": "Isi endpoint dulu.",
+      "kept": "Disimpan di perangkat ini. Asisten akan memakai model ini."
+    },
+    "test": {
+      "testing": "Menguji…",
+      "again": "Uji lagi",
+      "test": "Uji koneksi",
+      "connected": "Terhubung",
+      "noAnswer": "Tidak menjawab",
+      "notConnected": "Tidak terhubung"
+    },
+    "reader": {
+      "title": "Baca dokumen saya",
+      "hint": "hanya PDF",
+      "already": "Ponsel ini sudah dapat membaca berkas Word, berkas OpenDocument, presentasi, halaman tersimpan, dan teks biasa dengan sendirinya — tidak ada yang perlu disiapkan dan tidak ada yang dikirim ke mana pun.",
+      "pdf": "<strong>PDF adalah pengecualian.</strong> Mengubahnya kembali menjadi teks memerlukan tabel huruf di dalamnya, yang lebih dari yang dibawa aplikasi ini. Untuk PDF, jalankan {{name}} di perangkat yang dapat dijangkau ponsel ini dan isi alamatnya di bawah.",
+      "address": "Alamat",
+      "addressHint": "Tempat markitdown-mcp mendengarkan. Path-nya diakhiri dengan /mcp.",
+      "notRunning": "Belum menjalankannya?",
+      "addressFirst": "Isi alamat dulu.",
+      "ok": "Dokumen dikirim ke alamat itu dan tidak ke tempat lain. Tidak ada yang diunggah.",
+      "notice": "{{name}} adalah program terpisah, bukan bagian dari jojo. {{copyright}} {{licence}}. jojo tidak berafiliasi dengan Microsoft."
+    },
+    "appearance": {
+      "title": "Tampilan",
+      "theme": "Tema",
+      "themeDescription": "Sistem mengikuti pengaturan perangkat Anda"
+    },
+    "data": {
+      "title": "Data Anda",
+      "export": "Ekspor sebagai JSON",
+      "import": "Impor",
+      "paste": "Tempel cadangan",
+      "exportNote": "Ekspor mencakup lamaran, linimasa, brankas, lowongan tersimpan, kata kunci beserta yang dilabelinya, dan profil Anda. Ini cadangan yang dapat dibaca kembali oleh aplikasi ini — tetapi dokumen yang Anda lampirkan tetap di ponsel ini, jadi barisnya kembali tanpa isinya. Transfer, di Lainnya, memindahkan semuanya ke komputer termasuk dokumennya.",
+      "records": "Entri",
+      "recordsEmpty": "Setiap daftar kosong, jadi setiap layar menampilkan keadaan awalnya.",
+      "recordsDemo": "Pencarian bawaan — dua belas lamaran, linimasa, dan brankas yang sudah terisi.",
+      "move": "Pindahkan ke perangkat lain",
+      "moveDescription": "Pasangkan dengan komputer Anda melalui jaringan lokal dan pindahkan semuanya, termasuk dokumen.",
+      "reset": "Atur ulang data demo",
+      "resetDescription": "Mengembalikan semuanya seperti bawaan, membuang suntingan sesi ini.",
+      "resetButton": "Atur ulang",
+      "resetBlocker": "Kembalikan Entri ke Data demo dulu",
+      "warning": "Entri Anda disimpan di perangkat ini dan tetap ada setelah aplikasi ditutup. Tidak ada akun dan tidak ada sinkronisasi, dan tidak ada entri yang pernah keluar dari ponsel — tidak melalui model, tidak melalui laporan kerusakan. Ekspor menulis salinan ke papan klip jika Anda ingin menyimpannya di tempat lain.",
+      "cleared": "Semuanya dikosongkan",
+      "clearedDescription": "Setiap entri sudah hilang, termasuk profil Anda, dan dokumen yang Anda lampirkan sudah dihapus dari perangkat ini. Muat data demo lagi dari sini.",
+      "resetDone": "Data demo diatur ulang",
+      "loaded": "Data demo dimuat",
+      "loadedDescription": "Lamaran, linimasa, brankas, lowongan, dan profil bawaan sudah kembali seperti semula."
+    },
+    "confirm": {
+      "fallbackTitle": "Ubah data?",
+      "continue": "Lanjutkan",
+      "empty": {
+        "title": "Kosongkan semua entri?",
+        "description": "Lamaran, linimasa, brankas, lowongan tersimpan, dan profil Anda semuanya dihapus, termasuk apa pun yang Anda tambahkan di sesi ini, dan dokumen yang Anda lampirkan ikut dihapus dari perangkat ini. Tidak dapat diurungkan — ekspor dulu jika Anda ingin mendapatkannya kembali. Kata kunci Anda tetap disimpan, tetapi tidak ada lagi yang memakainya.",
+        "confirm": "Kosongkan semuanya"
+      },
+      "demo": {
+        "title": "Muat data demo?",
+        "description": "Entri bawaan kembali, dengan kata kunci bawaannya. Apa pun yang Anda tambahkan di sesi ini diganti, bukan digabung, dan dokumen yang Anda lampirkan dihapus dari perangkat ini. Tidak dapat diurungkan.",
+        "confirm": "Muat data demo"
+      },
+      "reset": {
+        "title": "Atur ulang ke data demo?",
+        "description": "Setiap suntingan, penambahan, dan penghapusan dari sesi ini dibuang dan entri bawaan kembali persis seperti semula, jadi dokumen yang Anda lampirkan dihapus dari perangkat ini. Daftar kata kunci Anda sendiri tidak disentuh. Tidak dapat diurungkan.",
+        "confirm": "Atur ulang data"
+      }
+    },
+    "provider": {
+      "title": "Penyedia",
+      "description": "Memilih salah satunya mengatur alamatnya untuk Anda. Yang berbasis cloud memerlukan kunci, dan entri Anda dikirim ke sana.",
+      "cloud": "Kata-kata Anda dikirim ke perusahaan ini, dan ditagihkan kepada Anda",
+      "localKey": "Di perangkat yang Anda kendalikan. Memerlukan kunci.",
+      "local": "Di perangkat yang Anda kendalikan. Tidak ada yang keluar darinya."
+    },
+    "cloud": {
+      "terms": "Ketentuan {{name}}",
+      "privacy": "Kebijakan privasi"
+    },
+    "servers": {
+      "title": "Server tersimpan",
+      "description": "Alamat yang pernah menjawab di perangkat ini.",
+      "done": "Selesai",
+      "empty": "Belum ada yang tersimpan. Uji koneksi dan alamatnya disimpan di sini.",
+      "load": "Muat {{name}}",
+      "inUse": "Sedang dipakai",
+      "forget": "Lupakan {{name}}"
+    },
+    "keywords": {
+      "title": "Kata kunci",
+      "hint": "dipakai bersama oleh lamaran, pengingat, dan Brankas",
+      "takenOff_other": "Dilepas dari {{count}} entri.",
+      "usedOn_other": "Dipakai di {{count}} entri",
+      "rename": "Ganti nama {{name}}",
+      "editTitle": "Edit {{name}}",
+      "editGeneric": "Edit kata kunci",
+      "editDescription": "Mengganti nama tidak mengubah id-nya, jadi setiap entri yang memakai kata kunci ini ikut berubah.",
+      "taken": "Nama itu sudah dipakai",
+      "takenDescription": "Sudah ada kata kunci lain dengan nama itu.",
+      "colour": "Warna",
+      "newTitle": "Kata kunci baru",
+      "newDescription": "Kata kunci adalah milik Anda. Kata kunci yang sama berlaku untuk lamaran, pengingat, berkas, dan tautan.",
+      "added": "{{name}} ditambahkan",
+      "placeholder": "mis. Menunggu mereka",
+      "confirmUsed_other": "Kata kunci ini dilepas dari {{count}} entri. Entri tersebut tetap ada; hanya kata kuncinya yang hilang.",
+      "confirmUnused": "Tidak ada yang memakai kata kunci ini, jadi tidak ada hal lain yang berubah."
+    }
+  }
+}

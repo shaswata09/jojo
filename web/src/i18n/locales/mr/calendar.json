@@ -1,0 +1,63 @@
+{
+  "monthPicker": {
+    "goTo": "महिन्यावर जा",
+    "previousYear": "मागील वर्ष",
+    "nextYear": "पुढील वर्ष"
+  },
+  "chip": {
+    "allDay": "दिवसभर",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, पूर्ण —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} कार्यक्रम",
+    "label_other": "{{label}}, {{count}} कार्यक्रम",
+    "add": "{{label}} रोजी कार्यक्रम जोडा",
+    "more_one": "+{{count}} आणखी",
+    "more_other": "+{{count}} आणखी"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "मागील महिना",
+    "nextMonth": "पुढील महिना",
+    "today": "आज",
+    "backTo": "{{date}} वर परत जा",
+    "goTo": "{{month}} {{year}} वर जा",
+    "hintTouch": "दिवसावर काय आहे ते पाहण्यासाठी त्यावर टॅप करा.",
+    "hintPointer": "ग्रिडच्या बाजूला यादी पाहण्यासाठी दिवस निवडा. कार्यक्रम संपादित करण्यासाठी त्यावर क्लिक करा, किंवा दुसऱ्या दिवसावर ओढा — ओढण्यासाठी पॉइंटर लागतो, त्यामुळे कीबोर्डसाठी कार्यक्रमातील तारीख फील्ड वापरा.",
+    "eventTypes": "कार्यक्रमांचे प्रकार",
+    "showAll": "सर्व दाखवा",
+    "dateColours": "तारखांचे रंग",
+    "marks": {
+      "overdue": "मुदत उलटलेले",
+      "soon": "48 तासांत मुदत",
+      "done": "पूर्ण"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "आज",
+    "selectedDay": "निवडलेला दिवस",
+    "hiddenTitle": "{{date}} रोजी काहीही दाखवलेले नाही",
+    "hiddenDescription_one": "{{count}} कार्यक्रम ग्रिडखाली बंद केलेल्या प्रकाराचा आहे.",
+    "hiddenDescription_other": "{{count}} कार्यक्रम ग्रिडखाली बंद केलेल्या प्रकारांचे आहेत.",
+    "showAllTypes": "सर्व प्रकारचे कार्यक्रम दाखवा",
+    "emptyTitle": "{{date}} रोजी काहीही नाही",
+    "emptyDescription": "मुलाखत, अंतिम मुदत किंवा तयारीसाठी वेळ जोडा, आणि ते इथे व ग्रिडवर दिसेल.",
+    "addEvent": "कार्यक्रम जोडा",
+    "backTo": "{{month}} वर परत जा",
+    "delete": "कार्यक्रम हटवा",
+    "deleteNamed": "{{title}} हटवा",
+    "restOf": "{{month}} चा उर्वरित भाग",
+    "lastDayTitle": "{{date}} हा महिन्याचा शेवटचा दिवस आहे",
+    "nothingAfterTitle": "{{date}} नंतर काहीही नाही",
+    "lastDayDescription": "त्यानंतर काहीही नाही. {{month}} चे नियोजन करण्यासाठी पुढे जा.",
+    "nothingAfterDescription": "{{month}} चा उर्वरित भाग रिकामा आहे. या दिवसानंतर तुम्ही जे जोडाल ते इथे दिसेल.",
+    "goToMonth": "{{month}} वर जा",
+    "goToDay": "{{label}} वर जा",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "या महिन्यात नंतर +{{count}} आणखी",
+    "moreLater_other": "या महिन्यात नंतर +{{count}} आणखी"
+  }
+}

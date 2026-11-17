@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "Le mosse di jojo",
+    "hint": "Scegline una, o disegna il suo tratto sul robot.",
+    "trigger": "Le mosse di jojo",
+    "triggerAria": "Le mosse di jojo e i crediti",
+    "plays": "esecuzioni",
+    "modelCredit": "Modello del robot:"
+  },
+  "theme": {
+    "toggle": "Cambia tema",
+    "toLight": "Passa al tema chiaro",
+    "toDark": "Passa al tema scuro"
+  },
+  "poke": "Stuzzica jojo"
+}

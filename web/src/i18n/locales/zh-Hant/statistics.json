@@ -1,0 +1,27 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "實測",
+        "hint": "根據你自己的紀錄計算"
+      },
+      "suggested": {
+        "label": "建議",
+        "hint": "一般性建議，或以一般求職而非你的求職為基準衡量"
+      }
+    },
+    "title": "下一步該做什麼",
+    "intro": "先依你的紀錄所支持的程度排序，再依花費最少的排序。"
+  },
+  "whatIsWorking": {
+    "countOf": "{{of}} 份中有 {{count}} 份",
+    "rate": "{{rate}}% · 可能介於 {{range}}",
+    "groupReplied": "回覆，依{{dimension}}",
+    "groupInterviews": "面試，依{{dimension}}",
+    "confident": "這些區間沒有重疊，所以這是真正的差異——「{{best}}」值得你投入更多心力。",
+    "unconfident": "這些區間有重疊，所以這只是兩個數字，還稱不上差異。更多紀錄會讓它們分開，或縮小差距。",
+    "tooFew_other": "另有 {{count}} 個群組的紀錄少於 {{min}} 筆，不列入比較。",
+    "title": "哪些做法有效",
+    "intro": "長條表示真實比率可能落在的範圍；線條是你實際量測到的數值。範圍越寬，表示紀錄還太少，無法確定。"
+  }
+}

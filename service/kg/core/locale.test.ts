@@ -12,8 +12,9 @@ describe('which language a device gets', () => {
   it('reads Chinese by script, and never shows Simplified to a Traditional reader', () => {
     expect(negotiateLocale(['zh-CN'])).toBe('zh-Hans')
     expect(negotiateLocale(['zh-Hans-SG'])).toBe('zh-Hans')
-    expect(negotiateLocale(['zh-TW', 'ja'])).toBe('ja')
-    expect(negotiateLocale(['zh-Hant'])).toBe('en')
+    expect(negotiateLocale(['zh-TW', 'ja'])).toBe('zh-Hant')
+    expect(negotiateLocale(['zh-Hant'])).toBe('zh-Hant')
+    expect(negotiateLocale(['zh-HK'])).toBe('zh-Hant')
   })
 
   it('walks the preference list and falls back to English', () => {
@@ -28,7 +29,17 @@ describe('which language a device gets', () => {
     expect(resolveLocale('klingon', ['ko-KR'])).toBe('ko')
   })
 
-  it('marks Arabic right-to-left and nothing else', () => {
-    expect(LOCALES.filter((l) => l.dir === 'rtl').map((l) => l.code)).toEqual(['ar'])
+  it('marks Arabic and Urdu right-to-left and nothing else', () => {
+    expect(LOCALES.filter((l) => l.dir === 'rtl').map((l) => l.code)).toEqual(['ar', 'ur'])
+  })
+
+  it('offers Bengali and the other most-spoken languages', () => {
+    const codes = LOCALES.map((l) => l.code)
+    for (const code of ['bn', 'ru', 'ur', 'id', 'tr', 'vi', 'it', 'zh-Hant', 'mr', 'ta'] as const) {
+      expect(codes).toContain(code)
+    }
+    expect(negotiateLocale(['bn-IN'])).toBe('bn')
+    expect(negotiateLocale(['ur-PK'])).toBe('ur')
+    expect(negotiateLocale(['ru-RU'])).toBe('ru')
   })
 })

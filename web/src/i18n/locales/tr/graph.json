@@ -1,0 +1,117 @@
+{
+  "common": {
+    "connections_one": "{{count}} bağlantı",
+    "connections_other": "{{count}} bağlantı",
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt"
+  },
+  "legend": {
+    "show": "Göster: {{name}}",
+    "hide": "Gizle: {{name}}",
+    "allHidden": "Tüm kayıt türleri gizli.",
+    "showAll": "Tümünü göster",
+    "isA": "türü"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Bilgi grafiği — {{records}}, {{connections}}",
+    "capped": "En çok bağlantılı {{shown}} kayıt gösteriliyor. {{dropped}} kayıt daha depoda ama bu tuvalde değil — görmek için filtrelerle daraltın.",
+    "description": "Her kayıt bir düğüm, kayıtlar arasındaki her işaret bir çizgidir. Bu grafiğin yanındaki paneller aynı bilgiyi metin olarak listeler."
+  },
+  "answer": {
+    "title": "Yanıt",
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt",
+    "prompt": "Bir örnek seçin ya da bir kalıp oluşturun; yanıt burada görünür ve yukarıdaki grafikte vurgulanır.",
+    "emptyTitle": "Eşleşen kayıt yok",
+    "clear": "Sorguyu temizle",
+    "caption": "Kalıpla eşleşen kayıtlar",
+    "columns": {
+      "record": "Kayıt",
+      "kind": "Tür",
+      "matched": "Eşleşen"
+    },
+    "open": "Aç",
+    "select": "Grafikte seç",
+    "via": "bağlantı: {{rel}}",
+    "more_one": "{{names}} +{{count}} tane daha",
+    "more_other": "{{names}} +{{count}} tane daha",
+    "showing": "{{total}} kaydın ilk {{shown}} tanesi gösteriliyor. Hepsi yukarıdaki grafikte vurgulu."
+  },
+  "examples": {
+    "title": "Örnekler",
+    "nothingToAsk": "Bu oturumda bunun sorulabileceği bir şey yok"
+  },
+  "query": {
+    "title": "Grafiğe sor",
+    "hint": "Bir cümleyle sorun ya da soruyu elle oluşturun",
+    "shape": "Soru biçimi",
+    "pattern": "Kalıp",
+    "path": "Yol",
+    "generated": "Oluşturulan sorgu",
+    "clear": "Temizle",
+    "sqlNote": "Sorunun biçimi, okunabilirlik için SQL terimleriyle. Asıl çalışan sorgu yukarıdaki yapılandırılmış sorgudur — bu satır hiçbir yerde ayrıştırılmaz."
+  },
+  "fields": {
+    "records": "Kayıtlar",
+    "anyRecord": "Herhangi bir kayıt",
+    "ofKind": "Türü",
+    "anyKind": "Herhangi bir tür",
+    "reminder": "Hatırlatıcı",
+    "condition": "Koşul",
+    "quantifier": {
+      "has": "var",
+      "missing": "yok",
+      "atLeast": "en az"
+    },
+    "howMany": "Kaç tane",
+    "orMore_one": "{{count}} veya daha fazla",
+    "orMore_other": "{{count}} veya daha fazla",
+    "relationship": "İlişki",
+    "anyRelationship": "herhangi bir ilişki",
+    "connectedTo": "Bağlı olduğu",
+    "anything": "herhangi bir şey",
+    "keyword": "Anahtar kelimesi",
+    "anyKeyword": "herhangi bir anahtar kelime",
+    "from": "Başlangıç",
+    "to": "Bitiş"
+  },
+  "detail": {
+    "title": "Seçili kayıt",
+    "nothingSelected": "Hiçbir şey seçilmedi",
+    "pickHint": "Neye bağlandığını ve uygulamada nerede bulunduğunu görmek için bir düğüm seçin — üzerine tıklayarak ya da Tab ile gelip Enter'a basarak.",
+    "open": "Aç: {{type}}",
+    "openType": {
+      "application": "Başvuruyu aç",
+      "organisation": "Kurumu aç",
+      "role": "Rolü aç",
+      "item": "Zaman çizelgesi öğesini aç",
+      "keyword": "Anahtar kelimeyi aç",
+      "link": "Bağlantıyı aç",
+      "file": "Dosyayı aç",
+      "snippet": "Metin parçasını aç",
+      "posting": "Kayıtlı ilanı aç",
+      "match": "Gözcü eşleşmesini aç",
+      "source": "Kaynağı aç",
+      "background": "\"Hakkınızda\" bölümünü aç",
+      "claim": "İlişkiyi aç"
+    },
+    "derived": "Kayıtlarınızdan türetildi — kendine ait bir sayfası yok.",
+    "verbs": "Bununla neler yapabilirsiniz",
+    "noLinks": "Henüz bu kayda işaret eden bir şey yok."
+  },
+  "ask": {
+    "notConnected": "<settings>Ayarlar</settings> bölümünden yerel bir model bağlarsanız bunu bir cümleyle sorabilirsiniz. Aşağıdaki oluşturucu her iki durumda da çalışır.",
+    "label": "Grafiğe bir soru sorun",
+    "stop": "Durdur",
+    "submit": "Sor",
+    "again": "Başka bir şey sor",
+    "suggestions": {
+      "noFollowUp": "Hangi başvuruların planlanmış bir takibi yok?",
+      "unfiled": "Hangi dosyalar hiçbir yerin altında dosyalı değil?",
+      "busy": "Hangi başvuruların ikiden fazla zaman çizelgesi öğesi var?"
+    }
+  }
+}

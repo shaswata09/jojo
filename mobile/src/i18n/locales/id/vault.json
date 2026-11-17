@@ -1,0 +1,290 @@
+{
+  "common": {
+    "undo": "Urungkan",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "remove": "Hapus",
+    "done": "Selesai",
+    "title": "Judul",
+    "note": "Catatan",
+    "changeApplications": "Ubah lamaran",
+    "fileUnderApplication": "Arsipkan di lamaran",
+    "moreActionsFor": "Tindakan lain untuk {{name}}",
+    "openNamed": "Buka {{name}}",
+    "savedAgo": "disimpan {{ago}}",
+    "copyOf": "{{name}} (salinan)",
+    "movedTo": "Dipindah ke {{name}}",
+    "titleRequired": "Beri nama agar dapat ditemukan lagi."
+  },
+  "screen": {
+    "title": "Brankas",
+    "subtitle": "Pengingat, tautan, berkas, cuplikan, dan orang",
+    "counts": {
+      "reminders_other": "{{count}} pengingat",
+      "links_other": "{{count}} tautan",
+      "files_other": "{{count}} berkas",
+      "snippets_other": "{{count}} cuplikan",
+      "people_other": "{{count}} orang"
+    },
+    "showCounts": "Tampilkan jumlah",
+    "showCountsDescription": "Total item di subjudul, bukan isi tab",
+    "toolLabel": "Alat Brankas",
+    "tools": {
+      "reminders": "Pengingat",
+      "links": "Tautan",
+      "files": "Berkas",
+      "snippets": "Cuplikan",
+      "people": "Orang",
+      "tools": "Alat"
+    }
+  },
+  "files": {
+    "add": "Catat dokumen",
+    "filterLabel": "Filter dokumen",
+    "editLabel": "Edit dokumen",
+    "bucket": "Kategori",
+    "search": {
+      "label": "Cari dokumen",
+      "placeholder": "Cari nama, catatan, atau kategori"
+    },
+    "empty": {
+      "zeroTitle": "Belum ada dokumen",
+      "zeroDescription": "CV, pernyataan, presentasi, dan pindaian administrasi Anda. Nama, ukuran, dan jenis dicatat — tidak ada yang membaca isi berkasnya.",
+      "search": "Tidak ada dokumen yang menyebut \"{{query}}\" di nama, catatan, atau kategorinya.",
+      "both": "Tidak ada dokumen di {{bucket}} yang memiliki kata kunci yang dipilih.",
+      "bucketTitle": "Tidak ada apa pun di {{bucket}}",
+      "bucketDescription_other": "{{count}} dokumen diarsipkan di kategori lain.",
+      "showAll": "Tampilkan semua kategori",
+      "keywordsTitle": "Tidak ada dokumen dengan kata kunci itu"
+    },
+    "toast": {
+      "removed": "Dokumen dihapus",
+      "duplicated": "Dokumen diduplikasi",
+      "updated": "Dokumen diperbarui",
+      "recorded": "Dokumen dicatat",
+      "recordedDescription": "{{name}} · diarsipkan di {{bucket}}. Nama, ukuran, dan jenis disimpan — isi berkasnya tidak dibaca."
+    }
+  },
+  "snippets": {
+    "add": "Cuplikan baru",
+    "filterLabel": "Filter cuplikan",
+    "tag": "Label",
+    "copyNamed": "Salin {{name}}",
+    "search": {
+      "label": "Cari cuplikan",
+      "placeholder": "Cari judul atau isi"
+    },
+    "empty": {
+      "zeroTitle": "Belum ada cuplikan",
+      "zeroDescription": "Jawaban yang Anda ketik ulang di setiap formulir — biodata singkat, paragraf pengajaran, email tindak lanjut yang selalu Anda kirim.",
+      "search": "Tidak ada cuplikan yang menyebut \"{{query}}\" di nama, teks, atau jenisnya.",
+      "both": "Tidak ada cuplikan {{tag}} yang memiliki kata kunci yang dipilih.",
+      "bucketTitle": "Tidak ada cuplikan {{tag}}",
+      "bucketDescription_other": "{{count}} cuplikan diarsipkan di jenis lain.",
+      "showAll": "Tampilkan semua jenis",
+      "keywordsTitle": "Tidak ada cuplikan dengan kata kunci itu"
+    },
+    "toast": {
+      "deleted": "Cuplikan dihapus",
+      "duplicated": "Cuplikan diduplikasi",
+      "filedUnder": "Diarsipkan di {{tag}}",
+      "saved": "Cuplikan disimpan",
+      "added": "Cuplikan ditambahkan",
+      "addedDescription": "{{title}} · diarsipkan di {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Edit cuplikan",
+      "description": "Apa pun di dalam [KURUNG] tetap kosong saat lembar draf memuat cuplikan ini, jadi nama orang tidak pernah diisikan untuk Anda.",
+      "titlePlaceholder": "mis. Tindak lanjut setelah tidak ada tanggapan",
+      "applicationHint": "Opsional. Cuplikan yang ditulis untuk pemberi kerja tertentu dapat menyebutkannya.",
+      "body": "Isi",
+      "bodyRequired": "Cuplikan tanpa teks tidak punya apa pun untuk ditempel.",
+      "bodyPlaceholder": "Yth. [NAMA], …"
+    },
+    "discard": {
+      "title": "Buang perubahan yang belum disimpan?",
+      "description": "Apa yang Anda ketik di sini belum disimpan di mana pun, jadi keluar akan membuangnya — dan itu tidak dapat diurungkan.",
+      "confirm": "Buang"
+    }
+  },
+  "links": {
+    "add": "Simpan tautan",
+    "filterLabel": "Filter tautan",
+    "category": "Kategori",
+    "search": {
+      "label": "Cari tautan",
+      "placeholder": "Cari judul, URL, atau catatan"
+    },
+    "empty": {
+      "zeroTitle": "Belum ada yang disimpan",
+      "zeroDescription": "Lowongan, halaman departemen, orang, dan panduan — apa pun yang ingin Anda buka lagi nanti.",
+      "search": "Tidak ada tautan yang menyebut \"{{query}}\" di judul, alamat, catatan, atau kategorinya.",
+      "both": "Tidak ada tautan {{category}} yang memiliki kata kunci yang dipilih.",
+      "bucketTitle": "Tidak ada tautan di {{category}}",
+      "bucketDescription_other": "{{count}} tautan diarsipkan di kategori lain.",
+      "showAll": "Tampilkan semua kategori",
+      "keywordsTitle": "Tidak ada tautan dengan kata kunci itu"
+    },
+    "menu": {
+      "open": "Buka tautan",
+      "copy": "Salin URL"
+    },
+    "toast": {
+      "removed": "Tautan dihapus",
+      "duplicated": "Tautan diduplikasi",
+      "copied": "URL disalin",
+      "updated": "Tautan diperbarui",
+      "saved": "Tautan disimpan"
+    },
+    "editor": {
+      "editTitle": "Edit tautan",
+      "description": "Tidak ada yang diambil — yang disimpan adalah judul, URL, dan tanggal Anda menyimpannya.",
+      "saveLink": "Simpan tautan",
+      "titlePlaceholder": "mis. Rice — lowongan Statistik",
+      "url": "URL",
+      "urlRequired": "Tautan tanpa URL tidak mengarah ke mana pun.",
+      "applicationHint": "Menautkan keduanya, jadi setiap lamaran menghitung tautan ini di antara yang diarsipkan di bawahnya.",
+      "notePlaceholder": "Mengapa ini layak dibuka lagi"
+    }
+  },
+  "reminders": {
+    "add": "Pengingat baru",
+    "filterLabel": "Filter pengingat",
+    "markDone": "Tandai \"{{title}}\" selesai",
+    "markNotDone": "Tandai \"{{title}}\" belum selesai",
+    "buckets": {
+      "overdue": "Terlambat",
+      "today": "Hari ini",
+      "upcoming": "Mendatang",
+      "done": "Selesai"
+    },
+    "search": {
+      "label": "Cari pengingat",
+      "placeholder": "Cari judul, catatan, atau jenis"
+    },
+    "empty": {
+      "zeroTitle": "Belum ada pengingat",
+      "zeroDescription": "Pengingat adalah entri bertanggal dengan dorongan yang diaktifkan. Setelah tanggalnya lewat, ia menjadi kewajiban, dan tetap ada di Hari ini sampai Anda mencentangnya.",
+      "search": "Tidak ada pengingat yang menyebut \"{{query}}\" di judul, catatan, atau jenisnya.",
+      "both": {
+        "overdue": "Tidak ada pengingat terlambat yang memiliki kata kunci yang dipilih.",
+        "today": "Tidak ada pengingat hari ini yang memiliki kata kunci yang dipilih.",
+        "upcoming": "Tidak ada pengingat mendatang yang memiliki kata kunci yang dipilih.",
+        "done": "Tidak ada pengingat selesai yang memiliki kata kunci yang dipilih."
+      },
+      "nothingIn": {
+        "overdue": "Tidak ada yang terlambat",
+        "today": "Tidak ada untuk hari ini",
+        "upcoming": "Tidak ada yang mendatang"
+      },
+      "doneTitle": "Belum ada yang selesai",
+      "doneDescription": "Pengingat yang Anda centang terkumpul di sini, jadi yang tercentang tidak sengaja masih bisa ditemukan.",
+      "bucketDescription_other": "{{count}} pengingat ada di kelompok lain.",
+      "showAll": "Tampilkan semua pengingat",
+      "keywordsTitle": "Tidak ada pengingat dengan kata kunci itu"
+    }
+  },
+  "people": {
+    "add": "Tambah",
+    "optionsFor": "Opsi untuk {{name}}",
+    "search": {
+      "label": "Cari orang",
+      "placeholder": "Cari nama, peran, atau catatan"
+    },
+    "empty": {
+      "zeroTitle": "Belum ada siapa pun",
+      "zeroDescription": "Pemberi referensi, ketua panitia seleksi, perekrut — siapa pun yang terlibat dalam pencarian Anda. Sebutkan mereka di pekerjaan yang mereka tuliskan surat dan mereka juga muncul di entri itu.",
+      "noMatchTitle": "Tidak ada yang cocok",
+      "noMatchDescription": "Coba sebagian nama, peran, atau tempat mereka berada."
+    },
+    "toast": {
+      "removed": "Orang dihapus",
+      "saved": "Orang disimpan"
+    },
+    "editor": {
+      "editTitle": "Edit orang",
+      "addTitle": "Tambah orang",
+      "save": "Simpan orang",
+      "description": "Nama adalah satu-satunya yang wajib diisi. Sisanya adalah apa yang ternyata penting.",
+      "noApplication": "Tanpa lamaran",
+      "name": "Nama",
+      "namePlaceholder": "mis. Prof. Ngozi Okafor",
+      "role": "Peran",
+      "rolePlaceholder": "mis. Pemberi referensi, ketua panitia seleksi, perekrut",
+      "affiliation": "Afiliasi",
+      "affiliationPlaceholder": "mis. Rice",
+      "affiliationHint": "Tempat mereka berada. Tidak ditautkan ke pemberi kerja yang Anda lamar.",
+      "email": "Email",
+      "phone": "Telepon",
+      "namedOn": "Disebut di",
+      "namedOnHint": "Setiap pekerjaan yang mereka tuliskan surat, seleksi, atau pimpin.",
+      "notePlaceholder": "Apa yang mereka katakan, apa yang mereka janjikan, kapan perlu dihubungi lagi."
+    }
+  },
+  "calculator": {
+    "title": "Kalkulator",
+    "hint": "berfungsi tanpa entri dan tanpa koneksi",
+    "copy": "Salin hasilnya",
+    "mode": "Mode",
+    "modes": {
+      "basic": "Dasar",
+      "scientific": "Ilmiah"
+    },
+    "plusMinus": "plus atau minus",
+    "history": "Riwayat",
+    "kept": "{{count}} disimpan",
+    "clear": "Bersihkan",
+    "emptyTitle": "Belum ada yang dihitung",
+    "emptyDescription": "Tiga puluh hasil terakhir tetap di sini, jadi angka kedua dapat dibandingkan dengan yang pertama. Ketuk salah satunya untuk menampilkannya lagi di layar.",
+    "historyEntry": "{{expr}} sama dengan {{value}}. Tampilkan lagi di layar"
+  },
+  "pageViewer": {
+    "capturedFrom": "Ditangkap dari {{host}}",
+    "missingTitle": "Tidak ada salinan tersimpan di perangkat ini",
+    "missingDescription": "Tangkapan disimpan di tempat dibuat, jadi yang dibuat di aplikasi web tidak ada di sini. Entri tetap menyimpan nama dan alamatnya."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · diarsipkan {{ago}}",
+    "editDetails": "Edit detail",
+    "openFailed": "Tidak ada aplikasi di ponsel ini yang menawarkan untuk membukanya.",
+    "facts": {
+      "type": "Jenis",
+      "size": "Ukuran",
+      "filed": "Diarsipkan",
+      "bucket": "Kategori"
+    },
+    "typed": {
+      "title": "Dicatat, tidak disimpan",
+      "description": "Entri ini diarsipkan secara manual — nama, jenis, dan ukuran untuk dokumen yang disimpan di tempat lain. Edit dan pilih berkas untuk menyimpan salinannya di sini."
+    },
+    "checking": {
+      "title": "Mencari salinannya",
+      "description": "Memeriksa apakah berkas yang ditunjuk entri ini masih ada di penyimpanan aplikasi."
+    },
+    "kept": {
+      "title": "Disimpan di perangkat ini",
+      "pageDescription": "Terbuka di sini, dengan skrip mati dan tanpa koneksi — salinan lowongan seperti isinya pada hari disimpan.",
+      "read": "Baca",
+      "fileDescription": "Terbuka di aplikasi apa pun di ponsel ini yang menangani jenis tersebut. Tidak ada yang diunggah, dan tidak ada yang membaca isinya di sini.",
+      "open": "Buka"
+    },
+    "gone": {
+      "title": "Salinannya sudah hilang",
+      "description": "Entri ini menunjuk ke berkas yang sudah tidak ada di penyimpanan aplikasi — kemungkinan besar dihapus oleh sistem. Entrinya utuh; pilih berkasnya lagi untuk melampirkannya.",
+      "choose": "Pilih lagi"
+    },
+    "attachedTo": "Terlampir ke",
+    "change": "Ubah",
+    "fileUnderJob": "Arsipkan di sebuah pekerjaan",
+    "notFiled": "Tidak diarsipkan di lamaran mana pun. Mengarsipkannya menempatkannya di entri itu dan memungkinkan graf menemukannya dari mana saja.",
+    "addNote": "Tambah catatan",
+    "notePlaceholder": "Untuk apa dokumen ini?",
+    "saveNote": "Simpan catatan",
+    "noNote": "Belum ada yang ditulis tentang dokumen ini.",
+    "toast": {
+      "noteSaved": "Catatan disimpan"
+    }
+  }
+}

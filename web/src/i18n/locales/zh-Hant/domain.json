@@ -1,0 +1,396 @@
+{
+  "stage": {
+    "draft": "草稿",
+    "submitted": "已送出",
+    "screen": "電話初談",
+    "interview": "面試",
+    "offer": "錄取",
+    "closed": "已結束"
+  },
+  "kind": {
+    "deadline": "截止日期",
+    "interview": "面試",
+    "visit": "參訪",
+    "call": "通話",
+    "prep": "準備",
+    "admin": "行政事務",
+    "follow-up": "後續追蹤"
+  },
+  "outcome": {
+    "rejected": "未錄取",
+    "withdrawn": "已撤回",
+    "accepted": "已接受",
+    "declined": "已婉拒",
+    "ghosted": "石沉大海——沒有回音"
+  },
+  "outcomeAction": {
+    "rejected": "未錄取",
+    "withdrawn": "已撤回",
+    "accepted": "已接受錄取",
+    "declined": "已婉拒錄取",
+    "ghosted": "未獲回覆，已結束"
+  },
+  "format": {
+    "phone": "電話",
+    "video": "視訊",
+    "onsite": "現場"
+  },
+  "verdict": {
+    "strong": "非常契合",
+    "worth-tailoring": "值得量身修改",
+    "a-stretch": "有點勉強",
+    "not-measured": "尚未評估"
+  },
+  "background": {
+    "education": "學歷",
+    "employment": "工作經歷",
+    "publication": "著作發表",
+    "patent": "專利",
+    "grant": "研究經費",
+    "leadership": "領導經歷",
+    "outreach": "科普與推廣",
+    "training": "專業進修",
+    "other": "其他",
+    "award": "獎項",
+    "teaching": "教學",
+    "service": "服務",
+    "project": "專案",
+    "certification": "證照",
+    "skill": "技能",
+    "language": "語言",
+    "volunteering": "志工服務",
+    "membership": "會員資格"
+  },
+  "tone": {
+    "teal": "藍色",
+    "cyan": "青色",
+    "green": "綠色",
+    "amber": "琥珀色",
+    "red": "紅色",
+    "pink": "粉紅色",
+    "violet": "紫色",
+    "gray": "灰色"
+  },
+  "mark": {
+    "bold": "為這個職缺新寫或改寫",
+    "italic": "換了說法",
+    "underline": "往前移或加重比重"
+  },
+  "document": {
+    "cv": "履歷",
+    "research-statement": "研究陳述",
+    "teaching-statement": "教學陳述",
+    "cover-letter": "求職信",
+    "other": "文件"
+  },
+  "how": {
+    "filed-under": "歸檔在這份申請下",
+    "same-url": "依網址比對",
+    "via-posting": "來自職缺偵察找到的職缺"
+  },
+  "contactRole": {
+    "recommender": "推薦人",
+    "contact": "聯絡窗口"
+  },
+  "approval": {
+    "manual": "手動",
+    "semi": "半自動",
+    "auto": "自動"
+  },
+  "approvalSaid": {
+    "manual": "在這段對話中寫入任何內容之前，都會先詢問你。",
+    "semi": "編輯會立即生效。刪除或清除任何內容之前，會先詢問你。",
+    "auto": "所有動作都會立即生效，包括刪除。只有清空或取代整個儲存區時才需要確認。"
+  },
+  "funnel": {
+    "0": "已申請",
+    "1": "已回覆",
+    "2": "電話初談",
+    "3": "面試",
+    "4": "錄取"
+  },
+  "band": {
+    "0": "進行中",
+    "1": "錄取",
+    "2": "未錄取",
+    "3": "已撤回",
+    "4": "無回覆"
+  },
+  "dimension": {
+    "source": "來源",
+    "role": "職務類型"
+  },
+  "kpi": {
+    "label": {
+      "response": "回覆率",
+      "interview": "面試率",
+      "offer": "錄取率",
+      "reply": "回覆時間中位數"
+    },
+    "note": {
+      "response_other": "{{of}} 份中有 {{count}} 份獲得回覆",
+      "interview_other": "{{of}} 份中有 {{count}} 份進入面試",
+      "offer_other": "{{of}} 份中有 {{count}} 份獲得錄取",
+      "replyNone": "還沒有兩個日期都已記錄的回覆",
+      "reply_other": "根據 {{count}} 則回覆"
+    },
+    "days_other": "{{count}} 天",
+    "typicalRate": "一般為 {{value}}%",
+    "typicalDays": "一般為 {{days}}"
+  },
+  "rel": {
+    "AT": "屬於",
+    "ABOUT": "關於",
+    "FILED_UNDER": "歸檔於",
+    "TAGS": "標記",
+    "FROM": "來自",
+    "BECAME": "轉為",
+    "COPY_OF": "複製自",
+    "SUBJECT": "關於",
+    "OBJECT": "指向"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "本機伺服器（vLLM、LM Studio、llama.cpp）",
+    "anthropic": "Anthropic（Claude）",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA（build.nvidia.com）——免費，有速率限制"
+  },
+  "month": {
+    "1": "1月",
+    "2": "2月",
+    "3": "3月",
+    "4": "4月",
+    "5": "5月",
+    "6": "6月",
+    "7": "7月",
+    "8": "8月",
+    "9": "9月",
+    "10": "10月",
+    "11": "11月",
+    "12": "12月"
+  },
+  "monthOfDay": {
+    "1": "1月",
+    "2": "2月",
+    "3": "3月",
+    "4": "4月",
+    "5": "5月",
+    "6": "6月",
+    "7": "7月",
+    "8": "8月",
+    "9": "9月",
+    "10": "10月",
+    "11": "11月",
+    "12": "12月"
+  },
+  "monthShort": {
+    "1": "1月",
+    "2": "2月",
+    "3": "3月",
+    "4": "4月",
+    "5": "5月",
+    "6": "6月",
+    "7": "7月",
+    "8": "8月",
+    "9": "9月",
+    "10": "10月",
+    "11": "11月",
+    "12": "12月"
+  },
+  "weekdayShort": {
+    "0": "週一",
+    "1": "週二",
+    "2": "週三",
+    "3": "週四",
+    "4": "週五",
+    "5": "週六",
+    "6": "週日"
+  },
+  "weekday": {
+    "0": "星期日",
+    "1": "星期一",
+    "2": "星期二",
+    "3": "星期三",
+    "4": "星期四",
+    "5": "星期五",
+    "6": "星期六"
+  },
+  "dayMonth": "{{month}}{{day}}日",
+  "monthYear": "{{year}}年{{month}}",
+  "quarter": "{{year}}年第{{quarter}}季",
+  "weekdayNarrow": {
+    "0": "一",
+    "1": "二",
+    "2": "三",
+    "3": "四",
+    "4": "五",
+    "5": "六",
+    "6": "日"
+  },
+  "action": {
+    "detailsEdited": "已編輯詳細資料",
+    "draftCreated": "已建立草稿",
+    "offerReceived": "已收到錄取",
+    "duplicated": "已複製",
+    "addedFromScout": "從職缺偵察加入",
+    "addedFromPosting": "從已儲存的職缺加入",
+    "noteEdited": "已編輯備註",
+    "offerCleared": "已清除錄取詳細資料",
+    "flagged": "已標記為待追蹤",
+    "flagCleared": "已取消標記",
+    "movedTo": {
+      "draft": "已移至「草稿」",
+      "submitted": "已移至「已送出」",
+      "screen": "已移至「電話初談」",
+      "interview": "已移至「面試」",
+      "offer": "已移至「錄取」",
+      "closed": "已移至「已結束」"
+    },
+    "addedAt": {
+      "draft": "於「草稿」階段加入",
+      "submitted": "於「已送出」階段加入",
+      "screen": "於「電話初談」階段加入",
+      "interview": "於「面試」階段加入",
+      "offer": "於「錄取」階段加入",
+      "closed": "於「已結束」階段加入"
+    },
+    "interviewScheduled": {
+      "phone": "已安排電話面試",
+      "video": "已安排視訊面試",
+      "onsite": "已安排現場面試"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "days_other": "{{count}} 天前"
+    },
+    "when": {
+      "today": "今天",
+      "tomorrow": "明天",
+      "inDays_other": "{{count}} 天後",
+      "overdue_other": "已逾期 {{count}} 天"
+    },
+    "inline": {
+      "today": "今天",
+      "tomorrow": "明天"
+    },
+    "completed": {
+      "today": "今天完成",
+      "yesterday": "昨天完成",
+      "days_other": "{{count}} 天前完成",
+      "on": "{{date}} 完成"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "錄取",
+      "overdue": "已逾期",
+      "deadline": "截止日期",
+      "interview": "面試"
+    },
+    "headline": {
+      "reply": "回覆 {{org}}",
+      "submitOrLetGo": "向 {{org}} 送出，或是放棄",
+      "recordInterview": "記錄 {{org}} 的面試",
+      "recordVisit": "記錄 {{org}} 的參訪",
+      "recordCall": "記錄與 {{org}} 的通話",
+      "catchUp": "追蹤 {{org}} 的進度",
+      "submit": "向 {{org}} 送出",
+      "prepare": "為 {{org}} 做準備",
+      "dateInterview": "為 {{org}} 的面試排定日期"
+    },
+    "timing": {
+      "respondBy": "{{date}} 前回覆 · {{when}}",
+      "wasDue": "原定 {{date}} 到期 · {{when}}",
+      "due": "{{date}} 到期 · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "未設定日期"
+    },
+    "button": {
+      "draftReply": "草擬回覆",
+      "recordOutcome": "記錄結果",
+      "acceptOrDecline": "接受或婉拒",
+      "openApplication": "開啟申請",
+      "draftMessage": "草擬訊息"
+    },
+    "undatedInterview": "已在面試階段，但沒有排定任何日期，所以下週概覽和行事曆都無法顯示。",
+    "unfiled": "這個截止日期沒有歸檔在任何申請下",
+    "unknownOrg": "未知"
+  },
+  "filed": {
+    "none": "未歸檔",
+    "one": "歸檔在 {{a}}",
+    "two": "歸檔在 {{a}} 和 {{b}}",
+    "many_other": "歸檔在 {{count}} 份申請下"
+  },
+  "readBy": "由 {{model}} 讀取 · {{ago}}",
+  "missingSource": "一份已不在保管庫中的文件",
+  "undo": {
+    "nothing": {
+      "undo": "沒有可以復原的動作。",
+      "redo": "沒有可以重做的動作。"
+    },
+    "changed": {
+      "undo": "無法復原——之後內容已有變動",
+      "redo": "無法重做——之後內容已有變動"
+    },
+    "done": {
+      "undo": "已復原",
+      "redo": "已重做"
+    },
+    "journal": "hidden",
+    "action": "復原",
+    "superseded": {
+      "nothing": "沒有復原任何內容",
+      "part": "其中一部分維持原狀",
+      "named": "{{labels}}——你之後修改過這些紀錄，現在復原會連同那些修改一起撤銷。",
+      "unnamed": "你之後修改過這些紀錄，現在復原會連同那些修改一起撤銷。",
+      "separator": "、"
+    }
+  },
+  "write": {
+    "refused": "沒有儲存成功",
+    "didNotFit": "這筆紀錄有部分內容不符合格式。"
+  },
+  "announce": {
+    "stickyRemoved": "已移除便利貼"
+  },
+  "handover": {
+    "never": "這部裝置從未參與傳輸，所以除了這裡之外，沒有其他地方保有這些紀錄的副本。",
+    "clean": {
+      "today": "上次傳輸是今天，之後這裡沒有寫入任何內容——另一部裝置保有相同的紀錄。",
+      "yesterday": "上次傳輸是昨天，之後這裡沒有寫入任何內容——另一部裝置保有相同的紀錄。",
+      "daysAgo": "上次傳輸是{{ago}}，之後這裡沒有寫入任何內容——另一部裝置保有相同的紀錄。"
+    },
+    "drifted": {
+      "today_other": "上次傳輸是今天，之後這裡有 {{count}} 項變更。另一部裝置就落後這麼多。",
+      "yesterday_other": "上次傳輸是昨天，之後這裡有 {{count}} 項變更。另一部裝置就落後這麼多。",
+      "daysAgo_other": "上次傳輸是{{ago}}，之後這裡有 {{count}} 項變更。另一部裝置就落後這麼多。"
+    }
+  },
+  "backup": {
+    "records_other": "{{count}} 筆紀錄",
+    "links_other": "{{count}} 個關聯",
+    "documents_zero": "沒有文件",
+    "documents_other": "{{count}} 份文件",
+    "summary": "{{records}}、{{links}}、{{documents}}",
+    "summaryLoss": "{{records}}、{{links}}、{{documents}}——其中{{loss}}",
+    "both": "{{a}}和{{b}}",
+    "leftOut": "{{what}}無法讀取，將會略過",
+    "changed_other": "{{count}} 筆紀錄還原後會有所變動",
+    "leftOutAndChanged": "{{leftOut}}，另有{{changed}}",
+    "replacesAll": {
+      "computer": "還原會取代你目前所有的紀錄和文件",
+      "phone": "還原會取代這支手機上所有的紀錄和文件"
+    },
+    "replacesKept": {
+      "computer_other": "還原會取代你目前所有的紀錄和文件，但有 {{count}} 筆紀錄送達時沒有附上文件，這些紀錄在這裡原有的副本會保留",
+      "phone_other": "還原會取代這支手機上所有的紀錄和文件，但有 {{count}} 筆紀錄送達時沒有附上文件，這些紀錄在這裡原有的副本會保留"
+    }
+  }
+}

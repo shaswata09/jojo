@@ -1,0 +1,168 @@
+{
+  "shared": {
+    "undo": "Urungkan",
+    "cancel": "Batal",
+    "add": "Tambah",
+    "discard": "Buang",
+    "save": "Simpan",
+    "didNotSave": "Itu tidak tersimpan"
+  },
+  "saveBar": {
+    "unsaved": "Ada perubahan yang belum disimpan — menyimpan akan menulisnya ke browser ini."
+  },
+  "form": {
+    "saved": {
+      "title": "Profil disimpan",
+      "description": "Ditulis ke browser ini dan disimpan."
+    }
+  },
+  "fields": {
+    "basics": "Dasar",
+    "fullName": {
+      "label": "Nama lengkap",
+      "placeholder": "mis. Lonardo Jenson"
+    },
+    "position": {
+      "label": "Posisi saat ini",
+      "placeholder": "mis. Kandidat PhD, Ilmu Komputer"
+    },
+    "location": {
+      "label": "Lokasi",
+      "placeholder": "mis. Santa Clara, CA"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "links": "Tautan",
+    "website": {
+      "label": "Situs web"
+    }
+  },
+  "interests": {
+    "title": "Minat dan sasaran",
+    "hint": "menentukan pencocokan pencari",
+    "matchTerms": {
+      "title": "Istilah pencocokan",
+      "description": "Bidang riset dan rumusan yang dicari pencari. Terpisah dari kata kunci yang Anda pakai untuk mengarsipkan entri.",
+      "remove": "Hapus {{term}}",
+      "newLabel": "Istilah pencocokan baru",
+      "placeholder": "Tambahkan istilah pencocokan"
+    },
+    "targetRoles": {
+      "label": "Posisi yang dituju",
+      "placeholder": "mis. Asisten profesor (TT) · Ilmuwan riset"
+    },
+    "regions": {
+      "label": "Wilayah pilihan",
+      "placeholder": "mis. Texas · jarak jauh"
+    },
+    "academia": "Sertakan lowongan akademik",
+    "industry": "Sertakan lowongan industri"
+  },
+  "roleTags": {
+    "title": "Label posisi",
+    "description": "Jenis posisi yang Anda pantau. Setiap lamaran diarsipkan di salah satunya, dan filter posisi serta angka per posisi di Statistik sama-sama membacanya. Menghapus salah satunya di sini tidak memindahkan lamaran yang memakainya.",
+    "remove_other": "Hapus {{role}}, dipakai di {{count}} lamaran",
+    "newLabel": "Label posisi baru",
+    "placeholder": "mis. Ilmuwan data"
+  },
+  "documents": {
+    "title": "Dokumen",
+    "hint": "kategori {{bucket}} di Brankas",
+    "upload": "Unggah",
+    "exportInSettings": "Ekspor di Pengaturan",
+    "empty": {
+      "title": "Belum ada dokumen",
+      "description": "Letakkan CV dan pernyataan Anda di sini, atau pilih berkasnya — semuanya diarsipkan di Brankas di bawah {{bucket}}, tempat bagian lain aplikasi dapat menjangkaunya.",
+      "upload": "Unggah dokumen"
+    },
+    "footer": "Berkas yang sama dengan <anchor>alat Berkas</anchor> di Brankas, difilter ke {{bucket}}. Letakkan dokumen di sini atau pilih satu, dan berkasnya disimpan di browser ini — tidak ada yang diunggah ke mana pun. Klik untuk membacanya."
+  },
+  "documentTile": {
+    "open": "Buka {{name}}",
+    "meta": "{{size}} · disimpan {{ago}}",
+    "delete": "Hapus {{name}}"
+  },
+  "background": {
+    "title": "Latar belakang Anda",
+    "hint_other": "{{count}} tercatat · pembanding untuk menimbang lowongan",
+    "details_other": "{{count}} detail",
+    "readFromDocument": "dibaca dari dokumen",
+    "edit": "Edit {{title}}",
+    "remove": "Hapus {{title}}",
+    "added": "{{title}} ditambahkan",
+    "updated": "{{title}} diperbarui",
+    "removed": "{{title}} dihapus",
+    "addEntry": "Tambah butir",
+    "form": {
+      "kind": "Jenis",
+      "title": "Judul",
+      "titlePlaceholder": "Apa itu",
+      "where": "Di mana",
+      "optional": "Opsional",
+      "when": "Kapan",
+      "whenPlaceholder": "Sesuai tulisan — “2021–2024”",
+      "year": "Tahun",
+      "detail": "Detail",
+      "detailPlaceholder": "Apa pun yang layak menjadi pembanding lowongan (opsional)",
+      "highlights": "Sorotan",
+      "highlightsHint": "Satu per baris — apa yang dibangun, dirilis, diajarkan, atau ditemukan.",
+      "readKept": "dibaca dari dokumen — suntingan Anda dipertahankan di atas hasil bacaan",
+      "saveChanges": "Simpan perubahan"
+    },
+    "empty": {
+      "title": "Belum ada yang tercatat",
+      "configured": "Taruh CV, pernyataan riset, atau pernyataan pengajaran Anda di Brankas dan jojo akan menawarkan untuk membacanya — temuannya ditampilkan kepada Anda sebelum apa pun disimpan. Atau tambahkan butir secara manual.",
+      "unconfigured": "Membaca dokumen memerlukan model. Hubungkan satu di Pengaturan, lalu taruh CV atau pernyataan Anda di Brankas dan jojo akan menawarkan untuk membacanya. Anda dapat menambahkan butir secara manual tanpa model."
+    },
+    "readMenu": {
+      "needsModel": "Membaca dokumen memerlukan model. Hubungkan satu di Pengaturan.",
+      "button": "Baca dokumen",
+      "nothing": "Belum ada isi Brankas yang dapat dibaca. Letakkan CV atau pernyataan Anda di sana dan akan muncul di sini.",
+      "allRead": "Semua yang dapat dibaca di Brankas sudah dibaca.",
+      "read": "dibaca"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Pendidikan",
+      "employment": "Pekerjaan",
+      "publication": "Publikasi",
+      "skill": "Keterampilan",
+      "teaching": "Pengajaran",
+      "award": "Penghargaan",
+      "service": "Pengabdian",
+      "certification": "Sertifikasi",
+      "language": "Bahasa",
+      "project": "Proyek",
+      "volunteering": "Kerelawanan",
+      "membership": "Keanggotaan",
+      "grant": "Hibah",
+      "patent": "Paten"
+    },
+    "skipped_other": "{{count}} butir dilewati",
+    "readIt": "Baca",
+    "readFailed": "Gagal membaca dokumen.",
+    "notNow": "Jangan sekarang",
+    "discardEntries": "Buang butir-butir ini",
+    "review": {
+      "single": "1 butir dibaca dari dokumen ini",
+      "some": "{{kept}} dari {{total}} butir akan ditambahkan",
+      "untick": "Hapus centang pada apa pun yang keliru.",
+      "add": "Tambahkan {{title}}",
+      "connections_other": "{{count}} koneksi di antara butir-butir ini",
+      "addOne": "Tambahkan ke profil saya",
+      "addMany": "Tambahkan {{total}} ke profil saya"
+    },
+    "toast": {
+      "already": "Sudah ada di profil Anda",
+      "added_other": "{{count}} ditambahkan ke profil Anda",
+      "nothing": "Tidak ada yang dapat ditambahkan",
+      "readFrom": "Dibaca dari {{name}}.",
+      "known": "{{known}} dari {{total}} sudah diketahui.",
+      "related_other": "{{count}} koneksi di antara butir-butir ini dicatat.",
+      "weigh": "jojo kini dapat menimbang lowongan terhadap apa yang telah Anda lakukan.",
+      "refused": "Butir-butir ditolak."
+    }
+  }
+}

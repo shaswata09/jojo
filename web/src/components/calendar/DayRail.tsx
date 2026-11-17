@@ -67,6 +67,8 @@ export function DayRail({
   const { t } = useTranslation('calendar')
   const domain = useDomain()
   const monthName = domain.month(month.month)
+  // Beside a day number: «5 ноября», not «5 ноябрь».
+  const monthOfDay = domain.monthOfDay(month.month)
   const todayMonth = t('rail.monthYear', {
     month: domain.month(TODAY_PARTS.month),
     year: TODAY_PARTS.year,
@@ -254,7 +256,7 @@ export function DayRail({
                     type="button"
                     onClick={() => onSelectDay(day, e.id)}
                     title={t('rail.goToDay', {
-                      label: t('grid.dayLabel', { month: monthName, day }),
+                      label: t('grid.dayLabel', { month: monthOfDay, day }),
                     })}
                     className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1 py-1 text-start text-xs transition-colors hover:bg-row-hover"
                   >

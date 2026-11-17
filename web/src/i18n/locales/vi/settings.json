@@ -1,0 +1,472 @@
+{
+  "shared": {
+    "thisBrowserOnly": "chỉ trình duyệt này",
+    "optional": "không bắt buộc",
+    "undo": "Hoàn tác",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "testing": "Đang kiểm tra…",
+    "testAgain": "Kiểm tra lại",
+    "testConnection": "Kiểm tra kết nối",
+    "connected": "Đã kết nối",
+    "noAnswer": "Không trả lời",
+    "notConnected": "Chưa kết nối"
+  },
+  "appearance": {
+    "title": "Giao diện",
+    "theme": {
+      "label": "Chủ đề",
+      "description": "Hệ thống sẽ theo thiết lập của hệ điều hành",
+      "light": "Sáng",
+      "dark": "Tối",
+      "system": "Hệ thống"
+    },
+    "gestures": {
+      "label": "Cử chỉ của linh vật",
+      "description": "jojo phản ứng khi bạn làm việc. Hãy thử một cử chỉ."
+    },
+    "draw": {
+      "label": "Vẽ một động tác",
+      "description": "Vẽ lên robot trong thẻ ở thanh bên. Nút robot ở góc thẻ cũng liệt kê các động tác này."
+    },
+    "sounds": {
+      "label": "Âm thanh giao diện",
+      "description": "Một tiếng tách ngắn khi bạn gạt công tắc"
+    }
+  },
+  "savedServers": {
+    "intro": "Các kết nối đã lưu — mọi máy chủ đã từng trả lời ở đây, sẵn sàng tải lại đầy đủ. Khóa được giữ cạnh địa chỉ trên thiết bị này; nó không bao giờ có trong bản sao lưu.",
+    "inUse": "Đang dùng",
+    "keyKept": "đã lưu khóa",
+    "load": "Tải {{name}}",
+    "loadWithKey": "Tải {{name}}, kèm khóa",
+    "forget": "Quên {{name}}"
+  },
+  "model": {
+    "title": "Mô hình",
+    "hint": "Tương thích OpenAI",
+    "savedNone": "Chưa lưu gì — kiểm tra một kết nối và địa chỉ sẽ được giữ lại",
+    "savedServers": "Máy chủ đã lưu",
+    "intro": "Một mô hình trên máy này, hoặc một mô hình bạn trả phí. Mặc định là cục bộ vì đó là lựa chọn duy nhất mà các bản ghi của bạn không bao giờ rời khỏi thiết bị.",
+    "provider": "Nhà cung cấp",
+    "reasoningOptions": {
+      "on": "Bật",
+      "light": "Nhẹ",
+      "off": "Tắt"
+    },
+    "endpoint": {
+      "label": "Điểm cuối",
+      "hintOllama": "Máy chủ và cổng. Không có /v1 — jojo dùng điểm cuối riêng của Ollama để có thể yêu cầu không cắt ngắn.",
+      "hint": "URL gốc, kết thúc bằng /v1."
+    },
+    "apiKey": {
+      "label": "Khóa API",
+      "hint": "Chỉ được giữ trong trình duyệt này. Nó không bao giờ được đưa vào bản sao lưu và không bao giờ được gửi tới đâu ngoài nhà cung cấp."
+    },
+    "getKeyLink": "<anchor>Lấy khóa từ {{provider}}</anchor>",
+    "getKeyFree": "<anchor>Lấy khóa từ {{provider}}</anchor> — miễn phí, không cần thẻ.",
+    "modelField": {
+      "label": "Mô hình",
+      "placeholder": "Mã mô hình, từ nhà cung cấp của bạn",
+      "hintConnected": "Giá trị máy chủ báo về. Hãy đổi nếu bạn phục vụ nhiều mô hình.",
+      "hint": "Kiểm tra kết nối để điền từ máy chủ, hoặc tự nhập mã."
+    },
+    "savedAs": {
+      "label": "Lưu với tên",
+      "hint": "Tên của máy chủ này trong danh sách. Mặc định là tên mô hình."
+    },
+    "contextWindow": {
+      "label": "Cửa sổ ngữ cảnh",
+      "hintOllama": "Số token. Để trống để dùng {{tokens}} và để Ollama tự điều chỉnh; con số ở đây cũng được gửi dưới dạng num_ctx.",
+      "hint": "Số token mà bản triển khai của bạn chứa được. Để trống để dùng {{tokens}}."
+    },
+    "reasoning": {
+      "label": "Suy luận",
+      "description": "Cho phép các mô hình có khả năng suy nghĩ — gpt-oss, Gemma 4, Qwen3 — suy luận trước khi trả lời. Hãy tắt nếu câu trả lời trống khi dùng mô hình nhỏ."
+    },
+    "fillEndpoint": "Hãy điền điểm cuối trước",
+    "connectedNote": "Được giữ trong trình duyệt này. Trợ lý sẽ dùng mô hình này."
+  },
+  "cloudTerms": {
+    "providerTerms": "Điều khoản của {{provider}}",
+    "privacy": "Chính sách quyền riêng tư",
+    "licence": "Trang giấy phép của jojo"
+  },
+  "mcp": {
+    "title": "Kết nối từ một ứng dụng MCP",
+    "intro": "Cho phép một trợ lý bạn đang dùng — ví dụ Claude Code theo gói của riêng bạn — đọc và cập nhật bản ghi ở đây, với cùng các công cụ mà trợ lý của jojo có. Nó kết nối tới thẻ này qua một chương trình nhỏ trên máy tính của bạn, và mọi thay đổi nó thực hiện đều hiện ở đây kèm nút Hoàn tác.",
+    "allow": "Cho phép ứng dụng MCP trên máy tính này dùng jojo",
+    "chip": {
+      "off": "Tắt",
+      "searching": "Đang chờ jojo-bridge",
+      "ready": "Đã liên kết",
+      "badToken": "Token bị từ chối",
+      "noExtension": "Cần tiện ích mở rộng",
+      "staleExtension": "Tải lại tiện ích mở rộng"
+    },
+    "explain": {
+      "searching": "Chưa có gì trả lời tại 127.0.0.1:3002. Hãy khởi động jojo-bridge bằng lệnh đầu tiên — jojo sẽ tiếp tục tìm.",
+      "served_other": "Đã trả lời {{count}} yêu cầu từ ứng dụng của bạn trong phiên này, gần nhất là {{method}}.",
+      "servedNoMethod_other": "Đã trả lời {{count}} yêu cầu từ ứng dụng của bạn trong phiên này.",
+      "ready": "jojo-bridge đang chạy. Hãy kết nối ứng dụng của bạn bằng lệnh thứ hai.",
+      "badToken": "jojo-bridge đang chạy với một token khác. Hãy dừng nó bằng Ctrl+C và khởi động lại bằng lệnh đầu tiên.",
+      "noExtension": "Bản jojo này được phục vụ từ web, và Chrome không cho trang web truy cập 127.0.0.1. Tiện ích mở rộng jojo sẽ chuyển tiếp liên kết — trình cài đặt có trên trang này, ở mục Giữ lại tin tuyển dụng.",
+      "staleExtension": "Tiện ích mở rộng jojo trong trình duyệt này cũ hơn trang này. Hãy mở chrome://extensions và nhấn Tải lại (Reload) ở jojo."
+    },
+    "start": {
+      "title": "Khởi động jojo-bridge và để nó chạy",
+      "copy": "Sao chép lệnh khởi động jojo-bridge",
+      "notePowershell": "Cần Node 18 trở lên. Dán vào Windows PowerShell. Token được truyền qua biến môi trường, nên không bao giờ hiện trong danh sách tiến trình. Bản jojo-bridge tải xuống trước phiên bản này phải được tải lại — lệnh này sẽ làm việc đó.",
+      "note": "Cần Node 18 trở lên. Token được truyền qua biến môi trường, nên không bao giờ hiện trong danh sách tiến trình. Bản jojo-bridge tải xuống trước phiên bản này phải được tải lại — lệnh này sẽ làm việc đó."
+    },
+    "connect": {
+      "title": "Kết nối Claude Code với nó, một lần",
+      "copy": "Sao chép lệnh kết nối Claude Code",
+      "note": "Sau đó hãy hỏi nó điều gì đó như “đơn ứng tuyển nào của tôi đang chờ tôi xử lý?”. Nếu terminal báo “command not found: claude”, bạn đang dùng Claude Code bên trong VS Code, vốn có bản riêng — hãy chạy cùng dòng lệnh với đường dẫn đầy đủ của bản đó (trong thư mục tiện ích mở rộng của VS Code, tại anthropic.claude-code-…/resources/native-binary/claude), hoặc cài Claude Code CLI. Bất kỳ ứng dụng nào dùng MCP qua HTTP đều có thể dùng cùng địa chỉ và token."
+    },
+    "honesty": "Ứng dụng của bạn chạy theo gói và tài khoản đăng nhập của riêng bạn — jojo không bao giờ thấy cả hai, và không gửi gì tới Anthropic hay bất kỳ ai khác. Nó có thể dùng mọi công cụ mà trợ lý của jojo dùng được, trừ hai công cụ không thể hoàn tác là Đặt lại và Xóa sạch. Claude Code sẽ hỏi trước khi dùng một công cụ trừ khi bạn bảo không cần, và jojo đánh dấu mọi thao tác xóa là có tính phá hủy. Hãy giữ thẻ này mở khi dùng: các bản ghi nằm ở đây, và đầu kia của liên kết cũng vậy.",
+    "newToken": "Token mới",
+    "newTokenNote": "Các lệnh cũ sẽ ngừng hoạt động — hãy chạy lại cả hai với token mới."
+  },
+  "reader": {
+    "title": "Đọc tài liệu của tôi",
+    "intro": "Trợ lý chỉ thấy được tên tài liệu cho đến khi có thứ gì đó chuyển nó thành văn bản. Hãy chạy <anchor>{{name}}</anchor> trên máy này và nó có thể đọc nội dung bên trong các tệp PDF, Word, bản trình chiếu và bảng tính của bạn.",
+    "address": {
+      "label": "Địa chỉ",
+      "hint": "Một đường dẫn trên trang này khi phát triển, hoặc địa chỉ riêng của trình đọc khi đã cài tiện ích mở rộng. Xem bên dưới."
+    },
+    "notRunning": "Chưa chạy nó?",
+    "copySetup": "Sao chép các lệnh thiết lập",
+    "cors": "Nó lắng nghe tại <mono>{{endpoint}}</mono>, nhưng không gửi tiêu đề CORS — nên trình duyệt sẽ không cho trang này gọi tới nó qua cổng khác. Máy chủ phát triển của jojo chuyển tiếp <mono>{{path}}</mono> tới nó, đó là lý do địa chỉ ở trên là một đường dẫn chứ không phải URL. Ứng dụng điện thoại giao tiếp trực tiếp với nó và không cần những thứ này.",
+    "hosted": "<em>Với bản được lưu trữ trên web, hãy cài tiện ích mở rộng.</em> Một trang được phục vụ từ web không thể gọi tới <mono>127.0.0.1</mono> — không có proxy để chuyển tiếp đường dẫn, và các trang https:// bị chặn truy cập mạng cục bộ. Tiện ích mở rộng không phải là một trang: nó kết nối trực tiếp tới trình đọc, và jojo nhờ nó làm việc đó. Hãy điền địa chỉ riêng của trình đọc ở trên và nó sẽ chuyển tiếp từng yêu cầu; nó chỉ chuyển tiếp tới máy này mà thôi.",
+    "fillAddress": "Hãy điền địa chỉ trước",
+    "connectedNote": "Tài liệu được gửi tới địa chỉ đó và không nơi nào khác. Không có gì được tải lên.",
+    "separate": "{{name}} là một chương trình riêng, không thuộc jojo.",
+    "notAffiliated": "jojo không liên kết với Microsoft."
+  },
+  "capture": {
+    "title": "Giữ lại tin tuyển dụng",
+    "intro": "Tin tuyển dụng là tài liệu duy nhất trong quá trình tìm việc thuộc về người khác. Tin bị gỡ xuống một tuần sau buổi phỏng vấn và mang theo cả các yêu cầu. Tiện ích mở rộng jojo lưu một bản sao — trang đúng như nội dung vào ngày bạn lưu, với mọi hình ảnh và định dạng được gộp vào, nên mở lại một năm sau cũng không cần truy cập gì và không cần kết nối.",
+    "checking": "Đang kiểm tra trình duyệt này…",
+    "installed": "Đã cài đặt và kết nối.",
+    "installedHint": "Mở một tin tuyển dụng và nhấp vào nút jojo trên thanh công cụ — nếu không thấy, nó nằm sau menu hình mảnh ghép và cần được ghim. Sau đó quay lại Kho lưu trữ.",
+    "version": "Phiên bản {{version}}.",
+    "safari": {
+      "title": "Safari không chạy được tiện ích mở rộng này.",
+      "body": "Safari chỉ nạp tiện ích mở rộng đi kèm một ứng dụng Mac đã ký, nên không có gì để cài ở đây. Hãy dùng Chrome, Edge, Brave hoặc Firefox để lưu trang; mọi thứ khác trong jojo đều hoạt động như nhau trên Safari."
+    },
+    "download": "Tải xuống tiện ích mở rộng",
+    "firefox": {
+      "title": "Firefox cần một bản đã ký.",
+      "body": "Firefox là trình duyệt duy nhất mà việc này có thể chỉ cần một cú nhấp — một tiện ích đã được Mozilla ký có thể cài thẳng từ một liên kết ở đây, không cần đăng lên cửa hàng. jojo chưa tạo bản đã ký, nên hiện tại hãy nạp tạm thời từ <code>about:debugging</code> → This Firefox → Load Temporary Add-on, và chọn <code>manifest.json</code>. Firefox sẽ quên nó khi khởi động lại."
+    },
+    "steps": {
+      "unzip": "Giải nén vào một nơi cố định — không phải thư mục Tải xuống. <muted>Trình duyệt đọc tiện ích mở rộng từ thư mục đó mỗi lần khởi động, nên xóa hoặc di chuyển nó sẽ gỡ cài đặt tiện ích.</muted>",
+      "open": "Mở trang tiện ích mở rộng.",
+      "copied": "Đã sao chép",
+      "copy": "Sao chép",
+      "paste": "Dán vào thanh địa chỉ.",
+      "developer": "Bật <strong>Chế độ dành cho nhà phát triển</strong> ở góc trên bên phải. <muted>Hãy để nó bật — tắt đi sẽ vô hiệu hóa các tiện ích được nạp theo cách này mà không báo gì.</muted>",
+      "load": "Nhấp <strong>Tải tiện ích đã giải nén</strong> và chọn thư mục bạn đã giải nén.",
+      "pin": "<strong>Ghim nó.</strong> Nhấp vào nút hình mảnh ghép trên thanh công cụ và ghim jojo. <muted>Các trình duyệt Chromium mặc định giấu mọi tiện ích mở rộng sau menu đó, nên nút có tồn tại nhưng không nằm trên thanh công cụ — đây là bước hay bị bỏ sót, và trông y như tiện ích cài đặt thất bại.</muted>",
+      "back": "Quay lại đây. <muted>Bảng này tự nhận ra và chuyển sang màu xanh.</muted>"
+    },
+    "yourBrowser": "trình duyệt của bạn",
+    "noOneClick": "Không có cách cài đặt một cú nhấp cho {{browser}}, và đó là quyết định của trình duyệt chứ không phải tính năng còn thiếu ở đây: API cho phép điều đó đã bị gỡ bỏ năm 2018, và một gói đã ký vẫn phải đến từ Chrome Web Store. Tiện ích mở rộng này không giao tiếp với máy chủ nào — nó đọc trang bạn đang xem và chuyển kết quả cho thẻ này."
+  },
+  "crash": {
+    "title": "Báo cáo sự cố",
+    "builtWithout": "Bản jojo này được xây dựng mà không có báo cáo sự cố hay phân tích mức sử dụng, nên không có gì được ghi lại và không có gì để bật. Bản dựng thiết lập chúng bằng <mono>{{crashFlag}}</mono> và <mono>{{analyticsFlag}}</mono>.",
+    "intro": "Khi có lỗi, jojo có thể giữ lại lỗi đó để bạn đọc lại — hữu ích khi thứ bị lỗi đã trôi mất khỏi màn hình. Một báo cáo chứa thông báo lỗi, nơi xảy ra lỗi trong jojo, và dấu vết ngăn xếp. Nó không bao giờ chứa đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện của bạn, và khóa API, địa chỉ, thư mục chính và địa chỉ email đều bị loại bỏ trước khi báo cáo được ghi.",
+    "where": "Trong trình duyệt này và trong tiện ích mở rộng, báo cáo sự cố <em>ở lại trên thiết bị này</em> — không có gì được tải lên, và tệp sao lưu không mang theo chúng. Ứng dụng điện thoại còn gửi chúng tới Firebase Crashlytics, kèm mẫu thiết bị, phiên bản hệ điều hành và một mã ngẫu nhiên dùng để đếm số người gặp cùng một sự cố. Báo cáo sự cố chỉ nói về sự cố — những gì bạn làm trong jojo là câu hỏi riêng bên dưới, được trả lời riêng.",
+    "keep": {
+      "label": "Giữ báo cáo sự cố",
+      "description": "Bật, để sự cố bạn gặp là thứ chúng tôi thấy được. Tắt đi thì không có gì được ghi lại."
+    },
+    "usage": {
+      "label": "Chia sẻ những tính năng tôi dùng",
+      "description": "Chỉ là số đếm, từ một danh sách cố định — không bao giờ là nội dung trong bản ghi của bạn.",
+      "note": "Nó chỉ có thể nói những điều trong một danh sách cố định — màn hình nào được mở, một đơn ứng tuyển đã được thêm, có khoảng bao nhiêu đơn. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập. Dữ liệu được gửi tới Google Analytics."
+    },
+    "kept_other": "Đã giữ {{count}} báo cáo",
+    "clear": "Xóa",
+    "stack": "Ngăn xếp",
+    "emptyOn": "Chưa có lỗi nào kể từ khi bạn bật tính năng này.",
+    "emptyOff": "Không có gì đang được ghi lại."
+  },
+  "audit": {
+    "title": "Những gì jojo đã làm",
+    "kept_other": "Đã giữ {{count}}",
+    "records_other": "{{count}} bản ghi",
+    "connections_other": "{{count}} kết nối",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "không thay đổi",
+    "undoTitle": {
+      "can": "Đưa các bản ghi về như trước thay đổi này",
+      "wholeStore": "Thay đổi này đã thay thế toàn bộ kho dữ liệu, nên không có gì để đưa về",
+      "trimmed": "jojo có ghi lại thay đổi này nhưng không đủ để đưa về — đó là một thao tác ghi chạy nền (một lần đánh giá mức phù hợp, dữ liệu của một tệp) hoặc đã quá lâu"
+    },
+    "undoFailed": {
+      "title": "Thay đổi đó không còn hoàn tác được",
+      "description": "Nó không còn trong nhật ký."
+    },
+    "empty": "Chưa có gì được ghi vào kho dữ liệu này. Mọi thay đổi bạn thực hiện đều được ghi lại ở đây, và bản ghi vẫn còn sau khi tải lại.",
+    "showFewer": "Thu gọn",
+    "showAll": "Hiện tất cả {{total}}",
+    "footer": "200 thay đổi gần nhất được giữ lại, thay đổi cũ nhất bị bỏ trước. Hoàn tác ở đây là một thay đổi mới — nó được thêm vào đầu danh sách thay vì xóa hàng mà nó đảo ngược."
+  },
+  "keywords": {
+    "title": "Từ khóa",
+    "hint": "dùng chung cho mọi bản ghi",
+    "intro": "Một bộ dùng chung cho đơn ứng tuyển, lời nhắc và Kho lưu trữ. Đổi tên một từ khóa sẽ áp dụng ở mọi nơi nó hiển thị; xóa một từ khóa sẽ gỡ nó khỏi mọi bản ghi đang mang nó.",
+    "usage": {
+      "none": "Chưa được gắn vào bản ghi nào",
+      "used_other": "Đang dùng cho {{count}} bản ghi"
+    },
+    "errors": {
+      "taken": "Đã có từ khóa khác mang tên đó.",
+      "blank": "Từ khóa cần có tên.",
+      "exists": "Từ khóa đó đã tồn tại."
+    },
+    "renameNamed": "Đổi tên {{name}}",
+    "rename": "Đổi tên",
+    "deleteNamed": "Xóa {{name}}",
+    "delete": "Xóa",
+    "empty": {
+      "title": "Chưa có từ khóa nào",
+      "description": "Thêm một từ khóa bên dưới, hoặc từ bộ lọc từ khóa phía trên bất kỳ danh sách nào. Từ khóa là của bạn — chúng không phải các nhãn vị trí cố định ở thanh trên cùng."
+    },
+    "newKeyword": "Từ khóa mới",
+    "placeholder": "vd. Referral",
+    "add": "Thêm từ khóa"
+  },
+  "documents": {
+    "title": "Tài liệu của bạn",
+    "hint": "trên thiết bị này",
+    "intro": "CV, thư xin việc và các bản trình bày bạn đính kèm được lưu trong trình duyệt này, trên máy này. Không có gì được tải lên đâu cả.",
+    "count_other": "{{count}} tài liệu",
+    "noneReadable": {
+      "title": "Không đọc được tài liệu nào",
+      "description": "Trình duyệt này không còn giữ dữ liệu của tài liệu nào."
+    },
+    "savedAll_other": "Đã lưu {{count}} tài liệu",
+    "savedSome": "Đã lưu {{saved}}/{{total}}",
+    "savedAllDescription": "Một tệp, {{name}}, trong thư mục tải xuống. Đây là các bản gốc, không phải bản sao của bản ghi.",
+    "savedSomeDescription": "{{name}} đã có trong thư mục tải xuống, nhưng thiếu {{missing}} mà trình duyệt này không còn đọc được.",
+    "failed": {
+      "title": "Không tạo được tệp tải xuống",
+      "description": "Không có gì được lưu. Hãy thử lại, hoặc mở từng tài liệu và tải xuống riêng."
+    },
+    "none": "Chưa có tài liệu nào",
+    "stored_other": "Đã lưu trữ {{count}} tài liệu",
+    "usage": "Đã dùng {{used}}/{{quota}}",
+    "notPermanent": "Trình duyệt này chưa đánh dấu bộ nhớ của jojo là vĩnh viễn, nên có thể xóa các tài liệu này nếu ổ đĩa đầy — và “Xóa dữ liệu duyệt web” sẽ xóa chúng dù có ghi gì đi nữa. Hãy giữ bản sao riêng của những gì bạn không muốn phải viết lại.",
+    "saving": "Đang lưu…",
+    "downloadAll": "Tải xuống mọi tài liệu"
+  },
+  "diagnostics": {
+    "title": "Chẩn đoán",
+    "types": {
+      "application": "Đơn ứng tuyển",
+      "background": "Thông tin lý lịch",
+      "claim": "Quan hệ",
+      "thread": "Cuộc trò chuyện",
+      "proposal": "Đề xuất",
+      "organisation": "Tổ chức",
+      "timelineItem": "Mục dòng thời gian",
+      "keyword": "Từ khóa",
+      "link": "Liên kết",
+      "file": "Tệp",
+      "snippet": "Đoạn văn bản",
+      "person": "Người liên hệ",
+      "stickyNote": "Ghi chú dán",
+      "posting": "Tin tuyển dụng đã lưu",
+      "match": "Gợi ý của trình tìm việc",
+      "pipeline": "Quy trình của trình tìm việc",
+      "profile": "Hồ sơ cá nhân"
+    },
+    "dataSet": {
+      "demo": "các bản ghi mẫu, chưa bị thay đổi",
+      "empty": "đã cố ý làm trống, chưa từng nạp dữ liệu mẫu",
+      "user": "đã được ghi vào kể từ khi thiết lập"
+    },
+    "notReported": "không có báo cáo",
+    "checking": "đang kiểm tra…",
+    "storage": "Bộ nhớ",
+    "durable": {
+      "label": "Bản ghi được ghi xuống ổ đĩa",
+      "yes": "có — IndexedDB",
+      "no": "không — chỉ trong thẻ này"
+    },
+    "schema": {
+      "label": "Lược đồ cơ sở dữ liệu",
+      "value": "v{{stored}} (ứng dụng cần v{{expected}})"
+    },
+    "persisted": {
+      "label": "Trình duyệt cam kết giữ lại",
+      "unknown": "trình duyệt này không cho biết",
+      "yes": "có",
+      "no": "không — trình duyệt có thể xóa nó bất cứ lúc nào, và cửa sổ ẩn danh sẽ xóa khi đóng"
+    },
+    "space": {
+      "label": "Dung lượng đã dùng",
+      "value": "{{used}}/{{quota}}"
+    },
+    "queue": {
+      "label": "Hàng đợi ghi",
+      "idle": "rảnh — mọi thứ đã được lưu",
+      "writing_other": "đang lưu {{count}} thay đổi",
+      "degraded": "đang thử lại {{unsaved}} thay đổi, {{pending}} hàng (lần thử {{attempts}}): {{error}}",
+      "stopped": "đã dừng — {{reason}}"
+    },
+    "store": "Kho dữ liệu này",
+    "contents": "Nội dung",
+    "created": "Ngày tạo",
+    "seeded": "Nạp dữ liệu mẫu",
+    "never": "chưa bao giờ",
+    "lastOpened": "Mở lần cuối",
+    "lastWrite": "Ghi lần cuối",
+    "nothingYet": "chưa có gì",
+    "skipped": {
+      "label": "Bản ghi không đọc được",
+      "none": "không có"
+    },
+    "integrity": {
+      "label": "Kiểm tra tính toàn vẹn",
+      "failed": "{{total}} lỗi",
+      "passed": "tất cả đều đạt"
+    },
+    "records": "Bản ghi ({{total}})",
+    "connections": "Kết nối ({{total}})",
+    "none": "Không có"
+  },
+  "data": {
+    "title": "Dữ liệu của bạn",
+    "export": {
+      "idle": "Tải xuống bản sao lưu",
+      "progress": "Đang chuẩn bị bản sao lưu… {{done}}/{{total}} tài liệu",
+      "preparing": "Đang chuẩn bị bản sao lưu…"
+    },
+    "restoreButton": "Khôi phục bản sao lưu",
+    "excel": {
+      "label": "Xuất sang Excel",
+      "title": "Không có công cụ ghi bảng tính đi kèm — bản xuất JSON chứa cùng các bản ghi"
+    },
+    "import": {
+      "label": "Nhập",
+      "title": "Đọc lại một bản sao lưu cần bộ kiểm tra hợp lệ có thể từ chối tệp nó không hiểu — cho đến khi có, việc nhập chỉ có thể đoán"
+    },
+    "about": "Một bản sao lưu đầy đủ: mọi đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và nhãn của chúng, và hồ sơ cá nhân, trong một tệp có đánh phiên bản. Đó là bản sao tạo ngay lúc này — nó không cập nhật theo các thay đổi sau đó, và là bản sao duy nhất không nằm trên máy này.",
+    "records": {
+      "label": "Bản ghi",
+      "empty": "Mọi danh sách đều trống, nên mọi trang đang hiển thị trạng thái lần chạy đầu.",
+      "emptyStays": "Nó vẫn trống khi bạn quay lại.",
+      "emptyKeywords": "Từ khóa của bạn vẫn còn đây, và tải dữ liệu mẫu sẽ thay chúng bằng từ khóa của dữ liệu mẫu.",
+      "demo": "Đợt tìm việc mẫu đi kèm jojo — mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ. Chưa có gì trong đó là của bạn.",
+      "own": "Các bản ghi của chính bạn. Tải dữ liệu mẫu sẽ thay thế chúng, nên hãy xuất bản sao lưu trước nếu bạn muốn giữ.",
+      "loadDemo": "Tải dữ liệu mẫu"
+    },
+    "clearRecords": {
+      "label": "Xóa mọi bản ghi",
+      "demo": "Xóa dữ liệu mẫu và để jojo trống. Chưa có gì ở đây là của bạn, nên các từ khóa mẫu cũng bị xóa theo.",
+      "own": "Xóa mọi đơn ứng tuyển, mục dòng thời gian, mục trong Kho lưu trữ, tin tuyển dụng đã lưu, người liên hệ, ghi chú, cuộc trò chuyện và thông tin từ CV, và làm trống hồ sơ cá nhân. Từ khóa của bạn được giữ lại.",
+      "nothingLeft": "Không còn gì để xóa",
+      "deletes": "Xóa mọi bản ghi",
+      "button": "Xóa bản ghi"
+    },
+    "move": {
+      "label": "Chuyển sang thiết bị khác",
+      "description": "Ghép nối với thiết bị thứ hai và chuyển giao mọi thứ. Đây là bản trình diễn trong bản dựng này — không có gì được truyền đi.",
+      "open": "Mở Chuyển dữ liệu"
+    },
+    "clearStorage": {
+      "label": "Xóa bộ nhớ trình duyệt",
+      "description": "Làm trống mọi thứ trang này đã lưu trong trình duyệt — các bản ghi và cơ sở dữ liệu của chúng, mọi tài liệu bạn đã đính kèm, tùy chọn, bộ nhớ đệm và cookie — rồi tải lại jojo như mới. Tài liệu chỉ có ở đây; hãy tải chúng xuống trước nếu bạn muốn giữ.",
+      "clearing": "Đang xóa…",
+      "button": "Xóa bộ nhớ"
+    },
+    "footer": {
+      "durable": "Các bản ghi của bạn được ghi vào cơ sở dữ liệu của trình duyệt này trong lúc bạn làm việc, nên đóng thẻ là an toàn. Cơ sở dữ liệu đó vẫn chỉ nằm trên một máy: trình duyệt có thể xóa nó và ổ đĩa có thể hỏng, nên một tệp xuất được giữ ở nơi khác mới là bản sao lưu thực sự.",
+      "memory": "Các bản ghi của bạn hiện không được lưu — biểu ngữ ở đầu trang cho biết lý do. Hãy xuất một bản sao trước khi đóng thẻ."
+    },
+    "confirm": {
+      "fallbackTitle": "Thay đổi dữ liệu?",
+      "continue": "Tiếp tục"
+    },
+    "restoreConfirm": {
+      "title": "Thay thế mọi thứ bằng bản sao lưu này?",
+      "description": "Tệp đó chứa {{contents}}. {{replaces}}, và không thể hoàn tác — lịch sử cũng mất theo. Hãy tải xuống bản sao lưu trước nếu bạn chưa chắc.",
+      "confirm": "Thay thế mọi thứ"
+    },
+    "restoreFailed": "Khôi phục thất bại",
+    "reload": "Tải lại jojo",
+    "demoLoaded": {
+      "title": "Đã tải dữ liệu mẫu",
+      "durable": "Mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ và một hồ sơ cá nhân, được ghi vào cơ sở dữ liệu của bạn đúng như bản gốc.",
+      "memory": "Mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ và một hồ sơ cá nhân, đúng như bản gốc. Hiện không có gì được lưu, nên chúng chỉ tồn tại chừng nào thẻ này còn mở."
+    },
+    "cleared": {
+      "title": "Đã xóa mọi thứ",
+      "demoDurable": "Mọi bản ghi mẫu đã bị xóa, kể cả từ khóa, và vẫn như vậy sau khi tải lại.",
+      "demoMemory": "Mọi bản ghi mẫu đã bị xóa, kể cả từ khóa, nhưng hiện không có gì được lưu, nên tải lại sẽ bắt đầu lại từ dữ liệu mẫu.",
+      "ownDurable": "Mọi bản ghi đã bị xóa, kể cả hồ sơ cá nhân, và vẫn như vậy sau khi tải lại. Từ khóa của bạn vẫn còn đây.",
+      "ownMemory": "Mọi bản ghi đã bị xóa, kể cả hồ sơ cá nhân, nhưng hiện không có gì được lưu, nên tải lại sẽ bắt đầu lại từ dữ liệu mẫu. Từ khóa của bạn vẫn còn đây."
+    }
+  },
+  "pending": {
+    "exportFirst": "Xuất bản sao lưu trước",
+    "empty": {
+      "title": "Xóa mọi bản ghi?",
+      "demoDurable": "Các đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và hồ sơ cá nhân mẫu đều bị xóa, và vẫn như vậy sau khi tải lại. Không có gì ở đây là của bạn — kho dữ liệu này chưa được ghi vào kể từ khi tải dữ liệu mẫu.",
+      "demoMemory": "Các đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và hồ sơ cá nhân mẫu đều bị xóa, nhưng hiện không có gì được lưu, nên tải lại sẽ bắt đầu lại từ dữ liệu mẫu. Không có gì ở đây là của bạn — kho dữ liệu này chưa được ghi vào kể từ khi tải dữ liệu mẫu.",
+      "ownDurable": "Đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, người liên hệ, ghi chú, cuộc trò chuyện, thông tin từ CV và hồ sơ cá nhân đều bị xóa, kể cả những gì bạn thêm trong phiên này, và vẫn như vậy sau khi tải lại. Không thể hoàn tác. Từ khóa của bạn được giữ lại — chúng là bản ghi riêng — nhưng không còn gì mang chúng, nên mọi số đếm trong bảng từ khóa đều về không.",
+      "ownMemory": "Đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, người liên hệ, ghi chú, cuộc trò chuyện, thông tin từ CV và hồ sơ cá nhân đều bị xóa, kể cả những gì bạn thêm trong phiên này, nhưng hiện không có gì được lưu, nên tải lại sẽ bắt đầu lại từ dữ liệu mẫu. Không thể hoàn tác. Từ khóa của bạn được giữ lại — chúng là bản ghi riêng — nhưng không còn gì mang chúng, nên mọi số đếm trong bảng từ khóa đều về không.",
+      "confirm": "Xóa mọi thứ"
+    },
+    "demo": {
+      "title": "Tải dữ liệu mẫu?",
+      "fillDurable": "Mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ và một hồ sơ cá nhân được ghi vào cơ sở dữ liệu của bạn, gắn các từ khóa đi kèm. Xóa chúng đi chỉ cần một lần nhấn.",
+      "fillMemory": "Mười hai đơn ứng tuyển, một dòng thời gian, một Kho lưu trữ đầy đủ và một hồ sơ cá nhân được tải, gắn các từ khóa đi kèm. Xóa chúng đi chỉ cần một lần nhấn.",
+      "replace": "Mọi thứ trong jojo sẽ bị thay bằng các bản ghi mẫu — đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, người liên hệ, ghi chú, cuộc trò chuyện, thông tin từ CV, từ khóa và hồ sơ cá nhân, tất cả đều bị thay thế chứ không gộp. Không thể hoàn tác.",
+      "confirm": "Tải dữ liệu mẫu"
+    },
+    "storage": {
+      "title": "Xóa mọi thứ trang này đã lưu?",
+      "description": "Làm trống trình duyệt này khỏi mọi thứ jojo đã đưa vào — các bản ghi và cơ sở dữ liệu của chúng, tùy chọn giao diện và âm thanh, mọi bộ nhớ đệm và cookie — rồi tải lại. Không có máy chủ nào giữ bản sao, và không có gì ở đây từng rời khỏi máy này, nên đây là toàn bộ dữ liệu. jojo sẽ trở lại như trên một máy mới: giao diện theo hệ thống, và câu hỏi ở lần chạy đầu về việc bắt đầu với dữ liệu mẫu hay trống. Không thể hoàn tác.",
+      "confirm": "Xóa bộ nhớ"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_other": "{{count}} bản ghi",
+      "documents_other": "{{count}} tài liệu",
+      "links_other": "{{count}} liên kết"
+    },
+    "lost": {
+      "title": "Một số bản ghi không khôi phục được",
+      "description": "Tệp đó chứa {{held}}. {{kept}} đã có trên thiết bị này và {{lost}} không đọc được — những mục đó đã mất. Bản thân tệp không thay đổi, nên một bản dựng đọc được chúng vẫn có thể khôi phục nó.",
+      "descriptionWithDocuments": "Tệp đó chứa {{held}}. {{kept}} và {{documents}} đã có trên thiết bị này và {{lost}} không đọc được — những mục đó đã mất. Bản thân tệp không thay đổi, nên một bản dựng đọc được chúng vẫn có thể khôi phục nó."
+    },
+    "withoutLinks": {
+      "title": "Đã khôi phục, thiếu một số liên kết",
+      "description": "Tất cả {{held}} đã trở lại. {{links}} giữa chúng không đọc được, nên một vài tài liệu, lời nhắc hoặc tin tuyển dụng có thể không được xếp vào đúng công việc của chúng. Không thiếu gì khác.",
+      "descriptionWithDocuments": "Tất cả {{held}} và {{documents}} đã trở lại. {{links}} giữa chúng không đọc được, nên một vài tài liệu, lời nhắc hoặc tin tuyển dụng có thể không được xếp vào đúng công việc của chúng. Không thiếu gì khác."
+    },
+    "done": {
+      "title": "Đã khôi phục",
+      "description": "{{records}} đã trở lại, đúng như trong tệp.",
+      "descriptionWithDocuments": "{{records}} và {{documents}} đã trở lại, đúng như trong tệp."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "Không đọc được tệp đó",
+      "description": "Trình duyệt không đọc được tệp đó — có thể nó đã bị di chuyển, đổi tên hoặc ngắt kết nối kể từ khi bạn chọn. Không có gì thay đổi; hãy chọn lại khi tệp đã trở lại."
+    },
+    "refused": {
+      "title": "Không thể khôi phục tệp đó",
+      "notBackup": "Tệp đó không phải bản sao lưu jojo. Không có gì thay đổi.",
+      "reason": "{{reason}}. Không có gì thay đổi."
+    }
+  }
+}

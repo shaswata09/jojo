@@ -1,0 +1,141 @@
+{
+  "sidebar": {
+    "navigation": "Gezinme",
+    "close": "Gezinmeyi kapat"
+  },
+  "nav": {
+    "dashboard": "Ana sayfa",
+    "applications": "Başvurular",
+    "calendar": "Takvim",
+    "vault": "Kasa",
+    "jobScout": "İş gözcüsü",
+    "statistics": "İstatistikler",
+    "flagged_one": "{{count}} işaretli",
+    "flagged_other": "{{count}} işaretli",
+    "flaggedTitle": "Takip için işaretli",
+    "weekTitle": "Önümüzdeki yedi gün içinde planlanan",
+    "overdueTitle": "Tarihi geçmiş hatırlatıcılar",
+    "fresh_one": "{{count}} yeni",
+    "fresh_other": "{{count}} yeni",
+    "freshTitle": "Henüz başvurulara eklenmemiş eşleşmeler"
+  },
+  "newMenu": {
+    "trigger": "Yeni",
+    "find": "Eklenecek bir şey bulun",
+    "findPlaceholder": "Eklenecek bir şey bulun…",
+    "empty": "Bununla eşleşen eklenecek bir şey yok."
+  },
+  "roleFilter": {
+    "label": "İş rolüne göre filtrele",
+    "all": "Tüm roller",
+    "selected_one": "{{count}} seçili",
+    "selected_other": "{{count}} seçili",
+    "find": "Rol bul",
+    "findPlaceholder": "Rol bul…",
+    "empty": "Eşleşen rol yok.",
+    "selectAll": "Tümünü seç",
+    "clear": "Filtreyi temizle",
+    "remove": "Kaldır: {{role}}"
+  },
+  "topbar": {
+    "openNav": "Gezinmeyi aç",
+    "search": "Başvurularda, hatırlatıcılarda, etkinliklerde ara…",
+    "accountNav": "Hesap ve destek",
+    "links": {
+      "profile": "Profilim",
+      "settings": "Ayarlar",
+      "assistant": "Asistan",
+      "guide": "Nasıl kullanılır"
+    }
+  },
+  "runtime": {
+    "heading": "Çalışma durumu",
+    "tileTitle": "{{label}} — {{detail}}. Açılan: {{destination}}",
+    "dest": {
+      "graph": "grafik",
+      "transfer": "Aktarım",
+      "settings": "Ayarlar"
+    },
+    "storage": {
+      "label": "Tarayıcı depolaması",
+      "notSaving": "kaydetmiyor",
+      "notSavingDetail": "kayıtlarınız kaydedilmiyor — nedeni sayfanın üstündeki bantta yazıyor",
+      "retrying": "yeniden deniyor",
+      "retryingDetail_one": "{{count}} değişiklik henüz kaydedilemedi ve jojo yeniden denemeye devam ediyor",
+      "retryingDetail_other": "{{count}} değişiklik henüz kaydedilemedi ve jojo yeniden denemeye devam ediyor",
+      "saved": "burada kayıtlı",
+      "savedDetail": "kayıtlarınız siz çalışırken bu tarayıcının veritabanına yazılır"
+    },
+    "model": {
+      "label": "Yerel model",
+      "connected": "bağlı",
+      "connectedDetail": "yerel bir model yanıt verdi — asistan ve gözcü puanlaması bunu kullanabilir",
+      "noAnswer": "yanıt yok",
+      "noAnswerDetail": "bir model yapılandırılmış ama yanıt vermedi — çalıştığından emin olun",
+      "checking": "denetleniyor",
+      "checkingDetail": "modelin orada olup olmadığı soruluyor",
+      "unset": "ayarlanmadı",
+      "unsetDetail": "henüz model uç noktası yok — Ayarlar'dan eklenir"
+    },
+    "transfer": {
+      "label": "Aktarım",
+      "meta": "Diğer cihazla eşitle",
+      "detail": "henüz eşleştirilmiş cihaz yok — Aktarım'dan eklenir"
+    }
+  },
+  "banner": {
+    "reload": "Yeniden yükle",
+    "interrupted": "jojo başka bir sekmede güncellendi; bu yüzden bu sekme, güncellemenin geçebilmesi için veritabanını kapattı. Burada değiştirdiğiniz hiçbir şey kaydedilmiyor. Devam etmek için yeniden yükleyin.",
+    "versionBlocked": "jojo veritabanını açamadı — başka bir jojo sekmesi uygulamanın farklı bir sürümüyle açık. <strong>Kayıtlarınız hâlâ diskte</strong>, ama bu sekme onları okuyamadı; bu yüzden tahmin yürütmek yerine hiçbir şey göstermiyor. Onları geri almak için diğer sekmeleri kapatıp yeniden yükleyin.",
+    "noStorage": "Bu tarayıcı jojo'nun depolamasını açmasına izin vermiyor; bu yüzden bu sekme boş bir çalışma alanı: bu cihazda önceden kaydedilmiş hiçbir şey gösterilmiyor ve buraya yazdığınız her şey sekmeyi kapattığınızda kaybolur. Gizli pencereler ve bazı yönetilen tarayıcılar bunu yapar. Saklamaya değer bir şey eklerseniz, ayrılmadan önce Ayarlar'dan dışa aktarın.",
+    "atRisk_one": "{{count}} değişiklik ekranda görünüyor ama kaydedilmedi — saklamak için Ayarlar'dan dışa aktarın; bu sekmeyi yeniden yüklemek ya da kapatmak onu kaybettirir.",
+    "atRisk_other": "{{count}} değişiklik ekranda görünüyor ama kaydedilmedi — saklamak için Ayarlar'dan dışa aktarın; bu sekmeyi yeniden yüklemek ya da kapatmak bunları kaybettirir.",
+    "safeBefore": "Bundan önce değiştirdiğiniz her şey diskte.",
+    "corrupt": "jojo kaydetmeyi durdurdu: bu tarayıcı kayıtlarınızdaki bir değişikliği reddetti ve yeniden denemek işe yaramayacak. {{atRisk}} Hemen Ayarlar'dan dışa aktarın — ayrıntılar Ayarlar → Tanılama bölümünde; dışa aktarmadan önce yeniden yüklemek yalnızca ekranda olanları kaybettirir.",
+    "quota": "Bu tarayıcıda yer kalmadı; bu yüzden jojo kaydetmeyi durdurdu. {{atRisk}} Biraz yer açın, ardından yeniden yükleyin.",
+    "otherTab": "Veritabanı başka bir sekmede olduğu için jojo kaydetmeyi durdurdu. Diğer sekmeleri kapatın; ekrandaki bir şey kaydedilmediyse Ayarlar'dan dışa aktarın — bu sekmeyi yeniden yüklemek onu kaybettirir.",
+    "degraded_one": "{{count}} değişiklik kaydedilemedi ve jojo yeniden denemeye devam ediyor. Şimdi bir kopyaya ihtiyacınız varsa Ayarlar'dan dışa aktarın. ({{error}})",
+    "degraded_other": "{{count}} değişiklik kaydedilemedi ve jojo yeniden denemeye devam ediyor. Şimdi bir kopyaya ihtiyacınız varsa Ayarlar'dan dışa aktarın. ({{error}})",
+    "documentsBlocked": "Belgeleriniz hâlâ bu cihazda, ama uygulamanın eski bir sürümüyle açık başka bir jojo sekmesi onları tutuyor. Diğer jojo sekmelerini kapatın — bu sekme onları kendiliğinden alır.",
+    "skipped_one": "Bu cihazdaki {{count}} kayıt okunamadı ve gösterilmiyor. Hiçbir şey silinmedi — <anchor>Tanılama</anchor> hangisi olduğunu gösterir ve oradan yapılan dışa aktarma, jojo'nun okuyabildiği her şeyi içerir.",
+    "skipped_other": "Bu cihazdaki {{count}} kayıt okunamadı ve gösterilmiyor. Hiçbir şey silinmedi — <anchor>Tanılama</anchor> hangileri olduğunu gösterir ve oradan yapılan dışa aktarma, jojo'nun okuyabildiği her şeyi içerir.",
+    "nearlyFull": "Bu tarayıcıda jojo için yer neredeyse bitti — izin verilen alanın yaklaşık %{{percent}} kadarı kullanımda. Dolduğunda kaydetme durur; bu yüzden kayıtlarınız hâlâ yazılabiliyorken şimdi Ayarlar'dan dışa aktarıp yer açmaya değer.",
+    "backup": {
+      "busy": "Yedekleniyor…",
+      "download": "Yedek indir",
+      "notNow": "Şimdi değil"
+    }
+  },
+  "shell": {
+    "skipToMain": "Ana içeriğe geç"
+  },
+  "spotlight": {
+    "title": "Ara",
+    "label": "Başvurularda, hatırlatıcılarda, etkinliklerde ve sayfalarda ara",
+    "placeholder": "Başvurularda, hatırlatıcılarda, etkinliklerde ara…",
+    "emptyTitle": "Bununla eşleşen bir şey yok.",
+    "emptyHint": "Bir rol, kurum ya da aşama deneyin.",
+    "actions": "Eylemler",
+    "applications": "Başvurular",
+    "reminders": "Hatırlatıcılar",
+    "calendar": "Takvim",
+    "tools": "Araçlar",
+    "goTo": "Git",
+    "toOpen": "açmak için",
+    "toClose": "kapatmak için esc",
+    "pages": {
+      "dashboard": "Ana sayfa",
+      "applications": "Başvurular",
+      "calendar": "Takvim",
+      "vault": "Kasa",
+      "jobScout": "İş gözcüsü",
+      "statistics": "İstatistikler",
+      "graph": "Grafik",
+      "transfer": "Aktarım",
+      "transferDetail": "Kayıtlarınızı başka bir cihaza taşıyın",
+      "profile": "Profilim",
+      "assistant": "Asistan",
+      "settings": "Ayarlar"
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Làm quen với jojo",
+      "body": "Trợ lý của bạn ở đây. Nó phản ứng với những gì bạn làm — nhảy múa khi một đơn ứng tuyển được gửi đi, gật đầu khi một việc hoàn thành — và dõi theo con trỏ của bạn quanh trang.",
+      "task": "Chạm vào jojo, hoặc vẽ một vòng tròn lên nó."
+    },
+    "moves": {
+      "title": "Mọi động tác, và cách vẽ chúng",
+      "body": "Nút này liệt kê mọi động tác của jojo, mỗi động tác kèm nét vẽ để kích hoạt — vuốt lên để nhảy, vẽ chữ Z để ngủ gật — và ghi công tác giả của mô hình 3D."
+    },
+    "runtime": {
+      "title": "Các bản ghi của bạn nằm ở đâu",
+      "body": "“Đã lưu ở đây” là bộ nhớ trình duyệt: một cơ sở dữ liệu bên trong trình duyệt này, trên máy này — không có gì được gửi đi và không có gì được đồng bộ. Các ô còn lại cho biết đã kết nối mô hình chưa và cho phép chuyển mọi thứ sang thiết bị khác. Mỗi ô mở tới nơi thiết lập của nó."
+    },
+    "applications": {
+      "title": "Các đơn ứng tuyển của bạn",
+      "body": "Mỗi công việc một bản ghi: vị trí, nhà tuyển dụng, giai đoạn và ghi chú của bạn. Hạn chót, phỏng vấn và tài liệu đều gắn với nó, nên không có gì phải nhập hai lần.",
+      "task": "Mở Đơn ứng tuyển."
+    },
+    "layout": {
+      "title": "Bảng hoặc bảng biểu",
+      "body": "Cùng các bản ghi, hai cách xem. Bảng hiển thị các giai đoạn thành cột; bảng biểu cho phép sắp xếp và tìm kiếm. Lựa chọn được lưu trong địa chỉ, nên một liên kết sẽ mở đúng như lúc bạn rời đi.",
+      "task": "Chuyển sang Bảng biểu."
+    },
+    "records": {
+      "title": "Sáu giai đoạn, và jojo cổ vũ từng giai đoạn",
+      "body": "Bản nháp, Đã nộp, Cuộc gọi sàng lọc, Phỏng vấn, Lời mời làm việc, Đã đóng. Trên bảng, kéo một thẻ sang cột tiếp theo: jojo nhảy múa khi một bản nháp được gửi đi, tăng sức mạnh khi có phỏng vấn và nhảy cẫng lên khi có lời mời làm việc. Mọi thao tác đều hoàn tác được."
+    },
+    "keywords": {
+      "title": "Từ khóa là nhãn của bạn",
+      "body": "Một bộ nhãn dùng chung cho đơn ứng tuyển, lời nhắc và Kho lưu trữ. Gắn nhãn cho một bản ghi bằng nút nhãn trên hàng của nó, thêm từ khóa mới bằng +, và nhấp chuột phải vào một nhãn để đổi tên, đổi màu hoặc xóa.",
+      "task": "Chọn một từ khóa để lọc theo nó."
+    },
+    "new": {
+      "title": "Tạo bất cứ thứ gì",
+      "body": "Mới tạo một đơn ứng tuyển, một lời nhắc, một mục lịch, một tin nhắn nháp, một liên kết đã lưu hoặc một tin tuyển dụng đã lưu. Phím n mở nó từ bất cứ đâu khi bạn không đang nhập liệu.",
+      "task": "Mở menu Mới."
+    },
+    "new-menu": {
+      "title": "Không có gì được lưu cho đến khi bạn lưu",
+      "body": "Mỗi mục mở biểu mẫu riêng. Đóng một biểu mẫu điền dở chẳng mất gì ngoài những gì đã gõ.",
+      "task": "Đóng menu — nhấn Esc."
+    },
+    "search": {
+      "title": "Cách nhanh nhất để đi tới mọi nơi",
+      "body": "Tìm mọi đơn ứng tuyển, lời nhắc và mục lịch, đi tới bất kỳ trang nào — kể cả những trang thanh bên không liệt kê — hoặc chạy một thao tác của chính ứng dụng.",
+      "task": "Nhấn ⌘K (Ctrl K), hoặc nhấp vào thanh tìm kiếm."
+    },
+    "palette": {
+      "title": "Gõ để tìm mọi thứ",
+      "body": "Một vị trí, một tổ chức hoặc một giai đoạn. Phím mũi tên để chọn, Enter để đi tới.",
+      "task": "Đóng bằng Esc khi bạn xem xong."
+    },
+    "calendar": {
+      "title": "Mọi ngày tháng ở một nơi",
+      "body": "Hạn chót, phỏng vấn và liên hệ lại là cùng một loại bản ghi, nên một mục sẽ hiện trên lịch, trên Tổng quan và trong đơn ứng tuyển của nó. Kéo một mục sang ngày khác để dời lịch.",
+      "task": "Mở Lịch."
+    },
+    "vault": {
+      "title": "Kho lưu trữ",
+      "body": "Mọi thứ một đợt tìm việc tích lũy ngoài đơn ứng tuyển: lời nhắc, liên kết đã lưu, tệp, các đoạn văn bản bạn dán vào mọi biểu mẫu, những người bạn quen, và vài công cụ.",
+      "task": "Mở Kho lưu trữ."
+    },
+    "files": {
+      "title": "Tệp, xem trước ngay tại chỗ",
+      "body": "Thả vào một CV, một bản trình bày hoặc một tin tuyển dụng. PDF, hình ảnh, văn bản và trang web đã lưu đều mở ngay tại đây, và mỗi tệp có thể kèm ghi chú và từ khóa. Tệp được lưu trong trình duyệt này, không được tải lên.",
+      "task": "Nhấp vào một tệp để xem trước."
+    },
+    "file-viewer": {
+      "title": "Xem trước",
+      "body": "Đọc mà không rời khỏi trang. Khi đã kết nối trình đọc tài liệu (Cài đặt), trợ lý cũng có thể đọc nội dung bên trong."
+    },
+    "tools": {
+      "title": "Công cụ",
+      "body": "Một máy tính, cơ bản hoặc khoa học, có lưu lịch sử phép tính — và một trình sửa PDF.",
+      "task": "Mở trình sửa PDF."
+    },
+    "pdf": {
+      "title": "Công cụ PDF",
+      "body": "Gộp nhiều PDF thành một, sắp xếp lại hoặc xóa trang, và đánh dấu chú thích — tất cả bên trong trình duyệt này, nên không tài liệu nào bị tải lên. Thả PDF thẳng vào bảng này."
+    },
+    "scout": {
+      "title": "Trình tìm việc",
+      "body": "Các tìm kiếm đã lưu thay bạn theo dõi các trang tuyển dụng.",
+      "task": "Mở Trình tìm việc."
+    },
+    "pipelines": {
+      "title": "Quy trình",
+      "body": "Mỗi quy trình là một lượt tìm kiếm trên một trang tuyển dụng (HigherEdJobs, AcademicCareers và các trang khác). Nó chạy theo lịch hoặc khi bạn nhấn Chạy ngay; những gì nó tìm thấy chờ dưới dạng đề xuất để bạn phê duyệt hoặc loại bỏ, và đề xuất được phê duyệt sẽ thành một đơn ứng tuyển nháp."
+    },
+    "statistics": {
+      "title": "Thống kê",
+      "body": "Việc tìm việc của bạn đang tiến triển ra sao, được tính từ chính các bản ghi của bạn.",
+      "task": "Mở Thống kê."
+    },
+    "stats": {
+      "title": "Tỷ lệ, với sai số trung thực",
+      "body": "Tỷ lệ phản hồi và phỏng vấn, phễu và biểu đồ theo tuần — mỗi tỷ lệ kèm khoảng giá trị thực sự có thể, vì vài đơn ứng tuyển chỉ là một mẫu nhỏ. Nó tuân theo bộ lọc vị trí ở thanh trên cùng."
+    },
+    "graph": {
+      "title": "Đồ thị tri thức",
+      "body": "Mọi bản ghi — đơn ứng tuyển, nhà tuyển dụng, người liên hệ, ngày tháng, tệp — là một nút, và cách chúng kết nối là các cạnh. Đặt câu hỏi bằng lời hoặc tự dựng câu hỏi, và các bản ghi khớp sẽ sáng lên. Nó không có trên thanh bên; ⌘K đưa bạn tới đây."
+    },
+    "chat": {
+      "title": "Trò chuyện với jojo",
+      "body": "Trợ lý có thể tìm, thêm và cập nhật bản ghi của bạn bằng chính các công cụ của ứng dụng, và sẽ hỏi trước khi thay đổi bất cứ thứ gì trừ khi bạn bảo không cần. Nó cần một mô hình — đó là bước tiếp theo."
+    },
+    "settings": {
+      "title": "Cài đặt",
+      "body": "Mô hình, trình đọc tài liệu, từ khóa, dữ liệu của bạn — và mọi cử chỉ jojo biết.",
+      "task": "Mở Cài đặt."
+    },
+    "model": {
+      "title": "Kết nối một mô hình",
+      "body": "Chọn nơi mô hình của trợ lý chạy. Máy chủ cục bộ — vLLM, LM Studio, llama.cpp, hoặc Ollama — cần địa chỉ của nó và giữ các bản ghi của bạn trên máy này. OpenAI, Anthropic (Claude), OpenRouter, Groq hoặc NVIDIA cần khóa API. Kiểm tra kết nối sẽ kiểm tra trước khi lưu bất cứ thứ gì."
+    },
+    "reader": {
+      "title": "Cho phép đọc tài liệu của bạn",
+      "body": "MarkItDown chuyển PDF, tệp Word, bản trình chiếu và bảng tính thành văn bản mà trợ lý đọc được. Sao chép hai lệnh ở đây vào terminal — một lệnh để cài, một lệnh để chạy — rồi nhấn Kiểm tra kết nối."
+    },
+    "keyword-manager": {
+      "title": "Quản lý từ khóa",
+      "body": "Thêm từ khóa, đổi tên, chọn màu bất kỳ, hoặc xóa chúng. Đổi tên sẽ áp dụng ở mọi nơi từ khóa được hiển thị."
+    },
+    "backup": {
+      "title": "Giữ bản sao lưu",
+      "body": "Xóa dữ liệu trình duyệt sẽ làm mất luôn các bản ghi của bạn, nên thỉnh thoảng hãy xuất bản sao lưu — một tệp chứa mọi thứ. jojo sẽ khoe cơ bắp khi bạn làm vậy."
+    },
+    "done": {
+      "title": "Chuyến tham quan đến đây là hết",
+      "body": "Hoàn tác là ⌘Z ở bất cứ đâu, và mọi thay đổi đều được liệt kê trong nhật ký kiểm tra ở cuối Cài đặt. Phần hướng dẫn lần lượt giới thiệu mọi màn hình — Cách sử dụng, trên thanh trên cùng — và bạn có thể tham quan lại bất cứ lúc nào."
+    }
+  },
+  "overlay": {
+    "progress": "Bước {{n}}/{{total}}",
+    "endLabel": "Kết thúc tham quan (vị trí của bạn được giữ lại)",
+    "end": "Kết thúc tham quan",
+    "nice": "Tốt lắm — vậy là xong.",
+    "tryIt": "Thử xem: {{task}}",
+    "done": "Xong.",
+    "announce": "Bước {{n}}/{{total}}: {{title}}.",
+    "announceTask": "Bước {{n}}/{{total}}: {{title}}. Thử xem: {{task}}",
+    "back": "Quay lại",
+    "notNow": "Để sau",
+    "finish": "Hoàn tất",
+    "skip": "Bỏ qua bước này",
+    "next": "Tiếp"
+  }
+}

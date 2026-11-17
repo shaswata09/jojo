@@ -1,0 +1,256 @@
+{
+  "common": {
+    "newApplication": "Lamaran baru",
+    "openBoard": "Buka papan",
+    "showAll": "Tampilkan semua",
+    "undo": "Urungkan",
+    "pushOut": "Tunda \"{{title}}\"",
+    "pushOutBy": "Tunda selama",
+    "completed": "{{title}} selesai",
+    "rescheduled": "{{title}} dijadwalkan ulang"
+  },
+  "headlineRates": {
+    "emptyTitle": "Belum ada angka",
+    "emptyDescription": "Tingkat balasan, wawancara, dan tawaran semuanya menghitung lamaran yang benar-benar sudah dikirim. Pindahkan satu lamaran keluar dari Draf dan bagian ini akan terisi."
+  },
+  "pipeline": {
+    "emptyTitle": "Alur masih kosong",
+    "emptyDescription": "Setiap lamaran berada di satu tahap, dan bagian ini menunjukkan sebarannya di setiap tahap. Tambahkan satu dan potongan pertama akan muncul.",
+    "ariaLabel_other": "{{count}} lamaran menurut tahap"
+  },
+  "statsCard": {
+    "control": "Statistik",
+    "tracked_other": "{{count}} dipantau",
+    "views": {
+      "pipeline": "Alur",
+      "rates": "Angka",
+      "when": "Kapan",
+      "next": "Berikutnya"
+    },
+    "titles": {
+      "pipeline": "Alur",
+      "rates": "Angka utama",
+      "when": "Kapan Anda melamar",
+      "next": "Yang perlu dikerjakan berikutnya"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "Catatan",
+      "recent": "Lamaran terbaru"
+    },
+    "headingNotes": "Catatan tempel",
+    "headingRecent": "Lamaran terbaru",
+    "control": "Tampilkan di kartu ini",
+    "addReminder": "Tambah pengingat",
+    "viewAll": "Lihat semua",
+    "emptyTitle": "Belum ada lamaran",
+    "emptyDescription": "Setiap posisi yang Anda pantau muncul di sini saat Anda menyentuhnya, yang terbaru di atas.",
+    "today": "Hari ini",
+    "daysAgo_other": "{{count}} hari lalu"
+  },
+  "searchHealth": {
+    "title": "Yang perlu dikerjakan berikutnya",
+    "series": {
+      "you": "Anda",
+      "target": "Umumnya"
+    },
+    "intro": "angka Anda dibandingkan pencarian pada umumnya",
+    "sample": "Contoh",
+    "sampleTitle": "Hanya cincin umumnya yang bersifat ilustrasi",
+    "emptyTitle": "Belum cukup untuk dibandingkan",
+    "emptyDescription": "Bagian ini menimbang balasan, wawancara, rujukan, dan tindak lanjut Anda terhadap pencarian pada umumnya. Diperlukan lamaran yang benar-benar sudah dikirim.",
+    "suggestions": "Saran, yang paling berguna lebih dulu"
+  },
+  "sources": {
+    "title": "Asal lamaran",
+    "views": {
+      "bars": "Batang",
+      "donut": "Donat"
+    },
+    "chartType": "Jenis grafik",
+    "unrecorded": "Tidak dicatat",
+    "hintAll_other": "{{count}} lamaran",
+    "hintSome": "{{shown}} dari {{count}}",
+    "emptyTitle": "Belum ada yang bisa dirinci",
+    "emptyDescription": "Setiap lamaran mencatat dari mana Anda menemukannya — papan lowongan, rujukan, halaman departemen. Bagian ini memilahnya begitu ada beberapa.",
+    "centerLabel": "lamaran",
+    "show": "Tampilkan {{name}}",
+    "hide": "Sembunyikan {{name}}",
+    "allOff": "Semua sumber dimatikan."
+  },
+  "offers": {
+    "title": "Tawaran, berdampingan",
+    "open_other": "{{count}} terbuka",
+    "caption": "Tawaran Anda yang terbuka, dengan paket sesuai yang Anda ketik, angka tahunannya, dan tanggal batas setiap tawaran harus dijawab",
+    "columns": {
+      "job": "Pekerjaan",
+      "package": "Paket",
+      "year": "Setahun",
+      "respondBy": "Jawab paling lambat"
+    },
+    "notStated": "tidak disebutkan",
+    "noAmount": "Tidak ada jumlah yang dapat dibaca dari paket",
+    "readFrom": "Dibaca dari “{{text}}”",
+    "highest": "— yang tertinggi di sini",
+    "annualised": "(disetahunkan)",
+    "passed": "lewat",
+    "today": "hari ini",
+    "daysLeft_other": "{{count}} hari",
+    "ranked": "Angka tahunan dibaca dari yang Anda ketik — arahkan kursor ke salah satunya untuk melihat dari kata mana asalnya.",
+    "unranked": "Tawaran ini tidak diperingkat: paketnya dalam mata uang berbeda, dan jojo tidak punya kurs serta tidak melakukan panggilan jaringan untuk mencarinya.",
+    "annualisedNote": "* disetahunkan dengan 12 bulan, 52 minggu, atau 2.080 jam, yang merupakan konvensi, bukan kontrak Anda."
+  },
+  "sticky": {
+    "newNote": "Catatan tempel baru",
+    "placeholder": "Tulis catatan untuk diri sendiri… (Enter untuk menempelkannya)",
+    "newColour": "Warna untuk catatan baru",
+    "stick": "Tempelkan",
+    "empty": "Belum ada yang ditempel. Catatan tetap di sini sampai Anda mencabutnya, dan catatan mana pun dapat menjadi pengingat setelah punya tanggal.",
+    "listLabel": "Catatan tempel",
+    "editNote": "Edit catatan",
+    "clickToEdit": "Klik untuk mengedit",
+    "editAria": "Edit catatan: {{text}}",
+    "colour": "Warna",
+    "colourOf": "Warna catatan \"{{text}}\"",
+    "toReminder": "Jadikan pengingat",
+    "toReminderAria": "Jadikan pengingat: {{text}}",
+    "takeDown": "Cabut catatan ini",
+    "removeAria": "Hapus catatan: {{text}}"
+  },
+  "frequency": {
+    "title": "Kapan Anda melamar",
+    "period": "Periode",
+    "periods": {
+      "week": "Minggu",
+      "month": "Bulan",
+      "quarter": "Kuartal"
+    },
+    "chartType": "Jenis grafik",
+    "charts": {
+      "bar": "Batang",
+      "line": "Garis"
+    },
+    "emptyTitle": "Belum ada yang bisa digrafikkan",
+    "emptyDescription": "Bagian ini menghitung lamaran yang Anda kirim, per minggu, dipilah menurut jenis posisi. Tambahkan satu dan batang pertama akan muncul.",
+    "noDatesTitle": "Belum ada tanggal kirim yang tercatat",
+    "noDates_other": "Belum ada satu pun dari {{count}} lamaran Anda yang bertanggal. Tanggal dicap saat Anda memindahkan entri ke Terkirim.",
+    "perPeriod": {
+      "week": "Lamaran terkirim per minggu, dipilah menurut {{series}}",
+      "month": "Lamaran terkirim per bulan, dipilah menurut {{series}}",
+      "quarter": "Lamaran terkirim per kuartal, dipilah menurut {{series}}"
+    },
+    "caption": {
+      "week": "Lamaran terkirim per minggu",
+      "month": "Lamaran terkirim per bulan",
+      "quarter": "Lamaran terkirim per kuartal"
+    },
+    "countingUndated_other": "Menghitung {{inWindow}} dari {{total}} lamaran — {{count}} belum bertanggal.",
+    "countingEarlier_other": "Menghitung {{inWindow}} dari {{total}} lamaran — {{count}} jatuh sebelum {{first}}.",
+    "countingBoth": "Menghitung {{inWindow}} dari {{total}} lamaran — {{undated}} belum bertanggal, dan {{earlier}} sebelum {{first}}."
+  },
+  "glance": {
+    "heading": "Sekilas",
+    "stats": {
+      "active": "Aktif",
+      "screens": "Seleksi & wawancara",
+      "overdue": "Terlambat",
+      "doneToday": "Selesai hari ini"
+    },
+    "previousMonth": "Bulan sebelumnya",
+    "currentMonth": "Ke bulan ini",
+    "currentMonthTitle": "{{date}} — bulan ini",
+    "nextMonth": "Bulan berikutnya",
+    "openCalendar": "Buka kalender",
+    "dayNone": "{{date}}, tidak ada acara",
+    "day_other": "{{date}}, {{count}} acara",
+    "dayAllDone_other": "{{date}}, {{count}} acara, semua selesai",
+    "today": "hari ini",
+    "nothingPlanned": "Tidak ada rencana. <add>Tambahkan sesuatu</add>."
+  },
+  "priority": {
+    "title": "Perlu keputusan",
+    "open_other": "{{count}} terbuka",
+    "completedDescription": "Item ini keluar dari tumpukan dan dari minggu ini — tidak ada yang dihapus.",
+    "rescheduledDescription": "Sekarang jatuh tempo {{date}}, di kalender dan minggu mendatang.",
+    "tickOff": "Centang \"{{title}}\"",
+    "done": "Selesai",
+    "snooze": "Tunda",
+    "notConnected": "Belum ada yang terhubung ke ini",
+    "earlierAria": "Tampilkan keputusan sebelumnya",
+    "earlier": "Sebelumnya",
+    "laterAria": "Tampilkan keputusan berikutnya",
+    "later": "Berikutnya",
+    "listLabel": "Keputusan, yang paling awal dulu",
+    "emptyTitle": "Tidak ada yang perlu diputuskan hari ini",
+    "emptyDescription": "Tawaran, lamaran yang terlambat, tenggat pasti berikutnya, dan wawancara Anda berikutnya muncul di sini. Tidak satu pun yang tertunda."
+  },
+  "firstSteps": {
+    "title": "Langkah pertama",
+    "hint": "{{done}} dari {{total}} selesai",
+    "application": {
+      "title": "Tambahkan lamaran",
+      "body": "Sebuah posisi, tahapnya, dan tenggatnya. Semua hal lain di jojo bergantung pada entri ini."
+    },
+    "dated": {
+      "title": "Beri tanggal pada sesuatu",
+      "body": "Tenggat, wawancara, dan kunjungan adalah satu jenis entri, jadi sebuah tanggal langsung sampai ke halaman ini, kalender, dan lamarannya sekaligus.",
+      "action": "Acara baru"
+    },
+    "reminder": {
+      "title": "Atur tindak lanjut",
+      "body": "Pengingat adalah entri yang sama dengan dorongan yang diaktifkan. Setelah tanggalnya lewat, ia menjadi kewajiban, dan tetap di sini sampai Anda mencentangnya.",
+      "action": "Pengingat baru"
+    },
+    "complete": "Ketiganya selesai. Apa pun yang Anda tambahkan mulai sekarang sampai ke halaman ini, kalender, dan lamaran terkaitnya.",
+    "intro": "Setiap langkah membuka fitur yang sebenarnya dan tercentang sendiri begitu entrinya ada — tidak ada tutorial yang harus Anda ikuti sampai habis.",
+    "introBare": "Belum ada yang dipantau. Setiap langkah membuka fitur yang sebenarnya dan tercentang sendiri begitu entrinya ada — tidak ada tutorial yang harus Anda ikuti sampai habis.",
+    "doneSr": "— selesai",
+    "notDoneSr": "— belum selesai",
+    "hideHint": "Langkah yang sama dijelaskan di panduan",
+    "close": "Tutup langkah pertama",
+    "hide": "Sembunyikan langkah ini"
+  },
+  "owed": {
+    "title": "Kewajiban minggu ini",
+    "add": "Tambah",
+    "addEvent": "Tambah acara",
+    "emptyTitle": "Tidak ada kewajiban",
+    "emptyDescription": "Tenggat, wawancara, dan tindak lanjut masuk ke sini begitu bertanggal, dan tetap di sini sampai Anda mencentangnya.",
+    "hintOverdue": "{{overdue}} terlambat · {{due}} jatuh tempo",
+    "hintDue_other": "{{count}} jatuh tempo",
+    "snoozeAria": "Tunda {{title}}",
+    "openAria": {
+      "reminder": "Buka {{title}}: edit pengingat atau buka lamarannya",
+      "event": "Buka {{title}}: edit acara atau buka lamarannya"
+    },
+    "edit": {
+      "reminder": "Edit pengingat",
+      "event": "Edit acara"
+    },
+    "openApplication": "Buka <name>{{name}}</name>",
+    "groups": {
+      "overdue": "Terlambat",
+      "today": "Hari ini",
+      "tomorrow": "Besok",
+      "rest": "Sisa minggu ini"
+    },
+    "completedDescription": "Item ini keluar dari daftar dan dihitung untuk hari ini — tidak ada yang dihapus.",
+    "rescheduledDescription": "Sekarang jatuh tempo {{date}}, di sini dan di kalender.",
+    "nextSeven": "Tujuh hari ke depan",
+    "items_other": "{{count}} item",
+    "allDone": "semua selesai",
+    "nothingScheduled": "tidak ada jadwal",
+    "todayClear": "Hari ini kosong.",
+    "todayClearDone": "Hari ini kosong — {{count}} selesai.",
+    "markDoneAria": "Tandai \"{{title}}\" selesai",
+    "markDone": "Tandai selesai",
+    "draftTitle": "Tulis ini dari salah satu cuplikan email Anda",
+    "draftAria": "Tulis draf {{title}}",
+    "later": "Nanti",
+    "openTitle": "Buka {{title}}",
+    "more_other": "{{count}} lagi di kalender",
+    "showAll": "Tampilkan semua {{total}}",
+    "showFewer": "Tampilkan lebih sedikit"
+  }
+}

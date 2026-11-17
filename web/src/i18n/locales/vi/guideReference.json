@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Các công cụ",
+    "subtitle": "Trợ lý thực sự làm được gì, bị chặn không cho làm gì, và cách nó tìm đúng công cụ.",
+    "can": {
+      "hint": "tổng cộng {{total}}",
+      "title": "Trợ lý làm được gì",
+      "intro": "<go>Trợ lý</go> không gõ vào màn hình của bạn. Nó gọi đúng {{total}} thao tác mà các nút bấm gọi — cùng một đường đi trong mã, với cùng các bước kiểm tra. Không có lối vào thứ hai, đó là lý do một chỉnh sửa của trợ lý xuất hiện trong lịch sử của bạn y hệt như chỉnh sửa bạn tự làm.",
+      "stats": {
+        "readsLabel": "cách xem",
+        "readsHint": "đọc không bao giờ thay đổi gì",
+        "writesLabel": "cách thay đổi",
+        "writesHint": "cách nào cũng hoàn tác được…",
+        "destructiveLabel": "được đánh dấu là có tính phá hủy",
+        "destructiveHint": "…trừ hai, những thao tác này hỏi trước"
+      },
+      "irreversibleOne": "Một trong {{destructive}} đó hoàn toàn không thể hoàn tác — những thao tác thay thế hoặc làm trống toàn bộ kho dữ liệu.",
+      "irreversibleTwo": "Hai trong {{destructive}} đó hoàn toàn không thể hoàn tác — những thao tác thay thế hoặc làm trống toàn bộ kho dữ liệu.",
+      "irreversibleMany": "{{irreversible}} trong {{destructive}} đó hoàn toàn không thể hoàn tác — những thao tác thay thế hoặc làm trống toàn bộ kho dữ liệu.",
+      "neverOffered": "Những thao tác đó không bao giờ được đưa cho trợ lý trừ khi chính lời bạn yêu cầu, và ngay cả khi đó chúng vẫn dừng lại để xác nhận, bất kể cuộc trò chuyện đang ở chế độ phê duyệt nào. Tự động sẽ hành động mà không hỏi với mọi thứ hoàn tác được; nó vẫn hỏi trước những thao tác này.",
+      "ownWords": "“Chính lời bạn yêu cầu” là một phép kiểm tra cụ thể, không phải một phán đoán: câu nói phải chứa thứ gì đó mang nghĩa xóa sạch, thứ gì đó mang nghĩa toàn bộ kho dữ liệu, và không nhắc tới một loại bản ghi cụ thể nào. “Xóa sạch mọi thứ” là đạt. “Xóa các nhãn khỏi đơn ứng tuyển Baylor” thì không, và “xóa mọi thứ tôi đã viết trong ghi chú đó” cũng không — cả hai đều nêu tên một thứ, nên cả hai đều nói về thứ đó.",
+      "errs": "Nó nghiêng về phía không đưa ra. Nếu bạn thật sự muốn và diễn đạt theo cách lạ, trợ lý sẽ nói là không làm được thay vì đoán, và Cài đặt vẫn có nút bấm đó."
+    },
+    "gates": {
+      "hint": "phần thực sự giữ vững",
+      "title": "Điều gì ngăn thao tác sai chạy",
+      "intro": "Một mô hình ngôn ngữ có thể yêu cầu bất cứ thứ gì. Nó có thể gọi tên một công cụ chưa từng được cho xem, hoặc bịa ra một công cụ không tồn tại — các mô hình nhỏ làm vậy thường xuyên, và đó không phải dấu hiệu có gì hỏng. Vì vậy jojo không dựa vào việc mô hình cẩn thận.",
+      "distinctionTitle": "Sự phân biệt quan trọng",
+      "distinction": "Chọn thứ gì để <em>cho</em> mô hình xem chỉ là gợi ý. Kiểm tra thứ nó thực sự <em>gọi</em> mới là quy tắc, và quy tắc đó tùy thuộc vào ai đã chọn tập công cụ. Khi màn hình cố định tập đó — Hỏi đồ thị, một quy trình của trình tìm việc — mọi lời gọi ra ngoài đều bị từ chối trước khi tra cứu bất cứ gì, huống chi là chạy. Trong cuộc trò chuyện, tập công cụ là phỏng đoán của jojo về những gì bạn cần, nên lời gọi ra ngoài không bị từ chối: nó đi qua cùng bước kiểm tra phê duyệt như mọi lời gọi khác, tức là hỏi bạn trước trừ khi cuộc trò chuyện được đặt để tự chạy. Ngoại lệ duy nhất là xóa sạch bản ghi, thứ duy nhất không thể hoàn tác: nó bị từ chối trừ khi bạn đã nói rõ ràng là muốn xóa sạch mọi thứ.",
+      "askGraph": "Đây là lý do thẻ “Hỏi đồ thị” có thể an toàn đưa ra hai công cụ chỉ đọc. Nó không tin rằng mô hình sẽ chỉ dùng trong phạm vi đó."
+    },
+    "workflow": {
+      "hint": "các bước, không phải một lần thử dài",
+      "title": "Công việc gồm nhiều bước",
+      "p1": "Đọc một CV không phải là một câu hỏi. jojo tách tài liệu theo chính các tiêu đề của nó, hỏi riêng từng phần, hỏi thêm một lần về những gì bị bỏ sót, và cuối cùng hỏi các thông tin liên quan với nhau thế nào — năm hoặc sáu lần gọi mô hình cho một lần tải lên. Nếu viết thành một khối mã duy nhất, đó sẽ là một <code>try</code> bao quanh tất cả, và một câu trả lời hỏng ở bất kỳ đâu sẽ làm mất toàn bộ.",
+      "p2": "Vì vậy một công việc như thế được khai báo thành <strong>các bước với các cạnh nối giữa chúng</strong>. Mỗi bước cho biết đáng thử lại bao nhiêu lần và công việc có thể tiếp tục mà không có nó hay không; đường đi từ bước này sang bước kia được quyết định bởi những gì đã xảy ra, không bao giờ bằng cách hỏi mô hình nên đi đâu. Một bước thất bại sẽ được nêu tên trong kết quả thay vì biến mất trong câu “đọc CV thất bại”.",
+      "p3": "Điều này quan trọng nhất với mô hình nhỏ. Một mô hình 7B thường không thất bại vì suy luận kém qua nhiều bước — nó thất bại vì trả về thứ gì đó sai định dạng ở một bước trong sáu. Cách xử lý hữu ích là thử lại bước đó và để yên năm bước kia.",
+      "p4": "Một bước chỉ giúp cải thiện kết quả, như xác định các thông tin của bạn liên quan với nhau thế nào, được đánh dấu là không bắt buộc: nếu nó thất bại, bạn vẫn nhận được mọi thứ các bước trước tìm thấy. Vòng lặp được phép — một bước có thể quay ngược lại — và có giới hạn cứng về tổng số bước để một lỗi định tuyến dừng lại với dấu vết dễ đọc thay vì quay mãi trên GPU của bạn."
+    },
+    "badReply": {
+      "hint": "một câu trả lời hỏng chỉ tốn một lượt, không mất cả tài liệu",
+      "title": "Khi mô hình nhỏ trả lời kém",
+      "p1": "Một mô hình nhỏ hết chỗ giữa chừng câu. Đọc CV yêu cầu một danh sách thông tin, và một câu trả lời bị cắt giữa danh sách sẽ thiếu dấu ngoặc đóng — nên nó không phải JSON, và cách hiển nhiên là vứt bỏ nó. Thay vào đó, jojo giữ lại mọi thứ cho tới mục <strong>hoàn chỉnh</strong> cuối cùng, và cho biết đã mất bao nhiêu. Hai mươi thông tin đến nơi thay vì không có gì.",
+      "p2": "Nó cố ý dừng ở một mục hoàn chỉnh. Nửa chức danh còn tệ hơn không có chức danh: nó hiện ra trước mắt bạn trông như hoàn chỉnh, và bạn phê duyệt nó.",
+      "p3": "Việc tìm kiếm cũng được cẩn trọng như vậy. Khi được yêu cầu “chuyển đơn ứng tuyển Rice của tôi sang phỏng vấn” trong khi có hai đơn, một mô hình tìm một kết quả và nhận được một sẽ không có cách nào biết có đơn thứ hai — nên nó sẽ tự tin chuyển nhầm bản ghi. Mọi lần tìm kiếm đều báo có bao nhiêu kết quả khớp cũng như đang hiển thị gì, nhờ đó trợ lý có thể quay lại hỏi bạn muốn nói đơn nào."
+    },
+    "picks": {
+      "hint": "để một yêu cầu không bao giờ dừng giữa chừng",
+      "title": "Cách nó chọn đúng công cụ",
+      "p1": "Cho mô hình xem cả {{total}} công cụ cùng lúc tốn hơn mười lăm nghìn từ trong không gian suy nghĩ của nó — trước khi bạn kịp gõ gì. Với một mô hình nhỏ chạy trên máy của bạn, đó có thể là nhiều hơn không gian nó có. Vì vậy jojo thu hẹp danh sách theo những gì lời bạn hướng tới.",
+      "p2": "Thu hẹp cẩu thả còn tệ hơn không thu hẹp. Hầu hết thao tác cần một thứ để tác động: bạn không thể gắn từ khóa khi không có từ khóa, hay cập nhật tài liệu khi không có tài liệu. Giấu công cụ tạo ra thứ đó đi, và trợ lý sẽ dừng giữa chừng mà không có gì trên màn hình giải thích tại sao.",
+      "unsureTitle": "Khi không chắc, nó không thu hẹp",
+      "unsure": "“Nhắc tôi về Baylor vào thứ Năm” là rõ ràng, và jojo đưa ra khoảng một phần năm danh mục. “Thật ra là cái kia” thì không rõ ràng về bất cứ điều gì — nên nó đưa ra mọi thứ, đúng như trước khi có tất cả những điều này. Không chắc chắn chỉ tốn một chút tốc độ. Đoán bừa sẽ khiến bạn mất câu trả lời.",
+      "secondTitle": "Một trợ lý thứ hai làm việc lựa chọn",
+      "second1": "Đối chiếu lời bạn với một danh sách thì nhanh, miễn phí và không đọc được ý định. “Tôi nhận được phản hồi từ Rice” không nêu tên công cụ hay động từ nào, nhưng rõ ràng có nghĩa là giai đoạn đã thay đổi. Vì vậy khi đã kết nối mô hình, một công việc thứ hai nhỏ hơn nhiều chạy trước: nó đọc yêu cầu của bạn — không phải cuộc trò chuyện, không phải kết quả, chỉ những gì bạn hỏi — và trả lời bằng các công cụ nó cho là cần thiết.",
+      "second2": "Nó rẻ vì không cần hướng dẫn đầy đủ của từng công cụ, chỉ cần tên và một dòng: khoảng một phần sáu so với việc đưa toàn bộ danh mục, và nó tiết kiệm được chừng đó ở mọi bước chứ không chỉ một lần. Đo qua mười câu hỏi liên tiếp, nó giảm tin nhắn đầu tiên từ khoảng 8.000 từ ngữ cảnh xuống còn 2.900.",
+      "second3": "Nó chỉ có thể thu hẹp. Bất cứ thứ gì nó chọn đều đi qua cùng các bước kiểm tra như trước — các công cụ tạo ra một thứ đi kèm các công cụ thay đổi thứ đó, và hai công cụ làm trống kho dữ liệu không bao giờ được đưa vào trừ khi chính lời bạn yêu cầu. Nếu nó chậm hoặc không có sẵn, việc đối chiếu từ ngữ sẽ chạy thay và không mất gì ngoài một chút thời gian.",
+      "longTitle": "Cuộc trò chuyện dài",
+      "long1": "Một mô hình chỉ chứa được chừng ấy cùng lúc, và cuộc trò chuyện vượt quá sẽ bị cắt — bởi máy chủ, từ phần đầu, nơi chứa các quy tắc. Thay vào đó jojo tự cắt, từ phần cũ nhất, và không bao giờ động tới hướng dẫn của chính nó hay câu hỏi hiện tại của bạn.",
+      "long2": "Những gì nó gỡ đi sẽ được thay trước bằng một bản tóm tắt ngắn về những gì đã xảy ra ở đó, để trợ lý vẫn biết bạn đã nói muốn nhắc đơn ứng tuyển Rice nào. Bạn sẽ được báo khi điều này xảy ra. Các bản ghi của bạn không bao giờ bị ảnh hưởng — đây chỉ là chuyện những gì vừa với một tin nhắn.",
+      "long3": "Một cuộc trò chuyện giữ lại các công cụ nó đã thực sự dùng. Những công cụ chỉ được đưa ra mà chưa từng dùng sẽ bị bỏ đi, để cuộc trò chuyện dài không dần dần chứa đầy mọi thứ."
+    },
+    "evidence": {
+      "hint": "chạy với mô hình thật, không chỉ khẳng định",
+      "title": "Nó có thực sự hiệu quả?",
+      "p1": "Mọi thứ ở trên là một thiết kế. Một mô hình cụ thể có thực sự chọn đúng công cụ trong danh mục của jojo hay không là câu hỏi về mô hình đó, và cách duy nhất để trả lời là thử. Vì vậy có một bộ kịch bản — đọc, ghi, chuỗi thao tác cần tra cứu trước, và các trường hợp mà câu trả lời đúng là không làm gì — và nó chạy với các máy chủ thật.",
+      "p2": "Mỗi kịch bản chạy hai lần: một lần với toàn bộ danh mục, và một lần với tập đã thu hẹp. Lần thứ hai mới là lần quan trọng. Thu hẹp nhằm giúp mô hình nhỏ bằng cách cho nó ít tên hơn để nhầm lẫn — nhưng nó cũng có thể gây hại vì gỡ mất thứ cần thiết, và một khẳng định như vậy chẳng có giá trị gì nếu không có nhóm đối chứng bên cạnh.",
+      "suiteTitle": "Bộ kịch bản tìm kiếm điều gì",
+      "suite": "Không phải mô hình có thông minh không. Mà là nó có với lấy công cụ tài liệu khi bạn đưa URL, tạo đơn ứng tuyển thứ hai thay vì cập nhật đơn bạn đã nêu tên, bịa ra một mã thay vì tra cứu, hoặc — trường hợp quan trọng nhất — nghe “xóa hạn chót” mà với lấy thao tác làm trống toàn bộ kho dữ liệu."
+    },
+    "conversation": {
+      "hint": "một kho dữ liệu thật, và trông nó thế nào sau đó",
+      "title": "Nó có giữ được cuộc trò chuyện?",
+      "p1": "Bộ kịch bản ở trên hỏi mô hình một câu và kiểm tra xem nó có gọi tên một công cụ hợp lý không. Đó là nửa dễ, và nó tâng bốc mọi mô hình. Công việc thực tế không phải một câu hỏi: bạn hỏi một thứ đang ở giai đoạn nào, rồi nói “chuyển nó sang phỏng vấn” — và bản ghi bạn muốn nói nằm trong câu trả lời trước đó, không nằm trong câu nói.",
+      "p2": "Vì vậy có một bài đánh giá thứ hai. Nó dựng một kho dữ liệu thật — sáu đơn ứng tuyển, một lịch, một Kho lưu trữ, các từ khóa — đưa cho trợ lý kịch bản gồm {{conversations}} cuộc trò chuyện thuộc {{groups}} loại công việc, và để các lời gọi công cụ thực sự chạy. Sau đó nó xem trong kho dữ liệu có gì. Bốn điều được chấm điểm riêng, vì một mô hình có thể đạt điều này mà trượt điều kia:",
+      "called": "<lead>Nó đã gọi gì</lead> — mỗi lượt có hợp lý không.",
+      "route": "<lead>Nó đến đó bằng cách nào</lead> — nó có tra cứu bản ghi trước khi thay đổi không, hay chỉ ghi dựa trên câu nói.",
+      "shape": "<lead>Hình dạng của công việc</lead> — mỗi trường hợp có một đồ thị chuẩn gồm các lời gọi cần thiết và lời gọi nào phụ thuộc vào lời gọi nào, và lần chạy được chấm điểm theo đồ thị đó. Hai lời gọi mà đồ thị để độc lập có thể diễn ra theo thứ tự nào cũng được; còn một lệnh ghi trước lệnh đọc tìm ra chỗ cần ghi thì không được.",
+      "left": "<lead>Nó để lại gì</lead> — kho dữ liệu có đúng không, và có gì thay đổi mà lẽ ra không nên không.",
+      "p3": "Điều thứ ba là thứ các bài đánh giá thường bỏ qua, và là lý do một mô hình có thể đạt điểm cao ở đây mà vẫn gây thất vọng khi dùng: với một kho dữ liệu nhỏ như vậy, đoán bừa thường trúng đúng bản ghi. Đồ thị cho biết nó đang suy luận hay chỉ may mắn. Điều này được báo cáo bên cạnh con số chính chứ không gộp vào — đến được đáp án đúng bằng một con đường không ai lường trước vẫn là đáp án đúng."
+    },
+    "reasoning": {
+      "hint": "đã đo, kèm cái giá về thời gian",
+      "title": "Suy luận có giúp ích không?",
+      "p1": "Có thể yêu cầu mô hình suy nghĩ trước khi trả lời — thiết lập Suy luận trong <go>Cài đặt</go>. Việc đó có giúp nó làm tốt hơn công việc của jojo hay không là câu hỏi về mô hình, nên bài đánh giá hội thoại ở trên đã được chạy hai lần khi bật suy luận và hai lần khi tắt, trên cùng máy chủ và cùng mã nguồn.",
+      "numbersTitle": "Các con số nói gì",
+      "gemma": "<lead>Với Gemma, suy luận làm giảm độ chính xác và tốn nhiều thời gian.</lead> Trung bình nó đạt ít hơn hai đến ba cuộc trò chuyện, và cuộc trò chuyện trung vị mất khoảng gấp ba thời gian. Sự chậm chạp chính là việc suy nghĩ: Gemma sinh khoảng 31 token mỗi giây và suy nghĩ vài trăm token trước mỗi câu trả lời, nên một lượt trung bình lâu hơn khoảng sáu giây và một lượt dài thì từ mười lăm giây trở lên. Qua cả hai lượt chạy, nó ổn định sửa được ba cuộc trò chuyện và ổn định làm hỏng ba đến bốn — trong số bị hỏng có việc xếp một tài liệu mới và từ chối một đề xuất, những việc nó luôn làm đúng khi tắt suy luận.",
+      "gptOss": "<lead>Với GPT-OSS, thiết lập này không thay đổi gì</lead> — và đó là điều được dự đoán chứ không phải một phát hiện. GPT-OSS luôn suy luận; “tắt” chỉ có thể yêu cầu nó suy luận ít hơn, và cả hai thiết lập đều chạy ở mức nỗ lực thông thường của nó. Nó cũng sinh nhanh hơn Gemma khoảng bảy lần, nên việc suy nghĩ tốn chưa tới một giây mỗi câu trả lời.",
+      "advice": "Nếu câu trả lời có vẻ chậm với một mô hình như Gemma, hãy tắt suy luận: trên bài đánh giá này bạn không mất gì cả. Dù thế nào, hai trợ lý phụ — một cái chọn công cụ mà mỗi lượt được dùng và một cái tóm tắt cuộc trò chuyện dài — không bao giờ suy luận, vì không việc nào được cải thiện nhờ nó, và từng có một bản tóm tắt mất gần hai phút khi chúng suy luận.",
+      "firstToken": "Cột token đầu tiên chiếm phần lớn thời gian chờ trong một cuộc trò chuyện dài: câu trả lời không thể bắt đầu cho đến khi máy chủ đọc xong mọi thứ được gửi tới. Một lời nhắc lặp lại rẻ hơn nhiều, vì máy chủ giữ phần đầu của nó từ lần trước — đó là lý do lượt thứ hai của cuộc trò chuyện thường trả lời nhanh hơn lượt đầu."
+    },
+    "previewer": {
+      "hint": "mọi trường hợp, nguyên văn",
+      "title": "Nó được đánh giá dựa trên gì",
+      "p1": "Một điểm số chỉ có giá trị bằng các trường hợp của nó, và ai đó đã chọn mẫu số. Vì vậy toàn bộ bài đánh giá có ở đây để đọc: kho dữ liệu nó chạy trên đó, mọi câu đã gửi cho trợ lý, và những gì phải đúng với bản ghi của bạn sau đó.",
+      "p2": "Nội dung này được đọc từ chính danh sách mà bài đánh giá chạy, không phải bản mô tả về nó — nên một trường hợp được thêm vào ngày mai sẽ xuất hiện ở đây kèm các lời nhắc, còn một trường hợp bị lặng lẽ bỏ đi sẽ biến mất.",
+      "p3": "Chọn một trường hợp để xem những gì đã được nói, quy trình nó mong đợi được vẽ thành một đồ thị phụ thuộc thật, mỗi lượt được và không được gọi gì, và từng mô hình đã thực sự làm gì với nó — kể cả những gì nó viết lại, nơi một mô hình không làm gì mà vẫn báo thành công sẽ tự lộ ra."
+    },
+    "ambiguity": {
+      "hint": "lý do bài đánh giá tồn tại",
+      "title": "Khi hai bản ghi cùng khớp",
+      "p1": "Kho dữ liệu cố ý chứa hai đơn ứng tuyển Rice và hai cơ sở UT, vì đó là hình ảnh thực tế của một đợt tìm việc sau vài tháng — và đó là tình huống mà trợ lý có thể gây hại thật sự trong khi trông như đang làm việc hoàn hảo.",
+      "p2": "Đây là lý do jojo được xây dựng theo cách phần còn lại của trang này mô tả. Không thể trông cậy vào việc mô hình biết dừng, nên những thứ không thể hoàn tác không bao giờ được đưa ra trừ khi bạn gọi tên chúng, mọi lệnh ghi đều được đối chiếu với những gì thực sự được đưa ra, và mọi thay đổi đều vào lịch sử của bạn, nơi bạn có thể hoàn tác.",
+      "p3": "Cũng cần nói thẳng: một lượt chạy đánh giá chỉ xếp hạng mô hình một cách tương đối. Điểm số thay đổi giữa các lần chạy trên cùng phần cứng với cùng thiết lập. Điều không thay đổi là hình dạng của thất bại — và đó là phần đáng để thiết kế phòng ngừa."
+    },
+    "model": {
+      "hint": "lựa chọn của bạn, và nó thay đổi nơi lời bạn được gửi tới",
+      "title": "Mô hình nào làm việc này",
+      "p1": "jojo giao tiếp với bất cứ thứ gì bạn trỏ tới trong <go>Cài đặt</go>. Một mô hình chạy trên chính máy của bạn — Ollama, vLLM, LM Studio — là mặc định, và đó là cách bố trí duy nhất mà không có gì bạn viết rời khỏi thiết bị.",
+      "p2": "Bạn cũng có thể dùng Claude, OpenAI và các nhà cung cấp khác với khóa API. Đó là một sự đánh đổi thực sự và màn hình nói rõ điều đó: các bản ghi của bạn được gửi tới công ty đó và tính phí vào tài khoản của bạn. Khóa được giữ trong trình duyệt này, không bao giờ có trong bản sao lưu, và không bao giờ được gửi tới đâu ngoài nhà cung cấp bạn đã chọn.",
+      "stoppedTitle": "Nếu trợ lý có vẻ đã ngừng đọc",
+      "stopped": "Một mô hình cục bộ thiếu chỗ sẽ lặng lẽ bỏ phần đầu của những gì được gửi tới, rồi tự tin trả lời một câu hỏi mà nó chưa từng thấy đầy đủ. Giờ jojo so sánh những gì máy chủ báo đã đọc với những gì thực sự được gửi, và báo cho bạn khi hai bên không khớp — vì nếu không, trợ lý sẽ trông như làm việc kém thay vì chỉ là thiếu chỗ."
+    },
+    "next": "Tiếp theo: <go>jojo được xây dựng bằng gì</go>."
+  },
+  "graph": {
+    "pageTitle": "Đồ thị bên dưới",
+    "subtitle": "Mỗi bản ghi là một nút và mỗi liên kết giữa chúng là một cạnh. Trang Đồ thị vẽ đúng điều đó.",
+    "picture": {
+      "hint": "không phải hình minh họa của kho dữ liệu — mà chính là kho dữ liệu",
+      "title": "Bức hình đang cho thấy gì",
+      "body": "Trang <go>Đồ thị</go> duyệt qua đúng các bản ghi mà bảng và lịch đọc, ở mỗi lần hiển thị, và vẽ một dấu cho mỗi bản ghi và một đường cho mỗi liên kết. Không có gì trên khung vẽ đó là bản sao thứ hai của dữ liệu và không có gì là bản phác thảo: xóa một đơn ứng tuyển trên bảng và nó biến mất khỏi khung vẽ trước khi bạn quay lại.",
+      "markTitle": "Một dấu có nghĩa là gì",
+      "colourTerm": "Màu",
+      "colour": "Loại bản ghi. Không có gì trên trang này có màu đỏ hay hổ phách — hai màu đó được dành riêng trong toàn ứng dụng cho quá hạn và sắp đến hạn, và một chấm đỏ ở đây sẽ bị đọc thành hạn chót chứ không phải một loại.",
+      "shapeTerm": "Hình dạng",
+      "shape": "Nhóm. Hình tròn là các bản ghi đang hoạt động của việc tìm việc — đơn ứng tuyển, mục có ngày, tin tuyển dụng, gợi ý. Hình vuông bo góc là những gì bạn xếp trong Kho lưu trữ: liên kết, tệp, đoạn văn bản. Hình thoi là những thứ được nhiều bản ghi dùng chung. Hai trong bốn hình thoi là bản ghi có mã riêng, một tổ chức và một từ khóa, còn hai hình kia thì không — xem bên dưới.",
+      "sizeTerm": "Kích thước",
+      "size": "Có bao nhiêu cạnh chạm vào nó, tính theo căn bậc hai và có giới hạn. Một nút trung tâm có hai mươi kết nối trông lớn hơn rõ ràng so với nút có bốn kết nối chứ không phải gấp năm lần diện tích, đó là kết quả khi định kích thước thẳng theo số đếm: các đơn ứng tuyển thành hành tinh còn mọi thứ khác thành bụi.",
+      "lineTerm": "Một đường",
+      "line": "Một liên kết giữa hai bản ghi, vẽ không có đầu mũi tên. Hướng có được lưu, nhưng mọi phép duyệt trên trang này đều bỏ qua nó — người hỏi điều gì nối một tệp với một công việc không nghĩ tới chiều nào cả.",
+      "notDoTitle": "Hai điều khung vẽ không làm",
+      "notDo1": "Nhấn một hàng trong chú giải sẽ ẩn loại bản ghi đó, và không nút nào đổi kích thước khi bạn làm vậy. Kích thước là thông tin về bản ghi, không phải về những gì bạn đang xem, và một nút co lại vì bạn ẩn một hàng chú giải sẽ nói với bạn về bộ lọc chứ không phải về dữ liệu.",
+      "notDo2": "Và không phải mọi thứ trong kho dữ liệu đều có trên khung vẽ. Các tìm kiếm đã lưu trong Trình tìm việc và hồ sơ cá nhân của bạn là bản ghi, nhưng không cái nào được vẽ: một tìm kiếm đã lưu không nêu tên bản ghi nào ở đây, còn hồ sơ cá nhân là một hàng sẽ nằm đơn độc ở một góc của mọi bức hình. Dù vậy chúng vẫn có trong bản xuất và trong số đếm bản ghi ở <go>Cài đặt</go>."
+    },
+    "question": {
+      "hint": "ba ngăn, và một trong số đó không chạy gì cả",
+      "title": "Đặt câu hỏi cho nó",
+      "intro": "Bảng bên dưới khung vẽ có ba phần, và nên biết phần nào là phần nào trước khi tin vào câu trả lời từ nó.",
+      "pickers": "<lead>Các bộ chọn là thật.</lead> Thứ bạn đang tìm, nó <hi>có</hi>, <hi>không có</hi> hay <hi>có ít nhất</hi> hai của một quan hệ, thứ gì nằm ở đầu kia, và tùy chọn thêm một từ khóa mà mọi thứ phải mang. Các mục dòng thời gian có thêm một bộ chọn thứ hai mà không loại nào khác có — một loại, hoặc cờ lời nhắc — vì “đơn ứng tuyển chưa có liên hệ lại” và “lời nhắc không liên kết với gì” là hai câu hỏi người ta thực sự hỏi và không câu nào diễn đạt được chỉ bằng loại bản ghi.",
+      "queryLine": "<lead>Dòng truy vấn thì không.</lead> Khối văn bản trông như mã bên dưới các bộ chọn được tạo từ chúng và không có gì phân tích nó. Nó được ghi rõ là minh họa ngay trên trang, và trang này sẽ không nói giảm điều đó: jojo không có ngôn ngữ truy vấn, gõ vào ô đó không phải tính năng sắp có, và không ô nhập nào ở đâu nhận nó.",
+      "answer": "<lead>Câu trả lời là thật.</lead> Bảng liệt kê các bản ghi khớp và mở chúng, và cùng các bản ghi đó sáng lên trên khung vẽ phía trên. Câu trả lời dài được cắt còn bốn mươi hàng trong bảng và có ghi rõ — mọi kết quả khớp vẫn sáng trên đồ thị dù thế nào.",
+      "whyTitle": "Vì sao dòng không được phân tích vẫn có mặt",
+      "why": "Vì đó là cách ngắn nhất để làm các bộ chọn dễ đọc. Thấy <code>{{query}}</code> nằm cạnh dòng chữ “đơn ứng tuyển chưa có liên hệ lại” là thứ biến ba danh sách thả xuống thành một câu bạn đọc được, và nó dạy hình dạng của câu hỏi chứ không phải một cú pháp mà bạn chẳng có chỗ nào để gõ. Quy tắc nó phải tuân theo là không bao giờ giả vờ: nó mang nhãn riêng, không có nút chạy, và nằm bên dưới các điều khiển thực sự làm việc chứ không nằm trên.",
+      "answersTitle": "Ba điều nên biết về các câu trả lời",
+      "answers1": "Câu hỏi chạy trên toàn bộ kho dữ liệu, không bao giờ chỉ trên những gì còn hiển thị. Một câu trả lời thay đổi khi bạn nhấn một hàng chú giải còn tệ hơn không có câu trả lời.",
+      "answers2": "Không có nút Chạy. Mọi thay đổi đều chạy lại ngay, nên bảng và các điều khiển phía trên không bao giờ mô tả hai câu hỏi khác nhau.",
+      "answers3": "Kết quả trống được diễn đạt bằng chính lời của câu hỏi. Hỏi đơn ứng tuyển nào thiếu liên hệ lại mà không nhận được gì, nó sẽ nói đơn nào cũng có — đó là một câu trả lời, không phải một thất bại."
+    },
+    "model": {
+      "hint": "quy tắc cho thứ được làm bản ghi",
+      "title": "Mười một loại bản ghi",
+      "intro": "Một giá trị trở thành bản ghi riêng khi bạn có thể đổi tên hoặc chú thích nó, nếu không thì vẫn là một trường. Nhà tuyển dụng đạt điều kiện: bạn có thể viết tên khác đi, các đơn ứng tuyển tích lũy dưới nó, và nên là một thứ thay vì mười hai chuỗi ký tự. Chính phép thử duy nhất đó đã tạo ra mười một loại bên dưới và loại bỏ mọi thứ khác.",
+      "manyTitle": "Một liên kết, hay nhiều",
+      "many": "Ba trong bảy là quan hệ nhiều: gắn nhãn, một thứ có ngày <code>ABOUT</code> điều gì, và một bản ghi trong Kho lưu trữ <code>FILED_UNDER</code> đâu. Một CV đi tới mọi đơn ứng tuyển bạn gửi nó, và một hạn chót thư giới thiệu áp dụng cho mọi công việc nó liên quan, nên những quan hệ đó là danh sách chứ không phải một ô. Bốn quan hệ còn lại tối đa một cho mỗi bản ghi, và liên kết lại sẽ thay thế cái cũ trong cùng một lần ghi. Danh tính của một liên kết là bộ ba mà nó nối, nên tạo hai lần vẫn là cùng một liên kết và không có cách nào có hai đường giống hệt giữa cùng hai bản ghi — đó là lý do xếp một tài liệu vào công việc mà nó đã được xếp vào hoàn toàn không làm gì.",
+      "elevensTitle": "Hai số mười một và hai số bảy, nhưng không giống nhau",
+      "elevensIntro": "Trang Đồ thị cũng có mười một loại nút và bảy loại đường, một sự trùng hợp đáng để phân tích vì nó đã làm lạc hướng những người đi tìm hiểu:",
+      "nineTerm": "Chín trên mười một trùng nhau",
+      "nine": "Hai loại được lưu không bao giờ được vẽ — tìm kiếm đã lưu và hồ sơ cá nhân — và hai loại được vẽ không bao giờ được lưu, đó là phần tiếp theo.",
+      "fiveTerm": "Năm trên bảy trùng nhau",
+      "five": "Hai quan hệ được lưu cũng không bao giờ được vẽ. Một cái cho biết một đơn ứng tuyển là bản sao của đơn khác, được ghi khi bạn nhân bản; cái kia nối một tin tuyển dụng đã lưu hoặc một gợi ý với tìm kiếm mà nó đến từ đó, và không được vẽ vì thứ ở đầu kia không được vẽ. Hai quan hệ được vẽ không bao giờ được lưu.",
+      "oneNameTerm": "Một tên mang hai nghĩa",
+      "oneName": "Bộ chọn quan hệ đưa ra <code>đến từ</code>, và trên khung vẽ đó là đường từ một đơn ứng tuyển tới nơi bạn tìm thấy nó — một đường mà kho dữ liệu chưa bao giờ lưu. Quan hệ được lưu cùng tên nối một tin tuyển dụng với một tìm kiếm đã lưu và không xuất hiện trên bức hình nào cả."
+    },
+    "drawn": {
+      "hint": "vị trí, và nguồn",
+      "title": "Hai thứ được vẽ nhưng chưa bao giờ được lưu",
+      "p1": "Một đơn ứng tuyển mang một nhãn vị trí từ danh sách cố định gồm năm nhãn, và tùy chọn nơi bạn tìm thấy nó từ danh sách cố định gồm bốn nguồn. Cả hai đều không phải bản ghi. Chúng là các danh sách đóng điều khiển một bộ lọc và một thứ tự chú giải, chúng không phải thứ bạn có thể đổi tên hay chú thích, và nâng chúng thành bản ghi sẽ thêm một bước tra cứu vào mọi phép chiếu trong ứng dụng để đổi lấy chẳng gì mà bạn có thể làm sau đó.",
+      "p2": "Dù vậy chúng vẫn được vẽ, vì một bức hình cho thấy đơn nào đến từ giới thiệu nội bộ là đáng có, và một nhãn lọc không phải là cùng bức hình đó. Trang Đồ thị tạo chúng từ các thuộc tính đã có sẵn, ngay tại thời điểm có chúng, và không ghi gì cả.",
+      "tellTitle": "Cách phân biệt chúng trên bức hình",
+      "tell": "Chúng là hai hình thoi không có nhà tuyển dụng hay từ khóa nào đằng sau, và phép thử quyết định là chúng không thể tồn tại lâu hơn thứ chúng được đọc ra từ đó. Xóa đơn ứng tuyển cuối cùng gắn nhãn <hi>Postdoc</hi> và nút đó biến mất theo — không có nơi nào khác trong jojo mà giá trị đó tồn tại như một thứ. Xóa đơn ứng tuyển cuối cùng ở một nhà tuyển dụng thì bản ghi tổ chức vẫn còn, vì nó là bản ghi; từ khóa cũng vậy, đó là lý do xóa mọi đơn ứng tuyển trong <go>Cài đặt</go> vẫn để lại từ khóa của bạn.",
+      "source": "Một nút nguồn cũng chỉ xuất hiện khi bạn đã cho biết thứ gì đó đến từ đâu. Đó là trường không bắt buộc, và đơn ứng tuyển không đặt trường này đơn giản là không có đường nào đi hướng đó."
+    },
+    "delete": {
+      "hint": "điều duy nhất đáng ghi nhớ",
+      "title": "Xóa chỉ gỡ liên kết, không bao giờ xóa dây chuyền",
+      "intro": "Xóa một đơn ứng tuyển và jojo gỡ bản ghi đó cùng các liên kết tới nó, và không động tới gì ở đầu kia của bất kỳ liên kết nào. Một hộp thoại nói “xóa Rice” không thể được hiểu một cách công bằng là đồng ý xóa bốn tệp mà ai đó đã mất cả buổi tối để làm.",
+      "afterTitle": "Những gì bạn thực sự thấy sau đó",
+      "after": "Tệp vẫn ở trong Kho lưu trữ, không xếp vào đâu. Lời nhắc vẫn ở trên lịch, không về điều gì. Từ khóa của bạn không bị động tới — chúng được mọi thứ dùng chung và ngay từ đầu chưa bao giờ thuộc về đơn ứng tuyển đó. Trên trang Đồ thị, các bản ghi đó trở thành nút không có kết nối, đó chính là công dụng của công tắc <hi>Ẩn bản ghi không có kết nối</hi> sau khi bạn dọn đi vài đợt tìm việc đã kết thúc.",
+      "halfTitle": "Và không bản ghi nào bị xóa một nửa",
+      "half": "Không có cờ ẩn nào đánh dấu bản ghi đã bị gỡ. Cách đó buộc phải có một bộ lọc không bao giờ được quên ở mọi lần đọc, mọi lần đếm, mọi phép chiếu và bản xuất, và chỉ một chỗ quên là một bản ghi đã xóa hiện lại trên bảng của bạn. Mất nghĩa là hàng không còn ở đó — và hoàn tác đưa nó trở lại cùng các liên kết, vì lần ghi đã lưu lại mỗi bản ghi trông thế nào trước khi chạy chứ không phải một ghi chú về cách tự đảo ngược."
+    },
+    "source": {
+      "hint": "dành cho người mở kho mã nguồn",
+      "title": "Một thao tác, một lần commit, một hàng nhật ký, một lần hoàn tác",
+      "p1": "Mọi thao tác ghi trong jojo là một phép toán có tên được định nghĩa bên ngoài React, được kiểm tra hợp lệ theo lược đồ riêng, và chạy đồng bộ trong một giao dịch duy nhất. Các phép toán gọi lẫn nhau, và một lời gọi lồng nhau tham gia vào giao dịch đã gọi nó thay vì mở giao dịch riêng. Đó là toàn bộ bất biến, và phần còn lại của trang này đều suy ra từ đó.",
+      "p2": "Thêm một đơn ứng tuyển là ba lần ghi: bản ghi, nhà tuyển dụng nếu đây là đơn đầu tiên ở đó, và hạn chót nếu bạn có đặt. Chúng được ghi thành một lần commit, nên tạo ra một hàng trong nhật ký, một thông báo, và một lần nhấn hoàn tác. Xóa một đơn có cùng hình dạng nhưng đọc ngược lại — giao dịch đã lưu mọi bản ghi nó động tới trông thế nào trước và sau, nên đảo ngược nó sẽ liên kết lại lời nhắc và tệp mà không ai phải viết một hàm biết rằng có lời nhắc và tệp liên quan. Đó là lý do việc gỡ liên kết ở trên có thể hoàn tác, và là lý do cách làm trước đây — viết tay một phép đảo ngược cho mỗi thao tác — từng là nơi loại lỗi này xuất hiện: một người phải nhớ một lần ghi đã động tới những gì, và lần ghi động tới năm tập hợp lại được nhớ là động tới bốn.",
+      "p3": "Nhật ký được giữ lại. <go>Cài đặt</go> liệt kê mọi lần ghi, mới nhất trước, giới hạn ở hai trăm lần gần nhất và được dọn khi kho dữ liệu mở, và cho phép hoàn tác hàng mới nhất. <em>Ngăn xếp</em> hoàn tác là thứ khác: chỉ trong phiên làm việc và sâu năm mươi mức, vì một ngăn xếp còn tồn tại sau khi tải lại sẽ khiến người ta hoàn tác thứ gì đó từ thứ Ba tuần trước, và điều đó cần các quy tắc xung đột mà ứng dụng này không có.",
+      "p4": "Các phép toán nằm ở đâu, tầng nào được nhập tầng nào, và cùng dấu vết thêm-một-đơn-ứng-tuyển được vẽ qua năm tầng đó có ở trang <go>Được xây dựng bằng</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "Hai cửa kiểm soát giữa một câu hỏi và một thay đổi trên bản ghi của bạn",
+      "desc": "Sáu bước, từ trên xuống. Một, những gì bạn gõ. Hai, jojo chọn các công cụ mà lời bạn hướng tới — và nếu lời bạn không rõ, nó đưa ra tất cả thay vì đoán. Ba, nó thêm những gì các công cụ đó phụ thuộc vào, để không chuỗi nào bị tắc. Bốn, mô hình chọn một công cụ. Năm, jojo kiểm tra công cụ đó có thực sự được đưa ra không; nếu không, lời gọi bị từ chối và không có gì chạy. Sáu, chỉ khi đó các bản ghi của bạn mới thay đổi. Bước năm là bước thực thi quy tắc — bước hai chỉ là gợi ý, vì mô hình có thể gọi tên một công cụ chưa từng được cho xem.",
+      "typed": "những gì bạn gõ",
+      "pick": "chọn các công cụ khả dĩ",
+      "pickNote": "không rõ? đưa ra cả {{total}}",
+      "needs": "thêm những gì các công cụ đó cần",
+      "needsNote": "để không chuỗi nào bị tắc",
+      "chooses": "mô hình chọn một",
+      "offered": "nó có được đưa ra không?",
+      "offeredNote": "không? bị từ chối, không có gì chạy",
+      "change": "bản ghi của bạn thay đổi",
+      "caption": "Bước hai giúp bạn tiết kiệm token. Bước năm là bước giữ an toàn cho bạn — và nó chạy dù bước hai có thu hẹp gì hay không."
+    },
+    "toolGraph": {
+      "title": "Cách một công cụ kéo theo công cụ cung cấp đầu vào cho nó",
+      "desc": "Ba hàng, mỗi hàng đọc từ trái sang phải. Ở hàng đầu, yêu cầu keyword.attach kéo theo keyword.create, vì gắn từ khóa cần một từ khóa đã tồn tại. Ở hàng thứ hai, vault.file.update kéo theo vault.file.add, vì cập nhật tài liệu cần có tài liệu. Ở hàng thứ ba, scout.posting.promote kéo theo scout.posting.save, vì nâng một tin tuyển dụng đã lưu cần có tin tuyển dụng đã lưu. Trong mọi trường hợp, jojo xác định sự phụ thuộc từ chính đầu vào của công cụ, và đưa ra cả hai công cụ cùng lúc — để trợ lý không bao giờ nhận được bước đầu tiên mà không có cách tới bước thứ hai.",
+      "asked": "những gì bạn yêu cầu",
+      "needsHeader": "những gì nó cần",
+      "offered": "được đưa ra cùng",
+      "needsKeyword": "một từ khóa",
+      "needsFile": "một tệp",
+      "needsPosting": "một tin tuyển dụng",
+      "without": "Nếu không có điều này, trợ lý có thể được đưa ô đầu tiên mà không có ô thứ hai —\nvà sẽ dừng giữa chừng mà không có gì trên màn hình giải thích tại sao.",
+      "caption": "jojo đọc từng yêu cầu từ chính định nghĩa của công cụ, nên một công cụ được thêm vào ngày mai cũng được bao quát mà không ai phải cập nhật danh sách nào."
+    },
+    "benchAmbiguity": {
+      "title": "Một câu nói, hai bản ghi, và bản ghi sai đã bị thay đổi",
+      "desc": "Ở trên cùng là yêu cầu: đóng đơn ứng tuyển UT, họ đã từ chối tôi. Bên dưới là hai bản ghi cùng khớp — UT Austin, vẫn ở trạng thái đã nộp và đang xét, và UT Dallas, đã đóng. Không có gì trong câu nói phân biệt chúng. Phản hồi đúng là hỏi lại đơn nào; thay vào đó, bốn trong sáu lần chạy đánh giá đã đóng UT Austin, đơn đang xét. Công cụ chúng chọn là đúng. Bản ghi chúng áp dụng thì sai.",
+      "quote": "“Đóng đơn ứng tuyển UT — họ đã từ chối tôi.”",
+      "matchesBoth": "khớp cả hai",
+      "austinState": "đã nộp — vẫn đang xét",
+      "austinRuns": "bị đóng bởi 4/6 lần chạy",
+      "dallasState": "đã đóng",
+      "dallasMeant": "đơn họ muốn nói",
+      "footer": "Công cụ đúng. Bản ghi thì sai — và không điểm số chọn công cụ nào nhìn ra được sự khác biệt.",
+      "caption": "Chính hướng dẫn của jojo yêu cầu mô hình hỏi lại khi một yêu cầu có thể ứng với nhiều bản ghi. Hai trong ba mô hình vẫn cứ ghi."
+    },
+    "benchAxes": {
+      "title": "Độ chính xác từng lượt so với thành công của cả cuộc trò chuyện",
+      "desc": "Ba thanh, đo trên cùng các lần chạy đánh giá. Số lượt gọi thứ gì đó hợp lý: {{turnsGot}}/{{turnsOf}}, {{turnsPct}} phần trăm. Số khẳng định riêng lẻ về kho dữ liệu là đúng: {{claimsGot}}/{{claimsOf}}, {{claimsPct}} phần trăm. Số cuộc trò chuyện trọn vẹn không có gì sai: {{wholeGot}}/{{wholeOf}}, {{wholePct}} phần trăm. Thanh thứ ba thấp hơn hai thanh kia vì một cuộc trò chuyện chỉ sạch khi mọi lượt và mọi khẳng định cùng đạt, nên hai con số cao cộng dồn thành con số thấp.",
+      "turnsLabel": "Lượt gọi thứ gì đó hợp lý",
+      "turnsNote": "câu hỏi dễ",
+      "claimsLabel": "Khẳng định về kho dữ liệu là đúng",
+      "claimsNote": "kiểm tra từng cái một",
+      "wholeLabel": "Cuộc trò chuyện trọn vẹn không có gì sai",
+      "wholeNote": "mọi lượt và mọi khẳng định, cùng lúc",
+      "count": "{{got}}/{{of}} — {{note}}",
+      "bracket": "cả hai phải\nđúng cùng lúc",
+      "caption": "Một bài đánh giá chỉ báo cáo thanh đầu tiên sẽ gọi các mô hình này là gần như hoàn hảo. Thanh thứ ba mới trả lời được công việc đã xong hay chưa."
+    },
+    "toolTrace": {
+      "title": "Mã thêm đơn ứng tuyển nằm ở đâu, theo từng tầng",
+      "desc": "Sáu bước, từ trên xuống. Một, trong src/components và bên ngoài tầng dùng chung, biểu mẫu đơn ứng tuyển chuyển cho runtime một đối tượng đầu vào. Hai, kg/react/use-tool.ts chạy công cụ tên application.create và không chờ gì cả. Ba, kg/tools/application.ts mở một giao dịch, và các lời gọi lồng nhau tới org.ensure và tới công cụ hạn chót tham gia giao dịch đó thay vì mở giao dịch riêng. Bốn, kg/core phân tích đầu vào theo lược đồ của công cụ và tạo mã cùng slug. Năm, kg/repo commit một lần: ảnh chụp được cập nhật, một hàng nhật ký được thêm vào, và hàng đó là lần hoàn tác duy nhất. Sáu, kg/storage ghi vào bốn kho đối tượng IndexedDB trong một giao dịch — và riêng bước cuối này được vẽ bằng mũi tên nét đứt, vì không có gì chờ nó. Một dấu ngoặc ở lề đánh dấu các bước ba đến năm là một giao dịch và một lần hoàn tác.",
+      "webOnly": "chỉ trên web",
+      "form": "biểu mẫu chuyển cho runtime một đối tượng đầu vào",
+      "run": "run('application.create') — không chờ gì cả",
+      "join": "org.ensure và hạn chót tham gia cùng lời gọi",
+      "parse": "phân tích đầu vào, tạo mã và slug",
+      "commit": "commit: ảnh chụp, một hàng nhật ký, một lần hoàn tác",
+      "stores": "bốn kho đối tượng, một giao dịch IndexedDB",
+      "bracket": "một giao dịch · một lần hoàn tác",
+      "nothingAwaits": "không có gì chờ bước này",
+      "caption": "Đọc từ trên xuống theo thứ tự diễn ra, không phải thứ tự của ngăn xếp — <code>kg/core</code> là L1 và nằm dưới <code>kg/repo</code> trong sơ đồ phía trên, vì một công cụ gọi xuống nó và quay lại trước khi có gì được commit."
+    },
+    "stack": {
+      "title": "Mã của jojo được phân tầng thế nào",
+      "desc": "Ba thứ ở trên cùng: tiện ích mở rộng trình duyệt, ứng dụng web và ứng dụng điện thoại. Tiện ích mở rộng giao tiếp với ứng dụng web bằng tin nhắn chuyển tiếp và không nhập gì cả. Ứng dụng web gửi dữ liệu sang điện thoại qua mạng cục bộ. Cả hai ứng dụng gọi vào dịch vụ dùng chung qua các hook React của nó. Dịch vụ gồm sáu tầng, mỗi tầng chỉ dùng các tầng bên dưới: react, agent, tools, repo, core và storage. Tầng tools được làm nổi bật: mọi thay đổi trên bản ghi đều đi qua nó. Ở dưới cùng, một driver IndexedDB trên web và một driver AsyncStorage trên điện thoại, mỗi cái hiện thực cổng lưu trữ.",
+      "extension": "tiện ích mở rộng",
+      "webApp": "ứng dụng web",
+      "phoneApp": "ứng dụng điện thoại",
+      "relay": "chuyển tiếp",
+      "lan": "LAN",
+      "hooks": "hook",
+      "reactNote": "hook mà cả hai ứng dụng dùng chung",
+      "agentNote": "vòng lặp mô hình · danh mục · MCP",
+      "toolsNote": "mọi lần ghi · một mục hoàn tác",
+      "repoNote": "commit · nhật ký · hàng đợi ghi",
+      "coreNote": "quy tắc thuần · hôm nay là một tham số",
+      "storageNote": "cổng Driver và FileStore",
+      "idbDriver": "driver IndexedDB · web",
+      "asyncDriver": "driver AsyncStorage · điện thoại",
+      "caption": "Mũi tên nét liền chỉ hướng mã được phép phụ thuộc: chỉ đi xuống. Đường nét đứt không phải phép nhập — tiện ích mở rộng chuyển tiếp tin nhắn, ứng dụng web chuyển dữ liệu cho điện thoại qua mạng cục bộ, và mỗi driver lưu trữ hiện thực cổng ở dưới cùng. Các ứng dụng cũng có thể dùng trực tiếp các hàm tiện ích thuần của core; chúng không bao giờ nên ghi dưới tầng tools."
+    },
+    "recordModel": {
+      "title": "Mười một loại bản ghi jojo lưu trữ và bảy cách một bản ghi có thể trỏ tới bản ghi khác",
+      "desc": "Đơn ứng tuyển nằm ở trung tâm và gần như mọi thứ đều trỏ tới nó. Một mục dòng thời gian ABOUT một đơn ứng tuyển, và có thể về nhiều đơn cùng lúc. Một liên kết, một tệp và một đoạn văn bản đều FILED_UNDER một đơn ứng tuyển, và có thể được xếp vào nhiều đơn. Một tin tuyển dụng đã lưu hoặc một gợi ý của trình tìm việc BECAME một đơn. Một đơn ứng tuyển AT một tổ chức, và có thể là COPY_OF một đơn ứng tuyển khác. Một từ khóa TAGS năm loại bản ghi — đơn ứng tuyển, mục dòng thời gian, liên kết, tệp và đoạn văn bản. Ba trong bảy quan hệ có thể xuất hiện nhiều lần — ABOUT, FILED_UNDER và TAGS; bốn quan hệ còn lại tối đa một cho mỗi bản ghi, nên liên kết lại sẽ thay thế liên kết cũ. Hai loại được lưu hoàn toàn không được vẽ trên trang Đồ thị: pipeline, nơi một tin tuyển dụng đã lưu hoặc một gợi ý đến FROM, và profile, thứ không quan hệ nào nối tới. COPY_OF và FROM đó cũng được lưu nhưng không bao giờ được vẽ, và vì thế được vẽ nét chấm ở đây. Bên dưới đường kẻ là hai thứ trang Đồ thị vẽ mà kho dữ liệu chưa bao giờ lưu: role và source. Chúng là thuộc tính của một đơn ứng tuyển — roleTag và source của nó — được hiển thị thành các nút nối bằng một cạnh IS và một cạnh thứ hai cũng tên là FROM, không cái nào được ghi lại ở đâu cả.",
+      "storedNotDrawn": "được lưu, nhưng không\nvẽ trên trang Đồ thị",
+      "drawnNeverStored": "được vẽ trên trang Đồ thị, không bao giờ được ghi lại",
+      "roleTagProp": "thuộc tính roleTag",
+      "sourceProp": "thuộc tính source",
+      "caption": "Mười một loại bản ghi, và bảy quan hệ nối chúng. <code>ABOUT</code>, <code>FILED_UNDER</code> và <code>TAGS</code> đều có thể xuất hiện nhiều lần — một CV đi tới mọi đơn ứng tuyển bạn gửi nó — trong khi bốn quan hệ còn lại tối đa một cho mỗi bản ghi, nên liên kết lại sẽ thay thế liên kết thay vì thêm cái thứ hai. Hai loại được lưu không bao giờ được vẽ trên trang Đồ thị: <code>pipeline</code>, nơi một tin tuyển dụng đã lưu hoặc một gợi ý đến từ đó, và <code>profile</code>, thứ không quan hệ nào nối tới. Bên dưới đường kẻ là hai thứ trang Đồ thị vẽ nhưng chưa bao giờ được lưu: <code>role</code> và <code>source</code> là thuộc tính của một đơn ứng tuyển, được nâng thành nút cho bức hình và không được ghi lại ở đâu cả."
+    },
+    "unlink": {
+      "title": "Xóa một đơn ứng tuyển sẽ gỡ các liên kết tới nó và giữ lại mọi bản ghi từng mang liên kết đó",
+      "desc": "Hai trạng thái, cái này trên cái kia. Trước: một đơn ứng tuyển, với một mục dòng thời gian trỏ tới nó bằng cạnh ABOUT, một từ khóa bằng cạnh TAGS và một tệp bằng cạnh FILED_UNDER. Công cụ application.delete chạy. Sau: mục dòng thời gian, từ khóa và tệp vẫn còn đó, ở cùng vị trí, không mang gì cả — mục dòng thời gian không về điều gì, từ khóa không gắn với gì, tệp không xếp vào đâu. Chỉ có đơn ứng tuyển và ba cạnh là biến mất. Không bản ghi nào ở đầu kia của một cạnh bị động tới.",
+      "before": "Trước",
+      "after": "Sau",
+      "gone": "đã mất",
+      "aboutNothing": "không về điều gì",
+      "taggingNothing": "không gắn với gì",
+      "filedNothing": "không xếp vào đâu",
+      "caption": "Đơn ứng tuyển và ba liên kết tới nó đã biến mất. Mục dòng thời gian, từ khóa và tệp thì không — chúng vẫn ở cùng vị trí, không mang gì cả, và tất cả vẫn là của bạn để mở. Hoàn tác đưa các cạnh trở lại, vì lần ghi đã lưu lại mỗi bản ghi trông thế nào trước khi chạy chứ không phải một ghi chú về cách tự đảo ngược."
+    }
+  }
+}

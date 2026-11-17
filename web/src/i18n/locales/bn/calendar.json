@@ -1,0 +1,63 @@
+{
+  "monthPicker": {
+    "goTo": "মাসে যান",
+    "previousYear": "আগের বছর",
+    "nextYear": "পরের বছর"
+  },
+  "chip": {
+    "allDay": "সারাদিন",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, সম্পন্ন —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}}টি ইভেন্ট",
+    "label_other": "{{label}}, {{count}}টি ইভেন্ট",
+    "add": "{{label}}-এ একটি ইভেন্ট যোগ করুন",
+    "more_one": "আরও +{{count}}",
+    "more_other": "আরও +{{count}}"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "আগের মাস",
+    "nextMonth": "পরের মাস",
+    "today": "আজ",
+    "backTo": "{{date}}-এ ফিরে যান",
+    "goTo": "{{month}} {{year}}-এ যান",
+    "hintTouch": "কোনো দিনে কী আছে দেখতে সেটিতে ট্যাপ করুন।",
+    "hintPointer": "গ্রিডের পাশে তালিকা দেখতে একটি দিন বেছে নিন। সম্পাদনা করতে কোনো ইভেন্টে ক্লিক করুন, অথবা অন্য দিনে টেনে নিন — টানতে পয়েন্টার লাগে, তাই কিবোর্ড দিয়ে করতে ইভেন্টের ভেতরের তারিখের ঘরটি ব্যবহার করুন।",
+    "eventTypes": "ইভেন্টের ধরন",
+    "showAll": "সব দেখান",
+    "dateColours": "তারিখের রং",
+    "marks": {
+      "overdue": "মেয়াদোত্তীর্ণ",
+      "soon": "48 ঘণ্টার মধ্যে নির্ধারিত",
+      "done": "সম্পন্ন"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "আজ",
+    "selectedDay": "বেছে নেওয়া দিন",
+    "hiddenTitle": "{{date}}-এ কিছু দেখানো হচ্ছে না",
+    "hiddenDescription_one": "{{count}}টি ইভেন্ট এমন ধরনের, যা গ্রিডের নিচে বন্ধ করা আছে।",
+    "hiddenDescription_other": "{{count}}টি ইভেন্ট এমন ধরনের, যা গ্রিডের নিচে বন্ধ করা আছে।",
+    "showAllTypes": "সব ধরনের ইভেন্ট দেখান",
+    "emptyTitle": "{{date}}-এ কিছু নেই",
+    "emptyDescription": "একটি ইন্টারভিউ, একটি শেষ তারিখ বা প্রস্তুতির সময় যোগ করুন, তা এখানে ও গ্রিডে দেখা যাবে।",
+    "addEvent": "ইভেন্ট যোগ করুন",
+    "backTo": "{{month}}-এ ফিরে যান",
+    "delete": "ইভেন্ট মুছুন",
+    "deleteNamed": "{{title}} মুছুন",
+    "restOf": "{{month}}-এর বাকি অংশ",
+    "lastDayTitle": "{{date}} মাসের শেষ দিন",
+    "nothingAfterTitle": "{{date}}-এর পরে কিছু নেই",
+    "lastDayDescription": "এর পরে কিছু নেই। {{month}}-এর পরিকল্পনা করতে সামনের পাতায় যান।",
+    "nothingAfterDescription": "{{month}}-এর বাকি অংশ ফাঁকা। এই দিনের পরে যা যোগ করবেন তা এখানে আসবে।",
+    "goToMonth": "{{month}}-এ যান",
+    "goToDay": "{{label}}-এ যান",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "এ মাসে পরে আরও +{{count}}",
+    "moreLater_other": "এ মাসে পরে আরও +{{count}}"
+  }
+}

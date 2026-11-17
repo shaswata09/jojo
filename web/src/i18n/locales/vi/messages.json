@@ -1,0 +1,295 @@
+{
+  "readCancelled": "Đã hủy việc đọc.",
+  "backup": {
+    "prompt": {
+      "never_other": "{{count}} bản ghi trong jojo chưa có trong bản sao lưu nào. Mọi thứ ở đây chỉ nằm trong trình duyệt này, nên xóa dữ liệu trình duyệt hoặc mất máy này sẽ làm mất chúng — hãy tải xuống một bản sao và giữ ở nơi khác.",
+      "since_other": "{{count}} bản ghi đã thay đổi kể từ lần sao lưu gần nhất vào {{day}}. Chúng chỉ nằm trong trình duyệt này cho đến khi bạn tải xuống một bản sao và giữ ở nơi khác."
+    },
+    "failedTitle": "Không ghi được bản sao lưu",
+    "failedDescription": "Các bản ghi của bạn không thay đổi và không có gì được lưu. Nếu trình duyệt đã chặn việc tải xuống, hãy kiểm tra cài đặt tải xuống của nó.",
+    "documentsNotReady": "Chỉ mục tài liệu chưa tải xong, nên bản sao lưu tạo lúc này sẽ cho rằng bạn không có tài liệu nào. Không có gì được ghi.",
+    "documentsUnreadable": "Không đọc được tài liệu nào đã lưu, nên bản sao lưu sẽ chỉ chứa bản ghi. Không có gì được ghi.",
+    "savedTitle": "Đã lưu bản sao lưu",
+    "startedTitle": "Đã bắt đầu sao lưu",
+    "savedAll": "{{name}} chứa các bản ghi của bạn và mọi tài liệu bạn đã đính kèm.",
+    "savedSome_other": "{{name}} chứa các bản ghi của bạn và {{written}}/{{total}} tài liệu — {{count}} tài liệu không đọc được và không có trong đó.",
+    "startedAll": "Hãy tìm {{name}} trong thư mục tải xuống. Tệp này chứa các bản ghi của bạn và mọi tài liệu bạn đã đính kèm.",
+    "startedSome_other": "Hãy tìm {{name}} trong thư mục tải xuống. Tệp này chứa các bản ghi của bạn và {{written}}/{{total}} tài liệu — {{count}} tài liệu không đọc được và không có trong đó."
+  },
+  "extension": {
+    "stale": "Tiện ích mở rộng jojo trong trình duyệt này cũ hơn trang này và không thể xử lý yêu cầu. Hãy cập nhật: nhấn Tải lại (Reload) ở jojo trên trang tiện ích mở rộng của trình duyệt — hoặc, nếu bạn cài từ Cài đặt, hãy tải xuống lại ở đó và nạp thư mục mới thay cho thư mục cũ. Tiện ích mở rộng dạng giải nén không bao giờ tự cập nhật.",
+    "oldScanner": "(Tiện ích mở rộng jojo trong trình duyệt này là phiên bản cũ, không thể theo một trang tuyển dụng tới tên miền con của nó hay nhấn “Tải thêm”. Hãy nhấn Tải lại (Reload) ở jojo trên trang tiện ích mở rộng của trình duyệt.)",
+    "noAnswerBoard": "Tiện ích mở rộng jojo không trả lời, nên không đọc được trang tuyển dụng nào. Đó là thứ cho phép jojo mở một trang bạn đã đăng nhập; Cài đặt có trình cài đặt.",
+    "boardUnreadable": "Không đọc được trang tuyển dụng đó.",
+    "pageUnsaved": "Không lưu được trang đó.",
+    "hostDidNotLoad": "{{host}} không tải được — liên kết có thể sai, trang có thể đang ngừng hoạt động, hoặc bạn đang ngoại tuyến. Hãy mở nó trong một thẻ để xem thông báo.",
+    "noAnswerPage": "Tiện ích mở rộng jojo không trả lời, nên không mở được trang. Cài đặt có trình cài đặt.",
+    "captureTimeout": "Tiện ích mở rộng jojo đã mở trang nhưng không lưu xong kịp thời. Trang rất nặng có thể cần lâu hơn — hãy thử lại, hoặc mở trang và dùng nút Lưu (Capture) của tiện ích mở rộng.",
+    "noAnswerReader": "Tiện ích mở rộng jojo không trả lời, nên không kết nối được tới trình đọc. Đó là thứ cho phép trang này giao tiếp với trình đọc trên máy của bạn; Cài đặt có trình cài đặt.",
+    "linkSwitchedOff": "Liên kết đã bị tắt.",
+    "noAnswerLink": "Tiện ích mở rộng jojo không trả lời. Với bản jojo chạy từ web, đó là thứ chuyển liên kết tới jojo-bridge; Cài đặt có trình cài đặt.",
+    "noAnswerProvider": "Tiện ích mở rộng jojo không trả lời, nên không kết nối được tới nhà cung cấp. Các nhà cung cấp không gửi tiêu đề CORS chỉ có thể được gọi qua tiện ích này; Cài đặt có trình cài đặt."
+  },
+  "posting": {
+    "localTarget": "Địa chỉ đó nằm trên máy tính này hoặc mạng riêng của bạn, không phải trang tuyển dụng — jojo không mở những địa chỉ như vậy.",
+    "nothingToReadWith": "Đọc tin tuyển dụng cần tiện ích mở rộng jojo, công cụ mở trang như cách bạn mở và lưu lại, hoặc trình đọc tài liệu, công cụ tải trang về. Chưa có cái nào được thiết lập trong trình duyệt này — Cài đặt có cả hai.",
+    "noBackgroundRoute": "Đọc các gợi ý trước khi bạn xem cần tiện ích mở rộng jojo. Trình đọc tài liệu chỉ được dùng cho tin tuyển dụng bạn tự mở.",
+    "notStored": "Trang đã được đọc, nhưng trình duyệt này không lưu nó — có thể đã hết dung lượng dành cho jojo. Không có gì được giữ lại; hãy giải phóng dung lượng rồi thử lại.",
+    "nearlyEmptyExtension": "Trang đó trả về gần như trống. Có thể nó chưa tải xong, hoặc yêu cầu bạn đăng nhập — hãy mở nó trong một thẻ, và thử lại khi trang hiện tin tuyển dụng.",
+    "nearlyEmptyReader": "Trang đó trả về gần như trống. Các trang tuyển dụng hiển thị bằng JavaScript chỉ gửi một khung trống cho bất cứ thứ gì không phải trình duyệt — hãy cài tiện ích mở rộng jojo và nó sẽ mở trang như cách bạn mở.",
+    "notSaved": "Tin tuyển dụng đó chưa được lưu, nên không có trang nào để giữ.",
+    "askedTwice": "Đã hỏi hai lần, cùng một kết quả."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "Cả hai tin tuyển dụng có cùng mã tin tuyển dụng.",
+      "url": "Cả hai có cùng địa chỉ tin tuyển dụng.",
+      "name": "Cùng nhà tuyển dụng và vị trí."
+    },
+    "deletedBefore": "Bản nháp đã bị xóa trước khi tin tuyển dụng của nó được đọc.",
+    "deletedDuring": "Bản nháp đã bị xóa trong khi tin tuyển dụng của nó đang được đọc.",
+    "updateFailed": "Không cập nhật được bản nháp."
+  },
+  "store": {
+    "remoteChangeTitle": "Đã cập nhật từ thẻ khác",
+    "remoteChangeDescription": "Các bản ghi của bạn đã được tải lại, nên lịch sử hoàn tác trong thẻ này đã bị xóa.",
+    "heldTitle": "Một thẻ jojo khác đang mở cơ sở dữ liệu",
+    "heldDescription": "Nó sẽ bị xóa ngay khi thẻ đó đóng. Hãy đóng các thẻ khác rồi thử lại.",
+    "deleteFailedTitle": "Không xóa được cơ sở dữ liệu",
+    "deleteFailedDescription": "{{error}}. Có thể một thẻ khác vẫn đang mở nó.",
+    "demoNotLoaded": "Chưa tải được dữ liệu mẫu",
+    "recordsNotCleared": "Chưa xóa được các bản ghi",
+    "writeFailedDescription": "{{error}} Các bản ghi của bạn không thay đổi."
+  },
+  "fileDelete": {
+    "refusedTitle": "Không xóa được",
+    "stillInVault": "{{name}} vẫn còn trong Kho lưu trữ.",
+    "deletedTitle": "Đã xóa {{name}}",
+    "deletedUnknown": "Hàng, các từ khóa của nó và mọi bản sao jojo giữ đều bị xóa. Bản gốc trên máy tính của bạn không bị ảnh hưởng.",
+    "deletedWithCopy": "Hàng, các từ khóa của nó và bản sao tài liệu của jojo đều bị xóa. Bản gốc trên máy tính của bạn không bị ảnh hưởng.",
+    "deletedNoCopy": "Hàng và các từ khóa của nó bị xóa. Không có bản sao lưu trữ nào của mục này để mất.",
+    "undo": "Hoàn tác",
+    "lostTitle": "{{name}} đã được khôi phục nhưng không có tài liệu",
+    "lostDescription": "Hàng và các từ khóa của nó đã được khôi phục, nhưng bản sao lưu trữ thì không. Hãy thả tệp vào lại để đính kèm."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} đã sẵn sàng",
+    "readyDescription": "Đã lưu vào đơn ứng tuyển mà nó được viết cho.",
+    "failedTitle": "{{label}} chưa hoàn tất"
+  },
+  "pdf": {
+    "passwordNeeded": "PDF đó cần mật khẩu để mở, nên không thể sửa ở đây.",
+    "unreadable": "Không đọc được tệp đó dưới dạng PDF. {{detail}}",
+    "chooseOne": "Chọn ít nhất một PDF để gộp.",
+    "pageNotIn_other": "{{name}} có {{count}} trang, nên không có trang {{page}}.",
+    "emptySelection": "Vùng chọn đó không có trang nào.",
+    "keepOnePage": "Tài liệu phải giữ lại ít nhất một trang.",
+    "planOutOfRange_other": "Tài liệu này có {{count}} trang; kế hoạch yêu cầu trang {{page}}.",
+    "noCanvas": "Trình duyệt này không cấp vùng vẽ (canvas) cho trang.",
+    "range": {
+      "noPages": "Tài liệu đó không có trang nào.",
+      "emptyPart": "Có một khoảng trống giữa hai dấu phẩy.",
+      "partNamesNoPages": "'{{part}}' không chỉ trang nào.",
+      "backwards": "'{{part}}' đếm ngược. Hãy viết thành {{to}}-{{from}}.",
+      "notANumber": "'{{part}}' không phải số trang.",
+      "namesNoPages": "Khoảng đó không chỉ trang nào.",
+      "fromOne": "Trang được đánh số từ 1.",
+      "pastEnd": "Tài liệu này kết thúc ở trang {{count}}, nên không có trang {{page}}."
+    },
+    "drop": {
+      "notPdf_other": "{{names}} không phải PDF",
+      "leftOut_other": "Đã bỏ qua {{names}} — chức năng này chỉ làm việc với một tài liệu mỗi lần",
+      "one": "{{part}}.",
+      "both": "{{first}}, và {{second}}.",
+      "two": "{{first}} và {{second}}",
+      "three": "{{first}}, {{second}} và {{third}}",
+      "many": "{{count}} tệp"
+    },
+    "colour": {
+      "yellow": "Vàng",
+      "green": "Xanh lá",
+      "blue": "Xanh dương",
+      "pink": "Hồng",
+      "orange": "Cam"
+    }
+  },
+  "noteSize": {
+    "small": "Nhỏ",
+    "normal": "Bình thường",
+    "large": "Lớn",
+    "huge": "Rất lớn"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Đơn ứng tuyển",
+      "organisation": "Tổ chức",
+      "role": "Vị trí",
+      "item": "Mục dòng thời gian",
+      "keyword": "Từ khóa",
+      "link": "Liên kết",
+      "file": "Tệp",
+      "snippet": "Đoạn văn bản",
+      "posting": "Tin tuyển dụng đã lưu",
+      "match": "Gợi ý của trình tìm việc",
+      "source": "Nguồn",
+      "background": "Về bạn",
+      "claim": "Quan hệ"
+    },
+    "savedAgo": "Đã lưu {{ago}}",
+    "fit": "Phù hợp {{fit}}%",
+    "count": {
+      "matches": "Kết quả khớp",
+      "connections": "Kết nối",
+      "hops": "Bước nối",
+      "hop": "Bước nối"
+    },
+    "empty": {
+      "noMatch": "Không có gì trong bản ghi của bạn khớp với mẫu đó.",
+      "noneMissing": "Không bản ghi nào thiếu kết nối đó — mọi bản ghi thuộc loại này đều có.",
+      "noPath": "Không có đường nối — hai bản ghi này không được kết nối qua bất cứ thứ gì trong kho dữ liệu của bạn.",
+      "noPathBetween": "Không có đường nối giữa hai bản ghi đó."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Đơn ứng tuyển chưa lên lịch liên hệ lại",
+        "hint": "Khoảng trống khiến nhiều người mất cơ hội phỏng vấn."
+      },
+      "tagged": {
+        "label": "Mọi thứ gắn từ khóa Referral",
+        "hint": "Một từ khóa, trên mọi loại bản ghi."
+      },
+      "repeatOrgs": {
+        "label": "Tổ chức tôi đã ứng tuyển nhiều hơn một lần",
+        "hint": "Hai đơn ứng tuyển ở cùng một nhà tuyển dụng, từ một nút tổ chức."
+      },
+      "looseReminders": {
+        "label": "Lời nhắc không liên kết với đơn ứng tuyển nào",
+        "hint": "Việc bạn sẽ làm mà không biết để làm gì."
+      },
+      "unusedFiles": {
+        "label": "Tệp không được đơn ứng tuyển nào dùng",
+        "hint": "Tài liệu nằm im trong Kho lưu trữ."
+      },
+      "bareApplications": {
+        "label": "Đơn ứng tuyển chưa có gì trong Kho lưu trữ",
+        "hint": "Không liên kết, không tệp, không đoạn văn bản — thường là đơn chưa bắt đầu."
+      },
+      "path": {
+        "label": "Đường nối ngắn nhất giữa hai bản ghi",
+        "hint": "Một tệp và một công việc bạn đã ứng tuyển liên quan với nhau thế nào."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Nhà tuyển dụng",
+      "position": "Vị trí",
+      "postingLink": "Liên kết tin tuyển dụng",
+      "location": "Địa điểm",
+      "appliedOn": "Ngày ứng tuyển",
+      "stage": "Giai đoạn",
+      "highlight": "Điểm nổi bật",
+      "notes": "Ghi chú cho bạn",
+      "materials": "Tài liệu đã gửi"
+    },
+    "fileStem": "{{person}} — đơn ứng tuyển {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "Trình duyệt này không lưu bản sao nào của tài liệu đó, nên không có gì để đọc.",
+    "noReader": "Chưa kết nối trình đọc tài liệu nào, nên không đọc được nội dung tệp này. Địa chỉ của trình đọc được điền trong Cài đặt.",
+    "noReaderToTryHarder": "{{reason}} Chưa kết nối trình đọc tài liệu nào để thử kỹ hơn — địa chỉ của trình đọc được điền trong Cài đặt.",
+    "maybeScan": "Không đọc được gì từ tài liệu đó — có thể đó là bản quét.",
+    "noAddress": "Chưa có địa chỉ. Xem Cài đặt.",
+    "tooLarge": "Tài liệu đó có dung lượng {{size}} MB, còn trình đọc chỉ nhận tối đa {{max}} MB."
+  },
+  "network": {
+    "mixedPrivate": "Trang này dùng https, và trình duyệt cấm gọi tới địa chỉ http thường — hãy cài tiện ích mở rộng jojo, nó sẽ chuyển tiếp chặng đó tới mạng riêng của bạn. Hoặc chạy jojo qua http.",
+    "mixedPublic": "Trang này dùng https, và trình duyệt cấm gọi tới địa chỉ http thường. Hãy chạy jojo qua http, hoặc đặt mô hình trên máy này, trong mạng riêng của bạn, hoặc sau https — tiện ích mở rộng chuyển tiếp được những trường hợp đó, nhưng không chuyển tiếp địa chỉ http thường trên internet công cộng.",
+    "cors": "Cả trang này và địa chỉ đó đều dùng https, nên đây không phải lỗi chặn nội dung hỗn hợp. Nguyên nhân có thể là CORS: máy chủ trả lời mà không kèm các tiêu đề trình duyệt cần để đọc phản hồi. Các nhà cung cấp đám mây thường không gửi chúng, và đó là lý do có tiện ích mở rộng jojo — hãy kiểm tra nó đã được cài và bật.",
+    "unknown": "Trình duyệt không cho biết lý do. Hoặc không có gì đang lắng nghe ở đó, hoặc máy chủ trả lời mà không kèm tiêu đề CORS mà trình duyệt cần để đọc phản hồi — điều mà cả hai dịch vụ ứng dụng này giao tiếp đều làm trong một số trường hợp, nên một máy chủ đang chạy cũng có thể lỗi theo cách này."
+  },
+  "mcpLink": {
+    "notBridge": "Có thứ khác không phải jojo-bridge (hoặc một bản cũ của nó) đang trả lời tại {{address}}.",
+    "displaced": "Một thẻ jojo khác đang giữ liên kết.",
+    "bridgeStatus": "jojo-bridge trả lời {{status}}.",
+    "otherTab": "Một thẻ jojo khác trong trình duyệt này đang giữ liên kết; thẻ này sẽ tiếp quản khi thẻ kia đóng."
+  },
+  "roleScopeEmpty": {
+    "title": "Không có đơn ứng tuyển nào cho các vị trí này",
+    "description": "Bộ lọc vị trí ở thanh trên cùng đang ẩn mọi đơn ứng tuyển mà biểu đồ này đếm.",
+    "showAll": "Hiện tất cả vị trí"
+  },
+  "create": {
+    "newApplication": "Đơn ứng tuyển mới",
+    "fromLink": {
+      "label": "Đơn ứng tuyển từ liên kết",
+      "hint": "Mô hình đọc tin tuyển dụng và điền vào biểu mẫu"
+    },
+    "newReminder": "Lời nhắc mới",
+    "newEvent": "Sự kiện mới",
+    "draftMessage": {
+      "label": "Soạn tin nhắn",
+      "hint": "Từ các đoạn văn bản email của bạn — không có gì được tự động tạo ra"
+    },
+    "saveLink": {
+      "label": "Lưu liên kết",
+      "hint": "Mở Kho lưu trữ, công cụ liên kết"
+    },
+    "savePosting": {
+      "label": "Lưu tin tuyển dụng",
+      "hint": "Mở Trình tìm việc"
+    }
+  },
+  "stroke": {
+    "tap": "Chạm",
+    "doubleTap": "Chạm hai lần",
+    "hold": "Nhấn giữ",
+    "up": "Vuốt lên",
+    "down": "Vuốt xuống",
+    "side": "Vuốt ngang",
+    "diagonal": "Vuốt chéo",
+    "backForth": "Qua lại",
+    "zigzag": "Zíc zắc ngang",
+    "scribbleUp": "Vẽ nguệch ngoạc lên xuống",
+    "circle": "Hình tròn",
+    "square": "Hình vuông",
+    "vee": "V (hoặc dấu tích)",
+    "peak": "Λ (đỉnh nhọn)",
+    "zed": "Z",
+    "arc": "Vòng cung (chữ C)",
+    "ell": "L",
+    "triangle": "Tam giác",
+    "other": "Bất cứ nét nào khác"
+  },
+  "move": {
+    "nod": "Gật đầu",
+    "shake": "Lắc đầu",
+    "hi": "Chào",
+    "bow": "Cúi chào",
+    "leanIn": "Nghiêng người tới",
+    "wobble": "Lắc lư",
+    "bounce": "Nảy",
+    "spin": "Xoay tròn",
+    "recoil": "Giật lùi",
+    "startle": "Giật mình",
+    "dance": "Nhảy",
+    "shrug": "Nhún vai",
+    "lookAround": "Nhìn quanh",
+    "hopSpin": "Nhảy xoay",
+    "stretch": "Vươn vai",
+    "flex": "Khoe cơ bắp",
+    "jab": "Đấm liên hoàn",
+    "powerUp": "Tăng sức mạnh",
+    "doze": "Ngủ gật",
+    "wink": "Nháy mắt",
+    "love": "Yêu thương",
+    "robot": "Nhảy robot",
+    "jazz": "Vẫy tay jazz",
+    "point": "Chỉ tay",
+    "hero": "Tư thế anh hùng",
+    "handsUp": "Giơ tay lên",
+    "disco": "Disco",
+    "typing": "Gõ phím",
+    "drumroll": "Gõ trống dồn"
+  }
+}

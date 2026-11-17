@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojo’nun hareketleri",
+    "hint": "Birini seçin ya da hareketini robotun üzerine çizin.",
+    "trigger": "jojo'nun hareketleri",
+    "triggerAria": "jojo'nun hareketleri ve emeği geçenler",
+    "plays": "oynatılma",
+    "modelCredit": "Robot modeli:"
+  },
+  "theme": {
+    "toggle": "Temayı değiştir",
+    "toLight": "Açık temaya geç",
+    "toDark": "Koyu temaya geç"
+  },
+  "poke": "jojo'yu dürt"
+}

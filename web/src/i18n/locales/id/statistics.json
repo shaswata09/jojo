@@ -1,0 +1,27 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Terukur",
+        "hint": "Dihitung dari entri Anda sendiri"
+      },
+      "suggested": {
+        "label": "Saran",
+        "hint": "Umum, atau diukur terhadap pencarian pada umumnya, bukan pencarian Anda"
+      }
+    },
+    "title": "Yang perlu dilakukan berikutnya",
+    "intro": "Diurutkan menurut apa yang didukung entri Anda, lalu menurut biaya yang paling kecil."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} dari {{of}}",
+    "rate": "{{rate}}% · kemungkinan {{range}}",
+    "groupReplied": "Balasan, menurut {{dimension}}",
+    "groupInterviews": "Wawancara, menurut {{dimension}}",
+    "confident": "Rentangnya tidak tumpang tindih, jadi ini perbedaan nyata — {{best}} layak mendapat lebih banyak upaya Anda.",
+    "unconfident": "Rentangnya tumpang tindih, jadi ini sekadar dua angka, bukan perbedaan. Lebih banyak entri akan memisahkannya atau menutup selisihnya.",
+    "tooFew_other": "{{count}} kelompok lain memiliki kurang dari {{min}} entri dan tidak dibandingkan.",
+    "title": "Yang berhasil",
+    "intro": "Batang menunjukkan di mana tingkat sebenarnya mungkin berada; garis menunjukkan yang sudah Anda ukur. Pita yang lebar berarti entrinya masih terlalu sedikit untuk dipastikan."
+  }
+}

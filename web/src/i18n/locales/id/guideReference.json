@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Alat",
+    "subtitle": "Apa yang benar-benar dapat dilakukan asisten, apa yang dicegah, dan bagaimana ia menemukan alat yang tepat.",
+    "can": {
+      "hint": "{{total}} secara keseluruhan",
+      "title": "Yang dapat dilakukan asisten",
+      "intro": "<go>Asisten</go> tidak mengetik di layar Anda. Asisten memanggil {{total}} operasi yang sama dengan yang dipanggil tombol — jalur kode yang identik, dengan pemeriksaan yang identik. Tidak ada jalan masuk kedua, itulah sebabnya suntingan asisten muncul di riwayat Anda persis seperti suntingan yang Anda buat sendiri.",
+      "stats": {
+        "readsLabel": "cara melihat",
+        "readsHint": "membaca tidak pernah mengubah apa pun",
+        "writesLabel": "cara mengubah",
+        "writesHint": "semuanya dapat diurungkan…",
+        "destructiveLabel": "ditandai destruktif",
+        "destructiveHint": "…kecuali dua, yang bertanya lebih dulu"
+      },
+      "irreversibleOne": "Satu dari {{destructive}} itu sama sekali tidak dapat diurungkan — yang mengganti atau mengosongkan seluruh penyimpanan.",
+      "irreversibleTwo": "Dua dari {{destructive}} itu sama sekali tidak dapat diurungkan — yang mengganti atau mengosongkan seluruh penyimpanan.",
+      "irreversibleMany": "{{irreversible}} dari {{destructive}} itu sama sekali tidak dapat diurungkan — yang mengganti atau mengosongkan seluruh penyimpanan.",
+      "neverOffered": "Operasi itu tidak pernah ditawarkan kepada asisten kecuali kata-kata Anda sendiri memintanya, dan tetap berhenti untuk konfirmasi meskipun begitu, apa pun mode persetujuan percakapannya. Otomatis bertindak tanpa bertanya pada semua yang dapat diurungkan; untuk operasi ini tetap bertanya.",
+      "ownWords": "“Kata-kata Anda sendiri memintanya” adalah uji yang spesifik, bukan penilaian: kalimatnya harus mengandung sesuatu yang berarti menghapus, sesuatu yang berarti seluruh penyimpanan, dan tidak menyebut jenis entri tertentu. “Kosongkan semuanya” memenuhi syarat. “Hapus label dari lamaran Baylor” tidak, begitu pula “hapus semua yang saya tulis di catatan itu” — keduanya menyebut suatu hal, jadi keduanya tentang hal itu.",
+      "errs": "Asisten condong untuk tidak menawarkan. Jika Anda bersungguh-sungguh dan merumuskannya dengan tidak biasa, asisten menyatakan tidak bisa alih-alih menebak, dan Pengaturan tetap punya tombolnya."
+    },
+    "gates": {
+      "hint": "bagian yang benar-benar menahan",
+      "title": "Yang mencegah alat yang salah berjalan",
+      "intro": "Model bahasa dapat meminta apa saja. Model dapat menyebut alat yang tidak pernah ditunjukkan kepadanya, atau mengarang alat yang tidak ada — model yang lebih kecil sering melakukannya, dan itu bukan tanda ada yang salah. Jadi jojo tidak bergantung pada kehati-hatian model.",
+      "distinctionTitle": "Perbedaan yang penting",
+      "distinction": "Memilih apa yang <em>ditunjukkan</em> kepada model adalah petunjuk. Memeriksa apa yang benar-benar <em>dipanggilnya</em> adalah aturan, dan aturannya bergantung pada siapa yang memilih kumpulannya. Jika layar yang menetapkannya — Tanya graf, alur kerja pencari — panggilan ke apa pun di luarnya ditolak sebelum apa pun dicari, apalagi dijalankan. Dalam obrolan, kumpulannya adalah tebakan jojo tentang apa yang Anda butuhkan, jadi panggilan di luarnya tidak ditolak: panggilan itu melewati pemeriksaan persetujuan yang sama dengan panggilan lain, yang bertanya kepada Anda lebih dulu kecuali percakapan diatur untuk berjalan sendiri. Satu-satunya pengecualian adalah mengosongkan entri Anda, satu-satunya hal yang tidak dapat diurungkan: ditolak kecuali Anda secara tegas meminta untuk menghapus semuanya.",
+      "askGraph": "Itulah sebabnya kartu “Tanya graf” dapat dengan aman menawarkan dua alat hanya-baca. Kartu itu tidak memercayai model untuk tetap berada di dalamnya."
+    },
+    "workflow": {
+      "hint": "langkah-langkah, bukan satu percobaan panjang",
+      "title": "Pekerjaan yang butuh beberapa langkah",
+      "p1": "Membaca CV bukan satu pertanyaan. jojo memecah dokumen berdasarkan judul bagiannya sendiri, menanyakan setiap bagian secara terpisah, bertanya sekali lagi apa yang terlewat, dan terakhir menanyakan bagaimana fakta-fakta itu saling terkait — lima atau enam panggilan model untuk satu unggahan. Jika ditulis sebagai satu blok kode, itu akan menjadi satu <code>try</code> untuk semuanya, dan satu balasan buruk di mana pun akan menghilangkan seluruhnya.",
+      "p2": "Jadi pekerjaan seperti itu dinyatakan sebagai <strong>langkah-langkah dengan sisi di antaranya</strong>. Setiap langkah menyatakan berapa kali layak dicoba ulang dan apakah pekerjaan dapat berlanjut tanpanya; rute dari satu langkah ke langkah berikutnya ditentukan oleh apa yang terjadi, tidak pernah dengan bertanya kepada model ke mana harus pergi. Langkah yang gagal disebutkan dalam hasil, bukan lenyap ke dalam “gagal membaca CV Anda”.",
+      "p3": "Ini paling penting pada model kecil. Model 7B biasanya tidak gagal karena bernalar buruk di banyak langkah — ia gagal karena mengembalikan sesuatu yang cacat di satu dari enam langkah. Jawaban yang berguna adalah mencoba langkah itu lagi dan membiarkan lima lainnya.",
+      "p4": "Langkah yang hanya memperbaiki hasil, seperti menentukan bagaimana fakta-fakta Anda terhubung, ditandai opsional: jika gagal, Anda tetap mendapatkan semua yang ditemukan langkah-langkah sebelumnya. Perulangan diizinkan — sebuah langkah boleh mengarah mundur — dan ada batas keras jumlah langkah, jadi kesalahan rute berhenti dengan jejak yang dapat dibaca alih-alih berputar membebani GPU Anda."
+    },
+    "badReply": {
+      "hint": "balasan buruk hanya membuang satu putaran, bukan dokumennya",
+      "title": "Saat model kecil menjawab dengan buruk",
+      "p1": "Model yang lebih kecil kehabisan ruang di tengah kalimat. Membaca CV meminta daftar fakta, dan balasan yang terpotong di tengah daftar itu tidak punya kurung penutup — jadi bukan JSON, dan yang paling jelas adalah membuangnya. jojo justru menyimpan semua hingga butir <strong>lengkap</strong> terakhir, dan menyebutkan berapa banyak yang hilang. Dua puluh fakta tiba, bukan nol.",
+      "p2": "Berhenti di butir yang lengkap itu disengaja. Separuh jabatan lebih buruk daripada tidak ada jabatan: ia tampil di depan Anda seolah lengkap, dan Anda menyetujuinya.",
+      "p3": "Kehati-hatian yang sama berlaku untuk pencarian. Diminta “pindahkan lamaran Rice saya ke wawancara” padahal ada dua, model yang mencari satu kecocokan dan mendapat satu tidak akan tahu ada yang kedua — jadi ia akan memindahkan entri yang salah dengan yakin. Setiap pencarian melaporkan berapa yang cocok sekaligus apa yang ditampilkannya, itulah yang memungkinkan asisten kembali dan bertanya kepada Anda mana yang dimaksud."
+    },
+    "picks": {
+      "hint": "agar permintaan tidak pernah berhenti di tengah jalan",
+      "title": "Bagaimana ia memilih yang tepat",
+      "p1": "Menunjukkan semua {{total}} alat sekaligus kepada model menghabiskan lebih dari lima belas ribu kata dari ruang yang dimilikinya untuk berpikir — sebelum Anda mengetik apa pun. Pada model kecil yang berjalan di perangkat Anda sendiri, itu bisa melebihi ruang yang dimilikinya. Jadi jojo mempersempit daftar ke apa yang ditunjuk kata-kata Anda.",
+      "p2": "Mempersempit dengan sembarangan lebih buruk daripada tidak mempersempit. Sebagian besar operasi memerlukan sesuatu untuk ditindaki: Anda tidak dapat memasang kata kunci tanpa kata kunci, atau memperbarui dokumen tanpa dokumen. Sembunyikan alat yang membuat hal itu, dan asisten berhenti di tengah jalan tanpa ada penjelasan di layar.",
+      "unsureTitle": "Saat tidak yakin, ia tidak mempersempit",
+      "unsure": "“Ingatkan saya tentang Baylor hari Kamis” jelas, dan jojo menawarkan sekitar seperlima katalog. “Sebenarnya, itu yang satunya” tidak jelas tentang apa pun — jadi jojo menawarkan semuanya, persis seperti sebelum semua ini ada. Ketidakyakinan memakan sedikit kecepatan. Menebak akan memakan jawaban Anda.",
+      "secondTitle": "Asisten kedua yang memilih",
+      "second1": "Mencocokkan kata-kata Anda dengan daftar itu cepat dan gratis, tetapi tidak dapat membaca maksud. “Saya dapat kabar dari Rice” tidak menyebut alat atau kata kerja apa pun, tetapi jelas berarti sebuah tahap berubah. Jadi saat model terhubung, pekerjaan kedua yang jauh lebih kecil berjalan lebih dulu: ia membaca permintaan Anda — bukan percakapannya, bukan hasilnya, hanya apa yang Anda minta — dan menjawab dengan alat yang menurutnya diperlukan.",
+      "second2": "Ini murah karena tidak memerlukan instruksi lengkap setiap alat, hanya nama dan satu baris: sekitar seperenam dari biaya menyerahkan seluruh katalog, dan penghematan itu terjadi di setiap langkah, bukan sekali. Diukur pada sepuluh pertanyaan berturut-turut, ini menurunkan pesan pertama dari sekitar 8.000 kata konteks menjadi 2.900.",
+      "second3": "Ia hanya dapat mempersempit. Apa pun yang dipilihnya melewati pemeriksaan yang sama seperti sebelumnya — alat yang membuat sesuatu ikut serta bersama alat yang mengubahnya, dan dua alat yang mengosongkan penyimpanan Anda tidak pernah disertakan kecuali Anda memintanya dengan kata-kata Anda sendiri. Jika lambat atau tidak tersedia, pencocokan kata yang berjalan sebagai gantinya dan tidak ada yang hilang selain sesaat.",
+      "longTitle": "Percakapan panjang",
+      "long1": "Model hanya dapat menampung sebanyak itu sekaligus, dan percakapan yang melampauinya akan dipotong — oleh server, dari awal, tempat aturan-aturannya berada. jojo melakukan pemotongan itu sendiri, dari ujung terlama, dan tidak pernah menyentuh instruksinya sendiri atau pertanyaan Anda saat ini.",
+      "long2": "Apa yang dihapusnya lebih dulu diganti dengan ringkasan singkat tentang apa yang terjadi di sana, jadi asisten tetap tahu bahwa Anda sudah memberi tahu lamaran Rice mana yang Anda maksud. Anda diberi tahu saat ini terjadi. Entri Anda tidak pernah terlibat — ini hanya tentang apa yang muat dalam satu pesan.",
+      "long3": "Percakapan mempertahankan alat yang benar-benar sudah dipakainya. Alat yang hanya ditawarkan dan tidak pernah disentuh akan gugur, jadi obrolan panjang tidak perlahan-lahan terisi dengan semuanya."
+    },
+    "evidence": {
+      "hint": "dijalankan pada model nyata, bukan sekadar diklaim",
+      "title": "Apakah ini benar-benar berhasil?",
+      "p1": "Semua di atas adalah rancangan. Apakah sebuah model benar-benar dapat memilih alat yang tepat dari katalog jojo adalah pertanyaan tentang model itu, dan satu-satunya cara menjawabnya adalah bertanya. Jadi ada rangkaian skenario — membaca, menulis, rangkaian yang memerlukan pencarian lebih dulu, dan kasus di mana jawaban yang benar adalah tidak melakukan apa pun — dan rangkaian itu dijalankan pada server nyata.",
+      "p2": "Setiap skenario dijalankan dua kali: sekali dengan seluruh katalog, dan sekali dengan kumpulan yang dipersempit. Putaran kedua itulah yang penting. Mempersempit dimaksudkan untuk membantu model yang lebih kecil dengan memberinya lebih sedikit nama untuk dikacaukan — tetapi bisa saja merugikan dengan menghapus sesuatu yang diperlukan, dan klaim seperti itu tidak ada nilainya tanpa pembanding di sampingnya.",
+      "suiteTitle": "Apa yang dicari rangkaian ini",
+      "suite": "Bukan apakah model itu pintar. Melainkan apakah ia meraih alat dokumen saat Anda memberinya URL, mengarsipkan lamaran kedua alih-alih memperbarui yang Anda sebut, mengarang id alih-alih mencarinya, atau — kasus yang paling penting — mendengar “hapus tenggatnya” lalu meraih operasi yang mengosongkan seluruh penyimpanan Anda."
+    },
+    "conversation": {
+      "hint": "penyimpanan nyata, dan keadaannya sesudahnya",
+      "title": "Dapatkah ia menjalani percakapan?",
+      "p1": "Rangkaian di atas mengajukan satu pertanyaan kepada model dan memeriksa apakah ia menyebut alat yang masuk akal. Itu separuh yang mudah, dan menguntungkan semua orang. Pekerjaan nyata bukan satu pertanyaan: Anda menanyakan sesuatu sedang di tahap apa, lalu berkata “pindahkan ke wawancara” — dan entri yang Anda maksud ada di jawaban sebelumnya, bukan di kalimat itu.",
+      "p2": "Jadi ada tolok ukur kedua. Ia membangun penyimpanan nyata — enam lamaran, kalender, brankas, kata kunci — menyerahkan kepada asisten naskah {{conversations}} percakapan di {{groups}} jenis pekerjaan, dan membiarkan panggilan alat benar-benar berjalan. Lalu ia melihat isi penyimpanan sesudahnya. Empat hal dinilai terpisah, karena model bisa lulus di satu dan gagal di yang lain:",
+      "called": "<lead>Apa yang dipanggilnya</lead> — apakah setiap giliran dapat dipertanggungjawabkan.",
+      "route": "<lead>Bagaimana ia sampai ke sana</lead> — apakah ia mencari entri sebelum mengubahnya, atau menulis hanya berdasarkan kalimat.",
+      "shape": "<lead>Bentuk pekerjaannya</lead> — setiap kasus membawa graf acuan berisi panggilan yang diperlukan dan mana yang bergantung pada mana, dan putaran dinilai terhadapnya. Dua panggilan yang dibiarkan independen oleh graf boleh terjadi dalam urutan apa pun; penulisan sebelum pembacaan yang menemukan sasaran penulisan tidak boleh.",
+      "left": "<lead>Apa yang ditinggalkannya</lead> — apakah penyimpanannya benar, dan apakah ada yang berubah padahal seharusnya tidak.",
+      "p3": "Yang ketiga itulah yang biasanya dilewati tolok ukur, dan itulah alasan model bisa mendapat skor bagus di sini tetapi mengecewakan saat dipakai: pada penyimpanan sekecil ini, menebak sering kali mengenai entri yang benar. Graf menunjukkan apakah ia bernalar atau sekadar beruntung. Hasilnya dilaporkan di samping angka utama, bukan dilebur ke dalamnya — mencapai jawaban yang benar lewat rute yang tidak diantisipasi siapa pun tetaplah jawaban yang benar."
+    },
+    "reasoning": {
+      "hint": "diukur, beserta biaya waktunya",
+      "title": "Apakah penalaran membantu?",
+      "p1": "Model dapat diminta berpikir sebelum menjawab — pengaturan Penalaran di <go>Pengaturan</go>. Apakah itu membuatnya lebih baik dalam pekerjaan jojo adalah pertanyaan tentang modelnya, jadi tolok ukur percakapan di atas dijalankan dua kali dengan penalaran aktif dan dua kali dengan penalaran mati, pada server dan kode yang sama.",
+      "numbersTitle": "Apa kata angkanya",
+      "gemma": "<lead>Pada Gemma, penalaran mengurangi akurasi dan memakan banyak waktu.</lead> Skornya rata-rata dua sampai tiga percakapan lebih rendah, dan median percakapan memakan waktu sekitar tiga kali lebih lama. Kelambatannya berasal dari proses berpikir itu sendiri: Gemma menghasilkan sekitar 31 token per detik dan berpikir beberapa ratus token sebelum membalas, jadi satu putaran rata-rata sekitar enam detik lebih lama dan putaran panjang lima belas detik atau lebih. Di kedua putaran, penalaran secara konsisten memperbaiki tiga percakapan dan secara konsisten merusak tiga sampai empat — di antara yang rusak, mengarsipkan dokumen baru dan menolak saran, yang selalu benar saat penalaran mati.",
+      "gptOss": "<lead>Pada GPT-OSS, pengaturan ini tidak mengubah apa pun</lead> — dan itu memang diharapkan, bukan temuan. GPT-OSS selalu bernalar; “mati” hanya dapat memintanya bernalar lebih sedikit, dan kedua pengaturan berjalan dengan upaya biasanya. GPT-OSS juga menghasilkan sekitar tujuh kali lebih cepat daripada Gemma, jadi berpikirnya memakan kurang dari satu detik per balasan.",
+      "advice": "Jika balasan terasa lambat pada model seperti Gemma, matikan penalaran: pada tolok ukur ini Anda tidak kehilangan apa pun karenanya. Bagaimanapun, kedua pembantu — yang memilih alat mana yang boleh dipakai sebuah giliran dan yang meringkas percakapan panjang — tidak pernah bernalar, karena tidak ada pekerjaan mereka yang membaik karenanya dan satu ringkasan pernah memakan hampir dua menit saat mereka bernalar.",
+      "firstToken": "Kolom token pertama adalah sebagian besar waktu tunggu pada percakapan panjang: balasan tidak dapat dimulai sampai server membaca semua yang dikirim kepadanya. Prompt yang berulang jauh lebih murah, karena server menyimpan bagian awalnya dari sebelumnya — itulah sebabnya giliran kedua percakapan biasanya dijawab lebih cepat daripada yang pertama."
+    },
+    "previewer": {
+      "hint": "setiap kasus, kata demi kata",
+      "title": "Apa yang menjadi bahan evaluasinya",
+      "p1": "Skor hanya bernilai sebesar kasus-kasusnya, dan seseorang memilih penyebutnya. Jadi seluruh tolok ukur ada di sini untuk dibaca: penyimpanan tempatnya dijalankan, setiap kalimat yang dikirim ke asisten, dan apa yang harus benar pada entri Anda sesudahnya.",
+      "p2": "Ini dibaca dari daftar yang sama yang dijalankan tolok ukur, bukan deskripsinya — jadi kasus yang ditambahkan besok muncul di sini beserta prompt-nya, dan kasus yang diam-diam dibuang akan hilang.",
+      "p3": "Pilih sebuah kasus untuk melihat apa yang dikatakan, alur kerja yang diharapkan digambar sebagai graf dependensi nyata, apa yang boleh dan tidak boleh dipanggil setiap giliran, dan apa yang benar-benar dilakukan setiap model — termasuk apa yang ditulisnya kembali, di situlah model yang tidak melakukan apa pun tetapi mengumumkan keberhasilan ketahuan."
+    },
+    "ambiguity": {
+      "hint": "alasan tolok ukur ini ada",
+      "title": "Saat dua entri cocok",
+      "p1": "Penyimpanan sengaja berisi dua lamaran Rice dan dua kampus UT, karena begitulah pencarian kerja yang nyata setelah beberapa bulan — dan itulah situasi di mana asisten dapat menimbulkan kerusakan nyata sambil tampak bekerja dengan sempurna.",
+      "p2": "Itulah sebabnya jojo dibangun seperti yang dijelaskan di bagian lain halaman ini. Model tidak dapat diandalkan untuk berhenti, jadi hal yang tidak dapat diurungkan tidak pernah ditawarkan kecuali Anda memintanya dengan menyebut namanya, setiap penulisan diperiksa terhadap apa yang benar-benar ditawarkan, dan setiap perubahan masuk ke riwayat Anda tempat Anda dapat mengurungkannya.",
+      "p3": "Perlu juga dikatakan terus terang: satu putaran tolok ukur paling banter hanya mengurutkan model secara kasar. Skor berubah antarputaran pada perangkat keras dan pengaturan yang sama. Yang tidak berubah adalah bentuk kegagalannya — dan itulah bagian yang layak dirancang untuk diantisipasi."
+    },
+    "model": {
+      "hint": "pilihan Anda, dan menentukan ke mana kata-kata Anda pergi",
+      "title": "Model mana yang melakukan ini",
+      "p1": "jojo berkomunikasi dengan apa pun yang Anda arahkan di <go>Pengaturan</go>. Model yang berjalan di perangkat Anda sendiri — Ollama, vLLM, LM Studio — adalah bawaan, dan satu-satunya pengaturan di mana tidak ada yang Anda tulis keluar dari perangkat.",
+      "p2": "Anda juga dapat memakai Claude, OpenAI, dan lainnya dengan kunci API. Itu pertukaran nyata dan layar menyatakannya terus terang: entri Anda dikirim ke perusahaan itu dan ditagihkan ke akun Anda. Kunci disimpan di browser ini, tidak pernah dimasukkan ke cadangan, dan tidak pernah dikirim ke mana pun selain penyedia yang Anda pilih.",
+      "stoppedTitle": "Jika asisten tampaknya berhenti membaca",
+      "stopped": "Model lokal dengan ruang yang terlalu sedikit diam-diam membuang bagian depan dari apa yang dikirim kepadanya, lalu menjawab dengan yakin tentang pertanyaan yang tidak pernah dilihatnya secara utuh. jojo kini membandingkan apa yang dinyatakan server telah dibacanya dengan apa yang benar-benar dikirim, dan memberi tahu Anda jika keduanya berbeda — karena alternatifnya adalah asisten yang tampak buruk dalam pekerjaannya padahal hanya kekurangan ruang."
+    },
+    "next": "Berikutnya: <go>dengan apa jojo dibangun</go>."
+  },
+  "graph": {
+    "pageTitle": "Graf di baliknya",
+    "subtitle": "Setiap entri adalah simpul dan setiap tautan di antaranya adalah sisi. Halaman Graf menggambar persis itu.",
+    "picture": {
+      "hint": "bukan ilustrasi penyimpanan — penyimpanan itu sendiri",
+      "title": "Apa yang ditunjukkan gambar",
+      "body": "Halaman <go>Graf</go> menelusuri entri yang sama dengan yang dibaca papan dan kalender, pada setiap render, dan menggambar satu tanda per entri dan satu garis per penunjuk. Tidak ada apa pun di kanvas itu yang merupakan salinan kedua data Anda dan tidak ada yang berupa tiruan: hapus lamaran di papan dan lamaran itu sudah hilang dari kanvas sebelum Anda kembali ke sana.",
+      "markTitle": "Arti sebuah tanda",
+      "colourTerm": "Warna",
+      "colour": "Jenis entri. Tidak ada apa pun di halaman ini yang berwarna merah atau kuning — kedua warna itu dicadangkan di seluruh aplikasi untuk terlambat dan segera jatuh tempo, dan titik merah di sini akan dibaca sebagai tenggat, bukan jenis.",
+      "shapeTerm": "Bentuk",
+      "shape": "Keluarganya. Lingkaran adalah entri aktif dalam pencarian — lamaran, item bertanggal, lowongan, kecocokan. Persegi bersudut bulat adalah yang Anda arsipkan di Brankas: tautan, berkas, cuplikan. Belah ketupat adalah hal yang dipakai bersama oleh banyak entri. Dua dari empat belah ketupat adalah entri dengan id sendiri, organisasi dan kata kunci, dan dua lainnya bukan — lihat di bawah.",
+      "sizeTerm": "Ukuran",
+      "size": "Berapa banyak sisi yang menyentuhnya, dengan akar kuadrat dan diberi batas. Simpul pusat dengan dua puluh koneksi terlihat jelas lebih besar daripada yang empat, bukan lima kali luasnya, yang terjadi jika ukuran langsung diambil dari jumlah: lamaran menjadi planet dan semua yang lain menjadi debu.",
+      "lineTerm": "Sebuah garis",
+      "line": "Satu penunjuk di antara dua entri, digambar tanpa mata panah. Arahnya disimpan, dan setiap penelusuran di halaman ini mengabaikannya — orang yang bertanya apa yang menghubungkan berkas dengan pekerjaan tidak memikirkan arah.",
+      "notDoTitle": "Dua hal yang tidak dilakukan kanvas",
+      "notDo1": "Menekan baris di legenda menyembunyikan jenis entri itu, dan tidak ada simpul yang berubah ukuran saat Anda melakukannya. Ukuran adalah fakta tentang entri, bukan tentang apa yang sedang Anda lihat, dan simpul yang mengecil karena Anda menyembunyikan baris legenda akan memberi tahu tentang filter Anda, bukan tentang data Anda.",
+      "notDo2": "Dan tidak semua isi penyimpanan Anda ada di kanvas. Pencarian tersimpan di Pencari lowongan dan profil Anda adalah entri, dan keduanya tidak digambar: pencarian tersimpan tidak menyebut entri apa pun di sini, dan profil adalah satu baris yang akan menyendiri di sudut setiap gambar. Keduanya tetap ada di ekspor dan di hitungan entri di <go>Pengaturan</go>."
+    },
+    "question": {
+      "hint": "tiga panel, dan satu tidak menjalankan apa pun",
+      "title": "Mengajukan pertanyaan",
+      "intro": "Panel di bawah kanvas punya tiga bagian, dan sebaiknya ketahui mana yang mana sebelum memercayai jawabannya.",
+      "pickers": "<lead>Pemilihnya nyata.</lead> Apa yang Anda cari, apakah ia <hi>memiliki</hi>, <hi>tidak memiliki</hi>, atau <hi>memiliki setidaknya</hi> dua dari suatu relasi, apa yang ada di ujung lainnya, dan opsional satu kata kunci yang harus dimiliki semuanya. Item linimasa mendapat pemilih kedua yang tidak dimiliki yang lain — jenis, atau tanda pengingat — karena “lamaran tanpa tindak lanjut” dan “pengingat yang tidak ditautkan ke apa pun” adalah dua pertanyaan yang benar-benar ditanyakan orang dan keduanya tidak dapat dinyatakan hanya dengan jenis entri.",
+      "queryLine": "<lead>Baris kueri tidak.</lead> Blok teks mirip kode di bawah pemilih dihasilkan dari pemilih dan tidak diurai oleh apa pun. Blok itu diberi label ilustrasi di halamannya sendiri, dan halaman ini tidak akan memperhalusnya: tidak ada bahasa kueri di jojo, mengetik di kotak itu bukan fitur yang akan datang, dan tidak ada masukan di mana pun yang menerimanya.",
+      "answer": "<lead>Jawabannya nyata.</lead> Tabel mencantumkan entri yang cocok dan membukanya, dan entri yang sama disorot di kanvas di atas. Jawaban panjang dipotong menjadi empat puluh baris di tabel dan menyatakannya — setiap kecocokan tetap disorot di graf.",
+      "whyTitle": "Mengapa baris yang tidak diurai itu ada",
+      "why": "Karena itulah cara terpendek membuat pemilih mudah dipahami. Melihat <code>{{query}}</code> di samping kata-kata “lamaran tanpa tindak lanjut” mengubah tiga menu tarik-turun menjadi kalimat yang dapat Anda baca, dan mengajarkan bentuk pertanyaannya, bukan sintaks yang tidak punya tempat untuk diketik. Aturan yang harus dipatuhinya adalah tidak pernah berpura-pura: ia membawa labelnya sendiri, tidak punya tombol jalankan, dan berada di bawah kontrol yang bekerja, bukan di atasnya.",
+      "answersTitle": "Tiga hal yang perlu diketahui tentang jawabannya",
+      "answers1": "Pertanyaan dijalankan pada seluruh penyimpanan Anda, tidak pernah pada apa yang tersisa terlihat. Jawaban yang berubah saat Anda menekan baris legenda lebih buruk daripada tidak ada jawaban.",
+      "answers2": "Tidak ada tombol Jalankan. Setiap perubahan langsung menjalankan ulang, jadi tabel dan kontrol di atasnya tidak pernah menggambarkan dua pertanyaan yang berbeda.",
+      "answers3": "Hasil kosong dirumuskan dengan kata-kata pertanyaannya sendiri. Tanyakan lamaran mana yang tidak punya tindak lanjut dan tidak mendapat apa pun, maka jawabannya menyatakan setiap lamaran punya — itu jawaban, bukan kegagalan."
+    },
+    "model": {
+      "hint": "aturan tentang apa yang layak menjadi entri",
+      "title": "Sebelas jenis entri",
+      "intro": "Sebuah nilai menjadi entri tersendiri jika Anda dapat mengganti namanya atau memberinya anotasi, dan tetap menjadi kolom jika tidak. Pemberi kerja lolos: Anda bisa mengejanya berbeda, lamaran terkumpul di bawahnya, dan layak menjadi satu hal, bukan dua belas teks. Uji tunggal itulah yang menghasilkan sebelas jenis di bawah dan menolak semua yang lain.",
+      "manyTitle": "Satu penunjuk, atau banyak",
+      "many": "Tiga dari tujuh adalah relasi jamak: pelabelan, <code>ABOUT</code> (tentang apa sebuah item bertanggal), dan <code>FILED_UNDER</code> (di mana sebuah entri brankas diarsipkan). Satu CV dikirim ke setiap lamaran tempat Anda mengirimnya dan satu tenggat referensi mencakup setiap pekerjaan yang dicakupnya, jadi keduanya berupa daftar, bukan satu slot. Empat lainnya paling banyak satu per entri, dan menautkan lagi menggantikan yang ada dalam penulisan yang sama. Identitas penunjuk adalah tripel yang dihubungkannya, jadi membuatnya dua kali menghasilkan penunjuk yang sama dan tidak mungkin ada dua garis identik di antara dua entri yang sama — itulah yang membuat pengarsipan dokumen di pekerjaan tempat ia sudah diarsipkan tidak melakukan apa pun.",
+      "elevensTitle": "Dua sebelas dan dua tujuh, dan semuanya tidak sama",
+      "elevensIntro": "Halaman Graf juga punya sebelas jenis simpul dan tujuh jenis garis, kebetulan yang layak diurai karena telah menyesatkan orang yang mencarinya:",
+      "nineTerm": "Sembilan dari sebelas beririsan",
+      "nine": "Dua jenis yang disimpan tidak pernah digambar — pencarian tersimpan dan profil — dan dua jenis yang digambar tidak pernah disimpan, yang dibahas di bagian berikutnya.",
+      "fiveTerm": "Lima dari tujuh beririsan",
+      "five": "Dua relasi yang disimpan juga tidak pernah digambar. Satu menyatakan bahwa sebuah lamaran adalah salinan dari lamaran lain, ditulis saat Anda menduplikasinya; yang lain menghubungkan lowongan tersimpan atau kecocokan dengan pencarian asalnya, dan tidak digambar karena hal di ujung lainnya tidak digambar. Dua relasi yang digambar tidak pernah disimpan.",
+      "oneNameTerm": "Satu nama berarti dua hal",
+      "oneName": "Pemilih relasi menawarkan <code>came from</code>, dan di kanvas itu adalah garis dari lamaran ke tempat Anda menemukannya — garis yang tidak pernah disimpan. Relasi tersimpan dengan nama yang sama menghubungkan lowongan dengan pencarian tersimpan dan tidak muncul di gambar mana pun."
+    },
+    "drawn": {
+      "hint": "posisi, dan sumber",
+      "title": "Dua hal yang digambar tetapi tidak pernah disimpan",
+      "p1": "Lamaran membawa label posisi dari daftar tetap berisi lima, dan opsional dari mana Anda menemukannya dari daftar tetap berisi empat. Keduanya bukan entri. Keduanya daftar tertutup yang menggerakkan satu filter dan satu urutan legenda, bukan hal yang dapat Anda ganti namanya atau beri anotasi, dan menjadikannya entri akan menambahkan pencarian pada setiap proyeksi di aplikasi tanpa memberi apa pun yang bisa Anda lakukan.",
+      "p2": "Keduanya tetap digambar, karena gambar tentang mana yang datang dari rujukan layak dimiliki dan chip filter bukan gambar yang sama. Halaman Graf membuatnya dari properti yang sudah ada di tangannya, pada saat ia memilikinya, dan tidak menulis apa pun.",
+      "tellTitle": "Cara membedakannya di gambar",
+      "tell": "Keduanya adalah dua belah ketupat tanpa pemberi kerja dan tanpa kata kunci di baliknya, dan uji yang memastikannya adalah bahwa keduanya tidak dapat bertahan lebih lama dari sumber bacaannya. Hapus lamaran terakhir berlabel <hi>Postdoc</hi> dan simpul itu ikut hilang — tidak ada tempat lain di jojo tempat nilai itu ada sebagai sesuatu. Hapus lamaran terakhir di sebuah pemberi kerja dan entri organisasinya tetap ada, karena itu entri; begitu pula kata kunci, itulah sebabnya mengosongkan semua lamaran di <go>Pengaturan</go> membiarkan kata kunci Anda tetap ada.",
+      "source": "Simpul sumber juga hanya muncul jika Anda sudah menyatakan dari mana sesuatu berasal. Itu kolom opsional, dan lamaran yang tidak mengisinya sama sekali tidak punya garis ke arah itu."
+    },
+    "delete": {
+      "hint": "satu fakta yang layak diingat",
+      "title": "Menghapus melepas tautan, tidak pernah berantai",
+      "intro": "Hapus sebuah lamaran dan jojo menghapus entri itu beserta penunjuk ke sana, dan tidak menyentuh apa pun di ujung lain penunjuk mana pun. Dialog yang berbunyi “hapus Rice” tidak dapat secara wajar dibaca sebagai persetujuan untuk menghapus empat berkas yang dikerjakan seseorang semalaman.",
+      "afterTitle": "Yang akan benar-benar Anda lihat sesudahnya",
+      "after": "Berkasnya masih di Brankas, tidak diarsipkan di mana pun. Pengingatnya masih di kalender, tidak tentang apa pun. Kata kunci Anda tidak tersentuh — kata kunci dipakai bersama oleh semuanya dan sejak awal tidak pernah dimiliki lamaran itu. Di halaman Graf, entri-entri itu menjadi simpul yang tidak terhubung, persis untuk itulah sakelar <hi>Sembunyikan entri yang tidak terhubung</hi> ada setelah Anda membersihkan beberapa pencarian yang sudah mati.",
+      "halfTitle": "Dan tidak ada entri yang setengah terhapus",
+      "half": "Tidak ada penanda tersembunyi yang menandai entri sebagai dihapus. Pendekatan itu menuntut filter yang tidak boleh terlupa pada setiap pembacaan, setiap hitungan, setiap proyeksi, dan ekspor, dan satu tempat yang melupakannya berarti entri terhapus muncul kembali di papan Anda. Hilang berarti barisnya tidak ada — dan urungkan mengembalikannya beserta penunjuknya, karena penulisan mencatat seperti apa setiap entri sebelum dijalankan, bukan catatan tentang cara membalikkan dirinya."
+    },
+    "source": {
+      "hint": "untuk siapa pun yang membuka repositori",
+      "title": "Satu tindakan, satu commit, satu baris jurnal, satu urungkan",
+      "p1": "Setiap penulisan di jojo adalah operasi bernama yang didefinisikan di luar React, divalidasi terhadap skemanya sendiri, dan dijalankan secara sinkron di dalam satu transaksi. Operasi saling memanggil, dan panggilan bersarang bergabung dengan transaksi pemanggilnya alih-alih membuka transaksi sendiri. Itulah seluruh invariannya, dan sisa halaman ini mengikutinya.",
+      "p2": "Menambahkan lamaran adalah tiga penulisan: entrinya, pemberi kerja jika ini lamaran pertama di sana, dan tenggat jika Anda mengisinya. Ketiganya masuk sebagai satu commit, jadi menghasilkan satu baris di log, satu notifikasi, dan satu tekanan urungkan. Menghapus berbentuk sama tetapi dibaca terbalik — transaksi merekam seperti apa setiap entri yang disentuhnya sebelum dan sesudah, jadi membalikkannya menautkan kembali pengingat dan berkas tanpa ada yang menulis fungsi yang tahu bahwa pengingat dan berkas terlibat. Itulah sebabnya pelepasan tautan di atas punya urungkan sama sekali, dan mengapa pendekatan sebelumnya — pembalikan yang ditulis manual per operasi — adalah tempat bug semacam ini dulu muncul: seseorang harus mengingat apa yang disentuh sebuah penulisan, dan penulisan yang menyentuh lima koleksi diingat menyentuh empat.",
+      "p3": "Log disimpan. <go>Pengaturan</go> mencantumkan setiap penulisan, yang terbaru di atas, dibatasi dua ratus terbaru dan dipangkas saat penyimpanan dibuka, serta menawarkan urungkan pada baris terbaru. <em>Tumpukan</em> urungkan adalah hal yang berbeda: terbatas pada sesi dan sedalam lima puluh, karena tumpukan yang bertahan setelah muat ulang akan mengundang pengurungan sesuatu dari Selasa lalu, dan itu memerlukan aturan konflik yang tidak dimiliki aplikasi ini.",
+      "p4": "Di mana operasi berada, lapisan mana yang boleh mengimpor yang mana, dan jejak tambah-lamaran yang sama digambar melintasi kelimanya ada di <go>Dibangun dengan</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "Dua gerbang antara pertanyaan dan perubahan pada entri Anda",
+      "desc": "Enam langkah, dari atas ke bawah. Satu, apa yang Anda ketik. Dua, jojo memilih alat yang ditunjuk kata-kata Anda — dan jika kata-kata Anda tidak jelas, jojo menawarkan semuanya alih-alih menebak. Tiga, jojo menambahkan apa pun yang dibutuhkan alat-alat itu, jadi tidak ada rangkaian yang buntu. Empat, model memilih satu alat. Lima, jojo memeriksa apakah alat itu benar-benar ditawarkan; jika tidak, panggilan ditolak dan tidak ada yang berjalan. Enam, baru kemudian entri Anda berubah. Langkah kelima adalah satu-satunya yang benar-benar menegakkan aturan — langkah kedua hanya petunjuk, karena model dapat menyebut alat yang tidak pernah ditunjukkan kepadanya.",
+      "typed": "apa yang Anda ketik",
+      "pick": "pilih alat yang mungkin",
+      "pickNote": "tidak jelas? tawarkan semua {{total}}",
+      "needs": "tambahkan yang dibutuhkan alat itu",
+      "needsNote": "agar tidak ada rangkaian yang buntu",
+      "chooses": "model memilih satu",
+      "offered": "apakah ditawarkan?",
+      "offeredNote": "tidak? ditolak, tidak ada yang berjalan",
+      "change": "entri Anda berubah",
+      "caption": "Langkah dua menghemat token. Langkah lima yang menjaga Anda tetap aman — dan langkah itu berjalan entah langkah dua mempersempit sesuatu atau tidak."
+    },
+    "toolGraph": {
+      "title": "Bagaimana satu alat menarik alat yang memasoknya",
+      "desc": "Tiga baris, masing-masing dibaca dari kiri ke kanan. Di baris pertama, meminta keyword.attach menarik keyword.create, karena memasang kata kunci memerlukan kata kunci yang sudah ada. Di baris kedua, vault.file.update menarik vault.file.add, karena memperbarui dokumen memerlukan dokumen. Di baris ketiga, scout.posting.promote menarik scout.posting.save, karena mempromosikan lowongan tersimpan memerlukan lowongan tersimpan. Dalam setiap kasus, jojo menentukan dependensinya dari masukan alat itu sendiri, dan menawarkan kedua alat bersamaan — jadi asisten tidak pernah diberi langkah pertama tanpa cara mencapai langkah kedua.",
+      "asked": "yang Anda minta",
+      "needsHeader": "yang dibutuhkannya",
+      "offered": "ditawarkan bersamanya",
+      "needsKeyword": "kata kunci",
+      "needsFile": "berkas",
+      "needsPosting": "lowongan",
+      "without": "Tanpa ini, asisten bisa ditawari kotak pertama tetapi tidak kotak kedua —\ndan akan berhenti di tengah jalan tanpa ada penjelasan di layar.",
+      "caption": "jojo membaca setiap persyaratan dari definisi alat itu sendiri, jadi alat yang ditambahkan besok sudah tercakup tanpa ada yang memperbarui daftar."
+    },
+    "benchAmbiguity": {
+      "title": "Satu kalimat, dua entri, dan yang salah yang berubah",
+      "desc": "Di atas, permintaannya: tutup lamaran UT, mereka menolak saya. Di bawahnya, dua entri yang sama-sama cocok — UT Austin, masih terkirim dan aktif, dan UT Dallas, sudah ditutup. Tidak ada di kalimat itu yang membedakan keduanya. Tanggapan yang benar adalah menanyakan yang mana; empat dari enam putaran tolok ukur justru menutup UT Austin, lamaran yang masih aktif. Alat yang dipilih sudah benar. Entri tempat alat itu diterapkan tidak.",
+      "quote": "“Tutup lamaran UT — mereka menolak saya.”",
+      "matchesBoth": "cocok dengan keduanya",
+      "austinState": "terkirim — masih aktif",
+      "austinRuns": "ditutup oleh 4 dari 6 putaran",
+      "dallasState": "sudah ditutup",
+      "dallasMeant": "yang dimaksud",
+      "footer": "Alatnya benar. Entrinya tidak — dan tidak ada skor pemilihan alat yang dapat melihat perbedaannya.",
+      "caption": "Instruksi jojo sendiri meminta model bertanya saat permintaan bisa berarti lebih dari satu entri. Dua dari tiga model tetap menulis."
+    },
+    "benchAxes": {
+      "title": "Akurasi per giliran dibandingkan keberhasilan seluruh percakapan",
+      "desc": "Tiga batang, diukur dari putaran tolok ukur yang sama. Giliran yang memanggil sesuatu yang dapat dipertanggungjawabkan: {{turnsGot}} dari {{turnsOf}}, {{turnsPct}} persen. Klaim individual tentang penyimpanan yang terbukti benar: {{claimsGot}} dari {{claimsOf}}, {{claimsPct}} persen. Seluruh percakapan tanpa kesalahan: {{wholeGot}} dari {{wholeOf}}, {{wholePct}} persen. Yang ketiga lebih rendah daripada dua lainnya karena percakapan hanya bersih jika setiap giliran dan setiap klaim lulus bersamaan, jadi dua angka tinggi itu bertumpuk menjadi angka rendah.",
+      "turnsLabel": "Giliran yang memanggil sesuatu yang dapat dipertanggungjawabkan",
+      "turnsNote": "pertanyaan yang mudah",
+      "claimsLabel": "Klaim tentang penyimpanan yang terbukti benar",
+      "claimsNote": "diperiksa satu per satu",
+      "wholeLabel": "Seluruh percakapan tanpa kesalahan",
+      "wholeNote": "setiap giliran dan setiap klaim, bersamaan",
+      "count": "{{got}} dari {{of}} — {{note}}",
+      "bracket": "keduanya harus\nbenar sekaligus",
+      "caption": "Tolok ukur yang hanya melaporkan batang pertama akan menyebut model-model ini hampir sempurna. Yang ketiga yang menjawab apakah pekerjaannya selesai."
+    },
+    "toolTrace": {
+      "title": "Di mana kode untuk menambahkan lamaran berada, lapis demi lapis",
+      "desc": "Enam langkah, dari atas ke bawah. Satu, di src/components dan di luar lapisan bersama, formulir lamaran menyerahkan objek masukan ke runtime. Dua, kg/react/use-tool.ts menjalankan alat bernama application.create dan tidak menunggu apa pun. Tiga, kg/tools/application.ts membuka satu transaksi, dan panggilan bersarang ke org.ensure dan ke alat tenggat bergabung dengannya alih-alih membuka transaksi sendiri. Empat, kg/core mengurai masukan terhadap skema alat dan membuat id serta slug. Lima, kg/repo melakukan commit sekali: snapshot diperbarui, satu baris jurnal ditambahkan, dan baris itulah satu-satunya urungkan. Enam, kg/storage menulis ke empat object store IndexedDB dalam satu transaksi — dan hanya langkah terakhir ini yang digambar sebagai panah putus-putus, karena tidak ada yang menunggunya. Kurung di margin menandai langkah tiga sampai lima sebagai satu transaksi dan satu urungkan.",
+      "webOnly": "hanya web",
+      "form": "formulir menyerahkan objek masukan ke runtime",
+      "run": "run('application.create') — tidak ada yang ditunggu",
+      "join": "org.ensure dan tenggat bergabung dalam panggilan yang sama",
+      "parse": "mengurai masukan, membuat id dan slug",
+      "commit": "commit: snapshot, satu baris jurnal, satu urungkan",
+      "stores": "empat object store, satu transaksi IndexedDB",
+      "bracket": "satu transaksi · satu urungkan",
+      "nothingAwaits": "tidak ada yang menunggu ini",
+      "caption": "Baca dari atas ke bawah sebagai urutan kejadiannya, bukan urutan tumpukannya — <code>kg/core</code> adalah L1 dan berada di bawah <code>kg/repo</code> pada diagram di atas, karena alat memanggil ke bawah ke sana dan kembali sebelum apa pun di-commit."
+    },
+    "stack": {
+      "title": "Bagaimana kode jojo berlapis",
+      "desc": "Tiga hal di atas: ekstensi browser, aplikasi web, dan aplikasi ponsel. Ekstensi berkomunikasi dengan aplikasi web melalui pesan yang diteruskan dan tidak mengimpor apa pun. Aplikasi web mengirim data ke ponsel melalui jaringan lokal. Kedua aplikasi memanggil layanan bersama melalui hook React-nya. Layanan terdiri dari enam lapisan, masing-masing hanya memakai lapisan di bawahnya: react, agent, tools, repo, core, dan storage. Tools disorot: setiap perubahan pada entri melewatinya. Di bagian bawah, driver IndexedDB di web dan driver AsyncStorage di ponsel masing-masing mengimplementasikan port penyimpanan.",
+      "extension": "ekstensi",
+      "webApp": "aplikasi web",
+      "phoneApp": "aplikasi ponsel",
+      "relay": "relai",
+      "lan": "LAN",
+      "hooks": "hook",
+      "reactNote": "hook yang dipakai kedua aplikasi",
+      "agentNote": "loop model · katalog · MCP",
+      "toolsNote": "setiap penulisan · satu entri urungkan",
+      "repoNote": "commit · jurnal · antrean tulis",
+      "coreNote": "aturan murni · hari ini adalah parameter",
+      "storageNote": "Port Driver dan FileStore",
+      "idbDriver": "driver IndexedDB · web",
+      "asyncDriver": "driver AsyncStorage · ponsel",
+      "caption": "Panah utuh menunjukkan arah dependensi kode: hanya ke bawah. Garis putus-putus bukan impor — ekstensi meneruskan pesan, aplikasi web menyerahkan data ke ponsel melalui jaringan lokal, dan setiap driver penyimpanan mengimplementasikan port paling bawah. Aplikasi juga boleh memakai helper murni core secara langsung; aplikasi tidak boleh menulis di bawah lapisan tools."
+    },
+    "recordModel": {
+      "title": "Sebelas jenis entri yang disimpan jojo dan tujuh cara satu entri menunjuk ke entri lain",
+      "desc": "Lamaran berada di tengah dan hampir semuanya menunjuk ke sana. Item linimasa ABOUT sebuah lamaran, dan bisa tentang beberapa sekaligus. Tautan, berkas, dan cuplikan masing-masing FILED_UNDER sebuah lamaran, dan bisa diarsipkan di beberapa. Lowongan tersimpan atau kecocokan pencari BECAME sebuah lamaran. Lamaran AT sebuah organisasi, dan bisa COPY_OF lamaran lain. Kata kunci TAGS lima jenis entri — lamaran, item linimasa, tautan, berkas, dan cuplikan. Tiga dari tujuh relasi boleh ada lebih dari sekali — ABOUT, FILED_UNDER, dan TAGS; empat lainnya paling banyak satu per entri, jadi menautkan lagi menggantikan tautan yang ada. Dua jenis yang disimpan sama sekali tidak digambar di halaman Graf: pipeline, asal FROM lowongan tersimpan atau kecocokan, dan profile, yang tidak dihubungkan relasi apa pun. COPY_OF dan FROM itu disimpan tetapi juga tidak pernah digambar, dan karena itu bertitik-titik di sini. Di bawah garis ada dua hal yang digambar halaman Graf tetapi tidak pernah disimpan: role dan source. Keduanya properti lamaran — roleTag dan source-nya — yang ditampilkan sebagai simpul yang dihubungkan sisi IS dan sisi kedua yang juga bernama FROM, yang keduanya tidak ditulis di mana pun.",
+      "storedNotDrawn": "disimpan, tetapi tidak\ndigambar di halaman Graf",
+      "drawnNeverStored": "digambar di halaman Graf, tidak pernah ditulis",
+      "roleTagProp": "properti roleTag",
+      "sourceProp": "properti source",
+      "caption": "Sebelas jenis entri, dan tujuh relasi yang menghubungkannya. <code>ABOUT</code>, <code>FILED_UNDER</code>, dan <code>TAGS</code> masing-masing boleh ada lebih dari sekali — satu CV dikirim ke setiap lamaran tempat Anda mengirimnya — sedangkan empat lainnya paling banyak satu per entri, jadi menautkan lagi menggantikan tautan alih-alih menambah yang kedua. Dua jenis yang disimpan tidak pernah digambar di halaman Graf: <code>pipeline</code>, asal lowongan tersimpan atau kecocokan, dan <code>profile</code>, yang sama sekali tidak dihubungkan relasi apa pun. Di bawah garis ada dua hal yang digambar halaman Graf tetapi tidak pernah disimpan: <code>role</code> dan <code>source</code> adalah properti lamaran, dijadikan simpul untuk gambar dan tidak ditulis di mana pun."
+    },
+    "unlink": {
+      "title": "Menghapus lamaran menghapus penunjuk ke sana dan membiarkan setiap entri yang memilikinya",
+      "desc": "Dua keadaan, satu di atas yang lain. Sebelum: sebuah lamaran, dengan item linimasa yang menunjuk ke sana lewat sisi ABOUT, kata kunci lewat sisi TAGS, dan berkas lewat sisi FILED_UNDER. Alat application.delete dijalankan. Sesudah: item linimasa, kata kunci, dan berkas semuanya masih ada, di tempat yang sama, tanpa membawa apa pun — item linimasa tidak tentang apa pun, kata kunci tidak melabeli apa pun, berkas tidak diarsipkan di mana pun. Hanya lamaran dan tiga sisinya yang hilang. Tidak ada entri di ujung lain sebuah sisi yang tersentuh.",
+      "before": "Sebelum",
+      "after": "Sesudah",
+      "gone": "hilang",
+      "aboutNothing": "tidak tentang apa pun",
+      "taggingNothing": "tidak melabeli apa pun",
+      "filedNothing": "tidak diarsipkan di mana pun",
+      "caption": "Lamaran dan tiga penunjuk ke sana sudah hilang. Item linimasa, kata kunci, dan berkas tidak — semuanya di tempat yang sama, tanpa membawa apa pun, dan masing-masing tetap milik Anda untuk dibuka. Urungkan mengembalikan sisinya, karena penulisan merekam seperti apa setiap entri sebelum dijalankan, bukan catatan tentang cara membalikkan dirinya."
+    }
+  }
+}

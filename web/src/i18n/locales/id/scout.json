@@ -1,0 +1,197 @@
+{
+  "common": {
+    "newPipeline": "Alur kerja baru",
+    "addToApplications": "Tambahkan ke lamaran",
+    "inApplicationsAs": "Ada di lamaran sebagai <anchor>{{name}}</anchor>",
+    "open": "Buka",
+    "undo": "Urungkan"
+  },
+  "header": {
+    "title": "Pencari lowongan",
+    "subtitle": "Pencarian tersimpan yang akan memantau papan lowongan untuk Anda — dan tempat menyimpan lowongan hari ini",
+    "onlyActive": "Hanya alur kerja aktif",
+    "onlyActiveHint": "Sembunyikan yang dimatikan",
+    "paused": "Tidak ada model lokal yang terhubung, jadi alur kerja dijeda. Anda tetap dapat menulisnya dan menyimpan lowongan di bawah — alur kerja mulai berjalan begitu model dapat dijangkau.",
+    "runsLocally": "Alur kerja berjalan di perangkat Anda, selama tab ini terbuka. Tidak ada yang dikirim ke pihak ketiga."
+  },
+  "shutdown": {
+    "title": "Matikan {{name}}?",
+    "description": "Alur kerja ini sudah dua kali berjalan tanpa menemukan apa pun untuk disarankan, dan tidak ada yang menunggu jawaban Anda. Mematikannya menghentikan pencariannya; semua yang sudah ditemukannya tetap di tempatnya. Anda dapat menyalakannya lagi kapan saja.",
+    "keep": "Biarkan berjalan",
+    "confirm": "Matikan"
+  },
+  "matches": {
+    "title": "Kecocokan",
+    "hint": "dinilai berdasarkan profil Anda",
+    "emptyTitle": "Tidak ada kecocokan",
+    "emptyDescription": "Alur kerja menaruh lowongan yang sudah dinilai di sini begitu model terhubung. Sampai saat itu, lowongan yang Anda simpan di bawah adalah jalan masuknya.",
+    "matched": "cocok dengan {{list}}",
+    "notScored": "belum dinilai",
+    "fit": "Kecocokan {{score}}%",
+    "added": "ditambahkan"
+  },
+  "dialog": {
+    "editTitle": "Edit alur kerja",
+    "description": "Alur kerja adalah tugas tetap untuk asisten. Ia berjalan di perangkat ini selama jojo terbuka, dan semua yang ingin diubahnya ditampilkan kepada Anda terlebih dahulu.",
+    "kind": "Fungsinya",
+    "kinds": {
+      "twin": "Jaga entri tetap lengkap",
+      "scout": "Cari lowongan"
+    },
+    "kindHint": {
+      "twin": "Membaca apa yang Anda miliki dan menyarankan yang kurang — catatan, pengingat, label, pengarsipan.",
+      "scout": "Mencari lowongan yang layak Anda perhatikan dan mengajukannya untuk ditinjau."
+    },
+    "name": "Nama",
+    "nameError": "Beri nama sesuai yang dipantaunya.",
+    "namePlaceholder": {
+      "twin": "mis. Rapikan lamaran saya",
+      "scout": "mis. Papan lowongan dosen CRA"
+    },
+    "sources": "Sumber",
+    "sourcesHint": "Papan lowongan atau halaman karier yang dipantaunya. Pisahkan beberapa dengan koma.",
+    "sourceError": "Pencari tanpa sumber tidak punya apa pun untuk dibaca.",
+    "terms": {
+      "twin": "Yang menjadi fokus",
+      "scout": "Istilah pencocokan"
+    },
+    "termsHint": {
+      "twin": "Apa pun yang perlu diperhatikan secara khusus. Kosongkan agar ia melihat ke mana-mana.",
+      "scout": "Dasar penilaian lowongan. Kosongkan untuk menyimpan semua yang dicantumkan sumber."
+    },
+    "termsPlaceholder": {
+      "twin": "tindak lanjut dan tenggat",
+      "scout": "asisten profesor, CS/ECE"
+    },
+    "howOften": "Seberapa sering",
+    "howOftenHint": "Berapa lama ia menunggu di antara putaran.",
+    "schedules": {
+      "hourly": "Setiap jam",
+      "daily": "Setiap hari",
+      "weekly": "Setiap minggu"
+    },
+    "cancel": "Batal",
+    "save": "Simpan perubahan",
+    "create": "Buat alur kerja"
+  },
+  "pipelines": {
+    "title": "Alur kerja",
+    "hint": "berjalan di perangkat ini selama jojo terbuka",
+    "caption": "Alur kerja bekerja selama tab ini terbuka — tidak ada yang berjalan di luar perangkat ini",
+    "kinds": {
+      "twin": "Kembaran digital",
+      "scout": "Pencari lowongan"
+    },
+    "status": {
+      "off": "mati",
+      "paused": "dijeda",
+      "running": "berjalan",
+      "watching": "memantau"
+    },
+    "noneOnTitle": "Tidak ada yang menyala",
+    "noneOnDescription": "Semua alur kerja Anda dimatikan. Nyalakan satu, atau hapus filter di opsi halaman.",
+    "emptyTitle": "Tidak ada alur kerja",
+    "emptyDescription": "Alur kerja adalah tugas tetap untuk asisten: menjaga entri Anda tetap lengkap, atau memantau lowongan yang layak Anda perhatikan.",
+    "showAll": "Tampilkan semua alur kerja",
+    "auto": "otomatis",
+    "autoAria": "Jalankan {{name}} tanpa bertanya",
+    "toReview_other": "{{count}} untuk ditinjau",
+    "runNow": "Jalankan {{name}} sekarang",
+    "edit": "Edit {{name}}",
+    "delete": "Hapus {{name}}",
+    "enable": "Aktifkan {{name}}"
+  },
+  "postings": {
+    "title": "Simpan lowongan",
+    "hint": "berfungsi tanpa model",
+    "intro": "Menyimpan juga menyimpan halamannya, di Brankas di bawah Lowongan kerja — dibuka melalui ekstensi jojo seperti yang Anda lihat, atau diambil oleh pembaca dokumen. Tanpa keduanya, yang disimpan adalah URL, pemberi kerja yang ditebak dari URL itu, dan tanggal Anda menyimpannya.",
+    "urlLabel": "URL lowongan kerja",
+    "pasteFirst": "Tempel URL dulu",
+    "save": "Simpan lowongan",
+    "emptyTitle": "Belum ada lowongan yang disimpan",
+    "emptyDescription": "Tempel URL iklan yang ingin Anda buka lagi nanti. Iklan bisa diturunkan; tautan dan tanggalnya tetap milik Anda.",
+    "saved": "disimpan {{when}}",
+    "linked": "ditautkan ke lamaran",
+    "unscored": "belum dinilai",
+    "openSnapshot": "Buka cuplikan halaman",
+    "savingPage": "Menyimpan halaman…",
+    "savePage": "Simpan halaman",
+    "savePageTitle": "Buka lowongan dan simpan salinannya di Brankas",
+    "remove": "Hapus {{title}}"
+  },
+  "proposals": {
+    "title": "Saran",
+    "hint": "tidak ada yang terjadi sampai Anda setuju",
+    "aPipeline": "sebuah alur kerja",
+    "clearAnswered": "Bersihkan yang sudah dijawab",
+    "approveAll": "Setujui semua {{count}}",
+    "clearAll": "Bersihkan semua",
+    "emptyTitle": "Tidak ada yang perlu ditinjau",
+    "emptyDescription": "Saat alur kerja berjalan, apa pun yang ingin diubahnya muncul di sini lebih dulu. Entri Anda tidak akan disentuh sampai Anda menyetujuinya.",
+    "clearTitle": "Bersihkan semua saran?",
+    "clearPending_other": "{{count}} saran masih menunggu Anda dan akan ditolak. Tidak ada yang berubah di entri Anda, dan alur kerja tetap berjalan — tetapi saran ini tidak akan ditawarkan lagi.",
+    "clearAnsweredOnly": "Kartu yang sudah dijawab dihapus dari daftar. Tidak ada yang berubah di entri Anda.",
+    "status": {
+      "applied": "diterapkan",
+      "discarded": "dibuang",
+      "failed": "tidak dapat diterapkan"
+    },
+    "noSummary": "Saran ini tidak disertai ringkasan — buka lowongannya untuk melihat isinya.",
+    "reading": "Membaca lowongan untuk mengambil detailnya…",
+    "notALink": "Bukan alamat web, jadi tidak ditawarkan sebagai tautan",
+    "from": "dari {{name}}",
+    "openPosting": "Buka lowongan",
+    "openPostingAria": "Buka lowongan di tab baru: {{title}}",
+    "inApplications": "Ada di lamaran",
+    "approve": "Setujui",
+    "discard": "Buang saran ini",
+    "discardAria": "Buang: {{title}}",
+    "unreadable": "Halaman tidak dapat dibaca: {{reason}}",
+    "unreadableKept": "Halaman tidak dapat dibaca: {{reason}} Halamannya sendiri sudah disimpan.",
+    "applyBy": "lamar paling lambat {{date}}",
+    "pageSaved": "Halaman disimpan"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Sudah ada di lamaran Anda — tidak ditambahkan lagi",
+    "alreadyHaveDescription": "Ini adalah {{name}}, yang diunggah ulang di papan lain. Lowongan ditautkan ke lamaran itu, dan halamannya diarsipkan di sana.",
+    "duplicateDescription": "Lowongan ini adalah {{name}}, yang sudah Anda miliki. {{why}} Halamannya diarsipkan di lamaran itu.",
+    "keepBoth": "Simpan keduanya",
+    "fillFailedTitle": "{{org}}: lowongan tidak dapat dibaca",
+    "fillFailedKept": "{{reason}} Halamannya sendiri sudah disimpan dan diarsipkan di draf — buka untuk mengisi sisanya.",
+    "fillFailed": "{{reason}} Draf menyimpan apa yang tertera di tautannya — buka untuk mengisi sisanya.",
+    "filledTitle": "{{name}} diisi dari lowongan",
+    "checkedTitle": "{{name}} dicocokkan dengan lowongan",
+    "filledIn": "Diisi: {{list}}.",
+    "checked": "Dicocokkan dengan halaman: {{list}}.",
+    "keptYours": "Suntingan Anda dipertahankan pada: {{list}}.",
+    "addedNothing": "Halaman tidak menambahkan apa pun yang belum ada di draf.",
+    "missing": "Tidak ada di halaman: {{list}}.",
+    "filedUnder": "Halamannya diarsipkan di lamaran itu.",
+    "approvedReading": "Membaca lowongan untuk mengisi detailnya — draf diperbarui setelah selesai.",
+    "approvedFromLink": "Diisi dari tautannya. Hubungkan model di Pengaturan agar lowongannya sendiri dibaca.",
+    "approvedOpen": "Buka untuk mengisi sisanya.",
+    "allRepeatsTitle": "Sudah ada di lamaran Anda — tidak ada yang baru ditambahkan",
+    "allRepeats_other": "{{count}} adalah pekerjaan yang sudah Anda miliki, diunggah ulang di papan lain. Semuanya ditautkan ke lamaran yang Anda miliki.",
+    "added_other": "{{count}} ditambahkan ke lamaran Anda sebagai draf",
+    "addedWithRepeats_other": "{{count}} ditambahkan ke lamaran Anda sebagai draf · {{repeats}} sudah ada",
+    "addedReading": "Membaca setiap lowongan secara bergiliran untuk mengisi detailnya.",
+    "addedFromLinks": "Diisi dari tautannya. Hubungkan model di Pengaturan agar lowongannya sendiri dibaca.",
+    "addedOne": "{{org}} ditambahkan ke lamaran Anda sebagai draf",
+    "addedAsDraft": "{{org}} ditambahkan sebagai draf",
+    "matchStays": "Kecocokan tetap di umpan ini, kini ditautkan ke lamaran.",
+    "postingSaved": "Lowongan disimpan",
+    "postingReading": "Membaca lowongan untuk memeriksa dan mengisi detailnya — draf diperbarui setelah selesai.",
+    "postingStays": "Lowongan tetap tersimpan di sini, kini ditautkan ke lamaran.",
+    "postingRemoved": "Lowongan dihapus",
+    "pageNotSaved": "Halaman lowongan tidak disimpan",
+    "pageSaved": "Halaman lowongan disimpan",
+    "pageSavedFiled": "{{title}} — diarsipkan di lamarannya.",
+    "pageSavedVault": "{{title}} — di Brankas di bawah Lowongan kerja.",
+    "pipelineUpdated": "Alur kerja diperbarui",
+    "pipelineCreated": "Alur kerja dibuat",
+    "pipelineCreatedPaused": "{{name}} — dijeda sampai model terhubung.",
+    "pipelineCreatedRunning": "{{name}} — akan segera mulai mencari.",
+    "pipelineDeleted": "Alur kerja dihapus",
+    "pipelineDeletedDescription": "{{name}} berhenti memantau {{source}}."
+  }
+}

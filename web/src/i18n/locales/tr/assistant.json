@@ -1,0 +1,160 @@
+{
+  "common": {
+    "title": "Asistan",
+    "undo": "Geri al",
+    "nothingAsked": "Henüz bir şey sorulmadı",
+    "askLabel": "Asistana sorun",
+    "saveToSnippets": "Metin parçalarına kaydet",
+    "savedToSnippets": "Metin parçalarına kaydedildi",
+    "filedUnder": "{{title}} · {{tag}} altında dosyalandı",
+    "openVault": "Kasa'yı aç",
+    "copyBlocked": "Kopyalama tarayıcı tarafından engellendi",
+    "copied": "Yanıt kopyalandı",
+    "newConversation": "Yeni konuşma"
+  },
+  "header": {
+    "subtitle": "Modelinize bağlı ve kayıtlarınız üzerinde işlem yapabiliyor. Yaptığı her şey olduğu anda listelenir.",
+    "clear": "Temizle",
+    "connected_one": "Yanıtlar <mono>{{endpoint}}</mono> adresindeki <mono>{{model}}</mono> modelinden gelir; bu model bu cihazda <tools>{{count}} aracı</tools> çağırabilir. Başka hiçbir yere bir şey gönderilmez.",
+    "connected_other": "Yanıtlar <mono>{{endpoint}}</mono> adresindeki <mono>{{model}}</mono> modelinden gelir; bu model bu cihazda <tools>{{count}} aracı</tools> çağırabilir. Başka hiçbir yere bir şey gönderilmez."
+  },
+  "composer": {
+    "send": "Gönder",
+    "typeFirst": "Önce bir mesaj yazın",
+    "stop": "Durdur",
+    "stopTitle": "Ajanı durdur"
+  },
+  "approval": {
+    "waiting": "{{title}} — sizi bekliyor",
+    "askedBy": "İsteyen: {{name}}. Henüz hiçbir şey değişmedi.",
+    "askedByUnnamed": "Bir konuşma tarafından istendi. Henüz hiçbir şey değişmedi.",
+    "decline": "Yapma",
+    "allow": "İzin ver"
+  },
+  "scripted": {
+    "subtitle": "Şimdilik örnekler. Yerel bir model bağlayın; hem kendi kayıtlarınızdan taslak hazırlasın hem de onlar üzerinde işlem yapsın.",
+    "clear": "Konuşmayı temizle",
+    "notConnected": "Bağlı bir model yok; bu yüzden aşağıdaki her yanıt bir cevap değil, bir örnektir. <settings>Ayarlar</settings> bölümünden jojo'yu OpenAI uyumlu yerel bir sunucuya — vLLM, Ollama ya da LM Studio — yönlendirin.",
+    "emptyDescription": "Aşağıdaki isteklerden birini seçin ya da istediğinizi yazın. Yanıtlar yazılı örneklerdir — üzerinde çalışmak için yararlıdır ve asla bir modelin cevabı olarak sunulmaz.",
+    "placeholder": "Ön yazı, takip e-postası, mülakat hakkında sorun…",
+    "footer": "Bir model bağlıyken bunların her biri profilinizi ve belgelerinizi bağlam olarak okur. Çıkarım yerel olduğu için CV'niz ve notlarınız hiçbir yere yüklenmez.",
+    "badge": "Örnek yanıt · bağlı model yok",
+    "cleared": "Konuşma temizlendi",
+    "messages_one": "{{count}} mesaj",
+    "messages_other": "{{count}} mesaj"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Ön yazı taslağı hazırla",
+      "title": "Ön yazı — yapı",
+      "reply": "[BÖLÜM] için kullanacağım yapı şu:\n\n1. paragraf — üzerinde çalıştığınız konu, alanınızın dışındaki bir komite üyesinin anlayabileceği tek bir cümleyle.\n2. paragraf — gerekçenizi oluşturan iki sonuç; her biri yöntemiyle değil, doğurduğu sonuçla.\n3. paragraf — neden bu bölüm: ortak çalışacağınız grup ve vereceğiniz ders.\n4. paragraf — ne zaman başlayabileceğiniz ve ilk üç yılın nasıl görüneceği.\n\nBir sayfayı geçmeyin. Komite bir akşamda bunlardan kırk tane okur."
+    },
+    "tailorCv": {
+      "action": "CV'mi bir ilana göre uyarla",
+      "title": "CV uyarlama — üç geçiş",
+      "reply": "Bu sırayla üç geçiş:\n\n1. İlanın istemediklerini çıkarın. Her şeye uyarlanmış bir CV, hiçbir şeye uyarlanmamıştır.\n2. İlanın öne çıkardığı bölümü ilk sayfanın en üstüne taşıyın — öğretim ağırlıklı bir ilan, öğretimin yayınlardan önce gelmesini ister.\n3. Başlığı ilanın kendi sözcükleriyle yeniden yazın, işin kapsamını abartmadan.\n\nDokunulmadan kalanlar: yayınlar, referanslar, tarihler. Bir komitenin kontrol ettiği kısımlar bunlardır."
+    },
+    "parsePosting": {
+      "action": "Bir iş ilanını ayrıştır",
+      "title": "Bir ilandan neler çıkarılmalı",
+      "reply": "Bir ilandan şunları çıkarırdım: işveren, rol, son tarih, istenen belgeler, adı geçen irtibat kişisi ve tercih değil de kesin şart olarak ifade edilen her şey.\n\nBaşvuruların kaybedildiği yer sonuncusudur — \"başlangıç tarihine kadar dereceye sahip olmalıdır\" bir eleme ölçütüdür, \"büyük ölçekli sistem deneyimi tercih sebebidir\" değildir.\n\nİş gözcüsü bunun kolay yarısını zaten model olmadan yapar: URL'yi oraya kaydedin; bağlantıyı saklar ve işvereni ondan tahmin eder."
+    },
+    "followUp": {
+      "action": "Takip e-postası taslağı hazırla",
+      "title": "Yanıt gelmeyince takip",
+      "reply": "Konu: Takip — [POZİSYON], [BÖLÜM]\n\nSayın [AD],\n\n[TARİH] tarihinde [POZİSYON] pozisyonuna başvurdum ve komitenin benden ihtiyaç duyduğu her şeye sahip olup olmadığını öğrenmek istedim. Daha kolay olacaksa eksik referans mektubunu doğrudan gönderebilirim.\n\nPozisyonla hâlâ çok ilgileniyorum ve her türlü soruyu e-postayla yanıtlamaktan memnuniyet duyarım.\n\nTeşekkürlerimle,\n[ADINIZ]"
+    },
+    "interview": {
+      "action": "Beni mülakata hazırla",
+      "title": "Mülakat — yanıtını bilmeniz gereken altı soru",
+      "reply": "O günden önce yanıtını bilmeye değer altı soru:\n\n— Çalışmanız, alanınızın dışındaki birine doksan saniyede anlatıldığında ne hakkında?\n— İlk hibeniz ne olurdu ve hangi kuruma başvururdunuz?\n— Gelecek dönem hiç hazırlık süresi olmadan hangi iki dersi verebilirsiniz?\n— Burada kiminle, ne üzerine ortak çalışırdınız?\n— Kendi sonucunuzun zayıf noktası nedir?\n— İşi yapabilmek için ilk yıl neye ihtiyacınız var?\n\nYanıtları elle, uzun uzun yazın. Önemli olan notlar değil, provadır."
+    },
+    "fallback": {
+      "title": "Asistan — örnek yanıt",
+      "reply": "Bağlı bir model yok; bu yüzden bu, yazdığınıza verilmiş bir yanıt değil, hazır bir cevap.\n\nBir model bağlı olsaydı bu sayfa profilinizi, Kasa'daki belgelerinizi ve adını verdiğiniz başvuruyu okur, ardından kendi bilgisayarınızda bunlara göre taslak hazırlardı. Ayarlar'dan jojo'yu OpenAI uyumlu yerel bir sunucuya yönlendirin — vLLM, Ollama ya da LM Studio.\n\nÖrnekleri yeniden görmek için konuşmayı temizleyin."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "Neyi bekliyorum?",
+      "add": "Bir başvuru ekle: Stripe'ta ML mühendisi, gönderildi",
+      "noDeadline": "Hangi başvuruların son tarihi yok?",
+      "flag": "UT Austin başvurumu işaretle"
+    },
+    "emptyDescription": "Ondan bir şey bulmasını, başvuru eklemesini ya da bir başvuruyu ilerletmesini isteyin. Çalıştırdığı her araç, ne gönderdiği ve ne geri geldiğiyle birlikte olduğu anda aşağıda görünür.",
+    "placeholder": "UT Austin başvurumu bul, bir tane ekle ya da mülakat aşamasına taşı…"
+  },
+  "threadBar": {
+    "titleLabel": "Konuşma başlığı",
+    "saveTitle": "Başlığı kaydet",
+    "cancel": "İptal",
+    "rename": "Bu konuşmayı yeniden adlandır",
+    "changeJob": "İşi değiştir",
+    "fileUnder": "Bir işin altında dosyala",
+    "approval": "Onay",
+    "approvalLabel": "Bu konuşmanın sormadan ne kadarını yapabileceği",
+    "delete": "Sil"
+  },
+  "threads": {
+    "deleted": "Konuşma silindi"
+  },
+  "threadList": {
+    "title": "Konuşmalar",
+    "kept_one": "Burada {{count}} konuşma saklanıyor",
+    "kept_other": "Burada {{count}} konuşma saklanıyor",
+    "noJob": "Henüz bir işle ilgili değil",
+    "searchLabel": "Konuşmalarda ara",
+    "searchPlaceholder": "Söylenenlerde ara",
+    "clearSearch": "Aramayı temizle",
+    "noMention": "Bundan hiç söz edilmemiş",
+    "mentionsIn": "{{conversations}} içinde {{mentions}}",
+    "mentions_one": "{{count}} geçiş",
+    "mentions_other": "{{count}} geçiş",
+    "conversationCount_one": "{{count}} konuşma",
+    "conversationCount_other": "{{count}} konuşma",
+    "empty": "Henüz bir şey yok. Bir şey sorun; burada, bu cihazda saklanır.",
+    "noResults": "“{{query}}” hiçbir yerde geçmiyor. Bu, yalnızca adlarında değil, tüm konuşmalarda arar.",
+    "working": "Çalışıyor…",
+    "matches_one": "{{count}} eşleşme",
+    "matches_other": "{{count}} eşleşme",
+    "questions_one": "{{count}} soru",
+    "questions_other": "{{count}} soru"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Geri alınacak bir şey yok — o zamandan beri değişti",
+      "alreadyUndone": "Zaten geri alındı",
+      "outOfReach": "Buradan geri almak için çok eski",
+      "undone": "Geri alındı"
+    },
+    "thinking": "Düşünüyor…",
+    "thought": "Düşündü"
+  },
+  "trace": {
+    "status": {
+      "running": "Çalışıyor",
+      "done": "Tamamlandı",
+      "failed": "Başarısız",
+      "declined": "Reddedildi"
+    },
+    "effect": {
+      "read": "okundu",
+      "unknown": "böyle bir araç yok",
+      "create": "eklendi",
+      "update": "değiştirildi",
+      "move": "taşındı",
+      "delete": "silindi",
+      "admin": "depo"
+    },
+    "approvalNeeded": "Onay gerekiyor: {{title}}",
+    "asked": "Ajan bunu yapmak istedi. Henüz hiçbir şey değişmedi.",
+    "declineAria": "Yapma: {{title}}",
+    "allowAria": "İzin ver: {{title}}",
+    "arguments": "Argümanlar",
+    "result": "Sonuç",
+    "undoStep": "Bu adımı geri al",
+    "cannotUndo": "Bu adım buradan geri alınamaz. Ayarlar → Kayıtlar, nelerin değiştiğinin günlüğünü tutar ve en sonuncusunu geri alabilir.",
+    "truncated": "Kısaltıldı — ajana, geri kalanı görmek için aramayı daraltması söylendi.",
+    "working": "Çalışıyor — {{model}} ne yapacağına karar veriyor…"
+  }
+}

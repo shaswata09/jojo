@@ -1,0 +1,57 @@
+{
+  "defaultTitle": "E-posta taslağı",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Mesaj taslağı hazırla",
+    "for": "Alıcı: {{name}}.",
+    "forItem": "Alıcı: {{name}} · {{item}}.",
+    "unlinked": "Bir başvuruya bağlı değil; bu yüzden [ROLE] ve [DATE] boş kalır.",
+    "body": "Hiçbir şey üretilmez ve hiçbir şey gönderilmez — boşlukları doldurun, e-posta programınıza kopyalayın, ardından gönderildi olarak işaretleyin."
+  },
+  "picker": {
+    "hint": "E-posta metin parçalarınızdan biriyle başlayın.",
+    "searchLabel": "Metin parçalarında ara",
+    "searchPlaceholder": "Metin parçalarında ara…",
+    "noMatch": "Bununla eşleşen metin parçası yok.",
+    "emailGroup": "E-posta metin parçaları",
+    "freshGroup": "Sıfırdan başla",
+    "blank": "Boş taslak"
+  },
+  "editor": {
+    "placeholder": "Mesajı yazın ya da başlangıç için bir metin parçası seçin…",
+    "label": "Mesaj taslağı",
+    "nothing": "Henüz taslak yok.",
+    "noBlanks": "Boşluk kalmadı.",
+    "blanksLeft_one": "{{count}} boşluk kaldı — {{names}}",
+    "blanksLeft_other": "{{count}} boşluk kaldı — {{names}}",
+    "nameNote": " · kişi adları sizin yerinize asla doldurulmaz",
+    "copyBlocked": "Kopyalama tarayıcı tarafından engellendi",
+    "copied": "Taslak panoya kopyalandı"
+  },
+  "empty": {
+    "title": "Henüz e-posta metin parçası yok",
+    "description": "Email etiketli metin parçaları burada başlangıç noktası olarak görünür. Yüklenecek bir şey yok, ama taslağın bunlardan biriyle başlaması da gerekmiyor.",
+    "action": "Boş bir taslakla başla"
+  },
+  "footer": {
+    "writeFirst": "Önce bir şey yazın",
+    "saveHint": "Bu taslağı Kasa'da Email etiketiyle saklayın",
+    "save": "Metin parçası olarak kaydet",
+    "assistantHint": "Asistanın kendi sayfası var — kenar çubuğundan açın",
+    "assistant": "Asistanda aç",
+    "copyHint": "Mesajı panoya kopyalayın",
+    "markNoItem": "Burada tamamlandı olarak işaretlemek için bunu bir hatırlatıcıdan açın",
+    "markDone": "Bu hatırlatıcı zaten tamamlandı olarak işaretli",
+    "markSent": "Gönderildi olarak işaretle"
+  },
+  "toast": {
+    "replaced": "Taslak değiştirildi",
+    "loaded": "Yüklendi: {{title}}.",
+    "startedBlank": "Boş taslakla yeniden başlandı.",
+    "undo": "Geri al",
+    "saved": "Metin parçalarına kaydedildi",
+    "savedDescription": "{{title}} · Email etiketli, Kasa'da",
+    "markedSent": "Gönderildi olarak işaretlendi",
+    "markedSentDescription": "{{title}} — hatırlatıcılarda tamamlandı olarak işaretlendi"
+  }
+}

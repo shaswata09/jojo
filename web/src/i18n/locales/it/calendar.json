@@ -1,0 +1,67 @@
+{
+  "monthPicker": {
+    "goTo": "Vai al mese",
+    "previousYear": "Anno precedente",
+    "nextYear": "Anno successivo"
+  },
+  "chip": {
+    "allDay": "Tutto il giorno",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, fatto —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} evento",
+    "label_many": "{{label}}, {{count}} di eventi",
+    "label_other": "{{label}}, {{count}} eventi",
+    "add": "Aggiungi un evento il {{label}}",
+    "more_one": "+{{count}} altro",
+    "more_many": "+{{count}} altri",
+    "more_other": "+{{count}} altri"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "Mese precedente",
+    "nextMonth": "Mese successivo",
+    "today": "Oggi",
+    "backTo": "Torna a {{date}}",
+    "goTo": "Vai a {{month}} {{year}}",
+    "hintTouch": "Tocca un giorno per vedere cosa c'è.",
+    "hintPointer": "Scegli un giorno per elencarlo accanto alla griglia. Fai clic su un evento per modificarlo, o trascinalo su un altro giorno: il trascinamento richiede un puntatore, quindi da tastiera usa il campo data dentro l'evento.",
+    "eventTypes": "Tipi di evento",
+    "showAll": "Mostra tutti",
+    "dateColours": "Colori delle date",
+    "marks": {
+      "overdue": "In ritardo",
+      "soon": "In scadenza entro 48 ore",
+      "done": "Fatto"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Oggi",
+    "selectedDay": "Giorno selezionato",
+    "hiddenTitle": "Nulla da mostrare il {{date}}",
+    "hiddenDescription_one": "{{count}} evento è di un tipo disattivato sotto la griglia.",
+    "hiddenDescription_many": "{{count}} di eventi sono di un tipo disattivato sotto la griglia.",
+    "hiddenDescription_other": "{{count}} eventi sono di un tipo disattivato sotto la griglia.",
+    "showAllTypes": "Mostra tutti i tipi di evento",
+    "emptyTitle": "Nulla il {{date}}",
+    "emptyDescription": "Aggiungi un colloquio, una scadenza o un blocco di preparazione e comparirà qui e sulla griglia.",
+    "addEvent": "Aggiungi evento",
+    "backTo": "Torna a {{month}}",
+    "delete": "Elimina evento",
+    "deleteNamed": "Elimina {{title}}",
+    "restOf": "Resto di {{month}}",
+    "lastDayTitle": "Il {{date}} è l'ultimo giorno del mese",
+    "nothingAfterTitle": "Nulla dopo il {{date}}",
+    "lastDayDescription": "Non c'è nulla dopo. Vai avanti per pianificare a {{month}}.",
+    "nothingAfterDescription": "Il resto di {{month}} è libero. Qualsiasi cosa aggiungi dopo questo giorno compare qui.",
+    "goToMonth": "Vai a {{month}}",
+    "goToDay": "Vai a {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "+{{count}} altro più avanti questo mese",
+    "moreLater_many": "+{{count}} altri più avanti questo mese",
+    "moreLater_other": "+{{count}} altri più avanti questo mese"
+  }
+}

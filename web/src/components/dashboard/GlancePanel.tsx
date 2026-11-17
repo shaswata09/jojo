@@ -13,6 +13,7 @@ import { KIND_ICON, MARK_DOT, MARK_TEXT, markOf } from '@/lib/timeline-visuals'
 import type { Mark } from '@/lib/timeline-visuals'
 import { TODAY as TODAY_ISO, TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { useDomain } from '@/i18n/domain'
 
 /**
  * What a day is marked with — the Calendar route's marks, off the shared rule,
@@ -57,8 +58,6 @@ const partsAsParams = (iso: string) => {
  * something without ever saying what, so the only way to find out was to leave
  * the dashboard. Selecting a day now lists it beside the month.
  */
-/** A Monday, so `WEEKDAYS[i]` and `MONDAY + i` name the same day. */
-const MONDAY = new Date(2024, 0, 1)
 
 export function GlancePanel() {
   const { t, i18n } = useTranslation('dashboard')
@@ -71,12 +70,15 @@ export function GlancePanel() {
     new Intl.DateTimeFormat(lang, { month: 'long', day: 'numeric' }).format(
       new Date(year, month - 1, day),
     )
-  const narrowWeekdays = useMemo(() => {
-    const format = new Intl.DateTimeFormat(lang, { weekday: 'narrow' })
-    return WEEKDAYS.map((_, i) =>
-      format.format(new Date(MONDAY.getFullYear(), MONDAY.getMonth(), MONDAY.getDate() + i)),
-    )
-  }, [lang])
+  // From the catalog, not `Intl` directly: CLDR has no narrow weekdays for
+  // Urdu and the browser answers in Latin letters (M T W…). `weekdayNarrow` is
+  // CLDR's form where it exists and the language's short day name where not.
+  const domain = useDomain()
+  const narrowWeekdays = useMemo(
+    () => WEEKDAYS.map((_, i) => domain.weekdayNarrow(i)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the language is what `domain` reads; a switch must re-run this
+    [domain, lang],
+  )
   const { all, stageCounts } = useApplications()
   const { all: items, forMonth, overdue } = useTimeline()
   const { open } = useDialogs()

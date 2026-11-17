@@ -1,0 +1,269 @@
+{
+  "language": {
+    "label": "語言",
+    "description": "jojo 介面顯示的語言。你的紀錄會維持你撰寫時使用的語言。",
+    "system": "與這個瀏覽器相同（{{name}}）",
+    "loadFailed": "無法載入這個語言。jojo 會維持使用{{name}}。"
+  },
+  "buckets": {
+    "overdue": "已逾期",
+    "today": "今天",
+    "upcoming": "即將到來",
+    "done": "已完成"
+  },
+  "snooze": {
+    "day": {
+      "soon": "明天",
+      "later": "延後一天",
+      "duration": "一天"
+    },
+    "threeDays": {
+      "soon": "3 天後",
+      "later": "延後三天",
+      "duration": "三天"
+    },
+    "week": {
+      "soon": "7 天後",
+      "later": "延後一週",
+      "duration": "一週"
+    }
+  },
+  "routeFailure": {
+    "title": "這個頁面沒有載入",
+    "subtitle": "jojo 的其他部分仍在正常執行。",
+    "emptyTitle": "這個檢視畫面出了問題",
+    "emptyDescription": "切換到其他地方再回來，就會重新載入。如果每次都發生，問題可能出在這個頁面所顯示的紀錄——你可以先到「設定」做一份備份。",
+    "back": "返回儀表板"
+  },
+  "writeResult": {
+    "title": "沒有儲存成功",
+    "refused": "這項變更遭到拒絕。"
+  },
+  "copy": {
+    "blocked": "已封鎖",
+    "copied": "已複製",
+    "copy": "複製"
+  },
+  "drag": {
+    "theItem": "這個項目",
+    "aTarget": "放置目標",
+    "start": "已拿起 {{name}}。",
+    "over": "{{name}} 位於 {{place}} 上方。",
+    "notOver": "{{name}} 已不在任何放置目標上方。",
+    "dropped": "{{name}} 已放到 {{place}}。",
+    "droppedHome": "{{name}} 已放回原本的位置。",
+    "cancelled": "已取消拖曳。{{name}} 已放回原本的位置。",
+    "instructions": "若要拿起可拖曳的項目，請按空白鍵。\n拖曳時，使用方向鍵移動項目。\n再按一次空白鍵即可將項目放到新位置，或按 Esc 鍵取消。"
+  },
+  "actions": {
+    "undo": "復原",
+    "cancel": "取消",
+    "save": "儲存",
+    "close": "關閉"
+  },
+  "records_other": "{{count}} 筆紀錄",
+  "deleteKeyword": {
+    "failed": "沒有刪除成功",
+    "stillThere": "「{{name}}」仍是關鍵字。",
+    "deleted": "已刪除「{{name}}」",
+    "wasUnused": "它沒有用在任何紀錄上。",
+    "takenOff_other": "已從 {{count}} 筆紀錄中移除，也已從關鍵字篩選中移除。",
+    "confirmTitle": "要刪除「{{name}}」嗎？",
+    "confirmTitleAny": "要刪除關鍵字嗎？",
+    "unused": "尚未用在任何紀錄上，所以不會影響其他內容。",
+    "usedOn_other": "用在 {{count}} 筆紀錄上。這些紀錄會保留——只是不再帶有這個關鍵字。",
+    "confirm": "刪除關鍵字"
+  },
+  "bucketFilter": {
+    "all": "全部"
+  },
+  "marks": {
+    "bold": "粗體",
+    "italic": "斜體",
+    "underlined": "底線"
+  },
+  "pageHeader": {
+    "options": "「{{title}}」選項"
+  },
+  "errorBoundary": {
+    "title": "出了點問題",
+    "body": "有個檢視畫面無法呈現。按「再試一次」會重新載入這個畫面，不必重新載入整個頁面。",
+    "retry": "再試一次"
+  },
+  "tone": {
+    "colourFor": "「{{label}}」的顏色",
+    "anyColourFor": "「{{label}}」的任意顏色"
+  },
+  "boot": {
+    "takingLong": "開啟本機資料庫的時間比平常久。可能有另一個 jojo 分頁正占用著它——關閉其他分頁通常就能解決。",
+    "opening": "正在開啟你的本機資料庫…"
+  },
+  "keywordPicker": {
+    "none": "還沒有",
+    "choose": "選擇關鍵字",
+    "heading": "關鍵字",
+    "newPlaceholder": "新關鍵字…",
+    "new": "新關鍵字"
+  },
+  "rowMenu": {
+    "moreFor": "{{name}} 的更多動作",
+    "more": "更多動作"
+  },
+  "firstRun": {
+    "title": "你想如何開始？",
+    "description": "jojo 把所有內容都保存在這台電腦上，所以由你決定。兩個選項都不是最終決定——之後隨時可以從「設定」載入示範資料，或清除所有紀錄。",
+    "demo": {
+      "title": "用示範資料探索",
+      "detail": "一份完整的求職範例，讓你四處看看——十二份申請、一條時間軸、一個裝滿內容的保管庫。裡面沒有任何你的資料，之後只要按一下就能清除。",
+      "working": "載入中…"
+    },
+    "empty": {
+      "title": "從空白開始",
+      "detail": "完全沒有示範紀錄。每個頁面都會從空白狀態開始，jojo 裡的第一筆內容會是你自己新增的。",
+      "working": "清除中…"
+    }
+  },
+  "recovery": {
+    "title": "jojo 無法讀取它的資料庫",
+    "body": "你的紀錄仍在這台電腦上。jojo 沒有變更或取代任何內容，也不會用示範資料覆蓋它們——如果儲存區為了看起來正常而自行重新填入資料，就會讓這次問題變成永久的資料遺失。",
+    "downloadHint": "將能讀取的資料列寫入檔案",
+    "downloadNothing": "完全無法讀取資料庫，所以沒有任何內容可以寫出",
+    "download": "下載能讀取的部分",
+    "working": "處理中…",
+    "retry": "再試一次",
+    "freshHint": "刪除資料庫，讓 jojo 像全新安裝一樣重新開始",
+    "fresh": "重新開始",
+    "readable_other": "有 {{count}} 列資料可以讀取——請先下載，因為重新開始會刪除它們。",
+    "unreadable": "儲存區中沒有任何內容可以讀取，所以沒有東西可下載。請先再試一次：資料庫若被另一個分頁占用，就會出現這種錯誤，並且會自行恢復。",
+    "confirmTitle": "要刪除資料庫並重新開始嗎？",
+    "confirmBody": "這會刪除 jojo 的本機資料庫和其中所有內容，然後從零開始——包括首次執行時詢問你要使用示範資料或從空白開始的問題。這不會修復任何東西，也無法復原。如果你還沒下載可讀取的資料列，請取消並先下載。",
+    "confirm": "刪除並重新開始"
+  },
+  "labelFilter": {
+    "label": "依關鍵字篩選",
+    "none": "還沒有關鍵字——新增一個即可用它篩選。",
+    "example": "例如：開發人員",
+    "add": "新增關鍵字",
+    "clear": "清除"
+  },
+  "labelPicker": {
+    "editOn": "編輯 {{name}} 的關鍵字",
+    "edit": "編輯關鍵字"
+  },
+  "keywordChip": {
+    "taken": "已有其他關鍵字使用這個名稱。",
+    "needsName": "關鍵字需要名稱。",
+    "rename": "重新命名",
+    "colour": "顏色",
+    "stopFiltering": "停止依「{{name}}」篩選",
+    "filterBy": "依「{{name}}」篩選",
+    "edit": "編輯關鍵字「{{name}}」",
+    "editHint": "重新命名、更換顏色或刪除"
+  },
+  "welcome": {
+    "title": "簡單介紹一下你自己",
+    "description": "草稿會以你的名字署名，職缺偵察也會依你想找的內容評分。這些資料全都保留在這台電腦上，而且都是選填——之後也可以在「個人檔案」中填寫。",
+    "fullName": "全名",
+    "fullNameExample": "例如：Lonardo Jenson",
+    "position": "目前職位",
+    "positionExample": "例如：資訊工程博士候選人",
+    "location": "所在地",
+    "locationExample": "例如：Santa Clara, CA",
+    "email": "電子郵件",
+    "skip": "先略過",
+    "save": "儲存並繼續",
+    "rest": "其他資料——連結、目標職務、職缺偵察比對的關鍵詞——都在<anchor>個人檔案</anchor>中。"
+  },
+  "onboarding": {
+    "tourTitle": "想要實際操作導覽嗎？",
+    "tourDescription": "帶你走過實際的頁面——逐一標示每個部分、說明用途，並讓你邊看邊試。它絕不會替你輸入、儲存或變更任何內容，中途停下也會記住你的進度。",
+    "notNow": "稍後再說",
+    "start": "開始導覽",
+    "always": "導覽隨時都在<em>使用說明</em>中，所以現在拒絕也不會有任何損失。"
+  },
+  "setup": {
+    "skip": "先略過",
+    "continue": "繼續",
+    "done": "完成",
+    "optional": "以下每一項都是選用的，之後都可以在「設定」中設定。",
+    "model": {
+      "title": "連接模型",
+      "body": "這是讓 jojo 成為代理程式、而不只是檔案櫃的關鍵：連接後，它可以回答關於你求職的問題、撰寫追蹤信和草稿，並執行職缺偵察管線，讓你的紀錄保持完整並留意新職缺。將它指向你自己電腦上的模型，任何資料都不會離開這部裝置。"
+    },
+    "reader": {
+      "title": "讓它讀取你的文件",
+      "body": "沒有這項設定，助理只能看到文件的名稱，其他什麼都看不到。在這台電腦上執行 MarkItDown——只要下方的兩個指令——它在草擬和回答時，就能讀取你的履歷、求職信和已儲存職缺的內容。"
+    },
+    "crash": {
+      "title": "當機報告與使用情形",
+      "description": "這是兩件獨立的事，預設都已開啟——可以在這裡或之後在「設定」中關閉其中任一項。兩者都無法帶走你的紀錄：不論是申請、文件、備註、個人檔案或對話。",
+      "inReport": "報告中包含什麼",
+      "inError": "錯誤訊息，以及它在 jojo 中發生的位置。",
+      "inStack": "堆疊追蹤，其中會列出出錯的程式碼。",
+      "never": "報告中絕不會包含什麼",
+      "neverRecords": "你的申請、文件、備註、個人檔案或對話。",
+      "neverSecrets": "你的 API 金鑰、你使用的位址、你的家目錄，或任何電子郵件地址——這些會在報告寫入前就移除，而不是在傳送前才移除。",
+      "where": "在這個瀏覽器和 jojo 擴充功能中，當機報告會<em>保留在這部裝置上</em>：不會上傳任何內容，備份檔案也不會包含它們。你可以在「設定」中自行查看。在 jojo 手機應用程式上，同樣的報告也會傳送到 Google 的 Firebase Crashlytics，並附上你的裝置型號、作業系統版本，以及一個用來計算有多少人遇到相同當機的隨機 ID——沒有姓名、沒有帳號，也沒有任何能連結到你的資訊。使用次數（下方的第二個開關）則會從每個版本（包括這個版本）傳送到 Google Analytics。",
+      "keep": "保留當機報告",
+      "keepHint": "錯誤內容和發生位置。在瀏覽器中會保留在這部裝置上。",
+      "share": "分享我使用哪些功能",
+      "shareHint": "只有次數——開啟了哪些畫面、開啟頻率。絕不包含畫面中的內容。",
+      "usageNote": "第二項是 jojo 唯一會傳送、關於你「做了什麼」的資料，而且只能從固定清單中挑選說法——「開啟了保管庫」、「新增了一份申請」、「共有 6–20 份」。它無法說出雇主、職務、檔案或你輸入的任何內容，因為這些字詞不在清單中。這些資料會傳送到 Google Analytics，讓我們知道 jojo 的哪些部分值得投入更多心力。",
+      "bothOff": "兩項都關閉",
+      "save": "儲存選擇",
+      "continueOff": "兩項都關閉並繼續",
+      "later": "你隨時可以在「設定」中變更這兩項，關閉其中一項時，也會一併捨棄它已保留的內容。"
+    },
+    "extension": {
+      "title": "保留你申請過的職缺",
+      "body": "徵才廣告常常在你收到回音前就下架了。瀏覽器擴充功能會把職缺當下的內容儲存到你自己的保管庫中——職缺偵察也是透過它來讀取你追蹤的求職網站。"
+    }
+  },
+  "spectrum": {
+    "saturation": "飽和度與亮度",
+    "hue": "色相",
+    "hex": "十六進位色碼",
+    "any": "任意顏色"
+  },
+  "field": {
+    "openInTab": "在新分頁中開啟{{label}}",
+    "hide": "隱藏{{label}}",
+    "show": "顯示{{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "小",
+      "normal": "一般",
+      "large": "大",
+      "huge": "特大"
+    },
+    "clearFormatting": "清除格式",
+    "bold": "粗體",
+    "italic": "斜體",
+    "underline": "底線",
+    "strikeThrough": "刪除線",
+    "insertUnorderedList": "項目符號清單",
+    "insertOrderedList": "編號清單",
+    "snippetText": "片段文字",
+    "fontSize": "字型大小",
+    "insertTable": "插入表格",
+    "textColour": "文字顏色"
+  },
+  "toolForm": {
+    "aRecord": "一筆紀錄",
+    "yourProfile": "你的個人檔案"
+  },
+  "toolRun": {
+    "choose": "選擇…",
+    "none": "無",
+    "omitted_other": "這個表單上沒有：{{fields}}。請開啟紀錄來設定。"
+  },
+  "toast": {
+    "notifications": "通知",
+    "dismiss": "關閉——{{title}}"
+  },
+  "command": {
+    "title": "命令選擇區",
+    "description": "搜尋要執行的命令…"
+  }
+}

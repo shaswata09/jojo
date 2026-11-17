@@ -50,7 +50,13 @@ export function catalogProblems(english: Catalog, translated: Catalog): string[]
     if (text.trim() === '') problems.push(`empty ${key}`)
     const want = placeholdersOf(englishText).join(',')
     const got = placeholdersOf(text).join(',')
-    if (want !== got) problems.push(`placeholders ${key}: {${got}} where English has {${want}}`)
+    // A plural form may say the number English's form leaves out: English
+    // "one" is only ever 1 ("one change"), but Russian's covers 21 and 31 too,
+    // Hindi's and Bengali's cover 0, so their "one" needs `{{count}}`.
+    const withCount = placeholdersOf(`${englishText}{{count}}`).join(',')
+    const countAdded = PLURAL.test(key) && !want.split(',').includes('count') && got === withCount
+    if (want !== got && !countAdded)
+      problems.push(`placeholders ${key}: {${got}} where English has {${want}}`)
   }
   return problems
 }

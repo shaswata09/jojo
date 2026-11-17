@@ -1,0 +1,44 @@
+{
+  "language": {
+    "label": "Ngôn ngữ",
+    "description": "Ngôn ngữ hiển thị của jojo. Các bản ghi của bạn vẫn giữ nguyên ngôn ngữ bạn đã viết.",
+    "system": "Giống thiết bị này ({{name}})",
+    "restartRtl": "{{name}} sẽ hiển thị từ phải sang trái sau khi khởi động lại jojo.",
+    "restartLtr": "{{name}} sẽ hiển thị từ trái sang phải sau khi khởi động lại jojo."
+  },
+  "actions": {
+    "undo": "Hoàn tác",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "cancel": "Hủy",
+    "tryAgain": "Thử lại",
+    "preview": "Xem trước",
+    "moreFor": "Thao tác khác cho {{name}}",
+    "save": "Lưu",
+    "done": "Xong",
+    "openNamed": "Mở {{name}}",
+    "clear": "Xóa",
+    "clearNamed": "Xóa {{name}}",
+    "notNow": "Để sau",
+    "duplicate": "Nhân bản",
+    "remove": "Gỡ",
+    "back": "Quay lại",
+    "next": "Tiếp",
+    "close": "Đóng",
+    "clearSearch": "Xóa tìm kiếm",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép"
+  },
+  "discard": {
+    "title": "Bỏ các thay đổi chưa lưu?",
+    "description": "Những gì bạn đã nhập ở đây chưa được lưu ở đâu cả, nên rời đi sẽ làm mất chúng — và không thể hoàn tác.",
+    "confirm": "Bỏ"
+  },
+  "filter": {
+    "all": "Tất cả"
+  },
+  "pageOptions": {
+    "title": "Tùy chọn trang",
+    "description": "Chỉ áp dụng cho màn hình này, trong lần xem này."
+  }
+}

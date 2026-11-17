@@ -1,0 +1,286 @@
+{
+  "common": {
+    "newApplication": "Nuova candidatura",
+    "openBoard": "Apri la bacheca",
+    "showAll": "Mostra tutto",
+    "undo": "Annulla",
+    "pushOut": "Rimanda \"{{title}}\"",
+    "pushOutBy": "Rimanda di",
+    "completed": "{{title}} completato",
+    "rescheduled": "{{title}} riprogrammato"
+  },
+  "headlineRates": {
+    "emptyTitle": "Ancora nessun tasso",
+    "emptyDescription": "I tassi di risposta, colloquio e offerta contano le candidature effettivamente inviate. Sposta una candidatura fuori da Bozza e questo riquadro si riempie."
+  },
+  "pipeline": {
+    "emptyTitle": "Nulla nella pipeline",
+    "emptyDescription": "Ogni candidatura si trova in una fase, e questo grafico mostra come sono distribuite. Aggiungine una e compare la prima fetta.",
+    "ariaLabel_one": "{{count}} candidatura per fase",
+    "ariaLabel_many": "{{count}} di candidature per fase",
+    "ariaLabel_other": "{{count}} candidature per fase"
+  },
+  "statsCard": {
+    "control": "Statistica",
+    "tracked_one": "{{count}} seguita",
+    "tracked_many": "{{count}} seguite",
+    "tracked_other": "{{count}} seguite",
+    "views": {
+      "pipeline": "Pipeline",
+      "rates": "Tassi",
+      "when": "Quando",
+      "next": "Prossimi passi"
+    },
+    "titles": {
+      "pipeline": "Pipeline",
+      "rates": "Tassi principali",
+      "when": "Quando ti sei candidato",
+      "next": "Su cosa lavorare adesso"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "Note",
+      "recent": "Candidature recenti"
+    },
+    "headingNotes": "Note adesive",
+    "headingRecent": "Candidature recenti",
+    "control": "Mostra in questa scheda",
+    "addReminder": "Aggiungi promemoria",
+    "viewAll": "Vedi tutte",
+    "emptyTitle": "Ancora nessuna candidatura",
+    "emptyDescription": "Ogni posizione che segui compare qui quando ci lavori, dalla più recente.",
+    "today": "Oggi",
+    "daysAgo_one": "{{count}} giorno fa",
+    "daysAgo_many": "{{count}} di giorni fa",
+    "daysAgo_other": "{{count}} giorni fa"
+  },
+  "searchHealth": {
+    "title": "Su cosa lavorare adesso",
+    "series": {
+      "you": "Tuoi",
+      "target": "Tipici"
+    },
+    "intro": "i tuoi dati rispetto a una ricerca tipica",
+    "sample": "Esempio",
+    "sampleTitle": "Solo l'anello tipico è indicativo",
+    "emptyTitle": "Ancora troppo poco per un confronto",
+    "emptyDescription": "Questo confronta le tue risposte, colloqui, segnalazioni e solleciti con una ricerca tipica. Servono candidature effettivamente inviate.",
+    "suggestions": "Suggerimenti, dal più utile"
+  },
+  "sources": {
+    "title": "Da dove provengono",
+    "views": {
+      "bars": "Barre",
+      "donut": "Ciambella"
+    },
+    "chartType": "Tipo di grafico",
+    "unrecorded": "Non registrata",
+    "hintAll_one": "{{count}} candidatura",
+    "hintAll_many": "{{count}} di candidature",
+    "hintAll_other": "{{count}} candidature",
+    "hintSome": "{{shown}} su {{count}}",
+    "emptyTitle": "Ancora nulla da suddividere",
+    "emptyDescription": "Ogni candidatura registra dove l'hai trovata: un sito di lavoro, una segnalazione, la pagina del dipartimento. Quando ce ne sono, questo grafico le suddivide.",
+    "centerLabel": "candidature",
+    "show": "Mostra {{name}}",
+    "hide": "Nascondi {{name}}",
+    "allOff": "Tutte le fonti sono disattivate."
+  },
+  "offers": {
+    "title": "Offerte a confronto",
+    "open_one": "{{count}} aperta",
+    "open_many": "{{count}} aperte",
+    "open_other": "{{count}} aperte",
+    "caption": "Le tue offerte aperte, con il pacchetto come l'hai scritto, una sua lettura annua e la data entro cui rispondere a ciascuna",
+    "columns": {
+      "job": "Lavoro",
+      "package": "Pacchetto",
+      "year": "All'anno",
+      "respondBy": "Rispondi entro"
+    },
+    "notStated": "non indicato",
+    "noAmount": "Non è stato possibile leggere un importo dal pacchetto",
+    "readFrom": "Letto da “{{text}}”",
+    "highest": "— il più alto qui",
+    "annualised": "(su base annua)",
+    "passed": "scaduta",
+    "today": "oggi",
+    "daysLeft_one": "{{count}} giorno",
+    "daysLeft_many": "{{count}} di giorni",
+    "daysLeft_other": "{{count}} giorni",
+    "ranked": "La cifra annua è letta da ciò che hai scritto: passa sopra una cifra per vedere da quali parole proviene.",
+    "unranked": "Non sono in classifica: i pacchetti sono in valute diverse, e jojo non ha un tasso di cambio né fa chiamate di rete per trovarne uno.",
+    "annualisedNote": "* su base annua calcolata su 12 mesi, 52 settimane o 2.080 ore, una convenzione e non il tuo contratto."
+  },
+  "sticky": {
+    "newNote": "Nuova nota adesiva",
+    "placeholder": "Annota un promemoria per te… (Invio per attaccarlo)",
+    "newColour": "Colore della nuova nota",
+    "stick": "Attacca",
+    "empty": "Ancora nulla di attaccato. Le note restano qui finché non le togli, e ognuna può diventare un promemoria quando ha una data.",
+    "listLabel": "Note adesive",
+    "editNote": "Modifica nota",
+    "clickToEdit": "Fai clic per modificare",
+    "editAria": "Modifica nota: {{text}}",
+    "colour": "Colore",
+    "colourOf": "Colore della nota \"{{text}}\"",
+    "toReminder": "Trasforma in promemoria",
+    "toReminderAria": "Trasforma in promemoria: {{text}}",
+    "takeDown": "Togli questa nota",
+    "removeAria": "Rimuovi nota: {{text}}"
+  },
+  "frequency": {
+    "title": "Quando ti sei candidato",
+    "period": "Periodo",
+    "periods": {
+      "week": "Settimana",
+      "month": "Mese",
+      "quarter": "Trimestre"
+    },
+    "chartType": "Tipo di grafico",
+    "charts": {
+      "bar": "Barre",
+      "line": "Linea"
+    },
+    "emptyTitle": "Ancora nulla da rappresentare",
+    "emptyDescription": "Questo conta le candidature che invii, settimana per settimana, suddivise per tipo di ruolo. Aggiungine una e compare la prima barra.",
+    "noDatesTitle": "Ancora nessuna data di invio registrata",
+    "noDates_one": "La tua unica candidatura non ha ancora una data. Viene apposta quando sposti un record in Inviata.",
+    "noDates_many": "Nessuna delle tue {{count}} di candidature ha ancora una data. Viene apposta quando sposti un record in Inviata.",
+    "noDates_other": "Nessuna delle tue {{count}} candidature ha ancora una data. Viene apposta quando sposti un record in Inviata.",
+    "perPeriod": {
+      "week": "Candidature inviate per settimana, suddivise per {{series}}",
+      "month": "Candidature inviate per mese, suddivise per {{series}}",
+      "quarter": "Candidature inviate per trimestre, suddivise per {{series}}"
+    },
+    "caption": {
+      "week": "Candidature inviate per settimana",
+      "month": "Candidature inviate per mese",
+      "quarter": "Candidature inviate per trimestre"
+    },
+    "countingUndated_one": "Conteggiate {{inWindow}} candidature su {{total}}: {{count}} non ha ancora una data.",
+    "countingUndated_many": "Conteggiate {{inWindow}} candidature su {{total}}: {{count}} non hanno ancora una data.",
+    "countingUndated_other": "Conteggiate {{inWindow}} candidature su {{total}}: {{count}} non hanno ancora una data.",
+    "countingEarlier_one": "Conteggiate {{inWindow}} candidature su {{total}}: {{count}} è precedente a {{first}}.",
+    "countingEarlier_many": "Conteggiate {{inWindow}} candidature su {{total}}: {{count}} sono precedenti a {{first}}.",
+    "countingEarlier_other": "Conteggiate {{inWindow}} candidature su {{total}}: {{count}} sono precedenti a {{first}}.",
+    "countingBoth": "Conteggiate {{inWindow}} candidature su {{total}}: {{undated}} ancora senza data, e {{earlier}} prima di {{first}}."
+  },
+  "glance": {
+    "heading": "In breve",
+    "stats": {
+      "active": "Attive",
+      "screens": "Chiamate e colloqui",
+      "overdue": "In ritardo",
+      "doneToday": "Fatti oggi"
+    },
+    "previousMonth": "Mese precedente",
+    "currentMonth": "Vai al mese corrente",
+    "currentMonthTitle": "{{date}} — mese corrente",
+    "nextMonth": "Mese successivo",
+    "openCalendar": "Apri il calendario",
+    "dayNone": "{{date}}, nessun evento",
+    "day_one": "{{date}}, {{count}} evento",
+    "day_many": "{{date}}, {{count}} di eventi",
+    "day_other": "{{date}}, {{count}} eventi",
+    "dayAllDone_one": "{{date}}, {{count}} evento, fatto",
+    "dayAllDone_many": "{{date}}, {{count}} di eventi, tutti fatti",
+    "dayAllDone_other": "{{date}}, {{count}} eventi, tutti fatti",
+    "today": "oggi",
+    "nothingPlanned": "Nulla in programma. <add>Aggiungi qualcosa</add>."
+  },
+  "priority": {
+    "title": "Serve una decisione",
+    "open_one": "{{count}} aperta",
+    "open_many": "{{count}} aperte",
+    "open_other": "{{count}} aperte",
+    "completedDescription": "Esce dal mazzo e da questa settimana: nulla viene eliminato.",
+    "rescheduledDescription": "Ora scade il {{date}}, nel calendario e nella settimana in arrivo.",
+    "tickOff": "Spunta \"{{title}}\"",
+    "done": "Fatto",
+    "snooze": "Rimanda",
+    "notConnected": "Ancora nulla è collegato a questo",
+    "earlierAria": "Mostra le decisioni precedenti",
+    "earlier": "Prima",
+    "laterAria": "Mostra le decisioni successive",
+    "later": "Dopo",
+    "listLabel": "Decisioni, dalla più vicina",
+    "emptyTitle": "Oggi non c'è nulla da decidere",
+    "emptyDescription": "Qui compaiono le offerte, le candidature in ritardo, la prossima scadenza tassativa e il tuo prossimo colloquio. Nessuno di questi è in sospeso."
+  },
+  "firstSteps": {
+    "title": "Primi passi",
+    "hint": "{{done}} su {{total}} fatti",
+    "application": {
+      "title": "Aggiungi una candidatura",
+      "body": "Una posizione, la sua fase e la sua scadenza. Tutto il resto in jojo dipende da questo record."
+    },
+    "dated": {
+      "title": "Dai una data a qualcosa",
+      "body": "Scadenze, colloqui e visite sono un unico tipo di record, quindi una data arriva a questa pagina, al calendario e alla candidatura contemporaneamente.",
+      "action": "Nuovo evento"
+    },
+    "reminder": {
+      "title": "Imposta un sollecito",
+      "body": "Un promemoria è lo stesso record con un avviso attivato. Quando la sua data passa è dovuto, e resta qui finché non lo spunti.",
+      "action": "Nuovo promemoria"
+    },
+    "complete": "Tutti e tre sono fatti. Qualsiasi cosa aggiungi da qui arriva a questa pagina, al calendario e alla candidatura a cui appartiene.",
+    "intro": "Ogni passo apre la funzione vera e si spunta da solo quando esiste un record: nessuno di essi è un tutorial da sorbirsi.",
+    "introBare": "Non segui ancora nulla. Ogni passo apre la funzione vera e si spunta da solo quando esiste un record: nessuno di essi è un tutorial da sorbirsi.",
+    "doneSr": "— fatto",
+    "notDoneSr": "— non ancora fatto",
+    "hideHint": "Gli stessi passi sono descritti nella guida",
+    "close": "Chiudi i primi passi",
+    "hide": "Nascondi questi passi"
+  },
+  "owed": {
+    "title": "Da fare questa settimana",
+    "add": "Aggiungi",
+    "addEvent": "Aggiungi un evento",
+    "emptyTitle": "Nulla da fare",
+    "emptyDescription": "Scadenze, colloqui e solleciti arrivano qui appena hanno una data, e restano finché non li spunti.",
+    "hintOverdue": "{{overdue}} in ritardo · {{due}} in scadenza",
+    "hintDue_one": "{{count}} in scadenza",
+    "hintDue_many": "{{count}} in scadenza",
+    "hintDue_other": "{{count}} in scadenza",
+    "snoozeAria": "Rimanda {{title}}",
+    "openAria": {
+      "reminder": "Apri {{title}}: modifica il promemoria o vai alla sua candidatura",
+      "event": "Apri {{title}}: modifica l'evento o vai alla sua candidatura"
+    },
+    "edit": {
+      "reminder": "Modifica promemoria",
+      "event": "Modifica evento"
+    },
+    "openApplication": "Apri <name>{{name}}</name>",
+    "groups": {
+      "overdue": "In ritardo",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "rest": "Resto della settimana"
+    },
+    "completedDescription": "Esce da questo elenco e conta per oggi: nulla viene eliminato.",
+    "rescheduledDescription": "Ora scade il {{date}}, qui e nel calendario.",
+    "nextSeven": "Prossimi sette giorni",
+    "items_one": "{{count}} elemento",
+    "items_many": "{{count}} di elementi",
+    "items_other": "{{count}} elementi",
+    "allDone": "tutto fatto",
+    "nothingScheduled": "nulla in programma",
+    "todayClear": "Oggi è libero.",
+    "todayClearDone": "Oggi è libero: {{count}} fatti.",
+    "markDoneAria": "Segna \"{{title}}\" come fatto",
+    "markDone": "Segna come fatto",
+    "draftTitle": "Scrivilo partendo da uno dei tuoi frammenti email",
+    "draftAria": "Scrivi {{title}}",
+    "later": "Dopo",
+    "openTitle": "Apri {{title}}",
+    "more_one": "{{count}} altro nel calendario",
+    "more_many": "{{count}} altri nel calendario",
+    "more_other": "{{count}} altri nel calendario",
+    "showAll": "Mostra tutti e {{total}}",
+    "showFewer": "Mostra meno"
+  }
+}

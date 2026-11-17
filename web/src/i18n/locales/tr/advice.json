@@ -1,0 +1,130 @@
+{
+  "days_one": "{{count}} gün",
+  "days_other": "{{count}} gün",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Emeğinizin daha büyük kısmını buna ayırın: {{label}}.",
+      "because": {
+        "source": {
+          "replied_one": "Orada {{of}} başvurudan {{count}} tanesi yanıt aldı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Nereden geldiklerine göre ayrıldı.",
+          "replied_other": "Orada {{of}} başvurudan {{count}} tanesi yanıt aldı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Nereden geldiklerine göre ayrıldı.",
+          "interview_one": "Orada {{of}} başvurudan {{count}} tanesi mülakata ulaştı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Nereden geldiklerine göre ayrıldı.",
+          "interview_other": "Orada {{of}} başvurudan {{count}} tanesi mülakata ulaştı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Nereden geldiklerine göre ayrıldı."
+        },
+        "role": {
+          "replied_one": "Orada {{of}} başvurudan {{count}} tanesi yanıt aldı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Rol türüne göre ayrıldı.",
+          "replied_other": "Orada {{of}} başvurudan {{count}} tanesi yanıt aldı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Rol türüne göre ayrıldı.",
+          "interview_one": "Orada {{of}} başvurudan {{count}} tanesi mülakata ulaştı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Rol türüne göre ayrıldı.",
+          "interview_other": "Orada {{of}} başvurudan {{count}} tanesi mülakata ulaştı (%{{rate}}, büyük olasılıkla %{{low}}–{{high}}); {{worst}} için bu, {{worstOf}} başvurudan {{worstCount}} (%{{worstRate}}, büyük olasılıkla %{{worstLow}}–{{worstHigh}}). Rol türüne göre ayrıldı."
+        }
+      }
+    },
+    "late": {
+      "headline_one": "Gecikmiş {{count}} takibi tamamlayın.",
+      "headline_other": "Gecikmiş {{count}} takibi tamamlayın.",
+      "because": "Bunlar, yapmaya değer olduğuna zaten karar verdiğiniz hatırlatmalar ve işverenin zaten gördüğü başvurularla ilgili. Bu listedeki başka hiçbir şey bitmeye bu kadar yakın değil."
+    },
+    "silent": {
+      "headline_one": "Sessizleşen {{count}} başvurunun peşine düşün.",
+      "headline_other": "Sessizleşen {{count}} başvurunun peşine düşün.",
+      "because_one": "Size gelen yanıtlar genellikle {{days}} içinde ulaşıyor; bu başvuru bu süreyi geçti ve hiçbir yanıt gelmedi. Bu genel bir kural değil, sizin kendi rakamınız.",
+      "because_other": "Size gelen yanıtlar genellikle {{days}} içinde ulaşıyor; bu başvurular bu süreyi geçti ve hiçbir yanıt gelmedi. Bu genel bir kural değil, sizin kendi rakamınız."
+    },
+    "stale": {
+      "headline_one": "{{count}} başvuruda ne olduğunu kaydedin.",
+      "headline_other": "{{count}} başvuruda ne olduğunu kaydedin.",
+      "because_one": "İki haftadır buna dair hiçbir şey yazılmadı. Bu sayfadaki her oran, ancak yazılanlar kadar doğrudur.",
+      "because_other": "İki haftadır bunlara dair hiçbir şey yazılmadı. Bu sayfadaki her oran, ancak yazılanlar kadar doğrudur."
+    },
+    "drafts": {
+      "headlineSingle": "Taslağı bitirin ya da bırakın.",
+      "headline_one": "{{count}} taslaktan bitmeye en yakın olanı tamamlayın ya da bırakın.",
+      "headline_other": "{{count}} taslaktan bitmeye en yakın olanı tamamlayın ya da bırakın.",
+      "because_one": "Bir taslak gönderilene kadar hiçbir işe yaramaz. En eskisi {{count}} gündür açık.",
+      "because_other": "Bir taslak gönderilene kadar hiçbir işe yaramaz. En eskisi {{count}} gündür açık."
+    },
+    "background": {
+      "headline": "jojo CV'nizi okusun.",
+      "because": "Kendi geçmişinize dair hiçbir şey kayıtlı değil; bu yüzden hiçbir başvuru, ilanın istedikleriyle karşılaştırılamıyor. Tek bir belge ve tek bir onay yeterli."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Bir sonrakini göndermeden önce giriş paragrafını yeniden yazın.",
+        "because": "Bu aramanın tipik bir aramaya göre en çok kaybettiği yer yanıtlar. {{of}} başvurudan {{got}} (%{{rate}}), tipik bir aramada ise %{{typical}} — bu, jojo'nun karşılaştırma için seçtiği yuvarlak bir sayıdır, kimseden ölçülmüş değildir."
+      },
+      "interviews": {
+        "headline": "Uyumu ilk üç satırda açıkça gösterin.",
+        "because": "Burada en büyük boşluk, görüşmeden önce tıkanan yanıtlar — ilgi var ama gerekçeniz yerine oturmuyor. {{of}} başvurudan {{got}} (%{{rate}}), tipik bir aramada ise %{{typical}} — bu, jojo'nun karşılaştırma için seçtiği yuvarlak bir sayıdır, kimseden ölçülmüş değildir."
+      }
+    },
+    "clear": {
+      "headline": "Burada peşine düşülecek bir şey yok.",
+      "because_one": "Tüm takipler zamanında, hiçbir şey sessizleşmedi ve bekleyen taslak yok. {{count}} başvuru gönderilmiş durumda.",
+      "because_other": "Tüm takipler zamanında, hiçbir şey sessizleşmedi ve bekleyen taslak yok. {{count}} başvuru gönderilmiş durumda."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Gönderilen",
+      "replies": "Yanıtlar",
+      "interviews": "Mülakatlar",
+      "referrals": "Referanslar",
+      "followUps": "Takipler",
+      "keptMoving": "İlerleyen"
+    },
+    "basis": {
+      "sent_one": "{{of}} başvurudan {{count}} tanesi taslaktan çıktı",
+      "sent_other": "{{of}} başvurudan {{count}} tanesi taslaktan çıktı",
+      "replies_one": "{{of}} başvurudan {{count}} tanesi yanıt aldı",
+      "replies_other": "{{of}} başvurudan {{count}} tanesi yanıt aldı",
+      "interviews_one": "{{of}} başvurudan {{count}} tanesi mülakata ulaştı",
+      "interviews_other": "{{of}} başvurudan {{count}} tanesi mülakata ulaştı",
+      "referrals_one": "{{of}} başvurudan {{count}} tanesi referansla geldi",
+      "referrals_other": "{{of}} başvurudan {{count}} tanesi referansla geldi",
+      "followUpsNone": "açık bir şey yok",
+      "followUps_one": "{{of}} açık takipten {{count}} tanesi gecikmiş",
+      "followUps_other": "{{of}} açık takipten {{count}} tanesi gecikmiş",
+      "keptMovingNone": "devam eden bir şey yok",
+      "keptMoving_one": "{{of}} başvurudan {{count}} tanesine son iki haftada dokunuldu",
+      "keptMoving_other": "{{of}} başvurudan {{count}} tanesine son iki haftada dokunuldu"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Taslakta bekleyen bir şey yok. Daha fazlasını eklemek yerine her birine gösterdiğiniz özeni korumaya değer.",
+        "some_one": "{{count}} başvuru hâlâ taslakta. Bir taslak gönderilene kadar hiçbir işe yaramaz ve bitmeye en yakın olanı tamamlamak en kolayıdır.",
+        "some_other": "{{count}} başvuru hâlâ taslakta. Bir taslak gönderilene kadar hiçbir işe yaramaz ve bitmeye en yakın olanı tamamlamak en kolayıdır."
+      },
+      "replies": {
+        "nothingSent": "Henüz hiçbir şey gönderilmedi; bu yüzden yanıtı ölçecek bir şey yok.",
+        "none_one": "Gönderilen {{count}} başvurunun hiçbiri yanıt almadı. Daha fazla göndermeden önce üzerinde çalışılacak adım bu — giriş paragrafını her ilana göre uyarlamak bunu her şeyden çok etkiler.",
+        "none_other": "Gönderilen {{count}} başvurunun hiçbiri yanıt almadı. Daha fazla göndermeden önce üzerinde çalışılacak adım bu — giriş paragrafını her ilana göre uyarlamak bunu her şeyden çok etkiler.",
+        "all": "Gönderilen her başvuru yanıt aldı. Giriş paragrafı ne yapıyorsa yapmaya devam etsin.",
+        "some_one": "{{of}} başvurudan {{count}} tanesine yanıt geldi. Giriş paragrafını her ilana göre uyarlamak bunu her şeyden çok etkiler.",
+        "some_other": "{{of}} başvurudan {{count}} tanesine yanıt geldi. Giriş paragrafını her ilana göre uyarlamak bunu her şeyden çok etkiler."
+      },
+      "interviews": {
+        "noReply": "Henüz yanıt gelmedi; bu yüzden hiçbir şeyin görüşmeden önce tıkanma fırsatı olmadı.",
+        "none_one": "{{count}} yanıt geldi ve hiçbiri görüşmeye dönüşmedi. Bu boşluk genellikle uyumun ilk paragrafta açıkça görünmemesinden kaynaklanır.",
+        "none_other": "{{count}} yanıt geldi ve hiçbiri görüşmeye dönüşmedi. Bu boşluk genellikle uyumun ilk paragrafta açıkça görünmemesinden kaynaklanır.",
+        "some_one": "{{count}} yanıttan {{interviewed}} tanesi görüşmeye dönüştü. Görüşmeden önce tıkanan yanıtlar genellikle uyumun yeterince erken görünmediği anlamına gelir.",
+        "some_other": "{{count}} yanıttan {{interviewed}} tanesi görüşmeye dönüştü. Görüşmeden önce tıkanan yanıtlar genellikle uyumun yeterince erken görünmediği anlamına gelir."
+      },
+      "referrals": {
+        "none": "Bunların hiçbiri bir tanıştırma yoluyla gelmedi. Referanslı bir başvurunun yanıt alma olasılığı birkaç kat yüksektir; bu yüzden bir tanesi birkaç soğuk başvuruya bedeldir.",
+        "some_one": "{{of}} başvurudan {{count}} tanesi bir tanıştırma yoluyla geldi. Bu listedeki en verimli şey bu ve aynı zamanda en zor ölçeklenen — bu yüzden bir sonraki soğuk başvurudan sonra değil, önce sormaya değer.",
+        "some_other": "{{of}} başvurudan {{count}} tanesi bir tanıştırma yoluyla geldi. Bu listedeki en verimli şey bu ve aynı zamanda en zor ölçeklenen — bu yüzden bir sonraki soğuk başvurudan sonra değil, önce sormaya değer."
+      },
+      "followUps": {
+        "none": "Gecikmiş bir şey yok. Gönderdikten yaklaşık bir hafta sonra yapılan hatırlatma genellikle sonuç verir.",
+        "late_one": "{{count}} takip gecikmiş. Bunları tamamlamak genellikle yeni bir yere başvurmaktan daha hızlı karşılık verir.",
+        "late_other": "{{count}} takip gecikmiş. Bunları tamamlamak genellikle yeni bir yere başvurmaktan daha hızlı karşılık verir."
+      },
+      "keptMoving": {
+        "none": "Hiçbir şey sessizleşmedi. Olanları olduğu anda kaydetmek, bu tabloyu dürüst tutar.",
+        "stale_one": "Devam eden {{count}} başvuruda iki haftadır hiçbir hareket yok. Kısa bir hatırlatma, yeni bir yerden başlamaktan daha az emek ister.",
+        "stale_other": "Devam eden {{count}} başvuruda iki haftadır hiçbir hareket yok. Kısa bir hatırlatma, yeni bir yerden başlamaktan daha az emek ister."
+      }
+    }
+  }
+}

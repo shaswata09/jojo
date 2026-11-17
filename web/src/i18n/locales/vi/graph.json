@@ -1,0 +1,112 @@
+{
+  "common": {
+    "connections_other": "{{count}} kết nối",
+    "records_other": "{{count}} bản ghi"
+  },
+  "legend": {
+    "show": "Hiện {{name}}",
+    "hide": "Ẩn {{name}}",
+    "allHidden": "Mọi loại bản ghi đều đang ẩn.",
+    "showAll": "Hiện tất cả",
+    "isA": "là một"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Đồ thị tri thức — {{records}}, {{connections}}",
+    "capped": "Đang hiện {{shown}} bản ghi có nhiều kết nối nhất. Còn {{dropped}} bản ghi khác trong kho dữ liệu nhưng không có trên khung này — dùng bộ lọc để thu hẹp và xem chúng.",
+    "description": "Mỗi bản ghi là một nút và mỗi liên kết giữa các bản ghi là một đường. Các bảng bên cạnh đồ thị liệt kê cùng thông tin đó dưới dạng văn bản."
+  },
+  "answer": {
+    "title": "Kết quả",
+    "records_other": "{{count}} bản ghi",
+    "prompt": "Chọn một ví dụ, hoặc tự dựng một mẫu, và kết quả sẽ hiện ở đây đồng thời sáng lên trong đồ thị phía trên.",
+    "emptyTitle": "Không có bản ghi nào khớp",
+    "clear": "Xóa truy vấn",
+    "caption": "Các bản ghi khớp với mẫu",
+    "columns": {
+      "record": "Bản ghi",
+      "kind": "Loại",
+      "matched": "Khớp"
+    },
+    "open": "Mở",
+    "select": "Chọn trong đồ thị",
+    "via": "qua {{rel}}",
+    "more_other": "{{names}} +{{count}} mục nữa",
+    "showing": "Đang hiện {{shown}} mục đầu tiên trong {{total}}. Tất cả đều được làm sáng trong đồ thị phía trên."
+  },
+  "examples": {
+    "title": "Ví dụ mẫu",
+    "nothingToAsk": "Phiên này không có gì để hỏi điều đó"
+  },
+  "query": {
+    "title": "Hỏi đồ thị",
+    "hint": "Hỏi bằng một câu, hoặc tự dựng câu hỏi",
+    "shape": "Dạng câu hỏi",
+    "pattern": "Mẫu",
+    "path": "Đường dẫn",
+    "generated": "Truy vấn được tạo",
+    "clear": "Xóa",
+    "sqlNote": "Dạng của câu hỏi, viết theo cú pháp SQL cho dễ đọc. Truy vấn thực sự chạy là truy vấn có cấu trúc ở phía trên — không có gì phân tích dòng này."
+  },
+  "fields": {
+    "records": "Bản ghi",
+    "anyRecord": "Bản ghi bất kỳ",
+    "ofKind": "Thuộc loại",
+    "anyKind": "Loại bất kỳ",
+    "reminder": "Lời nhắc",
+    "condition": "Điều kiện",
+    "quantifier": {
+      "has": "có",
+      "missing": "không có",
+      "atLeast": "có ít nhất"
+    },
+    "howMany": "Bao nhiêu",
+    "orMore_other": "{{count}} trở lên",
+    "relationship": "Quan hệ",
+    "anyRelationship": "quan hệ bất kỳ",
+    "connectedTo": "Kết nối với",
+    "anything": "bất kỳ thứ gì",
+    "keyword": "Mang từ khóa",
+    "anyKeyword": "từ khóa bất kỳ",
+    "from": "Từ",
+    "to": "Đến"
+  },
+  "detail": {
+    "title": "Bản ghi đã chọn",
+    "nothingSelected": "Chưa chọn gì",
+    "pickHint": "Chọn một nút — bằng cách nhấp vào nó, hoặc dùng Tab di chuyển tới rồi nhấn Enter — để xem nó kết nối với gì và nằm ở đâu trong ứng dụng.",
+    "open": "Mở {{type}}",
+    "openType": {
+      "application": "Mở đơn ứng tuyển",
+      "organisation": "Mở tổ chức",
+      "role": "Mở vị trí",
+      "item": "Mở mục dòng thời gian",
+      "keyword": "Mở từ khóa",
+      "link": "Mở liên kết",
+      "file": "Mở tệp",
+      "snippet": "Mở đoạn văn bản",
+      "posting": "Mở tin tuyển dụng đã lưu",
+      "match": "Mở gợi ý của Trình tìm việc",
+      "source": "Mở nguồn",
+      "background": "Mở \"Về bạn\"",
+      "claim": "Mở quan hệ"
+    },
+    "derived": "Được suy ra từ bản ghi của bạn — nó không có trang riêng.",
+    "verbs": "Bạn có thể làm gì với nó",
+    "noLinks": "Chưa có gì trỏ tới bản ghi này."
+  },
+  "ask": {
+    "notConnected": "Kết nối một mô hình cục bộ trong <settings>Cài đặt</settings> để có thể hỏi điều này bằng một câu. Công cụ dựng câu hỏi bên dưới vẫn dùng được trong cả hai trường hợp.",
+    "label": "Đặt câu hỏi cho đồ thị",
+    "stop": "Dừng",
+    "submit": "Hỏi",
+    "again": "Hỏi điều khác",
+    "suggestions": {
+      "noFollowUp": "Những đơn ứng tuyển nào chưa lên lịch liên hệ lại?",
+      "unfiled": "Những tệp nào chưa được xếp vào đâu?",
+      "busy": "Những đơn ứng tuyển nào có hơn hai mục dòng thời gian?"
+    }
+  }
+}

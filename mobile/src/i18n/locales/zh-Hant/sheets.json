@@ -1,0 +1,243 @@
+{
+  "common": {
+    "undo": "復原",
+    "cancel": "取消"
+  },
+  "addFromLink": {
+    "title": "從連結建立申請",
+    "description": "模型會讀取職缺並填寫表單，同時勾選職缺明顯相關的任何關鍵字。頁面會保留在保管庫的「職缺」下，在你確認之前，不會儲存為申請。",
+    "url": "職缺網址",
+    "addressOnly": "只使用網址",
+    "reading": "讀取中…",
+    "retry": "再試一次",
+    "submit": "讀取並預先填寫",
+    "failed": "讀取職缺失敗。",
+    "steps": {
+      "reading": "正在擷取頁面",
+      "asking": "正在讀取",
+      "saving": "正在儲存職缺"
+    },
+    "toast": {
+      "title": "已儲存並讀取職缺",
+      "kept": "{{name}} 已在保管庫中，你儲存申請時，它就會歸檔在申請底下。",
+      "gaps_other": "頁面上沒有 {{count}} 個欄位的資料。",
+      "tags_other": "已勾選你的 {{count}} 個關鍵字。"
+    }
+  },
+  "application": {
+    "newTitle": "新增申請",
+    "editTitle": "編輯 {{name}}",
+    "add": "新增申請",
+    "save": "儲存變更",
+    "checking": "正在檢查是否重複…",
+    "noRecord": "開啟這個面板時沒有指定要編輯的紀錄",
+    "description": {
+      "edit": "變更會取代目前的詳細資料，截止日期也會隨之更新。",
+      "prefilledTagged": "已根據你貼上的內容預先填寫——儲存前請檢查雇主、職務和關鍵字。",
+      "prefilled": "已根據你貼上的內容預先填寫——儲存前請檢查雇主和職務。",
+      "create": "追蹤你正在申請的職缺。標有星號的欄位為必填。"
+    },
+    "errors": {
+      "org": "請填寫雇主名稱——紀錄會依它歸檔。",
+      "role": "請填寫職務名稱，這樣同一個地方的兩份申請才能區分開來。",
+      "roleTag": "請選擇職務標籤——職務篩選條件和圖表都會讀取它。",
+      "url": "這不是瀏覽器可以開啟的連結——請加上 https://。"
+    },
+    "fields": {
+      "org": "機構",
+      "orgPlaceholder": "雇主或機構",
+      "role": "職稱",
+      "rolePlaceholder": "例如：資深資料分析師",
+      "roleTag": "職務標籤",
+      "pickRoleTag": "選擇職務標籤",
+      "roleTagDescription": "職務篩選條件和圖表依據的分類軸。",
+      "stage": "階段",
+      "deadline": "截止日期",
+      "deadlineHint": "在行事曆和未來一週中加入一個有日期的項目。",
+      "source": "來源",
+      "sourceNotSet": "未設定",
+      "location": "地點",
+      "locationPlaceholder": "城市，或遠端",
+      "comp": "薪酬",
+      "compPlaceholder": "例如：$96k + 股權",
+      "url": "職缺網址",
+      "postingId": "職缺編號",
+      "postingIdHint": "職缺或徵才編號（如果職缺有註明）。",
+      "postingIdPlaceholder": "例如：R-2024-0312",
+      "note": "備註",
+      "notePlaceholder": "送出之前還需要完成的事項。",
+      "keywords": "關鍵字"
+    },
+    "toast": {
+      "draftDiscarded": "已捨棄草稿",
+      "changesDiscarded": "已捨棄變更",
+      "nothingAdded": "沒有新增任何內容。按「復原」即可將表單恢復成你離開時的樣子。",
+      "unchanged": "{{name}} 沒有變更。按「復原」即可找回你的編輯。",
+      "recordUnchanged": "紀錄沒有變更。按「復原」即可找回你的編輯。",
+      "added": "已新增 {{name}}",
+      "deadlineOnCalendar": "截止日期 {{date}} 已加入行事曆。",
+      "noDeadline": "還沒有截止日期——新增後就會顯示在未來一週中。",
+      "postingFiled": "職缺已歸檔在它底下。",
+      "saved": "已儲存變更",
+      "deadlineRemoved": "{{name}}——它的截止日期已從行事曆移除。",
+      "restoreDeadline": "恢復截止日期"
+    },
+    "duplicate": {
+      "title": "這看起來是你已經有的職缺",
+      "modelSame": "模型判斷它們是同一個職缺。",
+      "modelReading": "——這是模型的判讀；請在下方確認。",
+      "existing": "你已經有的",
+      "adding": "你正在新增的",
+      "untitled": "未命名",
+      "postingId": "職缺編號 {{id}}",
+      "openYours": "開啟你已有的那份",
+      "openExisting": "開啟你已經有的 {{name}}",
+      "tapToOpen": "點一下即可開啟，或繼續將這份新增為第二筆紀錄。",
+      "editInstead": "改為編輯",
+      "discard": "捨棄",
+      "addAnyway": "仍要新增"
+    },
+    "since": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "daysAgo_other": "{{count}} 天前"
+    }
+  },
+  "draft": {
+    "title": "草擬訊息",
+    "description": {
+      "forApp": "寄給 {{name}}。不會產生任何內容，也不會寄出任何東西——填好空白處，複製到你的郵件程式，然後標記為已寄出。",
+      "forItem": "寄給 {{name}} · {{item}}。不會產生任何內容，也不會寄出任何東西——填好空白處，複製到你的郵件程式，然後標記為已寄出。",
+      "unlinked": "沒有連結到任何申請，所以 [ROLE] 和 [DATE] 會保持空白。不會產生任何內容，也不會寄出任何東西——填好空白處，複製到你的郵件程式，然後標記為已寄出。"
+    },
+    "defaultTitle": "電子郵件草稿",
+    "titleForOrg": "{{title}}——{{org}}",
+    "saveAsSnippet": "儲存為片段",
+    "writeFirst": "請先寫點內容",
+    "copy": "複製",
+    "copied": "已複製",
+    "markSent": "標記為已寄出",
+    "openFromReminder": "從提醒開啟這裡，才能勾選完成",
+    "alreadyTicked": "已經勾選完成",
+    "blank": "空白草稿",
+    "startFromSnippet": "從你的電子郵件片段開始",
+    "placeholder": "撰寫訊息，或選一個片段作為開頭…",
+    "editorLabel": "訊息草稿",
+    "empty": {
+      "title": "還沒有電子郵件片段",
+      "description": "標記為「電子郵件」的片段會顯示在這裡，作為開頭範本。目前沒有可載入的片段，但草稿不一定要從片段開始。",
+      "startBlank": "從空白草稿開始"
+    },
+    "status": {
+      "empty": "尚未草擬任何內容。",
+      "noBlanks": "沒有剩下的空白處。",
+      "blanksLeft_other": "還有 {{count}} 個空白處——{{names}}",
+      "nameNever": " · 人名一律不會自動幫你填入"
+    },
+    "picker": {
+      "title": "開頭範本",
+      "description": "你自己的電子郵件片段，並已填入紀錄中已知的內容。"
+    },
+    "toast": {
+      "replaced": "已取代草稿",
+      "loaded": "已載入「{{title}}」。",
+      "blank": "已從空白重新開始。",
+      "saved": "已儲存到片段",
+      "savedDescription": "{{title}} · 已標記為「電子郵件」，位於保管庫",
+      "sent": "已標記為已寄出",
+      "sentDescription": "{{title}}——已在提醒中勾選完成"
+    }
+  },
+  "stage": {
+    "moveTo": "移至「{{stage}}」",
+    "currently": "{{name}} · 目前在「{{stage}}」",
+    "nothingElse": "這筆紀錄的其他內容都沒有變更。",
+    "moveWithoutDetails": "不填詳細資料直接移動",
+    "outcome": "結果",
+    "submitted": {
+      "date": "送出日期",
+      "portal": "申請系統網址",
+      "portalHint": "申請所在的網站，方便你需要追問時查詢。",
+      "reference": "確認編號",
+      "referencePlaceholder": "例如：4471-QZ"
+    },
+    "interview": {
+      "date": "面試日期",
+      "format": "形式",
+      "formatLabel": "面試形式",
+      "mint": "加入時間軸",
+      "mintDescription": "在該日期建立一個面試項目，並附上提醒。"
+    },
+    "offer": {
+      "respondBy": "回覆期限",
+      "package": "薪酬方案",
+      "packagePlaceholder": "例如：$112k + $15k 啟動經費",
+      "note": "備註",
+      "notePlaceholder": "還在協商的項目",
+      "mint": "將截止日期加入時間軸",
+      "mintDescription": "沒有人留意的回覆期限，正是你最不能錯過的截止日期。"
+    },
+    "keepOffer": {
+      "label": "保留錄取詳細資料",
+      "description": "請在 {{date}} 前回覆。關閉此選項即可清除。",
+      "descriptionWithComp": "請在 {{date}} 前回覆 · {{comp}}。關閉此選項即可清除。"
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "新增提醒",
+      "editReminder": "編輯提醒",
+      "newEvent": "新增活動",
+      "editEvent": "編輯活動"
+    },
+    "description": "兩者都是同一筆紀錄——它會依你設定的日期出現在行事曆上；只要開關是開啟的，也會列在保管庫的提醒清單中。",
+    "delete": "刪除",
+    "save": "儲存",
+    "addReminder": "新增提醒",
+    "addEvent": "新增活動",
+    "reminderFallback": "提醒",
+    "duration": {
+      "minutes_other": "{{count}} 分鐘",
+      "hours_other": "{{count}} 小時"
+    },
+    "fields": {
+      "title": "標題",
+      "reminderPlaceholder": "例如：追問招募人員",
+      "eventPlaceholder": "例如：委員會 Zoom 會議",
+      "remind": "顯示在提醒中",
+      "remindOn": "會列在保管庫中並附上勾選方塊，也會顯示在行事曆的對應日期上。",
+      "remindOff": "只會顯示在行事曆的對應日期上——保管庫中不會有勾選方塊。",
+      "date": "日期",
+      "allDay": "整天",
+      "allDayDescription": "關閉後可設定開始時間和長度。",
+      "startTime": "開始時間",
+      "length": "長度",
+      "applicationHint": "建立連結後，每份申請都會列出這個項目，這個項目也能連回其中任何一份申請。",
+      "kind": "類型",
+      "kindFollowUp": "後續追蹤也會在「今天」中計為待辦，直到你勾選完成為止。",
+      "kindHint": "它在行事曆和提醒清單中顯示的圖示。",
+      "detail": "詳細說明",
+      "detailHint": "一行背景說明，顯示在標題下方。",
+      "note": "備註",
+      "noteHint": "你自己的隨手筆記。與詳細說明分開存放，所以編輯時絕不會被覆寫。",
+      "keywords": "關鍵字",
+      "keywordsHint": "與申請、檔案和連結共用——用其中一個關鍵字篩選，就能找到所有相關項目。"
+    },
+    "more": {
+      "title": "更多詳細資料",
+      "note": "備註",
+      "keywords": "關鍵字",
+      "empty": "備註、關鍵字"
+    },
+    "toast": {
+      "added": "已新增「{{title}}」",
+      "updated": "已更新「{{title}}」",
+      "inReminders": "列在提醒中",
+      "calendarOnly": "只顯示在行事曆上",
+      "owed": "並計入本週待辦",
+      "deleted": "已刪除「{{title}}」",
+      "goneFromBoth": "已從提醒清單和行事曆中移除。",
+      "goneFromCalendar": "已從行事曆中移除。"
+    }
+  }
+}

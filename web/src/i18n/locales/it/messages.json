@@ -1,0 +1,311 @@
+{
+  "readCancelled": "La lettura è stata annullata.",
+  "backup": {
+    "prompt": {
+      "never_one": "{{count}} record in jojo non è ancora in nessun backup. Tutto ciò che è qui esiste solo in questo browser, quindi svuotandolo o perdendo questo computer lo perderesti: scarica una copia e conservala altrove.",
+      "never_many": "{{count}} di record in jojo non sono ancora in nessun backup. Tutto ciò che è qui esiste solo in questo browser, quindi svuotandolo o perdendo questo computer li perderesti: scarica una copia e conservala altrove.",
+      "never_other": "{{count}} record in jojo non sono ancora in nessun backup. Tutto ciò che è qui esiste solo in questo browser, quindi svuotandolo o perdendo questo computer li perderesti: scarica una copia e conservala altrove.",
+      "since_one": "{{count}} record è cambiato dal tuo ultimo backup del {{day}}. Esiste solo in questo browser finché non scarichi una copia e la conservi altrove.",
+      "since_many": "{{count}} di record sono cambiati dal tuo ultimo backup del {{day}}. Esistono solo in questo browser finché non scarichi una copia e la conservi altrove.",
+      "since_other": "{{count}} record sono cambiati dal tuo ultimo backup del {{day}}. Esistono solo in questo browser finché non scarichi una copia e la conservi altrove."
+    },
+    "failedTitle": "Non è stato possibile scrivere il backup",
+    "failedDescription": "I tuoi record sono invariati e non è stato salvato nulla. Se il browser ha bloccato il download, controlla le sue impostazioni di download.",
+    "documentsNotReady": "L'indice dei documenti non aveva finito di caricarsi, quindi un backup fatto adesso direbbe che non ne hai. Non è stato scritto nulla.",
+    "documentsUnreadable": "Nessuno dei documenti memorizzati era leggibile, quindi il backup avrebbe contenuto solo i record. Non è stato scritto nulla.",
+    "savedTitle": "Backup salvato",
+    "startedTitle": "Backup avviato",
+    "savedAll": "{{name}} contiene i tuoi record e tutti i documenti che hai allegato.",
+    "savedSome_one": "{{name}} contiene i tuoi record e {{written}} dei tuoi {{total}} documenti: {{count}} non era leggibile e non è incluso.",
+    "savedSome_many": "{{name}} contiene i tuoi record e {{written}} dei tuoi {{total}} documenti: {{count}} non erano leggibili e non sono inclusi.",
+    "savedSome_other": "{{name}} contiene i tuoi record e {{written}} dei tuoi {{total}} documenti: {{count}} non erano leggibili e non sono inclusi.",
+    "startedAll": "Cerca {{name}} nei tuoi download. Contiene i tuoi record e tutti i documenti che hai allegato.",
+    "startedSome_one": "Cerca {{name}} nei tuoi download. Contiene i tuoi record e {{written}} dei tuoi {{total}} documenti: {{count}} non era leggibile e non è incluso.",
+    "startedSome_many": "Cerca {{name}} nei tuoi download. Contiene i tuoi record e {{written}} dei tuoi {{total}} documenti: {{count}} non erano leggibili e non sono inclusi.",
+    "startedSome_other": "Cerca {{name}} nei tuoi download. Contiene i tuoi record e {{written}} dei tuoi {{total}} documenti: {{count}} non erano leggibili e non sono inclusi."
+  },
+  "extension": {
+    "stale": "L'estensione jojo in questo browser è più vecchia di questa pagina e non può gestire la richiesta. Aggiornala: premi Ricarica su jojo nella pagina delle estensioni del browser oppure, se l'hai installata da Impostazioni, scaricala di nuovo da lì e carica la nuova cartella al posto della vecchia. Un'estensione non pacchettizzata non si aggiorna mai da sola.",
+    "oldScanner": "(L'estensione jojo in questo browser è una versione precedente che non può seguire un sito nel suo sottodominio né premere “Carica altro”. Premi Ricarica su jojo nella pagina delle estensioni del browser.)",
+    "noAnswerBoard": "L'estensione jojo per il browser non ha risposto, quindi non è stato possibile leggere nessun sito. È ciò che permette a jojo di aprire una pagina a cui hai effettuato l'accesso; in Impostazioni trovi il programma di installazione.",
+    "boardUnreadable": "Non è stato possibile leggere quel sito.",
+    "pageUnsaved": "Non è stato possibile salvare quella pagina.",
+    "hostDidNotLoad": "{{host}} non si è caricato: il link potrebbe essere sbagliato, il sito potrebbe non essere raggiungibile o potresti essere offline. Aprilo in una scheda per vedere cosa dice.",
+    "noAnswerPage": "L'estensione jojo per il browser non ha risposto, quindi non è stato possibile aprire la pagina. In Impostazioni trovi il programma di installazione.",
+    "captureTimeout": "L'estensione jojo ha aperto la pagina ma non ha finito di salvarla in tempo. Una pagina molto pesante può richiedere di più: riprova, oppure aprila e usa il pulsante Cattura dell'estensione.",
+    "noAnswerReader": "L'estensione jojo per il browser non ha risposto, quindi non è stato possibile raggiungere il lettore. È ciò che permette a questa pagina di comunicare con un lettore sul tuo computer; in Impostazioni trovi il programma di installazione.",
+    "linkSwitchedOff": "Il collegamento è stato disattivato.",
+    "noAnswerLink": "L'estensione jojo per il browser non ha risposto. In una copia di jojo servita dal web è ciò che porta il collegamento a jojo-bridge; in Impostazioni trovi il programma di installazione.",
+    "noAnswerProvider": "L'estensione jojo per il browser non ha risposto, quindi non è stato possibile raggiungere il fornitore. I fornitori che non inviano intestazioni CORS possono essere chiamati solo tramite essa; in Impostazioni trovi il programma di installazione."
+  },
+  "posting": {
+    "localTarget": "Quell'indirizzo è su questo computer o sulla tua rete, non su un sito di lavoro: jojo non li apre.",
+    "nothingToReadWith": "Per leggere un annuncio serve l'estensione jojo per il browser, che apre la pagina come faresti tu e la salva, oppure il lettore di documenti, che la scarica. Nessuno dei due è configurato in questo browser: in Impostazioni trovi entrambi.",
+    "noBackgroundRoute": "Per leggere i suggerimenti prima che tu li guardi serve l'estensione jojo per il browser. Il lettore di documenti viene usato solo per un annuncio che apri tu.",
+    "notStored": "La pagina è stata letta, ma questo browser non l'ha memorizzata: potrebbe aver esaurito lo spazio per jojo. Non è stato conservato nulla; libera un po' di spazio e riprova.",
+    "nearlyEmptyExtension": "Quella pagina è tornata quasi vuota. Potrebbe non aver finito di caricarsi, o richiedere l'accesso: aprila in una scheda e riprova quando mostra l'annuncio.",
+    "nearlyEmptyReader": "Quella pagina è tornata quasi vuota. I siti che si generano con JavaScript inviano una struttura vuota a tutto ciò che non è un browser: installa l'estensione jojo e aprirà la pagina come faresti tu.",
+    "notSaved": "Quell'annuncio non è salvato, quindi non c'è nessuna pagina da conservare.",
+    "askedTwice": "Chiesto due volte, con lo stesso risultato."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "Entrambi gli annunci hanno lo stesso ID.",
+      "url": "Entrambi hanno lo stesso indirizzo dell'annuncio.",
+      "name": "Stesso datore di lavoro e stesso ruolo."
+    },
+    "deletedBefore": "La bozza è stata eliminata prima che il suo annuncio potesse essere letto.",
+    "deletedDuring": "La bozza è stata eliminata mentre il suo annuncio veniva letto.",
+    "updateFailed": "Non è stato possibile aggiornare la bozza."
+  },
+  "store": {
+    "remoteChangeTitle": "Aggiornato da un'altra scheda",
+    "remoteChangeDescription": "I tuoi record sono stati ricaricati, quindi la cronologia degli annullamenti in questa scheda è stata cancellata.",
+    "heldTitle": "Un'altra scheda di jojo ha il database aperto",
+    "heldDescription": "Verrà eliminato appena quella scheda viene chiusa. Chiudi le altre schede, poi riprova.",
+    "deleteFailedTitle": "Non è stato possibile eliminare il database",
+    "deleteFailedDescription": "{{error}}. Un'altra scheda potrebbe averlo ancora aperto.",
+    "demoNotLoaded": "I dati di esempio non sono stati caricati",
+    "recordsNotCleared": "I record non sono stati cancellati",
+    "writeFailedDescription": "{{error}} I tuoi record sono invariati."
+  },
+  "fileDelete": {
+    "refusedTitle": "Non è stato eliminato",
+    "stillInVault": "{{name}} è ancora nella Cassaforte.",
+    "deletedTitle": "{{name}} eliminato",
+    "deletedUnknown": "La riga, le sue parole chiave e qualsiasi copia conservata da jojo vengono eliminate. L'originale sul tuo computer non viene toccato.",
+    "deletedWithCopy": "La riga, le sue parole chiave e la copia del documento conservata da jojo vengono eliminate. L'originale sul tuo computer non viene toccato.",
+    "deletedNoCopy": "La riga e le sue parole chiave vengono eliminate. Di questo non c'era nessuna copia memorizzata da perdere.",
+    "undo": "Annulla",
+    "lostTitle": "{{name}} è tornato senza il suo documento",
+    "lostDescription": "La riga e le sue parole chiave sono state ripristinate, ma la copia memorizzata no. Trascina di nuovo il file per allegarlo."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} è pronto",
+    "readyDescription": "Salvato sotto la candidatura per cui è stato scritto.",
+    "failedTitle": "{{label}} non è stato completato"
+  },
+  "pdf": {
+    "passwordNeeded": "Quel PDF richiede una password per essere aperto, quindi non può essere modificato qui.",
+    "unreadable": "Non è stato possibile leggere quel file come PDF. {{detail}}",
+    "chooseOne": "Scegli almeno un PDF da unire.",
+    "pageNotIn_one": "{{name}} ha {{count}} pagina, quindi la pagina {{page}} non c'è.",
+    "pageNotIn_many": "{{name}} ha {{count}} di pagine, quindi la pagina {{page}} non c'è.",
+    "pageNotIn_other": "{{name}} ha {{count}} pagine, quindi la pagina {{page}} non c'è.",
+    "emptySelection": "Quella selezione non contiene pagine.",
+    "keepOnePage": "Un documento deve conservare almeno una pagina.",
+    "planOutOfRange_one": "Questo documento ha {{count}} pagina; il piano chiede la pagina {{page}}.",
+    "planOutOfRange_many": "Questo documento ha {{count}} di pagine; il piano chiede la pagina {{page}}.",
+    "planOutOfRange_other": "Questo documento ha {{count}} pagine; il piano chiede la pagina {{page}}.",
+    "noCanvas": "Questo browser non ha fornito alla pagina un canvas su cui disegnare.",
+    "range": {
+      "noPages": "Quel documento non ha pagine.",
+      "emptyPart": "C'è un intervallo vuoto tra due virgole.",
+      "partNamesNoPages": "'{{part}}' non indica nessuna pagina.",
+      "backwards": "'{{part}}' va all'indietro. Scrivilo come {{to}}-{{from}}.",
+      "notANumber": "'{{part}}' non è un numero di pagina.",
+      "namesNoPages": "Quell'intervallo non indica nessuna pagina.",
+      "fromOne": "Le pagine sono numerate da 1.",
+      "pastEnd": "Questo documento finisce a pagina {{count}}, quindi la pagina {{page}} non c'è."
+    },
+    "drop": {
+      "notPdf_one": "{{names}} non è un PDF",
+      "notPdf_many": "{{names}} non sono PDF",
+      "notPdf_other": "{{names}} non sono PDF",
+      "leftOut_one": "{{names}} è stato escluso: funziona con un documento alla volta",
+      "leftOut_many": "{{names}} sono stati esclusi: funziona con un documento alla volta",
+      "leftOut_other": "{{names}} sono stati esclusi: funziona con un documento alla volta",
+      "one": "{{part}}.",
+      "both": "{{first}}, e {{second}}.",
+      "two": "{{first}} e {{second}}",
+      "three": "{{first}}, {{second}} e {{third}}",
+      "many": "{{count}} dei file"
+    },
+    "colour": {
+      "yellow": "Giallo",
+      "green": "Verde",
+      "blue": "Blu",
+      "pink": "Rosa",
+      "orange": "Arancione"
+    }
+  },
+  "noteSize": {
+    "small": "Piccola",
+    "normal": "Normale",
+    "large": "Grande",
+    "huge": "Enorme"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Candidatura",
+      "organisation": "Organizzazione",
+      "role": "Ruolo",
+      "item": "Elemento della cronologia",
+      "keyword": "Parola chiave",
+      "link": "Link",
+      "file": "File",
+      "snippet": "Frammento",
+      "posting": "Annuncio salvato",
+      "match": "Risultato dello scout",
+      "source": "Fonte",
+      "background": "Su di te",
+      "claim": "Relazione"
+    },
+    "savedAgo": "Salvato {{ago}}",
+    "fit": "{{fit}}% di compatibilità",
+    "count": {
+      "matches": "Risultati",
+      "connections": "Collegamenti",
+      "hops": "Passaggi",
+      "hop": "Passaggio"
+    },
+    "empty": {
+      "noMatch": "Nulla nei tuoi record corrisponde a quello schema.",
+      "noneMissing": "A nessuno manca quel collegamento: ogni record di questo tipo ne ha uno.",
+      "noPath": "Nessun percorso: questi due record non sono collegati da nulla nel tuo archivio.",
+      "noPathBetween": "Nessun percorso tra quei due record."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Candidature senza un sollecito in programma",
+        "hint": "La lacuna che fa perdere colloqui."
+      },
+      "tagged": {
+        "label": "Tutto ciò che ha l'etichetta Referral",
+        "hint": "Una parola chiave, su ogni tipo di record."
+      },
+      "repeatOrgs": {
+        "label": "Organizzazioni a cui mi sono candidato più di una volta",
+        "hint": "Due candidature presso un datore di lavoro, da un unico nodo organizzazione."
+      },
+      "looseReminders": {
+        "label": "Promemoria non collegati a nessuna candidatura",
+        "hint": "Lavoro che farai senza sapere a cosa serviva."
+      },
+      "unusedFiles": {
+        "label": "File non usati da nessuna candidatura",
+        "hint": "Documenti fermi nella Cassaforte senza fare nulla."
+      },
+      "bareApplications": {
+        "label": "Candidature senza nulla archiviato nella Cassaforte",
+        "hint": "Nessun link, nessun file, nessun frammento: di solito una non ancora iniziata."
+      },
+      "path": {
+        "label": "Percorso più breve tra due record",
+        "hint": "Come sono collegati un file e un lavoro a cui ti sei candidato."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Datore di lavoro",
+      "position": "Posizione",
+      "postingLink": "Link all'annuncio",
+      "location": "Località",
+      "appliedOn": "Candidatura del",
+      "stage": "Fase",
+      "highlight": "Punto saliente",
+      "notes": "Note per te",
+      "materials": "Materiali inviati"
+    },
+    "fileStem": "{{person}} — candidature {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "In questo browser non è memorizzata nessuna copia di quel documento, quindi non c'è nulla da leggere.",
+    "noReader": "Nessun lettore di documenti è collegato, quindi il contenuto di questo file non può essere letto. Il suo indirizzo va inserito in Impostazioni.",
+    "noReaderToTryHarder": "{{reason}} Nessun lettore di documenti è collegato per fare un tentativo più approfondito: il suo indirizzo va inserito in Impostazioni.",
+    "maybeScan": "Non è stato possibile leggere nulla da quel documento: potrebbe essere una scansione.",
+    "noAddress": "Ancora nessun indirizzo. Vedi Impostazioni.",
+    "tooLarge": "Quel documento è di {{size}} MB e il lettore accetta fino a {{max}} MB."
+  },
+  "network": {
+    "mixedPrivate": "Questa pagina è su https, e i browser le vietano di chiamare un semplice indirizzo http: installa l'estensione jojo, che inoltra per te quel passaggio verso la tua rete. Oppure servi jojo su http.",
+    "mixedPublic": "Questa pagina è su https, e i browser le vietano di chiamare un semplice indirizzo http. Servi jojo su http, oppure metti il modello su questo computer, sulla tua rete o dietro https: l'estensione inoltra quelli, ma non un semplice indirizzo http su internet.",
+    "cors": "Sia questa pagina sia quell'indirizzo sono su https, quindi non si tratta di un blocco di contenuti misti. La causa probabile è CORS: il server ha risposto senza le intestazioni di cui un browser ha bisogno per leggere una risposta. I fornitori cloud in genere non le inviano, ed è a questo che serve l'estensione jojo: verifica che sia installata e attiva.",
+    "unknown": "Il browser non ha detto perché. O lì non c'è nulla in ascolto, o il server ha risposto senza le intestazioni CORS di cui un browser ha bisogno per leggere una risposta, cosa che in alcuni casi fanno entrambi i servizi con cui comunica questa app, quindi anche un server in esecuzione può fallire così."
+  },
+  "mcpLink": {
+    "notBridge": "Qualcosa di diverso da jojo-bridge (o una sua versione precedente) sta rispondendo su {{address}}.",
+    "displaced": "Un'altra scheda di jojo sta tenendo il collegamento.",
+    "bridgeStatus": "jojo-bridge ha risposto {{status}}.",
+    "otherTab": "Un'altra scheda di jojo in questo browser sta gestendo il collegamento; questa subentra quando quella scheda si chiude."
+  },
+  "roleScopeEmpty": {
+    "title": "Nessuna candidatura per questi ruoli",
+    "description": "Il filtro per ruolo nella barra superiore nasconde tutte le candidature che questo grafico conta.",
+    "showAll": "Mostra tutti i ruoli"
+  },
+  "create": {
+    "newApplication": "Nuova candidatura",
+    "fromLink": {
+      "label": "Candidatura da un link",
+      "hint": "Il modello legge l'annuncio e compila il modulo"
+    },
+    "newReminder": "Nuovo promemoria",
+    "newEvent": "Nuovo evento",
+    "draftMessage": {
+      "label": "Scrivi un messaggio",
+      "hint": "Dai tuoi frammenti email: non viene generato nulla"
+    },
+    "saveLink": {
+      "label": "Salva un link",
+      "hint": "Apre la Cassaforte, strumento Link"
+    },
+    "savePosting": {
+      "label": "Salva un annuncio",
+      "hint": "Apre Scout offerte"
+    }
+  },
+  "stroke": {
+    "tap": "Tocco",
+    "doubleTap": "Doppio tocco",
+    "hold": "Tieni premuto",
+    "up": "Scorri verso l'alto",
+    "down": "Scorri verso il basso",
+    "side": "Scorri di lato",
+    "diagonal": "Scatto in diagonale",
+    "backForth": "Avanti e indietro",
+    "zigzag": "Zigzag laterale",
+    "scribbleUp": "Scarabocchio su e giù",
+    "circle": "Cerchio",
+    "square": "Quadrato",
+    "vee": "V (o una spunta)",
+    "peak": "Λ (un picco)",
+    "zed": "Z",
+    "arc": "Arco (una C)",
+    "ell": "L",
+    "triangle": "Triangolo",
+    "other": "Qualsiasi altro"
+  },
+  "move": {
+    "nod": "Annuisci",
+    "shake": "Scuoti la testa",
+    "hi": "Ciao",
+    "bow": "Inchino",
+    "leanIn": "Sporgiti",
+    "wobble": "Ondeggia",
+    "bounce": "Rimbalzo",
+    "spin": "Giravolta",
+    "recoil": "Indietreggia",
+    "startle": "Sobbalzo",
+    "dance": "Balla",
+    "shrug": "Alza le spalle",
+    "lookAround": "Guardati intorno",
+    "hopSpin": "Salto con giravolta",
+    "stretch": "Stiracchiati",
+    "flex": "Mostra i muscoli",
+    "jab": "Combinazione di pugni",
+    "powerUp": "Carica",
+    "doze": "Appisolati",
+    "wink": "Occhiolino",
+    "love": "Amore",
+    "robot": "Ballo del robot",
+    "jazz": "Mani jazz",
+    "point": "Indica",
+    "hero": "Posa da eroe",
+    "handsUp": "Mani in alto",
+    "disco": "Disco",
+    "typing": "Digitazione",
+    "drumroll": "Rullo di tamburi"
+  }
+}

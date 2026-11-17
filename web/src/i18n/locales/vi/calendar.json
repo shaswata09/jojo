@@ -1,0 +1,59 @@
+{
+  "monthPicker": {
+    "goTo": "Đi tới tháng",
+    "previousYear": "Năm trước",
+    "nextYear": "Năm sau"
+  },
+  "chip": {
+    "allDay": "Cả ngày",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, đã xong —"
+  },
+  "dayCell": {
+    "label_other": "{{label}}, {{count}} sự kiện",
+    "add": "Thêm sự kiện vào {{label}}",
+    "more_other": "+{{count}} mục nữa"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "Tháng trước",
+    "nextMonth": "Tháng sau",
+    "today": "Hôm nay",
+    "backTo": "Quay lại {{date}}",
+    "goTo": "Đi tới {{month}} năm {{year}}",
+    "hintTouch": "Chạm vào một ngày để xem có gì trong ngày đó.",
+    "hintPointer": "Chọn một ngày để liệt kê nó bên cạnh lưới. Nhấp vào một sự kiện để sửa, hoặc kéo nó sang ngày khác — việc kéo cần con trỏ, nên trường ngày bên trong sự kiện là cách dùng bàn phím.",
+    "eventTypes": "Loại sự kiện",
+    "showAll": "Hiện tất cả",
+    "dateColours": "Màu ngày",
+    "marks": {
+      "overdue": "Quá hạn",
+      "soon": "Đến hạn trong 48 giờ",
+      "done": "Đã xong"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} năm {{year}}",
+    "today": "Hôm nay",
+    "selectedDay": "Ngày đã chọn",
+    "hiddenTitle": "Không có gì hiển thị vào {{date}}",
+    "hiddenDescription_other": "{{count}} sự kiện thuộc loại đang tắt bên dưới lưới.",
+    "showAllTypes": "Hiện tất cả loại sự kiện",
+    "emptyTitle": "Không có gì vào {{date}}",
+    "emptyDescription": "Thêm một buổi phỏng vấn, một hạn chót hoặc một khoảng thời gian chuẩn bị, và nó sẽ hiện ở đây và trên lưới.",
+    "addEvent": "Thêm sự kiện",
+    "backTo": "Quay lại {{month}}",
+    "delete": "Xóa sự kiện",
+    "deleteNamed": "Xóa {{title}}",
+    "restOf": "Phần còn lại của {{month}}",
+    "lastDayTitle": "{{date}} là ngày cuối cùng của tháng",
+    "nothingAfterTitle": "Không có gì sau {{date}}",
+    "lastDayDescription": "Không có gì sau ngày này. Chuyển sang trang sau để lên kế hoạch cho {{month}}.",
+    "nothingAfterDescription": "Phần còn lại của {{month}} đang trống. Mọi thứ bạn thêm sau ngày này sẽ hiện ở đây.",
+    "goToMonth": "Đi tới {{month}}",
+    "goToDay": "Đi tới {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_other": "+{{count}} mục nữa sau trong tháng này"
+  }
+}

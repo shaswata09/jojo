@@ -1,0 +1,415 @@
+{
+  "stage": {
+    "draft": "Taslak",
+    "submitted": "Gönderildi",
+    "screen": "Ön görüşme",
+    "interview": "Mülakat",
+    "offer": "Teklif",
+    "closed": "Kapandı"
+  },
+  "kind": {
+    "deadline": "Son tarih",
+    "interview": "Mülakat",
+    "visit": "Ziyaret",
+    "call": "Görüşme",
+    "prep": "Hazırlık",
+    "admin": "İdari",
+    "follow-up": "Takip"
+  },
+  "outcome": {
+    "rejected": "Reddedildi",
+    "withdrawn": "Geri çekildi",
+    "accepted": "Kabul edildi",
+    "declined": "Geri çevrildi",
+    "ghosted": "Ses çıkmadı — yanıt yok"
+  },
+  "outcomeAction": {
+    "rejected": "Reddedildi",
+    "withdrawn": "Geri çekildi",
+    "accepted": "Teklif kabul edildi",
+    "declined": "Teklif geri çevrildi",
+    "ghosted": "Yanıt gelmeden kapandı"
+  },
+  "format": {
+    "phone": "Telefon",
+    "video": "Video",
+    "onsite": "Yüz yüze"
+  },
+  "verdict": {
+    "strong": "Güçlü bir uyum",
+    "worth-tailoring": "Uyarlamaya değer",
+    "a-stretch": "Biraz zorlama",
+    "not-measured": "Henüz ölçülmedi"
+  },
+  "background": {
+    "education": "Eğitim",
+    "employment": "İş deneyimi",
+    "publication": "Yayınlar",
+    "patent": "Patentler",
+    "grant": "Hibeler",
+    "leadership": "Liderlik",
+    "outreach": "Toplumla etkileşim",
+    "training": "Mesleki gelişim",
+    "other": "Diğer",
+    "award": "Ödüller",
+    "teaching": "Öğretim",
+    "service": "Hizmet",
+    "project": "Projeler",
+    "certification": "Sertifikalar",
+    "skill": "Beceriler",
+    "language": "Diller",
+    "volunteering": "Gönüllülük",
+    "membership": "Üyelikler"
+  },
+  "tone": {
+    "teal": "Mavi",
+    "cyan": "Camgöbeği",
+    "green": "Yeşil",
+    "amber": "Kehribar",
+    "red": "Kırmızı",
+    "pink": "Pembe",
+    "violet": "Mor",
+    "gray": "Gri"
+  },
+  "mark": {
+    "bold": "bu ilan için yeni ya da yeniden yazıldı",
+    "italic": "farklı ifade edildi",
+    "underline": "yukarı taşındı ya da daha çok öne çıkarıldı"
+  },
+  "document": {
+    "cv": "CV",
+    "research-statement": "araştırma beyanı",
+    "teaching-statement": "öğretim beyanı",
+    "cover-letter": "ön yazı",
+    "other": "belge"
+  },
+  "how": {
+    "filed-under": "bu başvurunun altında dosyalı",
+    "same-url": "web adresiyle eşleşti",
+    "via-posting": "gözcünün bulduğu ilandan"
+  },
+  "contactRole": {
+    "recommender": "Referans veren",
+    "contact": "İrtibat kişisi"
+  },
+  "approval": {
+    "manual": "Manuel",
+    "semi": "Yarı otomatik",
+    "auto": "Otomatik"
+  },
+  "approvalSaid": {
+    "manual": "Bu konuşmada herhangi bir şey yazılmadan önce size sorulur.",
+    "semi": "Düzenlemeler hemen yapılır. Bir şey silinmeden ya da temizlenmeden önce size sorulur.",
+    "auto": "Silme işlemleri dahil her şey hemen yapılır. Yalnızca deponun tamamını boşaltmak ya da değiştirmek onay ister."
+  },
+  "funnel": {
+    "0": "Başvuruldu",
+    "1": "Yanıt geldi",
+    "2": "Ön görüşme",
+    "3": "Mülakat",
+    "4": "Teklif"
+  },
+  "band": {
+    "0": "Devam ediyor",
+    "1": "Teklif",
+    "2": "Reddedildi",
+    "3": "Geri çekildi",
+    "4": "Yanıt yok"
+  },
+  "dimension": {
+    "source": "kaynağa göre",
+    "role": "rol türüne göre"
+  },
+  "kpi": {
+    "label": {
+      "response": "Yanıt oranı",
+      "interview": "Mülakat oranı",
+      "offer": "Teklif oranı",
+      "reply": "Medyan yanıt süresi"
+    },
+    "note": {
+      "response_one": "{{of}} başvurudan {{count}} tanesi yanıt aldı",
+      "response_other": "{{of}} başvurudan {{count}} tanesi yanıt aldı",
+      "interview_one": "{{of}} başvurudan {{count}} tanesi mülakata ulaştı",
+      "interview_other": "{{of}} başvurudan {{count}} tanesi mülakata ulaştı",
+      "offer_one": "{{of}} başvurudan {{count}} tanesi teklife ulaştı",
+      "offer_other": "{{of}} başvurudan {{count}} tanesi teklife ulaştı",
+      "replyNone": "iki tarihi de kayıtlı bir yanıt henüz yok",
+      "reply_one": "{{count}} yanıt üzerinden",
+      "reply_other": "{{count}} yanıt üzerinden"
+    },
+    "days_one": "{{count}} gün",
+    "days_other": "{{count}} gün",
+    "typicalRate": "tipik: %{{value}}",
+    "typicalDays": "tipik: {{days}}"
+  },
+  "rel": {
+    "AT": "bulunduğu yer",
+    "ABOUT": "konusu",
+    "FILED_UNDER": "dosyalandığı yer",
+    "TAGS": "etiketler",
+    "FROM": "kaynağı",
+    "BECAME": "dönüştüğü kayıt",
+    "COPY_OF": "kopyası olduğu kayıt",
+    "SUBJECT": "konusu",
+    "OBJECT": "işaret ettiği"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "Yerel bir sunucu (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) — ücretsiz, hız sınırlı"
+  },
+  "month": {
+    "1": "Ocak",
+    "2": "Şubat",
+    "3": "Mart",
+    "4": "Nisan",
+    "5": "Mayıs",
+    "6": "Haziran",
+    "7": "Temmuz",
+    "8": "Ağustos",
+    "9": "Eylül",
+    "10": "Ekim",
+    "11": "Kasım",
+    "12": "Aralık"
+  },
+  "monthOfDay": {
+    "1": "Ocak",
+    "2": "Şubat",
+    "3": "Mart",
+    "4": "Nisan",
+    "5": "Mayıs",
+    "6": "Haziran",
+    "7": "Temmuz",
+    "8": "Ağustos",
+    "9": "Eylül",
+    "10": "Ekim",
+    "11": "Kasım",
+    "12": "Aralık"
+  },
+  "monthShort": {
+    "1": "Oca",
+    "2": "Şub",
+    "3": "Mar",
+    "4": "Nis",
+    "5": "May",
+    "6": "Haz",
+    "7": "Tem",
+    "8": "Ağu",
+    "9": "Eyl",
+    "10": "Eki",
+    "11": "Kas",
+    "12": "Ara"
+  },
+  "weekdayShort": {
+    "0": "Pzt",
+    "1": "Sal",
+    "2": "Çar",
+    "3": "Per",
+    "4": "Cum",
+    "5": "Cmt",
+    "6": "Paz"
+  },
+  "weekday": {
+    "0": "Pazar",
+    "1": "Pazartesi",
+    "2": "Salı",
+    "3": "Çarşamba",
+    "4": "Perşembe",
+    "5": "Cuma",
+    "6": "Cumartesi"
+  },
+  "dayMonth": "{{day}} {{month}}",
+  "monthYear": "{{month}} {{year}}",
+  "quarter": "Ç{{quarter}} {{year}}",
+  "weekdayNarrow": {
+    "0": "P",
+    "1": "S",
+    "2": "Ç",
+    "3": "P",
+    "4": "C",
+    "5": "C",
+    "6": "P"
+  },
+  "action": {
+    "detailsEdited": "Ayrıntılar düzenlendi",
+    "draftCreated": "Taslak oluşturuldu",
+    "offerReceived": "Teklif alındı",
+    "duplicated": "Kopyalandı",
+    "addedFromScout": "İş gözcüsünden eklendi",
+    "addedFromPosting": "Kayıtlı bir ilandan eklendi",
+    "noteEdited": "Not düzenlendi",
+    "offerCleared": "Teklif ayrıntıları temizlendi",
+    "flagged": "Takip için işaretlendi",
+    "flagCleared": "İşaret kaldırıldı",
+    "movedTo": {
+      "draft": "Taslak aşamasına taşındı",
+      "submitted": "Gönderildi aşamasına taşındı",
+      "screen": "Ön görüşme aşamasına taşındı",
+      "interview": "Mülakat aşamasına taşındı",
+      "offer": "Teklif aşamasına taşındı",
+      "closed": "Kapandı aşamasına taşındı"
+    },
+    "addedAt": {
+      "draft": "Taslak aşamasında eklendi",
+      "submitted": "Gönderildi aşamasında eklendi",
+      "screen": "Ön görüşme aşamasında eklendi",
+      "interview": "Mülakat aşamasında eklendi",
+      "offer": "Teklif aşamasında eklendi",
+      "closed": "Kapandı aşamasında eklendi"
+    },
+    "interviewScheduled": {
+      "phone": "Telefon mülakatı planlandı",
+      "video": "Video mülakatı planlandı",
+      "onsite": "Yüz yüze mülakat planlandı"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "bugün",
+      "yesterday": "dün",
+      "days_one": "{{count}} gün önce",
+      "days_other": "{{count}} gün önce"
+    },
+    "when": {
+      "today": "Bugün",
+      "tomorrow": "Yarın",
+      "inDays_one": "{{count}} gün içinde",
+      "inDays_other": "{{count}} gün içinde",
+      "overdue_one": "{{count}} gün gecikti",
+      "overdue_other": "{{count}} gün gecikti"
+    },
+    "inline": {
+      "today": "bugün",
+      "tomorrow": "yarın"
+    },
+    "completed": {
+      "today": "Bugün tamamlandı",
+      "yesterday": "Dün tamamlandı",
+      "days_one": "{{count}} gün önce tamamlandı",
+      "days_other": "{{count}} gün önce tamamlandı",
+      "on": "Tamamlandı: {{date}}"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "Teklif",
+      "overdue": "Gecikmiş",
+      "deadline": "Son tarih",
+      "interview": "Mülakat"
+    },
+    "headline": {
+      "reply": "{{org}} kurumuna yanıt verin",
+      "submitOrLetGo": "{{org}} başvurusunu gönderin ya da bırakın",
+      "recordInterview": "{{org}} mülakatını kaydedin",
+      "recordVisit": "{{org}} ziyaretini kaydedin",
+      "recordCall": "{{org}} görüşmesini kaydedin",
+      "catchUp": "{{org}} başvurusunu güncelleyin",
+      "submit": "{{org}} başvurusunu gönderin",
+      "prepare": "{{org}} için hazırlanın",
+      "dateInterview": "{{org}} mülakatına tarih verin"
+    },
+    "timing": {
+      "respondBy": "Son yanıt tarihi {{date}} · {{when}}",
+      "wasDue": "Son tarih {{date}} idi · {{when}}",
+      "due": "Son tarih {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "Tarih belirlenmedi"
+    },
+    "button": {
+      "draftReply": "Yanıt taslağı hazırla",
+      "recordOutcome": "Ne olduğunu kaydet",
+      "acceptOrDecline": "Kabul et ya da reddet",
+      "openApplication": "Başvuruyu aç",
+      "draftMessage": "Mesaj taslağı hazırla"
+    },
+    "undatedInterview": "Mülakat aşamasında ama buna bağlı tarihli hiçbir şey yok; bu yüzden ne önümüzdeki hafta ne de takvim bunu gösterebilir.",
+    "unfiled": "Bu son tarih bir başvurunun altında dosyalı değil",
+    "unknownOrg": "Bilinmiyor"
+  },
+  "filed": {
+    "none": "dosyalanmamış",
+    "one": "{{a}} altında dosyalı",
+    "two": "{{a}} ve {{b}} altında dosyalı",
+    "many_one": "{{count}} başvurunun altında dosyalı",
+    "many_other": "{{count}} başvurunun altında dosyalı"
+  },
+  "readBy": "Okuyan: {{model}} · {{ago}}",
+  "missingSource": "artık Kasa'da olmayan bir belge",
+  "undo": {
+    "nothing": {
+      "undo": "Geri alınacak bir şey yok.",
+      "redo": "Yinelenecek bir şey yok."
+    },
+    "changed": {
+      "undo": "Geri alınacak bir şey yok — o zamandan beri değişti",
+      "redo": "Yinelenecek bir şey yok — o zamandan beri değişti"
+    },
+    "done": {
+      "undo": "Geri alındı",
+      "redo": "Yinelendi"
+    },
+    "journal": "hidden",
+    "action": "Geri al",
+    "superseded": {
+      "nothing": "Hiçbir şey geri alınmadı",
+      "part": "Bir kısmı olduğu gibi bırakıldı",
+      "named": "{{labels}} — bu kayıtları o zamandan beri değiştirdiniz; şimdi geri almak bu değişiklikleri de silerdi.",
+      "unnamed": "Bu kayıtları o zamandan beri değiştirdiniz; şimdi geri almak bu değişiklikleri de silerdi.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "Bu kaydedilmedi",
+    "didNotFit": "Bu kayıtla ilgili bir şey uymadı."
+  },
+  "announce": {
+    "stickyRemoved": "Not kaldırıldı"
+  },
+  "handover": {
+    "never": "Bu cihaz hiç aktarıma katılmadı; bu yüzden bu kayıtların burası dışında hiçbir kopyası yok.",
+    "clean": {
+      "today": "Son aktarım bugün yapıldı ve o zamandan beri buraya hiçbir şey yazılmadı — diğer cihazda da aynı kayıtlar var.",
+      "yesterday": "Son aktarım dün yapıldı ve o zamandan beri buraya hiçbir şey yazılmadı — diğer cihazda da aynı kayıtlar var.",
+      "daysAgo": "Son aktarım: {{ago}}. O zamandan beri buraya hiçbir şey yazılmadı — diğer cihazda da aynı kayıtlar var."
+    },
+    "drifted": {
+      "today_one": "Son aktarım bugün yapıldı ve o zamandan beri burada bir değişiklik yapıldı. Diğer cihaz o kadar geride.",
+      "today_other": "Son aktarım bugün yapıldı ve o zamandan beri burada {{count}} değişiklik yapıldı. Diğer cihaz o kadar geride.",
+      "yesterday_one": "Son aktarım dün yapıldı ve o zamandan beri burada bir değişiklik yapıldı. Diğer cihaz o kadar geride.",
+      "yesterday_other": "Son aktarım dün yapıldı ve o zamandan beri burada {{count}} değişiklik yapıldı. Diğer cihaz o kadar geride.",
+      "daysAgo_one": "Son aktarım: {{ago}}. O zamandan beri burada bir değişiklik yapıldı. Diğer cihaz o kadar geride.",
+      "daysAgo_other": "Son aktarım: {{ago}}. O zamandan beri burada {{count}} değişiklik yapıldı. Diğer cihaz o kadar geride."
+    }
+  },
+  "backup": {
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt",
+    "links_one": "{{count}} bağlantı",
+    "links_other": "{{count}} bağlantı",
+    "documents_zero": "belge yok",
+    "documents_one": "{{count}} belge",
+    "documents_other": "{{count}} belge",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}} — bunlardan {{loss}}",
+    "both": "{{a}} ve {{b}}",
+    "leftOut": "{{what}} okunamıyor ve dışarıda bırakılacak",
+    "changed_one": "{{count}} kayıt değişmiş olarak geri gelecek",
+    "changed_other": "{{count}} kayıt değişmiş olarak geri gelecek",
+    "leftOutAndChanged": "{{leftOut}}, ayrıca {{changed}}",
+    "replacesAll": {
+      "computer": "Geri yükleme, şu anki tüm kayıtlarınızın ve belgelerinizin yerini alır",
+      "phone": "Geri yükleme, bu telefondaki tüm kayıtların ve belgelerin yerini alır"
+    },
+    "replacesKept": {
+      "computer_one": "Geri yükleme, şu anki tüm kayıtlarınızın ve tüm belgelerin yerini alır; yalnızca belgesi olmadan gelen {{count}} kayıt hariç — onun buradaki kopyası korunur",
+      "computer_other": "Geri yükleme, şu anki tüm kayıtlarınızın ve tüm belgelerin yerini alır; yalnızca belgeleri olmadan gelen {{count}} kayıt hariç — onların buradaki kopyaları korunur",
+      "phone_one": "Geri yükleme, bu telefondaki tüm kayıtların ve tüm belgelerin yerini alır; yalnızca belgesi olmadan gelen {{count}} kayıt hariç — onun buradaki kopyası korunur",
+      "phone_other": "Geri yükleme, bu telefondaki tüm kayıtların ve tüm belgelerin yerini alır; yalnızca belgeleri olmadan gelen {{count}} kayıt hariç — onların buradaki kopyaları korunur"
+    }
+  }
+}

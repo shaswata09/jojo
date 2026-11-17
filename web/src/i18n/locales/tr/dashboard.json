@@ -1,0 +1,271 @@
+{
+  "common": {
+    "newApplication": "Yeni başvuru",
+    "openBoard": "Panoyu aç",
+    "showAll": "Tümünü göster",
+    "undo": "Geri al",
+    "pushOut": "\"{{title}}\" ertele",
+    "pushOutBy": "Erteleme süresi",
+    "completed": "{{title}} tamamlandı",
+    "rescheduled": "{{title}} yeniden planlandı"
+  },
+  "headlineRates": {
+    "emptyTitle": "Henüz oran yok",
+    "emptyDescription": "Yanıt, mülakat ve teklif oranlarının hepsi gerçekten gönderilmiş başvuruları sayar. Birini Taslak aşamasından çıkarın, burası dolsun."
+  },
+  "pipeline": {
+    "emptyTitle": "Süreçte hiçbir şey yok",
+    "emptyDescription": "Her başvuru bir aşamada durur; burası başvuruların aşamalara nasıl dağıldığını gösterir. Bir tane ekleyin, ilk dilim görünsün.",
+    "ariaLabel_one": "Aşamaya göre {{count}} başvuru",
+    "ariaLabel_other": "Aşamaya göre {{count}} başvuru"
+  },
+  "statsCard": {
+    "control": "İstatistik",
+    "tracked_one": "{{count}} izleniyor",
+    "tracked_other": "{{count}} izleniyor",
+    "views": {
+      "pipeline": "Süreç",
+      "rates": "Oranlar",
+      "when": "Zaman",
+      "next": "Sıradaki"
+    },
+    "titles": {
+      "pipeline": "Süreç",
+      "rates": "Temel oranlar",
+      "when": "Ne zaman başvurdunuz",
+      "next": "Sırada ne üzerinde çalışmalı"
+    }
+  },
+  "recent": {
+    "views": {
+      "notes": "Notlar",
+      "recent": "Son başvurular"
+    },
+    "headingNotes": "Yapışkan notlar",
+    "headingRecent": "Son başvurular",
+    "control": "Bu kartta göster",
+    "addReminder": "Hatırlatıcı ekle",
+    "viewAll": "Tümünü gör",
+    "emptyTitle": "Henüz başvuru yok",
+    "emptyDescription": "İzlediğiniz her pozisyon, üzerinde çalıştıkça en yenisi en üstte olacak şekilde burada görünür.",
+    "today": "Bugün",
+    "daysAgo_one": "{{count}} gün önce",
+    "daysAgo_other": "{{count}} gün önce"
+  },
+  "searchHealth": {
+    "title": "Sırada ne üzerinde çalışmalı",
+    "series": {
+      "you": "Sizinki",
+      "target": "Tipik"
+    },
+    "intro": "rakamlarınız ile tipik bir arama karşılaştırması",
+    "sample": "Örnek",
+    "sampleTitle": "Yalnızca tipik halka temsilidir",
+    "emptyTitle": "Karşılaştırmak için henüz yeterli veri yok",
+    "emptyDescription": "Bu, yanıtlarınızı, mülakatlarınızı, referanslarınızı ve takiplerinizi tipik bir aramayla karşılaştırır. Gerçekten gönderilmiş başvurular gerekir.",
+    "suggestions": "Öneriler, en yararlısı önce"
+  },
+  "sources": {
+    "title": "Nereden geldikleri",
+    "views": {
+      "bars": "Çubuk",
+      "donut": "Halka"
+    },
+    "chartType": "Grafik türü",
+    "unrecorded": "Kaydedilmemiş",
+    "hintAll_one": "{{count}} başvuru",
+    "hintAll_other": "{{count}} başvuru",
+    "hintSome": "{{count}} içinden {{shown}}",
+    "emptyTitle": "Henüz ayrıştırılacak bir şey yok",
+    "emptyDescription": "Her başvuru onu nerede bulduğunuzu kaydeder — bir iş ilanı sitesi, bir referans, bölüm sayfası. Birkaç tane olduğunda burası onları ayırır.",
+    "centerLabel": "başvuru",
+    "show": "Göster: {{name}}",
+    "hide": "Gizle: {{name}}",
+    "allOff": "Tüm kaynaklar kapalı."
+  },
+  "offers": {
+    "title": "Teklifler, yan yana",
+    "open_one": "{{count}} açık",
+    "open_other": "{{count}} açık",
+    "caption": "Açık teklifleriniz: yazdığınız hâliyle paket, bunun yıllık karşılığı ve her birinin yanıtlanması gereken tarih",
+    "columns": {
+      "job": "İş",
+      "package": "Paket",
+      "year": "Yıllık",
+      "respondBy": "Son yanıt"
+    },
+    "notStated": "belirtilmemiş",
+    "noAmount": "Paketten bir tutar okunamadı",
+    "readFrom": "Okunan metin: “{{text}}”",
+    "highest": "— buradaki en yüksek",
+    "annualised": "(yıllığa çevrildi)",
+    "passed": "geçti",
+    "today": "bugün",
+    "daysLeft_one": "{{count}} gün",
+    "daysLeft_other": "{{count}} gün",
+    "ranked": "Yıllık rakam yazdığınızdan okunur — hangi sözcüklerden geldiğini görmek için üzerine gelin.",
+    "unranked": "Bunlar sıralanmadı: paketler farklı para birimlerinde ve jojo'nun bir döviz kuru yok, kur bulmak için de ağa bağlanmıyor.",
+    "annualisedNote": "* 12 ay, 52 hafta ya da 2.080 saat üzerinden yıllığa çevrildi; bu sizin sözleşmeniz değil, bir varsayımdır."
+  },
+  "sticky": {
+    "newNote": "Yeni yapışkan not",
+    "placeholder": "Kendinize bir not alın… (yapıştırmak için Enter)",
+    "newColour": "Yeni notun rengi",
+    "stick": "Yapıştır",
+    "empty": "Henüz yapıştırılmış bir şey yok. Notlar siz kaldırana kadar burada kalır ve tarihi olan her not bir hatırlatıcıya dönüşebilir.",
+    "listLabel": "Yapışkan notlar",
+    "editNote": "Notu düzenle",
+    "clickToEdit": "Düzenlemek için tıklayın",
+    "editAria": "Notu düzenle: {{text}}",
+    "colour": "Renk",
+    "colourOf": "\"{{text}}\" notunun rengi",
+    "toReminder": "Hatırlatıcıya dönüştür",
+    "toReminderAria": "Hatırlatıcıya dönüştür: {{text}}",
+    "takeDown": "Bu notu kaldır",
+    "removeAria": "Notu kaldır: {{text}}"
+  },
+  "frequency": {
+    "title": "Ne zaman başvurdunuz",
+    "period": "Dönem",
+    "periods": {
+      "week": "Hafta",
+      "month": "Ay",
+      "quarter": "Çeyrek"
+    },
+    "chartType": "Grafik türü",
+    "charts": {
+      "bar": "Çubuk",
+      "line": "Çizgi"
+    },
+    "emptyTitle": "Henüz grafiğe dökülecek bir şey yok",
+    "emptyDescription": "Bu, gönderdiğiniz başvuruları hafta hafta, rol türüne göre ayırarak sayar. Bir tane ekleyin, ilk çubuk görünsün.",
+    "noDatesTitle": "Henüz gönderim tarihi kaydedilmedi",
+    "noDates_one": "Tek başvurunuzun henüz tarihi yok. Bir kaydı Gönderildi aşamasına taşıdığınızda tarih eklenir.",
+    "noDates_other": "{{count}} başvurunuzun hiçbirinin henüz tarihi yok. Bir kaydı Gönderildi aşamasına taşıdığınızda tarih eklenir.",
+    "perPeriod": {
+      "week": "Haftalık gönderilen başvurular; seriler: {{series}}",
+      "month": "Aylık gönderilen başvurular; seriler: {{series}}",
+      "quarter": "Çeyrek başına gönderilen başvurular; seriler: {{series}}"
+    },
+    "caption": {
+      "week": "Haftalık gönderilen başvurular",
+      "month": "Aylık gönderilen başvurular",
+      "quarter": "Çeyrek başına gönderilen başvurular"
+    },
+    "countingUndated_one": "{{total}} başvurudan {{inWindow}} tanesi sayılıyor — {{count}} tanesinin henüz tarihi yok.",
+    "countingUndated_other": "{{total}} başvurudan {{inWindow}} tanesi sayılıyor — {{count}} tanesinin henüz tarihi yok.",
+    "countingEarlier_one": "{{total}} başvurudan {{inWindow}} tanesi sayılıyor — {{count}} tanesi şu tarihten önce: {{first}}.",
+    "countingEarlier_other": "{{total}} başvurudan {{inWindow}} tanesi sayılıyor — {{count}} tanesi şu tarihten önce: {{first}}.",
+    "countingBoth": "{{total}} başvurudan {{inWindow}} tanesi sayılıyor — {{undated}} tanesinin henüz tarihi yok, {{earlier}} tanesi şu tarihten önce: {{first}}."
+  },
+  "glance": {
+    "heading": "Bir bakışta",
+    "stats": {
+      "active": "Etkin",
+      "screens": "Ön görüşmeler ve mülakatlar",
+      "overdue": "Gecikmiş",
+      "doneToday": "Bugün tamamlanan"
+    },
+    "previousMonth": "Önceki ay",
+    "currentMonth": "Bu aya git",
+    "currentMonthTitle": "{{date}} — bu ay",
+    "nextMonth": "Sonraki ay",
+    "openCalendar": "Takvimi aç",
+    "dayNone": "{{date}}, etkinlik yok",
+    "day_one": "{{date}}, {{count}} etkinlik",
+    "day_other": "{{date}}, {{count}} etkinlik",
+    "dayAllDone_one": "{{date}}, {{count}} etkinlik, tümü tamamlandı",
+    "dayAllDone_other": "{{date}}, {{count}} etkinlik, tümü tamamlandı",
+    "today": "bugün",
+    "nothingPlanned": "Planlanmış bir şey yok. <add>Bir şey ekleyin</add>."
+  },
+  "priority": {
+    "title": "Karar bekleyenler",
+    "open_one": "{{count}} açık",
+    "open_other": "{{count}} açık",
+    "completedDescription": "Desteden ve bu haftadan çıkar — hiçbir şey silinmez.",
+    "rescheduledDescription": "Yeni son tarih {{date}}; takvimde ve önümüzdeki haftada.",
+    "tickOff": "\"{{title}}\" tamamlandı olarak işaretle",
+    "done": "Tamamlandı",
+    "snooze": "Ertele",
+    "notConnected": "Henüz buna bağlı bir şey yok",
+    "earlierAria": "Önceki kararları göster",
+    "earlier": "Önceki",
+    "laterAria": "Sonraki kararları göster",
+    "later": "Sonraki",
+    "listLabel": "Kararlar, en erken önce",
+    "emptyTitle": "Bugün karar verilecek bir şey yok",
+    "emptyDescription": "Teklifler, gecikmiş başvurular, sıradaki kesin son tarih ve sıradaki mülakatınız burada görünür. Hiçbiri beklemede değil."
+  },
+  "firstSteps": {
+    "title": "İlk adımlar",
+    "hint": "{{total}} adımdan {{done}} tanesi tamamlandı",
+    "application": {
+      "title": "Bir başvuru ekleyin",
+      "body": "Bir pozisyon, aşaması ve son tarihi. jojo'daki diğer her şey bu kayda bağlanır."
+    },
+    "dated": {
+      "title": "Bir şeye tarih verin",
+      "body": "Son tarihler, mülakatlar ve ziyaretler aynı tür kayıttır; bu yüzden bir tarih aynı anda bu sayfaya, takvime ve başvuruya ulaşır.",
+      "action": "Yeni etkinlik"
+    },
+    "reminder": {
+      "title": "Bir takip ayarlayın",
+      "body": "Hatırlatıcı, uyarısı açık olan aynı kayıttır. Tarihi geçince yapılması gereken bir iş olur ve siz tamamlandı olarak işaretleyene kadar burada kalır.",
+      "action": "Yeni hatırlatıcı"
+    },
+    "complete": "Üçü de tamamlandı. Bundan sonra eklediğiniz her şey bu sayfaya, takvime ve ait olduğu başvuruya ulaşır.",
+    "intro": "Her adım asıl özelliği açar ve bir kayıt oluşunca kendiliğinden işaretlenir — hiçbiri baştan sona izlemeniz gereken bir eğitim değil.",
+    "introBare": "Henüz izlenen bir şey yok. Her adım asıl özelliği açar ve bir kayıt oluşunca kendiliğinden işaretlenir — hiçbiri baştan sona izlemeniz gereken bir eğitim değil.",
+    "doneSr": "— tamamlandı",
+    "notDoneSr": "— henüz tamamlanmadı",
+    "hideHint": "Aynı adımlar kılavuzda yazılı",
+    "close": "İlk adımları kapat",
+    "hide": "Bu adımları gizle"
+  },
+  "owed": {
+    "title": "Bu hafta yapılacaklar",
+    "add": "Ekle",
+    "addEvent": "Etkinlik ekle",
+    "emptyTitle": "Yapılacak bir şey yok",
+    "emptyDescription": "Son tarihler, mülakatlar ve takipler bir tarih aldıkları anda buraya gelir ve siz tamamlandı olarak işaretleyene kadar kalır.",
+    "hintOverdue": "{{overdue}} gecikmiş · {{due}} bekleyen",
+    "hintDue_one": "{{count}} bekleyen",
+    "hintDue_other": "{{count}} bekleyen",
+    "snoozeAria": "Ertele: {{title}}",
+    "openAria": {
+      "reminder": "Aç: {{title}} — hatırlatıcıyı düzenleyin ya da başvurusuna gidin",
+      "event": "Aç: {{title}} — etkinliği düzenleyin ya da başvurusuna gidin"
+    },
+    "edit": {
+      "reminder": "Hatırlatıcıyı düzenle",
+      "event": "Etkinliği düzenle"
+    },
+    "openApplication": "Aç: <name>{{name}}</name>",
+    "groups": {
+      "overdue": "Gecikmiş",
+      "today": "Bugün",
+      "tomorrow": "Yarın",
+      "rest": "Haftanın geri kalanı"
+    },
+    "completedDescription": "Bu listeden çıkar ve bugüne sayılır — hiçbir şey silinmez.",
+    "rescheduledDescription": "Yeni son tarih {{date}}; burada ve takvimde.",
+    "nextSeven": "Önümüzdeki yedi gün",
+    "items_one": "{{count}} öğe",
+    "items_other": "{{count}} öğe",
+    "allDone": "tümü tamamlandı",
+    "nothingScheduled": "planlanmış bir şey yok",
+    "todayClear": "Bugün boş.",
+    "todayClearDone": "Bugün boş — {{count}} tamamlandı.",
+    "markDoneAria": "\"{{title}}\" tamamlandı olarak işaretle",
+    "markDone": "Tamamlandı olarak işaretle",
+    "draftTitle": "Bunu e-posta metin parçalarınızdan biriyle yazın",
+    "draftAria": "Taslak hazırla: {{title}}",
+    "later": "Sonra",
+    "openTitle": "Aç: {{title}}",
+    "more_one": "Takvimde {{count}} tane daha",
+    "more_other": "Takvimde {{count}} tane daha",
+    "showAll": "Tümünü göster ({{total}})",
+    "showFewer": "Daha az göster"
+  }
+}

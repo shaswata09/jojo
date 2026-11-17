@@ -1,0 +1,202 @@
+{
+  "common": {
+    "newPipeline": "Yeni işlem hattı",
+    "addToApplications": "Başvurulara ekle",
+    "inApplicationsAs": "Başvurularda şu adla: <anchor>{{name}}</anchor>",
+    "open": "Aç",
+    "undo": "Geri al"
+  },
+  "header": {
+    "title": "İş gözcüsü",
+    "subtitle": "İş ilanı sitelerini sizin için izleyecek kayıtlı aramalar — ve bugün ilanları bırakabileceğiniz bir yer",
+    "onlyActive": "Yalnızca etkin işlem hatları",
+    "onlyActiveHint": "Kapalı olanları gizle",
+    "paused": "Bağlı bir yerel model yok; bu yüzden işlem hatları duraklatıldı. Yine de bunları yazabilir ve aşağıya ilan kaydedebilirsiniz — bir modele ulaşılabildiğinde çalışmaya başlarlar.",
+    "runsLocally": "İşlem hatları, bu sekme açıkken bilgisayarınızda çalışır. Üçüncü bir tarafa hiçbir şey gönderilmez."
+  },
+  "shutdown": {
+    "title": "{{name}} kapatılsın mı?",
+    "description": "İki kez çalıştı ve önerecek bir şey bulamadı; yanıtlamanızı bekleyen bir şey de yok. Kapatmak aramayı durdurur; şimdiye kadar bulduğu her şey olduğu yerde kalır. İstediğiniz zaman yeniden açabilirsiniz.",
+    "keep": "Çalışmaya devam etsin",
+    "confirm": "Kapat"
+  },
+  "matches": {
+    "title": "Eşleşmeler",
+    "hint": "profilinize göre puanlandı",
+    "emptyTitle": "Eşleşme yok",
+    "emptyDescription": "Bir model bağlandığında işlem hatları puanlanan ilanları buraya koyar. O zamana kadar aşağıya kaydettiğiniz ilanlar giriş yoludur.",
+    "matched": "eşleşen: {{list}}",
+    "notScored": "puanlanmadı",
+    "fit": "%{{score}} uyum",
+    "added": "eklendi"
+  },
+  "dialog": {
+    "editTitle": "İşlem hattını düzenle",
+    "description": "İşlem hattı, asistan için sürekli bir görevdir. jojo açıkken bu cihazda çalışır ve değiştirmek istediği her şey önce size gösterilir.",
+    "kind": "Ne yapar",
+    "kinds": {
+      "twin": "Kayıtları eksiksiz tut",
+      "scout": "İlan bul"
+    },
+    "kindHint": {
+      "twin": "Elinizdekileri okur ve eksik olanları önerir — notlar, hatırlatıcılar, etiketler, dosyalama.",
+      "scout": "İlginize değer ilanları arar ve incelemeniz için sunar."
+    },
+    "name": "Ad",
+    "nameError": "İzlediği şeye göre adlandırın.",
+    "namePlaceholder": {
+      "twin": "ör. Başvurularımı düzenli tut",
+      "scout": "ör. CRA akademik iş ilanları"
+    },
+    "sources": "Kaynaklar",
+    "sourcesHint": "İzlediği ilan sitesi ya da kariyer sayfası. Birden fazlasını virgülle ayırın.",
+    "sourceError": "Kaynağı olmayan bir gözcünün okuyacağı bir şey yoktur.",
+    "terms": {
+      "twin": "Neye odaklanmalı",
+      "scout": "Eşleştirme terimleri"
+    },
+    "termsHint": {
+      "twin": "Özellikle dikkat etmesi gereken her şey. Her yere bakması için boş bırakın.",
+      "scout": "Bir ilanın neye göre puanlandığı. Kaynağın listelediği her şeyi tutmak için boş bırakın."
+    },
+    "termsPlaceholder": {
+      "twin": "takipler ve son tarihler",
+      "scout": "dr. öğretim üyesi, bilgisayar/elektrik müh."
+    },
+    "howOften": "Ne sıklıkla",
+    "howOftenHint": "Turlar arasında ne kadar beklediği.",
+    "schedules": {
+      "hourly": "Saatlik",
+      "daily": "Günlük",
+      "weekly": "Haftalık"
+    },
+    "cancel": "İptal",
+    "save": "Değişiklikleri kaydet",
+    "create": "İşlem hattı oluştur"
+  },
+  "pipelines": {
+    "title": "İşlem hatları",
+    "hint": "jojo açıkken bu cihazda çalışır",
+    "caption": "Bu sekme açıkken çalışırlar — bu bilgisayarın dışında hiçbir şey çalışmaz",
+    "kinds": {
+      "twin": "Dijital ikiz",
+      "scout": "İş gözcüsü"
+    },
+    "status": {
+      "off": "kapalı",
+      "paused": "duraklatıldı",
+      "running": "çalışıyor",
+      "watching": "izliyor"
+    },
+    "noneOnTitle": "Açık bir şey yok",
+    "noneOnDescription": "Tüm işlem hatlarınız kapalı. Birini açın ya da sayfa seçeneklerindeki filtreyi kaldırın.",
+    "emptyTitle": "İşlem hattı yok",
+    "emptyDescription": "İşlem hattı, asistan için sürekli bir görevdir: kayıtlarınızı eksiksiz tutmak ya da ilginize değer ilanları izlemek.",
+    "showAll": "Tüm işlem hatlarını göster",
+    "auto": "otomatik",
+    "autoAria": "{{name}} sormadan çalışsın",
+    "toReview_one": "{{count}} incelenecek",
+    "toReview_other": "{{count}} incelenecek",
+    "runNow": "Şimdi çalıştır: {{name}}",
+    "edit": "Düzenle: {{name}}",
+    "delete": "Sil: {{name}}",
+    "enable": "Etkinleştir: {{name}}"
+  },
+  "postings": {
+    "title": "İlan kaydet",
+    "hint": "model olmadan çalışır",
+    "intro": "Kaydetmek sayfanın kendisini de Kasa'da İş ilanları altında saklar — jojo uzantısıyla sizin göreceğiniz şekilde açılır ya da belge okuyucuyla getirilir. İkisi de yoksa saklanan şey URL, ondan tahmin edilen işveren ve kaydettiğiniz gündür.",
+    "urlLabel": "İş ilanı URL'si",
+    "pasteFirst": "Önce bir URL yapıştırın",
+    "save": "İlanı kaydet",
+    "emptyTitle": "Kayıtlı ilan yok",
+    "emptyDescription": "Daha sonra dönmek istediğiniz bir ilanın URL'sini yapıştırın. İlanlar kaldırılır; bağlantı ve tarih sizde kalır.",
+    "saved": "kaydedildi: {{when}}",
+    "linked": "başvuruya bağlı",
+    "unscored": "puanlanmadı",
+    "openSnapshot": "Anlık görüntüyü aç",
+    "savingPage": "Sayfa kaydediliyor…",
+    "savePage": "Sayfayı kaydet",
+    "savePageTitle": "İlanı açın ve bir kopyasını Kasa'da saklayın",
+    "remove": "Kaldır: {{title}}"
+  },
+  "proposals": {
+    "title": "Öneriler",
+    "hint": "siz söyleyene kadar hiçbir şey olmaz",
+    "aPipeline": "bir işlem hattı",
+    "clearAnswered": "Yanıtlananları temizle",
+    "approveAll": "{{count}} önerinin tümünü onayla",
+    "clearAll": "Tümünü temizle",
+    "emptyTitle": "İncelenecek bir şey yok",
+    "emptyDescription": "Bir işlem hattı çalışırken değiştirmek istediği her şey önce burada görünür. Siz onaylayana kadar kayıtlarınıza dokunmaz.",
+    "clearTitle": "Tüm öneriler temizlensin mi?",
+    "clearPending_one": "{{count}} öneri hâlâ sizi bekliyor ve reddedilecek. Kayıtlarınızda hiçbir şey değişmez ve işlem hatları çalışmaya devam eder — ama bunları bir daha önermezler.",
+    "clearPending_other": "{{count}} öneri hâlâ sizi bekliyor ve reddedilecek. Kayıtlarınızda hiçbir şey değişmez ve işlem hatları çalışmaya devam eder — ama bunları bir daha önermezler.",
+    "clearAnsweredOnly": "Yanıtlanan kartlar listeden kalkar. Kayıtlarınızda hiçbir şey değişmez.",
+    "status": {
+      "applied": "uygulandı",
+      "discarded": "atıldı",
+      "failed": "uygulanamadı"
+    },
+    "noSummary": "Bununla birlikte özet gelmedi — ne olduğunu görmek için ilanı açın.",
+    "reading": "Ayrıntılar için ilan okunuyor…",
+    "notALink": "Bir web adresi değil; bu yüzden bağlantı olarak sunulmuyor",
+    "from": "kaynak: {{name}}",
+    "openPosting": "İlanı aç",
+    "openPostingAria": "İlanı yeni sekmede aç: {{title}}",
+    "inApplications": "Başvurularda",
+    "approve": "Onayla",
+    "discard": "Bu öneriyi at",
+    "discardAria": "At: {{title}}",
+    "unreadable": "Sayfa okunamadı: {{reason}}",
+    "unreadableKept": "Sayfa okunamadı: {{reason}} Sayfanın kendisi kaydedildi.",
+    "applyBy": "son başvuru: {{date}}",
+    "pageSaved": "Sayfa kaydedildi"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Zaten başvurularınızda — yeniden eklenmedi",
+    "alreadyHaveDescription": "Bu, başka bir sitede yeniden yayımlanmış {{name}}. İlan buna bağlandı ve sayfası onun altında dosyalandı.",
+    "duplicateDescription": "Bu ilan, zaten sizde olan {{name}}. {{why}} Sayfası onun altında dosyalandı.",
+    "keepBoth": "İkisini de tut",
+    "fillFailedTitle": "{{org}}: ilan okunamadı",
+    "fillFailedKept": "{{reason}} Sayfanın kendisi kaydedildi ve taslağın altında dosyalandı — geri kalanı doldurmak için açın.",
+    "fillFailed": "{{reason}} Taslak, bağlantısının söylediklerini tutar — geri kalanı doldurmak için açın.",
+    "filledTitle": "{{name}} ilandan dolduruldu",
+    "checkedTitle": "{{name}} ilanla karşılaştırıldı",
+    "filledIn": "Doldurulanlar: {{list}}.",
+    "checked": "Sayfayla karşılaştırılanlar: {{list}}.",
+    "keptYours": "Düzenlemeleriniz korunanlar: {{list}}.",
+    "addedNothing": "Sayfa, taslakta olmayan hiçbir şey eklemedi.",
+    "missing": "Sayfada olmayanlar: {{list}}.",
+    "filedUnder": "Sayfa onun altında dosyalandı.",
+    "approvedReading": "Ayrıntıları doldurmak için ilan okunuyor — bittiğinde taslak güncellenir.",
+    "approvedFromLink": "Bağlantısından dolduruldu. İlanın kendisinin okunması için Ayarlar'dan bir model bağlayın.",
+    "approvedOpen": "Geri kalanı doldurmak için açın.",
+    "allRepeatsTitle": "Zaten başvurularınızda — yeni bir şey eklenmedi",
+    "allRepeats_one": "{{count}} ilan, zaten sizde olan ve başka bir sitede yeniden yayımlanmış bir iş. Mevcut başvurunuza bağlandı.",
+    "allRepeats_other": "{{count}} ilan, zaten sizde olan ve başka bir sitede yeniden yayımlanmış işler. Mevcut başvurularınıza bağlandılar.",
+    "added_one": "{{count}} ilan başvurularınıza taslak olarak eklendi",
+    "added_other": "{{count}} ilan başvurularınıza taslak olarak eklendi",
+    "addedWithRepeats_one": "{{count}} ilan başvurularınıza taslak olarak eklendi · {{repeats}} tanesi zaten vardı",
+    "addedWithRepeats_other": "{{count}} ilan başvurularınıza taslak olarak eklendi · {{repeats}} tanesi zaten vardı",
+    "addedReading": "Ayrıntıları doldurmak için her ilan sırayla okunuyor.",
+    "addedFromLinks": "Bağlantılarından dolduruldu. İlanların kendilerinin okunması için Ayarlar'dan bir model bağlayın.",
+    "addedOne": "{{org}} başvurularınıza taslak olarak eklendi",
+    "addedAsDraft": "{{org}} taslak olarak eklendi",
+    "matchStays": "Eşleşme bu akışta kalır, artık başvuruya bağlı.",
+    "postingSaved": "İlan kaydedildi",
+    "postingReading": "Ayrıntıları kontrol etmek ve doldurmak için ilan okunuyor — bittiğinde taslak güncellenir.",
+    "postingStays": "İlan burada kayıtlı kalır, artık başvuruya bağlı.",
+    "postingRemoved": "İlan kaldırıldı",
+    "pageNotSaved": "İlanın sayfası kaydedilmedi",
+    "pageSaved": "İlan sayfası kaydedildi",
+    "pageSavedFiled": "{{title}} — başvurusunun altında dosyalandı.",
+    "pageSavedVault": "{{title}} — Kasa'da İş ilanları altında.",
+    "pipelineUpdated": "İşlem hattı güncellendi",
+    "pipelineCreated": "İşlem hattı oluşturuldu",
+    "pipelineCreatedPaused": "{{name}} — bir model bağlanana kadar duraklatıldı.",
+    "pipelineCreatedRunning": "{{name}} — kısa süre içinde aramaya başlayacak.",
+    "pipelineDeleted": "İşlem hattı silindi",
+    "pipelineDeletedDescription": "{{name}} artık şunu izlemiyor: {{source}}."
+  }
+}

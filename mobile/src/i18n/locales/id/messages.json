@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Lamaran",
+      "org": "Pemberi kerja",
+      "role": "Posisi",
+      "item": "Tanggal atau pengingat",
+      "file": "Berkas",
+      "link": "Tautan",
+      "snippet": "Cuplikan",
+      "posting": "Lowongan tersimpan",
+      "match": "Kecocokan",
+      "keyword": "Kata kunci"
+    },
+    "isA": "adalah",
+    "fit": "Kecocokan {{fit}}%",
+    "query": {
+      "undated": {
+        "question": "Lamaran tanpa tanggal apa pun",
+        "why": "Lamaran ini tidak terlihat di kalender dan di minggu mendatang, seaktif apa pun lamarannya."
+      },
+      "untagged": {
+        "question": "Lamaran tanpa kata kunci",
+        "why": "Entri yang tidak diarsipkan siapa pun adalah entri yang tidak akan pernah dimunculkan filter mana pun."
+      },
+      "orphanFiles": {
+        "question": "Berkas yang tidak diarsipkan di lamaran mana pun",
+        "why": "Dokumen mudah tercecer; inilah yang menunjukkan mana yang tidak ditunjuk apa pun."
+      },
+      "orphanLinks": {
+        "question": "Tautan yang tidak diarsipkan di lamaran mana pun",
+        "why": "Pertanyaan yang sama untuk lowongan dan halaman yang Anda simpan untuk dibuka lagi."
+      },
+      "busiest": {
+        "question": "Pemberi kerja dengan urusan terbanyak",
+        "why": "Dihitung dari semua koleksi sekaligus — lamaran, tanggal, berkas, dan tautan."
+      },
+      "unpromoted": {
+        "question": "Kecocokan dan lowongan yang tidak pernah menjadi lamaran",
+        "why": "Peluang menjadi basi tanpa suara; tidak ada tampilan daftar yang pernah menyebutkan yang mana."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} tidak {{rel}} {{end}}",
+      "startAny": "Apa pun",
+      "relAny": "terhubung ke",
+      "endAny": "apa pun",
+      "startType": {
+        "application": "Lamaran",
+        "org": "Pemberi kerja",
+        "role": "Posisi",
+        "item": "Tanggal atau pengingat",
+        "file": "Berkas",
+        "link": "Tautan",
+        "snippet": "Cuplikan",
+        "posting": "Lowongan tersimpan",
+        "match": "Kecocokan",
+        "keyword": "Kata kunci"
+      },
+      "endType": {
+        "application": "sebuah lamaran",
+        "org": "sebuah pemberi kerja",
+        "role": "sebuah posisi",
+        "item": "sebuah tanggal atau pengingat",
+        "file": "sebuah berkas",
+        "link": "sebuah tautan",
+        "snippet": "sebuah cuplikan",
+        "posting": "sebuah lowongan tersimpan",
+        "match": "sebuah kecocokan",
+        "keyword": "sebuah kata kunci"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Hari ini",
+      "hint": "Yang perlu diputuskan"
+    },
+    "apps": {
+      "label": "Lamaran",
+      "hint": "Daftar dan papan tahap"
+    },
+    "cal": {
+      "label": "Kalender",
+      "hint": "Tenggat, wawancara, dan persiapan"
+    },
+    "reminders": {
+      "label": "Pengingat",
+      "hint": "Brankas · kewajiban Anda dan kapan"
+    },
+    "links": {
+      "label": "Tautan",
+      "hint": "Brankas · lowongan, orang, dan halaman"
+    },
+    "files": {
+      "label": "Berkas",
+      "hint": "Brankas · dokumen yang sudah Anda catat"
+    },
+    "snippets": {
+      "label": "Cuplikan",
+      "hint": "Brankas · paragraf yang dapat dipakai ulang"
+    },
+    "tools": {
+      "label": "Alat",
+      "hint": "Brankas · kalkulator"
+    },
+    "scout": {
+      "label": "Pencari lowongan",
+      "hint": "Pencarian tersimpan, kecocokan, dan lowongan"
+    },
+    "stats": {
+      "label": "Statistik",
+      "hint": "Angka, corong, dan yang perlu dikerjakan"
+    },
+    "graph": {
+      "label": "Graf",
+      "hint": "Entri Anda sebagai jaringan apa adanya"
+    },
+    "profile": {
+      "label": "Profil saya",
+      "hint": "Data dasar, dokumen, dan istilah pencocokan"
+    },
+    "assistant": {
+      "label": "Asisten",
+      "hint": "Contoh yang dikerjakan sampai model terhubung"
+    },
+    "settings": {
+      "label": "Pengaturan",
+      "hint": "Koneksi, tampilan, kata kunci, dan data Anda"
+    },
+    "transfer": {
+      "label": "Transfer",
+      "hint": "Pindahkan semuanya ke atau dari komputer Anda"
+    },
+    "guide": {
+      "label": "Cara menggunakan",
+      "hint": "Tiga lapisan, layar-layar, dan graf"
+    },
+    "more": {
+      "label": "Lainnya",
+      "hint": "Bagian lain jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Lamaran baru"
+    },
+    "newApplicationFromLink": {
+      "label": "Lamaran dari tautan",
+      "hint": "Model membaca lowongan dan mengisi formulirnya"
+    },
+    "newReminder": {
+      "label": "Pengingat baru"
+    },
+    "newEvent": {
+      "label": "Acara baru"
+    },
+    "draftMessage": {
+      "label": "Tulis draf pesan",
+      "hint": "Dari cuplikan email Anda — tidak ada yang dibuat otomatis"
+    },
+    "saveLink": {
+      "label": "Simpan tautan",
+      "hint": "Membuka Brankas, alat tautan"
+    },
+    "recordDocument": {
+      "label": "Catat dokumen",
+      "hint": "Membuka Brankas, alat berkas"
+    },
+    "savePosting": {
+      "label": "Simpan lowongan",
+      "hint": "Membuka Pencari lowongan"
+    }
+  },
+  "snooze": {
+    "soon1": "Besok",
+    "later1": "Sehari kemudian",
+    "soon3": "Dalam 3 hari",
+    "later3": "Tiga hari kemudian",
+    "soon7": "Dalam 7 hari",
+    "later7": "Seminggu kemudian"
+  },
+  "itemActions": {
+    "reopened": "{{title}} dibuka kembali",
+    "completed": "{{title}} selesai",
+    "reopenedBody": "Kembali ke daftar terbuka dan dihitung sebagai kewajiban lagi.",
+    "completedBody": "Item ini keluar dari daftar terbuka dan dihitung untuk hari ini — tidak ada yang dihapus.",
+    "rescheduled": "{{title}} dijadwalkan ulang",
+    "nowDue": "Sekarang jatuh tempo {{date}}, di sini dan di kalender.",
+    "movedTo": "Dipindah ke {{date}}",
+    "copyTitle": "{{title}} (salinan)",
+    "added": "{{title}} ditambahkan",
+    "copyBody": "{{date}} — salinannya membawa kata kunci yang sama.",
+    "deleted": "{{title}} dihapus",
+    "deletedReminder": "Hilang dari daftar pengingat dan dari kalender.",
+    "deletedEvent": "Hilang dari kalender."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "Filter kata kunci di atas daftarlah yang menyembunyikannya.",
+    "noSearchMatch": "Tidak ada yang cocok dengan pencarian itu",
+    "noBothMatch": "Tidak ada yang cocok dengan kedua filter",
+    "clearBoth": "Hapus kedua filter",
+    "clearKeywords": "Hapus kata kunci"
+  },
+  "boardScan": {
+    "badAddress": "Itu bukan alamat yang dapat saya buka.",
+    "timeout": "Papan itu terlalu lama menjawab.",
+    "unreachable": "Papan itu tidak dapat dijangkau.",
+    "status": "Papan itu menjawab {{status}}.",
+    "browserOnly": "{{host}} hanya menampilkan daftar lowongannya ke browser sungguhan, jadi tidak dapat dibaca dari ponsel. Di komputer, ekstensi browser jojo dapat membacanya."
+  },
+  "timelineForm": {
+    "title": "Beri judul yang akan Anda kenali.",
+    "date": "Pilih tanggal — item tanpa tanggal tidak punya tempat untuk muncul.",
+    "time": "Gunakan waktu seperti 14:30."
+  },
+  "reader": {
+    "tooBig": "Dokumen itu berukuran {{size}} MB dan pembaca hanya menerima hingga {{max}} MB.",
+    "gone": "Salinan dokumen itu sudah tidak ada di perangkat ini.",
+    "empty": "Tidak ada yang dapat dibaca dari dokumen itu — mungkin berupa hasil pindaian.",
+    "noAddress": "Belum ada alamat. Lihat Pengaturan.",
+    "notConnected": "Tidak ada pembaca dokumen yang terhubung, jadi isi berkas ini tidak dapat dibaca. Alamatnya diisi di Pengaturan.",
+    "noCopy": "Entri itu tidak punya salinan tersimpan di perangkat ini, jadi tidak ada yang bisa dibaca."
+  },
+  "jobs": {
+    "ready": "{{label}} sudah siap",
+    "readyBody": "Disimpan di lamaran yang menjadi tujuan penulisannya.",
+    "failed": "{{label}} tidak selesai"
+  },
+  "boot": {
+    "corrupt": "entri tersimpan tidak dapat dibaca ({{detail}}).",
+    "blocked": "penyimpanan dikunci oleh sesuatu yang lain di perangkat ini.",
+    "unsupported": "perangkat ini tidak punya penyimpanan yang dapat dipakai aplikasi ini.",
+    "threw": "penyimpanan sama sekali tidak dapat dibuka.",
+    "banner": "Tidak menyimpan ke perangkat ini — {{why}}"
+  },
+  "posting": {
+    "needsReader": "Ini memerlukan pembaca dokumen selain model — pembaca itulah yang mengambil halamannya. Alamatnya ada di Pengaturan.",
+    "empty": "Halaman itu kembali hampir kosong. Papan yang dirender dengan JavaScript mengirim kerangka kosong ke apa pun selain browser — buka di sini dan simpan halamannya.",
+    "note": "Dibaca oleh model dari {{url}}",
+    "askedTwice": "Sudah ditanyakan dua kali, dengan hasil yang sama."
+  },
+  "localService": {
+    "stopped": "Dihentikan sebelum dikirim."
+  },
+  "clipboard": {
+    "tooBig": "Terlalu besar untuk papan klip",
+    "tooBigBody": "Entri Anda berukuran {{size}} dan papan klip Android hanya menampung sekitar {{max}} teks. Tidak ada yang disalin. Gunakan Transfer untuk mengirim semuanya ke komputer Anda melalui jaringan lokal.",
+    "copied": "Disalin ke papan klip",
+    "copiedBody": "Cadangan yang dapat Anda tempel ke catatan atau berkas. Dokumen yang Anda lampirkan tetap di ponsel ini — barisnya kembali tanpa isinya."
+  },
+  "documents": {
+    "incomplete": "Penyalinan tidak selesai.",
+    "nothingCopied": "Tidak ada yang disalin."
+  },
+  "weekday": {
+    "sun": "Min",
+    "mon": "Sen",
+    "tue": "Sel",
+    "wed": "Rab",
+    "thu": "Kam",
+    "fri": "Jum",
+    "sat": "Sab"
+  },
+  "owed": {
+    "overdue": "Terlambat",
+    "today": "Hari ini",
+    "tomorrow": "Besok",
+    "rest": "Sisa minggu ini"
+  },
+  "receive": {
+    "declined": "Tidak ada yang diubah. Pindai kodenya lagi untuk menerima."
+  }
+}

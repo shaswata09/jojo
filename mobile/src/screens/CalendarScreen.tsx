@@ -95,6 +95,8 @@ export function CalendarScreen() {
   const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
   // Not `month.label`: that is core's English, and this reads the language on screen.
   const monthName = domain.month(month.month)
+  // Beside a day number: «5 ноября», not «5 ноябрь».
+  const monthOfDay = domain.monthOfDay(month.month)
   // `forMonth` matches the 'YYYY-MM' prefix, year included — a month-only match
   // would list next October's deadlines under this one.
   const monthItems = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
@@ -320,7 +322,7 @@ export function CalendarScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                   accessibilityLabel={t('calendar.dayLabel', {
-                    month: monthName,
+                    month: monthOfDay,
                     day,
                     count: items.length,
                   })}
@@ -537,7 +539,7 @@ export function CalendarScreen() {
               <Pressable
                 key={e.id}
                 accessibilityRole="button"
-                accessibilityLabel={t('calendar.goToDay', { month: monthName, day })}
+                accessibilityLabel={t('calendar.goToDay', { month: monthOfDay, day })}
                 onPress={() => setSelected(day)}
                 style={styles.restRow}
               >

@@ -1,0 +1,56 @@
+{
+  "defaultTitle": "Draf email",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Tulis draf pesan",
+    "for": "Untuk {{name}}.",
+    "forItem": "Untuk {{name}} · {{item}}.",
+    "unlinked": "Tidak ditautkan ke lamaran, jadi [ROLE] dan [DATE] tetap kosong.",
+    "body": "Tidak ada yang dibuat otomatis dan tidak ada yang dikirim — isi bagian kosong, salin ke aplikasi email Anda, lalu tandai sudah dikirim."
+  },
+  "picker": {
+    "hint": "Mulai dari salah satu cuplikan email Anda.",
+    "searchLabel": "Cari cuplikan",
+    "searchPlaceholder": "Cari cuplikan…",
+    "noMatch": "Tidak ada cuplikan yang cocok.",
+    "emailGroup": "Cuplikan email",
+    "freshGroup": "Mulai dari awal",
+    "blank": "Draf kosong"
+  },
+  "editor": {
+    "placeholder": "Tulis pesannya, atau pilih cuplikan sebagai awal…",
+    "label": "Draf pesan",
+    "nothing": "Belum ada draf.",
+    "noBlanks": "Tidak ada bagian kosong yang tersisa.",
+    "blanksLeft_other": "{{count}} bagian kosong tersisa — {{names}}",
+    "nameNote": " · nama orang tidak pernah diisikan untuk Anda",
+    "copyBlocked": "Penyalinan diblokir oleh browser",
+    "copied": "Draf disalin ke papan klip"
+  },
+  "empty": {
+    "title": "Belum ada cuplikan email",
+    "description": "Cuplikan berlabel Email muncul di sini sebagai titik awal. Tidak ada yang bisa dimuat, tetapi draf tidak harus dimulai dari cuplikan.",
+    "action": "Mulai dari draf kosong"
+  },
+  "footer": {
+    "writeFirst": "Tulis sesuatu dulu",
+    "saveHint": "Simpan draf ini di Brankas, berlabel Email",
+    "save": "Simpan sebagai cuplikan",
+    "assistantHint": "Asisten punya halamannya sendiri — buka dari bilah samping",
+    "assistant": "Buka di asisten",
+    "copyHint": "Salin pesan ke papan klip",
+    "markNoItem": "Buka ini dari pengingat untuk mencentangnya di sini",
+    "markDone": "Pengingat itu sudah dicentang",
+    "markSent": "Tandai terkirim"
+  },
+  "toast": {
+    "replaced": "Draf diganti",
+    "loaded": "{{title}} dimuat.",
+    "startedBlank": "Dimulai lagi dari kosong.",
+    "undo": "Urungkan",
+    "saved": "Disimpan ke cuplikan",
+    "savedDescription": "{{title}} · berlabel Email, di Brankas",
+    "markedSent": "Ditandai terkirim",
+    "markedSentDescription": "{{title}} — dicentang di pengingat"
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Candidatura",
+      "org": "Datore di lavoro",
+      "role": "Ruolo",
+      "item": "Data o promemoria",
+      "file": "File",
+      "link": "Link",
+      "snippet": "Frammento",
+      "posting": "Annuncio salvato",
+      "match": "Risultato",
+      "keyword": "Parola chiave"
+    },
+    "isA": "è un",
+    "fit": "{{fit}}% di compatibilità",
+    "query": {
+      "undated": {
+        "question": "Candidature senza nulla di datato",
+        "why": "Sono invisibili nel calendario e nella settimana in arrivo, per quanto siano attive."
+      },
+      "untagged": {
+        "question": "Candidature senza parole chiave",
+        "why": "Un record che nessuno ha archiviato è un record che nessun filtro farà mai emergere."
+      },
+      "orphanFiles": {
+        "question": "File non archiviati sotto nessuna candidatura",
+        "why": "I documenti si disperdono; questo dice a quali non punta nulla."
+      },
+      "orphanLinks": {
+        "question": "Link non archiviati sotto nessuna candidatura",
+        "why": "La stessa domanda per gli annunci e le pagine che hai salvato per riprenderli."
+      },
+      "busiest": {
+        "question": "I datori di lavoro con cui hai più cose in corso",
+        "why": "Contati su tutte le raccolte insieme: candidature, date, file e link."
+      },
+      "unpromoted": {
+        "question": "Risultati e annunci mai diventati candidature",
+        "why": "Le opportunità scadono in silenzio; nulla negli elenchi dice quali."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} non {{rel}} {{end}}",
+      "startAny": "Qualsiasi cosa",
+      "relAny": "collegato a",
+      "endAny": "qualsiasi cosa",
+      "startType": {
+        "application": "Candidature",
+        "org": "Datori di lavoro",
+        "role": "Ruoli",
+        "item": "Date o promemoria",
+        "file": "File",
+        "link": "Link",
+        "snippet": "Frammenti",
+        "posting": "Annunci salvati",
+        "match": "Risultati",
+        "keyword": "Parole chiave"
+      },
+      "endType": {
+        "application": "una candidatura",
+        "org": "un datore di lavoro",
+        "role": "un ruolo",
+        "item": "una data o un promemoria",
+        "file": "un file",
+        "link": "un link",
+        "snippet": "un frammento",
+        "posting": "un annuncio salvato",
+        "match": "un risultato",
+        "keyword": "una parola chiave"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Oggi",
+      "hint": "Ciò che richiede una decisione"
+    },
+    "apps": {
+      "label": "Candidature",
+      "hint": "L'elenco e la bacheca delle fasi"
+    },
+    "cal": {
+      "label": "Calendario",
+      "hint": "Scadenze, colloqui e preparazione"
+    },
+    "reminders": {
+      "label": "Promemoria",
+      "hint": "Cassaforte · cosa devi fare e quando"
+    },
+    "links": {
+      "label": "Link",
+      "hint": "Cassaforte · annunci, persone e pagine"
+    },
+    "files": {
+      "label": "File",
+      "hint": "Cassaforte · documenti che hai registrato"
+    },
+    "snippets": {
+      "label": "Frammenti",
+      "hint": "Cassaforte · paragrafi riutilizzabili"
+    },
+    "tools": {
+      "label": "Strumenti",
+      "hint": "Cassaforte · la calcolatrice"
+    },
+    "scout": {
+      "label": "Scout offerte",
+      "hint": "Ricerche salvate, risultati e annunci"
+    },
+    "stats": {
+      "label": "Statistiche",
+      "hint": "Tassi, un imbuto e su cosa lavorare"
+    },
+    "graph": {
+      "label": "Grafo",
+      "hint": "I tuoi record come la rete che sono"
+    },
+    "profile": {
+      "label": "Il mio profilo",
+      "hint": "Dati di base, documenti e termini di ricerca"
+    },
+    "assistant": {
+      "label": "Assistente",
+      "hint": "Esempi svolti finché non colleghi un modello"
+    },
+    "settings": {
+      "label": "Impostazioni",
+      "hint": "Connessioni, aspetto, parole chiave e i tuoi dati"
+    },
+    "transfer": {
+      "label": "Trasferimento",
+      "hint": "Sposta tutto verso o dal tuo computer"
+    },
+    "guide": {
+      "label": "Come si usa",
+      "hint": "I tre livelli, le schermate e il grafo"
+    },
+    "more": {
+      "label": "Altro",
+      "hint": "Il resto di jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Nuova candidatura"
+    },
+    "newApplicationFromLink": {
+      "label": "Candidatura da un link",
+      "hint": "Il modello legge l'annuncio e compila il modulo"
+    },
+    "newReminder": {
+      "label": "Nuovo promemoria"
+    },
+    "newEvent": {
+      "label": "Nuovo evento"
+    },
+    "draftMessage": {
+      "label": "Scrivi un messaggio",
+      "hint": "Dai tuoi frammenti email: non viene generato nulla"
+    },
+    "saveLink": {
+      "label": "Salva un link",
+      "hint": "Apre la Cassaforte, strumento Link"
+    },
+    "recordDocument": {
+      "label": "Registra un documento",
+      "hint": "Apre la Cassaforte, strumento File"
+    },
+    "savePosting": {
+      "label": "Salva un annuncio",
+      "hint": "Apre Scout offerte"
+    }
+  },
+  "snooze": {
+    "soon1": "Domani",
+    "later1": "Un giorno dopo",
+    "soon3": "Tra 3 giorni",
+    "later3": "Tre giorni dopo",
+    "soon7": "Tra 7 giorni",
+    "later7": "Una settimana dopo"
+  },
+  "itemActions": {
+    "reopened": "{{title}} riaperto",
+    "completed": "{{title}} completato",
+    "reopenedBody": "Di nuovo nell'elenco aperto e di nuovo da fare.",
+    "completedBody": "Esce dagli elenchi aperti e conta per oggi: nulla viene eliminato.",
+    "rescheduled": "{{title}} riprogrammato",
+    "nowDue": "Ora scade il {{date}}, qui e nel calendario.",
+    "movedTo": "Spostato al {{date}}",
+    "copyTitle": "{{title}} (copia)",
+    "added": "{{title}} aggiunto",
+    "copyBody": "{{date}}: la copia ha le stesse parole chiave.",
+    "deleted": "{{title}} eliminato",
+    "deletedReminder": "Rimosso dall'elenco dei promemoria e dal calendario.",
+    "deletedEvent": "Rimosso dal calendario."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "È il filtro per parole chiave sopra l'elenco a nasconderli.",
+    "noSearchMatch": "Nulla corrisponde a quella ricerca",
+    "noBothMatch": "Nulla corrisponde a entrambi i filtri",
+    "clearBoth": "Cancella entrambi i filtri",
+    "clearKeywords": "Cancella le parole chiave"
+  },
+  "boardScan": {
+    "badAddress": "Non è un indirizzo che posso aprire.",
+    "timeout": "Quel sito ha impiegato troppo a rispondere.",
+    "unreachable": "Non è stato possibile raggiungere quel sito.",
+    "status": "Quel sito ha risposto {{status}}.",
+    "browserOnly": "{{host}} mostra i suoi annunci solo a un vero browser, quindi non può essere letto dal telefono. Su un computer l'estensione jojo per il browser può leggerlo."
+  },
+  "timelineForm": {
+    "title": "Dagli un titolo che riconoscerai.",
+    "date": "Scegli una data: un elemento senza data non ha dove comparire.",
+    "time": "Usa un orario come 14:30."
+  },
+  "reader": {
+    "tooBig": "Quel documento è di {{size}} MB e il lettore accetta fino a {{max}} MB.",
+    "gone": "La copia di quel documento non è più su questo dispositivo.",
+    "empty": "Non è stato possibile leggere nulla da quel documento: potrebbe essere una scansione.",
+    "noAddress": "Ancora nessun indirizzo. Vedi Impostazioni.",
+    "notConnected": "Nessun lettore di documenti è collegato, quindi il contenuto di questo file non può essere letto. Il suo indirizzo va inserito in Impostazioni.",
+    "noCopy": "Quel record non ha una copia memorizzata su questo dispositivo, quindi non c'è nulla da leggere."
+  },
+  "jobs": {
+    "ready": "{{label}} è pronto",
+    "readyBody": "Salvato sotto la candidatura per cui è stato scritto.",
+    "failed": "{{label}} non è stato completato"
+  },
+  "boot": {
+    "corrupt": "non è stato possibile leggere i record salvati ({{detail}}).",
+    "blocked": "la memoria è bloccata da qualcos'altro su questo dispositivo.",
+    "unsupported": "questo dispositivo non ha una memoria utilizzabile da questa app.",
+    "threw": "non è stato possibile aprire l'archivio.",
+    "banner": "Salvataggio su questo dispositivo non attivo: {{why}}"
+  },
+  "posting": {
+    "needsReader": "Serve il lettore di documenti oltre al modello: è lui che scarica la pagina. L'indirizzo si trova in Impostazioni.",
+    "empty": "Quella pagina è tornata quasi vuota. I siti che si generano con JavaScript inviano una struttura vuota a tutto ciò che non è un browser: aprila qui e salva invece la pagina.",
+    "note": "Letto dal modello da {{url}}",
+    "askedTwice": "Chiesto due volte, con lo stesso risultato."
+  },
+  "localService": {
+    "stopped": "Interrotto prima dell'invio."
+  },
+  "clipboard": {
+    "tooBig": "Troppo grande per gli appunti",
+    "tooBigBody": "I tuoi record occupano {{size}} e gli appunti di Android accettano circa {{max}} di testo. Non è stato copiato nulla. Usa Trasferimento per inviare tutto al tuo computer sulla rete locale.",
+    "copied": "Copiato negli appunti",
+    "copiedBody": "Un backup che puoi incollare in una nota o in un file. I documenti che hai allegato restano su questo telefono: le loro righe tornano senza il contenuto."
+  },
+  "documents": {
+    "incomplete": "La copia non è stata completata.",
+    "nothingCopied": "Non è stato copiato nulla."
+  },
+  "weekday": {
+    "sun": "Dom",
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Gio",
+    "fri": "Ven",
+    "sat": "Sab"
+  },
+  "owed": {
+    "overdue": "In ritardo",
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "rest": "Resto della settimana"
+  },
+  "receive": {
+    "declined": "Non è cambiato nulla. Scansiona di nuovo il codice per ricevere."
+  }
+}

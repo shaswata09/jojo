@@ -1,0 +1,175 @@
+{
+  "shared": {
+    "undo": "Geri al",
+    "cancel": "İptal",
+    "add": "Ekle",
+    "discard": "Vazgeç",
+    "save": "Kaydet",
+    "didNotSave": "Bu kaydedilmedi"
+  },
+  "saveBar": {
+    "unsaved": "Kaydedilmemiş değişiklikler — kaydetmek bunları bu tarayıcıya yazar."
+  },
+  "form": {
+    "saved": {
+      "title": "Profil kaydedildi",
+      "description": "Bu tarayıcıya yazıldı ve saklanıyor."
+    }
+  },
+  "fields": {
+    "basics": "Temel bilgiler",
+    "fullName": {
+      "label": "Ad soyad",
+      "placeholder": "ör. Lonardo Jenson"
+    },
+    "position": {
+      "label": "Şu anki pozisyon",
+      "placeholder": "ör. Doktora adayı, Bilgisayar Bilimleri"
+    },
+    "location": {
+      "label": "Konum",
+      "placeholder": "ör. Santa Clara, CA"
+    },
+    "email": {
+      "label": "E-posta"
+    },
+    "links": "Bağlantılar",
+    "website": {
+      "label": "Web sitesi"
+    }
+  },
+  "interests": {
+    "title": "İlgi alanları ve hedefler",
+    "hint": "gözcü eşleştirmesini yönlendirir",
+    "matchTerms": {
+      "title": "Eşleştirme terimleri",
+      "description": "Gözcünün aradığı araştırma alanları ve ifadeler. Kayıtları altında dosyaladığınız anahtar kelimelerden ayrıdır.",
+      "remove": "Kaldır: {{term}}",
+      "newLabel": "Yeni eşleştirme terimi",
+      "placeholder": "Eşleştirme terimi ekleyin"
+    },
+    "targetRoles": {
+      "label": "Hedef roller",
+      "placeholder": "ör. Dr. Öğretim Üyesi (kadro yolu) · Araştırma bilimcisi"
+    },
+    "regions": {
+      "label": "Tercih edilen bölgeler",
+      "placeholder": "ör. Texas · uzaktan"
+    },
+    "academia": "Akademik ilanları dahil et",
+    "industry": "Sektör ilanlarını dahil et"
+  },
+  "roleTags": {
+    "title": "Rol etiketleri",
+    "description": "İzlediğiniz rol türleri. Her başvuru bunlardan birinin altında dosyalanır; rol filtresi ve İstatistikler'deki rol bazlı rakamlar bunu okur. Burada birini kaldırmak, onu taşıyan başvuruları olduğu yerde bırakır.",
+    "remove_one": "Kaldır: {{role}} ({{count}} başvuruda kullanılıyor)",
+    "remove_other": "Kaldır: {{role}} ({{count}} başvuruda kullanılıyor)",
+    "newLabel": "Yeni rol etiketi",
+    "placeholder": "ör. Veri bilimci"
+  },
+  "documents": {
+    "title": "Belgeler",
+    "hint": "Kasa'daki {{bucket}} bölümü",
+    "upload": "Yükle",
+    "exportInSettings": "Ayarlar'da dışa aktar",
+    "empty": {
+      "title": "Henüz belge yok",
+      "description": "CV'nizi ve beyanlarınızı buraya bırakın ya da seçin — Kasa'da {{bucket}} altında dosyalanırlar ve uygulamanın geri kalanı onlara oradan ulaşır.",
+      "upload": "Belge yükle"
+    },
+    "footer": "Kasa'nın <anchor>Dosyalar aracı</anchor> ile aynı dosyalar, {{bucket}} ile filtrelenmiş. Buraya bir belge bırakın ya da seçin; dosyanın kendisi bu tarayıcıda saklanır — hiçbir yere yüklenmez. Okumak için birine tıklayın."
+  },
+  "documentTile": {
+    "open": "Aç: {{name}}",
+    "meta": "{{size}} · kaydedildi: {{ago}}",
+    "delete": "Sil: {{name}}"
+  },
+  "background": {
+    "title": "Geçmişiniz",
+    "hint_one": "{{count}} kayıtlı · bir ilanın karşılaştırıldığı şey",
+    "hint_other": "{{count}} kayıtlı · bir ilanın karşılaştırıldığı şey",
+    "details_one": "{{count}} ayrıntı",
+    "details_other": "{{count}} ayrıntı",
+    "readFromDocument": "bir belgeden okundu",
+    "edit": "Düzenle: {{title}}",
+    "remove": "Kaldır: {{title}}",
+    "added": "{{title}} eklendi",
+    "updated": "{{title}} güncellendi",
+    "removed": "{{title}} kaldırıldı",
+    "addEntry": "Giriş ekle",
+    "form": {
+      "kind": "Tür",
+      "title": "Başlık",
+      "titlePlaceholder": "Ne olduğu",
+      "where": "Nerede",
+      "optional": "İsteğe bağlı",
+      "when": "Ne zaman",
+      "whenPlaceholder": "Yazıldığı gibi — “2021–2024”",
+      "year": "Yıl",
+      "detail": "Ayrıntı",
+      "detailPlaceholder": "Bir ilanla karşılaştırmaya değer her şey (isteğe bağlı)",
+      "highlights": "Öne çıkanlar",
+      "highlightsHint": "Her satıra bir tane — ne inşa edildi, yayımlandı, öğretildi ya da bulundu.",
+      "readKept": "bir belgeden okundu — sizin düzenlemeniz okunanın yerine korunur",
+      "saveChanges": "Değişiklikleri kaydet"
+    },
+    "empty": {
+      "title": "Henüz kayıtlı bir şey yok",
+      "configured": "CV'nizi, araştırma ya da öğretim beyanınızı Kasa'ya koyun; jojo onu okumayı önerir — bulduklarınız hiçbir şey kaydedilmeden önce size gösterilir. Ya da elle bir giriş ekleyin.",
+      "unconfigured": "Bir belgeyi okumak için bir model gerekir. Ayarlar'dan bir model bağlayın, ardından CV'nizi ya da bir beyanı Kasa'ya koyun; jojo onu okumayı önerir. Model olmadan da elle giriş ekleyebilirsiniz."
+    },
+    "readMenu": {
+      "needsModel": "Bir belgeyi okumak için bir model gerekir. Ayarlar'dan bir model bağlayın.",
+      "button": "Belge oku",
+      "nothing": "Kasa'da henüz okunabilecek bir şey yok. CV'nizi ya da bir beyanı bırakın, burada görünsün.",
+      "allRead": "Kasa'daki okunabilir her şey okundu.",
+      "read": "okundu"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Eğitim",
+      "employment": "İş deneyimi",
+      "publication": "Yayın",
+      "skill": "Beceri",
+      "teaching": "Öğretim",
+      "award": "Ödül",
+      "service": "Hizmet",
+      "certification": "Sertifika",
+      "language": "Dil",
+      "project": "Proje",
+      "volunteering": "Gönüllülük",
+      "membership": "Üyelik",
+      "grant": "Hibe",
+      "patent": "Patent"
+    },
+    "skipped_one": "{{count}} giriş atlandı",
+    "skipped_other": "{{count}} giriş atlandı",
+    "readIt": "Oku",
+    "readFailed": "Belge okunamadı.",
+    "notNow": "Şimdi değil",
+    "discardEntries": "Bu girişleri at",
+    "review": {
+      "single": "Bu belgeden 1 giriş okundu",
+      "some": "{{total}} girişten {{kept}} tanesi eklenecek",
+      "untick": "Yanlış olan her şeyin işaretini kaldırın.",
+      "add": "Ekle: {{title}}",
+      "connections_one": "Aralarında {{count}} bağlantı",
+      "connections_other": "Aralarında {{count}} bağlantı",
+      "addOne": "Profilime ekle",
+      "addMany": "{{total}} girişi profilime ekle"
+    },
+    "toast": {
+      "already": "Zaten profilinizde",
+      "added_one": "Profilinize {{count}} giriş eklendi",
+      "added_other": "Profilinize {{count}} giriş eklendi",
+      "nothing": "Hiçbir şey eklenemedi",
+      "readFrom": "Okunan belge: {{name}}.",
+      "known": "{{total}} girişten {{known}} tanesi zaten biliniyordu.",
+      "related_one": "Aralarında {{count}} bağlantı kaydedildi.",
+      "related_other": "Aralarında {{count}} bağlantı kaydedildi.",
+      "weigh": "jojo artık bir ilanı yaptıklarınızla karşılaştırabilir.",
+      "refused": "Girişler reddedildi."
+    }
+  }
+}

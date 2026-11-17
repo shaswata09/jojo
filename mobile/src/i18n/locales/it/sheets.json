@@ -1,0 +1,255 @@
+{
+  "common": {
+    "undo": "Annulla",
+    "cancel": "Annulla"
+  },
+  "addFromLink": {
+    "title": "Candidatura da un link",
+    "description": "Il modello legge l'annuncio e compila il modulo, e spunta le tue parole chiave che riguardano chiaramente il lavoro. La pagina viene conservata nella Cassaforte sotto Annunci di lavoro, e nulla viene salvato come candidatura finché non lo dici tu.",
+    "url": "URL dell'annuncio",
+    "addressOnly": "Usa solo l'indirizzo",
+    "reading": "Lettura…",
+    "retry": "Riprova",
+    "submit": "Leggi e precompila",
+    "failed": "La lettura dell'annuncio non è riuscita.",
+    "steps": {
+      "reading": "Scaricamento della pagina",
+      "asking": "Lettura",
+      "saving": "Salvataggio dell'annuncio"
+    },
+    "toast": {
+      "title": "Annuncio salvato e letto",
+      "kept": "{{name}} è nella Cassaforte, e verrà archiviato sotto la candidatura quando la salvi.",
+      "gaps_one": "{{count}} campo non era nella pagina.",
+      "gaps_many": "{{count}} di campi non erano nella pagina.",
+      "gaps_other": "{{count}} campi non erano nella pagina.",
+      "tags_one": "{{count}} delle tue parole chiave è spuntata.",
+      "tags_many": "{{count}} delle tue parole chiave sono spuntate.",
+      "tags_other": "{{count}} delle tue parole chiave sono spuntate."
+    }
+  },
+  "application": {
+    "newTitle": "Nuova candidatura",
+    "editTitle": "Modifica {{name}}",
+    "add": "Aggiungi candidatura",
+    "save": "Salva le modifiche",
+    "checking": "Verifica dei duplicati…",
+    "noRecord": "Questo pannello è stato aperto senza un record da modificare",
+    "description": {
+      "edit": "Le modifiche sostituiscono i dettagli attuali, e la scadenza si sposta con esse.",
+      "prefilledTagged": "Precompilato da ciò che hai incollato: controlla datore di lavoro, ruolo e parole chiave prima di salvare.",
+      "prefilled": "Precompilato da ciò che hai incollato: controlla datore di lavoro e ruolo prima di salvare.",
+      "create": "Segui un lavoro a cui ti stai candidando. I campi con l'asterisco sono obbligatori."
+    },
+    "errors": {
+      "org": "Indica il datore di lavoro: è ciò sotto cui viene archiviato il record.",
+      "role": "Indica il ruolo, così due candidature presso lo stesso posto restano distinte.",
+      "roleTag": "Scegli un'etichetta di ruolo: il filtro per ruolo e i grafici la usano.",
+      "url": "Non è un link che un browser possa aprire: includi https://."
+    },
+    "fields": {
+      "org": "Organizzazione",
+      "orgPlaceholder": "Datore di lavoro o istituzione",
+      "role": "Titolo del ruolo",
+      "rolePlaceholder": "es. Data analyst senior",
+      "roleTag": "Etichetta di ruolo",
+      "pickRoleTag": "Scegli un'etichetta di ruolo",
+      "roleTagDescription": "L'asse che usano il filtro per ruolo e i grafici.",
+      "stage": "Fase",
+      "deadline": "Scadenza",
+      "deadlineHint": "Aggiunge una voce con data al calendario e alla settimana in arrivo.",
+      "source": "Fonte",
+      "sourceNotSet": "Non impostata",
+      "location": "Località",
+      "locationPlaceholder": "Città, o Da remoto",
+      "comp": "Retribuzione",
+      "compPlaceholder": "es. $96k + equity",
+      "url": "URL dell'annuncio",
+      "postingId": "ID dell'annuncio",
+      "postingIdHint": "Il numero dell'offerta o della richiesta, se l'annuncio lo indica.",
+      "postingIdPlaceholder": "es. R-2024-0312",
+      "note": "Nota",
+      "notePlaceholder": "Cosa deve ancora succedere prima dell'invio.",
+      "keywords": "Parole chiave"
+    },
+    "toast": {
+      "draftDiscarded": "Bozza scartata",
+      "changesDiscarded": "Modifiche scartate",
+      "nothingAdded": "Non è stato aggiunto nulla. Annulla riporta il modulo come l'avevi lasciato.",
+      "unchanged": "{{name}} è invariata. Annulla riporta le tue modifiche.",
+      "recordUnchanged": "Il record è invariato. Annulla riporta le tue modifiche.",
+      "added": "{{name}} aggiunta",
+      "deadlineOnCalendar": "La scadenza del {{date}} è nel calendario.",
+      "noDeadline": "Ancora nessuna scadenza: aggiungine una e comparirà nella settimana in arrivo.",
+      "postingFiled": "L'annuncio è archiviato sotto di essa.",
+      "saved": "Modifiche salvate",
+      "deadlineRemoved": "{{name}}: la sua scadenza è stata tolta dal calendario.",
+      "restoreDeadline": "Ripristina la scadenza"
+    },
+    "duplicate": {
+      "title": "Sembra un lavoro che hai già",
+      "modelSame": "Il modello le ha lette come la stessa posizione.",
+      "modelReading": ": è la lettura del modello, verificala qui sotto.",
+      "existing": "Cosa hai già",
+      "adding": "Cosa stai aggiungendo",
+      "untitled": "Senza titolo",
+      "postingId": "ID dell'annuncio {{id}}",
+      "openYours": "Apri quella che hai già",
+      "openExisting": "Apri {{name}}, che hai già",
+      "tapToOpen": "Tocca per aprirla, o continua e aggiungi questa come secondo record.",
+      "editInstead": "Modifica invece",
+      "discard": "Scarta",
+      "addAnyway": "Aggiungi comunque"
+    },
+    "since": {
+      "today": "oggi",
+      "yesterday": "ieri",
+      "daysAgo_one": "{{count}} giorno fa",
+      "daysAgo_many": "{{count}} di giorni fa",
+      "daysAgo_other": "{{count}} giorni fa"
+    }
+  },
+  "draft": {
+    "title": "Scrivi un messaggio",
+    "description": {
+      "forApp": "Per {{name}}. Non viene generato né inviato nulla: compila gli spazi vuoti, copia il testo nel tuo client di posta, poi segnalo come inviato.",
+      "forItem": "Per {{name}} · {{item}}. Non viene generato né inviato nulla: compila gli spazi vuoti, copia il testo nel tuo client di posta, poi segnalo come inviato.",
+      "unlinked": "Non è collegato a una candidatura, quindi [ROLE] e [DATE] restano vuoti. Non viene generato né inviato nulla: compila gli spazi vuoti, copia il testo nel tuo client di posta, poi segnalo come inviato."
+    },
+    "defaultTitle": "Bozza di email",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Salva come frammento",
+    "writeFirst": "Prima scrivi qualcosa",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "markSent": "Segna come inviato",
+    "openFromReminder": "Apri questa bozza da un promemoria per spuntarlo",
+    "alreadyTicked": "Già spuntato",
+    "blank": "Bozza vuota",
+    "startFromSnippet": "Parti da uno dei tuoi frammenti email",
+    "placeholder": "Scrivi il messaggio, o scegli un frammento da cui partire…",
+    "editorLabel": "Bozza del messaggio",
+    "empty": {
+      "title": "Ancora nessun frammento email",
+      "description": "I frammenti con l'etichetta Email compaiono qui come punti di partenza. Non c'è nulla da caricare, ma la bozza non deve per forza partire da uno di essi.",
+      "startBlank": "Parti da una bozza vuota"
+    },
+    "status": {
+      "empty": "Ancora nessuna bozza.",
+      "noBlanks": "Nessuno spazio vuoto rimasto.",
+      "blanksLeft_one": "{{count}} spazio vuoto rimasto — {{names}}",
+      "blanksLeft_many": "{{count}} di spazi vuoti rimasti — {{names}}",
+      "blanksLeft_other": "{{count}} spazi vuoti rimasti — {{names}}",
+      "nameNever": " · il nome di una persona non viene mai compilato al posto tuo"
+    },
+    "picker": {
+      "title": "Parti da",
+      "description": "I tuoi frammenti email, con ciò che i record sanno già compilato."
+    },
+    "toast": {
+      "replaced": "Bozza sostituita",
+      "loaded": "Caricato {{title}}.",
+      "blank": "Ricominciato da una bozza vuota.",
+      "saved": "Salvato nei frammenti",
+      "savedDescription": "{{title}} · con l'etichetta Email, nella Cassaforte",
+      "sent": "Segnato come inviato",
+      "sentDescription": "{{title}} — spuntato nei promemoria"
+    }
+  },
+  "stage": {
+    "moveTo": "Sposta in {{stage}}",
+    "currently": "{{name}} · attualmente {{stage}}",
+    "nothingElse": "Nient'altro nel record è cambiato.",
+    "moveWithoutDetails": "Sposta senza dettagli",
+    "outcome": "Esito",
+    "submitted": {
+      "date": "Inviata il",
+      "portal": "URL del portale",
+      "portalHint": "Dove si trova la candidatura, per quando devi sollecitarla.",
+      "reference": "Riferimento di conferma",
+      "referencePlaceholder": "es. 4471-QZ"
+    },
+    "interview": {
+      "date": "Data del colloquio",
+      "format": "Formato",
+      "formatLabel": "Formato del colloquio",
+      "mint": "Aggiungilo alla cronologia",
+      "mintDescription": "Crea una voce di colloquio in quella data, con un promemoria."
+    },
+    "offer": {
+      "respondBy": "Rispondi entro",
+      "package": "Pacchetto",
+      "packagePlaceholder": "es. $112k + $15k startup",
+      "note": "Nota",
+      "notePlaceholder": "Cosa è ancora in trattativa",
+      "mint": "Aggiungi la scadenza alla cronologia",
+      "mintDescription": "Una data di risposta senza nulla che la sorvegli è l'unica scadenza che non puoi permetterti di mancare."
+    },
+    "keepOffer": {
+      "label": "Conserva i dettagli dell'offerta",
+      "description": "Rispondi entro il {{date}}. Disattiva per cancellarli.",
+      "descriptionWithComp": "Rispondi entro il {{date}} · {{comp}}. Disattiva per cancellarli."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Nuovo promemoria",
+      "editReminder": "Modifica promemoria",
+      "newEvent": "Nuovo evento",
+      "editEvent": "Modifica evento"
+    },
+    "description": "È comunque un unico record: compare nel calendario alla data che indichi, e nell'elenco dei promemoria della Cassaforte finché l'interruttore è attivo.",
+    "delete": "Elimina",
+    "save": "Salva",
+    "addReminder": "Aggiungi promemoria",
+    "addEvent": "Aggiungi evento",
+    "reminderFallback": "Promemoria",
+    "duration": {
+      "minutes_one": "{{count}} min",
+      "minutes_many": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hours_one": "{{count}} ora",
+      "hours_many": "{{count}} di ore",
+      "hours_other": "{{count}} ore"
+    },
+    "fields": {
+      "title": "Titolo",
+      "reminderPlaceholder": "es. Sollecita il selezionatore",
+      "eventPlaceholder": "es. Zoom con la commissione",
+      "remind": "Mostra nei promemoria",
+      "remindOn": "Elencato nella Cassaforte con una casella di spunta, e nel calendario alla sua data.",
+      "remindOff": "Solo nel calendario alla sua data, senza casella di spunta nella Cassaforte.",
+      "date": "Data",
+      "allDay": "Tutto il giorno",
+      "allDayDescription": "Se disattivato, ha un'ora di inizio e una durata.",
+      "startTime": "Ora di inizio",
+      "length": "Durata",
+      "applicationHint": "Li collega, così ogni candidatura elenca questo elemento e questo riporta a ciascuna di esse.",
+      "kind": "Tipo",
+      "kindFollowUp": "Un sollecito viene anche contato tra le cose da fare in Oggi, finché non lo spunti.",
+      "kindHint": "L'icona che porta nel calendario e nell'elenco dei promemoria.",
+      "detail": "Dettaglio",
+      "detailHint": "Una riga di contesto, mostrata sotto il titolo.",
+      "note": "Nota",
+      "noteHint": "Un tuo appunto. Tenuto separato dal dettaglio, così una modifica non lo sovrascrive mai.",
+      "keywords": "Parole chiave",
+      "keywordsHint": "Condivise con candidature, file e link: filtrando per una le trovi tutte."
+    },
+    "more": {
+      "title": "Altri dettagli",
+      "note": "nota",
+      "keywords": "parole chiave",
+      "empty": "nota, parole chiave"
+    },
+    "toast": {
+      "added": "{{title}} aggiunto",
+      "updated": "{{title}} aggiornato",
+      "inReminders": "tra i promemoria",
+      "calendarOnly": "solo nel calendario",
+      "owed": "e da fare questa settimana",
+      "deleted": "{{title}} eliminato",
+      "goneFromBoth": "Rimosso dall'elenco dei promemoria e dal calendario.",
+      "goneFromCalendar": "Rimosso dal calendario."
+    }
+  }
+}

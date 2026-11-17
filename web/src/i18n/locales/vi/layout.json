@@ -1,0 +1,134 @@
+{
+  "sidebar": {
+    "navigation": "Điều hướng",
+    "close": "Đóng điều hướng"
+  },
+  "nav": {
+    "dashboard": "Tổng quan",
+    "applications": "Đơn ứng tuyển",
+    "calendar": "Lịch",
+    "vault": "Kho lưu trữ",
+    "jobScout": "Trình tìm việc",
+    "statistics": "Thống kê",
+    "flagged_other": "{{count}} đã gắn cờ",
+    "flaggedTitle": "Đã gắn cờ để liên hệ lại",
+    "weekTitle": "Đã lên lịch trong bảy ngày tới",
+    "overdueTitle": "Lời nhắc đã quá ngày",
+    "fresh_other": "{{count}} mới",
+    "freshTitle": "Gợi ý chưa được thêm vào đơn ứng tuyển"
+  },
+  "newMenu": {
+    "trigger": "Mới",
+    "find": "Tìm thứ cần thêm",
+    "findPlaceholder": "Tìm thứ cần thêm…",
+    "empty": "Không có gì để thêm khớp với từ đó."
+  },
+  "roleFilter": {
+    "label": "Lọc theo vị trí công việc",
+    "all": "Tất cả vị trí",
+    "selected_other": "Đã chọn {{count}}",
+    "find": "Tìm vị trí",
+    "findPlaceholder": "Tìm vị trí…",
+    "empty": "Không có vị trí nào khớp.",
+    "selectAll": "Chọn tất cả",
+    "clear": "Bỏ lọc",
+    "remove": "Gỡ {{role}}"
+  },
+  "topbar": {
+    "openNav": "Mở điều hướng",
+    "search": "Tìm đơn ứng tuyển, lời nhắc, sự kiện…",
+    "accountNav": "Tài khoản và hỗ trợ",
+    "links": {
+      "profile": "Hồ sơ cá nhân",
+      "settings": "Cài đặt",
+      "assistant": "Trợ lý",
+      "guide": "Cách sử dụng"
+    }
+  },
+  "runtime": {
+    "heading": "Trạng thái hoạt động",
+    "tileTitle": "{{label}} — {{detail}}. Mở {{destination}}",
+    "dest": {
+      "graph": "đồ thị",
+      "transfer": "Chuyển dữ liệu",
+      "settings": "Cài đặt"
+    },
+    "storage": {
+      "label": "Bộ nhớ trình duyệt",
+      "notSaving": "không lưu",
+      "notSavingDetail": "các bản ghi của bạn không được lưu — biểu ngữ phía trên trang cho biết lý do",
+      "retrying": "đang thử lại",
+      "retryingDetail_other": "{{count}} thay đổi chưa lưu được, và jojo vẫn đang thử lại",
+      "saved": "đã lưu ở đây",
+      "savedDetail": "các bản ghi của bạn được ghi vào cơ sở dữ liệu của trình duyệt này trong lúc bạn làm việc"
+    },
+    "model": {
+      "label": "Mô hình cục bộ",
+      "connected": "đã kết nối",
+      "connectedDetail": "một mô hình cục bộ đã trả lời — trợ lý và việc chấm điểm của trình tìm việc có thể dùng nó",
+      "noAnswer": "không trả lời",
+      "noAnswerDetail": "đã cấu hình mô hình nhưng nó không trả lời — hãy kiểm tra xem nó có đang chạy không",
+      "checking": "đang kiểm tra",
+      "checkingDetail": "đang hỏi xem mô hình có sẵn sàng không",
+      "unset": "chưa thiết lập",
+      "unsetDetail": "chưa có điểm cuối mô hình — thiết lập trong Cài đặt"
+    },
+    "transfer": {
+      "label": "Chuyển dữ liệu",
+      "meta": "Đồng bộ với thiết bị khác",
+      "detail": "chưa ghép nối thiết bị nào — thêm thiết bị trong Chuyển dữ liệu"
+    }
+  },
+  "banner": {
+    "reload": "Tải lại",
+    "interrupted": "jojo đã được cập nhật ở một thẻ khác, nên thẻ này đã đóng cơ sở dữ liệu để bản cập nhật đó được áp dụng. Mọi thay đổi bạn thực hiện ở đây sẽ không được lưu. Hãy tải lại để tiếp tục.",
+    "versionBlocked": "jojo không mở được cơ sở dữ liệu — một thẻ jojo khác đang mở ở phiên bản khác của ứng dụng. <strong>Các bản ghi của bạn vẫn còn trên ổ đĩa</strong>, nhưng thẻ này không đọc được chúng, nên nó không hiển thị gì thay vì đoán. Hãy đóng các thẻ khác và tải lại để lấy lại chúng.",
+    "noStorage": "Trình duyệt này không cho jojo mở bộ nhớ, nên thẻ này là một không gian làm việc trống: những gì đã lưu trên thiết bị này không được hiển thị, và những gì bạn nhập ở đây sẽ mất khi bạn đóng thẻ. Cửa sổ ẩn danh và một số trình duyệt do tổ chức quản lý hoạt động như vậy. Nếu bạn thêm thứ gì đáng giữ, hãy xuất dữ liệu từ Cài đặt trước khi rời đi.",
+    "atRisk_other": "{{count}} thay đổi đang hiện trên màn hình nhưng chưa được lưu — hãy xuất dữ liệu từ Cài đặt để giữ chúng, vì tải lại hoặc đóng thẻ này sẽ làm mất chúng.",
+    "safeBefore": "Mọi thay đổi trước đó đều đã nằm trên ổ đĩa.",
+    "corrupt": "jojo đã ngừng lưu: trình duyệt này từ chối một thay đổi đối với bản ghi của bạn và thử lại cũng không giúp được. {{atRisk}} Hãy xuất dữ liệu từ Cài đặt ngay — Cài đặt → Chẩn đoán có thông tin chi tiết, và tải lại trước khi xuất sẽ làm mất những gì chỉ có trên màn hình.",
+    "quota": "Trình duyệt này đã hết dung lượng, nên jojo đã ngừng lưu. {{atRisk}} Hãy giải phóng dung lượng rồi tải lại.",
+    "otherTab": "jojo đã ngừng lưu vì một thẻ khác đang giữ cơ sở dữ liệu. Hãy đóng các thẻ khác, rồi xuất dữ liệu từ Cài đặt nếu có gì trên màn hình chưa được lưu — tải lại thẻ này sẽ làm mất chúng.",
+    "degraded_other": "{{count}} thay đổi chưa lưu được và jojo vẫn đang thử lại. Hãy xuất dữ liệu từ Cài đặt nếu bạn cần một bản sao ngay bây giờ. ({{error}})",
+    "documentsBlocked": "Tài liệu của bạn vẫn còn trên thiết bị này, nhưng một thẻ jojo khác, đang mở ở phiên bản cũ hơn của ứng dụng, đang giữ chúng. Hãy đóng các thẻ jojo khác — thẻ này sẽ tự lấy lại chúng.",
+    "skipped_other": "{{count}} bản ghi trên thiết bị này không đọc được và không được hiển thị. Không có gì bị xóa — <anchor>Chẩn đoán</anchor> nêu tên chúng, và bản xuất từ đó bao gồm mọi thứ jojo đọc được.",
+    "nearlyFull": "Trình duyệt này sắp hết dung lượng dành cho jojo — khoảng {{percent}}% mức cho phép đã được dùng. Việc lưu sẽ ngừng hoạt động khi đầy, nên bạn nên xuất dữ liệu từ Cài đặt và giải phóng dung lượng ngay bây giờ, khi các bản ghi vẫn còn ghi được.",
+    "backup": {
+      "busy": "Đang sao lưu…",
+      "download": "Tải xuống bản sao lưu",
+      "notNow": "Để sau"
+    }
+  },
+  "shell": {
+    "skipToMain": "Chuyển đến nội dung chính"
+  },
+  "spotlight": {
+    "title": "Tìm kiếm",
+    "label": "Tìm đơn ứng tuyển, lời nhắc, sự kiện và trang",
+    "placeholder": "Tìm đơn ứng tuyển, lời nhắc, sự kiện…",
+    "emptyTitle": "Không có gì khớp.",
+    "emptyHint": "Thử một vị trí, một tổ chức hoặc một giai đoạn.",
+    "actions": "Thao tác",
+    "applications": "Đơn ứng tuyển",
+    "reminders": "Lời nhắc",
+    "calendar": "Lịch",
+    "tools": "Công cụ",
+    "goTo": "Đi tới",
+    "toOpen": "để mở",
+    "toClose": "esc để đóng",
+    "pages": {
+      "dashboard": "Tổng quan",
+      "applications": "Đơn ứng tuyển",
+      "calendar": "Lịch",
+      "vault": "Kho lưu trữ",
+      "jobScout": "Trình tìm việc",
+      "statistics": "Thống kê",
+      "graph": "Đồ thị",
+      "transfer": "Chuyển dữ liệu",
+      "transferDetail": "Chuyển các bản ghi của bạn sang thiết bị khác",
+      "profile": "Hồ sơ cá nhân",
+      "assistant": "Trợ lý",
+      "settings": "Cài đặt"
+    }
+  }
+}

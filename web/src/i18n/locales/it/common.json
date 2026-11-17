@@ -1,0 +1,279 @@
+{
+  "language": {
+    "label": "Lingua",
+    "description": "La lingua in cui viene mostrato jojo. I tuoi record restano nella lingua in cui li hai scritti.",
+    "system": "Come questo browser ({{name}})",
+    "loadFailed": "Non è stato possibile caricare quella lingua. jojo resta in {{name}}."
+  },
+  "buckets": {
+    "overdue": "In ritardo",
+    "today": "Oggi",
+    "upcoming": "In arrivo",
+    "done": "Completati"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Domani",
+      "later": "Un giorno dopo",
+      "duration": "Un giorno"
+    },
+    "threeDays": {
+      "soon": "Tra 3 giorni",
+      "later": "Tre giorni dopo",
+      "duration": "Tre giorni"
+    },
+    "week": {
+      "soon": "Tra 7 giorni",
+      "later": "Una settimana dopo",
+      "duration": "Una settimana"
+    }
+  },
+  "routeFailure": {
+    "title": "Questa pagina non si è caricata",
+    "subtitle": "Il resto di jojo funziona ancora.",
+    "emptyTitle": "Qualcosa in questa vista si è rotto",
+    "emptyDescription": "Andando altrove e tornando, verrà ricaricata. Se succede ogni volta, il problema è nei record che questa pagina mostra: in Impostazioni puoi prima fare un backup.",
+    "back": "Torna al pannello"
+  },
+  "writeResult": {
+    "title": "Non è stato salvato",
+    "refused": "La modifica è stata rifiutata."
+  },
+  "copy": {
+    "blocked": "Bloccato",
+    "copied": "Copiato",
+    "copy": "Copia"
+  },
+  "drag": {
+    "theItem": "l'elemento",
+    "aTarget": "una destinazione",
+    "start": "Hai preso {{name}}.",
+    "over": "{{name}} è sopra {{place}}.",
+    "notOver": "{{name}} non è più sopra una destinazione.",
+    "dropped": "{{name}} è stato rilasciato su {{place}}.",
+    "droppedHome": "{{name}} è stato rilasciato dov'era all'inizio.",
+    "cancelled": "Trascinamento annullato. {{name}} è tornato dov'era all'inizio.",
+    "instructions": "Per prendere un elemento trascinabile, premi la barra spaziatrice.\nDurante il trascinamento, usa i tasti freccia per spostare l'elemento.\nPremi di nuovo la barra spaziatrice per rilasciarlo nella nuova posizione, o premi Esc per annullare."
+  },
+  "actions": {
+    "undo": "Annulla",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "close": "Chiudi"
+  },
+  "records_one": "{{count}} record",
+  "records_many": "{{count}} di record",
+  "records_other": "{{count}} record",
+  "deleteKeyword": {
+    "failed": "Non è stato eliminato",
+    "stillThere": "{{name}} è ancora una parola chiave.",
+    "deleted": "{{name}} eliminata",
+    "wasUnused": "Non era su nessun record.",
+    "takenOff_one": "Tolta da {{count}} record e dal filtro per parole chiave.",
+    "takenOff_many": "Tolta da {{count}} di record e dal filtro per parole chiave.",
+    "takenOff_other": "Tolta da {{count}} record e dal filtro per parole chiave.",
+    "confirmTitle": "Eliminare {{name}}?",
+    "confirmTitleAny": "Eliminare la parola chiave?",
+    "unused": "Non è ancora su nessun record, quindi non cambia nient'altro.",
+    "usedOn_one": "Usata su {{count}} record. Il record resta, ma perde questa parola chiave.",
+    "usedOn_many": "Usata su {{count}} di record. I record restano, ma perdono questa parola chiave.",
+    "usedOn_other": "Usata su {{count}} record. I record restano, ma perdono questa parola chiave.",
+    "confirm": "Elimina parola chiave"
+  },
+  "bucketFilter": {
+    "all": "Tutti"
+  },
+  "marks": {
+    "bold": "grassetto",
+    "italic": "corsivo",
+    "underlined": "sottolineato"
+  },
+  "pageHeader": {
+    "options": "Opzioni di {{title}}"
+  },
+  "errorBoundary": {
+    "title": "Qualcosa si è rotto",
+    "body": "Non è stato possibile visualizzare una vista. «Riprova» la ricostruisce senza ricaricare la pagina.",
+    "retry": "Riprova"
+  },
+  "tone": {
+    "colourFor": "Colore per {{label}}",
+    "anyColourFor": "Qualsiasi colore per {{label}}"
+  },
+  "boot": {
+    "takingLong": "Il tuo database locale sta impiegando più del solito ad aprirsi. Forse un'altra scheda di jojo lo sta trattenendo: chiudere le altre di solito lo libera.",
+    "opening": "Apertura del database locale…"
+  },
+  "keywordPicker": {
+    "none": "Ancora nessuna",
+    "choose": "Scegli parole chiave",
+    "heading": "Parole chiave",
+    "newPlaceholder": "Nuova parola chiave…",
+    "new": "Nuova parola chiave"
+  },
+  "rowMenu": {
+    "moreFor": "Altre azioni per {{name}}",
+    "more": "Altre azioni"
+  },
+  "firstRun": {
+    "title": "Come vuoi iniziare?",
+    "description": "jojo tiene tutto su questo computer, quindi la scelta spetta a te. Nessuna delle due è definitiva: puoi caricare i dati di esempio o cancellare tutti i record in seguito, da Impostazioni.",
+    "demo": {
+      "title": "Esplora con i dati di esempio",
+      "detail": "Una ricerca di lavoro già avviata da esplorare: dodici candidature, una cronologia, una Cassaforte piena. Nulla è tuo, e per cancellarla in seguito basta un clic.",
+      "working": "Caricamento…"
+    },
+    "empty": {
+      "title": "Inizia da zero",
+      "detail": "Nessun record di esempio. Ogni pagina si apre vuota, e la prima cosa in jojo sarà qualcosa che hai aggiunto tu.",
+      "working": "Pulizia in corso…"
+    }
+  },
+  "recovery": {
+    "title": "jojo non riesce a leggere il suo database",
+    "body": "I tuoi record sono ancora su questo computer. jojo non ha modificato né sostituito nulla, e non caricherà i dati di esempio al loro posto: un archivio che si ripopola da solo per sembrare sano trasformerebbe questo problema in una perdita di dati permanente.",
+    "downloadHint": "Scrive in un file le righe che è stato possibile leggere",
+    "downloadNothing": "Il database non è leggibile in alcun modo, quindi non c'è nulla da scrivere",
+    "download": "Scarica ciò che siamo riusciti a leggere",
+    "working": "Al lavoro…",
+    "retry": "Riprova",
+    "freshHint": "Elimina il database e avvia jojo come se fosse nuovo",
+    "fresh": "Ricomincia da zero",
+    "readable_one": "{{count}} riga era leggibile: scaricala prima di ogni altra cosa, perché ricominciando da zero viene eliminata.",
+    "readable_many": "{{count}} di righe erano leggibili: scaricale prima di ogni altra cosa, perché ricominciando da zero vengono eliminate.",
+    "readable_other": "{{count}} righe erano leggibili: scaricale prima di ogni altra cosa, perché ricominciando da zero vengono eliminate.",
+    "unreadable": "Non è stato possibile leggere nulla dall'archivio, quindi non c'è nulla da scaricare. Prima riprova: un database tenuto aperto da un'altra scheda fallisce in questo modo e si riprende da solo.",
+    "confirmTitle": "Eliminare il database e ricominciare da zero?",
+    "confirmBody": "Questo elimina il database locale di jojo e tutto ciò che contiene ancora, poi riparte da zero, compresa la domanda iniziale sul partire dai dati di esempio o da vuoto. Non ripara nulla e non si può annullare. Se non hai ancora scaricato le righe leggibili, annulla e fallo prima.",
+    "confirm": "Elimina e ricomincia da zero"
+  },
+  "labelFilter": {
+    "label": "Filtra per parola chiave",
+    "none": "Ancora nessuna parola chiave: aggiungine una per filtrare.",
+    "example": "es. Sviluppatore",
+    "add": "Aggiungi parola chiave",
+    "clear": "Cancella"
+  },
+  "labelPicker": {
+    "editOn": "Modifica le parole chiave di {{name}}",
+    "edit": "Modifica parole chiave"
+  },
+  "keywordChip": {
+    "taken": "Un'altra parola chiave ha già quel nome.",
+    "needsName": "Una parola chiave ha bisogno di un nome.",
+    "rename": "Rinomina",
+    "colour": "Colore",
+    "stopFiltering": "Smetti di filtrare per {{name}}",
+    "filterBy": "Filtra per {{name}}",
+    "edit": "Modifica la parola chiave {{name}}",
+    "editHint": "Rinomina, cambia colore o elimina"
+  },
+  "welcome": {
+    "title": "Qualcosa su di te",
+    "description": "Le bozze si chiudono con il tuo nome, e lo scout valuta in base a ciò che cerchi. Tutto resta su questo computer, e tutto è facoltativo: puoi compilarlo più tardi in Profilo.",
+    "fullName": "Nome e cognome",
+    "fullNameExample": "es. Lonardo Jenson",
+    "position": "Posizione attuale",
+    "positionExample": "es. Dottorando, Informatica",
+    "location": "Località",
+    "locationExample": "es. Santa Clara, CA",
+    "email": "Email",
+    "skip": "Salta per ora",
+    "save": "Salva e continua",
+    "rest": "Il resto (link, ruoli desiderati, i termini su cui lo scout cerca corrispondenze) si trova in <anchor>Profilo</anchor>."
+  },
+  "onboarding": {
+    "tourTitle": "Vuoi un tour pratico?",
+    "tourDescription": "Un giro tra le pagine vere: un riflettore su ogni parte, a cosa serve, e provi ogni cosa man mano. Non scrive, salva o modifica mai nulla al posto tuo, e ricorda dove eri se ti fermi.",
+    "notNow": "Non ora",
+    "start": "Inizia il tour",
+    "always": "È sempre disponibile in <em>Come si usa</em>, quindi dire di no adesso non costa nulla."
+  },
+  "setup": {
+    "skip": "Salta per ora",
+    "continue": "Continua",
+    "done": "Fatto",
+    "optional": "Sono tutti facoltativi e puoi configurarli più tardi in Impostazioni.",
+    "model": {
+      "title": "Collega un modello",
+      "body": "È ciò che rende jojo un agente e non un semplice schedario: potrà rispondere a domande sulla tua ricerca, scrivere solleciti e bozze, ed eseguire le pipeline di Scout offerte che mantengono completi i tuoi record e cercano annunci. Indicagli un modello sul tuo computer e nulla lascerà il dispositivo."
+    },
+    "reader": {
+      "title": "Fagli leggere i tuoi documenti",
+      "body": "Senza questo, l'assistente vede solo il nome di un documento. Esegui MarkItDown su questo computer (due comandi, qui sotto) e potrà leggere il contenuto dei tuoi CV, delle lettere di presentazione e degli annunci salvati quando scrive bozze e risponde."
+    },
+    "crash": {
+      "title": "Segnalazioni di arresto anomalo e utilizzo",
+      "description": "Due cose distinte, entrambe attive: disattivane una qui o più tardi in Impostazioni. Nessuna delle due può contenere i tuoi record: né una candidatura, né un documento, né una nota, né un profilo, né una conversazione.",
+      "inReport": "Cosa c'è in una segnalazione",
+      "inError": "Il messaggio di errore e il punto di jojo in cui si è verificato.",
+      "inStack": "Lo stack trace, che indica il codice che non ha funzionato.",
+      "never": "Cosa non c'è mai",
+      "neverRecords": "Le tue candidature, documenti, note, profilo o conversazioni.",
+      "neverSecrets": "Le tue chiavi API, gli indirizzi che usi, la tua cartella home o qualsiasi indirizzo email: vengono rimossi prima che una segnalazione venga scritta, non prima che venga inviata.",
+      "where": "In questo browser e nell'estensione jojo, le segnalazioni di arresto anomalo <em>restano su questo dispositivo</em>: nulla viene caricato, e un file di backup non le contiene. Le leggi tu stesso in Impostazioni. Nell'app jojo per telefono la stessa segnalazione viene anche inviata a Firebase Crashlytics di Google, che aggiunge il modello del dispositivo, la versione del sistema operativo e un id casuale che usa per contare quante persone incontrano lo stesso arresto anomalo: nessun nome, nessun account, nulla di legato a te. I conteggi di utilizzo, il secondo interruttore qui sotto, vanno a Google Analytics da ogni versione, compresa questa.",
+      "keep": "Conserva le segnalazioni di arresto anomalo",
+      "keepHint": "L'errore e dove si è verificato. Resta su questo dispositivo, nel browser.",
+      "share": "Condividi quali funzioni uso",
+      "shareHint": "Solo conteggi: quali schermate vengono aperte, e quanto spesso. Mai cosa contengono.",
+      "usageNote": "Il secondo è l'unica cosa che jojo invia su ciò che FAI, e può dire solo cose tratte da un elenco fisso: “è stata aperta la Cassaforte”, “è stata aggiunta una candidatura”, “ce ne sono 6–20”. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto, perché quelle parole non sono nell'elenco. Va a Google Analytics, così possiamo vedere quali parti di jojo meritano più lavoro.",
+      "bothOff": "Disattiva entrambi",
+      "save": "Salva le scelte",
+      "continueOff": "Continua con entrambi disattivati",
+      "later": "Puoi cambiare entrambe le scelte in qualsiasi momento in Impostazioni, e disattivandone una elimini anche ciò che ha conservato."
+    },
+    "extension": {
+      "title": "Conserva gli annunci a cui ti candidi",
+      "body": "Gli annunci di lavoro vengono rimossi, spesso prima che tu riceva risposta. L'estensione del browser salva un annuncio così come appare oggi, nella tua Cassaforte, ed è anche il modo in cui Scout offerte legge i siti che segui."
+    }
+  },
+  "spectrum": {
+    "saturation": "Saturazione e luminosità",
+    "hue": "Tonalità",
+    "hex": "Colore esadecimale",
+    "any": "Qualsiasi colore"
+  },
+  "field": {
+    "openInTab": "Apri {{label}} in una nuova scheda",
+    "hide": "Nascondi {{label}}",
+    "show": "Mostra {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Piccolo",
+      "normal": "Normale",
+      "large": "Grande",
+      "huge": "Enorme"
+    },
+    "clearFormatting": "Cancella formattazione",
+    "bold": "Grassetto",
+    "italic": "Corsivo",
+    "underline": "Sottolineato",
+    "strikeThrough": "Barrato",
+    "insertUnorderedList": "Elenco puntato",
+    "insertOrderedList": "Elenco numerato",
+    "snippetText": "Testo del frammento",
+    "fontSize": "Dimensione del carattere",
+    "insertTable": "Inserisci tabella",
+    "textColour": "Colore del testo"
+  },
+  "toolForm": {
+    "aRecord": "un record",
+    "yourProfile": "Il tuo profilo"
+  },
+  "toolRun": {
+    "choose": "Scegli…",
+    "none": "Nessuno",
+    "omitted_one": "Non presente in questo modulo: {{fields}}. Apri il record per impostarlo.",
+    "omitted_many": "Non presenti in questo modulo: {{fields}}. Apri il record per impostarli.",
+    "omitted_other": "Non presenti in questo modulo: {{fields}}. Apri il record per impostarli."
+  },
+  "toast": {
+    "notifications": "Notifiche",
+    "dismiss": "Ignora — {{title}}"
+  },
+  "command": {
+    "title": "Tavolozza dei comandi",
+    "description": "Cerca un comando da eseguire..."
+  }
+}

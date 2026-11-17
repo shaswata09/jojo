@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "jojo ile tanışın",
+      "body": "Asistanınız burada yaşar. Yaptıklarınıza tepki verir — bir başvuru gönderildiğinde dans eder, bir görev tamamlandığında başını sallar — ve sayfada işaretçinizi izler.",
+      "task": "jojo'ya dokunun ya da üzerine bir daire çizin."
+    },
+    "moves": {
+      "title": "Her hareket ve nasıl çizileceği",
+      "body": "Bu düğme jojo'nun tüm hareketlerini, her birini oynatan çizimle birlikte listeler — zıplamak için yukarı kaydırma, uyuklamak için bir Z — ve 3B modelin sanatçısını anar."
+    },
+    "runtime": {
+      "title": "Kayıtlarınız nerede duruyor",
+      "body": "“Burada kayıtlı”, tarayıcı depolaması demektir: bu tarayıcının içinde, bu bilgisayardaki bir veritabanı — hiçbir şey bir yere gönderilmez ve hiçbir şey eşitlenmez. Diğer kutucuklar bir modelin bağlı olup olmadığını söyler ve her şeyi başka bir cihaza taşımayı önerir. Her biri ayarlandığı yeri açar."
+    },
+    "applications": {
+      "title": "Başvurularınız",
+      "body": "Her iş için bir kayıt: pozisyon, işveren, aşaması ve notlarınız. Son tarihler, mülakatlar ve belgeler hepsi ona bağlanır; böylece hiçbir şey iki kez yazılmaz.",
+      "task": "Başvurular'ı açın."
+    },
+    "layout": {
+      "title": "Pano ya da tablo",
+      "body": "Aynı kayıtlar, iki şekilde. Pano aşamaları sütunlar olarak gösterir; tablo sıralar ve arar. Seçim adreste saklanır; böylece bir bağlantı, bıraktığınız şekilde açılır.",
+      "task": "Tablo'ya geçin."
+    },
+    "records": {
+      "title": "Altı aşama ve jojo her birini kutlar",
+      "body": "Taslak, Gönderildi, Ön görüşme, Mülakat, Teklif, Kapandı. Panoda bir kartı sonraki sütununa sürükleyin: bir taslak gönderildiğinde jojo dans eder, mülakat için güç toplar, teklif için havaya sıçrar. Her hareket geri alınabilir."
+    },
+    "keywords": {
+      "title": "Anahtar kelimeler sizin etiketlerinizdir",
+      "body": "Başvurular, hatırlatıcılar ve kasa için tek bir etiket seti. Bir kaydı satırındaki etiket düğmesiyle etiketleyin, + ile yeni bir anahtar kelime ekleyin ve yeniden adlandırmak, rengini değiştirmek ya da silmek için bir etikete sağ tıklayın.",
+      "task": "Filtrelemek için bir anahtar kelime seçin."
+    },
+    "new": {
+      "title": "Her şeyi oluşturun",
+      "body": "Yeni; bir başvuru, hatırlatıcı, takvim kaydı, mesaj taslağı, kayıtlı bağlantı ya da kayıtlı ilan oluşturur. Yazı yazmadığınız her yerde n tuşu bunu açar.",
+      "task": "Yeni menüsünü açın."
+    },
+    "new-menu": {
+      "title": "Siz kaydetmeden hiçbir şey kaydedilmez",
+      "body": "Bunların her biri kendi formunu açar. Yarım doldurulmuş bir formu kapatmanın bedeli yalnızca yazdıklarınızdır.",
+      "task": "Menüyü kapatın — Esc'ye basın."
+    },
+    "search": {
+      "title": "En hızlı yol",
+      "body": "Tüm başvurularda, hatırlatıcılarda ve takvim kayıtlarında arayın, herhangi bir sayfaya gidin — kenar çubuğunun listelemediği sayfalar dahil — ya da uygulamanın kendi işlemlerinden birini çalıştırın.",
+      "task": "⌘K (Ctrl K) tuşlarına basın ya da arama çubuğuna tıklayın."
+    },
+    "palette": {
+      "title": "Her şeyi bulmak için yazın",
+      "body": "Bir rol, kurum ya da aşama. Ok tuşları seçer, Enter gider.",
+      "task": "Bakmayı bitirdiğinizde Esc ile kapatın."
+    },
+    "calendar": {
+      "title": "Tüm tarihler tek yerde",
+      "body": "Son tarihler, mülakatlar ve takipler aynı tür kayıttır; bu yüzden tek bir kayıt takvimde, ana sayfada ve başvurusunda görünür. Yeniden planlamak için birini başka bir güne sürükleyin.",
+      "task": "Takvim'i açın."
+    },
+    "vault": {
+      "title": "Kasa",
+      "body": "Bir iş aramasında başvurular dışında biriken her şey: hatırlatıcılar, kayıtlı bağlantılar, dosyalar, her forma yapıştırdığınız metin parçaları, tanıdığınız kişiler ve birkaç araç.",
+      "task": "Kasa'yı açın."
+    },
+    "files": {
+      "title": "Yerinde önizlenen dosyalar",
+      "body": "Bir CV, beyan ya da ilan bırakın. PDF'ler, resimler, metinler ve kayıtlı web sayfaları burada açılır; her dosya bir not ve anahtar kelimeler taşıyabilir. Dosyalar yüklenmez, bu tarayıcıda saklanır.",
+      "task": "Önizlemek için bir dosyaya tıklayın."
+    },
+    "file-viewer": {
+      "title": "Önizleme",
+      "body": "Sayfadan ayrılmadan okuyun. Belge okuyucu bağlıysa (Ayarlar) asistan da içeriğini okuyabilir."
+    },
+    "tools": {
+      "title": "Araçlar",
+      "body": "İşlemlerinin geçmişini tutan temel ya da bilimsel bir hesap makinesi — ve bir PDF düzenleyici.",
+      "task": "PDF düzenleyiciyi açın."
+    },
+    "pdf": {
+      "title": "PDF araçları",
+      "body": "Birkaç PDF'yi tek dosyada birleştirin, sayfaları yeniden sıralayın ya da silin ve bir PDF'yi işaretleyin — hepsi bu tarayıcının içinde, bu yüzden hiçbir belge yüklenmez. PDF'leri doğrudan bu panele bırakın."
+    },
+    "scout": {
+      "title": "İş gözcüsü",
+      "body": "İş ilanı sitelerini sizin için izleyen kayıtlı aramalar.",
+      "task": "İş gözcüsünü açın."
+    },
+    "pipelines": {
+      "title": "İşlem hatları",
+      "body": "Her işlem hattı bir sitede (HigherEdJobs, AcademicCareers ve diğerleri) yapılan bir aramadır. Bir zamanlamaya göre ya da Şimdi çalıştır'a bastığınızda çalışır; bulduğu şeyler onaylamanız ya da atmanız için öneri olarak bekler ve onaylanan bir öneri taslak başvuruya dönüşür."
+    },
+    "statistics": {
+      "title": "İstatistikler",
+      "body": "Aramanızın nasıl gittiği, kendi kayıtlarınızdan sayılmış olarak.",
+      "task": "İstatistikler'i açın."
+    },
+    "stats": {
+      "title": "Dürüst hata paylarıyla oranlar",
+      "body": "Yanıt ve mülakat oranları, bir huni ve haftalık bir grafik — her oran gerçekte olabileceği aralıkla birlikte, çünkü birkaç başvuru küçük bir örneklemdir. Üst çubuktaki rol filtresini izler."
+    },
+    "graph": {
+      "title": "Bilgi grafiği",
+      "body": "Her kayıt — başvurular, işverenler, kişiler, tarihler, dosyalar — bir düğümdür; aralarındaki bağlantılar da kenarlardır. Sözcüklerle bir soru sorun ya da bir tane oluşturun; eşleşen kayıtlar vurgulanır. Kenar çubuğunda yoktur; buraya ⌘K ile gelirsiniz."
+    },
+    "chat": {
+      "title": "jojo ile sohbet edin",
+      "body": "Asistan, uygulamanın kendi araçlarıyla kayıtlarınızı bulabilir, ekleyebilir ve güncelleyebilir; aksini söylemediğiniz sürece bir şeyi değiştirmeden önce sorar. Bir model gerekir — bu da sonraki adım."
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "body": "Modeller, belge okuyucu, anahtar kelimeler, verileriniz — ve jojo'nun bildiği her hareket.",
+      "task": "Ayarlar'ı açın."
+    },
+    "model": {
+      "title": "Bir model bağlayın",
+      "body": "Asistanın modelinin nerede çalışacağını seçin. Yerel bir sunucu — vLLM, LM Studio, llama.cpp ya da Ollama — adresini alır ve kayıtlarınızı bu bilgisayarda tutar. OpenAI, Anthropic (Claude), OpenRouter, Groq ya da NVIDIA bir API anahtarı alır. Bağlantıyı test et, hiçbir şey kaydedilmeden önce kontrol eder."
+    },
+    "reader": {
+      "title": "Belgelerinizi okuyabilsin",
+      "body": "MarkItDown; PDF'leri, Word dosyalarını, sunumları ve tabloları asistanın okuyabileceği metne dönüştürür. Buradaki iki komutu bir terminale kopyalayın — biri kurar, biri başlatır — ardından Bağlantıyı test et'e basın."
+    },
+    "keyword-manager": {
+      "title": "Anahtar kelimelerinizi yönetin",
+      "body": "Anahtar kelime ekleyin, yeniden adlandırın, istediğiniz rengi verin ya da silin. Yeniden adlandırma, anahtar kelimenin gösterildiği her yere yansır."
+    },
+    "backup": {
+      "title": "Bir yedek tutun",
+      "body": "Tarayıcıyı temizlemek kayıtlarınızı da götürür; bu yüzden ara sıra bir yedek dışa aktarın — her şeyi içeren tek bir dosya. Siz bunu yaptığınızda jojo kaslarını gösterir."
+    },
+    "done": {
+      "title": "Tur bu kadar",
+      "body": "Geri almak her yerde ⌘Z'dir ve her değişiklik Ayarlar'ın en altındaki denetim günlüğünde listelenir. Kılavuz her ekranı sırayla anlatır — üst çubuktaki Nasıl kullanılır — ve tur her zaman yeniden alınabilir."
+    }
+  },
+  "overlay": {
+    "progress": "Adım {{n}} / {{total}}",
+    "endLabel": "Turu bitir (kaldığınız yer saklanır)",
+    "end": "Turu bitir",
+    "nice": "Güzel — bu kadar.",
+    "tryIt": "Deneyin: {{task}}",
+    "done": "Tamamlandı.",
+    "announce": "Adım {{n}} / {{total}}: {{title}}.",
+    "announceTask": "Adım {{n}} / {{total}}: {{title}}. Deneyin: {{task}}",
+    "back": "Geri",
+    "notNow": "Şimdi değil",
+    "finish": "Bitir",
+    "skip": "Bunu atla",
+    "next": "İleri"
+  }
+}

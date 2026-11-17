@@ -1,0 +1,59 @@
+{
+  "monthPicker": {
+    "goTo": "Buka bulan",
+    "previousYear": "Tahun sebelumnya",
+    "nextYear": "Tahun berikutnya"
+  },
+  "chip": {
+    "allDay": "Sepanjang hari",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, selesai —"
+  },
+  "dayCell": {
+    "label_other": "{{label}}, {{count}} acara",
+    "add": "Tambahkan acara pada {{label}}",
+    "more_other": "+{{count}} lagi"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "Bulan sebelumnya",
+    "nextMonth": "Bulan berikutnya",
+    "today": "Hari ini",
+    "backTo": "Kembali ke {{date}}",
+    "goTo": "Buka {{month}} {{year}}",
+    "hintTouch": "Ketuk hari untuk melihat isinya.",
+    "hintPointer": "Pilih hari untuk menampilkan daftarnya di samping kisi. Klik acara untuk mengeditnya, atau seret ke hari lain — menyeret memerlukan penunjuk, jadi kolom tanggal di dalam acara adalah jalur lewat papan ketik.",
+    "eventTypes": "Jenis acara",
+    "showAll": "Tampilkan semua",
+    "dateColours": "Warna tanggal",
+    "marks": {
+      "overdue": "Terlambat",
+      "soon": "Jatuh tempo dalam 48 jam",
+      "done": "Selesai"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Hari ini",
+    "selectedDay": "Hari terpilih",
+    "hiddenTitle": "Tidak ada yang ditampilkan pada {{date}}",
+    "hiddenDescription_other": "{{count}} acara berjenis yang dimatikan di bawah kisi.",
+    "showAllTypes": "Tampilkan semua jenis acara",
+    "emptyTitle": "Tidak ada apa pun pada {{date}}",
+    "emptyDescription": "Tambahkan wawancara, tenggat, atau waktu persiapan, dan itu akan muncul di sini dan di kisi.",
+    "addEvent": "Tambah acara",
+    "backTo": "Kembali ke {{month}}",
+    "delete": "Hapus acara",
+    "deleteNamed": "Hapus {{title}}",
+    "restOf": "Sisa bulan {{month}}",
+    "lastDayTitle": "{{date}} adalah hari terakhir bulan ini",
+    "nothingAfterTitle": "Tidak ada apa pun setelah {{date}}",
+    "lastDayDescription": "Tidak ada apa pun setelahnya. Maju ke halaman berikutnya untuk merencanakan {{month}}.",
+    "nothingAfterDescription": "Sisa bulan {{month}} kosong. Apa pun yang Anda tambahkan setelah hari ini akan muncul di sini.",
+    "goToMonth": "Buka {{month}}",
+    "goToDay": "Buka {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_other": "+{{count}} lagi nanti bulan ini"
+  }
+}

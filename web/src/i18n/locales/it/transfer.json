@@ -1,0 +1,265 @@
+{
+  "page": {
+    "title": "Trasferimento",
+    "subtitle": "Sposta tutto tra questo computer e il tuo telefono",
+    "showAnimation": "Mostra l'animazione",
+    "showAnimationHint": "Una scena WebGPU ridisegnata a ogni fotogramma: disattivala quando sei a batteria",
+    "roleLabel": "Il ruolo di questo dispositivo",
+    "roles": {
+      "send": "Invia al telefono",
+      "receive": "Ricevi dal telefono"
+    },
+    "empty": {
+      "title": "Ancora nulla da inviare",
+      "description": "Questo dispositivo non contiene record, quindi non c'è nulla da inviare. Per portare qui i tuoi record dal telefono, scegli Ricevi dal telefono qui sopra. Oppure aggiungi qualcosa, o carica i dati di esempio, e comparirà qui come gruppo da inviare.",
+      "receive": "Ricevi dal telefono",
+      "loadDemo": "Carica i dati di esempio"
+    }
+  },
+  "groups": {
+    "applications": {
+      "label": "Candidature",
+      "hint": "Ogni fase, nota ed esito di ciascuna",
+      "summary_one": "{{count}} candidatura",
+      "summary_many": "{{count}} di candidature",
+      "summary_other": "{{count}} candidature"
+    },
+    "timeline": {
+      "label": "Promemoria ed eventi",
+      "hint": "{{reminders}} ti ricordano qualcosa, {{events}} sono eventi con data",
+      "summary_one": "{{count}} promemoria o evento",
+      "summary_many": "{{count}} di promemoria ed eventi",
+      "summary_other": "{{count}} promemoria ed eventi"
+    },
+    "vault": {
+      "label": "Link e frammenti",
+      "hint": "{{links}} link · {{snippets}} frammenti",
+      "summary_one": "{{count}} link o frammento",
+      "summary_many": "{{count}} di link e frammenti",
+      "summary_other": "{{count}} link e frammenti"
+    },
+    "files": {
+      "label": "File",
+      "hint": "CV, dichiarazioni e qualsiasi altra cosa salvata per una candidatura",
+      "summary_one": "{{count}} file",
+      "summary_many": "{{count}} di file",
+      "summary_other": "{{count}} file"
+    },
+    "keywords": {
+      "label": "Parole chiave",
+      "hint": "Il tuo elenco di parole chiave e ogni record a cui sono associate",
+      "summary_one": "{{count}} parola chiave",
+      "summary_many": "{{count}} di parole chiave",
+      "summary_other": "{{count}} parole chiave"
+    },
+    "scout": {
+      "label": "Scout offerte",
+      "hint": "{{pipelines}} pipeline · {{postings}} annunci salvati · {{matches}} risultati",
+      "summary_one": "{{count}} record di Scout offerte",
+      "summary_many": "{{count}} di record di Scout offerte",
+      "summary_other": "{{count}} record di Scout offerte"
+    },
+    "notes": {
+      "label": "Note adesive",
+      "hint": "Le note per te sulla bacheca del pannello",
+      "summary_one": "{{count}} nota adesiva",
+      "summary_many": "{{count}} di note adesive",
+      "summary_other": "{{count}} note adesive"
+    },
+    "profile": {
+      "label": "Profilo",
+      "hint": "Il tuo nome, i link, i termini di ricerca e le opzioni dello scout",
+      "summary_one": "{{count}} profilo",
+      "summary_many": "{{count}} di profili",
+      "summary_other": "{{count}} profili"
+    },
+    "people": {
+      "label": "Persone",
+      "hint": "Referenti, presidenti di commissione e selezionatori, e le candidature a cui sono legati",
+      "summary_one": "{{count}} persona",
+      "summary_many": "{{count}} di persone",
+      "summary_other": "{{count}} persone"
+    },
+    "background": {
+      "label": "Percorso",
+      "hint": "Titoli di studio, incarichi, articoli e competenze letti dal tuo CV",
+      "summary_one": "{{count}} elemento del percorso",
+      "summary_many": "{{count}} di elementi del percorso",
+      "summary_other": "{{count}} elementi del percorso"
+    },
+    "nothing": "nulla"
+  },
+  "stage": {
+    "sameNetwork": "Entrambi i dispositivi devono essere sulla stessa rete locale: i record passano direttamente dall'uno all'altro, senza server né relay.",
+    "send": {
+      "idle": {
+        "title": "In attesa dell'altro dispositivo",
+        "body": "Apri jojo sul telefono, scegli Trasferimento, poi Ricevi da un computer, e scansiona il codice qui. La scansione concorda una chiave di crittografia tra i due dispositivi, senza trasmettere nulla in rete. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Collegamento al telefono",
+        "body": "Richiesta all'indirizzo che hai inserito della sua metà dell'handshake. Non è ancora stato inviato nulla."
+      },
+      "packing": {
+        "title": "Raccolta dei tuoi record",
+        "body": "Lettura da questo dispositivo di tutto ciò che è nell'elenco qui sotto. Ancora nulla in rete."
+      },
+      "sending": {
+        "title": "Spostamento dei tuoi record",
+        "body": "Blocchi sigillati, direttamente al telefono sulla rete locale. L'avanzamento è accanto al codice che hai inserito."
+      },
+      "done": {
+        "title": "Tutto inviato",
+        "body": "Il telefono chiede prima di sostituire qualsiasi cosa; ciò che ha deciso è accanto al codice che hai inserito. Nulla è stato rimosso da questo dispositivo: un trasferimento è una copia."
+      },
+      "failed": {
+        "title": "Il trasferimento si è interrotto",
+        "body": "Su questo dispositivo non è cambiato nulla. Cosa è andato storto è scritto accanto al codice che hai inserito."
+      }
+    },
+    "receive": {
+      "idle": {
+        "title": "In attesa del telefono",
+        "body": "Apri jojo sul telefono, scegli Trasferimento, poi Invia a un computer, e scansiona il codice qui. Il telefono mostrerà poi un breve codice da inserire a destra. {{sameNetwork}}"
+      },
+      "connecting": {
+        "title": "Collegamento al telefono",
+        "body": "Richiesta all'indirizzo che hai inserito della sua metà dell'handshake. Non è ancora stato ricevuto nulla."
+      },
+      "receiving": {
+        "title": "Ricezione dei record del telefono",
+        "body": "Blocchi sigillati, direttamente dal telefono sulla rete locale. Su questo computer non cambia nulla finché non sei d'accordo."
+      },
+      "confirming": {
+        "title": "È arrivato tutto",
+        "body": "I record del telefono sono arrivati e sono stati verificati. Qui non è ancora cambiato nulla: indica se devono sostituire ciò che c'è su questo computer."
+      },
+      "restoring": {
+        "title": "Sostituzione dei record qui",
+        "body": "Scrittura di ciò che ha inviato il telefono al posto di ciò che c'era su questo computer."
+      },
+      "done": {
+        "title": "Tutto spostato",
+        "body": "Questo computer ora contiene i record del telefono. Nulla è stato rimosso dal telefono: un trasferimento è una copia."
+      },
+      "failed": {
+        "title": "Il trasferimento si è interrotto",
+        "body": "Su questo computer non è cambiato nulla. Cosa è andato storto è scritto accanto al codice che hai inserito."
+      }
+    },
+    "manifest": {
+      "receive": "{{summary}}: è ciò che c'è ora su questo computer, e che i record del telefono sostituiscono.",
+      "sent": "{{summary}}: è ciò che è stato inviato.",
+      "willMove": "{{summary}}: è ciò che verrà spostato."
+    },
+    "scanHint": "Scansiona il codice qui con l'app jojo sul telefono (è la chiave): poi ti mostrerà un breve codice da inserire a destra.",
+    "chooseGroup": "Scegli almeno un gruppo da inviare."
+  },
+  "qr": {
+    "label": "Codice di abbinamento. Scansionalo con l'app jojo sul telefono: apri Trasferimento e inquadra questo quadrato con la fotocamera."
+  },
+  "details": {
+    "title": "Dettagli",
+    "hint": "questo passaggio",
+    "records": "Record",
+    "recordsHint": "tutto ciò che è nei gruppi qui sotto",
+    "encryption": "Crittografia",
+    "encryptionHint": "AES-256-GCM, chiave concordata tramite fotocamera",
+    "keyAgreed": "Chiave concordata",
+    "notPaired": "Non ancora abbinato",
+    "route": "Percorso",
+    "routeHint": "un indirizzo di rete privato, mai internet",
+    "localNetwork": "Rete locale",
+    "servers": "Server",
+    "serversHint": "nessun relay, nessun segnalamento, nulla di ospitato",
+    "none": "Nessuno"
+  },
+  "payload": {
+    "label": "File del trasferimento",
+    "noFiles": "Nessun file su questo dispositivo",
+    "files_one": "{{count}} file: la parte più lenta di un passaggio",
+    "files_many": "{{count}} di file: la parte più lenta di un passaggio",
+    "files_other": "{{count}} file: la parte più lenta di un passaggio"
+  },
+  "connect": {
+    "title": "Collega",
+    "hintUnable": "non in questo browser",
+    "unable": "Questo browser non può collegarsi a un altro dispositivo sulla tua rete: non possono farlo Safari né alcun browser su iPhone o iPad, e nemmeno Firefox dal sito pubblicato. Usa Chrome o Edge su un computer, oppure sposta tutto con un file di backup da Impostazioni, che funziona ovunque e non ha limiti di dimensione.",
+    "hint": "dall'altro dispositivo",
+    "intro": "Dopo la scansione, il telefono mostra un breve codice. Inseriscilo qui: è così che questo computer scopre dove si trova il telefono, cosa che un browser non può capire da solo.",
+    "codeLabel": "Il codice mostrato sul telefono",
+    "send": "Invia",
+    "progress": "Avanzamento del trasferimento",
+    "reaching": "Collegamento al telefono…",
+    "gathering": "Raccolta dei tuoi record…",
+    "percentSent": "{{percent}}% inviato",
+    "cancel": "Annulla",
+    "another": "Invia a un altro dispositivo"
+  },
+  "done": {
+    "applied": "Il telefono ora contiene questi record.",
+    "appliedAt": "Il telefono su {{target}} ora contiene questi record.",
+    "declined": "Tutto è stato inviato, e il telefono ha mantenuto i propri record: lì non è stato sostituito nulla.",
+    "failed": "Tutto è stato inviato, ma il telefono non è riuscito a leggerlo, quindi lì non è stato sostituito nulla. Riprova.",
+    "unknown": "Tutto è stato inviato. Il telefono non ha detto se ha accettato i record: controlla lì.",
+    "unknownTo": "Tutto è stato inviato a {{target}}. Il telefono non ha detto se ha accettato i record: controlla lì.",
+    "waiting": "Tutto è stato inviato. Il telefono chiede prima di sostituire qualsiasi cosa: conferma lì per finire.",
+    "waitingTo": "Tutto è stato inviato a {{target}}. Il telefono chiede prima di sostituire qualsiasi cosa: conferma lì per finire."
+  },
+  "receive": {
+    "title": "Ricevi dal telefono",
+    "hint": "dal tuo telefono",
+    "unable": "Questo browser non può collegarsi a un altro dispositivo sulla tua rete: non possono farlo Safari né alcun browser su iPhone o iPad, e nemmeno Firefox dal sito pubblicato. Usa Chrome o Edge su un computer, oppure esporta un backup sul telefono e aprilo in Impostazioni.",
+    "intro": "Sul telefono, apri Trasferimento, scegli Invia a un computer e scansiona il codice in questa pagina. Il telefono mostrerà un breve codice: inseriscilo qui. Entrambi i dispositivi devono essere sulla stessa rete locale.",
+    "codeLabel": "Il codice mostrato sul telefono",
+    "receive": "Ricevi",
+    "reaching": "Collegamento al telefono…",
+    "progress": "{{size}} ricevuti finora. Qui non cambia nulla finché non sei d'accordo.",
+    "cancel": "Annulla",
+    "restoring": "Sostituzione dei record su questo computer…",
+    "replaceWarning": "Ricevendo, sostituisci tutto ciò che c'è su questo computer con ciò che c'è sul telefono, una volta che sei d'accordo. Per conservare una copia di ciò che c'è qui, scarica prima un backup.",
+    "downloadFirst": "Scarica prima un backup",
+    "twoBrowsers": {
+      "title": "Due browser",
+      "hint": "tra due computer",
+      "body": "Una pagina web non può accettare una connessione, e nemmeno quella dell'altro computer, quindi due computer non possono collegarsi tra loro. Esporta un backup da uno e aprilo sull'altro: contiene ogni record e ogni documento.",
+      "export": "Esporta un backup"
+    },
+    "reload": "Ricarica jojo"
+  },
+  "pullConfirm": {
+    "title": "Sostituire tutto con ciò che ha inviato il telefono?",
+    "description": "Il telefono ha inviato {{contents}}. {{replaces}}, e non si può annullare: anche la cronologia va persa. Se non sei sicuro, scarica prima un backup.",
+    "confirm": "Sostituisci tutto"
+  },
+  "handover": {
+    "sendingAgain": "Inviando di nuovo, sostituisci tutto ciò che c'è lì con tutto ciò che c'è qui."
+  },
+  "advice": {
+    "handoff": {
+      "unsupported": "Questo browser non può collegarsi a un altro dispositivo sulla tua rete: Safari non può, nessun browser su iPhone o iPad può, e Firefox non può dal sito pubblicato. Usa Chrome o Edge su un computer, oppure sposta i tuoi record con un file di backup.",
+      "notLocal": "Quell'indirizzo non è su una rete locale. jojo si collega solo a un indirizzo privato, così il trasferimento non attraversa mai internet.",
+      "unreachable": "Nessuna risposta da quell'indirizzo. Verifica che entrambi i dispositivi siano sulla stessa rete locale e che il browser abbia il permesso di trovare dispositivi sulla rete locale. Alcune reti ospiti impediscono ai dispositivi di vedersi.",
+      "refused": "Quel dispositivo ha rifiutato la connessione. Verifica che il telefono sia impostato al contrario (Ricevi sul telefono quando questo computer invia, Invia quando riceve), poi mostra un nuovo codice e scansionalo di nuovo.",
+      "oversized": "Quel dispositivo ha risposto con molti più dati di quanti jojo si aspetti, quindi ha smesso di leggere. Su questo computer non è cambiato nulla.",
+      "timeout": "Quel dispositivo ha smesso di rispondere. Tieni jojo aperto sul telefono con lo schermo acceso, poi mostra un nuovo codice e riprova.",
+      "blocked": "Il browser ha impedito a questo sito di raggiungere i dispositivi sulla rete locale. Consentilo nelle impostazioni del sito (l'icona a sinistra dell'indirizzo), poi riprova.",
+      "cancelled": "Annullato.",
+      "conflict": "Il telefono non è riuscito a raccogliere i suoi record da inviare. Controlla il messaggio sul telefono: su questo computer non è cambiato nulla."
+    },
+    "dial": {
+      "unreadable": "Quel codice contiene caratteri che jojo non usa. Confrontalo con l'altro schermo.",
+      "length": "Quel codice ha la lunghezza sbagliata. È di dodici caratteri, in tre gruppi da quattro.",
+      "mistyped": "Quel codice non torna: c'è un carattere sbagliato da qualche parte. Prova a inserirlo di nuovo."
+    },
+    "pull": {
+      "forged": "Parte di ciò che è arrivato non proveniva dal telefono con cui ti sei abbinato, quindi jojo l'ha scartato tutto. Su questo computer non è cambiato nulla: mostra un nuovo codice e riprova.",
+      "oversized": "Il telefono ha inviato più di quanto jojo accetti in una volta, quindi ha smesso di leggere. Su questo computer non è cambiato nulla.",
+      "unrestorable": "Ciò che ha inviato il telefono non può essere ripristinato: {{reason}}. Su questo computer non è cambiato nulla.",
+      "declined": "Non è cambiato nulla. Ciò che ha inviato il telefono è stato scartato."
+    },
+    "unexpected": "Qualcosa è andato storto su questo computer e il trasferimento si è interrotto. Sull'altro dispositivo non è rimasto nulla: riprova, oppure sposta i tuoi record con un file di backup da Impostazioni.",
+    "unproven": "Quel dispositivo non è riuscito a dimostrare di aver letto il codice su questo schermo. Mostra un nuovo codice e scansionalo di nuovo.",
+    "pairingFailed": "Qualcosa è andato storto nella configurazione di un abbinamento sicuro su questo dispositivo."
+  }
+}

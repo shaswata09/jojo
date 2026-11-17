@@ -1,0 +1,112 @@
+{
+  "common": {
+    "connections_other": "{{count}} koneksi",
+    "records_other": "{{count}} entri"
+  },
+  "legend": {
+    "show": "Tampilkan {{name}}",
+    "hide": "Sembunyikan {{name}}",
+    "allHidden": "Semua jenis entri disembunyikan.",
+    "showAll": "Tampilkan semua",
+    "isA": "adalah"
+  },
+  "node": {
+    "label": "{{label}}. {{type}}, {{connections}}"
+  },
+  "canvas": {
+    "label": "Graf pengetahuan — {{records}}, {{connections}}",
+    "capped": "Menampilkan {{shown}} entri dengan koneksi terbanyak. {{dropped}} lainnya ada di penyimpanan tetapi tidak di kanvas ini — persempit dengan filter untuk melihatnya.",
+    "description": "Setiap entri adalah simpul dan setiap penunjuk antar-entri adalah garis. Panel di samping graf ini mencantumkan informasi yang sama dalam bentuk teks."
+  },
+  "answer": {
+    "title": "Jawaban",
+    "records_other": "{{count}} entri",
+    "prompt": "Pilih contoh, atau susun pola, dan jawabannya muncul di sini serta disorot di graf di atas.",
+    "emptyTitle": "Tidak ada entri yang cocok",
+    "clear": "Kosongkan kueri",
+    "caption": "Entri yang cocok dengan pola",
+    "columns": {
+      "record": "Entri",
+      "kind": "Jenis",
+      "matched": "Cocok"
+    },
+    "open": "Buka",
+    "select": "Pilih di graf",
+    "via": "melalui {{rel}}",
+    "more_other": "{{names}} +{{count}} lagi",
+    "showing": "Menampilkan {{shown}} pertama dari {{total}}. Semuanya disorot di graf di atas."
+  },
+  "examples": {
+    "title": "Contoh yang dikerjakan",
+    "nothingToAsk": "Sesi ini tidak punya data untuk ditanyai hal itu"
+  },
+  "query": {
+    "title": "Tanya graf",
+    "hint": "Tanyakan dalam satu kalimat, atau susun pertanyaannya secara manual",
+    "shape": "Bentuk pertanyaan",
+    "pattern": "Pola",
+    "path": "Jalur",
+    "generated": "Kueri yang dihasilkan",
+    "clear": "Kosongkan",
+    "sqlNote": "Bentuk pertanyaan, dalam istilah SQL agar mudah dibaca. Kueri yang benar-benar dijalankan adalah versi terstruktur di atasnya — tidak ada yang mengurai baris ini."
+  },
+  "fields": {
+    "records": "Entri",
+    "anyRecord": "Entri apa pun",
+    "ofKind": "Berjenis",
+    "anyKind": "Jenis apa pun",
+    "reminder": "Pengingat",
+    "condition": "Kondisi",
+    "quantifier": {
+      "has": "memiliki",
+      "missing": "tidak memiliki",
+      "atLeast": "memiliki setidaknya"
+    },
+    "howMany": "Berapa banyak",
+    "orMore_other": "{{count}} atau lebih",
+    "relationship": "Relasi",
+    "anyRelationship": "relasi apa pun",
+    "connectedTo": "Terhubung ke",
+    "anything": "apa pun",
+    "keyword": "Berkata kunci",
+    "anyKeyword": "kata kunci apa pun",
+    "from": "Dari",
+    "to": "Ke"
+  },
+  "detail": {
+    "title": "Entri terpilih",
+    "nothingSelected": "Tidak ada yang dipilih",
+    "pickHint": "Pilih simpul — dengan mengekliknya, atau dengan Tab ke simpul itu lalu menekan Enter — untuk melihat koneksinya dan tempatnya di aplikasi.",
+    "open": "Buka {{type}}",
+    "openType": {
+      "application": "Buka lamaran",
+      "organisation": "Buka organisasi",
+      "role": "Buka posisi",
+      "item": "Buka item linimasa",
+      "keyword": "Buka kata kunci",
+      "link": "Buka tautan",
+      "file": "Buka berkas",
+      "snippet": "Buka cuplikan",
+      "posting": "Buka lowongan tersimpan",
+      "match": "Buka kecocokan Pencari",
+      "source": "Buka sumber",
+      "background": "Buka \"Tentang Anda\"",
+      "claim": "Buka relasi"
+    },
+    "derived": "Diturunkan dari entri Anda — tidak punya halaman sendiri.",
+    "verbs": "Yang dapat Anda lakukan dengannya",
+    "noLinks": "Belum ada yang menunjuk ke entri ini."
+  },
+  "ask": {
+    "notConnected": "Hubungkan model lokal di <settings>Pengaturan</settings> dan Anda dapat menanyakan ini dalam satu kalimat. Penyusun di bawah tetap berfungsi.",
+    "label": "Ajukan pertanyaan ke graf",
+    "stop": "Berhenti",
+    "submit": "Tanya",
+    "again": "Tanyakan hal lain",
+    "suggestions": {
+      "noFollowUp": "Lamaran mana yang belum punya jadwal tindak lanjut?",
+      "unfiled": "Berkas mana yang tidak diarsipkan di mana pun?",
+      "busy": "Lamaran mana yang punya lebih dari dua item linimasa?"
+    }
+  }
+}

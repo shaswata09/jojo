@@ -157,6 +157,12 @@ export const DOMAIN_EN = {
   /** Mostly product names, kept as they are; two carry words ("A local server", "free"). */
   provider: Object.fromEntries(PROVIDERS.map((p) => [p.id, p.label])) as Record<ProviderId, string>,
   month: indexed(MONTH_LABELS, 1),
+  /**
+   * The month as it reads beside a day number — the same word as `month` in
+   * English, but Russian says «5 ноября», not «5 ноябрь». Filled from CLDR's
+   * format context for every language.
+   */
+  monthOfDay: indexed(MONTH_LABELS, 1),
   /** Abbreviated, for a tight column. Other languages take CLDR's own short forms, not a slice. */
   monthShort: indexed(MONTH_LABELS.map((m) => m.slice(0, 3)), 1),
   weekdayShort: indexed(WEEKDAYS, 0),
@@ -491,6 +497,8 @@ export function domainText(t: Translate) {
     },
     /** 1-based, as `CalendarDay.month` is. */
     month: (month: number) => d(`month.${String(month)}`),
+    /** 1-based; the month beside a day number ('November 5', «5 ноября»). */
+    monthOfDay: (month: number) => d(`monthOfDay.${String(month)}`),
     /** 1-based; 'Nov', 'nov.', '11月'. */
     monthShort: (month: number) => d(`monthShort.${String(month)}`),
     /** 'November 2026', 'noviembre de 2026', '2026年11月'. */

@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "jojo 的動作",
+    "hint": "選一個，或在機器人身上畫出它的筆劃。",
+    "trigger": "jojo 的動作",
+    "triggerAria": "jojo 的動作與出處",
+    "plays": "會播放",
+    "modelCredit": "機器人模型："
+  },
+  "theme": {
+    "toggle": "切換主題",
+    "toLight": "切換為淺色主題",
+    "toDark": "切換為深色主題"
+  },
+  "poke": "戳一下 jojo"
+}

@@ -1,0 +1,134 @@
+{
+  "sidebar": {
+    "navigation": "導覽",
+    "close": "關閉導覽"
+  },
+  "nav": {
+    "dashboard": "儀表板",
+    "applications": "申請",
+    "calendar": "行事曆",
+    "vault": "保管庫",
+    "jobScout": "職缺偵察",
+    "statistics": "統計",
+    "flagged_other": "{{count}} 個已標記",
+    "flaggedTitle": "已標記為待追蹤",
+    "weekTitle": "未來七天內的安排",
+    "overdueTitle": "已過期的提醒",
+    "fresh_other": "{{count}} 個新的",
+    "freshTitle": "尚未加入申請的符合職缺"
+  },
+  "newMenu": {
+    "trigger": "新增",
+    "find": "找出要新增的項目",
+    "findPlaceholder": "找出要新增的項目…",
+    "empty": "沒有符合的可新增項目。"
+  },
+  "roleFilter": {
+    "label": "依職務篩選",
+    "all": "所有職務",
+    "selected_other": "已選取 {{count}} 個",
+    "find": "尋找職務",
+    "findPlaceholder": "尋找職務…",
+    "empty": "沒有符合的職務。",
+    "selectAll": "全選",
+    "clear": "清除篩選條件",
+    "remove": "移除「{{role}}」"
+  },
+  "topbar": {
+    "openNav": "開啟導覽",
+    "search": "搜尋申請、提醒、活動…",
+    "accountNav": "帳號與支援",
+    "links": {
+      "profile": "我的個人檔案",
+      "settings": "設定",
+      "assistant": "助理",
+      "guide": "使用說明"
+    }
+  },
+  "runtime": {
+    "heading": "執行狀態",
+    "tileTitle": "{{label}}——{{detail}}。點選即可開啟{{destination}}",
+    "dest": {
+      "graph": "圖譜",
+      "transfer": "「傳輸」",
+      "settings": "「設定」"
+    },
+    "storage": {
+      "label": "瀏覽器儲存空間",
+      "notSaving": "未儲存",
+      "notSavingDetail": "你的紀錄目前沒有被儲存——頁面上方的橫幅會說明原因",
+      "retrying": "重試中",
+      "retryingDetail_other": "有 {{count}} 項變更尚未儲存，jojo 仍在重試",
+      "saved": "已儲存在此",
+      "savedDetail": "你在操作時，紀錄會即時寫入這個瀏覽器的資料庫"
+    },
+    "model": {
+      "label": "本機模型",
+      "connected": "已連線",
+      "connectedDetail": "本機模型已回應——助理和職缺偵察的評分都可以使用它",
+      "noAnswer": "沒有回應",
+      "noAnswerDetail": "已設定模型，但它沒有回應——請確認它正在執行",
+      "checking": "檢查中",
+      "checkingDetail": "正在詢問模型是否可用",
+      "unset": "尚未設定",
+      "unsetDetail": "還沒有模型端點——可以到「設定」中新增"
+    },
+    "transfer": {
+      "label": "傳輸",
+      "meta": "與其他裝置同步",
+      "detail": "還沒有配對任何裝置——可以到「傳輸」中新增"
+    }
+  },
+  "banner": {
+    "reload": "重新載入",
+    "interrupted": "jojo 在另一個分頁中更新了，所以這個分頁關閉了資料庫，讓更新得以完成。你在這裡做的任何變更都不會被儲存。請重新載入以繼續。",
+    "versionBlocked": "jojo 無法開啟資料庫——另一個 jojo 分頁正在使用不同版本的應用程式。<strong>你的紀錄仍在磁碟上</strong>，但這個分頁無法讀取，所以寧可什麼都不顯示，也不去猜測。請關閉其他分頁並重新載入，就能找回紀錄。",
+    "noStorage": "這個瀏覽器不允許 jojo 開啟儲存空間，所以這個分頁是空白的工作區：這部裝置上已儲存的內容都不會顯示，而你在這裡輸入的任何內容，在關閉分頁後就會消失。無痕視窗和某些受管理的瀏覽器會有這種情況。如果你新增了值得保留的內容，離開前請先從「設定」匯出。",
+    "atRisk_other": "有 {{count}} 項變更顯示在畫面上，但尚未儲存——請從「設定」匯出以保留，因為重新載入或關閉這個分頁就會遺失。",
+    "safeBefore": "在此之前的所有變更都已存到磁碟上。",
+    "corrupt": "jojo 已停止儲存：這個瀏覽器拒絕了對你紀錄的一項變更，重試也無濟於事。{{atRisk}}請立即從「設定」匯出——詳細資訊在「設定 → 診斷」中，若在匯出前重新載入，只存在畫面上的內容都會遺失。",
+    "quota": "這個瀏覽器已經沒有剩餘空間，所以 jojo 已停止儲存。{{atRisk}}請釋出一些空間後再重新載入。",
+    "otherTab": "另一個分頁正在使用資料庫，所以 jojo 已停止儲存。請關閉其他分頁，如果畫面上有尚未儲存的內容，請從「設定」匯出——重新載入這個分頁會遺失這些內容。",
+    "degraded_other": "有 {{count}} 項變更無法儲存，jojo 仍在重試。如果你現在就需要一份副本，請從「設定」匯出。（{{error}}）",
+    "documentsBlocked": "你的文件仍在這部裝置上，但另一個開著舊版應用程式的 jojo 分頁正占用著它們。請關閉其他 jojo 分頁——這個分頁會自動取得這些文件。",
+    "skipped_other": "這部裝置上有 {{count}} 筆紀錄無法讀取，因此沒有顯示。沒有任何內容被刪除——<anchor>診斷</anchor>會列出它們，從那裡匯出的檔案也會包含 jojo 能讀取的所有內容。",
+    "nearlyFull": "這個瀏覽器分配給 jojo 的空間快滿了——已使用約 {{percent}}% 的上限。空間滿了之後就無法儲存，所以建議趁現在紀錄還能寫入時，從「設定」匯出並清出空間。",
+    "backup": {
+      "busy": "備份中…",
+      "download": "下載備份",
+      "notNow": "稍後再說"
+    }
+  },
+  "shell": {
+    "skipToMain": "跳到主要內容"
+  },
+  "spotlight": {
+    "title": "搜尋",
+    "label": "搜尋申請、提醒、活動和頁面",
+    "placeholder": "搜尋申請、提醒、活動…",
+    "emptyTitle": "沒有符合的項目。",
+    "emptyHint": "試試職務、機構或階段名稱。",
+    "actions": "動作",
+    "applications": "申請",
+    "reminders": "提醒",
+    "calendar": "行事曆",
+    "tools": "工具",
+    "goTo": "前往",
+    "toOpen": "開啟",
+    "toClose": "按 esc 關閉",
+    "pages": {
+      "dashboard": "儀表板",
+      "applications": "申請",
+      "calendar": "行事曆",
+      "vault": "保管庫",
+      "jobScout": "職缺偵察",
+      "statistics": "統計",
+      "graph": "圖譜",
+      "transfer": "傳輸",
+      "transferDetail": "將你的紀錄移到另一部裝置",
+      "profile": "我的個人檔案",
+      "assistant": "助理",
+      "settings": "設定"
+    }
+  }
+}

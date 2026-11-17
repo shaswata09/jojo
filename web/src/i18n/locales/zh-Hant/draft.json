@@ -1,0 +1,56 @@
+{
+  "defaultTitle": "電子郵件草稿",
+  "titleForOrg": "{{base}}——{{org}}",
+  "header": {
+    "title": "草擬訊息",
+    "for": "寄給 {{name}}。",
+    "forItem": "寄給 {{name}} · {{item}}。",
+    "unlinked": "沒有連結到任何申請，所以 [ROLE] 和 [DATE] 會保持空白。",
+    "body": "不會產生任何內容，也不會寄出任何東西——填好空白處，複製到你的郵件程式，然後標記為已寄出。"
+  },
+  "picker": {
+    "hint": "從你的電子郵件片段開始。",
+    "searchLabel": "搜尋片段",
+    "searchPlaceholder": "搜尋片段…",
+    "noMatch": "沒有符合的片段。",
+    "emailGroup": "電子郵件片段",
+    "freshGroup": "從頭開始",
+    "blank": "空白草稿"
+  },
+  "editor": {
+    "placeholder": "撰寫訊息，或選一個片段作為開頭…",
+    "label": "訊息草稿",
+    "nothing": "尚未草擬任何內容。",
+    "noBlanks": "沒有剩下的空白處。",
+    "blanksLeft_other": "還有 {{count}} 個空白處——{{names}}",
+    "nameNote": " · 人名一律不會自動幫你填入",
+    "copyBlocked": "瀏覽器封鎖了複製動作",
+    "copied": "已將草稿複製到剪貼簿"
+  },
+  "empty": {
+    "title": "還沒有電子郵件片段",
+    "description": "標記為「電子郵件」的片段會顯示在這裡，作為開頭範本。目前沒有可載入的片段，但草稿不一定要從片段開始。",
+    "action": "從空白草稿開始"
+  },
+  "footer": {
+    "writeFirst": "請先寫點內容",
+    "saveHint": "將這份草稿保留在保管庫中，並標記為「電子郵件」",
+    "save": "儲存為片段",
+    "assistantHint": "助理有自己的頁面——可從側邊欄開啟",
+    "assistant": "在助理中開啟",
+    "copyHint": "將訊息複製到剪貼簿",
+    "markNoItem": "從提醒開啟這裡，才能在此勾選完成",
+    "markDone": "那則提醒已經勾選完成",
+    "markSent": "標記為已寄出"
+  },
+  "toast": {
+    "replaced": "已取代草稿",
+    "loaded": "已載入「{{title}}」。",
+    "startedBlank": "已從空白重新開始。",
+    "undo": "復原",
+    "saved": "已儲存到片段",
+    "savedDescription": "{{title}} · 已標記為「電子郵件」，位於保管庫",
+    "markedSent": "已標記為已寄出",
+    "markedSentDescription": "{{title}}——已在提醒中勾選完成"
+  }
+}

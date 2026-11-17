@@ -1,0 +1,152 @@
+{
+  "screen": {
+    "title": "Aktarım",
+    "subtitle": "Her şeyi bu telefonla bilgisayarınız arasında yerel ağınız üzerinden taşıyın. İkisinin de aynı ağda olması gerekir. Hiçbir şey internete gitmez ve hiçbir şey başka bir yerde saklanmaz.",
+    "direction": "Yön",
+    "roles": {
+      "send": "Bilgisayara gönder",
+      "receive": "Bilgisayardan al"
+    },
+    "onPhone": "Şu anda bu telefonda olanlar",
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt",
+    "empty": "boş",
+    "sendNote": "Göndermek hepsini bilgisayarınıza kopyalar; bilgisayar elindekilerin yerine koymadan önce sorar. Bu telefonda hiçbir şey değişmez.",
+    "receiveNote": "Almak hepsinin yerini alır. Yukarıdaki her şeyin üzerine gelenler yazılır ve bu geri alınamaz — bunları saklamak istiyorsanız önce dışa aktarın."
+  },
+  "groups": {
+    "applications": {
+      "label": "Başvurular",
+      "hint": "Her birinin tüm aşamaları, notları ve sonuçları"
+    },
+    "timeline": {
+      "label": "Hatırlatıcılar ve etkinlikler",
+      "hint": "{{reminders}} hatırlatıcı, {{events}} tarihli etkinlik"
+    },
+    "vault": {
+      "label": "Bağlantılar ve metin parçaları",
+      "hint": "{{links}} bağlantı · {{snippets}} metin parçası"
+    },
+    "files": {
+      "label": "Dosyalar",
+      "hint": "CV'ler, beyanlar ve bir başvuruya kaydedilmiş diğer her şey"
+    },
+    "keywords": {
+      "label": "Anahtar kelimeler",
+      "hint": "Anahtar kelime listeniz ve bağlı olduğu tüm kayıtlar"
+    },
+    "scout": {
+      "label": "İş gözcüsü",
+      "hint": "{{pipelines}} işlem hattı · {{postings}} kayıtlı ilan · {{matches}} eşleşme"
+    },
+    "profile": {
+      "label": "Profil",
+      "hint": "Temel bilgileriniz, bağlantılarınız, hedef rolleriniz ve eşleştirme terimleriniz"
+    }
+  },
+  "handover": {},
+  "pairing": {
+    "unavailableHint": "bu cihazda kullanılamıyor",
+    "noRandom": "Bu cihazda güvenli bir rastgele sayı üreteci yok; bu yüzden jojo bu cihazda anahtar belirlemez. Eşleştirme zayıf biçimde yapılmak yerine devre dışı bırakıldı.",
+    "scan": "Kodu tara",
+    "retry": "Yeniden dene",
+    "cancel": "İptal"
+  },
+  "send": {
+    "title": "Bilgisayara gönder",
+    "hint": "bilgisayarınızdaki koda tutun",
+    "outcome": {
+      "applied": "Bilgisayarınızda artık kayıtlarınız var",
+      "declined": "Bilgisayarınız kendi kayıtlarını tuttu",
+      "failed": "Bilgisayarınız kayıtlarınızı alamadı",
+      "handed": "Her şey aktarıldı"
+    },
+    "detail": {
+      "waiting": "Bilgisayarınız bir şeyin yerini almadan önce sorar — bitirmek için orada onaylayın. Bu telefonda hiçbir şey değişmedi.",
+      "unknown": "Bilgisayarınız bunları alıp almadığını söylemedi. Bu telefonda hiçbir şey değişmedi.",
+      "applied": "İki cihazda da artık aynı kayıtlar var. Bu telefonda hiçbir şey değişmedi.",
+      "notReplaced": "Orada hiçbir şeyin yerine bir şey konmadı. Bu telefonda hiçbir şey değişmedi."
+    },
+    "unreadable_one": "{{count}} belge okunamadı ve geride kaldı.",
+    "unreadable_other": "{{count}} belge okunamadı ve geride kaldı.",
+    "again": "Yeniden gönder",
+    "typeThis": "Bunu bilgisayarınıza yazın",
+    "paired": "Eşleştirildi. Bu telefon, bilgisayarınızın istemesi için yerel ağınızda bekliyor.",
+    "handing": "Kayıtlarınız aktarılıyor…",
+    "handingProgress": "Kayıtlarınız aktarılıyor — {{chunks}} parçadan {{served}} tanesi.",
+    "intro": "Bilgisayarınızda Aktarım'ı açın, Telefondan al'ı seçin ve gösterdiği kodu tarayın. İkisinin de aynı yerel ağda olması gerekir.",
+    "gatherFailed": "jojo bu telefondaki kayıtları toplayamadı; bu yüzden hiçbir şey gönderilmedi. Yeniden deneyin."
+  },
+  "receive": {
+    "title": "Al",
+    "hint": "diğer cihazdaki koda tutun",
+    "complete": "Aktarım tamamlandı",
+    "done": "Bitti",
+    "typeThis": "Bunu diğer cihazınıza yazın",
+    "paired": "Eşleştirildi. Bu telefon yalnızca yerel ağınızı dinliyor, başka hiçbir yeri değil.",
+    "progress": "Alınıyor — şimdiye kadar {{size}}. Siz onaylayana kadar burada hiçbir şey değişmez.",
+    "intro": "Bilgisayarınızda jojo'yu açın, Aktarım'ı seçin ve gösterdiği kodu tarayın.",
+    "confirm": {
+      "title": "Bu telefondaki her şey değiştirilsin mi?",
+      "description": "{{contents}}. {{replaces}}; bu geri alınamaz.",
+      "confirm": "Değiştir"
+    },
+    "unrestorable": "Gelenler geri yüklenemez: {{reason}}. Bu telefonda hiçbir şey değişmedi."
+  },
+  "landed": {
+    "plain_one": "Bu telefonda {{count}} kayıt var.",
+    "plain_other": "Bu telefonda {{count}} kayıt var.",
+    "withDocuments_one": "Bu telefonda {{count}} kayıt var, {{documents}}.",
+    "withDocuments_other": "Bu telefonda {{count}} kayıt var, {{documents}}.",
+    "documents_one": "{{count}} belge",
+    "documents_other": "{{count}} belge",
+    "skipped_one": "{{count}} tanesi okunamadı.",
+    "skipped_other": "{{count}} tanesi okunamadı."
+  },
+  "scanner": {
+    "point": "Bunu diğer cihazınızın Aktarım sayfasındaki koda tutun.",
+    "advice": {
+      "denied": "jojo'nun diğer cihazınızdaki kodu okuması için kamera gerekir. İzin verin ya da kodu elle yazın.",
+      "unsupported": "Bu telefon jojo için kamerayı açamıyor.",
+      "failed": "Kamera başlamadı. jojo'yu kapatıp yeniden açın."
+    }
+  },
+  "camera": {
+    "rationale": {
+      "title": "Eşleştirme kodunu okuyun",
+      "message": "jojo'nun diğer cihazınızda gösterilen kodu okuması için kamera gerekir. Hiçbir şey kaydedilmez ve hiçbir görüntü bu telefondan çıkmaz.",
+      "allow": "İzin ver",
+      "notNow": "Şimdi değil"
+    },
+    "refused": {
+      "denied": "jojo'nun diğer cihazınızdaki kodu okuması için kamera gerekir.",
+      "blocked": "Kamera jojo için kapalı. Tarayarak eşleştirmek için telefonunuzun Ayarlar bölümünde, Uygulamalar altında açın."
+    }
+  },
+  "advice": {
+    "receive": {
+      "offer": "Bu kod bir jojo eşleştirme teklifi değil. Diğer cihazınızdakini tarayın.",
+      "noNetwork": "Bu telefon bir yerel ağa bağlı değil. jojo yalnızca yerel ağınız üzerinden aktarım yapar; bu yüzden iki cihazın da aynı ağda olması gerekir.",
+      "notLocal": "Bu telefon, jojo'nun aktarım yapmayacağı bir ağda. jojo yalnızca özel bir ağ adresine bağlanır; böylece kayıtlarınız asla internetten geçmez.",
+      "noSocket": "jojo bu telefonda bir bağlantı açamadı. Yeniden deneyin."
+    }
+  },
+  "import": {
+    "clipboardEmpty": "Pano boş. Önce bir jojo yedeği kopyalayın, sonra buraya yapıştırın.",
+    "fileEmpty": "Bu dosya boş. Bu telefonda hiçbir şey değişmedi.",
+    "notBackup": "bir jojo yedeği değil",
+    "unrestorable": {
+      "file": "Bu dosya geri yüklenemez: {{reason}}. Bu telefonda hiçbir şey değişmedi.",
+      "clipboard": "Panodaki içerik geri yüklenemez: {{reason}}. Bu telefonda hiçbir şey değişmedi."
+    },
+    "noRecords": {
+      "file": "Bu dosya, içinde hiç kayıt olmayan bir yedek. Bu telefonda hiçbir şey değişmedi — onu geri yüklemek bu telefonu boşaltırdı.",
+      "clipboard": "Panodaki içerik, içinde hiç kayıt olmayan bir yedek. Bu telefonda hiçbir şey değişmedi — onu geri yüklemek bu telefonu boşaltırdı."
+    },
+    "unreadable": "Bu dosya okunamadı. Bu telefonda hiçbir şey değişmedi.",
+    "noPicker": "Bu telefonda JSON ya da metin dosyası seçebilecek bir şey yok.",
+    "openFailed": "Dosya açılamadı: {{detail}}",
+    "failedTitle": "Hiçbir şey içe aktarılmadı",
+    "restoredTitle": "Yedek geri yüklendi"
+  }
+}

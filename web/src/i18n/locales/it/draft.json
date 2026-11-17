@@ -1,0 +1,58 @@
+{
+  "defaultTitle": "Bozza di email",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Scrivi un messaggio",
+    "for": "Per {{name}}.",
+    "forItem": "Per {{name}} · {{item}}.",
+    "unlinked": "Non è collegato a una candidatura, quindi [ROLE] e [DATE] restano vuoti.",
+    "body": "Non viene generato né inviato nulla: compila gli spazi vuoti, copia il testo nel tuo client di posta, poi segnalo come inviato."
+  },
+  "picker": {
+    "hint": "Parti da uno dei tuoi frammenti email.",
+    "searchLabel": "Cerca frammenti",
+    "searchPlaceholder": "Cerca frammenti…",
+    "noMatch": "Nessun frammento corrisponde.",
+    "emailGroup": "Frammenti email",
+    "freshGroup": "Ricomincia da zero",
+    "blank": "Bozza vuota"
+  },
+  "editor": {
+    "placeholder": "Scrivi il messaggio, o scegli un frammento da cui partire…",
+    "label": "Bozza del messaggio",
+    "nothing": "Ancora nessuna bozza.",
+    "noBlanks": "Nessuno spazio vuoto rimasto.",
+    "blanksLeft_one": "{{count}} spazio vuoto rimasto — {{names}}",
+    "blanksLeft_many": "{{count}} di spazi vuoti rimasti — {{names}}",
+    "blanksLeft_other": "{{count}} spazi vuoti rimasti — {{names}}",
+    "nameNote": " · il nome di una persona non viene mai compilato al posto tuo",
+    "copyBlocked": "Il browser ha bloccato la copia",
+    "copied": "Bozza copiata negli appunti"
+  },
+  "empty": {
+    "title": "Ancora nessun frammento email",
+    "description": "I frammenti con l'etichetta Email compaiono qui come punti di partenza. Non c'è nulla da caricare, ma la bozza non deve per forza partire da uno di essi.",
+    "action": "Parti da una bozza vuota"
+  },
+  "footer": {
+    "writeFirst": "Prima scrivi qualcosa",
+    "saveHint": "Conserva questa bozza nella Cassaforte, con l'etichetta Email",
+    "save": "Salva come frammento",
+    "assistantHint": "L'assistente ha una sua pagina: aprila dalla barra laterale",
+    "assistant": "Apri nell'assistente",
+    "copyHint": "Copia il messaggio negli appunti",
+    "markNoItem": "Apri questa bozza da un promemoria per spuntarlo qui",
+    "markDone": "Quel promemoria è già spuntato",
+    "markSent": "Segna come inviato"
+  },
+  "toast": {
+    "replaced": "Bozza sostituita",
+    "loaded": "Caricato {{title}}.",
+    "startedBlank": "Ricominciato da una bozza vuota.",
+    "undo": "Annulla",
+    "saved": "Salvato nei frammenti",
+    "savedDescription": "{{title}} · con l'etichetta Email, nella Cassaforte",
+    "markedSent": "Segnato come inviato",
+    "markedSentDescription": "{{title}} — spuntato nei promemoria"
+  }
+}

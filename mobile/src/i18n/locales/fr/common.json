@@ -3,7 +3,8 @@
     "label": "Langue",
     "description": "La langue dans laquelle jojo s’affiche. Vos fiches restent dans la langue où vous les avez écrites.",
     "system": "Comme cet appareil ({{name}})",
-    "restartForDirection": "L’arabe se lit de droite à gauche après le redémarrage de jojo."
+    "restartRtl": "{{name}} se lira de droite à gauche au redémarrage de jojo.",
+    "restartLtr": "{{name}} se lira de gauche à droite au redémarrage de jojo."
   },
   "actions": {
     "undo": "Annuler",

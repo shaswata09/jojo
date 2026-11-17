@@ -1,0 +1,153 @@
+{
+  "common": {
+    "title": "Asisten",
+    "undo": "Urungkan",
+    "nothingAsked": "Belum ada pertanyaan",
+    "askLabel": "Tanya asisten",
+    "saveToSnippets": "Simpan ke cuplikan",
+    "savedToSnippets": "Disimpan ke cuplikan",
+    "filedUnder": "{{title}} · diarsipkan di {{tag}}",
+    "openVault": "Buka brankas",
+    "copyBlocked": "Penyalinan diblokir oleh browser",
+    "copied": "Balasan disalin",
+    "newConversation": "Percakapan baru"
+  },
+  "header": {
+    "subtitle": "Terhubung ke model Anda, dan dapat bertindak atas entri Anda. Semua yang dilakukannya dicantumkan saat terjadi.",
+    "clear": "Bersihkan",
+    "connected_other": "Jawaban berasal dari <mono>{{model}}</mono> di <mono>{{endpoint}}</mono>, yang dapat memanggil <tools>{{count}} alat</tools> di perangkat ini. Tidak ada yang dikirim ke tempat lain."
+  },
+  "composer": {
+    "send": "Kirim",
+    "typeFirst": "Ketik pesan dulu",
+    "stop": "Berhenti",
+    "stopTitle": "Hentikan agen"
+  },
+  "approval": {
+    "waiting": "{{title}} — menunggu Anda",
+    "askedBy": "Diminta oleh {{name}}. Belum ada yang berubah.",
+    "askedByUnnamed": "Diminta oleh sebuah percakapan. Belum ada yang berubah.",
+    "decline": "Jangan",
+    "allow": "Izinkan"
+  },
+  "scripted": {
+    "subtitle": "Untuk sekarang, contoh yang dikerjakan. Hubungkan model lokal dan asisten akan menulis draf dari entri Anda sendiri sekaligus bertindak atasnya.",
+    "clear": "Bersihkan percakapan",
+    "notConnected": "Tidak ada model yang terhubung, jadi setiap balasan di bawah adalah contoh, bukan jawaban. Arahkan jojo ke server lokal yang kompatibel dengan OpenAI — vLLM, Ollama, atau LM Studio — di <settings>Pengaturan</settings>.",
+    "emptyDescription": "Pilih salah satu perintah di bawah, atau ketik apa saja. Balasannya adalah contoh tertulis — berguna sebagai bahan, dan tidak pernah disajikan sebagai jawaban model.",
+    "placeholder": "Tanyakan tentang surat pengantar, email tindak lanjut, wawancara…",
+    "footer": "Jika model terhubung, masing-masing akan membaca profil dan dokumen Anda sebagai konteks. Karena inferensi berjalan lokal, CV dan catatan Anda tidak pernah diunggah ke mana pun.",
+    "badge": "Contoh respons · tidak ada model yang terhubung",
+    "cleared": "Percakapan dibersihkan",
+    "messages_other": "{{count}} pesan"
+  },
+  "scripts": {
+    "coverLetter": {
+      "action": "Tulis draf surat pengantar",
+      "title": "Surat pengantar — struktur",
+      "reply": "Berikut susunan yang akan saya gunakan untuk [DEPARTEMEN]:\n\nParagraf 1 — bidang yang Anda tekuni, dalam satu kalimat yang dapat diikuti anggota komite dari luar bidang Anda.\nParagraf 2 — dua hasil yang menjadi dasar argumen Anda, masing-masing disertai dampaknya, bukan metodenya.\nParagraf 3 — mengapa departemen ini: kelompok yang akan beririsan dengan Anda, dan mata kuliah yang akan Anda ajarkan.\nParagraf 4 — ketersediaan, dan gambaran tiga tahun pertama.\n\nCukup satu halaman. Komite membaca empat puluh surat seperti ini dalam satu malam."
+    },
+    "tailorCv": {
+      "action": "Sesuaikan CV saya dengan lowongan",
+      "title": "Menyesuaikan CV — tiga putaran",
+      "reply": "Tiga putaran, dengan urutan ini:\n\n1. Buang yang tidak diminta iklan. CV yang disesuaikan untuk segalanya tidak disesuaikan untuk apa pun.\n2. Pindahkan bagian yang paling ditekankan iklan ke atas halaman pertama — iklan yang berat di pengajaran ingin pengajaran di atas publikasi.\n3. Tulis ulang judul utama dengan kata-kata iklan itu sendiri, tanpa membesar-besarkan cakupan pekerjaan.\n\nYang tetap tidak diubah: publikasi, referensi, tanggal. Bagian-bagian itulah yang diperiksa komite."
+    },
+    "parsePosting": {
+      "action": "Uraikan lowongan kerja",
+      "title": "Yang perlu diambil dari lowongan",
+      "reply": "Dari sebuah iklan saya akan mengambil: pemberi kerja, posisi, tenggat, dokumen yang diminta, narahubung yang disebut, dan apa pun yang dirumuskan sebagai syarat mutlak, bukan preferensi.\n\nYang terakhir itulah tempat lamaran gugur — \"harus sudah bergelar pada tanggal mulai\" adalah penyaring, \"pengalaman dengan sistem berskala besar diutamakan\" bukan.\n\nPencari lowongan sudah mengerjakan separuh yang mudah tanpa model: simpan URL-nya di sana dan ia menyimpan tautan serta menebak pemberi kerja dari tautan itu."
+    },
+    "followUp": {
+      "action": "Tulis draf email tindak lanjut",
+      "title": "Tindak lanjut setelah tidak ada tanggapan",
+      "reply": "Subjek: Tindak lanjut — [POSISI], [DEPARTEMEN]\n\nYth. [NAMA],\n\nSaya melamar posisi [POSISI] pada [TANGGAL] dan ingin memastikan komite sudah memiliki semua yang dibutuhkan dari saya. Saya bersedia mengirimkan langsung surat referensi yang masih kurang jika itu lebih mudah.\n\nSaya tetap sangat tertarik dengan posisi ini, dan dengan senang hati menjawab pertanyaan apa pun melalui email.\n\nTerima kasih,\n[NAMA ANDA]"
+    },
+    "interview": {
+      "action": "Bantu saya bersiap untuk wawancara",
+      "title": "Wawancara — enam pertanyaan yang perlu dijawab",
+      "reply": "Enam pertanyaan yang sebaiknya sudah punya jawaban sebelum harinya:\n\n— Tentang apa pekerjaan Anda, dalam sembilan puluh detik, untuk orang di luar bidang Anda?\n— Apa hibah pertama Anda nanti, dan ke lembaga mana?\n— Dua mata kuliah apa yang bisa Anda ajarkan semester depan tanpa persiapan?\n— Dengan siapa di sini Anda akan berkolaborasi, dan tentang apa?\n— Apa kelemahan dalam hasil penelitian Anda sendiri?\n— Apa yang Anda butuhkan di tahun pertama untuk menjalankan pekerjaan itu?\n\nTulis jawabannya dengan tangan. Latihannya yang penting, bukan catatannya."
+    },
+    "fallback": {
+      "title": "Asisten — contoh respons",
+      "reply": "Tidak ada model yang terhubung, jadi ini jawaban siap pakai, bukan balasan atas yang Anda ketik.\n\nJika model terhubung, halaman ini akan membaca profil Anda, dokumen di Brankas, dan lamaran yang Anda sebut, lalu menulis draf berdasarkan semua itu di perangkat Anda sendiri. Arahkan jojo ke server lokal yang kompatibel dengan OpenAI di Pengaturan — vLLM, Ollama, atau LM Studio.\n\nBersihkan percakapan untuk melihat contoh-contohnya lagi."
+    }
+  },
+  "agent": {
+    "prompts": {
+      "waiting": "Apa saja yang sedang saya tunggu?",
+      "add": "Tambahkan lamaran: ML engineer di Stripe, terkirim",
+      "noDeadline": "Lamaran mana yang tidak punya tenggat?",
+      "flag": "Tandai lamaran saya ke UT Austin"
+    },
+    "emptyDescription": "Minta asisten mencari sesuatu, menambahkan lamaran, atau memajukan lamaran. Setiap alat yang dijalankannya muncul di bawah saat terjadi, beserta apa yang dikirim dan apa yang kembali.",
+    "placeholder": "Cari lamaran saya ke UT Austin, atau tambahkan satu, atau pindahkan ke wawancara…"
+  },
+  "threadBar": {
+    "titleLabel": "Judul percakapan",
+    "saveTitle": "Simpan judul",
+    "cancel": "Batal",
+    "rename": "Ganti nama percakapan ini",
+    "changeJob": "Ganti pekerjaan",
+    "fileUnder": "Arsipkan di sebuah pekerjaan",
+    "approval": "Persetujuan",
+    "approvalLabel": "Seberapa banyak yang boleh dilakukan percakapan ini tanpa bertanya",
+    "delete": "Hapus"
+  },
+  "threads": {
+    "deleted": "Percakapan dihapus"
+  },
+  "threadList": {
+    "title": "Percakapan",
+    "kept_other": "{{count}} tersimpan di sini",
+    "noJob": "Belum tentang pekerjaan tertentu",
+    "searchLabel": "Cari percakapan",
+    "searchPlaceholder": "Cari isi percakapan",
+    "clearSearch": "Hapus pencarian",
+    "noMention": "Tidak ada yang menyebut itu",
+    "mentionsIn": "{{mentions}} dalam {{conversations}}",
+    "mentions_other": "{{count}} sebutan",
+    "conversationCount_other": "{{count}} percakapan",
+    "empty": "Belum ada. Ajukan pertanyaan dan percakapannya disimpan di sini, di perangkat ini.",
+    "noResults": "Tidak ada yang menyebut “{{query}}”. Pencarian ini mencakup seluruh isi percakapan, bukan hanya namanya.",
+    "working": "Memproses…",
+    "matches_other": "{{count}} kecocokan",
+    "questions_other": "{{count}} pertanyaan"
+  },
+  "transcript": {
+    "undo": {
+      "nothing": "Tidak ada yang bisa diurungkan — sudah berubah sejak itu",
+      "alreadyUndone": "Sudah diurungkan",
+      "outOfReach": "Terlalu jauh ke belakang untuk diurungkan dari sini",
+      "undone": "Diurungkan"
+    },
+    "thinking": "Berpikir…",
+    "thought": "Pemikiran"
+  },
+  "trace": {
+    "status": {
+      "running": "Berjalan",
+      "done": "Selesai",
+      "failed": "Gagal",
+      "declined": "Ditolak"
+    },
+    "effect": {
+      "read": "dibaca",
+      "unknown": "alat tidak ada",
+      "create": "ditambahkan",
+      "update": "diubah",
+      "move": "dipindah",
+      "delete": "dihapus",
+      "admin": "penyimpanan"
+    },
+    "approvalNeeded": "Perlu persetujuan: {{title}}",
+    "asked": "Agen meminta untuk melakukan ini. Belum ada yang berubah.",
+    "declineAria": "Jangan: {{title}}",
+    "allowAria": "Izinkan: {{title}}",
+    "arguments": "Argumen",
+    "result": "Hasil",
+    "undoStep": "Urungkan langkah ini",
+    "cannotUndo": "Langkah ini tidak dapat diurungkan dari sini. Pengaturan → Entri menyimpan log perubahan dan dapat membalikkan perubahan terakhir.",
+    "truncated": "Terpotong — agen diminta mempersempit pencarian untuk melihat sisanya.",
+    "working": "Memproses — {{model}} sedang memutuskan apa yang harus dilakukan…"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "defaultTitle": "Bản nháp email",
+  "titleForOrg": "{{base}} — {{org}}",
+  "header": {
+    "title": "Soạn tin nhắn",
+    "for": "Gửi {{name}}.",
+    "forItem": "Gửi {{name}} · {{item}}.",
+    "unlinked": "Chưa liên kết với đơn ứng tuyển nào, nên [ROLE] và [DATE] được để trống.",
+    "body": "Không có gì được tự động tạo ra và không có gì được gửi đi — điền vào chỗ trống, sao chép vào ứng dụng thư của bạn, rồi đánh dấu là đã gửi."
+  },
+  "picker": {
+    "hint": "Bắt đầu từ một đoạn văn bản email của bạn.",
+    "searchLabel": "Tìm đoạn văn bản",
+    "searchPlaceholder": "Tìm đoạn văn bản…",
+    "noMatch": "Không có đoạn văn bản nào khớp.",
+    "emailGroup": "Đoạn văn bản email",
+    "freshGroup": "Bắt đầu mới",
+    "blank": "Bản nháp trống"
+  },
+  "editor": {
+    "placeholder": "Viết tin nhắn, hoặc chọn một đoạn văn bản để bắt đầu…",
+    "label": "Bản nháp tin nhắn",
+    "nothing": "Chưa soạn gì.",
+    "noBlanks": "Không còn chỗ trống nào.",
+    "blanksLeft_other": "Còn {{count}} chỗ trống — {{names}}",
+    "nameNote": " · tên người không bao giờ được điền sẵn cho bạn",
+    "copyBlocked": "Trình duyệt đã chặn việc sao chép",
+    "copied": "Đã sao chép bản nháp vào bộ nhớ tạm"
+  },
+  "empty": {
+    "title": "Chưa có đoạn văn bản email nào",
+    "description": "Các đoạn văn bản gắn nhãn Email sẽ hiện ở đây làm điểm bắt đầu. Hiện chưa có gì để tải, nhưng bản nháp không nhất thiết phải bắt đầu từ một đoạn.",
+    "action": "Bắt đầu từ bản nháp trống"
+  },
+  "footer": {
+    "writeFirst": "Hãy viết gì đó trước",
+    "saveHint": "Giữ bản nháp này trong Kho lưu trữ, gắn nhãn Email",
+    "save": "Lưu thành đoạn văn bản",
+    "assistantHint": "Trợ lý có trang riêng — mở từ thanh bên",
+    "assistant": "Mở trong trợ lý",
+    "copyHint": "Sao chép tin nhắn vào bộ nhớ tạm",
+    "markNoItem": "Mở từ một lời nhắc để đánh dấu hoàn thành tại đây",
+    "markDone": "Lời nhắc đó đã được đánh dấu hoàn thành",
+    "markSent": "Đánh dấu đã gửi"
+  },
+  "toast": {
+    "replaced": "Đã thay bản nháp",
+    "loaded": "Đã tải {{title}}.",
+    "startedBlank": "Đã bắt đầu lại từ bản trống.",
+    "undo": "Hoàn tác",
+    "saved": "Đã lưu vào đoạn văn bản",
+    "savedDescription": "{{title}} · gắn nhãn Email, trong Kho lưu trữ",
+    "markedSent": "Đã đánh dấu là đã gửi",
+    "markedSentDescription": "{{title}} — đã đánh dấu hoàn thành trong lời nhắc"
+  }
+}

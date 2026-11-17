@@ -1,0 +1,168 @@
+{
+  "shared": {
+    "undo": "復原",
+    "cancel": "取消",
+    "add": "新增",
+    "discard": "捨棄",
+    "save": "儲存",
+    "didNotSave": "沒有儲存成功"
+  },
+  "saveBar": {
+    "unsaved": "有未儲存的變更——儲存後會寫入這個瀏覽器。"
+  },
+  "form": {
+    "saved": {
+      "title": "已儲存個人檔案",
+      "description": "已寫入並保留在這個瀏覽器中。"
+    }
+  },
+  "fields": {
+    "basics": "基本資料",
+    "fullName": {
+      "label": "全名",
+      "placeholder": "例如：Lonardo Jenson"
+    },
+    "position": {
+      "label": "目前職位",
+      "placeholder": "例如：資訊工程博士候選人"
+    },
+    "location": {
+      "label": "所在地",
+      "placeholder": "例如：Santa Clara, CA"
+    },
+    "email": {
+      "label": "電子郵件"
+    },
+    "links": "連結",
+    "website": {
+      "label": "網站"
+    }
+  },
+  "interests": {
+    "title": "興趣與目標",
+    "hint": "用於職缺偵察的比對",
+    "matchTerms": {
+      "title": "比對關鍵詞",
+      "description": "職缺偵察會尋找的研究領域和措辭。與你用來歸檔紀錄的關鍵字是分開的。",
+      "remove": "移除「{{term}}」",
+      "newLabel": "新比對關鍵詞",
+      "placeholder": "新增比對關鍵詞"
+    },
+    "targetRoles": {
+      "label": "目標職務",
+      "placeholder": "例如：助理教授（終身職軌）· 研究科學家"
+    },
+    "regions": {
+      "label": "偏好地區",
+      "placeholder": "例如：德州 · 遠端"
+    },
+    "academia": "包含學術界職缺",
+    "industry": "包含業界職缺"
+  },
+  "roleTags": {
+    "title": "職務標籤",
+    "description": "你正在追蹤的職務類型。每份申請都會歸在其中一類，職務篩選條件和「統計」中的各職務統計數字都會讀取它。在這裡移除某個標籤，帶有該標籤的申請仍會原封不動。",
+    "remove_other": "移除「{{role}}」，已用於 {{count}} 份申請",
+    "newLabel": "新職務標籤",
+    "placeholder": "例如：資料科學家"
+  },
+  "documents": {
+    "title": "文件",
+    "hint": "保管庫的「{{bucket}}」分類",
+    "upload": "上傳",
+    "exportInSettings": "在「設定」中匯出",
+    "empty": {
+      "title": "還沒有任何文件",
+      "description": "將你的履歷和陳述拖放到這裡，或手動選擇——它們會歸檔在保管庫的「{{bucket}}」下，讓應用程式的其他部分都能取用。",
+      "upload": "上傳文件"
+    },
+    "footer": "與保管庫<anchor>檔案工具</anchor>中的檔案相同，並篩選為「{{bucket}}」。將文件拖放到這裡或手動選擇，檔案本身會保存在這個瀏覽器中——不會上傳到任何地方。按一下即可閱讀。"
+  },
+  "documentTile": {
+    "open": "開啟 {{name}}",
+    "meta": "{{size}} · {{ago}}儲存",
+    "delete": "刪除 {{name}}"
+  },
+  "background": {
+    "title": "你的背景",
+    "hint_other": "已記錄 {{count}} 項 · 用來和職缺做比較",
+    "details_other": "{{count}} 項詳細資料",
+    "readFromDocument": "從文件讀取",
+    "edit": "編輯「{{title}}」",
+    "remove": "移除「{{title}}」",
+    "added": "已新增「{{title}}」",
+    "updated": "已更新「{{title}}」",
+    "removed": "已移除「{{title}}」",
+    "addEntry": "新增項目",
+    "form": {
+      "kind": "類型",
+      "title": "標題",
+      "titlePlaceholder": "內容是什麼",
+      "where": "地點",
+      "optional": "選填",
+      "when": "時間",
+      "whenPlaceholder": "照原樣填寫——「2021–2024」",
+      "year": "年份",
+      "detail": "詳細說明",
+      "detailPlaceholder": "任何值得拿來和職缺比較的內容（選填）",
+      "highlights": "重點",
+      "highlightsHint": "每行一項——建立、推出、教授或發現了什麼。",
+      "readKept": "從文件讀取——你的編輯會優先於讀取結果保留",
+      "saveChanges": "儲存變更"
+    },
+    "empty": {
+      "title": "尚未記錄任何內容",
+      "configured": "把你的履歷、研究陳述或教學陳述放進保管庫，jojo 就會提議讀取——在儲存任何內容之前，會先讓你看到它找到了什麼。你也可以手動新增項目。",
+      "unconfigured": "讀取文件需要模型。請先在「設定」中連接模型，再把你的履歷或陳述放進保管庫，jojo 就會提議讀取。沒有模型也可以手動新增項目。"
+    },
+    "readMenu": {
+      "needsModel": "讀取文件需要模型。請在「設定」中連接模型。",
+      "button": "讀取文件",
+      "nothing": "保管庫中還沒有可以讀取的內容。放入你的履歷或陳述後，就會顯示在這裡。",
+      "allRead": "保管庫中所有可讀取的內容都已讀取過。",
+      "read": "已讀取"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "學歷",
+      "employment": "工作經歷",
+      "publication": "著作發表",
+      "skill": "技能",
+      "teaching": "教學",
+      "award": "獎項",
+      "service": "服務",
+      "certification": "證照",
+      "language": "語言",
+      "project": "專案",
+      "volunteering": "志工服務",
+      "membership": "會員資格",
+      "grant": "研究經費",
+      "patent": "專利"
+    },
+    "skipped_other": "略過了 {{count}} 個項目",
+    "readIt": "讀取",
+    "readFailed": "讀取文件失敗。",
+    "notNow": "稍後再說",
+    "discardEntries": "捨棄這些項目",
+    "review": {
+      "single": "從這份文件讀出 1 個項目",
+      "some": "將新增 {{total}} 個項目中的 {{kept}} 個",
+      "untick": "取消勾選任何讀錯的項目。",
+      "add": "新增「{{title}}」",
+      "connections_other": "它們之間有 {{count}} 個關聯",
+      "addOne": "加入我的個人檔案",
+      "addMany": "將 {{total}} 個項目加入我的個人檔案"
+    },
+    "toast": {
+      "already": "已在你的個人檔案中",
+      "added_other": "已將 {{count}} 個項目加入你的個人檔案",
+      "nothing": "沒有可以新增的內容",
+      "readFrom": "讀取自 {{name}}。",
+      "known": "{{total}} 個中有 {{known}} 個已經記錄過。",
+      "related_other": "已記錄它們之間的 {{count}} 個關聯。",
+      "weigh": "jojo 現在可以拿你的經歷和職缺做比較了。",
+      "refused": "這些項目遭到拒絕。"
+    }
+  }
+}

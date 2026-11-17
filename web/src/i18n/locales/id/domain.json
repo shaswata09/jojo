@@ -1,0 +1,396 @@
+{
+  "stage": {
+    "draft": "Draf",
+    "submitted": "Terkirim",
+    "screen": "Panggilan seleksi",
+    "interview": "Wawancara",
+    "offer": "Tawaran",
+    "closed": "Ditutup"
+  },
+  "kind": {
+    "deadline": "Tenggat",
+    "interview": "Wawancara",
+    "visit": "Kunjungan",
+    "call": "Panggilan",
+    "prep": "Persiapan",
+    "admin": "Administrasi",
+    "follow-up": "Tindak lanjut"
+  },
+  "outcome": {
+    "rejected": "Ditolak",
+    "withdrawn": "Mengundurkan diri",
+    "accepted": "Diterima",
+    "declined": "Anda tolak",
+    "ghosted": "Tanpa kabar — tidak dibalas"
+  },
+  "outcomeAction": {
+    "rejected": "Ditolak",
+    "withdrawn": "Mengundurkan diri",
+    "accepted": "Tawaran diterima",
+    "declined": "Tawaran ditolak",
+    "ghosted": "Ditutup tanpa balasan"
+  },
+  "format": {
+    "phone": "Telepon",
+    "video": "Video",
+    "onsite": "Tatap muka"
+  },
+  "verdict": {
+    "strong": "Sangat cocok",
+    "worth-tailoring": "Layak disesuaikan",
+    "a-stretch": "Agak jauh",
+    "not-measured": "Belum diukur"
+  },
+  "background": {
+    "education": "Pendidikan",
+    "employment": "Pekerjaan",
+    "publication": "Publikasi",
+    "patent": "Paten",
+    "grant": "Hibah",
+    "leadership": "Kepemimpinan",
+    "outreach": "Penjangkauan",
+    "training": "Pengembangan profesional",
+    "other": "Lainnya",
+    "award": "Penghargaan",
+    "teaching": "Pengajaran",
+    "service": "Pengabdian",
+    "project": "Proyek",
+    "certification": "Sertifikasi",
+    "skill": "Keterampilan",
+    "language": "Bahasa",
+    "volunteering": "Kerelawanan",
+    "membership": "Keanggotaan"
+  },
+  "tone": {
+    "teal": "Biru",
+    "cyan": "Sian",
+    "green": "Hijau",
+    "amber": "Kuning",
+    "red": "Merah",
+    "pink": "Merah muda",
+    "violet": "Ungu",
+    "gray": "Abu-abu"
+  },
+  "mark": {
+    "bold": "baru atau ditulis ulang untuk lowongan ini",
+    "italic": "dirumuskan ulang",
+    "underline": "dinaikkan atau diberi bobot lebih"
+  },
+  "document": {
+    "cv": "CV",
+    "research-statement": "pernyataan riset",
+    "teaching-statement": "pernyataan pengajaran",
+    "cover-letter": "surat pengantar",
+    "other": "dokumen"
+  },
+  "how": {
+    "filed-under": "diarsipkan di lamaran ini",
+    "same-url": "cocok berdasarkan alamat web",
+    "via-posting": "dari lowongan yang ditemukan pencari"
+  },
+  "contactRole": {
+    "recommender": "Pemberi rekomendasi",
+    "contact": "Narahubung"
+  },
+  "approval": {
+    "manual": "Manual",
+    "semi": "Semi-otomatis",
+    "auto": "Otomatis"
+  },
+  "approvalSaid": {
+    "manual": "Anda ditanya sebelum apa pun dalam percakapan ini ditulis.",
+    "semi": "Perubahan langsung dilakukan. Anda ditanya sebelum apa pun dihapus atau dikosongkan.",
+    "auto": "Semuanya langsung dilakukan, termasuk penghapusan. Hanya pengosongan atau penggantian seluruh penyimpanan yang perlu dikonfirmasi."
+  },
+  "funnel": {
+    "0": "Melamar",
+    "1": "Dibalas",
+    "2": "Panggilan seleksi",
+    "3": "Wawancara",
+    "4": "Tawaran"
+  },
+  "band": {
+    "0": "Sedang berjalan",
+    "1": "Tawaran",
+    "2": "Ditolak",
+    "3": "Mengundurkan diri",
+    "4": "Tanpa balasan"
+  },
+  "dimension": {
+    "source": "asal lamaran",
+    "role": "jenis posisi"
+  },
+  "kpi": {
+    "label": {
+      "response": "Tingkat balasan",
+      "interview": "Tingkat wawancara",
+      "offer": "Tingkat tawaran",
+      "reply": "Median waktu balasan"
+    },
+    "note": {
+      "response_other": "{{count}} dari {{of}} membalas",
+      "interview_other": "{{count}} dari {{of}} sampai wawancara",
+      "offer_other": "{{count}} dari {{of}} sampai tawaran",
+      "replyNone": "belum ada balasan dengan kedua tanggal tercatat",
+      "reply_other": "dari {{count}} balasan"
+    },
+    "days_other": "{{count}} hari",
+    "typicalRate": "biasanya {{value}}%",
+    "typicalDays": "biasanya {{days}}"
+  },
+  "rel": {
+    "AT": "berada di",
+    "ABOUT": "tentang",
+    "FILED_UNDER": "diarsipkan di",
+    "TAGS": "melabeli",
+    "FROM": "berasal dari",
+    "BECAME": "menjadi",
+    "COPY_OF": "adalah salinan dari",
+    "SUBJECT": "tentang",
+    "OBJECT": "menunjuk ke"
+  },
+  "provider": {
+    "ollama": "Ollama",
+    "openai-compatible": "Server lokal (vLLM, LM Studio, llama.cpp)",
+    "anthropic": "Anthropic (Claude)",
+    "openai": "OpenAI",
+    "openrouter": "OpenRouter",
+    "groq": "Groq",
+    "nvidia": "NVIDIA (build.nvidia.com) — gratis, dengan batas laju"
+  },
+  "month": {
+    "1": "Januari",
+    "2": "Februari",
+    "3": "Maret",
+    "4": "April",
+    "5": "Mei",
+    "6": "Juni",
+    "7": "Juli",
+    "8": "Agustus",
+    "9": "September",
+    "10": "Oktober",
+    "11": "November",
+    "12": "Desember"
+  },
+  "monthOfDay": {
+    "1": "Januari",
+    "2": "Februari",
+    "3": "Maret",
+    "4": "April",
+    "5": "Mei",
+    "6": "Juni",
+    "7": "Juli",
+    "8": "Agustus",
+    "9": "September",
+    "10": "Oktober",
+    "11": "November",
+    "12": "Desember"
+  },
+  "monthShort": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "Mei",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Agu",
+    "9": "Sep",
+    "10": "Okt",
+    "11": "Nov",
+    "12": "Des"
+  },
+  "weekdayShort": {
+    "0": "Sen",
+    "1": "Sel",
+    "2": "Rab",
+    "3": "Kam",
+    "4": "Jum",
+    "5": "Sab",
+    "6": "Min"
+  },
+  "weekday": {
+    "0": "Minggu",
+    "1": "Senin",
+    "2": "Selasa",
+    "3": "Rabu",
+    "4": "Kamis",
+    "5": "Jumat",
+    "6": "Sabtu"
+  },
+  "dayMonth": "{{day}} {{month}}",
+  "monthYear": "{{month}} {{year}}",
+  "quarter": "K{{quarter}} {{year}}",
+  "weekdayNarrow": {
+    "0": "S",
+    "1": "S",
+    "2": "R",
+    "3": "K",
+    "4": "J",
+    "5": "S",
+    "6": "M"
+  },
+  "action": {
+    "detailsEdited": "Detail diedit",
+    "draftCreated": "Draf dibuat",
+    "offerReceived": "Tawaran masuk",
+    "duplicated": "Diduplikasi",
+    "addedFromScout": "Ditambahkan dari Pencari lowongan",
+    "addedFromPosting": "Ditambahkan dari lowongan tersimpan",
+    "noteEdited": "Catatan diedit",
+    "offerCleared": "Detail tawaran dikosongkan",
+    "flagged": "Ditandai untuk tindak lanjut",
+    "flagCleared": "Tanda dihapus",
+    "movedTo": {
+      "draft": "Dipindah ke Draf",
+      "submitted": "Dipindah ke Terkirim",
+      "screen": "Dipindah ke Panggilan seleksi",
+      "interview": "Dipindah ke Wawancara",
+      "offer": "Dipindah ke Tawaran",
+      "closed": "Dipindah ke Ditutup"
+    },
+    "addedAt": {
+      "draft": "Ditambahkan di Draf",
+      "submitted": "Ditambahkan di Terkirim",
+      "screen": "Ditambahkan di Panggilan seleksi",
+      "interview": "Ditambahkan di Wawancara",
+      "offer": "Ditambahkan di Tawaran",
+      "closed": "Ditambahkan di Ditutup"
+    },
+    "interviewScheduled": {
+      "phone": "Wawancara telepon dijadwalkan",
+      "video": "Wawancara video dijadwalkan",
+      "onsite": "Wawancara tatap muka dijadwalkan"
+    }
+  },
+  "date": {
+    "ago": {
+      "today": "hari ini",
+      "yesterday": "kemarin",
+      "days_other": "{{count}} hari lalu"
+    },
+    "when": {
+      "today": "Hari ini",
+      "tomorrow": "Besok",
+      "inDays_other": "dalam {{count}} hari",
+      "overdue_other": "terlambat {{count}} hari"
+    },
+    "inline": {
+      "today": "hari ini",
+      "tomorrow": "besok"
+    },
+    "completed": {
+      "today": "Selesai hari ini",
+      "yesterday": "Selesai kemarin",
+      "days_other": "Selesai {{count}} hari lalu",
+      "on": "Selesai {{date}}"
+    }
+  },
+  "priority": {
+    "kind": {
+      "offer": "Tawaran",
+      "overdue": "Terlambat",
+      "deadline": "Tenggat",
+      "interview": "Wawancara"
+    },
+    "headline": {
+      "reply": "Balas {{org}}",
+      "submitOrLetGo": "Kirim ke {{org}} atau lepaskan",
+      "recordInterview": "Catat wawancara {{org}}",
+      "recordVisit": "Catat kunjungan {{org}}",
+      "recordCall": "Catat panggilan {{org}}",
+      "catchUp": "Perbarui kabar {{org}}",
+      "submit": "Kirim ke {{org}}",
+      "prepare": "Bersiap untuk {{org}}",
+      "dateInterview": "Beri tanggal wawancara {{org}}"
+    },
+    "timing": {
+      "respondBy": "Balas paling lambat {{date}} · {{when}}",
+      "wasDue": "Tenggatnya {{date}} · {{when}}",
+      "due": "Tenggat {{date}} · {{when}}",
+      "on": "{{date}} · {{when}}",
+      "none": "Belum ada tanggal"
+    },
+    "button": {
+      "draftReply": "Tulis draf balasan",
+      "recordOutcome": "Catat yang terjadi",
+      "acceptOrDecline": "Terima atau tolak",
+      "openApplication": "Buka lamaran",
+      "draftMessage": "Tulis draf pesan"
+    },
+    "undatedInterview": "Di tahap wawancara tanpa tanggal apa pun, jadi minggu depan maupun kalender tidak dapat menampilkannya.",
+    "unfiled": "Tenggat ini tidak diarsipkan di lamaran mana pun",
+    "unknownOrg": "Tidak diketahui"
+  },
+  "filed": {
+    "none": "belum diarsipkan",
+    "one": "diarsipkan di {{a}}",
+    "two": "diarsipkan di {{a}} dan {{b}}",
+    "many_other": "diarsipkan di {{count}} lamaran"
+  },
+  "readBy": "Dibaca oleh {{model}} · {{ago}}",
+  "missingSource": "dokumen yang sudah tidak ada di Brankas",
+  "undo": {
+    "nothing": {
+      "undo": "Tidak ada yang bisa diurungkan.",
+      "redo": "Tidak ada yang bisa diulangi."
+    },
+    "changed": {
+      "undo": "Tidak ada yang bisa diurungkan — sudah berubah sejak itu",
+      "redo": "Tidak ada yang bisa diulangi — sudah berubah sejak itu"
+    },
+    "done": {
+      "undo": "Diurungkan",
+      "redo": "Diulangi"
+    },
+    "journal": "hidden",
+    "action": "Urungkan",
+    "superseded": {
+      "nothing": "Tidak ada yang diurungkan",
+      "part": "Sebagian dibiarkan seperti semula",
+      "named": "{{labels}} — Anda telah mengubah entri tersebut sejak itu, dan mengurungkan sekarang akan ikut membuang perubahan itu.",
+      "unnamed": "Anda telah mengubah entri tersebut sejak itu, dan mengurungkan sekarang akan ikut membuang perubahan itu.",
+      "separator": ", "
+    }
+  },
+  "write": {
+    "refused": "Itu tidak tersimpan",
+    "didNotFit": "Ada bagian entri itu yang tidak sesuai."
+  },
+  "announce": {
+    "stickyRemoved": "Catatan dihapus"
+  },
+  "handover": {
+    "never": "Perangkat ini belum pernah ikut transfer, jadi tidak ada salinan entri ini selain di sini.",
+    "clean": {
+      "today": "Transfer terakhir hari ini, dan belum ada yang ditulis di sini sejak itu — perangkat lain menyimpan entri yang sama.",
+      "yesterday": "Transfer terakhir kemarin, dan belum ada yang ditulis di sini sejak itu — perangkat lain menyimpan entri yang sama.",
+      "daysAgo": "Transfer terakhir {{ago}}, dan belum ada yang ditulis di sini sejak itu — perangkat lain menyimpan entri yang sama."
+    },
+    "drifted": {
+      "today_other": "Transfer terakhir hari ini, dan {{count}} perubahan telah dibuat di sini sejak itu. Perangkat lain tertinggal sebanyak itu.",
+      "yesterday_other": "Transfer terakhir kemarin, dan {{count}} perubahan telah dibuat di sini sejak itu. Perangkat lain tertinggal sebanyak itu.",
+      "daysAgo_other": "Transfer terakhir {{ago}}, dan {{count}} perubahan telah dibuat di sini sejak itu. Perangkat lain tertinggal sebanyak itu."
+    }
+  },
+  "backup": {
+    "records_other": "{{count}} entri",
+    "links_other": "{{count}} tautan",
+    "documents_zero": "tanpa dokumen",
+    "documents_other": "{{count}} dokumen",
+    "summary": "{{records}}, {{links}}, {{documents}}",
+    "summaryLoss": "{{records}}, {{links}}, {{documents}} — di antaranya {{loss}}",
+    "both": "{{a}} dan {{b}}",
+    "leftOut": "{{what}} tidak dapat dibaca dan akan dilewati",
+    "changed_other": "{{count}} entri akan kembali dalam keadaan berubah",
+    "leftOutAndChanged": "{{leftOut}}, dan {{changed}}",
+    "replacesAll": {
+      "computer": "Memulihkan akan mengganti semua entri dan semua dokumen yang Anda miliki sekarang",
+      "phone": "Memulihkan akan mengganti semua entri dan semua dokumen di ponsel ini"
+    },
+    "replacesKept": {
+      "computer_other": "Memulihkan akan mengganti semua entri yang Anda miliki sekarang dan semua dokumen, kecuali {{count}} entri yang datang tanpa dokumennya, yang salinannya di sini tetap disimpan",
+      "phone_other": "Memulihkan akan mengganti semua entri di ponsel ini dan semua dokumen, kecuali {{count}} entri yang datang tanpa dokumennya, yang salinannya di sini tetap disimpan"
+    }
+  }
+}

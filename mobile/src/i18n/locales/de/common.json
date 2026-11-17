@@ -3,7 +3,8 @@
     "label": "Sprache",
     "description": "Die Sprache, in der jojo angezeigt wird. Deine Einträge bleiben in der Sprache, in der du sie geschrieben hast.",
     "system": "Wie dieses Gerät ({{name}})",
-    "restartForDirection": "Arabisch wird nach einem Neustart von jojo von rechts nach links angezeigt."
+    "restartRtl": "{{name}} wird nach dem Neustart von jojo von rechts nach links angezeigt.",
+    "restartLtr": "{{name}} wird nach dem Neustart von jojo von links nach rechts angezeigt."
   },
   "actions": {
     "undo": "Rückgängig",

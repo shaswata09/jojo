@@ -1,0 +1,51 @@
+{
+  "chatWithJojo": "Chatta con jojo",
+  "newConversation": "Nuova conversazione",
+  "newAboutOpen": "Nuova conversazione sulla candidatura aperta",
+  "hideConversations": "Nascondi conversazioni",
+  "showConversations": "Mostra conversazioni",
+  "undo": "Annulla",
+  "overflow_one": "{{count}} altra conversazione aperta",
+  "overflow_many": "{{count}} di altre conversazioni aperte",
+  "overflow_other": "{{count}} altre conversazioni aperte",
+  "grip": {
+    "labelCorner": "Sposta la chat lateralmente — nell'angolo. I tasti freccia la spostano; il doppio clic la riporta nell'angolo.",
+    "labelFarLeft": "Sposta la chat lateralmente — all'estrema sinistra. I tasti freccia la spostano; il doppio clic la riporta nell'angolo.",
+    "labelFarRight": "Sposta la chat lateralmente — all'estrema destra. I tasti freccia la spostano; il doppio clic la riporta nell'angolo.",
+    "labelPartWay": "Sposta la chat lateralmente — al {{percent}}% verso sinistra. I tasti freccia la spostano; il doppio clic la riporta nell'angolo.",
+    "labelPartWayRight": "Sposta la chat lateralmente — al {{percent}}% verso destra. I tasti freccia la spostano; il doppio clic la riporta nell'angolo.",
+    "title": "Trascina per spostare la chat · doppio clic per riportarla nell'angolo"
+  },
+  "prompts": {
+    "about": {
+      "left": "Cosa resta da fare per questa candidatura?",
+      "followUp": "Scrivi un'email di sollecito per questa",
+      "summarise": "Riassumi questa candidatura"
+    },
+    "general": {
+      "waiting": "Cosa sto aspettando?",
+      "noDeadline": "Quali candidature non hanno una scadenza?"
+    }
+  },
+  "window": {
+    "label": "Conversazione: {{title}}",
+    "back": "Torna alle conversazioni",
+    "working": "Al lavoro",
+    "openInAssistant": "Apri nell'Assistente",
+    "open": "Apri questa conversazione",
+    "minimise": "Riduci a icona questa conversazione",
+    "close": "Chiudi questa conversazione",
+    "closeTitle": "Chiudi: resta tra le tue conversazioni",
+    "about": "Su <name>{{name}}</name>",
+    "detachAria": "Rendi questa conversazione non legata a nulla in particolare",
+    "unfileAria": "Scollega questa conversazione dalla candidatura",
+    "detachTitle": "Non riguarda questa candidatura",
+    "unfileTitle": "Scollega da questa candidatura",
+    "notConfigured": "Collega un modello in <settings>Impostazioni</settings> per chattare con jojo qui. Tutto resta su questo dispositivo.",
+    "askAbout": "Chiedi qualsiasi cosa su {{name}}: jojo sa che è questa la candidatura che intendi.",
+    "askGeneral": "Chiedi a jojo di trovare qualcosa, aggiungere una candidatura o farne avanzare una.",
+    "composerLabel": "Scrivi a jojo in {{title}}",
+    "placeholderAbout": "Chiedi di {{org}}…",
+    "placeholder": "Chiedi a jojo…"
+  }
+}

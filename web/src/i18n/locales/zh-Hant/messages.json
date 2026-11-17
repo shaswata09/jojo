@@ -1,0 +1,295 @@
+{
+  "readCancelled": "已取消讀取。",
+  "backup": {
+    "prompt": {
+      "never_other": "jojo 中有 {{count}} 筆紀錄還沒有備份。這裡的所有內容都只存在這個瀏覽器中，一旦清除資料或遺失這台電腦就會一併遺失——請下載一份副本，並存放到其他地方。",
+      "since_other": "自 {{day}} 上次備份以來，有 {{count}} 筆紀錄已變更。在你下載副本並存放到其他地方之前，它們都只存在這個瀏覽器中。"
+    },
+    "failedTitle": "無法寫入備份",
+    "failedDescription": "你的紀錄沒有變更，也沒有儲存任何內容。如果是瀏覽器封鎖了下載，請檢查它的下載設定。",
+    "documentsNotReady": "文件索引尚未載入完成，所以現在備份會顯示你沒有任何文件。沒有寫入任何內容。",
+    "documentsUnreadable": "已儲存的文件全都無法讀取，所以備份只會包含紀錄。沒有寫入任何內容。",
+    "savedTitle": "已儲存備份",
+    "startedTitle": "已開始備份",
+    "savedAll": "{{name}} 包含你的紀錄和你附加的每一份文件。",
+    "savedSome_other": "{{name}} 包含你的紀錄，以及 {{total}} 份文件中的 {{written}} 份——有 {{count}} 份無法讀取，未包含在內。",
+    "startedAll": "請在你的下載資料夾中尋找 {{name}}。它包含你的紀錄和你附加的每一份文件。",
+    "startedSome_other": "請在你的下載資料夾中尋找 {{name}}。它包含你的紀錄，以及 {{total}} 份文件中的 {{written}} 份——有 {{count}} 份無法讀取，未包含在內。"
+  },
+  "extension": {
+    "stale": "這個瀏覽器中的 jojo 擴充功能比這個頁面舊，無法處理這項要求。請更新它：在瀏覽器的擴充功能頁面中，對 jojo 按「重新載入」——或者，如果你是從「設定」安裝的，請在那裡重新下載，並載入新資料夾來取代舊的。未封裝的擴充功能絕不會自動更新。",
+    "oldScanner": "（這個瀏覽器中的 jojo 擴充功能是舊版，無法跟著求職網站前往它自己的子網域，也無法按下「載入更多」。請在瀏覽器的擴充功能頁面中，對 jojo 按「重新載入」。）",
+    "noAnswerBoard": "jojo 瀏覽器擴充功能沒有回應，所以無法讀取任何求職網站。jojo 要靠它才能開啟你已登入的頁面；安裝程式在「設定」中。",
+    "boardUnreadable": "無法讀取這個求職網站。",
+    "pageUnsaved": "無法儲存這個頁面。",
+    "hostDidNotLoad": "{{host}} 沒有載入——可能是連結有誤、網站停擺，或你處於離線狀態。請在分頁中開啟它，看看顯示了什麼。",
+    "noAnswerPage": "jojo 瀏覽器擴充功能沒有回應，所以無法開啟頁面。安裝程式在「設定」中。",
+    "captureTimeout": "jojo 擴充功能已開啟頁面，但沒有及時完成儲存。非常龐大的頁面可能需要更久——請再試一次，或開啟頁面後使用擴充功能的「擷取」按鈕。",
+    "noAnswerReader": "jojo 瀏覽器擴充功能沒有回應，所以無法連上讀取器。這個頁面要靠它才能和你電腦上的讀取器溝通；安裝程式在「設定」中。",
+    "linkSwitchedOff": "連結已關閉。",
+    "noAnswerLink": "jojo 瀏覽器擴充功能沒有回應。在從網路提供的 jojo 上，要靠它才能將連結傳到 jojo-bridge；安裝程式在「設定」中。",
+    "noAnswerProvider": "jojo 瀏覽器擴充功能沒有回應，所以無法連上供應商。不傳送 CORS 標頭的供應商只能透過它呼叫；安裝程式在「設定」中。"
+  },
+  "posting": {
+    "localTarget": "這個位址在這台電腦或你自己的網路上，不是求職網站——jojo 不會開啟這類位址。",
+    "nothingToReadWith": "讀取職缺需要 jojo 瀏覽器擴充功能（它會像你一樣開啟頁面並儲存），或文件讀取器（它會擷取頁面）。這個瀏覽器中兩者都尚未設定——兩者都在「設定」中。",
+    "noBackgroundRoute": "要在你查看建議之前先讀取它們，需要 jojo 瀏覽器擴充功能。文件讀取器只用於你自己開啟的職缺。",
+    "notStored": "頁面已讀取，但這個瀏覽器不肯儲存——可能是 jojo 的空間不足。沒有保留任何內容；請釋出一些空間後再試一次。",
+    "nearlyEmptyExtension": "這個頁面傳回的內容幾乎是空的。可能是還沒載入完成，或需要你登入——請在分頁中開啟它，等它顯示職缺後再試一次。",
+    "nearlyEmptyReader": "這個頁面傳回的內容幾乎是空的。用 JavaScript 呈現的求職網站，對瀏覽器以外的程式只會傳回空白框架——請安裝 jojo 擴充功能，它會像你一樣開啟頁面。",
+    "notSaved": "這個職缺尚未儲存，所以沒有可以保留的頁面。",
+    "askedTwice": "詢問了兩次，結果相同。"
+  },
+  "fill": {
+    "duplicate": {
+      "id": "兩個職缺的職缺編號相同。",
+      "url": "兩者是同一個職缺網址。",
+      "name": "雇主和職務相同。"
+    },
+    "deletedBefore": "草稿在職缺讀取之前就被刪除了。",
+    "deletedDuring": "草稿在讀取職缺的過程中被刪除了。",
+    "updateFailed": "無法更新草稿。"
+  },
+  "store": {
+    "remoteChangeTitle": "已從另一個分頁更新",
+    "remoteChangeDescription": "你的紀錄已重新載入，所以這個分頁的復原紀錄已清除。",
+    "heldTitle": "另一個 jojo 分頁正開著資料庫",
+    "heldDescription": "只要那個分頁關閉，資料庫就會被刪除。請關閉其他分頁後再試一次。",
+    "deleteFailedTitle": "無法刪除資料庫",
+    "deleteFailedDescription": "{{error}}。可能還有其他分頁開著它。",
+    "demoNotLoaded": "示範資料沒有載入",
+    "recordsNotCleared": "紀錄沒有清除",
+    "writeFailedDescription": "{{error}}你的紀錄沒有變更。"
+  },
+  "fileDelete": {
+    "refusedTitle": "沒有刪除成功",
+    "stillInVault": "{{name}} 仍在保管庫中。",
+    "deletedTitle": "已刪除 {{name}}",
+    "deletedUnknown": "這一列、它的關鍵字，以及 jojo 保留的任何副本都會刪除。你電腦上的原始檔案不受影響。",
+    "deletedWithCopy": "這一列、它的關鍵字，以及 jojo 保留的文件副本都會刪除。你電腦上的原始檔案不受影響。",
+    "deletedNoCopy": "這一列和它的關鍵字會刪除。這份文件沒有儲存的副本，所以不會遺失任何內容。",
+    "undo": "復原",
+    "lostTitle": "{{name}} 已還原，但沒有它的文件",
+    "lostDescription": "這一列和它的關鍵字已還原，但儲存的副本無法還原。請再次拖放檔案以附加它。"
+  },
+  "jobs": {
+    "readyTitle": "「{{label}}」已完成",
+    "readyDescription": "已儲存在它所針對的申請底下。",
+    "failedTitle": "「{{label}}」沒有完成"
+  },
+  "pdf": {
+    "passwordNeeded": "這份 PDF 需要密碼才能開啟，所以無法在這裡編輯。",
+    "unreadable": "無法將這個檔案當作 PDF 讀取。{{detail}}",
+    "chooseOne": "請至少選擇一份要合併的 PDF。",
+    "pageNotIn_other": "{{name}} 共有 {{count}} 頁，所以沒有第 {{page}} 頁。",
+    "emptySelection": "選取範圍中沒有任何頁面。",
+    "keepOnePage": "文件至少要保留一頁。",
+    "planOutOfRange_other": "這份文件共有 {{count}} 頁，但計畫要求第 {{page}} 頁。",
+    "noCanvas": "這個瀏覽器無法為頁面提供繪製用的畫布。",
+    "range": {
+      "noPages": "這份文件沒有任何頁面。",
+      "emptyPart": "兩個逗號之間有一段空白的範圍。",
+      "partNamesNoPages": "「{{part}}」沒有指定任何頁面。",
+      "backwards": "「{{part}}」是倒著數的。請寫成 {{to}}-{{from}}。",
+      "notANumber": "「{{part}}」不是頁碼。",
+      "namesNoPages": "這個範圍沒有指定任何頁面。",
+      "fromOne": "頁碼從 1 開始。",
+      "pastEnd": "這份文件到第 {{count}} 頁為止，所以沒有第 {{page}} 頁。"
+    },
+    "drop": {
+      "notPdf_other": "{{names}} 不是 PDF",
+      "leftOut_other": "已略過 {{names}}——這項功能一次只能處理一份文件",
+      "one": "{{part}}。",
+      "both": "{{first}}；{{second}}。",
+      "two": "{{first}}和{{second}}",
+      "three": "{{first}}、{{second}}和{{third}}",
+      "many": "其中 {{count}} 個檔案"
+    },
+    "colour": {
+      "yellow": "黃色",
+      "green": "綠色",
+      "blue": "藍色",
+      "pink": "粉紅色",
+      "orange": "橘色"
+    }
+  },
+  "noteSize": {
+    "small": "小",
+    "normal": "一般",
+    "large": "大",
+    "huge": "特大"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "申請",
+      "organisation": "機構",
+      "role": "職務",
+      "item": "時間軸項目",
+      "keyword": "關鍵字",
+      "link": "連結",
+      "file": "檔案",
+      "snippet": "片段",
+      "posting": "已儲存的職缺",
+      "match": "職缺偵察結果",
+      "source": "來源",
+      "background": "關於你",
+      "claim": "關係"
+    },
+    "savedAgo": "{{ago}}儲存",
+    "fit": "契合度 {{fit}}%",
+    "count": {
+      "matches": "符合項目",
+      "connections": "連結數",
+      "hops": "跳數",
+      "hop": "跳數"
+    },
+    "empty": {
+      "noMatch": "你的紀錄中沒有符合這個模式的內容。",
+      "noneMissing": "沒有任何紀錄缺少這個連結——這類紀錄每一筆都有。",
+      "noPath": "沒有路徑——在你的儲存區中，這兩筆紀錄之間沒有任何連結。",
+      "noPathBetween": "這兩筆紀錄之間沒有路徑。"
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "沒有排定後續追蹤的申請",
+        "hint": "讓人錯失面試機會的漏洞。"
+      },
+      "tagged": {
+        "label": "所有標記為「推薦」的項目",
+        "hint": "一個關鍵字，橫跨所有類型的紀錄。"
+      },
+      "repeatOrgs": {
+        "label": "我申請過不只一次的機構",
+        "hint": "同一個雇主的兩份申請，來自同一個機構節點。"
+      },
+      "looseReminders": {
+        "label": "沒有連結到任何申請的提醒",
+        "hint": "你會去做、卻不知道是為了什麼的工作。"
+      },
+      "unusedFiles": {
+        "label": "沒有任何申請使用的檔案",
+        "hint": "閒置在保管庫中的文件。"
+      },
+      "bareApplications": {
+        "label": "在保管庫中沒有歸檔任何內容的申請",
+        "hint": "沒有連結、檔案或片段——通常是還沒開始的申請。"
+      },
+      "path": {
+        "label": "兩筆紀錄之間的最短路徑",
+        "hint": "某個檔案和你申請的某個職缺之間有什麼關係。"
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "雇主",
+      "position": "職位",
+      "postingLink": "職缺連結",
+      "location": "地點",
+      "appliedOn": "申請日期",
+      "stage": "階段",
+      "highlight": "重點",
+      "notes": "給你的備註",
+      "materials": "已寄送資料"
+    },
+    "fileStem": "{{person}}——申請清單 {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "這個瀏覽器中沒有儲存這份文件的副本，所以沒有內容可以讀取。",
+    "noReader": "沒有連接文件讀取器，所以無法讀取這個檔案的內容。可以在「設定」中填入它的位址。",
+    "noReaderToTryHarder": "{{reason}}沒有連接文件讀取器來進一步嘗試——可以在「設定」中填入它的位址。",
+    "maybeScan": "無法從這份文件讀出任何內容——它可能是掃描檔。",
+    "noAddress": "還沒有位址。請參閱「設定」。",
+    "tooLarge": "這份文件有 {{size}} MB，但讀取器最多只接受 {{max}} MB。"
+  },
+  "network": {
+    "mixedPrivate": "這個頁面使用 https，而瀏覽器禁止它呼叫一般的 http 位址——請安裝 jojo 擴充功能，它會替你把這一段轉送到你自己的網路。或者，改用 http 提供 jojo。",
+    "mixedPublic": "這個頁面使用 https，而瀏覽器禁止它呼叫一般的 http 位址。請改用 http 提供 jojo，或將模型放在這台電腦上、你自己的網路中，或 https 後方——擴充功能可以轉送這些位址，但無法轉送公用網際網路上的一般 http 位址。",
+    "cors": "這個頁面和該位址都使用 https，所以這不是混合內容封鎖。可能的原因是 CORS：伺服器回應時沒有附上瀏覽器讀取回應所需的標頭。雲端供應商通常不會傳送這些標頭，這正是 jojo 擴充功能的用途——請確認它已安裝並啟用。",
+    "unknown": "瀏覽器沒有說明原因。可能是那裡沒有任何程式在接聽，或是伺服器回應時沒有附上瀏覽器讀取回應所需的 CORS 標頭——這個應用程式連線的兩種服務在某些情況下都會這樣，所以即使伺服器正在執行，也可能出現這種失敗。"
+  },
+  "mcpLink": {
+    "notBridge": "在 {{address}} 回應的不是 jojo-bridge（或是它的舊版）。",
+    "displaced": "另一個 jojo 分頁正占用著連結。",
+    "bridgeStatus": "jojo-bridge 回應了 {{status}}。",
+    "otherTab": "這個瀏覽器中的另一個 jojo 分頁正在負責連結；那個分頁關閉後，就會由這個分頁接手。"
+  },
+  "roleScopeEmpty": {
+    "title": "沒有這些職務的申請",
+    "description": "頂端列的職務篩選條件隱藏了這張圖表計算的所有申請。",
+    "showAll": "顯示所有職務"
+  },
+  "create": {
+    "newApplication": "新增申請",
+    "fromLink": {
+      "label": "從連結建立申請",
+      "hint": "模型會讀取職缺並填寫表單"
+    },
+    "newReminder": "新增提醒",
+    "newEvent": "新增活動",
+    "draftMessage": {
+      "label": "草擬訊息",
+      "hint": "從你的電子郵件片段開始——不會產生任何內容"
+    },
+    "saveLink": {
+      "label": "儲存連結",
+      "hint": "開啟保管庫的連結工具"
+    },
+    "savePosting": {
+      "label": "儲存職缺",
+      "hint": "開啟職缺偵察"
+    }
+  },
+  "stroke": {
+    "tap": "輕觸",
+    "doubleTap": "點兩下",
+    "hold": "按住",
+    "up": "向上滑動",
+    "down": "向下滑動",
+    "side": "左右滑動",
+    "diagonal": "斜向輕撥",
+    "backForth": "來回滑動",
+    "zigzag": "左右鋸齒",
+    "scribbleUp": "上下塗畫",
+    "circle": "圓形",
+    "square": "方形",
+    "vee": "V（或打勾）",
+    "peak": "Λ（山峰）",
+    "zed": "Z",
+    "arc": "弧形（C 字）",
+    "ell": "L",
+    "triangle": "三角形",
+    "other": "其他任何筆劃"
+  },
+  "move": {
+    "nod": "點頭",
+    "shake": "搖頭",
+    "hi": "打招呼",
+    "bow": "鞠躬",
+    "leanIn": "湊近",
+    "wobble": "搖晃",
+    "bounce": "彈跳",
+    "spin": "旋轉",
+    "recoil": "後退",
+    "startle": "嚇一跳",
+    "dance": "跳舞",
+    "shrug": "聳肩",
+    "lookAround": "東張西望",
+    "hopSpin": "跳躍旋轉",
+    "stretch": "伸懶腰",
+    "flex": "秀肌肉",
+    "jab": "連續出拳",
+    "powerUp": "集氣",
+    "doze": "打瞌睡",
+    "wink": "眨眼",
+    "love": "比愛心",
+    "robot": "機器人舞",
+    "jazz": "爵士手",
+    "point": "指向",
+    "hero": "英雄姿勢",
+    "handsUp": "舉起雙手",
+    "disco": "迪斯可",
+    "typing": "打字",
+    "drumroll": "擊鼓"
+  }
+}

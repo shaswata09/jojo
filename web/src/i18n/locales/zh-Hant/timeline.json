@@ -1,0 +1,113 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "新增提醒",
+        "event": "新增活動"
+      },
+      "edit": {
+        "reminder": "編輯提醒",
+        "event": "編輯活動"
+      }
+    },
+    "description": "兩者都是同一筆紀錄——它會依你設定的日期出現在行事曆上；只要標題旁的開關是開啟的，也會列在保管庫的提醒清單中。"
+  },
+  "form": {
+    "title": {
+      "label": "標題",
+      "error": "請取一個你認得出來的標題。",
+      "placeholder": {
+        "reminder": "例如：追問招募人員",
+        "event": "例如：委員會 Zoom 會議"
+      }
+    },
+    "remind": {
+      "label": "顯示在提醒中",
+      "on": "會列在保管庫中並附上勾選方塊，也會顯示在行事曆的對應日期上。",
+      "off": "只會顯示在行事曆的對應日期上——保管庫中不會有勾選方塊。"
+    },
+    "kind": {
+      "label": "類型",
+      "hintFollowUp": "後續追蹤也會顯示在儀表板的「待辦後續追蹤」中，直到你勾選完成為止。",
+      "hint": "它在行事曆和提醒清單中顯示的圖示。"
+    },
+    "detail": {
+      "label": "詳細說明",
+      "hint": "一行背景說明，顯示在標題下方。"
+    },
+    "more": {
+      "label": "更多詳細資料",
+      "empty": "備註、關鍵字",
+      "filledNote": "備註",
+      "filledKeywords": "關鍵字",
+      "filledBoth": "備註 · 關鍵字"
+    },
+    "note": {
+      "label": "備註",
+      "hint": "你自己的隨手筆記。與詳細說明分開存放，所以編輯時絕不會被覆寫。"
+    },
+    "keywords": {
+      "label": "關鍵字",
+      "hint": "與申請、檔案和連結共用——用其中一個關鍵字篩選，就能找到所有相關項目。"
+    },
+    "delete": "刪除",
+    "cancel": "取消",
+    "save": "儲存變更",
+    "add": {
+      "reminder": "新增提醒",
+      "event": "新增活動"
+    }
+  },
+  "schedule": {
+    "date": "日期",
+    "dateError": "請選擇日期——沒有日期的項目無處可顯示。",
+    "quick": {
+      "today": "今天",
+      "tomorrow": "明天",
+      "inWeek": "7 天後"
+    },
+    "allDay": {
+      "label": "整天",
+      "description": "關閉後可設定開始時間和長度，並顯示在行事曆的小時格線上。"
+    },
+    "startTime": "開始時間",
+    "length": "長度",
+    "durations": {
+      "min15": "15 分鐘",
+      "min30": "30 分鐘",
+      "min45": "45 分鐘",
+      "hour1": "1 小時",
+      "hour1_5": "1.5 小時",
+      "hour2": "2 小時",
+      "hour3": "3 小時"
+    }
+  },
+  "application": {
+    "label": "相關申請",
+    "hint": "建立連結後，每份申請都會列出這個項目，這個項目也能連回其中任何一份申請。",
+    "notLinked": "未連結",
+    "count_other": "{{count}} 份申請",
+    "searchLabel": "搜尋要連結的申請",
+    "searchPlaceholder": "搜尋申請…",
+    "none": "還沒有任何申請。",
+    "noMatch": "沒有符合的申請。",
+    "clear": "清除已連結的申請",
+    "open": "開啟 {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "已新增「{{title}}」",
+    "updated": "已更新「{{title}}」",
+    "inReminders": "{{when}}——以提醒的形式列在提醒中",
+    "inRemindersAndFollowUps": "{{when}}——以提醒的形式列在提醒中，也列在「待辦後續追蹤」中",
+    "calendarOnly": "{{when}}——只顯示在行事曆上",
+    "undo": "復原",
+    "deleteFailed": "沒有刪除成功",
+    "stillThere": "「{{title}}」仍在行事曆上。",
+    "stillThereUnnamed": "這則提醒仍在行事曆上。",
+    "deleted": "已刪除「{{title}}」",
+    "deletedUnnamed": "已刪除提醒",
+    "goneBoth": "已從提醒清單和行事曆中移除。",
+    "goneCalendar": "已從行事曆中移除。"
+  }
+}

@@ -1,0 +1,556 @@
+{
+  "common": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "undo": "Geri al",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "close": "Kapat",
+    "duplicate": "Kopyala",
+    "deleteFailed": "Silinmedi",
+    "deleted": "{{title}} silindi",
+    "unsaved": "Kaydedilmemiş değişiklikler",
+    "saved": "{{title}} kaydedildi",
+    "showIt": "Göster",
+    "copyBlocked": "Kopyalama tarayıcı tarafından engellendi",
+    "updated": "{{title}} güncellendi",
+    "saveChanges": "Değişiklikleri kaydet"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Hiçbir başvurunun altında dosyalanmamış dosyalar",
+      "label": "Dosyalanmamış"
+    },
+    "inlineEdit": {
+      "needsName": "Bir dosyanın adı olmalı"
+    },
+    "intake": {
+      "tooLarge": "{{name}} kontrol edilemeyecek kadar büyüktü",
+      "tooLargeDescription": "Dosyalandı; jojo onu içindeki tüm web adresleri engellenmiş ve bağlantıları kapatılmış olarak gösterir, böylece burada görüntülemek ağda hiçbir yere ulaşmaz — ama web'den yüklediği her şey eksik olur.",
+      "addresses_one": "{{name}} içinde {{count}} web adresi geçiyor",
+      "addresses_other": "{{name}} içinde {{count}} web adresi geçiyor",
+      "addressesDescription_one": "Bıraktığınız hâliyle dosyalandı; jojo onu bu adres engellenmiş ve bağlantıları kapatılmış olarak gösterir, böylece burada görüntülemek ağda hiçbir yere ulaşmaz. Web'den yüklediği resimler ya da stiller eksik olur.",
+      "addressesDescription_other": "Bıraktığınız hâliyle dosyalandı; jojo onu bu adreslerin hepsi engellenmiş ve bağlantıları kapatılmış olarak gösterir, böylece burada görüntülemek ağda hiçbir yere ulaşmaz. Web'den yüklediği resimler ya da stiller eksik olur.",
+      "folders_one": "Bu bir klasör gibi görünüyor",
+      "folders_other": "Bunlar klasör gibi görünüyor",
+      "foldersDescription": "jojo belgeleri tek tek dosyalar. Klasörü açın ve içindeki dosyaları bırakın.",
+      "reattached": "{{name}} yeniden eklendi",
+      "reattachedDescription": "Satır burada belgesi olmadan duruyordu. Artık bir belgesi var.",
+      "stillUnsaved": "{{name}} yine kaydedilemedi",
+      "stillUnsavedDescription": "Bu tarayıcı onu saklamayı yine reddetti — depolaması muhtemelen hâlâ dolu.",
+      "unsaved": "{{name}} dosyalandı ama kaydedilmedi",
+      "unsavedDescription": "Satır burada, ama bu tarayıcı belgeyi saklamayı reddetti — genellikle depolaması dolu olduğu için. Biraz yer açın ve aynı dosyayı yeniden bırakın; ikinci bir satır oluşturmak yerine bu satıra eklenir.",
+      "alreadyHere_one": "Bu dosya zaten burada",
+      "alreadyHere_other": "Bu dosyalar zaten burada",
+      "alreadyHereDescription": "Aynı adlı bir dosya zaten kasada.",
+      "addedOne": "{{name}} eklendi",
+      "addedMany_one": "{{count}} dosya eklendi",
+      "addedMany_other": "{{count}} dosya eklendi",
+      "addedHidden": "{{bucket}} altında dosyalandı — anahtar kelime filtresi açıkken gizli.",
+      "addedHiddenVault": "Kasa'da {{bucket}} altında dosyalandı — anahtar kelime filtresi açıkken gizli.",
+      "addedDescription": "{{bucket}} altında dosyalandı ve bu tarayıcıya kaydedildi. Hiçbir yere bir şey yüklenmedi.",
+      "addedDescriptionVault": "Kasa'da {{bucket}} altında dosyalandı ve bu tarayıcıya kaydedildi. Hiçbir yere bir şey yüklenmedi.",
+      "skipped_one": "{{count}} atlandı",
+      "skipped_other": "{{count}} atlandı",
+      "skippedDescription": "Aynı adlı bir dosya zaten kasadaydı.",
+      "foldersSkipped_one": "{{count}} klasör atlandı",
+      "foldersSkipped_other": "{{count}} klasör atlandı"
+    },
+    "row": {
+      "fileName": "Dosya adı",
+      "renameHint": "Bu dosyayı yeniden adlandırın",
+      "onDevice": "bu cihazda",
+      "viewing": "Görüntüleniyor",
+      "preview": "Önizle",
+      "rename": "Yeniden adlandır",
+      "editNote": "Notu düzenle",
+      "addNote": "Not ekle",
+      "changeApplications": "Başvuruları değiştir",
+      "fileUnder": "Bir başvurunun altında dosyala",
+      "readIntoProfile": "Profilinize okut"
+    },
+    "add": "Dosya ekle",
+    "filterLabel": "Dosyaları bölüme göre filtrele",
+    "searchLabel": "Dosyalarda ara",
+    "searchPlaceholder": "Ad ya da not ara",
+    "toast": {
+      "renamed": "{{name}} yeniden adlandırıldı",
+      "was": "Eski adı: {{name}}.",
+      "noteSaved": "{{name}} notu kaydedildi",
+      "noteCleared": "{{name}} notu temizlendi",
+      "noteClearedDescription": "Satırın adı, bölümü ve anahtar kelimeleri korunur.",
+      "filed": "{{name}} — {{filed}}",
+      "filedDescription": "Her birinde görünür ve grafik onu herhangi birinden bulabilir.",
+      "unfiledDescription": "Kasa'da, hiçbir yerin altında dosyalanmadan kalır."
+    },
+    "empty": {
+      "zeroTitle": "Henüz dosya yok",
+      "zeroDescription": "Buraya bir ilan, makale ya da taslak bırakın — ya da bilgisayarınızdan bir tane ekleyin.",
+      "search": "Adında, notunda ya da bölümünde \"{{query}}\" geçen dosya yok.",
+      "both": "{{bucket}} bölümünde seçili anahtar kelimeleri taşıyan dosya yok.",
+      "bucketTitle": "{{bucket}} bölümünde bir şey yok",
+      "bucketDescription_one": "{{count}} dosya diğer bölümler altında dosyalı.",
+      "bucketDescription_other": "{{count}} dosya diğer bölümler altında dosyalı.",
+      "showAll": "Tüm bölümleri göster",
+      "keywordsTitle": "Bu anahtar kelimeleri taşıyan dosya yok",
+      "allFiledTitle": "Her dosya bir başvurunun altında dosyalı",
+      "allFiledDescription_one": "{{count}} dosyanın hepsi. Ortada kalan bir şey yok.",
+      "allFiledDescription_other": "{{count}} dosyanın hepsi. Ortada kalan bir şey yok.",
+      "unfiledKeywords": "Seçili anahtar kelimelerde dosyalanmamış dosya yok.",
+      "unfiledBucket": "{{bucket}} bölümünde dosyalanmamış dosya yok."
+    },
+    "drop": {
+      "title": "{{bucket}} bölümüne eklemek için bırakın",
+      "description": "Ad, boyut ve tür okunur. Hiçbir şey yüklenmez.",
+      "hint": "{{bucket}} bölümüne eklemek için dosyaları bu panelin herhangi bir yerine bırakın."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Bırakılanların hepsi kullanılmadı",
+      "nothing": "Açılacak bir şey yok"
+    },
+    "save": {
+      "nameLabel": "Yeni dosyanın adı",
+      "working": "Çalışıyor…",
+      "alsoDownload": "Ayrıca indir",
+      "footnote": "Sonuç yeni bir belge olarak dosyalanır — başladığınız hiçbir şey değişmez. Burada, tarayıcınızda oluşturulur ve hiçbir parçası yüklenmez.",
+      "workingSpoken": "Belge üzerinde çalışılıyor"
+    },
+    "thumb": {
+      "turned": "{{label}}, {{degrees}} derece döndürüldü",
+      "noPreview": "Önizleme yok"
+    },
+    "source": {
+      "fromVault": "{{label}} (kasadan)",
+      "noneInVault": "Kasada henüz PDF yok",
+      "choose": "Kasadan seçin…",
+      "device": "Bu cihazdan",
+      "fromDevice": "{{label}} (bu cihazdan)",
+      "dropHintEmpty": "Ya da bu kartın herhangi bir yerine bir PDF bırakın. Burada kaydettiğiniz dosyalar bu listede görünür.",
+      "dropHint": "Ya da bu kartın herhangi bir yerine bir PDF bırakın."
+    },
+    "modes": {
+      "merge": "Birleştir",
+      "pages": "Sayfalar",
+      "annotate": "İşaretle"
+    },
+    "editor": {
+      "title": "PDF düzenleyici",
+      "hint": "PDF'leri birleştirin, yeniden düzenleyin ve işaretleyin. Her şey bu tarayıcıda çalışır — hiçbir belge yüklenmez.",
+      "operation": "PDF işlemi",
+      "dropMerge": "Birleştirmeye eklemek için PDF'leri bırakın",
+      "dropOpen": "Açmak için bir PDF bırakın"
+    },
+    "errors": {
+      "gone": "{{name}} artık saklanmıyor; bu yüzden açılamaz.",
+      "noRoom": "{{name}} dosyalandı, ama baytları bu tarayıcının depolamasına sığmadı."
+    },
+    "saved": "{{name}} kaydedildi",
+    "merge": {
+      "move": "{{name}} taşı, {{total}} içinde {{position}}. sırada",
+      "dragToReorder": "Yeniden sıralamak için sürükleyin",
+      "fromDevice": "· bu cihazdan",
+      "allPages": "Tüm sayfalar",
+      "rangeLabel": "{{name}} belgesinden alınacak sayfalar",
+      "remove": "{{name}} belgesini birleştirmeden çıkar",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{documents}} içinden {{pages}}, {{bucket}} altında dosyalandı. Asıl dosyalara dokunulmadı.",
+      "pages_one": "{{count}} sayfa",
+      "pages_other": "{{count}} sayfa",
+      "documents_one": "{{count}} belge",
+      "documents_other": "{{count}} belge",
+      "addLabel": "Birleştirmek için PDF ekle",
+      "empty": "İki ya da daha fazla PDF ekleyin veya bu kartın üzerine bırakın. Yukarıdan aşağıya birleştirilirler — sırayı değiştirmek için bir satırı sol kenarından sürükleyin — ve asıl dosyalar olduğu gibi bırakılır.",
+      "position": "{{total}} içinde {{position}}. sıra, {{name}}",
+      "hint": "1-3, 7, 9- gibi aralıklar belgenin bir kısmını alır. Tamamı için kutuyu boş bırakın.",
+      "action": "Birleştir ve kaydet"
+    },
+    "pages": {
+      "savedDescription_one": "{{count}} sayfa, {{bucket}} altında dosyalandı. {{name}} değişmedi.",
+      "savedDescription_other": "{{count}} sayfa, {{bucket}} altında dosyalandı. {{name}} değişmedi.",
+      "chooseLabel": "Düzenlenecek bir PDF seçin",
+      "empty": "Bir PDF seçin. Sayfaları döndürebilir, çıkarabilir, sıralarını değiştirebilir ve yalnızca bir kısmını tutabilirsiniz.",
+      "kept_one": "· {{count}} sayfadan {{kept}} tanesi tutuldu",
+      "kept_other": "· {{count}} sayfadan {{kept}} tanesi tutuldu",
+      "startOver": "Baştan başla",
+      "page": "Sayfa {{number}}",
+      "was": " · önceden {{number}}",
+      "earlier": "{{number}}. sayfayı öne al",
+      "anticlockwise": "{{number}}. sayfayı saat yönünün tersine döndür",
+      "clockwise": "{{number}}. sayfayı saat yönünde döndür",
+      "remove": "{{number}}. sayfayı kaldır",
+      "later": "{{number}}. sayfayı geriye al",
+      "hint": "Bir sayfayı döndürün, taşıyın ya da kaldırın; bu seçenek etkinleşir.",
+      "action": "Sayfaları kaydet"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Vurgula",
+        "comment": "Yorum"
+      },
+      "savedDescription": "{{summary}}, {{bucket}} altında dosyalandı. {{name}} değişmedi.",
+      "chooseLabel": "İşaretlenecek bir PDF seçin",
+      "empty": "Bir PDF seçin. Vurgulamak için sayfada metin seçin ya da Yorum'a geçip notun ait olduğu yere tıklayın.",
+      "toolLabel": "İşaretleme aracı",
+      "colour": "Vurgu rengi",
+      "previousPage": "Önceki sayfa",
+      "pageOf": "Sayfa {{page}} / {{total}}",
+      "nextPage": "Sonraki sayfa",
+      "zoom": "Yakınlaştır",
+      "highlightHint": "Sayfadaki sözcükleri seçin — satırlar arasında da olabilir — bıraktığınızda işaretlenirler.",
+      "commentHint": "Sayfada yorumun ait olduğu yere tıklayın.",
+      "commentPlaceholder": "Yorum nedir?",
+      "notePlaceholder": "Buna bir not ekleyin…",
+      "commentLabel": "{{number}}. sayfadaki yorum",
+      "noteLabel": "Şu vurgunun notu: {{excerpt}}",
+      "removeMark": "Bu işareti kaldır",
+      "hintEmpty": "Önce bir metni vurgulayın ya da yorum ekleyin.",
+      "hint": "{{summary}} belgeye işlenecek.",
+      "action": "İşaretli hâlini kaydet"
+    }
+  },
+  "instruments": {
+    "calculator": "Hesap makinesi",
+    "pdf": "PDF düzenleyici",
+    "label": "Hangi araç",
+    "loading": "PDF araçları hazırlanıyor…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Bu ilanın bu cihazda kayıtlı bir kopyası yok. Yakalamalar alındıkları yerde saklanır; bu yüzden telefonunuzda yapılan bir yakalama burada değildir — yedekten geri yüklenen bir satır da kaydı sayfa olmadan taşır.",
+      "stored": "Tarayıcılar PDF'leri kendileri gösterir ama {{kind}} dosyalarını göstermez. Belge saklanıyor — Kaydet onu kendi uygulamanıza verir.",
+      "missing": "Tarayıcılar PDF'leri kendileri gösterir ama {{kind}} dosyalarını göstermez — ve bu satırın arkasında başka bir şeye verilecek saklı bir belge yok."
+    },
+    "dialogDescription": "Bu başvurunun altında dosyalanmış {{name}} önizlemesi. Kayda dönmek için Escape tuşuna basın.",
+    "noteSaved": "{{name}} üzerine not kaydedildi",
+    "noteSavedDescription": "Kasanın bu dosyayı listelediği her yerde onunla birlikte görünür.",
+    "noteEmptyDescription": "Not artık boş; bu yüzden bu dosyanın yanında bir şey görünmez.",
+    "captured": "{{name}}, yakalandığı hâliyle",
+    "previewTitle": "{{name}} önizlemesi",
+    "asText": "{{name}}, metin olarak",
+    "truncated": "Yalnızca ilk megabayt gösteriliyor. Kaydet, dosyanın tamamını kendi uygulamanızda açar.",
+    "failedTitle": "Bu tarayıcı önizlemeyi açmadı",
+    "failedDescription": "{{error}}. Dosyanın kasanızdaki kaydı etkilenmedi — yalnızca önizleme oluşturulamadı.",
+    "noPreviewTitle": "Bu tür için önizleme yok",
+    "capturedFrom": "Yakalandığı yer: {{host}}",
+    "fullScreen": "Önizlemeyi tam ekran aç",
+    "fullScreenDescription": "{{name}}, tam ekran, not paneliyle. Geri dönmek için Escape tuşuna basın.",
+    "notes": {
+      "title": "Notlar",
+      "hide": "Not panelini gizle",
+      "show": "Not panelini göster",
+      "hint": "{{name}} ile birlikte saklanır ve bu dosyanın listelendiği her yerde gösterilir.",
+      "label": "{{name}} notları",
+      "placeholder": "Bu belgede önemli olanlar — 3. sayfaya gömülü son tarih, kime sorulacağı…",
+      "saved": "Kaydedildi",
+      "save": "Notu kaydet"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Bu hatırlatıcıyı ertele ya da taşı",
+      "label": "\"{{title}}\" ertele — {{when}}",
+      "heading": "Ertele",
+      "pickDate": "Tarih seçin",
+      "move": "Taşı"
+    },
+    "row": {
+      "markNotDone": "\"{{title}}\" tamamlanmadı olarak işaretle",
+      "markDone": "\"{{title}}\" tamamlandı olarak işaretle",
+      "draftReply": "Yanıt taslağı hazırla"
+    },
+    "relatedTwo": "{{first}} ve {{second}}",
+    "relatedMany_one": "{{count}} başvuru",
+    "relatedMany_other": "{{count}} başvuru",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (kopya)",
+    "add": "Hatırlatıcı ekle",
+    "filterLabel": "Hatırlatıcıları zamanına göre filtrele",
+    "searchLabel": "Hatırlatıcılarda ara",
+    "searchPlaceholder": "Başlık, not ya da iş ara",
+    "toast": {
+      "reopened": "{{title}} yeniden açıldı",
+      "completed": "{{title}} tamamlandı",
+      "reopenedDescription": "Yeniden kendi tarihi altında; takipse ana sayfada da yeniden görünür.",
+      "completedDescription": "Tamamlanan altında dosyalandı ve ana sayfadan kaldırıldı.",
+      "moved": "{{title}} taşındı",
+      "nowDue": "Yeni son tarih {{date}} · {{when}}",
+      "duplicated": "{{title}} kopyalandı",
+      "duplicatedDescription": "Kopya açık ve son tarihi {{date}}.",
+      "stillOnList": "{{title}} hâlâ listede.",
+      "deletedDescription": "{{description}} — bu listeden olduğu gibi takvimden de kaldırıldı."
+    },
+    "empty": {
+      "zeroTitle": "Henüz hatırlatıcı yok",
+      "zeroDescription": "Hatırlatıcı, tarihli bir uyarıdır — bir referansa hatırlatma yapmak, bir portalı kontrol etmek, teşekkür mesajı göndermek. Takip olarak işaretlediğiniz hatırlatıcılar, siz tamamlandı olarak işaretleyene kadar ana sayfada da görünür.",
+      "search": "Başlığında, notunda, türünde ya da başvurusunda \"{{query}}\" geçen hatırlatıcı yok.",
+      "both": "{{bucket}} grubunda seçili anahtar kelimeleri taşıyan hatırlatıcı yok.",
+      "doneTitle": "Henüz tamamlanan bir şey yok",
+      "doneDescription": "Tamamlandı olarak işaretlediğiniz hatırlatıcılar burada toplanır; böylece yanlışlıkla işaretlenen bir hatırlatıcı yine bulunabilir.",
+      "showAll": "Tüm hatırlatıcıları göster",
+      "bucketTitle": "{{bucket}}: bir şey yok",
+      "bucketDescription_one": "{{count}} hatırlatıcı diğer gruplar altında dosyalı.",
+      "bucketDescription_other": "{{count}} hatırlatıcı diğer gruplar altında dosyalı.",
+      "keywordsTitle": "Bu anahtar kelimeleri taşıyan hatırlatıcı yok"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "Bunları gizleyen şey sayfanın üstündeki anahtar kelime filtresi.",
+    "searchTitle": "Bu aramayla eşleşen bir şey yok",
+    "clearSearch": "Aramayı temizle",
+    "filtersTitle": "Bu filtrelerle eşleşen bir şey yok",
+    "clearFilters": "Filtreleri temizle",
+    "showFiled": "Dosyalanmış dosyaları da göster",
+    "bothTitle": "İki filtreyle de eşleşen bir şey yok",
+    "clearBoth": "İki filtreyi de temizle",
+    "clearKeywords": "Anahtar kelimeleri temizle"
+  },
+  "capture": {
+    "posting": "İlan",
+    "savedOne": "{{name}} kasanıza kaydedildi",
+    "savedMany_one": "{{count}} ilan kasanıza kaydedildi",
+    "savedMany_other": "{{count}} ilan kasanıza kaydedildi",
+    "suggested": "Hiçbir başvurunun altında dosyalanmadı. {{name}} eşleşiyor gibi görünüyor — Kasa'nızdaki satırdan dosyalayın.",
+    "unfiled": "Hiçbir başvurunun altında dosyalanmadı. İstediğiniz zaman Kasa'nızdaki satırdan dosyalayın.",
+    "dropped_one": "{{count}} öğe saklanamadı; bu yüzden bazı kısımlar sade görünebilir.",
+    "dropped_other": "{{count}} öğe saklanamadı; bu yüzden bazı kısımlar sade görünebilir.",
+    "unstored_one": "{{count}} tanesi bu cihazda saklanamadı — kayıt var, sayfa yok.",
+    "unstored_other": "{{count}} tanesi bu cihazda saklanamadı — kayıt var, sayfa yok.",
+    "refusedOne": "Bir yakalama saklanamadı",
+    "refusedMany_one": "{{count}} yakalama saklanamadı",
+    "refusedMany_other": "{{count}} yakalama saklanamadı",
+    "waitingOne": "Bir ilan buraya kaydedilmeyi bekliyor.",
+    "waitingMany_one": "{{count}} ilan buraya kaydedilmeyi bekliyor.",
+    "waitingMany_other": "{{count}} ilan buraya kaydedilmeyi bekliyor.",
+    "source": "jojo uzantısıyla yakalandı, hâlâ bu cihazda.",
+    "saving": "Kaydediliyor…",
+    "saveIt": "Kaydet",
+    "saveThem": "Hepsini kaydet"
+  },
+  "picker": {
+    "none": "Başvuru yok",
+    "label": "İlgili başvurular",
+    "searchLabel": "Başvurularda ara",
+    "searchPlaceholder": "Başvurularda ara…",
+    "noneYet": "Henüz başvuru yok.",
+    "noMatch": "Bununla eşleşen başvuru yok.",
+    "unfile": {
+      "record": "Bu kaydı dosyadan çıkar",
+      "file": "Bu dosyayı dosyadan çıkar",
+      "link": "Bu bağlantıyı dosyadan çıkar",
+      "snippet": "Bu metin parçasını dosyadan çıkar",
+      "person": "Bu kişiyi dosyadan çıkar",
+      "conversation": "Bu konuşmayı dosyadan çıkar"
+    }
+  },
+  "snippets": {
+    "openInVault": "Kasa'da aç",
+    "card": {
+      "edit": "Bu metin parçasını düzenle",
+      "moveTo": "Taşı"
+    },
+    "editor": {
+      "editTitle": "Metin parçasını düzenle",
+      "newTitle": "Yeni metin parçası",
+      "title": {
+        "label": "Başlık",
+        "placeholder": "ör. Neden bu bölüm"
+      },
+      "kind": {
+        "label": "Tür",
+        "hint": "Nerede dosyalandığı ve listede hangi etiketi gösterdiği."
+      },
+      "application": {
+        "label": "İlgili başvuru",
+        "hint": "İstediğiniz kadar iş. Ardından her birinin sayfasında görünür."
+      },
+      "text": {
+        "label": "Metin",
+        "hint": "Boyut, renk, kalın, italik, altı çizili ve üstü çizili metinle birlikte kaydedilir. Listeler ve tablolar düz satırlar olarak tutulur.",
+        "placeholder": "Sürekli yeniden yazdığınız paragrafı yazın…"
+      },
+      "fullScreen": "Tam ekran yaz",
+      "keywords": {
+        "label": "Anahtar kelimeler",
+        "hint": "Başvurular, hatırlatıcılar ve dosyalarla ortak — birine göre filtrelemek hepsini bulur."
+      },
+      "savedNote": "Bu tarayıcıdaki veritabanına kaydedildi — geri geldiğinizde burada.",
+      "fullScreenDescription": "Metin parçası tam ekran düzenleniyor. Geri dönmek için Escape tuşuna basın."
+    },
+    "errors": {
+      "title": "Metin parçasına bir ad verin.",
+      "body": "Daha sonra yapıştırmak istediğiniz metni yazın."
+    },
+    "toast": {
+      "filed": "{{tag}} altında dosyalandı, listeden kopyalanmaya hazır.",
+      "filedHidden": "{{tag}} altında dosyalandı — listenin üstündeki filtreler tarafından gizleniyor.",
+      "duplicated": "Kopya {{tag}} altında dosyalandı, yeniden yazılmaya hazır.",
+      "moved": "{{tag}} altında dosyalandı.",
+      "movedOut": "{{tag}} altında dosyalandı — baktığınız {{filter}} listesinin dışında.",
+      "stillThere": "{{title}} hâlâ Kasa'da.",
+      "stillThereUnnamed": "Metin parçası hâlâ Kasa'da.",
+      "deletedUnnamed": "Metin parçası silindi",
+      "deletedDescription": "Metin ve anahtar kelimeleri de onunla birlikte silinir."
+    },
+    "empty": {
+      "zeroTitle": "Henüz metin parçası yok",
+      "zeroDescription": "Sürekli yeniden yazdığınız paragrafları kaydedin — biyografi, neden bu bölüm, takip e-postası.",
+      "search": "Adında, metninde ya da türünde \"{{query}}\" geçen metin parçası yok.",
+      "both": "{{tag}} türünde seçili anahtar kelimeleri taşıyan metin parçası yok.",
+      "bucketTitle": "{{tag}} türünde metin parçası yok",
+      "bucketDescription_one": "{{count}} metin parçası diğer türler altında dosyalı.",
+      "bucketDescription_other": "{{count}} metin parçası diğer türler altında dosyalı.",
+      "showAll": "Tüm türleri göster",
+      "keywordsTitle": "Bu anahtar kelimeleri taşıyan metin parçası yok"
+    },
+    "filterLabel": "Metin parçalarını türe göre filtrele",
+    "searchLabel": "Metin parçalarında ara",
+    "searchPlaceholder": "Ad ya da metin ara",
+    "copied": "Metin parçası panoya kopyalandı",
+    "discard": {
+      "title": "Kaydedilmemiş değişiklikler atılsın mı?",
+      "description": "\"{{title}}\" kaydedilmemiş düzenlemeler içeriyor. Şimdi ayrılmak bunları atar ve bu geri alınamaz.",
+      "untitled": "Başlıksız metin parçası",
+      "confirm": "Değişiklikleri at"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Temel",
+      "scientific": "Bilimsel"
+    },
+    "mode": "Hesap makinesi modu",
+    "ops": {
+      "plus": "artı",
+      "minus": "eksi",
+      "times": "çarpı",
+      "dividedBy": "bölü",
+      "power": "üssü"
+    },
+    "history": "Geçmiş",
+    "plusMinus": "artı ya da eksi",
+    "backspace": "Geri sil",
+    "clear": "Temizle",
+    "empty": "Henüz bir şey yok. Tamamlanan hesaplamalar burada toplanır.",
+    "use": "Kullan: {{value}}"
+  },
+  "links": {
+    "newTab": "Yeni sekmede açılır",
+    "errors": {
+      "title": "Bağlantıya bir başlık verin.",
+      "url": "Bir sunucu adı gerekli, örneğin jobs.rice.edu/postings.",
+      "empty": "Kaydetmek için bir URL yapıştırın."
+    },
+    "fields": {
+      "title": "Başlık",
+      "url": "URL",
+      "category": "Kategori",
+      "applicationHint": "Bağlantıyı bir işin altında dosyalar; böylece iki taraf da birbirinden haberdar olur.",
+      "note": "Not",
+      "noteHint": "Bunun neden saklanmaya değer olduğuna dair tek satır."
+    },
+    "add": "Bağlantı ekle",
+    "toast": {
+      "saved": "{{category}} altında, URL'den okunan bir başlıkla dosyalandı.",
+      "savedHidden": "{{category}} altında dosyalandı — anahtar kelime filtresi açıkken gizli.",
+      "duplicated": "Kopya {{category}} altında dosyalandı, düzenlenmeye hazır.",
+      "deletedDescription": "Kasadan kaldırıldı. İşaret ettiği sayfaya dokunulmadı."
+    },
+    "empty": {
+      "zeroTitle": "Henüz kayıtlı bağlantı yok",
+      "zeroDescription": "Bir URL kaydedin — bir ilan, bir bölüm sayfası, iletişime geçmeniz söylenen bir kişi. Başlık adresten okunur.",
+      "search": "Başlığında, adresinde, notunda ya da kategorisinde \"{{query}}\" geçen bağlantı yok.",
+      "both": "{{category}} kategorisinde seçili anahtar kelimeleri taşıyan bağlantı yok.",
+      "bucketTitle": "{{category}} altında bağlantı yok",
+      "bucketDescription_one": "{{count}} bağlantı diğer kategoriler altında dosyalı.",
+      "bucketDescription_other": "{{count}} bağlantı diğer kategoriler altında dosyalı.",
+      "showAll": "Tüm kategorileri göster",
+      "keywordsTitle": "Bu anahtar kelimeleri taşıyan bağlantı yok"
+    },
+    "filterLabel": "Bağlantıları kategoriye göre filtrele",
+    "searchLabel": "Bağlantılarda ara",
+    "searchPlaceholder": "Başlık, adres ya da not ara",
+    "form": {
+      "label": "Bağlantı kaydet",
+      "hint": "{{category}} altında, URL'den okunan bir başlıkla kaydedilir. İkisini de değiştirmek için herhangi bir satırı düzenleyin.",
+      "placeholder": "Bir URL yapıştırın…",
+      "save": "Bağlantıyı kaydet"
+    }
+  },
+  "people": {
+    "add": "Kişi ekle",
+    "searchLabel": "Kişilerde ara",
+    "searchPlaceholder": "Ad, rol ya da not ara",
+    "applicationsList": "Başvuru listesi",
+    "toast": {
+      "removed": "Kişi kaldırıldı",
+      "saved": "Kişi kaydedildi"
+    },
+    "empty": {
+      "zeroTitle": "Henüz kimse yok",
+      "zeroDescription": "Referanslar, arama komitesi başkanları, işe alım uzmanları — aramanızın geçtiği herkes. Onları adlarının geçtiği işlerin altında dosyalayın; o kayıtlarda da görünsünler.",
+      "searchTitle": "Bununla eşleşen kimse yok",
+      "searchDescription": "Adın bir kısmını, bir rolü ya da nerede olduklarını deneyin."
+    },
+    "namedOn": {
+      "recommender": "Referans verdiği başvurular: {{names}}",
+      "contact": "İrtibat kişisi olduğu yer: {{names}}",
+      "named": "Adının geçtiği yer: {{names}}"
+    },
+    "form": {
+      "name": "Ad",
+      "nameError": "Bunun için gereken tek şey bir ad.",
+      "namePlaceholder": "ör. Prof. Ngozi Okafor",
+      "role": "Rol",
+      "rolePlaceholder": "ör. Referans, arama komitesi başkanı, işe alım uzmanı",
+      "affiliation": "Kurum",
+      "affiliationPlaceholder": "ör. Rice",
+      "affiliationHint": "Bulundukları yer. Başvurduğunuz bir işverene bağlanmaz.",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "namedOn": "Adının geçtiği yer",
+      "namedOnHint": "Mektup yazdığı, değerlendirdiği ya da başkanlık ettiği her iş.",
+      "notePlaceholder": "Ne söyledikleri, size neyi borçlu oldukları, ne zaman hatırlatma yapılacağı.",
+      "save": "Kişiyi kaydet"
+    }
+  },
+  "referee": {
+    "title": "{{name}} için başvurular",
+    "description": "Gönderilecek olanları işaretleyin ve her mektubun neyi öne çıkarmasını istediğinizi yazın. Öne çıkanlarınız ve notlarınız bir dahaki sefer için {{name}} kaydında saklanır.",
+    "include": "Dahil et: {{org}}, {{role}}",
+    "applied": "Başvuru tarihi: {{date}}",
+    "noMaterials": "Dosyalanmış materyal yok",
+    "materials_one": "{{count}} materyal",
+    "materials_other": "{{count}} materyal",
+    "posting": "İlan",
+    "noPosting": "İlan bağlantısı yok",
+    "highlight": "Öne çıkan",
+    "highlightPlaceholder": "ör. öğretim, NSF CAREER, nedensel çıkarım",
+    "highlightHint": "Virgülle ayırın.",
+    "note": "Onlara not",
+    "notePlaceholder": "Başka her şey: son tarih, kime hitap edileceği, bölümün neye önem verdiği.",
+    "format": "Dosya biçimi",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Materyallerimi dahil et",
+    "withMaterialsCount": "Materyallerimi dahil et ({{count}})",
+    "tickOne": "En az bir başvuruyu işaretleyin.",
+    "chosen_one": "{{count}} başvuru",
+    "chosen_other": "{{count}} başvuru",
+    "chosenZip_one": "{{count}} başvuru, tek bir .zip olarak",
+    "chosenZip_other": "{{count}} başvuru, tek bir .zip olarak",
+    "preparing": "Hazırlanıyor…",
+    "download": "İndir",
+    "toast": {
+      "saved": "{{name}} için liste kaydedildi",
+      "zip_one": "{{file}}: tablo ve {{count}} belge, indirilenler klasörünüzde.",
+      "zip_other": "{{file}}: tablo ve {{count}} belge, indirilenler klasörünüzde.",
+      "zipMissing_one": "{{file}} indirilenler klasörünüzde; bu tarayıcının artık okuyamadığı {{count}} belge olmadan.",
+      "zipMissing_other": "{{file}} indirilenler klasörünüzde; bu tarayıcının artık okuyamadığı {{count}} belge olmadan.",
+      "sheet": "{{file}}, indirilenler klasörünüzde.",
+      "failed": "Liste oluşturulamadı",
+      "failedDescription": "Hiçbir şey indirilmedi. Öne çıkanlarınız ve notlarınız korundu.",
+      "highlights": "Öne çıkanlar kaydedildi"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "chatWithJojo": "Mengobrol dengan jojo",
+  "newConversation": "Percakapan baru",
+  "newAboutOpen": "Percakapan baru tentang lamaran yang terbuka",
+  "hideConversations": "Sembunyikan percakapan",
+  "showConversations": "Tampilkan percakapan",
+  "undo": "Urungkan",
+  "overflow_other": "{{count}} percakapan terbuka lainnya",
+  "grip": {
+    "labelCorner": "Geser obrolan ke samping — di sudut. Tombol panah menggesernya; klik dua kali mengembalikannya ke sudut.",
+    "labelFarLeft": "Geser obrolan ke samping — di paling kiri. Tombol panah menggesernya; klik dua kali mengembalikannya ke sudut.",
+    "labelFarRight": "Geser obrolan ke samping — di paling kanan. Tombol panah menggesernya; klik dua kali mengembalikannya ke sudut.",
+    "labelPartWay": "Geser obrolan ke samping — {{percent}}% ke kiri. Tombol panah menggesernya; klik dua kali mengembalikannya ke sudut.",
+    "labelPartWayRight": "Geser obrolan ke samping — {{percent}}% ke kanan. Tombol panah menggesernya; klik dua kali mengembalikannya ke sudut.",
+    "title": "Seret untuk memindahkan obrolan agar tidak menghalangi · klik dua kali untuk mengembalikannya ke sudut"
+  },
+  "prompts": {
+    "about": {
+      "left": "Apa yang masih perlu dilakukan untuk lamaran ini?",
+      "followUp": "Buat draf email tindak lanjut untuk lamaran ini",
+      "summarise": "Ringkas lamaran ini"
+    },
+    "general": {
+      "waiting": "Apa saja yang sedang saya tunggu?",
+      "noDeadline": "Lamaran mana yang tidak punya tenggat?"
+    }
+  },
+  "window": {
+    "label": "Percakapan: {{title}}",
+    "back": "Kembali ke percakapan",
+    "working": "Sedang bekerja",
+    "openInAssistant": "Buka di Asisten",
+    "open": "Buka percakapan ini",
+    "minimise": "Minimalkan percakapan ini",
+    "close": "Tutup percakapan ini",
+    "closeTitle": "Tutup — percakapan tetap ada di daftar percakapan Anda",
+    "about": "Tentang <name>{{name}}</name>",
+    "detachAria": "Jadikan percakapan ini tidak tentang hal tertentu",
+    "unfileAria": "Lepaskan percakapan ini dari lamaran",
+    "detachTitle": "Bukan tentang lamaran ini",
+    "unfileTitle": "Lepaskan dari lamaran ini",
+    "notConfigured": "Hubungkan model di <settings>Pengaturan</settings> untuk mengobrol dengan jojo di sini. Semuanya tetap di perangkat ini.",
+    "askAbout": "Tanyakan apa saja tentang {{name}} — jojo tahu ini lamaran yang Anda maksud.",
+    "askGeneral": "Minta jojo mencari sesuatu, menambahkan lamaran, atau memajukan lamaran.",
+    "composerLabel": "Kirim pesan ke jojo di {{title}}",
+    "placeholderAbout": "Tanyakan tentang {{org}}…",
+    "placeholder": "Tanya jojo…"
+  }
+}

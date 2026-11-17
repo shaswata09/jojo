@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "Hiện {{label}}",
+    "hide": "Ẩn {{label}}"
+  },
+  "allHidden": {
+    "withReset": "Mọi chuỗi dữ liệu đều đang tắt trong chú giải.",
+    "noReset": "Đã ẩn tất cả chuỗi dữ liệu — chọn một mục trong chú giải để hiện lại.",
+    "showAll": "Hiện tất cả chuỗi dữ liệu"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "Biểu đồ radar so sánh {{series}} theo {{axes}}"
+  }
+}

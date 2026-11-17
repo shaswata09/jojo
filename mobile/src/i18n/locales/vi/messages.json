@@ -1,0 +1,275 @@
+{
+  "graph": {
+    "type": {
+      "application": "Đơn ứng tuyển",
+      "org": "Nhà tuyển dụng",
+      "role": "Vị trí",
+      "item": "Ngày hoặc lời nhắc",
+      "file": "Tệp",
+      "link": "Liên kết",
+      "snippet": "Đoạn văn bản",
+      "posting": "Tin tuyển dụng đã lưu",
+      "match": "Gợi ý",
+      "keyword": "Từ khóa"
+    },
+    "isA": "là một",
+    "fit": "Phù hợp {{fit}}%",
+    "query": {
+      "undated": {
+        "question": "Đơn ứng tuyển chưa có ngày nào",
+        "why": "Những đơn này không hiện trên lịch hay trong tuần tới, dù chúng còn đang xét đến đâu."
+      },
+      "untagged": {
+        "question": "Đơn ứng tuyển không mang từ khóa nào",
+        "why": "Một bản ghi chưa ai xếp loại là bản ghi mà không bộ lọc nào tìm ra."
+      },
+      "orphanFiles": {
+        "question": "Tệp chưa xếp vào đơn ứng tuyển nào",
+        "why": "Tài liệu dễ bị lạc; đây là thứ cho biết những tệp nào không có gì trỏ tới."
+      },
+      "orphanLinks": {
+        "question": "Liên kết chưa xếp vào đơn ứng tuyển nào",
+        "why": "Cùng câu hỏi đó cho các tin tuyển dụng và trang bạn đã lưu để quay lại."
+      },
+      "busiest": {
+        "question": "Các nhà tuyển dụng bạn có nhiều việc nhất",
+        "why": "Đếm trên mọi tập hợp cùng lúc — đơn ứng tuyển, ngày, tệp và liên kết."
+      },
+      "unpromoted": {
+        "question": "Gợi ý và tin tuyển dụng chưa bao giờ thành đơn ứng tuyển",
+        "why": "Các cơ hội lặng lẽ bị bỏ quên; không chế độ xem danh sách nào cho biết đó là những cái nào."
+      }
+    },
+    "pattern": {
+      "has": "{{start}} {{rel}} {{end}}",
+      "missing": "{{start}} không {{rel}} {{end}}",
+      "startAny": "Bất kỳ thứ gì",
+      "relAny": "liên kết với",
+      "endAny": "bất kỳ thứ gì",
+      "startType": {
+        "application": "Đơn ứng tuyển",
+        "org": "Nhà tuyển dụng",
+        "role": "Vị trí",
+        "item": "Ngày hoặc lời nhắc",
+        "file": "Tệp",
+        "link": "Liên kết",
+        "snippet": "Đoạn văn bản",
+        "posting": "Tin tuyển dụng đã lưu",
+        "match": "Gợi ý",
+        "keyword": "Từ khóa"
+      },
+      "endType": {
+        "application": "một đơn ứng tuyển",
+        "org": "một nhà tuyển dụng",
+        "role": "một vị trí",
+        "item": "một ngày hoặc lời nhắc",
+        "file": "một tệp",
+        "link": "một liên kết",
+        "snippet": "một đoạn văn bản",
+        "posting": "một tin tuyển dụng đã lưu",
+        "match": "một gợi ý",
+        "keyword": "một từ khóa"
+      }
+    }
+  },
+  "destinations": {
+    "today": {
+      "label": "Hôm nay",
+      "hint": "Những gì cần quyết định"
+    },
+    "apps": {
+      "label": "Đơn ứng tuyển",
+      "hint": "Danh sách và bảng giai đoạn"
+    },
+    "cal": {
+      "label": "Lịch",
+      "hint": "Hạn chót, phỏng vấn và chuẩn bị"
+    },
+    "reminders": {
+      "label": "Lời nhắc",
+      "hint": "Kho lưu trữ · việc cần làm và khi nào"
+    },
+    "links": {
+      "label": "Liên kết",
+      "hint": "Kho lưu trữ · tin tuyển dụng, người và trang"
+    },
+    "files": {
+      "label": "Tệp",
+      "hint": "Kho lưu trữ · tài liệu bạn đã ghi lại"
+    },
+    "snippets": {
+      "label": "Đoạn văn bản",
+      "hint": "Kho lưu trữ · đoạn văn dùng lại"
+    },
+    "tools": {
+      "label": "Công cụ",
+      "hint": "Kho lưu trữ · máy tính"
+    },
+    "scout": {
+      "label": "Trình tìm việc",
+      "hint": "Tìm kiếm đã lưu, gợi ý và tin tuyển dụng"
+    },
+    "stats": {
+      "label": "Thống kê",
+      "hint": "Tỷ lệ, phễu và nên tập trung vào đâu"
+    },
+    "graph": {
+      "label": "Đồ thị",
+      "hint": "Các bản ghi của bạn dưới dạng mạng lưới"
+    },
+    "profile": {
+      "label": "Hồ sơ cá nhân",
+      "hint": "Thông tin cơ bản, tài liệu và từ khóa đối chiếu"
+    },
+    "assistant": {
+      "label": "Trợ lý",
+      "hint": "Ví dụ mẫu cho đến khi kết nối mô hình"
+    },
+    "settings": {
+      "label": "Cài đặt",
+      "hint": "Kết nối, giao diện, từ khóa và dữ liệu của bạn"
+    },
+    "transfer": {
+      "label": "Chuyển dữ liệu",
+      "hint": "Chuyển mọi thứ sang hoặc từ máy tính của bạn"
+    },
+    "guide": {
+      "label": "Cách sử dụng",
+      "hint": "Ba tầng, các màn hình và đồ thị"
+    },
+    "more": {
+      "label": "Thêm",
+      "hint": "Phần còn lại của jojo"
+    }
+  },
+  "createActions": {
+    "newApplication": {
+      "label": "Đơn ứng tuyển mới"
+    },
+    "newApplicationFromLink": {
+      "label": "Đơn ứng tuyển từ liên kết",
+      "hint": "Mô hình đọc tin tuyển dụng và điền vào biểu mẫu"
+    },
+    "newReminder": {
+      "label": "Lời nhắc mới"
+    },
+    "newEvent": {
+      "label": "Sự kiện mới"
+    },
+    "draftMessage": {
+      "label": "Soạn tin nhắn",
+      "hint": "Từ các đoạn văn bản email của bạn — không có gì được tự động tạo ra"
+    },
+    "saveLink": {
+      "label": "Lưu liên kết",
+      "hint": "Mở Kho lưu trữ, công cụ liên kết"
+    },
+    "recordDocument": {
+      "label": "Ghi lại một tài liệu",
+      "hint": "Mở Kho lưu trữ, công cụ tệp"
+    },
+    "savePosting": {
+      "label": "Lưu tin tuyển dụng",
+      "hint": "Mở Trình tìm việc"
+    }
+  },
+  "snooze": {
+    "soon1": "Ngày mai",
+    "later1": "Một ngày sau",
+    "soon3": "3 ngày nữa",
+    "later3": "Ba ngày sau",
+    "soon7": "7 ngày nữa",
+    "later7": "Một tuần sau"
+  },
+  "itemActions": {
+    "reopened": "Đã mở lại {{title}}",
+    "completed": "Đã hoàn thành {{title}}",
+    "reopenedBody": "Đã trở lại danh sách đang mở và lại được tính là việc cần làm.",
+    "completedBody": "Mục này rời khỏi các danh sách đang mở và được tính vào hôm nay — không có gì bị xóa.",
+    "rescheduled": "Đã dời lịch {{title}}",
+    "nowDue": "Giờ đến hạn vào {{date}}, ở đây và trên lịch.",
+    "movedTo": "Đã chuyển sang {{date}}",
+    "copyTitle": "{{title}} (bản sao)",
+    "added": "Đã thêm {{title}}",
+    "copyBody": "{{date}} — bản sao mang cùng các từ khóa.",
+    "deleted": "Đã xóa {{title}}",
+    "deletedReminder": "Đã biến mất khỏi danh sách lời nhắc và khỏi lịch.",
+    "deletedEvent": "Đã biến mất khỏi lịch."
+  },
+  "vaultEmpty": {
+    "keywordsHidThem": "Bộ lọc từ khóa phía trên danh sách là thứ đang ẩn chúng.",
+    "noSearchMatch": "Không có gì khớp với tìm kiếm đó",
+    "noBothMatch": "Không có gì khớp với cả hai bộ lọc",
+    "clearBoth": "Bỏ cả hai bộ lọc",
+    "clearKeywords": "Bỏ từ khóa"
+  },
+  "boardScan": {
+    "badAddress": "Đó không phải địa chỉ tôi mở được.",
+    "timeout": "Trang tuyển dụng đó trả lời quá lâu.",
+    "unreachable": "Không kết nối được tới trang tuyển dụng đó.",
+    "status": "Trang tuyển dụng đó trả lời {{status}}.",
+    "browserOnly": "{{host}} chỉ hiển thị tin tuyển dụng cho trình duyệt thật, nên không đọc được từ điện thoại. Trên máy tính, tiện ích mở rộng jojo có thể đọc nó."
+  },
+  "timelineForm": {
+    "title": "Đặt một tiêu đề mà bạn sẽ nhận ra.",
+    "date": "Hãy chọn một ngày — mục không có ngày sẽ không có chỗ để hiện.",
+    "time": "Hãy dùng giờ dạng 14:30."
+  },
+  "reader": {
+    "tooBig": "Tài liệu đó có dung lượng {{size}} MB, còn trình đọc chỉ nhận tối đa {{max}} MB.",
+    "gone": "Bản sao của tài liệu đó không còn trên thiết bị này.",
+    "empty": "Không đọc được gì từ tài liệu đó — có thể đó là bản quét.",
+    "noAddress": "Chưa có địa chỉ. Xem Cài đặt.",
+    "notConnected": "Chưa kết nối trình đọc tài liệu nào, nên không đọc được nội dung tệp này. Địa chỉ của trình đọc được điền trong Cài đặt.",
+    "noCopy": "Bản ghi đó không có bản sao nào trên thiết bị này, nên không có gì để đọc."
+  },
+  "jobs": {
+    "ready": "{{label}} đã sẵn sàng",
+    "readyBody": "Đã lưu vào đơn ứng tuyển mà nó được viết cho.",
+    "failed": "{{label}} chưa hoàn tất"
+  },
+  "boot": {
+    "corrupt": "không đọc được các bản ghi đã lưu ({{detail}}).",
+    "blocked": "bộ nhớ đang bị thứ khác trên thiết bị này khóa.",
+    "unsupported": "thiết bị này không có bộ nhớ mà ứng dụng dùng được.",
+    "threw": "hoàn toàn không mở được kho dữ liệu.",
+    "banner": "Không lưu vào thiết bị này — {{why}}"
+  },
+  "posting": {
+    "needsReader": "Việc này cần cả trình đọc tài liệu lẫn mô hình — trình đọc là thứ tải trang về. Cài đặt có địa chỉ.",
+    "empty": "Trang đó trả về gần như trống. Các trang tuyển dụng hiển thị bằng JavaScript chỉ gửi một khung trống cho bất cứ thứ gì không phải trình duyệt — hãy mở nó ở đây và lưu trang.",
+    "note": "Được mô hình đọc từ {{url}}",
+    "askedTwice": "Đã hỏi hai lần, cùng một kết quả."
+  },
+  "localService": {
+    "stopped": "Đã dừng trước khi gửi."
+  },
+  "clipboard": {
+    "tooBig": "Quá lớn cho bộ nhớ tạm",
+    "tooBigBody": "Các bản ghi của bạn có dung lượng {{size}} còn bộ nhớ tạm của Android chỉ chứa khoảng {{max}} văn bản. Không có gì được sao chép. Hãy dùng Chuyển dữ liệu để gửi mọi thứ sang máy tính qua mạng cục bộ.",
+    "copied": "Đã sao chép vào bộ nhớ tạm",
+    "copiedBody": "Một bản sao lưu bạn có thể dán vào ghi chú hoặc tệp. Các tài liệu bạn đã đính kèm vẫn ở lại trên điện thoại này — các hàng của chúng được khôi phục mà không có nội dung."
+  },
+  "documents": {
+    "incomplete": "Việc sao chép chưa hoàn tất.",
+    "nothingCopied": "Không có gì được sao chép."
+  },
+  "weekday": {
+    "sun": "CN",
+    "mon": "Th 2",
+    "tue": "Th 3",
+    "wed": "Th 4",
+    "thu": "Th 5",
+    "fri": "Th 6",
+    "sat": "Th 7"
+  },
+  "owed": {
+    "overdue": "Quá hạn",
+    "today": "Hôm nay",
+    "tomorrow": "Ngày mai",
+    "rest": "Phần còn lại của tuần"
+  },
+  "receive": {
+    "declined": "Không có gì thay đổi. Hãy quét lại mã để nhận."
+  }
+}

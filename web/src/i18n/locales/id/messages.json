@@ -1,0 +1,295 @@
+{
+  "readCancelled": "Pembacaan dibatalkan.",
+  "backup": {
+    "prompt": {
+      "never_other": "{{count}} entri di jojo belum ada di cadangan mana pun. Semua yang ada di sini hanya tersimpan di browser ini, jadi membersihkannya atau kehilangan perangkat ini akan menghilangkannya — unduh salinan dan simpan di tempat lain.",
+      "since_other": "{{count}} entri telah berubah sejak cadangan terakhir Anda pada {{day}}. Entri tersebut hanya tersimpan di browser ini sampai Anda mengunduh salinan dan menyimpannya di tempat lain."
+    },
+    "failedTitle": "Cadangan tidak dapat ditulis",
+    "failedDescription": "Entri Anda tidak berubah dan tidak ada yang disimpan. Jika browser Anda memblokir unduhan, periksa pengaturan unduhannya.",
+    "documentsNotReady": "Indeks dokumen belum selesai dimuat, jadi cadangan yang dibuat sekarang akan menyatakan Anda tidak punya dokumen. Tidak ada yang ditulis.",
+    "documentsUnreadable": "Tidak satu pun dokumen tersimpan dapat dibaca, jadi cadangan hanya akan berisi entri. Tidak ada yang ditulis.",
+    "savedTitle": "Cadangan disimpan",
+    "startedTitle": "Pencadangan dimulai",
+    "savedAll": "{{name}} berisi entri Anda dan setiap dokumen yang Anda lampirkan.",
+    "savedSome_other": "{{name}} berisi entri Anda dan {{written}} dari {{total}} dokumen Anda — {{count}} tidak dapat dibaca dan tidak termasuk di dalamnya.",
+    "startedAll": "Cari {{name}} di folder unduhan Anda. Berkas itu berisi entri Anda dan setiap dokumen yang Anda lampirkan.",
+    "startedSome_other": "Cari {{name}} di folder unduhan Anda. Berkas itu berisi entri Anda dan {{written}} dari {{total}} dokumen Anda — {{count}} tidak dapat dibaca dan tidak termasuk di dalamnya."
+  },
+  "extension": {
+    "stale": "Ekstensi jojo di browser ini lebih lama dari halaman ini dan tidak dapat membawa permintaan tersebut. Perbarui ekstensinya: tekan Muat ulang pada jojo di halaman ekstensi browser Anda — atau, jika Anda memasangnya dari Pengaturan, unduh lagi di sana dan muat folder baru sebagai pengganti yang lama. Ekstensi yang tidak dikemas tidak pernah memperbarui dirinya sendiri.",
+    "oldScanner": "(Ekstensi jojo di browser ini adalah versi lama yang tidak dapat mengikuti papan ke subdomainnya sendiri atau menekan “Load more”. Tekan Muat ulang pada jojo di halaman ekstensi browser Anda.)",
+    "noAnswerBoard": "Ekstensi browser jojo tidak menjawab, jadi tidak ada papan yang dapat dibaca. Ekstensi inilah yang memungkinkan jojo membuka halaman tempat Anda sudah masuk; pemasangnya ada di Pengaturan.",
+    "boardUnreadable": "Papan itu tidak dapat dibaca.",
+    "pageUnsaved": "Halaman itu tidak dapat disimpan.",
+    "hostDidNotLoad": "{{host}} tidak termuat — tautannya mungkin salah, situsnya mungkin sedang tidak aktif, atau Anda mungkin luring. Buka di tab untuk melihat pesannya.",
+    "noAnswerPage": "Ekstensi browser jojo tidak menjawab, jadi halaman tidak dapat dibuka. Pemasangnya ada di Pengaturan.",
+    "captureTimeout": "Ekstensi jojo membuka halaman tetapi tidak selesai menyimpannya tepat waktu. Halaman yang sangat berat bisa memerlukan waktu lebih lama — coba lagi, atau buka halamannya dan gunakan tombol Capture di ekstensi.",
+    "noAnswerReader": "Ekstensi browser jojo tidak menjawab, jadi pembaca tidak dapat dihubungi. Ekstensi inilah yang memungkinkan halaman ini berkomunikasi dengan pembaca di perangkat Anda sendiri; pemasangnya ada di Pengaturan.",
+    "linkSwitchedOff": "Tautan dimatikan.",
+    "noAnswerLink": "Ekstensi browser jojo tidak menjawab. Pada salinan jojo yang disajikan dari web, ekstensi inilah yang membawa tautan ke jojo-bridge; pemasangnya ada di Pengaturan.",
+    "noAnswerProvider": "Ekstensi browser jojo tidak menjawab, jadi penyedia tidak dapat dihubungi. Penyedia yang tidak mengirim header CORS hanya dapat dipanggil melalui ekstensi ini; pemasangnya ada di Pengaturan."
+  },
+  "posting": {
+    "localTarget": "Alamat itu ada di komputer ini atau jaringan Anda sendiri, bukan papan lowongan — jojo tidak membuka alamat seperti itu.",
+    "nothingToReadWith": "Membaca lowongan memerlukan ekstensi browser jojo, yang membuka halaman seperti yang Anda lakukan lalu menyimpannya, atau pembaca dokumen, yang mengambilnya. Keduanya belum diatur di browser ini — keduanya ada di Pengaturan.",
+    "noBackgroundRoute": "Membaca saran sebelum Anda melihatnya memerlukan ekstensi browser jojo. Pembaca dokumen hanya dipakai untuk lowongan yang Anda buka sendiri.",
+    "notStored": "Halaman sudah dibaca, tetapi browser ini tidak mau menyimpannya — mungkin ruangnya untuk jojo sudah habis. Tidak ada yang disimpan; kosongkan sebagian ruang dan coba lagi.",
+    "nearlyEmptyExtension": "Halaman itu kembali hampir kosong. Mungkin belum selesai dimuat, atau mungkin meminta Anda masuk — buka di tab, lalu coba lagi setelah lowongannya tampil.",
+    "nearlyEmptyReader": "Halaman itu kembali hampir kosong. Papan yang dirender dengan JavaScript mengirim kerangka kosong ke apa pun selain browser — pasang ekstensi jojo dan ekstensi itu akan membuka halaman seperti yang Anda lakukan.",
+    "notSaved": "Lowongan itu tidak disimpan, jadi tidak ada halaman yang bisa disimpan untuknya.",
+    "askedTwice": "Sudah ditanyakan dua kali, dengan hasil yang sama."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "Kedua lowongan memiliki ID lowongan yang sama.",
+      "url": "Keduanya alamat lowongan yang sama.",
+      "name": "Pemberi kerja dan posisi yang sama."
+    },
+    "deletedBefore": "Draf dihapus sebelum lowongannya sempat dibaca.",
+    "deletedDuring": "Draf dihapus saat lowongannya sedang dibaca.",
+    "updateFailed": "Draf tidak dapat diperbarui."
+  },
+  "store": {
+    "remoteChangeTitle": "Diperbarui dari tab lain",
+    "remoteChangeDescription": "Entri Anda dimuat ulang, jadi riwayat urungkan di tab ini dikosongkan.",
+    "heldTitle": "Tab jojo lain sedang membuka database",
+    "heldDescription": "Database akan dihapus begitu tab itu ditutup. Tutup tab lain, lalu coba lagi.",
+    "deleteFailedTitle": "Database tidak dapat dihapus",
+    "deleteFailedDescription": "{{error}}. Mungkin tab lain masih membukanya.",
+    "demoNotLoaded": "Data demo tidak dimuat",
+    "recordsNotCleared": "Entri tidak dikosongkan",
+    "writeFailedDescription": "{{error}} Entri Anda tidak berubah."
+  },
+  "fileDelete": {
+    "refusedTitle": "Itu tidak terhapus",
+    "stillInVault": "{{name}} masih ada di Brankas.",
+    "deletedTitle": "{{name}} dihapus",
+    "deletedUnknown": "Barisnya, kata kuncinya, dan salinan apa pun yang disimpan jojo ikut dihapus. Berkas asli di komputer Anda tidak tersentuh.",
+    "deletedWithCopy": "Barisnya, kata kuncinya, dan salinan dokumen milik jojo ikut dihapus. Berkas asli di komputer Anda tidak tersentuh.",
+    "deletedNoCopy": "Barisnya dan kata kuncinya dihapus. Tidak ada salinan tersimpan dari berkas ini yang hilang.",
+    "undo": "Urungkan",
+    "lostTitle": "{{name}} kembali tanpa dokumennya",
+    "lostDescription": "Barisnya dan kata kuncinya dipulihkan, tetapi salinan tersimpannya tidak. Letakkan berkasnya lagi untuk melampirkannya."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} sudah siap",
+    "readyDescription": "Disimpan di lamaran yang menjadi tujuan penulisannya.",
+    "failedTitle": "{{label}} tidak selesai"
+  },
+  "pdf": {
+    "passwordNeeded": "PDF itu memerlukan kata sandi untuk dibuka, jadi tidak dapat diedit di sini.",
+    "unreadable": "Berkas itu tidak dapat dibaca sebagai PDF. {{detail}}",
+    "chooseOne": "Pilih setidaknya satu PDF untuk digabungkan.",
+    "pageNotIn_other": "{{name}} memiliki {{count}} halaman, jadi halaman {{page}} tidak ada di dalamnya.",
+    "emptySelection": "Pilihan itu tidak berisi halaman.",
+    "keepOnePage": "Dokumen harus menyisakan setidaknya satu halaman.",
+    "planOutOfRange_other": "Dokumen ini memiliki {{count}} halaman; rencana meminta halaman {{page}}.",
+    "noCanvas": "Browser ini tidak memberikan kanvas untuk menggambar halaman.",
+    "range": {
+      "noPages": "Dokumen itu tidak memiliki halaman.",
+      "emptyPart": "Ada rentang kosong di antara dua koma.",
+      "partNamesNoPages": "'{{part}}' tidak menyebut halaman apa pun.",
+      "backwards": "'{{part}}' menghitung mundur. Tulis sebagai {{to}}-{{from}}.",
+      "notANumber": "'{{part}}' bukan nomor halaman.",
+      "namesNoPages": "Rentang itu tidak menyebut halaman apa pun.",
+      "fromOne": "Halaman dinomori mulai dari 1.",
+      "pastEnd": "Dokumen ini berakhir di halaman {{count}}, jadi halaman {{page}} tidak ada di dalamnya."
+    },
+    "drop": {
+      "notPdf_other": "{{names}} bukan PDF",
+      "leftOut_other": "{{names}} dilewati — fitur ini bekerja pada satu dokumen setiap kali",
+      "one": "{{part}}.",
+      "both": "{{first}}, dan {{second}}.",
+      "two": "{{first}} dan {{second}}",
+      "three": "{{first}}, {{second}}, dan {{third}}",
+      "many": "{{count}} berkas"
+    },
+    "colour": {
+      "yellow": "Kuning",
+      "green": "Hijau",
+      "blue": "Biru",
+      "pink": "Merah muda",
+      "orange": "Oranye"
+    }
+  },
+  "noteSize": {
+    "small": "Kecil",
+    "normal": "Normal",
+    "large": "Besar",
+    "huge": "Sangat besar"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Lamaran",
+      "organisation": "Organisasi",
+      "role": "Posisi",
+      "item": "Item linimasa",
+      "keyword": "Kata kunci",
+      "link": "Tautan",
+      "file": "Berkas",
+      "snippet": "Cuplikan",
+      "posting": "Lowongan tersimpan",
+      "match": "Kecocokan Pencari",
+      "source": "Sumber",
+      "background": "Tentang Anda",
+      "claim": "Relasi"
+    },
+    "savedAgo": "Disimpan {{ago}}",
+    "fit": "Kecocokan {{fit}}%",
+    "count": {
+      "matches": "Kecocokan",
+      "connections": "Koneksi",
+      "hops": "Lompatan",
+      "hop": "Lompatan"
+    },
+    "empty": {
+      "noMatch": "Tidak ada entri Anda yang cocok dengan pola itu.",
+      "noneMissing": "Tidak ada yang kehilangan koneksi itu — setiap entri jenis ini memilikinya.",
+      "noPath": "Tidak ada jalur — kedua entri ini tidak terhubung oleh apa pun di penyimpanan Anda.",
+      "noPathBetween": "Tidak ada jalur di antara kedua entri itu."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Lamaran tanpa jadwal tindak lanjut",
+        "hint": "Celah yang membuat orang kehilangan wawancara."
+      },
+      "tagged": {
+        "label": "Semua yang berlabel Referral",
+        "hint": "Satu kata kunci, di semua jenis entri."
+      },
+      "repeatOrgs": {
+        "label": "Organisasi yang saya lamar lebih dari sekali",
+        "hint": "Dua lamaran di satu pemberi kerja, dari satu simpul organisasi."
+      },
+      "looseReminders": {
+        "label": "Pengingat yang tidak ditautkan ke lamaran mana pun",
+        "hint": "Pekerjaan yang akan Anda lakukan tanpa tahu untuk apa."
+      },
+      "unusedFiles": {
+        "label": "Berkas yang tidak dipakai lamaran mana pun",
+        "hint": "Dokumen yang menganggur di Brankas."
+      },
+      "bareApplications": {
+        "label": "Lamaran tanpa apa pun yang diarsipkan di Brankas",
+        "hint": "Tanpa tautan, berkas, atau cuplikan — biasanya lamaran yang belum dimulai."
+      },
+      "path": {
+        "label": "Jalur terpendek di antara dua entri",
+        "hint": "Bagaimana sebuah berkas dan pekerjaan yang Anda lamar saling terkait."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "Pemberi kerja",
+      "position": "Posisi",
+      "postingLink": "Tautan lowongan",
+      "location": "Lokasi",
+      "appliedOn": "Tanggal melamar",
+      "stage": "Tahap",
+      "highlight": "Sorotan",
+      "notes": "Catatan untuk Anda",
+      "materials": "Materi yang dikirim"
+    },
+    "fileStem": "{{person}} — lamaran {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "Tidak ada salinan dokumen itu yang tersimpan di browser ini, jadi tidak ada yang bisa dibaca.",
+    "noReader": "Tidak ada pembaca dokumen yang terhubung, jadi isi berkas ini tidak dapat dibaca. Alamatnya diisi di Pengaturan.",
+    "noReaderToTryHarder": "{{reason}} Tidak ada pembaca dokumen yang terhubung untuk mencoba lebih keras — alamatnya diisi di Pengaturan.",
+    "maybeScan": "Tidak ada yang dapat dibaca dari dokumen itu — mungkin berupa hasil pindaian.",
+    "noAddress": "Belum ada alamat. Lihat Pengaturan.",
+    "tooLarge": "Dokumen itu berukuran {{size}} MB dan pembaca hanya menerima hingga {{max}} MB."
+  },
+  "network": {
+    "mixedPrivate": "Halaman ini menggunakan https, yang dilarang browser untuk memanggil alamat http biasa — pasang ekstensi jojo, yang meneruskan satu lompatan itu ke jaringan Anda sendiri. Atau sajikan jojo melalui http.",
+    "mixedPublic": "Halaman ini menggunakan https, yang dilarang browser untuk memanggil alamat http biasa. Sajikan jojo melalui http, atau letakkan model di perangkat ini, di jaringan Anda sendiri, atau di balik https — ekstensi dapat meneruskan semua itu, tetapi tidak alamat http biasa di internet publik.",
+    "cors": "Halaman ini dan alamat itu sama-sama https, jadi ini bukan pemblokiran konten campuran. Penyebab yang mungkin adalah CORS: server menjawab tanpa header yang dibutuhkan browser untuk membaca balasan. Penyedia cloud umumnya tidak mengirimnya, dan untuk itulah ekstensi jojo ada — pastikan ekstensi terpasang dan aktif.",
+    "unknown": "Browser tidak mau menyebutkan alasannya. Entah tidak ada yang mendengarkan di sana, atau server menjawab tanpa header CORS yang dibutuhkan browser untuk membaca balasan — kedua layanan yang dihubungi aplikasi ini melakukannya dalam beberapa kasus, jadi server yang sedang berjalan pun bisa gagal dengan cara ini."
+  },
+  "mcpLink": {
+    "notBridge": "Sesuatu selain jojo-bridge (atau salinan lamanya) sedang menjawab di {{address}}.",
+    "displaced": "Tab jojo lain sedang memegang tautan.",
+    "bridgeStatus": "jojo-bridge menjawab {{status}}.",
+    "otherTab": "Tab jojo lain di browser ini sedang membawa tautan; tab ini mengambil alih saat tab itu ditutup."
+  },
+  "roleScopeEmpty": {
+    "title": "Tidak ada lamaran untuk posisi ini",
+    "description": "Filter posisi di bilah atas menyembunyikan semua lamaran yang dihitung grafik ini.",
+    "showAll": "Tampilkan semua posisi"
+  },
+  "create": {
+    "newApplication": "Lamaran baru",
+    "fromLink": {
+      "label": "Lamaran dari tautan",
+      "hint": "Model membaca lowongan dan mengisi formulirnya"
+    },
+    "newReminder": "Pengingat baru",
+    "newEvent": "Acara baru",
+    "draftMessage": {
+      "label": "Tulis draf pesan",
+      "hint": "Dari cuplikan email Anda — tidak ada yang dibuat otomatis"
+    },
+    "saveLink": {
+      "label": "Simpan tautan",
+      "hint": "Membuka Brankas, alat tautan"
+    },
+    "savePosting": {
+      "label": "Simpan lowongan",
+      "hint": "Membuka Pencari lowongan"
+    }
+  },
+  "stroke": {
+    "tap": "Ketuk",
+    "doubleTap": "Ketuk dua kali",
+    "hold": "Tekan dan tahan",
+    "up": "Usap ke atas",
+    "down": "Usap ke bawah",
+    "side": "Usap ke samping",
+    "diagonal": "Jentik diagonal",
+    "backForth": "Bolak-balik",
+    "zigzag": "Zig-zag ke samping",
+    "scribbleUp": "Coret naik-turun",
+    "circle": "Lingkaran",
+    "square": "Persegi",
+    "vee": "V (atau centang)",
+    "peak": "Λ (puncak)",
+    "zed": "Z",
+    "arc": "Busur (huruf C)",
+    "ell": "L",
+    "triangle": "Segitiga",
+    "other": "Lainnya"
+  },
+  "move": {
+    "nod": "Mengangguk",
+    "shake": "Menggeleng",
+    "hi": "Halo",
+    "bow": "Membungkuk",
+    "leanIn": "Mencondong",
+    "wobble": "Bergoyang",
+    "bounce": "Memantul",
+    "spin": "Berputar",
+    "recoil": "Tersentak mundur",
+    "startle": "Kaget",
+    "dance": "Menari",
+    "shrug": "Mengangkat bahu",
+    "lookAround": "Melihat sekeliling",
+    "hopSpin": "Lompat berputar",
+    "stretch": "Peregangan",
+    "flex": "Pamer otot",
+    "jab": "Kombinasi pukulan",
+    "powerUp": "Mengisi tenaga",
+    "doze": "Terkantuk",
+    "wink": "Mengedip",
+    "love": "Cinta",
+    "robot": "Tarian robot",
+    "jazz": "Tangan jazz",
+    "point": "Menunjuk",
+    "hero": "Pose pahlawan",
+    "handsUp": "Angkat tangan",
+    "disco": "Disko",
+    "typing": "Mengetik",
+    "drumroll": "Gebukan drum"
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "common": {
+    "newPipeline": "新增管線",
+    "addToApplications": "加入申請",
+    "inApplicationsAs": "已在申請中，名稱為<anchor>{{name}}</anchor>",
+    "open": "開啟",
+    "undo": "復原"
+  },
+  "header": {
+    "title": "職缺偵察",
+    "subtitle": "替你留意求職網站的已儲存搜尋——也是今天先存放職缺的地方",
+    "onlyActive": "只顯示啟用中的管線",
+    "onlyActiveHint": "隱藏已關閉的管線",
+    "paused": "沒有連接本機模型，所以管線已暫停。你仍然可以建立管線，並在下方儲存職缺——一旦可以連上模型，管線就會開始執行。",
+    "runsLocally": "管線在這個分頁開啟時，於你的電腦上執行。不會傳送任何資料給第三方。"
+  },
+  "shutdown": {
+    "title": "要關閉「{{name}}」嗎？",
+    "description": "它已經執行了兩次，都沒有找到任何可建議的內容，也沒有任何等待你回覆的項目。關閉後它就會停止搜尋；它已經找到的所有內容都會保留原處。你隨時可以重新開啟。",
+    "keep": "繼續執行",
+    "confirm": "關閉"
+  },
+  "matches": {
+    "title": "符合結果",
+    "hint": "依你的個人檔案評分",
+    "emptyTitle": "沒有符合結果",
+    "emptyDescription": "連接模型後，管線會把評分過的職缺放在這裡。在那之前，你在下方儲存的職缺就是入口。",
+    "matched": "符合 {{list}}",
+    "notScored": "未評分",
+    "fit": "契合度 {{score}}%",
+    "added": "已加入"
+  },
+  "dialog": {
+    "editTitle": "編輯管線",
+    "description": "管線是交給助理的常駐工作。它會在 jojo 開啟時於這部裝置上執行，任何它想變更的內容都會先讓你看過。",
+    "kind": "用途",
+    "kinds": {
+      "twin": "保持紀錄完整",
+      "scout": "尋找職缺"
+    },
+    "kindHint": {
+      "twin": "讀取你現有的內容，並建議缺少的部分——備註、提醒、標籤、歸檔。",
+      "scout": "尋找值得你留意的職缺，並提交給你審閱。"
+    },
+    "name": "名稱",
+    "nameError": "用它留意的對象來命名。",
+    "namePlaceholder": {
+      "twin": "例如：保持申請井然有序",
+      "scout": "例如：CRA 教職求才網站"
+    },
+    "sources": "來源",
+    "sourcesHint": "它留意的求職網站或徵才頁面。多個來源請用逗號分隔。",
+    "sourceError": "沒有來源的偵察就沒有可讀取的內容。",
+    "terms": {
+      "twin": "重點關注",
+      "scout": "比對關鍵詞"
+    },
+    "termsHint": {
+      "twin": "任何它應該特別留意的事項。留白則讓它全面查看。",
+      "scout": "用來替職缺評分的依據。留白則保留來源列出的所有職缺。"
+    },
+    "termsPlaceholder": {
+      "twin": "後續追蹤和截止日期",
+      "scout": "助理教授, CS/ECE"
+    },
+    "howOften": "頻率",
+    "howOftenHint": "每一輪之間要等多久。",
+    "schedules": {
+      "hourly": "每小時",
+      "daily": "每天",
+      "weekly": "每週"
+    },
+    "cancel": "取消",
+    "save": "儲存變更",
+    "create": "建立管線"
+  },
+  "pipelines": {
+    "title": "管線",
+    "hint": "在 jojo 開啟時於這部裝置上執行",
+    "caption": "它們在這個分頁開啟時運作——不會在這台電腦以外執行任何東西",
+    "kinds": {
+      "twin": "數位分身",
+      "scout": "職缺偵察"
+    },
+    "status": {
+      "off": "已關閉",
+      "paused": "已暫停",
+      "running": "執行中",
+      "watching": "留意中"
+    },
+    "noneOnTitle": "沒有啟用任何管線",
+    "noneOnDescription": "你所有的管線都已關閉。請開啟其中一個，或在頁面選項中取消篩選。",
+    "emptyTitle": "沒有管線",
+    "emptyDescription": "管線是交給助理的常駐工作：保持你的紀錄完整，或留意值得你注意的職缺。",
+    "showAll": "顯示所有管線",
+    "auto": "自動",
+    "autoAria": "執行「{{name}}」時不詢問",
+    "toReview_other": "{{count}} 項待審閱",
+    "runNow": "立即執行「{{name}}」",
+    "edit": "編輯「{{name}}」",
+    "delete": "刪除「{{name}}」",
+    "enable": "啟用「{{name}}」"
+  },
+  "postings": {
+    "title": "儲存職缺",
+    "hint": "不需要模型也能使用",
+    "intro": "儲存時也會一併保留頁面，放在保管庫的「職缺」下——透過 jojo 擴充功能以你看到的樣子開啟，或由文件讀取器擷取。兩者都沒有的話，會保留網址、從網址推測出的雇主，以及你儲存的日期。",
+    "urlLabel": "職缺網址",
+    "pasteFirst": "請先貼上網址",
+    "save": "儲存職缺",
+    "emptyTitle": "尚未儲存任何職缺",
+    "emptyDescription": "貼上你想日後再看的徵才廣告網址。廣告會下架，但連結和日期會留在你這裡。",
+    "saved": "{{when}}儲存",
+    "linked": "已連結到申請",
+    "unscored": "未評分",
+    "openSnapshot": "開啟快照",
+    "savingPage": "正在儲存頁面…",
+    "savePage": "儲存頁面",
+    "savePageTitle": "開啟職缺並在保管庫中保留一份副本",
+    "remove": "移除「{{title}}」"
+  },
+  "proposals": {
+    "title": "建議",
+    "hint": "在你同意之前，什麼都不會發生",
+    "aPipeline": "某個管線",
+    "clearAnswered": "清除已回覆項目",
+    "approveAll": "全部核准（{{count}} 項）",
+    "clearAll": "全部清除",
+    "emptyTitle": "沒有需要審閱的內容",
+    "emptyDescription": "管線執行時，任何它想變更的內容都會先顯示在這裡。在你核准之前，它不會動到你的紀錄。",
+    "clearTitle": "要清除所有建議嗎？",
+    "clearPending_other": "有 {{count}} 項建議仍在等你回覆，將會被婉拒。你的紀錄不會有任何變更，管線也會繼續執行——但它們不會再提出這些建議。",
+    "clearAnsweredOnly": "已回覆的卡片會從清單中移除。你的紀錄不會有任何變更。",
+    "status": {
+      "applied": "已套用",
+      "discarded": "已捨棄",
+      "failed": "無法套用"
+    },
+    "noSummary": "這項建議沒有附上摘要——請開啟職缺查看內容。",
+    "reading": "正在讀取職缺的詳細資料…",
+    "notALink": "不是網址，所以不會以連結形式提供",
+    "from": "來自 {{name}}",
+    "openPosting": "開啟職缺",
+    "openPostingAria": "在新分頁中開啟職缺：{{title}}",
+    "inApplications": "已在申請中",
+    "approve": "核准",
+    "discard": "捨棄這項建議",
+    "discardAria": "捨棄：{{title}}",
+    "unreadable": "無法讀取頁面：{{reason}}",
+    "unreadableKept": "無法讀取頁面：{{reason}}頁面本身已儲存。",
+    "applyBy": "{{date}} 前申請",
+    "pageSaved": "已儲存頁面"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "已在你的申請中——不會重複加入",
+    "alreadyHaveDescription": "這是 {{name}}，在另一個求職網站上重新刊登。這個職缺已連結到它，頁面也歸檔在它底下。",
+    "duplicateDescription": "這個職缺是你已經有的 {{name}}。{{why}}它的頁面已歸檔在那份申請底下。",
+    "keepBoth": "兩者都保留",
+    "fillFailedTitle": "{{org}}：無法讀取職缺",
+    "fillFailedKept": "{{reason}}頁面本身已儲存並歸檔在草稿底下——開啟它即可填寫其餘內容。",
+    "fillFailed": "{{reason}}草稿保留了連結中的資訊——開啟它即可填寫其餘內容。",
+    "filledTitle": "已從職缺填入 {{name}}",
+    "checkedTitle": "已依職缺核對 {{name}}",
+    "filledIn": "已填入：{{list}}。",
+    "checked": "已依頁面核對：{{list}}。",
+    "keptYours": "保留了你對以下欄位的編輯：{{list}}。",
+    "addedNothing": "頁面沒有提供草稿中沒有的內容。",
+    "missing": "頁面上沒有：{{list}}。",
+    "filedUnder": "頁面已歸檔在它底下。",
+    "approvedReading": "正在讀取職缺以填入詳細資料——完成後草稿就會更新。",
+    "approvedFromLink": "已從連結填入。在「設定」中連接模型，就能讀取職缺本身的內容。",
+    "approvedOpen": "開啟它即可填寫其餘內容。",
+    "allRepeatsTitle": "已在你的申請中——沒有新增任何內容",
+    "allRepeats_other": "有 {{count}} 個是你已經有的職缺，在另一個求職網站上重新刊登。它們已連結到你現有的申請。",
+    "added_other": "已將 {{count}} 個職缺以草稿形式加入你的申請",
+    "addedWithRepeats_other": "已將 {{count}} 個職缺以草稿形式加入你的申請 · {{repeats}} 個已經存在",
+    "addedReading": "正在逐一讀取每個職缺以填入詳細資料。",
+    "addedFromLinks": "已從各自的連結填入。在「設定」中連接模型，就能讀取職缺本身的內容。",
+    "addedOne": "已將 {{org}} 以草稿形式加入你的申請",
+    "addedAsDraft": "已將 {{org}} 加入為草稿",
+    "matchStays": "這個符合結果會留在這裡，現在已連結到申請。",
+    "postingSaved": "已儲存職缺",
+    "postingReading": "正在讀取職缺以核對並填入詳細資料——完成後草稿就會更新。",
+    "postingStays": "這個職缺會繼續儲存在這裡，現在已連結到申請。",
+    "postingRemoved": "已移除職缺",
+    "pageNotSaved": "職缺頁面沒有儲存",
+    "pageSaved": "已儲存職缺頁面",
+    "pageSavedFiled": "{{title}}——已歸檔在它的申請底下。",
+    "pageSavedVault": "{{title}}——位於保管庫的「職缺」下。",
+    "pipelineUpdated": "已更新管線",
+    "pipelineCreated": "已建立管線",
+    "pipelineCreatedPaused": "{{name}}——會暫停到連接模型為止。",
+    "pipelineCreatedRunning": "{{name}}——很快就會開始搜尋。",
+    "pipelineDeleted": "已刪除管線",
+    "pipelineDeletedDescription": "{{name}} 已停止留意 {{source}}。"
+  }
+}

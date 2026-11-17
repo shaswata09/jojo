@@ -1,0 +1,946 @@
+{
+  "shared": {
+    "undo": "Geri al",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "list": "{{items}} ve {{last}}",
+    "separator": ", "
+  },
+  "today": {
+    "title": "Bugün",
+    "subtitleEmpty": "{{date}} · henüz izlenen bir şey yok — eklediğiniz her şey bu cihazda kalır.",
+    "subtitle_one": "{{date}} · {{count}} başvuru, tümü bu cihazda.",
+    "subtitle_other": "{{date}} · {{count}} başvuru, tümü bu cihazda.",
+    "decision": {
+      "title": "Karar bekleyenler",
+      "done": "Tamamlandı",
+      "snooze": "Ertele",
+      "notConnected": "Henüz buna bağlı bir şey yok",
+      "emptyTitle": "Bugün karar verilecek bir şey yok",
+      "emptyDescription": "Teklifler, gecikmiş başvurular, sıradaki kesin son tarih ve sıradaki mülakatınız burada görünür. Hiçbiri beklemede değil.",
+      "open_one": "{{count}} açık",
+      "open_other": "{{count}} açık"
+    },
+    "firstSteps": {
+      "title": "İlk adımlar",
+      "progress": "{{total}} adımdan {{done}} tanesi tamamlandı",
+      "complete": "Üçü de tamamlandı. Bundan sonra eklediğiniz her şey bu ekrana, takvime ve ait olduğu başvuruya ulaşır.",
+      "intro": "Her adım asıl özelliği açar ve bir kayıt oluşunca kendiliğinden işaretlenir — hiçbiri baştan sona izlemeniz gereken bir eğitim değil.",
+      "introEmpty": "Henüz izlenen bir şey yok. Her adım asıl özelliği açar ve bir kayıt oluşunca kendiliğinden işaretlenir — hiçbiri baştan sona izlemeniz gereken bir eğitim değil.",
+      "close": "İlk adımları kapat",
+      "hide": "Bu adımları gizle",
+      "application": {
+        "title": "Bir başvuru ekleyin",
+        "body": "Bir pozisyon, aşaması ve son tarihi. jojo'daki diğer her şey bu kayda bağlanır."
+      },
+      "dated": {
+        "title": "Bir şeye tarih verin",
+        "body": "Son tarihler, mülakatlar ve ziyaretler aynı tür kayıttır; bu yüzden bir tarih aynı anda bu ekrana, takvime ve başvuruya ulaşır.",
+        "label": "Yeni etkinlik"
+      },
+      "reminder": {
+        "title": "Bir takip ayarlayın",
+        "body": "Hatırlatıcı, uyarısı açık olan aynı kayıttır. Tarihi geçince yapılması gereken bir iş olur ve siz tamamlandı olarak işaretleyene kadar burada kalır.",
+        "label": "Yeni hatırlatıcı"
+      }
+    },
+    "glance": {
+      "active": "Etkin",
+      "interviews": "Ön görüşmeler ve mülakatlar",
+      "overdue": "Gecikmiş",
+      "doneToday": "Bugün tamamlanan",
+      "a11y": "{{value}} {{label}}"
+    },
+    "owed": {
+      "title": "Bu hafta yapılacaklar",
+      "hintOverdue": "{{overdue}} gecikmiş · {{due}} bekleyen",
+      "hintDue": "{{due}} bekleyen",
+      "emptyTitle": "Yapılacak bir şey yok",
+      "emptyDescription": "Son tarihler, mülakatlar ve takipler bir tarih aldıkları anda buraya gelir ve siz tamamlandı olarak işaretleyene kadar kalır.",
+      "addEvent": "Etkinlik ekle",
+      "dayLabel_one": "{{date}} {{day}}, {{count}} öğe",
+      "dayLabel_other": "{{date}} {{day}}, {{count}} öğe",
+      "clear": "Bugün boş.",
+      "clearDone_one": "Bugün boş — {{count}} tamamlandı.",
+      "clearDone_other": "Bugün boş — {{count}} tamamlandı.",
+      "later": "Sonra",
+      "moreOnCalendar_one": "Takvimde {{count}} tane daha",
+      "moreOnCalendar_other": "Takvimde {{count}} tane daha"
+    },
+    "recent": {
+      "title": "Son başvurular",
+      "hint": "son etkinlik",
+      "viewAll": "Tümünü gör",
+      "emptyDescription": "İzlediğiniz her pozisyon, üzerinde çalıştıkça en yenisi en üstte olacak şekilde burada görünür.",
+      "daysAgo_one": "{{count}} gün önce",
+      "daysAgo_other": "{{count}} gün önce",
+      "views": {
+        "notes": "Notlar",
+        "recent": "Son başvurular"
+      },
+      "control": "Bu kartta göster",
+      "addReminder": "Hatırlatıcı ekle",
+      "headingNotes": "Yapışkan notlar"
+    },
+    "pipeline": {
+      "title": "Süreç",
+      "emptyTitle": "Süreçte hiçbir şey yok",
+      "emptyDescription": "Her başvuru bir aşamada durur; burası başvuruların aşamalara nasıl dağıldığını gösterir. Bir tane ekleyin, ilk dilim görünsün."
+    },
+    "sticky": {
+      "newNote": "Yeni yapışkan not",
+      "placeholder": "Kendinize bir not alın…",
+      "newColour": "Yeni notun rengi",
+      "stick": "Yapıştır",
+      "empty": "Henüz yapıştırılmış bir şey yok. Notlar siz kaldırana kadar burada kalır ve tarihi olan her not bir hatırlatıcıya dönüşebilir.",
+      "listLabel": "Yapışkan notlar",
+      "editNote": "Notu düzenle",
+      "editAria": "Notu düzenle: {{text}}",
+      "colour": "Renk",
+      "colourOf": "\"{{text}}\" notunun rengi",
+      "toReminderAria": "Hatırlatıcıya dönüştür: {{text}}",
+      "removeAria": "Notu kaldır: {{text}}"
+    }
+  },
+  "applications": {
+    "title": "Başvurular",
+    "subtitleEmpty": "Henüz izlenen bir şey yok — eklediğiniz her şey bu cihazda kalır.",
+    "subtitle": "{{shown}} gösteriliyor · toplam {{total}}",
+    "new": "Yeni",
+    "newApplication": "Yeni başvuru",
+    "showNotes": "Notları göster",
+    "showNotesDescription": "Her pozisyonun altındaki ikinci satır",
+    "none": {
+      "title": "Henüz başvuru yok",
+      "description": "Başvurduğunuz bir işi izleyin; burada, takvimde ve önümüzdeki haftada görünür."
+    },
+    "searchLabel": "Başvurularda ara",
+    "searchPlaceholder": "Pozisyon, not ya da aşama ara",
+    "layout": "Düzen",
+    "views": {
+      "list": "Liste",
+      "board": "Pano"
+    },
+    "filterByRole": "Role göre filtrele",
+    "filterByStage": "Aşamaya göre filtrele",
+    "sortButton": "Sıralama: {{sort}}, {{order}}",
+    "sorts": {
+      "activity": {
+        "label": "Son etkinlik",
+        "asc": "En yeni önce",
+        "desc": "En eski önce"
+      },
+      "stage": {
+        "label": "Aşama",
+        "asc": "Taslaktan kapanana",
+        "desc": "Kapanandan taslağa"
+      },
+      "position": {
+        "label": "Pozisyon",
+        "asc": "A'dan Z'ye",
+        "desc": "Z'den A'ya"
+      }
+    },
+    "sortMenu": {
+      "title": "Sıralama ölçütü",
+      "description": "Sütunu, ardından hangi ucunun üstte olacağını seçin.",
+      "currently": "Şu anda: {{order}}"
+    },
+    "empty": {
+      "title": "Eşleşen başvuru yok",
+      "nothing": "Burada gösterilecek bir şey yok.",
+      "carries": "Şununla eşleşen bir şey yok: {{filters}}.",
+      "reasons": {
+        "search": "bu arama",
+        "stage": "{{stage}} aşaması",
+        "keywords": "seçili anahtar kelimeler",
+        "roles": "seçili roller"
+      },
+      "showAll_one": "Tümünü göster ({{count}})",
+      "showAll_other": "Tümünü göster ({{count}})"
+    },
+    "row": {
+      "moreActions": "{{name}} için diğer eylemler",
+      "open": "Kaydı aç",
+      "edit": "Düzenle",
+      "flag": "Takip için işaretle",
+      "unflag": "Takip işaretini kaldır",
+      "duplicate": "Kopyala"
+    },
+    "roles": {
+      "description": "Hiçbir şey seçmemek her şey demektir — filtreyi temizlemek, hiç ayarlamamışsınız gibidir.",
+      "tracked_one": "{{count}} izleniyor",
+      "tracked_other": "{{count}} izleniyor",
+      "clear": "Tüm rolleri göster"
+    },
+    "paste": {
+      "label": "İlan URL'si",
+      "placeholder": "Bir ilan URL'si yapıştırın",
+      "submit": "Bağlantıdan"
+    }
+  },
+  "board": {
+    "cardHint": "Başka bir aşamaya taşımak için basılı tutun",
+    "addAt": "Şu aşamada başvuru ekle: {{stage}}",
+    "addHere": "Buraya ekle"
+  },
+  "rowActions": {
+    "duplicatedTitle": "{{name}} kopyalandı",
+    "duplicatedDescription": "Kopya taslak olarak başlar — asıl aşama, tarihler ve teklif geride kalır.",
+    "movedTitle": "{{name}} taşındı: {{stage}}",
+    "movedDescription": "Önceki aşama: {{from}}. Süreç ve huni bundan sonra onu şu aşamada sayar: {{stage}}.",
+    "deletedTitle": "{{name}} silindi",
+    "deletedDescription": "Altında dosyalanan hatırlatıcılar, dosyalar ve kayıtlı ilanlar bağlantısız olarak korundu.",
+    "confirmTitle": "{{name}} silinsin mi?",
+    "confirmTitleGeneric": "Başvuru silinsin mi?",
+    "confirmDescription": "Başvuru ve notu silinir. Altında dosyalanan her şey — hatırlatıcılar, dosyalar, kayıtlı ilanlar — korunur ama bağlantısı kaldırılır."
+  },
+  "detail": {
+    "missing": {
+      "title": "Başvuru",
+      "emptyTitle": "Bu başvuru artık mevcut değil",
+      "emptyDescription": "Silindi ya da bağlantı hiç var olmamış bir kimliğe işaret ediyor. Onunla birlikte başka hiçbir şey kaldırılmadı.",
+      "back": "Geri"
+    },
+    "kept": {
+      "reminders_one": "{{count}} hatırlatıcı",
+      "reminders_other": "{{count}} hatırlatıcı",
+      "events_one": "{{count}} etkinlik",
+      "events_other": "{{count}} etkinlik",
+      "saved_one": "{{count}} kayıtlı öğe",
+      "saved_other": "{{count}} kayıtlı öğe"
+    },
+    "closedTitle": "{{name}} kapatıldı",
+    "closedDescription": "Sonuç: {{outcome}}. Teklif ayrıntıları ve hatırlatıcıları korundu.",
+    "outcomes": {
+      "rejected": "reddedildi",
+      "withdrawn": "geri çekildi",
+      "accepted": "kabul edildi",
+      "declined": "geri çevrildi",
+      "ghosted": "yanıt gelmedi"
+    },
+    "duplicatedDescription": "Kopya, not ve ayrıntılar aktarılmış olarak Taslak aşamasında başlar.",
+    "deletedKept": "Korunanlar (bağlantısız): {{kept}}.",
+    "facts": {
+      "employer": "İşveren",
+      "employerJobs_one": "{{name}} · burada {{count}} iş",
+      "employerJobs_other": "{{name}} · burada {{count}} iş",
+      "source": "Kaynak",
+      "location": "Konum",
+      "compensation": "Ücret",
+      "posting": "İlan",
+      "postingId": "İlan kimliği",
+      "appliedOn": "Başvuru tarihi",
+      "confirmationRef": "Onay numarası",
+      "outcome": "Sonuç"
+    },
+    "moreActions": "Diğer eylemler",
+    "details": "Ayrıntılar",
+    "postingHint": "İlanı jojo içinde açar; orada bir kopyasını saklayabilirsiniz",
+    "dates": {
+      "title": "Tarihler ve hatırlatıcılar",
+      "hint": "{{open}} açık · toplam {{total}}",
+      "add": "Tarih ekle",
+      "emptyTitle": "Planlanmış bir şey yok",
+      "emptyDescription": "Bu başvuruya bağlı son tarihler, mülakatlar ve takipler burada görünür."
+    },
+    "note": {
+      "title": "Not",
+      "hint": "Başka yere dokunduğunuzda kaydedilir",
+      "edit": "Bu notu düzenle",
+      "placeholder": "Hâlâ bekleyenler, kiminle konuştuğunuz, sırada ne sorulacağı",
+      "label": "{{name}} notu",
+      "formatKept": "Değiştirmediğiniz sözcüklerde biçimlendirme korunur.",
+      "saved": "Not kaydedildi"
+    },
+    "draftMessage": "Mesaj taslağı hazırla",
+    "confirmDeleteKept": "Başvuru ve notu silinir. Şunlar korunur ama bağlantısı kaldırılır: {{kept}} — altında dosyaladığınız hiçbir şey silinmez.",
+    "confirmDeleteAlone": "Başvuru ve notu silinir. Başka hiçbir şey ona işaret etmiyor.",
+    "offer": {
+      "title": "Teklif",
+      "settled": "Kapandı · sonuç: {{outcome}}",
+      "pastDeadline_one": "Son tarihin üzerinden {{count}} gün geçti",
+      "pastDeadline_other": "Son tarihin üzerinden {{count}} gün geçti",
+      "daysLeft_one": "{{count}} gün kaldı",
+      "daysLeft_other": "{{count}} gün kaldı",
+      "respondBy": "Son yanıt tarihi {{date}}",
+      "accept": "Kabul et",
+      "decline": "Geri çevir"
+    },
+    "stageDates": {
+      "dated": "{{stage}} tarihi: {{date}}",
+      "undated": "{{stage}} artık tarihsiz",
+      "datedBody": "{{name}} — kayda göre bu, şu aşamaya ulaştığı gün: {{stage}}.",
+      "undatedBody": "{{name}} — aşama hâlâ kayıtta; yalnızca tarihi kaldırıldı.",
+      "hint": "{{total}} aşamadan {{dated}} tanesi tarihli",
+      "title": "Aşama tarihleri",
+      "now": "şimdi",
+      "explain": "Bu başvuruyu başka bir aşamaya taşımak tarihini otomatik olarak ekler. Bugünden önce ulaştığı her aşama burada doldurulabilir."
+    }
+  },
+  "organisation": {
+    "missing": {
+      "title": "İşveren",
+      "subtitle": "Bu adrese karşılık gelen bir şey yok",
+      "emptyTitle": "Bu adreste işveren yok",
+      "emptyDescription": "Bir işveren sayfası, bir başvuru onu adlandırdığı sürece var olur. Bu işverene yapılan tüm başvurular silindiyse bu sayfa da silinmiştir."
+    },
+    "subtitleOne": "Burada bir başvuru var",
+    "subtitleMany_one": "Burada {{count}} başvuru var, {{open}} tanesi hâlâ açık",
+    "subtitleMany_other": "Burada {{count}} başvuru var, {{open}} tanesi hâlâ açık",
+    "applications": "Başvurular",
+    "dates": "Tarihler",
+    "datesHint_one": "bu işlerde toplam {{count}}",
+    "datesHint_other": "bu işlerde toplam {{count}}",
+    "datesEmptyTitle": "Burada tarihli bir şey yok",
+    "datesEmptyDescription": "Bu işlerin herhangi biriyle ilgili son tarihler, mülakatlar ve hatırlatıcılar bu ekranda toplanır.",
+    "people": "Kişiler",
+    "peopleHint_one": "{{count}} kişi adlandırıldı",
+    "peopleHint_other": "{{count}} kişi adlandırıldı",
+    "peopleEmptyTitle": "Henüz adı geçen kimse yok",
+    "peopleEmptyDescription": "Bu işlerin herhangi birinde adı geçen referanslar, arama komitesi başkanları ve işe alım uzmanları burada görünür."
+  },
+  "calendar": {
+    "title": "Takvim",
+    "subtitle": "Son tarihler, mülakatlar ve hazırlık tek görünümde",
+    "key": {
+      "overdue": "Gecikmiş",
+      "soon": "48 saat içinde",
+      "done": "Tamamlandı"
+    },
+    "export": {
+      "label": "Takvimime aktar",
+      "done_one": "{{count}} tarih dışa aktarıldı",
+      "done_other": "{{count}} tarih dışa aktarıldı",
+      "doneDescription": "Takviminiz bunları her birine bir hatırlatıcıyla içe aktarmayı önerir.",
+      "failed": "Burada takvim dosyası açan bir şey yok",
+      "failedDescription": "Dosya bu telefona kaydedildi. .ics kabul eden bir takvim uygulaması onu açabilir."
+    },
+    "add": "Ekle",
+    "addEvent": "Etkinlik ekle",
+    "tallCells": "Uzun gün hücreleri",
+    "tallCellsDescription": "Izgarada her gün için daha fazla yer",
+    "jump": "{{month}} {{year}}. Başka bir aya git",
+    "previous": "Önceki ay",
+    "next": "Sonraki ay",
+    "backTo": "Şu tarihe dön: {{date}}",
+    "goTo": "Git: {{target}}",
+    "goToDay": "Git: {{day}} {{month}}",
+    "today": "Bugün",
+    "selectedDay": "Seçili gün",
+    "hint": "Bir günde neler olduğunu listelemek için o güne dokunun. Düzenlemek ya da yeniden planlamak için bir etkinliğe dokunun.",
+    "dayLabel_one": "{{day}} {{month}}, {{count}} etkinlik",
+    "dayLabel_other": "{{day}} {{month}}, {{count}} etkinlik",
+    "nothingOn": "Bir şey yok: {{date}}",
+    "nothingOnDescription": "Bir mülakat, son tarih ya da hazırlık bloğu ekleyin; burada ve ızgarada görünür.",
+    "allDay": "Tüm gün",
+    "reopen": "Yeniden aç: {{title}}",
+    "markDone": "\"{{title}}\" tamamlandı olarak işaretle",
+    "moreActions": "{{title}} için diğer eylemler",
+    "rest": {
+      "title": "{{month}} ayının geri kalanı",
+      "lastDay": "{{date}}, ayın son günü",
+      "nothingAfter": "{{date}} sonrasında bir şey yok",
+      "lastDayDescription": "Bundan sonra bir şey yok. {{month}} için plan yapmak üzere ileri gidin.",
+      "clearDescription": "{{month}} ayının geri kalanı boş. Bu günden sonra eklediğiniz her şey burada görünür.",
+      "more_one": "Bu ay daha sonra +{{count}} tane daha",
+      "more_other": "Bu ay daha sonra +{{count}} tane daha"
+    }
+  },
+  "search": {
+    "title": "Ara",
+    "subtitle": "Başvurular, tarihler, kasa ve gözcü, hepsi bir arada",
+    "fieldLabel": "Her şeyde ara",
+    "placeholder": "Başvurularda, hatırlatıcılarda, dosyalarda ara…",
+    "idleTitle": "Aramak için yazın",
+    "idleDescription": "Tüm koleksiyonlar üzerinde tek bir alan — çünkü “Rice ile ilgili şeyi nereye koymuştum” sorusu kaydın hangi listede durduğuyla değil, kaydın kendisiyle ilgilidir.",
+    "create": "Oluştur",
+    "createHint": "bulunacak bir şey yok mu? oluşturun",
+    "noneTitle": "“{{query}}” ile eşleşen bir şey yok",
+    "noneDescription": "Arama her kaydın başlığını, notunu ve kategorisini okur. Buradaki hiçbir şey başka bir yerden getirilmez.",
+    "fit": "%{{fit}} uyum",
+    "results_one": "{{count}} sonuç",
+    "results_other": "{{count}} sonuç",
+    "showAll_one": "Tümünü göster ({{count}})",
+    "showAll_other": "Tümünü göster ({{count}})",
+    "groups": {
+      "applications": "Başvurular",
+      "reminders": "Hatırlatıcılar",
+      "calendar": "Takvim",
+      "vault": "Kasa",
+      "jobScout": "İş gözcüsü",
+      "goTo": "Git"
+    }
+  },
+  "more": {
+    "title": "Daha fazla",
+    "subtitle": "jojo'nun geri kalanı",
+    "newBadge_one": "{{count}} yeni",
+    "newBadge_other": "{{count}} yeni",
+    "rowWithBadge": "{{name}}, {{badge}}",
+    "entries": {
+      "jobScout": {
+        "label": "İş gözcüsü",
+        "hint": "Kayıtlı aramalar, eşleşmeler ve bıraktığınız ilanlar"
+      },
+      "statistics": {
+        "label": "İstatistikler",
+        "hint": "Oranlar, bir huni ve sırada ne üzerinde çalışılacağı"
+      },
+      "graph": {
+        "label": "Grafik",
+        "hint": "Kayıtlarınız, oldukları gibi bir ağ olarak çizilmiş"
+      },
+      "transfer": {
+        "label": "Aktarım",
+        "hint": "Her şeyi bilgisayarınıza ya da bilgisayarınızdan taşıyın"
+      },
+      "profile": {
+        "label": "Profilim",
+        "hint": "Temel bilgiler, belgeler ve eşleştirme terimleri"
+      },
+      "assistant": {
+        "label": "Asistan",
+        "hint": "Yerel bir model bağlanana kadar örnekler"
+      },
+      "settings": {
+        "label": "Ayarlar",
+        "hint": "Bağlantılar, görünüm ve verileriniz"
+      },
+      "guide": {
+        "label": "Nasıl kullanılır",
+        "hint": "Rehberli bir tur ve her ekranın ne işe yaradığı"
+      }
+    },
+    "storage": {
+      "saved": "kaydedildi",
+      "saving": "kaydediliyor",
+      "savingCount": "{{count}} kaydediliyor",
+      "unsaved_one": "{{count}} kaydedilmedi",
+      "unsaved_other": "{{count}} kaydedilmedi",
+      "off": "kaydetmiyor"
+    },
+    "runtime": {
+      "title": "Çalışma durumu",
+      "hint": "gerçekte çalışan",
+      "storage": "Cihaz depolaması",
+      "model": "Model",
+      "modelConfigured": "{{model}} — yapılandırıldı",
+      "modelNotSetUp": "ayarlanmadı",
+      "transfer": "Aktarım",
+      "transferNever": "hiç kullanılmadı",
+      "transferLast": "son kullanım: {{date}}"
+    },
+    "footer": "jojo — Jarvis fOr Job Organization. Her şey bu cihazda çalışır.",
+    "overdue_one": "{{count}} hatırlatıcı gecikmiş.",
+    "overdue_other": "{{count}} hatırlatıcı gecikmiş."
+  },
+  "statistics": {
+    "title": "İstatistikler",
+    "emptySubtitle": "Henüz ölçülecek bir şey yok — siz başvuru ekledikçe bu ekran dolar.",
+    "emptyTitle": "Ölçülecek başvuru yok",
+    "emptyDescription": "Yanıt oranları, bir huni ve haftalık bir grafik için sayılacak kayıtlar gerekir. İlkini ekleyin, burası dolmaya başlasın.",
+    "subtitleSent": "Kendi kayıtlarınızdan sayıldı. Tipik olarak etiketlenen rakamlar, karşılaştırma için örnek bir aramadır.",
+    "subtitleNone": "Kendi kayıtlarınızdan sayıldı. Başvurular gönderildikçe dolar.",
+    "compare": "Tipik bir aramayla karşılaştır",
+    "compareDescription": "Her temel rakamın yanında örnek bir rakam",
+    "overTime": {
+      "title": "Zaman içinde başvurular",
+      "hint": "her birinin hangi rol için olduğuna göre",
+      "period": "Dönem",
+      "note": "Her dönem kendi penceresidir; bu yüzden toplamlar aralarında farklıdır — bir çeyrek önceki aramaları kapsar, bir hafta yalnızca bu dönemi."
+    },
+    "sources": {
+      "title": "Nereden geldikleri",
+      "hint_one": "{{count}} izleniyor",
+      "hint_other": "{{count}} izleniyor",
+      "center": "izleniyor"
+    },
+    "asFarAsShown": "her kaydın gösterdiği kadarıyla",
+    "openApplications": "Başvuruları aç",
+    "showAll": "Tümünü göster",
+    "funnel": {
+      "title": "Başvurular ne kadar ilerledi",
+      "emptyTitle": "Henüz hiçbir şey gönderilmedi",
+      "emptyDescription": "Yanıt, mülakat ve teklif oranlarının hepsi gerçekten gönderilmiş başvuruları sayar. Birini Taslak aşamasından çıkarın, burası dolsun.",
+      "carried": "%{{pct}} ilerledi"
+    },
+    "outcomes": {
+      "title": "Sonuçlar",
+      "count_one": "{{count}} başvuru",
+      "count_other": "{{count}} başvuru",
+      "partial": "{{total}} içinden {{shown}}",
+      "allOff": "Tüm sonuçlar kapalı."
+    },
+    "health": {
+      "title": "Sırada ne üzerinde çalışmalı",
+      "hint": "rakamlarınız ile tipik bir arama karşılaştırması",
+      "sample": "Örnek",
+      "emptyTitle": "Karşılaştırmak için henüz yeterli veri yok",
+      "emptyDescription": "Bu, yanıtlarınızı, mülakatlarınızı, referanslarınızı ve takiplerinizi tipik bir aramayla karşılaştırır. Gerçekten gönderilmiş başvurular gerekir.",
+      "allOff": "İki seri de kapalı.",
+      "yours": "Sizinki",
+      "typical": "Tipik",
+      "suggestions": "Öneriler, en yararlısı önce"
+    },
+    "roles": {
+      "title": "Her rol türü nasıl gidiyor",
+      "roles": "Roller",
+      "applied": "Başvurulan",
+      "replied": "Yanıt gelen",
+      "interviews": "Mülakatlar",
+      "offers": "Teklifler"
+    }
+  },
+  "graph": {
+    "title": "Grafik",
+    "emptySubtitle": "Kayıtlarınız, oldukları gibi bir ağ olarak çizilmiş",
+    "emptyTitle": "Çizilecek bir şey yok",
+    "emptyDescription": "Buradaki her düğüm kendi kayıtlarınızdan biridir. Bir başvuru ekleyin, ilki görünsün.",
+    "subtitle": "Kayıtlar yedi ayrı liste olmaktan çıktığında jojo'nun nasıl göründüğüne dair bir önizleme",
+    "caption": "{{total}} düğümden {{visible}} tanesi · {{edges}} kenar. Okumak için bir düğüme dokunun; gizlemek için aşağıdaki bir türe dokunun.",
+    "legend": "Gösterge",
+    "legendHint": "bir türü gizlemek için dokunun",
+    "joinedTo": "Bağlı olduğu",
+    "noEdges": "Henüz buna işaret eden bir şey yok.",
+    "openRecord": "Kaydı aç",
+    "ask": "Grafiğe sor",
+    "askHint": "bir cümleyle sorun ya da birini seçin",
+    "andMore_one": "ve {{count}} tane daha",
+    "andMore_other": "ve {{count}} tane daha",
+    "questions": "Sorular",
+    "questionsHint": "bir liste görünümünün veremeyeceği yanıtlar",
+    "pattern": "Başka bir şey sor",
+    "patternHint": "kendinizinkini oluşturun",
+    "patternNone": "Bununla eşleşen bir şey yok.",
+    "records_one": "{{count}} kayıt",
+    "records_other": "{{count}} kayıt",
+    "exampleNone": "Eşleşen bir şey yok — bu soru için iyi yanıt da budur."
+  },
+  "jobScout": {
+    "title": "İş gözcüsü",
+    "subtitle": "İş ilanı sitelerini sizin için izleyecek kayıtlı aramalar — ve bugün ilanları bırakabileceğiniz bir yer",
+    "onlyActive": "Yalnızca etkin işlem hatları",
+    "onlyActiveDescription": "Kapalı olanları gizle",
+    "paused": "Bağlı bir yerel model yok; bu yüzden işlem hatları duraklatıldı. Yine de bunları yazabilir ve aşağıya ilan kaydedebilirsiniz — bir modele ulaşılabildiğinde çalışmaya başlarlar.",
+    "status": {
+      "off": "kapalı",
+      "paused": "duraklatıldı",
+      "running": "çalışıyor",
+      "watching": "izliyor"
+    },
+    "kinds": {
+      "twin": "Kayıtları eksiksiz tut",
+      "scout": "İlan bul"
+    },
+    "kindLabel": {
+      "twin": "Dijital ikiz",
+      "scout": "İş gözcüsü"
+    },
+    "schedules": {
+      "hourly": "Saatlik",
+      "daily": "Günlük",
+      "weekly": "Haftalık"
+    },
+    "toast": {
+      "updated": "İşlem hattı güncellendi",
+      "created": "İşlem hattı oluşturuldu",
+      "createdPaused": "{{name}} — bir model bağlanana kadar duraklatıldı.",
+      "createdRunning": "{{name}} — kısa süre içinde aramaya başlayacak.",
+      "deleted": "İşlem hattı silindi",
+      "deletedDescription": "{{name}} artık şunu izlemiyor: {{source}}.",
+      "addedDraft": "{{org}} taslak olarak eklendi",
+      "matchLinked": "Eşleşme bu akışta kalır, artık başvuruya bağlı.",
+      "postingSaved": "İlan kaydedildi",
+      "postingLinked": "İlan burada kayıtlı kalır, artık başvuruya bağlı.",
+      "postingRemoved": "İlan kaldırıldı"
+    },
+    "pipelines": {
+      "title": "İşlem hatları",
+      "hint": "bir zamanlamaya göre yerel olarak çalışır",
+      "none": "İşlem hattı yok",
+      "noneOn": "Açık bir şey yok",
+      "noneDescription": "İşlem hattı kayıtlı bir aramadır — izlenecek bir site, önemli terimler ve ne sıklıkla bakılacağı.",
+      "noneOnDescription": "Tüm işlem hatlarınız kapalı. Birini açın ya da sayfa seçeneklerindeki filtreyi kaldırın.",
+      "showAll": "Tüm işlem hatlarını göster",
+      "toReview_one": "{{count}} incelenecek",
+      "toReview_other": "{{count}} incelenecek",
+      "auto": "otomatik",
+      "autoLabel": "Sormadan çalıştır",
+      "autoDescription": "Bulduklarını uygulasın ve size sonra söylesin.",
+      "autoToggle": "{{name}} sormadan çalışsın",
+      "enable": "Etkinleştir: {{name}}",
+      "runNow": "Şimdi çalıştır: {{name}}",
+      "edit": "Düzenle: {{name}}",
+      "delete": "Sil: {{name}}"
+    },
+    "matches": {
+      "title": "Eşleşmeler",
+      "hint": "profilinize göre puanlandı",
+      "emptyTitle": "Eşleşme yok",
+      "emptyDescription": "Bir model bağlandığında işlem hatları puanlanan ilanları buraya koyar. O zamana kadar aşağıya kaydettiğiniz ilanlar giriş yoludur.",
+      "matched": "eşleşen: {{terms}}",
+      "notScored": "puanlanmadı",
+      "added": "eklendi"
+    },
+    "inApplications": "Başvurularda şu adla: {{name}}",
+    "save": {
+      "title": "İlan kaydet",
+      "hint": "model olmadan çalışır",
+      "description": "Burada hiçbir şey sayfayı getirmez; bu yüzden saklanan şey URL, ondan tahmin edilen işveren ve kaydettiğiniz gündür — ilanı yeniden bulmak ve başvurmak için yeterlidir.",
+      "urlLabel": "İş ilanı URL'si",
+      "button": "İlanı kaydet",
+      "blocker": "Önce bir URL yapıştırın",
+      "emptyTitle": "Kayıtlı ilan yok",
+      "emptyDescription": "Daha sonra dönmek istediğiniz bir ilanın URL'sini yapıştırın. İlanlar kaldırılır; bağlantı ve tarih sizde kalır.",
+      "meta": "{{url}} · kaydedildi: {{ago}}",
+      "linked": "başvuruya bağlı",
+      "unscored": "puanlanmadı"
+    },
+    "footer": "İşlem hatları, jojo açıkken cihazınızda çalışır. Üçüncü bir tarafa hiçbir şey gönderilmez.",
+    "shutdown": {
+      "title": "{{name}} kapatılsın mı?",
+      "description": "İki kez çalıştı ve önerecek bir şey bulamadı; yanıtlamanızı bekleyen bir şey de yok. Kapatmak aramayı durdurur; şimdiye kadar bulduğu her şey olduğu yerde kalır.",
+      "keep": "Çalışmaya devam etsin",
+      "off": "Kapat"
+    },
+    "editor": {
+      "newTitle": "Yeni işlem hattı",
+      "editTitle": "İşlem hattını düzenle",
+      "description": "İşlem hattı, asistan için sürekli bir görevdir. jojo açıkken bu cihazda çalışır ve değiştirmek istediği her şey önce size gösterilir.",
+      "create": "Oluştur",
+      "kind": "Ne yapar",
+      "kindTwinHint": "Elinizdekileri okur ve eksik olanları önerir — notlar, hatırlatıcılar, etiketler, dosyalama.",
+      "kindScoutHint": "İlginize değer ilanları arar ve incelemeniz için sunar.",
+      "name": "Ad",
+      "nameError": "İzlediği şeye göre adlandırın.",
+      "namePlaceholderTwin": "ör. Başvurularımı düzenli tut",
+      "namePlaceholderScout": "ör. CRA akademik iş ilanları",
+      "sources": "Kaynaklar",
+      "sourcesError": "Kaynağı olmayan bir gözcünün okuyacağı bir şey yoktur.",
+      "sourcesHint": "İzlediği ilan sitesi ya da kariyer sayfası. Birden fazlasını virgülle ayırın.",
+      "focus": "Neye odaklanmalı",
+      "focusHint": "Özellikle dikkat etmesi gereken her şey. Her yere bakması için boş bırakın.",
+      "termsHint": "Bir ilanın neye göre puanlandığı. Kaynağın listelediği her şeyi tutmak için boş bırakın.",
+      "focusPlaceholder": "takipler ve son tarihler",
+      "termsPlaceholder": "dr. öğretim üyesi, bilgisayar/elektrik müh.",
+      "often": "Ne sıklıkla",
+      "oftenHint": "Turlar arasında ne kadar beklediği."
+    }
+  },
+  "postingBrowser": {
+    "failedTitle": "Bu sayfa saklanamadı",
+    "noAnswer": "Sayfa yanıt vermedi.",
+    "savedTitle": "{{name}} kaydedildi",
+    "savedDropped_one": "Kasanızda saklandı. {{count}} öğe saklanamadı; bu yüzden bazı kısımlar sade görünebilir.",
+    "savedDropped_other": "Kasanızda saklandı. {{count}} öğe saklanamadı; bu yüzden bazı kısımlar sade görünebilir.",
+    "savedOffline": "Kasanızda saklandı ve bağlantı olmadan okunabilir.",
+    "keep": "Bir kopya sakla",
+    "keeping": "Saklanıyor…",
+    "waitForLoad": "Sayfanın yüklenmesinin bitmesini bekleyin"
+  },
+  "profile": {
+    "title": "Profilim",
+    "subtitle": "Gözcünün ve asistanın eşleştirmek ve taslak hazırlamak için kullandıkları. Hiçbiri cihazınızdan çıkmaz.",
+    "savedTitle": "Profil kaydedildi",
+    "savedDescription": "Bu cihaza kaydedildi.",
+    "basics": {
+      "title": "Temel bilgiler",
+      "fullName": "Ad soyad",
+      "fullNamePlaceholder": "ör. Lonardo Jenson",
+      "position": "Şu anki pozisyon",
+      "positionPlaceholder": "ör. Doktora adayı, Bilgisayar Bilimleri",
+      "location": "Konum",
+      "locationPlaceholder": "ör. Santa Clara, CA",
+      "email": "E-posta"
+    },
+    "links": {
+      "title": "Bağlantılar",
+      "website": "Web sitesi"
+    },
+    "interests": {
+      "title": "İlgi alanları ve hedefler",
+      "hint": "gözcü eşleştirmesini yönlendirir",
+      "matchTerms": "Eşleştirme terimleri",
+      "matchTermsDescription": "Gözcünün aradığı araştırma alanları ve ifadeler. Kayıtları altında dosyaladığınız anahtar kelimelerden ayrıdır.",
+      "roleTags": "Rol etiketleri",
+      "roleTagsDescription": "İzlediğiniz rol türleri. Her başvuru bunlardan birinin altında dosyalanır; rol filtresi ve rol bazlı rakamlar bunu okur.",
+      "targetRoles": "Hedef roller",
+      "targetRolesPlaceholder": "ör. Dr. Öğretim Üyesi (kadro yolu) · Araştırma bilimcisi",
+      "regions": "Tercih edilen bölgeler",
+      "regionsPlaceholder": "ör. Texas · uzaktan",
+      "academia": "Akademik ilanları dahil et",
+      "industry": "Sektör ilanlarını dahil et"
+    },
+    "remove": "Kaldır: {{name}}",
+    "add": "Ekle",
+    "documents": {
+      "title": "Belgeler",
+      "hint": "Kasa'daki {{bucket}} bölümü",
+      "emptyTitle": "Henüz belge yok",
+      "emptyDescription": "CV'nizi ve beyanlarınızı ekleyin — Kasa'da {{bucket}} altında dosyalanırlar ve uygulamanın geri kalanı onlara oradan ulaşır.",
+      "add": "Belge ekle",
+      "openVault": "Kasa'yı aç",
+      "meta": "{{size}} · kaydedildi: {{ago}}",
+      "footer": "Kasa'nın Dosyalar aracıyla aynı dosyalar, {{bucket}} ile filtrelenmiş. Bir kayıt, belgenin adını, boyutunu ve türünü tutar — içeriğini asla.",
+      "addedTitle": "Belge eklendi",
+      "addedDescription": "Kasa'da {{bucket}} altında dosyalandı. Ad, boyut ve tür saklanır — dosyanın kendisi okunmaz."
+    },
+    "unsaved": "Kaydedilmemiş değişiklikler — kaydetmek bunları bu telefona yazar.",
+    "discard": "Vazgeç",
+    "save": "Kaydet",
+    "termSheet": {
+      "title": "Eşleştirme terimi ekleyin",
+      "description": "Gözcünün bir ilanda araması gereken bir araştırma alanı ya da ifade.",
+      "label": "Eşleştirme terimi",
+      "placeholder": "ör. dağıtık eğitim"
+    },
+    "roleSheet": {
+      "title": "Rol etiketi ekleyin",
+      "description": "İzlediğiniz bir rol türü. Her başvurudaki seçeneklerden biri olur.",
+      "label": "Rol etiketi",
+      "placeholder": "ör. Veri bilimci"
+    }
+  },
+  "assistant": {
+    "title": "Asistan",
+    "undone": "Geri alındı",
+    "saved": "Metin parçalarına kaydedildi",
+    "savedDescription": "{{title}} · {{tag}} altında dosyalandı",
+    "openVault": "Kasa'yı aç",
+    "clear": "Temizle",
+    "emptyTitle": "Henüz bir şey sorulmadı",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "saveToSnippets": "Metin parçalarına kaydet",
+    "ask": "Asistana sorun",
+    "send": "Gönder",
+    "stop": "Durdur",
+    "agent": {
+      "subtitle": "Modelinize bağlı ve kayıtlarınız üzerinde işlem yapabiliyor. Yaptığı her şey olduğu anda listelenir.",
+      "intro": "Yanıtlar <code>{{endpoint}}</code> adresindeki <code>{{model}}</code> ile veriliyor; bu model bu cihazda {{tools}} aracı çağırabilir. Başka hiçbir yere bir şey gönderilmez ve her değişiklik geri alınabilir.",
+      "deleted": "Konuşma silindi",
+      "emptyDescription": "Ondan bir şey bulmasını, başvuru eklemesini ya da bir başvuruyu ilerletmesini isteyin. Çalıştırdığı her araç, ne gönderdiği ve ne geri geldiğiyle birlikte olduğu anda aşağıda görünür.",
+      "placeholder": "UT Austin başvurumu bul, bir tane ekle, ilerlet…",
+      "footer": "Yazmadan önce okur; bir konuşma için kapatmadıkça her değişiklikten önce sorar ve yaptığı her şey bir düğmeye basmanın geçtiği geri alma yolundan geçer.",
+      "prompts": {
+        "waiting": "Neyi bekliyorum?",
+        "add": "Bir başvuru ekle: Stripe'ta ML mühendisi, gönderildi",
+        "noDeadline": "Hangi başvuruların son tarihi yok?",
+        "flag": "UT Austin başvurumu işaretle"
+      }
+    },
+    "scripted": {
+      "subtitle": "Şimdilik örnekler. Yerel bir model bağlayın; hem kendi kayıtlarınızdan taslak hazırlasın hem de onlar üzerinde işlem yapsın.",
+      "cleared": "Konuşma temizlendi",
+      "messages_one": "{{count}} mesaj",
+      "messages_other": "{{count}} mesaj",
+      "connectLabel": "Ayarlar'dan bir model bağlayın",
+      "banner": "Bağlı bir model yok; bu yüzden buradaki her yanıt bir cevap değil, bir örnektir.",
+      "connect": "Ayarlar'dan bir model bağlayın →",
+      "emptyDescription": "Aşağıdaki isteklerden birini seçin ya da istediğinizi yazın. Yanıtlar yazılı örneklerdir — üzerinde çalışmak için yararlıdır ve asla bir modelin cevabı olarak sunulmaz.",
+      "badge": "Örnek yanıt · bağlı model yok",
+      "placeholder": "Ön yazı, takip e-postası, mülakat hakkında sorun…",
+      "footer": "Bir model bağlıyken bunların her biri profilinizi ve belgelerinizi bağlam olarak okur. Çıkarım yerel olduğu için CV'niz ve notlarınız hiçbir yere yüklenmez."
+    },
+    "thought": {
+      "live": "Düşünüyor…",
+      "done": "Düşündü",
+      "liveLabel": "Düşünüyor. Modelin ne düşündüğünü göster",
+      "label": "Modelin ne düşündüğünü göster"
+    },
+    "scripts": {
+      "cover-letter": {
+        "action": "Ön yazı taslağı hazırla",
+        "title": "Ön yazı — yapı",
+        "reply": "[BÖLÜM] için kullanacağım yapı şu:\n\n1. paragraf — üzerinde çalıştığınız konu, alanınızın dışındaki bir komite üyesinin anlayabileceği tek bir cümleyle.\n2. paragraf — gerekçenizi oluşturan iki sonuç; her biri yöntemiyle değil, doğurduğu sonuçla.\n3. paragraf — neden bu bölüm: ortak çalışacağınız grup ve vereceğiniz ders.\n4. paragraf — ne zaman başlayabileceğiniz ve ilk üç yılın nasıl görüneceği.\n\nBir sayfayı geçmeyin. Komite bir akşamda bunlardan kırk tane okur."
+      },
+      "tailor-cv": {
+        "action": "CV'mi bir ilana göre uyarla",
+        "title": "CV uyarlama — üç geçiş",
+        "reply": "Bu sırayla üç geçiş:\n\n1. İlanın istemediklerini çıkarın. Her şeye uyarlanmış bir CV, hiçbir şeye uyarlanmamıştır.\n2. İlanın öne çıkardığı bölümü ilk sayfanın en üstüne taşıyın — öğretim ağırlıklı bir ilan, öğretimin yayınlardan önce gelmesini ister.\n3. Başlığı ilanın kendi sözcükleriyle yeniden yazın, işin kapsamını abartmadan.\n\nDokunulmadan kalanlar: yayınlar, referanslar, tarihler. Bir komitenin kontrol ettiği kısımlar bunlardır."
+      },
+      "parse-posting": {
+        "action": "Bir iş ilanını ayrıştır",
+        "title": "Bir ilandan neler çıkarılmalı",
+        "reply": "Bir ilandan şunları çıkarırdım: işveren, rol, son tarih, istenen belgeler, adı geçen irtibat kişisi ve tercih değil de kesin şart olarak ifade edilen her şey.\n\nBaşvuruların kaybedildiği yer sonuncusudur — \"başlangıç tarihine kadar dereceye sahip olmalıdır\" bir eleme ölçütüdür, \"büyük ölçekli sistem deneyimi tercih sebebidir\" değildir.\n\nİş gözcüsü bunun kolay yarısını zaten model olmadan yapar: URL'yi oraya kaydedin; bağlantıyı saklar ve işvereni ondan tahmin eder."
+      },
+      "follow-up": {
+        "action": "Takip e-postası taslağı hazırla",
+        "title": "Yanıt gelmeyince takip",
+        "reply": "Konu: Takip — [POZİSYON], [BÖLÜM]\n\nSayın [AD],\n\n[TARİH] tarihinde [POZİSYON] pozisyonuna başvurdum ve komitenin benden ihtiyaç duyduğu her şeye sahip olup olmadığını öğrenmek istedim. Daha kolay olacaksa eksik referans mektubunu doğrudan gönderebilirim.\n\nPozisyonla hâlâ çok ilgileniyorum ve her türlü soruyu e-postayla yanıtlamaktan memnuniyet duyarım.\n\nTeşekkürlerimle,\n[ADINIZ]"
+      },
+      "interview": {
+        "action": "Beni mülakata hazırla",
+        "title": "Mülakat — yanıtını bilmeniz gereken altı soru",
+        "reply": "O günden önce yanıtını bilmeye değer altı soru:\n\n— Çalışmanız, alanınızın dışındaki birine doksan saniyede anlatıldığında ne hakkında?\n— İlk hibeniz ne olurdu ve hangi kuruma başvururdunuz?\n— Gelecek dönem hiç hazırlık süresi olmadan hangi iki dersi verebilirsiniz?\n— Burada kiminle, ne üzerine ortak çalışırdınız?\n— Kendi sonucunuzun zayıf noktası nedir?\n— İşi yapabilmek için ilk yıl neye ihtiyacınız var?\n\nYanıtları elle, uzun uzun yazın. Önemli olan notlar değil, provadır."
+      },
+      "fallback": {
+        "title": "Asistan — örnek yanıt",
+        "reply": "Bağlı bir model yok; bu yüzden bu, yazdığınıza verilmiş bir yanıt değil, hazır bir cevap.\n\nBir model bağlı olsaydı bu ekran profilinizi, Kasa'daki belgelerinizi ve adını verdiğiniz başvuruyu okur, ardından kendi cihazınızda bunlara göre taslak hazırlardı. Ayarlar'dan jojo'yu OpenAI uyumlu yerel bir sunucuya yönlendirin — vLLM, Ollama ya da LM Studio.\n\nAşağıdaki beş isteğin her birinin, bu arada kullanabileceğiniz bir örneği var."
+      }
+    }
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "subtitle": "Bağlantılar, eşitleme ve verileriniz",
+    "themes": {
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    },
+    "dataSets": {
+      "demo": "Demo verileri",
+      "empty": "Boş"
+    },
+    "reasoning": {
+      "on": "Açık",
+      "low": "Hafif",
+      "off": "Kapalı"
+    },
+    "import": {
+      "refused": "Hiçbir şey içe aktarılmadı",
+      "fileFailed": "Dosya açılamadı: {{reason}}",
+      "clipboardFailed": "Pano okunamadı: {{reason}}",
+      "unfinished": "İçe aktarma tamamlanmadı",
+      "replaceTitle": "Bu telefondaki her şey değiştirilsin mi?",
+      "replaceDescription": "{{described}}. {{replaces}}; bu geri alınamaz.",
+      "replace": "Değiştir"
+    },
+    "device": {
+      "title": "Bu cihazda",
+      "hint": "kayıtlarınızın gerçekte durduğu yer",
+      "body": "Eklediğiniz her şey siz çalışırken doğrudan bu telefonun kendi depolamasına yazılır — açılacak bir şey yoktur ve hiçbir şey cihazdan çıkmaz. Eklediğiniz belgeler jojo'nun kendi klasörüne kopyalanır; böylece asıl dosya taşınsa ya da silinse de kalırlar.",
+      "copyOut": "Bir kopya almak için aşağıdaki Dışa aktar'ı kullanın ya da her şeyi yerel ağınız üzerinden bilgisayarınıza göndermek için Aktarım'ı kullanın."
+    },
+    "model": {
+      "title": "Model",
+      "intro": "Ulaşabildiğiniz bir bilgisayardaki bir model ya da ücretini ödediğiniz bir model. Varsayılan yereldir, çünkü kayıtlarınızın bu cihazdan hiç çıkmadığı tek düzenleme budur.",
+      "endpoint": "Uç nokta",
+      "loopback": "Bu adres “bu cihaz” anlamına gelir; bu yüzden bir telefonda telefonun kendisini gösterir. Bunun yerine bilgisayarın ağınızdaki adresini kullanın — 192.168.1.20 gibi bir şey ya da .local adı.",
+      "endpointOllama": "Sunucu ve bağlantı noktası. /v1 yok — jojo, kesmemesini isteyebilmek için Ollama'nın kendi uç noktasını kullanır.",
+      "endpointHint": "/v1 ile biten temel URL.",
+      "apiKey": "API anahtarı",
+      "apiKeyHint": "Yalnızca bu cihazda saklanır. Asla bir yedeğe konmaz ve sağlayıcı dışında hiçbir yere gönderilmez.",
+      "modelPlaceholder": "Bağlantıyı test ettiğinizde bulunur",
+      "modelHint": "Sunucunun bildirdiği. Birden fazla model sunuyorsanız değiştirin.",
+      "savedAs": "Kayıt adı",
+      "savedAsHint": "Bu sunucunun listedeki adı. Varsayılan olarak model adıdır.",
+      "context": "Bağlam penceresi",
+      "contextOllama": "Token. Boş bırakılırsa {{tokens}} kullanılır ve boyutu Ollama belirler; buraya yazılan sayı num_ctx olarak da gönderilir.",
+      "contextHint": "Dağıtımınızın tutabileceği token sayısı. Boş bırakılırsa {{tokens}} kullanılır.",
+      "reasoning": "Akıl yürütme",
+      "reasoningDescription": "Düşünebilen modellerin — gpt-oss, Gemma 4, Qwen3 — yanıt vermeden önce akıl yürütmesini sağlar. Küçük bir modelde yanıtlar boş geliyorsa kapatın.",
+      "endpointFirst": "Önce bir uç nokta girin.",
+      "kept": "Bu cihazda saklandı. Asistan bu modeli kullanacak."
+    },
+    "test": {
+      "testing": "Test ediliyor…",
+      "again": "Yeniden test et",
+      "test": "Bağlantıyı test et",
+      "connected": "Bağlı",
+      "noAnswer": "Yanıt yok",
+      "notConnected": "Bağlı değil"
+    },
+    "reader": {
+      "title": "Belgelerimi oku",
+      "hint": "yalnızca PDF'ler",
+      "already": "Bu telefon Word dosyalarını, OpenDocument dosyalarını, sunumları, kayıtlı sayfaları ve düz metinleri zaten kendi başına okur — kurulacak bir şey yok ve hiçbir yere bir şey gönderilmez.",
+      "pdf": "<strong>İstisna PDF'lerdir.</strong> Bir PDF'yi yeniden metne dönüştürmek, içindeki yazı tipi tablolarını gerektirir ve bu, bu uygulamanın taşıdığından fazlasıdır. Bunlar için {{name}} programını bu telefonun ulaşabileceği bir bilgisayarda çalıştırın ve adresini aşağıya girin.",
+      "address": "Adres",
+      "addressHint": "markitdown-mcp'nin dinlediği yer. Yol /mcp ile biter.",
+      "notRunning": "Henüz çalıştırmıyor musunuz?",
+      "addressFirst": "Önce bir adres girin.",
+      "ok": "Belgeler bu adrese gönderilir, başka hiçbir yere değil. Hiçbir şey yüklenmez.",
+      "notice": "{{name}} ayrı bir programdır, jojo'nun parçası değildir. {{copyright}} {{licence}}. jojo'nun Microsoft ile bir bağlantısı yoktur."
+    },
+    "appearance": {
+      "title": "Görünüm",
+      "theme": "Tema",
+      "themeDescription": "Sistem, cihazınızın ayarını izler"
+    },
+    "data": {
+      "title": "Verileriniz",
+      "export": "JSON olarak dışa aktar",
+      "import": "İçe aktar",
+      "paste": "Yedek yapıştır",
+      "exportNote": "Dışa aktarma; başvuruları, zaman çizelgesini, kasayı, kayıtlı ilanları, anahtar kelimelerinizi ve etiketlediklerini ve profilinizi kapsar. Bu uygulamanın geri okuyabileceği bir yedektir — ama eklediğiniz belgeler bu telefonda kalır; bu yüzden satırları içerikleri olmadan geri gelir. Daha fazla altındaki Aktarım, belgeler dahil her şeyi bir bilgisayara taşır.",
+      "records": "Kayıtlar",
+      "recordsEmpty": "Tüm listeler boş; bu yüzden her ekran ilk açılış hâlini gösteriyor.",
+      "recordsDemo": "Hazır gelen arama — on iki başvuru, bir zaman çizelgesi, dolu bir kasa.",
+      "move": "Başka bir cihaza taşı",
+      "moveDescription": "Yerel ağınız üzerinden bilgisayarınızla eşleştirin ve belgeler dahil her şeyi taşıyın.",
+      "reset": "Demo verilerini sıfırla",
+      "resetDescription": "Her şeyi geldiği hâline geri koyar, bu oturumdaki düzenlemeleri atar.",
+      "resetButton": "Sıfırla",
+      "resetBlocker": "Önce Kayıtlar'ı yeniden Demo verileri olarak ayarlayın",
+      "warning": "Kayıtlarınız bu cihaza kaydedilir ve uygulamayı kapattıktan sonra da kalır. Hesap ve eşitleme yoktur; hiçbir kayıt telefondan asla çıkmaz — ne model aracılığıyla ne de bir çökme raporu aracılığıyla. Başka bir yerde bir kopya istiyorsanız Dışa aktar panoya bir kopya yazar.",
+      "cleared": "Her şey temizlendi",
+      "clearedDescription": "Profiliniz dahil tüm kayıtlar silindi ve eklediğiniz belgeler bu cihazdan silindi. Demo verilerini buradan yeniden yükleyebilirsiniz.",
+      "resetDone": "Demo verileri sıfırlandı",
+      "loaded": "Demo verileri yüklendi",
+      "loadedDescription": "Hazır gelen başvurular, zaman çizelgesi, kasa, ilanlar ve profil geldikleri hâliyle geri geldi."
+    },
+    "confirm": {
+      "fallbackTitle": "Veriler değiştirilsin mi?",
+      "continue": "Devam",
+      "empty": {
+        "title": "Tüm kayıtlar temizlensin mi?",
+        "description": "Başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar ve profiliniz, bu oturumda eklediğiniz her şey dahil silinir ve eklediğiniz belgeler de onlarla birlikte bu cihazdan silinir. Geri alınamaz — geri istiyorsanız önce dışa aktarın. Anahtar kelimeleriniz korunur, ama onları taşıyan hiçbir şey kalmaz.",
+        "confirm": "Her şeyi temizle"
+      },
+      "demo": {
+        "title": "Demo verileri yüklensin mi?",
+        "description": "Hazır gelen kayıtlar, geldikleri anahtar kelimelerle etiketlenmiş olarak geri gelir. Bu oturumda eklediğiniz her şey birleştirilmez, değiştirilir ve eklediğiniz belgeler bu cihazdan silinir. Geri alınamaz.",
+        "confirm": "Demo verilerini yükle"
+      },
+      "reset": {
+        "title": "Demo verilerine sıfırlansın mı?",
+        "description": "Bu oturumdaki her düzenleme, ekleme ve silme atılır ve hazır gelen kayıtlar tam olarak geldikleri gibi geri gelir; bu yüzden eklediğiniz belgeler bu cihazdan silinir. Anahtar kelime listenize dokunulmaz. Geri alınamaz.",
+        "confirm": "Verileri sıfırla"
+      }
+    },
+    "provider": {
+      "title": "Sağlayıcı",
+      "description": "Birini seçmek adresini sizin için ayarlar. Bulut sağlayıcıları bir anahtar gerektirir ve kayıtlarınız onlara gider.",
+      "cloud": "Sözleriniz bu şirkete gider ve size faturalanır",
+      "localKey": "Kontrol ettiğiniz bir bilgisayarda. Anahtar gerekir.",
+      "local": "Kontrol ettiğiniz bir bilgisayarda. Hiçbir şey dışarı çıkmaz."
+    },
+    "cloud": {
+      "terms": "{{name}} koşulları",
+      "privacy": "Gizlilik politikası"
+    },
+    "servers": {
+      "title": "Kayıtlı sunucular",
+      "description": "Bu cihazda yanıt vermiş adresler.",
+      "done": "Bitti",
+      "empty": "Henüz kayıtlı bir şey yok. Bir bağlantıyı test edin, adres burada saklansın.",
+      "load": "Yükle: {{name}}",
+      "inUse": "Kullanımda",
+      "forget": "Unut: {{name}}"
+    },
+    "keywords": {
+      "title": "Anahtar kelimeler",
+      "hint": "başvurular, hatırlatıcılar ve Kasa tarafından paylaşılır",
+      "takenOff_one": "{{count}} kayıttan kaldırıldı.",
+      "takenOff_other": "{{count}} kayıttan kaldırıldı.",
+      "usedOn_one": "{{count}} kayıtta kullanılıyor",
+      "usedOn_other": "{{count}} kayıtta kullanılıyor",
+      "rename": "Yeniden adlandır: {{name}}",
+      "editTitle": "Düzenle: {{name}}",
+      "editGeneric": "Anahtar kelimeyi düzenle",
+      "editDescription": "Yeniden adlandırmak kimliğe dokunmaz; böylece bu anahtar kelimeyi taşıyan her kayıt da değişir.",
+      "taken": "Bu ad alınmış",
+      "takenDescription": "Başka bir anahtar kelime zaten bu adı taşıyor.",
+      "colour": "Renk",
+      "newTitle": "Yeni anahtar kelime",
+      "newDescription": "Anahtar kelimeler sizindir. Aynısı bir başvuruda, bir hatırlatıcıda, bir dosyada ve bir bağlantıda çalışır.",
+      "added": "{{name}} eklendi",
+      "placeholder": "ör. Onlardan yanıt bekleniyor",
+      "confirmUsed_one": "{{count}} kayıttan kaldırılır. Bu kayıtlar kalır; yalnızca anahtar kelime gider.",
+      "confirmUsed_other": "{{count}} kayıttan kaldırılır. Bu kayıtlar kalır; yalnızca anahtar kelime gider.",
+      "confirmUnused": "Hiçbir şey onunla etiketlenmemiş; bu yüzden başka hiçbir şey değişmez."
+    }
+  }
+}

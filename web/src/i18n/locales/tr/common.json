@@ -1,0 +1,274 @@
+{
+  "language": {
+    "label": "Dil",
+    "description": "jojo'nun gösterildiği dil. Kayıtlarınız, onları yazdığınız dilde kalır.",
+    "system": "Bu tarayıcıyla aynı ({{name}})",
+    "loadFailed": "Bu dil yüklenemedi. jojo şu dilde kalıyor: {{name}}."
+  },
+  "buckets": {
+    "overdue": "Gecikmiş",
+    "today": "Bugün",
+    "upcoming": "Yaklaşan",
+    "done": "Tamamlanan"
+  },
+  "snooze": {
+    "day": {
+      "soon": "Yarın",
+      "later": "Bir gün sonra",
+      "duration": "Bir gün"
+    },
+    "threeDays": {
+      "soon": "3 gün içinde",
+      "later": "Üç gün sonra",
+      "duration": "Üç gün"
+    },
+    "week": {
+      "soon": "7 gün içinde",
+      "later": "Bir hafta sonra",
+      "duration": "Bir hafta"
+    }
+  },
+  "routeFailure": {
+    "title": "Bu sayfa yüklenmedi",
+    "subtitle": "jojo'nun geri kalanı hâlâ çalışıyor.",
+    "emptyTitle": "Bu görünümde bir şey bozuldu",
+    "emptyDescription": "Başka bir yere gidip geri gelmek görünümü yeniden yükler. Her seferinde oluyorsa, bu sayfanın çizdiği kayıtlara bakmak gerekir — önce Ayarlar'dan bir yedek alabilirsiniz.",
+    "back": "Ana sayfaya dön"
+  },
+  "writeResult": {
+    "title": "Bu kaydedilmedi",
+    "refused": "Değişiklik reddedildi."
+  },
+  "copy": {
+    "blocked": "Engellendi",
+    "copied": "Kopyalandı",
+    "copy": "Kopyala"
+  },
+  "drag": {
+    "theItem": "öğe",
+    "aTarget": "bir bırakma hedefi",
+    "start": "Alındı: {{name}}.",
+    "over": "{{name}} şunun üzerinde: {{place}}.",
+    "notOver": "{{name}} artık bir bırakma hedefinin üzerinde değil.",
+    "dropped": "{{name}} bırakıldı: {{place}}.",
+    "droppedHome": "{{name}} başladığı yere bırakıldı.",
+    "cancelled": "Sürükleme iptal edildi. {{name}} başladığı yere geri kondu.",
+    "instructions": "Sürüklenebilir bir öğeyi almak için boşluk tuşuna basın.\nSürüklerken öğeyi taşımak için ok tuşlarını kullanın.\nÖğeyi yeni yerine bırakmak için yeniden boşluk tuşuna, iptal etmek için Escape tuşuna basın."
+  },
+  "actions": {
+    "undo": "Geri al",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "close": "Kapat"
+  },
+  "records_one": "{{count}} kayıt",
+  "records_other": "{{count}} kayıt",
+  "deleteKeyword": {
+    "failed": "Silinmedi",
+    "stillThere": "{{name}} hâlâ bir anahtar kelime.",
+    "deleted": "{{name}} silindi",
+    "wasUnused": "Hiçbir kayıtta yoktu.",
+    "takenOff_one": "{{count}} kayıttan ve anahtar kelime filtresinden kaldırıldı.",
+    "takenOff_other": "{{count}} kayıttan ve anahtar kelime filtresinden kaldırıldı.",
+    "confirmTitle": "{{name}} silinsin mi?",
+    "confirmTitleAny": "Anahtar kelime silinsin mi?",
+    "unused": "Henüz hiçbir kayıtta yok; bu yüzden başka hiçbir şey değişmez.",
+    "usedOn_one": "{{count}} kayıtta kullanılıyor. Bu kayıtlar kalır — yalnızca bu anahtar kelimeyi kaybederler.",
+    "usedOn_other": "{{count}} kayıtta kullanılıyor. Bu kayıtlar kalır — yalnızca bu anahtar kelimeyi kaybederler.",
+    "confirm": "Anahtar kelimeyi sil"
+  },
+  "bucketFilter": {
+    "all": "Tümü"
+  },
+  "marks": {
+    "bold": "kalın",
+    "italic": "italik",
+    "underlined": "altı çizili"
+  },
+  "pageHeader": {
+    "options": "{{title}} seçenekleri"
+  },
+  "errorBoundary": {
+    "title": "Bir şey bozuldu",
+    "body": "Bir görünüm çizilemedi. Yeniden dene, sayfayı yeniden yüklemeden onu yeniden oluşturur.",
+    "retry": "Yeniden dene"
+  },
+  "tone": {
+    "colourFor": "Renk: {{label}}",
+    "anyColourFor": "Herhangi bir renk: {{label}}"
+  },
+  "boot": {
+    "takingLong": "Yerel veritabanınızın açılması her zamankinden uzun sürüyor. Başka bir jojo sekmesi onu tutuyor olabilir — diğerlerini kapatmak genellikle onu serbest bırakır.",
+    "opening": "Yerel veritabanınız açılıyor…"
+  },
+  "keywordPicker": {
+    "none": "Henüz yok",
+    "choose": "Anahtar kelime seç",
+    "heading": "Anahtar kelimeler",
+    "newPlaceholder": "Yeni anahtar kelime…",
+    "new": "Yeni anahtar kelime"
+  },
+  "rowMenu": {
+    "moreFor": "{{name}} için diğer eylemler",
+    "more": "Diğer eylemler"
+  },
+  "firstRun": {
+    "title": "Nasıl başlamak istersiniz?",
+    "description": "jojo her şeyi bu bilgisayarda tutar; bu yüzden karar sizin. Hiçbir yanıt kesin değil — demo verilerini yüklemeyi ya da tüm kayıtları temizlemeyi daha sonra Ayarlar'dan yapabilirsiniz.",
+    "demo": {
+      "title": "Demo verileriyle keşfedin",
+      "detail": "Göz gezdirmeniz için hazırlanmış bir iş arayışı — on iki başvuru, bir zaman çizelgesi, dolu bir kasa. İçindekilerin hiçbiri sizin değil ve daha sonra temizlemek tek bir dokunuş.",
+      "working": "Yükleniyor…"
+    },
+    "empty": {
+      "title": "Boş başla",
+      "detail": "Hiç demo kaydı yok. Her sayfa boş hâliyle açılır ve jojo'daki ilk şey sizin eklediğiniz bir şey olur.",
+      "working": "Temizleniyor…"
+    }
+  },
+  "recovery": {
+    "title": "jojo veritabanını okuyamıyor",
+    "body": "Kayıtlarınız hâlâ bu bilgisayarda. jojo hiçbir şeyi değiştirmedi ya da yerine bir şey koymadı ve demo verilerini bunların üzerine yüklemeyecek — sağlıklı görünmek için kendini yeniden dolduran bir depo, bunu kalıcı veri kaybına dönüştürürdü.",
+    "downloadHint": "Okunabilen satırları bir dosyaya yazar",
+    "downloadNothing": "Veritabanı hiç okunamadı; bu yüzden yazılacak bir şey yok",
+    "download": "Okuyabildiklerimizi indir",
+    "working": "Çalışıyor…",
+    "retry": "Yeniden dene",
+    "freshHint": "Veritabanını siler ve jojo'yu yeniymiş gibi başlatır",
+    "fresh": "Sıfırdan başla",
+    "readable_one": "{{count}} satır okunabildi — her şeyden önce onu indirin, çünkü sıfırdan başlamak onu siler.",
+    "readable_other": "{{count}} satır okunabildi — her şeyden önce bunları indirin, çünkü sıfırdan başlamak bunları siler.",
+    "unreadable": "Depodan hiçbir şey okunamadı; bu yüzden indirilecek bir şey yok. Önce yeniden deneyin: başka bir sekmenin açık tuttuğu bir veritabanı bu şekilde hata verir ve kendiliğinden düzelir.",
+    "confirmTitle": "Veritabanı silinip sıfırdan başlansın mı?",
+    "confirmBody": "Bu işlem jojo'nun yerel veritabanını ve içinde kalan her şeyi siler, ardından her şeye sıfırdan başlar — ilk açılışta sorulan, demo verileriyle mi yoksa boş mu başlanacağı sorusu dahil. Hiçbir şeyi onarmaz ve geri alınamaz. Okunabilen satırları henüz indirmediyseniz iptal edin ve önce bunu yapın.",
+    "confirm": "Sil ve sıfırdan başla"
+  },
+  "labelFilter": {
+    "label": "Anahtar kelimeye göre filtrele",
+    "none": "Henüz anahtar kelime yok — filtrelemek için bir tane ekleyin.",
+    "example": "ör. Geliştirici",
+    "add": "Anahtar kelime ekle",
+    "clear": "Temizle"
+  },
+  "labelPicker": {
+    "editOn": "{{name}} üzerindeki anahtar kelimeleri düzenle",
+    "edit": "Anahtar kelimeleri düzenle"
+  },
+  "keywordChip": {
+    "taken": "Başka bir anahtar kelime zaten bu adı taşıyor.",
+    "needsName": "Bir anahtar kelimenin adı olmalı.",
+    "rename": "Yeniden adlandır",
+    "colour": "Renk",
+    "stopFiltering": "{{name}} filtresini kaldır",
+    "filterBy": "Filtrele: {{name}}",
+    "edit": "Anahtar kelimeyi düzenle: {{name}}",
+    "editHint": "Yeniden adlandırın, rengini değiştirin ya da silin"
+  },
+  "welcome": {
+    "title": "Biraz sizden bahsedin",
+    "description": "Taslaklar adınızla imzalanır ve gözcü, aradığınız şeye göre puanlar. Bunların hepsi bu bilgisayarda kalır ve hepsi isteğe bağlıdır — daha sonra Profil altında doldurabilirsiniz.",
+    "fullName": "Ad soyad",
+    "fullNameExample": "ör. Lonardo Jenson",
+    "position": "Şu anki pozisyon",
+    "positionExample": "ör. Doktora adayı, Bilgisayar Bilimleri",
+    "location": "Konum",
+    "locationExample": "ör. Santa Clara, CA",
+    "email": "E-posta",
+    "skip": "Şimdilik atla",
+    "save": "Kaydet ve devam et",
+    "rest": "Geri kalanı — bağlantılar, hedef roller, gözcünün eşleştirdiği terimler — <anchor>Profil</anchor> altında."
+  },
+  "onboarding": {
+    "tourTitle": "Uygulamalı bir tur ister misiniz?",
+    "tourDescription": "Gerçek sayfalarda bir gezinti — her bölüme bir spot ışığı, ne işe yaradığı ve ilerledikçe her şeyi kendiniz denemeniz. Sizin yerinize asla bir şey yazmaz, kaydetmez ya da değiştirmez; durursanız kaldığınız yeri hatırlar.",
+    "notNow": "Şimdi değil",
+    "start": "Turu başlat",
+    "always": "Tur her zaman <em>Nasıl kullanılır</em> altında; bu yüzden şimdi hayır demenin bir bedeli yok."
+  },
+  "setup": {
+    "skip": "Şimdilik atla",
+    "continue": "Devam",
+    "done": "Bitti",
+    "optional": "Bunların hepsi isteğe bağlıdır ve daha sonra Ayarlar altında kurabilirsiniz.",
+    "model": {
+      "title": "Bir model bağlayın",
+      "body": "jojo'yu bir dosya dolabından öte, bir ajan yapan şey budur: aramanızla ilgili soruları yanıtlayabilir, takip mesajları ve taslaklar yazabilir, kayıtlarınızı eksiksiz tutan ve ilanları izleyen İş gözcüsü işlem hatlarını çalıştırabilir. Onu kendi bilgisayarınızdaki bir modele yönlendirin; hiçbir şey cihazdan çıkmaz."
+    },
+    "reader": {
+      "title": "Belgelerinizi okuyabilsin",
+      "body": "Bu olmadan asistan bir belgenin yalnızca adını görebilir. MarkItDown'u bu bilgisayarda çalıştırın — aşağıda iki komut — böylece taslak hazırlarken ve yanıt verirken CV'lerinizin, ön yazılarınızın ve kayıtlı ilanlarınızın içeriğini okuyabilir."
+    },
+    "crash": {
+      "title": "Çökme raporları ve kullanım",
+      "description": "İki ayrı şey, ikisi de açık — birini ya da ikisini burada ya da daha sonra Ayarlar'da kapatabilirsiniz. Hiçbiri kayıtlarınızı taşıyamaz: ne bir başvuru, ne bir belge, ne bir not, ne bir profil, ne de bir konuşma.",
+      "inReport": "Bir raporda neler var",
+      "inError": "Hata mesajı ve hatanın jojo'nun neresinde oluştuğu.",
+      "inStack": "Başarısız olan kodu adlandıran yığın izi.",
+      "never": "Bir raporda asla olmayanlar",
+      "neverRecords": "Başvurularınız, belgeleriniz, notlarınız, profiliniz ya da konuşmalarınız.",
+      "neverSecrets": "API anahtarlarınız, kullandığınız adresler, ana dizininiz ya da herhangi bir e-posta adresi — bunlar rapor gönderilmeden önce değil, yazılmadan önce çıkarılır.",
+      "where": "Bu tarayıcıda ve jojo uzantısında çökme raporları <em>bu cihazda kalır</em>: hiçbir şey yüklenmez ve yedek dosyası bunları taşımaz. Onları Ayarlar altında kendiniz okursunuz. jojo telefon uygulamasında aynı rapor ayrıca Google'ın Firebase Crashlytics hizmetine gönderilir; bu hizmet cihaz modelinizi, işletim sistemi sürümünü ve aynı çökmeyi kaç kişinin yaşadığını saymak için kullandığı rastgele bir kimliği ekler — ad yok, hesap yok, size bağlı hiçbir şey yok. Aşağıdaki ikinci anahtar olan kullanım sayıları, bu sürüm dahil her sürümden Google Analytics'e gider.",
+      "keep": "Çökme raporlarını sakla",
+      "keepHint": "Hata ve nerede oluştuğu. Tarayıcıda bu cihazda kalır.",
+      "share": "Hangi özellikleri kullandığımı paylaş",
+      "shareHint": "Yalnızca sayılar — hangi ekranların ne sıklıkla açıldığı. İçlerinde ne olduğu asla.",
+      "usageNote": "İkincisi, jojo'nun sizin NE yaptığınız hakkında gönderdiği tek şeydir ve yalnızca sabit bir listedeki şeyleri söyleyebilir — “kasa açıldı”, “bir başvuru eklendi”, “6–20 tane var”. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz, çünkü bu sözcükler listede yok. Google Analytics'e gider; böylece jojo'nun hangi bölümlerinin daha fazla emeğe değer olduğunu görebiliriz.",
+      "bothOff": "İkisini de kapat",
+      "save": "Seçimleri kaydet",
+      "continueOff": "İkisi de kapalı devam et",
+      "later": "Bunların ikisini de istediğiniz zaman Ayarlar altında değiştirebilirsiniz; birini kapatmak, onun sakladıklarını da siler."
+    },
+    "extension": {
+      "title": "Başvurduğunuz ilanları saklayın",
+      "body": "İş ilanları, çoğu zaman siz yanıt almadan önce kaldırılır. Tarayıcı uzantısı bir ilanı bugünkü hâliyle kendi kasanıza kaydeder — ve İş gözcüsü takip ettiğiniz siteleri de bununla okur."
+    }
+  },
+  "spectrum": {
+    "saturation": "Doygunluk ve parlaklık",
+    "hue": "Ton",
+    "hex": "Hex renk",
+    "any": "Herhangi bir renk"
+  },
+  "field": {
+    "openInTab": "{{label}} bağlantısını yeni sekmede aç",
+    "hide": "Gizle: {{label}}",
+    "show": "Göster: {{label}}"
+  },
+  "richText": {
+    "sizes": {
+      "small": "Küçük",
+      "normal": "Normal",
+      "large": "Büyük",
+      "huge": "Çok büyük"
+    },
+    "clearFormatting": "Biçimlendirmeyi temizle",
+    "bold": "Kalın",
+    "italic": "İtalik",
+    "underline": "Altı çizili",
+    "strikeThrough": "Üstü çizili",
+    "insertUnorderedList": "Madde işaretli liste",
+    "insertOrderedList": "Numaralı liste",
+    "snippetText": "Metin parçası",
+    "fontSize": "Yazı boyutu",
+    "insertTable": "Tablo ekle",
+    "textColour": "Metin rengi"
+  },
+  "toolForm": {
+    "aRecord": "bir kayıt",
+    "yourProfile": "Profiliniz"
+  },
+  "toolRun": {
+    "choose": "Seçin…",
+    "none": "Yok",
+    "omitted_one": "Bu formda yok: {{fields}}. Ayarlamak için kaydı açın.",
+    "omitted_other": "Bu formda yok: {{fields}}. Ayarlamak için kaydı açın."
+  },
+  "toast": {
+    "notifications": "Bildirimler",
+    "dismiss": "Kapat — {{title}}"
+  },
+  "command": {
+    "title": "Komut Paleti",
+    "description": "Çalıştırılacak bir komut arayın..."
+  }
+}

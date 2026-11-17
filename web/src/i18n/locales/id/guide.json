@@ -1,0 +1,616 @@
+{
+  "nav": {
+    "rail": "Halaman panduan",
+    "contents": "Isi panduan",
+    "pager": "Halaman panduan lainnya",
+    "youAreHere": "Anda di sini",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya",
+    "pageOf": "Halaman {{current}} dari {{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "Cara menggunakan",
+      "blurb": "Apa itu entri, di mana disimpan, apa konsekuensinya bagi Anda, dan beberapa tombol yang perlu diketahui sebelum memercayakan pencarian kerja padanya."
+    },
+    "screens": {
+      "label": "Setiap layar",
+      "blurb": "Setiap halaman secara bergiliran — kegunaannya, mekanisme yang tidak terlihat jelas, dan apa yang belum terhubung."
+    },
+    "tools": {
+      "label": "Alat",
+      "blurb": "Apa yang benar-benar dapat dilakukan asisten, bagaimana ia dicegah melakukan hal lain, dan bagaimana ia memilih alat yang tepat dari seluruh katalog."
+    },
+    "graph": {
+      "label": "Graf",
+      "blurb": "Apa yang digambar halaman Graf, bagaimana pertanyaan menjadi kueri, dan model entri yang menjadi dasar penyimpanan seluruh aplikasi."
+    },
+    "builtWith": {
+      "label": "Dibangun dengan",
+      "blurb": "Karya sumber terbuka yang membentuk jojo, lisensi yang berlaku, dan bagaimana kodenya disusun."
+    },
+    "controlFlow": {
+      "label": "Graf alur kendali",
+      "blurb": "Setiap modul dan impor sebagai graf, bagaimana kendali bergerak melalui enam alur penggunaan, dan di mana sebuah perubahan seharusnya ditempatkan."
+    },
+    "licence": {
+      "label": "Lisensi",
+      "blurb": "Berapa biaya jojo, apa yang boleh Anda lakukan dengannya, dan ketentuan yang menyertai layanan yang dapat Anda hubungkan."
+    }
+  },
+  "onThisPage": "Di halaman ini",
+  "tour": {
+    "start": "Ikuti tur",
+    "resume": "Lanjutkan tur — langkah {{step}} dari {{total}}"
+  },
+  "gettingStarted": {
+    "title": "Memulai",
+    "progress": "{{done}} dari {{total}} selesai",
+    "allDone": "Semua langkah selesai. Daftar periksa ini membaca entri Anda, jadi akan menyesuaikan jika Anda mengosongkannya.",
+    "intro": "Setiap langkah membuka fitur yang sebenarnya, dan tercentang sendiri begitu entrinya ada. Tidak ada tutorial di sini yang harus Anda ikuti sampai habis.",
+    "done": "Selesai",
+    "srDone": " — selesai",
+    "srNotDone": " — belum selesai",
+    "steps": {
+      "application": {
+        "title": "Tambahkan lamaran",
+        "body": "Sebuah posisi, tahapnya, dan tenggatnya. Semua hal lain di jojo bergantung pada entri ini.",
+        "action": "Lamaran baru"
+      },
+      "dated": {
+        "title": "Beri tanggal pada sesuatu",
+        "body": "Tenggat, wawancara, dan kunjungan kampus adalah satu jenis entri, jadi semuanya sampai ke kalender, minggu mendatang, dan lamarannya sekaligus.",
+        "action": "Acara baru"
+      },
+      "reminder": {
+        "title": "Atur tindak lanjut",
+        "body": "Pengingat adalah entri yang sama dengan dorongan yang diaktifkan. Setelah tanggalnya lewat, pengingat ditandai di dasbor sampai Anda mencentangnya.",
+        "action": "Pengingat baru"
+      },
+      "posting": {
+        "title": "Simpan lowongan sebelum diturunkan",
+        "body": "Tidak ada yang diambil dan tidak ada salinan yang disimpan — yang disimpan adalah URL, pemberi kerja yang ditebak dari URL itu, dan tanggal Anda menyimpannya. Itu cukup untuk menemukan iklannya lagi.",
+        "action": "Buka Pencari lowongan"
+      },
+      "file": {
+        "title": "Arsipkan dokumen Anda",
+        "body": "Letakkan CV atau pernyataan di Brankas. Nama, ukuran, dan jenisnya dicatat; berkas yang Anda letakkan di sesi ini juga dapat dipratinjau.",
+        "action": "Buka Brankas"
+      },
+      "keyword": {
+        "title": "Beri label dengan kata kunci",
+        "body": "Kata kunci adalah milik Anda, dipakai bersama oleh lamaran, pengingat, dan semua isi Brankas — tidak seperti label posisi tetap di bilah atas. Tombol label di baris mana pun menambahkannya.",
+        "action": "Kelola kata kunci"
+      },
+      "draft": {
+        "title": "Tulis draf pesan",
+        "body": "Disusun dari cuplikan email Anda sendiri, dengan posisi, pemberi kerja, dan tanggal yang diisi dari entri. Nama orang tidak pernah diisikan untuk Anda. Tidak ada yang mencatat bahwa Anda sudah mengirimnya, jadi langkah ini tidak tercentang sendiri.",
+        "action": "Tulis draf pesan"
+      }
+    }
+  },
+  "overview": {
+    "title": "Cara menggunakan jojo",
+    "subtitle": "Semuanya berjalan di perangkat Anda. Mulailah sederhana, tambahkan kemampuan saat Anda membutuhkannya.",
+    "tourIntro": "Atau ikuti panduan langsung: sorotan pada halaman yang sebenarnya, dan Anda mencoba setiap hal sambil berjalan. Tur tidak pernah mengetik apa pun untuk Anda, tidak pernah menyimpan entri, dan tidak pernah mengubah pengaturan.",
+    "sections": {
+      "application": "Pantau lamaran",
+      "dates": "Tanggal dan tindak lanjut",
+      "vault": "Brankas",
+      "profile": "Profil Anda",
+      "keys": "Tombol dan urungkan",
+      "keywords": "Kata kunci",
+      "graph": "Tanya graf",
+      "data": "Data Anda",
+      "ladder": "Belum terhubung"
+    },
+    "track": {
+      "hint": "entri yang menjadi pusat semua hal lain",
+      "title": "Pantau lamaran dari melamar sampai tawaran",
+      "intro": "Lamaran adalah satu posisi di satu pemberi kerja. Tanggal, catatan, dokumen, kata kunci, dan setiap angka di halaman <stats>statistik</stats> mengarah kembali ke salah satunya, jadi inilah entri pertama yang layak dibuat. Semuanya ada di <board>papan</board>; untuk menambahkan, tekan <kbd>n</kbd> di mana saja di aplikasi, atau gunakan daftar periksa di atas.",
+      "movesTitle": "Yang diminta setiap perpindahan",
+      "movesIntro": "Dari mana Anda memindahkannya menentukan apa yang ditanyakan. Di papan atau tabel — seret, pil pada kartu, chip pada baris — perpindahan langsung terjadi, dengan Urungkan di notifikasi. Dari dalam entri, empat dari enam tujuan membuka formulir singkat lebih dulu; dua lainnya tetap langsung terjadi, karena dialog yang isinya hanya tombol Konfirmasi adalah polisi tidur, bukan langkah.",
+      "asks": {
+        "submitted": "Tanggal Anda mengirimnya, tautan portal, dan nomor konfirmasi jika ada.",
+        "interview": "Tanggalnya, dan apakah putarannya lewat telepon, video, atau tatap muka. Formulir menawarkan untuk menaruh putaran itu di kalender Anda dengan pengingat.",
+        "offer": "Batas tanggal menjawab, paketnya, dan catatan apa pun. Formulir menawarkan untuk menambahkan tenggat keputusan ke kalender Anda.",
+        "closed": "Bagaimana akhirnya: ditolak, mengundurkan diri, diterima, Anda tolak, atau tanpa kabar — tidak dibalas. Itulah yang dihitung statistik."
+      },
+      "asksNothing": "Tidak ada — perpindahan terjadi saat Anda melakukannya.",
+      "offerQuestion": "Satu pertanyaan tambahan, apa pun tujuannya: memindahkan lamaran yang sudah punya tawaran akan menanyakan apakah detail tawaran dipertahankan atau dikosongkan. Tawaran milik putaran yang menghasilkannya, jadi membuangnya adalah keputusan, bukan efek samping.",
+      "onceTitle": "Setelah entri ada",
+      "once": {
+        "open": "Membuka entri membiarkan daftar tetap di tempatnya — entri terbuka di atasnya, dan Kembali menutup entri tanpa menghilangkan filter Anda. Alamatnya berupa nama, bukan angka, jadi tautan ke lamaran tetap berfungsi setelah muat ulang.",
+        "note": "Catatan tersimpan saat Anda mengklik di luarnya, dan keterangannya ada di bawah. Tidak ada tombol Simpan yang bisa terlupa.",
+        "duplicate": "<lead>Duplikat</lead> untuk melamar lagi: salinannya dimulai lagi di Draf dengan membawa posisi, catatan, lokasi, dan tautan, dan sengaja tidak membawa tawaran, hasil, atau tanggal. jojo mencatat bahwa keduanya adalah salinan satu sama lain.",
+        "delete": "Menghapus lamaran menghapus lamaran dan catatannya. Apa pun yang Anda arsipkan di bawahnya — pengingat, dokumen, kata kunci — dilepas tautannya, tidak dihapus, dan konfirmasinya menyebutkan yang mana.",
+        "address": "Tampilan, kotak pencarian, filter tahap, dan urutan semuanya tersimpan di bilah alamat, jadi tampilan yang Anda atur adalah tautan yang bisa disimpan: <bystage>tabel, diurutkan menurut tahap</bystage> dan <atoffer>semua yang di tahap tawaran</atoffer> hanyalah URL. Keduanya sengaja menyebut tabel: chip tahap dan pengurutan kolom adalah kontrol milik tabel, dan papan tidak punya filter tahap karena papan sudah berupa enam kolom tahap — jadi tahap di alamat tidak berpengaruh sampai alamatnya juga menyebut tabel. Kotak pencarian berfungsi di keduanya. Filter posisi dan chip kata kunci di sampingnya tidak ada di keduanya: itu pilihan tab ini, bukan bagian dari alamat, dan diatur ulang saat Anda memuat ulang."
+      }
+    },
+    "stageRail": {
+      "title": "Enam tahap yang dilalui lamaran",
+      "desc": "Draf, Terkirim, Panggilan seleksi, Wawancara, Tawaran, dan Ditutup, berurutan, dalam satu jalur. Pindah ke Terkirim, Wawancara, Tawaran, atau Ditutup membuka formulir singkat; pindah ke Draf atau Panggilan seleksi langsung terjadi. Daftar di bawahnya menyebutkan apa yang diminta setiap formulir.",
+      "asks": "meminta"
+    },
+    "dates": {
+      "hint": "satu jenis entri, tiga nama",
+      "title": "Tanggal, tenggat, dan tindak lanjut",
+      "intro": "Tenggat pengiriman, wawancara, kunjungan kampus, dan catatan untuk menghubungi seseorang adalah jenis entri yang sama dengan label berbeda, dan pengingat adalah entri itu dengan dorongan yang diaktifkan. Inilah satu hal di jojo yang perlu diketahui sebelum memakainya: tambahkan sesuatu sekali dan itu sampai ke <calendar>kalender</calendar>, minggu mendatang di <today>Hari ini</today>, dan lamaran terkaitnya sekaligus, karena tidak ada yang perlu diselaraskan.",
+      "items": {
+        "grid": "Kisi bulan dan daftar hari adalah satu halaman. Menyeret item ke hari lain menjadwalkannya ulang dan menawarkan Urungkan di notifikasi.",
+        "colour": "Warna hanya mengikuti tanggal — terlambat, jatuh tempo dalam 48 jam, selesai — jadi tidak ada yang menjadi usang hanya karena dibiarkan. Keterangannya ada di halaman.",
+        "url": "Bulan yang sedang Anda lihat, hari yang Anda pilih, dan item yang Anda buka semuanya ada di URL, jadi hari tertentu bisa ditautkan.",
+        "reminders": "Pengingat juga punya daftarnya sendiri di <reminders>Brankas</reminders>, tempat mencentangnya adalah seluruh tugasnya. Pengingat yang terlambat tetap ditandai di Hari ini sampai dicentang.",
+        "mint": "Memindahkan lamaran ke Wawancara atau Tawaran menawarkan untuk membuatkan tanggalnya, jadi putaran yang baru Anda jadwalkan tidak perlu dimasukkan dua kali."
+      }
+    },
+    "vault": {
+      "hint": "lima alat, satu rak",
+      "title": "Arsipkan yang akan Anda perlukan lagi",
+      "reminders": {
+        "name": "Pengingat",
+        "body": "Semua yang punya dorongan, dalam satu daftar, dengan yang terlambat di atas."
+      },
+      "links": {
+        "name": "Tautan",
+        "body": "Portal, halaman pendanaan, orang yang layak diingat. Masing-masing masuk ke satu kategori, dan Anda bisa memindahkannya ke kategori lain nanti."
+      },
+      "files": {
+        "name": "Berkas",
+        "body": "Nama, ukuran, dan jenis dokumen dicatat. <strong>Dokumennya sendiri tidak</strong> — jojo tidak punya tempat di disk Anda untuk menaruhnya. Berkas yang Anda pilih selama kunjungan ini dapat dipratinjau sampai Anda memuat ulang; setelah itu barisnya menjadi catatan bahwa dokumen itu ada, yang cukup untuk mengetahui apa yang Anda kirim dan kapan."
+      },
+      "snippets": {
+        "name": "Cuplikan",
+        "body": "Paragraf yang terus Anda tulis ulang. Dialog <strong>Tulis draf pesan</strong> disusun dari cuplikan ini dengan posisi, pemberi kerja, dan tanggal yang diisi dari entri — nama orang tidak pernah diisikan untuk Anda, karena menebak nama adalah cara pesan terkirim kepada orang yang salah."
+      },
+      "tools": {
+        "name": "Alat",
+        "body": "Kalkulator, untuk hitungan gaji yang selalu muncul di setiap tawaran. Riwayatnya hanya untuk kunjungan ini."
+      }
+    },
+    "profile": {
+      "hint": "profil bukan bagian dari daftar periksa",
+      "title": "Isi profil Anda",
+      "body": "Data dasar, tautan, posisi yang dituju, dan istilah pencocokan Anda ada di <profile>Profil saya</profile>. Itulah dasar penilaian pencari dan bahan draf asisten, jadi semuanya penting. Menyimpan menulisnya ke browser ini dan menyimpannya, persis seperti entri lain — daftar periksa di atas tidak menyertakannya karena profil hanya ada satu, dan langkah yang sudah selesai begitu Anda tiba bukanlah langkah.",
+      "documents": "Dokumen yang Anda cantumkan di profil diarsipkan di kategori dokumen Brankas, bukan di tempat kedua yang bisa tidak sesuai dengannya, dan seluruh profil tersimpan sebagai satu perubahan, jadi satu Urungkan mengembalikannya."
+    },
+    "keys": {
+      "hint": "tiga tombol, dan dua Urungkan yang berbeda",
+      "title": "Bekerja tanpa mouse",
+      "find": "<lead>Temukan apa saja, dan jalankan.</lead> Ketik beberapa kata dan daftar lamaran, pengingat, dan kalender Anda menyempit — kata utuh dalam urutan apa pun, jadi “rice stat” menemukan posisi Statistik di Rice. Di bawah entri ada kelompok <strong>Alat</strong>: operasi bernama yang membentuk jojo, masing-masing dengan formulir yang dibuat dari masukan yang benar-benar diterima operasi itu. Memilih salah satunya melakukan tindakan nyata pada entri nyata Anda, jadi muncul notifikasi, tercatat di log audit, dan menawarkan Urungkan yang sama seperti saat operasi itu dijalankan dari kartu. Di bawahnya, <strong>Buka</strong> menjangkau setiap halaman, termasuk enam yang tidak tercantum di bilah samping.",
+      "make": "<lead>Buat sesuatu.</lead> Enam baris yang sama dengan tombol Baru: lamaran, pengingat, acara, draf pesan, simpan tautan, simpan lowongan. Diabaikan saat dialog sedang terbuka, dan diabaikan saat Anda mengetik, jadi huruf n tetap huruf.",
+      "undo": "<lead>Urungkan dan ulangi, di mana saja.</lead> Bukan per halaman — tombol ini milik aplikasi, dan akan mengurungkan perubahan tahap yang Anda buat di layar lain dua menit lalu. Sengaja diabaikan saat kursor berada di kolom teks, jadi di dalam catatan yang setengah diketik, urungkan milik browser Anda yang berlaku dan ⌘Z yang tidak sengaja tidak dapat diam-diam membalikkan entri lain di balik dialog.",
+      "twoUndosTitle": "Dua Urungkan, dan fungsinya berbeda",
+      "twoUndos": "<kbd>⌘Z</kbd> membalikkan apa pun yang berada di puncak tumpukan saat Anda menekannya. <strong>Urungkan</strong> di notifikasi membalikkan <strong>perubahan itu</strong>, meskipun Anda sudah melakukan tiga hal sejak notifikasi muncul — itulah intinya, karena notifikasi hanya bertahan beberapa detik dan Anda terus bekerja. Satu tindakan pengguna adalah satu urungkan berapa pun entri yang tersentuh: membuat lamaran menulis lamaran, kata kuncinya, dan tenggat yang dibuat formulir, dan mengurungkannya membatalkan ketiganya alih-alih meninggalkan tenggat yang menunjuk ke kekosongan.",
+      "pile": "Tumpukan menyimpan lima puluh perubahan terakhir dan dimulai kosong setiap kunjungan — tumpukan urungkan yang bertahan setelah muat ulang akan menawarkan untuk mengurungkan Selasa lalu. Jika jojo terbuka di dua tab, tab yang Anda kunjungi kembali membaca ulang database dan memulai lagi karena alasan yang sama: tab itu tidak dapat mengurungkan sesuatu yang dilakukan tab lain. Semuanya tetap tercantum di <settings>Pengaturan → Log audit</settings>, yang terbaru di atas, dan baris terbaru di sana dapat diurungkan dari sana."
+    },
+    "keywords": {
+      "hint": "milik Anda, dan dipakai bersama oleh semuanya",
+      "title": "Kata kunci, dan label posisi yang bukan kata kunci",
+      "intro": "Dua hal di jojo tampak seperti label tetapi perilakunya sama sekali berbeda. Tertukar di antara keduanya adalah cara paling umum berakhir dengan filter yang tidak menemukan apa yang Anda tahu ada.",
+      "yoursTitle": "Kata kunci adalah milik Anda",
+      "yours": "Anda yang membuat, menamai, mewarnai, dan memasangnya pada apa saja — lamaran, pengingat, tautan, berkas, cuplikan. Kata kunci melintasi setiap jenis entri, itulah yang membuat “tampilkan semua yang berkaitan dengan rujukan” menjadi pertanyaan yang dapat dijawab jojo.",
+      "record": "Kata kunci adalah entri tersendiri, bukan potongan teks yang disalin ke baris-baris: ganti namanya dan setiap baris yang memakainya ikut berubah, dan mengosongkan semua entri membiarkan kata kunci Anda tetap ada dengan hitungan nol. <settings>Pengaturan → Kata kunci</settings> mengganti nama, mengganti warna, dan menghapusnya, serta memberi tahu berapa entri yang memakai masing-masing sebelum Anda menghapusnya.",
+      "rolesTitle": "Label posisi adalah daftar Anda",
+      "roles": "Penyimpanan baru dimulai dengan lima — Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer — dan <profile>Profil</profile> mengeditnya. Dulu label ini tetap, dengan alasan statistik membandingkan antarlabel; kenyataannya, siapa pun di luar ilmu komputer akademik mengarsipkan seluruh pencariannya di bawah label yang tidak benar, lalu grafik membaca label itu seolah-olah benar. Menghapus salah satunya membiarkan setiap lamaran yang memakainya tetap di tempatnya.",
+      "roleFilter": "Hanya lamaran yang memakainya, dan filter posisi ada di bilah alat <applications>Lamaran</applications> di samping satu-satunya daftar yang difilternya — dulu filter ini disematkan di bilah atas, yang membuat setiap angka di tempat lain ambigu apakah menghitung seluruh pencarian Anda. Patokannya: label posisi adalah jenis pekerjaannya, kata kunci adalah alasan Anda peduli padanya."
+    },
+    "graph": {
+      "hint": "tanpa bahasa kueri yang perlu dipelajari",
+      "title": "Ajukan pertanyaan ke graf",
+      "intro": "Setiap entri di jojo adalah simpul, dan setiap tautan antara dua entri adalah sisi nyata di antara keduanya — itu bukan gambaran cara kerjanya, melainkan cara penyimpanannya. Halaman <graph>Graf</graph> menggambarnya, dan panel kuerinya memungkinkan Anda mengajukan pertanyaan yang tidak dapat dijawab sebuah daftar. Halaman ini dicapai dari petak <strong>Penyimpanan browser</strong> di bilah samping, yang bukan pintu yang jelas.",
+      "pickers": "Sebuah pertanyaan terdiri dari tiga pemilih: apa yang Anda cari, apakah ia <strong>memiliki</strong> atau <strong>tidak memiliki</strong> suatu relasi, dan apa yang ada di ujung lainnya. Jawaban diperbarui saat Anda mengubahnya — tidak ada tombol Jalankan, jadi tabel dan kontrol di atasnya tidak pernah bertentangan.",
+      "examplesTitle": "Contoh yang layak diklik lebih dulu",
+      "examples": {
+        "noFollowUp": "Lamaran tanpa jadwal tindak lanjut — celah yang membuat orang kehilangan wawancara.",
+        "keyword": "Semua yang diberi satu kata kunci, di setiap jenis entri.",
+        "twice": "Organisasi yang Anda lamar lebih dari sekali.",
+        "unlinked": "Pengingat yang tidak ditautkan ke lamaran mana pun — pekerjaan yang akan Anda lakukan tanpa tahu alasannya.",
+        "unusedFiles": "Berkas yang tidak dipakai lamaran mana pun."
+      },
+      "path": "Masing-masing dibangun dari entri yang benar-benar Anda miliki, dan contoh yang tidak punya data untuk ditanyai di penyimpanan Anda dimatikan alih-alih menjawab dengan tabel kosong. Bentuk kedua, <strong>Jalur</strong>, menjawab “bagaimana keduanya terhubung” — dan menjawab “tidak terhubung” jika memang tidak, yang merupakan hasil nyata, bukan kegagalan.",
+      "illustrative": "Baris kueri di bawah pemilih, yang tampak seperti kode, diberi label <strong>ilustrasi</strong> di halaman dan memang begitu maksudnya: tidak ada yang mengurainya, dan baris itu ada agar melihat bentuknya di samping kata-kata membuat pemilih mudah dipahami. Halaman <guide>Graf</guide> di panduan ini menjelaskan apa yang digambar dan alasannya."
+    },
+    "data": {
+      "hint": "di mana tempatnya, dan apa yang bisa salah",
+      "title": "Data Anda",
+      "askedTitle": "Pertanyaan yang diajukan jojo sekali",
+      "asked": "Saat pertama kali dijalankan, jojo bertanya apakah akan memulai dengan data demo atau kosong, dan tidak mengizinkan Anda melewati pertanyaan itu — orang asing yang melihat dua belas lamaran ke pemberi kerja yang belum pernah dihubunginya tidak dapat mengetahui apakah aplikasi mengarangnya atau memulihkan milik orang lain. Pertanyaan ini diajukan sekali karena jawabannya dicatat, dan tidak ada jawaban yang final: <settings>Pengaturan → Data Anda</settings> punya kedua pilihannya, dan mengosongkan entri demo tidak memunculkan pertanyaan itu lagi.",
+      "diskTitle": "Tidak ada yang menunggu disk",
+      "disk": "Perubahan tampil di layar saat itu juga, dan ditulis ke database browser sesaat kemudian di latar belakang. Itulah sebabnya tidak ada ikon pemuatan saat menyimpan, dan mengapa menutup tab aman — jojo menuliskan apa yang dipegangnya saat tab disembunyikan atau ditutup, termasuk di ponsel yang menutup tab tanpa peringatan. Itu juga sebabnya spanduk “tidak ada ruang tersisa” di bawah tidak punya tombol Muat ulang: perubahan Anda yang belum tersimpan ada di antrean itu, dan memuat ulang justru akan membuangnya.",
+      "stripsTitle": "Jika muncul strip di atas halaman",
+      "strips": "Tidak satu pun dari ini menghentikan jojo — yang tampil di layar itu nyata, dan masih bisa dibaca serta diekspor. Strip, bukan notifikasi, karena pesan bahwa perubahan Anda tidak tersimpan tidak boleh hilang setelah empat detik.",
+      "quoted": "“{{text}}”",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo tidak dapat membuka database-nya",
+          "means": "Tab jojo lain terbuka dengan versi aplikasi yang berbeda. Entri Anda masih ada di disk — tab ini tidak dapat membacanya, jadi tidak menampilkan apa pun alih-alih menebak. Tutup tab lain dan muat ulang."
+        },
+        "blocked": {
+          "says": "Browser ini tidak mengizinkan jojo membuka penyimpanannya",
+          "means": "Jendela pribadi, atau browser yang dikelola organisasi Anda. jojo tetap berjalan, tetapi sebagai ruang kerja kosong: yang sudah tersimpan di perangkat ini tidak ditampilkan, dan apa pun yang Anda ketik hilang saat tab ditutup. Ekspor sebelum pergi jika Anda menambahkan sesuatu yang layak disimpan."
+        },
+        "updated": {
+          "says": "jojo diperbarui di tab lain",
+          "means": "Versi baru dimuat di tempat lain dan tab ini menutup database-nya agar pembaruan dapat berjalan. Tidak ada perubahan di sini yang disimpan. Muat ulang."
+        },
+        "full": {
+          "says": "Browser ini sudah kehabisan ruang",
+          "means": "Penyimpanan berhenti, dan spanduk menghitung perubahan yang ada di layar tetapi belum ditulis. Sengaja tidak ada tombol Muat ulang di sini — memuat ulang justru akan menghilangkannya. Ekspor dulu, kosongkan sebagian ruang, lalu muat ulang."
+        },
+        "unsaved": {
+          "says": "N perubahan tidak dapat disimpan",
+          "means": "jojo masih mencoba lagi dan antrean diproses berurutan, jadi angka ini bisa turun dengan sendirinya. Ekspor jika Anda perlu salinan sekarang."
+        },
+        "unreadable": {
+          "says": "N entri tidak dapat dibaca",
+          "means": "Ada data di disk yang tidak sesuai harapan jojo, jadi data itu dilewati alih-alih ditampilkan setengah terbaca. Tidak ada yang dihapus, dan Pengaturan → Diagnostik menyebutkan entri tersebut berdasarkan id."
+        }
+      },
+      "recovery": "Ada satu lagi yang seharusnya tidak perlu Anda lihat. Jika database ada tetapi tidak dapat dibaca, jojo menampilkan layar pemulihan <strong>sebagai ganti</strong> aplikasi — tidak ada yang dipasang yang dapat menimpa apa yang masih ada di disk, dan jojo tidak pernah diam-diam memulai lagi dari nol. Layar itu menawarkan tiga hal sesuai urutan biayanya bagi Anda: unduh baris yang berhasil dibaca, coba lagi, atau mulai baru, satu-satunya yang bertanya lebih dulu.",
+      "controlsTitle": "Kontrol di Pengaturan",
+      "controls": {
+        "export": {
+          "name": "Ekspor cadangan",
+          "body": "Semuanya, dalam satu berkas berversi: lamaran, linimasa, brankas, lowongan tersimpan, kata kunci beserta labelnya, dan profil Anda. Berkas ditulis sebagai <strong>{{file}}</strong>, bertanggal agar ekspor kedua tidak menimpa yang pertama. Ini salinan yang diambil saat Anda menekannya — tidak mengikuti apa yang Anda lakukan selanjutnya, dan merupakan satu-satunya salinan data Anda yang tidak berada di perangkat ini. Ekspor ke Excel dan Impor dimatikan dan menjelaskan alasannya saat Anda mengarahkan kursor ke sana."
+        },
+        "demo": {
+          "name": "Muat data demo",
+          "body": "Mengganti isi yang ada, bukan menggabungkannya. Layak ditekan pada penyimpanan kosong untuk melihat seperti apa penyimpanan yang terisi; jika tidak, ekspor dulu."
+        },
+        "clear": {
+          "name": "Kosongkan semua entri",
+          "body": "Lamaran, linimasa, brankas, lowongan tersimpan, dan profil Anda. <strong>Kata kunci Anda tetap disimpan</strong> — kata kunci adalah entri tersendiri dan Anda yang menamainya — jadi setiap hitungan di panel kata kunci menjadi nol alih-alih daftarnya kosong."
+        },
+        "clearStorage": {
+          "name": "Bersihkan penyimpanan browser",
+          "body": "Semua yang pernah disimpan situs ini di browser Anda — entri beserta database-nya, pengaturan tema dan suara, cache dan cookie — lalu muat ulang. jojo kembali seperti di perangkat baru, lengkap dengan pertanyaan saat pertama kali dijalankan. Tidak ada server yang menyimpan salinan, jadi inilah benar-benar semuanya."
+        }
+      },
+      "lastThree": "Tiga yang terakhir adalah satu-satunya penulisan yang tidak dapat dibatalkan <kbd>⌘Z</kbd>, itulah sebabnya masing-masing bertanya lebih dulu dan menyebutkan persis apa yang terkena. Ketiganya tetap tercatat di log audit. <strong>Diagnostik</strong>, di halaman yang sama, menghitung isi penyimpanan Anda, berapa banyak ruang yang diberikan browser kepada jojo, dan menyebutkan apa pun yang ditolaknya untuk dibaca.",
+      "moveTitle": "Pindah ke perangkat lain",
+      "move": "<transfer>Transfer</transfer> adalah layar untuk menyerahkan entri Anda ke perangkat kedua: pilih arah, baca kode pemasangan, lihat persis apa yang akan dipindahkan dan berapa banyak, dan pilih apakah dokumen ikut. <strong>Tidak ada yang dikirim di build ini — tidak ada koneksi yang dibuka dan tidak ada yang ditulis.</strong> Layar ini layak dicoba karena bentuknya seperti serah terima yang sesungguhnya dan hitungannya dibaca dari penyimpanan Anda yang nyata, tetapi cara memindahkan data Anda saat ini adalah ekspor di atas."
+    },
+    "browserDb": {
+      "title": "Browser Anda adalah database-nya",
+      "body": "Setiap entri ditulis ke database di dalam browser ini sambil Anda bekerja, jadi menutup tab aman. Tidak ada yang keluar dari perangkat ini dan tidak ada yang disinkronkan — bersihkan data browser, ganti browser, atau kehilangan disk, maka data ikut hilang. Ekspor cadangan <kbd>.json</kbd> dari <settings>Pengaturan</settings> untuk apa pun yang ingin Anda simpan di tempat lain."
+    },
+    "savePath": {
+      "title": "Yang terjadi saat Anda menyimpan sesuatu",
+      "desc": "Menekan Simpan langsung mengubah tampilan di layar, dan penulisannya diantrekan lalu dilakukan ke database browser sesaat kemudian. Jika penulisan itu gagal, perubahan tetap disimpan di antrean dan dilaporkan di strip di atas halaman alih-alih dibuang.",
+      "press": {
+        "line1": "Anda menekan",
+        "line2": "Simpan"
+      },
+      "screen": {
+        "line1": "Di layar,",
+        "line2": "saat itu juga"
+      },
+      "saved": {
+        "line1": "Tersimpan di",
+        "line2": "browser ini"
+      },
+      "fail": {
+        "line1": "Penulisan yang gagal disimpan",
+        "line2": "dan dilaporkan, tidak dibuang."
+      }
+    },
+    "ladder": {
+      "title": "Yang dilakukan jojo dengan lebih banyak di perangkat",
+      "aside": "setiap anak tangga nyata; masing-masing opsional",
+      "intro": "Dua anak tangga pertama adalah pelacak yang tidak pernah meminta apa pun dari Anda. Mulai anak tangga ketiga, jojo menjadi asisten yang mengerjakan pencarian bersama Anda — dan setiap anak tangga di atasnya tetap boleh Anda lewati.",
+      "layers": {
+        "browser": {
+          "name": "Hanya browser",
+          "requires": "Tidak ada yang perlu disiapkan",
+          "gives": "Pantau lamaran dan tenggat, dan simpan dokumen yang Anda lampirkan"
+        },
+        "backup": {
+          "name": "+ Cadangan yang Anda simpan",
+          "requires": "Tempat untuk menaruh berkas",
+          "gives": "Satu berkas berisi setiap entri dan setiap dokumen, dapat dipulihkan dengan sekali klik"
+        },
+        "model": {
+          "name": "+ Model lokal",
+          "requires": "Ollama, vLLM, atau LM Studio — atau kunci NVIDIA gratis",
+          "gives": "Separuh yang agentik: asisten berutas yang membaca dan menulis entri Anda dengan persetujuan Anda, alur kerja Pencari lowongan yang melengkapi profil Anda dan memantau lowongan, \"Tanya graf\" dalam satu kalimat, dan penilaian pencari yang sesungguhnya"
+        },
+        "reader": {
+          "name": "+ Pembaca dokumen",
+          "requires": "MarkItDown, berjalan secara lokal",
+          "gives": "Model membaca PDF, berkas Word, dan presentasi Anda — dan lowongan kerja, jadi Baru → Lamaran dari tautan mengisi formulirnya"
+        },
+        "extension": {
+          "name": "+ Ekstensi",
+          "requires": "Chrome, Edge, Brave, atau Arc",
+          "gives": "Simpan lowongan persis seperti isinya. Ekstensi juga satu-satunya bagian jojo yang bukan halaman — itulah yang memungkinkan alur kerja menyisir papan lowongan, dan salinan yang di-hosting menjangkau pembaca dokumen di perangkat Anda sendiri"
+        }
+      },
+      "built": "sudah dibuat",
+      "notBuilt": "belum dibuat",
+      "outro": "Setiap halaman menyebutkan sendiri di anak tangga mana ia berada, jadi Anda tidak perlu kembali ke sini. <assistant>Asisten</assistant> adalah obrolan agentik berutas jika model terhubung dan lima contoh yang dikerjakan jika tidak, dengan lencana di kedua keadaan, dan <scout>Pencari lowongan</scout> menilai secara nyata berdasarkan profil Anda serta menyebutkan apa yang dicocokkan. <screens>Setiap layar</screens> membahas sisanya, halaman demi halaman.",
+      "backup": {
+        "hint": "sudah tersedia",
+        "title": "Simpan cadangan",
+        "storedTitle": "Dokumen Anda disimpan di sini",
+        "stored": "CV dan surat pengantar yang Anda lampirkan disimpan di browser ini dan tetap ada setelah tab ditutup. Tidak ada yang diunggah ke mana pun — dan tidak ada yang keluar dari perangkat ini kecuali Anda sendiri yang mengunduhnya.",
+        "oneFileTitle": "Satu berkas berisi semuanya",
+        "oneFile": "<settings>Pengaturan</settings> menulis cadangan yang membawa setiap entri, setiap tautan di antaranya, dan setiap dokumen, semuanya dalam satu berkas. Memulihkannya mengembalikan ketiganya.",
+        "whyTitle": "Mengapa ini penting",
+        "why": "Browser dapat menghapus penyimpanannya sendiri saat disk penuh, dan <kbd>Hapus data penjelajahan</kbd> selalu menghapusnya. Cadangan yang Anda simpan adalah satu-satunya salinan yang tidak terkena keduanya."
+      },
+      "model": {
+        "hint": "belum terhubung",
+        "title": "Tambahkan model lokal",
+        "connectTitle": "Hubungkan",
+        "connect": "Jalankan vLLM, Ollama, atau LM Studio dan masukkan endpoint-nya di <settings>Pengaturan</settings>. Server apa pun yang kompatibel dengan OpenAI dapat dipakai. Tidak punya GPU? Kunci gratis dari build.nvidia.com menjalankan agen yang sama dari layar yang sama — dibatasi lajunya alih-alih ditagih, dan satu-satunya konsekuensinya adalah entri Anda keluar dari perangkat.",
+        "changesTitle": "Yang berubah",
+        "changes": "Penulisan draf tidak lagi berupa templat isian, melainkan membaca profil dan dokumen Anda. Halaman <assistant>Asisten</assistant> menampilkan contoh yang dikerjakan sampai saat itu.",
+        "scoringTitle": "Alur kerja pencari mulai menilai",
+        "scoring": "Alur kerja adalah pencarian tersimpan yang dapat Anda tulis hari ini. Penilaian adalah separuh yang menunggu model, dan spanduk di halaman itu menyatakannya alih-alih menampilkan angka yang tidak dihasilkan apa pun."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Setiap layar",
+    "title": "Setiap layar, dan apa yang bisa dan tidak bisa dilakukannya",
+    "subtitle": "Satu bagian per halaman — kegunaannya, apa yang tidak terlihat jelas, dan apa yang belum terhubung.",
+    "caption": "Tiga belas bagian — langsung ke yang Anda cari",
+    "sections": {
+      "doors": "Letak setiap halaman",
+      "dashboard": "Hari ini",
+      "applications": "Lamaran",
+      "calendar": "Kalender",
+      "vault": "Brankas",
+      "scout": "Pencari lowongan",
+      "statistics": "Statistik",
+      "graph": "Graf",
+      "transfer": "Transfer",
+      "profile": "Profil saya",
+      "assistant": "Asisten",
+      "settings": "Pengaturan",
+      "guide": "Panduan ini"
+    },
+    "parts": {
+      "notObvious": "Yang tidak terlihat jelas",
+      "whatIsReal": "Yang nyata",
+      "addressNothing": "<lead>Di bilah alamat</lead> tidak membawa apa pun."
+    },
+    "doors": {
+      "hint": "enam halaman ada di bilah samping; enam tidak",
+      "title": "Letak setiap halaman",
+      "intro": "Bilah samping mencantumkan enam halaman. Enam lainnya dicapai dari tempat yang sama sekali berbeda: ikon di bilah atas, atau salah satu dari empat petak status di bagian bawah bilah samping, yang tampak seperti tampilan informasi tetapi juga tombol. Di bawah lebar laptop, bilah samping menjadi laci di balik tombol menu di kiri atas; bilah atas ada di setiap layar pada setiap ukuran.",
+      "listTitle": "Setiap rute, dan kontrol yang membukanya",
+      "where": {
+        "dashboard": "Bilah samping, baris pertama. Juga halaman pembuka jojo.",
+        "applications": "Bilah samping. Lencananya menghitung entri yang Anda tandai untuk tindak lanjut.",
+        "calendar": "Bilah samping. Lencananya menghitung yang terjadwal dalam tujuh hari ke depan.",
+        "vault": "Bilah samping. Lencananya menghitung pengingat yang lewat tanggalnya. <code>/reminders</code> dialihkan ke sini, tempat halaman itu dipindahkan.",
+        "scout": "Bilah samping. Lencananya menghitung kecocokan yang belum dijadikan lamaran.",
+        "statistics": "Bilah samping, baris terakhir.",
+        "graph": "Petak bertanda <strong>Penyimpanan browser</strong>, di bagian bawah bilah samping. Tidak ada bagian lain aplikasi yang menyebutnya Graf, itulah sebabnya inilah halaman yang paling sulit ditemukan secara tidak sengaja di jojo.",
+        "transfer": "Petak bertanda <strong>Transfer</strong>, dan <settings>Pengaturan → Data Anda</settings>.",
+        "profile": "Ikon orang di bilah atas.",
+        "assistant": "Ikon robot di bilah atas.",
+        "settings": "Ikon roda gigi di bilah atas. Petak <strong>Model lokal</strong> juga mengarah ke sini — di sinilah model dikonfigurasi.",
+        "guide": "Tanda tanya, ikon terakhir di bilah atas. Tidak ada di bilah samping."
+      },
+      "palette": "Ada satu pintu yang menjangkau semuanya, dan karena itulah enam halaman tersembunyi hanya merepotkan, bukan masalah: <kbd>⌘K</kbd> diakhiri dengan kelompok <strong>Buka</strong> yang mencantumkan setiap halaman, termasuk masing-masing dari empat halaman panduan ini. <overview>Cara menggunakan jojo</overview> membahas fungsi lain palet itu.",
+      "everyTitle": "Dua hal yang berlaku di setiap halaman",
+      "switches": "Sakelar di balik roda gigi di samping judul halaman — tampilkan catatan, baris ringkas, titik sebagai ganti judul, tampilkan jumlah — mengubah apa yang digambar halaman itu dan hanya berlaku untuk kunjungan ini. Sakelar ini tidak ada di bilah alamat dan tidak disimpan; tema dan sakelar suara di Pengaturan disimpan, dan keduanya pengecualian.",
+      "defaults": "Jika halaman menyimpan keadaan di alamat, nilai yang sama dengan tampilan bawaan halaman tidak dicantumkan. Itulah sebabnya <code>/applications</code> dan <code>/applications?view=board&stage=all&sort=daysAgo</code> adalah layar yang sama, dan mengapa yang lebih ringkas yang Anda dapatkan saat menghapus filter."
+    },
+    "doorsDiagram": {
+      "title": "Dari mana setiap halaman dicapai",
+      "desc": "Enam baris di bilah samping membuka Dasbor, Lamaran, Kalender, Brankas, Pencari lowongan, dan Statistik. Empat petak di bawahnya membuka Graf, Transfer, dan — untuk jembatan dan model — Pengaturan. Empat ikon di kanan bilah atas membuka Profil saya, Pengaturan, Asisten, dan panduan ini. Tidak ada di daftar bilah samping yang mengarah ke enam yang terakhir itu.",
+      "search": "Cari…",
+      "new": "Baru",
+      "topBar": {
+        "line1": "Profil saya · Pengaturan ·",
+        "line2": "Asisten · Cara menggunakan"
+      },
+      "sidebar": {
+        "line1": "Dasbor · Lamaran · Kalender",
+        "line2": "Brankas · Pencari lowongan · Statistik"
+      },
+      "tiles": "Graf · Transfer · Pengaturan"
+    },
+    "applications": {
+      "where": "bilah samping · papan, tabel, dan satu entri",
+      "open": "Buka papan",
+      "intro": "Setiap posisi yang Anda pantau, dalam salah satu dari dua tata letak atas entri yang sama, ditambah entri itu sendiri di alamatnya sendiri. Enam tahap dan apa yang diminta saat berpindah di antaranya ada di <overview>Cara menggunakan jojo</overview>; inilah halaman tempat semuanya terjadi.",
+      "boardTitle": "Papan dan tabel bukan tampilan yang sama dua kali",
+      "board": {
+        "columns": "Papan berisi satu kolom per tahap dengan jumlah di setiap judulnya. <strong>Tambah di sini</strong> di bagian bawah kolom membuka entri baru yang sudah berada di tahap itu — mencatat pekerjaan yang sudah Anda wawancarai tidak seharusnya berarti menambahkan draf lalu menyeretnya empat kolom.",
+        "sort": "Tabel diurutkan menurut Posisi, Tahap, dan Aktivitas terakhir; mengklik judul yang sama lagi membalik urutannya. Jenis posisi dan Tanggal berikutnya adalah kolom, bukan kunci pengurutan.",
+        "chips": "Chip filter tahap hanya ada di tabel. Papan sudah dikelompokkan menurut tahap, jadi memfilternya akan mengosongkan lima kolom alih-alih memendekkan daftar — beralih ke Papan menghapus filter itu alih-alih menyembunyikannya dalam keadaan tetap aktif.",
+        "search": "Kotak pencarian mencocokkan pemberi kerja, posisi, catatan, label posisi, dan nama tahap, jadi mengetik “tawaran” menemukan entri yang satu-satunya penyebutannya adalah chip. Jumlah pada chip tahap dihitung dari apa yang tersisa setelah pencarian dan chip kata kunci, bukan dari semuanya.",
+        "empty": "Saat daftar kosong, halaman menyebutkan filter yang menyebabkannya, dan menawarkan untuk menghapus semuanya sekaligus."
+      },
+      "moveTitle": "Memindahkan kartu antartahap",
+      "move": "Pegangan ada di tepi kiri kartu. Seret dan kartu terangkat dari kolomnya — kolom yang sedang Anda lewati mendapat batas aksen dan membuka slot bergaris putus-putus tempat kartu akan mendarat. Menyeret bukan satu-satunya cara, dan dengan papan ketik justru cara yang lambat — melintasi dua kolom berarti satu Spasi dan dua puluh tekanan panah. Setiap kartu punya menu tahap di bawah pil tahapnya, dan di tabel chip tahap pada baris adalah menu yang sama; keduanya cukup dua tekanan.",
+      "fromBoard": {
+        "name": "Dari papan atau tabel",
+        "body": "Perpindahan terjadi saat Anda melakukannya, dan notifikasi menyebutkan tahap asalnya serta menawarkan Urungkan. Seret dan pilihan menu adalah penulisan yang sama, jadi salah lepas sama mudahnya dipulihkan seperti salah klik — yang dulu tidak begitu, sampai seret melewati jalur yang sama dengan semua hal lain."
+      },
+      "fromRecord": {
+        "name": "Dari dalam entri",
+        "body": "Menu tahap di judul entri itu sendirilah yang dapat membuka formulir singkat lebih dulu, dan hanya terbuka jika perpindahan itu perlu menanyakan sesuatu: Terkirim, Wawancara, Tawaran, dan Ditutup bertanya, Draf dan Panggilan seleksi tidak. Meninggalkan entri yang sudah punya tawaran selalu bertanya, apa pun tujuannya, karena tawaran harus disimpan atau dibuang secara sengaja."
+      },
+      "exits": "Formulir punya tiga jalan keluar dan tidak ada yang menjebak: <strong>Batal</strong> tidak menulis apa pun, <strong>Pindahkan tanpa detail</strong> mengubah tahap dan tidak menyentuh hal lain, dan yang terakhir menerapkan apa yang Anda isi. Jika formulir menawarkan untuk menaruh tanggal di kalender Anda, notifikasi setelahnya menyebutkan bahwa itu sudah dilakukan.",
+      "recordTitle": "Entri itu sendiri",
+      "record": {
+        "opens": "Entri terbuka di atas daftar, bukan menggantikannya. Di laptop, entri berupa lembar di sisi kanan papan, ditutup dengan Escape, latar belakang, atau X di judulnya sendiri; di bawah lebar itu, entri memenuhi seluruh halaman. Bagaimanapun, Kembali menutup entri dan membiarkan tampilan, pencarian, tahap, dan urutan Anda persis seperti semula.",
+        "address": "Alamatnya berupa nama — <code>/applications/rice</code> — karena id entri dibuat per penyimpanan dan id yang ditandai akan mati setelah data demo dimuat lagi. Tautan yang dibuat dari id tetap berfungsi.",
+        "note": "Catatan tersimpan saat Anda mengklik di luarnya dan menampilkan “Catatan disimpan” di bawahnya. Tidak ada tombol Simpan yang bisa terlupa.",
+        "delete": "Penghapusan menghitung apa yang tetap ada sebelum bertanya — pengingat, acara, dan item tersimpan yang diarsipkan di entri itu tetap disimpan dan dilepas tautannya, tidak pernah dihapus — dan Urungkan di notifikasi juga mengembalikan tautan itu, yang tidak dapat Anda bangun ulang dengan menambahkan lamaran lagi.",
+        "deleted": "Tautan ke entri yang sudah dihapus membuka panel yang menyatakannya, bukan halaman kesalahan. Tidak ada hal lain yang ikut terhapus."
+      },
+      "address": "<lead>Di bilah alamat</lead> membawa tata letak, teks pencarian, dan — karena keduanya kontrol milik tabel — filter tahap dan kunci pengurutan, jadi <bystage>tabel yang diurutkan menurut tahap</bystage> dan <atoffer>semua yang di tahap tawaran</atoffer> adalah tautan yang bisa Anda simpan. Tahap di alamat tidak berpengaruh sampai alamatnya juga menyebut tabel. Filter posisi dan chip kata kunci di sampingnya sama sekali tidak ada di sana: itu pilihan tab ini dan diatur ulang saat Anda memuat ulang."
+    },
+    "today": {
+      "where": "bilah samping, baris pertama",
+      "open": "Buka Hari ini",
+      "intro": "Apa yang menjadi kewajiban hari ini, dan tidak lebih. Lima panel, semuanya dihitung dari entri Anda apa adanya: <strong>Perlu keputusan</strong> — tawaran, lamaran yang terlambat, tenggat atau wawancara berikutnya yang dikejar waktu — di samping strip bulan dan sejumlah penghitung, lalu <strong>Kewajiban minggu ini</strong>, <strong>Lamaran terbaru</strong>, dan rincian <strong>Alur</strong>.",
+      "items": {
+        "checklist": "Selama belum ada yang dipantau, tumpukan keputusan diganti dengan daftar periksa tiga langkah yang membuka dialog sebenarnya dan tercentang sendiri berdasarkan isi penyimpanan. Mengosongkan semua entri di Pengaturan memunculkannya lagi, karena daftar itu membaca penyimpanan, bukan mengingat bahwa Anda pernah menyelesaikannya.",
+        "colour": "Warna di halaman ini hanya berasal dari tanggal: merah berarti lewat jatuh tempo, kuning berarti jatuh tempo dalam 48 jam, dan semua yang lebih jauh polos betapa pun pentingnya. Yang sudah selesai menjadi abu-abu, bukan hijau — tidak ada yang menjadi hadiah di sini.",
+        "rows": "Baris dapat dicentang, ditunda sehari, tiga hari, atau seminggu, atau dibuka, tanpa meninggalkan halaman. Masing-masing adalah penulisan nyata dengan Urungkan di notifikasi.",
+        "strip": "Strip bulan adalah kalender kecil tersendiri — berpindah bulan tanpa menggeser halaman <calendar>Kalender</calendar>, dan mengklik sebuah hari membuka hari itu di sana."
+      },
+      "address": "<lead>Di bilah alamat</lead> tidak membawa apa pun. Halaman ini adalah <code>/</code>, dan setiap kontrol di dalamnya adalah tautan ke tempat lain atau sebuah penulisan."
+    },
+    "calendar": {
+      "where": "bilah samping, baris ketiga",
+      "open": "Buka Kalender",
+      "intro": "Kisi bulan dengan daftar hari terpilih di bawahnya, dalam satu halaman. Tenggat, wawancara, kunjungan kampus, dan pengingat semuanya ada di sini karena semuanya jenis entri yang sama — alasan hal itu perlu diketahui ada di <overview>Cara menggunakan jojo</overview>.",
+      "items": {
+        "drag": "Menyeret entri ke hari lain menjadwalkannya ulang, dengan Urungkan di notifikasi. Melepasnya kembali di hari asalnya tidak menulis apa pun dan tidak menampilkan apa pun — notifikasi yang mengklaim perpindahan yang tidak terjadi lebih buruk daripada diam.",
+        "types": "Jenis acara di bawah kisi adalah sakelar, seperti legenda grafik: matikan satu dan entrinya keluar dari kisi dan kedua daftar hari, untuk kunjungan ini. Hari yang semua entrinya dimatikan menyatakan hal itu alih-alih mengaku kosong, dan tautan ke entri berjenis tersembunyi menyalakan jenis itu lagi agar ada tempat untuk mendarat.",
+        "key": "Keterangan di bawah kisi dibuat dari isi bulan ini yang sebenarnya. Bulan tanpa apa pun yang terlambat tidak mencantumkan warna terlambat, karena keterangan yang menjanjikan tanda yang tidak ada di kisi membuat Anda mencarinya.",
+        "goTo": "<strong>Buka bulan</strong> menjelajahi tahun tanpa menggeser kalender di belakangnya sampai Anda memilih, dan menandai bulan saat ini selagi Anda berada di tahun lain. <strong>Hari ini</strong> kembali ke hari ini, dan tetap tampak tertekan selama Anda sudah di sana.",
+        "paging": "Berpindah antarbulan mempertahankan hari yang sedang Anda lihat, dibatasi ke bulan tujuan: melangkah dari 31 Januari membawa Anda ke hari terakhir Februari, bukan ke tanggal yang tidak ada. Batasan yang sama berlaku untuk alamat yang diketik manual, jadi <code>?m=2&d=31</code> menjawab dengan hari yang nyata, bukan kisi kosong.",
+        "add": "<strong>Tambah acara</strong> sudah terisi dengan hari yang tampil di layar, yang pada kalender hampir selalu hari yang Anda maksud.",
+        "export": "<strong>Ekspor ke kalender saya</strong> menulis setiap tanggal yang disimpan jojo sebagai <code>.ics</code>, dengan pengingat pada masing-masing. Fitur ini ada karena jojo tidak mengirim notifikasi sendiri: kalender yang sudah memberi Anda peringatan adalah satu-satunya yang dapat mengingatkan tenggat saat aplikasi ini tertutup. Termasuk batas tanggal menjawab setiap tawaran, yang tersimpan di lamaran, bukan di linimasa, sehingga tidak pernah muncul di kisi ini. Berkasnya adalah salinan yang diambil sekarang — ubah tanggal dan ekspor lagi."
+      },
+      "address": "<lead>Di bilah alamat</lead> membawa tahun, bulan, hari, dan entri tempat Anda tiba — dengan tahun dan bulan saat ini dihilangkan jika Anda memang di sana, jadi tautan ke bulan depan adalah <code>/calendar?m=11&d=3</code>. Yang terakhir dari keempatnya, <code>focus</code>, menyorot sebuah baris selama beberapa detik lalu menghapus dirinya dari alamat, jadi URL yang Anda salin setelahnya adalah harinya, bukan baris yang tidak lagi dilihat siapa pun."
+    },
+    "vault": {
+      "where": "bilah samping · enam alat, satu halaman",
+      "open": "Buka Brankas",
+      "intro": "Semua yang Anda simpan untuk dilihat lagi. Kontrol bersegmen di judul berpindah di antara enam alat dan hanya satu yang tampil setiap kali, yang paling sering terlewat: Brankas bukan sebuah daftar, dan lima dari enam alatnya ada di balik tab.",
+      "rows": {
+        "reminders": {
+          "name": "Pengingat",
+          "body": "Dikelompokkan menjadi Terlambat, Hari ini, Mendatang, dan Selesai. Mencentangnya adalah seluruh tugasnya, dan langkah tunda yang sama seperti di dasbor ada di setiap baris."
+        },
+        "links": {
+          "name": "Tautan",
+          "body": "Diarsipkan di Lowongan, Institusi, Orang, atau Panduan, dan dapat dipindahkan di antaranya kemudian."
+        },
+        "files": {
+          "name": "Berkas",
+          "body": "Kategori Untuk dibaca, Lamaran, Presentasi, dan Administrasi. Letakkan berkas di daftar atau pilih satu — lihat di bawah untuk apa yang sebenarnya disimpan."
+        },
+        "snippets": {
+          "name": "Cuplikan",
+          "body": "Berlabel Surat pengantar, Formulir lamaran, Email, atau Biodata. Dari cuplikan inilah dialog <strong>Tulis draf pesan</strong> disusun, dan di sinilah Asisten mengarsipkan balasan yang Anda simpan."
+        },
+        "people": {
+          "name": "Orang",
+          "body": "Pemberi referensi, ketua panitia seleksi, perekrut — siapa pun yang benar-benar terlibat dalam pencarian. Mereka diarsipkan di pekerjaan persis seperti CV, dan karena alasan yang sama berupa daftar, bukan satu id: pemberi referensi menulis untuk setiap posisi tempat Anda menyebutnya. Sebelumnya mereka hanya ada di dalam teks pengingat, itulah sebabnya tidak ada yang bisa menjawab “surat siapa yang masih kurang”."
+        },
+        "tools": {
+          "name": "Alat",
+          "body": "Kalkulator, dasar atau ilmiah, untuk hitungan yang selalu muncul di setiap tawaran. Menyimpan tiga puluh baris terakhir untuk kunjungan ini dan tidak ada apa pun setelah tab ditutup."
+        }
+      },
+      "items": {
+        "filter": "Filter kata kunci di atas daftar milik alat yang sedang terbuka, jadi jumlah di samping kata kunci menggambarkan tab ini, bukan seluruh Brankas. Filter tidak ditampilkan sama sekali di Alat, yang tidak menyimpan entri, atau di tab yang kosong.",
+        "search": "Keempat daftar masing-masing punya kotak pencarian dan filter kategori sendiri, dan keduanya tidak ada di alamat — tab yang terbuka dan entri tempat Anda tiba yang ada di alamat.",
+        "redirect": "<code>/reminders</code> dialihkan ke sini. Pengingat dulu punya halaman sendiri sebelum menjadi alat, dan tautan dari masa itu tetap berfungsi."
+      },
+      "notConnectedTitle": "Berkas dicatat, tidak disimpan",
+      "notConnected": "Berkas hanya memberikan nama, ukuran, dan jenisnya, dan hanya itu yang disimpan jojo — tidak ada tempat di disk Anda untuk menaruh dokumennya. Berkas yang Anda pilih atau letakkan selama kunjungan ini benar-benar dapat dipratinjau, dari data yang diserahkan browser, selama tab masih terbuka; baris yang datang bersama data demo tidak punya data di baliknya dan menampilkan pengganti berlabel. Tidak ada yang diunggah dan tidak ada isi yang dibaca.",
+      "address": "<lead>Di bilah alamat</lead> membawa alat yang terbuka dan, sebentar, entri yang dituju tautan: <code>/vault?tool=snippets</code>. Berpindah tab ikut menghapus sorotannya."
+    },
+    "scout": {
+      "where": "bilah samping, baris kelima",
+      "open": "Buka Pencari lowongan",
+      "intro": "Tiga panel: pencarian tersimpan yang ingin Anda jalankan, kecocokan yang akan dihasilkan pencarian itu, dan kotak untuk menyimpan lowongan yang Anda temukan sendiri. Strip di bagian atas halaman menyebutkan mana yang sedang menunggu sesuatu, dan karena itulah strip itu tampil paling atas.",
+      "items": {
+        "pipelines": "<strong>Alur kerja</strong> adalah entri seperti entri lain — papan yang dipantau, istilah yang penting, dan seberapa sering melihat. Menulis, mengedit, dan menghapusnya semuanya berfungsi dan bertahan setelah muat ulang. Alur kerja yang Anda nyalakan menampilkan <strong>dijeda</strong>, bukan berjalan, yang merupakan kata yang jujur untuknya.",
+        "save": "<strong>Simpan lowongan</strong> berfungsi tanpa ada yang terhubung. Yang disimpan adalah URL, pemberi kerja yang ditebak dari URL itu, dan tanggal Anda menyimpannya — cukup untuk menemukan iklannya lagi dan melamar dari sana. Tidak ada yang mengambil halamannya.",
+        "add": "<strong>Tambahkan ke lamaran</strong>, pada kecocokan atau lowongan tersimpan, membuat lamaran dan menautkan keduanya alih-alih memindahkan barisnya. Baris itu lalu menyebutkan tujuannya, jadi Anda tidak bisa melakukannya dua kali."
+      },
+      "notConnectedTitle": "Cuplikan halaman menunggu model lokal. Penilaian tidak.",
+      "notConnected": "Kecocokannya masih yang datang bersama data demo — belum ada yang menyisir papan lowongan — tetapi persentase pada masing-masing dihitung di sini, di perangkat ini, berdasarkan istilah pencocokan, posisi yang dituju, dan wilayah di profil Anda, dan setiap baris menyebutkan apa yang dicocokkan. Profil yang kosong menampilkan <strong>belum dinilai</strong>, bukan angka meyakinkan tanpa dasar. <strong>Buka cuplikan halaman</strong> adalah bagian yang memang menunggu: dinonaktifkan di setiap lowongan tersimpan dan menjelaskan alasannya saat Anda mengarahkan kursor, karena tidak ada halaman yang pernah diambil dan menampilkannya berarti mengklaim berkas yang tidak dimiliki jojo.",
+      "address": "<lead>Di bilah alamat</lead> membawa baris yang dituju tautan, dinamai menurut daftar tempatnya — <code>/scout?focus=match:unt</code> atau <code>focus=posting:…</code>. Kedua daftar membuat id-nya terpisah, jadi daftarnya harus menjadi bagian parameter agar baris yang benar tersorot."
+    },
+    "statistics": {
+      "where": "bilah samping, baris terakhir",
+      "open": "Buka Statistik",
+      "intro": "Angka utama, kapan Anda melamar, asal setiap lamaran, sejauh mana lamaran melangkah, bagaimana akhirnya, apa yang perlu dikerjakan berikutnya, serta lamaran, balasan, wawancara, dan tawaran menurut jenis posisi. Setiap angka dihitung dari lamaran Anda saat Anda melihatnya.",
+      "items": {
+        "funnel": "Hanya tahap entri saat ini yang disimpan, jadi corong menghitung setiap lamaran sejauh yang ditunjukkannya. Entri yang ditolak setelah wawancara dihitung berdasarkan tanggal yang dimilikinya dan tidak lebih, dan dua panel yang terpengaruh menyebutkan <strong>sejauh yang ditunjukkan setiap entri</strong> di judulnya alih-alih diam-diam melaporkan angka yang tidak dapat dipertanggungjawabkan.",
+        "typical": "Angka bertanda <strong>umumnya</strong> adalah contoh pencarian sebagai pembanding, bukan riwayat Anda sendiri — sakelar di balik roda gigi menyembunyikannya. jojo tidak menyimpan riwayat angkanya sendiri, itulah sebabnya tidak ada yang melaporkan perubahan dari waktu ke waktu di sini.",
+        "legend": "Legenda di bawah batang hasil mematikan pita, dan judulnya lalu menyebutkan berapa dari total yang masih ditampilkan. Persentasenya dihitung ulang terhadap yang tersisa, tidak tetap.",
+        "holds": "Halaman ini menahan diri alih-alih mengarang penyebut. Tanpa lamaran terkirim, tidak ada angka utama dan tidak ada corong — tingkat balasan dari nol lamaran adalah angka karangan — dan tanpa entri sama sekali, seluruh halaman berupa satu keadaan kosong."
+      },
+      "address": "<lead>Di bilah alamat</lead> tidak membawa apa pun. Sakelar dan legenda hanya untuk kunjungan ini."
+    },
+    "graph": {
+      "where": "petak Penyimpanan browser di bilah samping",
+      "open": "Buka graf",
+      "intro": "Entri Anda digambar sesuai cara penyimpanannya: simpul untuk setiap entri, sisi untuk setiap penunjuk di antara dua entri. Warna menunjukkan jenis entri dan ukuran menunjukkan seberapa banyak yang menunjuk ke sana. Di bawah gambar ada panel kueri yang menjawab pertanyaan yang tidak dapat dijawab daftar, seperti lamaran mana yang tidak punya jadwal tindak lanjut. <guide>Graf</guide> membahas semuanya — bagian ini hanya untuk menyebutkan letak halaman dan apa yang tidak dilakukannya.",
+      "items": {
+        "legend": "Baris legenda menyembunyikan satu jenis entri dari gambar. Pertanyaan tetap dijalankan pada seluruh graf — jawaban yang berubah karena Anda menyembunyikan sesuatu lebih buruk daripada tidak ada jawaban.",
+        "illustrative": "Baris di bawah pemilih yang tampak seperti kode diberi label <strong>ilustrasi</strong> dan memang begitu maksudnya. Tidak ada yang mengurainya; baris itu ada agar melihat bentuknya di samping kata-kata membuat pemilih mudah dipahami.",
+        "fetched": "Halaman ini dan Transfer diambil terpisah dari bagian lain jojo, jadi saat pemuatan pertama Anda mungkin melihat panel bernama sesaat selagi kodenya tiba. Panel itu menyatakannya alih-alih menampilkan ikon berputar."
+      },
+      "address": "<lead>Di bilah alamat</lead> tidak membawa apa pun — bukan simpul terpilih, bukan pertanyaan, bukan jenis yang Anda sembunyikan. Tampilan yang Anda atur di sini tidak dapat dikirim ke siapa pun; contoh kueri di panel adalah versi yang dapat dibagikan."
+    },
+    "transfer": {
+      "where": "petak Transfer di bilah samping, dan Pengaturan",
+      "open": "Buka Transfer",
+      "intro": "Menyerahkan semuanya ke perangkat kedua: pilih ujung mana perangkat ini, bacakan kode pemasangan, lihat persis apa yang akan dipindahkan dan berapa banyak, dan putuskan apakah dokumen ikut. Hitungannya dibaca dari penyimpanan Anda sendiri, kelompok demi kelompok, itulah gunanya mencobanya — apa yang dinyatakan akan dipindahkan adalah apa yang benar-benar Anda miliki.",
+      "notConnectedTitle": "Tidak ada yang dikirim",
+      "notConnected": "Build ini tidak membuka koneksi, tidak meminta kamera, dan tidak menulis ke penyimpanan mana pun. Kode pemasangan dibuat baru setiap kunjungan dan tidak terpasang dengan apa pun; kemajuan yang ditampilkannya adalah demonstrasi bentuk serah terima yang sesungguhnya, dan halaman menyatakannya di bawah kode, bukan di spanduk yang akan Anda lewati. Cara memindahkan entri Anda ke perangkat lain saat ini adalah ekspor di <settings>Pengaturan → Data Anda</settings>.",
+      "items": {
+        "files": "Berkas adalah satu-satunya kelompok yang dimatikan secara bawaan — berkas adalah separuh terberat dari serah terima dan separuh yang kemungkinan besar sudah ada di perangkat lain. Pihak penerima tidak ikut menentukan, karena perangkat yang diam-diam membuang separuh kiriman akan menjadi kejutan yang lebih buruk.",
+        "animation": "Animasinya adalah adegan WebGPU yang digambar ulang setiap bingkai. Ada sakelar di balik roda gigi untuk menyembunyikannya, yang layak dilakukan saat memakai baterai.",
+        "empty": "Dengan penyimpanan kosong, halaman menyatakan bahwa tidak ada yang bisa dipindahkan dan mengarahkan ke data demo, alih-alih menawarkan untuk mengirim nol dari semuanya."
+      }
+    },
+    "profile": {
+      "where": "ikon orang, bilah atas",
+      "open": "Buka profil Anda",
+      "intro": "Empat panel: data dasar, tautan, minat dan sasaran, serta dokumen Anda. Profil ditulis ke browser ini dan disimpan, persis seperti entri lain — <overview>Cara menggunakan jojo</overview> menjelaskan mengapa profil tetap bukan salah satu langkah memulai.",
+      "items": {
+        "match": "<strong>Istilah pencocokan</strong> bukan kata kunci, dan panel menyatakannya di tempat Anda mengetiknya. Kata kunci adalah sesuatu untuk mengarsipkan dan memfilter entri; istilah pencocokan adalah rumusan yang menjadi dasar penilaian lowongan oleh pencari. Kedua daftar itu tidak pernah berhubungan satu sama lain.",
+        "documents": "Panel dokumen adalah tampilan kategori Lamaran di <vault>Brankas</vault>, bukan daftar kedua tersendiri — CV yang ditambahkan di salah satu tempat muncul di keduanya, karena tempatnya hanya satu. Mengunggah di sini mencatat nama, ukuran, dan jenis, dengan ketentuan yang sama seperti di Brankas.",
+        "save": "Seluruh halaman tersimpan sebagai satu perubahan, jadi satu Urungkan mengembalikan semuanya. Menekan Simpan tanpa ada yang diedit tidak menulis apa pun dan tidak menawarkan Urungkan, alih-alih mencatat perubahan yang tidak terjadi.",
+        "example": "Setiap kolom punya contoh berwarna abu-abu. Pada penyimpanan kosong hal ini penting: halaman ini dulu menampilkan nama dan email orang asing sebagai nilai sungguhan, di kotak yang wajar dianggap pembaca sebagai jawabannya sendiri."
+      }
+    },
+    "assistant": {
+      "where": "ikon robot, bilah atas",
+      "open": "Buka asisten",
+      "intro": "Obrolan berutas dengan model lokal yang Anda hubungkan di <settings>Pengaturan</settings>, dan halaman contoh yang dikerjakan sampai Anda melakukannya. Mana yang Anda dapatkan ditentukan oleh ada tidaknya endpoint yang tersimpan — tidak ada yang disembunyikan dan tidak ada sakelar.",
+      "connectedTitle": "Dengan model terhubung",
+      "connected": {
+        "agentic": "Asisten bersifat <strong>agentik</strong>: model diberi alat milik aplikasi dan dapat membaca serta menulis entri untuk menjawab Anda. Setiap panggilan yang dilakukannya dicantumkan di balasan saat terjadi — alatnya, argumennya, dan apa yang kembali — jadi penulisan adalah sesuatu yang Anda saksikan, bukan yang Anda temukan belakangan.",
+        "threads": "Percakapan berupa <strong>utas, dan disimpan</strong>. Utas tersimpan di IndexedDB browser ini bersama semua hal lain, jadi menutup tab tetap menyimpannya; bilah utas berpindah di antaranya, dan masing-masing dapat diarsipkan di sebuah lamaran agar dua pencarian tidak tercampur dalam satu riwayat.",
+        "documents": "Jika pembaca dokumen juga dikonfigurasi, asisten dapat <strong>membaca dokumen Anda</strong> — PDF, berkas Word, presentasi — dan menjawab berdasarkan isinya."
+      },
+      "notConnectedTitle": "Tanpa model, balasannya ditulis, bukan dihasilkan",
+      "notConnected": "Lima perintah yang benar-benar muncul dalam pencarian kerja — surat pengantar, menyesuaikan CV, membaca lowongan, email tindak lanjut, persiapan wawancara — masing-masing dijawab dengan contoh yang ditulis lengkap. Pesan yang tidak cocok dengan satu pun mendapat balasan yang dibuka dengan menyatakan bahwa itu jawaban siap pakai, bukan paragraf yang tampak masuk akal tentang apa pun yang Anda tanyakan, dan setiap balasan membawa lencana yang sama — <strong>Contoh respons · tidak ada model yang terhubung</strong>.",
+      "items": {
+        "save": "<strong>Simpan ke cuplikan</strong> mengarsipkan balasan di <vault>Brankas</vault> di bawah label yang sesuai, dan notifikasi menawarkan untuk membukanya di sana.",
+        "copy": "Penyalinan bisa ditolak mentah-mentah oleh browser, jadi tombol melaporkan kegagalannya alih-alih mengonfirmasi sesuatu yang tidak terjadi.",
+        "delete": "Menghapus utas menawarkan Urungkan, bukan konfirmasi."
+      }
+    },
+    "settings": {
+      "where": "ikon roda gigi, bilah atas",
+      "open": "Buka Pengaturan",
+      "intro": "Tujuh panel: dokumen Anda, model lokal, tampilan, data Anda, kata kunci Anda, diagnostik, dan log audit. Petak runtime di bagian bawah bilah samping mengarah ke sini, memang untuk itulah petak itu ada.",
+      "items": {
+        "export": "<strong>Ekspor cadangan</strong> menulis cadangan lengkap berversi ke <strong>{{file}}</strong>: lamaran, linimasa, brankas, lowongan tersimpan, kata kunci beserta labelnya, dan profil Anda. Ini salinan yang diambil saat Anda menekannya dan tidak mengikuti apa yang Anda lakukan selanjutnya.",
+        "clear": "<strong>Muat data demo</strong>, <strong>Kosongkan entri</strong>, dan <strong>Bersihkan penyimpanan</strong> masing-masing bertanya lebih dulu dan menyebutkan persis apa yang terkena. Mengosongkan entri mempertahankan kata kunci yang Anda namai — kecuali penyimpanan masih berisi data demo yang belum disentuh, dalam hal itu kata kunci bawaan ikut terhapus, dan konfirmasinya menyebutkan mana yang akan dilakukan.",
+        "keywords": "<strong>Kata kunci</strong> mengganti nama, mengganti warna, dan menghapusnya, serta memberi tahu berapa entri yang memakai masing-masing sebelum Anda menghapusnya.",
+        "diagnostics": "<strong>Diagnostik</strong> mengubah “entri Anda tersimpan” menjadi sesuatu yang dapat diperiksa: berapa banyak setiap jenis di penyimpanan, versi skema mana yang ada di disk, berapa banyak ruang yang diberikan browser kepada jojo, dan id apa pun yang ditolaknya untuk dibaca.",
+        "audit": "<strong>Log audit</strong> mencantumkan setiap penulisan, yang terbaru di atas, hingga dua ratus. Hanya baris terbaru yang menawarkan Urungkan, karena entri dari tiga jam lalu menggambarkan entri yang sudah diedit belasan kali sejak itu. Muat data demo dan Kosongkan entri tercantum di sana seperti yang lain dan merupakan dua hal yang tidak dapat diurungkan dari log — keduanya sudah menyatakannya sebelum Anda menekannya."
+      },
+      "notConnectedTitle": "Satu panel dan satu tombol dimatikan",
+      "notConnected": "Endpoint model lokal berupa kolom, dan tombol Uji yang menjelaskan mengapa ia tidak dapat dijalankan. Panel yang dulu ada di sampingnya — alamat jembatan, kode pemasangan, path penyimpanan, dan tiga sakelar, yang semuanya menerima apa yang Anda ketik tanpa menjangkau apa pun — sudah dihapus; dokumen kini benar-benar disimpan, dan <strong>Dokumen Anda</strong> menyebutkan di mana. <strong>Ekspor ke Excel</strong> dan <strong>Impor</strong> dinonaktifkan dengan alasannya saat kursor diarahkan — tidak ada penulis spreadsheet yang disertakan, dan membaca kembali cadangan memerlukan validator yang dapat menolak berkas yang tidak dipahaminya. Apa yang akan diberikan masing-masing ada di <overview>Cara menggunakan jojo</overview>."
+    },
+    "guide": {
+      "where": "tanda tanya, bilah atas",
+      "open": "Buka halaman pertama",
+      "intro": "Empat halaman di bawah satu alamat, dengan rel di atas dan penomoran halaman di bawah pada setiap halaman. Satu-satunya pintu masuknya di antarmuka adalah ikon bantuan: bernama saat kursor diarahkan dan bagi pembaca layar, tetapi tanpa teks yang terlihat dan tanpa baris di bilah samping, pintu yang tipis untuk halaman yang Anda cari saat ada yang tidak jelas. <kbd>⌘K</kbd> adalah jalan kembali yang andal, dan mencantumkan keempat halaman secara terpisah, bukan satu baris untuk seluruh bagian.",
+      "order": "Urutannya disengaja, bukan kebetulan: siapa pun dapat berhenti setelah halaman pertama dan langsung memakai aplikasi, dan siapa pun dapat langsung melompat ke halaman terakhir.",
+      "address": "<lead>Di bilah alamat</lead> adalah halaman itu sendiri. Halaman pertama adalah <code>/guide</code>, bukan <code>/guide/overview</code>, jadi setiap tautan dan penanda yang dibuat sebelum ada empat halaman tetap mengarah ke tempat yang nyata."
+    }
+  }
+}

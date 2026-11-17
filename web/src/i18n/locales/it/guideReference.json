@@ -1,0 +1,298 @@
+{
+  "tools": {
+    "pageTitle": "Gli strumenti",
+    "subtitle": "Cosa può fare davvero l'assistente, cosa gli viene impedito e come trova quello giusto.",
+    "can": {
+      "hint": "{{total}} in totale",
+      "title": "Cosa può fare l'assistente",
+      "intro": "L'<go>Assistente</go> non scrive nelle tue schermate. Chiama le stesse {{total}} operazioni che chiamano i pulsanti: lo stesso identico percorso nel codice, con gli stessi identici controlli. Non esiste un secondo accesso, ed è per questo che una modifica dell'assistente arriva nella tua cronologia esattamente come una fatta da te.",
+      "stats": {
+        "readsLabel": "modi per guardare",
+        "readsHint": "leggere non cambia mai nulla",
+        "writesLabel": "modi per modificare",
+        "writesHint": "tutti annullabili…",
+        "destructiveLabel": "segnati come distruttivi",
+        "destructiveHint": "…tranne due, che chiedono prima"
+      },
+      "irreversibleOne": "Una di queste {{destructive}} non si può annullare affatto: quelle che sostituiscono o svuotano l'intero archivio.",
+      "irreversibleTwo": "Due di queste {{destructive}} non si possono annullare affatto: quelle che sostituiscono o svuotano l'intero archivio.",
+      "irreversibleMany": "{{irreversible}} di queste {{destructive}} non si possono annullare affatto: quelle che sostituiscono o svuotano l'intero archivio.",
+      "neverOffered": "Non vengono mai proposte all'assistente a meno che non siano le tue stesse parole a chiederle, e anche allora si fermano per una conferma, qualunque sia la modalità di approvazione della conversazione. Automatica agisce senza chiedere su tutto ciò che si può annullare; per queste chiede comunque.",
+      "ownWords": "“Le tue stesse parole le chiedono” è un test preciso, non una valutazione: la frase deve contenere qualcosa che significhi cancellare, qualcosa che significhi l'intero archivio, e nessuna menzione di un tipo particolare di record. “Cancella tutto” lo supera. “Togli le etichette dalla candidatura a Baylor” no, e nemmeno “elimina tutto quello che ho scritto in quella nota”: entrambe nominano una cosa, quindi riguardano quella cosa.",
+      "errs": "Nel dubbio, non propone. Se lo intendi davvero e lo formuli in modo insolito, l'assistente dice che non può anziché tirare a indovinare, e in Impostazioni c'è comunque il pulsante."
+    },
+    "gates": {
+      "hint": "la parte che regge davvero",
+      "title": "Cosa impedisce che parta quello sbagliato",
+      "intro": "Un modello linguistico può chiedere qualsiasi cosa. Può nominare uno strumento che non gli è mai stato mostrato, o inventarne uno che non esiste: i modelli più piccoli lo fanno regolarmente, e non è segno che qualcosa sia andato storto. Quindi jojo non si affida alla prudenza del modello.",
+      "distinctionTitle": "La distinzione che conta",
+      "distinction": "Scegliere cosa <em>mostrare</em> al modello è un suggerimento. Controllare cosa ha effettivamente <em>chiamato</em> è una regola, e la regola dipende da chi ha scelto l'insieme. Dove è la schermata a fissarlo (Interroga il grafo, una pipeline dello scout), una chiamata a qualsiasi cosa al di fuori viene rifiutata prima ancora di cercarla, figuriamoci eseguirla. In una chat l'insieme è la stima di jojo di ciò che ti serve, quindi una chiamata al di fuori non viene rifiutata: passa allo stesso controllo di approvazione di ogni altra chiamata, che ti chiede prima a meno che la conversazione non sia impostata per agire da sola. L'unica eccezione è la cancellazione dei tuoi record, l'unica cosa che non si può annullare: viene rifiutata a meno che tu non abbia chiesto esplicitamente di cancellare tutto.",
+      "askGraph": "Ecco perché la scheda “Interroga il grafo” può offrire in sicurezza due strumenti di sola lettura. Non si fida che il modello resti al loro interno."
+    },
+    "workflow": {
+      "hint": "passi, non un unico lungo tentativo",
+      "title": "Lavoro che richiede più passi",
+      "p1": "Leggere un CV non è una sola domanda. jojo divide il documento secondo i suoi titoli, chiede di ogni sezione separatamente, chiede ancora una volta cosa è sfuggito, e infine chiede come sono collegati i fatti: cinque o sei chiamate al modello per un solo caricamento. Scritto come un unico blocco di codice sarebbe un solo <code>try</code> attorno a tutto, e una sola risposta sbagliata in un punto qualsiasi farebbe perdere l'intero lavoro.",
+      "p2": "Quindi un lavoro del genere viene dichiarato come <strong>passi con archi tra di essi</strong>. Ogni passo indica quante volte vale la pena riprovarlo e se il lavoro può proseguire senza; il percorso da un passo al successivo è deciso da ciò che è successo, mai chiedendo al modello dove andare. Un passo che fallisce viene nominato nel risultato invece di sparire in “la lettura del tuo CV non è riuscita”.",
+      "p3": "Questo conta soprattutto su un modello piccolo. Un 7B di solito non fallisce ragionando male su molti passi: fallisce restituendo qualcosa di malformato in un passo su sei. La risposta utile è riprovare quel passo e lasciare stare gli altri cinque.",
+      "p4": "Un passo che si limita a migliorare il risultato, come capire come sono collegati i tuoi fatti, è segnato come facoltativo: se fallisce, ottieni comunque tutto ciò che hanno trovato i passi precedenti. I cicli sono ammessi (un passo può tornare indietro) e c'è un limite rigido al numero totale di passi, così un errore di instradamento si ferma con una traccia leggibile invece di girare a vuoto sulla tua GPU."
+    },
+    "badReply": {
+      "hint": "una risposta sbagliata costa un passaggio, non il documento",
+      "title": "Quando un modello piccolo risponde male",
+      "p1": "Un modello più piccolo esaurisce lo spazio a metà frase. Leggere un CV richiede un elenco di fatti, e una risposta interrotta a metà di quell'elenco non ha la parentesi di chiusura: quindi non è JSON, e la cosa ovvia da fare sarebbe buttarla via. jojo invece conserva tutto fino all'ultima voce <strong>completa</strong>, e dice quanto è andato perso. Arrivano venti fatti invece di nessuno.",
+      "p2": "Si ferma a una voce completa di proposito. Metà di un titolo di lavoro è peggio di nessun titolo: ti viene mostrata come se fosse completa, e la approvi.",
+      "p3": "La stessa attenzione vale per la ricerca. Se gli chiedi di “spostare la mia candidatura a Rice a colloquio” quando ce ne sono due, un modello che ne avesse cercata una e ne avesse ottenuta una non avrebbe modo di sapere che ce n'è una seconda, e sposterebbe con sicurezza il record sbagliato. Ogni ricerca indica quante corrispondenze ci sono oltre a ciò che mostra, ed è questo che permette all'assistente di tornare a chiederti quale intendevi."
+    },
+    "picks": {
+      "hint": "così una richiesta non si ferma mai a metà",
+      "title": "Come sceglie quello giusto",
+      "p1": "Mostrare a un modello tutti i {{total}} strumenti insieme costa ben più di quindicimila parole dello spazio che ha per pensare, prima ancora che tu abbia scritto qualcosa. Su un modello piccolo che gira sul tuo computer, può essere più spazio di quanto ne abbia. Quindi jojo restringe l'elenco a ciò a cui puntano le tue parole.",
+      "p2": "Restringere senza attenzione è peggio che non restringere. La maggior parte delle operazioni ha bisogno di qualcosa su cui agire: non puoi associare una parola chiave senza una parola chiave, o aggiornare un documento senza un documento. Nascondi lo strumento che crea la cosa, e l'assistente si ferma a metà senza che nulla sullo schermo spieghi perché.",
+      "unsureTitle": "Quando non è sicuro, non restringe",
+      "unsure": "“Ricordami di Baylor giovedì” è chiaro, e jojo propone circa un quinto del catalogo. “Anzi, era l'altra” non è chiaro su nulla, quindi propone tutto, esattamente come avrebbe fatto prima che esistesse tutto questo. L'incertezza costa un po' di velocità. Tirare a indovinare ti costerebbe la risposta.",
+      "secondTitle": "Un secondo assistente fa la scelta",
+      "second1": "Confrontare le tue parole con un elenco è veloce e gratuito, ma non sa leggere le intenzioni. “Ho avuto notizie da Rice” non nomina né uno strumento né un verbo, ma significa chiaramente che una fase è cambiata. Quindi, quando un modello è collegato, prima viene eseguito un secondo lavoro molto più piccolo: legge la tua richiesta (non la conversazione, non i risultati, solo ciò che hai chiesto) e risponde con gli strumenti che ritiene necessari.",
+      "second2": "È economico perché non ha bisogno delle istruzioni complete di ogni strumento, solo di un nome e una riga: circa un sesto di quanto costerebbe consegnare l'intero catalogo, e lo risparmia a ogni passo, non una volta sola. Misurato su dieci domande di fila, ha ridotto il primo messaggio da circa 8.000 parole di contesto a 2.900.",
+      "second3": "Può solo restringere. Qualsiasi cosa scelga passa per gli stessi controlli di prima: gli strumenti che creano una cosa arrivano insieme a quelli che la modificano, e i due che svuotano il tuo archivio non vengono mai inclusi a meno che tu non li abbia chiesti con le tue parole. Se è lento o non disponibile, viene usato il confronto delle parole e si perde solo un attimo.",
+      "longTitle": "Conversazioni lunghe",
+      "long1": "Un modello può contenere solo una certa quantità di testo alla volta, e una conversazione che la supera viene tagliata: dal server, dall'inizio, che è dove stanno le regole. jojo invece fa il taglio da sé, dall'estremità più vecchia, e non tocca mai le proprie istruzioni né la tua domanda attuale.",
+      "long2": "Ciò che rimuove lo sostituisce prima con un breve riassunto di quanto è successo lì, così l'assistente sa ancora che gli hai già detto quale candidatura a Rice intendevi. Ti viene detto quando succede. I tuoi record non sono mai coinvolti: riguarda solo ciò che sta in un messaggio.",
+      "long3": "Una conversazione conserva gli strumenti che ha effettivamente usato. Quelli che le sono stati solo proposti e mai toccati spariscono, così una chat lunga non si riempie lentamente di tutto."
+    },
+    "evidence": {
+      "hint": "provato su modelli reali, non solo affermato",
+      "title": "Funziona davvero?",
+      "p1": "Tutto quanto sopra è un progetto. Se un dato modello sappia davvero scegliere lo strumento giusto dal catalogo di jojo è una questione che riguarda quel modello, e l'unico modo per rispondere è chiederglielo. Quindi esiste una serie di scenari (lettura, scrittura, catene che richiedono prima una ricerca, e casi in cui la risposta giusta è non fare nulla) che viene eseguita su server reali.",
+      "p2": "Ogni scenario viene eseguito due volte: una con l'intero catalogo e una con l'insieme ristretto. È la seconda esecuzione quella che conta. Restringere dovrebbe aiutare un modello più piccolo dandogli meno nomi da confondere, ma potrebbe anche danneggiarlo togliendo qualcosa di necessario, e un'affermazione del genere non vale nulla senza il controllo accanto.",
+      "suiteTitle": "Cosa cerca la serie di test",
+      "suite": "Non se un modello è intelligente. Se ricorre a uno strumento per documenti quando gli hai dato un URL, archivia una seconda candidatura invece di aggiornare quella che hai nominato, inventa un id invece di cercarlo, o (il caso che conta di più) sente “cancella la scadenza” e ricorre all'operazione che svuota l'intero archivio."
+    },
+    "conversation": {
+      "hint": "un archivio reale, e come appariva dopo",
+      "title": "Sa sostenere una conversazione?",
+      "p1": "La serie qui sopra fa una sola domanda a un modello e controlla se ha nominato uno strumento sensato. È la metà facile, e fa sembrare tutti bravi. Il lavoro reale non è una sola domanda: chiedi in che fase è qualcosa, poi dici “spostala a colloquio”, e il record che intendi è nella risposta precedente, non nella frase.",
+      "p2": "Quindi c'è un secondo benchmark. Costruisce un archivio reale (sei candidature, un calendario, una Cassaforte, parole chiave), consegna all'assistente un copione di {{conversations}} conversazioni su {{groups}} tipi di lavoro, e lascia che le chiamate agli strumenti vengano eseguite davvero. Poi guarda cosa c'è nell'archivio alla fine. Vengono valutate separatamente quattro cose, perché un modello può superarne una e fallirne un'altra:",
+      "called": "<lead>Cosa ha chiamato</lead>: ogni turno era giustificabile.",
+      "route": "<lead>Come ci è arrivato</lead>: ha cercato un record prima di modificarlo, o ha scritto partendo solo dalla frase.",
+      "shape": "<lead>La forma del lavoro</lead>: ogni caso ha un grafo di riferimento delle chiamate necessarie e di quali dipendono da quali, e l'esecuzione viene valutata rispetto a esso. Due chiamate che il grafo lascia indipendenti possono avvenire in qualsiasi ordine; una scrittura prima della lettura che trova dove scrivere no.",
+      "left": "<lead>Cosa ha lasciato</lead>: l'archivio è corretto, e qualcosa è cambiato quando non doveva.",
+      "p3": "La terza è quella che i benchmark di solito saltano, ed è il motivo per cui un modello può ottenere un buon punteggio qui e deludere nell'uso: su un archivio così piccolo, tirare a indovinare spesso porta al record giusto. Il grafo dice se stava ragionando o se è stato fortunato. Viene riportato accanto al risultato principale anziché incorporato: arrivare alla risposta giusta per una strada che nessuno aveva previsto resta comunque la risposta giusta."
+    },
+    "reasoning": {
+      "hint": "misurato, con quanto costa in tempo",
+      "title": "Il ragionamento aiuta?",
+      "p1": "A un modello si può chiedere di pensare prima di rispondere: è l'impostazione Ragionamento in <go>Impostazioni</go>. Se questo lo renda migliore nel lavoro di jojo è una questione che riguarda il modello, quindi il benchmark delle conversazioni qui sopra è stato eseguito due volte con il ragionamento attivo e due con il ragionamento disattivato, sugli stessi server e con lo stesso codice.",
+      "numbersTitle": "Cosa dicono i numeri",
+      "gemma": "<lead>Su Gemma, il ragionamento costa precisione e molto tempo.</lead> In media ha ottenuto due o tre conversazioni in meno, e la conversazione mediana ha richiesto circa il triplo del tempo. La lentezza è il pensiero stesso: Gemma genera circa 31 token al secondo e pensa per qualche centinaio di token prima di rispondere, quindi un giro richiede in media circa sei secondi in più e uno lungo quindici o più. In entrambi i passaggi ha sistemato in modo affidabile tre conversazioni e ne ha rotte in modo affidabile tre o quattro; tra quelle rotte, archiviare un nuovo documento e rifiutare un suggerimento, che con il ragionamento disattivato riesce sempre.",
+      "gptOss": "<lead>Su GPT-OSS, l'impostazione non cambia nulla</lead>, ed è prevedibile più che una scoperta. GPT-OSS ragiona sempre; “disattivato” può solo chiedergli di ragionare meno, ed entrambe le impostazioni sono state eseguite con il suo sforzo abituale. Genera anche circa sette volte più velocemente di Gemma, quindi il suo pensiero costa meno di un secondo per risposta.",
+      "advice": "Se le risposte sembrano lente su un modello come Gemma, disattiva il ragionamento: su questo benchmark non perdi nulla. In ogni caso i due assistenti ausiliari (quello che sceglie quali strumenti può usare un turno e quello che riassume una conversazione lunga) non ragionano mai, perché nessuno dei due lavori ne trae vantaggio e un riassunto, quando lo facevano, ha richiesto una volta quasi due minuti.",
+      "firstToken": "La colonna del primo token rappresenta gran parte dell'attesa in una conversazione lunga: una risposta non può iniziare finché il server non ha letto tutto ciò che gli è stato inviato. Un prompt che si ripete costa molto meno, perché il server conserva l'inizio dalla volta precedente: ecco perché il secondo turno di una conversazione di solito risponde più in fretta del primo."
+    },
+    "previewer": {
+      "hint": "ogni caso, alla lettera",
+      "title": "Su cosa è stato valutato",
+      "p1": "Un punteggio vale quanto i suoi casi, e qualcuno ha scelto il denominatore. Quindi l'intero benchmark è qui da leggere: l'archivio su cui è stato eseguito, ogni frase inviata all'assistente, e cosa doveva risultare vero dei tuoi record alla fine.",
+      "p2": "Viene letto dallo stesso elenco che il benchmark esegue, non da una sua descrizione: quindi un caso aggiunto domani compare qui con i suoi prompt, e uno eliminato di nascosto scompare.",
+      "p3": "Scegli un caso per vedere cosa è stato detto, il flusso di lavoro atteso disegnato come un vero grafo delle dipendenze, cosa può e non può chiamare ogni turno, e cosa ha effettivamente fatto ogni modello, compreso ciò che ha risposto: è lì che un modello che non ha fatto nulla e ha annunciato di esserci riuscito si tradisce."
+    },
+    "ambiguity": {
+      "hint": "il motivo per cui esiste il benchmark",
+      "title": "Quando due record corrispondono",
+      "p1": "L'archivio contiene di proposito due candidature a Rice e due campus UT, perché è così che appare una vera ricerca di lavoro dopo qualche mese, ed è la situazione in cui un assistente può fare danni reali sembrando funzionare perfettamente.",
+      "p2": "Ecco perché jojo è costruito come descrive il resto di questa pagina. Non si può contare sul fatto che un modello si fermi, quindi le cose che non si possono annullare non vengono mai proposte a meno che tu non le chieda per nome, ogni scrittura viene confrontata con ciò che è stato effettivamente proposto, e ogni modifica arriva nella tua cronologia dove puoi annullarla.",
+      "p3": "Vale anche la pena dirlo chiaramente: un solo passaggio di un benchmark classifica i modelli in modo approssimativo, nel migliore dei casi. I punteggi sono cambiati tra un'esecuzione e l'altra sullo stesso hardware con le stesse impostazioni. Ciò che non cambia è la forma dell'errore, ed è quella la parte contro cui vale la pena progettare."
+    },
+    "model": {
+      "hint": "una tua scelta, e cambia dove vanno le tue parole",
+      "title": "Quale modello lo fa",
+      "p1": "jojo comunica con qualsiasi cosa tu indichi in <go>Impostazioni</go>. Un modello che gira sul tuo computer (Ollama, vLLM, LM Studio) è la scelta predefinita, ed è l'unica configurazione in cui nulla di ciò che scrivi lascia il dispositivo.",
+      "p2": "Puoi anche usare Claude, OpenAI e altri con una chiave API. È un compromesso reale e la schermata lo dice chiaramente: i tuoi record vanno a quell'azienda e vengono addebitati sul tuo account. La chiave viene conservata in questo browser, non viene mai inclusa in un backup e non viene mai inviata ad altri che al fornitore che hai scelto.",
+      "stoppedTitle": "Se l'assistente sembra aver smesso di leggere",
+      "stopped": "Un modello locale con troppo poco spazio scarta silenziosamente l'inizio di ciò che gli è stato inviato, e poi risponde con sicurezza a una domanda che non ha mai visto per intero. jojo ora confronta ciò che il server dice di aver letto con ciò che è stato effettivamente inviato, e ti avvisa quando non coincidono, perché l'alternativa è un assistente che sembra incapace anziché a corto di spazio."
+    },
+    "next": "Prossimo: <go>con cosa è costruito jojo</go>."
+  },
+  "graph": {
+    "pageTitle": "Il grafo sottostante",
+    "subtitle": "Ogni record è un nodo e ogni collegamento tra record è un arco. La pagina Grafo disegna esattamente questo.",
+    "picture": {
+      "hint": "non un'illustrazione dell'archivio: l'archivio stesso",
+      "title": "Cosa mostra l'immagine",
+      "body": "La pagina <go>Grafo</go> percorre gli stessi record che leggono la bacheca e il calendario, a ogni rendering, e disegna un segno per record e una linea per riferimento. Nulla in quell'area è una seconda copia dei tuoi dati e nulla è un modello finto: elimina una candidatura dalla bacheca e sparisce dall'area prima che tu ci torni.",
+      "markTitle": "Cosa significa un segno",
+      "colourTerm": "Colore",
+      "colour": "Il tipo di record. Nulla in questa pagina è mai rosso o ambra: quei due colori sono riservati in tutta l'app a ritardo e scadenza imminente, e un punto rosso qui verrebbe letto come una scadenza anziché come un tipo.",
+      "shapeTerm": "Forma",
+      "shape": "La famiglia. I cerchi sono i record attivi di una ricerca: candidature, elementi con data, annunci, risultati. I quadrati arrotondati sono ciò che hai archiviato nella Cassaforte: link, file, frammenti. I rombi sono le cose condivise da molti record. Due dei quattro rombi sono record con un id proprio, un'organizzazione e una parola chiave, gli altri due no: vedi sotto.",
+      "sizeTerm": "Dimensione",
+      "size": "Quanti archi lo toccano, su scala di radice quadrata e con un limite. Un nodo con venti collegamenti è visibilmente più grande di uno con quattro, invece di avere cinque volte l'area, che è ciò che produceva il dimensionamento diretto sul conteggio: le candidature diventavano pianeti e tutto il resto polvere.",
+      "lineTerm": "Una linea",
+      "line": "Un riferimento tra due record, disegnato senza punta di freccia. La direzione è memorizzata, e ogni percorso in questa pagina la ignora: chi chiede cosa collega un file a un lavoro non pensa a una direzione.",
+      "notDoTitle": "Due cose che l'area non fa",
+      "notDo1": "Premendo una riga della legenda si nasconde quel tipo di record, e nessun nodo cambia dimensione. La dimensione è un fatto del record, non di ciò che stai guardando, e un nodo che si rimpicciolisse perché hai nascosto una riga della legenda ti parlerebbe del tuo filtro anziché dei tuoi dati.",
+      "notDo2": "E non tutto il tuo archivio è nell'area. Le ricerche salvate in Scout offerte e il tuo profilo sono record, e nessuno dei due viene disegnato: una ricerca salvata non nomina nessun record qui, e il profilo è una sola riga che resterebbe isolata in un angolo di ogni immagine. In ogni caso sono nell'esportazione e nei conteggi dei record in <go>Impostazioni</go>."
+    },
+    "question": {
+      "hint": "tre riquadri, e uno non esegue nulla",
+      "title": "Fargli una domanda",
+      "intro": "Il pannello sotto l'area ha tre parti, e conviene sapere quale è quale prima di fidarsi di una sua risposta.",
+      "pickers": "<lead>I selettori sono reali.</lead> Cosa stai cercando, se <hi>ha</hi>, <hi>non ha</hi> o <hi>ha almeno</hi> due di una relazione, cosa c'è all'altra estremità e, facoltativamente, una parola chiave che tutto deve avere. Gli elementi della cronologia hanno un secondo selettore che nient'altro ha (un tipo, o il contrassegno di promemoria) perché “candidature senza sollecito” e “promemoria non collegati a nulla” sono le due domande che le persone fanno davvero, e nessuna delle due si può esprimere solo con i tipi di record.",
+      "queryLine": "<lead>La riga della query non lo è.</lead> Il blocco di testo dall'aspetto di codice sotto i selettori viene generato da essi e non viene interpretato da nulla. È indicato come illustrativo nella pagina stessa, e questa pagina non lo addolcirà: in jojo non esiste un linguaggio di query, scrivere in quella casella non è una funzione in arrivo, e nessun campo da nessuna parte ne accetta uno.",
+      "answer": "<lead>La risposta è reale.</lead> La tabella elenca i record corrispondenti e li apre, e gli stessi record si illuminano nell'area qui sopra. Le risposte lunghe vengono tagliate a quaranta righe nella tabella, e lo dicono; ogni corrispondenza resta comunque illuminata nel grafo.",
+      "whyTitle": "Perché c'è la riga non interpretata",
+      "why": "Perché è il modo più breve per rendere leggibili i selettori. Vedere <code>{{query}}</code> accanto alle parole “candidature senza sollecito” è ciò che trasforma tre menu a tendina in una frase leggibile, e insegna la forma della domanda anziché una sintassi che poi non avresti dove scrivere. La regola che deve rispettare è che non finge mai: ha la sua etichetta, non ha un pulsante di esecuzione, e sta sotto i controlli che fanno il lavoro anziché sopra.",
+      "answersTitle": "Tre cose utili da sapere sulle risposte",
+      "answers1": "Una domanda viene eseguita sull'intero archivio, mai su ciò che resta visibile. Una risposta che cambiasse premendo una riga della legenda sarebbe peggio di nessuna risposta.",
+      "answers2": "Non c'è un pulsante Esegui. Ogni modifica la riesegue subito, così la tabella e i controlli sopra non possono mai descrivere due domande diverse.",
+      "answers3": "Un risultato vuoto è formulato con le parole della domanda. Chiedi quali candidature non hanno un sollecito e non ottieni nulla: ti dice che ognuna ne ha uno, che è una risposta, non un errore."
+    },
+    "model": {
+      "hint": "la regola per meritarsene uno",
+      "title": "Undici tipi di record",
+      "intro": "Un valore diventa un record a sé quando lo puoi rinominare o annotare, altrimenti resta un campo. Un datore di lavoro supera il test: puoi scriverlo in modo diverso, le candidature si accumulano sotto di esso, e conviene che sia una cosa sola anziché dodici stringhe. Quell'unico test ha prodotto gli undici qui sotto e ha scartato tutto il resto.",
+      "manyTitle": "Un riferimento, o molti",
+      "many": "Tre delle sette sono relazioni multiple: l'etichettatura, ciò che un elemento con data <code>ABOUT</code> (riguarda), e ciò sotto cui un record della Cassaforte è <code>FILED_UNDER</code> (archiviato). Un CV va a ogni candidatura a cui lo invii e una scadenza per le referenze copre ogni lavoro che copre, quindi quelle due sono elenchi anziché caselle. Le altre quattro sono al massimo una per record, e collegare di nuovo sostituisce ciò che c'era nella stessa scrittura. L'identità di un riferimento è la tripla che unisce, quindi crearne uno due volte dà lo stesso riferimento e non c'è modo di ritrovarsi con due linee identiche tra gli stessi due record: è per questo che archiviare un documento sotto un lavoro sotto cui è già archiviato non fa assolutamente nulla.",
+      "elevensTitle": "Due undici e due sette, e non sono gli stessi",
+      "elevensIntro": "Anche la pagina Grafo ha undici tipi di nodo e sette tipi di linea, una coincidenza che vale la pena smontare perché ha ingannato chi è andato a cercare:",
+      "nineTerm": "Nove su undici coincidono",
+      "nine": "Due tipi memorizzati non vengono mai disegnati (la ricerca salvata e il profilo) e due tipi disegnati non vengono mai memorizzati, che è l'argomento della prossima sezione.",
+      "fiveTerm": "Cinque su sette coincidono",
+      "five": "Anche due relazioni memorizzate non vengono mai disegnate. Una dice che una candidatura è la copia di un'altra, scritta quando ne duplichi una; l'altra unisce un annuncio salvato o un risultato alla ricerca da cui proviene, e non viene disegnata perché ciò che sta all'altra estremità non viene disegnato. Due relazioni disegnate non vengono mai memorizzate.",
+      "oneNameTerm": "Un nome significa due cose",
+      "oneName": "Il selettore di relazioni offre <code>proviene da</code>, e nell'area è la linea da una candidatura al punto in cui l'hai trovata: una linea che l'archivio non ha mai contenuto. La relazione memorizzata con lo stesso nome unisce un annuncio a una ricerca salvata e non compare in nessuna immagine."
+    },
+    "drawn": {
+      "hint": "ruolo e fonte",
+      "title": "Due cose disegnate che non sono mai state memorizzate",
+      "p1": "Una candidatura porta un'etichetta di ruolo da un elenco fisso di cinque e, facoltativamente, dove l'hai trovata da un elenco fisso di quattro. Nessuno dei due è un record. Sono elenchi chiusi che guidano un filtro e un ordine della legenda, non sono cose che puoi rinominare o annotare, e promuoverli metterebbe una ricerca in ogni proiezione dell'app in cambio di nulla che potresti poi fare.",
+      "p2": "Vengono disegnati comunque, perché un'immagine di quali di queste sono arrivate da una segnalazione è utile, e un filtro non è la stessa immagine. La pagina Grafo li crea dalle proprietà che ha già a disposizione, nel momento in cui le ha, e non scrive nulla.",
+      "tellTitle": "Come distinguerli nell'immagine",
+      "tell": "Sono i due rombi senza un datore di lavoro né una parola chiave dietro, e il test decisivo è che non possono sopravvivere a ciò da cui sono stati letti. Elimina l'ultima candidatura con l'etichetta <hi>Postdoc</hi> e quel nodo sparisce con essa: non c'è nessun altro posto in jojo in cui quel valore esista come cosa. Elimina l'ultima candidatura presso un datore di lavoro e il record dell'organizzazione resta, perché è un record; lo stesso vale per una parola chiave, ed è per questo che cancellare tutte le candidature in <go>Impostazioni</go> lascia le tue parole chiave.",
+      "source": "Anche un nodo fonte compare solo quando hai indicato da dove proviene qualcosa. È un campo facoltativo, e una candidatura che non lo ha impostato semplicemente non ha una linea in quella direzione."
+    },
+    "delete": {
+      "hint": "l'unico fatto da ricordare",
+      "title": "Eliminare scollega, non elimina a cascata",
+      "intro": "Elimina una candidatura e jojo rimuove quel record e i riferimenti a esso, senza toccare nulla all'altra estremità di nessuno di essi. Una finestra che dice “elimina Rice” non può essere letta onestamente come consenso a eliminare i quattro file su cui qualcuno ha passato una serata.",
+      "afterTitle": "Cosa vedrai davvero dopo",
+      "after": "Il file è ancora nella Cassaforte, non archiviato sotto nulla. Il promemoria è ancora nel calendario, senza riferimento a nulla. Le tue parole chiave sono intatte: sono condivise da tutto e non sono mai appartenute a quella candidatura. Nella pagina Grafo quei record diventano nodi non collegati, ed è esattamente a questo che serve l'interruttore <hi>Nascondi i record non collegati</hi> dopo aver ripulito qualche ricerca chiusa.",
+      "halfTitle": "E nessun record viene mai eliminato a metà",
+      "half": "Non c'è un contrassegno nascosto che segna un record come rimosso. Quell'approccio richiede un filtro da non dimenticare mai su ogni lettura, ogni conteggio, ogni proiezione e l'esportazione, e un solo punto che lo dimentica è un record eliminato che ricompare sulla tua bacheca. Eliminato significa che la riga non c'è, e annullare la rimette al suo posto con i suoi riferimenti, perché la scrittura ha registrato com'era ogni record prima di essere eseguita, non una nota su come invertirsi."
+    },
+    "source": {
+      "hint": "per chi apre il repository",
+      "title": "Un'azione, un commit, una riga di registro, un annullamento",
+      "p1": "Ogni scrittura in jojo è un'operazione con nome definita fuori da React, convalidata rispetto al proprio schema ed eseguita in modo sincrono in un'unica transazione. Le operazioni si chiamano a vicenda, e una chiamata annidata si unisce alla transazione da cui è stata chiamata invece di aprirne una propria. Questa è l'intera invariante, e il resto di questa pagina ne discende.",
+      "p2": "Aggiungere una candidatura sono tre scritture: il record, il datore di lavoro se è la prima candidatura lì, e la scadenza se ne hai indicata una. Arrivano come un unico commit, quindi producono una riga nel registro, una notifica e una pressione di Annulla. Eliminarne una ha la stessa forma letta al contrario: la transazione ha registrato com'era ogni record toccato prima e dopo, quindi invertirla ricollega il promemoria e il file senza che nessuno abbia scritto una funzione che sappia che erano coinvolti un promemoria e un file. È per questo che lo scollegamento descritto sopra si può annullare, ed è per questo che l'approccio precedente (un'inversione scritta a mano per ogni operazione) era dove si annidava questo tipo di bug: una persona doveva ricordare cosa toccava una scrittura, e la scrittura che toccava cinque raccolte veniva ricordata come se ne toccasse quattro.",
+      "p3": "Il registro viene conservato. <go>Impostazioni</go> elenca ogni scrittura, dalla più recente, limitate alle ultime duecento e sfoltite all'apertura dell'archivio, e offre l'annullamento sulla riga più recente. La <em>pila</em> degli annullamenti è un'altra cosa: limitata alla sessione e profonda cinquanta, perché una pila che sopravvivesse a un ricaricamento inviterebbe ad annullare qualcosa di martedì scorso, e servirebbero regole sui conflitti che questa app non ha.",
+      "p4": "Dove vivono le operazioni, quale livello può importare quale, e lo stesso tracciato di aggiunta di una candidatura disegnato attraverso tutti e cinque si trovano in <go>Costruito con</go>."
+    }
+  },
+  "diagrams": {
+    "toolGate": {
+      "title": "I due filtri tra una domanda e una modifica ai tuoi record",
+      "desc": "Sei passi, dall'alto verso il basso. Uno, ciò che hai scritto. Due, jojo sceglie gli strumenti a cui puntano le tue parole, e se le tue parole non sono chiare li propone tutti anziché tirare a indovinare. Tre, aggiunge ciò da cui dipendono quegli strumenti, così nessuna catena resta in sospeso. Quattro, il modello sceglie uno strumento. Cinque, jojo controlla se quello strumento è stato effettivamente proposto; se no, la chiamata viene rifiutata e non viene eseguito nulla. Sei, solo allora i tuoi record cambiano. Il quinto passo è quello che impone davvero qualcosa; il secondo è solo un suggerimento, perché un modello può nominare uno strumento che non gli è mai stato mostrato.",
+      "typed": "ciò che hai scritto",
+      "pick": "scegli gli strumenti probabili",
+      "pickNote": "non è chiaro? proponi tutti i {{total}}",
+      "needs": "aggiungi ciò che serve a quegli strumenti",
+      "needsNote": "così nessuna catena resta in sospeso",
+      "chooses": "il modello ne sceglie uno",
+      "offered": "era stato proposto?",
+      "offeredNote": "no? rifiutato, non viene eseguito nulla",
+      "change": "i tuoi record cambiano",
+      "caption": "Il passo due ti fa risparmiare token. Il passo cinque è quello che ti tiene al sicuro, e viene eseguito sia che il passo due abbia ristretto qualcosa sia che no."
+    },
+    "toolGraph": {
+      "title": "Come uno strumento si porta dietro quello che lo alimenta",
+      "desc": "Tre righe, ciascuna da leggere da sinistra a destra. Nella prima, chiedere keyword.attach si porta dietro keyword.create, perché associare una parola chiave richiede una parola chiave che esista già. Nella seconda, vault.file.update si porta dietro vault.file.add, perché aggiornare un documento richiede un documento. Nella terza, scout.posting.promote si porta dietro scout.posting.save, perché promuovere un annuncio salvato richiede un annuncio salvato. In ogni caso jojo ricava la dipendenza dall'input dello strumento stesso e propone entrambi gli strumenti insieme, così all'assistente non viene mai consegnato un primo passo senza modo di raggiungere il secondo.",
+      "asked": "ciò che hai chiesto",
+      "needsHeader": "ciò di cui ha bisogno",
+      "offered": "proposto insieme",
+      "needsKeyword": "una parola chiave",
+      "needsFile": "un file",
+      "needsPosting": "un annuncio",
+      "without": "Senza questo, all'assistente potrebbe essere proposto il primo riquadro e non il secondo,\ne si fermerebbe a metà senza che nulla sullo schermo spieghi perché.",
+      "caption": "jojo legge ogni requisito dalla definizione stessa dello strumento, quindi uno strumento aggiunto domani è coperto senza che nessuno aggiorni un elenco."
+    },
+    "benchAmbiguity": {
+      "title": "Una frase, due record, e quello sbagliato modificato",
+      "desc": "In alto, la richiesta: chiudi la candidatura a UT, mi hanno respinto. Sotto, due record che corrispondono entrambi: UT Austin, ancora inviata e attiva, e UT Dallas, già chiusa. Nulla nella frase li distingue. La risposta corretta è chiedere quale; quattro esecuzioni del benchmark su sei hanno invece chiuso UT Austin, la candidatura attiva. Lo strumento scelto era quello giusto. Il record a cui l'hanno applicato no.",
+      "quote": "“Chiudi la candidatura a UT, mi hanno respinto.”",
+      "matchesBoth": "corrisponde a entrambe",
+      "austinState": "inviata — ancora attiva",
+      "austinRuns": "chiusa da 4 esecuzioni su 6",
+      "dallasState": "già chiusa",
+      "dallasMeant": "quella che intendevano",
+      "footer": "Lo strumento era giusto. Il record no, e nessun punteggio sulla scelta dello strumento può vedere la differenza.",
+      "caption": "Le istruzioni stesse di jojo dicono al modello di chiedere quando una richiesta potrebbe riferirsi a più di un record. Due modelli su tre hanno scritto comunque."
+    },
+    "benchAxes": {
+      "title": "Precisione per turno contro successo dell'intera conversazione",
+      "desc": "Tre barre, misurate sulle stesse esecuzioni del benchmark. Turni che hanno chiamato qualcosa di giustificabile: {{turnsGot}} su {{turnsOf}}, il {{turnsPct}} per cento. Singole affermazioni sull'archivio che si sono rivelate vere: {{claimsGot}} su {{claimsOf}}, il {{claimsPct}} per cento. Intere conversazioni senza nulla di sbagliato: {{wholeGot}} su {{wholeOf}}, il {{wholePct}} per cento. La terza è più bassa delle altre due perché una conversazione è pulita solo quando ogni turno e ogni affermazione sono stati superati insieme, quindi i due numeri alti si combinano in quello basso.",
+      "turnsLabel": "Turni che hanno chiamato qualcosa di giustificabile",
+      "turnsNote": "la domanda facile",
+      "claimsLabel": "Affermazioni sull'archivio rivelatesi vere",
+      "claimsNote": "verificate una alla volta",
+      "wholeLabel": "Intere conversazioni senza nulla di sbagliato",
+      "wholeNote": "ogni turno e ogni affermazione, insieme",
+      "count": "{{got}} su {{of}} — {{note}}",
+      "bracket": "entrambe devono\nvalere insieme",
+      "caption": "Un benchmark che riportasse solo la prima barra definirebbe questi modelli quasi perfetti. La terza è quella che risponde alla domanda se il lavoro è stato fatto."
+    },
+    "toolTrace": {
+      "title": "Dove si trova il codice per aggiungere una candidatura, livello per livello",
+      "desc": "Sei passi, dall'alto verso il basso. Uno, in src/components e fuori dal livello condiviso, il modulo della candidatura passa al runtime un oggetto di input. Due, kg/react/use-tool.ts esegue lo strumento chiamato application.create e non attende nulla. Tre, kg/tools/application.ts apre una transazione, e le chiamate annidate a org.ensure e allo strumento della scadenza si uniscono a essa invece di aprirne una propria. Quattro, kg/core analizza l'input rispetto allo schema dello strumento e genera l'id e lo slug. Cinque, kg/repo esegue un unico commit: lo snapshot viene aggiornato, viene aggiunta una riga al registro, e quella riga è l'unico annullamento. Sei, kg/storage scrive in quattro object store di IndexedDB in un'unica transazione, e solo quest'ultimo passo è disegnato con una freccia tratteggiata, perché nulla lo attende. Una parentesi a margine indica i passi dal tre al cinque come un'unica transazione e un unico annullamento.",
+      "webOnly": "solo web",
+      "form": "il modulo passa al runtime un oggetto di input",
+      "run": "run('application.create') — non si attende nulla",
+      "join": "org.ensure e la scadenza si uniscono alla stessa chiamata",
+      "parse": "analizza l'input, genera l'id e lo slug",
+      "commit": "commit: lo snapshot, una riga di registro, un annullamento",
+      "stores": "quattro object store, una transazione IndexedDB",
+      "bracket": "una transazione · un annullamento",
+      "nothingAwaits": "nulla attende questo",
+      "caption": "Da leggere dall'alto verso il basso come l'ordine in cui avviene, non come l'ordine della pila: <code>kg/core</code> è L1 e nel diagramma qui sopra sta sotto <code>kg/repo</code>, perché uno strumento chiama verso il basso e torna indietro prima che venga eseguito qualsiasi commit."
+    },
+    "stack": {
+      "title": "Come è stratificato il codice di jojo",
+      "desc": "Tre cose in cima: l'estensione del browser, l'app web e l'app per telefono. L'estensione comunica con l'app web tramite messaggi inoltrati e non importa nulla. L'app web invia dati al telefono sulla rete locale. Entrambe le app chiamano il servizio condiviso tramite i suoi hook React. Il servizio è composto da sei livelli, ciascuno dei quali usa solo quelli sottostanti: react, agent, tools, repo, core e storage. Tools è evidenziato: ogni modifica ai record passa da lì. In fondo, un driver IndexedDB sul web e un driver AsyncStorage sul telefono implementano ciascuno la porta di storage.",
+      "extension": "estensione",
+      "webApp": "app web",
+      "phoneApp": "app per telefono",
+      "relay": "inoltro",
+      "lan": "LAN",
+      "hooks": "hook",
+      "reactNote": "hook condivisi da entrambe le app",
+      "agentNote": "ciclo del modello · catalogo · MCP",
+      "toolsNote": "ogni scrittura · una voce di annullamento",
+      "repoNote": "commit · registro · coda di scrittura",
+      "coreNote": "regole pure · oggi è un parametro",
+      "storageNote": "Porte Driver e FileStore",
+      "idbDriver": "driver IndexedDB · web",
+      "asyncDriver": "driver AsyncStorage · telefono",
+      "caption": "Le frecce continue indicano la direzione in cui il codice può dipendere: solo verso il basso. Le linee tratteggiate non sono importazioni: l'estensione inoltra messaggi, l'app web passa dati al telefono sulla rete locale, e ogni driver di storage implementa la porta più in basso. Le app possono anche usare direttamente le funzioni pure di core; non devono mai scrivere sotto il livello tools."
+    },
+    "recordModel": {
+      "title": "Gli undici tipi di record che jojo memorizza e i sette modi in cui uno può puntare a un altro",
+      "desc": "La candidatura sta al centro e quasi tutto punta a essa. Un elemento della cronologia è ABOUT una candidatura, e può riguardarne diverse insieme. Un link, un file e un frammento sono ciascuno FILED_UNDER una candidatura, e possono essere archiviati sotto diverse. Un annuncio salvato o un risultato dello scout BECAME una candidatura. Una candidatura è AT un'organizzazione, e può essere COPY_OF un'altra candidatura. Una parola chiave TAGS cinque tipi di record: candidature, elementi della cronologia, link, file e frammenti. Tre delle sette relazioni possono essere presenti più di una volta (ABOUT, FILED_UNDER e TAGS); le altre quattro sono al massimo una per record, quindi collegare di nuovo sostituisce il collegamento che c'era. Due tipi memorizzati non vengono disegnati affatto nella pagina Grafo: pipeline, da cui (FROM) proviene un annuncio salvato o un risultato, e profile, che nessuna relazione unisce a qualcosa. COPY_OF e quel FROM sono memorizzati ma ugualmente mai disegnati, e qui sono tratteggiati per questo. Sotto la linea ci sono le due cose che la pagina Grafo disegna e che l'archivio non ha mai contenuto: ruolo e fonte. Sono proprietà di una candidatura (il suo roleTag e la sua source) mostrate come nodi uniti da un arco IS e da un secondo arco chiamato anch'esso FROM, nessuno dei quali viene scritto da nessuna parte.",
+      "storedNotDrawn": "memorizzato, ma non\ndisegnato nella pagina Grafo",
+      "drawnNeverStored": "disegnato nella pagina Grafo, mai scritto",
+      "roleTagProp": "la proprietà roleTag",
+      "sourceProp": "la proprietà source",
+      "caption": "Undici tipi di record, e sette relazioni che li uniscono. <code>ABOUT</code>, <code>FILED_UNDER</code> e <code>TAGS</code> possono essere presenti più di una volta (un CV va a ogni candidatura a cui lo invii), mentre le altre quattro sono al massimo una per record, quindi collegare di nuovo sostituisce il collegamento anziché aggiungerne un secondo. Due tipi memorizzati non vengono mai disegnati nella pagina Grafo: <code>pipeline</code>, da cui proviene un annuncio salvato o un risultato, e <code>profile</code>, che nessuna relazione unisce a nulla. Sotto la linea ci sono le due cose che la pagina Grafo disegna e che non sono mai state memorizzate: <code>role</code> e <code>source</code> sono proprietà di una candidatura, promosse a nodi per l'immagine e non scritte da nessuna parte."
+    },
+    "unlink": {
+      "title": "Eliminare una candidatura rimuove i riferimenti a essa e lascia ogni record che ne aveva uno",
+      "desc": "Due stati, uno sopra l'altro. Prima: una candidatura, con un elemento della cronologia che punta a essa lungo un arco ABOUT, una parola chiave lungo un arco TAGS e un file lungo un arco FILED_UNDER. Viene eseguito lo strumento application.delete. Dopo: l'elemento della cronologia, la parola chiave e il file sono ancora lì, negli stessi punti, senza riferimenti: l'elemento della cronologia non riguarda nulla, la parola chiave non etichetta nulla, il file non è archiviato sotto nulla. Sono spariti solo la candidatura e i tre archi. Nessun record all'altra estremità di un arco viene toccato.",
+      "before": "Prima",
+      "after": "Dopo",
+      "gone": "eliminata",
+      "aboutNothing": "non riguarda nulla",
+      "taggingNothing": "non etichetta nulla",
+      "filedNothing": "non archiviato sotto nulla",
+      "caption": "La candidatura e i tre riferimenti a essa sono spariti. L'elemento della cronologia, la parola chiave e il file no: sono negli stessi punti, senza riferimenti, e ognuno di essi puoi ancora aprirlo. Annulla rimette gli archi, perché la scrittura ha registrato com'era ogni record prima di essere eseguita, non una nota su come invertirsi."
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "dialog": {
+    "title": {
+      "new": { "reminder": "Nuovo promemoria", "event": "Nuovo evento" },
+      "edit": { "reminder": "Modifica promemoria", "event": "Modifica evento" }
+    },
+    "description": "È comunque un unico record: compare nel calendario alla data che indichi, e nell'elenco dei promemoria della Cassaforte finché l'interruttore accanto al titolo è attivo."
+  },
+  "form": {
+    "title": {
+      "label": "Titolo",
+      "error": "Dagli un titolo che riconoscerai.",
+      "placeholder": {
+        "reminder": "es. Sollecita il selezionatore",
+        "event": "es. Zoom con la commissione"
+      }
+    },
+    "remind": {
+      "label": "Mostra nei promemoria",
+      "on": "Elencato nella Cassaforte con una casella di spunta, e nel calendario alla sua data.",
+      "off": "Solo nel calendario alla sua data, senza casella di spunta nella Cassaforte."
+    },
+    "kind": {
+      "label": "Tipo",
+      "hintFollowUp": "Un sollecito compare anche in Solleciti in scadenza sul pannello, finché non lo spunti.",
+      "hint": "L'icona che porta nel calendario e nell'elenco dei promemoria."
+    },
+    "detail": {
+      "label": "Dettaglio",
+      "hint": "Una riga di contesto, mostrata sotto il titolo."
+    },
+    "more": {
+      "label": "Altri dettagli",
+      "empty": "nota, parole chiave",
+      "filledNote": "nota",
+      "filledKeywords": "parole chiave",
+      "filledBoth": "nota · parole chiave"
+    },
+    "note": {
+      "label": "Nota",
+      "hint": "Un tuo appunto. Tenuto separato dal dettaglio, così una modifica non lo sovrascrive mai."
+    },
+    "keywords": {
+      "label": "Parole chiave",
+      "hint": "Condivise con candidature, file e link: filtrando per una le trovi tutte."
+    },
+    "delete": "Elimina",
+    "cancel": "Annulla",
+    "save": "Salva le modifiche",
+    "add": { "reminder": "Aggiungi promemoria", "event": "Aggiungi evento" }
+  },
+  "schedule": {
+    "date": "Data",
+    "dateError": "Scegli una data: un elemento senza data non ha dove comparire.",
+    "quick": { "today": "Oggi", "tomorrow": "Domani", "inWeek": "Tra 7 giorni" },
+    "allDay": {
+      "label": "Tutto il giorno",
+      "description": "Se disattivato, ha un'ora di inizio e una durata, e compare nella griglia oraria del calendario."
+    },
+    "startTime": "Ora di inizio",
+    "length": "Durata",
+    "durations": {
+      "min15": "15 min",
+      "min30": "30 min",
+      "min45": "45 min",
+      "hour1": "1 ora",
+      "hour1_5": "1,5 ore",
+      "hour2": "2 ore",
+      "hour3": "3 ore"
+    }
+  },
+  "application": {
+    "label": "Candidatura correlata",
+    "hint": "Li collega, così ogni candidatura elenca questo elemento e questo riporta a ciascuna di esse.",
+    "notLinked": "Non collegato",
+    "count_one": "{{count}} candidatura",
+    "count_many": "{{count}} di candidature",
+    "count_other": "{{count}} candidature",
+    "searchLabel": "Cerca candidature da collegare",
+    "searchPlaceholder": "Cerca candidature…",
+    "none": "Ancora nessuna candidatura.",
+    "noMatch": "Nessuna candidatura corrisponde.",
+    "clear": "Cancella le candidature collegate",
+    "open": "Apri {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "{{title}} aggiunto",
+    "updated": "{{title}} aggiornato",
+    "inReminders": "{{when}} — tra i promemoria",
+    "inRemindersAndFollowUps": "{{when}} — tra i promemoria e in Solleciti in scadenza",
+    "calendarOnly": "{{when}} — solo nel calendario",
+    "undo": "Annulla",
+    "deleteFailed": "Non è stato eliminato",
+    "stillThere": "{{title}} è ancora nel calendario.",
+    "stillThereUnnamed": "Il promemoria è ancora nel calendario.",
+    "deleted": "{{title}} eliminato",
+    "deletedUnnamed": "Promemoria eliminato",
+    "goneBoth": "Rimosso dall'elenco dei promemoria e dal calendario.",
+    "goneCalendar": "Rimosso dal calendario."
+  }
+}

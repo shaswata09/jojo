@@ -1,0 +1,44 @@
+{
+  "language": {
+    "label": "Lingua",
+    "description": "La lingua in cui viene mostrato jojo. I tuoi record restano nella lingua in cui li hai scritti.",
+    "system": "Come questo dispositivo ({{name}})",
+    "restartRtl": "{{name}} si leggerà da destra a sinistra al riavvio di jojo.",
+    "restartLtr": "{{name}} si leggerà da sinistra a destra al riavvio di jojo."
+  },
+  "actions": {
+    "undo": "Annulla",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "cancel": "Annulla",
+    "tryAgain": "Riprova",
+    "preview": "Anteprima",
+    "moreFor": "Altre azioni per {{name}}",
+    "save": "Salva",
+    "done": "Fatto",
+    "openNamed": "Apri {{name}}",
+    "clear": "Cancella",
+    "clearNamed": "Cancella {{name}}",
+    "notNow": "Non ora",
+    "duplicate": "Duplica",
+    "remove": "Rimuovi",
+    "back": "Indietro",
+    "next": "Avanti",
+    "close": "Chiudi",
+    "clearSearch": "Cancella ricerca",
+    "copy": "Copia",
+    "copied": "Copiato"
+  },
+  "discard": {
+    "title": "Scartare le modifiche non salvate?",
+    "description": "Quello che hai scritto qui non è stato salvato da nessuna parte, quindi uscendo lo perdi, e non si può annullare.",
+    "confirm": "Scarta"
+  },
+  "filter": {
+    "all": "Tutti"
+  },
+  "pageOptions": {
+    "title": "Opzioni della pagina",
+    "description": "Valgono solo per questa schermata, per questa visita."
+  }
+}

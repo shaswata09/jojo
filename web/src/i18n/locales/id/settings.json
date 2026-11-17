@@ -1,0 +1,472 @@
+{
+  "shared": {
+    "thisBrowserOnly": "hanya browser ini",
+    "optional": "opsional",
+    "undo": "Urungkan",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "testing": "Menguji…",
+    "testAgain": "Uji lagi",
+    "testConnection": "Uji koneksi",
+    "connected": "Terhubung",
+    "noAnswer": "Tidak menjawab",
+    "notConnected": "Tidak terhubung"
+  },
+  "appearance": {
+    "title": "Tampilan",
+    "theme": {
+      "label": "Tema",
+      "description": "Sistem mengikuti pengaturan sistem operasi Anda",
+      "light": "Terang",
+      "dark": "Gelap",
+      "system": "Sistem"
+    },
+    "gestures": {
+      "label": "Gestur maskot",
+      "description": "jojo bereaksi saat Anda bekerja. Coba salah satunya."
+    },
+    "draw": {
+      "label": "Gambar sebuah gerakan",
+      "description": "Gambar di atas robot di kartu bilah samping. Tombol robot di sudutnya juga mencantumkan gerakan ini."
+    },
+    "sounds": {
+      "label": "Suara antarmuka",
+      "description": "Bunyi klik singkat saat Anda menggeser sakelar"
+    }
+  },
+  "savedServers": {
+    "intro": "Koneksi tersimpan — semua yang pernah menjawab di sini, siap dimuat kembali secara utuh. Kunci disimpan di samping alamat di perangkat ini; kunci tidak pernah masuk ke cadangan.",
+    "inUse": "Sedang dipakai",
+    "keyKept": "kunci tersimpan",
+    "load": "Muat {{name}}",
+    "loadWithKey": "Muat {{name}}, termasuk kuncinya",
+    "forget": "Lupakan {{name}}"
+  },
+  "model": {
+    "title": "Model",
+    "hint": "Kompatibel dengan OpenAI",
+    "savedNone": "Belum ada yang tersimpan — uji koneksi dan alamatnya akan disimpan",
+    "savedServers": "Server tersimpan",
+    "intro": "Model di perangkat ini, atau model berbayar. Lokal adalah bawaan karena hanya opsi itulah yang membuat entri Anda tidak pernah keluar dari perangkat.",
+    "provider": "Penyedia",
+    "reasoningOptions": {
+      "on": "Aktif",
+      "light": "Ringan",
+      "off": "Mati"
+    },
+    "endpoint": {
+      "label": "Endpoint",
+      "hintOllama": "Host dan port. Tanpa /v1 — jojo memakai endpoint Ollama sendiri agar dapat memintanya tidak memotong.",
+      "hint": "URL dasar, diakhiri dengan /v1."
+    },
+    "apiKey": {
+      "label": "Kunci API",
+      "hint": "Hanya disimpan di browser ini. Tidak pernah dimasukkan ke cadangan dan tidak pernah dikirim ke mana pun selain ke penyedia."
+    },
+    "getKeyLink": "<anchor>Dapatkan kunci dari {{provider}}</anchor>",
+    "getKeyFree": "<anchor>Dapatkan kunci dari {{provider}}</anchor> — gratis, tanpa kartu.",
+    "modelField": {
+      "label": "Model",
+      "placeholder": "ID model, dari penyedia Anda",
+      "hintConnected": "Yang dilaporkan server. Ubah jika Anda menyajikan lebih dari satu.",
+      "hint": "Uji koneksi untuk mengisinya dari server, atau ketik ID-nya sendiri."
+    },
+    "savedAs": {
+      "label": "Disimpan sebagai",
+      "hint": "Nama server ini di daftar. Bawaannya nama model."
+    },
+    "contextWindow": {
+      "label": "Jendela konteks",
+      "hintOllama": "Token. Kosongkan untuk memakai {{tokens}} dan biarkan Ollama menentukan ukurannya; angka di sini juga dikirim sebagai num_ctx.",
+      "hint": "Token yang dapat ditampung deployment Anda. Kosongkan untuk {{tokens}}."
+    },
+    "reasoning": {
+      "label": "Penalaran",
+      "description": "Mengizinkan model yang bisa berpikir — gpt-oss, Gemma 4, Qwen3 — bernalar sebelum menjawab. Matikan jika balasan kembali kosong pada model kecil."
+    },
+    "fillEndpoint": "Isi endpoint dulu",
+    "connectedNote": "Disimpan di browser ini. Asisten akan memakai model ini."
+  },
+  "cloudTerms": {
+    "providerTerms": "Ketentuan {{provider}}",
+    "privacy": "Kebijakan privasi",
+    "licence": "Halaman lisensi jojo"
+  },
+  "mcp": {
+    "title": "Hubungkan dari klien MCP",
+    "intro": "Izinkan asisten yang sudah Anda pakai — misalnya Claude Code dengan paket Anda sendiri — membaca dan memperbarui entri Anda di sini, dengan alat yang sama seperti asisten jojo. Asisten itu menjangkau tab ini melalui program kecil di komputer Anda, dan setiap perubahan yang dibuatnya muncul di sini dengan Urungkan.",
+    "allow": "Izinkan klien MCP di komputer ini memakai jojo",
+    "chip": {
+      "off": "Mati",
+      "searching": "Menunggu jojo-bridge",
+      "ready": "Tertaut",
+      "badToken": "Token ditolak",
+      "noExtension": "Perlu ekstensi",
+      "staleExtension": "Muat ulang ekstensi"
+    },
+    "explain": {
+      "searching": "Belum ada yang menjawab di 127.0.0.1:3002. Jalankan jojo-bridge dengan perintah pertama — jojo terus mencari.",
+      "served_other": "Menjawab {{count}} permintaan dari klien Anda di sesi ini, terakhir {{method}}.",
+      "servedNoMethod_other": "Menjawab {{count}} permintaan dari klien Anda di sesi ini.",
+      "ready": "jojo-bridge sedang berjalan. Hubungkan klien Anda dengan perintah kedua.",
+      "badToken": "jojo-bridge berjalan dengan token yang berbeda. Hentikan dengan Ctrl+C dan jalankan lagi dengan perintah pertama.",
+      "noExtension": "Salinan jojo ini disajikan dari web, dan Chrome menjauhkan halaman web dari 127.0.0.1. Ekstensi jojo yang membawa tautannya — pemasangnya ada di halaman ini, di bawah Menyimpan lowongan.",
+      "staleExtension": "Ekstensi jojo di browser ini lebih lama dari halaman ini. Buka chrome://extensions dan tekan Muat ulang pada jojo."
+    },
+    "start": {
+      "title": "Jalankan jojo-bridge, dan biarkan berjalan",
+      "copy": "Salin perintah yang menjalankan jojo-bridge",
+      "notePowershell": "Memerlukan Node 18 atau lebih baru. Tempel ke Windows PowerShell. Token dimasukkan melalui environment, jadi tidak pernah tampil di daftar proses. jojo-bridge yang diunduh sebelum versi ini harus diunduh lagi — perintah ini melakukannya.",
+      "note": "Memerlukan Node 18 atau lebih baru. Token dimasukkan melalui environment, jadi tidak pernah tampil di daftar proses. jojo-bridge yang diunduh sebelum versi ini harus diunduh lagi — perintah ini melakukannya."
+    },
+    "connect": {
+      "title": "Hubungkan Claude Code ke sana, sekali saja",
+      "copy": "Salin perintah yang menghubungkan Claude Code",
+      "note": "Lalu tanyakan sesuatu seperti “lamaran mana yang sedang menunggu saya?”. Jika terminal Anda menampilkan “command not found: claude”, berarti Anda memakai Claude Code di dalam VS Code, yang membawa salinannya sendiri — jalankan baris yang sama dengan path lengkap salinan itu (di folder ekstensi VS Code, di bawah anthropic.claude-code-…/resources/native-binary/claude), atau pasang Claude Code CLI. Klien apa pun yang mendukung MCP melalui HTTP dapat memakai alamat dan token yang sama."
+    },
+    "honesty": "Klien Anda berjalan dengan paket dan login Anda sendiri — jojo tidak pernah melihat keduanya, dan tidak mengirim apa pun ke Anthropic atau pihak lain. Klien dapat memakai setiap alat asisten jojo kecuali dua yang tidak dapat diurungkan, Reset dan Clear. Claude Code bertanya sebelum memakai alat kecuali Anda memintanya tidak bertanya, dan jojo menandai setiap penghapusan sebagai destruktif. Biarkan tab ini terbuka selama Anda memakainya: entri tersimpan di sini, begitu pula ujung lain tautannya.",
+    "newToken": "Token baru",
+    "newTokenNote": "Perintah lama tidak berfungsi lagi — jalankan keduanya lagi dengan token baru."
+  },
+  "reader": {
+    "title": "Baca dokumen saya",
+    "intro": "Asisten hanya bisa melihat nama dokumen sampai ada sesuatu yang mengubahnya menjadi teks. Jalankan <anchor>{{name}}</anchor> di perangkat ini dan asisten dapat membaca isi PDF, berkas Word, presentasi, dan spreadsheet Anda.",
+    "address": {
+      "label": "Alamat",
+      "hint": "Path di situs ini saat pengembangan, atau alamat pembaca itu sendiri jika ekstensi terpasang. Lihat di bawah."
+    },
+    "notRunning": "Belum menjalankannya?",
+    "copySetup": "Salin perintah penyiapan",
+    "cors": "Pembaca mendengarkan di <mono>{{endpoint}}</mono>, tetapi tidak mengirim header CORS — jadi browser tidak mengizinkan halaman ini memanggilnya lintas port. Server pengembangan jojo meneruskan <mono>{{path}}</mono> ke sana, itulah sebabnya alamat di atas berupa path, bukan URL. Aplikasi ponsel berkomunikasi langsung dengannya dan tidak memerlukan semua ini.",
+    "hosted": "<em>Pada salinan yang di-hosting, pasang ekstensi.</em> Halaman yang disajikan dari web tidak dapat memanggil <mono>127.0.0.1</mono> — tidak ada proxy untuk meneruskan path, dan halaman https:// dilarang mengakses jaringan lokal. Ekstensi bukan halaman: ekstensi menjangkau pembaca secara langsung, dan jojo memintanya melakukan itu. Isi alamat pembaca itu sendiri di atas dan ekstensi akan meneruskan setiap permintaan; ekstensi hanya akan meneruskan ke perangkat ini.",
+    "fillAddress": "Isi alamat dulu",
+    "connectedNote": "Dokumen dikirim ke alamat itu dan tidak ke tempat lain. Tidak ada yang diunggah.",
+    "separate": "{{name}} adalah program terpisah, bukan bagian dari jojo.",
+    "notAffiliated": "jojo tidak berafiliasi dengan Microsoft."
+  },
+  "capture": {
+    "title": "Menyimpan lowongan",
+    "intro": "Lowongan kerja adalah satu-satunya dokumen dalam pencarian Anda yang milik orang lain. Iklannya diturunkan seminggu setelah wawancara dan persyaratannya ikut hilang. Ekstensi jojo menyimpan salinannya — halaman seperti isinya pada hari Anda mengarsipkannya, dengan setiap gambar dan stylesheet disertakan, jadi membukanya setahun kemudian tidak menjangkau apa pun dan tidak memerlukan koneksi.",
+    "checking": "Memeriksa browser ini…",
+    "installed": "Terpasang dan terhubung.",
+    "installedHint": "Buka lowongan dan klik tombol jojo di bilah alat — jika tidak terlihat, tombol itu ada di balik menu kepingan puzzle dan perlu disematkan. Lalu kembali ke Brankas.",
+    "version": "Versi {{version}}.",
+    "safari": {
+      "title": "Safari tidak dapat menjalankan ekstensi ini.",
+      "body": "Safari hanya memuat ekstensi yang dikemas di dalam aplikasi Mac bertanda tangan, jadi tidak ada yang bisa dipasang di sini. Gunakan Chrome, Edge, Brave, atau Firefox untuk menangkap lowongan; semua fitur lain jojo berfungsi sama di Safari."
+    },
+    "download": "Unduh ekstensi",
+    "firefox": {
+      "title": "Firefox memerlukan salinan bertanda tangan.",
+      "body": "Firefox adalah satu-satunya browser yang memungkinkan ini dengan sekali klik — add-on bertanda tangan Mozilla dapat dipasang langsung dari tautan di sini, tanpa daftar di toko. jojo belum menghasilkan build bertanda tangan, jadi untuk sementara muat dari <code>about:debugging</code> → This Firefox → Load Temporary Add-on, lalu pilih <code>manifest.json</code>. Firefox melupakannya saat dimulai ulang."
+    },
+    "steps": {
+      "unzip": "Ekstrak di tempat permanen — bukan Downloads. <muted>Browser membaca ekstensi dari folder itu setiap kali dimulai, jadi menghapus atau memindahkannya akan mencopot ekstensi.</muted>",
+      "open": "Buka halaman ekstensi.",
+      "copied": "Disalin",
+      "copy": "Salin",
+      "paste": "Tempel ke bilah alamat.",
+      "developer": "Aktifkan <strong>Developer mode</strong>, di kanan atas. <muted>Biarkan tetap aktif — mematikannya akan menonaktifkan ekstensi yang dimuat dengan cara ini, tanpa pemberitahuan.</muted>",
+      "load": "Klik <strong>Load unpacked</strong> dan pilih folder yang sudah Anda ekstrak.",
+      "pin": "<strong>Sematkan.</strong> Klik tombol kepingan puzzle di bilah alat dan sematkan jojo. <muted>Browser Chromium menyembunyikan setiap ekstensi di balik menu itu secara bawaan, jadi tombolnya ada tetapi tidak di bilah alat — inilah langkah yang sering terlewat, dan tampak persis seperti ekstensi gagal terpasang.</muted>",
+      "back": "Kembali ke sini. <muted>Panel ini mendeteksinya sendiri dan berubah hijau.</muted>"
+    },
+    "yourBrowser": "browser Anda",
+    "noOneClick": "Tidak ada pemasangan sekali klik untuk {{browser}}, dan itu keputusan browser, bukan fitur yang kurang di sini: API yang memungkinkannya dihapus pada 2018, dan paket bertanda tangan tetap harus berasal dari Chrome Web Store. Ekstensi ini sama sekali tidak berkomunikasi dengan server — ia membaca halaman yang sedang Anda lihat dan menyerahkan hasilnya ke tab ini."
+  },
+  "crash": {
+    "title": "Laporan kerusakan",
+    "builtWithout": "Salinan jojo ini dibuat tanpa pelaporan kerusakan atau analitik penggunaan, jadi tidak ada yang dicatat dan tidak ada yang bisa diaktifkan. Build mengaturnya dengan <mono>{{crashFlag}}</mono> dan <mono>{{analyticsFlag}}</mono>.",
+    "intro": "Saat ada yang rusak, jojo dapat menyimpan kesalahannya agar Anda bisa membacanya kembali — berguna ketika hal yang gagal sudah tergulir hilang. Laporan berisi pesan kesalahan, di bagian jojo mana itu terjadi, dan stack trace. Laporan tidak pernah berisi lamaran, dokumen, catatan, profil, atau percakapan Anda, dan kunci API, alamat, direktori home, serta alamat email dihapus sebelum laporan ditulis.",
+    "where": "Di browser ini dan di ekstensi, laporan kerusakan <em>tetap di perangkat ini</em> — tidak ada yang diunggah, dan berkas cadangan tidak membawanya. Aplikasi ponsel juga mengirimnya ke Firebase Crashlytics, yang menambahkan model perangkat, versi OS-nya, dan id acak yang dipakai untuk menghitung berapa orang mengalami kerusakan yang sama. Laporan kerusakan hanya tentang kerusakan — apa yang Anda lakukan di jojo adalah pertanyaan terpisah di bawah, dijawab terpisah.",
+    "keep": {
+      "label": "Simpan laporan kerusakan",
+      "description": "Aktif, agar kerusakan yang Anda alami dapat kami lihat. Matikan dan tidak ada yang dicatat."
+    },
+    "usage": {
+      "label": "Bagikan fitur yang saya gunakan",
+      "description": "Hanya hitungan, dari daftar tetap — tidak pernah isi entri Anda.",
+      "note": "Hanya dapat menyebutkan hal dari daftar tetap — layar mana yang dibuka, bahwa sebuah lamaran ditambahkan, kira-kira berapa jumlahnya. Tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik. Dikirim ke Google Analytics."
+    },
+    "kept_other": "{{count}} laporan disimpan",
+    "clear": "Bersihkan",
+    "stack": "Stack",
+    "emptyOn": "Tidak ada yang rusak sejak Anda mengaktifkan ini.",
+    "emptyOff": "Tidak ada yang dicatat."
+  },
+  "audit": {
+    "title": "Yang telah dilakukan jojo",
+    "kept_other": "{{count}} disimpan",
+    "records_other": "{{count}} entri",
+    "connections_other": "{{count}} koneksi",
+    "both": "{{records}}, {{connections}}",
+    "noChange": "tidak ada perubahan",
+    "undoTitle": {
+      "can": "Mengembalikan entri seperti sebelum perubahan ini",
+      "wholeStore": "Perubahan ini mengganti seluruh penyimpanan, jadi tidak ada yang bisa dikembalikan",
+      "trimmed": "jojo mencatat perubahan ini tetapi tidak cukup untuk mengembalikannya — ini adalah penulisan latar belakang (penilaian kecocokan, isi berkas) atau sudah terlalu lama"
+    },
+    "undoFailed": {
+      "title": "Perubahan itu tidak dapat diurungkan lagi",
+      "description": "Perubahan itu sudah tidak ada di jurnal."
+    },
+    "empty": "Belum ada yang ditulis ke penyimpanan ini. Setiap perubahan yang Anda buat dicatat di sini, dan catatannya bertahan setelah muat ulang.",
+    "showFewer": "Tampilkan lebih sedikit",
+    "showAll": "Tampilkan semua {{total}}",
+    "footer": "200 perubahan terakhir disimpan, yang tertua dibuang lebih dulu. Mengurungkan di sini adalah perubahan baru tersendiri — ditambahkan ke atas daftar ini, bukan menghapus baris yang dibalikkannya."
+  },
+  "keywords": {
+    "title": "Kata kunci",
+    "hint": "dipakai bersama oleh setiap entri",
+    "intro": "Satu set untuk lamaran, pengingat, dan brankas. Mengganti nama berlaku di semua tempat kata kunci itu ditampilkan; menghapusnya melepaskannya dari setiap entri yang memakainya.",
+    "usage": {
+      "none": "Belum ada di entri mana pun",
+      "used_other": "Dipakai di {{count}} entri"
+    },
+    "errors": {
+      "taken": "Sudah ada kata kunci lain dengan nama itu.",
+      "blank": "Kata kunci memerlukan nama.",
+      "exists": "Kata kunci itu sudah ada."
+    },
+    "renameNamed": "Ganti nama {{name}}",
+    "rename": "Ganti nama",
+    "deleteNamed": "Hapus {{name}}",
+    "delete": "Hapus",
+    "empty": {
+      "title": "Belum ada kata kunci",
+      "description": "Tambahkan satu di bawah, atau dari filter kata kunci di atas daftar mana pun. Kata kunci adalah milik Anda — bukan label posisi tetap di bilah atas."
+    },
+    "newKeyword": "Kata kunci baru",
+    "placeholder": "mis. Referral",
+    "add": "Tambah kata kunci"
+  },
+  "documents": {
+    "title": "Dokumen Anda",
+    "hint": "di perangkat ini",
+    "intro": "CV, surat pengantar, dan pernyataan yang Anda lampirkan disimpan di browser ini, di perangkat ini. Tidak ada yang diunggah ke mana pun.",
+    "count_other": "{{count}} dokumen",
+    "noneReadable": {
+      "title": "Tidak ada dokumen yang dapat dibaca",
+      "description": "Browser ini tidak lagi menyimpan isi dokumen-dokumen itu."
+    },
+    "savedAll_other": "{{count}} dokumen disimpan",
+    "savedSome": "{{saved}} dari {{total}} disimpan",
+    "savedAllDescription": "Satu berkas, {{name}}, di folder unduhan Anda. Ini adalah berkas asli, bukan salinan entri.",
+    "savedSomeDescription": "{{name}} ada di folder unduhan Anda, tanpa {{missing}} yang tidak dapat lagi dibaca browser ini.",
+    "failed": {
+      "title": "Tidak dapat membuat unduhan",
+      "description": "Tidak ada yang disimpan. Coba lagi, atau buka dokumen dan unduh satu per satu."
+    },
+    "none": "Belum ada dokumen",
+    "stored_other": "{{count}} dokumen tersimpan",
+    "usage": "{{used}} dari {{quota}} terpakai",
+    "notPermanent": "Browser ini belum menandai penyimpanan jojo sebagai permanen, jadi browser mungkin menghapus dokumen ini jika disk penuh — dan “Hapus data penjelajahan” akan menghapusnya apa pun keterangannya. Simpan salinan sendiri untuk apa pun yang tidak ingin Anda tulis ulang.",
+    "saving": "Menyimpan…",
+    "downloadAll": "Unduh semua dokumen"
+  },
+  "diagnostics": {
+    "title": "Diagnostik",
+    "types": {
+      "application": "Lamaran",
+      "background": "Fakta latar belakang",
+      "claim": "Relasi",
+      "thread": "Percakapan",
+      "proposal": "Saran",
+      "organisation": "Organisasi",
+      "timelineItem": "Item linimasa",
+      "keyword": "Kata kunci",
+      "link": "Tautan",
+      "file": "Berkas",
+      "snippet": "Cuplikan",
+      "person": "Orang",
+      "stickyNote": "Catatan tempel",
+      "posting": "Lowongan tersimpan",
+      "match": "Kecocokan pencari",
+      "pipeline": "Alur kerja pencari",
+      "profile": "Profil"
+    },
+    "dataSet": {
+      "demo": "entri demo, belum disentuh",
+      "empty": "sengaja dikosongkan, tidak pernah diisi data awal",
+      "user": "sudah ditulisi sejak disiapkan"
+    },
+    "notReported": "tidak dilaporkan",
+    "checking": "memeriksa…",
+    "storage": "Penyimpanan",
+    "durable": {
+      "label": "Entri ditulis ke disk",
+      "yes": "ya — IndexedDB",
+      "no": "tidak — hanya tab ini"
+    },
+    "schema": {
+      "label": "Skema database",
+      "value": "v{{stored}} (aplikasi mengharapkan v{{expected}})"
+    },
+    "persisted": {
+      "label": "Browser berjanji menyimpannya",
+      "unknown": "browser ini tidak mau menyebutkan",
+      "yes": "ya",
+      "no": "tidak — browser dapat menghapusnya kapan saja, dan jendela pribadi akan menghapusnya saat ditutup"
+    },
+    "space": {
+      "label": "Ruang terpakai",
+      "value": "{{used}} dari {{quota}}"
+    },
+    "queue": {
+      "label": "Antrean tulis",
+      "idle": "diam — semuanya tersimpan",
+      "writing_other": "menyimpan {{count}} perubahan",
+      "degraded": "mencoba lagi {{unsaved}} perubahan, {{pending}} baris (percobaan {{attempts}}): {{error}}",
+      "stopped": "berhenti — {{reason}}"
+    },
+    "store": "Penyimpanan ini",
+    "contents": "Isi",
+    "created": "Dibuat",
+    "seeded": "Diisi data awal",
+    "never": "tidak pernah",
+    "lastOpened": "Terakhir dibuka",
+    "lastWrite": "Penulisan terakhir",
+    "nothingYet": "belum ada",
+    "skipped": {
+      "label": "Entri yang tidak dapat dibaca",
+      "none": "tidak ada"
+    },
+    "integrity": {
+      "label": "Pemeriksaan integritas",
+      "failed": "{{total}} gagal",
+      "passed": "semua lolos"
+    },
+    "records": "Entri ({{total}})",
+    "connections": "Koneksi ({{total}})",
+    "none": "Tidak ada"
+  },
+  "data": {
+    "title": "Data Anda",
+    "export": {
+      "idle": "Unduh cadangan",
+      "progress": "Menyiapkan cadangan… {{done}} dari {{total}} dokumen",
+      "preparing": "Menyiapkan cadangan…"
+    },
+    "restoreButton": "Pulihkan cadangan",
+    "excel": {
+      "label": "Ekspor ke Excel",
+      "title": "Tidak ada penulis spreadsheet yang disertakan — ekspor JSON berisi entri yang sama"
+    },
+    "import": {
+      "label": "Impor",
+      "title": "Membaca kembali cadangan memerlukan validator yang dapat menolak berkas yang tidak dipahaminya — sampai validator itu ada, impor hanya bisa menebak"
+    },
+    "about": "Cadangan lengkap: setiap lamaran, linimasa, brankas, lowongan tersimpan, kata kunci beserta labelnya, dan profil Anda, dalam satu berkas berversi. Ini salinan yang diambil sekarang — tidak mengikuti perubahan berikutnya, dan merupakan satu-satunya salinan yang tidak berada di perangkat ini.",
+    "records": {
+      "label": "Entri",
+      "empty": "Setiap daftar kosong, jadi setiap halaman menampilkan keadaan awalnya.",
+      "emptyStays": "Tetap kosong saat Anda kembali.",
+      "emptyKeywords": "Kata kunci Anda masih ada, dan memuat data demo akan menggantinya dengan kata kunci bawaan demo.",
+      "demo": "Contoh pencarian bawaan jojo — dua belas lamaran, linimasa, dan brankas yang sudah terisi. Belum ada yang milik Anda.",
+      "own": "Entri Anda sendiri. Memuat data demo akan menggantinya, jadi ekspor cadangan dulu jika Anda ingin menyimpannya.",
+      "loadDemo": "Muat data demo"
+    },
+    "clearRecords": {
+      "label": "Kosongkan semua entri",
+      "demo": "Menghapus data demo dan membiarkan jojo kosong. Belum ada yang milik Anda di sini, jadi kata kunci bawaan ikut terhapus.",
+      "own": "Menghapus setiap lamaran, item linimasa, isi brankas, lowongan tersimpan, kontak, catatan, percakapan, dan fakta CV, serta mengosongkan profil Anda. Kata kunci Anda tetap disimpan.",
+      "nothingLeft": "Tidak ada lagi yang bisa dikosongkan",
+      "deletes": "Menghapus setiap entri",
+      "button": "Kosongkan entri"
+    },
+    "move": {
+      "label": "Pindahkan ke perangkat lain",
+      "description": "Pasangkan dengan perangkat kedua dan serahkan semuanya. Demonstrasi pada build ini — tidak ada yang dikirim.",
+      "open": "Buka Transfer"
+    },
+    "clearStorage": {
+      "label": "Bersihkan penyimpanan browser",
+      "description": "Mengosongkan semua yang disimpan situs ini di browser Anda — entri beserta database-nya, setiap dokumen yang Anda lampirkan, preferensi, cache, dan cookie — lalu memuat ulang jojo seolah-olah baru. Dokumen hanya ada di sini; unduh dulu jika Anda ingin menyimpannya.",
+      "clearing": "Membersihkan…",
+      "button": "Bersihkan penyimpanan"
+    },
+    "footer": {
+      "durable": "Entri Anda ditulis ke database browser ini sambil Anda bekerja, jadi menutup tab aman. Database itu tetap hanya ada di satu perangkat ini: browser dapat menghapusnya dan disk bisa rusak, jadi berkas ekspor yang disimpan di tempat lain adalah satu-satunya cadangan yang sesungguhnya.",
+      "memory": "Entri Anda tidak sedang disimpan saat ini — spanduk di bagian atas halaman menjelaskan alasannya. Ekspor salinan sebelum menutup tab."
+    },
+    "confirm": {
+      "fallbackTitle": "Ubah data?",
+      "continue": "Lanjutkan"
+    },
+    "restoreConfirm": {
+      "title": "Ganti semuanya dengan cadangan ini?",
+      "description": "Berkas itu berisi {{contents}}. {{replaces}}, dan ini tidak dapat diurungkan — riwayatnya ikut hilang. Unduh cadangan terlebih dahulu jika Anda ragu.",
+      "confirm": "Ganti semuanya"
+    },
+    "restoreFailed": "Pemulihan gagal",
+    "reload": "Muat ulang jojo",
+    "demoLoaded": {
+      "title": "Data demo dimuat",
+      "durable": "Dua belas lamaran, linimasa, brankas yang sudah terisi, dan profil, ditulis ke database Anda sesuai bawaannya.",
+      "memory": "Dua belas lamaran, linimasa, brankas yang sudah terisi, dan profil, sesuai bawaannya. Tidak ada yang disimpan saat ini, jadi semuanya hanya bertahan selama tab ini terbuka."
+    },
+    "cleared": {
+      "title": "Semuanya dikosongkan",
+      "demoDurable": "Setiap entri demo sudah hilang, termasuk kata kunci, dan tetap begitu setelah muat ulang.",
+      "demoMemory": "Setiap entri demo sudah hilang, termasuk kata kunci, tetapi tidak ada yang disimpan saat ini, jadi muat ulang akan memulai lagi dari data demo.",
+      "ownDurable": "Setiap entri sudah hilang, termasuk profil Anda, dan tetap begitu setelah muat ulang. Kata kunci Anda masih ada.",
+      "ownMemory": "Setiap entri sudah hilang, termasuk profil Anda, tetapi tidak ada yang disimpan saat ini, jadi muat ulang akan memulai lagi dari data demo. Kata kunci Anda masih ada."
+    }
+  },
+  "pending": {
+    "exportFirst": "Ekspor cadangan dulu",
+    "empty": {
+      "title": "Kosongkan semua entri?",
+      "demoDurable": "Lamaran demo, linimasa, brankas, lowongan tersimpan, kata kunci, dan profil semuanya dihapus, dan tetap begitu setelah muat ulang. Tidak ada yang milik Anda di sini — penyimpanan ini belum ditulisi sejak data demo dimuat.",
+      "demoMemory": "Lamaran demo, linimasa, brankas, lowongan tersimpan, kata kunci, dan profil semuanya dihapus, tetapi tidak ada yang disimpan saat ini, jadi muat ulang akan memulai lagi dari data demo. Tidak ada yang milik Anda di sini — penyimpanan ini belum ditulisi sejak data demo dimuat.",
+      "ownDurable": "Lamaran, linimasa, brankas, lowongan tersimpan, kontak, catatan, percakapan, fakta CV, dan profil Anda semuanya dihapus, termasuk apa pun yang Anda tambahkan di sesi ini, dan tetap begitu setelah muat ulang. Tidak dapat diurungkan. Kata kunci Anda tetap disimpan — kata kunci adalah entri tersendiri — tetapi tidak ada lagi yang memakainya, jadi setiap hitungan di panel kata kunci menjadi nol.",
+      "ownMemory": "Lamaran, linimasa, brankas, lowongan tersimpan, kontak, catatan, percakapan, fakta CV, dan profil Anda semuanya dihapus, termasuk apa pun yang Anda tambahkan di sesi ini, tetapi tidak ada yang disimpan saat ini, jadi muat ulang akan memulai lagi dari data demo. Tidak dapat diurungkan. Kata kunci Anda tetap disimpan — kata kunci adalah entri tersendiri — tetapi tidak ada lagi yang memakainya, jadi setiap hitungan di panel kata kunci menjadi nol.",
+      "confirm": "Kosongkan semuanya"
+    },
+    "demo": {
+      "title": "Muat data demo?",
+      "fillDurable": "Dua belas lamaran, linimasa, brankas yang sudah terisi, dan profil ditulis ke database Anda, dengan kata kunci bawaannya. Mengosongkannya lagi cukup sekali tekan.",
+      "fillMemory": "Dua belas lamaran, linimasa, brankas yang sudah terisi, dan profil dimuat, dengan kata kunci bawaannya. Mengosongkannya lagi cukup sekali tekan.",
+      "replace": "Semua isi jojo diganti dengan entri bawaan — lamaran, linimasa, brankas, lowongan tersimpan, kontak, catatan, percakapan, fakta CV, kata kunci, dan profil Anda, semuanya, diganti bukan digabung. Tidak dapat diurungkan.",
+      "confirm": "Muat data demo"
+    },
+    "storage": {
+      "title": "Bersihkan semua yang disimpan situs ini?",
+      "description": "Mengosongkan browser ini dari semua yang pernah disimpan jojo di dalamnya — entri beserta database-nya, preferensi tema dan suara, cache dan cookie apa pun — lalu memuat ulang. Tidak ada server yang menyimpan salinan, dan tidak ada apa pun di sini yang pernah keluar dari perangkat ini, jadi inilah semuanya. jojo kembali seperti di perangkat baru: tema sistem, dan pertanyaan saat pertama kali dijalankan tentang apakah akan memulai dengan data demo atau kosong. Tidak dapat diurungkan.",
+      "confirm": "Bersihkan penyimpanan"
+    }
+  },
+  "restore": {
+    "count": {
+      "records_other": "{{count}} entri",
+      "documents_other": "{{count}} dokumen",
+      "links_other": "{{count}} tautan"
+    },
+    "lost": {
+      "title": "Sebagian entri tidak dapat dipulihkan",
+      "description": "Berkas itu berisi {{held}}. {{kept}} ada di perangkat ini dan {{lost}} tidak dapat dibaca — semuanya hilang. Berkasnya sendiri tidak berubah, jadi build yang dapat membacanya masih bisa memulihkannya.",
+      "descriptionWithDocuments": "Berkas itu berisi {{held}}. {{kept}} dan {{documents}} ada di perangkat ini dan {{lost}} tidak dapat dibaca — semuanya hilang. Berkasnya sendiri tidak berubah, jadi build yang dapat membacanya masih bisa memulihkannya."
+    },
+    "withoutLinks": {
+      "title": "Dipulihkan, tanpa sebagian tautan",
+      "description": "Semua {{held}} sudah kembali. {{links}} di antaranya tidak dapat dibaca, jadi beberapa dokumen, pengingat, atau lowongan mungkin tidak diarsipkan di pekerjaan asalnya. Tidak ada hal lain yang hilang.",
+      "descriptionWithDocuments": "Semua {{held}} dan {{documents}} sudah kembali. {{links}} di antaranya tidak dapat dibaca, jadi beberapa dokumen, pengingat, atau lowongan mungkin tidak diarsipkan di pekerjaan asalnya. Tidak ada hal lain yang hilang."
+    },
+    "done": {
+      "title": "Dipulihkan",
+      "description": "{{records}} sudah kembali, persis seperti isi berkasnya.",
+      "descriptionWithDocuments": "{{records}} dan {{documents}} sudah kembali, persis seperti isi berkasnya."
+    }
+  },
+  "pickBackup": {
+    "unreadable": {
+      "title": "Berkas itu tidak dapat dibaca",
+      "description": "Browser Anda tidak dapat membaca berkas itu — mungkin sudah dipindah, diganti namanya, atau terputus sejak Anda memilihnya. Tidak ada yang diubah; pilih lagi setelah berkasnya kembali."
+    },
+    "refused": {
+      "title": "Berkas itu tidak dapat dipulihkan",
+      "notBackup": "Berkas itu bukan cadangan jojo. Tidak ada yang diubah.",
+      "reason": "{{reason}}. Tidak ada yang diubah."
+    }
+  }
+}

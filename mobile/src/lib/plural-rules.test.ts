@@ -1,5 +1,6 @@
 import i18next from 'i18next'
 import { describe, expect, it } from 'vitest'
+import { LOCALES as SHIPPED } from '@jojo/service/core/locale'
 import { installPluralRules, PluralRules } from '@/lib/plural-rules'
 
 /**
@@ -7,7 +8,8 @@ import { installPluralRules, PluralRules } from '@/lib/plural-rules'
  * and the shim is held to it, number by number, for every language jojo ships.
  */
 
-const LOCALES = ['en', 'es', 'fr', 'de', 'pt-BR', 'zh-Hans', 'ja', 'ko', 'hi', 'ar'] as const
+/** Every language the apps offer — read from the shared list, so a new one is checked here too. */
+const LOCALES = SHIPPED.map((l) => l.code)
 
 const NUMBERS = [
   ...Array.from({ length: 1001 }, (_, i) => i),

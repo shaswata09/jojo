@@ -6,9 +6,12 @@
  * themselves live with each app (`web/src/i18n`, `mobile/src/i18n`), because
  * the two apps say different things; this file only decides WHICH catalog.
  *
- * The set is the world's most-used languages that a job search is commonly
- * run in, written as BCP 47 tags. `dir` is there for Arabic: a right-to-left
- * language needs the document's direction set, not just its words.
+ * The set is the world's most-spoken languages, written as BCP 47 tags: the
+ * first ten from 2026-11-16, then the next ten by number of speakers —
+ * Bengali, Russian, Urdu, Indonesian, Turkish, Vietnamese, Italian, Marathi,
+ * Tamil — and Traditional Chinese, so Taiwan and Hong Kong are no longer sent
+ * to English. `dir` is there for Arabic and Urdu: a right-to-left language
+ * needs the document's direction set, not just its words.
  */
 
 export type LocaleInfo = {
@@ -32,6 +35,16 @@ export const LOCALES = [
   { code: 'ko', native: '한국어', english: 'Korean', dir: 'ltr' },
   { code: 'hi', native: 'हिन्दी', english: 'Hindi', dir: 'ltr' },
   { code: 'ar', native: 'العربية', english: 'Arabic', dir: 'rtl' },
+  { code: 'bn', native: 'বাংলা', english: 'Bengali', dir: 'ltr' },
+  { code: 'ru', native: 'Русский', english: 'Russian', dir: 'ltr' },
+  { code: 'ur', native: 'اردو', english: 'Urdu', dir: 'rtl' },
+  { code: 'id', native: 'Bahasa Indonesia', english: 'Indonesian', dir: 'ltr' },
+  { code: 'tr', native: 'Türkçe', english: 'Turkish', dir: 'ltr' },
+  { code: 'vi', native: 'Tiếng Việt', english: 'Vietnamese', dir: 'ltr' },
+  { code: 'it', native: 'Italiano', english: 'Italian', dir: 'ltr' },
+  { code: 'zh-Hant', native: '繁體中文', english: 'Chinese (Traditional)', dir: 'ltr' },
+  { code: 'mr', native: 'मराठी', english: 'Marathi', dir: 'ltr' },
+  { code: 'ta', native: 'தமிழ்', english: 'Tamil', dir: 'ltr' },
 ] as const satisfies readonly LocaleInfo[]
 
 export type LocaleCode = (typeof LOCALES)[number]['code']
@@ -57,8 +70,7 @@ export const localeInfo = (code: LocaleCode): LocaleInfo =>
  *
  * Matched exactly first ('pt-BR'), then by script for Chinese, whose region
  * tags name a script without saying so ('zh-CN' and 'zh-SG' are Simplified;
- * 'zh-TW', 'zh-HK' and 'zh-MO' are Traditional, which is not offered, so they
- * are passed over rather than shown Simplified text), then by language alone
+ * 'zh-TW', 'zh-HK' and 'zh-MO' are Traditional), then by language alone
  * ('es-MX' → 'es', 'pt-PT' → 'pt-BR'). Nothing matching is English.
  */
 export function negotiateLocale(wanted: readonly string[]): LocaleCode {
@@ -70,8 +82,7 @@ export function negotiateLocale(wanted: readonly string[]): LocaleCode {
     const [language = '', ...rest] = tag.toLowerCase().split('-')
     if (language === 'zh') {
       const traditional = rest.some((part) => ['hant', 'tw', 'hk', 'mo'].includes(part))
-      if (traditional) continue
-      return 'zh-Hans'
+      return traditional ? 'zh-Hant' : 'zh-Hans'
     }
     const byLanguage = LOCALES.find((l) => l.code.toLowerCase().split('-')[0] === language)
     if (byLanguage) return byLanguage.code

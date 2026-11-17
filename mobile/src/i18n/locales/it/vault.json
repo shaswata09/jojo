@@ -1,0 +1,308 @@
+{
+  "common": {
+    "undo": "Annulla",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "remove": "Rimuovi",
+    "done": "Fatto",
+    "title": "Titolo",
+    "note": "Nota",
+    "changeApplications": "Cambia candidature",
+    "fileUnderApplication": "Archivia sotto una candidatura",
+    "moreActionsFor": "Altre azioni per {{name}}",
+    "openNamed": "Apri {{name}}",
+    "savedAgo": "salvato {{ago}}",
+    "copyOf": "{{name}} (copia)",
+    "movedTo": "Spostato in {{name}}",
+    "titleRequired": "Dagli un nome per ritrovarlo."
+  },
+  "screen": {
+    "title": "Cassaforte",
+    "subtitle": "Promemoria, link, file, frammenti e persone",
+    "counts": {
+      "reminders_one": "{{count}} promemoria",
+      "reminders_many": "{{count}} di promemoria",
+      "reminders_other": "{{count}} promemoria",
+      "links_one": "{{count}} link",
+      "links_many": "{{count}} di link",
+      "links_other": "{{count}} link",
+      "files_one": "{{count}} file",
+      "files_many": "{{count}} di file",
+      "files_other": "{{count}} file",
+      "snippets_one": "{{count}} frammento",
+      "snippets_many": "{{count}} di frammenti",
+      "snippets_other": "{{count}} frammenti",
+      "people_one": "{{count}} persona",
+      "people_many": "{{count}} di persone",
+      "people_other": "{{count}} persone"
+    },
+    "showCounts": "Mostra i conteggi",
+    "showCountsDescription": "Totali degli elementi nel sottotitolo, anziché ciò che contengono le schede",
+    "toolLabel": "Strumento della Cassaforte",
+    "tools": {
+      "reminders": "Promemoria",
+      "links": "Link",
+      "files": "File",
+      "snippets": "Frammenti",
+      "people": "Persone",
+      "tools": "Strumenti"
+    }
+  },
+  "files": {
+    "add": "Registra un documento",
+    "filterLabel": "Filtra i documenti",
+    "editLabel": "Modifica documento",
+    "bucket": "Sezione",
+    "search": {
+      "label": "Cerca documenti",
+      "placeholder": "Cerca nome, nota o sezione"
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun documento",
+      "zeroDescription": "Il tuo CV, le dichiarazioni, le presentazioni e le scansioni amministrative. Vengono registrati nomi, dimensioni e tipi: nulla legge il file stesso.",
+      "search": "Nessun documento menziona \"{{query}}\" nel nome, nella nota o nella sezione.",
+      "both": "Nessun documento in {{bucket}} ha le parole chiave selezionate.",
+      "bucketTitle": "Nulla in {{bucket}}",
+      "bucketDescription_one": "{{count}} documento è archiviato nelle altre sezioni.",
+      "bucketDescription_many": "{{count}} di documenti sono archiviati nelle altre sezioni.",
+      "bucketDescription_other": "{{count}} documenti sono archiviati nelle altre sezioni.",
+      "showAll": "Mostra tutte le sezioni",
+      "keywordsTitle": "Nessun documento ha quelle parole chiave"
+    },
+    "toast": {
+      "removed": "Documento rimosso",
+      "duplicated": "Documento duplicato",
+      "updated": "Documento aggiornato",
+      "recorded": "Documento registrato",
+      "recordedDescription": "{{name}} · archiviato sotto {{bucket}}. Vengono conservati nome, dimensione e tipo: il file stesso non viene letto."
+    }
+  },
+  "snippets": {
+    "add": "Nuovo frammento",
+    "filterLabel": "Filtra i frammenti",
+    "tag": "Etichetta",
+    "copyNamed": "Copia {{name}}",
+    "search": {
+      "label": "Cerca frammenti",
+      "placeholder": "Cerca titolo o testo"
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun frammento",
+      "zeroDescription": "Le risposte che riscrivi in ogni modulo: una breve biografia, un paragrafo sulla didattica, l'email di sollecito che invii sempre.",
+      "search": "Nessun frammento menziona \"{{query}}\" nel nome, nel testo o nel tipo.",
+      "both": "Nessun frammento {{tag}} ha le parole chiave selezionate.",
+      "bucketTitle": "Nessun frammento {{tag}}",
+      "bucketDescription_one": "{{count}} frammento è archiviato negli altri tipi.",
+      "bucketDescription_many": "{{count}} di frammenti sono archiviati negli altri tipi.",
+      "bucketDescription_other": "{{count}} frammenti sono archiviati negli altri tipi.",
+      "showAll": "Mostra tutti i tipi",
+      "keywordsTitle": "Nessun frammento ha quelle parole chiave"
+    },
+    "toast": {
+      "deleted": "Frammento eliminato",
+      "duplicated": "Frammento duplicato",
+      "filedUnder": "Archiviato sotto {{tag}}",
+      "saved": "Frammento salvato",
+      "added": "Frammento aggiunto",
+      "addedDescription": "{{title}} · archiviato sotto {{tag}}"
+    },
+    "editor": {
+      "editTitle": "Modifica frammento",
+      "description": "Tutto ciò che è tra [PARENTESI] resta uno spazio vuoto quando il pannello di bozza lo carica, così il nome di una persona non viene mai compilato al posto tuo.",
+      "titlePlaceholder": "es. Sollecito dopo una mancata risposta",
+      "applicationHint": "Facoltativo. Un frammento scritto per datori di lavoro specifici può indicare quali.",
+      "body": "Testo",
+      "bodyRequired": "Un frammento senza testo non ha nulla da incollare.",
+      "bodyPlaceholder": "Gentile [NAME], …"
+    },
+    "discard": {
+      "title": "Scartare le modifiche non salvate?",
+      "description": "Quello che hai scritto qui non è stato salvato da nessuna parte, quindi uscendo lo perdi, e non si può annullare.",
+      "confirm": "Scarta"
+    }
+  },
+  "links": {
+    "add": "Salva un link",
+    "filterLabel": "Filtra i link",
+    "category": "Categoria",
+    "search": {
+      "label": "Cerca link",
+      "placeholder": "Cerca titolo, URL o nota"
+    },
+    "empty": {
+      "zeroTitle": "Ancora nulla di salvato",
+      "zeroDescription": "Annunci, pagine di dipartimento, persone e guide: qualsiasi cosa su cui vuoi tornare.",
+      "search": "Nessun link menziona \"{{query}}\" nel titolo, nell'indirizzo, nella nota o nella categoria.",
+      "both": "Nessun link {{category}} ha le parole chiave selezionate.",
+      "bucketTitle": "Nessun link in {{category}}",
+      "bucketDescription_one": "{{count}} link è archiviato nelle altre categorie.",
+      "bucketDescription_many": "{{count}} di link sono archiviati nelle altre categorie.",
+      "bucketDescription_other": "{{count}} link sono archiviati nelle altre categorie.",
+      "showAll": "Mostra tutte le categorie",
+      "keywordsTitle": "Nessun link ha quelle parole chiave"
+    },
+    "menu": {
+      "open": "Apri il link",
+      "copy": "Copia l'URL"
+    },
+    "toast": {
+      "removed": "Link rimosso",
+      "duplicated": "Link duplicato",
+      "copied": "URL copiato",
+      "updated": "Link aggiornato",
+      "saved": "Link salvato"
+    },
+    "editor": {
+      "editTitle": "Modifica link",
+      "description": "Non viene scaricato nulla: si conservano il titolo, l'URL e il giorno in cui l'hai salvato.",
+      "saveLink": "Salva link",
+      "titlePlaceholder": "es. Rice — annuncio Statistica",
+      "url": "URL",
+      "urlRequired": "Un link senza URL non porta da nessuna parte.",
+      "applicationHint": "Li collega, così ogni candidatura lo conta tra ciò che è archiviato sotto di essa.",
+      "notePlaceholder": "Perché vale la pena tornarci"
+    }
+  },
+  "reminders": {
+    "add": "Nuovo promemoria",
+    "filterLabel": "Filtra i promemoria",
+    "markDone": "Segna \"{{title}}\" come fatto",
+    "markNotDone": "Segna \"{{title}}\" come non fatto",
+    "buckets": {
+      "overdue": "In ritardo",
+      "today": "Oggi",
+      "upcoming": "In arrivo",
+      "done": "Completati"
+    },
+    "search": {
+      "label": "Cerca promemoria",
+      "placeholder": "Cerca titolo, nota o tipo"
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessun promemoria",
+      "zeroDescription": "Un promemoria è un record con data con un avviso attivato. Quando la sua data passa è da fare, e resta in Oggi finché non lo spunti.",
+      "search": "Nessun promemoria menziona \"{{query}}\" nel titolo, nella nota o nel tipo.",
+      "both": {
+        "overdue": "Nessun promemoria in ritardo ha le parole chiave selezionate.",
+        "today": "Nessun promemoria in scadenza oggi ha le parole chiave selezionate.",
+        "upcoming": "Nessun promemoria in arrivo ha le parole chiave selezionate.",
+        "done": "Nessun promemoria completato ha le parole chiave selezionate."
+      },
+      "nothingIn": {
+        "overdue": "Nulla in ritardo",
+        "today": "Nulla oggi",
+        "upcoming": "Nulla in arrivo"
+      },
+      "doneTitle": "Ancora nulla di completato",
+      "doneDescription": "I promemoria che spunti si raccolgono qui, così uno spuntato per errore si ritrova.",
+      "bucketDescription_one": "{{count}} promemoria è negli altri gruppi.",
+      "bucketDescription_many": "{{count}} di promemoria sono negli altri gruppi.",
+      "bucketDescription_other": "{{count}} promemoria sono negli altri gruppi.",
+      "showAll": "Mostra tutti i promemoria",
+      "keywordsTitle": "Nessun promemoria ha quelle parole chiave"
+    }
+  },
+  "people": {
+    "add": "Aggiungi",
+    "optionsFor": "Opzioni per {{name}}",
+    "search": {
+      "label": "Cerca persone",
+      "placeholder": "Cerca nome, ruolo o nota"
+    },
+    "empty": {
+      "zeroTitle": "Ancora nessuno",
+      "zeroDescription": "Referenti, presidenti di commissione, selezionatori: chiunque sia coinvolto nella ricerca. Indicali nei lavori per cui scrivono e compariranno anche in quei record.",
+      "noMatchTitle": "Nessuno corrisponde",
+      "noMatchDescription": "Prova con parte di un nome, un ruolo o dove si trovano."
+    },
+    "toast": {
+      "removed": "Persona rimossa",
+      "saved": "Persona salvata"
+    },
+    "editor": {
+      "editTitle": "Modifica persona",
+      "addTitle": "Aggiungi persona",
+      "save": "Salva persona",
+      "description": "Il nome è l'unica cosa necessaria. Il resto è ciò che si rivelerà importante.",
+      "noApplication": "Nessuna candidatura",
+      "name": "Nome",
+      "namePlaceholder": "es. Prof. Ngozi Okafor",
+      "role": "Ruolo",
+      "rolePlaceholder": "es. Referente, presidente di commissione, selezionatore",
+      "affiliation": "Affiliazione",
+      "affiliationPlaceholder": "es. Rice",
+      "affiliationHint": "Dove si trovano. Non collegato a un datore di lavoro a cui ti sei candidato.",
+      "email": "Email",
+      "phone": "Telefono",
+      "namedOn": "Indicato in",
+      "namedOnHint": "Ogni lavoro per cui scrivono, selezionano o presiedono.",
+      "notePlaceholder": "Cosa hanno detto, cosa ti devono, quando sollecitarli."
+    }
+  },
+  "calculator": {
+    "title": "Calcolatrice",
+    "hint": "funziona senza record e senza connessione",
+    "copy": "Copia il risultato",
+    "mode": "Modalità",
+    "modes": {
+      "basic": "Base",
+      "scientific": "Scientifica"
+    },
+    "plusMinus": "più o meno",
+    "history": "Cronologia",
+    "kept": "{{count}} conservati",
+    "clear": "Azzera",
+    "emptyTitle": "Ancora nessun calcolo",
+    "emptyDescription": "Gli ultimi trenta risultati restano qui, così puoi confrontare il secondo numero con il primo. Toccane uno per rimetterlo sul display.",
+    "historyEntry": "{{expr}} è uguale a {{value}}. Rimettilo sul display"
+  },
+  "pageViewer": {
+    "capturedFrom": "Catturato da {{host}}",
+    "missingTitle": "Nessuna copia salvata su questo dispositivo",
+    "missingDescription": "Le catture restano dove sono state fatte, quindi una fatta nell'app web non è qui. Il record ha conservato il nome e l'indirizzo."
+  },
+  "fileViewer": {
+    "description": "{{bucket}} · archiviato {{ago}}",
+    "editDetails": "Modifica i dettagli",
+    "openFailed": "Nulla su questo telefono si è offerto di aprirlo.",
+    "facts": {
+      "type": "Tipo",
+      "size": "Dimensione",
+      "filed": "Archiviato",
+      "bucket": "Sezione"
+    },
+    "typed": {
+      "title": "Registrato, non memorizzato",
+      "description": "Questo è stato archiviato a mano: un nome, un tipo e una dimensione per un documento conservato altrove. Modificalo e scegli un file per conservarne una copia qui."
+    },
+    "checking": {
+      "title": "Ricerca della copia",
+      "description": "Verifica che il file a cui punta questo record sia ancora nella memoria dell'app."
+    },
+    "kept": {
+      "title": "Conservato su questo dispositivo",
+      "pageDescription": "Si apre qui, con gli script disattivati e senza connessione: la copia dell'annuncio com'era il giorno in cui è stato salvato.",
+      "read": "Leggilo",
+      "fileDescription": "Si apre in qualsiasi app su questo telefono che gestisce il tipo. Non viene caricato nulla, e nulla qui legge il contenuto.",
+      "open": "Apri"
+    },
+    "gone": {
+      "title": "La copia non c'è più",
+      "description": "Questo record punta a un file che non è più nella memoria dell'app, molto probabilmente rimosso dal sistema. Il record è intatto; scegli di nuovo il file per allegarlo.",
+      "choose": "Sceglilo di nuovo"
+    },
+    "attachedTo": "Allegato a",
+    "change": "Cambia",
+    "fileUnderJob": "Archivialo sotto un lavoro",
+    "notFiled": "Non archiviato sotto una candidatura. Archiviarlo lo aggiunge a quei record e permette al grafo di trovarlo da ciascuno di essi.",
+    "addNote": "Aggiungi una nota",
+    "notePlaceholder": "A cosa serve questo documento?",
+    "saveNote": "Salva nota",
+    "noNote": "Ancora nulla di scritto su questo.",
+    "toast": {
+      "noteSaved": "Nota salvata"
+    }
+  }
+}

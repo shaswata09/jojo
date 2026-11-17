@@ -21,6 +21,19 @@ describe('a translation measured against English', () => {
     expect(catalogProblems(english, { a: { count_other: '{{count}}' } })).toEqual(['missing a.label'])
   })
 
+  it('lets a plural form say the number English’s form leaves out, and only that', () => {
+    const english = { changed_one: 'one change', changed_other: '{{count}} changes' }
+    // Russian "one" also covers 21, 31…, so it must be able to say the number.
+    expect(catalogProblems(english, { changed_one: '{{count}} изменение', changed_other: '{{count}} изменений' })).toEqual([])
+    // Any other placeholder is still wrong, and so is the number outside a plural key.
+    expect(catalogProblems(english, { changed_one: '{{n}} изменение', changed_other: '{{count}} изменений' })).toEqual([
+      'placeholders changed_one: {n} where English has {}',
+    ])
+    expect(catalogProblems({ label: 'Done' }, { label: '{{count}} готово' })).toEqual([
+      'placeholders label: {count} where English has {}',
+    ])
+  })
+
   it('flattens nested keys to dotted paths', () => {
     expect([...flattenCatalog(english).keys()]).toEqual(['a.label', 'a.count_one', 'a.count_other'])
   })

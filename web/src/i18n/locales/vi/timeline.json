@@ -1,0 +1,113 @@
+{
+  "dialog": {
+    "title": {
+      "new": {
+        "reminder": "Lời nhắc mới",
+        "event": "Sự kiện mới"
+      },
+      "edit": {
+        "reminder": "Sửa lời nhắc",
+        "event": "Sửa sự kiện"
+      }
+    },
+    "description": "Dù chọn cách nào cũng chỉ là một bản ghi — nó xuất hiện trên lịch vào ngày bạn đặt, và trong danh sách lời nhắc của Kho lưu trữ khi công tắc cạnh tiêu đề đang bật."
+  },
+  "form": {
+    "title": {
+      "label": "Tiêu đề",
+      "error": "Đặt một tiêu đề mà bạn sẽ nhận ra.",
+      "placeholder": {
+        "reminder": "vd. Liên hệ lại với nhà tuyển dụng",
+        "event": "vd. Zoom với hội đồng"
+      }
+    },
+    "remind": {
+      "label": "Hiện trong lời nhắc",
+      "on": "Được liệt kê trong Kho lưu trữ với ô đánh dấu, và trên lịch vào ngày của nó.",
+      "off": "Chỉ hiện trên lịch vào ngày của nó — không có ô đánh dấu trong Kho lưu trữ."
+    },
+    "kind": {
+      "label": "Loại",
+      "hintFollowUp": "Một lần liên hệ lại cũng xuất hiện trong mục Cần liên hệ lại trên Tổng quan, cho đến khi bạn đánh dấu hoàn thành.",
+      "hint": "Biểu tượng của nó trên lịch và trong danh sách lời nhắc."
+    },
+    "detail": {
+      "label": "Chi tiết",
+      "hint": "Một dòng ngữ cảnh, hiện dưới tiêu đề."
+    },
+    "more": {
+      "label": "Thêm chi tiết",
+      "empty": "ghi chú, từ khóa",
+      "filledNote": "ghi chú",
+      "filledKeywords": "từ khóa",
+      "filledBoth": "ghi chú · từ khóa"
+    },
+    "note": {
+      "label": "Ghi chú",
+      "hint": "Ghi chép riêng của bạn. Được giữ tách khỏi phần chi tiết, nên việc sửa đổi không bao giờ ghi đè lên nó."
+    },
+    "keywords": {
+      "label": "Từ khóa",
+      "hint": "Dùng chung với đơn ứng tuyển, tệp và liên kết — lọc theo một từ khóa sẽ tìm ra tất cả."
+    },
+    "delete": "Xóa",
+    "cancel": "Hủy",
+    "save": "Lưu thay đổi",
+    "add": {
+      "reminder": "Thêm lời nhắc",
+      "event": "Thêm sự kiện"
+    }
+  },
+  "schedule": {
+    "date": "Ngày",
+    "dateError": "Hãy chọn một ngày — mục không có ngày sẽ không có chỗ để hiện.",
+    "quick": {
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "inWeek": "7 ngày nữa"
+    },
+    "allDay": {
+      "label": "Cả ngày",
+      "description": "Khi tắt, mục sẽ có giờ bắt đầu và thời lượng, và được đặt trên lưới giờ của lịch."
+    },
+    "startTime": "Giờ bắt đầu",
+    "length": "Thời lượng",
+    "durations": {
+      "min15": "15 phút",
+      "min30": "30 phút",
+      "min45": "45 phút",
+      "hour1": "1 giờ",
+      "hour1_5": "1,5 giờ",
+      "hour2": "2 giờ",
+      "hour3": "3 giờ"
+    }
+  },
+  "application": {
+    "label": "Đơn ứng tuyển liên quan",
+    "hint": "Liên kết chúng với nhau, để mỗi đơn ứng tuyển liệt kê mục này và mục này dẫn về bất kỳ đơn nào trong số đó.",
+    "notLinked": "Chưa liên kết",
+    "count_other": "{{count}} đơn ứng tuyển",
+    "searchLabel": "Tìm đơn ứng tuyển để liên kết",
+    "searchPlaceholder": "Tìm đơn ứng tuyển…",
+    "none": "Chưa có đơn ứng tuyển nào.",
+    "noMatch": "Không có đơn ứng tuyển nào khớp.",
+    "clear": "Bỏ các đơn ứng tuyển đã liên kết",
+    "open": "Mở {{name}}"
+  },
+  "toast": {
+    "when": "{{date}} · {{when}}",
+    "added": "Đã thêm {{title}}",
+    "updated": "Đã cập nhật {{title}}",
+    "inReminders": "{{when}} — có trong lời nhắc",
+    "inRemindersAndFollowUps": "{{when}} — có trong lời nhắc và trong mục Cần liên hệ lại",
+    "calendarOnly": "{{when}} — chỉ trên lịch",
+    "undo": "Hoàn tác",
+    "deleteFailed": "Không xóa được",
+    "stillThere": "{{title}} vẫn còn trên lịch.",
+    "stillThereUnnamed": "Lời nhắc vẫn còn trên lịch.",
+    "deleted": "Đã xóa {{title}}",
+    "deletedUnnamed": "Đã xóa lời nhắc",
+    "goneBoth": "Đã biến mất khỏi danh sách lời nhắc và khỏi lịch.",
+    "goneCalendar": "Đã biến mất khỏi lịch."
+  }
+}

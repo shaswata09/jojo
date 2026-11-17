@@ -1,0 +1,148 @@
+{
+  "sidebar": {
+    "navigation": "Navigazione",
+    "close": "Chiudi la navigazione"
+  },
+  "nav": {
+    "dashboard": "Pannello",
+    "applications": "Candidature",
+    "calendar": "Calendario",
+    "vault": "Cassaforte",
+    "jobScout": "Scout offerte",
+    "statistics": "Statistiche",
+    "flagged_one": "{{count}} contrassegnata",
+    "flagged_many": "{{count}} contrassegnate",
+    "flagged_other": "{{count}} contrassegnate",
+    "flaggedTitle": "Contrassegnate per un sollecito",
+    "weekTitle": "In programma nei prossimi sette giorni",
+    "overdueTitle": "Promemoria scaduti",
+    "fresh_one": "{{count}} nuovo",
+    "fresh_many": "{{count}} nuovi",
+    "fresh_other": "{{count}} nuovi",
+    "freshTitle": "Risultati non ancora aggiunti alle candidature"
+  },
+  "newMenu": {
+    "trigger": "Nuovo",
+    "find": "Trova qualcosa da aggiungere",
+    "findPlaceholder": "Trova qualcosa da aggiungere…",
+    "empty": "Nulla da aggiungere corrisponde."
+  },
+  "roleFilter": {
+    "label": "Filtra per ruolo",
+    "all": "Tutti i ruoli",
+    "selected_one": "{{count}} selezionato",
+    "selected_many": "{{count}} selezionati",
+    "selected_other": "{{count}} selezionati",
+    "find": "Trova un ruolo",
+    "findPlaceholder": "Trova un ruolo…",
+    "empty": "Nessun ruolo corrisponde.",
+    "selectAll": "Seleziona tutti",
+    "clear": "Cancella il filtro",
+    "remove": "Rimuovi {{role}}"
+  },
+  "topbar": {
+    "openNav": "Apri la navigazione",
+    "search": "Cerca candidature, promemoria, eventi…",
+    "accountNav": "Account e assistenza",
+    "links": {
+      "profile": "Il mio profilo",
+      "settings": "Impostazioni",
+      "assistant": "Assistente",
+      "guide": "Come si usa"
+    }
+  },
+  "runtime": {
+    "heading": "Stato",
+    "tileTitle": "{{label}} — {{detail}}. Apre {{destination}}",
+    "dest": {
+      "graph": "il grafo",
+      "transfer": "Trasferimento",
+      "settings": "Impostazioni"
+    },
+    "storage": {
+      "label": "Memoria del browser",
+      "notSaving": "salvataggio fermo",
+      "notSavingDetail": "i tuoi record non vengono salvati: il banner sopra la pagina spiega perché",
+      "retrying": "nuovo tentativo",
+      "retryingDetail_one": "{{count}} modifica non è ancora stata salvata, e jojo continua a riprovare",
+      "retryingDetail_many": "{{count}} di modifiche non sono ancora state salvate, e jojo continua a riprovare",
+      "retryingDetail_other": "{{count}} modifiche non sono ancora state salvate, e jojo continua a riprovare",
+      "saved": "salvato qui",
+      "savedDetail": "i tuoi record vengono scritti nel database di questo browser mentre lavori"
+    },
+    "model": {
+      "label": "Modello locale",
+      "connected": "collegato",
+      "connectedDetail": "un modello locale ha risposto: l'assistente e la valutazione dello scout possono usarlo",
+      "noAnswer": "nessuna risposta",
+      "noAnswerDetail": "un modello è configurato ma non ha risposto: verifica che sia in esecuzione",
+      "checking": "verifica in corso",
+      "checkingDetail": "chiede al modello se è presente",
+      "unset": "non configurato",
+      "unsetDetail": "ancora nessun endpoint del modello: si configura in Impostazioni"
+    },
+    "transfer": {
+      "label": "Trasferimento",
+      "meta": "Sincronizza con un altro dispositivo",
+      "detail": "ancora nessun dispositivo abbinato: si aggiunge in Trasferimento"
+    }
+  },
+  "banner": {
+    "reload": "Ricarica",
+    "interrupted": "jojo è stato aggiornato in un'altra scheda, quindi questa ha chiuso il suo database per lasciar passare l'aggiornamento. Nulla di ciò che modifichi qui viene salvato. Ricarica per continuare.",
+    "versionBlocked": "jojo non è riuscito ad aprire il suo database: è aperta un'altra scheda di jojo con una versione diversa dell'app. <strong>I tuoi record sono ancora sul disco</strong>, ma questa scheda non è riuscita a leggerli, quindi non mostra nulla anziché tirare a indovinare. Chiudi le altre schede e ricarica per recuperarli.",
+    "noStorage": "Questo browser non permette a jojo di aprire la sua memoria, quindi questa scheda è uno spazio di lavoro vuoto: ciò che è già salvato su questo dispositivo non viene mostrato, e ciò che scrivi qui sparisce quando chiudi la scheda. Succede con le finestre private e alcuni browser gestiti. Se aggiungi qualcosa che vale la pena conservare, esporta da Impostazioni prima di uscire.",
+    "atRisk_one": "{{count}} modifica è sullo schermo ma non è salvata: esportala da Impostazioni per conservarla, perché ricaricando o chiudendo questa scheda andrà persa.",
+    "atRisk_many": "{{count}} di modifiche sono sullo schermo ma non sono salvate: esportale da Impostazioni per conservarle, perché ricaricando o chiudendo questa scheda andranno perse.",
+    "atRisk_other": "{{count}} modifiche sono sullo schermo ma non sono salvate: esportale da Impostazioni per conservarle, perché ricaricando o chiudendo questa scheda andranno perse.",
+    "safeBefore": "Tutto ciò che hai modificato prima è sul disco.",
+    "corrupt": "jojo ha smesso di salvare: questo browser ha rifiutato una modifica ai tuoi record e riprovare non servirà. {{atRisk}} Esporta subito da Impostazioni: Impostazioni → Diagnostica ha i dettagli, e ricaricando prima di esportare perdi ciò che è solo sullo schermo.",
+    "quota": "Questo browser ha esaurito lo spazio, quindi jojo ha smesso di salvare. {{atRisk}} Libera un po' di spazio, poi ricarica.",
+    "otherTab": "jojo ha smesso di salvare perché un'altra scheda ha il database. Chiudi le altre schede, poi esporta da Impostazioni se qualcosa sullo schermo non è stato salvato: ricaricando questa scheda lo perdi.",
+    "degraded_one": "{{count}} modifica non è stata salvata e jojo continua a riprovare. Esporta da Impostazioni se ti serve subito una copia. ({{error}})",
+    "degraded_many": "{{count}} di modifiche non sono state salvate e jojo continua a riprovare. Esporta da Impostazioni se ti serve subito una copia. ({{error}})",
+    "degraded_other": "{{count}} modifiche non sono state salvate e jojo continua a riprovare. Esporta da Impostazioni se ti serve subito una copia. ({{error}})",
+    "documentsBlocked": "I tuoi documenti sono ancora su questo dispositivo, ma un'altra scheda di jojo, aperta su una versione precedente dell'app, li sta trattenendo. Chiudi le altre schede di jojo: questa li recupera da sola.",
+    "skipped_one": "{{count}} record su questo dispositivo non è leggibile e non viene mostrato. Non è stato eliminato nulla: <anchor>Diagnostica</anchor> indica quale, e un'esportazione da lì include tutto ciò che jojo è riuscito a leggere.",
+    "skipped_many": "{{count}} di record su questo dispositivo non sono leggibili e non vengono mostrati. Non è stato eliminato nulla: <anchor>Diagnostica</anchor> indica quali, e un'esportazione da lì include tutto ciò che jojo è riuscito a leggere.",
+    "skipped_other": "{{count}} record su questo dispositivo non sono leggibili e non vengono mostrati. Non è stato eliminato nulla: <anchor>Diagnostica</anchor> indica quali, e un'esportazione da lì include tutto ciò che jojo è riuscito a leggere.",
+    "nearlyFull": "Questo browser ha quasi esaurito lo spazio per jojo: è in uso circa il {{percent}}% di quanto consente. Quando si riempie il salvataggio smette di funzionare, quindi conviene esportare da Impostazioni e liberare spazio adesso, finché i tuoi record possono ancora essere scritti.",
+    "backup": {
+      "busy": "Backup in corso…",
+      "download": "Scarica un backup",
+      "notNow": "Non ora"
+    }
+  },
+  "shell": {
+    "skipToMain": "Vai al contenuto principale"
+  },
+  "spotlight": {
+    "title": "Cerca",
+    "label": "Cerca candidature, promemoria, eventi e pagine",
+    "placeholder": "Cerca candidature, promemoria, eventi…",
+    "emptyTitle": "Nessun risultato.",
+    "emptyHint": "Prova con un ruolo, un'organizzazione o una fase.",
+    "actions": "Azioni",
+    "applications": "Candidature",
+    "reminders": "Promemoria",
+    "calendar": "Calendario",
+    "tools": "Strumenti",
+    "goTo": "Vai a",
+    "toOpen": "per aprire",
+    "toClose": "esc per chiudere",
+    "pages": {
+      "dashboard": "Pannello",
+      "applications": "Candidature",
+      "calendar": "Calendario",
+      "vault": "Cassaforte",
+      "jobScout": "Scout offerte",
+      "statistics": "Statistiche",
+      "graph": "Grafo",
+      "transfer": "Trasferimento",
+      "transferDetail": "Sposta i tuoi record su un altro dispositivo",
+      "profile": "Il mio profilo",
+      "assistant": "Assistente",
+      "settings": "Impostazioni"
+    }
+  }
+}

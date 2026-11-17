@@ -1,0 +1,103 @@
+{
+  "days_other": "{{count}} ngày",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Dồn nhiều công sức hơn vào {{label}}.",
+      "because": {
+        "source": {
+          "replied_other": "{{count}}/{{of}} đã phản hồi ở đó ({{rate}}%, khả năng trong khoảng {{low}}–{{high}}%), so với {{worstCount}}/{{worstOf}} ở {{worst}} ({{worstRate}}%, khả năng trong khoảng {{worstLow}}–{{worstHigh}}%). Chia theo nguồn ứng tuyển.",
+          "interview_other": "{{count}}/{{of}} được phỏng vấn ở đó ({{rate}}%, khả năng trong khoảng {{low}}–{{high}}%), so với {{worstCount}}/{{worstOf}} ở {{worst}} ({{worstRate}}%, khả năng trong khoảng {{worstLow}}–{{worstHigh}}%). Chia theo nguồn ứng tuyển."
+        },
+        "role": {
+          "replied_other": "{{count}}/{{of}} đã phản hồi ở đó ({{rate}}%, khả năng trong khoảng {{low}}–{{high}}%), so với {{worstCount}}/{{worstOf}} ở {{worst}} ({{worstRate}}%, khả năng trong khoảng {{worstLow}}–{{worstHigh}}%). Chia theo loại vị trí.",
+          "interview_other": "{{count}}/{{of}} được phỏng vấn ở đó ({{rate}}%, khả năng trong khoảng {{low}}–{{high}}%), so với {{worstCount}}/{{worstOf}} ở {{worst}} ({{worstRate}}%, khả năng trong khoảng {{worstLow}}–{{worstHigh}}%). Chia theo loại vị trí."
+        }
+      }
+    },
+    "late": {
+      "headline_other": "Xử lý {{count}} lần liên hệ lại đã quá hạn.",
+      "because": "Đây là những lần liên hệ lại mà bạn đã quyết định là đáng làm, cho những đơn ứng tuyển nhà tuyển dụng đã xem. Không mục nào khác trong danh sách này gần xong bằng."
+    },
+    "silent": {
+      "headline_other": "Liên hệ lại {{count}} đơn ứng tuyển đã im lặng.",
+      "because_other": "Phản hồi dành cho bạn thường đến sau {{days}}, và các đơn này đã quá mốc đó mà chưa có hồi âm. Đó là số liệu của chính bạn, không phải một quy tắc chung."
+    },
+    "stale": {
+      "headline_other": "Ghi lại diễn biến của {{count}} đơn ứng tuyển.",
+      "because_other": "Đã hai tuần nay không có gì được ghi cho các đơn này. Mọi tỷ lệ trên trang này chỉ chính xác bằng những gì đã được ghi lại."
+    },
+    "drafts": {
+      "headlineSingle": "Hoàn thành bản nháp hoặc bỏ nó đi.",
+      "headline_other": "Hoàn thành bản gần xong nhất trong {{count}} bản nháp, hoặc bỏ chúng đi.",
+      "because_other": "Bản nháp chẳng mang lại gì cho đến khi được gửi đi. Bản cũ nhất đã mở được {{count}} ngày."
+    },
+    "background": {
+      "headline": "Để jojo đọc CV của bạn.",
+      "because": "Chưa có gì về lý lịch của bạn được ghi lại, nên không đơn ứng tuyển nào có thể được so với yêu cầu của tin tuyển dụng. Chỉ cần một tài liệu và một lần xác nhận."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Viết lại đoạn mở đầu trước khi gửi đơn tiếp theo.",
+        "because": "Phản hồi là khâu mà đợt tìm việc này thua xa nhất so với mức thông thường. {{got}}/{{of}} ({{rate}}%), so với {{typical}}% của một đợt tìm việc thông thường — con số jojo chọn làm mốc so sánh tròn, không phải đo từ ai cả."
+      },
+      "interviews": {
+        "headline": "Làm rõ mức phù hợp ngay trong ba dòng đầu.",
+        "because": "Những phản hồi dừng lại trước cuộc gọi là khoảng trống lớn nhất ở đây — họ có quan tâm nhưng lập luận của bạn chưa thuyết phục. {{got}}/{{of}} ({{rate}}%), so với {{typical}}% của một đợt tìm việc thông thường — con số jojo chọn làm mốc so sánh tròn, không phải đo từ ai cả."
+      }
+    },
+    "clear": {
+      "headline": "Không có gì ở đây cần liên hệ lại.",
+      "because_other": "Mọi lần liên hệ lại đều đúng hạn, không đơn nào im lặng, và không có bản nháp nào đang chờ. {{count}} đơn ứng tuyển đang được xét."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Đã gửi",
+      "replies": "Phản hồi",
+      "interviews": "Phỏng vấn",
+      "referrals": "Giới thiệu nội bộ",
+      "followUps": "Liên hệ lại",
+      "keptMoving": "Duy trì tiến độ"
+    },
+    "basis": {
+      "sent_other": "{{count}}/{{of}} đã ra khỏi bản nháp",
+      "replies_other": "{{count}}/{{of}} đã phản hồi",
+      "interviews_other": "{{count}}/{{of}} được phỏng vấn",
+      "referrals_other": "{{count}}/{{of}} đến qua giới thiệu nội bộ",
+      "followUpsNone": "không có gì đang mở",
+      "followUps_other": "{{count}}/{{of}} lần liên hệ lại đang mở bị trễ",
+      "keptMovingNone": "không có đơn nào đang xét",
+      "keptMoving_other": "{{count}}/{{of}} có cập nhật trong hai tuần qua"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Không có gì nằm ở bản nháp. Nên giữ sự chăm chút cho từng đơn hơn là gửi thêm.",
+        "some_other": "{{count}} đơn ứng tuyển vẫn còn là bản nháp. Bản nháp chẳng mang lại gì cho đến khi được gửi đi, và bản gần xong nhất là bản dễ hoàn thành nhất."
+      },
+      "replies": {
+        "nothingSent": "Chưa có gì được gửi đi, nên chưa có gì để đo phản hồi.",
+        "none_other": "Chưa đơn nào trong {{count}} đơn ứng tuyển đã gửi nhận được phản hồi. Đó là khâu cần cải thiện trước khi gửi thêm — điều chỉnh đoạn mở đầu cho từng tin tuyển dụng có tác dụng hơn bất cứ điều gì khác.",
+        "all": "Mọi đơn ứng tuyển đã gửi đều nhận được phản hồi. Đoạn mở đầu đang làm tốt, hãy tiếp tục như vậy.",
+        "some_other": "{{count}}/{{of}} đã có hồi âm. Điều chỉnh đoạn mở đầu cho từng tin tuyển dụng có tác dụng hơn bất cứ điều gì khác."
+      },
+      "interviews": {
+        "noReply": "Chưa có phản hồi nào, nên chưa có gì bị dừng lại trước cuộc gọi.",
+        "none_other": "Đã có {{count}} phản hồi nhưng chưa phản hồi nào dẫn tới cuộc gọi. Khoảng trống đó thường là do mức phù hợp chưa rõ ràng ngay trong đoạn đầu.",
+        "some_other": "{{interviewed}} trong {{count}} phản hồi đã dẫn tới cuộc gọi. Những phản hồi dừng lại trước đó thường cho thấy mức phù hợp chưa được thể hiện đủ sớm."
+      },
+      "referrals": {
+        "none": "Không đơn nào đến qua lời giới thiệu. Một đơn được giới thiệu có khả năng nhận phản hồi cao hơn nhiều lần, nên một lời giới thiệu đáng giá bằng nhiều lần gửi đơn không quen biết.",
+        "some_other": "{{count}}/{{of}} đến qua lời giới thiệu. Đây là việc mang lại hiệu quả cao nhất trong danh sách, và cũng khó nhân rộng nhất — vì vậy nên hỏi trước lần gửi đơn không quen biết tiếp theo, chứ không phải sau đó."
+      },
+      "followUps": {
+        "none": "Không có gì bị trễ. Một lần liên hệ lại khoảng một tuần sau khi gửi thường là lần có kết quả.",
+        "late_other": "{{count}} lần liên hệ lại đã quá hạn. Xử lý chúng thường có lợi nhanh hơn là ứng tuyển chỗ mới."
+      },
+      "keptMoving": {
+        "none": "Không có gì im lặng. Ghi lại diễn biến ngay khi nó xảy ra là cách giữ cho số liệu này trung thực.",
+        "stale_other": "{{count}} đơn ứng tuyển đang xét không có hoạt động nào trong hai tuần. Một lời nhắc ngắn tốn ít công sức hơn là bắt đầu ở chỗ mới."
+      }
+    }
+  }
+}

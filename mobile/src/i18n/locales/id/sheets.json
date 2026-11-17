@@ -1,0 +1,243 @@
+{
+  "common": {
+    "undo": "Urungkan",
+    "cancel": "Batal"
+  },
+  "addFromLink": {
+    "title": "Lamaran dari tautan",
+    "description": "Model membaca lowongan dan mengisi formulir, serta mencentang kata kunci Anda yang jelas sesuai dengan pekerjaan itu. Halamannya disimpan di Brankas di bawah Lowongan kerja, dan tidak ada yang disimpan sebagai lamaran sampai Anda memintanya.",
+    "url": "URL lowongan kerja",
+    "addressOnly": "Gunakan alamatnya saja",
+    "reading": "Membaca…",
+    "retry": "Coba lagi",
+    "submit": "Baca dan isi",
+    "failed": "Gagal membaca lowongan.",
+    "steps": {
+      "reading": "Mengambil halaman",
+      "asking": "Membacanya",
+      "saving": "Menyimpan lowongan"
+    },
+    "toast": {
+      "title": "Lowongan disimpan dan dibaca",
+      "kept": "{{name}} ada di Brankas, dan diarsipkan di lamaran saat Anda menyimpannya.",
+      "gaps_other": "{{count}} kolom tidak ada di halaman.",
+      "tags_other": "{{count}} kata kunci Anda dicentang."
+    }
+  },
+  "application": {
+    "newTitle": "Lamaran baru",
+    "editTitle": "Edit {{name}}",
+    "add": "Tambah lamaran",
+    "save": "Simpan perubahan",
+    "checking": "Memeriksa duplikat…",
+    "noRecord": "Lembar ini dibuka tanpa entri untuk diedit",
+    "description": {
+      "edit": "Perubahan menggantikan detail saat ini, dan tenggat ikut berpindah.",
+      "prefilledTagged": "Diisi dari yang Anda tempel — periksa pemberi kerja, posisi, dan kata kunci sebelum menyimpan.",
+      "prefilled": "Diisi dari yang Anda tempel — periksa pemberi kerja dan posisi sebelum menyimpan.",
+      "create": "Pantau pekerjaan yang Anda lamar. Kolom bertanda bintang wajib diisi."
+    },
+    "errors": {
+      "org": "Sebutkan pemberi kerjanya — entri diarsipkan berdasarkan nama itu.",
+      "role": "Sebutkan posisinya, agar dua lamaran ke tempat yang sama tetap terpisah.",
+      "roleTag": "Pilih label posisi — filter posisi dan grafik membacanya.",
+      "url": "Itu bukan tautan yang bisa dibuka browser — sertakan https://."
+    },
+    "fields": {
+      "org": "Organisasi",
+      "orgPlaceholder": "Pemberi kerja atau institusi",
+      "role": "Nama posisi",
+      "rolePlaceholder": "mis. Analis data senior",
+      "roleTag": "Label posisi",
+      "pickRoleTag": "Pilih label posisi",
+      "roleTagDescription": "Sumbu yang dibaca filter posisi dan grafik.",
+      "stage": "Tahap",
+      "deadline": "Tenggat",
+      "deadlineHint": "Menaruh entri bertanggal di kalender dan di minggu mendatang.",
+      "source": "Sumber",
+      "sourceNotSet": "Belum diatur",
+      "location": "Lokasi",
+      "locationPlaceholder": "Kota, atau Jarak jauh",
+      "comp": "Kompensasi",
+      "compPlaceholder": "mis. $96k + saham",
+      "url": "URL lowongan",
+      "postingId": "ID lowongan",
+      "postingIdHint": "Nomor pekerjaan atau permintaan rekrutmen, jika lowongan mencantumkannya.",
+      "postingIdPlaceholder": "mis. R-2024-0312",
+      "note": "Catatan",
+      "notePlaceholder": "Yang masih harus dilakukan sebelum lamaran ini dikirim.",
+      "keywords": "Kata kunci"
+    },
+    "toast": {
+      "draftDiscarded": "Draf dibuang",
+      "changesDiscarded": "Perubahan dibuang",
+      "nothingAdded": "Tidak ada yang ditambahkan. Urungkan mengembalikan formulir seperti saat Anda meninggalkannya.",
+      "unchanged": "{{name}} tidak berubah. Urungkan mengembalikan suntingan Anda.",
+      "recordUnchanged": "Entri tidak berubah. Urungkan mengembalikan suntingan Anda.",
+      "added": "{{name}} ditambahkan",
+      "deadlineOnCalendar": "Tenggat {{date}} ada di kalender.",
+      "noDeadline": "Belum ada tenggat — tambahkan dan tenggat itu muncul di minggu mendatang.",
+      "postingFiled": "Lowongannya diarsipkan di bawahnya.",
+      "saved": "Perubahan disimpan",
+      "deadlineRemoved": "{{name}} — tenggatnya dihapus dari kalender.",
+      "restoreDeadline": "Kembalikan tenggat"
+    },
+    "duplicate": {
+      "title": "Ini tampaknya pekerjaan yang sudah Anda miliki",
+      "modelSame": "Model menilai keduanya sebagai lowongan yang sama.",
+      "modelReading": " — penilaian model; periksa di bawah.",
+      "existing": "Yang sudah Anda miliki",
+      "adding": "Yang sedang Anda tambahkan",
+      "untitled": "Tanpa judul",
+      "postingId": "ID lowongan {{id}}",
+      "openYours": "Buka yang sudah Anda miliki",
+      "openExisting": "Buka {{name}}, yang sudah Anda miliki",
+      "tapToOpen": "Ketuk untuk membukanya, atau lanjutkan dan tambahkan ini sebagai entri kedua.",
+      "editInstead": "Edit saja",
+      "discard": "Buang",
+      "addAnyway": "Tetap tambahkan"
+    },
+    "since": {
+      "today": "hari ini",
+      "yesterday": "kemarin",
+      "daysAgo_other": "{{count}} hari lalu"
+    }
+  },
+  "draft": {
+    "title": "Tulis draf pesan",
+    "description": {
+      "forApp": "Untuk {{name}}. Tidak ada yang dibuat otomatis dan tidak ada yang dikirim — isi bagian kosong, salin ke aplikasi email Anda, lalu tandai sudah dikirim.",
+      "forItem": "Untuk {{name}} · {{item}}. Tidak ada yang dibuat otomatis dan tidak ada yang dikirim — isi bagian kosong, salin ke aplikasi email Anda, lalu tandai sudah dikirim.",
+      "unlinked": "Tidak ditautkan ke lamaran, jadi [ROLE] dan [DATE] tetap kosong. Tidak ada yang dibuat otomatis dan tidak ada yang dikirim — isi bagian kosong, salin ke aplikasi email Anda, lalu tandai sudah dikirim."
+    },
+    "defaultTitle": "Draf email",
+    "titleForOrg": "{{title}} — {{org}}",
+    "saveAsSnippet": "Simpan sebagai cuplikan",
+    "writeFirst": "Tulis sesuatu dulu",
+    "copy": "Salin",
+    "copied": "Disalin",
+    "markSent": "Tandai terkirim",
+    "openFromReminder": "Buka ini dari pengingat untuk mencentangnya",
+    "alreadyTicked": "Sudah dicentang",
+    "blank": "Draf kosong",
+    "startFromSnippet": "Mulai dari salah satu cuplikan email Anda",
+    "placeholder": "Tulis pesannya, atau pilih cuplikan sebagai awal…",
+    "editorLabel": "Draf pesan",
+    "empty": {
+      "title": "Belum ada cuplikan email",
+      "description": "Cuplikan berlabel Email muncul di sini sebagai titik awal. Tidak ada yang bisa dimuat, tetapi draf tidak harus dimulai dari cuplikan.",
+      "startBlank": "Mulai dari draf kosong"
+    },
+    "status": {
+      "empty": "Belum ada draf.",
+      "noBlanks": "Tidak ada bagian kosong yang tersisa.",
+      "blanksLeft_other": "{{count}} bagian kosong tersisa — {{names}}",
+      "nameNever": " · nama orang tidak pernah diisikan untuk Anda"
+    },
+    "picker": {
+      "title": "Mulai dari",
+      "description": "Cuplikan email Anda sendiri, dengan apa yang sudah diketahui entri terisi."
+    },
+    "toast": {
+      "replaced": "Draf diganti",
+      "loaded": "{{title}} dimuat.",
+      "blank": "Dimulai lagi dari kosong.",
+      "saved": "Disimpan ke cuplikan",
+      "savedDescription": "{{title}} · berlabel Email, di Brankas",
+      "sent": "Ditandai terkirim",
+      "sentDescription": "{{title}} — dicentang di pengingat"
+    }
+  },
+  "stage": {
+    "moveTo": "Pindahkan ke {{stage}}",
+    "currently": "{{name}} · saat ini {{stage}}",
+    "nothingElse": "Tidak ada hal lain pada entri yang berubah.",
+    "moveWithoutDetails": "Pindahkan tanpa detail",
+    "outcome": "Hasil",
+    "submitted": {
+      "date": "Dikirim pada",
+      "portal": "URL portal",
+      "portalHint": "Tempat lamaran berada, untuk saat Anda perlu menindaklanjutinya.",
+      "reference": "Nomor konfirmasi",
+      "referencePlaceholder": "mis. 4471-QZ"
+    },
+    "interview": {
+      "date": "Tanggal wawancara",
+      "format": "Format",
+      "formatLabel": "Format wawancara",
+      "mint": "Tambahkan ke linimasa",
+      "mintDescription": "Membuat entri wawancara pada tanggal itu, dengan pengingat."
+    },
+    "offer": {
+      "respondBy": "Jawab paling lambat",
+      "package": "Paket",
+      "packagePlaceholder": "mis. $112k + $15k dana awal",
+      "note": "Catatan",
+      "notePlaceholder": "Yang masih dinegosiasikan",
+      "mint": "Tambahkan tenggat ke linimasa",
+      "mintDescription": "Batas waktu menjawab yang tidak dipantau adalah satu-satunya tenggat yang tidak boleh terlewat."
+    },
+    "keepOffer": {
+      "label": "Simpan detail tawaran",
+      "description": "Jawab paling lambat {{date}}. Matikan ini untuk mengosongkannya.",
+      "descriptionWithComp": "Jawab paling lambat {{date}} · {{comp}}. Matikan ini untuk mengosongkannya."
+    }
+  },
+  "timeline": {
+    "title": {
+      "newReminder": "Pengingat baru",
+      "editReminder": "Edit pengingat",
+      "newEvent": "Acara baru",
+      "editEvent": "Edit acara"
+    },
+    "description": "Satu entri apa pun jenisnya — muncul di kalender pada tanggal yang Anda berikan, dan di daftar pengingat Brankas selama sakelarnya menyala.",
+    "delete": "Hapus",
+    "save": "Simpan",
+    "addReminder": "Tambah pengingat",
+    "addEvent": "Tambah acara",
+    "reminderFallback": "Pengingat",
+    "duration": {
+      "minutes_other": "{{count}} mnt",
+      "hours_other": "{{count}} jam"
+    },
+    "fields": {
+      "title": "Judul",
+      "reminderPlaceholder": "mis. Hubungi lagi perekrut",
+      "eventPlaceholder": "mis. Zoom komite",
+      "remind": "Tampilkan di pengingat",
+      "remindOn": "Tercantum di Brankas dengan kotak centang, dan di kalender pada tanggalnya.",
+      "remindOff": "Hanya di kalender pada tanggalnya — tanpa kotak centang di Brankas.",
+      "date": "Tanggal",
+      "allDay": "Sepanjang hari",
+      "allDayDescription": "Jika dimatikan, item ini mendapat waktu mulai dan durasi.",
+      "startTime": "Waktu mulai",
+      "length": "Durasi",
+      "applicationHint": "Menautkan keduanya, jadi setiap lamaran mencantumkan item ini dan item ini mengarah kembali ke setiap lamaran tersebut.",
+      "kind": "Jenis",
+      "kindFollowUp": "Tindak lanjut juga dihitung sebagai kewajiban di Hari ini, sampai Anda mencentangnya.",
+      "kindHint": "Ikon yang dibawanya di kalender dan di daftar pengingat.",
+      "detail": "Detail",
+      "detailHint": "Satu baris konteks, ditampilkan di bawah judul.",
+      "note": "Catatan",
+      "noteHint": "Coretan Anda sendiri. Disimpan terpisah dari detail, jadi suntingan tidak pernah menimpanya.",
+      "keywords": "Kata kunci",
+      "keywordsHint": "Dipakai bersama oleh lamaran, berkas, dan tautan — memfilter dengan satu kata kunci menemukan semuanya."
+    },
+    "more": {
+      "title": "Detail lainnya",
+      "note": "catatan",
+      "keywords": "kata kunci",
+      "empty": "catatan, kata kunci"
+    },
+    "toast": {
+      "added": "{{title}} ditambahkan",
+      "updated": "{{title}} diperbarui",
+      "inReminders": "di pengingat",
+      "calendarOnly": "hanya di kalender",
+      "owed": "dan menjadi kewajiban minggu ini",
+      "deleted": "{{title}} dihapus",
+      "goneFromBoth": "Hilang dari daftar pengingat dan dari kalender.",
+      "goneFromCalendar": "Hilang dari kalender."
+    }
+  }
+}

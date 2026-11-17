@@ -1,0 +1,29 @@
+{
+  "nextSteps": {
+    "badges": {
+      "measured": {
+        "label": "Misurato",
+        "hint": "Calcolato dai tuoi record"
+      },
+      "suggested": {
+        "label": "Suggerito",
+        "hint": "Generico, o misurato rispetto a una ricerca tipica anziché alla tua"
+      }
+    },
+    "title": "Cosa fare adesso",
+    "intro": "Ordinati in base a quanto li confermano i tuoi record, poi in base a quanto costano meno."
+  },
+  "whatIsWorking": {
+    "countOf": "{{count}} su {{of}}",
+    "rate": "{{rate}}% · probabilmente {{range}}",
+    "groupReplied": "Risposte, per {{dimension}}",
+    "groupInterviews": "Colloqui, per {{dimension}}",
+    "confident": "Gli intervalli non si sovrappongono, quindi la differenza è reale: vale la pena concentrare più impegno su {{best}}.",
+    "unconfident": "Gli intervalli si sovrappongono, quindi sono due numeri e non una differenza. Con più record si separeranno o il divario si chiuderà.",
+    "tooFew_one": "{{count}} altro gruppo ha meno di {{min}} record e non viene confrontato.",
+    "tooFew_many": "{{count}} di altri gruppi hanno meno di {{min}} record e non vengono confrontati.",
+    "tooFew_other": "{{count}} altri gruppi hanno meno di {{min}} record e non vengono confrontati.",
+    "title": "Cosa sta funzionando",
+    "intro": "La barra indica dove si trova plausibilmente il tasso reale; la linea è ciò che hai misurato. Una fascia ampia significa che i record sono ancora troppo pochi per esserne sicuri."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "legend": {
+    "show": "Tampilkan {{label}}",
+    "hide": "Sembunyikan {{label}}"
+  },
+  "allHidden": {
+    "withReset": "Semua seri dimatikan di legenda.",
+    "noReset": "Semua seri tersembunyi — pilih salah satu dari legenda untuk menampilkannya lagi.",
+    "showAll": "Tampilkan semua seri"
+  },
+  "donut": {
+    "aria": "{{total}} {{label}}"
+  },
+  "radar": {
+    "aria": "Radar yang membandingkan {{series}} pada {{axes}}"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "days_other": "{{count}} 天",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "把更多心力放在「{{label}}」上。",
+      "because": {
+        "source": {
+          "replied_other": "那裡 {{of}} 份中有 {{count}} 份獲得回覆（{{rate}}%，可能介於 {{low}}–{{high}}%），相較之下「{{worst}}」是 {{worstOf}} 份中有 {{worstCount}} 份（{{worstRate}}%，可能介於 {{worstLow}}–{{worstHigh}}%）。依來源區分。",
+          "interview_other": "那裡 {{of}} 份中有 {{count}} 份進入面試（{{rate}}%，可能介於 {{low}}–{{high}}%），相較之下「{{worst}}」是 {{worstOf}} 份中有 {{worstCount}} 份（{{worstRate}}%，可能介於 {{worstLow}}–{{worstHigh}}%）。依來源區分。"
+        },
+        "role": {
+          "replied_other": "那裡 {{of}} 份中有 {{count}} 份獲得回覆（{{rate}}%，可能介於 {{low}}–{{high}}%），相較之下「{{worst}}」是 {{worstOf}} 份中有 {{worstCount}} 份（{{worstRate}}%，可能介於 {{worstLow}}–{{worstHigh}}%）。依職務類型區分。",
+          "interview_other": "那裡 {{of}} 份中有 {{count}} 份進入面試（{{rate}}%，可能介於 {{low}}–{{high}}%），相較之下「{{worst}}」是 {{worstOf}} 份中有 {{worstCount}} 份（{{worstRate}}%，可能介於 {{worstLow}}–{{worstHigh}}%）。依職務類型區分。"
+        }
+      }
+    },
+    "late": {
+      "headline_other": "處理 {{count}} 項逾期的後續追蹤。",
+      "because": "這些是你已經決定值得追問的事，而且對方已經看過這些申請。這份清單上沒有其他事情比它們更接近完成。"
+    },
+    "silent": {
+      "headline_other": "追問 {{count}} 份已經沒有消息的申請。",
+      "because_other": "你通常在 {{days}} 內會收到回覆，而這些申請已經超過這個時間卻毫無回音。這是你自己的數字，不是經驗法則。"
+    },
+    "stale": {
+      "headline_other": "記錄 {{count}} 份申請的後續狀況。",
+      "because_other": "這兩週以來都沒有寫入任何相關內容。這一頁上的每個比率，都只和已記錄下來的內容一樣準確。"
+    },
+    "drafts": {
+      "headlineSingle": "完成這份草稿，或是放棄它。",
+      "headline_other": "從 {{count}} 份草稿中完成最接近完成的一份，或是放棄它們。",
+      "because_other": "草稿不送出就沒有任何作用。最舊的一份已經開了 {{count}} 天。"
+    },
+    "background": {
+      "headline": "讓 jojo 讀取你的履歷。",
+      "because": "目前沒有記錄任何關於你自身背景的資料，所以沒有任何申請能和職缺的要求做比較。只需要一份文件和一次確認。"
+    },
+    "funnel": {
+      "replies": {
+        "headline": "寄出下一份之前，先改寫開頭那一段。",
+        "because": "和一般的求職相比，這次求職最落後的是回覆。{{of}} 份中有 {{got}} 份（{{rate}}%），一般求職則是 {{typical}}%——這是 jojo 選來做比較的整數，並非實際量測自任何人。"
+      },
+      "interviews": {
+        "headline": "在前三行就讓契合之處一目了然。",
+        "because": "這裡最大的落差，是回覆之後卡在通話之前——對方有興趣，但你的理由沒有說服力。{{of}} 份中有 {{got}} 份（{{rate}}%），一般求職則是 {{typical}}%——這是 jojo 選來做比較的整數，並非實際量測自任何人。"
+      }
+    },
+    "clear": {
+      "headline": "這裡沒有需要追問的事。",
+      "because_other": "每項後續追蹤都準時，沒有申請失去消息，也沒有等待中的草稿。目前已送出 {{count}} 份申請。"
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "已送出",
+      "replies": "回覆",
+      "interviews": "面試",
+      "referrals": "推薦",
+      "followUps": "後續追蹤",
+      "keptMoving": "持續推進"
+    },
+    "basis": {
+      "sent_other": "{{of}} 份中有 {{count}} 份已不是草稿",
+      "replies_other": "{{of}} 份中有 {{count}} 份獲得回覆",
+      "interviews_other": "{{of}} 份中有 {{count}} 份進入面試",
+      "referrals_other": "{{of}} 份中有 {{count}} 份經由推薦",
+      "followUpsNone": "沒有未完成的項目",
+      "followUps_other": "{{of}} 項未完成的後續追蹤中有 {{count}} 項已逾期",
+      "keptMovingNone": "沒有進行中的申請",
+      "keptMoving_other": "{{of}} 份中有 {{count}} 份在最近兩週內有動靜"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "沒有任何申請停留在草稿。與其再增加數量，不如保持每一份的用心。",
+        "some_other": "還有 {{count}} 份申請停留在草稿。草稿不送出就沒有任何作用，而最接近完成的那份，花最少力氣就能完成。"
+      },
+      "replies": {
+        "nothingSent": "目前還沒有送出任何申請，所以沒有可用來衡量回覆的依據。",
+        "none_other": "已送出的 {{count}} 份申請都還沒有收到回覆。在送出更多之前，應該先改善這一步——針對每個職缺調整開頭那一段，效果比任何做法都大。",
+        "all": "每份已送出的申請都收到了回覆。不論開頭那一段做對了什麼，繼續保持。",
+        "some_other": "{{of}} 份中有 {{count}} 份收到回覆。針對每個職缺調整開頭那一段，最能提升這個數字。"
+      },
+      "interviews": {
+        "noReply": "目前還沒有收到任何回覆，所以也還談不上卡在通話之前。",
+        "none_other": "已收到 {{count}} 則回覆，但沒有一則進展到通話。這個落差通常是因為第一段沒有清楚展現契合之處。",
+        "some_other": "{{count}} 則回覆中有 {{interviewed}} 則進展到通話。回覆後卡在通話之前，通常表示契合之處沒有及早呈現。"
+      },
+      "referrals": {
+        "none": "這些申請都不是經由引薦而來。有人推薦的申請獲得回覆的機會高出好幾倍，所以一份推薦抵得上好幾份主動投遞。",
+        "some_other": "{{of}} 份中有 {{count}} 份經由引薦而來。這是這份清單上效益最高、卻最難擴大的做法——所以值得在下一次主動投遞之前先開口請託，而不是之後。"
+      },
+      "followUps": {
+        "none": "沒有任何逾期。寄出後大約一週追問一次，通常最有效。",
+        "late_other": "有 {{count}} 項後續追蹤已逾期。先處理這些，通常比去申請新的地方更快見效。"
+      },
+      "keptMoving": {
+        "none": "沒有任何申請失去消息。事情發生時就隨手記錄，才能讓這些數字保持真實。",
+        "stale_other": "有 {{count}} 份進行中的申請兩週以來沒有任何動靜。簡短地提醒一下，比從頭申請新的地方省力。"
+      }
+    }
+  }
+}

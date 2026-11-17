@@ -1,0 +1,150 @@
+{
+  "steps": {
+    "jojo": {
+      "title": "Ecco jojo",
+      "body": "Il tuo assistente vive qui. Reagisce a ciò che fai (un balletto quando invii una candidatura, un cenno quando completi un'attività) e segue il puntatore sulla pagina.",
+      "task": "Tocca jojo, o disegnaci sopra un cerchio."
+    },
+    "moves": {
+      "title": "Tutte le mosse, e come disegnarle",
+      "body": "Questo pulsante elenca tutte le mosse di jojo, ciascuna con il tratto che la avvia (uno scorrimento verso l'alto per saltare, una Z per appisolarsi), e cita l'autore del modello 3D."
+    },
+    "runtime": {
+      "title": "Dove vivono i tuoi record",
+      "body": "“Salvato qui” è la memoria del browser: un database dentro questo browser, su questo computer. Nulla viene inviato altrove e nulla si sincronizza. Gli altri riquadri dicono se un modello è collegato e propongono di spostare tutto su un altro dispositivo. Ognuno apre il punto in cui si configura."
+    },
+    "applications": {
+      "title": "Le tue candidature",
+      "body": "Un record per ogni lavoro: la posizione, il datore di lavoro, la fase e le tue note. Scadenze, colloqui e documenti dipendono tutti da esso, così nulla va scritto due volte.",
+      "task": "Apri Candidature."
+    },
+    "layout": {
+      "title": "Bacheca o tabella",
+      "body": "Gli stessi record, in due modi. La bacheca mostra le fasi come colonne; la tabella ordina e cerca. La scelta è nell'indirizzo, quindi un link si apre come l'hai lasciato.",
+      "task": "Passa a Tabella."
+    },
+    "records": {
+      "title": "Sei fasi, e jojo le festeggia tutte",
+      "body": "Bozza, Inviata, Chiamata preliminare, Colloquio, Offerta, Chiusa. Sulla bacheca, trascina una scheda nella colonna successiva: jojo balla quando invii una bozza, si carica per un colloquio e salta di gioia per un'offerta. Ogni spostamento si può annullare."
+    },
+    "keywords": {
+      "title": "Le parole chiave sono le tue etichette",
+      "body": "Un unico insieme di etichette per candidature, promemoria e Cassaforte. Etichetta un record dal pulsante etichetta nella sua riga, aggiungi una nuova parola chiave con + e fai clic destro su un'etichetta per rinominarla, cambiarne il colore o eliminarla.",
+      "task": "Scegli una parola chiave per filtrare."
+    },
+    "new": {
+      "title": "Crea qualsiasi cosa",
+      "body": "Nuovo crea una candidatura, un promemoria, una voce di calendario, un messaggio, un link salvato o un annuncio salvato. Il tasto n lo apre ovunque tu non stia scrivendo.",
+      "task": "Apri il menu Nuovo."
+    },
+    "new-menu": {
+      "title": "Nulla viene salvato finché non salvi",
+      "body": "Ognuna di queste voci apre il proprio modulo. Chiudere un modulo compilato a metà costa solo quanto hai scritto.",
+      "task": "Chiudi il menu: premi Esc."
+    },
+    "search": {
+      "title": "La via più veloce",
+      "body": "Cerca in ogni candidatura, promemoria e voce di calendario, vai a qualsiasi pagina (comprese quelle che la barra laterale non elenca) o esegui una delle operazioni dell'app.",
+      "task": "Premi ⌘K (Ctrl K), o fai clic sulla barra di ricerca."
+    },
+    "palette": {
+      "title": "Scrivi per trovare qualsiasi cosa",
+      "body": "Un ruolo, un'organizzazione o una fase. I tasti freccia scelgono, Invio conferma.",
+      "task": "Chiudila con Esc quando hai finito."
+    },
+    "calendar": {
+      "title": "Tutte le date in un unico posto",
+      "body": "Scadenze, colloqui e solleciti sono un unico tipo di record, quindi una voce compare nel calendario, nel pannello e nella sua candidatura. Trascinala su un altro giorno per riprogrammarla.",
+      "task": "Apri il Calendario."
+    },
+    "vault": {
+      "title": "La Cassaforte",
+      "body": "Tutto ciò che una ricerca di lavoro accumula oltre alle candidature: promemoria, link salvati, file, i frammenti che incolli in ogni modulo, le persone che conosci e qualche strumento.",
+      "task": "Apri la Cassaforte."
+    },
+    "files": {
+      "title": "File, con anteprima sul posto",
+      "body": "Aggiungi un CV, una dichiarazione o un annuncio. PDF, immagini, testo e pagine web salvate si aprono qui, e ogni file può avere una nota e delle parole chiave. I file sono memorizzati in questo browser, non caricati.",
+      "task": "Fai clic su un file per vederne l'anteprima."
+    },
+    "file-viewer": {
+      "title": "L'anteprima",
+      "body": "Leggilo senza lasciare la pagina. Con il lettore di documenti collegato (Impostazioni), anche l'assistente può leggerne il contenuto."
+    },
+    "tools": {
+      "title": "Strumenti",
+      "body": "Una calcolatrice, base o scientifica, che tiene la cronologia dei calcoli, e un editor PDF.",
+      "task": "Apri l'editor PDF."
+    },
+    "pdf": {
+      "title": "Strumenti PDF",
+      "body": "Unisci più PDF in uno, riordina o elimina pagine e annotane uno, tutto dentro questo browser, quindi nessun documento viene mai caricato. Trascina i PDF direttamente su questo pannello."
+    },
+    "scout": {
+      "title": "Scout offerte",
+      "body": "Ricerche salvate che tengono d'occhio i siti di lavoro per te.",
+      "task": "Apri Scout offerte."
+    },
+    "pipelines": {
+      "title": "Pipeline",
+      "body": "Ogni pipeline è una ricerca su un sito (HigherEdJobs, AcademicCareers e altri). Viene eseguita secondo una pianificazione o quando premi Esegui ora; ciò che trova attende come suggerimenti da approvare o scartare, e uno approvato diventa una candidatura in bozza."
+    },
+    "statistics": {
+      "title": "Statistiche",
+      "body": "Come sta andando la tua ricerca, calcolato dai tuoi record.",
+      "task": "Apri Statistiche."
+    },
+    "stats": {
+      "title": "Tassi, con margini di errore onesti",
+      "body": "Tassi di risposta e di colloquio, un imbuto e un grafico settimanale, ogni tasso con l'intervallo in cui potrebbe davvero trovarsi, perché una manciata di candidature è un campione piccolo. Segue il filtro per ruolo nella barra superiore."
+    },
+    "graph": {
+      "title": "Il grafo della conoscenza",
+      "body": "Ogni record (candidature, datori di lavoro, persone, date, file) è un nodo, e i collegamenti tra loro sono gli archi. Fai una domanda a parole o costruiscila, e i record corrispondenti si illuminano. Non è nella barra laterale; ci arrivi con ⌘K."
+    },
+    "chat": {
+      "title": "Chatta con jojo",
+      "body": "L'assistente può trovare, aggiungere e aggiornare i tuoi record con gli strumenti dell'app, e chiede prima di modificare qualsiasi cosa, a meno che tu non gli dica di non farlo. Ha bisogno di un modello: è il prossimo passo."
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "body": "Modelli, lettore di documenti, parole chiave, i tuoi dati, e tutti i gesti che jojo conosce.",
+      "task": "Apri Impostazioni."
+    },
+    "model": {
+      "title": "Collega un modello",
+      "body": "Scegli dove gira il modello dell'assistente. Un server locale (vLLM, LM Studio, llama.cpp o Ollama) richiede il suo indirizzo e tiene i tuoi record su questo computer. OpenAI, Anthropic (Claude), OpenRouter, Groq o NVIDIA richiedono una chiave API. Verifica connessione lo controlla prima che venga salvato qualcosa."
+    },
+    "reader": {
+      "title": "Fagli leggere i tuoi documenti",
+      "body": "MarkItDown trasforma PDF, file Word, presentazioni e fogli di calcolo in testo che l'assistente può leggere. Copia i due comandi qui in un terminale (uno lo installa, l'altro lo avvia), poi premi Verifica connessione."
+    },
+    "keyword-manager": {
+      "title": "Gestisci le tue parole chiave",
+      "body": "Aggiungi parole chiave, rinominale, dai loro qualsiasi colore o eliminale. Una ridenominazione si applica ovunque la parola chiave venga mostrata."
+    },
+    "backup": {
+      "title": "Fai un backup",
+      "body": "Svuotare il browser porta via anche i tuoi record, quindi esporta un backup ogni tanto: un unico file con tutto. Quando lo fai, jojo mostra i muscoli."
+    },
+    "done": {
+      "title": "Il tour è finito",
+      "body": "Annulla è ⌘Z ovunque, e ogni modifica è elencata nel registro delle modifiche in fondo a Impostazioni. La guida descrive ogni schermata una per una (Come si usa, nella barra superiore) e il tour è sempre lì da rifare."
+    }
+  },
+  "overlay": {
+    "progress": "Passo {{n}} di {{total}}",
+    "endLabel": "Termina il tour (il punto in cui sei viene ricordato)",
+    "end": "Termina il tour",
+    "nice": "Ottimo, è tutto.",
+    "tryIt": "Prova: {{task}}",
+    "done": "Fatto.",
+    "announce": "Passo {{n}} di {{total}}: {{title}}.",
+    "announceTask": "Passo {{n}} di {{total}}: {{title}}. Prova: {{task}}",
+    "back": "Indietro",
+    "notNow": "Non ora",
+    "finish": "Fine",
+    "skip": "Salta",
+    "next": "Avanti"
+  }
+}

@@ -182,7 +182,7 @@
       "remove": "Remove page {{number}}",
       "later": "Move page {{number}} later",
       "hint": "Turn, move or remove a page and this becomes available.",
-      "action": "Save pages and save"
+      "action": "Save pages"
     },
     "annotate": {
       "tools": {
@@ -207,7 +207,7 @@
       "removeMark": "Remove this mark",
       "hintEmpty": "Highlight some text or add a comment first.",
       "hint": "{{summary}} will be written in.",
-      "action": "Save marked up and save"
+      "action": "Save with markup"
     }
   },
   "instruments": {

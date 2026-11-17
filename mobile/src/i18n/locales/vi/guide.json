@@ -1,0 +1,249 @@
+{
+  "screen": {
+    "title": "Cách sử dụng jojo",
+    "pageLabel": "Trang hướng dẫn",
+    "takeTour": "Bắt đầu tham quan",
+    "pages": {
+      "overview": {
+        "label": "Tổng quan",
+        "subtitle": "Mọi thứ chạy trên thiết bị của bạn. Bắt đầu đơn giản, thêm sức mạnh khi bạn muốn."
+      },
+      "screens": {
+        "label": "Màn hình",
+        "subtitle": "Mỗi màn hình dùng để làm gì, và một lối đi thẳng tới đó."
+      },
+      "graph": {
+        "label": "Đồ thị",
+        "subtitle": "Mô hình bản ghi bên dưới bảy danh sách."
+      },
+      "tools": {
+        "label": "Công cụ",
+        "subtitle": "Trợ lý có thể làm gì với bản ghi của bạn, và điều gì ngăn nó lại."
+      },
+      "built": {
+        "label": "Được xây dựng bằng",
+        "subtitle": "Ứng dụng được làm từ gì, và những gì vẫn còn là phần giữ chỗ."
+      }
+    }
+  },
+  "overview": {
+    "active": "đang hoạt động",
+    "notConnected": "chưa kết nối",
+    "layers": {
+      "device": {
+        "name": "Chỉ thiết bị này",
+        "requires": "Không cần thiết lập gì",
+        "gives": "Theo dõi đơn ứng tuyển, hạn chót, liên hệ lại và tài liệu"
+      },
+      "model": {
+        "name": "+ Mô hình cục bộ",
+        "requires": "Ollama, vLLM hoặc LM Studio — hoặc một khóa NVIDIA miễn phí",
+        "gives": "Một trợ lý theo chuỗi hội thoại đọc và ghi bản ghi của bạn — mọi thay đổi đều được hiển thị cho bạn trước — và \"Hỏi đồ thị\" bằng một câu"
+      },
+      "reader": {
+        "name": "+ Trình đọc tài liệu",
+        "requires": "MarkItDown, tại một địa chỉ bạn nhập vào",
+        "gives": "Trợ lý đọc nội dung bên trong CV và tin tuyển dụng đã lưu, và tin tuyển dụng bạn thêm từ liên kết sẽ tự điền biểu mẫu"
+      },
+      "computer": {
+        "name": "+ Máy tính của bạn",
+        "requires": "Cả hai trên cùng một mạng",
+        "gives": "Chuyển dữ liệu chuyển toàn bộ kho dữ liệu giữa điện thoại này và máy tính của bạn, không qua trung gian nào"
+      }
+    },
+    "gettingStarted": "Bắt đầu",
+    "progress": "Đã xong {{done}}/{{total}}",
+    "allDone": "Mọi bước đã xong. Danh sách kiểm tra đọc các bản ghi của bạn, nên nó sẽ cập nhật theo nếu bạn xóa chúng.",
+    "howItWorks": "Mỗi bước mở đúng chức năng thật, và tự đánh dấu khi đã có bản ghi. Không có gì ở đây là bài hướng dẫn bắt buộc phải ngồi xem.",
+    "done": "Xong",
+    "steps": {
+      "application": {
+        "title": "Thêm một đơn ứng tuyển",
+        "body": "Một vị trí, giai đoạn và hạn chót của nó. Mọi thứ khác trong jojo đều gắn với bản ghi này.",
+        "label": "Đơn ứng tuyển mới"
+      },
+      "dated": {
+        "title": "Đặt ngày cho một mục",
+        "body": "Hạn chót, phỏng vấn và chuyến thăm trường là cùng một loại bản ghi, nên chúng xuất hiện cùng lúc trên lịch, trong tuần tới và trong đơn ứng tuyển.",
+        "label": "Sự kiện mới"
+      },
+      "reminder": {
+        "title": "Đặt lịch liên hệ lại",
+        "body": "Lời nhắc là cùng loại bản ghi đó nhưng bật thêm chế độ nhắc. Khi qua ngày, nó được gắn cờ ở trang Hôm nay cho đến khi bạn đánh dấu hoàn thành.",
+        "label": "Lời nhắc mới"
+      },
+      "posting": {
+        "title": "Giữ lại tin tuyển dụng trước khi bị gỡ",
+        "body": "Không có gì được tải về và không bản sao nào được lưu — những gì được giữ là URL, nhà tuyển dụng đoán từ URL và ngày bạn lưu. Chừng đó là đủ để tìm lại tin tuyển dụng.",
+        "label": "Mở Trình tìm việc"
+      },
+      "file": {
+        "title": "Lưu trữ tài liệu của bạn",
+        "body": "Ghi lại CV hoặc một bản trình bày trong Kho lưu trữ. Tên, kích thước và loại được giữ lại; bản thân tệp không bao giờ được đọc.",
+        "label": "Mở Kho lưu trữ"
+      },
+      "keyword": {
+        "title": "Gắn từ khóa cho một mục",
+        "body": "Từ khóa là của bạn, dùng chung cho đơn ứng tuyển, lời nhắc và mọi thứ trong Kho lưu trữ — khác với các nhãn vị trí cố định. Nút nhãn trên bất kỳ hàng nào cũng thêm được từ khóa.",
+        "label": "Quản lý từ khóa"
+      },
+      "draft": {
+        "title": "Soạn tin nhắn",
+        "body": "Được tạo từ chính các đoạn văn bản email của bạn, với vị trí, nhà tuyển dụng và ngày tháng được điền từ bản ghi. Tên người không bao giờ được điền sẵn cho bạn. Không có gì ở đây ghi nhận rằng bạn đã gửi, nên bước này không tự đánh dấu.",
+        "label": "Soạn tin nhắn"
+      }
+    },
+    "profile": {
+      "title": "Điền hồ sơ cá nhân",
+      "hint": "hồ sơ cá nhân không nằm trong danh sách kiểm tra",
+      "body": "Thông tin cơ bản, liên kết, vị trí mục tiêu và từ khóa đối chiếu nằm trong Hồ sơ cá nhân. Đó là cơ sở để trình tìm việc chấm điểm và để trợ lý soạn thảo, nên chúng quan trọng — nhưng bản dựng này chỉ giữ chúng trong lần truy cập thay vì ghi lại ở đâu đó, đó là lý do danh sách kiểm tra ở trên không thể đánh dấu cho chúng.",
+      "open": "Mở hồ sơ cá nhân"
+    },
+    "database": {
+      "title": "Ứng dụng là cơ sở dữ liệu",
+      "body": "Các bản ghi của bạn được lưu trên thiết bị này và vẫn còn sau khi khởi động lại. Không có gì được gửi đi đâu cả — không tài khoản, không đồng bộ, không gọi mạng. Cài đặt là nơi bạn xóa chúng, tải lại dữ liệu mẫu, hoặc xuất một bản sao vào bộ nhớ tạm."
+    }
+  },
+  "screens": {
+    "intro": "Mọi màn hình trong ứng dụng, và một câu cho biết nó dùng để làm gì. Chạm vào một hàng để mở — trang này vừa là lối vào vừa là bảng chú giải.",
+    "open": "Mở {{name}}",
+    "groups": {
+      "tabs": {
+        "title": "Trên thanh thẻ",
+        "hint": "luôn chỉ cách một lần chạm"
+      },
+      "vault": {
+        "title": "Bên trong Kho lưu trữ",
+        "hint": "năm công cụ, một thẻ"
+      },
+      "more": {
+        "title": "Sau mục Thêm",
+        "hint": "phần còn lại của jojo"
+      }
+    }
+  },
+  "graph": {
+    "intro": "Mọi danh sách trong ứng dụng này là một chế độ xem trên cùng một tập bản ghi. Một bản ghi là một <b>nút</b>; một kết nối giữa hai bản ghi là một <b>cạnh</b> có tên. Đó là toàn bộ mô hình, và là lý do một câu hỏi vắt qua hai danh sách mới có thể trả lời được.",
+    "open": "Mở đồ thị",
+    "kinds_other": "{{count}} loại",
+    "nodes": "Nút",
+    "nodesIntro": "Mỗi bản ghi một nút, cộng thêm ba loại chỉ tồn tại dưới dạng kết nối — nhà tuyển dụng, vị trí và từ khóa đều là nút để mọi thứ được xếp dưới chúng có thể được tìm thấy từ đó.",
+    "edges": "Cạnh",
+    "edgesIntro": "Mỗi cạnh có hướng và tên. Tên là thứ mà công cụ dựng câu hỏi trên màn hình Đồ thị đặt ở hàng giữa.",
+    "relShape": {
+      "AT": "Đơn ứng tuyển → Nhà tuyển dụng",
+      "IS": "Đơn ứng tuyển → Vị trí",
+      "ABOUT": "Ngày hoặc lời nhắc → Đơn ứng tuyển",
+      "FILED_UNDER": "Tệp, liên kết hoặc đoạn văn bản → Đơn ứng tuyển",
+      "TAGS": "Từ khóa → bản ghi bất kỳ",
+      "BECAME": "Tin tuyển dụng đã lưu hoặc gợi ý → Đơn ứng tuyển"
+    },
+    "deleteTitle": "Xóa chỉ gỡ liên kết, không xóa dây chuyền",
+    "deleteBody": "Gỡ một đơn ứng tuyển sẽ gỡ nút đó và các cạnh chạm vào nó. Các lời nhắc, tệp và tin tuyển dụng đã lưu được xếp vào nó vẫn còn — chúng là bản ghi riêng, và tồn tại tiếp mà không có gì trỏ tới. Mọi thao tác xóa trong ứng dụng đều nói điều này, và công cụ dựng câu hỏi trên màn hình Đồ thị là nơi bạn tìm những gì bị tách rời: hãy hỏi những tệp không có liên kết tới đơn ứng tuyển nào."
+  },
+  "tools": {
+    "inTotal": "tổng cộng {{count}}",
+    "canDo": {
+      "title": "Trợ lý làm được gì",
+      "body_other": "Trợ lý không chạm vào màn hình thay bạn. Nó gọi đúng {{count}} thao tác mà các nút bấm gọi — cùng một đường đi trong mã, với cùng các bước kiểm tra. Không có lối vào thứ hai, đó là lý do một chỉnh sửa của trợ lý xuất hiện trong lịch sử của bạn y hệt như chỉnh sửa bạn tự làm.",
+      "irreversible": "Hai trong {{count}} thao tác đó hoàn toàn không thể hoàn tác — những thao tác thay thế hoặc làm trống toàn bộ kho dữ liệu. Chúng không bao giờ được đưa cho trợ lý trừ khi chính lời bạn yêu cầu, và ngay cả khi đó vẫn dừng lại để xác nhận.",
+      "open": "Mở trợ lý"
+    },
+    "stats": {
+      "reads": {
+        "label_other": "cách xem",
+        "hint": "đọc không bao giờ thay đổi gì"
+      },
+      "writes": {
+        "label_other": "cách thay đổi",
+        "hint": "cách nào cũng hoàn tác được…"
+      },
+      "destructive": {
+        "label": "được đánh dấu là có tính phá hủy",
+        "hint": "…trừ hai, những thao tác này hỏi trước"
+      }
+    },
+    "gate": {
+      "title": "Điều gì ngăn thao tác sai chạy",
+      "hint": "phần thực sự giữ vững",
+      "body": "Một mô hình ngôn ngữ có thể yêu cầu bất cứ thứ gì. Nó có thể gọi tên một công cụ chưa từng được cho xem, hoặc bịa ra một công cụ không tồn tại — các mô hình nhỏ làm vậy thường xuyên, và đó không phải dấu hiệu có gì hỏng. Vì vậy jojo không dựa vào việc mô hình cẩn thận.",
+      "distinctionTitle": "Sự phân biệt quan trọng",
+      "distinction": "Chọn thứ gì để cho mô hình xem chỉ là gợi ý. Kiểm tra thứ nó thực sự gọi mới là quy tắc, và quy tắc đó tùy thuộc vào ai đã chọn tập công cụ. Khi màn hình cố định tập đó — Hỏi đồ thị, một quy trình của trình tìm việc — mọi lời gọi ra ngoài đều bị từ chối trước khi tra cứu bất cứ gì, huống chi là chạy. Trong cuộc trò chuyện, tập công cụ là phỏng đoán của jojo về những gì bạn cần, nên lời gọi ra ngoài không bị từ chối: nó đi qua cùng bước kiểm tra phê duyệt như mọi lời gọi khác, tức là hỏi bạn trước trừ khi cuộc trò chuyện được đặt để tự chạy. Ngoại lệ duy nhất là xóa sạch bản ghi, thứ duy nhất không thể hoàn tác: nó bị từ chối trừ khi bạn đã nói rõ ràng là muốn xóa sạch mọi thứ.",
+      "askGraph": "Đây là lý do ô “Hỏi đồ thị” trên màn hình Đồ thị có thể an toàn đưa ra hai công cụ chỉ đọc. Nó không tin rằng mô hình sẽ chỉ dùng trong phạm vi đó."
+    },
+    "pick": {
+      "title": "Cách nó chọn đúng công cụ",
+      "hint": "để một yêu cầu không bao giờ dừng giữa chừng",
+      "cost_other": "Cho mô hình xem cả {{count}} công cụ cùng lúc tốn khoảng mười lăm nghìn từ trong không gian suy nghĩ của nó — trước khi bạn kịp gõ gì. Với một mô hình nhỏ chạy trên máy của bạn, đó có thể là nhiều hơn không gian nó có. Vì vậy jojo thu hẹp danh sách theo những gì lời bạn hướng tới.",
+      "careless": "Thu hẹp cẩu thả còn tệ hơn không thu hẹp. Hầu hết thao tác cần một thứ để tác động: bạn không thể gắn từ khóa khi không có từ khóa, hay cập nhật tài liệu khi không có tài liệu. Giấu công cụ tạo ra thứ đó đi, và trợ lý sẽ dừng giữa chừng mà không có gì trên màn hình giải thích tại sao.",
+      "unsureTitle": "Khi không chắc, nó không thu hẹp",
+      "unsure": "“Nhắc tôi về Baylor vào thứ Năm” là rõ ràng, và jojo đưa ra khoảng một phần năm danh mục. “Thật ra là cái kia” thì không rõ ràng về bất cứ điều gì — nên nó đưa ra mọi thứ, đúng như trước khi có tất cả những điều này. Không chắc chắn chỉ tốn một chút tốc độ. Đoán bừa sẽ khiến bạn mất câu trả lời.",
+      "onlyGains": "Một cuộc trò chuyện chỉ có thêm công cụ chứ không bớt. Không có gì bạn đã dùng bị lấy đi bởi một câu hỏi sau đó."
+    },
+    "model": {
+      "title": "Mô hình nào làm việc này",
+      "hint": "lựa chọn của bạn, và nó thay đổi nơi lời bạn được gửi tới",
+      "local": "jojo giao tiếp với bất cứ thứ gì bạn trỏ tới trong Cài đặt. Một mô hình chạy trên máy bạn kiểm soát — Ollama, vLLM, LM Studio — là mặc định, và đó là cách bố trí duy nhất mà không có gì bạn viết rời khỏi thiết bị này.",
+      "cloud": "Bạn cũng có thể dùng Claude, OpenAI và các nhà cung cấp khác với khóa API. Đó là một sự đánh đổi thực sự và màn hình nói rõ điều đó: các bản ghi của bạn được gửi tới công ty đó và tính phí vào tài khoản của bạn. Khóa được giữ trên thiết bị này, không bao giờ có trong bản sao lưu, và không bao giờ được gửi tới đâu ngoài nhà cung cấp bạn đã chọn.",
+      "openSettings": "Mở Cài đặt",
+      "truncatedTitle": "Nếu trợ lý có vẻ đã ngừng đọc",
+      "truncated": "Một mô hình cục bộ thiếu chỗ sẽ lặng lẽ bỏ phần đầu của những gì được gửi tới, rồi tự tin trả lời một câu hỏi mà nó chưa từng thấy đầy đủ. jojo so sánh những gì máy chủ báo đã đọc với những gì thực sự được gửi, và báo cho bạn khi hai bên không khớp — vì nếu không, trợ lý sẽ trông như làm việc kém thay vì chỉ là thiếu chỗ."
+    },
+    "gateFigure": {
+      "typed": "những gì bạn gõ",
+      "pick": "chọn các công cụ khả dĩ",
+      "pickNote": "không rõ? đưa ra cả {{count}}",
+      "add": "thêm những gì các công cụ đó cần",
+      "addNote": "để không chuỗi nào bị tắc",
+      "choose": "mô hình chọn một",
+      "offered": "nó có được đưa ra không?",
+      "offeredNote": "không? bị từ chối, không có gì chạy",
+      "change": "bản ghi của bạn thay đổi",
+      "description": "Sáu bước, từ trên xuống. Một, những gì bạn gõ. Hai, jojo chọn các công cụ mà lời bạn hướng tới — và nếu lời bạn không rõ, nó đưa ra cả {{count}} thay vì đoán. Ba, nó thêm những gì các công cụ đó phụ thuộc vào, để không chuỗi nào bị tắc. Bốn, mô hình chọn một công cụ. Năm, jojo kiểm tra công cụ đó có thực sự được đưa ra không; nếu không, lời gọi bị từ chối và không có gì chạy. Sáu, chỉ khi đó các bản ghi của bạn mới thay đổi. Bước năm là bước thực thi quy tắc — bước hai chỉ là gợi ý, vì mô hình có thể gọi tên một công cụ chưa từng được cho xem.",
+      "caption": "Bước hai giúp bạn tiết kiệm token. Bước năm là bước giữ an toàn cho bạn — và nó chạy dù bước hai có thu hẹp gì hay không."
+    },
+    "graphFigure": {
+      "intro": "Ba ví dụ, không theo thứ tự nào. Mỗi ví dụ là một công cụ mà lời bạn yêu cầu, thứ nó không thể chạy nếu thiếu, và công cụ jojo đưa ra kèm theo để chuỗi có thể hoàn tất.",
+      "description": "Ba ví dụ. Yêu cầu keyword.attach cũng đưa ra keyword.create, vì gắn từ khóa cần một từ khóa đã tồn tại. Yêu cầu vault.file.update cũng đưa ra vault.file.add, vì cập nhật tài liệu cần có tài liệu. Yêu cầu scout.posting.promote cũng đưa ra scout.posting.save, vì nâng một tin tuyển dụng đã lưu cần có tin tuyển dụng đã lưu. Trong mọi trường hợp, jojo xác định sự phụ thuộc từ chính đầu vào của công cụ, và đưa ra cả hai công cụ cùng lúc — để trợ lý không bao giờ nhận được bước đầu tiên mà không có cách tới bước thứ hai.",
+      "needs": {
+        "keyword": "cần một từ khóa, nên jojo cũng đưa ra",
+        "file": "cần một tệp, nên jojo cũng đưa ra",
+        "posting": "cần một tin tuyển dụng, nên jojo cũng đưa ra"
+      },
+      "without": "Nếu không có điều này, trợ lý có thể được đưa công cụ đầu tiên mà không có công cụ thứ hai — và sẽ dừng giữa chừng mà không có gì trên màn hình giải thích tại sao.",
+      "derived": "jojo đọc từng yêu cầu từ chính định nghĩa của công cụ, nên một công cụ được thêm vào ngày mai cũng được bao quát mà không ai phải cập nhật danh sách nào."
+    }
+  },
+  "builtWith": {
+    "intro": "Một nguyên mẫu tương tác của cùng sản phẩm với ứng dụng web, dùng chung mọi mô-đun có chứa quy tắc — phép tính ngày tháng, phễu thống kê, hệ thống từ khóa và dữ liệu mẫu — nên hai ứng dụng không thể mâu thuẫn về một ngày, một tỷ lệ hay một giai đoạn.",
+    "stackTitle": "Được xây dựng bằng",
+    "stackHint": "những gì thực sự đang chạy",
+    "unfinishedTitle": "Những gì vẫn còn là phần giữ chỗ",
+    "unfinishedHint": "nói rõ, không giấu",
+    "unfinishedIntro": "Một nguyên mẫu giấu đi những chỗ chưa hoàn thiện là nguyên mẫu dễ bị tin nhầm. Ba điều này là những điều nên biết trước khi bạn đánh giá bất cứ thứ gì khác trên màn hình.",
+    "placeholder": "giữ chỗ",
+    "stack": {
+      "app": "Bản thân ứng dụng, trên cả hai nền tảng",
+      "build": "Bản dựng. Không dùng Expo — chúng tôi tự quản lý android/ và ios/",
+      "documents": "Đính kèm tệp, và mở lại nó",
+      "navigation": "Thanh thẻ và ngăn xếp màn hình",
+      "drag": "Thao tác nhấn giữ để kéo trên bảng, chạy trên luồng giao diện",
+      "charts": "Biểu đồ vành khuyên, radar và đồ thị",
+      "type": "Phông chữ, đóng gói sẵn thay vì tải về"
+    },
+    "unfinished": {
+      "assistant": {
+        "title": "Trợ lý cần một mô hình do bạn cung cấp",
+        "detail": "Kết nối một mô hình trong Cài đặt và trợ lý trở thành một cuộc trò chuyện tác tử theo chuỗi: nó gọi các công cụ của chính ứng dụng để trả lời, liệt kê mọi lời gọi khi thực hiện, và lưu từng chuỗi trên thiết bị này. Khi chưa có, mọi câu trả lời là một trong năm ví dụ mẫu và mang huy hiệu cho biết điều đó."
+      },
+      "scout": {
+        "title": "Trình tìm việc không tự tìm thấy gì",
+        "detail": "Tỷ lệ phù hợp là thật — được tính trên thiết bị này dựa trên từ khóa đối chiếu, vị trí mục tiêu và khu vực trong hồ sơ cá nhân của bạn, và chúng cho biết đã khớp với điều gì. Thứ còn thiếu là việc quét: không có gì đi ra ngoài tìm tin tuyển dụng, nên danh sách chỉ chứa những gì bạn đưa vào."
+      },
+      "network": {
+        "title": "Không có gì rời khỏi thiết bị này trừ nơi bạn chỉ định",
+        "detail": "Không có tài khoản, không đồng bộ và không tải lên. Có thể kết nối tới hai địa chỉ, cả hai đều của bạn và đều được đặt trong Cài đặt: mô hình, và trình đọc tài liệu — trình đọc cũng tải tin tuyển dụng về khi bạn thêm đơn ứng tuyển từ liên kết, nên URL đó đi tới trình đọc của bạn chứ không phải tới chúng tôi. Chuyển dữ liệu chuyển một bản sao giữa các thiết bị của bạn qua mạng cục bộ — trên điện thoại này nó nhận, còn máy tính là bên gửi. Không có gì khác đi đâu cả."
+      }
+    }
+  }
+}

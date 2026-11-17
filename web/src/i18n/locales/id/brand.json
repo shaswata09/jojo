@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "title": "Gerakan jojo",
+    "hint": "Pilih satu, atau gambar goresannya pada robot.",
+    "trigger": "Gerakan jojo",
+    "triggerAria": "Gerakan dan kredit jojo",
+    "plays": "diputar",
+    "modelCredit": "Model robot:"
+  },
+  "theme": {
+    "toggle": "Ganti tema",
+    "toLight": "Beralih ke tema terang",
+    "toDark": "Beralih ke tema gelap"
+  },
+  "poke": "Colek jojo"
+}

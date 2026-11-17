@@ -1,0 +1,157 @@
+{
+  "days_one": "{{count}} giorno",
+  "days_many": "{{count}} di giorni",
+  "days_other": "{{count}} giorni",
+  "rec": {
+    "segment": {
+      "labelCase": "asWritten",
+      "headline": "Concentra più impegno su {{label}}.",
+      "because": {
+        "source": {
+          "replied_one": "{{count}} su {{of}} ha risposto lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per provenienza.",
+          "replied_many": "{{count}} su {{of}} hanno risposto lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per provenienza.",
+          "replied_other": "{{count}} su {{of}} hanno risposto lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per provenienza.",
+          "interview_one": "{{count}} su {{of}} è arrivata al colloquio lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per provenienza.",
+          "interview_many": "{{count}} su {{of}} sono arrivate al colloquio lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per provenienza.",
+          "interview_other": "{{count}} su {{of}} sono arrivate al colloquio lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per provenienza."
+        },
+        "role": {
+          "replied_one": "{{count}} su {{of}} ha risposto lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per tipo di ruolo.",
+          "replied_many": "{{count}} su {{of}} hanno risposto lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per tipo di ruolo.",
+          "replied_other": "{{count}} su {{of}} hanno risposto lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per tipo di ruolo.",
+          "interview_one": "{{count}} su {{of}} è arrivata al colloquio lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per tipo di ruolo.",
+          "interview_many": "{{count}} su {{of}} sono arrivate al colloquio lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per tipo di ruolo.",
+          "interview_other": "{{count}} su {{of}} sono arrivate al colloquio lì ({{rate}}%, probabilmente {{low}}–{{high}}%), contro {{worstCount}} su {{worstOf}} per {{worst}} ({{worstRate}}%, probabilmente {{worstLow}}–{{worstHigh}}%). Suddivise per tipo di ruolo."
+        }
+      }
+    },
+    "late": {
+      "headline_one": "Smaltisci {{count}} sollecito in ritardo.",
+      "headline_many": "Smaltisci {{count}} di solleciti in ritardo.",
+      "headline_other": "Smaltisci {{count}} solleciti in ritardo.",
+      "because": "Sono solleciti che hai già deciso valesse la pena fare, su candidature che un datore di lavoro ha già visto. Nient'altro in questo elenco è così vicino a essere concluso."
+    },
+    "silent": {
+      "headline_one": "Sollecita {{count}} candidatura rimasta in silenzio.",
+      "headline_many": "Sollecita {{count}} di candidature rimaste in silenzio.",
+      "headline_other": "Sollecita {{count}} candidature rimaste in silenzio.",
+      "because_one": "Di solito le risposte ti arrivano in {{days}}, e questa ha superato quel tempo senza alcun riscontro. È un dato tuo, non una regola generale.",
+      "because_many": "Di solito le risposte ti arrivano in {{days}}, e queste hanno superato quel tempo senza alcun riscontro. È un dato tuo, non una regola generale.",
+      "because_other": "Di solito le risposte ti arrivano in {{days}}, e queste hanno superato quel tempo senza alcun riscontro. È un dato tuo, non una regola generale."
+    },
+    "stale": {
+      "headline_one": "Registra com'è andata per {{count}} candidatura.",
+      "headline_many": "Registra com'è andata per {{count}} di candidature.",
+      "headline_other": "Registra com'è andata per {{count}} candidature.",
+      "because_one": "Da due settimane non vi è stato registrato nulla. Ogni tasso di questa pagina vale solo quanto ciò che è stato annotato.",
+      "because_many": "Da due settimane non vi è stato registrato nulla. Ogni tasso di questa pagina vale solo quanto ciò che è stato annotato.",
+      "because_other": "Da due settimane non vi è stato registrato nulla. Ogni tasso di questa pagina vale solo quanto ciò che è stato annotato."
+    },
+    "drafts": {
+      "headlineSingle": "Completa la bozza o lasciala perdere.",
+      "headline_one": "Completa la più avanzata di {{count}} bozza, o lasciale perdere.",
+      "headline_many": "Completa la più avanzata di {{count}} di bozze, o lasciale perdere.",
+      "headline_other": "Completa la più avanzata di {{count}} bozze, o lasciale perdere.",
+      "because_one": "Una bozza non serve a nulla finché non viene inviata. La più vecchia è aperta da {{count}} giorno.",
+      "because_many": "Una bozza non serve a nulla finché non viene inviata. La più vecchia è aperta da {{count}} di giorni.",
+      "because_other": "Una bozza non serve a nulla finché non viene inviata. La più vecchia è aperta da {{count}} giorni."
+    },
+    "background": {
+      "headline": "Lascia che jojo legga il tuo CV.",
+      "because": "Non c'è nulla di registrato sul tuo percorso, quindi nessuna candidatura può essere confrontata con ciò che chiede un annuncio. Basta un documento e una conferma."
+    },
+    "funnel": {
+      "replies": {
+        "headline": "Rivedi il paragrafo iniziale prima di inviare la prossima.",
+        "because": "È sulle risposte che questa ricerca perde di più rispetto a una ricerca tipica. {{got}} su {{of}} ({{rate}}%), contro il {{typical}}% di una ricerca tipica: una cifra tonda scelta da jojo come confronto, non misurata su qualcuno."
+      },
+      "interviews": {
+        "headline": "Rendi evidente la compatibilità nelle prime tre righe.",
+        "because": "Le risposte che si fermano prima di una chiamata sono il divario più grande qui: l'interesse c'è, ma la tua candidatura non convince. {{got}} su {{of}} ({{rate}}%), contro il {{typical}}% di una ricerca tipica: una cifra tonda scelta da jojo come confronto, non misurata su qualcuno."
+      }
+    },
+    "clear": {
+      "headline": "Qui non c'è nulla da sollecitare.",
+      "because_one": "Tutti i solleciti sono in tempo, nulla è rimasto in silenzio e non ci sono bozze in attesa. {{count}} candidatura è stata inviata.",
+      "because_many": "Tutti i solleciti sono in tempo, nulla è rimasto in silenzio e non ci sono bozze in attesa. {{count}} di candidature sono state inviate.",
+      "because_other": "Tutti i solleciti sono in tempo, nulla è rimasto in silenzio e non ci sono bozze in attesa. {{count}} candidature sono state inviate."
+    }
+  },
+  "health": {
+    "axis": {
+      "sent": "Inviate",
+      "replies": "Risposte",
+      "interviews": "Colloqui",
+      "referrals": "Segnalazioni",
+      "followUps": "Solleciti",
+      "keptMoving": "In movimento"
+    },
+    "basis": {
+      "sent_one": "{{count}} su {{of}} non più in bozza",
+      "sent_many": "{{count}} su {{of}} non più in bozza",
+      "sent_other": "{{count}} su {{of}} non più in bozza",
+      "replies_one": "{{count}} su {{of}} ha risposto",
+      "replies_many": "{{count}} su {{of}} hanno risposto",
+      "replies_other": "{{count}} su {{of}} hanno risposto",
+      "interviews_one": "{{count}} su {{of}} è arrivata al colloquio",
+      "interviews_many": "{{count}} su {{of}} sono arrivate al colloquio",
+      "interviews_other": "{{count}} su {{of}} sono arrivate al colloquio",
+      "referrals_one": "{{count}} su {{of}} è arrivata tramite una segnalazione",
+      "referrals_many": "{{count}} su {{of}} sono arrivate tramite una segnalazione",
+      "referrals_other": "{{count}} su {{of}} sono arrivate tramite una segnalazione",
+      "followUpsNone": "nulla di aperto",
+      "followUps_one": "{{count}} su {{of}} solleciti aperti è in ritardo",
+      "followUps_many": "{{count}} su {{of}} solleciti aperti sono in ritardo",
+      "followUps_other": "{{count}} su {{of}} solleciti aperti sono in ritardo",
+      "keptMovingNone": "nulla di attivo",
+      "keptMoving_one": "{{count}} su {{of}} toccata nelle ultime due settimane",
+      "keptMoving_many": "{{count}} su {{of}} toccate nelle ultime due settimane",
+      "keptMoving_other": "{{count}} su {{of}} toccate nelle ultime due settimane"
+    },
+    "suggestion": {
+      "sent": {
+        "none": "Non c'è nulla fermo in bozza. Meglio preservare la cura di ciascuna che aggiungerne altre.",
+        "some_one": "{{count}} candidatura è ancora in bozza. Una bozza non serve a nulla finché non viene inviata, e quella più vicina a essere conclusa è la più facile da completare.",
+        "some_many": "{{count}} di candidature sono ancora in bozza. Una bozza non serve a nulla finché non viene inviata, e quella più vicina a essere conclusa è la più facile da completare.",
+        "some_other": "{{count}} candidature sono ancora in bozza. Una bozza non serve a nulla finché non viene inviata, e quella più vicina a essere conclusa è la più facile da completare."
+      },
+      "replies": {
+        "nothingSent": "Non è ancora stato inviato nulla, quindi non c'è niente su cui misurare una risposta.",
+        "none_one": "{{count}} candidatura inviata, nessuna risposta. È questo il passaggio su cui lavorare prima di inviarne altre: adattare il paragrafo iniziale a ogni annuncio conta più di qualsiasi altra cosa.",
+        "none_many": "Nessuna delle {{count}} di candidature inviate ha ricevuto risposta. È questo il passaggio su cui lavorare prima di inviarne altre: adattare il paragrafo iniziale a ogni annuncio conta più di qualsiasi altra cosa.",
+        "none_other": "Nessuna delle {{count}} candidature inviate ha ricevuto risposta. È questo il passaggio su cui lavorare prima di inviarne altre: adattare il paragrafo iniziale a ogni annuncio conta più di qualsiasi altra cosa.",
+        "all": "Ogni candidatura inviata ha ricevuto una risposta. Qualunque cosa stia facendo il paragrafo iniziale, continua così.",
+        "some_one": "{{count}} su {{of}} ha avuto risposta. Adattare il paragrafo iniziale a ogni annuncio conta più di qualsiasi altra cosa.",
+        "some_many": "{{count}} su {{of}} hanno avuto risposta. Adattare il paragrafo iniziale a ogni annuncio conta più di qualsiasi altra cosa.",
+        "some_other": "{{count}} su {{of}} hanno avuto risposta. Adattare il paragrafo iniziale a ogni annuncio conta più di qualsiasi altra cosa."
+      },
+      "interviews": {
+        "noReply": "Non è ancora arrivata nessuna risposta, quindi nulla ha avuto modo di fermarsi prima di una chiamata.",
+        "none_one": "È arrivata {{count}} risposta, ma non è diventata una chiamata. Di solito questo divario indica che la compatibilità non è evidente nel primo paragrafo.",
+        "none_many": "Sono arrivate {{count}} di risposte e nessuna è diventata una chiamata. Di solito questo divario indica che la compatibilità non è evidente nel primo paragrafo.",
+        "none_other": "Sono arrivate {{count}} risposte e nessuna è diventata una chiamata. Di solito questo divario indica che la compatibilità non è evidente nel primo paragrafo.",
+        "some_one": "{{interviewed}} su {{count}} risposta è diventata una chiamata. Le risposte che si fermano prima di una chiamata di solito indicano che la compatibilità non è evidente abbastanza presto.",
+        "some_many": "{{interviewed}} su {{count}} di risposte sono diventate una chiamata. Le risposte che si fermano prima di una chiamata di solito indicano che la compatibilità non è evidente abbastanza presto.",
+        "some_other": "{{interviewed}} su {{count}} risposte sono diventate una chiamata. Le risposte che si fermano prima di una chiamata di solito indicano che la compatibilità non è evidente abbastanza presto."
+      },
+      "referrals": {
+        "none": "Nessuna di queste è arrivata tramite una presentazione. Una candidatura segnalata ha molte più probabilità di ricevere risposta, quindi una vale diversi invii a freddo.",
+        "some_one": "{{count}} su {{of}} è arrivata tramite una presentazione. È la cosa più redditizia di questo elenco, e quella che si moltiplica peggio: per questo conviene chiedere prima del prossimo invio a freddo, non dopo.",
+        "some_many": "{{count}} su {{of}} sono arrivate tramite una presentazione. È la cosa più redditizia di questo elenco, e quella che si moltiplica peggio: per questo conviene chiedere prima del prossimo invio a freddo, non dopo.",
+        "some_other": "{{count}} su {{of}} sono arrivate tramite una presentazione. È la cosa più redditizia di questo elenco, e quella che si moltiplica peggio: per questo conviene chiedere prima del prossimo invio a freddo, non dopo."
+      },
+      "followUps": {
+        "none": "Nulla è in ritardo. Di solito il sollecito che va a segno è quello inviato circa una settimana dopo la candidatura.",
+        "late_one": "{{count}} sollecito è in ritardo. Smaltirlo di solito rende più in fretta che candidarsi altrove.",
+        "late_many": "{{count}} di solleciti sono in ritardo. Smaltirli di solito rende più in fretta che candidarsi altrove.",
+        "late_other": "{{count}} solleciti sono in ritardo. Smaltirli di solito rende più in fretta che candidarsi altrove."
+      },
+      "keptMoving": {
+        "none": "Nulla è rimasto in silenzio. Registrare cosa succede mentre succede è ciò che mantiene affidabili questi dati.",
+        "stale_one": "{{count}} candidatura attiva non ha avuto attività da due settimane. Un breve sollecito costa meno che ricominciare altrove.",
+        "stale_many": "{{count}} di candidature attive non hanno avuto attività da due settimane. Un breve sollecito costa meno che ricominciare altrove.",
+        "stale_other": "{{count}} candidature attive non hanno avuto attività da due settimane. Un breve sollecito costa meno che ricominciare altrove."
+      }
+    }
+  }
+}

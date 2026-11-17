@@ -1,0 +1,303 @@
+{
+  "readCancelled": "Okuma iptal edildi.",
+  "backup": {
+    "prompt": {
+      "never_one": "jojo'daki {{count}} kayıt henüz hiçbir yedekte yok. Buradaki her şey yalnızca bu tarayıcıda duruyor; tarayıcıyı temizlemek ya da bu bilgisayarı kaybetmek onu kaybettirir — bir kopya indirin ve başka bir yerde saklayın.",
+      "never_other": "jojo'daki {{count}} kayıt henüz hiçbir yedekte yok. Buradaki her şey yalnızca bu tarayıcıda duruyor; tarayıcıyı temizlemek ya da bu bilgisayarı kaybetmek bunları kaybettirir — bir kopya indirin ve başka bir yerde saklayın.",
+      "since_one": "{{day}} tarihli son yedeğinizden bu yana {{count}} kayıt değişti. Bir kopya indirip başka bir yerde saklayana kadar yalnızca bu tarayıcıda duruyor.",
+      "since_other": "{{day}} tarihli son yedeğinizden bu yana {{count}} kayıt değişti. Bir kopya indirip başka bir yerde saklayana kadar yalnızca bu tarayıcıda duruyorlar."
+    },
+    "failedTitle": "Yedek yazılamadı",
+    "failedDescription": "Kayıtlarınız değişmedi ve hiçbir şey kaydedilmedi. Tarayıcınız indirmeyi engellediyse indirme ayarlarını kontrol edin.",
+    "documentsNotReady": "Belge dizini yüklenmeyi bitirmemişti; bu yüzden şimdi alınan bir yedek hiç belgeniz olmadığını söylerdi. Hiçbir şey yazılmadı.",
+    "documentsUnreadable": "Saklanan belgelerin hiçbiri okunamadı; bu yüzden yedek yalnızca kayıtları içerirdi. Hiçbir şey yazılmadı.",
+    "savedTitle": "Yedek kaydedildi",
+    "startedTitle": "Yedekleme başladı",
+    "savedAll": "{{name}}, kayıtlarınızı ve eklediğiniz tüm belgeleri içerir.",
+    "savedSome_one": "{{name}}, kayıtlarınızı ve {{total}} belgenizden {{written}} tanesini içerir — {{count}} belge okunamadı ve içinde değil.",
+    "savedSome_other": "{{name}}, kayıtlarınızı ve {{total}} belgenizden {{written}} tanesini içerir — {{count}} belge okunamadı ve içinde değil.",
+    "startedAll": "İndirilenler klasörünüzde {{name}} dosyasını arayın. Kayıtlarınızı ve eklediğiniz tüm belgeleri içerir.",
+    "startedSome_one": "İndirilenler klasörünüzde {{name}} dosyasını arayın. Kayıtlarınızı ve {{total}} belgenizden {{written}} tanesini içerir — {{count}} belge okunamadı ve içinde değil.",
+    "startedSome_other": "İndirilenler klasörünüzde {{name}} dosyasını arayın. Kayıtlarınızı ve {{total}} belgenizden {{written}} tanesini içerir — {{count}} belge okunamadı ve içinde değil."
+  },
+  "extension": {
+    "stale": "Bu tarayıcıdaki jojo uzantısı bu sayfadan eski ve isteği taşıyamıyor. Güncelleyin: tarayıcınızın uzantılar sayfasında jojo için Yeniden yükle'ye basın — ya da Ayarlar'dan kurduysanız orada yeniden indirip yeni klasörü eskisinin yerine yükleyin. Paketlenmemiş bir uzantı kendini asla güncellemez.",
+    "oldScanner": "(Bu tarayıcıdaki jojo uzantısı, bir siteyi kendi alt alan adına kadar izleyemeyen ya da “Daha fazla yükle” düğmesine basamayan eski bir sürüm. Tarayıcınızın uzantılar sayfasında jojo için Yeniden yükle'ye basın.)",
+    "noAnswerBoard": "jojo tarayıcı uzantısı yanıt vermedi; bu yüzden hiçbir site okunamadı. Oturum açtığınız bir sayfayı jojo'nun açmasını sağlayan şey odur; yükleyici Ayarlar'da.",
+    "boardUnreadable": "Bu site okunamadı.",
+    "pageUnsaved": "Bu sayfa kaydedilemedi.",
+    "hostDidNotLoad": "{{host}} yüklenmedi — bağlantı yanlış olabilir, site çökmüş olabilir ya da çevrimdışı olabilirsiniz. Ne dediğini görmek için bir sekmede açın.",
+    "noAnswerPage": "jojo tarayıcı uzantısı yanıt vermedi; bu yüzden sayfa açılamadı. Yükleyici Ayarlar'da.",
+    "captureTimeout": "jojo uzantısı sayfayı açtı ama zamanında kaydetmeyi bitiremedi. Çok ağır bir sayfa daha uzun sürebilir — yeniden deneyin ya da sayfayı açıp uzantının Yakala düğmesini kullanın.",
+    "noAnswerReader": "jojo tarayıcı uzantısı yanıt vermedi; bu yüzden okuyucuya ulaşılamadı. Bu sayfanın kendi bilgisayarınızdaki bir okuyucuyla konuşmasını sağlayan şey odur; yükleyici Ayarlar'da.",
+    "linkSwitchedOff": "Bağlantı kapatıldı.",
+    "noAnswerLink": "jojo tarayıcı uzantısı yanıt vermedi. Web'den sunulan bir jojo kopyasında bağlantıyı jojo-bridge'e taşıyan şey odur; yükleyici Ayarlar'da.",
+    "noAnswerProvider": "jojo tarayıcı uzantısı yanıt vermedi; bu yüzden sağlayıcıya ulaşılamadı. CORS başlığı göndermeyen sağlayıcılar yalnızca onun üzerinden çağrılabilir; yükleyici Ayarlar'da."
+  },
+  "posting": {
+    "localTarget": "Bu adres bu bilgisayarda ya da kendi ağınızda, bir iş ilanı sitesinde değil — jojo bunları açmaz.",
+    "nothingToReadWith": "Bir ilanı okumak için ya sayfayı sizin açacağınız gibi açıp kaydeden jojo tarayıcı uzantısı ya da sayfayı getiren belge okuyucu gerekir. Bu tarayıcıda ikisi de kurulu değil — ikisi de Ayarlar'da.",
+    "noBackgroundRoute": "Önerileri siz bakmadan önce okumak için jojo tarayıcı uzantısı gerekir. Belge okuyucu yalnızca kendiniz açtığınız bir ilan için kullanılır.",
+    "notStored": "Sayfa okundu ama bu tarayıcı onu saklamadı — jojo için yer kalmamış olabilir. Hiçbir şey saklanmadı; biraz yer açıp yeniden deneyin.",
+    "nearlyEmptyExtension": "Bu sayfa neredeyse boş geldi. Yüklenmeyi bitirmemiş olabilir ya da oturum açmanızı istiyor olabilir — bir sekmede açın ve ilan göründüğünde yeniden deneyin.",
+    "nearlyEmptyReader": "Bu sayfa neredeyse boş geldi. JavaScript ile çizilen siteler, tarayıcı dışındaki her şeye boş bir kabuk gönderir — jojo uzantısını kurun, sayfayı sizin açacağınız gibi açsın.",
+    "notSaved": "Bu ilan kayıtlı değil; bu yüzden saklanacak bir sayfası yok.",
+    "askedTwice": "İki kez soruldu, aynı sonuç alındı."
+  },
+  "fill": {
+    "duplicate": {
+      "id": "İki ilan da aynı ilan kimliğini taşıyor.",
+      "url": "İkisi de aynı ilan adresi.",
+      "name": "Aynı işveren ve rol."
+    },
+    "deletedBefore": "Taslak, ilanı okunamadan önce silindi.",
+    "deletedDuring": "Taslak, ilanı okunurken silindi.",
+    "updateFailed": "Taslak güncellenemedi."
+  },
+  "store": {
+    "remoteChangeTitle": "Başka bir sekmeden güncellendi",
+    "remoteChangeDescription": "Kayıtlarınız yeniden yüklendi; bu yüzden bu sekmedeki geri alma geçmişi temizlendi.",
+    "heldTitle": "Veritabanı başka bir jojo sekmesinde açık",
+    "heldDescription": "O sekme kapanır kapanmaz silinecek. Diğer sekmeleri kapatın, ardından yeniden deneyin.",
+    "deleteFailedTitle": "Veritabanı silinemedi",
+    "deleteFailedDescription": "{{error}}. Başka bir sekme onu hâlâ açık tutuyor olabilir.",
+    "demoNotLoaded": "Demo verileri yüklenmedi",
+    "recordsNotCleared": "Kayıtlar temizlenmedi",
+    "writeFailedDescription": "{{error}} Kayıtlarınız değişmedi."
+  },
+  "fileDelete": {
+    "refusedTitle": "Silinmedi",
+    "stillInVault": "{{name}} hâlâ Kasa'da.",
+    "deletedTitle": "{{name}} silindi",
+    "deletedUnknown": "Satır, anahtar kelimeleri ve jojo'nun sakladığı her kopya silinir. Bilgisayarınızdaki asıl dosyaya dokunulmaz.",
+    "deletedWithCopy": "Satır, anahtar kelimeleri ve jojo'nun belgenin kopyası silinir. Bilgisayarınızdaki asıl dosyaya dokunulmaz.",
+    "deletedNoCopy": "Satır ve anahtar kelimeleri silinir. Bunun kaybedilecek saklı bir kopyası yoktu.",
+    "undo": "Geri al",
+    "lostTitle": "{{name}} belgesi olmadan geri geldi",
+    "lostDescription": "Satır ve anahtar kelimeleri geri yüklendi ama saklı kopya geri yüklenemedi. Eklemek için dosyayı yeniden bırakın."
+  },
+  "jobs": {
+    "readyTitle": "{{label}} hazır",
+    "readyDescription": "Yazıldığı başvurunun altına kaydedildi.",
+    "failedTitle": "{{label}} tamamlanamadı"
+  },
+  "pdf": {
+    "passwordNeeded": "Bu PDF'yi açmak için parola gerekiyor; bu yüzden burada düzenlenemez.",
+    "unreadable": "Bu dosya PDF olarak okunamadı. {{detail}}",
+    "chooseOne": "Birleştirmek için en az bir PDF seçin.",
+    "pageNotIn_one": "{{name}} {{count}} sayfadan oluşuyor; bu yüzden {{page}}. sayfa içinde yok.",
+    "pageNotIn_other": "{{name}} {{count}} sayfadan oluşuyor; bu yüzden {{page}}. sayfa içinde yok.",
+    "emptySelection": "Bu seçimde hiç sayfa yok.",
+    "keepOnePage": "Bir belgede en az bir sayfa kalmalı.",
+    "planOutOfRange_one": "Bu belgede {{count}} sayfa var; plan {{page}}. sayfayı istiyor.",
+    "planOutOfRange_other": "Bu belgede {{count}} sayfa var; plan {{page}}. sayfayı istiyor.",
+    "noCanvas": "Bu tarayıcı sayfaya çizim yapmak için bir tuval vermedi.",
+    "range": {
+      "noPages": "Bu belgede sayfa yok.",
+      "emptyPart": "İki virgül arasında boş bir aralık var.",
+      "partNamesNoPages": "'{{part}}' hiçbir sayfayı belirtmiyor.",
+      "backwards": "'{{part}}' geriye doğru sayıyor. {{to}}-{{from}} şeklinde yazın.",
+      "notANumber": "'{{part}}' bir sayfa numarası değil.",
+      "namesNoPages": "Bu aralık hiçbir sayfayı belirtmiyor.",
+      "fromOne": "Sayfalar 1'den başlayarak numaralanır.",
+      "pastEnd": "Bu belge {{count}}. sayfada bitiyor; bu yüzden {{page}}. sayfa içinde yok."
+    },
+    "drop": {
+      "notPdf_one": "{{names}} bir PDF değil",
+      "notPdf_other": "{{names}} PDF değil",
+      "leftOut_one": "{{names}} dışarıda bırakıldı — bu araç aynı anda tek bir belgeyle çalışır",
+      "leftOut_other": "{{names}} dışarıda bırakıldı — bu araç aynı anda tek bir belgeyle çalışır",
+      "one": "{{part}}.",
+      "both": "{{first}}; ayrıca {{second}}.",
+      "two": "{{first}} ve {{second}}",
+      "three": "{{first}}, {{second}} ve {{third}}",
+      "many": "dosyalardan {{count}} tanesi"
+    },
+    "colour": {
+      "yellow": "Sarı",
+      "green": "Yeşil",
+      "blue": "Mavi",
+      "pink": "Pembe",
+      "orange": "Turuncu"
+    }
+  },
+  "noteSize": {
+    "small": "Küçük",
+    "normal": "Normal",
+    "large": "Büyük",
+    "huge": "Çok büyük"
+  },
+  "graph": {
+    "nodeType": {
+      "application": "Başvuru",
+      "organisation": "Kurum",
+      "role": "Rol",
+      "item": "Zaman çizelgesi öğesi",
+      "keyword": "Anahtar kelime",
+      "link": "Bağlantı",
+      "file": "Dosya",
+      "snippet": "Metin parçası",
+      "posting": "Kayıtlı ilan",
+      "match": "Gözcü eşleşmesi",
+      "source": "Kaynak",
+      "background": "Hakkınızda",
+      "claim": "İlişki"
+    },
+    "savedAgo": "Kaydedildi: {{ago}}",
+    "fit": "%{{fit}} uyum",
+    "count": {
+      "matches": "Eşleşmeler",
+      "connections": "Bağlantılar",
+      "hops": "Adım",
+      "hop": "Adım"
+    },
+    "empty": {
+      "noMatch": "Kayıtlarınızda bu kalıpla eşleşen bir şey yok.",
+      "noneMissing": "Bu bağlantısı eksik olan bir şey yok — bu türdeki her kaydın bir tane var.",
+      "noPath": "Yol yok — bu iki kayıt deponuzdaki hiçbir şeyle birbirine bağlı değil.",
+      "noPathBetween": "Bu iki kayıt arasında yol yok."
+    },
+    "examples": {
+      "noFollowUp": {
+        "label": "Planlanmış takibi olmayan başvurular",
+        "hint": "İnsanlara mülakat kaybettiren boşluk."
+      },
+      "tagged": {
+        "label": "Referral etiketli her şey",
+        "hint": "Tek bir anahtar kelime, her kayıt türünde."
+      },
+      "repeatOrgs": {
+        "label": "Birden fazla kez başvurduğum kurumlar",
+        "hint": "Tek bir işverende iki başvuru, tek bir kurum düğümünden."
+      },
+      "looseReminders": {
+        "label": "Hiçbir başvuruya bağlı olmayan hatırlatıcılar",
+        "hint": "Ne için olduğunu bilmeden yapacağınız işler."
+      },
+      "unusedFiles": {
+        "label": "Hiçbir başvuruda kullanılmayan dosyalar",
+        "hint": "Kasa'da boşuna duran belgeler."
+      },
+      "bareApplications": {
+        "label": "Kasa'da hiçbir şey dosyalanmamış başvurular",
+        "hint": "Bağlantı yok, dosya yok, metin parçası yok — genellikle başlanmamış bir başvuru."
+      },
+      "path": {
+        "label": "İki kayıt arasındaki en kısa yol",
+        "hint": "Bir dosya ile başvurduğunuz bir işin nasıl ilişkili olduğu."
+      }
+    }
+  },
+  "refereePack": {
+    "column": {
+      "employer": "İşveren",
+      "position": "Pozisyon",
+      "postingLink": "İlan bağlantısı",
+      "location": "Konum",
+      "appliedOn": "Başvuru tarihi",
+      "stage": "Aşama",
+      "highlight": "Öne çıkan",
+      "notes": "Size notlar",
+      "materials": "Gönderilen materyaller"
+    },
+    "fileStem": "{{person}} — başvurular {{day}}"
+  },
+  "read": {
+    "noStoredCopy": "Bu belgenin bu tarayıcıda saklanan bir kopyası yok; bu yüzden okunacak bir şey yok.",
+    "noReader": "Bağlı bir belge okuyucu yok; bu yüzden bu dosyanın içeriği okunamıyor. Adresi Ayarlar'a girilir.",
+    "noReaderToTryHarder": "{{reason}} Daha fazla denemek için bağlı bir belge okuyucu yok — adresi Ayarlar'a girilir.",
+    "maybeScan": "Bu belgeden hiçbir şey okunamadı — taranmış bir belge olabilir.",
+    "noAddress": "Henüz adres yok. Ayarlar'a bakın.",
+    "tooLarge": "Bu belge {{size}} MB; okuyucu en fazla {{max}} MB kabul eder."
+  },
+  "network": {
+    "mixedPrivate": "Bu sayfa https üzerinde; tarayıcılar böyle bir sayfanın düz bir http adresini çağırmasını yasaklar — jojo uzantısını kurun, bu tek adımı sizin için kendi ağınıza aktarsın. Ya da jojo'yu http üzerinden sunun.",
+    "mixedPublic": "Bu sayfa https üzerinde; tarayıcılar böyle bir sayfanın düz bir http adresini çağırmasını yasaklar. jojo'yu http üzerinden sunun ya da modeli bu bilgisayara, kendi ağınıza veya https arkasına koyun — uzantı bunları aktarır, ama genel internetteki düz bir http adresini aktarmaz.",
+    "cors": "Hem bu sayfa hem de o adres https; bu yüzden bu bir karışık içerik engeli değil. Olası neden CORS: sunucu, tarayıcının yanıtı okuyabilmesi için gereken başlıklar olmadan yanıt verdi. Bulut sağlayıcıları genellikle bunları göndermez; jojo uzantısı tam da bunun için var — kurulu ve etkin olduğunu kontrol edin.",
+    "unknown": "Tarayıcı nedenini söylemedi. Ya orada dinleyen bir şey yok ya da sunucu, tarayıcının yanıtı okuyabilmesi için gereken CORS başlıkları olmadan yanıt verdi — bu uygulamanın konuştuğu iki hizmet de bazı durumlarda bunu yapar; bu yüzden çalışan bir sunucu da bu şekilde başarısız olabilir."
+  },
+  "mcpLink": {
+    "notBridge": "{{address}} adresinde jojo-bridge dışında bir şey (ya da onun eski bir kopyası) yanıt veriyor.",
+    "displaced": "Bağlantıyı başka bir jojo sekmesi tutuyor.",
+    "bridgeStatus": "jojo-bridge şu yanıtı verdi: {{status}}.",
+    "otherTab": "Bu tarayıcıdaki başka bir jojo sekmesi bağlantıyı taşıyor; o sekme kapandığında bu sekme devralır."
+  },
+  "roleScopeEmpty": {
+    "title": "Bu roller için başvuru yok",
+    "description": "Üst çubuktaki rol filtresi bu grafiğin saydığı tüm başvuruları gizliyor.",
+    "showAll": "Tüm rolleri göster"
+  },
+  "create": {
+    "newApplication": "Yeni başvuru",
+    "fromLink": {
+      "label": "Bağlantıdan başvuru",
+      "hint": "Model ilanı okur ve formu doldurur"
+    },
+    "newReminder": "Yeni hatırlatıcı",
+    "newEvent": "Yeni etkinlik",
+    "draftMessage": {
+      "label": "Mesaj taslağı hazırla",
+      "hint": "E-posta metin parçalarınızdan — hiçbir şey üretilmez"
+    },
+    "saveLink": {
+      "label": "Bağlantı kaydet",
+      "hint": "Kasa'nın bağlantılar aracını açar"
+    },
+    "savePosting": {
+      "label": "İlan kaydet",
+      "hint": "İş gözcüsünü açar"
+    }
+  },
+  "stroke": {
+    "tap": "Dokun",
+    "doubleTap": "Çift dokun",
+    "hold": "Basılı tut",
+    "up": "Yukarı kaydır",
+    "down": "Aşağı kaydır",
+    "side": "Yana kaydır",
+    "diagonal": "Çapraz fiske",
+    "backForth": "İleri geri",
+    "zigzag": "Yana zikzak",
+    "scribbleUp": "Yukarı aşağı karala",
+    "circle": "Daire",
+    "square": "Kare",
+    "vee": "V (ya da onay işareti)",
+    "peak": "Λ (bir tepe)",
+    "zed": "Z",
+    "arc": "Yay (bir C)",
+    "ell": "L",
+    "triangle": "Üçgen",
+    "other": "Başka herhangi bir şey"
+  },
+  "move": {
+    "nod": "Baş salla",
+    "shake": "Başını iki yana salla",
+    "hi": "Merhaba",
+    "bow": "Reverans",
+    "leanIn": "Öne eğil",
+    "wobble": "Sallan",
+    "bounce": "Zıpla",
+    "spin": "Dön",
+    "recoil": "Geri çekil",
+    "startle": "Irkıl",
+    "dance": "Dans et",
+    "shrug": "Omuz silk",
+    "lookAround": "Etrafına bak",
+    "hopSpin": "Zıplayıp dön",
+    "stretch": "Gerin",
+    "flex": "Kas göster",
+    "jab": "Yumruk kombinasyonu",
+    "powerUp": "Güç topla",
+    "doze": "Uyukla",
+    "wink": "Göz kırp",
+    "love": "Sevgi",
+    "robot": "Robot dansı",
+    "jazz": "Caz elleri",
+    "point": "İşaret et",
+    "hero": "Kahraman pozu",
+    "handsUp": "Eller yukarı",
+    "disco": "Disko",
+    "typing": "Yazı yaz",
+    "drumroll": "Davul sesi"
+  }
+}

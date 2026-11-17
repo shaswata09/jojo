@@ -1,0 +1,529 @@
+{
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "undo": "Urungkan",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "close": "Tutup",
+    "duplicate": "Duplikat",
+    "deleteFailed": "Itu tidak terhapus",
+    "deleted": "{{title}} dihapus",
+    "unsaved": "Perubahan belum disimpan",
+    "saved": "{{title}} disimpan",
+    "showIt": "Tampilkan",
+    "copyBlocked": "Penyalinan diblokir oleh browser",
+    "updated": "{{title}} diperbarui",
+    "saveChanges": "Simpan perubahan"
+  },
+  "files": {
+    "unfiled": {
+      "title": "Berkas yang tidak diarsipkan di lamaran mana pun",
+      "label": "Belum diarsipkan"
+    },
+    "inlineEdit": {
+      "needsName": "Berkas memerlukan nama"
+    },
+    "intake": {
+      "tooLarge": "{{name}} terlalu besar untuk diperiksa",
+      "tooLargeDescription": "Berkas ini sudah diarsipkan, dan jojo menampilkannya dengan semua alamat web di dalamnya diblokir dan tautannya dimatikan, jadi melihatnya di sini tidak menjangkau apa pun di jaringan — tetapi apa pun yang dimuatnya dari web akan hilang.",
+      "addresses_other": "{{name}} menyebut {{count}} alamat web",
+      "addressesDescription_other": "Berkas ini diarsipkan seperti saat Anda meletakkannya, dan jojo menampilkannya dengan semua alamat itu diblokir dan tautannya dimatikan, jadi melihatnya di sini tidak menjangkau apa pun di jaringan. Gambar atau gaya yang dimuat dari web akan hilang.",
+      "folders_other": "Itu tampaknya folder",
+      "foldersDescription": "jojo mengarsipkan dokumen satu per satu. Buka foldernya dan letakkan berkas di dalamnya.",
+      "reattached": "{{name}} terlampir lagi",
+      "reattachedDescription": "Barisnya sudah ada di sini tanpa dokumen. Sekarang sudah ada dokumennya.",
+      "stillUnsaved": "{{name}} masih tidak dapat disimpan",
+      "stillUnsavedDescription": "Browser ini menolak menyimpannya lagi — penyimpanannya mungkin masih penuh.",
+      "unsaved": "{{name}} sudah diarsipkan, tetapi tidak disimpan",
+      "unsavedDescription": "Barisnya ada di sini, tetapi browser ini menolak menyimpan dokumennya — biasanya karena penyimpanannya penuh. Kosongkan sebagian ruang dan letakkan berkas yang sama lagi; berkas itu akan terlampir ke baris ini, bukan membuat baris kedua.",
+      "alreadyHere_other": "Berkas itu sudah ada di sini",
+      "alreadyHereDescription": "Berkas dengan nama yang sama sudah ada di brankas.",
+      "addedOne": "{{name}} ditambahkan",
+      "addedMany_other": "{{count}} berkas ditambahkan",
+      "addedHidden": "Diarsipkan di {{bucket}} — disembunyikan selama filter kata kunci aktif.",
+      "addedHiddenVault": "Diarsipkan di Brankas di bawah {{bucket}} — disembunyikan selama filter kata kunci aktif.",
+      "addedDescription": "Diarsipkan di {{bucket}} dan disimpan di browser ini. Tidak ada yang diunggah ke mana pun.",
+      "addedDescriptionVault": "Diarsipkan di Brankas di bawah {{bucket}} dan disimpan di browser ini. Tidak ada yang diunggah ke mana pun.",
+      "skipped_other": "{{count}} dilewati",
+      "skippedDescription": "Berkas dengan nama yang sama sudah ada di brankas.",
+      "foldersSkipped_other": "{{count}} folder dilewati"
+    },
+    "row": {
+      "fileName": "Nama berkas",
+      "renameHint": "Ganti nama berkas ini",
+      "onDevice": "di perangkat ini",
+      "viewing": "Sedang dilihat",
+      "preview": "Pratinjau",
+      "rename": "Ganti nama",
+      "editNote": "Edit catatan",
+      "addNote": "Tambah catatan",
+      "changeApplications": "Ubah lamaran",
+      "fileUnder": "Arsipkan di lamaran",
+      "readIntoProfile": "Baca ke profil Anda"
+    },
+    "add": "Tambah berkas",
+    "filterLabel": "Filter berkas menurut kategori",
+    "searchLabel": "Cari berkas",
+    "searchPlaceholder": "Cari nama atau catatan",
+    "toast": {
+      "renamed": "{{name}} diganti namanya",
+      "was": "Sebelumnya {{name}}.",
+      "noteSaved": "Catatan {{name}} disimpan",
+      "noteCleared": "Catatan {{name}} dikosongkan",
+      "noteClearedDescription": "Baris tetap mempertahankan nama, kategori, dan kata kuncinya.",
+      "filed": "{{name}} {{filed}}",
+      "filedDescription": "Berkas ini tampil di setiap lamaran itu, dan graf dapat menemukannya dari mana saja.",
+      "unfiledDescription": "Berkas ini tetap di Brankas, tanpa diarsipkan di mana pun."
+    },
+    "empty": {
+      "zeroTitle": "Belum ada berkas",
+      "zeroDescription": "Letakkan lowongan, makalah, atau draf di sini — atau tambahkan dari komputer Anda.",
+      "search": "Tidak ada berkas yang menyebut \"{{query}}\" di nama, catatan, atau kategorinya.",
+      "both": "Tidak ada berkas di {{bucket}} yang memiliki kata kunci yang dipilih.",
+      "bucketTitle": "Tidak ada apa pun di {{bucket}}",
+      "bucketDescription_other": "{{count}} berkas diarsipkan di kategori lain.",
+      "showAll": "Tampilkan semua kategori",
+      "keywordsTitle": "Tidak ada berkas dengan kata kunci itu",
+      "allFiledTitle": "Setiap berkas sudah diarsipkan di lamaran",
+      "allFiledDescription_other": "Semua {{count}} berkas. Tidak ada yang tercecer.",
+      "unfiledKeywords": "Tidak ada berkas yang belum diarsipkan dengan kata kunci yang dipilih.",
+      "unfiledBucket": "Tidak ada berkas yang belum diarsipkan di {{bucket}}."
+    },
+    "drop": {
+      "title": "Lepas untuk menambahkan ke {{bucket}}",
+      "description": "Nama, ukuran, dan jenis dibaca. Tidak ada yang diunggah.",
+      "hint": "Letakkan berkas di mana saja di panel ini untuk menambahkannya ke {{bucket}}."
+    }
+  },
+  "pdf": {
+    "drop": {
+      "partial": "Tidak semua yang dilepas dapat dipakai",
+      "nothing": "Tidak ada yang bisa dibuka"
+    },
+    "save": {
+      "nameLabel": "Nama untuk berkas baru",
+      "working": "Memproses…",
+      "alsoDownload": "Unduh juga",
+      "footnote": "Hasilnya diarsipkan sebagai dokumen baru — tidak ada sumber yang diubah. Dokumen dibuat di sini di browser Anda, dan tidak ada bagiannya yang diunggah.",
+      "workingSpoken": "Sedang memproses dokumen"
+    },
+    "thumb": {
+      "turned": "{{label}}, diputar {{degrees}} derajat",
+      "noPreview": "Tanpa pratinjau"
+    },
+    "source": {
+      "fromVault": "{{label}} dari brankas",
+      "noneInVault": "Belum ada PDF di brankas",
+      "choose": "Pilih dari brankas…",
+      "device": "Dari perangkat ini",
+      "fromDevice": "{{label}} dari perangkat ini",
+      "dropHintEmpty": "Atau letakkan PDF di mana saja di kartu ini. Berkas yang Anda simpan di sini muncul di daftar ini.",
+      "dropHint": "Atau letakkan PDF di mana saja di kartu ini."
+    },
+    "modes": {
+      "merge": "Gabung",
+      "pages": "Halaman",
+      "annotate": "Anotasi"
+    },
+    "editor": {
+      "title": "Editor PDF",
+      "hint": "Gabungkan, susun ulang, dan beri anotasi pada PDF. Semuanya berjalan di browser ini — tidak ada dokumen yang diunggah.",
+      "operation": "Operasi PDF",
+      "dropMerge": "Letakkan PDF untuk menambahkannya ke penggabungan",
+      "dropOpen": "Letakkan PDF untuk membukanya"
+    },
+    "errors": {
+      "gone": "{{name}} sudah tidak tersimpan, jadi tidak dapat dibuka.",
+      "noRoom": "{{name}} sudah diarsipkan, tetapi isinya tidak muat di penyimpanan browser ini."
+    },
+    "saved": "{{name}} disimpan",
+    "merge": {
+      "move": "Pindahkan {{name}}, {{position}} dari {{total}}",
+      "dragToReorder": "Seret untuk mengubah urutan",
+      "fromDevice": "· dari perangkat ini",
+      "allPages": "Semua halaman",
+      "rangeLabel": "Halaman yang diambil dari {{name}}",
+      "remove": "Keluarkan {{name}} dari penggabungan",
+      "rangeError": "{{name}}: {{reason}}",
+      "savedDescription": "{{pages}} dari {{documents}}, diarsipkan di {{bucket}}. Berkas asli tidak tersentuh.",
+      "pages_other": "{{count}} halaman",
+      "documents_other": "{{count}} dokumen",
+      "addLabel": "Tambahkan PDF untuk digabung",
+      "empty": "Tambahkan dua PDF atau lebih, atau letakkan di kartu ini. PDF digabungkan dari atas ke bawah — seret baris dari tepi kirinya untuk mengubah urutan — dan berkas asli dibiarkan apa adanya.",
+      "position": "posisi {{position}} dari {{total}}, {{name}}",
+      "hint": "Rentang seperti 1-3, 7, 9- mengambil sebagian dokumen. Kosongkan kotak untuk mengambil semuanya.",
+      "action": "Gabung dan simpan"
+    },
+    "pages": {
+      "savedDescription_other": "{{count}} halaman, diarsipkan di {{bucket}}. {{name}} tidak berubah.",
+      "chooseLabel": "Pilih PDF untuk disusun",
+      "empty": "Pilih satu PDF. Anda dapat memutar halaman, membuangnya, mengubah urutannya, dan menyimpan sebagian saja.",
+      "kept_other": "· {{kept}} dari {{count}} halaman disimpan",
+      "startOver": "Mulai ulang",
+      "page": "Halaman {{number}}",
+      "was": " · sebelumnya {{number}}",
+      "earlier": "Pindahkan halaman {{number}} lebih awal",
+      "anticlockwise": "Putar halaman {{number}} berlawanan arah jarum jam",
+      "clockwise": "Putar halaman {{number}} searah jarum jam",
+      "remove": "Hapus halaman {{number}}",
+      "later": "Pindahkan halaman {{number}} lebih akhir",
+      "hint": "Putar, pindahkan, atau hapus halaman dan tombol ini akan tersedia.",
+      "action": "Simpan halaman"
+    },
+    "annotate": {
+      "tools": {
+        "highlight": "Sorot",
+        "comment": "Komentar"
+      },
+      "savedDescription": "{{summary}}, diarsipkan di {{bucket}}. {{name}} tidak berubah.",
+      "chooseLabel": "Pilih PDF untuk diberi anotasi",
+      "empty": "Pilih satu PDF. Pilih teks di halaman untuk menyorotnya, atau beralih ke Komentar dan klik tempat catatan itu berada.",
+      "toolLabel": "Alat penanda",
+      "colour": "Warna sorotan",
+      "previousPage": "Halaman sebelumnya",
+      "pageOf": "Halaman {{page}} dari {{total}}",
+      "nextPage": "Halaman berikutnya",
+      "zoom": "Zoom",
+      "highlightHint": "Pilih kata di halaman — boleh melintasi baris — dan kata itu ditandai saat Anda melepasnya.",
+      "commentHint": "Klik halaman di tempat komentar itu berada.",
+      "commentPlaceholder": "Apa komentarnya?",
+      "notePlaceholder": "Tambahkan catatan untuk ini…",
+      "commentLabel": "Komentar di halaman {{number}}",
+      "noteLabel": "Catatan pada sorotan {{excerpt}}",
+      "removeMark": "Hapus tanda ini",
+      "hintEmpty": "Sorot teks atau tambahkan komentar dulu.",
+      "hint": "{{summary}} akan dituliskan.",
+      "action": "Simpan dengan anotasi"
+    }
+  },
+  "instruments": {
+    "calculator": "Kalkulator",
+    "pdf": "Editor PDF",
+    "label": "Alat yang mana",
+    "loading": "Menyiapkan alat PDF…"
+  },
+  "viewer": {
+    "noPreview": {
+      "page": "Lowongan ini tidak punya salinan tersimpan di perangkat ini. Tangkapan disimpan di tempat dibuat, jadi yang dibuat di ponsel Anda tidak ada di sini — dan baris yang dipulihkan dari cadangan membawa entrinya tanpa halamannya.",
+      "stored": "Browser menampilkan PDF secara langsung, tetapi tidak berkas {{kind}}. Dokumennya tersimpan — Simpan akan menyerahkannya ke aplikasi Anda sendiri.",
+      "missing": "Browser menampilkan PDF secara langsung, tetapi tidak berkas {{kind}} — dan tidak ada dokumen tersimpan di balik baris ini untuk diserahkan ke aplikasi lain."
+    },
+    "dialogDescription": "Pratinjau {{name}}, diarsipkan di lamaran ini. Tekan Escape untuk kembali ke entri.",
+    "noteSaved": "Catatan disimpan pada {{name}}",
+    "noteSavedDescription": "Catatan tampil pada berkas ini di mana pun brankas mencantumkannya.",
+    "noteEmptyDescription": "Catatan sekarang kosong, jadi tidak ada yang tampil pada berkas ini.",
+    "captured": "{{name}}, seperti saat ditangkap",
+    "previewTitle": "Pratinjau {{name}}",
+    "asText": "{{name}}, sebagai teks",
+    "truncated": "Hanya megabita pertama yang ditampilkan. Simpan membuka seluruh berkas di aplikasi Anda sendiri.",
+    "failedTitle": "Browser ini tidak mau membuka pratinjau",
+    "failedDescription": "{{error}}. Entri berkas di brankas Anda tidak terpengaruh — hanya pratinjaunya yang tidak dapat dibuat.",
+    "noPreviewTitle": "Tidak ada pratinjau untuk jenis ini",
+    "capturedFrom": "Ditangkap dari {{host}}",
+    "fullScreen": "Buka pratinjau layar penuh",
+    "fullScreenDescription": "{{name}}, layar penuh, dengan panel catatan. Tekan Escape untuk kembali.",
+    "notes": {
+      "title": "Catatan",
+      "hide": "Sembunyikan panel catatan",
+      "show": "Tampilkan panel catatan",
+      "hint": "Disimpan pada {{name}}, dan ditampilkan di mana pun berkas ini tercantum.",
+      "label": "Catatan pada {{name}}",
+      "placeholder": "Apa yang penting di dokumen ini — tenggat yang terselip di halaman 3, siapa yang perlu ditanya…",
+      "saved": "Tersimpan",
+      "save": "Simpan catatan"
+    }
+  },
+  "reminders": {
+    "snooze": {
+      "title": "Tunda atau pindahkan pengingat ini",
+      "label": "Tunda \"{{title}}\" — {{when}}",
+      "heading": "Tunda",
+      "pickDate": "Pilih tanggal",
+      "move": "Pindahkan"
+    },
+    "row": {
+      "markNotDone": "Tandai \"{{title}}\" belum selesai",
+      "markDone": "Tandai \"{{title}}\" selesai",
+      "draftReply": "Tulis draf balasan"
+    },
+    "relatedTwo": "{{first}} dan {{second}}",
+    "relatedMany_other": "{{count}} lamaran",
+    "describe": "{{title}} · {{related}}",
+    "copyTitle": "{{title}} (salinan)",
+    "add": "Tambah pengingat",
+    "filterLabel": "Filter pengingat menurut waktu jatuh tempo",
+    "searchLabel": "Cari pengingat",
+    "searchPlaceholder": "Cari judul, catatan, atau pekerjaan",
+    "toast": {
+      "reopened": "{{title}} dibuka kembali",
+      "completed": "{{title}} selesai",
+      "reopenedDescription": "Kembali ke tanggalnya sendiri, dan kembali ke dasbor jika merupakan tindak lanjut.",
+      "completedDescription": "Diarsipkan di Selesai, dan dihapus dari dasbor.",
+      "moved": "{{title}} dipindah",
+      "nowDue": "Sekarang jatuh tempo {{date}} · {{when}}",
+      "duplicated": "{{title}} diduplikasi",
+      "duplicatedDescription": "Salinannya terbuka dan jatuh tempo {{date}}.",
+      "stillOnList": "{{title}} masih ada di daftar.",
+      "deletedDescription": "{{description}} — hilang dari kalender dan juga dari daftar ini."
+    },
+    "empty": {
+      "zeroTitle": "Belum ada pengingat",
+      "zeroDescription": "Pengingat adalah dorongan bertanggal — hubungi pemberi referensi, periksa portal, kirim ucapan terima kasih. Yang Anda tandai sebagai tindak lanjut juga tampil di dasbor sampai Anda mencentangnya.",
+      "search": "Tidak ada pengingat yang menyebut \"{{query}}\" di judul, catatan, jenis, atau lamarannya.",
+      "both": "Tidak ada pengingat {{bucket}} yang memiliki kata kunci yang dipilih.",
+      "doneTitle": "Belum ada yang selesai",
+      "doneDescription": "Pengingat yang Anda centang terkumpul di sini, jadi yang tercentang tidak sengaja masih bisa ditemukan.",
+      "showAll": "Tampilkan semua pengingat",
+      "bucketTitle": "Tidak ada di {{bucket}}",
+      "bucketDescription_other": "{{count}} pengingat ada di kelompok lain.",
+      "keywordsTitle": "Tidak ada pengingat dengan kata kunci itu"
+    }
+  },
+  "empty": {
+    "keywordsHidThem": "Filter kata kunci di bagian atas halamanlah yang menyembunyikannya.",
+    "searchTitle": "Tidak ada yang cocok dengan pencarian itu",
+    "clearSearch": "Hapus pencarian",
+    "filtersTitle": "Tidak ada yang cocok dengan filter itu",
+    "clearFilters": "Hapus filter",
+    "showFiled": "Tampilkan juga berkas yang sudah diarsipkan",
+    "bothTitle": "Tidak ada yang cocok dengan kedua filter",
+    "clearBoth": "Hapus kedua filter",
+    "clearKeywords": "Hapus kata kunci"
+  },
+  "capture": {
+    "posting": "Lowongan",
+    "savedOne": "{{name}} disimpan ke brankas Anda",
+    "savedMany_other": "{{count}} lowongan disimpan ke brankas Anda",
+    "suggested": "Belum diarsipkan di lamaran mana pun. {{name}} tampaknya cocok — arsipkan dari barisnya di Brankas.",
+    "unfiled": "Belum diarsipkan di lamaran mana pun. Arsipkan dari barisnya di Brankas kapan pun Anda mau.",
+    "dropped_other": "{{count}} aset tidak dapat disimpan, jadi sebagian tampilan mungkin polos.",
+    "unstored_other": "{{count}} tidak dapat disimpan di perangkat ini — entrinya ada, halamannya tidak.",
+    "refusedOne": "Satu tangkapan tidak dapat disimpan",
+    "refusedMany_other": "{{count}} tangkapan tidak dapat disimpan",
+    "waitingOne": "Satu lowongan menunggu untuk disimpan di sini.",
+    "waitingMany_other": "{{count}} lowongan menunggu untuk disimpan di sini.",
+    "source": "Ditangkap dengan ekstensi jojo, masih di perangkat ini.",
+    "saving": "Menyimpan…",
+    "saveIt": "Simpan",
+    "saveThem": "Simpan semuanya"
+  },
+  "picker": {
+    "none": "Tanpa lamaran",
+    "label": "Lamaran terkait",
+    "searchLabel": "Cari lamaran",
+    "searchPlaceholder": "Cari lamaran…",
+    "noneYet": "Belum ada lamaran.",
+    "noMatch": "Tidak ada lamaran yang cocok.",
+    "unfile": {
+      "record": "Lepaskan arsip entri ini",
+      "file": "Lepaskan arsip berkas ini",
+      "link": "Lepaskan arsip tautan ini",
+      "snippet": "Lepaskan arsip cuplikan ini",
+      "person": "Lepaskan arsip orang ini",
+      "conversation": "Lepaskan arsip percakapan ini"
+    }
+  },
+  "snippets": {
+    "openInVault": "Buka di Brankas",
+    "card": {
+      "edit": "Edit cuplikan ini",
+      "moveTo": "Pindahkan ke"
+    },
+    "editor": {
+      "editTitle": "Edit cuplikan",
+      "newTitle": "Cuplikan baru",
+      "title": {
+        "label": "Judul",
+        "placeholder": "mis. Mengapa departemen ini"
+      },
+      "kind": {
+        "label": "Jenis",
+        "hint": "Tempat cuplikan diarsipkan, dan chip yang ditampilkan daftar."
+      },
+      "application": {
+        "label": "Lamaran terkait",
+        "hint": "Berapa pun pekerjaan. Cuplikan lalu tampil di halaman masing-masing."
+      },
+      "text": {
+        "label": "Teks",
+        "hint": "Ukuran, warna, tebal, miring, garis bawah, dan coret disimpan bersama teks. Daftar dan tabel disimpan sebagai baris biasa.",
+        "placeholder": "Tulis paragraf yang terus Anda tulis ulang…"
+      },
+      "fullScreen": "Menulis layar penuh",
+      "keywords": {
+        "label": "Kata kunci",
+        "hint": "Dipakai bersama oleh lamaran, pengingat, dan berkas — memfilter dengan satu kata kunci menemukan semuanya."
+      },
+      "savedNote": "Disimpan ke database di browser ini — akan ada di sini saat Anda kembali.",
+      "fullScreenDescription": "Mengedit cuplikan dalam layar penuh. Tekan Escape untuk kembali."
+    },
+    "errors": {
+      "title": "Beri nama cuplikan.",
+      "body": "Tulis teks yang ingin Anda tempel nanti."
+    },
+    "toast": {
+      "filed": "Diarsipkan di {{tag}}, siap disalin dari daftar.",
+      "filedHidden": "Diarsipkan di {{tag}} — disembunyikan oleh filter di atas daftar.",
+      "duplicated": "Salinannya diarsipkan di {{tag}}, siap ditulis ulang.",
+      "moved": "Diarsipkan di {{tag}}.",
+      "movedOut": "Diarsipkan di {{tag}} — keluar dari daftar {{filter}} yang sedang Anda lihat.",
+      "stillThere": "{{title}} masih ada di Brankas.",
+      "stillThereUnnamed": "Cuplikan masih ada di Brankas.",
+      "deletedUnnamed": "Cuplikan dihapus",
+      "deletedDescription": "Teks dan kata kuncinya ikut terhapus."
+    },
+    "empty": {
+      "zeroTitle": "Belum ada cuplikan",
+      "zeroDescription": "Simpan paragraf yang terus Anda tulis ulang — biodata, alasan memilih departemen ini, email tindak lanjut.",
+      "search": "Tidak ada cuplikan yang menyebut \"{{query}}\" di nama, teks, atau jenisnya.",
+      "both": "Tidak ada cuplikan {{tag}} yang memiliki kata kunci yang dipilih.",
+      "bucketTitle": "Tidak ada cuplikan {{tag}}",
+      "bucketDescription_other": "{{count}} cuplikan diarsipkan di jenis lain.",
+      "showAll": "Tampilkan semua jenis",
+      "keywordsTitle": "Tidak ada cuplikan dengan kata kunci itu"
+    },
+    "filterLabel": "Filter cuplikan menurut jenis",
+    "searchLabel": "Cari cuplikan",
+    "searchPlaceholder": "Cari nama atau teks",
+    "copied": "Cuplikan disalin ke papan klip",
+    "discard": {
+      "title": "Buang perubahan yang belum disimpan?",
+      "description": "\"{{title}}\" memiliki suntingan yang belum disimpan. Keluar sekarang akan membuangnya, dan itu tidak dapat diurungkan.",
+      "untitled": "Cuplikan tanpa judul",
+      "confirm": "Buang perubahan"
+    }
+  },
+  "calculator": {
+    "modes": {
+      "basic": "Dasar",
+      "scientific": "Ilmiah"
+    },
+    "mode": "Mode kalkulator",
+    "ops": {
+      "plus": "tambah",
+      "minus": "kurang",
+      "times": "kali",
+      "dividedBy": "bagi",
+      "power": "pangkat"
+    },
+    "history": "Riwayat",
+    "plusMinus": "plus atau minus",
+    "backspace": "Hapus mundur",
+    "clear": "Bersihkan",
+    "empty": "Belum ada. Hitungan yang selesai muncul di sini.",
+    "use": "Gunakan {{value}}"
+  },
+  "links": {
+    "newTab": "Terbuka di tab baru",
+    "errors": {
+      "title": "Beri judul tautan.",
+      "url": "Perlu nama host, seperti jobs.rice.edu/postings.",
+      "empty": "Tempel URL untuk menyimpannya."
+    },
+    "fields": {
+      "title": "Judul",
+      "url": "URL",
+      "category": "Kategori",
+      "applicationHint": "Mengarsipkan tautan di sebuah pekerjaan, jadi keduanya saling mengetahui.",
+      "note": "Catatan",
+      "noteHint": "Satu baris tentang alasan tautan ini layak disimpan."
+    },
+    "add": "Tambah tautan",
+    "toast": {
+      "saved": "Diarsipkan di {{category}}, dengan judul yang dibaca dari URL.",
+      "savedHidden": "Diarsipkan di {{category}} — disembunyikan selama filter kata kunci aktif.",
+      "duplicated": "Salinannya diarsipkan di {{category}}, siap diedit.",
+      "deletedDescription": "Hilang dari brankas. Halaman yang dituju tidak tersentuh."
+    },
+    "empty": {
+      "zeroTitle": "Belum ada tautan yang disimpan",
+      "zeroDescription": "Simpan URL — lowongan, halaman departemen, orang yang disarankan untuk Anda hubungi. Judulnya dibaca dari alamatnya.",
+      "search": "Tidak ada tautan yang menyebut \"{{query}}\" di judul, alamat, catatan, atau kategorinya.",
+      "both": "Tidak ada tautan {{category}} yang memiliki kata kunci yang dipilih.",
+      "bucketTitle": "Tidak ada tautan di {{category}}",
+      "bucketDescription_other": "{{count}} tautan diarsipkan di kategori lain.",
+      "showAll": "Tampilkan semua kategori",
+      "keywordsTitle": "Tidak ada tautan dengan kata kunci itu"
+    },
+    "filterLabel": "Filter tautan menurut kategori",
+    "searchLabel": "Cari tautan",
+    "searchPlaceholder": "Cari judul, alamat, atau catatan",
+    "form": {
+      "label": "Simpan tautan",
+      "hint": "Disimpan di {{category}}, dengan judul yang dibaca dari URL. Edit baris mana pun untuk mengubah keduanya.",
+      "placeholder": "Tempel URL…",
+      "save": "Simpan tautan"
+    }
+  },
+  "people": {
+    "add": "Tambah orang",
+    "searchLabel": "Cari orang",
+    "searchPlaceholder": "Cari nama, peran, atau catatan",
+    "applicationsList": "Daftar lamaran",
+    "toast": {
+      "removed": "Orang dihapus",
+      "saved": "Orang disimpan"
+    },
+    "empty": {
+      "zeroTitle": "Belum ada siapa pun",
+      "zeroDescription": "Pemberi referensi, ketua panitia seleksi, perekrut — siapa pun yang terlibat dalam pencarian Anda. Arsipkan mereka di pekerjaan tempat mereka disebut dan mereka juga muncul di entri itu.",
+      "searchTitle": "Tidak ada yang cocok",
+      "searchDescription": "Coba sebagian nama, peran, atau tempat mereka berada."
+    },
+    "namedOn": {
+      "recommender": "Pemberi rekomendasi untuk {{names}}",
+      "contact": "Narahubung di {{names}}",
+      "named": "Disebut di {{names}}"
+    },
+    "form": {
+      "name": "Nama",
+      "nameError": "Nama adalah satu-satunya yang wajib diisi.",
+      "namePlaceholder": "mis. Prof. Ngozi Okafor",
+      "role": "Peran",
+      "rolePlaceholder": "mis. Pemberi referensi, ketua panitia seleksi, perekrut",
+      "affiliation": "Afiliasi",
+      "affiliationPlaceholder": "mis. Rice",
+      "affiliationHint": "Tempat mereka berada. Tidak ditautkan ke pemberi kerja yang Anda lamar.",
+      "email": "Email",
+      "phone": "Telepon",
+      "namedOn": "Disebut di",
+      "namedOnHint": "Setiap pekerjaan yang mereka tuliskan surat, seleksi, atau pimpin.",
+      "notePlaceholder": "Apa yang mereka katakan, apa yang mereka janjikan, kapan perlu dihubungi lagi.",
+      "save": "Simpan orang"
+    }
+  },
+  "referee": {
+    "title": "Lamaran untuk {{name}}",
+    "description": "Centang yang akan dikirim dan tuliskan apa yang ingin Anda tonjolkan di setiap surat. Sorotan dan catatan Anda disimpan pada {{name}} untuk lain kali.",
+    "include": "Sertakan {{org}}, {{role}}",
+    "applied": "Melamar {{date}}",
+    "noMaterials": "Tidak ada materi yang diarsipkan",
+    "materials_other": "{{count}} materi",
+    "posting": "Lowongan",
+    "noPosting": "Tidak ada tautan lowongan",
+    "highlight": "Sorotan",
+    "highlightPlaceholder": "mis. pengajaran, NSF CAREER, inferensi kausal",
+    "highlightHint": "Pisahkan dengan koma.",
+    "note": "Catatan untuk mereka",
+    "notePlaceholder": "Hal lain: tenggat, kepada siapa ditujukan, apa yang dipedulikan departemen.",
+    "format": "Format berkas",
+    "excel": "Excel (.xlsx)",
+    "withMaterials": "Sertakan materi saya",
+    "withMaterialsCount": "Sertakan materi saya ({{count}})",
+    "tickOne": "Centang setidaknya satu lamaran.",
+    "chosen_other": "{{count}} lamaran",
+    "chosenZip_other": "{{count}} lamaran, sebagai satu .zip",
+    "preparing": "Menyiapkan…",
+    "download": "Unduh",
+    "toast": {
+      "saved": "Daftar untuk {{name}} disimpan",
+      "zip_other": "{{file}}: lembar dan {{count}} dokumen, di folder unduhan Anda.",
+      "zipMissing_other": "{{file}} ada di folder unduhan Anda, tanpa {{count}} dokumen yang tidak dapat lagi dibaca browser ini.",
+      "sheet": "{{file}}, di folder unduhan Anda.",
+      "failed": "Tidak dapat membuat daftar",
+      "failedDescription": "Tidak ada yang diunduh. Sorotan dan catatan Anda tetap disimpan.",
+      "highlights": "Sorotan disimpan"
+    }
+  }
+}

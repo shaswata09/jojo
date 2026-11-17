@@ -1,0 +1,168 @@
+{
+  "shared": {
+    "undo": "Hoàn tác",
+    "cancel": "Hủy",
+    "add": "Thêm",
+    "discard": "Bỏ",
+    "save": "Lưu",
+    "didNotSave": "Không lưu được"
+  },
+  "saveBar": {
+    "unsaved": "Có thay đổi chưa lưu — lưu sẽ ghi chúng vào trình duyệt này."
+  },
+  "form": {
+    "saved": {
+      "title": "Đã lưu hồ sơ cá nhân",
+      "description": "Đã ghi vào trình duyệt này và được giữ lại."
+    }
+  },
+  "fields": {
+    "basics": "Thông tin cơ bản",
+    "fullName": {
+      "label": "Họ và tên",
+      "placeholder": "vd. Lonardo Jenson"
+    },
+    "position": {
+      "label": "Vị trí hiện tại",
+      "placeholder": "vd. Nghiên cứu sinh tiến sĩ, Khoa học máy tính"
+    },
+    "location": {
+      "label": "Địa điểm",
+      "placeholder": "vd. Santa Clara, CA"
+    },
+    "email": {
+      "label": "Email"
+    },
+    "links": "Liên kết",
+    "website": {
+      "label": "Trang web"
+    }
+  },
+  "interests": {
+    "title": "Mối quan tâm và mục tiêu",
+    "hint": "định hướng việc tìm gợi ý của trình tìm việc",
+    "matchTerms": {
+      "title": "Từ khóa đối chiếu",
+      "description": "Các lĩnh vực nghiên cứu và cách diễn đạt mà trình tìm việc tìm kiếm. Tách biệt với các từ khóa bạn dùng để xếp bản ghi.",
+      "remove": "Gỡ {{term}}",
+      "newLabel": "Từ khóa đối chiếu mới",
+      "placeholder": "Thêm từ khóa đối chiếu"
+    },
+    "targetRoles": {
+      "label": "Vị trí mục tiêu",
+      "placeholder": "vd. Phó giáo sư (TT) · Nhà khoa học nghiên cứu"
+    },
+    "regions": {
+      "label": "Khu vực ưu tiên",
+      "placeholder": "vd. Texas · từ xa"
+    },
+    "academia": "Bao gồm tin tuyển dụng học thuật",
+    "industry": "Bao gồm tin tuyển dụng doanh nghiệp"
+  },
+  "roleTags": {
+    "title": "Nhãn vị trí",
+    "description": "Các loại vị trí bạn đang theo dõi. Mỗi đơn ứng tuyển được xếp vào một loại, và cả bộ lọc vị trí lẫn số liệu theo vị trí trong Thống kê đều dựa vào đó. Gỡ một nhãn ở đây không làm thay đổi các đơn ứng tuyển đang mang nhãn đó.",
+    "remove_other": "Gỡ {{role}}, đang dùng cho {{count}} đơn ứng tuyển",
+    "newLabel": "Nhãn vị trí mới",
+    "placeholder": "vd. Nhà khoa học dữ liệu"
+  },
+  "documents": {
+    "title": "Tài liệu",
+    "hint": "nhóm {{bucket}} trong Kho lưu trữ",
+    "upload": "Tải lên",
+    "exportInSettings": "Xuất trong Cài đặt",
+    "empty": {
+      "title": "Chưa có tài liệu nào",
+      "description": "Thả CV và các bản trình bày vào đây, hoặc chọn chúng — chúng được xếp trong Kho lưu trữ dưới nhóm {{bucket}}, nơi các phần khác của ứng dụng có thể dùng tới.",
+      "upload": "Tải lên tài liệu"
+    },
+    "footer": "Cùng các tệp với <anchor>công cụ Tệp</anchor> trong Kho lưu trữ, lọc theo {{bucket}}. Thả một tài liệu vào đây hoặc chọn một tệp, và tệp đó được giữ trong trình duyệt này — không có gì được tải lên đâu cả. Nhấp vào một tệp để đọc."
+  },
+  "documentTile": {
+    "open": "Mở {{name}}",
+    "meta": "{{size}} · lưu {{ago}}",
+    "delete": "Xóa {{name}}"
+  },
+  "background": {
+    "title": "Lý lịch của bạn",
+    "hint_other": "đã ghi {{count}} mục · cơ sở để so với tin tuyển dụng",
+    "details_other": "{{count}} chi tiết",
+    "readFromDocument": "đọc từ một tài liệu",
+    "edit": "Sửa {{title}}",
+    "remove": "Gỡ {{title}}",
+    "added": "Đã thêm {{title}}",
+    "updated": "Đã cập nhật {{title}}",
+    "removed": "Đã gỡ {{title}}",
+    "addEntry": "Thêm một mục",
+    "form": {
+      "kind": "Loại",
+      "title": "Tiêu đề",
+      "titlePlaceholder": "Đó là gì",
+      "where": "Ở đâu",
+      "optional": "Không bắt buộc",
+      "when": "Khi nào",
+      "whenPlaceholder": "Ghi như cách bạn viết — “2021–2024”",
+      "year": "Năm",
+      "detail": "Chi tiết",
+      "detailPlaceholder": "Bất cứ điều gì đáng dùng để so với tin tuyển dụng (không bắt buộc)",
+      "highlights": "Điểm nổi bật",
+      "highlightsHint": "Mỗi dòng một ý — những gì đã xây dựng, phát hành, giảng dạy hoặc phát hiện.",
+      "readKept": "đọc từ một tài liệu — bản chỉnh sửa của bạn được ưu tiên hơn kết quả đọc",
+      "saveChanges": "Lưu thay đổi"
+    },
+    "empty": {
+      "title": "Chưa ghi lại gì",
+      "configured": "Đặt CV, bản trình bày nghiên cứu hoặc giảng dạy vào Kho lưu trữ và jojo sẽ đề nghị đọc nó — những gì tìm được sẽ hiện cho bạn xem trước khi lưu. Hoặc tự thêm một mục.",
+      "unconfigured": "Đọc tài liệu cần một mô hình. Hãy kết nối một mô hình trong Cài đặt, rồi đặt CV hoặc một bản trình bày vào Kho lưu trữ và jojo sẽ đề nghị đọc nó. Bạn vẫn có thể tự thêm mục mà không cần mô hình."
+    },
+    "readMenu": {
+      "needsModel": "Đọc tài liệu cần một mô hình. Hãy kết nối một mô hình trong Cài đặt.",
+      "button": "Đọc một tài liệu",
+      "nothing": "Chưa có gì trong Kho lưu trữ đọc được. Thả CV hoặc một bản trình bày vào và nó sẽ hiện ở đây.",
+      "allRead": "Mọi thứ đọc được trong Kho lưu trữ đều đã được đọc.",
+      "read": "đã đọc"
+    }
+  },
+  "offer": {
+    "kinds": {
+      "education": "Học vấn",
+      "employment": "Kinh nghiệm làm việc",
+      "publication": "Công bố khoa học",
+      "skill": "Kỹ năng",
+      "teaching": "Giảng dạy",
+      "award": "Giải thưởng",
+      "service": "Hoạt động phục vụ",
+      "certification": "Chứng chỉ",
+      "language": "Ngôn ngữ",
+      "project": "Dự án",
+      "volunteering": "Tình nguyện",
+      "membership": "Thành viên hội",
+      "grant": "Tài trợ nghiên cứu",
+      "patent": "Bằng sáng chế"
+    },
+    "skipped_other": "Đã bỏ qua {{count}} mục",
+    "readIt": "Đọc",
+    "readFailed": "Không đọc được tài liệu.",
+    "notNow": "Để sau",
+    "discardEntries": "Bỏ các mục này",
+    "review": {
+      "single": "Đã đọc 1 mục từ tài liệu này",
+      "some": "Sẽ thêm {{kept}}/{{total}} mục",
+      "untick": "Bỏ chọn những gì bị đọc sai.",
+      "add": "Thêm {{title}}",
+      "connections_other": "{{count}} kết nối giữa chúng",
+      "addOne": "Thêm vào hồ sơ cá nhân",
+      "addMany": "Thêm {{total}} mục vào hồ sơ cá nhân"
+    },
+    "toast": {
+      "already": "Đã có trong hồ sơ cá nhân",
+      "added_other": "Đã thêm {{count}} mục vào hồ sơ cá nhân",
+      "nothing": "Không thêm được gì",
+      "readFrom": "Đọc từ {{name}}.",
+      "known": "{{known}}/{{total}} mục đã có từ trước.",
+      "related_other": "Đã ghi lại {{count}} kết nối giữa chúng.",
+      "weigh": "Giờ jojo có thể so một tin tuyển dụng với những gì bạn đã làm.",
+      "refused": "Các mục đã bị từ chối."
+    }
+  }
+}

@@ -1,0 +1,616 @@
+{
+  "nav": {
+    "rail": "Các trang hướng dẫn",
+    "contents": "Mục lục hướng dẫn",
+    "pager": "Các trang hướng dẫn khác",
+    "youAreHere": "bạn đang ở đây",
+    "previous": "Trước",
+    "next": "Tiếp",
+    "pageOf": "Trang {{current}}/{{total}}"
+  },
+  "pages": {
+    "overview": {
+      "label": "Cách sử dụng",
+      "blurb": "Bản ghi là gì, được lưu ở đâu, điều đó khiến bạn đánh đổi gì, và vài phím nên biết trước khi giao việc tìm việc cho nó."
+    },
+    "screens": {
+      "label": "Mọi màn hình",
+      "blurb": "Lần lượt từng trang — dùng để làm gì, các cơ chế không nhìn là thấy, và những gì chưa được kết nối."
+    },
+    "tools": {
+      "label": "Các công cụ",
+      "blurb": "Trợ lý thực sự làm được gì, bị ngăn làm những việc khác ra sao, và cách nó chọn đúng công cụ trong cả danh mục."
+    },
+    "graph": {
+      "label": "Đồ thị",
+      "blurb": "Trang Đồ thị vẽ gì, một câu hỏi trở thành truy vấn thế nào, và mô hình bản ghi mà toàn bộ ứng dụng được lưu theo."
+    },
+    "builtWith": {
+      "label": "Được xây dựng bằng",
+      "blurb": "Các dự án mã nguồn mở tạo nên jojo, các giấy phép áp dụng, và cách tổ chức mã."
+    },
+    "controlFlow": {
+      "label": "Đồ thị luồng điều khiển",
+      "blurb": "Mọi mô-đun và phép nhập dưới dạng đồ thị, cách luồng điều khiển đi qua sáu hành trình, và một thay đổi nên đặt ở đâu."
+    },
+    "licence": {
+      "label": "Giấy phép",
+      "blurb": "jojo có giá bao nhiêu, bạn được làm gì với nó, và các điều khoản đi kèm những dịch vụ bạn có thể kết nối."
+    }
+  },
+  "onThisPage": "Trên trang này",
+  "tour": {
+    "start": "Bắt đầu tham quan",
+    "resume": "Tiếp tục tham quan — bước {{step}}/{{total}}"
+  },
+  "gettingStarted": {
+    "title": "Bắt đầu",
+    "progress": "Đã xong {{done}}/{{total}}",
+    "allDone": "Mọi bước đã xong. Danh sách kiểm tra đọc các bản ghi của bạn, nên nó sẽ cập nhật theo nếu bạn xóa chúng.",
+    "intro": "Mỗi bước mở đúng chức năng thật, và tự đánh dấu khi đã có bản ghi. Không có gì ở đây là bài hướng dẫn bắt buộc phải ngồi xem.",
+    "done": "Xong",
+    "srDone": " — đã xong",
+    "srNotDone": " — chưa xong",
+    "steps": {
+      "application": {
+        "title": "Thêm một đơn ứng tuyển",
+        "body": "Một vị trí, giai đoạn và hạn chót của nó. Mọi thứ khác trong jojo đều gắn với bản ghi này.",
+        "action": "Đơn ứng tuyển mới"
+      },
+      "dated": {
+        "title": "Đặt ngày cho một mục",
+        "body": "Hạn chót, phỏng vấn và chuyến thăm trường là cùng một loại bản ghi, nên chúng xuất hiện cùng lúc trên lịch, trong tuần tới và trong đơn ứng tuyển.",
+        "action": "Sự kiện mới"
+      },
+      "reminder": {
+        "title": "Đặt lịch liên hệ lại",
+        "body": "Lời nhắc là cùng loại bản ghi đó nhưng bật thêm chế độ nhắc. Khi qua ngày, nó được gắn cờ trên Tổng quan cho đến khi bạn đánh dấu hoàn thành.",
+        "action": "Lời nhắc mới"
+      },
+      "posting": {
+        "title": "Giữ lại tin tuyển dụng trước khi bị gỡ",
+        "body": "Không có gì được tải về và không bản sao nào được lưu — những gì được giữ là URL, nhà tuyển dụng đoán từ URL và ngày bạn lưu. Chừng đó là đủ để tìm lại tin tuyển dụng.",
+        "action": "Mở Trình tìm việc"
+      },
+      "file": {
+        "title": "Lưu trữ tài liệu của bạn",
+        "body": "Thả CV hoặc một bản trình bày vào Kho lưu trữ. Tên, kích thước và loại tệp được ghi lại; tệp bạn thả vào trong phiên này cũng có thể xem trước.",
+        "action": "Mở Kho lưu trữ"
+      },
+      "keyword": {
+        "title": "Gắn từ khóa cho một mục",
+        "body": "Từ khóa là của bạn, dùng chung cho đơn ứng tuyển, lời nhắc và mọi thứ trong Kho lưu trữ — khác với các nhãn vị trí cố định ở thanh trên cùng. Nút nhãn trên bất kỳ hàng nào cũng thêm được từ khóa.",
+        "action": "Quản lý từ khóa"
+      },
+      "draft": {
+        "title": "Soạn tin nhắn",
+        "body": "Được tạo từ chính các đoạn văn bản email của bạn, với vị trí, nhà tuyển dụng và ngày tháng được điền từ bản ghi. Tên người không bao giờ được điền sẵn cho bạn. Không có gì ở đây ghi nhận rằng bạn đã gửi, nên bước này không tự đánh dấu.",
+        "action": "Soạn tin nhắn"
+      }
+    }
+  },
+  "overview": {
+    "title": "Cách sử dụng jojo",
+    "subtitle": "Mọi thứ chạy trên máy của bạn. Bắt đầu đơn giản, thêm sức mạnh khi bạn muốn.",
+    "tourIntro": "Hoặc để được dẫn đi từng bước, tự tay thực hành: làm nổi bật các trang thật, và bạn thử từng thứ khi đi qua. Chuyến tham quan không bao giờ gõ gì thay bạn, không bao giờ lưu bản ghi và không bao giờ thay đổi thiết lập.",
+    "sections": {
+      "application": "Theo dõi đơn ứng tuyển",
+      "dates": "Ngày tháng và liên hệ lại",
+      "vault": "Kho lưu trữ",
+      "profile": "Hồ sơ cá nhân",
+      "keys": "Phím tắt và hoàn tác",
+      "keywords": "Từ khóa",
+      "graph": "Hỏi đồ thị",
+      "data": "Dữ liệu của bạn",
+      "ladder": "Chưa được kết nối"
+    },
+    "track": {
+      "hint": "bản ghi mà mọi thứ khác gắn vào",
+      "title": "Theo dõi đơn ứng tuyển từ lúc nộp tới khi nhận lời mời",
+      "intro": "Một đơn ứng tuyển là một vị trí ở một nhà tuyển dụng. Ngày tháng, ghi chú, tài liệu, từ khóa và mọi con số trên trang <stats>thống kê</stats> đều trỏ về một đơn như vậy, nên đó là bản ghi đầu tiên đáng tạo. Chúng nằm trên <board>bảng</board>; để thêm một đơn, nhấn <kbd>n</kbd> ở bất cứ đâu trong ứng dụng, hoặc dùng danh sách kiểm tra ở trên.",
+      "movesTitle": "Mỗi lần chuyển giai đoạn hỏi những gì",
+      "movesIntro": "Nơi bạn chuyển nó quyết định bạn được hỏi gì. Trên bảng hoặc bảng biểu — kéo thả, nút trên thẻ, nhãn trên hàng — việc chuyển diễn ra ngay, kèm nút Hoàn tác trong thông báo. Từ bên trong bản ghi, bốn trong sáu đích đến sẽ mở một biểu mẫu ngắn trước; hai đích còn lại vẫn diễn ra ngay, vì một hộp thoại chỉ có nút Xác nhận là chướng ngại chứ không phải một bước.",
+      "asks": {
+        "submitted": "Ngày bạn gửi, liên kết cổng nộp đơn, và mã xác nhận nếu có.",
+        "interview": "Ngày, và hình thức qua điện thoại, video hay trực tiếp. Nó đề nghị đưa vòng phỏng vấn lên lịch kèm lời nhắc.",
+        "offer": "Ngày phải trả lời, gói đãi ngộ và ghi chú. Nó đề nghị thêm hạn chót quyết định vào lịch.",
+        "closed": "Kết thúc ra sao: bị từ chối, đã rút đơn, đã nhận lời, đã từ chối, hoặc bị bỏ lơ — không phản hồi. Đó là những gì thống kê đếm."
+      },
+      "asksNothing": "Không hỏi gì — việc chuyển diễn ra ngay khi bạn thực hiện.",
+      "offerQuestion": "Thêm một câu hỏi, bất kể đích đến: chuyển một đơn ứng tuyển đã có lời mời làm việc sẽ hỏi có giữ thông tin lời mời hay xóa đi. Lời mời thuộc về vòng đã tạo ra nó, nên bỏ nó đi là một quyết định chứ không phải hệ quả phụ.",
+      "onceTitle": "Khi bản ghi đã tồn tại",
+      "once": {
+        "open": "Mở một đơn sẽ giữ nguyên danh sách — bản ghi mở đè lên trên, và Quay lại sẽ đóng bản ghi chứ không làm mất bộ lọc của bạn. Địa chỉ là một cái tên chứ không phải con số, nên liên kết tới một đơn ứng tuyển vẫn dùng được sau khi tải lại.",
+        "note": "Ghi chú tự lưu khi bạn nhấp ra ngoài, và có ghi rõ bên dưới. Không có nút Lưu để quên.",
+        "duplicate": "<lead>Nhân bản</lead> dùng khi ứng tuyển lại: bản sao bắt đầu lại ở Bản nháp, mang theo vị trí, ghi chú, địa điểm và liên kết, và cố ý không mang theo lời mời làm việc, kết quả hay ngày tháng. jojo ghi nhận hai đơn là bản sao của nhau.",
+        "delete": "Xóa một đơn ứng tuyển sẽ xóa đơn và ghi chú của nó. Mọi thứ bạn đã xếp vào nó — lời nhắc, tài liệu, từ khóa — chỉ bị gỡ liên kết, không bị xóa, và hộp thoại xác nhận cho biết đó là những gì.",
+        "address": "Chế độ xem, ô tìm kiếm, bộ lọc giai đoạn và cách sắp xếp đều nằm trên thanh địa chỉ, nên một chế độ xem bạn đã thiết lập là một liên kết bạn có thể giữ: <bystage>bảng biểu, sắp xếp theo giai đoạn</bystage> và <atoffer>mọi đơn ở giai đoạn lời mời làm việc</atoffer> đều chỉ là URL. Cả hai đều cố ý chỉ định bảng biểu: các nhãn giai đoạn và việc sắp xếp theo cột là điều khiển riêng của bảng biểu, còn bảng không có bộ lọc giai đoạn vì nó vốn đã là sáu cột giai đoạn — nên giai đoạn trong địa chỉ không có tác dụng cho đến khi địa chỉ cũng chỉ định bảng biểu. Ô tìm kiếm hoạt động ở cả hai. Bộ lọc vị trí và các nhãn từ khóa bên cạnh thì không nằm trong địa chỉ: chúng là lựa chọn của thẻ này chứ không phải một phần của địa chỉ, và sẽ được đặt lại khi bạn tải lại trang."
+      }
+    },
+    "stageRail": {
+      "title": "Sáu giai đoạn mà một đơn ứng tuyển đi qua",
+      "desc": "Bản nháp, Đã nộp, Cuộc gọi sàng lọc, Phỏng vấn, Lời mời làm việc và Đã đóng, theo thứ tự, trên một đường. Chuyển sang Đã nộp, Phỏng vấn, Lời mời làm việc hoặc Đã đóng sẽ mở một biểu mẫu ngắn; chuyển sang Bản nháp hoặc Cuộc gọi sàng lọc diễn ra ngay. Danh sách bên dưới cho biết mỗi biểu mẫu hỏi gì.",
+      "asks": "hỏi"
+    },
+    "dates": {
+      "hint": "một loại bản ghi, ba cái tên",
+      "title": "Ngày tháng, hạn chót và liên hệ lại",
+      "intro": "Hạn chót nộp đơn, buổi phỏng vấn, chuyến thăm trường và một ghi chú nhắc liên hệ ai đó là cùng một loại bản ghi với nhãn khác nhau, và lời nhắc là bản ghi đó với chế độ nhắc được bật. Đây là điều duy nhất trong jojo nên biết trước khi dùng: thêm một lần và nó xuất hiện cùng lúc trên <calendar>lịch</calendar>, trong tuần tới ở trang <today>Hôm nay</today> và trong đơn ứng tuyển liên quan, vì không có gì phải đồng bộ.",
+      "items": {
+        "grid": "Lưới tháng và danh sách ngày là cùng một trang. Kéo một mục sang ngày khác sẽ dời lịch nó và có nút Hoàn tác trong thông báo.",
+        "colour": "Màu chỉ theo ngày và không gì khác — quá hạn, đến hạn trong 48 giờ, đã xong — nên không có gì bị cũ đi vì nằm yên. Chú giải có trên trang.",
+        "url": "Tháng bạn đang xem, ngày bạn đã chọn và mục bạn đã mở đều nằm trong URL, nên có thể chia sẻ liên kết tới một ngày cụ thể.",
+        "reminders": "Lời nhắc còn có danh sách riêng trong <reminders>Kho lưu trữ</reminders>, nơi việc đánh dấu hoàn thành là toàn bộ công việc. Lời nhắc quá hạn vẫn được gắn cờ trên trang Hôm nay cho đến khi được đánh dấu.",
+        "mint": "Chuyển một đơn ứng tuyển sang Phỏng vấn hoặc Lời mời làm việc sẽ đề nghị tạo ngày cho bạn, để vòng bạn vừa lên lịch không phải nhập hai lần."
+      }
+    },
+    "vault": {
+      "hint": "năm công cụ, một kệ",
+      "title": "Lưu trữ những gì bạn sẽ cần lại",
+      "reminders": {
+        "name": "Lời nhắc",
+        "body": "Mọi thứ có bật nhắc, trong một danh sách, những mục quá hạn ở đầu."
+      },
+      "links": {
+        "name": "Liên kết",
+        "body": "Cổng nộp đơn, trang tài trợ, những người đáng nhớ. Mỗi liên kết nằm trong một nhóm, và bạn có thể chuyển nó sang nhóm khác sau."
+      },
+      "files": {
+        "name": "Tệp",
+        "body": "Tên, kích thước và loại của tài liệu được ghi lại. <strong>Bản thân tài liệu thì không</strong> — jojo không có chỗ nào trên ổ đĩa để đặt nó. Tệp bạn chọn trong lần truy cập này có thể xem trước cho đến khi tải lại; sau đó hàng chỉ là một bản ghi cho biết tài liệu tồn tại, đủ để biết bạn đã gửi gì và khi nào."
+      },
+      "snippets": {
+        "name": "Đoạn văn bản",
+        "body": "Những đoạn văn bạn cứ phải viết lại. Hộp thoại <strong>Soạn tin nhắn</strong> được tạo từ chúng, với vị trí, nhà tuyển dụng và ngày tháng điền từ bản ghi — tên người không bao giờ được điền sẵn cho bạn, vì đoán tên là cách một tin nhắn bị gửi nhầm người."
+      },
+      "tools": {
+        "name": "Công cụ",
+        "body": "Một máy tính, cho những phép tính lương mà lời mời làm việc nào cũng dẫn tới. Lịch sử của nó chỉ dành cho lần truy cập này."
+      }
+    },
+    "profile": {
+      "hint": "hồ sơ cá nhân không nằm trong danh sách kiểm tra",
+      "title": "Điền hồ sơ cá nhân",
+      "body": "Thông tin cơ bản, liên kết, vị trí mục tiêu và từ khóa đối chiếu nằm trong <profile>Hồ sơ cá nhân</profile>. Đó là cơ sở để trình tìm việc chấm điểm và để trợ lý soạn thảo, nên chúng quan trọng. Lưu sẽ ghi chúng vào trình duyệt này và giữ lại, giống hệt mọi bản ghi khác — danh sách kiểm tra ở trên không có mục này vì dù sao cũng chỉ có một hồ sơ cá nhân, và một bước đã xong ngay khi bạn vừa tới thì không phải là một bước.",
+      "documents": "Các tài liệu bạn liệt kê trong hồ sơ cá nhân được xếp vào nhóm tài liệu của Kho lưu trữ chứ không phải ở một nơi thứ hai có thể mâu thuẫn, và toàn bộ hồ sơ được lưu thành một thay đổi, nên một lần Hoàn tác sẽ đưa nó trở lại."
+    },
+    "keys": {
+      "hint": "ba phím, và hai kiểu Hoàn tác khác nhau",
+      "title": "Làm việc không cần chuột",
+      "find": "<lead>Tìm mọi thứ, và chạy nó.</lead> Gõ vài từ và nó thu hẹp các đơn ứng tuyển, lời nhắc và lịch — các từ trọn vẹn theo thứ tự bất kỳ, nên “rice stat” tìm ra vị trí Thống kê ở Rice. Bên dưới các bản ghi là nhóm <strong>Công cụ</strong>: các thao tác có tên tạo nên jojo, mỗi thao tác có biểu mẫu được tạo từ chính những gì nó nhận. Chọn một thao tác sẽ thực hiện thật trên bản ghi thật của bạn, nên nó hiện thông báo, được ghi vào nhật ký kiểm tra, và cho phép Hoàn tác đúng như khi bạn thực hiện cùng thao tác từ một thẻ. Bên dưới nữa, <strong>Đi tới</strong> dẫn tới mọi trang, kể cả sáu trang mà thanh bên không liệt kê.",
+      "make": "<lead>Tạo một thứ gì đó.</lead> Sáu hàng giống nút Mới: đơn ứng tuyển, lời nhắc, sự kiện, soạn tin nhắn, lưu liên kết, lưu tin tuyển dụng. Bị bỏ qua khi một hộp thoại đang mở, và khi bạn đang gõ, nên chữ n vẫn là chữ n.",
+      "undo": "<lead>Hoàn tác và làm lại, ở bất cứ đâu.</lead> Không theo từng trang — phím tắt thuộc về ứng dụng, và nó sẽ hoàn tác việc đổi giai đoạn bạn làm ở màn hình khác hai phút trước. Cố ý bị bỏ qua khi con trỏ đang ở trong ô văn bản, nên trong một ghi chú đang gõ dở, chức năng hoàn tác của trình duyệt sẽ được ưu tiên và một lần ⌘Z vô tình không thể lặng lẽ đảo ngược bản ghi nào khác phía sau hộp thoại.",
+      "twoUndosTitle": "Hai kiểu Hoàn tác, và chúng làm những việc khác nhau",
+      "twoUndos": "<kbd>⌘Z</kbd> đảo ngược thứ đang nằm trên cùng của chồng ngay lúc bạn nhấn. Nút <strong>Hoàn tác</strong> trong thông báo đảo ngược <strong>đúng</strong> thay đổi đó, kể cả khi bạn đã làm ba việc khác từ lúc nó xuất hiện — đó chính là mục đích, vì thông báo chỉ hiện vài giây còn bạn vẫn tiếp tục làm việc. Một thao tác của người dùng là một lần hoàn tác dù nó động tới bao nhiêu bản ghi: tạo một đơn ứng tuyển ghi đơn đó, các từ khóa và hạn chót do biểu mẫu tạo ra, và hoàn tác sẽ gỡ cả ba thay vì để lại một hạn chót trỏ vào hư không.",
+      "pile": "Chồng hoàn tác giữ năm mươi thay đổi gần nhất và bắt đầu trống mỗi lần truy cập — một ngăn xếp hoàn tác tồn tại sau khi tải lại sẽ đề nghị hoàn tác thứ gì đó từ thứ Ba tuần trước. Nếu bạn mở jojo ở hai thẻ, thẻ bạn quay lại sẽ đọc lại cơ sở dữ liệu và bắt đầu lại vì cùng lý do: nó không thể hoàn tác việc thẻ kia đã làm. Mọi thứ vẫn được liệt kê trong <settings>Cài đặt → Nhật ký kiểm tra</settings>, mới nhất trước, và hàng mới nhất ở đó có thể được hoàn tác."
+    },
+    "keywords": {
+      "hint": "của bạn, và được mọi thứ dùng chung",
+      "title": "Từ khóa, và nhãn vị trí — thứ không phải từ khóa",
+      "intro": "Hai thứ trong jojo trông như nhãn nhưng hoạt động hoàn toàn khác nhau. Nhầm lẫn giữa chúng là cách phổ biến nhất để có một bộ lọc không tìm ra thứ bạn biết chắc là có.",
+      "yoursTitle": "Từ khóa là của bạn",
+      "yours": "Bạn tạo, đặt tên, tô màu và gắn chúng vào bất cứ thứ gì — đơn ứng tuyển, lời nhắc, liên kết, tệp, đoạn văn bản. Chúng xuyên suốt mọi loại bản ghi, nhờ đó “cho tôi xem mọi thứ liên quan đến lời giới thiệu” mới là câu hỏi jojo trả lời được.",
+      "record": "Từ khóa là một bản ghi riêng, không phải một đoạn chữ được sao chép vào các hàng: đổi tên một từ khóa và mọi hàng mang nó đều thay đổi theo, và xóa mọi bản ghi vẫn để lại các từ khóa của bạn với số đếm bằng không. <settings>Cài đặt → Từ khóa</settings> cho phép đổi tên, đổi màu và xóa chúng, và cho biết mỗi từ khóa đang gắn với bao nhiêu bản ghi trước khi bạn xóa.",
+      "rolesTitle": "Nhãn vị trí là danh sách của bạn",
+      "roles": "Một kho dữ liệu mới bắt đầu với năm nhãn — Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer — và <profile>Hồ sơ cá nhân</profile> cho phép sửa chúng. Trước đây chúng cố định, với lập luận rằng thống kê so sánh giữa chúng; thực tế điều đó có nghĩa là bất kỳ ai ngoài ngành khoa học máy tính học thuật đều phải xếp cả đợt tìm việc vào một nhãn không đúng, và các biểu đồ lại đọc nhãn đó như thể nó đúng. Gỡ một nhãn sẽ giữ nguyên mọi đơn ứng tuyển đang mang nó.",
+      "roleFilter": "Chỉ đơn ứng tuyển mới mang nhãn vị trí, và bộ lọc vị trí nằm trên thanh công cụ của <applications>Đơn ứng tuyển</applications> cạnh danh sách duy nhất mà nó lọc — trước đây nó được ghim trên thanh trên cùng, khiến mọi con số ở nơi khác không rõ là có đếm toàn bộ đợt tìm việc hay không. Quy tắc đơn giản: nhãn vị trí là công việc đó là gì, từ khóa là lý do bạn quan tâm tới nó."
+    },
+    "graph": {
+      "hint": "không có ngôn ngữ truy vấn nào phải học",
+      "title": "Đặt câu hỏi cho đồ thị",
+      "intro": "Mọi bản ghi trong jojo là một nút, và mọi liên kết giữa hai bản ghi là một cạnh thật giữa chúng — đó không phải hình minh họa cách nó hoạt động, mà là cách nó được lưu. Trang <graph>Đồ thị</graph> vẽ ra điều đó, và bảng truy vấn của nó cho phép bạn hỏi kho dữ liệu những câu mà một danh sách không trả lời được. Bạn tới đó từ ô <strong>Bộ nhớ trình duyệt</strong> trên thanh bên, một lối vào không hiển nhiên.",
+      "pickers": "Một câu hỏi gồm ba bộ chọn: thứ bạn đang tìm, nó <strong>có</strong> hay <strong>thiếu</strong> một quan hệ, và thứ gì nằm ở đầu kia. Câu trả lời cập nhật khi bạn thay đổi chúng — không có nút Chạy, nên bảng và các điều khiển phía trên không bao giờ mâu thuẫn.",
+      "examplesTitle": "Các ví dụ nên thử trước",
+      "examples": {
+        "noFollowUp": "Đơn ứng tuyển chưa lên lịch liên hệ lại — khoảng trống khiến nhiều người mất cơ hội phỏng vấn.",
+        "keyword": "Mọi thứ gắn một từ khóa, trên mọi loại bản ghi.",
+        "twice": "Tổ chức bạn đã ứng tuyển nhiều hơn một lần.",
+        "unlinked": "Lời nhắc không liên kết với đơn ứng tuyển nào — việc bạn sẽ làm mà không biết để làm gì.",
+        "unusedFiles": "Tệp không được đơn ứng tuyển nào dùng."
+      },
+      "path": "Mỗi ví dụ được dựng dựa trên các bản ghi bạn thực sự có, và ví dụ nào kho dữ liệu của bạn không có gì để hỏi sẽ bị tắt thay vì trả về bảng trống. Dạng thứ hai, <strong>Đường dẫn</strong>, trả lời “hai thứ này kết nối với nhau thế nào” — và trả lời “không kết nối” khi đúng là như vậy, đó là một kết quả thật chứ không phải thất bại.",
+      "illustrative": "Dòng truy vấn bên dưới các bộ chọn, dòng trông như mã, được ghi là <strong>minh họa</strong> trên trang và đúng là như vậy: không có gì phân tích nó, và nó có mặt để việc thấy hình dạng bên cạnh lời diễn đạt giúp các bộ chọn dễ đọc. Trang <guide>Đồ thị</guide> của hướng dẫn này giải thích những gì được vẽ và tại sao."
+    },
+    "data": {
+      "hint": "nó ở đâu, và điều gì có thể hỏng",
+      "title": "Dữ liệu của bạn",
+      "askedTitle": "Câu hỏi jojo chỉ hỏi một lần",
+      "asked": "Ở lần chạy đầu, jojo hỏi nên bắt đầu với dữ liệu mẫu hay trống, và không cho bạn bỏ qua câu hỏi — một người lạ nhìn thấy mười hai đơn ứng tuyển gửi tới những nhà tuyển dụng họ chưa từng liên hệ không có cách nào biết ứng dụng tự bịa ra chúng hay đã khôi phục dữ liệu của người khác. Nó chỉ hỏi một lần vì câu trả lời được ghi lại, và không câu trả lời nào là cố định: <settings>Cài đặt → Dữ liệu của bạn</settings> có cả hai lựa chọn, và xóa các bản ghi mẫu cũng không làm câu hỏi xuất hiện lại.",
+      "diskTitle": "Không có gì phải chờ ổ đĩa",
+      "disk": "Một thay đổi hiện trên màn hình ngay khi bạn thực hiện, và được ghi vào cơ sở dữ liệu của trình duyệt một lát sau ở chế độ nền. Đó là lý do không có vòng quay chờ khi lưu, và lý do đóng thẻ là an toàn — jojo ghi hết những gì đang giữ khi thẻ bị ẩn hoặc đóng, kể cả trên điện thoại đóng thẻ mà không báo trước. Đó cũng là lý do biểu ngữ “hết dung lượng” bên dưới không có nút Tải lại: thay đổi chưa lưu của bạn đang nằm trong hàng đợi đó, và tải lại chính là thứ sẽ vứt bỏ nó.",
+      "stripsTitle": "Nếu có một dải thông báo xuất hiện phía trên trang",
+      "strips": "Không cái nào làm jojo ngừng hoạt động — những gì trên màn hình là thật, và vẫn có thể đọc và xuất được. Là dải thông báo chứ không phải thông báo nổi, vì một thông báo cho biết thay đổi của bạn không được lưu không được phép trôi mất sau bốn giây.",
+      "quoted": "“{{text}}”",
+      "banners": {
+        "cannotOpen": {
+          "says": "jojo không mở được cơ sở dữ liệu",
+          "means": "Một thẻ jojo khác đang mở ở phiên bản khác của ứng dụng. Các bản ghi của bạn vẫn còn trên ổ đĩa — thẻ này không đọc được chúng, nên nó không hiển thị gì thay vì đoán. Hãy đóng các thẻ khác và tải lại."
+        },
+        "blocked": {
+          "says": "Trình duyệt này không cho jojo mở bộ nhớ",
+          "means": "Một cửa sổ ẩn danh, hoặc trình duyệt do tổ chức của bạn quản lý. jojo vẫn chạy, nhưng như một không gian làm việc trống: những gì đã lưu trên thiết bị này không được hiển thị, và những gì bạn nhập sẽ mất khi đóng thẻ. Hãy xuất dữ liệu trước khi rời đi nếu bạn thêm thứ gì đáng giữ."
+        },
+        "updated": {
+          "says": "jojo đã được cập nhật ở một thẻ khác",
+          "means": "Một phiên bản mới đã được tải ở nơi khác và thẻ này đã đóng cơ sở dữ liệu để bản cập nhật được áp dụng. Mọi thay đổi bạn thực hiện ở đây sẽ không được lưu. Hãy tải lại."
+        },
+        "full": {
+          "says": "Trình duyệt này đã hết dung lượng",
+          "means": "Việc lưu đã dừng, và biểu ngữ đếm số thay đổi đang hiện trên màn hình nhưng chưa được ghi. Biểu ngữ này cố ý không có nút Tải lại — tải lại chính là thứ sẽ làm mất chúng. Hãy xuất dữ liệu trước, giải phóng dung lượng, rồi tải lại."
+        },
+        "unsaved": {
+          "says": "N thay đổi chưa lưu được",
+          "means": "jojo vẫn đang thử lại và hàng đợi được xử lý theo thứ tự, nên con số này có thể tự giảm. Hãy xuất dữ liệu nếu bạn cần một bản sao ngay."
+        },
+        "unreadable": {
+          "says": "N bản ghi không đọc được",
+          "means": "Có thứ gì đó trên ổ đĩa không khớp với những gì jojo mong đợi, nên nó bị bỏ qua thay vì hiển thị nửa vời. Không có gì bị xóa, và Cài đặt → Chẩn đoán nêu tên các bản ghi theo mã."
+        }
+      },
+      "recovery": "Còn một thông báo nữa mà bạn lẽ ra không phải thấy. Nếu cơ sở dữ liệu có ở đó nhưng không đọc được, jojo hiển thị một màn hình khôi phục <strong>thay cho</strong> ứng dụng — không có gì được nạp mà có thể ghi đè lên những gì vẫn còn trên ổ đĩa, và nó không bao giờ lặng lẽ bắt đầu lại từ đầu. Nó đưa ra ba lựa chọn theo thứ tự cái giá phải trả: tải xuống các dòng đã đọc được, thử lại, hoặc bắt đầu lại từ đầu, lựa chọn duy nhất hỏi trước.",
+      "controlsTitle": "Các điều khiển trong Cài đặt",
+      "controls": {
+        "export": {
+          "name": "Xuất bản sao lưu",
+          "body": "Mọi thứ, trong một tệp có đánh phiên bản: đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và nhãn của chúng, và hồ sơ cá nhân. Nó được ghi thành <strong>{{file}}</strong>, có ghi ngày để lần xuất thứ hai không ghi đè lần đầu. Đó là bản sao tạo ngay lúc bạn nhấn — nó không cập nhật theo những gì bạn làm tiếp, và là bản sao duy nhất của dữ liệu không nằm trên máy này. Xuất sang Excel và Nhập đang bị tắt và giải thích lý do khi bạn rê chuột lên."
+        },
+        "demo": {
+          "name": "Tải dữ liệu mẫu",
+          "body": "Thay thế những gì đang có thay vì gộp vào. Nên nhấn khi kho dữ liệu trống để xem một kho đầy đủ trông thế nào; nếu không thì nên xuất dữ liệu trước."
+        },
+        "clear": {
+          "name": "Xóa mọi bản ghi",
+          "body": "Đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu và hồ sơ cá nhân. <strong>Từ khóa của bạn được giữ lại</strong> — chúng là bản ghi riêng và do bạn đặt tên — nên mọi số đếm trong bảng từ khóa về không thay vì danh sách trở nên trống."
+        },
+        "clearStorage": {
+          "name": "Xóa bộ nhớ trình duyệt",
+          "body": "Mọi thứ trang này đã đưa vào trình duyệt của bạn — các bản ghi và cơ sở dữ liệu của chúng, thiết lập giao diện và âm thanh, bộ nhớ đệm và cookie — rồi tải lại. jojo trở lại như trên một máy mới, kể cả câu hỏi ở lần chạy đầu. Không có máy chủ nào giữ bản sao, nên đây thực sự là toàn bộ dữ liệu."
+        }
+      },
+      "lastThree": "Ba mục cuối là những thao tác ghi duy nhất mà <kbd>⌘Z</kbd> không đảo ngược được, đó là lý do mỗi mục đều hỏi trước và nói rõ nó ảnh hưởng tới những gì. Chúng vẫn xuất hiện trong nhật ký kiểm tra. <strong>Chẩn đoán</strong>, trên cùng trang, đếm những gì có trong kho dữ liệu, trình duyệt đang dành cho jojo bao nhiêu dung lượng, và nêu tên bất cứ thứ gì nó từ chối đọc.",
+      "moveTitle": "Chuyển sang máy khác",
+      "move": "<transfer>Chuyển dữ liệu</transfer> là màn hình để chuyển giao bản ghi sang thiết bị thứ hai: chọn chiều chuyển, đọc mã ghép nối, xem chính xác những gì sẽ được chuyển và bao nhiêu, và chọn có mang theo tài liệu hay không. <strong>Bản dựng này không truyền gì cả — nó không mở kết nối nào và không ghi gì.</strong> Nên đi qua màn hình này vì nó có hình dạng giống lần chuyển giao thật và các số đếm trên đó được đọc từ kho dữ liệu thật của bạn, nhưng cách chuyển dữ liệu hiện nay là bản xuất ở trên."
+    },
+    "browserDb": {
+      "title": "Trình duyệt của bạn là cơ sở dữ liệu",
+      "body": "Mọi bản ghi được ghi vào cơ sở dữ liệu bên trong trình duyệt này trong lúc bạn làm việc, nên đóng thẻ là an toàn. Không có gì rời khỏi máy này và không có gì được đồng bộ — xóa dữ liệu trình duyệt, đổi trình duyệt hoặc mất ổ đĩa thì dữ liệu cũng mất theo. Hãy xuất bản sao lưu <kbd>.json</kbd> từ <settings>Cài đặt</settings> cho những gì bạn muốn giữ ở nơi khác."
+    },
+    "savePath": {
+      "title": "Điều gì xảy ra khi bạn lưu một thứ gì đó",
+      "desc": "Nhấn Lưu sẽ thay đổi những gì trên màn hình ngay lập tức, và thao tác ghi được xếp hàng rồi ghi vào cơ sở dữ liệu của trình duyệt một lát sau. Nếu thao tác ghi đó thất bại, thay đổi được giữ trong hàng đợi và được báo trong một dải thông báo phía trên trang thay vì bị vứt bỏ.",
+      "press": {
+        "line1": "Bạn nhấn",
+        "line2": "Lưu"
+      },
+      "screen": {
+        "line1": "Trên màn hình,",
+        "line2": "ngay lập tức"
+      },
+      "saved": {
+        "line1": "Được lưu trong",
+        "line2": "trình duyệt này"
+      },
+      "fail": {
+        "line1": "Thao tác ghi thất bại được giữ lại",
+        "line2": "và được báo, không bị bỏ."
+      }
+    },
+    "ladder": {
+      "title": "jojo làm được gì khi máy có thêm công cụ",
+      "aside": "mỗi bậc đều có thật; bậc nào cũng không bắt buộc",
+      "intro": "Hai bậc đầu là một công cụ theo dõi không bao giờ đòi hỏi gì ở bạn. Từ bậc thứ ba, nó trở thành một trợ lý cùng bạn tìm việc — và mọi bậc phía trên vẫn là của bạn để bỏ qua.",
+      "layers": {
+        "browser": {
+          "name": "Chỉ trình duyệt",
+          "requires": "Không cần thiết lập gì",
+          "gives": "Theo dõi đơn ứng tuyển và hạn chót, và giữ các tài liệu bạn đính kèm"
+        },
+        "backup": {
+          "name": "+ Một bản sao lưu bạn giữ",
+          "requires": "Một nơi để đặt tệp",
+          "gives": "Một tệp chứa mọi bản ghi và mọi tài liệu, khôi phục chỉ bằng một cú nhấp"
+        },
+        "model": {
+          "name": "+ Mô hình cục bộ",
+          "requires": "Ollama, vLLM hoặc LM Studio — hoặc một khóa NVIDIA miễn phí",
+          "gives": "Nửa tác tử: một trợ lý theo chuỗi hội thoại đọc và ghi bản ghi của bạn dưới sự phê duyệt của bạn, các quy trình của Trình tìm việc hoàn thiện hồ sơ cá nhân và theo dõi tin tuyển dụng, \"Hỏi đồ thị\" bằng một câu, và chấm điểm thật của trình tìm việc"
+        },
+        "reader": {
+          "name": "+ Trình đọc tài liệu",
+          "requires": "MarkItDown, chạy cục bộ",
+          "gives": "Mô hình đọc các tệp PDF, Word và bản trình chiếu của bạn — và cả tin tuyển dụng, nên Mới → Đơn ứng tuyển từ liên kết sẽ điền sẵn biểu mẫu"
+        },
+        "extension": {
+          "name": "+ Tiện ích mở rộng",
+          "requires": "Chrome, Edge, Brave hoặc Arc",
+          "gives": "Giữ một tin tuyển dụng đúng như nội dung ban đầu. Đó cũng là phần duy nhất của jojo không phải là một trang — nhờ đó một quy trình có thể quét một trang tuyển dụng, và một bản được lưu trữ trên web có thể kết nối tới trình đọc tài liệu trên máy của bạn"
+        }
+      },
+      "built": "đã có",
+      "notBuilt": "chưa có",
+      "outro": "Mỗi trang tự cho biết nó ở bậc nào, thay vì bắt bạn quay lại đây. <assistant>Trợ lý</assistant> là một cuộc trò chuyện tác tử theo chuỗi khi đã kết nối mô hình và năm ví dụ mẫu khi chưa, có ghi rõ trong cả hai trường hợp, và <scout>Trình tìm việc</scout> chấm điểm thật theo hồ sơ cá nhân và cho biết nó khớp với điều gì. <screens>Mọi màn hình</screens> giới thiệu phần còn lại, từng trang một.",
+      "backup": {
+        "hint": "có sẵn",
+        "title": "Giữ bản sao lưu",
+        "storedTitle": "Tài liệu của bạn được lưu ở đây",
+        "stored": "CV và thư xin việc bạn đính kèm được lưu trong trình duyệt này và vẫn còn sau khi đóng thẻ. Không có gì được tải lên đâu cả — và không có gì rời khỏi máy này trừ khi bạn tự tải xuống.",
+        "oneFileTitle": "Một tệp chứa mọi thứ",
+        "oneFile": "<settings>Cài đặt</settings> ghi một bản sao lưu mang theo mọi bản ghi, mọi liên kết giữa chúng và mọi tài liệu, tất cả trong một tệp. Khôi phục nó sẽ đưa cả ba trở lại.",
+        "whyTitle": "Vì sao điều này quan trọng",
+        "why": "Trình duyệt có thể tự xóa bộ nhớ khi ổ đĩa đầy, và <kbd>Xóa dữ liệu duyệt web</kbd> thì luôn xóa. Một bản sao lưu bạn tự giữ là bản sao duy nhất không bị ảnh hưởng bởi cả hai."
+      },
+      "model": {
+        "hint": "chưa kết nối",
+        "title": "Thêm mô hình cục bộ",
+        "connectTitle": "Kết nối nó",
+        "connect": "Chạy vLLM, Ollama hoặc LM Studio và nhập điểm cuối trong <settings>Cài đặt</settings>. Mọi máy chủ tương thích OpenAI đều dùng được. Không có GPU? Một khóa miễn phí từ build.nvidia.com chạy cùng tác tử từ cùng màn hình — bị giới hạn tần suất chứ không tính phí, và cái giá duy nhất là các bản ghi của bạn rời khỏi thiết bị.",
+        "changesTitle": "Điều gì thay đổi",
+        "changes": "Việc soạn thảo không còn là mẫu điền vào chỗ trống mà bắt đầu đọc hồ sơ cá nhân và tài liệu của bạn. Trang <assistant>Trợ lý</assistant> hiển thị các ví dụ mẫu mà nó trả lời cho đến lúc đó.",
+        "scoringTitle": "Các quy trình của trình tìm việc bắt đầu chấm điểm",
+        "scoring": "Quy trình là một tìm kiếm đã lưu mà bạn có thể viết ngay hôm nay. Chấm điểm là phần phải chờ mô hình, và biểu ngữ trên trang đó nói rõ điều này thay vì hiển thị những con số không do gì tạo ra."
+      }
+    }
+  },
+  "screens": {
+    "docTitle": "Mọi màn hình",
+    "title": "Mọi màn hình, và những gì chúng làm và không làm",
+    "subtitle": "Mỗi trang một phần — dùng để làm gì, điều gì không hiển nhiên, và những gì chưa được kết nối.",
+    "caption": "Mười ba phần — chuyển tới phần bạn cần",
+    "sections": {
+      "doors": "Mỗi trang ở đâu",
+      "dashboard": "Hôm nay",
+      "applications": "Đơn ứng tuyển",
+      "calendar": "Lịch",
+      "vault": "Kho lưu trữ",
+      "scout": "Trình tìm việc",
+      "statistics": "Thống kê",
+      "graph": "Đồ thị",
+      "transfer": "Chuyển dữ liệu",
+      "profile": "Hồ sơ cá nhân",
+      "assistant": "Trợ lý",
+      "settings": "Cài đặt",
+      "guide": "Hướng dẫn này"
+    },
+    "parts": {
+      "notObvious": "Điều không hiển nhiên",
+      "whatIsReal": "Điều gì là thật",
+      "addressNothing": "<lead>Trên thanh địa chỉ</lead> không mang thông tin gì."
+    },
+    "doors": {
+      "hint": "sáu trang nằm trên thanh bên; sáu trang thì không",
+      "title": "Mỗi trang ở đâu",
+      "intro": "Thanh bên liệt kê sáu trang. Sáu trang nữa được mở từ những nơi hoàn toàn khác: một biểu tượng trên thanh trên cùng, hoặc một trong bốn ô trạng thái ở cuối thanh bên, trông như ô hiển thị nhưng cũng là nút bấm. Khi màn hình hẹp hơn máy tính xách tay, thanh bên là một ngăn kéo sau nút menu ở góc trên bên trái; thanh trên cùng có mặt trên mọi màn hình ở mọi kích thước.",
+      "listTitle": "Mọi đường dẫn, và điều khiển mở nó",
+      "where": {
+        "dashboard": "Thanh bên, hàng đầu tiên. Cũng là trang jojo mở ra đầu tiên.",
+        "applications": "Thanh bên. Huy hiệu của nó đếm các bản ghi bạn đã gắn cờ để liên hệ lại.",
+        "calendar": "Thanh bên. Huy hiệu của nó đếm những gì đã lên lịch trong bảy ngày tới.",
+        "vault": "Thanh bên. Huy hiệu của nó đếm các lời nhắc đã quá ngày. <code>/reminders</code> chuyển hướng về đây, nơi trang đó đã được chuyển tới.",
+        "scout": "Thanh bên. Huy hiệu của nó đếm các gợi ý chưa ai biến thành đơn ứng tuyển.",
+        "statistics": "Thanh bên, hàng cuối.",
+        "graph": "Ô ghi <strong>Bộ nhớ trình duyệt</strong>, ở cuối thanh bên. Không chỗ nào khác trong ứng dụng gọi nó là Đồ thị, đó là lý do đây là trang khó tình cờ tìm thấy nhất trong jojo.",
+        "transfer": "Ô ghi <strong>Chuyển dữ liệu</strong>, và <settings>Cài đặt → Dữ liệu của bạn</settings>.",
+        "profile": "Biểu tượng hình người trên thanh trên cùng.",
+        "assistant": "Biểu tượng robot trên thanh trên cùng.",
+        "settings": "Biểu tượng bánh răng trên thanh trên cùng. Ô <strong>Mô hình cục bộ</strong> cũng dẫn tới đây — đó là nơi thiết lập nó.",
+        "guide": "Dấu chấm hỏi, biểu tượng cuối cùng trên thanh trên cùng. Nó không có trên thanh bên."
+      },
+      "palette": "Có một lối vào dẫn tới tất cả, và nhờ nó mà sáu trang ẩn chỉ là chút bất tiện chứ không phải vấn đề: <kbd>⌘K</kbd> kết thúc bằng nhóm <strong>Đi tới</strong> liệt kê mọi trang, kể cả từng trang trong bốn trang của hướng dẫn này. <overview>Cách sử dụng jojo</overview> giới thiệu những gì khác mà bảng lệnh đó làm được.",
+      "everyTitle": "Hai điều đúng với mọi trang",
+      "switches": "Các công tắc sau biểu tượng bánh răng cạnh tiêu đề trang — hiện ghi chú, hàng thu gọn, dấu chấm thay cho tiêu đề, hiện số lượng — thay đổi những gì trang đó hiển thị và chỉ có hiệu lực trong lần truy cập này. Chúng không nằm trên thanh địa chỉ và không được lưu; chủ đề và công tắc âm thanh trong Cài đặt thì được lưu, và chúng là ngoại lệ.",
+      "defaults": "Khi một trang có giữ trạng thái trên địa chỉ, giá trị nào bằng với những gì trang vốn hiển thị sẽ bị bỏ ra khỏi địa chỉ. Đó là lý do <code>/applications</code> và <code>/applications?view=board&stage=all&sort=daysAgo</code> là cùng một màn hình, và lý do địa chỉ gọn hơn là địa chỉ bạn nhận được khi bỏ bộ lọc."
+    },
+    "doorsDiagram": {
+      "title": "Mỗi trang được mở từ đâu",
+      "desc": "Sáu hàng dọc thanh bên mở Tổng quan, Đơn ứng tuyển, Lịch, Kho lưu trữ, Trình tìm việc và Thống kê. Bốn ô bên dưới mở Đồ thị, Chuyển dữ liệu và — cho cầu nối và mô hình — Cài đặt. Bốn biểu tượng ở bên phải thanh trên cùng mở Hồ sơ cá nhân, Cài đặt, Trợ lý và hướng dẫn này. Không có gì trong danh sách thanh bên dẫn tới sáu trang cuối đó.",
+      "search": "Tìm kiếm…",
+      "new": "Mới",
+      "topBar": {
+        "line1": "Hồ sơ cá nhân · Cài đặt ·",
+        "line2": "Trợ lý · Cách sử dụng"
+      },
+      "sidebar": {
+        "line1": "Tổng quan · Đơn ứng tuyển · Lịch",
+        "line2": "Kho lưu trữ · Trình tìm việc · Thống kê"
+      },
+      "tiles": "Đồ thị · Chuyển dữ liệu · Cài đặt"
+    },
+    "applications": {
+      "where": "thanh bên · bảng, bảng biểu và một bản ghi",
+      "open": "Mở bảng",
+      "intro": "Mọi vị trí bạn đang theo dõi, ở một trong hai bố cục trên cùng các bản ghi, cùng với bản thân bản ghi ở địa chỉ riêng. Sáu giai đoạn và những gì mỗi lần chuyển giai đoạn hỏi bạn có ở <overview>Cách sử dụng jojo</overview>; đây là trang nơi chúng diễn ra.",
+      "boardTitle": "Bảng và bảng biểu không phải là cùng một chế độ xem hai lần",
+      "board": {
+        "columns": "Bảng có một cột cho mỗi giai đoạn với số đếm ở mỗi tiêu đề. <strong>Thêm vào đây</strong> ở cuối một cột mở một bản ghi mới đã ở sẵn giai đoạn đó — ghi lại một công việc bạn đã phỏng vấn không nên có nghĩa là thêm một bản nháp rồi kéo nó qua bốn cột.",
+        "sort": "Bảng biểu sắp xếp theo Vị trí, Giai đoạn và Hoạt động gần nhất; nhấp lại vào cùng tiêu đề sẽ đảo ngược thứ tự. Loại vị trí và Ngày tiếp theo là cột, không phải khóa sắp xếp.",
+        "chips": "Các nhãn lọc giai đoạn chỉ có ở bảng biểu. Bảng vốn đã nhóm theo giai đoạn, nên lọc nó sẽ làm trống năm cột thay vì rút ngắn một danh sách — chuyển sang Bảng sẽ bỏ bộ lọc đó thay vì giấu nó trong khi vẫn bật.",
+        "search": "Ô tìm kiếm khớp với nhà tuyển dụng, vị trí, ghi chú, nhãn vị trí và tên giai đoạn, nên gõ “lời mời” sẽ tìm ra bản ghi mà chỉ có nhãn nhắc tới điều đó. Số đếm trên các nhãn giai đoạn tính trên những gì còn lại sau tìm kiếm và nhãn từ khóa, không phải trên mọi thứ.",
+        "empty": "Khi danh sách trống, nó nêu tên các bộ lọc đang gây ra điều đó, và cho phép bỏ tất cả cùng lúc."
+      },
+      "moveTitle": "Chuyển thẻ giữa các giai đoạn",
+      "move": "Tay nắm nằm ở mép trái của thẻ. Kéo nó và thẻ được nhấc ra khỏi cột — cột bạn đang ở trên sẽ có viền nổi bật và mở một ô nét đứt nơi thẻ sẽ được đặt xuống. Kéo không phải cách duy nhất, và với bàn phím đó là cách chậm — vượt qua hai cột cần một lần nhấn phím cách và hai mươi lần nhấn mũi tên. Mỗi thẻ có một menu giai đoạn dưới nhãn giai đoạn của nó, và trong bảng biểu, nhãn giai đoạn trên một hàng chính là menu đó; cách nào cũng chỉ cần hai lần nhấn.",
+      "fromBoard": {
+        "name": "Từ bảng hoặc bảng biểu",
+        "body": "Việc chuyển diễn ra ngay khi bạn thực hiện, và thông báo cho biết nó đến từ giai đoạn nào kèm nút Hoàn tác. Kéo thả và chọn từ menu là cùng một thao tác ghi, nên thả nhầm cũng khôi phục được như nhấp nhầm — điều trước đây không đúng cho đến khi thao tác kéo đi qua cùng đường như mọi thứ khác."
+      },
+      "fromRecord": {
+        "name": "Từ bên trong bản ghi",
+        "body": "Menu giai đoạn trong tiêu đề của chính bản ghi là menu có thể mở biểu mẫu ngắn trước, và chỉ mở khi lần chuyển đó có điều cần hỏi: Đã nộp, Phỏng vấn, Lời mời làm việc và Đã đóng thì có, Bản nháp và Cuộc gọi sàng lọc thì không. Rời giai đoạn của một bản ghi đã có lời mời làm việc thì luôn hỏi, bất kể đích đến, vì lời mời phải được giữ lại hoặc bỏ đi một cách có chủ ý."
+      },
+      "exits": "Biểu mẫu có ba lối ra và không lối nào là mẹo: <strong>Hủy</strong> không ghi gì, <strong>Chuyển mà không thêm thông tin</strong> đổi giai đoạn và không động tới gì khác, và lối cuối áp dụng những gì bạn đã điền. Khi nó đề nghị đưa một ngày lên lịch, thông báo sau đó sẽ cho biết đã làm.",
+      "recordTitle": "Bản thân bản ghi",
+      "record": {
+        "opens": "Nó mở đè lên danh sách chứ không thay thế danh sách. Trên máy tính xách tay, nó là một tấm trượt ở bên phải bảng, đóng bằng Escape, bằng cách nhấp vào nền hoặc nút X trong tiêu đề của nó; ở màn hình hẹp hơn, nó chiếm toàn trang. Dù thế nào, Quay lại sẽ đóng bản ghi và giữ nguyên chế độ xem, tìm kiếm, giai đoạn và cách sắp xếp.",
+        "address": "Địa chỉ của nó là một cái tên — <code>/applications/rice</code> — vì mã bản ghi được tạo riêng cho từng kho dữ liệu và một mã đã đánh dấu sẽ không còn dùng được sau khi tải lại dữ liệu mẫu. Liên kết tạo từ mã vẫn được phân giải.",
+        "note": "Ghi chú tự lưu khi bạn nhấp ra ngoài và hiện “Đã lưu ghi chú” bên dưới. Không có nút Lưu để quên.",
+        "delete": "Việc xóa đếm những gì còn lại trước khi hỏi — các lời nhắc, sự kiện và mục đã lưu được xếp vào bản ghi đều được giữ lại và gỡ liên kết, không bao giờ bị xóa — và nút Hoàn tác trong thông báo cũng đưa các liên kết đó trở lại, điều mà bạn không thể tự dựng lại bằng cách thêm lại đơn ứng tuyển.",
+        "deleted": "Liên kết tới một bản ghi đã bị xóa sẽ dẫn tới một bảng thông báo điều đó, thay vì một trang lỗi. Không có gì khác bị xóa theo."
+      },
+      "address": "<lead>Trên thanh địa chỉ</lead> có bố cục, nội dung tìm kiếm, và — vì cả hai đều là điều khiển riêng của bảng biểu — bộ lọc giai đoạn và khóa sắp xếp, nên <bystage>bảng biểu sắp xếp theo giai đoạn</bystage> và <atoffer>mọi đơn ở giai đoạn lời mời làm việc</atoffer> là những liên kết bạn có thể giữ. Giai đoạn trong địa chỉ không có tác dụng cho đến khi địa chỉ cũng chỉ định bảng biểu. Bộ lọc vị trí và các nhãn từ khóa bên cạnh hoàn toàn không có trong đó: chúng là lựa chọn của thẻ này và được đặt lại khi bạn tải lại trang."
+    },
+    "today": {
+      "where": "thanh bên, hàng đầu tiên",
+      "open": "Mở Hôm nay",
+      "intro": "Những việc của ngày hôm nay, và không gì khác. Năm bảng, tất cả đều đếm từ các bản ghi hiện tại của bạn: <strong>Cần quyết định</strong> — một lời mời làm việc, một đơn ứng tuyển quá hạn, hạn chót hoặc buổi phỏng vấn tiếp theo đang đếm ngược — bên cạnh một dải tháng và các bộ đếm, rồi <strong>Việc cần làm tuần này</strong>, <strong>Đơn ứng tuyển gần đây</strong> và bảng phân tích <strong>Quy trình</strong>.",
+      "items": {
+        "checklist": "Khi chưa theo dõi gì, chồng thẻ quyết định được thay bằng danh sách kiểm tra ba bước mở đúng các hộp thoại thật và tự đánh dấu dựa trên kho dữ liệu. Xóa mọi bản ghi trong Cài đặt sẽ đưa nó trở lại, vì nó đọc kho dữ liệu chứ không ghi nhớ rằng bạn từng hoàn thành.",
+        "colour": "Màu trên trang này chỉ dựa trên ngày và không gì khác: đỏ là đã quá hạn, hổ phách là đến hạn trong 48 giờ, và mọi thứ xa hơn đều không có màu dù quan trọng đến đâu. Thứ bạn đã hoàn thành chuyển sang xám chứ không phải xanh lá — không có gì ở đây là phần thưởng.",
+        "rows": "Các hàng có thể được đánh dấu hoàn thành, tạm hoãn một ngày, ba ngày hoặc một tuần, hoặc mở ra, mà không rời trang. Mỗi thao tác đó là một lần ghi thật kèm nút Hoàn tác trong thông báo.",
+        "strip": "Dải tháng là một cuốn lịch nhỏ riêng — nó chuyển tháng mà không làm thay đổi trang <calendar>Lịch</calendar>, và nhấp vào một ngày sẽ mở ngày đó ở đó."
+      },
+      "address": "<lead>Trên thanh địa chỉ</lead> không mang thông tin gì. Trang này là <code>/</code>, và mọi điều khiển trên đó hoặc là liên kết tới nơi khác hoặc là một thao tác ghi."
+    },
+    "calendar": {
+      "where": "thanh bên, hàng thứ ba",
+      "open": "Mở Lịch",
+      "intro": "Một lưới tháng với danh sách của ngày đã chọn bên dưới, trên cùng một trang. Hạn chót, phỏng vấn, chuyến thăm trường và lời nhắc đều ở đây vì chúng đều là cùng một loại bản ghi — lý do điều đó đáng biết có ở <overview>Cách sử dụng jojo</overview>.",
+      "items": {
+        "drag": "Kéo một mục sang ngày khác sẽ dời lịch nó, kèm nút Hoàn tác trong thông báo. Thả nó lại đúng ngày cũ thì không ghi gì và không báo gì — một thông báo về lần di chuyển không hề xảy ra còn tệ hơn im lặng.",
+        "types": "Các loại sự kiện bên dưới lưới là công tắc, như chú giải của biểu đồ: tắt một loại và các mục của nó rời khỏi lưới và cả hai danh sách ngày, trong lần truy cập này. Một ngày mà mọi mục đều đang tắt sẽ cho biết điều đó thay vì nói là trống, và liên kết tới một mục thuộc loại đang ẩn sẽ bật lại loại đó để có chỗ hiển thị.",
+        "key": "Chú giải bên dưới lưới được tạo từ những gì tháng này thực sự có. Một tháng không có gì quá hạn sẽ không liệt kê màu quá hạn, vì chú giải hứa hẹn một dấu không có trên lưới sẽ khiến bạn đi tìm nó.",
+        "goTo": "<strong>Đi tới tháng</strong> cho phép duyệt qua các năm mà không làm lịch phía sau thay đổi cho đến khi bạn chọn, và nó đánh dấu tháng hiện tại thực sự khi bạn đang xem năm khác. <strong>Hôm nay</strong> quay về hôm nay, và giữ trạng thái như đang được nhấn khi bạn đã ở đó.",
+        "paging": "Chuyển giữa các tháng sẽ giữ ngày bạn đang xem, giới hạn trong tháng bạn chuyển tới: rời ngày 31 tháng 1 và bạn đến ngày cuối cùng của tháng 2 thay vì một ngày không tồn tại. Cùng giới hạn đó áp dụng cho địa chỉ gõ tay, nên <code>?m=2&d=31</code> trả về một ngày thật thay vì một lưới trống.",
+        "add": "<strong>Thêm sự kiện</strong> được điền sẵn ngày đang hiển thị, mà trên lịch thì gần như luôn là ngày bạn muốn.",
+        "export": "<strong>Xuất sang lịch của tôi</strong> ghi mọi ngày jojo đang giữ thành tệp <code>.ics</code>, kèm lời nhắc cho từng ngày. Nó có ở đây vì jojo không tự gửi thông báo: ứng dụng lịch mà bạn đang nhận cảnh báo là thứ duy nhất có thể nhắc bạn về hạn chót khi ứng dụng này đang đóng. Nó bao gồm hạn trả lời của từng lời mời làm việc, vốn nằm trong đơn ứng tuyển chứ không trên dòng thời gian nên chưa bao giờ xuất hiện trên lưới này. Tệp là bản sao tạo ngay lúc này — đổi một ngày thì hãy xuất lại."
+      },
+      "address": "<lead>Trên thanh địa chỉ</lead> có năm, tháng, ngày và mục bạn đã mở tới — năm và tháng hiện tại sẽ được bỏ đi khi bạn đang ở đó, nên liên kết tới tháng sau là <code>/calendar?m=11&d=3</code>. Tham số cuối trong bốn tham số, <code>focus</code>, làm sáng một hàng trong vài giây rồi tự gỡ khỏi địa chỉ, nên URL bạn sao chép sau đó là ngày chứ không phải một hàng mà không ai còn nhìn nữa."
+    },
+    "vault": {
+      "where": "thanh bên · sáu công cụ, một trang",
+      "open": "Mở Kho lưu trữ",
+      "intro": "Mọi thứ bạn để dành để quay lại sau. Điều khiển phân đoạn trong tiêu đề chuyển giữa sáu công cụ và mỗi lúc chỉ có một công cụ trên màn hình, đó là điều hầu hết mọi người bỏ lỡ: Kho lưu trữ không phải một danh sách, và năm trong sáu công cụ của nó nằm sau một thẻ.",
+      "rows": {
+        "reminders": {
+          "name": "Lời nhắc",
+          "body": "Được nhóm thành Quá hạn, Hôm nay, Sắp tới và Đã hoàn thành. Đánh dấu hoàn thành là toàn bộ công việc, và các bước tạm hoãn giống như ở Tổng quan có trên mọi hàng."
+        },
+        "links": {
+          "name": "Liên kết",
+          "body": "Được xếp vào Tin tuyển dụng, Cơ sở, Người hoặc Hướng dẫn, và có thể chuyển giữa các nhóm sau đó."
+        },
+        "files": {
+          "name": "Tệp",
+          "body": "Các nhóm Cần đọc, Đơn ứng tuyển, Bài nói và Hành chính. Thả một tệp vào danh sách hoặc chọn một tệp — xem bên dưới để biết những gì thực sự được giữ."
+        },
+        "snippets": {
+          "name": "Đoạn văn bản",
+          "body": "Được gắn nhãn Thư xin việc, Mẫu đơn ứng tuyển, Email hoặc Tiểu sử. Đây là những gì hộp thoại <strong>Soạn tin nhắn</strong> được tạo từ đó, và là nơi Trợ lý xếp câu trả lời bạn lưu."
+        },
+        "people": {
+          "name": "Người liên hệ",
+          "body": "Người viết thư giới thiệu, trưởng hội đồng tuyển chọn, nhà tuyển dụng — bất kỳ ai thực sự liên quan đến việc tìm việc. Họ được xếp vào một công việc giống hệt như một CV, và vì cùng lý do đó, đây là danh sách chứ không phải một mã duy nhất: một người viết thư giới thiệu viết cho mọi vị trí bạn nêu tên họ. Trước đây họ nằm trong nội dung của lời nhắc, đó là lý do không gì trả lời được câu hỏi “thư của ai vẫn còn chưa gửi”."
+        },
+        "tools": {
+          "name": "Công cụ",
+          "body": "Một máy tính, cơ bản hoặc khoa học, cho những phép tính mà lời mời làm việc nào cũng dẫn tới. Nó giữ ba mươi dòng gần nhất trong lần truy cập này và không giữ gì sau khi bạn đóng thẻ."
+        }
+      },
+      "items": {
+        "filter": "Bộ lọc từ khóa phía trên danh sách thuộc về công cụ bạn đang mở, nên số đếm cạnh một từ khóa mô tả thẻ này chứ không phải toàn bộ Kho lưu trữ. Nó hoàn toàn không hiện ở Công cụ, nơi không chứa bản ghi nào, hoặc ở thẻ không có gì.",
+        "search": "Mỗi danh sách trong bốn danh sách có ô tìm kiếm và bộ lọc nhóm riêng, và không cái nào nằm trong địa chỉ — thẻ đang mở và bản ghi bạn được dẫn tới thì có.",
+        "redirect": "<code>/reminders</code> chuyển hướng về đây. Lời nhắc từng là một trang riêng trước khi trở thành một công cụ, và các liên kết tạo từ hồi đó vẫn dẫn tới đúng chỗ."
+      },
+      "notConnectedTitle": "Tệp được ghi nhận, không được lưu trữ",
+      "notConnected": "Một tệp cho biết tên, kích thước và loại của nó, và đó là tất cả những gì jojo giữ — không có chỗ nào trên ổ đĩa để đặt bản thân tài liệu. Tệp bạn chọn hoặc thả vào trong lần truy cập này có thể xem trước thật, từ dữ liệu mà trình duyệt chuyển cho, chừng nào thẻ còn mở; các hàng đi kèm dữ liệu mẫu không có dữ liệu phía sau và hiển thị một khung giữ chỗ có ghi chú. Không có gì được tải lên và không nội dung nào được đọc.",
+      "address": "<lead>Trên thanh địa chỉ</lead> có công cụ đang mở và, trong chốc lát, bản ghi mà một liên kết trỏ tới: <code>/vault?tool=snippets</code>. Chuyển thẻ sẽ bỏ phần làm sáng đó."
+    },
+    "scout": {
+      "where": "thanh bên, hàng thứ năm",
+      "open": "Mở Trình tìm việc",
+      "intro": "Ba bảng: các tìm kiếm đã lưu bạn muốn chạy, các gợi ý mà một tìm kiếm như vậy sẽ tạo ra, và một ô để lưu tin tuyển dụng bạn tự tìm thấy. Dải ở đầu trang cho biết phần nào đang phải chờ thứ gì đó, và vì thế nó là thứ đầu tiên trên màn hình.",
+      "items": {
+        "pipelines": "<strong>Quy trình</strong> là bản ghi như mọi bản ghi khác — một trang tuyển dụng để theo dõi, các từ khóa quan trọng và tần suất xem. Viết, sửa và xóa chúng đều hoạt động và vẫn còn sau khi tải lại. Một quy trình bạn bật sẽ hiện <strong>tạm dừng</strong> thay vì đang chạy, đó là từ trung thực cho trạng thái của nó.",
+        "save": "<strong>Lưu tin tuyển dụng</strong> hoạt động mà không cần kết nối gì. Những gì được giữ là URL, nhà tuyển dụng đoán từ URL, và ngày bạn lưu — đủ để tìm lại tin tuyển dụng và ứng tuyển. Không có gì tải trang về.",
+        "add": "<strong>Thêm vào Đơn ứng tuyển</strong>, trên một gợi ý hoặc tin tuyển dụng đã lưu, sẽ tạo đơn ứng tuyển và liên kết hai thứ thay vì di chuyển hàng. Sau đó hàng sẽ cho biết nó đã đi đâu, nên bạn không thể làm hai lần."
+      },
+      "notConnectedTitle": "Bản lưu trang phải chờ mô hình cục bộ. Điểm số thì không.",
+      "notConnected": "Các gợi ý vẫn là những gợi ý đi kèm dữ liệu mẫu — chưa có gì quét trang tuyển dụng nào — nhưng tỷ lệ phần trăm trên mỗi gợi ý được tính ngay tại đây, trên thiết bị này, dựa trên từ khóa đối chiếu, vị trí mục tiêu và khu vực trong hồ sơ cá nhân của bạn, và mỗi hàng cho biết nó khớp với điều gì. Một hồ sơ cá nhân trống sẽ hiện <strong>chưa chấm điểm</strong> thay vì một con số tự tin dựa trên hư không. <strong>Mở bản lưu</strong> là phần thực sự phải chờ: nó bị tắt trên mọi tin tuyển dụng đã lưu và giải thích lý do khi bạn rê chuột lên, vì chưa có trang nào được tải về và hiển thị một trang sẽ là khẳng định một tệp mà jojo không có.",
+      "address": "<lead>Trên thanh địa chỉ</lead> có hàng mà một liên kết trỏ tới, được đặt tên theo danh sách chứa nó — <code>/scout?focus=match:unt</code> hoặc <code>focus=posting:…</code>. Hai danh sách tạo mã riêng, nên tên danh sách phải là một phần của tham số để đúng hàng được làm sáng."
+    },
+    "statistics": {
+      "where": "thanh bên, hàng cuối",
+      "open": "Mở Thống kê",
+      "intro": "Tỷ lệ chính, thời điểm bạn ứng tuyển, mỗi đơn đến từ đâu, các đơn ứng tuyển đã đi được bao xa, kết thúc ra sao, nên tập trung vào đâu tiếp theo, và đơn ứng tuyển, phản hồi, phỏng vấn và lời mời làm việc theo loại vị trí. Mọi con số đều được đếm từ các đơn ứng tuyển của bạn ngay lúc bạn xem.",
+      "items": {
+        "funnel": "Chỉ giai đoạn hiện tại của bản ghi được lưu, nên phễu tính mỗi đơn ứng tuyển theo những gì nó cho thấy. Một bản ghi bị từ chối sau phỏng vấn được tính theo các ngày nó mang và không xa hơn, và hai bảng bị ảnh hưởng ghi <strong>theo những gì mỗi bản ghi cho thấy</strong> trong tiêu đề thay vì lặng lẽ báo một con số không thể bảo đảm.",
+        "typical": "Các số liệu ghi <strong>thông thường</strong> là một đợt tìm việc mẫu để bạn so sánh, không phải lịch sử của bạn — công tắc sau biểu tượng bánh răng sẽ ẩn chúng. jojo không lưu lịch sử các con số của chính nó, đó là lý do không có gì ở đây báo cáo thay đổi theo thời gian.",
+        "legend": "Chú giải bên dưới thanh kết quả cho phép tắt các dải, và tiêu đề sẽ cho biết còn bao nhiêu trong tổng số được hiển thị. Tỷ lệ phần trăm được tính lại theo những gì còn lại thay vì giữ nguyên.",
+        "holds": "Trang này tự kiềm chế thay vì bịa ra mẫu số. Khi chưa gửi đi gì, không có tỷ lệ chính và không có phễu — tỷ lệ phản hồi trên không đơn ứng tuyển là một con số bịa đặt — và khi không có bản ghi nào, cả trang chỉ là một trạng thái trống."
+      },
+      "address": "<lead>Trên thanh địa chỉ</lead> không mang thông tin gì. Các công tắc và chú giải chỉ dành cho lần truy cập này."
+    },
+    "graph": {
+      "where": "ô Bộ nhớ trình duyệt trên thanh bên",
+      "open": "Mở đồ thị",
+      "intro": "Các bản ghi của bạn được vẽ đúng như cách chúng được lưu: một nút cho mỗi bản ghi, một cạnh cho mỗi liên kết giữa hai bản ghi. Màu là loại bản ghi và kích thước là có bao nhiêu thứ trỏ tới nó. Bên dưới bức hình là một bảng truy vấn trả lời những câu mà danh sách không trả lời được, chẳng hạn đơn ứng tuyển nào chưa lên lịch liên hệ lại. <guide>Đồ thị</guide> giải thích tất cả — phần này chỉ để cho biết trang ở đâu và nó không làm gì.",
+      "items": {
+        "legend": "Các hàng chú giải ẩn một loại bản ghi khỏi bức hình. Câu hỏi vẫn chạy trên toàn bộ đồ thị — một câu trả lời thay đổi vì bạn đã ẩn thứ gì đó còn tệ hơn không có câu trả lời.",
+        "illustrative": "Dòng bên dưới các bộ chọn trông như mã được ghi là <strong>minh họa</strong> và đúng là như vậy. Không có gì phân tích nó; nó có mặt để việc thấy hình dạng bên cạnh lời diễn đạt giúp các bộ chọn dễ đọc.",
+        "fetched": "Trang này và Chuyển dữ liệu được tải riêng khỏi phần còn lại của jojo, nên khi tải lần đầu bạn có thể thấy một bảng có tên trong chốc lát trong khi mã đang được tải. Nó nói rõ điều đó thay vì quay vòng chờ."
+      },
+      "address": "<lead>Trên thanh địa chỉ</lead> không mang thông tin gì — không có nút đã chọn, không có câu hỏi, không có các loại bạn đã ẩn. Một chế độ xem bạn thiết lập ở đây không thể gửi cho ai; các ví dụ truy vấn trong bảng là phiên bản có thể chia sẻ."
+    },
+    "transfer": {
+      "where": "ô Chuyển dữ liệu trên thanh bên, và Cài đặt",
+      "open": "Mở Chuyển dữ liệu",
+      "intro": "Chuyển giao mọi thứ sang thiết bị thứ hai: chọn máy này ở đầu nào, đọc mã ghép nối, xem chính xác những gì sẽ được chuyển và bao nhiêu, và quyết định có mang theo tài liệu hay không. Các số đếm được đọc từ chính kho dữ liệu của bạn, theo từng nhóm, đó là mục đích của việc đi qua màn hình này — những gì nó nói sẽ chuyển chính là những gì bạn thực sự có.",
+      "notConnectedTitle": "Không có gì được truyền đi",
+      "notConnected": "Bản dựng này không mở kết nối nào, không yêu cầu camera và không ghi vào kho dữ liệu nào. Mã ghép nối được tạo mới mỗi lần truy cập và không ghép nối với gì cả; tiến trình nó đi qua là bản trình diễn hình dạng mà lần chuyển giao thật sẽ có, và trang nói rõ điều đó ngay bên dưới mã thay vì trong một biểu ngữ mà bạn sẽ cuộn qua. Cách chuyển bản ghi sang máy khác hiện nay là bản xuất trong <settings>Cài đặt → Dữ liệu của bạn</settings>.",
+      "items": {
+        "files": "Tệp là nhóm duy nhất bị tắt mặc định — chúng là nửa nặng của lần chuyển giao và là nửa mà nhiều khả năng bạn đã có trên thiết bị kia. Đầu nhận không có quyền quyết định, vì một thiết bị lặng lẽ bỏ đi một nửa những gì nhận được sẽ là điều bất ngờ tệ hơn.",
+        "animation": "Hoạt ảnh là một cảnh WebGPU vẽ lại ở mỗi khung hình. Có một công tắc sau biểu tượng bánh răng để tắt nó, nên làm vậy khi dùng pin.",
+        "empty": "Với kho dữ liệu trống, trang cho biết không có gì để chuyển và chỉ tới dữ liệu mẫu, thay vì đề nghị gửi không mục nào của mọi thứ."
+      }
+    },
+    "profile": {
+      "where": "biểu tượng hình người, thanh trên cùng",
+      "open": "Mở hồ sơ cá nhân",
+      "intro": "Bốn bảng: thông tin cơ bản, liên kết, mối quan tâm và mục tiêu, và tài liệu. Nó được ghi vào trình duyệt này và giữ lại, giống hệt mọi bản ghi khác — <overview>Cách sử dụng jojo</overview> giải thích vì sao nó vẫn không phải một trong các bước bắt đầu.",
+      "items": {
+        "match": "<strong>Từ khóa đối chiếu</strong> không phải từ khóa, và bảng nói rõ điều đó ngay chỗ bạn nhập. Từ khóa là thứ bạn dùng để xếp và lọc bản ghi; từ khóa đối chiếu là một cách diễn đạt mà trình tìm việc dùng để chấm điểm tin tuyển dụng. Hai danh sách chưa bao giờ liên quan đến nhau.",
+        "documents": "Bảng tài liệu là một chế độ xem của nhóm Đơn ứng tuyển trong <vault>Kho lưu trữ</vault> chứ không phải một danh sách thứ hai của riêng nó — một CV được thêm ở nơi nào cũng hiện ở cả hai, vì chỉ có một nơi. Tải lên ở đây ghi lại tên, kích thước và loại tệp, với cùng điều kiện như Kho lưu trữ.",
+        "save": "Cả trang được lưu thành một thay đổi, nên một lần Hoàn tác sẽ đưa toàn bộ trở lại. Nhấn Lưu khi chưa sửa gì sẽ không ghi gì và không có Hoàn tác, thay vì ghi nhật ký một thay đổi không hề xảy ra.",
+        "example": "Mọi trường đều có một ví dụ màu xám. Với kho dữ liệu trống, điều đó quan trọng: trang này từng hiển thị tên và email của một người lạ như giá trị thật, trong các ô mà người đọc có lý do để tưởng là câu trả lời của chính họ."
+      }
+    },
+    "assistant": {
+      "where": "biểu tượng robot, thanh trên cùng",
+      "open": "Mở trợ lý",
+      "intro": "Một cuộc trò chuyện theo chuỗi với mô hình cục bộ bạn đã kết nối trong <settings>Cài đặt</settings>, và một trang ví dụ mẫu cho đến khi bạn kết nối. Bạn nhận được cái nào tùy thuộc vào việc đã lưu điểm cuối hay chưa — không có gì bị giấu và không có công tắc nào.",
+      "connectedTitle": "Khi đã kết nối mô hình",
+      "connected": {
+        "agentic": "Nó là <strong>tác tử</strong>: mô hình được trao các công cụ của chính ứng dụng và có thể đọc và ghi bản ghi để trả lời bạn. Mọi lời gọi nó thực hiện đều được liệt kê trong câu trả lời ngay khi diễn ra — công cụ, tham số, và kết quả trả về — nên một thao tác ghi là thứ bạn theo dõi được chứ không phải tình cờ phát hiện.",
+        "threads": "Các cuộc trò chuyện là <strong>các chuỗi, và chúng được lưu</strong>. Chúng nằm trong IndexedDB của trình duyệt này cùng với mọi thứ khác, nên đóng thẻ vẫn giữ lại; thanh chuỗi cho phép chuyển giữa chúng, và mỗi chuỗi có thể được xếp vào một đơn ứng tuyển để hai đợt tìm việc không hòa lẫn vào một lịch sử.",
+        "documents": "Khi trình đọc tài liệu cũng đã được thiết lập, nó có thể <strong>đọc tài liệu của bạn</strong> — một PDF, một tệp Word, một bản trình chiếu — và trả lời dựa trên nội dung bên trong."
+      },
+      "notConnectedTitle": "Khi chưa có, các câu trả lời là viết sẵn chứ không phải do mô hình tạo ra",
+      "notConnected": "Năm yêu cầu mà việc tìm việc thực sự đặt ra — thư xin việc, điều chỉnh CV, đọc tin tuyển dụng, email liên hệ lại, chuẩn bị phỏng vấn — mỗi cái được trả lời bằng một ví dụ mẫu viết đầy đủ. Một tin nhắn không khớp với cái nào sẽ nhận câu trả lời mở đầu bằng việc nói rằng nó là câu trả lời soạn sẵn, thay vì một đoạn văn nghe hợp lý về bất cứ điều gì bạn hỏi, và mọi câu trả lời đều mang cùng huy hiệu — <strong>Câu trả lời mẫu · chưa kết nối mô hình</strong>.",
+      "items": {
+        "save": "<strong>Lưu vào đoạn văn bản</strong> xếp câu trả lời vào <vault>Kho lưu trữ</vault> dưới nhãn mà câu trả lời đó thuộc về, và thông báo cho phép mở nó ở đó.",
+        "copy": "Trình duyệt có thể thẳng thừng từ chối việc sao chép, nên nút sẽ báo lỗi thay vì xác nhận một điều không xảy ra.",
+        "delete": "Xóa một chuỗi sẽ có nút Hoàn tác thay vì hộp thoại xác nhận."
+      }
+    },
+    "settings": {
+      "where": "biểu tượng bánh răng, thanh trên cùng",
+      "open": "Mở Cài đặt",
+      "intro": "Bảy bảng: tài liệu của bạn, mô hình cục bộ, giao diện, dữ liệu của bạn, từ khóa, chẩn đoán, và nhật ký kiểm tra. Ô trạng thái ở cuối thanh bên dẫn tới đây, đó là công dụng của nó.",
+      "items": {
+        "export": "<strong>Xuất bản sao lưu</strong> ghi một bản sao lưu đầy đủ có đánh phiên bản thành <strong>{{file}}</strong>: đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và nhãn của chúng, và hồ sơ cá nhân. Đó là bản sao tạo ngay lúc bạn nhấn và không cập nhật theo những gì bạn làm tiếp.",
+        "clear": "<strong>Tải dữ liệu mẫu</strong>, <strong>Xóa bản ghi</strong> và <strong>Xóa bộ nhớ</strong> đều hỏi trước và đều nói rõ chúng ảnh hưởng tới những gì. Xóa bản ghi sẽ giữ các từ khóa bạn đã đặt — trừ khi kho dữ liệu vẫn còn là dữ liệu mẫu chưa bị động tới, khi đó các từ khóa mẫu cũng bị xóa theo, và hộp thoại xác nhận cho biết nó sắp làm điều nào trong hai.",
+        "keywords": "<strong>Từ khóa</strong> cho phép đổi tên, đổi màu và xóa chúng, và cho biết mỗi từ khóa đang gắn với bao nhiêu bản ghi trước khi bạn xóa.",
+        "diagnostics": "<strong>Chẩn đoán</strong> là thứ biến “các bản ghi của bạn đã được lưu” thành điều kiểm chứng được: mỗi loại có bao nhiêu trong kho dữ liệu, phiên bản lược đồ nào đang trên ổ đĩa, trình duyệt đang dành cho jojo bao nhiêu dung lượng, và mã của bất cứ thứ gì nó từ chối đọc.",
+        "audit": "<strong>Nhật ký kiểm tra</strong> liệt kê mọi lần ghi, mới nhất trước, tối đa hai trăm. Chỉ hàng mới nhất có nút Hoàn tác, vì một mục từ ba giờ trước mô tả những bản ghi đã được sửa hàng chục lần kể từ đó. Tải dữ liệu mẫu và Xóa bản ghi xuất hiện ở đó như mọi thứ khác và là hai thao tác nhật ký sẽ không hoàn tác — chúng đã nói rõ điều đó trước khi bạn nhấn."
+      },
+      "notConnectedTitle": "Một bảng và một nút đang bị tắt",
+      "notConnected": "Điểm cuối mô hình cục bộ là một trường nhập, kèm nút Kiểm tra cho biết vì sao nó không chạy được. Bảng từng nằm cạnh nó — một địa chỉ cầu nối, một mã ghép nối, một đường dẫn lưu và ba công tắc, tất cả đều nhận những gì bạn gõ mà không kết nối tới đâu — đã bị gỡ bỏ; tài liệu giờ được lưu trữ thật, và <strong>Tài liệu của bạn</strong> cho biết ở đâu. <strong>Xuất sang Excel</strong> và <strong>Nhập</strong> bị tắt kèm lý do khi rê chuột lên — không có công cụ ghi bảng tính đi kèm, và đọc lại một bản sao lưu cần bộ kiểm tra hợp lệ có thể từ chối tệp nó không hiểu. Mỗi cái sẽ mang lại gì cho bạn có ở <overview>Cách sử dụng jojo</overview>."
+    },
+    "guide": {
+      "where": "dấu chấm hỏi, thanh trên cùng",
+      "open": "Mở trang đầu tiên",
+      "intro": "Bốn trang dưới một địa chỉ, với thanh điều hướng phía trên và bộ chuyển trang phía dưới ở mỗi trang. Lối vào duy nhất của nó trong khung giao diện là biểu tượng trợ giúp: có tên khi rê chuột và với trình đọc màn hình, nhưng không có chữ hiển thị và không có hàng nào trên thanh bên, một lối vào mỏng manh cho trang bạn đi tìm khi có gì đó chưa rõ. <kbd>⌘K</kbd> là cách đáng tin cậy để quay lại, và nó liệt kê riêng cả bốn trang thay vì một hàng cho cả phần.",
+      "order": "Thứ tự là có chủ đích chứ không phải ngẫu nhiên: ai cũng có thể dừng sau trang đầu tiên và dùng ứng dụng, và ai cũng có thể nhảy thẳng tới trang cuối.",
+      "address": "<lead>Trên thanh địa chỉ</lead> chính là trang đó. Trang đầu tiên là <code>/guide</code> chứ không phải <code>/guide/overview</code>, để mọi liên kết và dấu trang tạo ra trước khi có bốn trang vẫn dẫn tới một nơi thật."
+    }
+  }
+}

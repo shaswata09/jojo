@@ -1,0 +1,71 @@
+{
+  "monthPicker": {
+    "goTo": "Перейти к месяцу",
+    "previousYear": "Предыдущий год",
+    "nextYear": "Следующий год"
+  },
+  "chip": {
+    "allDay": "Весь день",
+    "tooltip": "{{start}} — {{title}}",
+    "spoken": "{{start}} —",
+    "spokenDone": "{{start}}, выполнено —"
+  },
+  "dayCell": {
+    "label_one": "{{label}}, {{count}} событие",
+    "label_few": "{{label}}, {{count}} события",
+    "label_many": "{{label}}, {{count}} событий",
+    "label_other": "{{label}}, {{count}} события",
+    "add": "Добавить событие: {{label}}",
+    "more_one": "ещё {{count}}",
+    "more_few": "ещё {{count}}",
+    "more_many": "ещё {{count}}",
+    "more_other": "ещё {{count}}"
+  },
+  "grid": {
+    "dayLabel": "{{day}} {{month}}",
+    "previousMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "today": "Сегодня",
+    "backTo": "Назад: {{date}}",
+    "goTo": "Перейти: {{month}} {{year}}",
+    "hintTouch": "Нажмите на день, чтобы увидеть его события.",
+    "hintPointer": "Выберите день, чтобы показать его список рядом с сеткой. Щёлкните событие, чтобы изменить его, или перетащите на другой день — перетаскивание требует мыши, поэтому с клавиатуры используйте поле даты внутри события.",
+    "eventTypes": "Типы событий",
+    "showAll": "Показать все",
+    "dateColours": "Цвета дат",
+    "marks": {
+      "overdue": "Просрочено",
+      "soon": "Срок в ближайшие 48 часов",
+      "done": "Выполнено"
+    }
+  },
+  "rail": {
+    "monthYear": "{{month}} {{year}}",
+    "today": "Сегодня",
+    "selectedDay": "Выбранный день",
+    "hiddenTitle": "{{date}}: ничего не показано",
+    "hiddenDescription_one": "{{count}} событие относится к типу, отключённому под сеткой.",
+    "hiddenDescription_few": "{{count}} события относятся к типу, отключённому под сеткой.",
+    "hiddenDescription_many": "{{count}} событий относятся к типу, отключённому под сеткой.",
+    "hiddenDescription_other": "{{count}} события относятся к типу, отключённому под сеткой.",
+    "showAllTypes": "Показать все типы событий",
+    "emptyTitle": "{{date}}: ничего нет",
+    "emptyDescription": "Добавьте собеседование, срок или время на подготовку — и они появятся здесь и в сетке.",
+    "addEvent": "Добавить событие",
+    "backTo": "Назад: {{month}}",
+    "delete": "Удалить событие",
+    "deleteNamed": "Удалить «{{title}}»",
+    "restOf": "Остаток месяца: {{month}}",
+    "lastDayTitle": "{{date}} — последний день месяца",
+    "nothingAfterTitle": "После {{date}} ничего нет",
+    "lastDayDescription": "После него ничего нет. Перелистните вперёд, чтобы планировать на следующий месяц ({{month}}).",
+    "nothingAfterDescription": "До конца месяца ({{month}}) свободно. Всё, что вы добавите после этого дня, появится здесь.",
+    "goToMonth": "Перейти: {{month}}",
+    "goToDay": "Перейти: {{label}}",
+    "shortDay": "{{day}} {{month}}",
+    "moreLater_one": "ещё {{count}} позже в этом месяце",
+    "moreLater_few": "ещё {{count}} позже в этом месяце",
+    "moreLater_many": "ещё {{count}} позже в этом месяце",
+    "moreLater_other": "ещё {{count}} позже в этом месяце"
+  }
+}

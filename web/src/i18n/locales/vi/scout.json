@@ -1,0 +1,197 @@
+{
+  "common": {
+    "newPipeline": "Quy trình mới",
+    "addToApplications": "Thêm vào Đơn ứng tuyển",
+    "inApplicationsAs": "Có trong Đơn ứng tuyển với tên <anchor>{{name}}</anchor>",
+    "open": "Mở",
+    "undo": "Hoàn tác"
+  },
+  "header": {
+    "title": "Trình tìm việc",
+    "subtitle": "Các tìm kiếm đã lưu sẽ thay bạn theo dõi các trang tuyển dụng — và là nơi lưu tạm tin tuyển dụng ngay hôm nay",
+    "onlyActive": "Chỉ quy trình đang bật",
+    "onlyActiveHint": "Ẩn các quy trình đang tắt",
+    "paused": "Chưa có mô hình cục bộ nào được kết nối, nên các quy trình đang tạm dừng. Bạn vẫn có thể viết quy trình và lưu tin tuyển dụng bên dưới — chúng sẽ bắt đầu chạy khi kết nối được tới mô hình.",
+    "runsLocally": "Các quy trình chạy trên máy của bạn, trong khi thẻ này đang mở. Không có gì được gửi cho bên thứ ba."
+  },
+  "shutdown": {
+    "title": "Tắt {{name}}?",
+    "description": "Nó đã chạy hai lần mà không tìm thấy gì để gợi ý, và không có gì đang chờ bạn trả lời. Tắt nó sẽ ngừng việc tìm kiếm; mọi thứ nó đã tìm thấy vẫn giữ nguyên. Bạn có thể bật lại bất cứ lúc nào.",
+    "keep": "Tiếp tục chạy",
+    "confirm": "Tắt"
+  },
+  "matches": {
+    "title": "Gợi ý",
+    "hint": "chấm điểm theo hồ sơ cá nhân của bạn",
+    "emptyTitle": "Chưa có gợi ý nào",
+    "emptyDescription": "Các quy trình sẽ đưa tin tuyển dụng đã chấm điểm vào đây khi đã kết nối mô hình. Trước đó, các tin tuyển dụng bạn lưu bên dưới là cách để bắt đầu.",
+    "matched": "khớp với {{list}}",
+    "notScored": "chưa chấm điểm",
+    "fit": "Phù hợp {{score}}%",
+    "added": "đã thêm"
+  },
+  "dialog": {
+    "editTitle": "Sửa quy trình",
+    "description": "Quy trình là một công việc thường trực của trợ lý. Nó chạy trên thiết bị này khi jojo đang mở, và mọi thay đổi nó muốn thực hiện đều được hiển thị cho bạn trước.",
+    "kind": "Chức năng",
+    "kinds": {
+      "twin": "Giữ bản ghi đầy đủ",
+      "scout": "Tìm tin tuyển dụng"
+    },
+    "kindHint": {
+      "twin": "Đọc những gì bạn có và gợi ý những gì còn thiếu — ghi chú, lời nhắc, nhãn, xếp mục.",
+      "scout": "Tìm các tin tuyển dụng đáng chú ý và đưa ra để bạn xem xét."
+    },
+    "name": "Tên",
+    "nameError": "Đặt tên theo thứ nó theo dõi.",
+    "namePlaceholder": {
+      "twin": "vd. Giữ các đơn ứng tuyển gọn gàng",
+      "scout": "vd. Trang tuyển dụng giảng viên CRA"
+    },
+    "sources": "Nguồn",
+    "sourcesHint": "Trang tuyển dụng hoặc trang nghề nghiệp mà nó theo dõi. Ngăn cách nhiều nguồn bằng dấu phẩy.",
+    "sourceError": "Trình tìm việc không có nguồn thì không có gì để đọc.",
+    "terms": {
+      "twin": "Cần tập trung vào đâu",
+      "scout": "Từ khóa đối chiếu"
+    },
+    "termsHint": {
+      "twin": "Bất cứ điều gì nó nên đặc biệt chú ý. Để trống để nó xem mọi nơi.",
+      "scout": "Cơ sở để chấm điểm tin tuyển dụng. Để trống để giữ mọi thứ nguồn liệt kê."
+    },
+    "termsPlaceholder": {
+      "twin": "liên hệ lại và hạn chót",
+      "scout": "phó giáo sư, CS/ECE"
+    },
+    "howOften": "Tần suất",
+    "howOftenHint": "Thời gian chờ giữa các lượt.",
+    "schedules": {
+      "hourly": "Mỗi giờ",
+      "daily": "Mỗi ngày",
+      "weekly": "Mỗi tuần"
+    },
+    "cancel": "Hủy",
+    "save": "Lưu thay đổi",
+    "create": "Tạo quy trình"
+  },
+  "pipelines": {
+    "title": "Quy trình",
+    "hint": "chạy trên thiết bị này khi jojo đang mở",
+    "caption": "Chúng hoạt động khi thẻ này đang mở — không có gì chạy bên ngoài máy này",
+    "kinds": {
+      "twin": "Bản sao số",
+      "scout": "Trình tìm việc"
+    },
+    "status": {
+      "off": "tắt",
+      "paused": "tạm dừng",
+      "running": "đang chạy",
+      "watching": "đang theo dõi"
+    },
+    "noneOnTitle": "Chưa bật quy trình nào",
+    "noneOnDescription": "Mọi quy trình bạn có đều đang tắt. Hãy bật một quy trình, hoặc bỏ bộ lọc trong tùy chọn trang.",
+    "emptyTitle": "Chưa có quy trình nào",
+    "emptyDescription": "Quy trình là một công việc thường trực của trợ lý: giữ cho bản ghi đầy đủ, hoặc theo dõi các tin tuyển dụng đáng chú ý.",
+    "showAll": "Hiện tất cả quy trình",
+    "auto": "tự động",
+    "autoAria": "Chạy {{name}} mà không cần hỏi",
+    "toReview_other": "{{count}} cần xem xét",
+    "runNow": "Chạy {{name}} ngay",
+    "edit": "Sửa {{name}}",
+    "delete": "Xóa {{name}}",
+    "enable": "Bật {{name}}"
+  },
+  "postings": {
+    "title": "Lưu tin tuyển dụng",
+    "hint": "hoạt động không cần mô hình",
+    "intro": "Việc lưu cũng giữ lại trang đó, trong Kho lưu trữ ở mục Tin tuyển dụng — được mở qua tiện ích mở rộng jojo đúng như bạn thấy, hoặc được trình đọc tài liệu tải về. Nếu không có cả hai, những gì được giữ là URL, nhà tuyển dụng đoán từ URL, và ngày bạn lưu.",
+    "urlLabel": "URL tin tuyển dụng",
+    "pasteFirst": "Hãy dán URL trước",
+    "save": "Lưu tin tuyển dụng",
+    "emptyTitle": "Chưa lưu tin tuyển dụng nào",
+    "emptyDescription": "Dán URL của tin tuyển dụng bạn muốn quay lại sau. Tin tuyển dụng có thể bị gỡ xuống; liên kết và ngày thì là của bạn.",
+    "saved": "đã lưu {{when}}",
+    "linked": "đã liên kết với đơn ứng tuyển",
+    "unscored": "chưa chấm điểm",
+    "openSnapshot": "Mở bản lưu",
+    "savingPage": "Đang lưu trang…",
+    "savePage": "Lưu trang",
+    "savePageTitle": "Mở tin tuyển dụng và giữ một bản sao trong Kho lưu trữ",
+    "remove": "Gỡ {{title}}"
+  },
+  "proposals": {
+    "title": "Đề xuất",
+    "hint": "không có gì xảy ra cho đến khi bạn đồng ý",
+    "aPipeline": "một quy trình",
+    "clearAnswered": "Xóa các mục đã trả lời",
+    "approveAll": "Phê duyệt cả {{count}}",
+    "clearAll": "Xóa tất cả",
+    "emptyTitle": "Không có gì cần xem xét",
+    "emptyDescription": "Khi một quy trình đang chạy, mọi thay đổi nó muốn thực hiện sẽ hiện ở đây trước. Nó sẽ không động vào bản ghi của bạn cho đến khi bạn phê duyệt.",
+    "clearTitle": "Xóa tất cả đề xuất?",
+    "clearPending_other": "{{count}} đề xuất vẫn đang chờ bạn và sẽ bị từ chối. Không có gì trong bản ghi của bạn thay đổi, và các quy trình vẫn tiếp tục chạy — nhưng chúng sẽ không đề xuất lại những mục này.",
+    "clearAnsweredOnly": "Các thẻ đã trả lời sẽ được gỡ khỏi danh sách. Không có gì trong bản ghi của bạn thay đổi.",
+    "status": {
+      "applied": "đã áp dụng",
+      "discarded": "đã loại bỏ",
+      "failed": "không áp dụng được"
+    },
+    "noSummary": "Mục này không kèm tóm tắt — mở tin tuyển dụng để xem đó là gì.",
+    "reading": "Đang đọc tin tuyển dụng để lấy thông tin chi tiết…",
+    "notALink": "Không phải địa chỉ web, nên không được đưa ra dưới dạng liên kết",
+    "from": "từ {{name}}",
+    "openPosting": "Mở tin tuyển dụng",
+    "openPostingAria": "Mở tin tuyển dụng trong thẻ mới: {{title}}",
+    "inApplications": "Có trong Đơn ứng tuyển",
+    "approve": "Phê duyệt",
+    "discard": "Loại bỏ đề xuất này",
+    "discardAria": "Loại bỏ: {{title}}",
+    "unreadable": "Không đọc được trang: {{reason}}",
+    "unreadableKept": "Không đọc được trang: {{reason}} Bản thân trang đã được lưu.",
+    "applyBy": "ứng tuyển trước {{date}}",
+    "pageSaved": "Đã lưu trang"
+  },
+  "toasts": {
+    "alreadyHaveTitle": "Đã có trong Đơn ứng tuyển — không thêm lại",
+    "alreadyHaveDescription": "Đây là {{name}}, được đăng lại trên một trang tuyển dụng khác. Tin tuyển dụng đã được liên kết với nó, và trang của tin được xếp vào đó.",
+    "duplicateDescription": "Tin tuyển dụng này là {{name}}, bạn đã có rồi. {{why}} Trang của nó được xếp vào đơn đó.",
+    "keepBoth": "Giữ cả hai",
+    "fillFailedTitle": "{{org}}: không đọc được tin tuyển dụng",
+    "fillFailedKept": "{{reason}} Bản thân trang đã được lưu và xếp vào bản nháp — mở nó để điền phần còn lại.",
+    "fillFailed": "{{reason}} Bản nháp giữ những gì liên kết cho biết — mở nó để điền phần còn lại.",
+    "filledTitle": "Đã điền {{name}} từ tin tuyển dụng",
+    "checkedTitle": "Đã đối chiếu {{name}} với tin tuyển dụng",
+    "filledIn": "Đã điền: {{list}}.",
+    "checked": "Đã đối chiếu với trang: {{list}}.",
+    "keptYours": "Đã giữ các chỉnh sửa của bạn cho: {{list}}.",
+    "addedNothing": "Trang không bổ sung gì mà bản nháp chưa có.",
+    "missing": "Không có trên trang: {{list}}.",
+    "filedUnder": "Trang đã được xếp vào đó.",
+    "approvedReading": "Đang đọc tin tuyển dụng để điền thông tin — bản nháp sẽ cập nhật khi xong.",
+    "approvedFromLink": "Đã điền từ liên kết. Kết nối một mô hình trong Cài đặt để đọc nội dung tin tuyển dụng.",
+    "approvedOpen": "Mở nó để điền phần còn lại.",
+    "allRepeatsTitle": "Đã có trong Đơn ứng tuyển — không thêm gì mới",
+    "allRepeats_other": "{{count}} mục là công việc bạn đã có, được đăng lại trên trang tuyển dụng khác. Chúng đã được liên kết với các đơn ứng tuyển bạn có.",
+    "added_other": "Đã thêm {{count}} mục vào Đơn ứng tuyển dưới dạng bản nháp",
+    "addedWithRepeats_other": "Đã thêm {{count}} mục vào Đơn ứng tuyển dưới dạng bản nháp · {{repeats}} đã có sẵn",
+    "addedReading": "Đang lần lượt đọc từng tin tuyển dụng để điền thông tin.",
+    "addedFromLinks": "Đã điền từ liên kết. Kết nối một mô hình trong Cài đặt để đọc nội dung các tin tuyển dụng.",
+    "addedOne": "Đã thêm {{org}} vào Đơn ứng tuyển dưới dạng bản nháp",
+    "addedAsDraft": "Đã thêm {{org}} dưới dạng bản nháp",
+    "matchStays": "Gợi ý vẫn ở trong danh sách này, giờ đã liên kết với đơn ứng tuyển.",
+    "postingSaved": "Đã lưu tin tuyển dụng",
+    "postingReading": "Đang đọc tin tuyển dụng để đối chiếu và điền thông tin — bản nháp sẽ cập nhật khi xong.",
+    "postingStays": "Tin tuyển dụng vẫn được lưu ở đây, giờ đã liên kết với đơn ứng tuyển.",
+    "postingRemoved": "Đã gỡ tin tuyển dụng",
+    "pageNotSaved": "Trang của tin tuyển dụng chưa được lưu",
+    "pageSaved": "Đã lưu trang tin tuyển dụng",
+    "pageSavedFiled": "{{title}} — đã xếp vào đơn ứng tuyển của nó.",
+    "pageSavedVault": "{{title}} — trong Kho lưu trữ ở mục Tin tuyển dụng.",
+    "pipelineUpdated": "Đã cập nhật quy trình",
+    "pipelineCreated": "Đã tạo quy trình",
+    "pipelineCreatedPaused": "{{name}} — tạm dừng cho đến khi kết nối mô hình.",
+    "pipelineCreatedRunning": "{{name}} — sẽ sớm bắt đầu tìm kiếm.",
+    "pipelineDeleted": "Đã xóa quy trình",
+    "pipelineDeletedDescription": "{{name}} ngừng theo dõi {{source}}."
+  }
+}
