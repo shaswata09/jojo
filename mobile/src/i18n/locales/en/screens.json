@@ -518,7 +518,90 @@
     "patternNone": "Nothing matches this one.",
     "records_one": "{{count}} record",
     "records_other": "{{count}} records",
-    "exampleNone": "Nothing matches — which is the good answer to this one."
+    "exampleNone": "Nothing matches — which is the good answer to this one.",
+    "view": {
+      "mode": {
+        "label": "View",
+        "overview": "Overview",
+        "focus": "Focus"
+      },
+      "groupBy": {
+        "label": "Group by",
+        "role": "Role",
+        "stage": "Stage",
+        "organisation": "Employer",
+        "keyword": "Keyword"
+      },
+      "group": {
+        "shared": "Shared",
+        "none": "None",
+        "rest": "Others",
+        "loose": "Not linked to anything",
+        "label": "{{name}}: {{records}}",
+        "singles": "One application each"
+      },
+      "groups_one": "{{count}} group",
+      "groups_other": "{{count}} groups",
+      "overviewLabel": "Knowledge graph overview — {{groups}}, {{records}}",
+      "overviewHelp": "Each circle is a group. Tap a record to see its links and unfold what is counted on it. Pinch, or use + and −, to zoom.",
+      "listHint": "Every record in this picture is listed under Groups below.",
+      "focusLabel": "{{label}} in focus — {{records}}",
+      "focusHelp": "The record in the middle, what it links to on the first ring, and what those link to on the next. Tap a record to focus on it or expand it.",
+      "focusOn": "Focus on {{label}}",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "back": "Back to overview",
+      "trail": "Focus trail",
+      "more_one": "{{formatted}} more record within reach is not drawn — focus on a neighbour to see it.",
+      "more_other": "{{formatted}} more records within reach are not drawn — focus on a neighbour to see them.",
+      "looseHint": "These records point at nothing and nothing points at them. Pick one to see it.",
+      "groupsTitle": "Groups",
+      "groupsHint": "the picture as a list",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, with {{folded}} counted on it",
+        "hub": "{{label}}. {{type}}, {{connections}}; {{folded}} not drawn — expand it to show them"
+      },
+      "connections_one": "{{count}} connection",
+      "connections_other": "{{count}} connections",
+      "folded": {
+        "application_one": "{{count}} application",
+        "application_other": "{{count}} applications",
+        "role_one": "{{count}} role",
+        "role_other": "{{count}} roles",
+        "item_one": "{{count}} timeline item",
+        "item_other": "{{count}} timeline items",
+        "keyword_one": "{{count}} keyword",
+        "keyword_other": "{{count}} keywords",
+        "link_one": "{{count}} link",
+        "link_other": "{{count}} links",
+        "file_one": "{{count}} file",
+        "file_other": "{{count}} files",
+        "snippet_one": "{{count}} snippet",
+        "snippet_other": "{{count}} snippets",
+        "posting_one": "{{count}} saved posting",
+        "posting_other": "{{count}} saved postings",
+        "match_one": "{{count}} Scout match",
+        "match_other": "{{count}} Scout matches",
+        "org_one": "{{count}} employer",
+        "org_other": "{{count}} employers"
+      },
+      "moreItem_one": "+{{formatted}} more",
+      "moreItem_other": "+{{formatted}} more",
+      "moreLabel_one": "{{formatted}} more record linked to {{label}}. Select it to list them all.",
+      "moreLabel_other": "{{formatted}} more records linked to {{label}}. Select it to list them all.",
+      "zoom": {
+        "label": "Zoom",
+        "in": "Zoom in",
+        "out": "Zoom out",
+        "fit": "Fit to view"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} and {{last}}",
+        "many": "{{head}} and {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "Job scout",

@@ -7,7 +7,7 @@
  * node come from".
  */
 
-import type { Rel } from '@jojo/service/core/model'
+import type { Rel, Stage } from '@jojo/service/core/model'
 import type { TimelineKind } from '@/data/timeline'
 import { i18next } from '@/i18n/i18n'
 import { domain } from '@/i18n/domain'
@@ -79,6 +79,12 @@ export type GraphNode = {
   itemKind?: TimelineKind
   /** Timeline items only — whether it surfaces in the Vault's reminders. */
   reminder?: boolean
+  /**
+   * Applications only — the pipeline stage, so the overview can group and order
+   * by it (`lib/graph/view.ts`). Not shown on its own: the detail line is the
+   * location, as it always was.
+   */
+  stage?: Stage
   /** Edges touching this node, counted at build time. Drives node size. */
   degree: number
 }

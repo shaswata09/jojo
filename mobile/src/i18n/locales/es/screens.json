@@ -518,7 +518,90 @@
     "patternNone": "Nada coincide con esta.",
     "records_one": "{{count}} registro",
     "records_other": "{{count}} registros",
-    "exampleNone": "Nada coincide, que es la buena respuesta para esta."
+    "exampleNone": "Nada coincide, que es la buena respuesta para esta.",
+    "view": {
+      "mode": {
+        "label": "Vista",
+        "overview": "Vista general",
+        "focus": "Enfoque"
+      },
+      "groupBy": {
+        "label": "Agrupar por",
+        "role": "Puesto",
+        "stage": "Etapa",
+        "organisation": "Empleador",
+        "keyword": "Palabra clave"
+      },
+      "group": {
+        "shared": "Compartidos",
+        "none": "Sin especificar",
+        "rest": "Otros",
+        "loose": "Sin ninguna conexión",
+        "label": "{{name}}: {{records}}",
+        "singles": "Una candidatura cada uno"
+      },
+      "groups_one": "{{count}} grupo",
+      "groups_other": "{{count}} grupos",
+      "overviewLabel": "Vista general del grafo de conocimiento: {{groups}}, {{records}}",
+      "overviewHelp": "Cada círculo es un grupo. Toca un registro para ver sus vínculos y desplegar lo que se cuenta en él. Pellizca, o usa + y −, para acercar o alejar.",
+      "listHint": "Cada registro de esta imagen aparece en Grupos, más abajo.",
+      "focusLabel": "Enfoque en {{label}}: {{records}}",
+      "focusHelp": "El registro del centro, aquello a lo que está vinculado en el primer anillo y aquello a lo que están vinculados estos en el siguiente. Toca un registro para enfocarlo o expandirlo.",
+      "focusOn": "Enfocar {{label}}",
+      "expand": "Expandir",
+      "collapse": "Contraer",
+      "back": "Volver a la vista general",
+      "trail": "Recorrido del enfoque",
+      "more_one": "Hay {{formatted}} registro más al alcance que no se dibuja; enfoca un vecino para verlo.",
+      "more_other": "Hay {{formatted}} registros más al alcance que no se dibujan; enfoca un vecino para verlos.",
+      "looseHint": "Estos registros no apuntan a nada y nada apunta a ellos. Elige uno para verlo.",
+      "groupsTitle": "Grupos",
+      "groupsHint": "la imagen como lista",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, agrupa {{folded}}",
+        "hub": "{{label}}. {{type}}, {{connections}}; sin dibujar: {{folded}}; expándelo para mostrarlos"
+      },
+      "connections_one": "{{count}} conexión",
+      "connections_other": "{{count}} conexiones",
+      "folded": {
+        "application_one": "{{count}} candidatura",
+        "application_other": "{{count}} candidaturas",
+        "role_one": "{{count}} puesto",
+        "role_other": "{{count}} puestos",
+        "item_one": "{{count}} elemento de la cronología",
+        "item_other": "{{count}} elementos de la cronología",
+        "keyword_one": "{{count}} palabra clave",
+        "keyword_other": "{{count}} palabras clave",
+        "link_one": "{{count}} enlace",
+        "link_other": "{{count}} enlaces",
+        "file_one": "{{count}} archivo",
+        "file_other": "{{count}} archivos",
+        "snippet_one": "{{count}} fragmento",
+        "snippet_other": "{{count}} fragmentos",
+        "posting_one": "{{count}} oferta guardada",
+        "posting_other": "{{count}} ofertas guardadas",
+        "match_one": "{{count}} coincidencia del explorador",
+        "match_other": "{{count}} coincidencias del explorador",
+        "org_one": "{{count}} empleador",
+        "org_other": "{{count}} empleadores"
+      },
+      "moreItem_one": "+{{formatted}} más",
+      "moreItem_other": "+{{formatted}} más",
+      "moreLabel_one": "Hay {{formatted}} registro más vinculado a {{label}}. Selecciónalo para ver la lista completa.",
+      "moreLabel_other": "Hay {{formatted}} registros más vinculados a {{label}}. Selecciónalo para ver la lista completa.",
+      "zoom": {
+        "label": "Zoom",
+        "in": "Acercar",
+        "out": "Alejar",
+        "fit": "Ajustar a la vista"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} y {{last}}",
+        "many": "{{head}} y {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "Explorador de empleo",

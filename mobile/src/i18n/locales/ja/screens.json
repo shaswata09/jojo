@@ -489,7 +489,75 @@
     "patternHint": "自分で組み立てる",
     "patternNone": "これに一致するものはありません。",
     "records_other": "{{count}} 件の記録",
-    "exampleNone": "一致なし。この質問にはそれが良い答えです。"
+    "exampleNone": "一致なし。この質問にはそれが良い答えです。",
+    "view": {
+      "mode": {
+        "label": "表示",
+        "overview": "概要",
+        "focus": "フォーカス"
+      },
+      "groupBy": {
+        "label": "グループ化",
+        "role": "職種",
+        "stage": "段階",
+        "organisation": "雇用主",
+        "keyword": "キーワード"
+      },
+      "group": {
+        "shared": "共通",
+        "none": "なし",
+        "rest": "その他",
+        "loose": "何ともつながっていない",
+        "label": "{{name}}：{{records}}",
+        "singles": "応募が 1 件ずつ"
+      },
+      "groups_other": "{{count}} 個のグループ",
+      "overviewLabel": "ナレッジグラフの概要 — {{groups}}、{{records}}",
+      "overviewHelp": "円はそれぞれ 1 つのグループです。記録をタップすると、つながりが表示され、その記録にまとめて数えられているものが展開されます。ピンチするか、+ と − でズームします。",
+      "listHint": "この図のすべての記録は、下の「グループ」に一覧されています。",
+      "focusLabel": "{{label}} にフォーカス中 — {{records}}",
+      "focusHelp": "中心にある記録、1 つ目の輪にそのつながり先、次の輪にさらにそのつながり先が並びます。記録をタップすると、フォーカスしたり展開したりできます。",
+      "focusOn": "{{label}} にフォーカス",
+      "expand": "展開",
+      "collapse": "折りたたむ",
+      "back": "概要に戻る",
+      "trail": "フォーカスの履歴",
+      "more_other": "たどれる範囲の記録があと {{formatted}} 件ありますが、描かれていません。表示するには、隣の記録にフォーカスしてください。",
+      "looseHint": "これらの記録はどれも何も指しておらず、何からも指されていません。1 つ選ぶと表示されます。",
+      "groupsTitle": "グループ",
+      "groupsHint": "同じ図をリストで",
+      "node": {
+        "plain": "{{label}}。{{type}}、{{connections}}",
+        "folded": "{{label}}。{{type}}、{{connections}}。{{folded}}がまとめて数えられています",
+        "hub": "{{label}}。{{type}}、{{connections}}。{{folded}}は描かれていません。展開すると表示されます"
+      },
+      "connections_other": "{{count}} 件のつながり",
+      "folded": {
+        "application_other": "{{count}} 件の応募",
+        "role_other": "{{count}} 件の職種",
+        "item_other": "{{count}} 件のタイムラインの項目",
+        "keyword_other": "{{count}} 件のキーワード",
+        "link_other": "{{count}} 件のリンク",
+        "file_other": "{{count}} 件のファイル",
+        "snippet_other": "{{count}} 件のスニペット",
+        "posting_other": "{{count}} 件の保存した求人",
+        "match_other": "{{count}} 件のスカウトの候補",
+        "org_other": "{{count}} 件の雇用主"
+      },
+      "moreItem_other": "+{{formatted}} 件",
+      "moreLabel_other": "{{label}} につながる記録があと {{formatted}} 件あります。選択するとすべて一覧表示されます。",
+      "zoom": {
+        "label": "ズーム",
+        "in": "拡大",
+        "out": "縮小",
+        "fit": "全体を表示"
+      },
+      "list": {
+        "sep": "、",
+        "two": "{{first}}、{{last}}",
+        "many": "{{head}}、{{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "求人スカウト",

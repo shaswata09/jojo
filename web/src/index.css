@@ -1949,3 +1949,33 @@ body:has(.tour-overlay) [data-radix-popper-content-wrapper] {
   color: var(--tour-ink);
 }
 
+/* The /graph overview (`components/graph/OverviewCanvas.tsx`). Dimming is one
+   attribute on the <svg> and one opacity on the whole static layer — the lit
+   records are drawn again above it — so a hover neither re-renders nor
+   re-composites the thousands of marks underneath. */
+.graph-overview .ov-disc {
+  fill-opacity: 0.55;
+}
+.graph-overview[data-dim] [data-layer='static'] {
+  opacity: 0.3;
+}
+.graph-overview[data-dim] .ov-group-labels {
+  opacity: 0.45;
+}
+.ov-label {
+  fill: var(--text-1);
+  paint-order: stroke;
+  stroke: var(--well);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.ov-label-sub {
+  fill: var(--text-2);
+  font-size: 10px;
+  font-weight: 400;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .graph-overview [data-layer='static'] {
+    transition: opacity 120ms ease-out;
+  }
+}

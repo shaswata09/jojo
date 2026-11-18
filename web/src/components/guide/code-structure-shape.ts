@@ -58,15 +58,15 @@ export const SHAPE: DirRow[] = [
     // Four more on 2026-11-16 (i18n): `domain-text.ts` and `advice-text.ts`
     // with a test each — the model's own words in any language, the translator
     // passed in, the English held to core's word for word.
-    files: 195,
-    tests: 81,
+    files: 197,
+    tests: 82,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
     // Re-measured 2026-10-22 with `backup-stream.ts`, and 2026-11-16 without
     // the pulse code.
-    lines: 45791,
+    lines: 49009,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8461, what: 'transactions, journal, boot' },
@@ -187,15 +187,15 @@ export const SHAPE: DirRow[] = [
     // `diagrams/StackDiagram.tsx`.
     // `transfer/PairingQrCard.tsx`: the pairing key as a QR code (Q329), in
     // place of `PulseOverlay.tsx` and `pulse-paint.ts` and its test.
-    files: 502,
-    tests: 139,
-    lines: 74745,
+    files: 511,
+    tests: 140,
+    lines: 77198,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
   // shared pieces the chat dock draws too. Longer again (2026-11-16) with the
   // pages' text moved into translation catalogs behind `useTranslation`.
-  { dir: 'web/src/routes', files: 25, tests: 10, lines: 3936, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 25, tests: 10, lines: 4230, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -239,7 +239,7 @@ export const SHAPE: DirRow[] = [
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
     // 217 with `search-places.ts` — every setting, profile field and place the
     // search palette can reach — its completeness guard, and the arrival test.
-    files: 222,
+    files: 224,
     tests: 103,
     lines: 38679,
     what: 'web-only adapters and URL state',
@@ -271,4 +271,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 264
+export const WEB_TEST_FILES = 265

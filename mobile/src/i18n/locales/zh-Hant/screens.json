@@ -489,7 +489,75 @@
     "patternHint": "自己建立問題",
     "patternNone": "沒有符合這個問題的內容。",
     "records_other": "{{count}} 筆紀錄",
-    "exampleNone": "沒有符合的內容——對這個問題來說，這是好答案。"
+    "exampleNone": "沒有符合的內容——對這個問題來說，這是好答案。",
+    "view": {
+      "mode": {
+        "label": "檢視",
+        "overview": "總覽",
+        "focus": "聚焦"
+      },
+      "groupBy": {
+        "label": "分組依據",
+        "role": "職務",
+        "stage": "階段",
+        "organisation": "雇主",
+        "keyword": "關鍵字"
+      },
+      "group": {
+        "shared": "共用",
+        "none": "無",
+        "rest": "其他",
+        "loose": "未連結到任何項目",
+        "label": "{{name}}：{{records}}",
+        "singles": "每項僅一份申請"
+      },
+      "groups_other": "{{count}} 個群組",
+      "overviewLabel": "知識圖譜總覽——{{groups}}，{{records}}",
+      "overviewHelp": "每個圓圈是一個群組。輕觸一筆紀錄，就能看到它的連結，並展開計入其中的項目。用雙指縮放，或使用 + 和 − 縮放。",
+      "listHint": "這張圖中的每筆紀錄都列在下方的「群組」中。",
+      "focusLabel": "聚焦在{{label}}——{{records}}",
+      "focusHelp": "中間是這筆紀錄，第一圈是它連結的項目，下一圈是那些項目連結的項目。輕觸一筆紀錄即可聚焦或展開它。",
+      "focusOn": "聚焦在{{label}}",
+      "expand": "展開",
+      "collapse": "收合",
+      "back": "返回總覽",
+      "trail": "聚焦軌跡",
+      "more_other": "還有 {{formatted}} 筆可連到的紀錄沒有畫出——聚焦在相鄰的紀錄上即可看到。",
+      "looseHint": "這些紀錄沒有指向任何項目，也沒有任何項目指向它們。選一筆即可查看。",
+      "groupsTitle": "群組",
+      "groupsHint": "以清單呈現同一張圖",
+      "node": {
+        "plain": "{{label}}。{{type}}，{{connections}}",
+        "folded": "{{label}}。{{type}}，{{connections}}，其中計入了{{folded}}",
+        "hub": "{{label}}。{{type}}，{{connections}}；{{folded}}沒有畫出——展開即可顯示"
+      },
+      "connections_other": "{{count}} 個連結",
+      "folded": {
+        "application_other": "{{count}} 份申請",
+        "role_other": "{{count}} 個職務",
+        "item_other": "{{count}} 個時間軸項目",
+        "keyword_other": "{{count}} 個關鍵字",
+        "link_other": "{{count}} 個連結",
+        "file_other": "{{count}} 個檔案",
+        "snippet_other": "{{count}} 個片段",
+        "posting_other": "{{count}} 個已儲存的職缺",
+        "match_other": "{{count}} 筆職缺偵察結果",
+        "org_other": "{{count}} 個雇主"
+      },
+      "moreItem_other": "+{{formatted}} 筆",
+      "moreLabel_other": "還有 {{formatted}} 筆紀錄連結到{{label}}。選取即可列出全部。",
+      "zoom": {
+        "label": "縮放",
+        "in": "放大",
+        "out": "縮小",
+        "fit": "調整至符合畫面"
+      },
+      "list": {
+        "sep": "、",
+        "two": "{{first}}和{{last}}",
+        "many": "{{head}}和{{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "職缺偵察",

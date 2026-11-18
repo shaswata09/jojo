@@ -518,7 +518,90 @@
     "patternNone": "এর সঙ্গে কিছু মেলেনি।",
     "records_one": "{{count}}টি রেকর্ড",
     "records_other": "{{count}}টি রেকর্ড",
-    "exampleNone": "কিছু মেলেনি — এই প্রশ্নের জন্য সেটিই ভালো উত্তর।"
+    "exampleNone": "কিছু মেলেনি — এই প্রশ্নের জন্য সেটিই ভালো উত্তর।",
+    "view": {
+      "mode": {
+        "label": "দৃশ্য",
+        "overview": "সারসংক্ষেপ",
+        "focus": "ফোকাস"
+      },
+      "groupBy": {
+        "label": "দলের ভিত্তি",
+        "role": "পদ",
+        "stage": "ধাপ",
+        "organisation": "নিয়োগকর্তা",
+        "keyword": "কীওয়ার্ড"
+      },
+      "group": {
+        "shared": "যৌথ",
+        "none": "কিছু না",
+        "rest": "অন্যান্য",
+        "loose": "কিছুর সঙ্গে যুক্ত নয়",
+        "label": "{{name}}: {{records}}",
+        "singles": "প্রতিটির একটি করে আবেদন"
+      },
+      "groups_one": "{{count}}টি দল",
+      "groups_other": "{{count}}টি দল",
+      "overviewLabel": "জ্ঞান-গ্রাফের সারসংক্ষেপ — {{groups}}, {{records}}",
+      "overviewHelp": "প্রতিটি বৃত্ত একটি দল। কোনো রেকর্ডের সংযোগ দেখতে আর তার ওপর যা গোনা হয়েছে তা খুলে দেখতে সেটিতে ট্যাপ করুন। জুম করতে দুই আঙুলে চিমটি দিন, বা + ও − ব্যবহার করুন।",
+      "listHint": "এই ছবির প্রতিটি রেকর্ড নিচে «দল»-এর অধীনে তালিকাভুক্ত আছে।",
+      "focusLabel": "{{label}} ফোকাসে — {{records}}",
+      "focusHelp": "মাঝখানে রেকর্ডটি, প্রথম বলয়ে যাদের সঙ্গে এটি যুক্ত, আর পরের বলয়ে তারা যাদের সঙ্গে যুক্ত। কোনো রেকর্ডে ফোকাস করতে বা সেটি প্রসারিত করতে তাতে ট্যাপ করুন।",
+      "focusOn": "{{label}}-এ ফোকাস করুন",
+      "expand": "প্রসারিত করুন",
+      "collapse": "সংকুচিত করুন",
+      "back": "সারসংক্ষেপে ফিরুন",
+      "trail": "ফোকাসের পথ",
+      "more_one": "নাগালের মধ্যে আরও {{formatted}}টি রেকর্ড আঁকা হয়নি — সেটি দেখতে কোনো প্রতিবেশীতে ফোকাস করুন।",
+      "more_other": "নাগালের মধ্যে আরও {{formatted}}টি রেকর্ড আঁকা হয়নি — সেগুলো দেখতে কোনো প্রতিবেশীতে ফোকাস করুন।",
+      "looseHint": "এই রেকর্ডগুলো কিছুর দিকে নির্দেশ করে না, আর কিছুই এগুলোর দিকে নির্দেশ করে না। দেখতে একটি বেছে নিন।",
+      "groupsTitle": "দল",
+      "groupsHint": "একই ছবি, তালিকা হিসেবে",
+      "node": {
+        "plain": "{{label}}। {{type}}, {{connections}}",
+        "folded": "{{label}}। {{type}}, {{connections}}, এর ওপর গোনা হয়েছে {{folded}}",
+        "hub": "{{label}}। {{type}}, {{connections}}; আঁকা হয়নি {{folded}} — সেগুলো দেখতে এটি প্রসারিত করুন"
+      },
+      "connections_one": "{{count}}টি সংযোগ",
+      "connections_other": "{{count}}টি সংযোগ",
+      "folded": {
+        "application_one": "{{count}}টি আবেদন",
+        "application_other": "{{count}}টি আবেদন",
+        "role_one": "{{count}}টি পদ",
+        "role_other": "{{count}}টি পদ",
+        "item_one": "{{count}}টি টাইমলাইন আইটেম",
+        "item_other": "{{count}}টি টাইমলাইন আইটেম",
+        "keyword_one": "{{count}}টি কীওয়ার্ড",
+        "keyword_other": "{{count}}টি কীওয়ার্ড",
+        "link_one": "{{count}}টি লিংক",
+        "link_other": "{{count}}টি লিংক",
+        "file_one": "{{count}}টি ফাইল",
+        "file_other": "{{count}}টি ফাইল",
+        "snippet_one": "{{count}}টি স্নিপেট",
+        "snippet_other": "{{count}}টি স্নিপেট",
+        "posting_one": "{{count}}টি সংরক্ষিত বিজ্ঞপ্তি",
+        "posting_other": "{{count}}টি সংরক্ষিত বিজ্ঞপ্তি",
+        "match_one": "{{count}}টি স্কাউটের মিল",
+        "match_other": "{{count}}টি স্কাউটের মিল",
+        "org_one": "{{count}} জন নিয়োগকর্তা",
+        "org_other": "{{count}} জন নিয়োগকর্তা"
+      },
+      "moreItem_one": "+আরও {{formatted}}টি",
+      "moreItem_other": "+আরও {{formatted}}টি",
+      "moreLabel_one": "{{label}}-এর সঙ্গে যুক্ত আরও {{formatted}}টি রেকর্ড। সবগুলোর তালিকা দেখতে এটি বেছে নিন।",
+      "moreLabel_other": "{{label}}-এর সঙ্গে যুক্ত আরও {{formatted}}টি রেকর্ড। সবগুলোর তালিকা দেখতে এটি বেছে নিন।",
+      "zoom": {
+        "label": "জুম",
+        "in": "জুম ইন করুন",
+        "out": "জুম আউট করুন",
+        "fit": "দৃশ্যে মানিয়ে নিন"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} এবং {{last}}",
+        "many": "{{head}} এবং {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "জব স্কাউট",

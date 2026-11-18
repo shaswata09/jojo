@@ -518,7 +518,90 @@
     "patternNone": "اس سے کچھ میل نہیں کھاتا۔",
     "records_one": "{{count}} ریکارڈ",
     "records_other": "{{count}} ریکارڈز",
-    "exampleNone": "کچھ میل نہیں کھاتا — جو اس سوال کا اچھا جواب ہے۔"
+    "exampleNone": "کچھ میل نہیں کھاتا — جو اس سوال کا اچھا جواب ہے۔",
+    "view": {
+      "mode": {
+        "label": "منظر",
+        "overview": "جائزہ",
+        "focus": "فوکس"
+      },
+      "groupBy": {
+        "label": "گروہ بندی بلحاظ",
+        "role": "عہدہ",
+        "stage": "مرحلہ",
+        "organisation": "آجر",
+        "keyword": "کلیدی لفظ"
+      },
+      "group": {
+        "shared": "مشترک",
+        "none": "کوئی نہیں",
+        "rest": "دیگر",
+        "loose": "کسی چیز سے منسلک نہیں",
+        "label": "{{name}}: {{records}}",
+        "singles": "ہر ایک کی ایک درخواست"
+      },
+      "groups_one": "{{count}} گروہ",
+      "groups_other": "{{count}} گروہ",
+      "overviewLabel": "نالج گراف کا جائزہ — {{groups}}، {{records}}",
+      "overviewHelp": "ہر دائرہ ایک گروہ ہے۔ کسی ریکارڈ کے روابط دیکھنے اور اس پر شمار چیزیں کھولنے کے لیے اسے تھپتھپائیں۔ زوم کے لیے دو انگلیوں سے چٹکی لیں، یا + اور − استعمال کریں۔",
+      "listHint": "اس تصویر کا ہر ریکارڈ نیچے «گروہ» کے تحت درج ہے۔",
+      "focusLabel": "{{label}} فوکس میں — {{records}}",
+      "focusHelp": "درمیان میں ریکارڈ، پہلے حلقے پر وہ جن سے یہ جڑا ہے، اور اگلے حلقے پر وہ جن سے وہ جڑے ہیں۔ کسی ریکارڈ پر فوکس کرنے یا اسے پھیلانے کے لیے اسے تھپتھپائیں۔",
+      "focusOn": "{{label}} پر فوکس کریں",
+      "expand": "پھیلائیں",
+      "collapse": "سمیٹیں",
+      "back": "جائزے پر واپس جائیں",
+      "trail": "فوکس کا راستہ",
+      "more_one": "پہنچ میں {{formatted}} مزید ریکارڈ دکھایا نہیں گیا — اسے دیکھنے کے لیے کسی پڑوسی پر فوکس کریں۔",
+      "more_other": "پہنچ میں {{formatted}} مزید ریکارڈز دکھائے نہیں گئے — انہیں دیکھنے کے لیے کسی پڑوسی پر فوکس کریں۔",
+      "looseHint": "یہ ریکارڈز کسی چیز کی طرف اشارہ نہیں کرتے اور نہ کوئی چیز ان کی طرف۔ دیکھنے کے لیے کوئی ایک چنیں۔",
+      "groupsTitle": "گروہ",
+      "groupsHint": "یہی تصویر، فہرست کی صورت میں",
+      "node": {
+        "plain": "{{label}}۔ {{type}}، {{connections}}",
+        "folded": "{{label}}۔ {{type}}، {{connections}}، اس پر شمار: {{folded}}",
+        "hub": "{{label}}۔ {{type}}، {{connections}}؛ دکھائے نہیں گئے: {{folded}} — انہیں دکھانے کے لیے اسے پھیلائیں"
+      },
+      "connections_one": "{{count}} ربط",
+      "connections_other": "{{count}} روابط",
+      "folded": {
+        "application_one": "{{count}} درخواست",
+        "application_other": "{{count}} درخواستیں",
+        "role_one": "{{count}} عہدہ",
+        "role_other": "{{count}} عہدے",
+        "item_one": "{{count}} ٹائم لائن کی چیز",
+        "item_other": "{{count}} ٹائم لائن کی چیزیں",
+        "keyword_one": "{{count}} کلیدی لفظ",
+        "keyword_other": "{{count}} کلیدی الفاظ",
+        "link_one": "{{count}} لنک",
+        "link_other": "{{count}} لنکس",
+        "file_one": "{{count}} فائل",
+        "file_other": "{{count}} فائلیں",
+        "snippet_one": "{{count}} اقتباس",
+        "snippet_other": "{{count}} اقتباسات",
+        "posting_one": "{{count}} محفوظ اشتہار",
+        "posting_other": "{{count}} محفوظ اشتہارات",
+        "match_one": "{{count}} اسکاؤٹ کی مماثلت",
+        "match_other": "{{count}} اسکاؤٹ کی مماثلتیں",
+        "org_one": "{{count}} آجر",
+        "org_other": "{{count}} آجر"
+      },
+      "moreItem_one": "+{{formatted}} مزید",
+      "moreItem_other": "+{{formatted}} مزید",
+      "moreLabel_one": "{{label}} سے منسلک {{formatted}} مزید ریکارڈ۔ سب کی فہرست دیکھنے کے لیے اسے منتخب کریں۔",
+      "moreLabel_other": "{{label}} سے منسلک {{formatted}} مزید ریکارڈز۔ سب کی فہرست دیکھنے کے لیے اسے منتخب کریں۔",
+      "zoom": {
+        "label": "زوم",
+        "in": "زوم اِن",
+        "out": "زوم آؤٹ",
+        "fit": "منظر میں پورا دکھائیں"
+      },
+      "list": {
+        "sep": "، ",
+        "two": "{{first}} اور {{last}}",
+        "many": "{{head}}، اور {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "جاب اسکاؤٹ",

@@ -113,5 +113,88 @@
       "unfiled": "Welche Dateien sind nirgends abgelegt?",
       "busy": "Welche Bewerbungen haben mehr als zwei Einträge in der Zeitleiste?"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "Ansicht",
+      "overview": "Übersicht",
+      "focus": "Fokus",
+      "free": "Freies Layout"
+    },
+    "groupBy": {
+      "label": "Gruppieren nach",
+      "role": "Stelle",
+      "stage": "Phase",
+      "organisation": "Organisation",
+      "keyword": "Schlagwort"
+    },
+    "group": {
+      "shared": "Gemeinsam",
+      "none": "Keine Angabe",
+      "rest": "Sonstige",
+      "loose": "Ohne jede Verbindung",
+      "label": "{{name}}: {{records}}",
+      "singles": "Je eine Bewerbung"
+    },
+    "groups_one": "{{count}} Gruppe",
+    "groups_other": "{{count}} Gruppen",
+    "overviewLabel": "Übersicht des Wissensgraphen – {{groups}}, {{records}}",
+    "overviewDescription": "Einträge sind in beschrifteten Kreisen gruppiert. Ein Eintrag mit nur einer Verbindung wird bei dem Eintrag mitgezählt, mit dem er verbunden ist, und Verbindungen werden nur für den Eintrag gezeichnet, auf den du zeigst oder den du auswählst. Die Bereiche neben diesem Graphen zeigen dieselben Informationen als Text.",
+    "overviewHelp": "Jeder Kreis ist eine Gruppe. Zeige mit der Maus auf einen Eintrag oder springe mit der Tabulatortaste dorthin, um seine Verbindungen zu sehen; wähle ihn aus, um aufzuklappen, was bei ihm mitgezählt ist. Mit den Pfeiltasten bewegst du dich innerhalb einer Gruppe, F rückt einen Eintrag in den Fokus.",
+    "focusLabel": "{{label}} im Fokus – {{records}}",
+    "focusDescription": "Der Eintrag im Fokus steht in der Mitte, die Einträge, mit denen er verbunden ist, liegen auf dem ersten Ring, und die Einträge, mit denen diese verbunden sind, auf dem zweiten.",
+    "focusHelp": "Der Eintrag in der Mitte, seine Verbindungen auf dem ersten Ring und deren Verbindungen auf dem nächsten. Wähle einen Eintrag aus, um ihn in den Fokus zu rücken oder aufzuklappen; F rückt in den Fokus, E klappt auf.",
+    "focusOn": "{{label}} in den Fokus rücken",
+    "focusOnHint": "Diesen Eintrag in der Mitte zeigen, mit seinen Nachbarn in Ringen",
+    "expand": "Aufklappen",
+    "collapse": "Zuklappen",
+    "expandHint": "Auch die eigenen Verbindungen dieses Eintrags zeichnen, einen Ring weiter außen",
+    "back": "Zurück zur Übersicht",
+    "trail": "Fokusverlauf",
+    "more_one": "{{formatted}} weiterer erreichbarer Eintrag wird nicht gezeichnet – rücke einen Nachbarn in den Fokus, um ihn zu sehen.",
+    "more_other": "{{formatted}} weitere erreichbare Einträge werden nicht gezeichnet – rücke einen Nachbarn in den Fokus, um sie zu sehen.",
+    "looseHint": "Diese Einträge verweisen auf nichts, und nichts verweist auf sie. Wähle einen aus, um ihn zu sehen.",
+    "node": {
+      "folded": "{{label}}. {{type}}, {{connections}}, darin mitgezählt: {{folded}}",
+      "hub": "{{label}}. {{type}}, {{connections}}; nicht gezeichnet: {{folded}} – klappe den Eintrag auf, um sie zu sehen"
+    },
+    "folded": {
+      "application_one": "{{count}} Bewerbung",
+      "application_other": "{{count}} Bewerbungen",
+      "organisation_one": "{{count}} Organisation",
+      "organisation_other": "{{count}} Organisationen",
+      "role_one": "{{count}} Stelle",
+      "role_other": "{{count}} Stellen",
+      "item_one": "{{count}} Zeitleisteneintrag",
+      "item_other": "{{count}} Zeitleisteneinträge",
+      "keyword_one": "{{count}} Schlagwort",
+      "keyword_other": "{{count}} Schlagwörter",
+      "link_one": "{{count}} Link",
+      "link_other": "{{count}} Links",
+      "file_one": "{{count}} Datei",
+      "file_other": "{{count}} Dateien",
+      "snippet_one": "{{count}} Textbaustein",
+      "snippet_other": "{{count}} Textbausteine",
+      "posting_one": "{{count}} gespeicherte Stellenanzeige",
+      "posting_other": "{{count}} gespeicherte Stellenanzeigen",
+      "match_one": "{{count}} Scout-Treffer",
+      "match_other": "{{count}} Scout-Treffer",
+      "source_one": "{{count}} Quelle",
+      "source_other": "{{count}} Quellen",
+      "background_one": "{{count}} Eintrag über dich",
+      "background_other": "{{count}} Einträge über dich",
+      "claim_one": "{{count}} Beziehung",
+      "claim_other": "{{count}} Beziehungen"
+    },
+    "moreItem_one": "+{{formatted}} weiterer",
+    "moreItem_other": "+{{formatted}} weitere",
+    "moreLabel_one": "{{formatted}} weiterer mit {{label}} verbundener Eintrag. Auswählen, um alle aufzulisten.",
+    "moreLabel_other": "{{formatted}} weitere mit {{label}} verbundene Einträge. Auswählen, um alle aufzulisten.",
+    "zoom": {
+      "label": "Zoom",
+      "in": "Vergrößern",
+      "out": "Verkleinern",
+      "fit": "An Ansicht anpassen"
+    }
   }
 }

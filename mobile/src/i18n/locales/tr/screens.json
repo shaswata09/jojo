@@ -518,7 +518,90 @@
     "patternNone": "Bununla eşleşen bir şey yok.",
     "records_one": "{{count}} kayıt",
     "records_other": "{{count}} kayıt",
-    "exampleNone": "Eşleşen bir şey yok — bu soru için iyi yanıt da budur."
+    "exampleNone": "Eşleşen bir şey yok — bu soru için iyi yanıt da budur.",
+    "view": {
+      "mode": {
+        "label": "Görünüm",
+        "overview": "Genel bakış",
+        "focus": "Odak"
+      },
+      "groupBy": {
+        "label": "Gruplama ölçütü",
+        "role": "Rol",
+        "stage": "Aşama",
+        "organisation": "İşveren",
+        "keyword": "Anahtar kelime"
+      },
+      "group": {
+        "shared": "Ortak",
+        "none": "Anahtar kelimesiz",
+        "rest": "Diğerleri",
+        "loose": "Hiçbir şeye bağlı değil",
+        "label": "{{name}}: {{records}}",
+        "singles": "Her birinde tek başvuru"
+      },
+      "groups_one": "{{count}} grup",
+      "groups_other": "{{count}} grup",
+      "overviewLabel": "Bilgi grafiğine genel bakış — {{groups}}, {{records}}",
+      "overviewHelp": "Her daire bir gruptur. Bağlantılarını görmek ve üzerinde sayılanları açmak için bir kayda dokunun. Yakınlaştırmak için iki parmakla sıkıştırın ya da + ve − düğmelerini kullanın.",
+      "listHint": "Bu resimdeki her kayıt aşağıda Gruplar altında listelenir.",
+      "focusLabel": "Odakta {{label}} — {{records}}",
+      "focusHelp": "Ortada kayıt, ilk halkada onun bağlandıkları, sonraki halkada da onların bağlandıkları. Bir kayda odaklanmak ya da onu genişletmek için ona dokunun.",
+      "focusOn": "Odaklan: {{label}}",
+      "expand": "Genişlet",
+      "collapse": "Daralt",
+      "back": "Genel bakışa dön",
+      "trail": "Odak izi",
+      "more_one": "Erişim içindeki {{formatted}} kayıt daha çizilmedi — görmek için bir komşuya odaklanın.",
+      "more_other": "Erişim içindeki {{formatted}} kayıt daha çizilmedi — görmek için bir komşuya odaklanın.",
+      "looseHint": "Bu kayıtlar hiçbir şeye işaret etmiyor ve hiçbir şey onlara işaret etmiyor. Görmek için birini seçin.",
+      "groupsTitle": "Gruplar",
+      "groupsHint": "aynı resim, liste olarak",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, üzerinde sayılan: {{folded}}",
+        "hub": "{{label}}. {{type}}, {{connections}}; çizilmeyen: {{folded}} — göstermek için genişletin"
+      },
+      "connections_one": "{{count}} bağlantı",
+      "connections_other": "{{count}} bağlantı",
+      "folded": {
+        "application_one": "{{count}} başvuru",
+        "application_other": "{{count}} başvuru",
+        "role_one": "{{count}} rol",
+        "role_other": "{{count}} rol",
+        "item_one": "{{count}} zaman çizelgesi öğesi",
+        "item_other": "{{count}} zaman çizelgesi öğesi",
+        "keyword_one": "{{count}} anahtar kelime",
+        "keyword_other": "{{count}} anahtar kelime",
+        "link_one": "{{count}} bağlantı",
+        "link_other": "{{count}} bağlantı",
+        "file_one": "{{count}} dosya",
+        "file_other": "{{count}} dosya",
+        "snippet_one": "{{count}} metin parçası",
+        "snippet_other": "{{count}} metin parçası",
+        "posting_one": "{{count}} kayıtlı ilan",
+        "posting_other": "{{count}} kayıtlı ilan",
+        "match_one": "{{count}} Gözcü eşleşmesi",
+        "match_other": "{{count}} Gözcü eşleşmesi",
+        "org_one": "{{count}} işveren",
+        "org_other": "{{count}} işveren"
+      },
+      "moreItem_one": "+{{formatted}} daha",
+      "moreItem_other": "+{{formatted}} daha",
+      "moreLabel_one": "{{label}} ile bağlantılı {{formatted}} kayıt daha. Tümünü listelemek için seçin.",
+      "moreLabel_other": "{{label}} ile bağlantılı {{formatted}} kayıt daha. Tümünü listelemek için seçin.",
+      "zoom": {
+        "label": "Yakınlaştırma",
+        "in": "Yakınlaştır",
+        "out": "Uzaklaştır",
+        "fit": "Görünüme sığdır"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} ve {{last}}",
+        "many": "{{head}} ve {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "İş gözcüsü",

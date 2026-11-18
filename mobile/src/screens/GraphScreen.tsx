@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { GROUP_LOOSE, wantsOverview } from '@jojo/service/core/graph-view'
+import type { ClusterGroup } from '@jojo/service/core/graph-view'
 import { useTranslation } from 'react-i18next'
 import Svg, { Circle, Line } from 'react-native-svg'
 import { useNavigation } from '@react-navigation/native'
@@ -29,6 +31,14 @@ import { useLabels } from '@/lib/labels-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { AskBox } from '@/components/graph/AskBox'
+import { FocusCanvas } from '@/components/graph/FocusCanvas'
+import { GraphGroupList, GraphLoosePanel } from '@/components/graph/GraphGroupList'
+import { GraphActions, GraphViewBar } from '@/components/graph/GraphViewBar'
+import type { GraphMode } from '@/components/graph/GraphViewBar'
+import { OverviewCanvas } from '@/components/graph/OverviewCanvas'
+import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
+import { foldGraph, toViewGraph } from '@/lib/graph-view'
+import type { GroupDimension } from '@/lib/graph-view'
 import { highlightFor, rowsFor } from '@/lib/graph-answer'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { s } from '@/theme/styles'
@@ -38,6 +48,11 @@ import { toTab } from '@/navigation/to-tab'
 
 /** Enough to see the shape of the answer without turning a panel into a list view. */
 const PATTERN_SHOWN = 8
+/** A record's links listed at a time in the detail panel: a role joins a hundred applications. */
+const JOINED_PAGE = 25
+
+/** The canvas's height for its width: taller than wide on a phone, capped on a tablet. */
+const canvasHeight = (width: number) => Math.round(Math.min(560, Math.max(340, width * 1.3)))
 
 export function GraphScreen() {
   const { t } = useTranslation('screens')
@@ -70,6 +85,74 @@ export function GraphScreen() {
 
   const visible = useMemo(() => graph.nodes.filter((n) => !hidden.has(n.type)), [graph, hidden])
 
+  /*
+   * A large store is drawn the way the web draws one (`kg/core/graph-view.ts`):
+   * single-link records folded into counts on their parent, the rest in
+   * labelled groups, and one record at a time in rings. The size that decides
+   * is the FOLDED one, by the same threshold the web uses. A small store keeps
+   * the radial picture below, unchanged.
+   */
+  const viewGraph = useMemo(() => toViewGraph(graph, hidden), [graph, hidden])
+  const folding = useMemo(() => foldGraph(viewGraph), [viewGraph])
+  const large = wantsOverview(folding)
+  const inView = useMemo(() => new Set(viewGraph.nodes.map((n) => n.id)), [viewGraph])
+  const [groupBy, setGroupBy] = useState<GroupDimension>('role')
+  /** Records focused on, oldest first. Its last record in view means the focus view is showing. */
+  const [trail, setTrail] = useState<string[]>([])
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set())
+  const [groups, setGroups] = useState<readonly ClusterGroup[]>([])
+  /** The page stops scrolling while a pinch or a pan has the canvas. */
+  const [gesturing, setGesturing] = useState(false)
+  const [canvasWidth, setCanvasWidth] = useState(0)
+  const [joinedShown, setJoinedShown] = useState(JOINED_PAGE)
+  const centre = trail.length > 0 ? trail[trail.length - 1] : undefined
+  const mode: GraphMode = centre !== undefined && inView.has(centre) ? 'focus' : 'overview'
+
+  const select = useCallback((id: string | null) => {
+    setSelectedId(id)
+    setJoinedShown(JOINED_PAGE)
+  }, [])
+
+  const focusOn = useCallback(
+    (id: string) => {
+      setTrail((current) => {
+        const at = current.indexOf(id)
+        // Focusing on a record already on the trail goes back to it, rather
+        // than growing a trail that runs in a circle.
+        return at === -1 ? [...current, id] : current.slice(0, at + 1)
+      })
+      setExpanded(new Set())
+      select(id)
+    },
+    [select],
+  )
+
+  const backToOverview = useCallback(() => {
+    setTrail([])
+    setExpanded(new Set())
+  }, [])
+
+  const toggleExpanded = useCallback((id: string) => {
+    setExpanded((current) => {
+      const next = new Set(current)
+      if (!next.delete(id)) next.add(id)
+      return next
+    })
+  }, [])
+
+  const switchMode = (next: GraphMode) => {
+    if (next === 'overview') {
+      backToOverview()
+      return
+    }
+    // The selected record, else the most connected record in view — Focus
+    // never opens on nothing.
+    const target =
+      (selectedId && selectedId !== GROUP_LOOSE && inView.has(selectedId) ? selectedId : null) ??
+      [...graph.nodes].filter((n) => inView.has(n.id)).sort((a, b) => b.degree - a.degree)[0]?.id
+    if (target) focusOn(target)
+  }
+
   /**
    * Laid out by type, not by force.
    *
@@ -82,6 +165,8 @@ export function GraphScreen() {
   const size = Math.min(width - space[3] * 2 - space[4] * 2, 340)
   const layout = useMemo(() => {
     const positions = new Map<string, { x: number; y: number }>()
+    // A large store is drawn by the overview instead; nothing to place here.
+    if (large) return positions
     const shown = GRAPH_NODE_TYPES.filter((t) => !hidden.has(t) && (counts.get(t) ?? 0) > 0)
     const cx = size / 2
     const cy = size / 2
@@ -119,7 +204,7 @@ export function GraphScreen() {
       })
     })
     return positions
-  }, [visible, hidden, counts, size])
+  }, [visible, hidden, counts, size, large])
 
   /**
    * The answer to a question asked in words, and the nodes it lights.
@@ -136,6 +221,22 @@ export function GraphScreen() {
   const askedRows = useMemo(() => (asked ? rowsFor(graph, asked.answer) : []), [graph, asked])
 
   const selected = selectedId ? (graph.byId.get(selectedId) ?? null) : null
+  const viewAction =
+    !large || !selected || !inView.has(selected.id)
+      ? null
+      : {
+          label: selected.label,
+          canFocus: selected.id !== centre,
+          onFocus: () => focusOn(selected.id),
+          ...(mode === 'focus' && selected.id !== centre
+            ? {
+                expand: {
+                  expanded: expanded.has(selected.id),
+                  onToggle: () => toggleExpanded(selected.id),
+                },
+              }
+            : {}),
+        }
   const query = QUERY_EXAMPLES.find((q) => q.id === queryId)
   const result = query ? query.run(graph) : null
   const patternRows = useMemo(() => runPattern(graph, pattern), [graph, pattern])
@@ -187,165 +288,8 @@ export function GraphScreen() {
     )
   }
 
-  return (
-    <Screen title={t('graph.title')} subtitle={t('graph.subtitle')}>
-      <Panel>
-        <View style={{ alignSelf: 'center' }}>
-          <Svg width={size} height={size}>
-            {graph.edges.map((e, i) => {
-              const from = layout.get(e.from)
-              const to = layout.get(e.to)
-              if (!from || !to) return null
-              // An answer outranks the selection: it is the question the reader
-              // just asked, and the selection is where they happened to tap.
-              const lit = askedLit
-                ? askedLit.has(e.from) && askedLit.has(e.to)
-                : selectedId !== null && (e.from === selectedId || e.to === selectedId)
-              return (
-                <Line
-                  key={i}
-                  x1={from.x}
-                  y1={from.y}
-                  x2={to.x}
-                  y2={to.y}
-                  stroke={lit ? c.accent : c.hairline}
-                  strokeWidth={lit ? 1.5 : 0.7}
-                />
-              )
-            })}
-            {visible.map((n) => {
-              const at = layout.get(n.id)
-              if (!at) return null
-              const on = n.id === selectedId
-              // Dimmed rather than hidden: the shape of the whole graph is the
-              // context that makes an answer mean something, and a canvas that
-              // dropped the unmatched nodes would answer a different question.
-              const answered = askedLit?.has(n.id) ?? true
-              return (
-                <Circle
-                  key={n.id}
-                  cx={at.x}
-                  cy={at.y}
-                  // Degree is the only thing size encodes: a node joined to
-                  // eight things matters more than one joined to nothing.
-                  r={on ? 8 : 3.5 + Math.min(n.degree, 6) * 0.7}
-                  fill={typeColor(n.type, c)}
-                  opacity={answered ? 1 : 0.25}
-                  stroke={on ? c.accent : 'transparent'}
-                  strokeWidth={2}
-                  onPress={() => setSelectedId(n.id)}
-                />
-              )
-            })}
-          </Svg>
-        </View>
-
-        <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
-          {t('graph.caption', {
-            visible: visible.length,
-            total: graph.nodes.length,
-            edges: graph.edges.length,
-          })}
-        </Txt>
-      </Panel>
-
-      <Panel>
-        <PanelTitle hint={t('graph.legendHint')}>{t('graph.legend')}</PanelTitle>
-        <View style={styles.legend}>
-          {GRAPH_NODE_TYPES.filter((type) => (counts.get(type) ?? 0) > 0).map((type) => {
-            const off = hidden.has(type)
-            return (
-              <Pressable
-                key={type}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: !off }}
-                onPress={() => toggleType(type)}
-                style={[
-                  styles.legendChip,
-                  { backgroundColor: c.well, borderColor: off ? c.hairline : c.hairlineStrong },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.swatch,
-                    {
-                      backgroundColor: off ? 'transparent' : typeColor(type, c),
-                      borderColor: typeColor(type, c),
-                    },
-                  ]}
-                />
-                <Txt
-                  size="sm"
-                  tone={off ? 'muted' : 'secondary'}
-                  style={off ? s.struck : undefined}
-                >
-                  {NODE_TYPE_LABEL[type]}
-                </Txt>
-                <Txt size="xs" tone="muted" mono>
-                  {counts.get(type) ?? 0}
-                </Txt>
-              </Pressable>
-            )
-          })}
-        </View>
-      </Panel>
-
-      {selected ? (
-        <Panel>
-          <PanelTitle hint={NODE_TYPE_LABEL[selected.type]}>{selected.label}</PanelTitle>
-          {selected.detail ? (
-            <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-              {selected.detail}
-            </Txt>
-          ) : null}
-
-          <Txt size="xs" tone="muted" uppercase style={{ marginBottom: space[2] }}>
-            {t('graph.joinedTo')}
-          </Txt>
-          {incidentEdges(graph, selected.id).length === 0 ? (
-            <Txt size="sm" tone="muted">
-              {t('graph.noEdges')}
-            </Txt>
-          ) : (
-            incidentEdges(graph, selected.id).map((e, i) => {
-              const other = graph.byId.get(otherEnd(e, selected.id))
-              if (!other) return null
-              return (
-                <Pressable
-                  key={`${e.from}-${e.to}-${i}`}
-                  accessibilityRole="button"
-                  onPress={() => setSelectedId(other.id)}
-                  style={styles.edgeRow}
-                >
-                  <View
-                    style={[
-                      styles.swatch,
-                      {
-                        backgroundColor: typeColor(other.type, c),
-                        borderColor: typeColor(other.type, c),
-                      },
-                    ]}
-                  />
-                  <Txt size="sm" style={s.fill} numberOfLines={1}>
-                    {other.label}
-                  </Txt>
-                  <Txt size="xs" tone="muted">
-                    {REL_LABEL[e.rel]}
-                  </Txt>
-                </Pressable>
-              )
-            })
-          )}
-
-          <Button
-            label={t('graph.openRecord')}
-            variant="outline"
-            onPress={() => openRecord(selected)}
-            style={{ marginTop: space[3], alignSelf: 'flex-start' }}
-          />
-        </Panel>
-      ) : null}
-
+  const questions = (
+    <>
       <Panel>
         <PanelTitle hint={t('graph.askHint')}>{t('graph.ask')}</PanelTitle>
         <AskBox
@@ -368,7 +312,7 @@ export function GraphScreen() {
               <Pressable
                 key={node.id}
                 accessibilityRole="button"
-                onPress={() => setSelectedId(node.id)}
+                onPress={() => select(node.id)}
                 style={styles.edgeRow}
               >
                 <View
@@ -438,7 +382,7 @@ export function GraphScreen() {
               <Pressable
                 key={row.node.id}
                 accessibilityRole="button"
-                onPress={() => setSelectedId(row.node.id)}
+                onPress={() => select(row.node.id)}
                 style={styles.edgeRow}
               >
                 <View
@@ -485,7 +429,7 @@ export function GraphScreen() {
                 <Pressable
                   key={n.id}
                   accessibilityRole="button"
-                  onPress={() => setSelectedId(n.id)}
+                  onPress={() => select(n.id)}
                   style={styles.edgeRow}
                 >
                   <View
@@ -506,6 +450,258 @@ export function GraphScreen() {
           </View>
         ) : null}
       </Panel>
+    </>
+  )
+
+  // A large store: the overview or the focus view, the selected record (or
+  // the loose list) right under the picture, then the picture as a list.
+  const legendPanel = (
+    <Panel>
+      <PanelTitle hint={t('graph.legendHint')}>{t('graph.legend')}</PanelTitle>
+      <View style={styles.legend}>
+        {GRAPH_NODE_TYPES.filter((type) => (counts.get(type) ?? 0) > 0).map((type) => {
+          const off = hidden.has(type)
+          return (
+            <Pressable
+              key={type}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: !off }}
+              onPress={() => toggleType(type)}
+              style={[
+                styles.legendChip,
+                { backgroundColor: c.well, borderColor: off ? c.hairline : c.hairlineStrong },
+              ]}
+            >
+              <View
+                style={[
+                  styles.swatch,
+                  {
+                    backgroundColor: off ? 'transparent' : typeColor(type, c),
+                    borderColor: typeColor(type, c),
+                  },
+                ]}
+              />
+              <Txt size="sm" tone={off ? 'muted' : 'secondary'} style={off ? s.struck : undefined}>
+                {NODE_TYPE_LABEL[type]}
+              </Txt>
+              <Txt size="xs" tone="muted" mono>
+                {counts.get(type) ?? 0}
+              </Txt>
+            </Pressable>
+          )
+        })}
+      </View>
+    </Panel>
+  )
+
+  const selectedPanel = (
+    <>
+      {large && selectedId === GROUP_LOOSE && mode === 'overview' ? (
+        <GraphLoosePanel graph={graph} ids={folding.loose} onSelect={select} />
+      ) : selected ? (
+        <Panel>
+          <PanelTitle hint={NODE_TYPE_LABEL[selected.type]}>{selected.label}</PanelTitle>
+          {selected.detail ? (
+            <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+              {selected.detail}
+            </Txt>
+          ) : null}
+
+          <Txt size="xs" tone="muted" uppercase style={{ marginBottom: space[2] }}>
+            {t('graph.joinedTo')}
+          </Txt>
+          {incidentEdges(graph, selected.id).length === 0 ? (
+            <Txt size="sm" tone="muted">
+              {t('graph.noEdges')}
+            </Txt>
+          ) : (
+            incidentEdges(graph, selected.id)
+              .slice(0, joinedShown)
+              .map((e, i) => {
+                const other = graph.byId.get(otherEnd(e, selected.id))
+                if (!other) return null
+                return (
+                  <Pressable
+                    key={`${e.from}-${e.to}-${i}`}
+                    accessibilityRole="button"
+                    onPress={() => select(other.id)}
+                    style={styles.edgeRow}
+                  >
+                    <View
+                      style={[
+                        styles.swatch,
+                        {
+                          backgroundColor: typeColor(other.type, c),
+                          borderColor: typeColor(other.type, c),
+                        },
+                      ]}
+                    />
+                    <Txt size="sm" style={s.fill} numberOfLines={1}>
+                      {other.label}
+                    </Txt>
+                    <Txt size="xs" tone="muted">
+                      {REL_LABEL[e.rel]}
+                    </Txt>
+                  </Pressable>
+                )
+              })
+          )}
+          <ShowMoreRows
+            shown={Math.min(joinedShown, incidentEdges(graph, selected.id).length)}
+            hidden={Math.max(0, incidentEdges(graph, selected.id).length - joinedShown)}
+            onMore={() => setJoinedShown((n) => n + JOINED_PAGE)}
+          />
+
+          <Button
+            label={t('graph.openRecord')}
+            variant="outline"
+            onPress={() => openRecord(selected)}
+            style={{ marginTop: space[3], alignSelf: 'flex-start' }}
+          />
+        </Panel>
+      ) : null}
+    </>
+  )
+
+  if (large) {
+    return (
+      <Screen title={t('graph.title')} subtitle={t('graph.subtitle')} scrollEnabled={!gesturing}>
+        <Panel>
+          <GraphViewBar
+            mode={mode}
+            onMode={switchMode}
+            by={groupBy}
+            onBy={setGroupBy}
+            trail={trail}
+            labelOf={(id) => graph.byId.get(id)?.label ?? id}
+            onCrumb={(index) => {
+              const id = trail[index]
+              if (id) focusOn(id)
+            }}
+            onBack={backToOverview}
+          />
+          <View
+            onLayout={(event) => setCanvasWidth(Math.floor(event.nativeEvent.layout.width))}
+            style={{ minHeight: canvasHeight(canvasWidth) }}
+          >
+            {canvasWidth === 0 ? null : mode === 'focus' && centre !== undefined ? (
+              <FocusCanvas
+                viewGraph={viewGraph}
+                centreId={centre}
+                expanded={expanded}
+                width={canvasWidth}
+                height={canvasHeight(canvasWidth)}
+                selectedId={selectedId}
+                onSelect={select}
+                onFocus={focusOn}
+                onExpand={toggleExpanded}
+                answered={askedLit}
+              />
+            ) : (
+              <OverviewCanvas
+                viewGraph={viewGraph}
+                folding={folding}
+                by={groupBy}
+                width={canvasWidth}
+                height={canvasHeight(canvasWidth)}
+                selectedId={selectedId}
+                onSelect={select}
+                answered={askedLit}
+                onGesture={setGesturing}
+                onGroups={setGroups}
+              />
+            )}
+          </View>
+          <GraphActions action={viewAction} />
+          <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+            {mode === 'focus' ? t('graph.view.focusHelp') : t('graph.view.overviewHelp')}
+          </Txt>
+        </Panel>
+
+        {selectedPanel}
+
+        {mode === 'overview' ? (
+          <GraphGroupList
+            viewGraph={viewGraph}
+            folding={folding}
+            groups={groups}
+            by={groupBy}
+            selectedId={selectedId}
+            onSelect={select}
+          />
+        ) : null}
+
+        {legendPanel}
+        {questions}
+      </Screen>
+    )
+  }
+
+  return (
+    <Screen title={t('graph.title')} subtitle={t('graph.subtitle')}>
+      <Panel>
+        <View style={{ alignSelf: 'center' }}>
+          <Svg width={size} height={size}>
+            {graph.edges.map((e, i) => {
+              const from = layout.get(e.from)
+              const to = layout.get(e.to)
+              if (!from || !to) return null
+              // An answer outranks the selection: it is the question the reader
+              // just asked, and the selection is where they happened to tap.
+              const lit = askedLit
+                ? askedLit.has(e.from) && askedLit.has(e.to)
+                : selectedId !== null && (e.from === selectedId || e.to === selectedId)
+              return (
+                <Line
+                  key={i}
+                  x1={from.x}
+                  y1={from.y}
+                  x2={to.x}
+                  y2={to.y}
+                  stroke={lit ? c.accent : c.hairline}
+                  strokeWidth={lit ? 1.5 : 0.7}
+                />
+              )
+            })}
+            {visible.map((n) => {
+              const at = layout.get(n.id)
+              if (!at) return null
+              const on = n.id === selectedId
+              // Dimmed rather than hidden: the shape of the whole graph is the
+              // context that makes an answer mean something, and a canvas that
+              // dropped the unmatched nodes would answer a different question.
+              const answered = askedLit?.has(n.id) ?? true
+              return (
+                <Circle
+                  key={n.id}
+                  cx={at.x}
+                  cy={at.y}
+                  // Degree is the only thing size encodes: a node joined to
+                  // eight things matters more than one joined to nothing.
+                  r={on ? 8 : 3.5 + Math.min(n.degree, 6) * 0.7}
+                  fill={typeColor(n.type, c)}
+                  opacity={answered ? 1 : 0.25}
+                  stroke={on ? c.accent : 'transparent'}
+                  strokeWidth={2}
+                  onPress={() => select(n.id)}
+                />
+              )
+            })}
+          </Svg>
+        </View>
+
+        <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
+          {t('graph.caption', {
+            visible: visible.length,
+            total: graph.nodes.length,
+            edges: graph.edges.length,
+          })}
+        </Txt>
+      </Panel>
+
+      {legendPanel}
+      {selectedPanel}
+      {questions}
     </Screen>
   )
 }

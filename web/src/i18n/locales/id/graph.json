@@ -108,5 +108,71 @@
       "unfiled": "Berkas mana yang tidak diarsipkan di mana pun?",
       "busy": "Lamaran mana yang punya lebih dari dua item linimasa?"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "Tampilan",
+      "overview": "Ikhtisar",
+      "focus": "Fokus",
+      "free": "Tata letak bebas"
+    },
+    "groupBy": {
+      "label": "Kelompokkan menurut",
+      "role": "Posisi",
+      "stage": "Tahap",
+      "organisation": "Organisasi",
+      "keyword": "Kata kunci"
+    },
+    "group": {
+      "shared": "Bersama",
+      "none": "Tanpa kata kunci",
+      "rest": "Lainnya",
+      "loose": "Tidak terhubung ke apa pun",
+      "label": "{{name}}: {{records}}",
+      "singles": "Masing-masing satu lamaran"
+    },
+    "groups_other": "{{count}} kelompok",
+    "overviewLabel": "Ikhtisar graf pengetahuan — {{groups}}, {{records}}",
+    "overviewDescription": "Entri dikelompokkan ke dalam lingkaran berlabel. Entri yang hanya punya satu koneksi dihitung pada entri yang ditautkannya, dan koneksi hanya digambar untuk entri yang Anda tunjuk atau pilih. Panel di samping graf ini mencantumkan informasi yang sama dalam bentuk teks.",
+    "overviewHelp": "Setiap lingkaran adalah satu kelompok. Arahkan kursor atau Tab ke sebuah entri untuk melihat koneksinya; pilih entri itu untuk membuka apa yang dihitung padanya. Tombol panah berpindah di dalam kelompok, F memfokuskan pada entri.",
+    "focusLabel": "{{label}} dalam fokus — {{records}}",
+    "focusDescription": "Entri yang difokuskan berada di tengah, entri yang ditautkannya berada di cincin pertama, dan entri yang ditautkan oleh entri-entri itu berada di cincin kedua.",
+    "focusHelp": "Entri di tengah, yang ditautkannya di cincin pertama, dan yang ditautkan oleh entri-entri itu di cincin berikutnya. Pilih entri untuk memfokuskan atau memperluasnya; F memfokuskan, E memperluas.",
+    "focusOn": "Fokus pada {{label}}",
+    "focusOnHint": "Tampilkan entri ini di tengah, dengan tetangganya dalam cincin",
+    "expand": "Perluas",
+    "collapse": "Ciutkan",
+    "expandHint": "Gambar juga koneksi milik entri ini, satu cincin lebih jauh ke luar",
+    "back": "Kembali ke ikhtisar",
+    "trail": "Jejak fokus",
+    "more_other": "{{formatted}} entri lain dalam jangkauan tidak digambar — fokus pada tetangga untuk melihatnya.",
+    "looseHint": "Entri-entri ini tidak menunjuk ke apa pun dan tidak ada yang menunjuk ke sana. Pilih salah satu untuk melihatnya.",
+    "node": {
+      "folded": "{{label}}. {{type}}, {{connections}}, dengan {{folded}} dihitung padanya",
+      "hub": "{{label}}. {{type}}, {{connections}}; {{folded}} tidak digambar — perluas untuk menampilkannya"
+    },
+    "folded": {
+      "application_other": "{{count}} lamaran",
+      "organisation_other": "{{count}} organisasi",
+      "role_other": "{{count}} posisi",
+      "item_other": "{{count}} item linimasa",
+      "keyword_other": "{{count}} kata kunci",
+      "link_other": "{{count}} tautan",
+      "file_other": "{{count}} berkas",
+      "snippet_other": "{{count}} cuplikan",
+      "posting_other": "{{count}} lowongan tersimpan",
+      "match_other": "{{count}} kecocokan Pencari",
+      "source_other": "{{count}} sumber",
+      "background_other": "{{count}} entri tentang Anda",
+      "claim_other": "{{count}} relasi"
+    },
+    "moreItem_other": "+{{formatted}} lainnya",
+    "moreLabel_other": "{{formatted}} entri lain terhubung ke {{label}}. Pilih untuk melihat daftar lengkapnya.",
+    "zoom": {
+      "label": "Zoom",
+      "in": "Perbesar",
+      "out": "Perkecil",
+      "fit": "Paskan ke tampilan"
+    }
   }
 }

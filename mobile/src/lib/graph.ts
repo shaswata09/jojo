@@ -118,6 +118,8 @@ export type GraphNode = {
   /** The record this node stands for, so a tap can open the real thing. */
   recordId: string
   degree: number
+  /** An application's pipeline stage, for grouping the overview by stage. */
+  stage?: Application['stage']
 }
 
 /** `${from}|${rel}|${to}` — see `edgeIdOf`. */
@@ -166,11 +168,21 @@ export function buildGraph(input: GraphInput): Graph {
   const edges: GraphEdge[] = []
   const seen = new Set<string>()
 
-  const add = (type: GraphNodeType, recordId: string, label: string, detail?: string) => {
+  const add = (
+    type: GraphNodeType,
+    recordId: string,
+    label: string,
+    detail?: string,
+    stage?: Application['stage'],
+  ) => {
     const id = graphNodeId(type, recordId)
     if (!seen.has(id)) {
       seen.add(id)
-      nodes.push({ id, type, label, detail, recordId, degree: 0 })
+      nodes.push(
+        stage === undefined
+          ? { id, type, label, detail, recordId, degree: 0 }
+          : { id, type, label, detail, recordId, degree: 0, stage },
+      )
     }
     return id
   }
@@ -195,7 +207,7 @@ export function buildGraph(input: GraphInput): Graph {
   }
 
   for (const a of input.applications) {
-    const appId = add('application', a.id, displayName(a), a.note)
+    const appId = add('application', a.id, displayName(a), a.note, a.stage)
     const orgId = add('org', a.org, a.org)
     const roleId = add('role', a.roleTag, a.roleTag)
     join(appId, orgId, 'AT')

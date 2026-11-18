@@ -518,7 +518,90 @@
     "patternNone": "Hierzu passt nichts.",
     "records_one": "{{count}} Eintrag",
     "records_other": "{{count}} Einträge",
-    "exampleNone": "Nichts passt – genau die gute Antwort auf diese Frage."
+    "exampleNone": "Nichts passt – genau die gute Antwort auf diese Frage.",
+    "view": {
+      "mode": {
+        "label": "Ansicht",
+        "overview": "Übersicht",
+        "focus": "Fokus"
+      },
+      "groupBy": {
+        "label": "Gruppieren nach",
+        "role": "Stelle",
+        "stage": "Phase",
+        "organisation": "Arbeitgeber",
+        "keyword": "Schlagwort"
+      },
+      "group": {
+        "shared": "Gemeinsam",
+        "none": "Keine Angabe",
+        "rest": "Sonstige",
+        "loose": "Ohne jede Verbindung",
+        "label": "{{name}}: {{records}}",
+        "singles": "Je eine Bewerbung"
+      },
+      "groups_one": "{{count}} Gruppe",
+      "groups_other": "{{count}} Gruppen",
+      "overviewLabel": "Übersicht des Wissensgraphen – {{groups}}, {{records}}",
+      "overviewHelp": "Jeder Kreis ist eine Gruppe. Tippe auf einen Eintrag, um seine Verbindungen zu sehen und aufzuklappen, was bei ihm mitgezählt ist. Zum Zoomen zwei Finger spreizen oder + und − verwenden.",
+      "listHint": "Jeder Eintrag in diesem Bild steht unten unter „Gruppen“.",
+      "focusLabel": "{{label}} im Fokus – {{records}}",
+      "focusHelp": "Der Eintrag in der Mitte, seine Verbindungen auf dem ersten Ring und deren Verbindungen auf dem nächsten. Tippe auf einen Eintrag, um ihn in den Fokus zu rücken oder aufzuklappen.",
+      "focusOn": "{{label}} in den Fokus rücken",
+      "expand": "Aufklappen",
+      "collapse": "Zuklappen",
+      "back": "Zurück zur Übersicht",
+      "trail": "Fokusverlauf",
+      "more_one": "{{formatted}} weiterer erreichbarer Eintrag wird nicht gezeichnet – rücke einen Nachbarn in den Fokus, um ihn zu sehen.",
+      "more_other": "{{formatted}} weitere erreichbare Einträge werden nicht gezeichnet – rücke einen Nachbarn in den Fokus, um sie zu sehen.",
+      "looseHint": "Diese Einträge verweisen auf nichts, und nichts verweist auf sie. Wähle einen aus, um ihn zu sehen.",
+      "groupsTitle": "Gruppen",
+      "groupsHint": "das Bild als Liste",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, darin mitgezählt: {{folded}}",
+        "hub": "{{label}}. {{type}}, {{connections}}; nicht gezeichnet: {{folded}} – klappe den Eintrag auf, um sie zu sehen"
+      },
+      "connections_one": "{{count}} Verbindung",
+      "connections_other": "{{count}} Verbindungen",
+      "folded": {
+        "application_one": "{{count}} Bewerbung",
+        "application_other": "{{count}} Bewerbungen",
+        "role_one": "{{count}} Stelle",
+        "role_other": "{{count}} Stellen",
+        "item_one": "{{count}} Zeitleisteneintrag",
+        "item_other": "{{count}} Zeitleisteneinträge",
+        "keyword_one": "{{count}} Schlagwort",
+        "keyword_other": "{{count}} Schlagwörter",
+        "link_one": "{{count}} Link",
+        "link_other": "{{count}} Links",
+        "file_one": "{{count}} Datei",
+        "file_other": "{{count}} Dateien",
+        "snippet_one": "{{count}} Textbaustein",
+        "snippet_other": "{{count}} Textbausteine",
+        "posting_one": "{{count}} gespeicherte Stellenanzeige",
+        "posting_other": "{{count}} gespeicherte Stellenanzeigen",
+        "match_one": "{{count}} Scout-Treffer",
+        "match_other": "{{count}} Scout-Treffer",
+        "org_one": "{{count}} Arbeitgeber",
+        "org_other": "{{count}} Arbeitgeber"
+      },
+      "moreItem_one": "+{{formatted}} weiterer",
+      "moreItem_other": "+{{formatted}} weitere",
+      "moreLabel_one": "{{formatted}} weiterer mit {{label}} verbundener Eintrag. Auswählen, um alle aufzulisten.",
+      "moreLabel_other": "{{formatted}} weitere mit {{label}} verbundene Einträge. Auswählen, um alle aufzulisten.",
+      "zoom": {
+        "label": "Zoom",
+        "in": "Vergrößern",
+        "out": "Verkleinern",
+        "fit": "An Ansicht anpassen"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} und {{last}}",
+        "many": "{{head}} und {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "Job-Scout",

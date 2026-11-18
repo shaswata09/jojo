@@ -108,5 +108,71 @@
       "unfiled": "哪些檔案沒有歸檔在任何地方？",
       "busy": "哪些申請有超過兩個時間軸項目？"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "檢視",
+      "overview": "總覽",
+      "focus": "聚焦",
+      "free": "自由排列"
+    },
+    "groupBy": {
+      "label": "分組依據",
+      "role": "職務",
+      "stage": "階段",
+      "organisation": "機構",
+      "keyword": "關鍵字"
+    },
+    "group": {
+      "shared": "共用",
+      "none": "無",
+      "rest": "其他",
+      "loose": "未連結到任何項目",
+      "label": "{{name}}：{{records}}",
+      "singles": "每項僅一份申請"
+    },
+    "groups_other": "{{count}} 個群組",
+    "overviewLabel": "知識圖譜總覽——{{groups}}，{{records}}",
+    "overviewDescription": "紀錄會分組放進加上標籤的圓圈裡。只有一個連結的紀錄，會計入它所連結的那筆紀錄；連線只會為你指向或選取的紀錄畫出。這張圖旁邊的面板以文字列出相同的資訊。",
+    "overviewHelp": "每個圓圈是一個群組。將游標移到紀錄上，或用 Tab 鍵移到它上面，就能看到它的連結；選取它，即可展開計入其中的項目。方向鍵可在群組內移動，按 F 可聚焦在一筆紀錄上。",
+    "focusLabel": "聚焦在{{label}}——{{records}}",
+    "focusDescription": "聚焦的紀錄位於中心，它連結的紀錄在第一圈，那些紀錄所連結的紀錄則在第二圈。",
+    "focusHelp": "中間是這筆紀錄，第一圈是它連結的項目，下一圈是那些項目連結的項目。選取一筆紀錄即可聚焦或展開它；按 F 聚焦，按 E 展開。",
+    "focusOn": "聚焦在{{label}}",
+    "focusOnHint": "將這筆紀錄顯示在中心，相鄰的紀錄一圈圈排列在周圍",
+    "expand": "展開",
+    "collapse": "收合",
+    "expandHint": "也在再往外一圈畫出這筆紀錄本身的連結",
+    "back": "返回總覽",
+    "trail": "聚焦軌跡",
+    "more_other": "還有 {{formatted}} 筆可連到的紀錄沒有畫出——聚焦在相鄰的紀錄上即可看到。",
+    "looseHint": "這些紀錄沒有指向任何項目，也沒有任何項目指向它們。選一筆即可查看。",
+    "node": {
+      "folded": "{{label}}。{{type}}，{{connections}}，其中計入了{{folded}}",
+      "hub": "{{label}}。{{type}}，{{connections}}；{{folded}}沒有畫出——展開即可顯示"
+    },
+    "folded": {
+      "application_other": "{{count}} 份申請",
+      "organisation_other": "{{count}} 個機構",
+      "role_other": "{{count}} 個職務",
+      "item_other": "{{count}} 個時間軸項目",
+      "keyword_other": "{{count}} 個關鍵字",
+      "link_other": "{{count}} 個連結",
+      "file_other": "{{count}} 個檔案",
+      "snippet_other": "{{count}} 個片段",
+      "posting_other": "{{count}} 個已儲存的職缺",
+      "match_other": "{{count}} 筆職缺偵察結果",
+      "source_other": "{{count}} 個來源",
+      "background_other": "{{count}} 筆「關於你」的項目",
+      "claim_other": "{{count}} 個關係"
+    },
+    "moreItem_other": "+{{formatted}} 筆",
+    "moreLabel_other": "還有 {{formatted}} 筆紀錄連結到{{label}}。選取即可列出全部。",
+    "zoom": {
+      "label": "縮放",
+      "in": "放大",
+      "out": "縮小",
+      "fit": "調整至符合畫面"
+    }
   }
 }

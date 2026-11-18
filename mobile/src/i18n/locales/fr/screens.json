@@ -518,7 +518,90 @@
     "patternNone": "Rien ne correspond à celle-ci.",
     "records_one": "{{count}} enregistrement",
     "records_other": "{{count}} enregistrements",
-    "exampleNone": "Rien ne correspond — c’est la bonne réponse pour celle-ci."
+    "exampleNone": "Rien ne correspond — c’est la bonne réponse pour celle-ci.",
+    "view": {
+      "mode": {
+        "label": "Vue",
+        "overview": "Vue d’ensemble",
+        "focus": "Vue centrée"
+      },
+      "groupBy": {
+        "label": "Regrouper par",
+        "role": "Poste",
+        "stage": "Étape",
+        "organisation": "Employeur",
+        "keyword": "Mot-clé"
+      },
+      "group": {
+        "shared": "Partagés",
+        "none": "Non renseigné",
+        "rest": "Autres",
+        "loose": "Sans aucune connexion",
+        "label": "{{name}} : {{records}}",
+        "singles": "Une candidature chacun"
+      },
+      "groups_one": "{{count}} groupe",
+      "groups_other": "{{count}} groupes",
+      "overviewLabel": "Vue d’ensemble du graphe de connaissances — {{groups}}, {{records}}",
+      "overviewHelp": "Chaque cercle est un groupe. Touchez un enregistrement pour voir ses liens et déplier ce qui est compté dessus. Pincez, ou utilisez + et −, pour zoomer.",
+      "listHint": "Chaque enregistrement de cette image figure dans Groupes, plus bas.",
+      "focusLabel": "{{label}} au centre — {{records}}",
+      "focusHelp": "L’enregistrement au milieu, ce à quoi il est lié sur le premier anneau, et ce à quoi ceux-ci sont liés sur le suivant. Touchez un enregistrement pour le placer au centre ou le déplier.",
+      "focusOn": "Centrer sur {{label}}",
+      "expand": "Déplier",
+      "collapse": "Replier",
+      "back": "Retour à la vue d’ensemble",
+      "trail": "Parcours des vues centrées",
+      "more_one": "{{formatted}} autre enregistrement à portée n’est pas affiché — centrez la vue sur un voisin pour le voir.",
+      "more_other": "{{formatted}} autres enregistrements à portée ne sont pas affichés — centrez la vue sur un voisin pour les voir.",
+      "looseHint": "Ces enregistrements ne pointent vers rien et rien ne pointe vers eux. Choisissez-en un pour le voir.",
+      "groupsTitle": "Groupes",
+      "groupsHint": "l’image sous forme de liste",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, regroupant {{folded}}",
+        "hub": "{{label}}. {{type}}, {{connections}} ; {{folded}} hors du tracé — dépliez-le pour les afficher"
+      },
+      "connections_one": "{{count}} connexion",
+      "connections_other": "{{count}} connexions",
+      "folded": {
+        "application_one": "{{count}} candidature",
+        "application_other": "{{count}} candidatures",
+        "role_one": "{{count}} poste",
+        "role_other": "{{count}} postes",
+        "item_one": "{{count}} élément de la chronologie",
+        "item_other": "{{count}} éléments de la chronologie",
+        "keyword_one": "{{count}} mot-clé",
+        "keyword_other": "{{count}} mots-clés",
+        "link_one": "{{count}} lien",
+        "link_other": "{{count}} liens",
+        "file_one": "{{count}} fichier",
+        "file_other": "{{count}} fichiers",
+        "snippet_one": "{{count}} extrait",
+        "snippet_other": "{{count}} extraits",
+        "posting_one": "{{count}} offre enregistrée",
+        "posting_other": "{{count}} offres enregistrées",
+        "match_one": "{{count}} correspondance de l’éclaireur",
+        "match_other": "{{count}} correspondances de l’éclaireur",
+        "org_one": "{{count}} employeur",
+        "org_other": "{{count}} employeurs"
+      },
+      "moreItem_one": "+{{formatted}} autre",
+      "moreItem_other": "+{{formatted}} autres",
+      "moreLabel_one": "{{formatted}} autre enregistrement lié à {{label}}. Sélectionnez pour afficher la liste complète.",
+      "moreLabel_other": "{{formatted}} autres enregistrements liés à {{label}}. Sélectionnez pour afficher la liste complète.",
+      "zoom": {
+        "label": "Zoom",
+        "in": "Zoom avant",
+        "out": "Zoom arrière",
+        "fit": "Ajuster à la vue"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} et {{last}}",
+        "many": "{{head}} et {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "Éclaireur d’emploi",

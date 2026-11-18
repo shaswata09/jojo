@@ -489,7 +489,75 @@
     "patternHint": "自己构建",
     "patternNone": "没有符合此条件的内容。",
     "records_other": "{{count}} 条记录",
-    "exampleNone": "没有匹配项——对这个问题来说，这正是好答案。"
+    "exampleNone": "没有匹配项——对这个问题来说，这正是好答案。",
+    "view": {
+      "mode": {
+        "label": "视图",
+        "overview": "概览",
+        "focus": "聚焦"
+      },
+      "groupBy": {
+        "label": "分组依据",
+        "role": "职位",
+        "stage": "阶段",
+        "organisation": "雇主",
+        "keyword": "关键词"
+      },
+      "group": {
+        "shared": "共享",
+        "none": "无",
+        "rest": "其他",
+        "loose": "未与任何内容相连",
+        "label": "{{name}}：{{records}}",
+        "singles": "每项仅一份申请"
+      },
+      "groups_other": "{{count}} 个分组",
+      "overviewLabel": "知识图谱概览——{{groups}}，{{records}}",
+      "overviewHelp": "每个圆圈是一个分组。轻触一条记录即可查看它的连接，并展开计入其中的内容。双指缩放，或使用 + 和 − 缩放。",
+      "listHint": "这张图中的每条记录都列在下方的“分组”中。",
+      "focusLabel": "聚焦于{{label}}——{{records}}",
+      "focusHelp": "中间是这条记录，第一环是它连接的内容，下一环是这些内容所连接的内容。轻触一条记录即可聚焦或展开它。",
+      "focusOn": "聚焦于{{label}}",
+      "expand": "展开",
+      "collapse": "收起",
+      "back": "返回概览",
+      "trail": "聚焦路径",
+      "more_other": "还有 {{formatted}} 条可达的记录未绘制——聚焦到相邻记录即可看到。",
+      "looseHint": "这些记录不指向任何内容，也没有任何内容指向它们。选一条即可查看。",
+      "groupsTitle": "分组",
+      "groupsHint": "以列表呈现同一张图",
+      "node": {
+        "plain": "{{label}}。{{type}}，{{connections}}",
+        "folded": "{{label}}。{{type}}，{{connections}}，其中计入了{{folded}}",
+        "hub": "{{label}}。{{type}}，{{connections}}；{{folded}}未绘制——展开即可显示"
+      },
+      "connections_other": "{{count}} 个连接",
+      "folded": {
+        "application_other": "{{count}} 份申请",
+        "role_other": "{{count}} 个职位",
+        "item_other": "{{count}} 个时间线条目",
+        "keyword_other": "{{count}} 个关键词",
+        "link_other": "{{count}} 个链接",
+        "file_other": "{{count}} 个文件",
+        "snippet_other": "{{count}} 个片段",
+        "posting_other": "{{count}} 个已保存的职位",
+        "match_other": "{{count}} 个侦察匹配",
+        "org_other": "{{count}} 个雇主"
+      },
+      "moreItem_other": "+{{formatted}} 条",
+      "moreLabel_other": "还有 {{formatted}} 条记录与{{label}}相连。选择即可列出全部。",
+      "zoom": {
+        "label": "缩放",
+        "in": "放大",
+        "out": "缩小",
+        "fit": "适应视图"
+      },
+      "list": {
+        "sep": "、",
+        "two": "{{first}}和{{last}}",
+        "many": "{{head}}和{{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "职位侦察",

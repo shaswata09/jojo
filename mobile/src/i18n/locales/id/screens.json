@@ -489,7 +489,75 @@
     "patternHint": "susun sendiri",
     "patternNone": "Tidak ada yang cocok.",
     "records_other": "{{count}} entri",
-    "exampleNone": "Tidak ada yang cocok — dan untuk pertanyaan ini, itu jawaban yang baik."
+    "exampleNone": "Tidak ada yang cocok — dan untuk pertanyaan ini, itu jawaban yang baik.",
+    "view": {
+      "mode": {
+        "label": "Tampilan",
+        "overview": "Ikhtisar",
+        "focus": "Fokus"
+      },
+      "groupBy": {
+        "label": "Kelompokkan menurut",
+        "role": "Posisi",
+        "stage": "Tahap",
+        "organisation": "Pemberi kerja",
+        "keyword": "Kata kunci"
+      },
+      "group": {
+        "shared": "Bersama",
+        "none": "Tanpa kata kunci",
+        "rest": "Lainnya",
+        "loose": "Tidak terhubung ke apa pun",
+        "label": "{{name}}: {{records}}",
+        "singles": "Masing-masing satu lamaran"
+      },
+      "groups_other": "{{count}} kelompok",
+      "overviewLabel": "Ikhtisar graf pengetahuan — {{groups}}, {{records}}",
+      "overviewHelp": "Setiap lingkaran adalah satu kelompok. Ketuk sebuah entri untuk melihat koneksinya dan membuka apa yang dihitung padanya. Cubit, atau gunakan + dan −, untuk memperbesar atau memperkecil.",
+      "listHint": "Setiap entri di gambar ini tercantum di bawah Kelompok.",
+      "focusLabel": "{{label}} dalam fokus — {{records}}",
+      "focusHelp": "Entri di tengah, yang ditautkannya di cincin pertama, dan yang ditautkan oleh entri-entri itu di cincin berikutnya. Ketuk entri untuk memfokuskan atau memperluasnya.",
+      "focusOn": "Fokus pada {{label}}",
+      "expand": "Perluas",
+      "collapse": "Ciutkan",
+      "back": "Kembali ke ikhtisar",
+      "trail": "Jejak fokus",
+      "more_other": "{{formatted}} entri lain dalam jangkauan tidak digambar — fokus pada tetangga untuk melihatnya.",
+      "looseHint": "Entri-entri ini tidak menunjuk ke apa pun dan tidak ada yang menunjuk ke sana. Pilih salah satu untuk melihatnya.",
+      "groupsTitle": "Kelompok",
+      "groupsHint": "gambar ini sebagai daftar",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, dengan {{folded}} dihitung padanya",
+        "hub": "{{label}}. {{type}}, {{connections}}; {{folded}} tidak digambar — perluas untuk menampilkannya"
+      },
+      "connections_other": "{{count}} koneksi",
+      "folded": {
+        "application_other": "{{count}} lamaran",
+        "role_other": "{{count}} posisi",
+        "item_other": "{{count}} item linimasa",
+        "keyword_other": "{{count}} kata kunci",
+        "link_other": "{{count}} tautan",
+        "file_other": "{{count}} berkas",
+        "snippet_other": "{{count}} cuplikan",
+        "posting_other": "{{count}} lowongan tersimpan",
+        "match_other": "{{count}} kecocokan Pencari",
+        "org_other": "{{count}} pemberi kerja"
+      },
+      "moreItem_other": "+{{formatted}} lainnya",
+      "moreLabel_other": "{{formatted}} entri lain terhubung ke {{label}}. Pilih untuk melihat daftar lengkapnya.",
+      "zoom": {
+        "label": "Zoom",
+        "in": "Perbesar",
+        "out": "Perkecil",
+        "fit": "Paskan ke tampilan"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} dan {{last}}",
+        "many": "{{head}}, dan {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "Pencari lowongan",

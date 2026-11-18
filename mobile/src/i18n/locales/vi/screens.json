@@ -489,7 +489,75 @@
     "patternHint": "tự dựng câu hỏi",
     "patternNone": "Không có gì khớp với câu này.",
     "records_other": "{{count}} bản ghi",
-    "exampleNone": "Không có gì khớp — đó là câu trả lời tốt cho câu hỏi này."
+    "exampleNone": "Không có gì khớp — đó là câu trả lời tốt cho câu hỏi này.",
+    "view": {
+      "mode": {
+        "label": "Chế độ xem",
+        "overview": "Tổng quan",
+        "focus": "Tiêu điểm"
+      },
+      "groupBy": {
+        "label": "Nhóm theo",
+        "role": "Vị trí",
+        "stage": "Giai đoạn",
+        "organisation": "Nhà tuyển dụng",
+        "keyword": "Từ khóa"
+      },
+      "group": {
+        "shared": "Dùng chung",
+        "none": "Không có từ khóa",
+        "rest": "Khác",
+        "loose": "Không liên kết với gì",
+        "label": "{{name}}: {{records}}",
+        "singles": "Mỗi mục chỉ một đơn ứng tuyển"
+      },
+      "groups_other": "{{count}} nhóm",
+      "overviewLabel": "Tổng quan đồ thị tri thức — {{groups}}, {{records}}",
+      "overviewHelp": "Mỗi vòng tròn là một nhóm. Chạm vào một bản ghi để xem các liên kết của nó và mở ra những gì được đếm trên nó. Chụm hoặc mở hai ngón tay, hay dùng + và −, để thu phóng.",
+      "listHint": "Mọi bản ghi trong hình này đều được liệt kê bên dưới, trong mục Nhóm.",
+      "focusLabel": "{{label}} đang là tiêu điểm — {{records}}",
+      "focusHelp": "Bản ghi ở giữa, những gì nó liên kết tới ở vòng thứ nhất, và những gì chúng liên kết tới ở vòng tiếp theo. Chạm vào một bản ghi để đặt tiêu điểm vào nó hoặc mở rộng nó.",
+      "focusOn": "Đặt tiêu điểm vào {{label}}",
+      "expand": "Mở rộng",
+      "collapse": "Thu gọn",
+      "back": "Quay lại tổng quan",
+      "trail": "Lộ trình tiêu điểm",
+      "more_other": "Còn {{formatted}} bản ghi trong tầm với chưa được vẽ — đặt tiêu điểm vào một bản ghi lân cận để xem.",
+      "looseHint": "Các bản ghi này không trỏ tới gì và cũng không có gì trỏ tới chúng. Chọn một bản ghi để xem.",
+      "groupsTitle": "Nhóm",
+      "groupsHint": "hình này dưới dạng danh sách",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, kèm {{folded}} được đếm trên nó",
+        "hub": "{{label}}. {{type}}, {{connections}}; {{folded}} chưa được vẽ — mở rộng để hiển thị"
+      },
+      "connections_other": "{{count}} kết nối",
+      "folded": {
+        "application_other": "{{count}} đơn ứng tuyển",
+        "role_other": "{{count}} vị trí",
+        "item_other": "{{count}} mục dòng thời gian",
+        "keyword_other": "{{count}} từ khóa",
+        "link_other": "{{count}} liên kết",
+        "file_other": "{{count}} tệp",
+        "snippet_other": "{{count}} đoạn văn bản",
+        "posting_other": "{{count}} tin tuyển dụng đã lưu",
+        "match_other": "{{count}} gợi ý của Trình tìm việc",
+        "org_other": "{{count}} nhà tuyển dụng"
+      },
+      "moreItem_other": "+{{formatted}} nữa",
+      "moreLabel_other": "Còn {{formatted}} bản ghi khác liên kết với {{label}}. Chọn để liệt kê tất cả.",
+      "zoom": {
+        "label": "Thu phóng",
+        "in": "Phóng to",
+        "out": "Thu nhỏ",
+        "fit": "Vừa khung nhìn"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} và {{last}}",
+        "many": "{{head}} và {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "Trình tìm việc",

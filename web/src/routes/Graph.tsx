@@ -4,10 +4,16 @@ import { useTranslation } from 'react-i18next'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { FocusCanvas } from '@/components/graph/FocusCanvas'
 import { GraphCanvas } from '@/components/graph/GraphCanvas'
 import { GraphDetail } from '@/components/graph/GraphDetail'
 import { GraphLegend } from '@/components/graph/GraphLegend'
+import { GraphLoosePanel } from '@/components/graph/GraphLoosePanel'
+import { GraphViewBar } from '@/components/graph/GraphViewBar'
+import type { GraphMode } from '@/components/graph/GraphViewBar'
+import { OverviewCanvas } from '@/components/graph/OverviewCanvas'
 import { QueryPanel } from '@/components/graph/QueryPanel'
+import { MAX_DRAWN } from '@/components/graph/structure'
 import { toQueryResult } from '@/lib/graph/from-agent'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { Button } from '@/components/ui/button'
@@ -19,7 +25,12 @@ import { runQuery } from '@/lib/graph/query'
 import type { GraphQuery, QueryResult } from '@/lib/graph/query'
 import { filterGraph } from '@/lib/graph/traversal'
 import { useGraph } from '@jojo/service/react/kg-context'
+import { GROUP_LOOSE, wantsOverview } from '@jojo/service/core/graph-view'
 import { useTitle } from '@/lib/links'
+import { useFocusParam } from '@/lib/link-params'
+import { foldGraph, toViewGraph } from '@/lib/graph/view'
+import type { GroupDimension } from '@/lib/graph/view'
+import { useStableView } from '@/lib/graph/use-stable-view'
 
 /**
  * The knowledge graph, as a preview.
@@ -33,6 +44,7 @@ import { useTitle } from '@/lib/links'
  */
 export function Graph() {
   const { t, i18n } = useTranslation('pages')
+  const { t: tGraph } = useTranslation('graph')
   useTitle(t('graph.title'))
 
   // The snapshot itself, not eight projections of it. The page used to rebuild
@@ -74,6 +86,63 @@ export function Graph() {
       filterGraph(graph, (node) => !hidden.has(node.type) && !(hideLoners && node.degree === 0)),
     [graph, hidden, hideLoners],
   )
+
+  /*
+   * The calm overview (`kg/core/graph-view.ts`). Folded, grouped and placed from
+   * a view graph that keeps its identity across commits that change nothing
+   * it reads — rule 1 of `GraphCanvas`, for the same reason: `view` is a fresh
+   * object on every commit anywhere in the app, and the overview is thousands
+   * of elements.
+   */
+  const viewGraph = useStableView(useMemo(() => toViewGraph(view), [view]))
+  const folding = useMemo(() => foldGraph(viewGraph), [viewGraph])
+  const large = wantsOverview(folding)
+  const freeAllowed = view.nodes.length <= MAX_DRAWN
+  /** The picture asked for; 'auto' follows the store's size. */
+  const [layout, setLayout] = useState<'auto' | 'overview' | 'free'>('auto')
+  const [groupBy, setGroupBy] = useState<GroupDimension>('role')
+  /** Records focused on, oldest first. Non-empty means the focus view is showing. */
+  const [trail, setTrail] = useState<string[]>([])
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set())
+  const centre = trail.at(-1)
+  const base: 'overview' | 'free' =
+    layout === 'auto'
+      ? large
+        ? 'overview'
+        : 'free'
+      : layout === 'free' && !freeAllowed
+        ? 'overview'
+        : layout
+  const mode: GraphMode = centre !== undefined && view.byId.has(centre) ? 'focus' : base
+
+  const focusOn = useCallback((id: string) => {
+    setTrail((current) => {
+      const at = current.indexOf(id)
+      // Focusing on a record already on the trail goes back to it, rather than
+      // growing a trail that runs in a circle.
+      return at === -1 ? [...current, id] : current.slice(0, at + 1)
+    })
+    setExpanded(new Set())
+    setSelectedId(id)
+  }, [])
+
+  const backToOverview = useCallback(() => {
+    setTrail([])
+    setExpanded(new Set())
+  }, [])
+
+  // `/graph?focus=<id>` — arriving from a link opens the focus view on it.
+  const { focus: arrivalFocus, clearFocus, arrival } = useFocusParam()
+  useEffect(() => {
+    if (!arrivalFocus) return
+    if (graph.byId.has(arrivalFocus)) {
+      setHidden(new Set())
+      setTrail([arrivalFocus])
+      setExpanded(new Set())
+      setSelectedId(arrivalFocus)
+    }
+    clearFocus()
+  }, [arrivalFocus, arrival, graph, clearFocus])
 
   const counts = useMemo(() => {
     const map = new Map<GraphNodeType, number>()
@@ -118,8 +187,39 @@ export function Graph() {
 
   // A record can be deleted from another page while this one is mounted.
   useEffect(() => {
-    setSelectedId((id) => (id && graph.byId.has(id) ? id : null))
+    setSelectedId((id) => (id && (graph.byId.has(id) || id === GROUP_LOOSE) ? id : null))
+    setTrail((current) => {
+      const kept = current.filter((id) => graph.byId.has(id))
+      return kept.length === current.length ? current : kept
+    })
   }, [graph])
+
+  const switchMode = useCallback(
+    (next: GraphMode) => {
+      if (next === 'focus') {
+        // The selected record, else the last one focused, else the most
+        // connected record in view — Focus never opens on nothing.
+        const target =
+          (selectedId && selectedId !== GROUP_LOOSE && view.byId.has(selectedId)
+            ? selectedId
+            : null) ?? [...view.nodes].sort((a, b) => b.degree - a.degree)[0]?.id
+        if (target) focusOn(target)
+        return
+      }
+      backToOverview()
+      setLayout(next)
+    },
+    [selectedId, view, focusOn, backToOverview],
+  )
+
+  /** Opening a query answer: in the overview or focus, it opens in focus. */
+  const selectFromAnswer = useCallback(
+    (id: string) => {
+      setSelectedId(id)
+      if (mode !== 'free') focusOn(id)
+    },
+    [mode, focusOn],
+  )
 
   const toggleType = useCallback((type: GraphNodeType) => {
     setHidden((current) => {
@@ -130,6 +230,27 @@ export function Graph() {
   }, [])
 
   const selected = selectedId ? (graph.byId.get(selectedId) ?? null) : null
+  const viewAction =
+    mode === 'free' || !selected
+      ? null
+      : {
+          label: selected.label,
+          canFocus: selected.id !== centre && view.byId.has(selected.id),
+          onFocus: () => focusOn(selected.id),
+          ...(mode === 'focus' && selected.id !== centre && view.byId.has(selected.id)
+            ? {
+                expand: {
+                  expanded: expanded.has(selected.id),
+                  onToggle: () =>
+                    setExpanded((current) => {
+                      const next = new Set(current)
+                      if (!next.delete(selected.id)) next.add(selected.id)
+                      return next
+                    }),
+                },
+              }
+            : {}),
+        }
 
   /**
    * A query that matched nothing has to be said next to the picture.
@@ -203,34 +324,36 @@ export function Graph() {
           </>
         }
         actions={
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLayoutSeed((seed) => seed + 1)}
-              title={t('graph.reorganizeHint')}
-            >
-              <Shuffle className="size-3.5" strokeWidth={2} aria-hidden />
-              {t('graph.reorganize')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                /*
-                 * The seed goes back to 0 with the nonce, or "Reset" would hand
-                 * back whatever "Reorganize" last produced — which is a reset to
-                 * nowhere in particular. Reset means the canonical arrangement.
-                 */
-                setLayoutSeed(0)
-                setLayoutNonce((n) => n + 1)
-              }}
-              title={t('graph.resetHint')}
-            >
-              <RotateCcw className="size-3.5" strokeWidth={2} aria-hidden />
-              {t('graph.reset')}
-            </Button>
-          </>
+          mode !== 'free' ? null : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLayoutSeed((seed) => seed + 1)}
+                title={t('graph.reorganizeHint')}
+              >
+                <Shuffle className="size-3.5" strokeWidth={2} aria-hidden />
+                {t('graph.reorganize')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  /*
+                   * The seed goes back to 0 with the nonce, or "Reset" would hand
+                   * back whatever "Reorganize" last produced — which is a reset to
+                   * nowhere in particular. Reset means the canonical arrangement.
+                   */
+                  setLayoutSeed(0)
+                  setLayoutNonce((n) => n + 1)
+                }}
+                title={t('graph.resetHint')}
+              >
+                <RotateCcw className="size-3.5" strokeWidth={2} aria-hidden />
+                {t('graph.reset')}
+              </Button>
+            </>
+          )
         }
       />
 
@@ -271,19 +394,72 @@ export function Graph() {
             {t('graph.panelTitle')}
           </PanelTitle>
 
+          <GraphViewBar
+            mode={mode}
+            onMode={switchMode}
+            freeAllowed={freeAllowed}
+            by={groupBy}
+            onBy={setGroupBy}
+            trail={trail}
+            labelOf={(id) => graph.byId.get(id)?.label ?? id}
+            onCrumb={(index) => {
+              const id = trail[index]
+              if (id) focusOn(id)
+            }}
+            onBack={backToOverview}
+            action={viewAction}
+          />
+
           <div className="well h-[380px] overflow-hidden rounded-md sm:h-[460px] lg:h-[560px]">
-            <GraphCanvas
-              graph={view}
-              showAllLabels={showAllLabels}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              result={result}
-              layoutNonce={layoutNonce}
-              layoutSeed={layoutSeed}
-            />
+            {mode === 'free' ? (
+              <GraphCanvas
+                graph={view}
+                showAllLabels={showAllLabels}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                result={result}
+                layoutNonce={layoutNonce}
+                layoutSeed={layoutSeed}
+              />
+            ) : mode === 'focus' && centre !== undefined ? (
+              <FocusCanvas
+                viewGraph={viewGraph}
+                centreId={centre}
+                expanded={expanded}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onFocus={focusOn}
+                onExpand={(id) =>
+                  setExpanded((current) => {
+                    const next = new Set(current)
+                    if (!next.delete(id)) next.add(id)
+                    return next
+                  })
+                }
+                result={result}
+                showAllLabels={showAllLabels}
+              />
+            ) : (
+              <OverviewCanvas
+                viewGraph={viewGraph}
+                folding={folding}
+                by={groupBy}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onFocus={focusOn}
+                result={result}
+                showAllLabels={showAllLabels}
+              />
+            )}
           </div>
 
-          <p className="mt-2 text-xs text-text-3">{t('graph.help')}</p>
+          <p className="mt-2 text-xs text-text-3">
+            {mode === 'free'
+              ? t('graph.help')
+              : mode === 'focus'
+                ? tGraph('view.focusHelp')
+                : tGraph('view.overviewHelp')}
+          </p>
 
           <GraphLegend
             counts={counts}
@@ -293,7 +469,11 @@ export function Graph() {
           />
         </Panel>
 
-        <GraphDetail graph={graph} node={selected} onSelect={setSelectedId} />
+        {selectedId === GROUP_LOOSE && mode === 'overview' ? (
+          <GraphLoosePanel graph={graph} ids={folding.loose} onSelect={setSelectedId} />
+        ) : (
+          <GraphDetail graph={graph} node={selected} onSelect={setSelectedId} />
+        )}
       </div>
 
       <QueryPanel
@@ -312,7 +492,7 @@ export function Graph() {
         }}
         askReset={askReset}
         selectedId={selectedId}
-        onSelectNode={setSelectedId}
+        onSelectNode={selectFromAnswer}
       />
     </>
   )

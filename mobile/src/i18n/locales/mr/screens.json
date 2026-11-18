@@ -518,7 +518,90 @@
     "patternNone": "याच्याशी काहीही जुळत नाही.",
     "records_one": "{{count}} नोंद",
     "records_other": "{{count}} नोंदी",
-    "exampleNone": "काहीही जुळत नाही — या प्रश्नासाठी हेच चांगले उत्तर आहे."
+    "exampleNone": "काहीही जुळत नाही — या प्रश्नासाठी हेच चांगले उत्तर आहे.",
+    "view": {
+      "mode": {
+        "label": "दृश्य",
+        "overview": "आढावा",
+        "focus": "फोकस"
+      },
+      "groupBy": {
+        "label": "गटबद्ध करा",
+        "role": "पद",
+        "stage": "टप्पा",
+        "organisation": "नियोक्ता",
+        "keyword": "कीवर्ड"
+      },
+      "group": {
+        "shared": "सामायिक",
+        "none": "काहीही नाही",
+        "rest": "इतर",
+        "loose": "कशाशीही जोडलेले नाही",
+        "label": "{{name}}: {{records}}",
+        "singles": "प्रत्येकी एक अर्ज"
+      },
+      "groups_one": "{{count}} गट",
+      "groups_other": "{{count}} गट",
+      "overviewLabel": "ज्ञान आलेखाचा आढावा — {{groups}}, {{records}}",
+      "overviewHelp": "प्रत्येक वर्तुळ एक गट आहे. नोंदीच्या जोडण्या पाहण्यासाठी आणि तिच्यावर मोजलेले उलगडण्यासाठी तिच्यावर टॅप करा. झूम करण्यासाठी दोन बोटांनी चिमटा घ्या, किंवा + आणि − वापरा.",
+      "listHint": "या चित्रातील प्रत्येक नोंद खाली «गट» मध्ये सूचीबद्ध आहे.",
+      "focusLabel": "{{label}} फोकसमध्ये — {{records}}",
+      "focusHelp": "मध्यभागी नोंद, ती ज्यांच्याशी जोडलेली आहे ते पहिल्या वलयावर, आणि ते ज्यांच्याशी जोडलेले आहेत ते पुढच्या वलयावर. नोंदीवर फोकस करण्यासाठी किंवा ती विस्तारण्यासाठी तिच्यावर टॅप करा.",
+      "focusOn": "{{label}} वर फोकस करा",
+      "expand": "विस्तारा",
+      "collapse": "मिटवा",
+      "back": "आढाव्याकडे परत",
+      "trail": "फोकसचा मार्ग",
+      "more_one": "आवाक्यातील आणखी {{formatted}} नोंद काढलेली नाही — ती पाहण्यासाठी एखाद्या शेजाऱ्यावर फोकस करा.",
+      "more_other": "आवाक्यातील आणखी {{formatted}} नोंदी काढलेल्या नाहीत — त्या पाहण्यासाठी एखाद्या शेजाऱ्यावर फोकस करा.",
+      "looseHint": "या नोंदी कशाकडेही निर्देश करत नाहीत आणि कोणतीही गोष्ट त्यांच्याकडे निर्देश करत नाही. पाहण्यासाठी त्यापैकी एक निवडा.",
+      "groupsTitle": "गट",
+      "groupsHint": "हेच चित्र, यादी म्हणून",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, यावर मोजलेले: {{folded}}",
+        "hub": "{{label}}. {{type}}, {{connections}}; न काढलेले: {{folded}} — ते दाखवण्यासाठी ही नोंद विस्तारा"
+      },
+      "connections_one": "{{count}} जोडणी",
+      "connections_other": "{{count}} जोडण्या",
+      "folded": {
+        "application_one": "{{count}} अर्ज",
+        "application_other": "{{count}} अर्ज",
+        "role_one": "{{count}} पद",
+        "role_other": "{{count}} पदे",
+        "item_one": "{{count}} टाइमलाइन घटक",
+        "item_other": "{{count}} टाइमलाइन घटक",
+        "keyword_one": "{{count}} कीवर्ड",
+        "keyword_other": "{{count}} कीवर्ड",
+        "link_one": "{{count}} लिंक",
+        "link_other": "{{count}} लिंक",
+        "file_one": "{{count}} फाइल",
+        "file_other": "{{count}} फाइल्स",
+        "snippet_one": "{{count}} स्निपेट",
+        "snippet_other": "{{count}} स्निपेट",
+        "posting_one": "{{count}} जतन केलेली जाहिरात",
+        "posting_other": "{{count}} जतन केलेल्या जाहिराती",
+        "match_one": "{{count}} स्काउट जुळणी",
+        "match_other": "{{count}} स्काउट जुळण्या",
+        "org_one": "{{count}} नियोक्ता",
+        "org_other": "{{count}} नियोक्ते"
+      },
+      "moreItem_one": "+{{formatted}} आणखी",
+      "moreItem_other": "+{{formatted}} आणखी",
+      "moreLabel_one": "{{label}} शी जोडलेली आणखी {{formatted}} नोंद. सर्वांची यादी पाहण्यासाठी हे निवडा.",
+      "moreLabel_other": "{{label}} शी जोडलेल्या आणखी {{formatted}} नोंदी. सर्वांची यादी पाहण्यासाठी हे निवडा.",
+      "zoom": {
+        "label": "झूम",
+        "in": "झूम इन करा",
+        "out": "झूम आउट करा",
+        "fit": "दृश्यात बसवा"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} आणि {{last}}",
+        "many": "{{head}} आणि {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "जॉब स्काउट",

@@ -2824,3 +2824,16 @@ Guarded by:
 - `mobile/src/lib/device-check.requests.test.ts` › "ask before the reminder, link, person and stage sheets throw it away"
 - `web/src/lib/intl-locale.requests.test.ts` › "formats Bengali dates and numbers in the digits counts use"
 Note: The hosted app sharing its github.io origin needs a dedicated domain and stays open. Two app notes carry generated English inside them and are shown as stored.
+
+### Q337 — The knowledge graph looks chaotic with a lot of data; show it a better way.
+`feature` · 2026-11-17 · cross · active
+Must stay true: Above a folded size of 150 records the graph opens on an overview instead of a force layout: a record with a single link is drawn as a count on the record it links to, records with no links are one "Not linked to anything" item, and records sit in labelled clusters by Role, Stage (pipeline order), Organisation (one-each group) or Keyword, laid out deterministically with no simulation. Links are drawn only for the record pointed at or selected. A focus view puts one record in the middle with its neighbours on rings, never walks through a hub two steps out (it is drawn closed with its count, and opens as a wedge capped with a "+N more" item), and keeps a trail back. Small stores keep the previous layout. The web and the phone both build these pictures from `service/kg/core/graph-view.ts`.
+Guarded by:
+- `service/kg/core/graph-view.test.ts` › "folds a leaf into the one record it links to"
+- `service/kg/core/graph-view.test.ts` › "is the same picture every time"
+- `service/kg/core/graph-view.test.ts` › "does not walk through a hub two steps out, and says what it stands for"
+- `web/src/components/graph/overview.requests.test.ts` › "opens a large store on the overview and a small one on the free layout"
+- `web/src/components/graph/overview.requests.test.ts` › "draws lines only for the record pointed at or selected"
+- `mobile/src/lib/graph-view.requests.test.ts` › "opens a large store on the overview and a small one on the radial layout"
+- `mobile/src/lib/graph-view.requests.test.ts` › "draws lines only for the selected record"
+Note: Measured on a 2,700-record store: 74% of records had exactly one link, and five synthesised role nodes knotted 500 small bundles together; time to a painted graph went from 1,357 ms to about 700 ms (13,200 records: 3,919 ms to 1,239 ms). Pinch zoom on the phone was not exercised on the emulator (adb sends one finger); TalkBack was not switched on.

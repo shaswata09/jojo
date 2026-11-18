@@ -489,7 +489,75 @@
     "patternHint": "직접 만들기",
     "patternNone": "이 조건에 맞는 항목이 없어요.",
     "records_other": "기록 {{count}}개",
-    "exampleNone": "일치하는 항목이 없어요. 이 질문에는 그게 좋은 답이에요."
+    "exampleNone": "일치하는 항목이 없어요. 이 질문에는 그게 좋은 답이에요.",
+    "view": {
+      "mode": {
+        "label": "보기",
+        "overview": "개요",
+        "focus": "포커스"
+      },
+      "groupBy": {
+        "label": "그룹 기준",
+        "role": "직무",
+        "stage": "단계",
+        "organisation": "고용주",
+        "keyword": "키워드"
+      },
+      "group": {
+        "shared": "공유",
+        "none": "없음",
+        "rest": "기타",
+        "loose": "어디에도 연결되지 않음",
+        "label": "{{name}}: {{records}}",
+        "singles": "지원서 1개씩"
+      },
+      "groups_other": "그룹 {{count}}개",
+      "overviewLabel": "지식 그래프 개요 — {{groups}}, {{records}}",
+      "overviewHelp": "원 하나가 그룹 하나예요. 기록을 탭하면 연결이 보이고, 그 기록에 포함해 센 항목이 펼쳐져요. 두 손가락으로 벌리거나 오므리거나, +와 −로 확대·축소해요.",
+      "listHint": "이 그림의 모든 기록은 아래 ‘그룹’에 나열되어 있어요.",
+      "focusLabel": "{{label}} 포커스 중 — {{records}}",
+      "focusHelp": "가운데에 기록이, 첫 번째 고리에 그 기록과 연결된 기록이, 다음 고리에 다시 그 기록들과 연결된 기록이 있어요. 기록을 탭해 포커스하거나 펼칠 수 있어요.",
+      "focusOn": "{{label}} 포커스",
+      "expand": "펼치기",
+      "collapse": "접기",
+      "back": "개요로 돌아가기",
+      "trail": "포커스 경로",
+      "more_other": "닿을 수 있는 기록이 {{formatted}}개 더 있지만 그리지 않았어요. 보려면 이웃한 기록에 포커스하세요.",
+      "looseHint": "이 기록들은 아무것도 가리키지 않고, 이 기록들을 가리키는 것도 없어요. 하나를 골라 확인해 보세요.",
+      "groupsTitle": "그룹",
+      "groupsHint": "같은 그림을 목록으로",
+      "node": {
+        "plain": "{{label}}. {{type}}, {{connections}}",
+        "folded": "{{label}}. {{type}}, {{connections}}, {{folded}} 포함",
+        "hub": "{{label}}. {{type}}, {{connections}}, {{folded}} 생략됨 — 보려면 펼치세요"
+      },
+      "connections_other": "연결 {{count}}개",
+      "folded": {
+        "application_other": "지원서 {{count}}개",
+        "role_other": "직무 {{count}}개",
+        "item_other": "타임라인 항목 {{count}}개",
+        "keyword_other": "키워드 {{count}}개",
+        "link_other": "링크 {{count}}개",
+        "file_other": "파일 {{count}}개",
+        "snippet_other": "스니펫 {{count}}개",
+        "posting_other": "저장한 채용 공고 {{count}}개",
+        "match_other": "스카우트 매치 {{count}}개",
+        "org_other": "고용주 {{count}}곳"
+      },
+      "moreItem_other": "+{{formatted}}개 더",
+      "moreLabel_other": "{{label}}에 연결된 기록이 {{formatted}}개 더 있어요. 선택하면 모두 나열해요.",
+      "zoom": {
+        "label": "확대/축소",
+        "in": "확대",
+        "out": "축소",
+        "fit": "화면에 맞추기"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} 및 {{last}}",
+        "many": "{{head}} 및 {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "채용 스카우트",

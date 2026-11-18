@@ -518,7 +518,90 @@
     "patternNone": "इससे कुछ भी मेल नहीं खाता।",
     "records_one": "{{count}} रिकॉर्ड",
     "records_other": "{{count}} रिकॉर्ड",
-    "exampleNone": "कुछ भी मेल नहीं खाता — इस सवाल का यही अच्छा जवाब है।"
+    "exampleNone": "कुछ भी मेल नहीं खाता — इस सवाल का यही अच्छा जवाब है।",
+    "view": {
+      "mode": {
+        "label": "दृश्य",
+        "overview": "अवलोकन",
+        "focus": "फ़ोकस"
+      },
+      "groupBy": {
+        "label": "समूह का आधार",
+        "role": "भूमिका",
+        "stage": "चरण",
+        "organisation": "नियोक्ता",
+        "keyword": "कीवर्ड"
+      },
+      "group": {
+        "shared": "साझा",
+        "none": "कोई नहीं",
+        "rest": "अन्य",
+        "loose": "किसी से जुड़ा नहीं",
+        "label": "{{name}}: {{records}}",
+        "singles": "हर एक का एक आवेदन"
+      },
+      "groups_one": "{{count}} समूह",
+      "groups_other": "{{count}} समूह",
+      "overviewLabel": "नॉलेज ग्राफ़ का अवलोकन — {{groups}}, {{records}}",
+      "overviewHelp": "हर घेरा एक समूह है। किसी रिकॉर्ड के कनेक्शन देखने और उस पर गिनी गई चीज़ें खोलने के लिए उस पर टैप करें। ज़ूम करने के लिए दो उँगलियों से पिंच करें, या + और − का इस्तेमाल करें।",
+      "listHint": "इस चित्र का हर रिकॉर्ड नीचे «समूह» में सूचीबद्ध है।",
+      "focusLabel": "{{label}} फ़ोकस में — {{records}}",
+      "focusHelp": "बीच में रिकॉर्ड, पहले छल्ले पर वे जिनसे वह जुड़ा है, और अगले पर वे जिनसे वे जुड़े हैं। किसी रिकॉर्ड पर फ़ोकस करने या उसे फैलाने के लिए उस पर टैप करें।",
+      "focusOn": "{{label}} पर फ़ोकस करें",
+      "expand": "फैलाएँ",
+      "collapse": "समेटें",
+      "back": "अवलोकन पर वापस जाएँ",
+      "trail": "फ़ोकस का रास्ता",
+      "more_one": "पहुँच के भीतर {{formatted}} और रिकॉर्ड नहीं दिखाया गया — उसे देखने के लिए किसी पड़ोसी पर फ़ोकस करें।",
+      "more_other": "पहुँच के भीतर {{formatted}} और रिकॉर्ड नहीं दिखाए गए — उन्हें देखने के लिए किसी पड़ोसी पर फ़ोकस करें।",
+      "looseHint": "ये रिकॉर्ड किसी की ओर इशारा नहीं करते और न ही कुछ इनकी ओर। देखने के लिए किसी एक को चुनें।",
+      "groupsTitle": "समूह",
+      "groupsHint": "यही चित्र, सूची के रूप में",
+      "node": {
+        "plain": "{{label}}। {{type}}, {{connections}}",
+        "folded": "{{label}}। {{type}}, {{connections}}, इस पर गिने गए: {{folded}}",
+        "hub": "{{label}}। {{type}}, {{connections}}; नहीं दिखाए गए: {{folded}} — उन्हें दिखाने के लिए इसे फैलाएँ"
+      },
+      "connections_one": "{{count}} कनेक्शन",
+      "connections_other": "{{count}} कनेक्शन",
+      "folded": {
+        "application_one": "{{count}} आवेदन",
+        "application_other": "{{count}} आवेदन",
+        "role_one": "{{count}} भूमिका",
+        "role_other": "{{count}} भूमिकाएँ",
+        "item_one": "{{count}} टाइमलाइन आइटम",
+        "item_other": "{{count}} टाइमलाइन आइटम",
+        "keyword_one": "{{count}} कीवर्ड",
+        "keyword_other": "{{count}} कीवर्ड",
+        "link_one": "{{count}} लिंक",
+        "link_other": "{{count}} लिंक",
+        "file_one": "{{count}} फ़ाइल",
+        "file_other": "{{count}} फ़ाइलें",
+        "snippet_one": "{{count}} स्निपेट",
+        "snippet_other": "{{count}} स्निपेट",
+        "posting_one": "{{count}} सहेजी गई पोस्टिंग",
+        "posting_other": "{{count}} सहेजी गई पोस्टिंग",
+        "match_one": "{{count}} स्काउट मैच",
+        "match_other": "{{count}} स्काउट मैच",
+        "org_one": "{{count}} नियोक्ता",
+        "org_other": "{{count}} नियोक्ता"
+      },
+      "moreItem_one": "+{{formatted}} और",
+      "moreItem_other": "+{{formatted}} और",
+      "moreLabel_one": "{{label}} से जुड़ा {{formatted}} और रिकॉर्ड। सभी की सूची देखने के लिए इसे चुनें।",
+      "moreLabel_other": "{{label}} से जुड़े {{formatted}} और रिकॉर्ड। सभी की सूची देखने के लिए इसे चुनें।",
+      "zoom": {
+        "label": "ज़ूम",
+        "in": "ज़ूम इन करें",
+        "out": "ज़ूम आउट करें",
+        "fit": "दृश्य में फ़िट करें"
+      },
+      "list": {
+        "sep": ", ",
+        "two": "{{first}} और {{last}}",
+        "many": "{{head}}, और {{last}}"
+      }
+    }
   },
   "jobScout": {
     "title": "जॉब स्काउट",

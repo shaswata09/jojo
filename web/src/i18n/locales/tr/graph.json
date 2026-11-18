@@ -113,5 +113,88 @@
       "unfiled": "Hangi dosyalar hiçbir yerin altında dosyalı değil?",
       "busy": "Hangi başvuruların ikiden fazla zaman çizelgesi öğesi var?"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "Görünüm",
+      "overview": "Genel bakış",
+      "focus": "Odak",
+      "free": "Serbest yerleşim"
+    },
+    "groupBy": {
+      "label": "Gruplama ölçütü",
+      "role": "Rol",
+      "stage": "Aşama",
+      "organisation": "Kurum",
+      "keyword": "Anahtar kelime"
+    },
+    "group": {
+      "shared": "Ortak",
+      "none": "Anahtar kelimesiz",
+      "rest": "Diğerleri",
+      "loose": "Hiçbir şeye bağlı değil",
+      "label": "{{name}}: {{records}}",
+      "singles": "Her birinde tek başvuru"
+    },
+    "groups_one": "{{count}} grup",
+    "groups_other": "{{count}} grup",
+    "overviewLabel": "Bilgi grafiğine genel bakış — {{groups}}, {{records}}",
+    "overviewDescription": "Kayıtlar etiketli dairelerde gruplanır. Tek bağlantısı olan bir kayıt, bağlandığı kaydın üzerinde sayılır; bağlantılar yalnızca üzerine geldiğiniz ya da seçtiğiniz kayıt için çizilir. Bu grafiğin yanındaki paneller aynı bilgiyi metin olarak listeler.",
+    "overviewHelp": "Her daire bir gruptur. Bağlantılarını görmek için bir kaydın üzerine gelin ya da Tab ile ona gidin; üzerinde sayılanları açmak için onu seçin. Ok tuşları grup içinde dolaşır, F bir kayda odaklanır.",
+    "focusLabel": "Odakta {{label}} — {{records}}",
+    "focusDescription": "Odaktaki kayıt ortadadır; bağlandığı kayıtlar ilk halkada, onların bağlandığı kayıtlar ise ikinci halkadadır.",
+    "focusHelp": "Ortada kayıt, ilk halkada onun bağlandıkları, sonraki halkada da onların bağlandıkları. Bir kayda odaklanmak ya da onu genişletmek için seçin; F odaklar, E genişletir.",
+    "focusOn": "Odaklan: {{label}}",
+    "focusOnHint": "Bu kaydı ortada, komşularını çevresinde halkalar hâlinde göster",
+    "expand": "Genişlet",
+    "collapse": "Daralt",
+    "expandHint": "Bu kaydın kendi bağlantılarını da bir halka daha dışarıda çiz",
+    "back": "Genel bakışa dön",
+    "trail": "Odak izi",
+    "more_one": "Erişim içindeki {{formatted}} kayıt daha çizilmedi — görmek için bir komşuya odaklanın.",
+    "more_other": "Erişim içindeki {{formatted}} kayıt daha çizilmedi — görmek için bir komşuya odaklanın.",
+    "looseHint": "Bu kayıtlar hiçbir şeye işaret etmiyor ve hiçbir şey onlara işaret etmiyor. Görmek için birini seçin.",
+    "node": {
+      "folded": "{{label}}. {{type}}, {{connections}}, üzerinde sayılan: {{folded}}",
+      "hub": "{{label}}. {{type}}, {{connections}}; çizilmeyen: {{folded}} — göstermek için genişletin"
+    },
+    "folded": {
+      "application_one": "{{count}} başvuru",
+      "application_other": "{{count}} başvuru",
+      "organisation_one": "{{count}} kurum",
+      "organisation_other": "{{count}} kurum",
+      "role_one": "{{count}} rol",
+      "role_other": "{{count}} rol",
+      "item_one": "{{count}} zaman çizelgesi öğesi",
+      "item_other": "{{count}} zaman çizelgesi öğesi",
+      "keyword_one": "{{count}} anahtar kelime",
+      "keyword_other": "{{count}} anahtar kelime",
+      "link_one": "{{count}} bağlantı",
+      "link_other": "{{count}} bağlantı",
+      "file_one": "{{count}} dosya",
+      "file_other": "{{count}} dosya",
+      "snippet_one": "{{count}} metin parçası",
+      "snippet_other": "{{count}} metin parçası",
+      "posting_one": "{{count}} kayıtlı ilan",
+      "posting_other": "{{count}} kayıtlı ilan",
+      "match_one": "{{count}} Gözcü eşleşmesi",
+      "match_other": "{{count}} Gözcü eşleşmesi",
+      "source_one": "{{count}} kaynak",
+      "source_other": "{{count}} kaynak",
+      "background_one": "sizinle ilgili {{count}} girdi",
+      "background_other": "sizinle ilgili {{count}} girdi",
+      "claim_one": "{{count}} ilişki",
+      "claim_other": "{{count}} ilişki"
+    },
+    "moreItem_one": "+{{formatted}} daha",
+    "moreItem_other": "+{{formatted}} daha",
+    "moreLabel_one": "{{label}} ile bağlantılı {{formatted}} kayıt daha. Tümünü listelemek için seçin.",
+    "moreLabel_other": "{{label}} ile bağlantılı {{formatted}} kayıt daha. Tümünü listelemek için seçin.",
+    "zoom": {
+      "label": "Yakınlaştırma",
+      "in": "Yakınlaştır",
+      "out": "Uzaklaştır",
+      "fit": "Görünüme sığdır"
+    }
   }
 }

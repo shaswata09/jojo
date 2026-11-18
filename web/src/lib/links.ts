@@ -194,9 +194,13 @@ export function guidePath(page: GuidePage = GUIDE_DEFAULTS.page, section?: strin
   return section ? `${path}#${encodeURIComponent(section)}` : path
 }
 
-/** The knowledge-graph preview. No params — it reads the whole store. */
-export function graphPath() {
-  return '/graph'
+/**
+ * The knowledge graph, optionally opened in focus on one record — `focus` is a
+ * graph node id ('app:…'), and the page centres the focus view on it the way
+ * the Vault highlights a row (`useFocusParam`).
+ */
+export function graphPath(p?: { focus?: string }) {
+  return withQuery('/graph', { focus: p?.focus })
 }
 
 /**

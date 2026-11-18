@@ -188,6 +188,7 @@ function describe(
         ...base,
         label: displayName({ org, role: node.props.role }),
         ...(node.props.location === undefined ? {} : { detail: node.props.location }),
+        stage: node.props.stage,
         // The stored node, so the link carries the slug rather than the id the
         // canvas happens to be drawing this session.
         href: appPath({ id: node.id, slug: node.props.slug }),

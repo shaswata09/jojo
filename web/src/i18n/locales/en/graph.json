@@ -113,5 +113,88 @@
       "unfiled": "Which files are filed under nothing?",
       "busy": "Which applications have more than two timeline items?"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "View",
+      "overview": "Overview",
+      "focus": "Focus",
+      "free": "Free layout"
+    },
+    "groupBy": {
+      "label": "Group by",
+      "role": "Role",
+      "stage": "Stage",
+      "organisation": "Organisation",
+      "keyword": "Keyword"
+    },
+    "group": {
+      "shared": "Shared",
+      "none": "None",
+      "rest": "Others",
+      "loose": "Not linked to anything",
+      "label": "{{name}}: {{records}}",
+      "singles": "One application each"
+    },
+    "groups_one": "{{count}} group",
+    "groups_other": "{{count}} groups",
+    "overviewLabel": "Knowledge graph overview — {{groups}}, {{records}}",
+    "overviewDescription": "Records are grouped into labelled circles. A record with a single link is counted on the record it links to, and links are drawn only for the record you point at or select. The panels beside this graph list the same information as text.",
+    "overviewHelp": "Each circle is a group. Hover or tab to a record to see its links; select it to unfold what is counted on it. Arrow keys move within a group, F focuses on a record.",
+    "focusLabel": "{{label}} in focus — {{records}}",
+    "focusDescription": "The record in focus is at the centre, the records it links to are on the first ring, and the records those link to are on the second.",
+    "focusHelp": "The record in the middle, what it links to on the first ring, and what those link to on the next. Select a record to focus on it or expand it; F focuses, E expands.",
+    "focusOn": "Focus on {{label}}",
+    "focusOnHint": "Show this record at the centre, with its neighbours in rings",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "expandHint": "Also draw this record’s own links, one ring further out",
+    "back": "Back to overview",
+    "trail": "Focus trail",
+    "more_one": "{{formatted}} more record within reach is not drawn — focus on a neighbour to see it.",
+    "more_other": "{{formatted}} more records within reach are not drawn — focus on a neighbour to see them.",
+    "looseHint": "These records point at nothing and nothing points at them. Pick one to see it.",
+    "node": {
+      "folded": "{{label}}. {{type}}, {{connections}}, with {{folded}} counted on it",
+      "hub": "{{label}}. {{type}}, {{connections}}; {{folded}} not drawn — expand it to show them"
+    },
+    "folded": {
+      "application_one": "{{count}} application",
+      "application_other": "{{count}} applications",
+      "organisation_one": "{{count}} organisation",
+      "organisation_other": "{{count}} organisations",
+      "role_one": "{{count}} role",
+      "role_other": "{{count}} roles",
+      "item_one": "{{count}} timeline item",
+      "item_other": "{{count}} timeline items",
+      "keyword_one": "{{count}} keyword",
+      "keyword_other": "{{count}} keywords",
+      "link_one": "{{count}} link",
+      "link_other": "{{count}} links",
+      "file_one": "{{count}} file",
+      "file_other": "{{count}} files",
+      "snippet_one": "{{count}} snippet",
+      "snippet_other": "{{count}} snippets",
+      "posting_one": "{{count}} saved posting",
+      "posting_other": "{{count}} saved postings",
+      "match_one": "{{count}} Scout match",
+      "match_other": "{{count}} Scout matches",
+      "source_one": "{{count}} source",
+      "source_other": "{{count}} sources",
+      "background_one": "{{count}} entry about you",
+      "background_other": "{{count}} entries about you",
+      "claim_one": "{{count}} relation",
+      "claim_other": "{{count}} relations"
+    },
+    "moreItem_one": "+{{formatted}} more",
+    "moreItem_other": "+{{formatted}} more",
+    "moreLabel_one": "{{formatted}} more record linked to {{label}}. Select it to list them all.",
+    "moreLabel_other": "{{formatted}} more records linked to {{label}}. Select it to list them all.",
+    "zoom": {
+      "label": "Zoom",
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "fit": "Fit to view"
+    }
   }
 }

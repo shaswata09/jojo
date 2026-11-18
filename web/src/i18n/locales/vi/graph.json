@@ -108,5 +108,71 @@
       "unfiled": "Những tệp nào chưa được xếp vào đâu?",
       "busy": "Những đơn ứng tuyển nào có hơn hai mục dòng thời gian?"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "Chế độ xem",
+      "overview": "Tổng quan",
+      "focus": "Tiêu điểm",
+      "free": "Bố cục tự do"
+    },
+    "groupBy": {
+      "label": "Nhóm theo",
+      "role": "Vị trí",
+      "stage": "Giai đoạn",
+      "organisation": "Tổ chức",
+      "keyword": "Từ khóa"
+    },
+    "group": {
+      "shared": "Dùng chung",
+      "none": "Không có từ khóa",
+      "rest": "Khác",
+      "loose": "Không liên kết với gì",
+      "label": "{{name}}: {{records}}",
+      "singles": "Mỗi mục chỉ một đơn ứng tuyển"
+    },
+    "groups_other": "{{count}} nhóm",
+    "overviewLabel": "Tổng quan đồ thị tri thức — {{groups}}, {{records}}",
+    "overviewDescription": "Các bản ghi được gom vào những vòng tròn có nhãn. Bản ghi chỉ có một liên kết được đếm trên bản ghi mà nó liên kết tới, và liên kết chỉ được vẽ cho bản ghi bạn trỏ vào hoặc chọn. Các bảng bên cạnh đồ thị liệt kê cùng thông tin đó dưới dạng văn bản.",
+    "overviewHelp": "Mỗi vòng tròn là một nhóm. Di chuột hoặc dùng Tab tới một bản ghi để xem các liên kết của nó; chọn nó để mở ra những gì được đếm trên nó. Phím mũi tên di chuyển trong một nhóm, F đặt tiêu điểm vào một bản ghi.",
+    "focusLabel": "{{label}} đang là tiêu điểm — {{records}}",
+    "focusDescription": "Bản ghi tiêu điểm nằm ở giữa, các bản ghi nó liên kết tới nằm trên vòng thứ nhất, và các bản ghi mà chúng liên kết tới nằm trên vòng thứ hai.",
+    "focusHelp": "Bản ghi ở giữa, những gì nó liên kết tới ở vòng thứ nhất, và những gì chúng liên kết tới ở vòng tiếp theo. Chọn một bản ghi để đặt tiêu điểm vào nó hoặc mở rộng nó; F đặt tiêu điểm, E mở rộng.",
+    "focusOn": "Đặt tiêu điểm vào {{label}}",
+    "focusOnHint": "Hiện bản ghi này ở giữa, các bản ghi lân cận xếp thành vòng quanh nó",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "expandHint": "Vẽ thêm các liên kết riêng của bản ghi này, ra xa thêm một vòng",
+    "back": "Quay lại tổng quan",
+    "trail": "Lộ trình tiêu điểm",
+    "more_other": "Còn {{formatted}} bản ghi trong tầm với chưa được vẽ — đặt tiêu điểm vào một bản ghi lân cận để xem.",
+    "looseHint": "Các bản ghi này không trỏ tới gì và cũng không có gì trỏ tới chúng. Chọn một bản ghi để xem.",
+    "node": {
+      "folded": "{{label}}. {{type}}, {{connections}}, kèm {{folded}} được đếm trên nó",
+      "hub": "{{label}}. {{type}}, {{connections}}; {{folded}} chưa được vẽ — mở rộng để hiển thị"
+    },
+    "folded": {
+      "application_other": "{{count}} đơn ứng tuyển",
+      "organisation_other": "{{count}} tổ chức",
+      "role_other": "{{count}} vị trí",
+      "item_other": "{{count}} mục dòng thời gian",
+      "keyword_other": "{{count}} từ khóa",
+      "link_other": "{{count}} liên kết",
+      "file_other": "{{count}} tệp",
+      "snippet_other": "{{count}} đoạn văn bản",
+      "posting_other": "{{count}} tin tuyển dụng đã lưu",
+      "match_other": "{{count}} gợi ý của Trình tìm việc",
+      "source_other": "{{count}} nguồn",
+      "background_other": "{{count}} mục về bạn",
+      "claim_other": "{{count}} quan hệ"
+    },
+    "moreItem_other": "+{{formatted}} nữa",
+    "moreLabel_other": "Còn {{formatted}} bản ghi khác liên kết với {{label}}. Chọn để liệt kê tất cả.",
+    "zoom": {
+      "label": "Thu phóng",
+      "in": "Phóng to",
+      "out": "Thu nhỏ",
+      "fit": "Vừa khung nhìn"
+    }
   }
 }

@@ -108,5 +108,71 @@
       "unfiled": "어디에도 정리되지 않은 파일은 뭐야?",
       "busy": "타임라인 항목이 세 개 이상인 지원은 뭐야?"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "보기",
+      "overview": "개요",
+      "focus": "포커스",
+      "free": "자유 배치"
+    },
+    "groupBy": {
+      "label": "그룹 기준",
+      "role": "직무",
+      "stage": "단계",
+      "organisation": "기관",
+      "keyword": "키워드"
+    },
+    "group": {
+      "shared": "공유",
+      "none": "없음",
+      "rest": "기타",
+      "loose": "어디에도 연결되지 않음",
+      "label": "{{name}}: {{records}}",
+      "singles": "지원서 1개씩"
+    },
+    "groups_other": "그룹 {{count}}개",
+    "overviewLabel": "지식 그래프 개요 — {{groups}}, {{records}}",
+    "overviewDescription": "기록은 이름이 붙은 원으로 묶여 있어요. 연결이 하나뿐인 기록은 연결된 기록에 포함해 세고, 선은 가리키거나 선택한 기록의 연결만 그려요. 이 그래프 옆의 패널에 같은 정보가 텍스트로 나와 있어요.",
+    "overviewHelp": "원 하나가 그룹 하나예요. 기록에 마우스를 올리거나 Tab으로 이동하면 연결이 보이고, 선택하면 그 기록에 포함해 센 항목이 펼쳐져요. 화살표 키로 그룹 안에서 이동하고, F를 누르면 기록에 포커스해요.",
+    "focusLabel": "{{label}} 포커스 중 — {{records}}",
+    "focusDescription": "포커스한 기록이 가운데에 있고, 그 기록과 연결된 기록이 첫 번째 고리에, 다시 그 기록들과 연결된 기록이 두 번째 고리에 있어요.",
+    "focusHelp": "가운데에 기록이, 첫 번째 고리에 그 기록과 연결된 기록이, 다음 고리에 다시 그 기록들과 연결된 기록이 있어요. 기록을 선택해 포커스하거나 펼칠 수 있어요. F는 포커스, E는 펼치기예요.",
+    "focusOn": "{{label}} 포커스",
+    "focusOnHint": "이 기록을 가운데에 두고 이웃한 기록을 고리 모양으로 보여 줘요",
+    "expand": "펼치기",
+    "collapse": "접기",
+    "expandHint": "이 기록 자체의 연결도 한 고리 더 바깥에 그려요",
+    "back": "개요로 돌아가기",
+    "trail": "포커스 경로",
+    "more_other": "닿을 수 있는 기록이 {{formatted}}개 더 있지만 그리지 않았어요. 보려면 이웃한 기록에 포커스하세요.",
+    "looseHint": "이 기록들은 아무것도 가리키지 않고, 이 기록들을 가리키는 것도 없어요. 하나를 골라 확인해 보세요.",
+    "node": {
+      "folded": "{{label}}. {{type}}, {{connections}}, {{folded}} 포함",
+      "hub": "{{label}}. {{type}}, {{connections}}, {{folded}} 생략됨 — 보려면 펼치세요"
+    },
+    "folded": {
+      "application_other": "지원서 {{count}}개",
+      "organisation_other": "기관 {{count}}개",
+      "role_other": "직무 {{count}}개",
+      "item_other": "타임라인 항목 {{count}}개",
+      "keyword_other": "키워드 {{count}}개",
+      "link_other": "링크 {{count}}개",
+      "file_other": "파일 {{count}}개",
+      "snippet_other": "스니펫 {{count}}개",
+      "posting_other": "저장한 채용 공고 {{count}}개",
+      "match_other": "스카우트 매치 {{count}}개",
+      "source_other": "출처 {{count}}개",
+      "background_other": "내 소개 항목 {{count}}개",
+      "claim_other": "관계 {{count}}개"
+    },
+    "moreItem_other": "+{{formatted}}개 더",
+    "moreLabel_other": "{{label}}에 연결된 기록이 {{formatted}}개 더 있어요. 선택하면 모두 나열해요.",
+    "zoom": {
+      "label": "확대/축소",
+      "in": "확대",
+      "out": "축소",
+      "fit": "화면에 맞추기"
+    }
   }
 }

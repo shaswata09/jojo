@@ -108,5 +108,71 @@
       "unfiled": "どこにも整理されていないファイルはどれ？",
       "busy": "タイムラインの項目が 3 つ以上ある応募はどれ？"
     }
+  },
+  "view": {
+    "mode": {
+      "label": "表示",
+      "overview": "概要",
+      "focus": "フォーカス",
+      "free": "自由配置"
+    },
+    "groupBy": {
+      "label": "グループ化",
+      "role": "職種",
+      "stage": "段階",
+      "organisation": "組織",
+      "keyword": "キーワード"
+    },
+    "group": {
+      "shared": "共通",
+      "none": "なし",
+      "rest": "その他",
+      "loose": "何ともつながっていない",
+      "label": "{{name}}：{{records}}",
+      "singles": "応募が 1 件ずつ"
+    },
+    "groups_other": "{{count}} 個のグループ",
+    "overviewLabel": "ナレッジグラフの概要 — {{groups}}、{{records}}",
+    "overviewDescription": "記録はラベル付きの円にグループ分けされています。つながりが 1 つだけの記録は、つながり先の記録にまとめて数えられます。線は、ポインターを合わせた記録か選択した記録のつながりだけが描かれます。このグラフの横のパネルには、同じ情報がテキストで表示されます。",
+    "overviewHelp": "円はそれぞれ 1 つのグループです。記録にポインターを合わせるか Tab で移動すると、つながりが表示されます。選択すると、その記録にまとめて数えられているものが展開されます。矢印キーでグループ内を移動し、F で記録にフォーカスします。",
+    "focusLabel": "{{label}} にフォーカス中 — {{records}}",
+    "focusDescription": "フォーカス中の記録が中心にあり、そのつながり先の記録が 1 つ目の輪に、さらにそのつながり先の記録が 2 つ目の輪にあります。",
+    "focusHelp": "中心にある記録、1 つ目の輪にそのつながり先、次の輪にさらにそのつながり先が並びます。記録を選択すると、フォーカスしたり展開したりできます。F でフォーカス、E で展開します。",
+    "focusOn": "{{label}} にフォーカス",
+    "focusOnHint": "この記録を中心に置き、隣接する記録を輪にして表示します",
+    "expand": "展開",
+    "collapse": "折りたたむ",
+    "expandHint": "この記録自身のつながりも、1 つ外側の輪に描きます",
+    "back": "概要に戻る",
+    "trail": "フォーカスの履歴",
+    "more_other": "たどれる範囲の記録があと {{formatted}} 件ありますが、描かれていません。表示するには、隣の記録にフォーカスしてください。",
+    "looseHint": "これらの記録はどれも何も指しておらず、何からも指されていません。1 つ選ぶと表示されます。",
+    "node": {
+      "folded": "{{label}}。{{type}}、{{connections}}。{{folded}}がまとめて数えられています",
+      "hub": "{{label}}。{{type}}、{{connections}}。{{folded}}は描かれていません。展開すると表示されます"
+    },
+    "folded": {
+      "application_other": "{{count}} 件の応募",
+      "organisation_other": "{{count}} 件の組織",
+      "role_other": "{{count}} 件の職種",
+      "item_other": "{{count}} 件のタイムラインの項目",
+      "keyword_other": "{{count}} 件のキーワード",
+      "link_other": "{{count}} 件のリンク",
+      "file_other": "{{count}} 件のファイル",
+      "snippet_other": "{{count}} 件のスニペット",
+      "posting_other": "{{count}} 件の保存した求人",
+      "match_other": "{{count}} 件のスカウトの候補",
+      "source_other": "{{count}} 件の応募経路",
+      "background_other": "{{count}} 件のあなたについての項目",
+      "claim_other": "{{count}} 件の関係"
+    },
+    "moreItem_other": "+{{formatted}} 件",
+    "moreLabel_other": "{{label}} につながる記録があと {{formatted}} 件あります。選択するとすべて一覧表示されます。",
+    "zoom": {
+      "label": "ズーム",
+      "in": "拡大",
+      "out": "縮小",
+      "fit": "全体を表示"
+    }
   }
 }
