@@ -125,7 +125,7 @@
     },
     "group": {
       "shared": "Bersama",
-      "none": "Tanpa kata kunci",
+      "none": "Tanpa keterangan",
       "rest": "Lainnya",
       "loose": "Tidak terhubung ke apa pun",
       "label": "{{name}}: {{records}}",

@@ -8,6 +8,7 @@
     "failedTitle": "無法寫入備份",
     "failedDescription": "你的紀錄沒有變更，也沒有儲存任何內容。如果是瀏覽器封鎖了下載，請檢查它的下載設定。",
     "documentsNotReady": "文件索引尚未載入完成，所以現在備份會顯示你沒有任何文件。沒有寫入任何內容。",
+    "documentsUnavailable": "無法列出已儲存的文件，所以現在備份會顯示你沒有任何文件。如果還開著另一個 jojo 分頁，請將它關閉後再試一次。沒有寫入任何內容。",
     "documentsUnreadable": "已儲存的文件全都無法讀取，所以備份只會包含紀錄。沒有寫入任何內容。",
     "savedTitle": "已儲存備份",
     "startedTitle": "已開始備份",

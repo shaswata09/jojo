@@ -41,8 +41,6 @@ import { useArrivingFocus } from '@/components/ui/focus-scope'
 import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
 import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
-const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record<SnippetTag, string>
-
 /**
  * The answers you retype on every form.
  *
@@ -130,7 +128,7 @@ export function SnippetsTool() {
     const before = snippet.tag
     updateSnippet(snippet.id, { tag: next })
     toast({
-      title: t('snippets.toast.filedUnder', { tag: next }),
+      title: t('snippets.toast.filedUnder', { tag: domain.snippetTag(next) }),
       description: snippet.title,
       action: {
         label: t('common.undo'),
@@ -158,9 +156,9 @@ export function SnippetsTool() {
         description: t('snippets.empty.zeroDescription'),
       },
       search: (q) => t('snippets.empty.search', { query: q }),
-      both: t('snippets.empty.both', { tag }),
+      both: t('snippets.empty.both', { tag: domain.snippetTag(tag) }),
       bucket: {
-        title: t('snippets.empty.bucketTitle', { tag }),
+        title: t('snippets.empty.bucketTitle', { tag: domain.snippetTag(tag) }),
         description: t('snippets.empty.bucketDescription', { count: snippets.length }),
         clearLabel: t('snippets.empty.showAll'),
       },
@@ -179,7 +177,12 @@ export function SnippetsTool() {
       <BucketFilter
         label={t('snippets.filterLabel')}
         options={SNIPPET_TAGS}
-        labels={TAG_LABELS}
+        labels={
+          Object.fromEntries(SNIPPET_TAGS.map((k) => [k, domain.snippetTag(k)])) as Record<
+            SnippetTag,
+            string
+          >
+        }
         counts={counts}
         value={tag}
         onChange={setTag}
@@ -213,7 +216,7 @@ export function SnippetsTool() {
                   </Txt>
                   <View style={styles.chips}>
                     <Chip size="sm" tone="gray">
-                      {snippet.tag}
+                      {domain.snippetTag(snippet.tag)}
                     </Chip>
                     <LabelChips recordId={snippet.id} />
                   </View>
@@ -267,7 +270,7 @@ export function SnippetsTool() {
         open={menuFor !== null}
         onClose={() => setMenuFor(null)}
         title={menuFor?.title}
-        description={menuFor?.tag}
+        description={menuFor ? domain.snippetTag(menuFor.tag) : undefined}
         actions={
           menuFor
             ? buildRecordMenu({
@@ -288,6 +291,7 @@ export function SnippetsTool() {
                 move: {
                   label: t('snippets.tag'),
                   options: SNIPPET_TAGS,
+                  say: domain.snippetTag,
                   current: menuFor.tag,
                   onMove: (next) => onMove(menuFor, next),
                 },
@@ -336,6 +340,7 @@ function SnippetEditor({
   onSave: (draft: Omit<Snippet, 'id'>) => void
 }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [title, setTitle] = useState(initial?.title ?? '')
   const [body, setBody] = useState(initial?.body ?? '')
   const [tag, setTag] = useState<SnippetTag>(initial?.tag ?? 'Cover letter')
@@ -406,7 +411,7 @@ function SnippetEditor({
           <Segment
             label={t('snippets.tag')}
             scroll
-            options={SNIPPET_TAGS.map((t) => ({ value: t, label: t }))}
+            options={SNIPPET_TAGS.map((k) => ({ value: k, label: domain.snippetTag(k) }))}
             value={tag}
             onChange={setTag}
           />

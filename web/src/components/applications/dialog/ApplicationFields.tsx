@@ -23,10 +23,13 @@ import type { RoleTag, Source } from '@/data/seed'
 import { cn } from '@/lib/utils'
 import { useDomain } from '@/i18n/domain'
 
-/** `Not set` is the one label here that is not a stored value, so it is passed in. */
-const sourceOptions = (notSet: string): { value: Source | 'none'; label: string }[] => [
+/** `Not set` is not a stored value; each source is, shown through `say` in the language on screen. */
+const sourceOptions = (
+  notSet: string,
+  say: (source: string) => string,
+): { value: Source | 'none'; label: string }[] => [
   { value: 'none', label: notSet },
-  ...SOURCES.map((s) => ({ value: s, label: s })),
+  ...SOURCES.map((s) => ({ value: s, label: say(s) })),
 ]
 
 /** The five role tags, as a searchable combobox rather than a sixth segment. */
@@ -224,7 +227,7 @@ export function ApplicationFields({
       <FormField label={t('fields.source')} className="sm:col-span-2">
         <Segment
           label={t('fields.source')}
-          options={sourceOptions(t('fields.notSet'))}
+          options={sourceOptions(t('fields.notSet'), domain.source)}
           value={form.source}
           onChange={(source) => set('source', source)}
           className="w-full [&>button]:min-w-0 [&>button]:flex-1 [&>button]:px-1 [&>button]:wrap-anywhere [&>button]:hyphens-auto"

@@ -184,22 +184,30 @@ export function failureStatus(
   return { state: 'searching', reason: failed.reason }
 }
 
-/** A wait that ends early when the link is switched off. */
+/**
+ * A wait that ends early when the link is switched off.
+ *
+ * The abort listener is taken off again when the timer wins (review 3,
+ * leaks-3). `{ once: true }` removes a listener only after it fires, and the
+ * signal is the link's own, alive for as long as the switch is on — so with
+ * the bridge not started, which is most of the time the link is on, the
+ * signal gained a listener and a closure per back-off for the whole session.
+ */
 const pause = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {
     if (signal.aborted) {
       resolve()
       return
     }
-    const timer = setTimeout(resolve, ms)
-    signal.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer)
-        resolve()
-      },
-      { once: true },
-    )
+    const onAbort = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal.addEventListener('abort', onAbort, { once: true })
   })
 
 /**

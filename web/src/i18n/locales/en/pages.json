@@ -99,8 +99,11 @@
     "resetHint": "Put the records back in their usual arrangement",
     "noMatches": "No records match this question",
     "clearQuery": "clear the query",
-    "counts_one": "{{shown}} of {{count}} record · {{edges}} connections",
-    "counts_other": "{{shown}} of {{count}} records · {{edges}} connections",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_one": "{{shown}} of {{count}} record",
+    "countsRecords_other": "{{shown}} of {{count}} records",
+    "countsConnections_one": "{{count}} connection",
+    "countsConnections_other": "{{count}} connections",
     "panelTitle": "Everything, connected",
     "help": "Hover or tab to a node to trace its neighbourhood, press to select it, drag to move it. Node colour is its kind, size is how much points at it."
   },

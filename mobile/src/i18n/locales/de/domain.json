@@ -92,6 +92,34 @@
     "recommender": "Referenz",
     "contact": "Ansprechperson"
   },
+  "linkCategory": {
+    "posting": "Stellenanzeige",
+    "institution": "Einrichtung",
+    "person": "Person",
+    "guide": "Leitfaden"
+  },
+  "snippetTag": {
+    "coverLetter": "Anschreiben",
+    "applicationForm": "Bewerbungsformular",
+    "email": "E-Mail",
+    "bio": "Kurzbiografie",
+    "cv": "Lebenslauf",
+    "researchStatement": "Forschungsstatement",
+    "teachingStatement": "Lehrstatement"
+  },
+  "source": {
+    "jobScout": "Job-Scout",
+    "jobBoard": "Jobbörse",
+    "referral": "Empfehlung",
+    "careersPage": "Karriereseite"
+  },
+  "fileBucket": {
+    "toRead": "Zu lesen",
+    "applications": "Bewerbungen",
+    "jobPostings": "Stellenanzeigen",
+    "talks": "Vorträge",
+    "admin": "Verwaltung"
+  },
   "approval": {
     "manual": "Manuell",
     "semi": "Halbautomatisch",
@@ -140,7 +168,7 @@
     },
     "days_one": "{{count}} Tag",
     "days_other": "{{count}} Tage",
-    "typicalRate": "typisch: {{value}} %",
+    "typicalRate": "typisch: {{value}} %",
     "typicalDays": "typisch: {{days}}"
   },
   "rel": {
@@ -364,6 +392,7 @@
   },
   "readBy": "Gelesen von {{model}} · {{ago}}",
   "missingSource": "ein Dokument, das nicht mehr im Tresor liegt",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Nichts rückgängig zu machen.",

@@ -512,3 +512,28 @@ describe('lakh, crore, 万 and other non-English notations', () => {
     expect(parseComp('Grade 7 L, $90k')?.amount).toBe(90_000)
   })
 })
+
+describe('review 3: one currency, two spellings, and ungrouped decimal commas', () => {
+  const read = (...texts: string[]) => texts.map((t) => parseComp(t)!)
+
+  it('ranks a single-currency symbol against its own code', () => {
+    expect(rankable(read('€60.000', '55.000 EUR'))).toBe(true)
+    expect(rankable(read('£45,000', 'GBP 50,000'))).toBe(true)
+    expect(rankable(read('₹12 LPA', 'INR 1,500,000'))).toBe(true)
+    // The symbol as written is kept; only the comparison reads it as the code.
+    expect(parseComp('€60.000')?.currency).toBe('€')
+    // A symbol that names several currencies still names none of them.
+    expect(rankable(read('$90k', 'USD 95k'))).toBe(false)
+    expect(rankable(read('¥9,000,000', 'JPY 9,500,000'))).toBe(false)
+    expect(comparable(parseComp('€1')!, parseComp('£1')!)).toBe(false)
+  })
+
+  it('keeps the cents of an ungrouped hourly figure written with a decimal comma', () => {
+    expect(parseComp('€15,50 per hour')).toMatchObject({ amount: 15.5, period: 'hour' })
+    expect(parseComp('EUR 22,75/hour')).toMatchObject({ amount: 22.75, period: 'hour' })
+    expect(annualised(parseComp('€15,50 per hour')!)).toBe(32_240)
+    // Three digits after the comma is still the grouped thousands.
+    expect(parseComp('€3,500')?.amount).toBe(3500)
+    expect(parseComp('£12.50/hour')?.amount).toBe(12.5)
+  })
+})

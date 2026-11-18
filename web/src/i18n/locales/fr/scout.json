@@ -27,7 +27,7 @@
     "emptyDescription": "Les pipelines placent ici des offres notées dès qu’un modèle est connecté. D’ici là, les offres que vous enregistrez ci-dessous sont le point d’entrée.",
     "matched": "correspond sur {{list}}",
     "notScored": "non notée",
-    "fit": "{{score}} % d’adéquation",
+    "fit": "{{score}} % d’adéquation",
     "added": "ajoutée"
   },
   "dialog": {

@@ -208,7 +208,8 @@
     "timeout": "Esse site de vagas demorou demais para responder.",
     "unreachable": "Não foi possível acessar esse site de vagas.",
     "status": "Esse site de vagas respondeu {{status}}.",
-    "browserOnly": "{{host}} só mostra as vagas para um navegador de verdade, então não dá para ler pelo celular. No computador, a extensão de navegador do jojo consegue ler."
+    "browserOnly": "{{host}} só mostra as vagas para um navegador de verdade, então não dá para ler pelo celular. No computador, a extensão de navegador do jojo consegue ler.",
+    "cancelled": "A leitura foi cancelada."
   },
   "timelineForm": {
     "title": "Dê um título que você vá reconhecer.",

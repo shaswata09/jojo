@@ -38,6 +38,8 @@ export function buildRecordMenu<T extends string>({
     /** Names the axis in the row's own words — "Move to bucket". */
     label: string
     options: readonly T[]
+    /** An option as the person reads it — a stored English value in the language on screen. */
+    say?: (option: T) => string
     current: T
     onMove: (next: T) => void
   }
@@ -60,7 +62,7 @@ export function buildRecordMenu<T extends string>({
     ...(move
       ? move.options.map((option) => ({
           id: `move-${option}`,
-          label: `${move.label}: ${option}`,
+          label: `${move.label}: ${move.say ? move.say(option) : option}`,
           icon: 'folder' as const,
           // The option already in force is listed so the set reads whole, and
           // ticked so it is obvious which one that is — but pressing it would

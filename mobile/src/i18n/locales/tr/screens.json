@@ -501,12 +501,17 @@
     "emptyTitle": "Çizilecek bir şey yok",
     "emptyDescription": "Buradaki her düğüm kendi kayıtlarınızdan biridir. Bir başvuru ekleyin, ilki görünsün.",
     "subtitle": "Kayıtlar yedi ayrı liste olmaktan çıktığında jojo'nun nasıl göründüğüne dair bir önizleme",
-    "caption": "{{total}} düğümden {{visible}} tanesi · {{edges}} kenar. Okumak için bir düğüme dokunun; gizlemek için aşağıdaki bir türe dokunun.",
+    "caption": "{{nodes}} · {{edges}}. Okumak için bir düğüme dokunun; gizlemek için aşağıdaki bir türe dokunun.",
+    "captionNodes_one": "{{count}} düğümden {{visible}} tanesi",
+    "captionNodes_other": "{{count}} düğümden {{visible}} tanesi",
+    "captionEdges_one": "{{count}} kenar",
+    "captionEdges_other": "{{count}} kenar",
     "legend": "Gösterge",
     "legendHint": "bir türü gizlemek için dokunun",
     "joinedTo": "Bağlı olduğu",
     "noEdges": "Henüz buna işaret eden bir şey yok.",
     "openRecord": "Kaydı aç",
+    "derivedRecord": "Kayıtlarınızdan türetildi — kendine ait bir sayfası yok.",
     "ask": "Grafiğe sor",
     "askHint": "bir cümleyle sorun ya da birini seçin",
     "andMore_one": "ve {{count}} tane daha",
@@ -534,7 +539,7 @@
       },
       "group": {
         "shared": "Ortak",
-        "none": "Anahtar kelimesiz",
+        "none": "Belirtilmemiş",
         "rest": "Diğerleri",
         "loose": "Hiçbir şeye bağlı değil",
         "label": "{{name}}: {{records}}",
@@ -1026,7 +1031,9 @@
       "placeholder": "ör. Onlardan yanıt bekleniyor",
       "confirmUsed_one": "{{count}} kayıttan kaldırılır. Bu kayıtlar kalır; yalnızca anahtar kelime gider.",
       "confirmUsed_other": "{{count}} kayıttan kaldırılır. Bu kayıtlar kalır; yalnızca anahtar kelime gider.",
-      "confirmUnused": "Hiçbir şey onunla etiketlenmemiş; bu yüzden başka hiçbir şey değişmez."
+      "confirmUnused": "Hiçbir şey onunla etiketlenmemiş; bu yüzden başka hiçbir şey değişmez.",
+      "confirmTitle": "{{name}} anahtar kelimesi silinsin mi?",
+      "deletedTitle": "{{name}} anahtar kelimesi silindi"
     }
   }
 }

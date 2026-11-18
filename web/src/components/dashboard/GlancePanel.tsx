@@ -63,12 +63,8 @@ const partsAsParams = (iso: string) => {
 export function GlancePanel() {
   const { t, i18n } = useTranslation('dashboard')
   const lang = i18n.language
-  // Month and day names come from the reader's locale rather than from the
-  // English tables in `data/calendar`.
-  const monthName = (year: number, month: number) =>
-    new Intl.DateTimeFormat(intlLocale(lang), { month: 'long' }).format(
-      new Date(year, month - 1, 1),
-    )
+  // Day names come from the reader's locale rather than from the English
+  // tables in `data/calendar`; the month heading from `domain.monthYearParts`.
   const dayName = (year: number, month: number, day: number) =>
     new Intl.DateTimeFormat(intlLocale(lang), { month: 'long', day: 'numeric' }).format(
       new Date(year, month - 1, day),
@@ -268,7 +264,19 @@ export function GlancePanel() {
       <div className="@container mt-4 border-t border-hairline pt-3.5">
         <div className="mb-2 flex items-center justify-between gap-1">
           <h3 className="min-w-0 truncate text-xs font-medium text-text-2">
-            {monthName(view.year, view.month)} <span className="text-text-3">{month.year}</span>
+            {/* In the order the language writes it, as the calendar's own
+                heading does: month-then-year was hard-coded here, so ja and
+                zh read '11月 2026' for '2026年11月' (finding i18n-6). The year
+                stays muted wherever it falls. */}
+            {domain.monthYearParts(view.month, view.year).map((part) =>
+              part.isYear ? (
+                <span key="year" className="text-text-3">
+                  {part.text}
+                </span>
+              ) : (
+                part.text
+              ),
+            )}
           </h3>
 
           <div className="flex shrink-0 items-center">

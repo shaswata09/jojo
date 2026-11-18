@@ -422,6 +422,7 @@
       "demoMemory": "Lamaran demo, linimasa, brankas, lowongan tersimpan, kata kunci, dan profil semuanya dihapus, tetapi tidak ada yang disimpan saat ini, jadi muat ulang akan memulai lagi dari data demo. Tidak ada yang milik Anda di sini — penyimpanan ini belum ditulisi sejak data demo dimuat.",
       "ownDurable": "Lamaran, linimasa, brankas, lowongan tersimpan, kontak, catatan, percakapan, fakta CV, dan profil Anda semuanya dihapus, termasuk apa pun yang Anda tambahkan di sesi ini, dan tetap begitu setelah muat ulang. Tidak dapat diurungkan. Kata kunci Anda tetap disimpan — kata kunci adalah entri tersendiri — tetapi tidak ada lagi yang memakainya, jadi setiap hitungan di panel kata kunci menjadi nol.",
       "ownMemory": "Lamaran, linimasa, brankas, lowongan tersimpan, kontak, catatan, percakapan, fakta CV, dan profil Anda semuanya dihapus, termasuk apa pun yang Anda tambahkan di sesi ini, tetapi tidak ada yang disimpan saat ini, jadi muat ulang akan memulai lagi dari data demo. Tidak dapat diurungkan. Kata kunci Anda tetap disimpan — kata kunci adalah entri tersendiri — tetapi tidak ada lagi yang memakainya, jadi setiap hitungan di panel kata kunci menjadi nol.",
+      "documentsKept": "Dokumen yang Anda lampirkan langsung hilang dari semua layar, tetapi berkasnya tetap di tempat sampah browser ini selama 30 hari sebelum dihapus permanen. Untuk menghapusnya sekarang juga, gunakan “{{storage}}”.",
       "confirm": "Kosongkan semuanya"
     },
     "demo": {

@@ -39,3 +39,13 @@ describe('Q128 approving the shutdown modal turns the pipeline off', () => {
     expect(hook).toMatch(/shutdownCandidate\(pipelines, proposals, running\)/)
   })
 })
+
+describe('a search result naming a paused pipeline (review 3: focus-1)', () => {
+  it('turns "Only active" off so the row it names is drawn and lit', () => {
+    const src = code(jobScout)
+    expect(src).toMatch(
+      /onlyActive &&\s*focus\?\.kind === 'pipeline' &&\s*pipelines\.some\(\(p\) => p\.id === focus\.id && !p\.enabled\)/,
+    )
+    expect(src).toMatch(/if \(revealPaused\) setOnlyActive\(false\)/)
+  })
+})

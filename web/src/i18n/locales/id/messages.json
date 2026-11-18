@@ -8,6 +8,7 @@
     "failedTitle": "Cadangan tidak dapat ditulis",
     "failedDescription": "Entri Anda tidak berubah dan tidak ada yang disimpan. Jika browser Anda memblokir unduhan, periksa pengaturan unduhannya.",
     "documentsNotReady": "Indeks dokumen belum selesai dimuat, jadi cadangan yang dibuat sekarang akan menyatakan Anda tidak punya dokumen. Tidak ada yang ditulis.",
+    "documentsUnavailable": "Dokumen yang tersimpan tidak dapat didaftar, jadi cadangan yang dibuat sekarang akan menyatakan Anda tidak punya dokumen. Jika ada tab jojo lain yang terbuka, tutup lalu coba lagi. Tidak ada yang ditulis.",
     "documentsUnreadable": "Tidak satu pun dokumen tersimpan dapat dibaca, jadi cadangan hanya akan berisi entri. Tidak ada yang ditulis.",
     "savedTitle": "Cadangan disimpan",
     "startedTitle": "Pencadangan dimulai",

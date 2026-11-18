@@ -112,6 +112,24 @@ export function toViewGraph(graph: Graph): ViewGraph {
   return { nodes, edges: graph.edges }
 }
 
+/**
+ * The picture /graph draws outside focus, from the one asked for.
+ *
+ * 'auto' follows the folded size, AND falls back to the overview whenever the
+ * free layout cannot draw everything. Hiding a legend type can make the folded
+ * store small — every record left unlinked counts once, as one loose item —
+ * while the free layout would still have to draw thousands: past `MAX_DRAWN`
+ * it drops records, and the mode control, which does not offer Free then,
+ * would show nothing selected.
+ */
+export function basePicture(
+  layout: 'auto' | 'overview' | 'free',
+  { large, freeAllowed }: { large: boolean; freeAllowed: boolean },
+): 'overview' | 'free' {
+  if (layout === 'auto') return large || !freeAllowed ? 'overview' : 'free'
+  return layout === 'free' && !freeAllowed ? 'overview' : layout
+}
+
 /** `foldLeaves` with this app's rule about what may fold. */
 export const foldGraph = (graph: ViewGraph): Folding => foldLeaves(graph, { canFold })
 

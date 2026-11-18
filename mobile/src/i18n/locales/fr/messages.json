@@ -13,7 +13,7 @@
       "keyword": "Mot-clé"
     },
     "isA": "est un",
-    "fit": "{{fit}} % d’adéquation",
+    "fit": "{{fit}} % d’adéquation",
     "query": {
       "undated": {
         "question": "Candidatures sans aucune date associée",
@@ -208,7 +208,8 @@
     "timeout": "Ce site d’offres a mis trop de temps à répondre.",
     "unreachable": "Impossible de joindre ce site d’offres.",
     "status": "Ce site d’offres a répondu {{status}}.",
-    "browserOnly": "{{host}} n’affiche ses offres qu’à un vrai navigateur ; il ne peut donc pas être lu depuis le téléphone. Sur un ordinateur, l’extension de navigateur jojo peut le lire."
+    "browserOnly": "{{host}} n’affiche ses offres qu’à un vrai navigateur ; il ne peut donc pas être lu depuis le téléphone. Sur un ordinateur, l’extension de navigateur jojo peut le lire.",
+    "cancelled": "La lecture a été annulée."
   },
   "timelineForm": {
     "title": "Donnez-lui un titre que vous reconnaîtrez.",

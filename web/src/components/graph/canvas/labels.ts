@@ -33,13 +33,38 @@ import type { GraphNode } from '@/lib/graph/model'
  */
 export const LABEL_SIZE = 9.5
 export const LABEL_DY = 11
-const LABEL_ASCENT = LABEL_SIZE * 0.78
-const LABEL_DESCENT = LABEL_SIZE * 0.24
-/** The gap `LABEL_DY` leaves under a node, reused above it so both look alike. */
-const LABEL_CLEARANCE = LABEL_DY - LABEL_ASCENT
 /** Breathing room, so two labels that clear each other by a hair still read. */
 const LABEL_GAP_X = 3
 const LABEL_GAP_Y = 1.5
+
+/**
+ * The smallest a label may be on screen, in CSS pixels. The layout is solved in
+ * a 620-unit-high space and the SVG scaled into its box, so on a phone (a
+ * 380px well) 9.5 units drew at about 5.7px — unreadable. `labelScale` grows
+ * the labels, in layout units, by what the box shrank them.
+ */
+export const MIN_LABEL_PX = 10.5
+
+/**
+ * How much larger than `LABEL_SIZE` labels are drawn, given how many CSS pixels
+ * one layout unit takes (`fit`). 1 wherever they are already legible; stepped
+ * by 0.05 so a resize does not re-measure every label for a hair's change.
+ */
+export function labelScale(fit: number): number {
+  if (!(fit > 0)) return 1
+  const need = MIN_LABEL_PX / (LABEL_SIZE * fit)
+  return need <= 1 ? 1 : Math.ceil(need * 20) / 20
+}
+
+/** Label geometry at a scale: size, offset below the node, ascent, descent, clearance. */
+export function labelMetrics(scale = 1) {
+  const size = LABEL_SIZE * scale
+  const dy = LABEL_DY * scale
+  const ascent = size * 0.78
+  const descent = size * 0.24
+  /** The gap `dy` leaves under a node, reused above it so both look alike. */
+  return { size, dy, ascent, descent, clearance: dy - ascent }
+}
 
 const LABEL_MAX_CHARS = 22
 
@@ -67,6 +92,8 @@ export type LabelPass = {
    * point where they start to collide".
    */
   labelAll: boolean
+  /** `labelScale` of the box the SVG is drawn in; 1 when omitted. */
+  scale?: number
 }
 
 /**
@@ -86,7 +113,9 @@ export function placeLabels({
   selected,
   active,
   labelAll,
+  scale = 1,
 }: LabelPass) {
+  const m = labelMetrics(scale)
   if (labelAll) {
     // The resting offset goes back on with the label. Without it a node whose
     // name the pass had moved above it keeps sitting up there after the switch
@@ -97,7 +126,7 @@ export function placeLabels({
       const body = sim.nodes[at]
       const el = node && labelEls.get(node.id)
       if (!el || !body) continue
-      el.setAttribute('y', (body.radius + LABEL_DY).toFixed(1))
+      el.setAttribute('y', (body.radius + m.dy).toFixed(1))
       el.removeAttribute('visibility')
     }
     return
@@ -110,6 +139,8 @@ export function placeLabels({
     slots: { dy: number; box: Box }[]
     rank: number
     at: number
+    /** The record pointed at or selected: its name may cross other marks. */
+    over: boolean
   }[] = []
 
   for (let at = 0; at < nodes.length; at++) {
@@ -128,11 +159,11 @@ export function placeLabels({
       // Falls back to an estimate when the SVG has no layout yet — a measured
       // 0 would let every label through and stack them all on top of another.
       const measured = el.getComputedTextLength()
-      width = measured > 0 ? measured : text.length * LABEL_SIZE * 0.55
+      width = measured > 0 ? measured : text.length * m.size * 0.55
       labelWidths.set(text, width)
     }
 
-    const half = width / 2 + LABEL_GAP_X
+    const half = width / 2 + LABEL_GAP_X * scale
     const slot = (dy: number) => {
       const baseline = body.y + dy
       return {
@@ -140,8 +171,8 @@ export function placeLabels({
         box: {
           left: body.x - half,
           right: body.x + half,
-          top: baseline - LABEL_ASCENT - LABEL_GAP_Y,
-          bottom: baseline + LABEL_DESCENT + LABEL_GAP_Y,
+          top: baseline - m.ascent - LABEL_GAP_Y * scale,
+          bottom: baseline + m.descent + LABEL_GAP_Y * scale,
         },
       }
     }
@@ -153,7 +184,7 @@ export function placeLabels({
       // second test: in the crowded middle it is usually the difference
       // between a named hub and an anonymous dot, and 'Baylor — CS' was one
       // of five that went missing without it.
-      slots: [slot(r + LABEL_DY), slot(-r - LABEL_CLEARANCE - LABEL_DESCENT)],
+      slots: [slot(r + m.dy), slot(-r - m.clearance - m.descent)],
       rank:
         node.id === selected
           ? 400
@@ -165,6 +196,11 @@ export function placeLabels({
                 ? 200 + node.degree
                 : node.degree,
       at,
+      // On a small box, where labels are drawn larger than the marks are
+      // spaced (`labelScale`), nearly every name touches some mark, and the
+      // record you are pointing at or selected lost its own name. That one
+      // may cross marks; it still never lands on another name.
+      over: node.id === selected || node.id === active,
     })
   }
 
@@ -175,7 +211,7 @@ export function placeLabels({
     const free = candidate.slots.find(
       ({ box }) =>
         !placed.some((taken) => overlaps(box, taken)) &&
-        !nodeBoxes.some((taken) => overlaps(box, taken)),
+        (candidate.over || !nodeBoxes.some((taken) => overlaps(box, taken))),
     )
     if (!free) {
       candidate.el.setAttribute('visibility', 'hidden')

@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "Lembretes e eventos",
-      "hint": "{{reminders}} lembram você, {{events}} são eventos com data",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} lembra você",
+      "reminders_other": "{{count}} lembram você",
+      "events_one": "{{count}} é um evento com data",
+      "events_other": "{{count}} são eventos com data",
       "summary_one": "{{count}} lembrete ou evento",
       "summary_other": "{{count}} lembretes e eventos"
     },
     "vault": {
       "label": "Links e trechos",
-      "hint": "{{links}} links · {{snippets}} trechos",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} link",
+      "links_other": "{{count}} links",
+      "snippets_one": "{{count}} trecho",
+      "snippets_other": "{{count}} trechos",
       "summary_one": "{{count}} link ou trecho",
       "summary_other": "{{count}} links e trechos"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "Busca de vagas",
-      "hint": "{{pipelines}} buscas · {{postings}} vagas salvas · {{matches}} correspondências",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} busca",
+      "pipelines_other": "{{count}} buscas",
+      "postings_one": "{{count}} vaga salva",
+      "postings_other": "{{count}} vagas salvas",
+      "matches_one": "{{count}} correspondência",
+      "matches_other": "{{count}} correspondências",
       "summary_one": "{{count}} registro da busca de vagas",
       "summary_other": "{{count}} registros da busca de vagas"
     },

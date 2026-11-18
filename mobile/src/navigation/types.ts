@@ -8,6 +8,13 @@ import type { Stage } from '@jojo/service/data/seed'
 export const VAULT_TOOLS = ['reminders', 'links', 'files', 'snippets', 'people', 'tools'] as const
 export type VaultTool = (typeof VAULT_TOOLS)[number]
 
+/**
+ * Whether a value names one of them. A `jojo://vault?tool=…` link arrives as a
+ * raw string any app or page can write, and an unknown one left the Vault blank.
+ */
+export const isVaultTool = (x: unknown): x is VaultTool =>
+  (VAULT_TOOLS as readonly unknown[]).includes(x)
+
 /** The guide's five pages, in order; each is labelled by `screen.pages.<value>` in the guide catalog. */
 export const GUIDE_PAGES = ['overview', 'screens', 'graph', 'tools', 'built'] as const
 export type GuidePage = (typeof GUIDE_PAGES)[number]

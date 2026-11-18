@@ -613,5 +613,6 @@
       "address": "<lead>La barra degli indirizzi</lead> è la pagina stessa. La prima pagina è <code>/guide</code> anziché <code>/guide/overview</code>, così ogni link e preferito creato prima che le pagine fossero quattro porta ancora da qualche parte."
     }
   },
-  "englishOnly": "Questa pagina è in inglese: nomina codice, pacchetti e termini di licenza con le parole in cui sono scritti."
+  "englishOnly": "Questa pagina è in inglese: nomina codice, pacchetti e termini di licenza con le parole in cui sono scritti.",
+  "englishData": "Questa tabella è in inglese: riporta il benchmark così come è stato eseguito, con le parole dei suoi casi di test, degli strumenti e dei modelli."
 }

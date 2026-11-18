@@ -28,7 +28,7 @@ import { useGraph } from '@jojo/service/react/kg-context'
 import { GROUP_LOOSE, wantsOverview } from '@jojo/service/core/graph-view'
 import { useTitle } from '@/lib/links'
 import { useFocusParam } from '@/lib/link-params'
-import { foldGraph, toViewGraph } from '@/lib/graph/view'
+import { basePicture, foldGraph, toViewGraph } from '@/lib/graph/view'
 import type { GroupDimension } from '@/lib/graph/view'
 import { useStableView } from '@/lib/graph/use-stable-view'
 
@@ -105,14 +105,7 @@ export function Graph() {
   const [trail, setTrail] = useState<string[]>([])
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set())
   const centre = trail.at(-1)
-  const base: 'overview' | 'free' =
-    layout === 'auto'
-      ? large
-        ? 'overview'
-        : 'free'
-      : layout === 'free' && !freeAllowed
-        ? 'overview'
-        : layout
+  const base = basePicture(layout, { large, freeAllowed })
   const mode: GraphMode = centre !== undefined && view.byId.has(centre) ? 'focus' : base
 
   const focusOn = useCallback((id: string) => {
@@ -130,6 +123,16 @@ export function Graph() {
     setTrail([])
     setExpanded(new Set())
   }, [])
+
+  /**
+   * The focus view's "Back to overview" button: it goes where it says. Leaving
+   * focus alone returns to `base`, which on a small store is the free layout —
+   * a button named Overview that landed there misnamed its own destination.
+   */
+  const backFromFocus = useCallback(() => {
+    backToOverview()
+    setLayout('overview')
+  }, [backToOverview])
 
   // `/graph?focus=<id>` — arriving from a link opens the focus view on it.
   const { focus: arrivalFocus, clearFocus, arrival } = useFocusParam()
@@ -383,10 +386,14 @@ export function Graph() {
                   </button>
                 </>
               ) : (
+                // Each count its own plural, framed: the one sentence they shared
+                // was plural on the records and said "1 connections".
                 t('graph.counts', {
-                  shown: view.nodes.length,
-                  count: graph.nodes.length,
-                  edges: view.edges.length,
+                  records: t('graph.countsRecords', {
+                    shown: view.nodes.length,
+                    count: graph.nodes.length,
+                  }),
+                  connections: t('graph.countsConnections', { count: view.edges.length }),
                 })
               )
             }
@@ -406,7 +413,7 @@ export function Graph() {
               const id = trail[index]
               if (id) focusOn(id)
             }}
-            onBack={backToOverview}
+            onBack={backFromFocus}
             action={viewAction}
           />
 

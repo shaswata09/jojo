@@ -13,7 +13,7 @@
       "keyword": "Schlagwort"
     },
     "isA": "ist ein",
-    "fit": "{{fit}} % Passung",
+    "fit": "{{fit}} % Passung",
     "query": {
       "undated": {
         "question": "Bewerbungen ohne jeden Termin",
@@ -208,7 +208,8 @@
     "timeout": "Diese Jobbörse hat zu lange gebraucht.",
     "unreachable": "Diese Jobbörse war nicht erreichbar.",
     "status": "Diese Jobbörse hat mit {{status}} geantwortet.",
-    "browserOnly": "{{host}} zeigt seine Stellenanzeigen nur einem echten Browser, daher kann es nicht vom Handy aus gelesen werden. Auf einem Computer kann die jojo-Browsererweiterung es lesen."
+    "browserOnly": "{{host}} zeigt seine Stellenanzeigen nur einem echten Browser, daher kann es nicht vom Handy aus gelesen werden. Auf einem Computer kann die jojo-Browsererweiterung es lesen.",
+    "cancelled": "Das Lesen wurde abgebrochen."
   },
   "timelineForm": {
     "title": "Gib ihm einen Titel, den du wiedererkennst.",

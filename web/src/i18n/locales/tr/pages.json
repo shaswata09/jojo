@@ -99,8 +99,11 @@
     "resetHint": "Kayıtları her zamanki düzenine geri koy",
     "noMatches": "Bu soruyla eşleşen kayıt yok",
     "clearQuery": "sorguyu temizle",
-    "counts_one": "{{count}} kayıttan {{shown}} tanesi · {{edges}} bağlantı",
-    "counts_other": "{{count}} kayıttan {{shown}} tanesi · {{edges}} bağlantı",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_one": "{{count}} kayıttan {{shown}} tanesi",
+    "countsRecords_other": "{{count}} kayıttan {{shown}} tanesi",
+    "countsConnections_one": "{{count}} bağlantı",
+    "countsConnections_other": "{{count}} bağlantı",
     "panelTitle": "Her şey, bağlantılı",
     "help": "Komşularını görmek için bir düğümün üzerine gelin ya da Tab ile ona gelin; seçmek için basın, taşımak için sürükleyin. Düğümün rengi türünü, boyutu ise ona ne kadar şeyin işaret ettiğini gösterir."
   },

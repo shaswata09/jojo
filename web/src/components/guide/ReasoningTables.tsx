@@ -111,9 +111,9 @@ export function ReasoningTables() {
       <p className="mt-1.5 text-xs text-text-3">
         One request at a time on an idle server, streamed, three samples each. The request is
         jojo&rsquo;s system prompt and every tool description:{' '}
-        {SPEED_ROWS[0]?.promptTokens.toLocaleString()} tokens to Gemma, and{' '}
-        {SPEED_ROWS[1]?.promptTokens.toLocaleString()} to GPT-OSS, whose tokenizer counts the same
-        text as fewer tokens.
+        {SPEED_ROWS[0]?.promptTokens.toLocaleString('en')} tokens to Gemma, and{' '}
+        {SPEED_ROWS[1]?.promptTokens.toLocaleString('en')} to GPT-OSS, whose tokenizer counts the
+        same text as fewer tokens.
       </p>
     </>
   )

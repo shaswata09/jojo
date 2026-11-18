@@ -15,7 +15,7 @@
   },
   "whatIsWorking": {
     "countOf": "{{count}} von {{of}}",
-    "rate": "{{rate}} % · wahrscheinlich {{range}}",
+    "rate": "{{rate}} % · wahrscheinlich {{range}}",
     "groupReplied": "Antworten nach {{dimension}}",
     "groupInterviews": "Vorstellungsgespräche nach {{dimension}}",
     "confident": "Die Bereiche überschneiden sich nicht, der Unterschied ist also echt – {{best}} verdient mehr von deinem Einsatz.",

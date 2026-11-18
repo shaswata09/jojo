@@ -27,7 +27,11 @@ const SHOWN_AT = {
   role: ['header', /\{displayName\(a\)\}/],
   roleTag: ['header', /<Chip>\{a\.roleTag\}<\/Chip>/],
   stage: ['header', /<StageMenu\s+value=\{a\.stage\}/],
-  source: ['facts', /\{ label: t\('facts\.source'\), value: a\.source \}/],
+  // Shown in the language on screen; the stored value is English (review 3, i18n-1).
+  source: [
+    'facts',
+    /label: t\('facts\.source'\),\s+value: a\.source === undefined \? undefined : domain\.source\(a\.source\)/,
+  ],
   url: ['facts', /label: t\('facts\.posting'\),\s*value: a\.url \?/],
   postingId: ['facts', /\{ label: t\('facts\.postingId'\), value: a\.postingId \}/],
   confirmationRef: [

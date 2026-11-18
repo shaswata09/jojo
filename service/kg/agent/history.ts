@@ -12,6 +12,7 @@ import { fitHistory, summarisedNote, trimNote } from './budget'
 import type { Trimmed } from './budget'
 import { asMessage, compact } from './compact'
 import type { CompactOptions, ThreadRef } from './compact'
+import { TOOLS_OVERFLOW_NOTE } from './notes'
 import type { ToolSpecs } from './offer'
 import type { AgentOptions, AgentRun } from './types'
 
@@ -312,13 +313,7 @@ function carriedSummary(
   return carried !== null && carried.content !== asMessage('', framing).content ? carried : null
 }
 
-/**
- * Told to the person when the tool list alone overflows the window. Stored
- * English; shown translated through `appNoteText` (`react/app-note.ts`), which
- * reads it back by this exact text.
- */
-export const TOOLS_OVERFLOW_NOTE =
-  'The tool list alone is larger than this model can hold. Narrow what the assistant may reach for, or raise the context window in Settings if your server allows it.'
+export { TOOLS_OVERFLOW_NOTE } from './notes'
 
 /**
  * The app notes about the trim.

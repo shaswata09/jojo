@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import type { FormEvent } from 'react'
 import { Field, FormField } from '@/components/common/Field'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
@@ -27,6 +28,7 @@ const SELECT_CLASS =
  */
 export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => void }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const { updateLink } = useVault()
   const { toast } = useToast()
 
@@ -73,7 +75,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
     if (announceRefusal(written, toast)) return
     toast({
       title: t('common.updated', { title: title.trim() }),
-      description: t('snippets.toast.moved', { tag: category }),
+      description: t('snippets.toast.moved', { tag: domain.linkCategory(category) }),
       action: { label: t('common.undo'), onClick: () => updateLink(link.id, before) },
     })
     onDone()
@@ -114,7 +116,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
           >
             {LINK_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {domain.linkCategory(c)}
               </option>
             ))}
           </select>

@@ -81,3 +81,51 @@ describe('electing the tab that runs the scout (web-lib-3)', () => {
     expect(leading).toEqual(['A'])
   })
 })
+
+/**
+ * A LockManager with Chrome's behaviour for a request aborted in the same task
+ * it was made: the abort does NOT take it out of the queue, and it is granted
+ * in its turn (review 3, coverage-4). The fake above dequeues on abort, so it
+ * could not show the trap `waitToLead` has to survive.
+ */
+function chromeLocks() {
+  let held = false
+  const queue: (() => void)[] = []
+  const request = async (
+    _name: string,
+    _options: { signal?: AbortSignal },
+    callback: (lock: object | null) => Promise<void>,
+  ) => {
+    if (held) await new Promise<void>((resolve) => queue.push(resolve))
+    held = true
+    try {
+      return await callback({})
+    } finally {
+      held = false
+      queue.shift()?.()
+    }
+  }
+  return { request } as unknown as LockManager
+}
+
+describe('a wait called off that the browser still grants (coverage-4)', () => {
+  it('never leads, and lets the lock go at once to the next in line', async () => {
+    const locks = chromeLocks()
+    const leading: string[] = []
+    const a = new AbortController()
+    const first = waitToLead('jojo-scout', a.signal, () => leading.push('A'), locks)
+    const orphan = new AbortController()
+    const stale = waitToLead('jojo-scout', orphan.signal, () => leading.push('orphan'), locks)
+    orphan.abort()
+    const c = new AbortController()
+    const third = waitToLead('jojo-scout', c.signal, () => leading.push('C'), locks)
+    await tick()
+    a.abort()
+    await first
+    await stale
+    await tick()
+    expect(leading).toEqual(['A', 'C'])
+    c.abort()
+    await third
+  })
+})

@@ -10,10 +10,10 @@
 
 import { finish, settleContinuation } from './turn-state'
 import type { TurnState } from './turn-state'
+import { VERIFY_NOTE } from './notes'
 import type { OkTurn } from './round'
 import type { AgentRun } from './types'
 import { verifyBeforeExit } from './verify-gate'
-import type { VerifyReason } from './verify-gate'
 
 /**
  * A code fence stripped, but only when it wraps the WHOLE text.
@@ -87,33 +87,7 @@ function toolCallInText(text: string, offered: Set<string> | null): string | nul
   return offered === null || offered.has(name) || offered.has(dotted) ? dotted : null
 }
 
-/**
- * What the PERSON is told when the verification gate sends an answer back.
- *
- * One sentence per reason, because the reasons are not interchangeable and a
- * single generic line would be the least useful of the four. The model gets
- * `verdict.nudge`, which is an instruction in the second person; this is the
- * fact in the third, for the screen.
- *
- * Written to be readable by somebody who does not know a gate exists: it says
- * what the assistant claimed, what the store actually shows, and that a round is
- * being spent on the difference. Somebody who sees this and then sees a correct
- * answer has learned the app checked; somebody who sees it and then sees the
- * same claim again has learned not to trust that claim, which is the whole
- * point.
- */
-export const VERIFY_NOTE: Record<VerifyReason, string> = {
-  'claimed-write-none-attempted':
-    'The assistant said it had changed something, but nothing that writes was called and the store is unchanged. It has been asked to check before finishing.',
-  'claimed-write-none-landed':
-    'The assistant said it had changed something, but every write it tried this turn failed or was declined, so the store is unchanged. It has been asked to check before finishing.',
-  'named-unread-record':
-    'The assistant named a record it did not read this turn. It has been asked to look it up before answering, rather than answering from memory.',
-  'bare-acknowledgement':
-    'The assistant agreed to do the work without doing it, so nothing has happened yet. It has been asked to make the call.',
-  'stopped-mid-task':
-    'The assistant stopped partway, saying what it would do next without doing it. It has been asked to carry on.',
-}
+export { VERIFY_NOTE } from './notes'
 
 /** A call written into the reply's text, refused as a server misconfiguration. */
 function refuseCallAsText(state: TurnState, answer: string): AgentRun | null {

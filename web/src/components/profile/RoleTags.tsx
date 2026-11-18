@@ -51,7 +51,7 @@ export function RoleTags({
                   type="button"
                   onClick={() => removeRole(role)}
                   aria-label={t('roleTags.remove', { role, count: used })}
-                  className="ms-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
+                  className="touch-target ms-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
                 >
                   <X className="size-3" aria-hidden />
                 </button>

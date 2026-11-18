@@ -4,6 +4,8 @@ import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BoardCard } from '@/components/applications/board/BoardCard'
 import { PanelScroll } from '@/components/common/Panel'
+import { ShowMoreRows } from '@/components/common/ShowMoreRows'
+import { indexOfId, useRowCap } from '@/components/common/use-row-cap'
 import type { STAGES, Application, Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
 import { useDomain } from '@/i18n/domain'
@@ -14,6 +16,8 @@ export function BoardColumn({
   onAdd,
   onMoveStage,
   openId,
+  dropped,
+  keep,
   openRef,
 }: {
   stage: (typeof STAGES)[number]
@@ -21,11 +25,25 @@ export function BoardColumn({
   onAdd: (stage: Stage) => void
   onMoveStage: (a: Application, stage: Stage) => void
   openId?: string
+  /** The card last moved to another column: mounted however far down it sorts. */
+  dropped?: string
+  /** The list's search and filters, carried on each card's link (`listStateOf`). */
+  keep: string
   openRef: Ref<HTMLDivElement>
 }) {
   const { t } = useTranslation('applications')
   const domain = useDomain()
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
+  /*
+   * A page of cards per column, like the table and the phone board. Every card
+   * was mounted, each with its drag hook and stage menu: 3,000 applications
+   * were 39,457 DOM nodes and 1.4-1.8 s long tasks on load and on drag start
+   * (finding performance-1). The open record and the card just moved here stay
+   * mounted however far down they sort — the cap is raised to reach them, and
+   * stays raised (`useRowCap`), so closing the sheet does not unmount the card
+   * focus is about to return to.
+   */
+  const cap = useRowCap(items.length, Math.max(indexOfId(items, openId), indexOfId(items, dropped)))
 
   return (
     <div
@@ -57,15 +75,17 @@ export function BoardColumn({
           stage header stays visible however uneven the stages are. `tight`
           because the column's gutter is p-2, not a Panel's. */}
       <PanelScroll axis="y" inset="tight" className="flex min-h-16 flex-col gap-2">
-        {items.map((app) => (
+        {items.slice(0, cap.shown).map((app) => (
           <BoardCard
             key={app.id}
             app={app}
             onMoveStage={onMoveStage}
             open={app.id === openId}
+            keep={keep}
             ref={app.id === openId ? openRef : undefined}
           />
         ))}
+        <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
 
         {/* Where the card will land. The column tint alone says "this one" but
             not "and it goes here", which is the half people read as the drag

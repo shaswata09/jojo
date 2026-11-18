@@ -71,6 +71,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => applyTheme(resolved), [resolved])
 
+  /*
+   * Another tab's choice, followed here (review 3, multitab-3). Read once at
+   * mount, a theme picked in one tab left every other tab in the old one until
+   * it was reloaded — and its toggle then wrote the opposite of what the person
+   * was looking at elsewhere. `storage` reaches every OTHER tab of this origin;
+   * `key === null` is a cleared storage, which reads back as the default.
+   */
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === THEME_STORAGE_KEY || event.key === null) setPrefState(readPref())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
   const setPref = useCallback((next: ThemePref) => {
     setPrefState(next)
     // Every choice is written, 'system' included — see `readPref` for why an

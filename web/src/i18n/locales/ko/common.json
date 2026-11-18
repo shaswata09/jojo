@@ -11,6 +11,12 @@
     "upcoming": "예정",
     "done": "완료"
   },
+  "bucketsInline": {
+    "overdue": "기한 지남",
+    "today": "오늘",
+    "upcoming": "예정",
+    "done": "완료"
+  },
   "snooze": {
     "day": {
       "soon": "내일",
@@ -268,6 +274,7 @@
     "description": "실행할 명령 검색..."
   },
   "rows": {
-    "showMore": "더 보기 ({{total}}개 중 {{shown}}개)"
+    "showMore": "더 보기 ({{total}}개 중 {{shown}}개)",
+    "allShown": "모두 표시됨 ({{total}}개)"
   }
 }

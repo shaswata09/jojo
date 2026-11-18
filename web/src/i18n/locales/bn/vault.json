@@ -215,6 +215,15 @@
       "hintEmpty": "আগে কিছু লেখা হাইলাইট করুন বা একটি মন্তব্য যোগ করুন।",
       "hint": "{{summary}} ভেতরে লেখা হবে।",
       "action": "চিহ্নিত কপি সংরক্ষণ করুন"
+    },
+    "names": {
+      "annotated": "টীকাযুক্ত",
+      "pages_one": "{{count}} পৃষ্ঠা",
+      "pages_other": "{{count}} পৃষ্ঠা",
+      "pagesFile": "পৃষ্ঠা",
+      "merged": "একত্রিত",
+      "more_one": "আরও {{count}}টি",
+      "more_other": "আরও {{count}}টি"
     }
   },
   "instruments": {

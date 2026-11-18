@@ -11,6 +11,12 @@
     "upcoming": "قادمة",
     "done": "مكتملة"
   },
+  "bucketsInline": {
+    "overdue": "متأخرة",
+    "today": "اليوم",
+    "upcoming": "قادمة",
+    "done": "مكتملة"
+  },
   "snooze": {
     "day": {
       "soon": "غدًا",
@@ -293,6 +299,7 @@
     "description": "ابحث عن أمر لتشغيله..."
   },
   "rows": {
-    "showMore": "عرض المزيد ({{shown}} من {{total}})"
+    "showMore": "عرض المزيد ({{shown}} من {{total}})",
+    "allShown": "تم عرض الكل ({{total}})"
   }
 }

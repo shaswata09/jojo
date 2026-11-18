@@ -42,17 +42,21 @@ export async function send(
    */
   timeoutMs: number = MODEL_TIMEOUT_MS,
 ): Promise<Sent> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
   // A signal aborted BEFORE it got here never fires again — `addEventListener`
   // after the fact hears nothing — so a cancel pressed during the document
-  // read would still send the model request. See the web twin.
+  // read would still send the model request. See the web twin. Asked before
+  // anything is armed, so this way out leaves nothing behind.
   if (signal?.aborted === true) {
-    clearTimeout(timer)
     return { failed: unreachable(endpoint, i18next.t('messages:localService.stopped'), true) }
   }
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
   // The caller's cancel and our timeout both have to reach the same request.
-  signal?.addEventListener('abort', () => controller.abort())
+  // Taken off in the `finally`: a run hands one signal to every model call it
+  // makes, and kept one listener per call until the run ended (the web twin's
+  // review-3 leaks-4 fix).
+  const onAbort = () => controller.abort()
+  signal?.addEventListener('abort', onAbort, { once: true })
   try {
     const response = await fetch(request.url, {
       method: request.method,
@@ -74,5 +78,6 @@ export async function send(
     return { failed: unreachable(endpoint, detail, aborted, timeoutMs) }
   } finally {
     clearTimeout(timer)
+    signal?.removeEventListener('abort', onAbort)
   }
 }

@@ -8,20 +8,20 @@
       "headline": "Mettez davantage d’efforts sur {{label}}.",
       "because": {
         "source": {
-          "replied_one": "{{count}} sur {{of}} a reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
-          "replied_many": "{{count}} sur {{of}} ont reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
-          "replied_other": "{{count}} sur {{of}} ont reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
-          "interview_one": "{{count}} sur {{of}} a obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
-          "interview_many": "{{count}} sur {{of}} ont obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
-          "interview_other": "{{count}} sur {{of}} ont obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance."
+          "replied_one": "{{count}} sur {{of}} a reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "replied_many": "{{count}} sur {{of}} ont reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "replied_other": "{{count}} sur {{of}} ont reçu une réponse par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "interview_one": "{{count}} sur {{of}} a obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "interview_many": "{{count}} sur {{of}} ont obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance.",
+          "interview_other": "{{count}} sur {{of}} ont obtenu un entretien par ce canal ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par provenance."
         },
         "role": {
-          "replied_one": "{{count}} sur {{of}} a reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
-          "replied_many": "{{count}} sur {{of}} ont reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
-          "replied_other": "{{count}} sur {{of}} ont reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
-          "interview_one": "{{count}} sur {{of}} a obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
-          "interview_many": "{{count}} sur {{of}} ont obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
-          "interview_other": "{{count}} sur {{of}} ont obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste."
+          "replied_one": "{{count}} sur {{of}} a reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "replied_many": "{{count}} sur {{of}} ont reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "replied_other": "{{count}} sur {{of}} ont reçu une réponse pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "interview_one": "{{count}} sur {{of}} a obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "interview_many": "{{count}} sur {{of}} ont obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste.",
+          "interview_other": "{{count}} sur {{of}} ont obtenu un entretien pour ce type de poste ({{rate}} %, probablement entre {{low}} et {{high}} %), contre {{worstCount}} sur {{worstOf}} pour {{worst}} ({{worstRate}} %, probablement entre {{worstLow}} et {{worstHigh}} %). Réparti par type de poste."
         }
       }
     },
@@ -63,11 +63,11 @@
     "funnel": {
       "replies": {
         "headline": "Retravaillez le premier paragraphe avant d’envoyer la prochaine.",
-        "because": "C’est sur les réponses que cette recherche perd le plus face à une recherche type. {{got}} sur {{of}} ({{rate}} %), contre {{typical}} % pour une recherche type — un chiffre rond choisi par jojo pour comparer, pas mesuré sur qui que ce soit."
+        "because": "C’est sur les réponses que cette recherche perd le plus face à une recherche type. {{got}} sur {{of}} ({{rate}} %), contre {{typical}} % pour une recherche type — un chiffre rond choisi par jojo pour comparer, pas mesuré sur qui que ce soit."
       },
       "interviews": {
         "headline": "Rendez l’adéquation évidente dès les trois premières lignes.",
-        "because": "Les réponses qui s’arrêtent avant un entretien sont le plus grand écart ici — l’intérêt est là, mais l’argumentaire ne porte pas. {{got}} sur {{of}} ({{rate}} %), contre {{typical}} % pour une recherche type — un chiffre rond choisi par jojo pour comparer, pas mesuré sur qui que ce soit."
+        "because": "Les réponses qui s’arrêtent avant un entretien sont le plus grand écart ici — l’intérêt est là, mais l’argumentaire ne porte pas. {{got}} sur {{of}} ({{rate}} %), contre {{typical}} % pour une recherche type — un chiffre rond choisi par jojo pour comparer, pas mesuré sur qui que ce soit."
       }
     },
     "clear": {

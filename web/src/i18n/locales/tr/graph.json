@@ -130,7 +130,7 @@
     },
     "group": {
       "shared": "Ortak",
-      "none": "Anahtar kelimesiz",
+      "none": "Belirtilmemiş",
       "rest": "Diğerleri",
       "loose": "Hiçbir şeye bağlı değil",
       "label": "{{name}}: {{records}}",

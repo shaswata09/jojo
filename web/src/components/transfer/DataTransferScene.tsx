@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { useAspect, useTexture } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { bloom } from 'three/examples/jsm/tsl/display/BloomNode.js'
@@ -110,9 +110,21 @@ function Scene({ scaleFactor, reduced }: SceneProps) {
     return { material, uPointer, uProgress }
   }, [rawMap, depthMap])
 
-  // Both textures outlive React's tree unless something says otherwise: they are
-  // cached by drei's loader, so only the material is ours to free.
+  // Both textures outlive React's tree: drei's loader caches them by URL, so
+  // the next visit reuses the same two objects. Each renderer that uploads one
+  // hangs a 'dispose' listener on it, and `renderer.dispose()` does not take it
+  // off — so the cached texture kept every past renderer, its canvas and the
+  // detached page under it. Disposing the texture here fires those listeners,
+  // which free the GPU copy and remove themselves; the object stays cached and
+  // the next renderer uploads it afresh.
   useEffect(() => () => material.dispose(), [material])
+  useEffect(
+    () => () => {
+      rawMap.dispose()
+      depthMap.dispose()
+    },
+    [rawMap, depthMap],
+  )
 
   useFrame(({ clock, pointer }) => {
     uPointer.value.set(pointer.x, pointer.y)
@@ -159,7 +171,7 @@ function PostProcessing({
 
   const uScan = useMemo(() => uniform(FROZEN_PROGRESS), [])
 
-  const pipeline = useMemo(() => {
+  const { pipeline, passes } = useMemo(() => {
     const post = new RenderPipeline(gl as unknown as WebGPURenderer)
 
     const scenePass = pass(scene, camera)
@@ -193,10 +205,21 @@ function PostProcessing({
     const bloomPass = bloom(lit.add(emissivePass), strength, 0.5, threshold)
 
     post.outputNode = lit.add(bloomPass)
-    return post
+    return { pipeline: post, passes: [scenePass, bloomPass] }
   }, [gl, scene, camera, strength, threshold, fullScreenEffect, reduced, uScan])
 
-  useEffect(() => () => pipeline.dispose(), [pipeline])
+  // The passes too, not only the pipeline: `pipeline.dispose()` frees its own
+  // quad and nothing in the node graph. The bloom pass's materials and render
+  // targets were left alive, and each of their render objects hangs a listener
+  // on a quad geometry three keeps at module scope — which held this renderer,
+  // its canvas and the detached page for the rest of the session.
+  useEffect(
+    () => () => {
+      for (const pass of passes) pass.dispose()
+      pipeline.dispose()
+    },
+    [pipeline, passes],
+  )
 
   // Priority > 0 takes the frame loop off R3F's own render call — otherwise the
   // scene would be drawn twice a frame and the post output immediately
@@ -206,6 +229,43 @@ function PostProcessing({
     pipeline.render()
   }, 1)
 
+  return null
+}
+
+/**
+ * How long R3F waits after unmounting a canvas before its own teardown
+ * (`unmountComponentAtNode` in @react-three/fiber 9: a 500 ms timer that
+ * disposes the scene and drops the root). The renderer goes after that.
+ */
+const R3F_TEARDOWN_MS = 500
+
+/**
+ * Disposes the WebGPU renderer when the scene leaves.
+ *
+ * R3F does not: its teardown calls `renderLists.dispose()` and
+ * `forceContextLoss()`, neither of which a `WebGPURenderer` has. And three's
+ * `Renderer.init()` starts an internal requestAnimationFrame loop that only
+ * `dispose()` stops — so every visit to /transfer left a 60 Hz callback
+ * running for good, holding the renderer, its GPU device and render targets,
+ * the canvas, and through the canvas the whole detached page.
+ *
+ * Deferred past R3F's own teardown rather than run here, because that teardown
+ * disposes the scene's geometry and materials, and the renderer listens for
+ * those disposals — a renderer already torn down would throw inside R3F's
+ * try/catch and skip the line that forgets the root.
+ */
+function DisposeRenderer() {
+  const gl = useThree((s) => s.gl)
+  const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => {
+    // A cleanup followed by a fresh run on the same renderer is StrictMode's
+    // rehearsal, not a departure: the scheduled disposal is called off.
+    clearTimeout(pending.current)
+    const renderer = gl as unknown as WebGPURenderer
+    return () => {
+      pending.current = setTimeout(() => renderer.dispose(), R3F_TEARDOWN_MS + 100)
+    }
+  }, [gl])
   return null
 }
 
@@ -255,6 +315,7 @@ export function DataTransferScene({
       <Suspense fallback={null}>
         <Scene scaleFactor={scaleFactor} reduced={reduced} />
       </Suspense>
+      <DisposeRenderer />
     </Canvas>
   )
 }

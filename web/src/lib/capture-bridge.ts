@@ -183,7 +183,8 @@ type Reply = {
 type Ask = {
   take?: boolean
   /**
-   * Asks for a model answer in pieces. See `callModelStream`.
+   * Asks for a model answer in pieces. See `callModel`, which sets it when it
+   * is handed an `onChunk`.
    *
    * Only honoured alongside `model`, and only by a bridge at protocol 5 or
    * above; an older one ignores the flag and answers whole, which is why the

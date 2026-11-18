@@ -90,7 +90,9 @@
     "resetHint": "將紀錄恢復成平常的排列方式",
     "noMatches": "沒有符合這個問題的紀錄",
     "clearQuery": "清除查詢",
-    "counts_other": "{{count}} 筆紀錄中的 {{shown}} 筆 · {{edges}} 個連結",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_other": "{{count}} 筆紀錄中的 {{shown}} 筆",
+    "countsConnections_other": "{{count}} 個連結",
     "panelTitle": "一切，全都連在一起",
     "help": "將游標移到節點上或用 Tab 鍵移到節點，即可追蹤它周圍的關聯；按一下即可選取，拖曳即可移動。節點顏色代表類型，大小代表有多少項目指向它。"
   },

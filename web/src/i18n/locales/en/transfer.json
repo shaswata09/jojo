@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "Reminders and events",
-      "hint": "{{reminders}} remind you, {{events}} are dated events",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} reminds you",
+      "reminders_other": "{{count}} remind you",
+      "events_one": "{{count}} is a dated event",
+      "events_other": "{{count}} are dated events",
       "summary_one": "{{count}} reminder or event",
       "summary_other": "{{count}} reminders and events"
     },
     "vault": {
       "label": "Links and snippets",
-      "hint": "{{links}} links · {{snippets}} snippets",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} link",
+      "links_other": "{{count}} links",
+      "snippets_one": "{{count}} snippet",
+      "snippets_other": "{{count}} snippets",
       "summary_one": "{{count}} link or snippet",
       "summary_other": "{{count}} links and snippets"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "Job scout",
-      "hint": "{{pipelines}} pipelines · {{postings}} saved postings · {{matches}} matches",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} pipeline",
+      "pipelines_other": "{{count}} pipelines",
+      "postings_one": "{{count}} saved posting",
+      "postings_other": "{{count}} saved postings",
+      "matches_one": "{{count}} match",
+      "matches_other": "{{count}} matches",
       "summary_one": "{{count}} job scout record",
       "summary_other": "{{count}} job scout records"
     },

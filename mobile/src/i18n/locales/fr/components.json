@@ -465,7 +465,7 @@
     "title": "Que faire ensuite"
   },
   "working": {
-    "arm": "{{count}} sur {{of}} · {{rate}} % · probablement {{range}}",
+    "arm": "{{count}} sur {{of}} · {{rate}} % · probablement {{range}}",
     "repliesBy": "Réponses, par {{dimension}}",
     "interviewsBy": "Entretiens, par {{dimension}}",
     "confident": "Les fourchettes ne se chevauchent pas : la différence est réelle — {{best}} mérite davantage vos efforts.",

@@ -92,6 +92,34 @@
     "recommender": "பரிந்துரையாளர்",
     "contact": "தொடர்பு நபர்"
   },
+  "linkCategory": {
+    "posting": "வேலை அறிவிப்பு",
+    "institution": "நிறுவனம்",
+    "person": "நபர்",
+    "guide": "வழிகாட்டி"
+  },
+  "snippetTag": {
+    "coverLetter": "விண்ணப்பக் கடிதம்",
+    "applicationForm": "விண்ணப்பப் படிவம்",
+    "email": "மின்னஞ்சல்",
+    "bio": "சுயவிவரக் குறிப்பு",
+    "cv": "CV",
+    "researchStatement": "ஆய்வு அறிக்கை",
+    "teachingStatement": "கற்பித்தல் அறிக்கை"
+  },
+  "source": {
+    "jobScout": "வேலை தேடி",
+    "jobBoard": "வேலைவாய்ப்புத் தளம்",
+    "referral": "பரிந்துரை",
+    "careersPage": "பணிவாய்ப்புப் பக்கம்"
+  },
+  "fileBucket": {
+    "toRead": "படிக்க வேண்டியவை",
+    "applications": "விண்ணப்பங்கள்",
+    "jobPostings": "வேலை அறிவிப்புகள்",
+    "talks": "உரைகள்",
+    "admin": "நிர்வாகம்"
+  },
   "approval": {
     "manual": "கைமுறை",
     "semi": "பகுதி-தானியங்கி",
@@ -364,6 +392,7 @@
   },
   "readBy": "{{model}} படித்தது · {{ago}}",
   "missingSource": "இப்போது பெட்டகத்தில் இல்லாத ஒரு ஆவணம்",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "செயல்தவிர்க்க எதுவும் இல்லை.",

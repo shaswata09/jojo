@@ -134,7 +134,10 @@ export function Transcript({
     })
     toast({
       title: t('common.savedToSnippets'),
-      description: t('common.filedUnder', { title: snippet.title, tag: snippet.tag }),
+      description: t('common.filedUnder', {
+        title: snippet.title,
+        tag: domain.snippetTag(snippet.tag),
+      }),
       action: {
         label: t('common.openVault'),
         onClick: () => navigate(vaultPath({ tool: 'snippets' })),

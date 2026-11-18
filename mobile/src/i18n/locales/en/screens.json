@@ -501,12 +501,17 @@
     "emptyTitle": "Nothing to draw",
     "emptyDescription": "Every node here is one of your own records. Add an application and the first one appears.",
     "subtitle": "A preview of what jojo looks like once records stop being seven separate lists",
-    "caption": "{{visible}} of {{total}} nodes · {{edges}} edges. Tap a node to read it; tap a type below to hide it.",
+    "caption": "{{nodes}} · {{edges}}. Tap a node to read it; tap a type below to hide it.",
+    "captionNodes_one": "{{visible}} of {{count}} node",
+    "captionNodes_other": "{{visible}} of {{count}} nodes",
+    "captionEdges_one": "{{count}} edge",
+    "captionEdges_other": "{{count}} edges",
     "legend": "Legend",
     "legendHint": "tap to hide a type",
     "joinedTo": "Joined to",
     "noEdges": "Nothing points at this yet.",
     "openRecord": "Open the record",
+    "derivedRecord": "Derived from your records — it has no page of its own.",
     "ask": "Ask the graph",
     "askHint": "ask in a sentence, or pick one",
     "andMore_one": "and {{count}} more",
@@ -1026,7 +1031,9 @@
       "placeholder": "e.g. Waiting on them",
       "confirmUsed_one": "It comes off {{count}} record. Those records stay; only the keyword goes.",
       "confirmUsed_other": "It comes off {{count}} records. Those records stay; only the keyword goes.",
-      "confirmUnused": "Nothing is tagged with it, so nothing else changes."
+      "confirmUnused": "Nothing is tagged with it, so nothing else changes.",
+      "confirmTitle": "Delete the keyword {{name}}?",
+      "deletedTitle": "Keyword {{name}} deleted"
     }
   }
 }

@@ -65,9 +65,17 @@ const onDisk = new Map<string, number>()
 /** The `(path, mime)` pair the last ACTION_VIEW intent was built from. */
 let intent: { path: string; mime: string } | null = null
 
+/**
+ * The app's document directory, which every path below sits in — a path
+ * anywhere else is refused before the filesystem is asked (security-2).
+ * Hoisted and mutable: the iOS case points it at a container.
+ */
+const dirs = vi.hoisted(() => ({ DocumentDir: '/data/user/0/dev.jojo/files' }))
+
 vi.mock('react-native-blob-util', () => ({
   default: {
     fs: {
+      dirs,
       exists: (path: string) => {
         fsCalls.push({ call: 'exists', path })
         return Promise.resolve(onDisk.has(path))
@@ -120,6 +128,7 @@ beforeEach(() => {
   intent = null
   shared = null
   platform.OS = 'android'
+  dirs.DocumentDir = '/data/user/0/dev.jojo/files'
 })
 
 const asset = (over: Record<string, unknown> = {}) => ({
@@ -191,16 +200,19 @@ describe('the URI a record holds, and the path the filesystem wants', () => {
  */
 describe('forgetting every copy at once', () => {
   it('unlinks each one, through the same decode', async () => {
-    onDisk.set('/files/a/CV 2026.pdf', 1)
-    onDisk.set('/files/b/Offer.pdf', 2)
+    onDisk.set('/data/user/0/dev.jojo/files/a/CV 2026.pdf', 1)
+    onDisk.set('/data/user/0/dev.jojo/files/b/Offer.pdf', 2)
 
-    await forgetDocuments(['file:///files/a/CV%202026.pdf', 'file:///files/b/Offer.pdf'])
+    await forgetDocuments([
+      'file:///data/user/0/dev.jojo/files/a/CV%202026.pdf',
+      'file:///data/user/0/dev.jojo/files/b/Offer.pdf',
+    ])
 
     expect(fsCalls.map((c) => c.path).sort()).toEqual([
-      '/files/a/CV 2026.pdf',
-      '/files/a/CV 2026.pdf.jojo-trashed',
-      '/files/b/Offer.pdf',
-      '/files/b/Offer.pdf.jojo-trashed',
+      '/data/user/0/dev.jojo/files/a/CV 2026.pdf',
+      '/data/user/0/dev.jojo/files/a/CV 2026.pdf.jojo-trashed',
+      '/data/user/0/dev.jojo/files/b/Offer.pdf',
+      '/data/user/0/dev.jojo/files/b/Offer.pdf.jojo-trashed',
     ])
     expect(onDisk.size).toBe(0)
   })
@@ -212,12 +224,15 @@ describe('forgetting every copy at once', () => {
    * that reports failures does not report a phantom one.
    */
   it('unlinks a file two records share exactly once', async () => {
-    onDisk.set('/files/a/CV.pdf', 1)
+    onDisk.set('/data/user/0/dev.jojo/files/a/CV.pdf', 1)
 
-    await forgetDocuments(['file:///files/a/CV.pdf', 'file:///files/a/CV.pdf'])
+    await forgetDocuments([
+      'file:///data/user/0/dev.jojo/files/a/CV.pdf',
+      'file:///data/user/0/dev.jojo/files/a/CV.pdf',
+    ])
 
     // Once for the file, once for its set-aside copy — not twice each.
-    expect(fsCalls.filter((c) => c.path === '/files/a/CV.pdf')).toHaveLength(1)
+    expect(fsCalls.filter((c) => c.path === '/data/user/0/dev.jojo/files/a/CV.pdf')).toHaveLength(1)
     expect(fsCalls).toHaveLength(2)
   })
 
@@ -249,7 +264,7 @@ describe('handing a copy to whatever can open it', () => {
   })
 
   it('shrugs with the wildcard rather than claiming octet-stream', async () => {
-    await openDocument('file:///data/files/9f2/1764-notes.unknown')
+    await openDocument('file:///data/user/0/dev.jojo/files/9f2/1764-notes.unknown')
     // Octet-stream is a claim Android honours by offering nothing; the wildcard
     // lets the phone offer whatever it has.
     expect(intent?.mime).toBe('*/*')
@@ -257,7 +272,8 @@ describe('handing a copy to whatever can open it', () => {
 
   it('hands iOS the URI, not the path — the share sheet takes the URL form', async () => {
     platform.OS = 'ios'
-    const uri = 'file:///var/mobile/Containers/Data/9f2/1764-CV%202026.pdf'
+    dirs.DocumentDir = '/var/mobile/Containers/Data/Application/9f2/Documents'
+    const uri = 'file:///var/mobile/Containers/Data/Application/9f2/Documents/1764-CV%202026.pdf'
     await openDocument(uri)
     expect(shared).toEqual({ url: uri })
     expect(intent).toBeNull()
@@ -354,5 +370,22 @@ describe('picking documents', () => {
       cancelled: false,
       reason: 'no provider',
     })
+  })
+})
+
+/* --------------------- only the app's own documents ----------------------- */
+
+describe("a record that names a path outside the app's documents (security-2)", () => {
+  const STORE = 'file:///data/user/0/dev.jojo/databases/RKStorage'
+
+  it('reports no copy, deletes nothing and opens nothing, without asking the filesystem', async () => {
+    onDisk.set('/data/user/0/dev.jojo/databases/RKStorage', 4096)
+    expect(await documentExists(STORE)).toBe(false)
+    await forgetDocument(STORE)
+    await forgetDocuments([STORE])
+    await expect(openDocument(STORE)).rejects.toThrow()
+    expect(fsCalls).toEqual([])
+    expect(intent).toBeNull()
+    expect(onDisk.has('/data/user/0/dev.jojo/databases/RKStorage')).toBe(true)
   })
 })

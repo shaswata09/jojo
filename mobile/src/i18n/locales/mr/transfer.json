@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "स्मरणपत्रे आणि कार्यक्रम",
-      "hint": "{{reminders}} तुम्हाला आठवण करून देतात, {{events}} तारीख असलेले कार्यक्रम आहेत"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} तुम्हाला आठवण करून देते",
+      "reminders_other": "{{count}} तुम्हाला आठवण करून देतात",
+      "events_one": "{{count}} तारीख असलेला कार्यक्रम आहे",
+      "events_other": "{{count}} तारीख असलेले कार्यक्रम आहेत"
     },
     "vault": {
       "label": "लिंक आणि स्निपेट",
-      "hint": "{{links}} लिंक · {{snippets}} स्निपेट"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} लिंक",
+      "links_other": "{{count}} लिंक",
+      "snippets_one": "{{count}} स्निपेट",
+      "snippets_other": "{{count}} स्निपेट"
     },
     "files": {
       "label": "फाइल्स",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "जॉब स्काउट",
-      "hint": "{{pipelines}} पाइपलाइन · {{postings}} जतन केलेल्या जाहिराती · {{matches}} जुळण्या"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} पाइपलाइन",
+      "pipelines_other": "{{count}} पाइपलाइन",
+      "postings_one": "{{count}} जतन केलेली जाहिरात",
+      "postings_other": "{{count}} जतन केलेल्या जाहिराती",
+      "matches_one": "{{count}} जुळणी",
+      "matches_other": "{{count}} जुळण्या"
     },
     "profile": {
       "label": "प्रोफाइल",

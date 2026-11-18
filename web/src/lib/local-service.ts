@@ -147,23 +147,30 @@ export async function send(
    */
   timeoutMs: number = MODEL_TIMEOUT_MS,
 ): Promise<Sent> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => {
-    controller.abort()
-  }, timeoutMs)
   /*
    * A signal that was aborted BEFORE it got here never fires `abort` again —
    * `addEventListener` after the fact hears nothing, which `capture-bridge.ts`
    * spells out and guards. Without this line a cancel pressed during the
    * document read still sent the model request, and the reply landed minutes
    * later on a card that had long since gone idle.
+   *
+   * Asked BEFORE the timer is armed: this return is outside the `finally`
+   * below, so a timer armed first stayed pending for the whole timeout
+   * (review 3, leaks-4).
    */
   if (isAborted(signal))
     return { failed: unreachable(endpoint, 'Stopped before it was sent.', true) }
-  // The caller's cancel and our timeout both have to reach the same request.
-  signal?.addEventListener('abort', () => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => {
     controller.abort()
-  })
+  }, timeoutMs)
+  // The caller's cancel and our timeout both have to reach the same request.
+  // Taken off in the `finally`: a run's signal is handed to every model call
+  // the run makes, and kept one listener per call until the run ended.
+  const onAbort = () => {
+    controller.abort()
+  }
+  signal?.addEventListener('abort', onAbort, { once: true })
   try {
     const response = await fetch(request.url, {
       method: request.method,
@@ -218,6 +225,7 @@ export async function send(
     }
   } finally {
     clearTimeout(timer)
+    signal?.removeEventListener('abort', onAbort)
   }
 }
 
@@ -264,16 +272,21 @@ export async function sendStream(
       controller.abort()
     }, MODEL_TIMEOUT_MS)
   }
-  const stopClock = () => {
-    if (timer !== undefined) clearTimeout(timer)
-  }
-  idle()
-  // See `send`: a signal aborted before it arrived never fires again.
+  // See `send`: a signal aborted before it arrived never fires again. And
+  // asked before the clock starts, which this early return would leave running.
   if (isAborted(signal))
     return { failed: unreachable(endpoint, 'Stopped before it was sent.', true) }
-  signal?.addEventListener('abort', () => {
+  // Taken off when the clock stops, which every way out of the request does —
+  // see `send` (review 3, leaks-4).
+  const onAbort = () => {
     controller.abort()
-  })
+  }
+  const stopClock = () => {
+    if (timer !== undefined) clearTimeout(timer)
+    signal?.removeEventListener('abort', onAbort)
+  }
+  idle()
+  signal?.addEventListener('abort', onAbort, { once: true })
 
   // Read in the catch, to tell a stream that never started from one that stopped.
   let sofar = 0

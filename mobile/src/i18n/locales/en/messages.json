@@ -208,7 +208,8 @@
     "timeout": "That board took too long to answer.",
     "unreachable": "That board could not be reached.",
     "status": "That board answered {{status}}.",
-    "browserOnly": "{{host}} only shows its listings to a real browser, so it cannot be read from the phone. On a computer the jojo browser extension can read it."
+    "browserOnly": "{{host}} only shows its listings to a real browser, so it cannot be read from the phone. On a computer the jojo browser extension can read it.",
+    "cancelled": "The read was cancelled."
   },
   "timelineForm": {
     "title": "Give it a title you will recognise.",

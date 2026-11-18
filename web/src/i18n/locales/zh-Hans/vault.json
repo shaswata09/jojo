@@ -202,6 +202,13 @@
       "hintEmpty": "请先高亮一些文字或添加评论。",
       "hint": "{{summary}}将写入文档。",
       "action": "保存批注"
+    },
+    "names": {
+      "annotated": "已批注",
+      "pages_other": "{{count}} 页",
+      "pagesFile": "页面",
+      "merged": "合并",
+      "more_other": "另外 {{count}} 个"
     }
   },
   "instruments": {

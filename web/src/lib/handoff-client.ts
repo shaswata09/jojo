@@ -107,21 +107,37 @@ const CHUNK_TIMEOUT_MS = 60_000
 const addressSpace = (address: DialAddress): 'loopback' | 'local' =>
   address.host[0] === 127 ? 'loopback' : 'local'
 
-/** One signal that fires on the caller's cancel or on the timeout, whichever comes first. */
-function combined(
+/**
+ * One signal that fires on the caller's cancel or on the timeout, whichever
+ * comes first — and `dispose`, which the caller runs once the request is over.
+ *
+ * Without `dispose` a request that simply finished left its timer running and
+ * its listener on the caller's signal (review 3, leaks-1/leaks-4). A send makes
+ * one request per 64 KiB chunk against the same run signal, so a 100 MB backup
+ * left 1,600 listeners on it and 1,600 sixty-second timers armed.
+ */
+export function combined(
   timeoutMs: number,
   signal?: AbortSignal,
-): { signal: AbortSignal; timedOut: () => boolean } {
+): { signal: AbortSignal; timedOut: () => boolean; dispose: () => void } {
   const controller = new AbortController()
   let expired = false
   const timer = setTimeout(() => {
     expired = true
     controller.abort()
   }, timeoutMs)
+  const onCallerAbort = () => {
+    controller.abort()
+  }
+  const dispose = () => {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', onCallerAbort)
+  }
+  // Before the check below, so a caller already cancelled clears the timer too.
+  controller.signal.addEventListener('abort', dispose, { once: true })
   if (signal?.aborted) controller.abort()
-  signal?.addEventListener('abort', () => controller.abort(), { once: true })
-  controller.signal.addEventListener('abort', () => clearTimeout(timer), { once: true })
-  return { signal: controller.signal, timedOut: () => expired }
+  else signal?.addEventListener('abort', onCallerAbort, { once: true })
+  return { signal: controller.signal, timedOut: () => expired, dispose }
 }
 
 /**
@@ -159,58 +175,63 @@ async function call(
    */
   const { timeoutMs, cancel, ...rest } = init
   const deadline = combined(timeoutMs, cancel)
-  const failed = (): HandoffResult<Uint8Array> => ({
-    ok: false,
-    error: cancel?.aborted
-      ? 'handoff/cancelled'
-      : deadline.timedOut()
-        ? 'handoff/timeout'
-        : 'handoff/unreachable',
-  })
-
-  let response: Response
+  // Over once this returns, whichever way: the timer and the listener go with it.
   try {
-    response = await fetch(base(address) + path, {
-      ...rest,
-      // No cookies, no credentials, nothing ambient. This is a stranger's socket
-      // as far as the browser is concerned and should stay that way.
-      credentials: 'omit',
-      cache: 'no-store',
-      mode: 'cors',
-      signal: deadline.signal,
-      targetAddressSpace: addressSpace(address),
-    } as RequestInit)
-  } catch {
-    /*
-     * `fetch` throws the same TypeError for a denied Local Network Access
-     * permission, a refused connection, a DNS failure and a CORS rejection.
-     * The one of those a browser will own up to is the permission, so it is
-     * asked; the rest share one sentence.
-     */
-    const out = failed()
-    if (out.ok || out.error !== 'handoff/unreachable') return out
-    return (await localNetworkDenied()) ? { ok: false, error: 'handoff/blocked' } : out
-  }
+    const failed = (): HandoffResult<Uint8Array> => ({
+      ok: false,
+      error: cancel?.aborted
+        ? 'handoff/cancelled'
+        : deadline.timedOut()
+          ? 'handoff/timeout'
+          : 'handoff/unreachable',
+    })
 
-  // A 409 is the phone saying its own side failed — it could not build its
-  // backup. Reported as "the code may have expired", it sent people off to
-  // rescan, which cannot help (transfer audit, 2026-11-16).
-  if (response.status === 409) return { ok: false, error: 'handoff/conflict' }
-  if (!response.ok) return { ok: false, error: 'handoff/refused' }
-  try {
-    return await readCapped(response, MAX_BODY_BYTES)
-  } catch {
-    if (cancel?.aborted || deadline.timedOut()) return failed()
-    /*
-     * The body is a SECOND read off the network, after the headers have already
-     * resolved the `fetch` above — so a phone that goes to sleep, a wifi drop,
-     * or a socket the other end closes mid-response rejects HERE and not there.
-     * Unguarded, that rejection walked straight out of `call` past the result
-     * type this module exists to produce: `start` rejected into the `void` at
-     * its call site and the panel sat spinning with nothing on screen to say
-     * why. Same cause as the throw above, so the same words.
-     */
-    return { ok: false, error: 'handoff/unreachable' }
+    let response: Response
+    try {
+      response = await fetch(base(address) + path, {
+        ...rest,
+        // No cookies, no credentials, nothing ambient. This is a stranger's socket
+        // as far as the browser is concerned and should stay that way.
+        credentials: 'omit',
+        cache: 'no-store',
+        mode: 'cors',
+        signal: deadline.signal,
+        targetAddressSpace: addressSpace(address),
+      } as RequestInit)
+    } catch {
+      /*
+       * `fetch` throws the same TypeError for a denied Local Network Access
+       * permission, a refused connection, a DNS failure and a CORS rejection.
+       * The one of those a browser will own up to is the permission, so it is
+       * asked; the rest share one sentence.
+       */
+      const out = failed()
+      if (out.ok || out.error !== 'handoff/unreachable') return out
+      return (await localNetworkDenied()) ? { ok: false, error: 'handoff/blocked' } : out
+    }
+
+    // A 409 is the phone saying its own side failed — it could not build its
+    // backup. Reported as "the code may have expired", it sent people off to
+    // rescan, which cannot help (transfer audit, 2026-11-16).
+    if (response.status === 409) return { ok: false, error: 'handoff/conflict' }
+    if (!response.ok) return { ok: false, error: 'handoff/refused' }
+    try {
+      return await readCapped(response, MAX_BODY_BYTES)
+    } catch {
+      if (cancel?.aborted || deadline.timedOut()) return failed()
+      /*
+       * The body is a SECOND read off the network, after the headers have already
+       * resolved the `fetch` above — so a phone that goes to sleep, a wifi drop,
+       * or a socket the other end closes mid-response rejects HERE and not there.
+       * Unguarded, that rejection walked straight out of `call` past the result
+       * type this module exists to produce: `start` rejected into the `void` at
+       * its call site and the panel sat spinning with nothing on screen to say
+       * why. Same cause as the throw above, so the same words.
+       */
+      return { ok: false, error: 'handoff/unreachable' }
+    }
+  } finally {
+    deadline.dispose()
   }
 }
 

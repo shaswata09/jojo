@@ -12,6 +12,7 @@
     "failedTitle": "No se pudo escribir la copia de seguridad",
     "failedDescription": "Tus registros no han cambiado y no se guardó nada. Si tu navegador bloqueó la descarga, revisa su configuración de descargas.",
     "documentsNotReady": "El índice de documentos aún no había terminado de cargarse, así que una copia hecha ahora diría que no tienes ninguno. No se escribió nada.",
+    "documentsUnavailable": "No se pudieron listar los documentos guardados, así que una copia hecha ahora diría que no tienes ninguno. Si hay otra pestaña de jojo abierta, ciérrala y vuelve a intentarlo. No se escribió nada.",
     "documentsUnreadable": "No se pudo leer ninguno de los documentos guardados, así que la copia solo habría contenido registros. No se escribió nada.",
     "savedTitle": "Copia de seguridad guardada",
     "startedTitle": "Copia de seguridad iniciada",
@@ -152,7 +153,7 @@
       "claim": "Relación"
     },
     "savedAgo": "Guardada {{ago}}",
-    "fit": "{{fit}} % de encaje",
+    "fit": "{{fit}} % de encaje",
     "count": {
       "matches": "Coincidencias",
       "connections": "Conexiones",

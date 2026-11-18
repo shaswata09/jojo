@@ -422,6 +422,7 @@
       "demoMemory": "Các đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, từ khóa và hồ sơ cá nhân mẫu đều bị xóa, nhưng hiện không có gì được lưu, nên tải lại sẽ bắt đầu lại từ dữ liệu mẫu. Không có gì ở đây là của bạn — kho dữ liệu này chưa được ghi vào kể từ khi tải dữ liệu mẫu.",
       "ownDurable": "Đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, người liên hệ, ghi chú, cuộc trò chuyện, thông tin từ CV và hồ sơ cá nhân đều bị xóa, kể cả những gì bạn thêm trong phiên này, và vẫn như vậy sau khi tải lại. Không thể hoàn tác. Từ khóa của bạn được giữ lại — chúng là bản ghi riêng — nhưng không còn gì mang chúng, nên mọi số đếm trong bảng từ khóa đều về không.",
       "ownMemory": "Đơn ứng tuyển, dòng thời gian, Kho lưu trữ, tin tuyển dụng đã lưu, người liên hệ, ghi chú, cuộc trò chuyện, thông tin từ CV và hồ sơ cá nhân đều bị xóa, kể cả những gì bạn thêm trong phiên này, nhưng hiện không có gì được lưu, nên tải lại sẽ bắt đầu lại từ dữ liệu mẫu. Không thể hoàn tác. Từ khóa của bạn được giữ lại — chúng là bản ghi riêng — nhưng không còn gì mang chúng, nên mọi số đếm trong bảng từ khóa đều về không.",
+      "documentsKept": "Các tài liệu bạn đã đính kèm biến mất khỏi mọi màn hình ngay lúc này, nhưng tệp của chúng vẫn nằm trong thùng rác của trình duyệt này 30 ngày trước khi bị xóa hẳn. Để xóa ngay, hãy dùng “{{storage}}”.",
       "confirm": "Xóa mọi thứ"
     },
     "demo": {

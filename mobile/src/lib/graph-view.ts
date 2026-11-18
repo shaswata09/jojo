@@ -178,6 +178,22 @@ export function listJoiner(t: Say): (parts: readonly string[]) => string {
   }
 }
 
+/**
+ * The line under the radial graph: "3 of 12 nodes · 1 edge. Tap a node…".
+ *
+ * Each count is its own plural, framed by `graph.caption`, because the one
+ * sentence they used to share could be plural on nothing: it said "1 edges" in
+ * English, and Arabic — six forms — or Russian — four — had no way to agree
+ * with either number. The nodes phrase agrees with the total, the noun it
+ * counts ("3 of 21 nodes").
+ */
+export function graphCaption(t: Say, visible: number, total: number, edges: number): string {
+  return t('graph.caption', {
+    nodes: t('graph.captionNodes', { visible, count: total }),
+    edges: t('graph.captionEdges', { count: edges }),
+  })
+}
+
 /** "2 timeline items and 1 file", from a `foldedSummary`. Empty when nothing is folded. */
 export function foldedPhrase(
   summary: readonly { type: string; count: number }[],

@@ -433,6 +433,7 @@
       "demoMemory": "The demo applications, timeline, vault, saved postings, keywords and profile all go, though nothing is being saved right now, so a reload starts over from the demo data. Nothing here was yours — this store has not been written to since the demo data was loaded.",
       "ownDurable": "Applications, the timeline, the vault, saved postings, contacts, notes, conversations, CV facts and your profile all go, including anything you added this session, and it stays that way across a reload. There is no undo. Your keywords are kept — they are records of their own — but nothing is left carrying them, so every count in the keyword panel goes to zero.",
       "ownMemory": "Applications, the timeline, the vault, saved postings, contacts, notes, conversations, CV facts and your profile all go, including anything you added this session, though nothing is being saved right now, so a reload starts over from the demo data. There is no undo. Your keywords are kept — they are records of their own — but nothing is left carrying them, so every count in the keyword panel goes to zero.",
+      "documentsKept": "Documents you attached leave every screen now, but their files stay in this browser’s trash for 30 days before they are erased for good. To erase them at once, use “{{storage}}”.",
       "confirm": "Clear everything"
     },
     "demo": {

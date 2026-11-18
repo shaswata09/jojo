@@ -270,6 +270,12 @@ const ROUTING_SEGMENTS = new Set([
   'us',
   'uk',
   'index',
+  // The scout's boards file every job under their own prefix:
+  // academicjobsonline.org/ajo/jobs/…, higheredjobs.com/faculty/details.cfm,
+  // cra.org/ads/…. Left in, each came back as a role ('Ajo', 'Ads').
+  'ajo',
+  'ads',
+  'faculty',
 ])
 
 /** Spellings the sentence-cased de-slugifier would otherwise flatten. */
@@ -456,7 +462,7 @@ function pathOf(url: URL): { segments: string[]; named: string[] } {
   const segments = url.pathname
     .split('/')
     .map(decodeSegment)
-    .map((s) => withoutReqNumber(s.replace(/\.(html?|php|aspx?|jsp)$/i, '')))
+    .map((s) => withoutReqNumber(s.replace(/\.(html?|php|aspx?|jsp|cfm)$/i, '')))
     .filter(Boolean)
   const named = segments.filter((s) => !ROUTING_SEGMENTS.has(s.toLowerCase()) && !looksLikeId(s))
   return { segments, named }
@@ -574,7 +580,12 @@ export function draftFromShare(shared: string): Partial<Application> {
     .trim()
     .replace(/^[-—–|·:]+|[-—–|·:]+$/g, '')
     .trim()
-  if (!words || draft.role) return draft
+  if (!words) return draft
+  // A role read off a board's address as one word is a routing word the
+  // board added after this list was written, or a department ('CS'), far more
+  // often than a title. The words the person shared are the title.
+  const weakRole = draft.source === 'Job board' && draft.role !== undefined && !/\s/.test(draft.role)
+  if (draft.role && !weakRole) return draft
 
   // No role came out of the address, so the title is the best one available —
   // and if it carries an 'employer — role' separator, that split wins over the

@@ -15,7 +15,7 @@ import {
   without,
   type Annotation,
 } from '@/lib/pdf/annotations'
-import { derivedName } from '@/lib/pdf/output-name'
+import { annotatedName } from '@/lib/pdf/output-name'
 import { openPdf, type OpenPdf } from '@/lib/pdf/render'
 import { PdfSourceAdd } from './PdfSourceAdd'
 import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
@@ -69,6 +69,7 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
    * closed and dropped, and the old document leaves the screen at once.
    */
   const request = useRef(0)
+  const mounted = useRef(true)
   const open = useCallback(
     async (picked: PdfChoice) => {
       const ticket = ++request.current
@@ -84,6 +85,10 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
           opened.close()
           return
         }
+        if (!mounted.current) {
+          opened.close()
+          return
+        }
         setDocument(opened)
       } catch (cause) {
         if (ticket !== request.current) return
@@ -95,6 +100,17 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
   )
 
   useEffect(() => () => document_?.close(), [document_])
+  // An open that finishes after the panel is gone is closed, not handed to a
+  // setDocument nobody hears — the document cleanup never sees that document,
+  // and the worker would hold its bytes for good. A flag rather than a ticket
+  // bump: StrictMode's rehearsal unmount would otherwise drop the open a dropped
+  // file started on mount, which `useDroppedPdfs` will not start twice.
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   // One at a time: this panel works on a single document, and `useDroppedPdfs`
   // says so out loud rather than silently taking the first of five.
@@ -145,7 +161,7 @@ export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) 
     [marks.length, page],
   )
 
-  const suggested = choice ? derivedName(choice.name, 'annotated') : 'annotated.pdf'
+  const suggested = annotatedName(choice?.name)
 
   async function save(then: 'save' | 'download') {
     if (!choice) return

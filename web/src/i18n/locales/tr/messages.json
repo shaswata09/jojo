@@ -10,6 +10,7 @@
     "failedTitle": "Yedek yazılamadı",
     "failedDescription": "Kayıtlarınız değişmedi ve hiçbir şey kaydedilmedi. Tarayıcınız indirmeyi engellediyse indirme ayarlarını kontrol edin.",
     "documentsNotReady": "Belge dizini yüklenmeyi bitirmemişti; bu yüzden şimdi alınan bir yedek hiç belgeniz olmadığını söylerdi. Hiçbir şey yazılmadı.",
+    "documentsUnavailable": "Kayıtlı belgeler listelenemedi; bu yüzden şimdi alınan bir yedek hiç belgeniz olmadığını söylerdi. Başka bir jojo sekmesi açıksa kapatıp yeniden deneyin. Hiçbir şey yazılmadı.",
     "documentsUnreadable": "Saklanan belgelerin hiçbiri okunamadı; bu yüzden yedek yalnızca kayıtları içerirdi. Hiçbir şey yazılmadı.",
     "savedTitle": "Yedek kaydedildi",
     "startedTitle": "Yedekleme başladı",

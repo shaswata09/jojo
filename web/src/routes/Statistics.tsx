@@ -10,6 +10,7 @@ import { HeadlineRatesBody } from '@/components/dashboard/HeadlineRates'
 import { ApplicationSources } from '@/components/dashboard/ApplicationSources'
 import { SearchHealth } from '@/components/dashboard/SearchHealth'
 import { NextSteps } from '@/components/statistics/NextSteps'
+import { statisticsFocusFallback } from '@/components/statistics/focus-fallback'
 import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -50,7 +51,7 @@ export function Statistics() {
   // A search result naming one card (`?focus=stats-funnel`) — see `Settings`.
   const { focus, clearFocus, arrival } = useFocusParam()
   useArrivalHighlight(focus, clearFocus, arrival)
-  useFocusArrival(focus, { arrival })
+  useFocusArrival(focus, { fallbackOf: statisticsFocusFallback, arrival })
   // The benchmark is useful, and noisy when you are reading your own numbers.
   const [showTypical, setShowTypical] = useState(true)
   // Every figure on this page counts the roles picked in the top bar, and all

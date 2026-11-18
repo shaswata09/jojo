@@ -24,12 +24,16 @@
     },
     "timeline": {
       "label": "알림 및 일정",
-      "hint": "알림 {{reminders}}개, 날짜가 정해진 일정 {{events}}개",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_other": "알림 {{count}}개",
+      "events_other": "날짜가 정해진 일정 {{count}}개",
       "summary_other": "알림 및 일정 {{count}}개"
     },
     "vault": {
       "label": "링크 및 스니펫",
-      "hint": "링크 {{links}}개 · 스니펫 {{snippets}}개",
+      "hint": "{{links}} · {{snippets}}",
+      "links_other": "링크 {{count}}개",
+      "snippets_other": "스니펫 {{count}}개",
       "summary_other": "링크 및 스니펫 {{count}}개"
     },
     "files": {
@@ -44,7 +48,10 @@
     },
     "scout": {
       "label": "채용 스카우트",
-      "hint": "파이프라인 {{pipelines}}개 · 저장한 공고 {{postings}}개 · 매치 {{matches}}개",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_other": "파이프라인 {{count}}개",
+      "postings_other": "저장한 공고 {{count}}개",
+      "matches_other": "매치 {{count}}개",
       "summary_other": "채용 스카우트 기록 {{count}}개"
     },
     "notes": {

@@ -214,7 +214,8 @@ export function AddFromLinkDialog({
           <label htmlFor={id} className="sr-only">
             {t('fromLink.urlLabel')}
           </label>
-          <div className="relative min-w-0">
+          {/* Left to right in every locale, icon and gutter with it — see AddByUrl. */}
+          <div dir="ltr" className="relative min-w-0">
             <LinkIcon
               aria-hidden
               strokeWidth={1.8}

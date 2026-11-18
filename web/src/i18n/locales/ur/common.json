@@ -11,6 +11,12 @@
     "upcoming": "آنے والی",
     "done": "مکمل"
   },
+  "bucketsInline": {
+    "overdue": "تاخیر شدہ",
+    "today": "آج",
+    "upcoming": "آنے والی",
+    "done": "مکمل"
+  },
   "snooze": {
     "day": {
       "soon": "کل",
@@ -273,6 +279,7 @@
     "description": "چلانے کے لیے کمانڈ تلاش کریں..."
   },
   "rows": {
-    "showMore": "مزید دکھائیں ({{total}} میں سے {{shown}})"
+    "showMore": "مزید دکھائیں ({{total}} میں سے {{shown}})",
+    "allShown": "سب دکھائے گئے ({{total}})"
   }
 }

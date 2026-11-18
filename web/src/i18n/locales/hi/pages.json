@@ -99,8 +99,11 @@
     "resetHint": "रिकॉर्ड को उनकी सामान्य व्यवस्था में वापस रखें",
     "noMatches": "कोई रिकॉर्ड इस सवाल से मेल नहीं खाता",
     "clearQuery": "क्वेरी हटाएँ",
-    "counts_one": "{{count}} में से {{shown}} रिकॉर्ड · {{edges}} जुड़ाव",
-    "counts_other": "{{count}} में से {{shown}} रिकॉर्ड · {{edges}} जुड़ाव",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_one": "{{count}} में से {{shown}} रिकॉर्ड",
+    "countsRecords_other": "{{count}} में से {{shown}} रिकॉर्ड",
+    "countsConnections_one": "{{count}} जुड़ाव",
+    "countsConnections_other": "{{count}} जुड़ाव",
     "panelTitle": "सब कुछ, जुड़ा हुआ",
     "help": "किसी नोड का आस-पास देखने के लिए उस पर पॉइंटर ले जाएँ या Tab से पहुँचें, चुनने के लिए दबाएँ, हिलाने के लिए खींचें। नोड का रंग उसका प्रकार बताता है, आकार बताता है कि कितनी चीज़ें उसकी ओर इशारा करती हैं।"
   },

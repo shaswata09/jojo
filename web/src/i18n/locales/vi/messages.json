@@ -8,6 +8,7 @@
     "failedTitle": "Không ghi được bản sao lưu",
     "failedDescription": "Các bản ghi của bạn không thay đổi và không có gì được lưu. Nếu trình duyệt đã chặn việc tải xuống, hãy kiểm tra cài đặt tải xuống của nó.",
     "documentsNotReady": "Chỉ mục tài liệu chưa tải xong, nên bản sao lưu tạo lúc này sẽ cho rằng bạn không có tài liệu nào. Không có gì được ghi.",
+    "documentsUnavailable": "Không thể liệt kê các tài liệu đã lưu, nên bản sao lưu tạo lúc này sẽ cho rằng bạn không có tài liệu nào. Nếu đang mở một thẻ jojo khác, hãy đóng thẻ đó rồi thử lại. Không có gì được ghi.",
     "documentsUnreadable": "Không đọc được tài liệu nào đã lưu, nên bản sao lưu sẽ chỉ chứa bản ghi. Không có gì được ghi.",
     "savedTitle": "Đã lưu bản sao lưu",
     "startedTitle": "Đã bắt đầu sao lưu",

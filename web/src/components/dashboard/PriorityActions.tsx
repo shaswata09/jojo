@@ -6,6 +6,7 @@ import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { SnoozeSteps } from '@/components/common/SnoozeSteps'
+import { revealFocused } from '@/components/common/reveal-focus'
 import { checklistClosed, checklistOpened, closeChecklist, openChecklist } from '@/lib/onboarding'
 import { snoozeAnchor } from '@/components/common/snooze'
 import { Button } from '@/components/ui/button'
@@ -217,6 +218,9 @@ function DecisionCard({ action, timeline }: { action: PriorityAction; timeline: 
  */
 const DECK_SHOWN = 20
 
+/** Keyboard focus on a card off the track's edge snaps the whole card in. */
+const revealCard = revealFocused('li')
+
 /** How much of the track a step moves when there is no card to measure. */
 const FALLBACK_STEP = 0.8
 
@@ -231,8 +235,11 @@ const FALLBACK_STEP = 0.8
  *   move it — and the arrows are a shortcut on top, not the only way in.
  * - Off-screen cards stayed in the tab order. They still do, deliberately,
  *   because every card is a real decision; what changed is that focusing one
- *   scrolls it into view (the browser does that for a focused control inside
- *   a scroller), so focus never lands somewhere invisible.
+ *   scrolls its whole card into view (`revealCard`, below), so focus never
+ *   lands somewhere invisible. The browser does not do that by itself: it
+ *   leaves a scroller alone while the focused control is even partly
+ *   visible, and the second card's buttons were focused at 28% visible with
+ *   the track unmoved (finding a11y-5).
  * - The track was an `aria-live` region that re-announced a whole card on
  *   every scroll tick. Nothing here announces anything: it is a labelled list
  *   in date order, read like any other list.
@@ -349,6 +356,7 @@ function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: 
         ref={track}
         aria-label={t('priority.listLabel')}
         onScroll={measure}
+        onFocus={revealCard}
         /*
          * Bled out to the panel's edges, `PanelScroll`'s treatment: the negative
          * margins cancel the panel's padding and the same padding goes straight

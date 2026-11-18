@@ -32,13 +32,16 @@ import { useDomain } from '@/i18n/domain'
  * what keeps them apart.
  */
 
-function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
+function Row({ arm, leader, dimension }: { arm: Arm; leader: boolean; dimension: string }) {
   const { t } = useTranslation('statistics')
+  const domain = useDomain()
   const low = arm.interval.low * 100
   const width = Math.max(arm.interval.high * 100 - low, 1)
   return (
     <li className="grid grid-cols-[minmax(0,7rem)_1fr_auto] items-center gap-3 text-sm">
-      <span className={`truncate ${leader ? 'font-medium' : ''}`}>{arm.label}</span>
+      <span className={`truncate ${leader ? 'font-medium' : ''}`}>
+        {domain.armLabel(dimension, arm.label)}
+      </span>
 
       <span className="relative h-2.5 rounded-full bg-well" aria-hidden>
         {/* The band: where the true rate plausibly sits. */}
@@ -76,14 +79,19 @@ function Group({ c }: { c: Comparison }) {
       </h3>
       <ul className="flex flex-col gap-2">
         {c.arms.map((arm) => (
-          <Row key={arm.label} arm={arm} leader={c.confident && arm.label === c.best.label} />
+          <Row
+            key={arm.label}
+            arm={arm}
+            dimension={c.dimension}
+            leader={c.confident && arm.label === c.best.label}
+          />
         ))}
       </ul>
       <p className="mt-2 text-xs text-text-3">
         {/* The arm as written — a source or role tag the person named. Not
             lowercased: that broke names ("LinkedIn") and German nouns. */}
         {c.confident
-          ? t('whatIsWorking.confident', { best: c.best.label })
+          ? t('whatIsWorking.confident', { best: domain.armLabel(c.dimension, c.best.label) })
           : t('whatIsWorking.unconfident')}
         {c.tooFew > 0 && ` ${t('whatIsWorking.tooFew', { count: c.tooFew, min: MIN_ARM })}`}
       </p>

@@ -775,26 +775,9 @@ export function fitHistory(
   return { ...evict(working.length, []), kept: [], lost: null }
 }
 
-/** What to tell the person when earlier turns were summarised rather than lost. */
-export const summarisedNote = (dropped: number): string =>
-  `This conversation grew past what the model can hold, so the earliest ${String(dropped)} message${dropped === 1 ? '' : 's'} ${dropped === 1 ? 'was' : 'were'} replaced with a short summary. The assistant still knows what happened; it no longer has the exact wording.`
-
-/** What to tell the person when earlier turns had to go. */
-/**
- * Said when a run had to shorten its own tool results to keep going.
- *
- * Deliberately not `trimNote`: nothing was dropped and no message left the
- * request, so telling the person their conversation was cut would be wrong.
- * What happened is recoverable and worth naming plainly — the model can read
- * any of it again.
- */
-export const stubbedNote = (stubbed: number): string =>
-  `This turn grew past what the model can hold, so ${String(stubbed)} earlier tool result${
-    stubbed === 1 ? ' was' : 's were'
-  } shortened to a summary line. Nothing was lost — the records are still in your store and can be read again.`
-
-export const trimNote = (dropped: number): string =>
-  `This conversation grew past what the model can hold, so the earliest ${String(dropped)} message${dropped === 1 ? '' : 's'} ${dropped === 1 ? 'was' : 'were'} left out of this request. Your records are untouched — start a new conversation to give it a clean slate.`
+// The notes the person is told about a trim live in `notes.ts`, a leaf the
+// app's transcript can import without pulling this module into its bundle.
+export { stubbedNote, summarisedNote, trimNote } from './notes'
 
 /**
  * Whether a tool list leaves room for a conversation.

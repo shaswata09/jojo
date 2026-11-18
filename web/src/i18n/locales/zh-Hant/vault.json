@@ -202,6 +202,13 @@
       "hintEmpty": "請先醒目提示一些文字或新增註解。",
       "hint": "將寫入{{summary}}。",
       "action": "儲存標註並存檔"
+    },
+    "names": {
+      "annotated": "已註解",
+      "pages_other": "{{count}} 頁",
+      "pagesFile": "頁面",
+      "merged": "合併",
+      "more_other": "另外 {{count}} 個"
     }
   },
   "instruments": {

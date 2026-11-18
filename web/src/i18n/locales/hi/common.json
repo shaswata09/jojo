@@ -11,6 +11,12 @@
     "upcoming": "आने वाले",
     "done": "पूरे हुए"
   },
+  "bucketsInline": {
+    "overdue": "समय बीत चुका",
+    "today": "आज",
+    "upcoming": "आने वाले",
+    "done": "पूरे हुए"
+  },
   "snooze": {
     "day": {
       "soon": "कल",
@@ -273,6 +279,7 @@
     "description": "चलाने के लिए कोई कमांड खोजें..."
   },
   "rows": {
-    "showMore": "और दिखाएँ ({{total}} में से {{shown}})"
+    "showMore": "और दिखाएँ ({{total}} में से {{shown}})",
+    "allShown": "सभी दिखाए गए ({{total}})"
   }
 }

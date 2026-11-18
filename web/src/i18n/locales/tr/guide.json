@@ -613,5 +613,6 @@
       "address": "<lead>Adres çubuğu</lead> sayfanın kendisidir. İlk sayfa <code>/guide/overview</code> değil <code>/guide</code>'dır; böylece dört sayfa olmadan önce alınan her bağlantı ve yer imi hâlâ gerçek bir yere çıkar."
     }
   },
-  "englishOnly": "Bu sayfa İngilizcedir: kodu, paketleri ve lisans koşullarını yazıldıkları sözcüklerle adlandırır."
+  "englishOnly": "Bu sayfa İngilizcedir: kodu, paketleri ve lisans koşullarını yazıldıkları sözcüklerle adlandırır.",
+  "englishData": "Bu tablo İngilizcedir: karşılaştırmayı çalıştırıldığı haliyle, test senaryolarının, araçların ve modellerin kendi sözcükleriyle aktarır."
 }

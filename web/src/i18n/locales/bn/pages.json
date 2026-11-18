@@ -99,8 +99,11 @@
     "resetHint": "রেকর্ডগুলো আবার স্বাভাবিক বিন্যাসে ফিরিয়ে দিন",
     "noMatches": "এই প্রশ্নের সাথে কোনো রেকর্ড মেলে না",
     "clearQuery": "প্রশ্নটি মুছে ফেলুন",
-    "counts_one": "{{count}}টি রেকর্ডের মধ্যে {{shown}}টি · {{edges}}টি সংযোগ",
-    "counts_other": "{{count}}টি রেকর্ডের মধ্যে {{shown}}টি · {{edges}}টি সংযোগ",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_one": "{{count}}টি রেকর্ডের মধ্যে {{shown}}টি",
+    "countsRecords_other": "{{count}}টি রেকর্ডের মধ্যে {{shown}}টি",
+    "countsConnections_one": "{{count}}টি সংযোগ",
+    "countsConnections_other": "{{count}}টি সংযোগ",
     "panelTitle": "সবকিছু, যুক্ত অবস্থায়",
     "help": "কোনো নোডের প্রতিবেশ দেখতে তার ওপর হোভার করুন বা Tab দিয়ে যান, বেছে নিতে চাপুন, সরাতে টেনে নিন। নোডের রং তার ধরন বোঝায়, আকার বোঝায় কতগুলো জিনিস তার দিকে নির্দেশ করে।"
   },

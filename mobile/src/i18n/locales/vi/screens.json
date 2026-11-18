@@ -474,12 +474,15 @@
     "emptyTitle": "Chưa có gì để vẽ",
     "emptyDescription": "Mỗi nút ở đây là một bản ghi của chính bạn. Thêm một đơn ứng tuyển và nút đầu tiên sẽ xuất hiện.",
     "subtitle": "Bản xem trước jojo trông thế nào khi các bản ghi không còn là bảy danh sách riêng lẻ",
-    "caption": "{{visible}}/{{total}} nút · {{edges}} cạnh. Chạm vào một nút để đọc; chạm vào một loại bên dưới để ẩn nó.",
+    "caption": "{{nodes}} · {{edges}}. Chạm vào một nút để đọc; chạm vào một loại bên dưới để ẩn nó.",
+    "captionNodes_other": "{{visible}}/{{count}} nút",
+    "captionEdges_other": "{{count}} cạnh",
     "legend": "Chú giải",
     "legendHint": "chạm để ẩn một loại",
     "joinedTo": "Nối với",
     "noEdges": "Chưa có gì trỏ tới mục này.",
     "openRecord": "Mở bản ghi",
+    "derivedRecord": "Được suy ra từ bản ghi của bạn — nó không có trang riêng.",
     "ask": "Hỏi đồ thị",
     "askHint": "hỏi bằng một câu, hoặc chọn một câu hỏi",
     "andMore_other": "và {{count}} mục nữa",
@@ -505,7 +508,7 @@
       },
       "group": {
         "shared": "Dùng chung",
-        "none": "Không có từ khóa",
+        "none": "Không xác định",
         "rest": "Khác",
         "loose": "Không liên kết với gì",
         "label": "{{name}}: {{records}}",
@@ -976,7 +979,9 @@
       "added": "Đã thêm {{name}}",
       "placeholder": "vd. Đang chờ họ",
       "confirmUsed_other": "Nó sẽ được gỡ khỏi {{count}} bản ghi. Các bản ghi đó vẫn được giữ; chỉ có từ khóa bị gỡ.",
-      "confirmUnused": "Không có gì được gắn từ khóa này, nên không có gì khác thay đổi."
+      "confirmUnused": "Không có gì được gắn từ khóa này, nên không có gì khác thay đổi.",
+      "confirmTitle": "Xóa từ khóa {{name}}?",
+      "deletedTitle": "Đã xóa từ khóa {{name}}"
     }
   }
 }

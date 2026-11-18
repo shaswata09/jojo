@@ -106,7 +106,7 @@
     "skipped_one": "{{count}} enregistrement de cet appareil n’a pas pu être lu et n’est pas affiché. Rien n’a été supprimé — <anchor>Diagnostic</anchor> l’identifie, et un export depuis cet écran inclut tout ce que jojo a pu lire.",
     "skipped_other": "{{count}} enregistrements de cet appareil n’ont pas pu être lus et ne sont pas affichés. Rien n’a été supprimé — <anchor>Diagnostic</anchor> les identifie, et un export depuis cet écran inclut tout ce que jojo a pu lire.",
     "skipped_many": "{{count}} enregistrements de cet appareil n’ont pas pu être lus et ne sont pas affichés. Rien n’a été supprimé — <anchor>Diagnostic</anchor> les identifie, et un export depuis cet écran inclut tout ce que jojo a pu lire.",
-    "nearlyFull": "Ce navigateur n’a presque plus de place pour jojo — environ {{percent}} % de ce qu’il autorise est utilisé. L’enregistrement cessera de fonctionner une fois plein : mieux vaut exporter depuis les Paramètres et libérer de l’espace maintenant, tant que vos enregistrements peuvent encore être écrits.",
+    "nearlyFull": "Ce navigateur n’a presque plus de place pour jojo — environ {{percent}} % de ce qu’il autorise est utilisé. L’enregistrement cessera de fonctionner une fois plein : mieux vaut exporter depuis les Paramètres et libérer de l’espace maintenant, tant que vos enregistrements peuvent encore être écrits.",
     "backup": {
       "busy": "Sauvegarde…",
       "download": "Télécharger une sauvegarde",

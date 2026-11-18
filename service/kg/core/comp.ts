@@ -371,8 +371,21 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
    * cents, while `1,200,50` is not a decimal anything and keeps its old reading.
    */
   const cents = groups['cents']
+  /*
+   * And a decimal COMMA after a short ungrouped figure: `€15,50 per hour`,
+   * `EUR 22,75/hour`. European hourly and daily pay is almost never grouped, so
+   * the grouped-only rule read those as 15 and 22. Exactly two digits, no
+   * multiplier, at most three digits before — `€3,500` is the grouped form and
+   * never reaches here, and `2,50k` keeps its old reading.
+   */
+  const commaCents =
+    cents !== undefined &&
+    !separated &&
+    suffix === undefined &&
+    /^\d{1,3}$/.test(raw) &&
+    /^,\d{2}$/.test(cents)
   const tail =
-    cents !== undefined && grouped && !raw.includes(cents.charAt(0))
+    cents !== undefined && ((grouped && !raw.includes(cents.charAt(0))) || commaCents)
       ? Number(`0.${cents.slice(1)}`)
       : 0
   const base = whole + tail
@@ -606,8 +619,20 @@ export const annualised = (parsed: ParsedComp): number => parsed.amount * PER_YE
  * first" means "every pair comparable", which is what those screens assume.
  */
 export function comparable(a: ParsedComp, b: ParsedComp): boolean {
-  return a.currency === b.currency
+  return unitOf(a.currency) === unitOf(b.currency)
 }
+
+/*
+ * A symbol that names exactly one currency is that currency's code, so
+ * `€60.000` and `55.000 EUR` are one unit — the reading `PREFIXED_DOLLAR`
+ * already gives `C$` and `CAD`. Bare `$` and `¥` stay as they are: each names
+ * several currencies (USD, CAD, AUD…; JPY, CNY), and reading them as one would
+ * rank a yuan offer against a yen one. `currency` itself keeps the symbol as
+ * written; only the comparison canonicalises.
+ */
+const ONE_CURRENCY_SYMBOL: Readonly<Record<string, string>> = { '€': 'EUR', '£': 'GBP', '₹': 'INR' }
+const unitOf = (currency: string | undefined) =>
+  currency === undefined ? undefined : (ONE_CURRENCY_SYMBOL[currency] ?? currency)
 
 /**
  * Whether a set of offers can be ranked at all: at least two, and every

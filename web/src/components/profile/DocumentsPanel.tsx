@@ -4,6 +4,8 @@ import type { ChangeEvent } from 'react'
 import { Link } from 'react-router'
 import { Download, FileText, Upload } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ShowMoreRows } from '@/components/common/ShowMoreRows'
+import { indexOfId, useRowCap } from '@/components/common/use-row-cap'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { FileViewer } from '@/components/vault/FileViewer'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
@@ -59,6 +61,10 @@ export function DocumentsPanel() {
 
   const drop = useFileDrop(takeFiles)
   const viewer = useDocumentViewer(documents)
+  // A page of tiles at a time, like the Vault's Files: 600 documents in this
+  // drawer were 600 tiles and 12,000 DOM nodes on every visit to the Profile
+  // (finding performance-3). The document open in the viewer stays mounted.
+  const cap = useRowCap(documents.length, indexOfId(documents, viewer.openDoc?.id))
 
   return (
     <Panel focusId="profile-documents">
@@ -130,17 +136,20 @@ export function DocumentsPanel() {
             }
           />
         ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {documents.map((f) => (
-              <DocumentTile
-                key={f.id}
-                file={f}
-                get={get}
-                onOpen={viewer.open}
-                onDelete={viewer.onDelete}
-              />
-            ))}
-          </ul>
+          <>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {documents.slice(0, cap.shown).map((f) => (
+                <DocumentTile
+                  key={f.id}
+                  file={f}
+                  get={get}
+                  onOpen={viewer.open}
+                  onDelete={viewer.onDelete}
+                />
+              ))}
+            </ul>
+            <ShowMoreRows shown={cap.shown} hidden={cap.hidden} onMore={cap.more} />
+          </>
         )}
       </div>
 

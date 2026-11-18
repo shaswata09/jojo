@@ -11,6 +11,12 @@
     "upcoming": "আসন্ন",
     "done": "সম্পন্ন"
   },
+  "bucketsInline": {
+    "overdue": "মেয়াদোত্তীর্ণ",
+    "today": "আজ",
+    "upcoming": "আসন্ন",
+    "done": "সম্পন্ন"
+  },
   "snooze": {
     "day": {
       "soon": "আগামীকাল",
@@ -273,6 +279,7 @@
     "description": "চালানোর জন্য একটি কমান্ড খুঁজুন..."
   },
   "rows": {
-    "showMore": "আরও দেখান ({{total}}টির মধ্যে {{shown}}টি)"
+    "showMore": "আরও দেখান ({{total}}টির মধ্যে {{shown}}টি)",
+    "allShown": "সবগুলো দেখানো হয়েছে ({{total}})"
   }
 }

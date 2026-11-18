@@ -609,12 +609,25 @@
     "emptyTitle": "لا شيء لرسمه",
     "emptyDescription": "كل عقدة هنا هي أحد سجلاتك. أضف طلبًا وستظهر العقدة الأولى.",
     "subtitle": "لمحة عن jojo حين تتوقف السجلات عن كونها سبع قوائم منفصلة",
-    "caption": "{{visible}} من {{total}} عقدة · {{edges}} وصلة. انقر على عقدة لقراءتها، وانقر على نوع أدناه لإخفائه.",
+    "caption": "{{nodes}} · {{edges}}. انقر على عقدة لقراءتها، وانقر على نوع أدناه لإخفائه.",
+    "captionNodes_zero": "{{visible}} من {{count}} عقد",
+    "captionNodes_one": "{{visible}} من {{count}} عقدة",
+    "captionNodes_two": "{{visible}} من {{count}} عقدتين",
+    "captionNodes_few": "{{visible}} من {{count}} عقد",
+    "captionNodes_many": "{{visible}} من {{count}} عقدةً",
+    "captionNodes_other": "{{visible}} من {{count}} عقدة",
+    "captionEdges_zero": "{{count}} وصلات",
+    "captionEdges_one": "{{count}} وصلة",
+    "captionEdges_two": "{{count}} وصلتان",
+    "captionEdges_few": "{{count}} وصلات",
+    "captionEdges_many": "{{count}} وصلةً",
+    "captionEdges_other": "{{count}} وصلة",
     "legend": "مفتاح الرسم",
     "legendHint": "انقر لإخفاء نوع",
     "joinedTo": "مرتبط بـ",
     "noEdges": "لا شيء يشير إلى هذا بعد.",
     "openRecord": "فتح السجل",
+    "derivedRecord": "مستمد من سجلاتك — ليست له صفحة خاصة.",
     "ask": "اسأل الرسم البياني",
     "askHint": "اسأل بجملة، أو اختر سؤالًا",
     "andMore_zero": "و{{count}} آخر",
@@ -1226,7 +1239,9 @@
       "confirmUsed_few": "ستُزال من {{count}} سجلات. تبقى السجلات؛ وتُحذف الكلمة المفتاحية فقط.",
       "confirmUsed_many": "ستُزال من {{count}} سجل. يبقى السجل؛ وتُحذف الكلمة المفتاحية فقط.",
       "confirmUsed_other": "ستُزال من {{count}} سجل. يبقى السجل؛ وتُحذف الكلمة المفتاحية فقط.",
-      "confirmUnused": "لا شيء موسوم بها، لذا لا يتغير شيء آخر."
+      "confirmUnused": "لا شيء موسوم بها، لذا لا يتغير شيء آخر.",
+      "confirmTitle": "حذف الكلمة المفتاحية {{name}}؟",
+      "deletedTitle": "تم حذف الكلمة المفتاحية {{name}}"
     }
   }
 }

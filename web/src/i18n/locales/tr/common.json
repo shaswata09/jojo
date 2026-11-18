@@ -11,6 +11,12 @@
     "upcoming": "Yaklaşan",
     "done": "Tamamlanan"
   },
+  "bucketsInline": {
+    "overdue": "Gecikmiş",
+    "today": "Bugün",
+    "upcoming": "Yaklaşan",
+    "done": "Tamamlanan"
+  },
   "snooze": {
     "day": {
       "soon": "Yarın",
@@ -273,6 +279,7 @@
     "description": "Çalıştırılacak bir komut arayın..."
   },
   "rows": {
-    "showMore": "Daha fazla göster ({{total}} içinden {{shown}})"
+    "showMore": "Daha fazla göster ({{total}} içinden {{shown}})",
+    "allShown": "Tümü gösteriliyor ({{total}})"
   }
 }

@@ -12,6 +12,7 @@
     "failedTitle": "La sauvegarde n’a pas pu être écrite",
     "failedDescription": "Vos données sont inchangées et rien n’a été enregistré. Si votre navigateur a bloqué le téléchargement, vérifiez ses paramètres de téléchargement.",
     "documentsNotReady": "L’index des documents n’avait pas fini de se charger : une sauvegarde faite maintenant indiquerait que vous n’en avez aucun. Rien n’a été écrit.",
+    "documentsUnavailable": "Impossible de lister les documents stockés : une sauvegarde faite maintenant indiquerait que vous n’en avez aucun. Si un autre onglet jojo est ouvert, fermez-le et réessayez. Rien n’a été écrit.",
     "documentsUnreadable": "Aucun des documents stockés n’a pu être lu : la sauvegarde n’aurait contenu que les données. Rien n’a été écrit.",
     "savedTitle": "Sauvegarde enregistrée",
     "startedTitle": "Sauvegarde lancée",
@@ -152,7 +153,7 @@
       "claim": "Relation"
     },
     "savedAgo": "Enregistrée {{ago}}",
-    "fit": "Adéquation de {{fit}} %",
+    "fit": "Adéquation de {{fit}} %",
     "count": {
       "matches": "Correspondances",
       "connections": "Connexions",

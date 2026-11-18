@@ -474,12 +474,15 @@
     "emptyTitle": "Tidak ada yang bisa digambar",
     "emptyDescription": "Setiap simpul di sini adalah salah satu entri Anda sendiri. Tambahkan lamaran dan simpul pertama akan muncul.",
     "subtitle": "Pratinjau seperti apa jojo begitu entri tidak lagi berupa tujuh daftar terpisah",
-    "caption": "{{visible}} dari {{total}} simpul · {{edges}} sisi. Ketuk simpul untuk membacanya; ketuk jenis di bawah untuk menyembunyikannya.",
+    "caption": "{{nodes}} · {{edges}}. Ketuk simpul untuk membacanya; ketuk jenis di bawah untuk menyembunyikannya.",
+    "captionNodes_other": "{{visible}} dari {{count}} simpul",
+    "captionEdges_other": "{{count}} sisi",
     "legend": "Legenda",
     "legendHint": "ketuk untuk menyembunyikan jenis",
     "joinedTo": "Terhubung ke",
     "noEdges": "Belum ada yang menunjuk ke sini.",
     "openRecord": "Buka entri",
+    "derivedRecord": "Diturunkan dari entri Anda — tidak punya halaman sendiri.",
     "ask": "Tanya graf",
     "askHint": "tanyakan dalam satu kalimat, atau pilih salah satu",
     "andMore_other": "dan {{count}} lagi",
@@ -505,7 +508,7 @@
       },
       "group": {
         "shared": "Bersama",
-        "none": "Tanpa kata kunci",
+        "none": "Tanpa keterangan",
         "rest": "Lainnya",
         "loose": "Tidak terhubung ke apa pun",
         "label": "{{name}}: {{records}}",
@@ -976,7 +979,9 @@
       "added": "{{name}} ditambahkan",
       "placeholder": "mis. Menunggu mereka",
       "confirmUsed_other": "Kata kunci ini dilepas dari {{count}} entri. Entri tersebut tetap ada; hanya kata kuncinya yang hilang.",
-      "confirmUnused": "Tidak ada yang memakai kata kunci ini, jadi tidak ada hal lain yang berubah."
+      "confirmUnused": "Tidak ada yang memakai kata kunci ini, jadi tidak ada hal lain yang berubah.",
+      "confirmTitle": "Hapus kata kunci {{name}}?",
+      "deletedTitle": "Kata kunci {{name}} dihapus"
     }
   }
 }

@@ -331,6 +331,15 @@ export function useHandoffPull({
   const decision = useRef(createDecision())
   /** The phone the plan came from, which is waiting to hear what happens to it. */
   const from = useRef<PulledFrom | null>(null)
+  /**
+   * True while an agreed restore is running. It cannot be stopped once begun,
+   * so `cancel` — which Transfer runs on every role switch and on unmount —
+   * must not tell the phone "declined" over records that are being replaced
+   * (review 3, races-3). The phone stamps a handover only on "applied".
+   */
+  const restoring = useRef(false)
+  /** Bumped by every `start`, so a restore that outlives its pull does not paint over a newer one. */
+  const attempt = useRef(0)
   /** Tells that phone, once — fire and forget: the restore here does not wait on it. */
   const tell = useCallback(
     (outcome: 'applied' | 'declined' | 'failed') => {
@@ -343,6 +352,7 @@ export function useHandoffPull({
 
   const start = useCallback(
     async (code: string, tokens: readonly string[]) => {
+      attempt.current += 1
       run.current?.abort()
       const mine = new AbortController()
       run.current = mine
@@ -393,8 +403,18 @@ export function useHandoffPull({
     if (staged === null || !decision.current.take()) return
     setPlan(null)
     setStage('restoring')
-    const done = await restoreFromPhone(repo, blobs, staged, new Date().toISOString())
+    const mine = attempt.current
+    restoring.current = true
+    let done: Awaited<ReturnType<typeof restoreFromPhone>>
+    try {
+      done = await restoreFromPhone(repo, blobs, staged, new Date().toISOString())
+    } finally {
+      restoring.current = false
+    }
+    // The real outcome, whatever happened to the screen meanwhile.
     tell(done.ok ? 'applied' : 'failed')
+    // A new pull started while this ran owns the screen now.
+    if (attempt.current !== mine) return
     if (!done.ok) {
       setProblem(done.message)
       setStage('failed')
@@ -421,6 +441,9 @@ export function useHandoffPull({
   }, [tell])
 
   const cancel = useCallback(() => {
+    // Too late to walk away: the restore runs to the end, and `confirm` tells
+    // the phone how it went and shows it here. See `restoring`.
+    if (restoring.current) return
     // Walking away from the confirmation is a no as far as the phone is concerned.
     tell('declined')
     run.current?.abort()

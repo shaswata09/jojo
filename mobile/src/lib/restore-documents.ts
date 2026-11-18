@@ -8,8 +8,9 @@
  * ## Why the records have to be rewritten at all
  *
  * A file node holds a `uri` — see `FileProps.uri` — and what that string means
- * depends on the device that wrote it. The browser stores bytes in OPFS under
- * `core/blob-path.ts`'s layout and keys them by the record's own id. This app
+ * depends on the device that wrote it. The browser stores bytes in IndexedDB
+ * (`web/src/kg/storage/idb-file-store.ts`) under `core/blob-path.ts`'s layout
+ * and keys them by the record's own id. This app
  * stores a real file and keeps the absolute `file://` path the picker handed
  * back.
  *
@@ -46,6 +47,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import { BLOB_SEP, encodeName, idOfPath, nameOfPath } from '@jojo/service/core/blob-path'
 import type { StoredNode } from '@jojo/service/core/model'
 import type { DocumentStore } from '@jojo/service/repo/restore'
+import { ownDocumentPath } from '@/lib/document-path'
 
 /**
  * The folder restored documents land in.
@@ -138,8 +140,11 @@ export async function heldDocuments(
     if (node.type !== 'file') continue
     const uri = (node.props as { uri?: unknown }).uri
     if (typeof uri !== 'string' || !uri.startsWith('file://')) continue
+    // Only the app's own copies are kept across a restore (security-2).
+    const path = ownDocumentPath(uri)
+    if (path === null) continue
     try {
-      if (await exists(decodeURIComponent(uri.slice('file://'.length)))) held.set(node.id, uri)
+      if (await exists(path)) held.set(node.id, uri)
     } catch {
       // Unreadable: treated as not held, so the record says its document is missing.
     }
@@ -167,7 +172,9 @@ export const DOCUMENT_TRASH_SUFFIX = '.jojo-trashed'
  */
 export async function forgetUris(uris: readonly string[]): Promise<void> {
   for (const uri of new Set(uris)) {
-    const path = uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
+    // Never a path outside the app's own documents, whatever a record named.
+    const path = ownDocumentPath(uri)
+    if (path === null) continue
     for (const target of [path, `${path}${DOCUMENT_TRASH_SUFFIX}`]) {
       try {
         await ReactNativeBlobUtil.fs.unlink(target)

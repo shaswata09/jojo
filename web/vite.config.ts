@@ -313,6 +313,22 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     /**
+     * Thirty seconds, as the service suite has (`service/vitest.config.mts`
+     * explains it at length), so only a genuine hang fails.
+     *
+     * With several suites running at once — concurrent sessions and review
+     * agents do that in this repo — tests that pass alone in under a second
+     * timed out at the default five (review 3, coverage-13). The two measured
+     * here had causes of their own, fixed rather than hidden: one compiled a
+     * module graph inside the test with a dynamic `import()`
+     * (`reader-relay.test.ts`), the other ran an `expect` per bone per frame
+     * (`robot-rig.test.ts`). What remains slow does real work against real
+     * sockets (`mcp-link.test.ts`), and a loaded machine stretches it. A red
+     * gate caused by load teaches people to re-run rather than read the
+     * failure.
+     */
+    testTimeout: 30_000,
+    /**
      * Only so that `import css from '@/index.css?raw'` returns the stylesheet.
      *
      * Vitest stubs every id matching `.css` with an empty module by default,

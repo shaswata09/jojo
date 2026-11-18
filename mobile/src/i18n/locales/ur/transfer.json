@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "یاد دہانیاں اور واقعات",
-      "hint": "{{reminders}} یاد دلاتی ہیں، {{events}} تاریخ والے واقعات ہیں"
+      "hint": "{{reminders}}، {{events}}",
+      "reminders_one": "{{count}} یاد دلاتی ہے",
+      "reminders_other": "{{count}} یاد دلاتی ہیں",
+      "events_one": "{{count}} تاریخ والا واقعہ ہے",
+      "events_other": "{{count}} تاریخ والے واقعات ہیں"
     },
     "vault": {
       "label": "لنکس اور اقتباسات",
-      "hint": "{{links}} لنکس · {{snippets}} اقتباسات"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} لنک",
+      "links_other": "{{count}} لنکس",
+      "snippets_one": "{{count}} اقتباس",
+      "snippets_other": "{{count}} اقتباسات"
     },
     "files": {
       "label": "فائلیں",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "جاب اسکاؤٹ",
-      "hint": "{{pipelines}} پائپ لائنز · {{postings}} محفوظ اشتہارات · {{matches}} مماثلتیں"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} پائپ لائن",
+      "pipelines_other": "{{count}} پائپ لائنز",
+      "postings_one": "{{count}} محفوظ اشتہار",
+      "postings_other": "{{count}} محفوظ اشتہارات",
+      "matches_one": "{{count}} مماثلت",
+      "matches_other": "{{count}} مماثلتیں"
     },
     "profile": {
       "label": "پروفائل",

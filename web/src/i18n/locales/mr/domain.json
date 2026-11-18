@@ -92,6 +92,34 @@
     "recommender": "शिफारसकर्ते",
     "contact": "संपर्क व्यक्ती"
   },
+  "linkCategory": {
+    "posting": "नोकरीची जाहिरात",
+    "institution": "संस्था",
+    "person": "व्यक्ती",
+    "guide": "मार्गदर्शक"
+  },
+  "snippetTag": {
+    "coverLetter": "कव्हर लेटर",
+    "applicationForm": "अर्जाचा नमुना",
+    "email": "ईमेल",
+    "bio": "परिचय",
+    "cv": "CV",
+    "researchStatement": "संशोधन निवेदन",
+    "teachingStatement": "अध्यापन निवेदन"
+  },
+  "source": {
+    "jobScout": "जॉब स्काउट",
+    "jobBoard": "जॉब बोर्ड",
+    "referral": "शिफारस",
+    "careersPage": "करिअर पेज"
+  },
+  "fileBucket": {
+    "toRead": "वाचायचे",
+    "applications": "अर्ज",
+    "jobPostings": "नोकरीच्या जाहिराती",
+    "talks": "भाषणे",
+    "admin": "प्रशासकीय"
+  },
   "approval": {
     "manual": "मॅन्युअल",
     "semi": "अर्ध-स्वयंचलित",
@@ -364,6 +392,7 @@
   },
   "readBy": "{{model}} ने वाचले · {{ago}}",
   "missingSource": "आता व्हॉल्टमध्ये नसलेला दस्तऐवज",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "पूर्ववत करण्यासारखे काही नाही.",

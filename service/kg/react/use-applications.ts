@@ -164,14 +164,113 @@ export function applicationUpdateInput(
   }
 }
 
+/**
+ * What the hook derives from the application list, worked out ONCE per list.
+ *
+ * Per hook instance it was a `useMemo` each — and the hook is called per ROW:
+ * the dashboard's `OpenItemMenu` once per owed item, the phone's
+ * `FiledUnderLinks` once per row of five vault tools. Every instance rebuilt a
+ * Map of every application on mount and on every application change, and ran
+ * the counts and the sort beside it: 110 owed rows over 3,000 applications was
+ * 87 ms of a 954 ms dashboard load, measured, for a lookup table (review 3).
+ *
+ * The projection hands every instance the SAME array for one commit, so a
+ * cache keyed on that array is shared by all of them, and each member is built
+ * the first time something reads it — a row that only looks up `byId` never
+ * pays for the sort. Weak, so a replaced list is collected with its cache.
+ */
+class Derived {
+  readonly #all: readonly Application[]
+  #byId: ReadonlyMap<string, Application> | undefined
+  #stageCounts: { id: Stage; label: string; count: number }[] | undefined
+  #offers: OfferApplication[] | undefined
+  #recent: Application[] | undefined
+  #sourceCounts: { source: (typeof SOURCES)[number]; count: number }[] | undefined
+
+  constructor(all: readonly Application[]) {
+    this.#all = all
+  }
+
+  get byId(): ReadonlyMap<string, Application> {
+    return (this.#byId ??= new Map(this.#all.map((a) => [a.id, a])))
+  }
+
+  /**
+   * `{ id, label, count }`, and deliberately no colour.
+   *
+   * This used to spread `STAGES` from the seed fixture, which carries a `dot`
+   * field whose values are Tailwind class names — 'bg-stage-draft',
+   * 'bg-stage-offer'. So a CSS class was being minted inside the one layer that
+   * is supposed to mount unchanged on React Native, where it resolves to
+   * nothing. Neither guard could see it: `check-platform.mjs` looks for platform
+   * IDENTIFIERS and a class name is a string literal, and `check-layers.mjs`
+   * reads import direction, which was downward and legal. Built from
+   * `STAGE_VALUES` and `STAGE_LABEL` instead, both of which are the model's own.
+   * A web caller that wants the colour reads `STAGE_DOT` out of `@/data/seed` —
+   * web's own façade onto `@jojo/service/data/seed` — which is where a Tailwind
+   * token belongs; `PipelineBreakdown` is the one that does.
+   *
+   * The import that carried it is gone as well: `check-layers.mjs`'s
+   * DATA_READERS names the only production module under `kg` allowed to read the
+   * fixtures at all, it is `repo/seed.ts`, and it is not a hook.
+   */
+  get stageCounts(): { id: Stage; label: string; count: number }[] {
+    return (this.#stageCounts ??= STAGE_VALUES.map((id) => ({
+      id,
+      label: STAGE_LABEL[id],
+      count: this.#all.filter((a) => a.stage === id).length,
+    })))
+  }
+
+  get offers(): OfferApplication[] {
+    return (this.#offers ??= this.#all.filter(
+      (a): a is OfferApplication => a.stage === 'offer' && a.offer !== undefined,
+    ))
+  }
+
+  /**
+   * Most recently touched first. ASCENDING, because `daysAgo` counts backwards.
+   *
+   * Spelled out because the comparator reads like the opposite of the name, and
+   * because `daysAgo` is not a stored field — it is projected from `lastActionAt`
+   * against the provider's `today` (D25). Two consequences: the order is only as
+   * correct as `today` is, and sorting on the stored instant instead would be a
+   * finer-grained sort, not the same one, since every record touched today ties
+   * at 0 here and keeps its id order (D4).
+   */
+  get recent(): Application[] {
+    return (this.#recent ??= [...this.#all].sort((a, b) => a.daysAgo - b.daysAgo))
+  }
+
+  // Every source stays in the list even at zero, so the breakdown's colours and
+  // legend order hold still as applications move around.
+  get sourceCounts(): { source: (typeof SOURCES)[number]; count: number }[] {
+    return (this.#sourceCounts ??= SOURCES.map((source) => ({
+      source,
+      count: this.#all.filter((a) => a.source === source).length,
+    })))
+  }
+}
+
+const DERIVED = new WeakMap<readonly Application[], Derived>()
+
+/** The shared derivations for one application list — see `Derived`. */
+export function derivedOf(all: readonly Application[]): Derived {
+  let d = DERIVED.get(all)
+  if (!d) {
+    d = new Derived(all)
+    DERIVED.set(all, d)
+  }
+  return d
+}
+
 export function useApplications() {
   const graph = useGraph()
   const { repo, projections, today } = useKg()
   const run = useRun()
 
   const all = projections.applications(graph)
-
-  const byId = useMemo(() => new Map(all.map((a) => [a.id, a])), [all])
+  const derived = derivedOf(all)
 
   /**
    * The one resolver for a URL segment: the slug a link was built from, or a
@@ -193,9 +292,9 @@ export function useApplications() {
     (key: string) => {
       const node = resolveAddress(graph, 'application', key)
       if (!node) return undefined
-      return byId.get(node.id) ?? projections.application(graph, node.id)
+      return derived.byId.get(node.id) ?? projections.application(graph, node.id)
     },
-    [byId, graph, projections],
+    [derived, graph, projections],
   )
 
   const project = useCallback(
@@ -291,64 +390,14 @@ export function useApplications() {
     [run, project],
   )
 
-  /**
-   * `{ id, label, count }`, and deliberately no colour.
-   *
-   * This used to spread `STAGES` from the seed fixture, which carries a `dot`
-   * field whose values are Tailwind class names — 'bg-stage-draft',
-   * 'bg-stage-offer'. So a CSS class was being minted inside the one layer that
-   * is supposed to mount unchanged on React Native, where it resolves to
-   * nothing. Neither guard could see it: `check-platform.mjs` looks for platform
-   * IDENTIFIERS and a class name is a string literal, and `check-layers.mjs`
-   * reads import direction, which was downward and legal. Built from
-   * `STAGE_VALUES` and `STAGE_LABEL` instead, both of which are the model's own.
-   * A web caller that wants the colour reads `STAGE_DOT` out of `@/data/seed` —
-   * web's own façade onto `@jojo/service/data/seed` — which is where a Tailwind
-   * token belongs; `PipelineBreakdown` is the one that does.
-   *
-   * The import that carried it is gone as well: `check-layers.mjs`'s
-   * DATA_READERS names the only production module under `kg` allowed to read the
-   * fixtures at all, it is `repo/seed.ts`, and it is not a hook.
-   */
-  const stageCounts = useMemo(
-    () =>
-      STAGE_VALUES.map((id) => ({
-        id,
-        label: STAGE_LABEL[id],
-        count: all.filter((a) => a.stage === id).length,
-      })),
-    [all],
-  )
-
-  const offers = useMemo(
-    () => all.filter((a): a is OfferApplication => a.stage === 'offer' && a.offer !== undefined),
-    [all],
-  )
-
-  /**
-   * Most recently touched first. ASCENDING, because `daysAgo` counts backwards.
-   *
-   * Spelled out because the comparator reads like the opposite of the name, and
-   * because `daysAgo` is not a stored field — it is projected from `lastActionAt`
-   * against the provider's `today` (D25). Two consequences: the order is only as
-   * correct as `today` is, and sorting on the stored instant instead would be a
-   * finer-grained sort, not the same one, since every record touched today ties
-   * at 0 here and keeps its id order (D4).
-   */
-  const recent = useMemo(() => [...all].sort((a, b) => a.daysAgo - b.daysAgo), [all])
-
-  // Every source stays in the list even at zero, so the breakdown's colours and
-  // legend order hold still as applications move around.
-  const sourceCounts = useMemo(
-    () =>
-      SOURCES.map((source) => ({ source, count: all.filter((a) => a.source === source).length })),
-    [all],
-  )
-
+  // Getters, so a row that reads only `byId` (or only `get`) never makes the
+  // counts or the sort exist; each is built once per list either way.
   return useMemo(
     () => ({
       all,
-      byId,
+      get byId() {
+        return derived.byId
+      },
       get,
       add,
       update,
@@ -356,25 +405,19 @@ export function useApplications() {
       remove,
       setStage,
       duplicate,
-      stageCounts,
-      offers,
-      recent,
-      sourceCounts,
+      get stageCounts() {
+        return derived.stageCounts
+      },
+      get offers() {
+        return derived.offers
+      },
+      get recent() {
+        return derived.recent
+      },
+      get sourceCounts() {
+        return derived.sourceCounts
+      },
     }),
-    [
-      all,
-      byId,
-      get,
-      add,
-      update,
-      setNote,
-      remove,
-      setStage,
-      duplicate,
-      stageCounts,
-      offers,
-      recent,
-      sourceCounts,
-    ],
+    [all, derived, get, add, update, setNote, remove, setStage, duplicate],
   )
 }

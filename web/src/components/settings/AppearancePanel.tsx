@@ -56,8 +56,9 @@ export function AppearancePanel() {
             <span className="grid size-14 shrink-0 place-items-center rounded-md bg-[#171717]">
               <RobotMascot pose={pose} seq={seq} className="size-11" />
             </span>
-            {/* Narrower on phones. SettingRow's control cell is `shrink-0`,
-                so whatever this measures is a hard floor for the row — at 72
+            {/* Narrower on phones. SettingRow's control cell takes its
+                content's width (and wraps under the text when that does not
+                fit), so whatever this measures is a floor for the row — at 72
                 the ten gestures plus the robot plate pushed the Settings page
                 into a sideways scroll. Wrapping into an extra line costs
                 nothing; the page scrolling does not.
@@ -125,7 +126,10 @@ function LanguageRow() {
       control={
         <select
           aria-label={t('language.label')}
-          className="h-9 w-full max-w-56 rounded-md border border-hairline bg-panel px-2.5 text-sm"
+          // Up to 18rem: the row stacks on a phone now, so there is room for
+          // "Same as this browser (…)" whole rather than cut at 14rem
+          // (finding responsive-1).
+          className="h-9 w-full max-w-72 rounded-md border border-hairline bg-panel px-2.5 text-sm"
           value={choice}
           onChange={(e) => setChoice(e.target.value as LocaleChoice)}
         >

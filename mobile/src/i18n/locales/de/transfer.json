@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "Erinnerungen und Termine",
-      "hint": "{{reminders}} erinnern dich, {{events}} sind datierte Termine"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} erinnert dich",
+      "reminders_other": "{{count}} erinnern dich",
+      "events_one": "{{count}} ist ein datierter Termin",
+      "events_other": "{{count}} sind datierte Termine"
     },
     "vault": {
       "label": "Links und Textbausteine",
-      "hint": "{{links}} Links · {{snippets}} Textbausteine"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} Link",
+      "links_other": "{{count}} Links",
+      "snippets_one": "{{count}} Textbaustein",
+      "snippets_other": "{{count}} Textbausteine"
     },
     "files": {
       "label": "Dateien",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "Jobsuche",
-      "hint": "{{pipelines}} Suchen · {{postings}} gespeicherte Stellen · {{matches}} Treffer"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} Suche",
+      "pipelines_other": "{{count}} Suchen",
+      "postings_one": "{{count}} gespeicherte Stelle",
+      "postings_other": "{{count}} gespeicherte Stellen",
+      "matches_one": "{{count}} Treffer",
+      "matches_other": "{{count}} Treffer"
     },
     "profile": {
       "label": "Profil",

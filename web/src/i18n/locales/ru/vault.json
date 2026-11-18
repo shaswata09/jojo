@@ -241,6 +241,19 @@
       "hintEmpty": "Сначала выделите текст или добавьте комментарий.",
       "hint": "Будет записано: {{summary}}.",
       "action": "Сохранить с пометками"
+    },
+    "names": {
+      "annotated": "с пометками",
+      "pages_one": "{{count}} страница",
+      "pages_few": "{{count}} страницы",
+      "pages_many": "{{count}} страниц",
+      "pages_other": "{{count}} страницы",
+      "pagesFile": "страницы",
+      "merged": "объединённый",
+      "more_one": "ещё {{count}}",
+      "more_few": "ещё {{count}}",
+      "more_many": "ещё {{count}}",
+      "more_other": "ещё {{count}}"
     }
   },
   "instruments": {

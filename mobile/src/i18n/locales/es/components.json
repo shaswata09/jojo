@@ -465,7 +465,7 @@
     "title": "Qué hacer ahora"
   },
   "working": {
-    "arm": "{{count}} de {{of}} · {{rate}} % · probablemente {{range}}",
+    "arm": "{{count}} de {{of}} · {{rate}} % · probablemente {{range}}",
     "repliesBy": "Respuestas, por {{dimension}}",
     "interviewsBy": "Entrevistas, por {{dimension}}",
     "confident": "Los rangos no se solapan, así que es una diferencia real: {{best}} merece más de tu esfuerzo.",

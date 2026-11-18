@@ -260,7 +260,11 @@ export function FocusCanvas({
           label: centre?.label ?? '',
           records: t('common.records', { count: ids.length }),
         })}
-        className="h-full w-full touch-none select-none"
+        // Touch is not captured: this view has no pan or zoom, so a swipe that starts
+        // on it must scroll the page — on a phone the canvas is most of the
+        // screen. `touch-manipulation` keeps double-tap (re-centre) from
+        // zooming the page instead.
+        className="h-full w-full touch-manipulation select-none"
         onPointerOver={(event) => {
           const id = idAt(event.target)
           setHoverId((current) => (current === id ? current : id))
@@ -423,6 +427,8 @@ export function FocusCanvas({
                 aria-pressed={selectedId === id}
                 aria-label={nameOf(node)}
                 aria-expanded={id === centreId ? undefined : expanded.has(id)}
+                // Where the view bar sends focus after a press removes its button.
+                data-centre={id === centreId ? '' : undefined}
                 transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}
                 opacity={dim ? 0.3 : 1}
                 className="cursor-pointer"

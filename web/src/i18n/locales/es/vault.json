@@ -228,6 +228,17 @@
       "hintEmpty": "Primero resalta texto o añade un comentario.",
       "hint": "Se escribirá {{summary}}.",
       "action": "Guardar con anotaciones"
+    },
+    "names": {
+      "annotated": "anotado",
+      "pages_one": "{{count}} página",
+      "pages_many": "{{count}} páginas",
+      "pages_other": "{{count}} páginas",
+      "pagesFile": "páginas",
+      "merged": "combinado",
+      "more_one": "{{count}} más",
+      "more_many": "{{count}} más",
+      "more_other": "{{count}} más"
     }
   },
   "instruments": {

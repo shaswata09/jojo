@@ -11,6 +11,12 @@
     "upcoming": "வரவிருப்பவை",
     "done": "முடிந்தவை"
   },
+  "bucketsInline": {
+    "overdue": "தாமதம்",
+    "today": "இன்று",
+    "upcoming": "வரவிருப்பவை",
+    "done": "முடிந்தவை"
+  },
   "snooze": {
     "day": {
       "soon": "நாளை",
@@ -273,6 +279,7 @@
     "description": "இயக்க ஒரு கட்டளையைத் தேடுங்கள்..."
   },
   "rows": {
-    "showMore": "மேலும் காட்டு ({{total}} இல் {{shown}})"
+    "showMore": "மேலும் காட்டு ({{total}} இல் {{shown}})",
+    "allShown": "அனைத்தும் காட்டப்பட்டன ({{total}})"
   }
 }

@@ -168,7 +168,6 @@ export function MonthPickerSheet({
   // picker draws a month with no today marker.
   const month = buildMonth(view.year, view.month, TODAY_PARTS)
   // Not `month.label`: that is core's English, and this reads the language on screen.
-  const monthName = domain.month(month.month)
   const cells: (number | null)[] = [
     ...Array.from({ length: month.startsOn }, () => null),
     ...Array.from({ length: month.days }, (_, i) => i + 1),
@@ -182,11 +181,19 @@ export function MonthPickerSheet({
           label={t('date.previousMonth')}
           onPress={() => setView(stepMonth(view.year, view.month, -1))}
         />
+        {/* In the order the language writes it ('2026年11月' puts the year
+            first), with the year muted wherever it falls — as the calendar
+            does (review 3, i18n-6). */}
         <Txt size="md" weight="medium">
-          {monthName}{' '}
-          <Txt size="md" tone="muted">
-            {month.year}
-          </Txt>
+          {domain.monthYearParts(month.month, month.year).map((part) =>
+            part.isYear ? (
+              <Txt key="year" size="md" tone="muted">
+                {part.text}
+              </Txt>
+            ) : (
+              part.text
+            ),
+          )}
         </Txt>
         <IconButton
           icon="chevron-right"
@@ -218,7 +225,7 @@ export function MonthPickerSheet({
               key={day}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={`${monthName} ${day}`}
+              accessibilityLabel={domain.dayMonth(month.month, day)}
               onPress={() => onPick(iso)}
               style={styles.cell}
             >

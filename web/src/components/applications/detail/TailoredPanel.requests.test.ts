@@ -51,3 +51,11 @@ describe('Q257 — the description is a second row of its own', () => {
     expect(en.tailored.provenance).toBe('{{tag}} · from {{from}} · {{model}}')
   })
 })
+
+describe('the tailoring chooser in another language (review 3: i18n-2)', () => {
+  it('names each document by its translated kind, not core’s English label', () => {
+    expect(panel).toMatch(/sentenceStart\(domain\.document\(c\.kind\), i18n\.language\)/)
+    expect(panel).not.toMatch(/c\.label\.charAt\(0\)/)
+    expect(panel).toMatch(/word\.charAt\(0\)\.toLocaleUpperCase\(language\)/)
+  })
+})

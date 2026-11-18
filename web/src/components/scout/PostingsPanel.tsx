@@ -77,6 +77,9 @@ export function PostingsPanel({
           <Input
             id="posting-url"
             type="url"
+            // An address reads left to right in an Arabic or Urdu page too, so it
+            // shows its start (https://…) rather than its end (review 3, responsive-4).
+            dir="ltr"
             inputMode="url"
             value={url}
             onChange={(e) => onUrlChange(e.target.value)}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { ClipboardList, Plus } from 'lucide-react'
 import { Donut } from '@/components/charts/Donut'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -37,6 +38,7 @@ const UNRECORDED_COLOR = 'var(--text-3)'
  */
 export function ApplicationSources() {
   const { t, i18n } = useTranslation(['dashboard', 'charts'])
+  const domain = useDomain()
   const [view, setView] = useState<View>('donut')
   const views = VIEWS.map((value) => ({ value, label: t(`sources.views.${value}`) }))
   // Scoped to the roles picked in the top bar; everything when none are.
@@ -56,7 +58,7 @@ export function ApplicationSources() {
   const slices = useMemo(() => {
     const known = sourceCounts.map((s, i) => ({
       key: s.source as string,
-      label: s.source as string,
+      label: domain.source(s.source),
       value: s.count,
       color: RAMP[i % RAMP.length],
     }))
@@ -72,7 +74,7 @@ export function ApplicationSources() {
           },
         ]
       : known
-  }, [all, sourceCounts, t])
+  }, [all, sourceCounts, t, domain])
 
   // Both views share one hidden-set, so switching bars↔donut keeps your choices.
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(slices.map((s) => s.key))

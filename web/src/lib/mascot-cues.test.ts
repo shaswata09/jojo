@@ -125,7 +125,15 @@ describe('the actions wired to the mascot (Q323)', () => {
   })
 
   it('flexes for a saved backup, scans for a scout run, types while the assistant works', () => {
-    expect(code(backup).match(/mascot\.play\(CUES\.backupSaved\)/g)?.length).toBe(2)
+    // Once, in the download's `taken` step, which both ways a download can
+    // succeed run — saved through the picker and handed to the downloader
+    // (`runDownload`; review 3, coverage-2 made it one step).
+    const backupCode = code(backup)
+    expect(backupCode.match(/mascot\.play\(CUES\.backupSaved\)/g)?.length).toBe(1)
+    const taken = backupCode.slice(backupCode.indexOf('taken: (at) => {'))
+    expect(taken.slice(0, taken.indexOf('\n        },'))).toContain('mascot.play(CUES.backupSaved)')
+    const run = backupCode.slice(backupCode.indexOf('export async function runDownload('))
+    expect(run.slice(0, run.indexOf('\n}\n')).match(/steps\.taken\(at\)/g)?.length).toBe(2)
     expect(code(pipelines)).toMatch(/engine\.runNow\(id\)\s*mascot\.play\(CUES\.scoutStarted\)/)
     expect(code(conversation)).toMatch(/mascot\.play\(CUES\.assistantWorking\)\s*void send\(text\)/)
   })

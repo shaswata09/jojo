@@ -215,6 +215,15 @@
       "hintEmpty": "Heb zuerst Text hervor oder füge einen Kommentar hinzu.",
       "hint": "{{summary}} wird eingefügt.",
       "action": "Mit Markierungen speichern"
+    },
+    "names": {
+      "annotated": "kommentiert",
+      "pages_one": "{{count}} Seite",
+      "pages_other": "{{count}} Seiten",
+      "pagesFile": "Seiten",
+      "merged": "zusammengeführt",
+      "more_one": "{{count}} weitere",
+      "more_other": "{{count}} weitere"
     }
   },
   "instruments": {

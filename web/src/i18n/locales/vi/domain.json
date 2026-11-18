@@ -92,6 +92,34 @@
     "recommender": "Người viết thư giới thiệu",
     "contact": "Đầu mối liên hệ"
   },
+  "linkCategory": {
+    "posting": "Tin tuyển dụng",
+    "institution": "Tổ chức",
+    "person": "Người",
+    "guide": "Hướng dẫn"
+  },
+  "snippetTag": {
+    "coverLetter": "Thư xin việc",
+    "applicationForm": "Mẫu đơn ứng tuyển",
+    "email": "Email",
+    "bio": "Tiểu sử",
+    "cv": "CV",
+    "researchStatement": "Bản trình bày nghiên cứu",
+    "teachingStatement": "Bản trình bày giảng dạy"
+  },
+  "source": {
+    "jobScout": "Trình tìm việc",
+    "jobBoard": "Trang việc làm",
+    "referral": "Giới thiệu",
+    "careersPage": "Trang tuyển dụng"
+  },
+  "fileBucket": {
+    "toRead": "Cần đọc",
+    "applications": "Đơn ứng tuyển",
+    "jobPostings": "Tin tuyển dụng",
+    "talks": "Bài nói",
+    "admin": "Hành chính"
+  },
   "approval": {
     "manual": "Thủ công",
     "semi": "Bán tự động",
@@ -352,6 +380,7 @@
   },
   "readBy": "Được đọc bởi {{model}} · {{ago}}",
   "missingSource": "một tài liệu không còn trong Kho lưu trữ",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Không có gì để hoàn tác.",

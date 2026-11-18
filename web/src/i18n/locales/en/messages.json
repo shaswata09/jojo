@@ -10,6 +10,7 @@
     "failedTitle": "The backup could not be written",
     "failedDescription": "Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.",
     "documentsNotReady": "The document index had not finished loading, so a backup taken now would say you have none. Nothing was written.",
+    "documentsUnavailable": "The stored documents could not be listed, so a backup taken now would say you have none. If another jojo tab is open, close it and try again. Nothing was written.",
     "documentsUnreadable": "None of the stored documents could be read, so the backup would have held records only. Nothing was written.",
     "savedTitle": "Backup saved",
     "startedTitle": "Backup started",

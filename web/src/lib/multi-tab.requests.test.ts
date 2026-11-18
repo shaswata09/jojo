@@ -6,6 +6,7 @@ import vault from '@/routes/Vault.tsx?raw'
 import calendar from '@/routes/Calendar.tsx?raw'
 import jobScout from '@/routes/JobScout.tsx?raw'
 import arrival from '@/lib/use-arrival-highlight.ts?raw'
+import theme from '@/lib/theme.tsx?raw'
 
 /**
  * Review 2: what one tab does has to reach the others (web-lib-1, -2, -3), and
@@ -35,6 +36,29 @@ describe('settings changed in another tab (web-lib-1, web-lib-2)', () => {
     for (const key of ['SERVERS_KEY', 'STORAGE_KEY', 'READER_KEY']) {
       expect(code).toContain(`event.key === ${key}`)
     }
+  })
+})
+
+describe('the theme chosen in another tab (review 3, multitab-3)', () => {
+  it('is followed here, re-read from storage rather than this tab’s copy', () => {
+    const code = strip(theme)
+    expect(code).toMatch(/addEventListener\('storage', onStorage\)/)
+    expect(code).toMatch(
+      /event\.key === THEME_STORAGE_KEY \|\| event\.key === null\) setPrefState\(readPref\(\)\)/,
+    )
+    expect(code).toMatch(/removeEventListener\('storage', onStorage\)/)
+  })
+})
+
+describe('the MCP link’s place in line (review 3, multitab-2)', () => {
+  it('withdraws on pagehide and asks again from the back/forward cache, as the scout does', () => {
+    const code = strip(mcpLinkProvider)
+    const effect = code.slice(code.indexOf('void runElected('))
+    expect(effect).toMatch(
+      /withdrawOnPageHide\(\s*\(\) => \{\s*controller\.abort\(\)\s*\},\s*\(\) => \{\s*setShown\(\(n\) => n \+ 1\)/,
+    )
+    expect(effect).toMatch(/stopListening\(\)/)
+    expect(effect).toMatch(/\}, \[on, stored\.token, local, live, shown\]\)/)
   })
 })
 

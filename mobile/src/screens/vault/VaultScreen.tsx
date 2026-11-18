@@ -7,6 +7,7 @@ import { Screen } from '@/components/ui/Screen'
 import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Segment } from '@/components/ui/Segment'
 import { useTimeline, useVault } from '@/lib/store-context'
+import { isVaultTool } from '@/navigation/types'
 import type { TabParamList, VaultTool } from '@/navigation/types'
 import { CalculatorTool } from '@/screens/vault/CalculatorTool'
 import { FilesTool } from '@/screens/vault/FilesTool'
@@ -41,7 +42,9 @@ const TOOLS = [
 export function VaultScreen() {
   const { t } = useTranslation('vault')
   const route = useRoute<RouteProp<TabParamList, 'Vault'>>()
-  const [tool, setTool] = useState<VaultTool>(route.params?.tool ?? 'reminders')
+  const [tool, setTool] = useState<VaultTool>(() =>
+    isVaultTool(route.params?.tool) ? route.params.tool : 'reminders',
+  )
   // The web page makes this a switch too. The totals are the right default —
   // it is the only place the vault says how much is in it — but it is also the
   // longest subtitle in the app, and on a narrow phone it wraps to two lines.
@@ -57,7 +60,8 @@ export function VaultScreen() {
   const linkTool = route.params?.tool
   useEffect(() => {
     if (!linkTool) return
-    setTool(linkTool)
+    // An unknown tool is ignored — still cleared — rather than leaving no tool shown.
+    if (isVaultTool(linkTool)) setTool(linkTool)
     navigation.setParams({ tool: undefined } as never)
   }, [linkTool, navigation])
 

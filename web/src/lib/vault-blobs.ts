@@ -91,6 +91,14 @@ export type VaultBlobs = {
    * close rather than left looking at an empty Vault. Clears on its own.
    */
   blocked: boolean
+  /**
+   * True while the last listing of the documents failed — `blocked` above, or
+   * a store that opened and would not list. The index is then `ready` and
+   * empty, which is not the same answer as "no documents": a backup taken in
+   * this state must refuse rather than write a file holding none (review 3,
+   * races-2). Clears on the next listing that succeeds.
+   */
+  failed: boolean
   put: (id: string, file: File) => Promise<boolean>
   get: (id: string) => Promise<File | null>
   /**
@@ -105,7 +113,10 @@ export type VaultBlobs = {
   restore: (id: string) => Promise<boolean>
   /** Hands the file to the browser's downloader. */
   download: (id: string) => Promise<boolean>
-  /** Every stored document, newest first. For "download everything". */
+  /**
+   * Every stored document, in storage order — by key, so oldest record first,
+   * with documents written this session after them. For "download everything".
+   */
   all: () => Promise<{ id: string; name: string }[]>
   /**
    * Swaps every stored document for the given set, and reports how many landed.
@@ -205,8 +216,8 @@ function announce(): void {
  * The trash sweep, run once for the whole page rather than once per mount.
  *
  * It used to sit in the hook's mount effect, which is not the same thing at all:
- * there are four `useVaultBlobs()` call sites, THREE of them mount together on
- * Settings, and `FilesTool` is unmounted and remounted by a plain ternary every
+ * there were four `useVaultBlobs()` call sites then, THREE of them mounting together
+ * on Settings, and `FilesTool` is unmounted and remounted by a plain ternary every
  * time the vault's tool tabs change. So a sweep fired on almost any navigation.
  *
  * That made the comment justifying it false — "by the time this runs, everything
@@ -525,6 +536,8 @@ function sweepOnce(records: FileRecords): Promise<void> {
 }
 
 async function sweepNow(records: FileRecords): Promise<void> {
+  // Taken before the first await, for the reason `putBack` gives.
+  const before = generation
   await hydrate()
   const [documents, trash] = await Promise.all([store().list(DIR), store().listTrash(TRASH_DOCS)])
   // A store that will not list is a store the sweep knows nothing about.
@@ -546,7 +559,7 @@ async function sweepNow(records: FileRecords): Promise<void> {
     now: Date.now(),
   })
 
-  for (const copy of plan.restore) await putBack(copy.id, copy.from, copy.to)
+  for (const copy of plan.restore) await putBack(copy.id, copy.from, copy.to, before)
 
   for (const path of plan.reclaim) {
     const id = idOfPath(path)
@@ -578,16 +591,27 @@ async function sweepNow(records: FileRecords): Promise<void> {
 /**
  * A trashed copy whose record has come back, written back where it was.
  *
- * Bumped past by `replaceAll`: a restore that replaced every document between
- * this read and this write has the newer answer, and an older trash copy must
- * not land over it.
+ * Gives way to `replaceAll`: a restore that replaced every document since the
+ * caller decided to put this one back has the newer answer, and an older
+ * trash copy must not land over it.
+ *
+ * `before` is the generation the CALLER read, synchronously, at the moment it
+ * decided — not one read here. It used to be read here, after the caller's
+ * slow trash listing, and a backup restore is exactly the case where that is
+ * too late (review 3, races-1): `restoreBackup` commits the records first, the
+ * subscription below starts listing the trash for every restored id, and
+ * `replaceAll` has bumped the generation and begun writing the backup's bytes
+ * before that listing answers. Read then, the check passed, the index did not
+ * yet hold the id (`replaceAll` sets it only at the end), and last week's
+ * trashed copy was written over the document the backup had just restored.
+ * `replacing` covers a caller that decided while a replace was already running.
  */
-async function putBack(id: string, from: string, to: string): Promise<boolean> {
-  const before = generation
-  if (current.index.has(id) || removing.has(id)) return false
+async function putBack(id: string, from: string, to: string, before: number): Promise<boolean> {
+  const superseded = () => replacing > 0 || generation !== before || current.index.has(id)
+  if (superseded() || removing.has(id)) return false
   const read = await store().read(from)
   if (!read.ok) return false
-  if (generation !== before || current.index.has(id)) return false
+  if (superseded()) return false
   const written = await store().write(to, read.value)
   if (!written.ok) return false
   edit((index) => index.set(id, to))
@@ -605,14 +629,16 @@ async function putBack(id: string, from: string, to: string): Promise<boolean> {
  * newest trash copy. A brand-new record finds nothing and costs one listing.
  */
 function bringBack(id: string): void {
+  // Read now, inside the commit, before any await — see `putBack`.
+  const before = generation
   if (trashed.has(id) || trashedFrom.has(id) || removing.has(id)) {
-    void restore(id)
+    void restore(id, before)
     return
   }
-  void fromAnyTrash(id)
+  void fromAnyTrash(id, before)
 }
 
-async function fromAnyTrash(id: string): Promise<boolean> {
+async function fromAnyTrash(id: string, before: number): Promise<boolean> {
   await hydrate()
   if (current.index.has(id)) return false
   const listed = await store().listTrash(TRASH_DOCS)
@@ -630,11 +656,13 @@ async function fromAnyTrash(id: string): Promise<boolean> {
     now: Date.now(),
   })
   const copy = plan.restore[0]
-  return copy === undefined ? false : putBack(copy.id, copy.from, copy.to)
+  return copy === undefined ? false : putBack(copy.id, copy.from, copy.to, before)
 }
 
-/** Bumped by `replaceAll`. See `putBack`. */
+/** Bumped by `replaceAll`, synchronously as it starts. See `putBack`. */
 let generation = 0
+/** How many `replaceAll`s are running. Nothing is put back from the trash while one is. */
+let replacing = 0
 
 function store(): IdbFileStore {
   shared ??= createIdbFileStore({
@@ -648,7 +676,7 @@ function store(): IdbFileStore {
 /* --------------------------------------------------------------------------
  * The one index, for the whole page.
  *
- * It used to be React state inside the hook, so each of the ~18 call sites held
+ * It used to be React state inside the hook, so each of its call sites held
  * its own copy: every mount listed the whole store, every announcement made
  * every instance list it again, and `has()` answered false on any instance
  * whose own list had not resolved yet — a freshly mounted panel said "not on
@@ -665,9 +693,17 @@ type IndexSnapshot = {
   readonly revision: number
   /** See `VaultBlobs.blocked`. */
   readonly blocked: boolean
+  /** See `VaultBlobs.failed`. */
+  readonly failed: boolean
 }
 
-let current: IndexSnapshot = { index: new Map(), ready: false, revision: 0, blocked: false }
+let current: IndexSnapshot = {
+  index: new Map(),
+  ready: false,
+  revision: 0,
+  blocked: false,
+  failed: false,
+}
 const subscribers = new Set<() => void>()
 /**
  * Bumped by every local change. A listing that was in flight while one
@@ -680,9 +716,10 @@ function setIndex(
   next: ReadonlyMap<string, string>,
   ready = true,
   blocked = current.blocked,
+  failed = current.failed,
 ): void {
   changes += 1
-  current = { index: next, ready, revision: current.revision + 1, blocked }
+  current = { index: next, ready, revision: current.revision + 1, blocked, failed }
   // A snapshot, so a listener that subscribes or unsubscribes while being called
   // does not change who this round reaches.
   for (const notify of Array.from(subscribers)) notify()
@@ -713,8 +750,9 @@ async function relist(): Promise<void> {
     const blocked = !listed.ok && isBlockedFailure(listed.error)
     // A store that will not open is a store with nothing in it. The caller
     // renders "not on this device", which is true — and, when another tab is
-    // what is in the way, `blocked` says which tab to close.
-    setIndex(listed.ok ? indexFrom(listed.value) : new Map(), true, blocked)
+    // what is in the way, `blocked` says which tab to close. `failed` keeps
+    // that empty index from passing for an empty store: a backup refuses on it.
+    setIndex(listed.ok ? indexFrom(listed.value) : new Map(), true, blocked, !listed.ok)
     if (blocked && retrying === null) {
       retrying = setTimeout(() => {
         retrying = null
@@ -780,12 +818,12 @@ export const blobIndex = {
 /**
  * What this session trashed — the path AND the bytes — so Undo can put it back.
  *
- * The bytes are held rather than re-read from `jojo/Trash`, and that is the
- * difference between an Undo that works and one that usually works. The trash
- * copy is not a reliable source: this page sweeps it once per load, and so
- * does every OTHER tab when it loads, which can happen at any moment while an
- * Undo toast is on screen here. Depending on it made deletion recoverable most
- * of the time, which is the worst kind of recoverable.
+ * The bytes are held rather than re-read from `jojo/Trash` while the Undo
+ * toast is likeliest to be pressed. The trash copy is the second source, not
+ * the first: the sweep (this tab's or any other's) keeps it for
+ * `TRASH_RETENTION_MS` whichever tab runs it, but "Clear browsing data", an
+ * eviction, or a store that will not read can still take it, and the bytes in
+ * hand cannot be taken by any of those.
  *
  * Module-level now, like the index: a delete made through one hook instance
  * and undone through another's toast must find the same bytes.
@@ -798,8 +836,9 @@ const trashed = new Map<string, { path: string; data: Uint8Array }>()
  * Without a limit the map kept every document deleted this session, in full,
  * for the life of the page. The toast offering the Undo runs 8 s but pauses
  * while hovered or focused, so the hold is generous rather than exact; past it,
- * Undo reads the `jojo/Trash` copy instead (see `trashedFrom`), and only if
- * that has been swept too does it bring the row back without its document.
+ * Undo reads the `jojo/Trash` copy instead (see `trashedFrom`), which the sweep
+ * keeps for `TRASH_RETENTION_MS`; only if that copy is gone anyway (cleared
+ * site data, eviction) does it bring the row back without its document.
  */
 export const TRASH_HOLD_MS = 120_000
 
@@ -816,8 +855,9 @@ const evictions = new Map<string, ReturnType<typeof setTimeout>>()
  * the whole time. Past the hold, `restore` reads that copy instead. Only a
  * path and a number per delete, so it costs nothing to keep for the page.
  *
- * The hold is still read first, because the trash copy can vanish: any tab
- * that loads sweeps `jojo/Trash`. When it has, Undo says so, as it did before.
+ * The hold is still read first, because it costs no read and cannot fail. The
+ * trash copy survives every sweep for `TRASH_RETENTION_MS`; when it has gone
+ * some other way (cleared site data, eviction), Undo says so, as it did before.
  */
 const trashedFrom = new Map<string, { path: string; bytes: number }>()
 
@@ -898,7 +938,7 @@ async function get(id: string): Promise<File | null> {
   /*
    * The index first, and the folder itself when the index has no answer.
    *
-   * The index is filled after the trash sweep, so for the first moments of a
+   * The index is filled by the first listing, so for the first moments of a
    * page it is empty — and a caller that asked then was told "no copy of that
    * document is stored in this browser" about a document that plainly was.
    * The fit panel on an application is exactly such a caller: it opens the
@@ -919,8 +959,9 @@ async function get(id: string): Promise<File | null> {
     path = fresh.get(id)
     if (path === undefined) return null
     // Only when nothing changed locally meanwhile; a newer index is not
-    // replaced by an older listing.
-    if (changes === before) setIndex(fresh)
+    // replaced by an older listing. A listing that answered is also the news
+    // that the store is neither blocked nor failing any more.
+    if (changes === before) setIndex(fresh, true, false, false)
   }
   const read = await store().read(path)
   if (!read.ok) return null
@@ -973,20 +1014,28 @@ async function removeNow(id: string): Promise<boolean> {
  */
 const restoring = new Map<string, Promise<boolean>>()
 
-function restore(id: string): Promise<boolean> {
+/**
+ * `before` as in `putBack`: the generation when the Undo was decided. The
+ * records subscription passes the one it read inside the commit; the toast's
+ * button reads it as it is pressed.
+ */
+function restore(id: string, before: number = generation): Promise<boolean> {
   const running = restoring.get(id)
   if (running !== undefined) return running
-  const next = restoreNow(id).finally(() => {
+  const next = restoreNow(id, before).finally(() => {
     if (restoring.get(id) === next) restoring.delete(id)
   })
   restoring.set(id, next)
   return next
 }
 
-async function restoreNow(id: string): Promise<boolean> {
+async function restoreNow(id: string, before: number): Promise<boolean> {
   await removing.get(id)
   const held = trashed.get(id) ?? (await fromTrash(id))
   if (held === null) return false
+  // A backup restore that began since has the newer bytes for this id, or has
+  // decided it has none — either way not these. Same race as `putBack`'s.
+  if (replacing > 0 || generation !== before) return false
   // Written from the bytes captured at `remove` while the hold lasts, and from
   // the trash copy after it — see `trashedFrom`. A rename would be simpler and
   // the port has none — `FileStore` can read, write and trash, and Undo has to
@@ -1017,9 +1066,23 @@ async function all(): Promise<{ id: string; name: string }[]> {
   return [...current.index.entries()].map(([id, path]) => ({ id, name: nameOfPath(path) }))
 }
 
-async function replaceAll(
+function replaceAll(
   documents: readonly { path: string; data: Uint8Array }[],
   keep: ReadonlySet<string> = new Set(),
+): Promise<number> {
+  // Both moved BEFORE the first await (review 3, races-1). A put-back decided
+  // from this moment on is older than the restore and must give way to it,
+  // including one whose trash listing is still in flight — see `putBack`.
+  generation += 1
+  replacing += 1
+  return replaceAllNow(documents, keep).finally(() => {
+    replacing -= 1
+  })
+}
+
+async function replaceAllNow(
+  documents: readonly { path: string; data: Uint8Array }[],
+  keep: ReadonlySet<string>,
 ): Promise<number> {
   // The whole index, not whatever part of it has loaded. A restore made in the
   // first moments after load used to walk an index the first listing had not
@@ -1028,7 +1091,6 @@ async function replaceAll(
   // ones: bytes no record points at, counted against the quota. `removeNow`
   // awaits this for the same reason.
   await hydrate()
-  generation += 1
   // Trashed, not deleted: `FileStore` never unlinks, and a restore is
   // exactly the moment a person might discover they picked the wrong file.
   // What they replaced is still under `jojo/Trash`.
@@ -1118,6 +1180,7 @@ export function useVaultBlobs(): VaultBlobs {
       ready: snapshot.ready,
       revision: snapshot.revision,
       blocked: snapshot.blocked,
+      failed: snapshot.failed,
     }),
     [snapshot],
   )

@@ -92,6 +92,34 @@
     "recommender": "Référent",
     "contact": "Contact"
   },
+  "linkCategory": {
+    "posting": "Offre",
+    "institution": "Établissement",
+    "person": "Personne",
+    "guide": "Guide"
+  },
+  "snippetTag": {
+    "coverLetter": "Lettre de motivation",
+    "applicationForm": "Formulaire de candidature",
+    "email": "E-mail",
+    "bio": "Biographie",
+    "cv": "CV",
+    "researchStatement": "Déclaration de recherche",
+    "teachingStatement": "Déclaration d’enseignement"
+  },
+  "source": {
+    "jobScout": "Éclaireur d’emplois",
+    "jobBoard": "Site d’emploi",
+    "referral": "Recommandation",
+    "careersPage": "Page carrières"
+  },
+  "fileBucket": {
+    "toRead": "À lire",
+    "applications": "Candidatures",
+    "jobPostings": "Offres d’emploi",
+    "talks": "Présentations",
+    "admin": "Administratif"
+  },
   "approval": {
     "manual": "Manuel",
     "semi": "Semi-automatique",
@@ -145,7 +173,7 @@
     "days_one": "{{count}} jour",
     "days_many": "{{count}} jours",
     "days_other": "{{count}} jours",
-    "typicalRate": "typique : {{value}} %",
+    "typicalRate": "typique : {{value}} %",
     "typicalDays": "typique : {{days}}"
   },
   "rel": {
@@ -376,6 +404,7 @@
   },
   "readBy": "Lu par {{model}} · {{ago}}",
   "missingSource": "un document qui n’est plus dans le Coffre",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Rien à annuler.",

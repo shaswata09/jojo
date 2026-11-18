@@ -208,7 +208,8 @@
     "timeout": "Bu site yanıt vermekte çok geç kaldı.",
     "unreachable": "Bu siteye ulaşılamadı.",
     "status": "Bu site şu yanıtı verdi: {{status}}.",
-    "browserOnly": "{{host}} ilanlarını yalnızca gerçek bir tarayıcıya gösteriyor; bu yüzden telefondan okunamaz. Bilgisayarda jojo tarayıcı uzantısı onu okuyabilir."
+    "browserOnly": "{{host}} ilanlarını yalnızca gerçek bir tarayıcıya gösteriyor; bu yüzden telefondan okunamaz. Bilgisayarda jojo tarayıcı uzantısı onu okuyabilir.",
+    "cancelled": "Okuma iptal edildi."
   },
   "timelineForm": {
     "title": "Tanıyacağınız bir başlık verin.",

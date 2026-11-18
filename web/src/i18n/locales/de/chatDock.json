@@ -11,8 +11,8 @@
     "labelCorner": "Chat seitlich verschieben – in der Ecke. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
     "labelFarLeft": "Chat seitlich verschieben – ganz links. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
     "labelFarRight": "Chat seitlich verschieben – ganz rechts. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
-    "labelPartWay": "Chat seitlich verschieben – {{percent}} % nach links. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
-    "labelPartWayRight": "Chat seitlich verschieben – {{percent}} % nach rechts. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "labelPartWay": "Chat seitlich verschieben – {{percent}} % nach links. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
+    "labelPartWayRight": "Chat seitlich verschieben – {{percent}} % nach rechts. Pfeiltasten verschieben ihn; Doppelklick bringt ihn zurück in die Ecke.",
     "title": "Ziehen, um den Chat aus dem Weg zu schieben · Doppelklick bringt ihn zurück in die Ecke"
   },
   "prompts": {

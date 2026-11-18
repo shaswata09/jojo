@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useCallback, useId, useRef } from 'react'
 import { ArrowLeft, ChevronRight, Crosshair, Expand, Shrink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Segment } from '@/components/common/Segment'
@@ -52,6 +52,29 @@ export function GraphViewBar({
 }) {
   const { t } = useTranslation('graph')
   const groupId = useId()
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  /**
+   * "Focus on X", a crumb and Back each remove the button just pressed — X
+   * becomes the centre, the crumb becomes the current place, focus mode ends —
+   * which dropped keyboard focus on <body>. After the press, if focus was lost,
+   * it goes to where the action took you: the new centre on the canvas, or
+   * after Back the mode control's checked option. A press whose button survives
+   * keeps its focus.
+   */
+  const thenFocus = useCallback((action: () => void, target: 'centre' | 'mode') => {
+    action()
+    requestAnimationFrame(() => {
+      const active = document.activeElement
+      if (active && active !== document.body && active.isConnected) return
+      const root = rootRef.current
+      const el =
+        target === 'centre'
+          ? root?.parentElement?.querySelector<SVGElement>('[data-centre]')
+          : root?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')
+      el?.focus()
+    })
+  }, [])
 
   const modes: { value: GraphMode; label: string }[] = [
     { value: 'overview', label: t('view.mode.overview') },
@@ -60,7 +83,7 @@ export function GraphViewBar({
   ]
 
   return (
-    <div className="mb-3 flex flex-col gap-2">
+    <div ref={rootRef} className="mb-3 flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Segment label={t('view.mode.label')} value={mode} onChange={onMode} options={modes} />
 
@@ -90,7 +113,7 @@ export function GraphViewBar({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={action.onFocus}
+                onClick={() => thenFocus(action.onFocus, 'centre')}
                 title={t('view.focusOnHint')}
                 aria-label={t('view.focusOn', { label: action.label })}
                 className="max-w-full"
@@ -121,7 +144,7 @@ export function GraphViewBar({
 
       {mode === 'focus' && trail.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onBack}>
+          <Button variant="ghost" size="sm" onClick={() => thenFocus(onBack, 'mode')}>
             <ArrowLeft className="size-3.5 rtl:-scale-x-100" strokeWidth={2} aria-hidden />
             {t('view.back')}
           </Button>
@@ -147,7 +170,7 @@ export function GraphViewBar({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => onCrumb(index)}
+                        onClick={() => thenFocus(() => onCrumb(index), 'centre')}
                         className="max-w-[12rem] cursor-pointer truncate rounded-sm text-text-2 underline-offset-2 hover:text-text-1 hover:underline"
                       >
                         {labelOf(id)}

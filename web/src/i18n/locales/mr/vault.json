@@ -215,6 +215,15 @@
       "hintEmpty": "आधी काही मजकूर हायलाइट करा किंवा टिप्पणी जोडा.",
       "hint": "{{summary}} लिहिले जाईल.",
       "action": "खुणांसह जतन करा"
+    },
+    "names": {
+      "annotated": "टिपांसह",
+      "pages_one": "{{count}} पान",
+      "pages_other": "{{count}} पाने",
+      "pagesFile": "पाने",
+      "merged": "एकत्रित",
+      "more_one": "आणखी {{count}}",
+      "more_other": "आणखी {{count}}"
     }
   },
   "instruments": {

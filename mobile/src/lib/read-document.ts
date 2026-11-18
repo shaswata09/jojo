@@ -4,6 +4,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { convertDocument } from '@/lib/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { ownDocumentPath } from '@/lib/document-path'
 
 /**
  * Opening a document the Vault holds, by its record id.
@@ -30,7 +31,9 @@ export function useReadDocument(): (fileId: string) => Promise<ConvertResult> {
         }
       }
       const record = files.find((f) => f.id === fileId)
-      if (!record?.uri) {
+      // A uri outside the app's own documents is not a copy it holds — and
+      // reading one would hand any file on the phone to the model (security-2).
+      if (!record?.uri || ownDocumentPath(record.uri) === null) {
         return {
           ok: false as const,
           reason: i18next.t('messages:reader.noCopy'),

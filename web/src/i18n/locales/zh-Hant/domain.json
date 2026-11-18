@@ -92,6 +92,34 @@
     "recommender": "推薦人",
     "contact": "聯絡窗口"
   },
+  "linkCategory": {
+    "posting": "職缺",
+    "institution": "機構",
+    "person": "人物",
+    "guide": "指南"
+  },
+  "snippetTag": {
+    "coverLetter": "求職信",
+    "applicationForm": "申請表",
+    "email": "電子郵件",
+    "bio": "個人簡介",
+    "cv": "履歷",
+    "researchStatement": "研究陳述",
+    "teachingStatement": "教學陳述"
+  },
+  "source": {
+    "jobScout": "職缺偵察",
+    "jobBoard": "求職網站",
+    "referral": "推薦",
+    "careersPage": "徵才頁面"
+  },
+  "fileBucket": {
+    "toRead": "待讀",
+    "applications": "申請",
+    "jobPostings": "職缺",
+    "talks": "演講",
+    "admin": "行政事務"
+  },
   "approval": {
     "manual": "手動",
     "semi": "半自動",
@@ -352,6 +380,7 @@
   },
   "readBy": "由 {{model}} 讀取 · {{ago}}",
   "missingSource": "一份已不在保管庫中的文件",
+  "tailoredTitle": "{{document}}——{{org}}",
   "undo": {
     "nothing": {
       "undo": "沒有可以復原的動作。",

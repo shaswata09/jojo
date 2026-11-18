@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "रिमाइंडर और इवेंट",
-      "hint": "{{reminders}} आपको याद दिलाते हैं, {{events}} तारीख़ वाले इवेंट हैं"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} आपको याद दिलाता है",
+      "reminders_other": "{{count}} आपको याद दिलाते हैं",
+      "events_one": "{{count}} तारीख़ वाला इवेंट है",
+      "events_other": "{{count}} तारीख़ वाले इवेंट हैं"
     },
     "vault": {
       "label": "लिंक और स्निपेट",
-      "hint": "{{links}} लिंक · {{snippets}} स्निपेट"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} लिंक",
+      "links_other": "{{count}} लिंक",
+      "snippets_one": "{{count}} स्निपेट",
+      "snippets_other": "{{count}} स्निपेट"
     },
     "files": {
       "label": "फ़ाइलें",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "जॉब स्काउट",
-      "hint": "{{pipelines}} पाइपलाइन · {{postings}} सहेजी गई पोस्टिंग · {{matches}} मैच"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} पाइपलाइन",
+      "pipelines_other": "{{count}} पाइपलाइन",
+      "postings_one": "{{count}} सहेजी गई पोस्टिंग",
+      "postings_other": "{{count}} सहेजी गई पोस्टिंग",
+      "matches_one": "{{count}} मैच",
+      "matches_other": "{{count}} मैच"
     },
     "profile": {
       "label": "प्रोफ़ाइल",

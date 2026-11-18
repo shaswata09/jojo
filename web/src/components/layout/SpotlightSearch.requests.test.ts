@@ -63,3 +63,17 @@ describe('the palette at scale (review 2: performance-2, health-4, web-a11y-7)',
     expect(code).toContain("setAttribute('aria-activedescendant', selected.id)")
   })
 })
+
+describe('a dialog opened from the palette (review 3: webui-3)', () => {
+  it('records the palette’s trigger as its return target, not the palette’s vanished input', () => {
+    expect(code).toMatch(
+      /useLayoutEffect\(\(\) => \{\s*if \(!open\) return\s*const active = document\.activeElement/,
+    )
+    expect(code).toMatch(
+      /if \(back\?\.isConnected\) back\.focus\(\{ preventScroll: true \}\)\s*next\(\)/,
+    )
+    expect(code).toMatch(/onSelect=\{\(\) => closeThen\(\(\) => runCreate\(action\)\)\}/)
+    expect(code).toMatch(/onSelect=\{\(\) => closeThen\(\(\) => onPickTool\(row\)\)\}/)
+    expect(code).not.toMatch(/requestAnimationFrame\(\(\) => (runCreate|onPickTool)\(/)
+  })
+})

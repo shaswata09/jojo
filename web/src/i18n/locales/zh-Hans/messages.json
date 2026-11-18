@@ -8,6 +8,7 @@
     "failedTitle": "无法写入备份",
     "failedDescription": "你的记录没有变化，也没有保存任何内容。如果浏览器拦截了下载，请检查它的下载设置。",
     "documentsNotReady": "文档索引尚未加载完成，此时备份会显示你没有任何文档。未写入任何内容。",
+    "documentsUnavailable": "无法列出已存储的文档，此时备份会显示你没有任何文档。如果还打开着另一个 jojo 标签页，请将其关闭后重试。未写入任何内容。",
     "documentsUnreadable": "无法读取任何已存储的文档，备份将只包含记录。未写入任何内容。",
     "savedTitle": "备份已保存",
     "startedTitle": "备份已开始",

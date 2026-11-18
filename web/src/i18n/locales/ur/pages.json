@@ -99,8 +99,11 @@
     "resetHint": "ریکارڈز کو ان کی معمول کی ترتیب میں واپس رکھیں",
     "noMatches": "کوئی ریکارڈ اس سوال سے میل نہیں کھاتا",
     "clearQuery": "سوال صاف کریں",
-    "counts_one": "{{count}} ریکارڈ میں سے {{shown}} · {{edges}} روابط",
-    "counts_other": "{{count}} ریکارڈز میں سے {{shown}} · {{edges}} روابط",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_one": "{{count}} ریکارڈ میں سے {{shown}}",
+    "countsRecords_other": "{{count}} ریکارڈز میں سے {{shown}}",
+    "countsConnections_one": "{{count}} ربط",
+    "countsConnections_other": "{{count}} روابط",
     "panelTitle": "سب کچھ، جڑا ہوا",
     "help": "کسی نوڈ کا اردگرد دیکھنے کے لیے اس پر ماؤس لے جائیں یا Tab سے پہنچیں، منتخب کرنے کے لیے دبائیں، ہلانے کے لیے گھسیٹیں۔ نوڈ کا رنگ اس کی قسم ہے، اور سائز یہ کہ کتنی چیزیں اس کی طرف اشارہ کرتی ہیں۔"
   },

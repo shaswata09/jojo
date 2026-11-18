@@ -11,6 +11,12 @@
     "upcoming": "Upcoming",
     "done": "Completed"
   },
+  "bucketsInline": {
+    "overdue": "overdue",
+    "today": "today",
+    "upcoming": "upcoming",
+    "done": "completed"
+  },
   "snooze": {
     "day": {
       "soon": "Tomorrow",
@@ -273,6 +279,7 @@
     "description": "Search for a command to run..."
   },
   "rows": {
-    "showMore": "Show more ({{shown}} of {{total}})"
+    "showMore": "Show more ({{shown}} of {{total}})",
+    "allShown": "All shown ({{total}})"
   }
 }

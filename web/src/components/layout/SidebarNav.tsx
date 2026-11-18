@@ -21,10 +21,17 @@ import {
   LayoutDashboard,
   Radar,
 } from 'lucide-react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
-type Badge = { text: string; tone: 'red' | 'amber' | 'accent'; title: string }
+type Badge = {
+  text: string
+  /** The number alone — what the pill falls back to when `text` does not fit. */
+  count: number
+  tone: 'red' | 'amber' | 'accent'
+  title: string
+}
 
 type NavEntry = {
   to: string
@@ -87,6 +94,7 @@ function useNavEntries(): NavEntry[] {
         flagged > 0
           ? {
               text: t('nav.flagged', { count: flagged }),
+              count: flagged,
               tone: 'amber',
               title: t('nav.flaggedTitle'),
             }
@@ -98,7 +106,9 @@ function useNavEntries(): NavEntry[] {
       text: t('nav.calendar'),
       icon: CalendarDays,
       badge:
-        week > 0 ? { text: String(week), tone: 'accent', title: t('nav.weekTitle') } : undefined,
+        week > 0
+          ? { text: String(week), count: week, tone: 'accent', title: t('nav.weekTitle') }
+          : undefined,
     },
     {
       to: vaultPath(),
@@ -107,7 +117,7 @@ function useNavEntries(): NavEntry[] {
       icon: Archive,
       badge:
         overdue > 0
-          ? { text: String(overdue), tone: 'red', title: t('nav.overdueTitle') }
+          ? { text: String(overdue), count: overdue, tone: 'red', title: t('nav.overdueTitle') }
           : undefined,
     },
     {
@@ -119,6 +129,7 @@ function useNavEntries(): NavEntry[] {
         fresh > 0
           ? {
               text: t('nav.fresh', { count: fresh }),
+              count: fresh,
               tone: 'accent',
               title: t('nav.freshTitle'),
             }
@@ -161,26 +172,68 @@ export function SidebarNav({ tabIndex }: { tabIndex?: number }) {
           }
         >
           <Icon className="size-4 shrink-0" strokeWidth={1.7} />
-          {text}
-          {badge ? (
-            // Inside the link rather than beside it: the destination is the
-            // page where the thing it counts is visible, and a second anchor
-            // nested in this one would be invalid markup for no new
-            // destination. The `title` says what the number is counting,
-            // which the number alone never does.
-            <span
-              title={badge.title}
-              className={cn(
-                'ms-auto rounded-full px-1.5 py-px text-xs font-semibold',
-                BADGE_TONE[badge.tone],
-              )}
-            >
-              {badge.text}
-              <span className="sr-only"> — {badge.title}</span>
-            </span>
-          ) : null}
+          <span className="min-w-0 truncate">{text}</span>
+          {/* Keyed by the words, so a new count or language measures afresh. */}
+          {badge ? <NavBadge key={badge.text} badge={badge} /> : null}
         </NavLink>
       ))}
     </nav>
+  )
+}
+
+/**
+ * A nav item's count, with its state word when the word fits.
+ *
+ * Inside the link rather than beside it: the destination is the page where the
+ * thing it counts is visible, and a second anchor nested in this one would be
+ * invalid markup for no new destination. The `title` says what the number is
+ * counting, which the number alone never does.
+ *
+ * One line, never wrapped and never cut. In Tamil '2 குறிக்கப்பட்டவை' is one
+ * unbreakable word: the pill ran 21px past the sidebar panel and was cut by
+ * its edge, and in German it wrapped to a two-line '2 / markiert' (finding
+ * responsive-3). Squeezing it instead cut both the page's name and the pill
+ * ('Bewerbung…', '2 mar…'). So the pill keeps its words while the page's name
+ * beside it is whole, and drops to the bare number — the Calendar and Vault
+ * badges' form — when the name would otherwise be cut. Measured after layout,
+ * again whenever the name's box changes size (a drawer opening), and from
+ * scratch when a font arrives; the words stay in the title and the sr-only
+ * text either way.
+ */
+function NavBadge({ badge }: { badge: Badge }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [short, setShort] = useState(false)
+  useLayoutEffect(() => {
+    const name = ref.current?.previousElementSibling
+    if (short || !(name instanceof HTMLElement)) return
+    const check = () => {
+      if (name.scrollWidth > name.clientWidth) setShort(true)
+    }
+    check()
+    const watch = new ResizeObserver(check)
+    watch.observe(name)
+    return () => watch.disconnect()
+  }, [short])
+  // A font arriving late changes every width: the name was measured in the
+  // fallback face, which can be wider, and the words would have been dropped
+  // for good. Try the words again and measure afresh.
+  useEffect(() => {
+    const fonts = document.fonts
+    const retry = () => setShort(false)
+    fonts.addEventListener('loadingdone', retry)
+    return () => fonts.removeEventListener('loadingdone', retry)
+  }, [])
+  return (
+    <span
+      ref={ref}
+      title={badge.title}
+      className={cn(
+        'ms-auto shrink-0 rounded-full px-1.5 py-px text-xs font-semibold whitespace-nowrap',
+        BADGE_TONE[badge.tone],
+      )}
+    >
+      {short ? String(badge.count) : badge.text}
+      <span className="sr-only"> — {badge.title}</span>
+    </span>
   )
 }

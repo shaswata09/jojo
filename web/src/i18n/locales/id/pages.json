@@ -90,7 +90,9 @@
     "resetHint": "Kembalikan entri ke susunan biasanya",
     "noMatches": "Tidak ada entri yang cocok dengan pertanyaan ini",
     "clearQuery": "kosongkan kueri",
-    "counts_other": "{{shown}} dari {{count}} entri · {{edges}} koneksi",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_other": "{{shown}} dari {{count}} entri",
+    "countsConnections_other": "{{count}} koneksi",
     "panelTitle": "Semuanya, terhubung",
     "help": "Arahkan kursor atau Tab ke simpul untuk menelusuri sekitarnya, tekan untuk memilihnya, seret untuk memindahkannya. Warna simpul menunjukkan jenisnya, ukurannya menunjukkan seberapa banyak yang menunjuk ke sana."
   },

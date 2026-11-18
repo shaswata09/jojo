@@ -115,6 +115,15 @@ describe('draftFromUrl', () => {
     expect(employerSite(url)).toBeUndefined()
   })
 
+  it.each([
+    ['https://www.higheredjobs.com/faculty/details.cfm?JobCode=180000001&Title=Lecturer', undefined],
+    ['https://academicjobsonline.org/ajo/jobs/29411', undefined],
+    ['https://cra.org/ads/12345', undefined],
+    ['https://careercenter.cra.org/job/assistant-professor/71234567/', 'Assistant professor'],
+  ])('reads no role from the scout board’s own routing in %s', (url, role) => {
+    expect(draftFromUrl(url).role).toBe(role)
+  })
+
   it('keeps a CRA look-alike host an employer site', () => {
     expect(employerSite('https://evil-cra.org/jobs/1')).toBe('evil-cra.org')
   })
@@ -239,6 +248,18 @@ describe('roleFromTitle', () => {
  * filed the job under an employer named after the entire share.
  */
 describe('draftFromShare', () => {
+  it('keeps the shared title over a one-word role read off a board’s address', () => {
+    const ajo = draftFromShare('Assistant Professor of Computer Science https://academicjobsonline.org/ajo/jobs/12345')
+    expect(ajo.role).toBe('Assistant Professor of Computer Science')
+    expect(ajo.source).toBe('Job board')
+    const dept = draftFromShare('Lecturer in Statistics https://academicjobsonline.org/ajo/MIT/CS/29411')
+    expect(dept.role).toBe('Lecturer in Statistics')
+    // A slug that reads as a title still wins over the words round it.
+    expect(
+      draftFromShare('look at this https://careercenter.cra.org/job/assistant-professor/71234567/').role,
+    ).toBe('Assistant professor')
+  })
+
   it('pulls the link out of a title-and-URL share', () => {
     const d = draftFromShare(
       'Assistant Professor of Computer Science https://jobs.rice.edu/postings/29411',

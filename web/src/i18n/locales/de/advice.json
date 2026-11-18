@@ -7,16 +7,16 @@
       "headline": "Steck mehr Einsatz in {{label}}.",
       "because": {
         "source": {
-          "replied_one": "{{count}} von {{of}} hat über diesen Weg eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
-          "replied_other": "{{count}} von {{of}} haben über diesen Weg eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
-          "interview_one": "{{count}} von {{of}} kam über diesen Weg zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
-          "interview_other": "{{count}} von {{of}} kamen über diesen Weg zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft."
+          "replied_one": "{{count}} von {{of}} hat über diesen Weg eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
+          "replied_other": "{{count}} von {{of}} haben über diesen Weg eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
+          "interview_one": "{{count}} von {{of}} kam über diesen Weg zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft.",
+          "interview_other": "{{count}} von {{of}} kamen über diesen Weg zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Herkunft."
         },
         "role": {
-          "replied_one": "{{count}} von {{of}} hat bei dieser Art von Stelle eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
-          "replied_other": "{{count}} von {{of}} haben bei dieser Art von Stelle eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
-          "interview_one": "{{count}} von {{of}} kam bei dieser Art von Stelle zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
-          "interview_other": "{{count}} von {{of}} kamen bei dieser Art von Stelle zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle."
+          "replied_one": "{{count}} von {{of}} hat bei dieser Art von Stelle eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
+          "replied_other": "{{count}} von {{of}} haben bei dieser Art von Stelle eine Antwort bekommen ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
+          "interview_one": "{{count}} von {{of}} kam bei dieser Art von Stelle zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle.",
+          "interview_other": "{{count}} von {{of}} kamen bei dieser Art von Stelle zum Vorstellungsgespräch ({{rate}} %, wahrscheinlich {{low}}–{{high}} %), gegenüber {{worstCount}} von {{worstOf}} bei {{worst}} ({{worstRate}} %, wahrscheinlich {{worstLow}}–{{worstHigh}} %). Aufgeteilt nach Art der Stelle."
         }
       }
     },
@@ -51,11 +51,11 @@
     "funnel": {
       "replies": {
         "headline": "Überarbeite den Einstiegsabsatz, bevor du die nächste abschickst.",
-        "because": "Bei den Antworten verliert diese Suche am meisten gegenüber einer typischen. {{got}} von {{of}} ({{rate}} %), gegenüber {{typical}} % bei einer typischen Suche – eine runde Vergleichszahl, die jojo gewählt hat, nicht an irgendwem gemessen."
+        "because": "Bei den Antworten verliert diese Suche am meisten gegenüber einer typischen. {{got}} von {{of}} ({{rate}} %), gegenüber {{typical}} % bei einer typischen Suche – eine runde Vergleichszahl, die jojo gewählt hat, nicht an irgendwem gemessen."
       },
       "interviews": {
         "headline": "Mach die Passung in den ersten drei Zeilen offensichtlich.",
-        "because": "Antworten, die vor einem Gespräch versanden, sind hier die größte Lücke – das Interesse ist da, aber das Argument kommt nicht an. {{got}} von {{of}} ({{rate}} %), gegenüber {{typical}} % bei einer typischen Suche – eine runde Vergleichszahl, die jojo gewählt hat, nicht an irgendwem gemessen."
+        "because": "Antworten, die vor einem Gespräch versanden, sind hier die größte Lücke – das Interesse ist da, aber das Argument kommt nicht an. {{got}} von {{of}} ({{rate}} %), gegenüber {{typical}} % bei einer typischen Suche – eine runde Vergleichszahl, die jojo gewählt hat, nicht an irgendwem gemessen."
       }
     },
     "clear": {

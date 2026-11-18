@@ -125,7 +125,7 @@
     },
     "group": {
       "shared": "Dùng chung",
-      "none": "Không có từ khóa",
+      "none": "Không xác định",
       "rest": "Khác",
       "loose": "Không liên kết với gì",
       "label": "{{name}}: {{records}}",

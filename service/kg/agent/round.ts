@@ -9,6 +9,7 @@
 import type { Turn } from '../core/model-server'
 import { isEmptyTurn } from '../core/model-server'
 import { stubToFit, stubbedNote } from './budget'
+import { CUT_CALL_NOTE, CUT_REPLY_NOTE } from './notes'
 import { CONTINUE_PROMPT, CUT_CALL_PROMPT } from './prompt'
 import { finish } from './turn-state'
 import type { TurnState } from './turn-state'
@@ -74,17 +75,7 @@ function refitToWindow(state: TurnState): void {
   }
 }
 
-/**
- * Told to the person when a tool call was cut off by the output limit and the
- * model was asked to send it again. Stored English; shown translated through
- * `appNoteText` (`react/app-note.ts`), which reads it back by this exact text.
- */
-export const CUT_CALL_NOTE =
-  'The model’s tool call was cut off by its output limit before it was complete, so it was not run. It has been asked to send it again.'
-
-/** Told to the person when a reply stopped at the output limit for good. As `CUT_CALL_NOTE`. */
-export const CUT_REPLY_NOTE =
-  'The model stopped mid-reply because it hit its own output limit. Anything below this may be incomplete — a shorter question, or a larger reply limit on the server, usually fixes it.'
+export { CUT_CALL_NOTE, CUT_REPLY_NOTE } from './notes'
 
 /** One request to the model, streaming its fragments out as events. */
 function ask(state: TurnState): Promise<Turn> {

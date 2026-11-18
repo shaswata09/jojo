@@ -12,6 +12,7 @@
     "failedTitle": "Não foi possível gravar o backup",
     "failedDescription": "Seus registros não mudaram e nada foi salvo. Se o navegador bloqueou o download, confira as configurações de download dele.",
     "documentsNotReady": "O índice de documentos ainda não tinha terminado de carregar, então um backup feito agora diria que você não tem nenhum. Nada foi gravado.",
+    "documentsUnavailable": "Não foi possível listar os documentos salvos, então um backup feito agora diria que você não tem nenhum. Se houver outra aba do jojo aberta, feche-a e tente de novo. Nada foi gravado.",
     "documentsUnreadable": "Nenhum dos documentos armazenados pôde ser lido, então o backup teria só os registros. Nada foi gravado.",
     "savedTitle": "Backup salvo",
     "startedTitle": "Backup iniciado",

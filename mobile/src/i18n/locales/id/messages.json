@@ -208,7 +208,8 @@
     "timeout": "Papan itu terlalu lama menjawab.",
     "unreachable": "Papan itu tidak dapat dijangkau.",
     "status": "Papan itu menjawab {{status}}.",
-    "browserOnly": "{{host}} hanya menampilkan daftar lowongannya ke browser sungguhan, jadi tidak dapat dibaca dari ponsel. Di komputer, ekstensi browser jojo dapat membacanya."
+    "browserOnly": "{{host}} hanya menampilkan daftar lowongannya ke browser sungguhan, jadi tidak dapat dibaca dari ponsel. Di komputer, ekstensi browser jojo dapat membacanya.",
+    "cancelled": "Pembacaan dibatalkan."
   },
   "timelineForm": {
     "title": "Beri judul yang akan Anda kenali.",

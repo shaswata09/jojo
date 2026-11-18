@@ -25,7 +25,7 @@
  * worst a sloppy match can do is be thrown away.
  */
 
-import type { BoardScan } from '@jojo/service/core/board'
+import type { BoardScan, ScanCancellation } from '@jojo/service/core/board'
 import { i18next } from '@/i18n/i18n'
 
 const TIMEOUT_MS = 20000
@@ -57,7 +57,18 @@ function textOf(html: string): string {
     .trim()
 }
 
-export async function scanBoard(url: string): ReturnType<BoardScan> {
+/** Read through a call: TypeScript would otherwise keep the first check's answer. */
+const stopped = (signal: ScanCancellation | undefined) => signal?.aborted === true
+
+/**
+ * `signal` is the round's Stop (review 2026-11-18, leaks-2): it was dropped, so
+ * a Stop pressed mid-page waited out the fetch — up to `TIMEOUT_MS` — where the
+ * web's twin (`capture-bridge.ts`) gives up at once.
+ */
+export async function scanBoard(url: string, signal?: ScanCancellation): ReturnType<BoardScan> {
+  if (stopped(signal)) {
+    return { ok: false, reason: i18next.t('messages:boardScan.cancelled') }
+  }
   let host = ''
   try {
     host = new URL(url).hostname
@@ -81,6 +92,15 @@ export async function scanBoard(url: string): ReturnType<BoardScan> {
   // timer are the portable spelling, and the same pair `local-service.ts` uses.
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  // The Stop aborts the same request. React Native's fetch resolves only once
+  // the whole body has arrived (whatwg-fetch over XHR), so this and the timer
+  // cover the body too.
+  signal?.onAbort?.(() => controller.abort())
+  ;(
+    signal as {
+      addEventListener?: (type: 'abort', fn: () => void, options?: { once?: boolean }) => void
+    }
+  )?.addEventListener?.('abort', () => controller.abort(), { once: true })
 
   let response: Response
   try {
@@ -93,6 +113,9 @@ export async function scanBoard(url: string): ReturnType<BoardScan> {
     })
   } catch (error) {
     clearTimeout(timer)
+    if (stopped(signal)) {
+      return { ok: false, reason: i18next.t('messages:boardScan.cancelled') }
+    }
     const aborted = error instanceof Error && error.name === 'AbortError'
     return {
       ok: false,

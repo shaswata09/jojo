@@ -11,6 +11,12 @@
     "upcoming": "Próximos",
     "done": "Completados"
   },
+  "bucketsInline": {
+    "overdue": "vencido",
+    "today": "de hoy",
+    "upcoming": "próximo",
+    "done": "completado"
+  },
   "snooze": {
     "day": {
       "soon": "Mañana",
@@ -278,6 +284,7 @@
     "description": "Busca un comando para ejecutar..."
   },
   "rows": {
-    "showMore": "Mostrar más ({{shown}} de {{total}})"
+    "showMore": "Mostrar más ({{shown}} de {{total}})",
+    "allShown": "Se muestran todos ({{total}})"
   }
 }

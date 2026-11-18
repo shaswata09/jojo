@@ -613,5 +613,6 @@
       "address": "<lead>Di bilah alamat</lead> adalah halaman itu sendiri. Halaman pertama adalah <code>/guide</code>, bukan <code>/guide/overview</code>, jadi setiap tautan dan penanda yang dibuat sebelum ada empat halaman tetap mengarah ke tempat yang nyata."
     }
   },
-  "englishOnly": "Halaman ini berbahasa Inggris: kode, paket, dan ketentuan lisensi disebut dengan kata-kata aslinya."
+  "englishOnly": "Halaman ini berbahasa Inggris: kode, paket, dan ketentuan lisensi disebut dengan kata-kata aslinya.",
+  "englishData": "Tabel ini dalam bahasa Inggris: tabel ini menyajikan tolok ukur apa adanya saat dijalankan, dengan kata-kata kasus uji, alat, dan modelnya sendiri."
 }

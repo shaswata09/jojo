@@ -38,7 +38,15 @@ export async function waitToLead(
   }
   try {
     await locks.request(name, { signal }, () => {
-      onLead()
+      /*
+       * Asked again, because Chrome grants a request that was aborted in the
+       * same task it was made: it stays in the queue (see `useTabLeader`).
+       * Granted after its wait was called off, it must not lead — the lock is
+       * let go at once below, as the signal is already aborted. The hook
+       * guards this too; this keeps the function's own promise for any caller
+       * (review 3, coverage-4).
+       */
+      if (!signal.aborted) onLead()
       return new Promise<void>((resolve) => {
         if (signal.aborted) resolve()
         else signal.addEventListener('abort', () => resolve(), { once: true })
@@ -46,6 +54,42 @@ export async function waitToLead(
     })
   } catch {
     // Aborted while waiting in line: the tab is closing, or stopped wanting it.
+  }
+}
+
+/**
+ * Out of line the moment the page is hidden for navigation, and back in line
+ * when it is shown again from the back/forward cache. Returns what stops
+ * listening.
+ *
+ * `withdraw` runs synchronously on `pagehide` — a state update would not
+ * render before the page is frozen. Measured: a waiting tab that navigated
+ * away left its old document's request queued, and on handover that frozen
+ * document was granted the lock and held it until the browser evicted it from
+ * the back/forward cache (ten seconds for a reload; indefinitely, in one
+ * measurement, for a same-tab navigation). `askAgain` runs on a `pageshow`
+ * that restored the page from that cache, whose request was withdrawn.
+ *
+ * Shared by every Web Lock election in the app — the scout's (`useTabLeader`)
+ * and the MCP link's (`McpLinkProvider`), which lacked it (review 3,
+ * multitab-2).
+ */
+export function withdrawOnPageHide(
+  withdraw: () => void,
+  askAgain: () => void,
+  target: Pick<Window, 'addEventListener' | 'removeEventListener'> = window,
+): () => void {
+  const onHide = () => {
+    withdraw()
+  }
+  const onShow = (event: Event) => {
+    if ((event as PageTransitionEvent).persisted) askAgain()
+  }
+  target.addEventListener('pagehide', onHide)
+  target.addEventListener('pageshow', onShow)
+  return () => {
+    target.removeEventListener('pagehide', onHide)
+    target.removeEventListener('pageshow', onShow)
   }
 }
 
@@ -76,26 +120,18 @@ export function useTabLeader(name: string): boolean {
         if (!controller.signal.aborted) setLeader(true)
       })
     }, 0)
-    /*
-     * Out of line the moment the page is hidden for navigation, synchronously
-     * — a state update would not render before the page is frozen. Measured: a
-     * waiting tab that was reloaded left its old document's request queued,
-     * and on handover that frozen document was granted the lock and held it
-     * for ten seconds, until the browser evicted it from the back/forward
-     * cache. A page restored from that cache asks again (`shown`).
-     */
-    const onHide = () => {
-      window.clearTimeout(start)
-      controller.abort()
-    }
-    const onShow = (event: PageTransitionEvent) => {
-      if (event.persisted) setShown((n) => n + 1)
-    }
-    window.addEventListener('pagehide', onHide)
-    window.addEventListener('pageshow', onShow)
+    // See `withdrawOnPageHide`. A page restored from the cache asks again (`shown`).
+    const stopListening = withdrawOnPageHide(
+      () => {
+        window.clearTimeout(start)
+        controller.abort()
+      },
+      () => {
+        setShown((n) => n + 1)
+      },
+    )
     return () => {
-      window.removeEventListener('pagehide', onHide)
-      window.removeEventListener('pageshow', onShow)
+      stopListening()
       window.clearTimeout(start)
       controller.abort()
       setLeader(false)

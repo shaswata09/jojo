@@ -69,7 +69,7 @@ import { domain } from '@/i18n/domain'
  */
 
 export function TailoredPanel({ applicationId }: { applicationId: string }) {
-  const { t } = useTranslation('applications')
+  const { t, i18n } = useTranslation('applications')
   const { text } = useKg()
   const tailor = useTailoring(applicationId)
   const { toast } = useToast()
@@ -125,7 +125,9 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
                   }}
                 >
                   <span className="text-text-1">
-                    {c.label.charAt(0).toUpperCase() + c.label.slice(1)}
+                    {/* The translated kind, not the candidate's `label`: that is
+                        core's English, which every catalog already translates. */}
+                    {sentenceStart(domain.document(c.kind), i18n.language)}
                     {c.already && (
                       <span className="ms-1.5 text-text-3 [unicode-bidi:isolate]">
                         {t('tailored.before')}
@@ -365,4 +367,14 @@ function TailoredCard({
       </p>
     </li>
   )
+}
+
+/**
+ * A document kind at the start of a menu line. The catalogs keep the kinds in
+ * running-text case ("research statement", "ön yazı") for the sentences they
+ * are spliced into; the first letter is raised here, by the language's own
+ * rules, and scripts without case are left as they are.
+ */
+function sentenceStart(word: string, language: string): string {
+  return word.charAt(0).toLocaleUpperCase(language) + word.slice(1)
 }

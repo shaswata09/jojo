@@ -92,6 +92,34 @@
     "recommender": "Referans veren",
     "contact": "İrtibat kişisi"
   },
+  "linkCategory": {
+    "posting": "İlan",
+    "institution": "Kurum",
+    "person": "Kişi",
+    "guide": "Rehber"
+  },
+  "snippetTag": {
+    "coverLetter": "Ön yazı",
+    "applicationForm": "Başvuru formu",
+    "email": "E-posta",
+    "bio": "Biyografi",
+    "cv": "CV",
+    "researchStatement": "Araştırma beyanı",
+    "teachingStatement": "Öğretim beyanı"
+  },
+  "source": {
+    "jobScout": "İş gözcüsü",
+    "jobBoard": "İş ilanı sitesi",
+    "referral": "Tavsiye",
+    "careersPage": "Kariyer sayfası"
+  },
+  "fileBucket": {
+    "toRead": "Okunacak",
+    "applications": "Başvurular",
+    "jobPostings": "İş ilanları",
+    "talks": "Sunumlar",
+    "admin": "İdari"
+  },
   "approval": {
     "manual": "Manuel",
     "semi": "Yarı otomatik",
@@ -364,6 +392,7 @@
   },
   "readBy": "Okuyan: {{model}} · {{ago}}",
   "missingSource": "artık Kasa'da olmayan bir belge",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Geri alınacak bir şey yok.",

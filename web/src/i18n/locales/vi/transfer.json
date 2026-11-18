@@ -24,12 +24,16 @@
     },
     "timeline": {
       "label": "Lời nhắc và sự kiện",
-      "hint": "{{reminders}} lời nhắc, {{events}} sự kiện có ngày",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_other": "{{count}} lời nhắc",
+      "events_other": "{{count}} sự kiện có ngày",
       "summary_other": "{{count}} lời nhắc và sự kiện"
     },
     "vault": {
       "label": "Liên kết và đoạn văn bản",
-      "hint": "{{links}} liên kết · {{snippets}} đoạn văn bản",
+      "hint": "{{links}} · {{snippets}}",
+      "links_other": "{{count}} liên kết",
+      "snippets_other": "{{count}} đoạn văn bản",
       "summary_other": "{{count}} liên kết và đoạn văn bản"
     },
     "files": {
@@ -44,7 +48,10 @@
     },
     "scout": {
       "label": "Trình tìm việc",
-      "hint": "{{pipelines}} quy trình · {{postings}} tin tuyển dụng đã lưu · {{matches}} gợi ý",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_other": "{{count}} quy trình",
+      "postings_other": "{{count}} tin tuyển dụng đã lưu",
+      "matches_other": "{{count}} gợi ý",
       "summary_other": "{{count}} bản ghi của Trình tìm việc"
     },
     "notes": {

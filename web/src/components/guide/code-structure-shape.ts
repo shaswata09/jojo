@@ -58,8 +58,8 @@ export const SHAPE: DirRow[] = [
     // Four more on 2026-11-16 (i18n): `domain-text.ts` and `advice-text.ts`
     // with a test each — the model's own words in any language, the translator
     // passed in, the English held to core's word for word.
-    files: 197,
-    tests: 82,
+    files: 198,
+    tests: 83,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -99,7 +99,7 @@ export const SHAPE: DirRow[] = [
     // application a conversation is about, so "this one" has a referent.
     // `record-query.ts` and its test: filter, sort, group and add up over a
     // record's stored and derived fields, for `memory.list`.
-    files: 104,
+    files: 105,
     tests: 41,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
@@ -187,15 +187,15 @@ export const SHAPE: DirRow[] = [
     // `diagrams/StackDiagram.tsx`.
     // `transfer/PairingQrCard.tsx`: the pairing key as a QR code (Q329), in
     // place of `PulseOverlay.tsx` and `pulse-paint.ts` and its test.
-    files: 511,
-    tests: 140,
+    files: 522,
+    tests: 148,
     lines: 77198,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
   // shared pieces the chat dock draws too. Longer again (2026-11-16) with the
   // pages' text moved into translation catalogs behind `useTranslation`.
-  { dir: 'web/src/routes', files: 25, tests: 10, lines: 4230, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 26, tests: 11, lines: 4230, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -239,9 +239,9 @@ export const SHAPE: DirRow[] = [
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
     // 217 with `search-places.ts` — every setting, profile field and place the
     // search palette can reach — its completeness guard, and the arrival test.
-    files: 224,
-    tests: 103,
-    lines: 38679,
+    files: 229,
+    tests: 108,
+    lines: 40769,
     what: 'web-only adapters and URL state',
   },
   {
@@ -271,4 +271,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 265
+export const WEB_TEST_FILES = 280

@@ -10,6 +10,7 @@
     "failedTitle": "Die Sicherung konnte nicht geschrieben werden",
     "failedDescription": "Deine Einträge sind unverändert, und es wurde nichts gespeichert. Falls dein Browser den Download blockiert hat, prüfe seine Download-Einstellungen.",
     "documentsNotReady": "Der Dokumentindex war noch nicht fertig geladen, daher würde eine jetzt erstellte Sicherung behaupten, du hättest keine Dokumente. Es wurde nichts geschrieben.",
+    "documentsUnavailable": "Die gespeicherten Dokumente konnten nicht aufgelistet werden, daher würde eine jetzt erstellte Sicherung behaupten, du hättest keine. Wenn ein anderer jojo-Tab offen ist, schließe ihn und versuche es erneut. Es wurde nichts geschrieben.",
     "documentsUnreadable": "Keines der gespeicherten Dokumente konnte gelesen werden, daher hätte die Sicherung nur Einträge enthalten. Es wurde nichts geschrieben.",
     "savedTitle": "Sicherung gespeichert",
     "startedTitle": "Sicherung gestartet",
@@ -144,7 +145,7 @@
       "claim": "Beziehung"
     },
     "savedAgo": "Gespeichert {{ago}}",
-    "fit": "{{fit}} % Passung",
+    "fit": "{{fit}} % Passung",
     "count": {
       "matches": "Treffer",
       "connections": "Verbindungen",

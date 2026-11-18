@@ -92,6 +92,34 @@
     "recommender": "Recommender",
     "contact": "Point of contact"
   },
+  "linkCategory": {
+    "posting": "Posting",
+    "institution": "Institution",
+    "person": "Person",
+    "guide": "Guide"
+  },
+  "snippetTag": {
+    "coverLetter": "Cover letter",
+    "applicationForm": "Application form",
+    "email": "Email",
+    "bio": "Bio",
+    "cv": "CV",
+    "researchStatement": "Research statement",
+    "teachingStatement": "Teaching statement"
+  },
+  "source": {
+    "jobScout": "Job scout",
+    "jobBoard": "Job board",
+    "referral": "Referral",
+    "careersPage": "Careers page"
+  },
+  "fileBucket": {
+    "toRead": "To read",
+    "applications": "Applications",
+    "jobPostings": "Job postings",
+    "talks": "Talks",
+    "admin": "Admin"
+  },
   "approval": {
     "manual": "Manual",
     "semi": "Semi-auto",
@@ -364,6 +392,7 @@
   },
   "readBy": "Read by {{model}} · {{ago}}",
   "missingSource": "a document no longer in the Vault",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Nothing to undo.",

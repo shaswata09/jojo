@@ -40,11 +40,6 @@ import { useArrivingFocus } from '@/components/ui/focus-scope'
 import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
 import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
-const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
-  FileBucket,
-  string
->
-
 /**
  * Documents, as records.
  *
@@ -86,8 +81,13 @@ export function FilesTool() {
   const filingFile = files.find((f) => f.id === filing) ?? null
 
   const pool = useMemo(
-    () => files.filter((f) => matches(f.id) && matchesQuery(query, f.name, f.note, f.bucket)),
-    [files, query, matches],
+    () =>
+      files.filter(
+        (f) =>
+          matches(f.id) &&
+          matchesQuery(query, f.name, f.note, f.bucket, domain.fileBucket(f.bucket)),
+      ),
+    [files, query, matches, domain],
   )
 
   const counts = useMemo(() => {
@@ -180,7 +180,7 @@ export function FilesTool() {
     const before = f.bucket
     updateFile(f.id, { bucket: next })
     toast({
-      title: t('common.movedTo', { name: next }),
+      title: t('common.movedTo', { name: domain.fileBucket(next) }),
       description: f.name,
       action: { label: t('common.undo'), onPress: () => updateFile(f.id, { bucket: before }) },
     })
@@ -203,9 +203,9 @@ export function FilesTool() {
         description: t('files.empty.zeroDescription'),
       },
       search: (q) => t('files.empty.search', { query: q }),
-      both: t('files.empty.both', { bucket }),
+      both: t('files.empty.both', { bucket: domain.fileBucket(bucket) }),
       bucket: {
-        title: t('files.empty.bucketTitle', { bucket }),
+        title: t('files.empty.bucketTitle', { bucket: domain.fileBucket(bucket) }),
         description: t('files.empty.bucketDescription', { count: files.length }),
         clearLabel: t('files.empty.showAll'),
       },
@@ -224,7 +224,12 @@ export function FilesTool() {
       <BucketFilter
         label={t('files.filterLabel')}
         options={FILE_BUCKETS}
-        labels={BUCKET_LABELS}
+        labels={
+          Object.fromEntries(FILE_BUCKETS.map((b) => [b, domain.fileBucket(b)])) as Record<
+            FileBucket,
+            string
+          >
+        }
         counts={counts}
         value={bucket}
         onChange={setBucket}
@@ -286,7 +291,7 @@ export function FilesTool() {
                       <FiledUnderLinks applicationIds={f.applicationIds} />
                       <View style={styles.chips}>
                         <Chip size="sm" tone="gray">
-                          {f.bucket}
+                          {domain.fileBucket(f.bucket)}
                         </Chip>
                         <LabelChips recordId={f.id} />
                       </View>
@@ -310,7 +315,7 @@ export function FilesTool() {
         open={menuFor !== null}
         onClose={() => setMenuFor(null)}
         title={menuFor?.name}
-        description={menuFor ? `${menuFor.bucket} · ${menuFor.size}` : undefined}
+        description={menuFor ? `${domain.fileBucket(menuFor.bucket)} · ${menuFor.size}` : undefined}
         actions={
           menuFor
             ? buildRecordMenu({
@@ -336,6 +341,7 @@ export function FilesTool() {
                 move: {
                   label: t('files.bucket'),
                   options: FILE_BUCKETS,
+                  say: domain.fileBucket,
                   current: menuFor.bucket,
                   onMove: (next) => onMove(menuFor, next),
                 },

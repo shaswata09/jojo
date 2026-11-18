@@ -22,11 +22,23 @@
     },
     "timeline": {
       "label": "Promemoria ed eventi",
-      "hint": "{{reminders}} ti ricordano qualcosa, {{events}} sono eventi con data"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} ti ricorda qualcosa",
+      "reminders_many": "{{count}} ti ricordano qualcosa",
+      "reminders_other": "{{count}} ti ricordano qualcosa",
+      "events_one": "{{count}} è un evento con data",
+      "events_many": "{{count}} sono eventi con data",
+      "events_other": "{{count}} sono eventi con data"
     },
     "vault": {
       "label": "Link e frammenti",
-      "hint": "{{links}} link · {{snippets}} frammenti"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} link",
+      "links_many": "{{count}} di link",
+      "links_other": "{{count}} link",
+      "snippets_one": "{{count}} frammento",
+      "snippets_many": "{{count}} di frammenti",
+      "snippets_other": "{{count}} frammenti"
     },
     "files": {
       "label": "File",
@@ -38,7 +50,16 @@
     },
     "scout": {
       "label": "Scout offerte",
-      "hint": "{{pipelines}} pipeline · {{postings}} annunci salvati · {{matches}} risultati"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} pipeline",
+      "pipelines_many": "{{count}} di pipeline",
+      "pipelines_other": "{{count}} pipeline",
+      "postings_one": "{{count}} annuncio salvato",
+      "postings_many": "{{count}} di annunci salvati",
+      "postings_other": "{{count}} annunci salvati",
+      "matches_one": "{{count}} risultato",
+      "matches_many": "{{count}} di risultati",
+      "matches_other": "{{count}} risultati"
     },
     "profile": {
       "label": "Profilo",

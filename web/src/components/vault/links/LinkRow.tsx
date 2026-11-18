@@ -1,6 +1,7 @@
 import type { Ref } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { Copy, ExternalLink, Link2, Pencil, Trash2 } from 'lucide-react'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
@@ -36,6 +37,7 @@ export function LinkRow({
   onDelete: (link: VaultLink) => void
 }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   return (
     <li
       ref={rowRef}
@@ -69,7 +71,7 @@ export function LinkRow({
           {l.title}
         </button>
 
-        <div className="mt-0.5 flex items-center gap-x-2 overflow-hidden text-xs text-text-3">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 overflow-hidden text-xs text-text-3 sm:flex-nowrap">
           <a
             href={l.url}
             target="_blank"
@@ -96,7 +98,10 @@ export function LinkRow({
               · {displayName(app)}
             </Link>
           ))}
-          <LabelChips recordId={l.id} className="shrink-0" />
+          {/* Their own line below sm. Sharing one at 360, chips that do not
+                shrink squeezed the application, note and URL — the part the
+                row exists to show — down to two or three letters. */}
+          <LabelChips recordId={l.id} className="shrink-0 basis-full sm:basis-auto" />
         </div>
       </div>
 
@@ -112,7 +117,7 @@ export function LinkRow({
           <MenuSection title={t('snippets.card.moveTo')}>
             {LINK_CATEGORIES.map((c) => (
               <MenuItem key={c} current={c === l.category} onSelect={() => onMove(l, c)}>
-                {c}
+                {domain.linkCategory(c)}
               </MenuItem>
             ))}
           </MenuSection>

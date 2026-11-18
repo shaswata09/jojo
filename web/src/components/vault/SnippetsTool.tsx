@@ -6,6 +6,7 @@ import type { NodeId } from '@jojo/service/core/model'
 import type { FormEvent } from 'react'
 import { Plus, Quote } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -44,6 +45,7 @@ const COPIED_MS = 1600
  */
 export function SnippetsTool({ focus }: { focus?: string }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const graph = useGraph()
   const [tagFilter, setTagFilter] = useState<SnippetTag | 'all'>('all')
   const [query, setQuery] = useState('')
@@ -102,7 +104,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     (s) =>
       (tagFilter === 'all' || s.tag === tagFilter) &&
       matches(s.id) &&
-      matchesQuery(query, s.title, s.body, s.tag),
+      matchesQuery(query, s.title, s.body, s.tag, domain.snippetTag(s.tag)),
   )
 
   /**
@@ -273,7 +275,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       })
       toast({
         title: t('common.saved', { title }),
-        description: t('snippets.toast.filed', { tag: editing.tag }),
+        description: t('snippets.toast.filed', { tag: domain.snippetTag(editing.tag) }),
         // A save that committed nothing offers no Undo rather than a dead button.
         ...(restore
           ? {
@@ -357,8 +359,8 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     toast({
       title: t('common.saved', { title }),
       description: hidden
-        ? t('snippets.toast.filedHidden', { tag: record.tag })
-        : t('snippets.toast.filed', { tag: record.tag }),
+        ? t('snippets.toast.filedHidden', { tag: domain.snippetTag(record.tag) })
+        : t('snippets.toast.filed', { tag: domain.snippetTag(record.tag) }),
       action: hidden
         ? {
             label: t('common.showIt'),
@@ -373,7 +375,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
             onClick: () => {
               removeSnippet(record.id)
               removeRecord(record.id)
-              closeEditor()
+              // Only the editor still on this record goes: by the time Undo is
+              // pressed the panel may be on another snippet with unsaved text,
+              // and closing that one threw the typing away without a prompt.
+              if (openId.current === record.id) closeEditor()
             },
           },
     })
@@ -388,7 +393,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     if (keywords.length > 0) setRecord(copy.id, keywords)
     toast({
       title: t('reminders.toast.duplicated', { title: s.title }),
-      description: t('snippets.toast.duplicated', { tag: copy.tag }),
+      description: t('snippets.toast.duplicated', { tag: domain.snippetTag(copy.tag) }),
       action: {
         label: t('common.undo'),
         onClick: () => {
@@ -402,14 +407,31 @@ export function SnippetsTool({ focus }: { focus?: string }) {
   const onMove = (s: Snippet, next: SnippetTag) => {
     const before = s.tag
     if (announceRefusal(updateSnippet(s.id, { tag: next }), toast)) return
-    if (editing?.id === s.id) setEditing((prev) => (prev ? { ...prev, tag: next } : prev))
+    // The move is stored, so the open editor's baseline moves with it: a
+    // filing the store already holds is not an unsaved change, and Save in that
+    // editor must not be the thing that files it back.
+    const refile = (tag: SnippetTag) => {
+      if (openId.current !== s.id) return
+      setEditing((prev) => (prev?.id === s.id ? { ...prev, tag } : prev))
+      setClean((prev) => (prev ? { ...prev, tag } : prev))
+    }
+    refile(next)
     toast({
       title: t('reminders.toast.moved', { title: s.title }),
       description:
         tagFilter !== 'all' && tagFilter !== next
-          ? t('snippets.toast.movedOut', { tag: next, filter: tagFilter })
-          : t('snippets.toast.moved', { tag: next }),
-      action: { label: t('common.undo'), onClick: () => updateSnippet(s.id, { tag: before }) },
+          ? t('snippets.toast.movedOut', {
+              tag: domain.snippetTag(next),
+              filter: domain.snippetTag(tagFilter),
+            })
+          : t('snippets.toast.moved', { tag: domain.snippetTag(next) }),
+      action: {
+        label: t('common.undo'),
+        onClick: () => {
+          if (announceRefusal(updateSnippet(s.id, { tag: before }), toast)) return
+          refile(before)
+        },
+      },
     })
   }
 
@@ -479,9 +501,9 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         ),
       },
       search: (q) => t('snippets.empty.search', { query: q }),
-      both: t('snippets.empty.both', { tag: tagFilter }),
+      both: t('snippets.empty.both', { tag: domain.snippetTag(tagFilter) }),
       bucket: {
-        title: t('snippets.empty.bucketTitle', { tag: tagFilter }),
+        title: t('snippets.empty.bucketTitle', { tag: domain.snippetTag(tagFilter) }),
         description: t('snippets.empty.bucketDescription', { count: snippets.length }),
         clearLabel: t('snippets.empty.showAll'),
       },
@@ -498,6 +520,9 @@ export function SnippetsTool({ focus }: { focus?: string }) {
               <BucketFilter
                 label={t('snippets.filterLabel')}
                 options={SNIPPET_TAGS}
+                labels={Object.fromEntries(
+                  SNIPPET_TAGS.map((tag) => [tag, domain.snippetTag(tag)]),
+                )}
                 counts={counts}
                 value={tagFilter}
                 onChange={setTagFilter}

@@ -168,11 +168,19 @@ export function Field({
   const [shown, setShown] = useState(false)
   const type = secret && shown ? 'text' : props.type
   const button = href !== undefined || secret
+  /*
+   * A URL or an address reads left to right in every locale. Inherited rtl in
+   * ar/ur clipped a long link at its START — ':tps://github.example.com/…' —
+   * with the scheme cut mid-glyph (finding responsive-4). Set on the box rather
+   * than the input so the open-link button and the `pe-8` gutter it needs stay
+   * on the same side. A caller's own `dir` still wins, on the input.
+   */
+  const ltr = props.type === 'url' || props.type === 'email' ? 'ltr' : undefined
 
   return (
     <div data-focus-id={focusId} className={cn('space-y-1.5', className)}>
       <FieldLabel htmlFor={fieldId} label={label} required={required} />
-      <div className="relative">
+      <div dir={ltr} className="relative">
         <Input
           id={fieldId}
           required={required}
@@ -340,13 +348,22 @@ export function SettingRow({
   return (
     <div
       data-focus-id={focusId}
-      className="flex items-start justify-between gap-4 border-t border-hairline py-3 first:border-t-0"
+      // Stacks on a narrow row: the control under its text, not beside it.
+      // Side by side with a `shrink-0` control, a 3-option Segment, the
+      // language select or the swatch grid took the row at 360px and left the
+      // text column 62-74px wide, one word per line, with a keyword chip drawn
+      // under the first swatch (finding responsive-1). `flex-wrap` rather than a
+      // breakpoint, so it is the row's own room that decides — a SettingRow in
+      // a narrow panel on a wide screen stacks too — and a short control
+      // (a switch) still sits beside a label that fits. The text column asks
+      // for 12rem before it gives way.
+      className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-t border-hairline py-3 first:border-t-0"
     >
-      <div className="min-w-0">
+      <div className="min-w-0 flex-[1_1_12rem]">
         <div className="text-sm text-text-1">{label}</div>
         {description ? <div className="mt-0.5 text-xs text-text-3">{description}</div> : null}
       </div>
-      <div className="shrink-0 pt-0.5">{control}</div>
+      <div className="max-w-full min-w-0 pt-0.5">{control}</div>
     </div>
   )
 }

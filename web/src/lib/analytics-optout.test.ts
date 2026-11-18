@@ -5,8 +5,9 @@
  * Firebase's installation id behind — the id earlier reports were filed under.
  */
 
-import { describe, expect, it } from 'vitest'
-import { forgetAnalyticsIdentity } from './analytics'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { followAnalyticsSwitch, forgetAnalyticsIdentity } from './analytics'
+import analyticsSource from './analytics.ts?raw'
 
 /** A cookie jar keyed by name and domain, which is how a browser keys it. */
 function jar(host: string, cookies: { name: string; domain: string }[]) {
@@ -53,5 +54,58 @@ describe('forgetting the analytics identity', () => {
     expect(() => {
       forgetAnalyticsIdentity(null)
     }).not.toThrow()
+  })
+})
+
+describe('turning analytics off in another tab (review 3, multitab-1)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  /** Storage as another tab left it. */
+  function stored(entries: Record<string, string>) {
+    vi.stubGlobal('window', {
+      localStorage: { getItem: (key: string) => entries[key] ?? null },
+    })
+  }
+
+  it('stops this tab’s loaded SDK and forgets its identity', () => {
+    stored({ 'jojo/analytics/v1': 'off' })
+    const apply = vi.fn()
+    const forget = vi.fn()
+    followAnalyticsSwitch('jojo/analytics/v1', apply, forget)
+    expect(apply).toHaveBeenCalledWith(false)
+    expect(forget).toHaveBeenCalledTimes(1)
+  })
+
+  it('turns it back on, and forgets nothing, when the other tab said yes', () => {
+    stored({ 'jojo/analytics/v1': 'on' })
+    const apply = vi.fn()
+    const forget = vi.fn()
+    followAnalyticsSwitch('jojo/analytics/v1', apply, forget)
+    expect(apply).toHaveBeenCalledWith(true)
+    expect(forget).not.toHaveBeenCalled()
+  })
+
+  it('treats storage being cleared as the answer going with it', () => {
+    stored({})
+    const apply = vi.fn()
+    followAnalyticsSwitch(null, apply, () => {})
+    expect(apply).toHaveBeenCalledWith(false)
+  })
+
+  it('ignores every other key', () => {
+    stored({ 'jojo/analytics/v1': 'off' })
+    const apply = vi.fn()
+    followAnalyticsSwitch('jojo.theme', apply, () => {})
+    expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('is listening for the other tabs, and reaches only an SDK this tab already loaded', () => {
+    const code = analyticsSource.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+    expect(code).toMatch(
+      /window\.addEventListener\('storage', \(event\) => \{\s*followAnalyticsSwitch\(event\.key\)/,
+    )
+    expect(code).toMatch(/if \(loaded\) void applyCollection\(on\)/)
   })
 })

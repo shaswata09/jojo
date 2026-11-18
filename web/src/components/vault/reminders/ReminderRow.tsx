@@ -153,7 +153,7 @@ function ReminderRowView({
             {/* One line, not three. The keyword chips used to sit under this and
                 made every row a different height, which is why eight reminders
                 did not fit on a screen. */}
-            <div className="mt-0.5 flex items-center gap-x-2 overflow-hidden text-xs text-text-3">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 overflow-hidden text-xs text-text-3 sm:flex-nowrap">
               {/* Named out loud: the icon is the only thing on the row that
                   says whether this is a chase or a piece of prep. */}
               <Icon
@@ -182,7 +182,10 @@ function ReminderRowView({
                 <span className="shrink-0">{t('files.unfiled.label')}</span>
               )}
               {shown.note ? <span className="truncate">· {shown.note}</span> : null}
-              <LabelChips recordId={item.id} className="shrink-0" />
+              {/* Their own line below sm. Sharing one at 360, chips that do not
+                shrink squeezed the application, note and URL — the part the
+                row exists to show — down to two or three letters. */}
+              <LabelChips recordId={item.id} className="shrink-0 basis-full sm:basis-auto" />
             </div>
           </div>
 

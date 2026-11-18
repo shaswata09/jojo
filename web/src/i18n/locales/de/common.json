@@ -11,6 +11,12 @@
     "upcoming": "Demnächst",
     "done": "Erledigt"
   },
+  "bucketsInline": {
+    "overdue": "überfällig",
+    "today": "heute",
+    "upcoming": "demnächst",
+    "done": "erledigt"
+  },
   "snooze": {
     "day": {
       "soon": "Morgen",
@@ -273,6 +279,7 @@
     "description": "Nach einem Befehl suchen ..."
   },
   "rows": {
-    "showMore": "Mehr anzeigen ({{shown}} von {{total}})"
+    "showMore": "Mehr anzeigen ({{shown}} von {{total}})",
+    "allShown": "Alle angezeigt ({{total}})"
   }
 }

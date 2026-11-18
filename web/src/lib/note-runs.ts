@@ -70,7 +70,7 @@ function readStyle(node: Node): Omit<RawRun, 'text'> {
  * The editor's HTML → a flat list of runs, in order.
  *
  * Parsed into an inert document rather than assigned to an element, the same
- * precaution `textFromHtml` takes and for the same reason: a detached `<div>`
+ * precaution the removed `rich-text.ts` walker took, and for the same reason: a detached `<div>`
  * still fetches an `<img>` it is handed, and nothing here needs the network.
  *
  * Total by construction. An element this does not know contributes its TEXT and

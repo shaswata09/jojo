@@ -631,18 +631,79 @@ export function OverviewCanvas({
     toEl?.focus()
   }
 
+  /**
+   * Tab into and out of the unfolded ring. The satellites are drawn after the
+   * static layer, so in DOM order Tab from their host went to the next group's
+   * mark first — and focusing that moved the ring, so the satellites vanished
+   * before they could be reached. Tab from a host with a ring enters it; Tab
+   * from its last satellite goes on to the stop after the host; Shift+Tab from
+   * the first returns to the host. True when this handled the key.
+   */
+  const tabThroughRing = (target: EventTarget, id: string, back: boolean) => {
+    const svg = svgRef.current
+    if (!svg || !host || host === GROUP_LOOSE || !(target instanceof Element)) return false
+    const ring = [...svg.querySelectorAll<SVGGElement>('[data-layer="satellites"] [data-id]')]
+    if (ring.length === 0) return false
+    const hostEl = markEls.current.get(host) as SVGGElement | undefined
+    const onRing = target.closest('[data-layer="satellites"]') !== null
+    if (!onRing) {
+      if (back || id !== host) return false
+      ring[0]?.focus()
+      return true
+    }
+    const at = ring.findIndex((el) => el.contains(target))
+    if (back && at === 0 && hostEl) {
+      hostEl.focus()
+      return true
+    }
+    if (!back && at === ring.length - 1 && hostEl) {
+      const next = [
+        ...svg.querySelectorAll<SVGGElement>('[data-layer="static"] [tabindex="0"]'),
+      ].find((el) => (hostEl.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
+      if (!next) return false
+      next.focus()
+      return true
+    }
+    return false
+  }
+
   return (
-    <div ref={frameRef} className={cn('relative h-full w-full', className)}>
+    <div
+      ref={frameRef}
+      className={cn('relative h-full w-full', className)}
+      // The zoom keys, on the frame so they work wherever focus is inside it:
+      // on a record, on the canvas itself, or on the zoom buttons.
+      onKeyDown={(event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return
+        if (event.key === '+' || event.key === '=') {
+          event.preventDefault()
+          zoom.zoomIn()
+        } else if (event.key === '-' || event.key === '_') {
+          event.preventDefault()
+          zoom.zoomOut()
+        } else if (event.key === '0') {
+          event.preventDefault()
+          zoom.fit()
+        }
+      }}
+    >
       <svg
         ref={svgRef}
         viewBox={`0 0 ${size.width} ${size.height}`}
         role="group"
+        // Focusable by a click, not by Tab: so + − 0 work after a click on the
+        // background, not only once a record has focus.
+        tabIndex={-1}
         aria-label={t('view.overviewLabel', {
           groups: t('view.groups', { count: layout.groups.length }),
           records: t('common.records', { count: viewGraph.nodes.length }),
         })}
         className={cn(
-          'graph-overview h-full w-full touch-none select-none',
+          'graph-overview h-full w-full outline-none select-none',
+          // At fit there is nothing to pan, so a one-finger swipe scrolls the
+          // page (on a phone the canvas is most of the screen); zoomed in, a
+          // drag is a pan. A pinch at fit is claimed by use-zoom's touchmove.
+          view.k > 1 ? 'touch-none' : 'touch-pan-y',
           view.k > 1 && 'cursor-grab active:cursor-grabbing',
         )}
         {...zoom.handlers}
@@ -667,23 +728,12 @@ export function OverviewCanvas({
           if (id && id !== GROUP_LOOSE) onFocus(id)
         }}
         onKeyDown={(event) => {
-          if (event.key === '+' || event.key === '=') {
-            event.preventDefault()
-            zoom.zoomIn()
-            return
-          }
-          if (event.key === '-' || event.key === '_') {
-            event.preventDefault()
-            zoom.zoomOut()
-            return
-          }
-          if (event.key === '0') {
-            event.preventDefault()
-            zoom.fit()
-            return
-          }
           const id = idAt(event.target)
           if (!id) return
+          if (event.key === 'Tab' && tabThroughRing(event.target, id, event.shiftKey)) {
+            event.preventDefault()
+            return
+          }
           const forward = rtl ? 'ArrowLeft' : 'ArrowRight'
           const back = rtl ? 'ArrowRight' : 'ArrowLeft'
           if (event.key === 'Enter' || event.key === ' ') {
@@ -820,7 +870,7 @@ export function OverviewCanvas({
         ) : null}
 
         {unfolded && unfolded.children.length > 0 ? (
-          <g>
+          <g data-layer="satellites">
             {unfolded.children.map((id) => {
               const p = unfolded.seats.get(id)
               const node = byId.get(id)

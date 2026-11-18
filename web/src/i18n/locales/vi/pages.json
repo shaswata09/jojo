@@ -90,7 +90,9 @@
     "resetHint": "Đưa các bản ghi về cách bố trí thông thường",
     "noMatches": "Không có bản ghi nào khớp với câu hỏi này",
     "clearQuery": "xóa truy vấn",
-    "counts_other": "{{shown}}/{{count}} bản ghi · {{edges}} kết nối",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_other": "{{shown}}/{{count}} bản ghi",
+    "countsConnections_other": "{{count}} kết nối",
     "panelTitle": "Mọi thứ, được kết nối",
     "help": "Rê chuột hoặc dùng Tab tới một nút để xem các nút lân cận, nhấn để chọn, kéo để di chuyển. Màu của nút cho biết loại, kích thước cho biết có bao nhiêu thứ trỏ tới nó."
   },

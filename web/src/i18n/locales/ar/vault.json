@@ -267,6 +267,23 @@
       "hintEmpty": "ميّز بعض النص أو أضف تعليقًا أولًا.",
       "hint": "ستُكتب {{summary}} في المستند.",
       "action": "حفظ مع التعليقات"
+    },
+    "names": {
+      "annotated": "مع تعليقات",
+      "pages_zero": "{{count}} صفحة",
+      "pages_one": "صفحة {{count}}",
+      "pages_two": "{{count}} صفحتان",
+      "pages_few": "{{count}} صفحات",
+      "pages_many": "{{count}} صفحة",
+      "pages_other": "{{count}} صفحة",
+      "pagesFile": "صفحات",
+      "merged": "مدمج",
+      "more_zero": "{{count}} أخرى",
+      "more_one": "{{count}} أخرى",
+      "more_two": "{{count}} أخرى",
+      "more_few": "{{count}} أخرى",
+      "more_many": "{{count}} أخرى",
+      "more_other": "{{count}} أخرى"
     }
   },
   "instruments": {

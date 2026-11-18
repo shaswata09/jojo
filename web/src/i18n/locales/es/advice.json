@@ -8,20 +8,20 @@
       "headline": "Dedica más esfuerzo a {{label}}.",
       "because": {
         "source": {
-          "replied_one": "{{count}} de {{of}} recibió respuesta por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
-          "replied_many": "{{count}} de {{of}} recibieron respuesta por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
-          "replied_other": "{{count}} de {{of}} recibieron respuesta por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
-          "interview_one": "{{count}} de {{of}} llegó a una entrevista por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
-          "interview_many": "{{count}} de {{of}} llegaron a una entrevista por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
-          "interview_other": "{{count}} de {{of}} llegaron a una entrevista por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia."
+          "replied_one": "{{count}} de {{of}} recibió respuesta por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
+          "replied_many": "{{count}} de {{of}} recibieron respuesta por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
+          "replied_other": "{{count}} de {{of}} recibieron respuesta por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
+          "interview_one": "{{count}} de {{of}} llegó a una entrevista por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
+          "interview_many": "{{count}} de {{of}} llegaron a una entrevista por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia.",
+          "interview_other": "{{count}} de {{of}} llegaron a una entrevista por esa vía ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por procedencia."
         },
         "role": {
-          "replied_one": "{{count}} de {{of}} recibió respuesta en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
-          "replied_many": "{{count}} de {{of}} recibieron respuesta en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
-          "replied_other": "{{count}} de {{of}} recibieron respuesta en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
-          "interview_one": "{{count}} de {{of}} llegó a una entrevista en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
-          "interview_many": "{{count}} de {{of}} llegaron a una entrevista en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
-          "interview_other": "{{count}} de {{of}} llegaron a una entrevista en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto."
+          "replied_one": "{{count}} de {{of}} recibió respuesta en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
+          "replied_many": "{{count}} de {{of}} recibieron respuesta en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
+          "replied_other": "{{count}} de {{of}} recibieron respuesta en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
+          "interview_one": "{{count}} de {{of}} llegó a una entrevista en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
+          "interview_many": "{{count}} de {{of}} llegaron a una entrevista en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto.",
+          "interview_other": "{{count}} de {{of}} llegaron a una entrevista en ese tipo de puesto ({{rate}} %, probablemente entre {{low}} y {{high}} %), frente a {{worstCount}} de {{worstOf}} en {{worst}} ({{worstRate}} %, probablemente entre {{worstLow}} y {{worstHigh}} %). Separado por tipo de puesto."
         }
       }
     },
@@ -63,11 +63,11 @@
     "funnel": {
       "replies": {
         "headline": "Rehaz el párrafo inicial antes de enviar la próxima.",
-        "because": "Las respuestas son donde esta búsqueda más pierde frente a una típica. {{got}} de {{of}} ({{rate}} %), frente al {{typical}} % de una búsqueda típica: una cifra redonda que jojo eligió para comparar, no medida a partir de nadie."
+        "because": "Las respuestas son donde esta búsqueda más pierde frente a una típica. {{got}} de {{of}} ({{rate}} %), frente al {{typical}} % de una búsqueda típica: una cifra redonda que jojo eligió para comparar, no medida a partir de nadie."
       },
       "interviews": {
         "headline": "Haz que el encaje sea obvio en las tres primeras líneas.",
-        "because": "Las respuestas que se estancan antes de una llamada son la mayor brecha aquí: el interés existe y el argumento no está calando. {{got}} de {{of}} ({{rate}} %), frente al {{typical}} % de una búsqueda típica: una cifra redonda que jojo eligió para comparar, no medida a partir de nadie."
+        "because": "Las respuestas que se estancan antes de una llamada son la mayor brecha aquí: el interés existe y el argumento no está calando. {{got}} de {{of}} ({{rate}} %), frente al {{typical}} % de una búsqueda típica: una cifra redonda que jojo eligió para comparar, no medida a partir de nadie."
       }
     },
     "clear": {

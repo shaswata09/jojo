@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "Hatırlatıcılar ve etkinlikler",
-      "hint": "{{reminders}} hatırlatıcı, {{events}} tarihli etkinlik"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} hatırlatıcı",
+      "reminders_other": "{{count}} hatırlatıcı",
+      "events_one": "{{count}} tarihli etkinlik",
+      "events_other": "{{count}} tarihli etkinlik"
     },
     "vault": {
       "label": "Bağlantılar ve metin parçaları",
-      "hint": "{{links}} bağlantı · {{snippets}} metin parçası"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} bağlantı",
+      "links_other": "{{count}} bağlantı",
+      "snippets_one": "{{count}} metin parçası",
+      "snippets_other": "{{count}} metin parçası"
     },
     "files": {
       "label": "Dosyalar",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "İş gözcüsü",
-      "hint": "{{pipelines}} işlem hattı · {{postings}} kayıtlı ilan · {{matches}} eşleşme"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} işlem hattı",
+      "pipelines_other": "{{count}} işlem hattı",
+      "postings_one": "{{count}} kayıtlı ilan",
+      "postings_other": "{{count}} kayıtlı ilan",
+      "matches_one": "{{count}} eşleşme",
+      "matches_other": "{{count}} eşleşme"
     },
     "profile": {
       "label": "Profil",

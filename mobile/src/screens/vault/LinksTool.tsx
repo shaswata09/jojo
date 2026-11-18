@@ -41,11 +41,6 @@ import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
 import { useDiscardGuard } from '@/components/ui/discard-guard'
 import { indexOfId, useRowCap } from '@/lib/use-row-cap'
 
-const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) as Record<
-  LinkCategory,
-  string
->
-
 /** Postings, department pages, people and guides — anything to come back to. */
 export function LinksTool() {
   const { t } = useTranslation('vault')
@@ -139,7 +134,7 @@ export function LinksTool() {
     const before = l.category
     updateLink(l.id, { category: next })
     toast({
-      title: t('common.movedTo', { name: next }),
+      title: t('common.movedTo', { name: domain.linkCategory(next) }),
       description: l.title,
       action: { label: t('common.undo'), onPress: () => updateLink(l.id, { category: before }) },
     })
@@ -162,9 +157,9 @@ export function LinksTool() {
         description: t('links.empty.zeroDescription'),
       },
       search: (q) => t('links.empty.search', { query: q }),
-      both: t('links.empty.both', { category }),
+      both: t('links.empty.both', { category: domain.linkCategory(category) }),
       bucket: {
-        title: t('links.empty.bucketTitle', { category }),
+        title: t('links.empty.bucketTitle', { category: domain.linkCategory(category) }),
         description: t('links.empty.bucketDescription', { count: links.length }),
         clearLabel: t('links.empty.showAll'),
       },
@@ -183,7 +178,12 @@ export function LinksTool() {
       <BucketFilter
         label={t('links.filterLabel')}
         options={LINK_CATEGORIES}
-        labels={CATEGORY_LABELS}
+        labels={
+          Object.fromEntries(LINK_CATEGORIES.map((k) => [k, domain.linkCategory(k)])) as Record<
+            LinkCategory,
+            string
+          >
+        }
         counts={counts}
         value={category}
         onChange={setCategory}
@@ -238,7 +238,7 @@ export function LinksTool() {
                     <FiledUnderLinks applicationIds={l.applicationIds} />
                     <View style={styles.chips}>
                       <Chip size="sm" tone="gray">
-                        {l.category}
+                        {domain.linkCategory(l.category)}
                       </Chip>
                       <LabelChips recordId={l.id} />
                     </View>
@@ -309,6 +309,7 @@ export function LinksTool() {
                 move: {
                   label: t('links.category'),
                   options: LINK_CATEGORIES,
+                  say: domain.linkCategory,
                   current: menuFor.category,
                   onMove: (next) => onMove(menuFor, next),
                 },
@@ -351,6 +352,7 @@ function LinkEditor({
   onSave: (draft: Omit<VaultLink, 'id' | 'savedOn'>) => void
 }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [title, setTitle] = useState(initial?.title ?? '')
   const [url, setUrl] = useState(initial?.url ?? '')
   const [note, setNote] = useState(initial?.note ?? '')
@@ -417,7 +419,7 @@ function LinkEditor({
           <Segment
             label={t('links.category')}
             scroll
-            options={LINK_CATEGORIES.map((k) => ({ value: k, label: k }))}
+            options={LINK_CATEGORIES.map((k) => ({ value: k, label: domain.linkCategory(k) }))}
             value={category}
             onChange={setCategory}
           />

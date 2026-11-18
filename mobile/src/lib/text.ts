@@ -2,19 +2,13 @@
  * The app's small prose helpers.
  *
  * Each of these was written out two or three times across the screens, and the
- * copies had already drifted — one `plural` took the plural form as an argument
- * and another appended an 's', so "1 saved item" and "1 replies" could both
- * reach a toast.
+ * copies had already drifted.
+ *
+ * No `plural` or `listJoin` here any more (review 2026-11-18, docs-6): both
+ * only ever spoke English — "3 days", "a, b and c" — in an app read in twenty
+ * languages, and nothing called them. A count goes through a catalog plural
+ * (`t('key', { count })`) and a list through `listJoiner(t)` in `graph-view.ts`.
  */
-
-/** `1 day` · `3 days`. Pass `many` where an 's' will not do. */
-export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
-
-/** `a` · `a and b` · `a, b and c`. */
-export function listJoin(parts: string[]) {
-  if (parts.length <= 1) return parts[0] ?? ''
-  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
-}
 
 /** 'yesterday' → 'Yesterday'. For a label that stands alone rather than mid-phrase. */
 export const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)

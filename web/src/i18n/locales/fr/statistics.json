@@ -15,7 +15,7 @@
   },
   "whatIsWorking": {
     "countOf": "{{count}} sur {{of}}",
-    "rate": "{{rate}} % · probablement {{range}}",
+    "rate": "{{rate}} % · probablement {{range}}",
     "groupReplied": "Réponses, par {{dimension}}",
     "groupInterviews": "Entretiens, par {{dimension}}",
     "confident": "Les intervalles ne se chevauchent pas : la différence est réelle, et {{best}} mérite davantage vos efforts.",

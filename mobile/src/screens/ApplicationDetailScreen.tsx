@@ -311,7 +311,11 @@ function Detail({ application: a }: { application: Application }) {
         ? { go: () => navigation.navigate('Organisation', { key: employer.slug }) }
         : {}),
     },
-    { id: 'source', label: t('detail.facts.source'), value: a.source },
+    {
+      id: 'source',
+      label: t('detail.facts.source'),
+      value: a.source === undefined ? undefined : domain.source(a.source),
+    },
     { id: 'location', label: t('detail.facts.location'), value: a.location },
     // Falls through to the offer: Baylor states "$112k + $15k startup" in its
     // offer block, and printed "Compensation —" underneath it, because the

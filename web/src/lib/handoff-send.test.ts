@@ -17,7 +17,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { guardedTransfer, unexpectedAdvice } from '@/lib/handoff-send'
+import { guardedTransfer, sleepFor, unexpectedAdvice } from '@/lib/handoff-send'
 // `?raw`, the same way `reader-relay.test.ts` reads the extension: the wiring is
 // the claim, and the wiring is only visible in the source.
 import sendSource from './handoff-send.ts?raw'
@@ -102,5 +102,41 @@ describe('start runs inside the guard', () => {
     const start = code.slice(code.indexOf('const start = useCallback('))
     // The advice has to reach state, or the guard catches into a void.
     expect(start).toContain('setProblem(')
+  })
+})
+
+/**
+ * Counts the `abort` listeners on a signal: added minus taken off. (Node's
+ * `getEventListeners` would do, but this project's types are the browser's.)
+ */
+function abortListeners(signal: AbortSignal): () => number {
+  const live = new Set<unknown>()
+  const add = signal.addEventListener.bind(signal)
+  const remove = signal.removeEventListener.bind(signal)
+  signal.addEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.add(fn)
+    add(type, fn as EventListener, options as AddEventListenerOptions)
+  }) as typeof signal.addEventListener
+  signal.removeEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.delete(fn)
+    remove(type, fn as EventListener, options as EventListenerOptions)
+  }) as typeof signal.removeEventListener
+  return () => live.size
+}
+
+describe('waiting between polls (review 3, leaks-3)', () => {
+  it('takes its listener off the run’s signal when the wait runs out', async () => {
+    const run = new AbortController()
+    const listening = abortListeners(run.signal)
+    for (let i = 0; i < 20; i += 1) await sleepFor(0, run.signal)
+    expect(listening()).toBe(0)
+  })
+
+  it('still ends at once when the run is stopped', async () => {
+    const run = new AbortController()
+    const waiting = sleepFor(60_000, run.signal)
+    run.abort()
+    await expect(waiting).resolves.toBeUndefined()
+    await expect(sleepFor(60_000, run.signal)).resolves.toBeUndefined()
   })
 })

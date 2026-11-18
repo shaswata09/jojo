@@ -7,6 +7,7 @@ import { i18next } from '@/i18n/i18n'
 import { relayToBridge } from '@/lib/capture-bridge'
 import { BRIDGE_ADDRESS, directTransport, mintToken, runElected, runLink } from '@/lib/mcp-link'
 import { McpLinkContext } from '@/lib/mcp-link-context'
+import { withdrawOnPageHide } from '@/lib/tab-leader'
 import type { McpLink } from '@/lib/mcp-link-context'
 import type { LinkStatus, LinkTransport } from '@/lib/mcp-link'
 import { useReadDocument } from '@/lib/read-document'
@@ -97,6 +98,8 @@ export function McpLinkProvider({ children }: { children: ReactNode }) {
 
   const on = stored.enabled && stored.token !== ''
   const local = servedLocally()
+  /** Bumped when the page comes back from the back/forward cache, to ask for the lock again. */
+  const [shown, setShown] = useState(0)
 
   useEffect(() => {
     if (!on) return
@@ -126,10 +129,21 @@ export function McpLinkProvider({ children }: { children: ReactNode }) {
         })
       },
     )
+    // Out of line when the page is hidden for navigation, back in line when it
+    // is restored — the trap `useTabLeader` measured (review 3, multitab-2).
+    const stopListening = withdrawOnPageHide(
+      () => {
+        controller.abort()
+      },
+      () => {
+        setShown((n) => n + 1)
+      },
+    )
     return () => {
+      stopListening()
       controller.abort()
     }
-  }, [on, stored.token, local, live])
+  }, [on, stored.token, local, live, shown])
 
   /*
    * Another tab's switch or new token, taken in here.

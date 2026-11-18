@@ -17,10 +17,18 @@
 
 import { TRIM_MARKER } from '../core/model-thread'
 import type { AppNoteKey, CountedAppNote, DomainText } from '../core/domain-text'
-import { stubbedNote, summarisedNote, trimNote } from '../agent/budget'
-import { TOOLS_OVERFLOW_NOTE } from '../agent/history'
-import { CUT_CALL_NOTE, CUT_REPLY_NOTE } from '../agent/round'
-import { VERIFY_NOTE } from '../agent/exit'
+// From the leaf, never from the producers (`budget`, `history`, `round`,
+// `exit`): this module is in the app's boot bundle, and importing a producer
+// pulls the agent loop's internals in with it — see `agent/notes.ts`.
+import {
+  CUT_CALL_NOTE,
+  CUT_REPLY_NOTE,
+  TOOLS_OVERFLOW_NOTE,
+  VERIFY_NOTE,
+  stubbedNote,
+  summarisedNote,
+  trimNote,
+} from '../agent/notes'
 import type { VerifyReason } from '../agent/verify-gate'
 
 /** The fixed-text notes, by their stored English. */

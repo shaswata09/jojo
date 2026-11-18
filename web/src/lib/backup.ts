@@ -232,7 +232,7 @@ export function backupPromptText(changed: number, lastBackupAt: string | null): 
  * exercises is a guard nobody notices the loss of. `Pick` rather than a hand-
  * written shape so it cannot drift from the hook it is fed.
  */
-export type BackupBlobs = Pick<VaultBlobs, 'ready' | 'all' | 'get'>
+export type BackupBlobs = Pick<VaultBlobs, 'ready' | 'failed' | 'all' | 'get'>
 
 /**
  * What `reportError('backup', …)` and the console are given when a backup is
@@ -243,6 +243,16 @@ export type BackupBlobs = Pick<VaultBlobs, 'ready' | 'all' | 'get'>
  */
 export const DOCUMENTS_NOT_READY =
   'The document index had not finished loading, so a backup taken now would say you have none. Nothing was written.'
+
+/**
+ * The index loaded and is empty because the store would not LIST — another
+ * jojo tab holding the documents database (`VaultBlobs.blocked`), or one that
+ * opened and failed. Before this was its own refusal, that index read as "no
+ * documents": the backup held none, the toast said it held every one, and the
+ * prompt was put away (review 3, races-2).
+ */
+export const DOCUMENTS_UNAVAILABLE =
+  'The stored documents could not be listed, so a backup taken now would say you have none. If another jojo tab is open, close it and try again. Nothing was written.'
 
 export const DOCUMENTS_UNREADABLE =
   'None of the stored documents could be read, so the backup would have held records only. Nothing was written.'
@@ -298,6 +308,10 @@ export type BackupProgress = { readonly done: number; readonly total: number }
  *
  * ## The two refusals, which are different failures
  *
+ * (A third, UNAVAILABLE, is NOT READY's cousin: the index has loaded, from a
+ * listing that failed, so it is empty for a store that may be full. It is
+ * checked at the same moment, for the same reason.)
+ *
  * NOT READY is the ordinary one and has nothing wrong with it. The index loads
  * asynchronously on mount — `hydrate()` opens the store before the first
  * `list` — so for a moment after the page appears `all()`
@@ -323,6 +337,7 @@ export async function streamDocuments(
   onProgress?: (p: BackupProgress) => void,
 ): Promise<DocumentCount> {
   if (!blobs.ready) throw new Error(DOCUMENTS_NOT_READY)
+  if (blobs.failed) throw new Error(DOCUMENTS_UNAVAILABLE)
 
   const listed = await blobs.all()
   const pace = pacer()
@@ -373,6 +388,7 @@ export async function collectDocuments(
   blobs: BackupBlobs,
 ): Promise<{ path: string; data: Uint8Array }[]> {
   if (!blobs.ready) throw new Error(DOCUMENTS_NOT_READY)
+  if (blobs.failed) throw new Error(DOCUMENTS_UNAVAILABLE)
   const listed = await blobs.all()
   const documents: { path: string; data: Uint8Array }[] = []
   for (const item of listed) {
@@ -407,7 +423,7 @@ export async function collectDocuments(
 export const SAVE_PICKER_FROM = 200 * 1024 * 1024
 
 /** The File System Access API, where the browser has it (Chrome and Edge). */
-type SavePicker = (options: {
+export type SavePicker = (options: {
   suggestedName: string
   types: { description: string; accept: Record<string, string[]> }[]
 }) => Promise<{
@@ -448,7 +464,11 @@ export type DownloadOutcome =
   DownloadKind | { kind: DownloadKind; documents?: DocumentCount; reason?: string }
 
 /** The refusals that are jojo's own, whose sentence is worth more than "check the download". */
-const OWN_REFUSALS: ReadonlySet<string> = new Set([DOCUMENTS_NOT_READY, DOCUMENTS_UNREADABLE])
+const OWN_REFUSALS: ReadonlySet<string> = new Set([
+  DOCUMENTS_NOT_READY,
+  DOCUMENTS_UNAVAILABLE,
+  DOCUMENTS_UNREADABLE,
+])
 
 const reasonOf = (error: unknown): string | undefined =>
   error instanceof Error && OWN_REFUSALS.has(error.message) ? error.message : undefined
@@ -460,9 +480,11 @@ const reasonOf = (error: unknown): string | undefined =>
 const ownRefusal = (reason: string | undefined): string | undefined =>
   reason === DOCUMENTS_NOT_READY
     ? i18next.t('messages:backup.documentsNotReady')
-    : reason === DOCUMENTS_UNREADABLE
-      ? i18next.t('messages:backup.documentsUnreadable')
-      : reason
+    : reason === DOCUMENTS_UNAVAILABLE
+      ? i18next.t('messages:backup.documentsUnavailable')
+      : reason === DOCUMENTS_UNREADABLE
+        ? i18next.t('messages:backup.documentsUnreadable')
+        : reason
 
 /**
  * What to tell the person once a download has ended, or null to say nothing.
@@ -511,6 +533,112 @@ export function backupToast(outcome: DownloadOutcome, name: string): ToastOption
             ? i18next.t('messages:backup.startedAll', { name })
             : i18next.t('messages:backup.startedSome', counts),
       }
+}
+
+/**
+ * What `runDownload` is given: every effect it has, as a parameter.
+ *
+ * The hook passes the browser's; a test passes its own, so each way a download
+ * can end is RUN rather than read off the source (review 3, coverage-2). The
+ * source-text guard that stood alone here could not fail: it found the save
+ * picker's `try {` while looking for the fallback's.
+ */
+export type DownloadSteps = {
+  /** The save picker, where the browser has one. */
+  readonly picker: SavePicker | null
+  /** How much this origin stores — decides whether the picker is offered. */
+  readonly storedBytes: () => Promise<number>
+  /** The whole file into a sink, as `useBackup` writes it. */
+  readonly write: (
+    sink: BackupSink,
+    withDocuments: boolean,
+    onProgress?: (p: BackupProgress) => void,
+  ) => Promise<DocumentCount>
+  /** The whole file as a Blob, and how many documents it holds. */
+  readonly assemble: (
+    options: BuildOptions,
+    onProgress?: (p: BackupProgress) => void,
+  ) => Promise<{ file: Blob; documents: DocumentCount }>
+  /** Hands the finished file to the browser's downloader. The click is the last thing observable. */
+  readonly deliver: (file: Blob, name: string) => void
+  /** Records that a backup was taken. Runs only once a file has reached the person. */
+  readonly taken: (at: Date) => void
+}
+
+/** The body of `useBackup().download` — see `BackupState.download` for what each outcome means. */
+export async function runDownload(
+  name: string,
+  onProgress: ((p: BackupProgress) => void) | undefined,
+  steps: DownloadSteps,
+): Promise<DownloadOutcome> {
+  const at = new Date()
+
+  /*
+   * Straight to disk where the browser can, and the store is big enough to
+   * need it. Asked FIRST, before any await that could outlast the click's
+   * user activation — the picker refuses to open without it. A refusal of
+   * that kind (no activation, a policy) falls through to the download; a
+   * person closing the dialog is `cancelled`, and nothing is written.
+   */
+  const { picker } = steps
+  if (picker !== null && (await steps.storedBytes()) >= SAVE_PICKER_FROM) {
+    let handle: Awaited<ReturnType<SavePicker>> | null = null
+    try {
+      handle = await picker({
+        suggestedName: name,
+        types: [{ description: 'jojo backup', accept: { 'application/json': ['.json'] } }],
+      })
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled'
+      handle = null
+    }
+    if (handle !== null) {
+      let file: Awaited<ReturnType<typeof handle.createWritable>> | null = null
+      let documents: DocumentCount
+      try {
+        file = await handle.createWritable()
+        const out = file
+        documents = await steps.write((part) => out.write(part), true, onProgress)
+        // `close` is what makes the file real: until it resolves the bytes
+        // are in a swap file the browser deletes on abort.
+        await file.close()
+      } catch (error) {
+        reportError('backup', error)
+        await file?.abort().catch(() => undefined)
+        const reason = reasonOf(error)
+        return reason === undefined ? 'failed' : { kind: 'failed', reason }
+      }
+      steps.taken(at)
+      return { kind: 'saved', documents }
+    }
+  }
+
+  // `assemble` INSIDE the try. It reads every document and writes the lot, so
+  // it throws on a quota read, on a document index that has not loaded yet
+  // or that lists documents it will not read. It used to sit above the
+  // try, where a throw rejected this promise — and the only caller does
+  // `void download(...).then(...)` with no `.catch`, so the user got no
+  // file, no toast and no error. A button that does nothing reads as a
+  // broken button, not as a warning about their records.
+  let documents: DocumentCount
+  try {
+    const made = await steps.assemble({}, onProgress)
+    documents = made.documents
+    steps.deliver(made.file, name)
+  } catch (error) {
+    // The user gets a toast saying it failed; this says WHY, to somebody who
+    // can fix it. A backup is the one thing between a person and losing
+    // everything, so a silent failure here is the most expensive silence in
+    // the app.
+    reportError('backup', error)
+    const reason = reasonOf(error)
+    return reason === undefined ? 'failed' : { kind: 'failed', reason }
+  }
+
+  // Recorded only after the click. Recording it first would mean a browser
+  // that blocked the download left jojo believing the user was safe.
+  steps.taken(at)
+  return { kind: 'started', documents }
 }
 
 export type BuildOptions = {
@@ -668,102 +796,45 @@ export function useBackup(readable?: () => unknown): BackupState {
   )
 
   const download = useCallback(
-    async (name: string, onProgress?: (p: BackupProgress) => void): Promise<DownloadOutcome> => {
-      const at = new Date()
-
-      /*
-       * Straight to disk where the browser can, and the store is big enough to
-       * need it. Asked FIRST, before any await that could outlast the click's
-       * user activation — the picker refuses to open without it. A refusal of
-       * that kind (no activation, a policy) falls through to the download; a
-       * person closing the dialog is `cancelled`, and nothing is written.
-       */
-      const picker = savePicker()
-      if (picker !== null && (await storedBytes()) >= SAVE_PICKER_FROM) {
-        let handle: Awaited<ReturnType<SavePicker>> | null = null
-        try {
-          handle = await picker({
-            suggestedName: name,
-            types: [{ description: 'jojo backup', accept: { 'application/json': ['.json'] } }],
-          })
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled'
-          handle = null
-        }
-        if (handle !== null) {
-          let file: Awaited<ReturnType<typeof handle.createWritable>> | null = null
-          let documents: DocumentCount
+    (name: string, onProgress?: (p: BackupProgress) => void): Promise<DownloadOutcome> =>
+      runDownload(name, onProgress, {
+        picker: savePicker(),
+        storedBytes,
+        write,
+        assemble,
+        deliver: (file, fileName) => {
+          const href = URL.createObjectURL(file)
           try {
-            file = await handle.createWritable()
-            const out = file
-            documents = await write((part) => out.write(part), true, onProgress)
-            // `close` is what makes the file real: until it resolves the bytes
-            // are in a swap file the browser deletes on abort.
-            await file.close()
+            const anchor = document.createElement('a')
+            anchor.href = href
+            anchor.download = fileName
+            anchor.click()
           } catch (error) {
-            reportError('backup', error)
-            await file?.abort().catch(() => undefined)
-            const reason = reasonOf(error)
-            return reason === undefined ? 'failed' : { kind: 'failed', reason }
+            URL.revokeObjectURL(href)
+            throw error
           }
+          // Revoked LATER, NOT synchronously and not in a `finally`. An early
+          // revoke races the download the click just started and the file
+          // arrives EMPTY — which is the worst possible outcome here, because
+          // the user has a file named like a backup that contains nothing, and
+          // `taken` is about to tell them they are safe. "Next task" was not
+          // late enough for Firefox on a large file; see `revokeLater`.
+          revokeLater(href)
+        },
+        taken: (at) => {
           writeLastBackup(at.toISOString())
+          /*
+           * Reported here for the same reason `writeLastBackup` is: this is
+           * the first line that runs only when a file actually reached the
+           * user. The count is how much the person has in jojo, BUCKETED —
+           * which answers "is this feature used by people with real stores or
+           * only on empty demos", while an exact number would be a small
+           * fingerprint and answer nothing extra.
+           */
           report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
           mascot.play(CUES.backupSaved)
-          return { kind: 'saved', documents }
-        }
-      }
-
-      // `build` INSIDE the try. It reads every document and writes the lot, so
-      // it throws on a quota read, on a document index that has not loaded yet
-      // or that lists documents it will not read. It used to sit above the
-      // try, where a throw rejected this promise — and the only caller does
-      // `void download(...).then(...)` with no `.catch`, so the user got no
-      // file, no toast and no error. A button that does nothing reads as a
-      // broken button, not as a warning about their records.
-      let href: string | null = null
-      let documents: DocumentCount
-      try {
-        const made = await assemble({}, onProgress)
-        documents = made.documents
-        href = URL.createObjectURL(made.file)
-        const anchor = document.createElement('a')
-        anchor.href = href
-        anchor.download = name
-        anchor.click()
-      } catch (error) {
-        // The user gets a toast saying it failed; this says WHY, to somebody who
-        // can fix it. A backup is the one thing between a person and losing
-        // everything, so a silent failure here is the most expensive silence in
-        // the app.
-        reportError('backup', error)
-        if (href !== null) URL.revokeObjectURL(href)
-        const reason = reasonOf(error)
-        return reason === undefined ? 'failed' : { kind: 'failed', reason }
-      }
-
-      // Revoked LATER, NOT synchronously and not in a `finally`. An early
-      // revoke races the download the click just started and the file arrives
-      // EMPTY — which is the worst possible outcome here, because the user has
-      // a file named like a backup that contains nothing, and
-      // `writeLastBackup` below has just told them they are safe. "Next task"
-      // was not late enough for Firefox on a large file; see `revokeLater`.
-      revokeLater(href)
-
-      // Recorded only after the click. Recording it first would mean a browser
-      // that blocked the download left jojo believing the user was safe.
-      writeLastBackup(at.toISOString())
-      /*
-       * Reported here for the same reason `writeLastBackup` is: this is the
-       * first line that runs only when a file actually reached the user. The
-       * count is how much the person has in jojo, BUCKETED — which answers
-       * "is this feature used by people with real stores or only on empty
-       * demos", while an exact number would be a small fingerprint and answer
-       * nothing extra.
-       */
-      report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
-      mascot.play(CUES.backupSaved)
-      return { kind: 'started', documents }
-    },
+        },
+      }),
     [assemble, write, graph, mascot],
   )
 

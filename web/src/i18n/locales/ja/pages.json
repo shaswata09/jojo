@@ -90,7 +90,9 @@
     "resetHint": "レコードをいつもの配置に戻します",
     "noMatches": "この質問に一致するレコードはありません",
     "clearQuery": "クエリをクリア",
-    "counts_other": "{{count}} 件中 {{shown}} 件のレコード · つながり {{edges}} 本",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_other": "{{count}} 件中 {{shown}} 件のレコード",
+    "countsConnections_other": "つながり {{count}} 本",
     "panelTitle": "すべてをつなげて",
     "help": "ノードにポインターを合わせるか Tab で移動すると周辺をたどれます。押すと選択、ドラッグで移動します。ノードの色は種類を、大きさは参照されている数を表します。"
   },

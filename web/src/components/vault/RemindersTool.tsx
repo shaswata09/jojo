@@ -403,7 +403,10 @@ export function RemindersTool({ focus }: { focus?: string }) {
 
   // Only ever read by the branches that already know the chip is on; named
   // here because the copy object is built before the branch is chosen.
-  const bucketWord = bucket === 'all' ? '' : BUCKET_LABEL[bucket].toLowerCase()
+  // The catalog's own running-text form, not the label lower-cased: casing is
+  // a per-language decision (a Turkish frame opens on the word, so it stays
+  // capitalised there), and `toLowerCase` made one for every language.
+  const bucketWord = bucket === 'all' ? '' : t(`common:bucketsInline.${bucket}`)
 
   const empty = emptyStateFor({
     total: reminders.length,

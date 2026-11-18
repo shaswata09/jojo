@@ -53,7 +53,7 @@ export type VaultEmptyCopy = {
   bucket: { icon?: FeatherName; title: string; description: string; clearLabel: string }
   /**
    * Only the keyword row is on. Its clear button is always "Clear keywords",
-   * and its description is `KEYWORDS_HID_THEM` in all four tools — the keyword
+   * and its description is `keywordsHidThem()` in all four tools — the keyword
    * row is a page-level control, so the sentence pointing at it does not vary
    * by list. Overridable rather than hard-coded so a fifth tool with its own
    * keyword control is not forced to lie about where the switch is.

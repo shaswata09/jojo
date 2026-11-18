@@ -92,6 +92,34 @@
     "recommender": "रेफ़री",
     "contact": "संपर्क व्यक्ति"
   },
+  "linkCategory": {
+    "posting": "जॉब पोस्टिंग",
+    "institution": "संस्थान",
+    "person": "व्यक्ति",
+    "guide": "गाइड"
+  },
+  "snippetTag": {
+    "coverLetter": "कवर लेटर",
+    "applicationForm": "आवेदन फ़ॉर्म",
+    "email": "ईमेल",
+    "bio": "परिचय",
+    "cv": "CV",
+    "researchStatement": "शोध स्टेटमेंट",
+    "teachingStatement": "शिक्षण स्टेटमेंट"
+  },
+  "source": {
+    "jobScout": "जॉब स्काउट",
+    "jobBoard": "जॉब बोर्ड",
+    "referral": "रेफ़रल",
+    "careersPage": "करियर पेज"
+  },
+  "fileBucket": {
+    "toRead": "पढ़ना है",
+    "applications": "आवेदन",
+    "jobPostings": "जॉब पोस्टिंग",
+    "talks": "टॉक",
+    "admin": "प्रशासन"
+  },
   "approval": {
     "manual": "मैनुअल",
     "semi": "सेमी-ऑटो",
@@ -364,6 +392,7 @@
   },
   "readBy": "{{model}} ने पढ़ा · {{ago}}",
   "missingSource": "एक दस्तावेज़ जो अब वॉल्ट में नहीं है",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "पहले जैसा करने को कुछ नहीं।",

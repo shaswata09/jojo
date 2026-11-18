@@ -302,3 +302,49 @@ describe('an asset on the phone’s own network (review 2, security-3)', () => {
     expect(out.ok && out.capture.html).toContain('color: red')
   })
 })
+
+describe('a page that forges its own address (review 2026-11-18, security-3)', () => {
+  it("is judged by the WebView's address, so a LAN asset is still refused", async () => {
+    const fetched: string[] = []
+    vi.stubGlobal('fetch', (href: string) => {
+      fetched.push(href)
+      return Promise.resolve(sheet('wifi_psk=hunter2'))
+    })
+    // The page rewrote `JSON.stringify`: the message claims the router's address.
+    const out = await inlineCapture(
+      {
+        type: 'jojo:capture',
+        url: 'http://192.168.1.1/',
+        title: 'A job',
+        html: '<html><head><style>__JOJO_ASSET_0__</style></head></html>',
+        assets: [{ href: 'http://192.168.1.1/cgi-bin/config', kind: 'css' }],
+      },
+      NOW,
+      'https://evil.example/jobs/1',
+    )
+    vi.unstubAllGlobals()
+    expect(fetched).toEqual([])
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    expect(out.capture.html).not.toContain('wifi_psk')
+    // And it is filed under where it really was, not where it claimed to be.
+    expect(out.capture.url).toBe('https://evil.example/jobs/1')
+  })
+
+  it("still keeps an intranet page's own assets when the WebView says it is local", async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(sheet('body { color: red }')))
+    const out = await inlineCapture(
+      {
+        type: 'jojo:capture',
+        url: 'http://intranet.lan/jobs/1',
+        title: 'An intranet job',
+        html: '<html><head><style>__JOJO_ASSET_0__</style></head></html>',
+        assets: [{ href: 'http://intranet.lan/site.css', kind: 'css' }],
+      },
+      NOW,
+      'http://intranet.lan/jobs/1',
+    )
+    vi.unstubAllGlobals()
+    expect(out.ok && out.capture.html).toContain('color: red')
+  })
+})

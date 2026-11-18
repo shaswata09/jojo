@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
-import { hostOf, isCaptureSource } from '@jojo/service/core/capture'
+import { hostOf, isCaptureSource, lockedCaptureHtml } from '@jojo/service/core/capture'
 import type { VaultFile } from '@jojo/service/data/vault'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -36,6 +36,20 @@ import { space } from '@/theme/tokens'
  *
  * `cacheEnabled={false}` so nothing about reading an old posting is written back
  * to the WebView's cache.
+ *
+ * ## The Content-Security-Policy, and why the switches above were not enough
+ *
+ * Every lock above governs NAVIGATION. None stops a subresource: an
+ * `<img src=https://…>`, a remote stylesheet, `@font-face`, `@import` or a
+ * `background-image` still went out on every open (review 2026-11-18,
+ * security-1) — and not only from a capture whose scan missed one: a `.html`
+ * the person picked, or one dropped on the web Vault and carried over by a
+ * Transfer, reaches this viewer with no scan at all. So the markup is shown as
+ * `lockedCaptureHtml` makes it, the same function the web's viewer uses: a
+ * `<meta http-equiv=Content-Security-Policy>` of `default-src 'none'` (only
+ * `data:` for images, fonts and media) as the first thing in a head of our own,
+ * which Android's `loadDataWithBaseURL` and WKWebView's `loadHTMLString` both
+ * honour.
  *
  * ## Why `incognito` is NOT set, though it looks like it belongs
  *
@@ -106,13 +120,22 @@ export function PageViewer({ file, onClose }: { file: VaultFile; onClose: () => 
           </View>
         ) : (
           <WebView<object>
-            source={{ html }}
+            // Locked exactly as the web viewer locks it: a `default-src 'none'`
+            // policy written first in a head of our own, scripts, frames and
+            // links renamed inert. See the header.
+            source={{ html: lockedCaptureHtml(html) }}
             // Everything off. See the header — each of these is a separate way
             // a stored page could reach the network.
             javaScriptEnabled={false}
+            javaScriptCanOpenWindowsAutomatically={false}
+            setSupportMultipleWindows={false}
             domStorageEnabled={false}
             cacheEnabled={false}
             allowFileAccess={false}
+            allowFileAccessFromFileURLs={false}
+            allowUniversalAccessFromFileURLs={false}
+            geolocationEnabled={false}
+            mixedContentMode="never"
             originWhitelist={['about:']}
             onShouldStartLoadWithRequest={(request) =>
               // The first load is the document itself; anything after it is a

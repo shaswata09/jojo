@@ -215,6 +215,15 @@
       "hintEmpty": "पहले कुछ टेक्स्ट हाइलाइट करें या टिप्पणी जोड़ें।",
       "hint": "{{summary}} दस्तावेज़ में लिखे जाएँगे।",
       "action": "निशानों के साथ सहेजें"
+    },
+    "names": {
+      "annotated": "टिप्पणी सहित",
+      "pages_one": "{{count}} पेज",
+      "pages_other": "{{count}} पेज",
+      "pagesFile": "पेज",
+      "merged": "मर्ज किया गया",
+      "more_one": "{{count}} और",
+      "more_other": "{{count}} और"
     }
   },
   "instruments": {

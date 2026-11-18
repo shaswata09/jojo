@@ -11,6 +11,7 @@ import { BenchAxesDiagram } from '@/components/guide/diagrams/BenchAxesDiagram'
 import { BenchAmbiguityDiagram } from '@/components/guide/diagrams/BenchAmbiguityDiagram'
 import { BenchExplorer } from '@/components/guide/BenchExplorer'
 import { ReasoningTables } from '@/components/guide/ReasoningTables'
+import { EnglishData } from '@/components/guide/EnglishData'
 import {
   CONVERSATIONS as BENCH_CONVERSATIONS,
   GROUPS as BENCH_GROUPS,
@@ -198,7 +199,9 @@ export function GuideTools() {
         <p className={P3}>{t('tools.evidence.p2')}</p>
 
         <div className="mt-4">
-          <ToolEvalTable />
+          <EnglishData>
+            <ToolEvalTable />
+          </EnglishData>
         </div>
 
         <h3 className="mt-5 text-sm font-medium">{t('tools.evidence.suiteTitle')}</h3>
@@ -230,7 +233,9 @@ export function GuideTools() {
         </div>
 
         <div className="mt-5">
-          <ToolBenchTable />
+          <EnglishData>
+            <ToolBenchTable />
+          </EnglishData>
         </div>
       </Panel>
 
@@ -247,7 +252,9 @@ export function GuideTools() {
         </p>
 
         <div className="mt-4">
-          <ReasoningTables />
+          <EnglishData>
+            <ReasoningTables />
+          </EnglishData>
         </div>
 
         <h3 className="mt-5 text-sm font-medium">{t('tools.reasoning.numbersTitle')}</h3>
@@ -270,7 +277,9 @@ export function GuideTools() {
         <p className={P3}>{t('tools.previewer.p3')}</p>
 
         <div className="mt-4">
-          <BenchExplorer />
+          <EnglishData>
+            <BenchExplorer />
+          </EnglishData>
         </div>
       </Panel>
 

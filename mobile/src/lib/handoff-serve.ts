@@ -36,6 +36,7 @@ import { canPair, createSecrets } from '@jojo/service/crypto/noble-secrets'
 import { handedOver } from '@jojo/service/repo/meta'
 import type { Repository } from '@jojo/service/repo/repository'
 import { bytesFromBase64 } from '@/lib/base64'
+import { ownDocumentPath } from '@/lib/document-path'
 import { startHandoffServer, type HandoffServer } from '@/lib/handoff-server'
 import { localAddress, type ReceiveProblem } from '@/lib/handoff-receive'
 
@@ -143,7 +144,10 @@ export async function beginServing(
  * with a space in its name reads as missing.
  */
 export async function readStoredDocument(uri: string): Promise<Uint8Array | null> {
-  const path = uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
+  // Only the app's own documents leave the phone: a record's uri can be set by
+  // the assistant or a backup to any path, the store's own database included.
+  const path = ownDocumentPath(uri)
+  if (path === null) return null
   try {
     if (!(await ReactNativeBlobUtil.fs.exists(path))) return null
     return bytesFromBase64(await ReactNativeBlobUtil.fs.readFile(path, 'base64'))

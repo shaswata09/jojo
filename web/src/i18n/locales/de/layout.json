@@ -99,7 +99,7 @@
     "documentsBlocked": "Deine Dokumente sind noch auf diesem Gerät, aber ein anderer jojo-Tab mit einer älteren Version der App hält sie fest. Schließe die anderen jojo-Tabs – dieser holt sie sich dann von selbst.",
     "skipped_one": "{{count}} Eintrag auf diesem Gerät konnte nicht gelesen werden und wird nicht angezeigt. Nichts wurde gelöscht – die <anchor>Diagnose</anchor> nennt ihn, und ein Export von dort enthält alles, was jojo lesen konnte.",
     "skipped_other": "{{count}} Einträge auf diesem Gerät konnten nicht gelesen werden und werden nicht angezeigt. Nichts wurde gelöscht – die <anchor>Diagnose</anchor> nennt sie, und ein Export von dort enthält alles, was jojo lesen konnte.",
-    "nearlyFull": "Dieser Browser hat fast keinen Platz mehr für jojo – etwa {{percent}} % des Erlaubten sind belegt. Wenn er voll ist, funktioniert das Speichern nicht mehr, also lohnt es sich, jetzt über die Einstellungen zu exportieren und Platz zu schaffen, solange deine Einträge noch geschrieben werden können.",
+    "nearlyFull": "Dieser Browser hat fast keinen Platz mehr für jojo – etwa {{percent}} % des Erlaubten sind belegt. Wenn er voll ist, funktioniert das Speichern nicht mehr, also lohnt es sich, jetzt über die Einstellungen zu exportieren und Platz zu schaffen, solange deine Einträge noch geschrieben werden können.",
     "backup": {
       "busy": "Backup läuft …",
       "download": "Backup herunterladen",

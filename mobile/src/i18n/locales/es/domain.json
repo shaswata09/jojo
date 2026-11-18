@@ -92,6 +92,34 @@
     "recommender": "Referente",
     "contact": "Persona de contacto"
   },
+  "linkCategory": {
+    "posting": "Oferta",
+    "institution": "Institución",
+    "person": "Persona",
+    "guide": "Guía"
+  },
+  "snippetTag": {
+    "coverLetter": "Carta de presentación",
+    "applicationForm": "Formulario de solicitud",
+    "email": "Correo electrónico",
+    "bio": "Biografía",
+    "cv": "CV",
+    "researchStatement": "Declaración de investigación",
+    "teachingStatement": "Declaración de docencia"
+  },
+  "source": {
+    "jobScout": "Explorador de empleo",
+    "jobBoard": "Portal de empleo",
+    "referral": "Recomendación",
+    "careersPage": "Página de empleo"
+  },
+  "fileBucket": {
+    "toRead": "Por leer",
+    "applications": "Candidaturas",
+    "jobPostings": "Ofertas de empleo",
+    "talks": "Charlas",
+    "admin": "Administración"
+  },
   "approval": {
     "manual": "Manual",
     "semi": "Semiautomático",
@@ -145,7 +173,7 @@
     "days_one": "{{count}} día",
     "days_many": "{{count}} días",
     "days_other": "{{count}} días",
-    "typicalRate": "típico: {{value}} %",
+    "typicalRate": "típico: {{value}} %",
     "typicalDays": "típico: {{days}}"
   },
   "rel": {
@@ -376,6 +404,7 @@
   },
   "readBy": "Leído por {{model}} · {{ago}}",
   "missingSource": "un documento que ya no está en la Bóveda",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "No hay nada que deshacer.",

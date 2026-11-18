@@ -358,7 +358,7 @@
     "createHint": "rien à trouver ? créez-le",
     "noneTitle": "Rien ne correspond à « {{query}} »",
     "noneDescription": "La recherche lit le titre, la note et la catégorie de chaque fiche, et le nom de chaque réglage. Rien n’est récupéré ailleurs.",
-    "fit": "{{fit}} % d’adéquation",
+    "fit": "{{fit}} % d’adéquation",
     "results_one": "{{count}} résultat",
     "results_other": "{{count}} résultats",
     "showAll_one": "Tout afficher ({{count}})",
@@ -466,7 +466,7 @@
       "title": "Jusqu’où les candidatures sont allées",
       "emptyTitle": "Rien n’a encore été envoyé",
       "emptyDescription": "Les taux de réponse, d’entretien et d’offre comptent les candidatures réellement envoyées. Sortez-en une du Brouillon et cet écran se remplira.",
-      "carried": "{{pct}} % sont passées à l’étape suivante"
+      "carried": "{{pct}} % sont passées à l’étape suivante"
     },
     "outcomes": {
       "title": "Issues",
@@ -501,12 +501,19 @@
     "emptyTitle": "Rien à dessiner",
     "emptyDescription": "Chaque nœud ici est l’un de vos enregistrements. Ajoutez une candidature et le premier apparaît.",
     "subtitle": "Un aperçu de jojo quand les enregistrements cessent d’être sept listes séparées",
-    "caption": "{{visible}} nœuds sur {{total}} · {{edges}} liens. Touchez un nœud pour le lire ; touchez un type ci-dessous pour le masquer.",
+    "caption": "{{nodes}} · {{edges}}. Touchez un nœud pour le lire ; touchez un type ci-dessous pour le masquer.",
+    "captionNodes_one": "{{visible}} nœud sur {{count}}",
+    "captionNodes_many": "{{visible}} nœuds sur {{count}}",
+    "captionNodes_other": "{{visible}} nœuds sur {{count}}",
+    "captionEdges_one": "{{count}} lien",
+    "captionEdges_many": "{{count}} liens",
+    "captionEdges_other": "{{count}} liens",
     "legend": "Légende",
     "legendHint": "touchez pour masquer un type",
     "joinedTo": "Relié à",
     "noEdges": "Rien ne pointe encore vers ceci.",
     "openRecord": "Ouvrir l’enregistrement",
+    "derivedRecord": "Dérivé de vos enregistrements — il n’a pas de page propre.",
     "ask": "Interroger le graphe",
     "askHint": "posez une question ou choisissez-en une",
     "andMore_one": "et {{count}} de plus",
@@ -1026,7 +1033,9 @@
       "placeholder": "ex. En attente de leur retour",
       "confirmUsed_one": "Il sera retiré de {{count}} enregistrement. Cet enregistrement reste ; seul le mot-clé disparaît.",
       "confirmUsed_other": "Il sera retiré de {{count}} enregistrements. Ces enregistrements restent ; seul le mot-clé disparaît.",
-      "confirmUnused": "Rien n’est étiqueté avec, donc rien d’autre ne change."
+      "confirmUnused": "Rien n’est étiqueté avec, donc rien d’autre ne change.",
+      "confirmTitle": "Supprimer le mot-clé {{name}} ?",
+      "deletedTitle": "Mot-clé {{name}} supprimé"
     }
   }
 }

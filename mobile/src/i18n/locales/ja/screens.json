@@ -474,12 +474,15 @@
     "emptyTitle": "描画するものがありません",
     "emptyDescription": "ここのノードはすべてあなたの記録です。応募を追加すると最初のノードが表示されます。",
     "subtitle": "記録が 7 つの別々のリストでなくなったときの jojo のプレビュー",
-    "caption": "{{total}} 個中 {{visible}} 個のノード · エッジ {{edges}} 本。ノードをタップすると内容を表示し、下の種類をタップすると非表示にできます。",
+    "caption": "{{nodes}} · {{edges}}。ノードをタップすると内容を表示し、下の種類をタップすると非表示にできます。",
+    "captionNodes_other": "{{count}} 個中 {{visible}} 個のノード",
+    "captionEdges_other": "エッジ {{count}} 本",
     "legend": "凡例",
     "legendHint": "タップで種類を非表示",
     "joinedTo": "つながり",
     "noEdges": "まだこれを参照しているものはありません。",
     "openRecord": "記録を開く",
+    "derivedRecord": "あなたの記録から導き出されたもので、専用のページはありません。",
     "ask": "グラフに質問",
     "askHint": "文章で質問するか、選んでください",
     "andMore_other": "ほか {{count}} 件",
@@ -976,7 +979,9 @@
       "added": "{{name}} を追加しました",
       "placeholder": "例：先方の返事待ち",
       "confirmUsed_other": "{{count}} 件の記録から外れます。記録は残り、キーワードだけが削除されます。",
-      "confirmUnused": "これでタグ付けされたものはないため、ほかには何も変わりません。"
+      "confirmUnused": "これでタグ付けされたものはないため、ほかには何も変わりません。",
+      "confirmTitle": "キーワード「{{name}}」を削除しますか？",
+      "deletedTitle": "キーワード「{{name}}」を削除しました"
     }
   }
 }

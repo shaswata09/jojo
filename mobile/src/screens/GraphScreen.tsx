@@ -37,7 +37,8 @@ import { GraphActions, GraphViewBar } from '@/components/graph/GraphViewBar'
 import type { GraphMode } from '@/components/graph/GraphViewBar'
 import { OverviewCanvas } from '@/components/graph/OverviewCanvas'
 import { ShowMoreRows } from '@/components/ui/ShowMoreRows'
-import { foldGraph, toViewGraph } from '@/lib/graph-view'
+import { foldGraph, graphCaption, toViewGraph } from '@/lib/graph-view'
+import { canvasHeightFor } from '@/lib/graph-canvas'
 import type { GroupDimension } from '@/lib/graph-view'
 import { highlightFor, rowsFor } from '@/lib/graph-answer'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
@@ -50,14 +51,21 @@ import { toTab } from '@/navigation/to-tab'
 const PATTERN_SHOWN = 8
 /** A record's links listed at a time in the detail panel: a role joins a hundred applications. */
 const JOINED_PAGE = 25
-
-/** The canvas's height for its width: taller than wide on a phone, capped on a tablet. */
-const canvasHeight = (width: number) => Math.round(Math.min(560, Math.max(340, width * 1.3)))
+/** What "Open record" can go to — employers, roles and keywords have no page. */
+const OPENS_RECORD: ReadonlySet<GraphNodeType> = new Set<GraphNodeType>([
+  'application',
+  'item',
+  'file',
+  'link',
+  'snippet',
+  'match',
+  'posting',
+])
 
 export function GraphScreen() {
   const { t } = useTranslation('screens')
   const c = useColors()
-  const { width } = useWindowDimensions()
+  const { width, height: windowHeight } = useWindowDimensions()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const { all: applications } = useApplications()
@@ -104,6 +112,7 @@ export function GraphScreen() {
   /** The page stops scrolling while a pinch or a pan has the canvas. */
   const [gesturing, setGesturing] = useState(false)
   const [canvasWidth, setCanvasWidth] = useState(0)
+  const canvasHeight = canvasHeightFor(canvasWidth, windowHeight)
   const [joinedShown, setJoinedShown] = useState(JOINED_PAGE)
   const centre = trail.length > 0 ? trail[trail.length - 1] : undefined
   const mode: GraphMode = centre !== undefined && inView.has(centre) ? 'focus' : 'overview'
@@ -238,7 +247,8 @@ export function GraphScreen() {
             : {}),
         }
   const query = QUERY_EXAMPLES.find((q) => q.id === queryId)
-  const result = query ? query.run(graph) : null
+  // Memoised: every re-render (a tap on the canvas, a selection) re-ran it.
+  const result = useMemo(() => (query ? query.run(graph) : null), [query, graph])
   const patternRows = useMemo(() => runPattern(graph, pattern), [graph, pattern])
 
   const toggleType = (type: GraphNodeType) =>
@@ -248,6 +258,8 @@ export function GraphScreen() {
       return next
     })
 
+  /** The node types `openRecord` has a page for; the rest are derived from records. */
+  const opensRecord = (node: GraphNode) => OPENS_RECORD.has(node.type)
   const openRecord = (node: GraphNode) => {
     if (node.type === 'application') {
       navigation.navigate('ApplicationDetail', { id: node.recordId })
@@ -425,7 +437,7 @@ export function GraphScreen() {
                 {t('graph.exampleNone')}
               </Txt>
             ) : (
-              result.map((n) => (
+              result.slice(0, PATTERN_SHOWN).map((n) => (
                 <Pressable
                   key={n.id}
                   accessibilityRole="button"
@@ -447,6 +459,11 @@ export function GraphScreen() {
                 </Pressable>
               ))
             )}
+            {result.length > PATTERN_SHOWN ? (
+              <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+                {t('graph.andMore', { count: result.length - PATTERN_SHOWN })}
+              </Txt>
+            ) : null}
           </View>
         ) : null}
       </Panel>
@@ -552,12 +569,20 @@ export function GraphScreen() {
             onMore={() => setJoinedShown((n) => n + JOINED_PAGE)}
           />
 
-          <Button
-            label={t('graph.openRecord')}
-            variant="outline"
-            onPress={() => openRecord(selected)}
-            style={{ marginTop: space[3], alignSelf: 'flex-start' }}
-          />
+          {opensRecord(selected) ? (
+            <Button
+              label={t('graph.openRecord')}
+              variant="outline"
+              onPress={() => openRecord(selected)}
+              style={{ marginTop: space[3], alignSelf: 'flex-start' }}
+            />
+          ) : (
+            // Employers, roles and keywords are drawn from the records and have
+            // no page of their own — a button that did nothing was worse.
+            <Txt size="xs" tone="muted" style={{ marginTop: space[3] }}>
+              {t('graph.derivedRecord')}
+            </Txt>
+          )}
         </Panel>
       ) : null}
     </>
@@ -582,7 +607,7 @@ export function GraphScreen() {
           />
           <View
             onLayout={(event) => setCanvasWidth(Math.floor(event.nativeEvent.layout.width))}
-            style={{ minHeight: canvasHeight(canvasWidth) }}
+            style={{ minHeight: canvasHeight }}
           >
             {canvasWidth === 0 ? null : mode === 'focus' && centre !== undefined ? (
               <FocusCanvas
@@ -590,7 +615,7 @@ export function GraphScreen() {
                 centreId={centre}
                 expanded={expanded}
                 width={canvasWidth}
-                height={canvasHeight(canvasWidth)}
+                height={canvasHeight}
                 selectedId={selectedId}
                 onSelect={select}
                 onFocus={focusOn}
@@ -603,7 +628,7 @@ export function GraphScreen() {
                 folding={folding}
                 by={groupBy}
                 width={canvasWidth}
-                height={canvasHeight(canvasWidth)}
+                height={canvasHeight}
                 selectedId={selectedId}
                 onSelect={select}
                 answered={askedLit}
@@ -691,11 +716,7 @@ export function GraphScreen() {
         </View>
 
         <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
-          {t('graph.caption', {
-            visible: visible.length,
-            total: graph.nodes.length,
-            edges: graph.edges.length,
-          })}
+          {graphCaption(t, visible.length, graph.nodes.length, graph.edges.length)}
         </Txt>
       </Panel>
 

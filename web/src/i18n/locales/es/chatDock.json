@@ -12,8 +12,8 @@
     "labelCorner": "Mover el chat de lado: en la esquina. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
     "labelFarLeft": "Mover el chat de lado: en el extremo izquierdo. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
     "labelFarRight": "Mover el chat de lado: en el extremo derecho. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
-    "labelPartWay": "Mover el chat de lado: al {{percent}} % hacia la izquierda. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
-    "labelPartWayRight": "Mover el chat de lado: al {{percent}} % hacia la derecha. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
+    "labelPartWay": "Mover el chat de lado: al {{percent}} % hacia la izquierda. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
+    "labelPartWayRight": "Mover el chat de lado: al {{percent}} % hacia la derecha. Las flechas lo mueven; doble clic lo devuelve a la esquina.",
     "title": "Arrastra para apartar el chat · doble clic para devolverlo a la esquina"
   },
   "prompts": {

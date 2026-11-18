@@ -11,6 +11,12 @@
     "upcoming": "今後",
     "done": "完了"
   },
+  "bucketsInline": {
+    "overdue": "期限切れ",
+    "today": "今日",
+    "upcoming": "今後",
+    "done": "完了"
+  },
   "snooze": {
     "day": {
       "soon": "明日",
@@ -268,6 +274,7 @@
     "description": "実行するコマンドを検索..."
   },
   "rows": {
-    "showMore": "さらに表示（{{total}} 件中 {{shown}} 件）"
+    "showMore": "さらに表示（{{total}} 件中 {{shown}} 件）",
+    "allShown": "すべて表示中（{{total}} 件）"
   }
 }

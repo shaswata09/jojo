@@ -14,11 +14,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const disk = vi.hoisted(() => new Map<string, string>())
 const kv = vi.hoisted(() => new Map<string, string>())
+/** How many of the next `mv` calls fail, whatever they move. */
+const mvFails = vi.hoisted(() => ({ count: 0 }))
 
 vi.mock('react-native-blob-util', () => ({
   default: {
     fs: {
+      dirs: { DocumentDir: '/data/user/0/jojo/files' },
       mv: (from: string, to: string) => {
+        if (mvFails.count > 0) {
+          mvFails.count -= 1
+          return Promise.reject(new Error('mv failed (transient)'))
+        }
         const data = disk.get(from)
         if (data === undefined || disk.has(to)) return Promise.reject(new Error('mv failed'))
         disk.delete(from)
@@ -51,6 +58,11 @@ vi.mock('@react-native-documents/picker', () => ({
 
 vi.mock('react-native', () => ({ Platform: { OS: 'android' }, Share: { share: vi.fn() } }))
 
+// Nothing here reads a sentence, and the real module pulls in twenty locales'
+// catalogs: under a loaded machine that first import alone ran past the 5 s
+// test timeout (coverage-13).
+vi.mock('@/i18n/i18n', () => ({ i18next: { t: (key: string) => key } }))
+
 const URI = 'file:///data/user/0/jojo/files/abc/1-CV.pdf'
 const PATH = '/data/user/0/jojo/files/abc/1-CV.pdf'
 const TRASHED = `${PATH}.jojo-trashed`
@@ -59,9 +71,14 @@ beforeEach(() => {
   vi.resetModules()
   disk.clear()
   kv.clear()
+  mvFails.count = 0
 })
 
 const load = () => import('./documents')
+
+/** The paths the stored trash list names. */
+const listed = () =>
+  (JSON.parse(kv.get('jojo/documents/trashed') ?? '[]') as { path: string }[]).map((e) => e.path)
 
 describe('the set-aside documents, decided by the records (health-1)', () => {
   it('moves a copy back once a revert names its path again', async () => {
@@ -258,5 +275,81 @@ describe('the retention window', () => {
     expect(disk.has(path)).toBe(false)
     await docs.reconcileTrashedDocuments([uri], { sweep: false, hydrated: true })
     expect([...disk.entries()]).toEqual([[path, 'cv two']])
+  })
+})
+
+describe("the toast's own Undo (coverage-3)", () => {
+  it('moves the bytes back by itself when no reconcile ran first', async () => {
+    const docs = await load()
+    disk.set(PATH, 'cv')
+    const restoreBytes = await docs.trashDocument(URI, false)
+    await restoreBytes()
+    expect([...disk.entries()]).toEqual([[PATH, 'cv']])
+    expect(listed()).toEqual([])
+  })
+
+  it('keeps the entry when its move back fails, so a later reconcile still restores it', async () => {
+    const docs = await load()
+    disk.set(PATH, 'cv')
+    const restoreBytes = await docs.trashDocument(URI, false)
+    mvFails.count = 1
+    await restoreBytes()
+    expect([...disk.keys()]).toEqual([TRASHED])
+    expect(listed()).toEqual([TRASHED])
+    await docs.reconcileTrashedDocuments([URI], { sweep: false, hydrated: true })
+    expect([...disk.entries()]).toEqual([[PATH, 'cv']])
+    expect(listed()).toEqual([])
+  })
+
+  it("keeps reconcile's own entry when its restore fails with the original absent", async () => {
+    const docs = await load()
+    disk.set(PATH, 'cv')
+    await docs.trashDocument(URI, false)
+    mvFails.count = 1
+    await docs.reconcileTrashedDocuments([URI], { sweep: false, hydrated: true })
+    expect(listed()).toEqual([TRASHED])
+    await docs.reconcileTrashedDocuments([URI], { sweep: false, hydrated: true })
+    expect([...disk.entries()]).toEqual([[PATH, 'cv']])
+  })
+})
+
+describe("only the app's own documents (security-2)", () => {
+  const STORE = '/data/user/0/jojo/databases/RKStorage'
+
+  it('never moves aside a vanished path outside the document directory', async () => {
+    const docs = await load()
+    disk.set(STORE, 'every record')
+    // `vault.file.add {uri: <the store>}`, then `vault.file.update {uri: 'x'}`.
+    const vanished = docs.vanishedDocuments([`file://${STORE}`], ['x'])
+    expect(vanished).toEqual([STORE])
+    await docs.reconcileTrashedDocuments(['x'], { sweep: false, hydrated: true, vanished })
+    expect([...disk.entries()]).toEqual([[STORE, 'every record']])
+    expect(listed()).toEqual([])
+  })
+
+  it("refuses a '..' that climbs out of it, and a trash or wipe of a foreign path", async () => {
+    const docs = await load()
+    const climbing = '/data/user/0/jojo/files/../databases/RKStorage'
+    disk.set(climbing, 'every record')
+    disk.set(STORE, 'every record')
+    await docs.reconcileTrashedDocuments([], {
+      sweep: false,
+      hydrated: true,
+      vanished: [climbing],
+    })
+    const restoreBytes = await docs.trashDocument(`file://${STORE}`, false)
+    await restoreBytes()
+    await docs.forgetDocuments([`file://${STORE}`, `file://${climbing}`])
+    expect(disk.get(STORE)).toBe('every record')
+    expect(disk.get(climbing)).toBe('every record')
+    expect(listed()).toEqual([])
+  })
+
+  it('never purges a listed path outside it, whatever an older build wrote', async () => {
+    kv.set('jojo/documents/trashed', JSON.stringify([{ path: STORE, at: 0 }]))
+    disk.set(STORE, 'every record')
+    const docs = await load()
+    await docs.reconcileTrashedDocuments([], { sweep: true, hydrated: true, now: Date.now() })
+    expect(disk.get(STORE)).toBe('every record')
   })
 })

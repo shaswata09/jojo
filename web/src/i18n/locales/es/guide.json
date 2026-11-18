@@ -601,5 +601,6 @@
       "address": "<lead>La barra de direcciones</lead> es la propia página. La primera página es <code>/guide</code> y no <code>/guide/overview</code>, así que cada enlace y marcador tomado antes de que hubiera cuatro sigue llevando a algún sitio real."
     }
   },
-  "englishOnly": "Esta página está en inglés: nombra el código, los paquetes y los términos de licencia con las palabras en que están escritos."
+  "englishOnly": "Esta página está en inglés: nombra el código, los paquetes y los términos de licencia con las palabras en que están escritos.",
+  "englishData": "Esta tabla está en inglés: recoge la prueba tal como se ejecutó, con las palabras de sus casos, herramientas y modelos."
 }

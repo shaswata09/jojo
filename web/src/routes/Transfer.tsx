@@ -150,16 +150,22 @@ export function Transfer() {
       {
         id: 'timeline',
         label: t('groups.timeline.label'),
+        // Each count worded by its own plural key, then joined: a count
+        // dropped into one sentence read "1 links" and "1 remind you", and
+        // gave Arabic one plural form for every number.
         hint: t('groups.timeline.hint', {
-          reminders: reminders.length,
-          events: items.length - reminders.length,
+          reminders: t('groups.timeline.reminders', { count: reminders.length }),
+          events: t('groups.timeline.events', { count: items.length - reminders.length }),
         }),
         count: items.length,
       },
       {
         id: 'vault',
         label: t('groups.vault.label'),
-        hint: t('groups.vault.hint', { links: links.length, snippets: snippets.length }),
+        hint: t('groups.vault.hint', {
+          links: t('groups.vault.links', { count: links.length }),
+          snippets: t('groups.vault.snippets', { count: snippets.length }),
+        }),
         count: links.length + snippets.length,
       },
       // Its own group rather than part of the vault, because it is the one the
@@ -185,9 +191,9 @@ export function Transfer() {
         id: 'scout',
         label: t('groups.scout.label'),
         hint: t('groups.scout.hint', {
-          pipelines: pipelines.length,
-          postings: postings.length,
-          matches: matches.length,
+          pipelines: t('groups.scout.pipelines', { count: pipelines.length }),
+          postings: t('groups.scout.postings', { count: postings.length }),
+          matches: t('groups.scout.matches', { count: matches.length }),
         }),
         count: pipelines.length + postings.length + matches.length,
       },

@@ -72,6 +72,14 @@ export function pendingCopy({
           {untouchedDemo
             ? t(durable ? 'pending.empty.demoDurable' : 'pending.empty.demoMemory')
             : t(durable ? 'pending.empty.ownDurable' : 'pending.empty.ownMemory')}
+          {/* The documents' files are not erased at once: they sit in the
+              browser's trash for 30 days first (see `onClearRecords`), and a
+              dialog that said "the vault … all go" let somebody stop looking
+              for them (finding docs-1). Named with the control that does erase
+              them now, so the way out is in the sentence. */}
+          {untouchedDemo
+            ? null
+            : ` ${t('pending.empty.documentsKept', { storage: t('data.clearStorage.label') })}`}
           {untouchedDemo ? null : exportFirst}
         </>
       ),

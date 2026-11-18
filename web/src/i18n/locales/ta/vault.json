@@ -215,6 +215,15 @@
       "hintEmpty": "முதலில் சில உரையைச் சிறப்பிடுங்கள் அல்லது ஒரு கருத்தைச் சேருங்கள்.",
       "hint": "{{summary}} எழுதப்படும்.",
       "action": "குறிப்புகளுடன் சேமி"
+    },
+    "names": {
+      "annotated": "குறிப்புகளுடன்",
+      "pages_one": "{{count}} பக்கம்",
+      "pages_other": "{{count}} பக்கங்கள்",
+      "pagesFile": "பக்கங்கள்",
+      "merged": "இணைக்கப்பட்டது",
+      "more_one": "மேலும் {{count}}",
+      "more_other": "மேலும் {{count}}"
     }
   },
   "instruments": {

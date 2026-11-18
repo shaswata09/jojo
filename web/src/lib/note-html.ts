@@ -158,7 +158,9 @@ export const toneOf = (raw: string | undefined): LabelTone | undefined =>
   raw === undefined ? undefined : TONE_FROM_INK.get(raw.trim().toLowerCase())
 
 /**
- * The three rewrites `textFromHtml` finishes with, kept identical.
+ * The three rewrites every saved note's text finishes with — `noteFromRuns`
+ * runs them over the text it gathers — kept identical to the ones the removed
+ * `rich-text.ts` walker applied.
  *
  * They are pinned by a test against the same regexes, because this is a port
  * rather than a shared call and a quiet difference here would mean a note

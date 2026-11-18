@@ -24,12 +24,16 @@
     },
     "timeline": {
       "label": "Pengingat dan acara",
-      "hint": "{{reminders}} mengingatkan Anda, {{events}} adalah acara bertanggal",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_other": "{{count}} mengingatkan Anda",
+      "events_other": "{{count}} adalah acara bertanggal",
       "summary_other": "{{count}} pengingat dan acara"
     },
     "vault": {
       "label": "Tautan dan cuplikan",
-      "hint": "{{links}} tautan · {{snippets}} cuplikan",
+      "hint": "{{links}} · {{snippets}}",
+      "links_other": "{{count}} tautan",
+      "snippets_other": "{{count}} cuplikan",
       "summary_other": "{{count}} tautan dan cuplikan"
     },
     "files": {
@@ -44,7 +48,10 @@
     },
     "scout": {
       "label": "Pencari lowongan",
-      "hint": "{{pipelines}} alur kerja · {{postings}} lowongan tersimpan · {{matches}} kecocokan",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_other": "{{count}} alur kerja",
+      "postings_other": "{{count}} lowongan tersimpan",
+      "matches_other": "{{count}} kecocokan",
       "summary_other": "{{count}} entri pencari lowongan"
     },
     "notes": {

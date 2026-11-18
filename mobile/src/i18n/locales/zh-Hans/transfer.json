@@ -20,11 +20,15 @@
     },
     "timeline": {
       "label": "提醒和事件",
-      "hint": "{{reminders}} 个提醒，{{events}} 个定日期的事件"
+      "hint": "{{reminders}}，{{events}}",
+      "reminders_other": "{{count}} 个提醒",
+      "events_other": "{{count}} 个定日期的事件"
     },
     "vault": {
       "label": "链接和片段",
-      "hint": "{{links}} 个链接 · {{snippets}} 个片段"
+      "hint": "{{links}} · {{snippets}}",
+      "links_other": "{{count}} 个链接",
+      "snippets_other": "{{count}} 个片段"
     },
     "files": {
       "label": "文件",
@@ -36,7 +40,10 @@
     },
     "scout": {
       "label": "职位搜寻",
-      "hint": "{{pipelines}} 个搜寻流程 · {{postings}} 个已保存职位 · {{matches}} 个匹配"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_other": "{{count}} 个搜寻流程",
+      "postings_other": "{{count}} 个已保存职位",
+      "matches_other": "{{count}} 个匹配"
     },
     "profile": {
       "label": "个人资料",

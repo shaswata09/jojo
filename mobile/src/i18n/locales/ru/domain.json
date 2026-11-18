@@ -92,6 +92,34 @@
     "recommender": "Рекомендатель",
     "contact": "Контактное лицо"
   },
+  "linkCategory": {
+    "posting": "Вакансия",
+    "institution": "Организация",
+    "person": "Человек",
+    "guide": "Руководство"
+  },
+  "snippetTag": {
+    "coverLetter": "Сопроводительное письмо",
+    "applicationForm": "Анкета",
+    "email": "Эл. письмо",
+    "bio": "Биография",
+    "cv": "Резюме",
+    "researchStatement": "Описание исследований",
+    "teachingStatement": "Описание преподавания"
+  },
+  "source": {
+    "jobScout": "Скаут вакансий",
+    "jobBoard": "Сайт вакансий",
+    "referral": "Рекомендация",
+    "careersPage": "Страница карьеры"
+  },
+  "fileBucket": {
+    "toRead": "К прочтению",
+    "applications": "Заявки",
+    "jobPostings": "Вакансии",
+    "talks": "Доклады",
+    "admin": "Администрирование"
+  },
   "approval": {
     "manual": "Вручную",
     "semi": "Полуавто",
@@ -388,6 +416,7 @@
   },
   "readBy": "Прочитано моделью {{model}} · {{ago}}",
   "missingSource": "документ, которого больше нет в Хранилище",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Нечего отменять.",

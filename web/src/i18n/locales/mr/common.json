@@ -11,6 +11,12 @@
     "upcoming": "आगामी",
     "done": "पूर्ण झालेले"
   },
+  "bucketsInline": {
+    "overdue": "मुदत उलटलेले",
+    "today": "आज",
+    "upcoming": "आगामी",
+    "done": "पूर्ण झालेले"
+  },
   "snooze": {
     "day": {
       "soon": "उद्या",
@@ -273,6 +279,7 @@
     "description": "चालवण्यासाठी कमांड शोधा..."
   },
   "rows": {
-    "showMore": "आणखी दाखवा ({{total}} पैकी {{shown}})"
+    "showMore": "आणखी दाखवा ({{total}} पैकी {{shown}})",
+    "allShown": "सर्व दाखवले ({{total}})"
   }
 }

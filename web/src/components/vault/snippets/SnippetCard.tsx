@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { Marked } from '@/components/common/Marked'
 import type { Ref } from 'react'
 import { CopyPlus, Pencil, Trash2 } from 'lucide-react'
@@ -48,6 +49,7 @@ export function SnippetCard({
   onDelete: (id: string) => void
 }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   return (
     <li
       ref={cardRef}
@@ -118,7 +120,7 @@ export function SnippetCard({
           <MenuSection title={t('snippets.card.moveTo')}>
             {SNIPPET_TAGS.map((tag) => (
               <MenuItem key={tag} current={tag === s.tag} onSelect={() => onMove(s, tag)}>
-                {tag}
+                {domain.snippetTag(tag)}
               </MenuItem>
             ))}
           </MenuSection>

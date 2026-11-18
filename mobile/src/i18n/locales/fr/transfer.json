@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "Rappels et événements",
-      "hint": "{{reminders}} vous rappellent quelque chose, {{events}} sont des événements datés"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} vous rappelle quelque chose",
+      "reminders_other": "{{count}} vous rappellent quelque chose",
+      "events_one": "{{count}} est un événement daté",
+      "events_other": "{{count}} sont des événements datés"
     },
     "vault": {
       "label": "Liens et extraits",
-      "hint": "{{links}} liens · {{snippets}} extraits"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} lien",
+      "links_other": "{{count}} liens",
+      "snippets_one": "{{count}} extrait",
+      "snippets_other": "{{count}} extraits"
     },
     "files": {
       "label": "Fichiers",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "Veille d’offres",
-      "hint": "{{pipelines}} recherches · {{postings}} offres enregistrées · {{matches}} correspondances"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} recherche",
+      "pipelines_other": "{{count}} recherches",
+      "postings_one": "{{count}} offre enregistrée",
+      "postings_other": "{{count}} offres enregistrées",
+      "matches_one": "{{count}} correspondance",
+      "matches_other": "{{count}} correspondances"
     },
     "profile": {
       "label": "Profil",

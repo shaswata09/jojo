@@ -15,6 +15,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   canReachLocalNetwork,
+  combined,
   fetchPairingResponse,
   pullChunk,
   readCapped,
@@ -144,5 +145,67 @@ describe('which browsers can reach a phone on the local network', () => {
   it('stops Firefox only where its mixed-content rule bites: an https page', () => {
     expect(canReachLocalNetwork(FIREFOX, true)).toBe(false)
     expect(canReachLocalNetwork(FIREFOX, false)).toBe(true)
+  })
+})
+
+/**
+ * Counts the `abort` listeners on a signal: added minus taken off. (Node's
+ * `getEventListeners` would do, but this project's types are the browser's.)
+ */
+function abortListeners(signal: AbortSignal): () => number {
+  const live = new Set<unknown>()
+  const add = signal.addEventListener.bind(signal)
+  const remove = signal.removeEventListener.bind(signal)
+  signal.addEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.add(fn)
+    add(type, fn as EventListener, options as AddEventListenerOptions)
+  }) as typeof signal.addEventListener
+  signal.removeEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.delete(fn)
+    remove(type, fn as EventListener, options as EventListenerOptions)
+  }) as typeof signal.removeEventListener
+  return () => live.size
+}
+
+describe('what a finished request leaves behind (review 3, leaks-1)', () => {
+  it('neither a listener on the run’s signal nor an armed timer, chunk after chunk', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.stubGlobal('fetch', async () => new Response(null, { status: 200 }))
+      const run = new AbortController()
+      const listening = abortListeners(run.signal)
+      for (let i = 0; i < 100; i += 1) {
+        await sendChunk(PHONE, 'tok', new Uint8Array(8), run.signal)
+      }
+      // Before the fix: 100 of each, one per 64 KiB chunk of a transfer.
+      expect(listening()).toBe(0)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('still reaches the request on the caller’s cancel and on the deadline', async () => {
+    vi.useFakeTimers()
+    try {
+      const run = new AbortController()
+      const cancelled = combined(60_000, run.signal)
+      run.abort()
+      expect(cancelled.signal.aborted).toBe(true)
+      expect(cancelled.timedOut()).toBe(false)
+
+      const late = combined(1_000, new AbortController().signal)
+      await vi.advanceTimersByTimeAsync(1_000)
+      expect(late.signal.aborted).toBe(true)
+      expect(late.timedOut()).toBe(true)
+
+      // A caller signal aborted before the request began aborts it at once.
+      const before = new AbortController()
+      before.abort()
+      expect(combined(60_000, before.signal).signal.aborted).toBe(true)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

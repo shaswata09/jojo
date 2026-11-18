@@ -24,12 +24,16 @@
     },
     "timeline": {
       "label": "提醒與活動",
-      "hint": "{{reminders}} 則提醒、{{events}} 個有日期的活動",
+      "hint": "{{reminders}}、{{events}}",
+      "reminders_other": "{{count}} 則提醒",
+      "events_other": "{{count}} 個有日期的活動",
       "summary_other": "{{count}} 則提醒和活動"
     },
     "vault": {
       "label": "連結與片段",
-      "hint": "{{links}} 個連結 · {{snippets}} 個片段",
+      "hint": "{{links}} · {{snippets}}",
+      "links_other": "{{count}} 個連結",
+      "snippets_other": "{{count}} 個片段",
       "summary_other": "{{count}} 個連結和片段"
     },
     "files": {
@@ -44,7 +48,10 @@
     },
     "scout": {
       "label": "職缺偵察",
-      "hint": "{{pipelines}} 個管線 · {{postings}} 個已儲存的職缺 · {{matches}} 個符合結果",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_other": "{{count}} 個管線",
+      "postings_other": "{{count}} 個已儲存的職缺",
+      "matches_other": "{{count}} 個符合結果",
       "summary_other": "{{count}} 筆職缺偵察紀錄"
     },
     "notes": {

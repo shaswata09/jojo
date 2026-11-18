@@ -92,6 +92,34 @@
     "recommender": "Pemberi rekomendasi",
     "contact": "Narahubung"
   },
+  "linkCategory": {
+    "posting": "Lowongan",
+    "institution": "Institusi",
+    "person": "Orang",
+    "guide": "Panduan"
+  },
+  "snippetTag": {
+    "coverLetter": "Surat pengantar",
+    "applicationForm": "Formulir lamaran",
+    "email": "Email",
+    "bio": "Bio",
+    "cv": "CV",
+    "researchStatement": "Pernyataan riset",
+    "teachingStatement": "Pernyataan pengajaran"
+  },
+  "source": {
+    "jobScout": "Pencari lowongan",
+    "jobBoard": "Situs lowongan",
+    "referral": "Rujukan",
+    "careersPage": "Halaman karier"
+  },
+  "fileBucket": {
+    "toRead": "Untuk dibaca",
+    "applications": "Lamaran",
+    "jobPostings": "Lowongan kerja",
+    "talks": "Presentasi",
+    "admin": "Administrasi"
+  },
   "approval": {
     "manual": "Manual",
     "semi": "Semi-otomatis",
@@ -352,6 +380,7 @@
   },
   "readBy": "Dibaca oleh {{model}} · {{ago}}",
   "missingSource": "dokumen yang sudah tidak ada di Brankas",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Tidak ada yang bisa diurungkan.",

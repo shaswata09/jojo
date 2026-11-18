@@ -23,7 +23,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Application } from '../core/model'
 import type { ApplicationDraft } from './use-applications'
-import { applicationCreateInput, applicationUpdateInput } from './use-applications'
+import { applicationCreateInput, applicationUpdateInput, derivedOf } from './use-applications'
 
 const TODAY = '2026-09-12'
 
@@ -171,5 +171,25 @@ describe('applicationUpdateInput', () => {
     expect(applicationUpdateInput('x', { url: '' }, TODAY)).toEqual({ id: 'x', url: '' })
     // Absent means "leave it alone" — no key at all.
     expect(applicationUpdateInput('x', { org: 'Rice' }, TODAY)).toEqual({ id: 'x', org: 'Rice' })
+  })
+})
+
+describe('the derivations every hook instance shares (review 3)', () => {
+  const app = (id: string, stage: Application['stage'], daysAgo: number) =>
+    ({ id, slug: id, org: id, role: 'R', stage, note: '', lastAction: '', daysAgo, source: 'Referral' }) as Application
+
+  it('builds byId, the counts and the sort once per list, whoever asks', () => {
+    const all = [app('a', 'draft', 3), app('b', 'offer', 1)]
+    const one = derivedOf(all)
+    const two = derivedOf(all)
+    expect(two).toBe(one)
+    expect(two.byId).toBe(one.byId)
+    expect(one.byId.get('b')?.stage).toBe('offer')
+    expect(two.recent.map((a) => a.id)).toEqual(['b', 'a'])
+    expect(two.recent).toBe(one.recent)
+    expect(one.stageCounts.find((s) => s.id === 'draft')?.count).toBe(1)
+    expect(one.sourceCounts.find((s) => s.source === 'Referral')?.count).toBe(2)
+    // A new list (the next commit) is a new derivation.
+    expect(derivedOf([...all]).byId).not.toBe(one.byId)
   })
 })

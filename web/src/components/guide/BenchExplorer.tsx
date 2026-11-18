@@ -231,7 +231,7 @@ function RunsView({ conversation }: { conversation: Conversation }) {
             <span title="Prompt / completion tokens across the conversation">
               {run.run === null
                 ? '—'
-                : `${run.run.promptTokens.toLocaleString()} / ${run.run.completionTokens.toLocaleString()} tokens`}
+                : `${run.run.promptTokens.toLocaleString('en')} / ${run.run.completionTokens.toLocaleString('en')} tokens`}
             </span>
             <span title="Times the context was summarised to fit the window">
               {run.run === null ? '—' : `${String(run.run.compactions)} compactions`}

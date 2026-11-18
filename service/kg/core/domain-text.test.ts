@@ -42,6 +42,8 @@ import { twinOfferCopy } from './twin'
 import { duplicateMessage } from './duplicates'
 import { CAPTURE_REJECTION_MESSAGE } from './capture'
 import type { CaptureRejection } from './capture'
+import { FILE_BUCKET_VALUES, LINK_CATEGORY_VALUES, SNIPPET_TAG_VALUES } from './model-vault'
+import { SOURCES } from './model-application'
 
 const en = domainText(englishT)
 const at = '2026-11-16T09:00:00.000Z' as Instant
@@ -259,6 +261,29 @@ describe('labels and stored phrases', () => {
     WEEKDAYS.forEach((day, i) => expect(en.weekdayShort(i)).toBe(day))
     expect(en.weekday(0)).toBe('Sunday')
     expect(en.dimension('something new')).toBe('something new')
+  })
+
+  it('says every stored link category, snippet tag, source and file drawer, and anything else as stored', () => {
+    const lists: [readonly string[], (value: string) => string][] = [
+      [LINK_CATEGORY_VALUES, en.linkCategory],
+      [SNIPPET_TAG_VALUES, en.snippetTag],
+      [SOURCES, en.source],
+      [FILE_BUCKET_VALUES, en.fileBucket],
+    ]
+    for (const [values, say] of lists) {
+      for (const value of values) expect(say(value)).toBe(value)
+      expect(say('Something a person typed')).toBe('Something a person typed')
+    }
+    // Through a translator: the stored value finds its key, and the key is what is said.
+    const keyed = domainText((key) => `<${key}>`)
+    expect(keyed.snippetTag('Cover letter')).toBe('<domain:snippetTag.coverLetter>')
+    expect(keyed.source('Careers page')).toBe('<domain:source.careersPage>')
+    expect(keyed.fileBucket('To read')).toBe('<domain:fileBucket.toRead>')
+    expect(keyed.linkCategory('Guide')).toBe('<domain:linkCategory.guide>')
+    expect(keyed.linkCategory('guide')).toBe('guide')
+    // A comparison's arm is a source only when the comparison is by source.
+    expect(keyed.armLabel(DOMAIN_EN.dimension.source, 'Referral')).toBe('<domain:source.referral>')
+    expect(keyed.armLabel(DOMAIN_EN.dimension.role, 'Referral')).toBe('Referral')
   })
 
   it('says the priority deck’s fixed words from the catalog', () => {

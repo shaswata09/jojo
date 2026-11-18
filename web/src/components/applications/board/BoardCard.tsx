@@ -1,5 +1,6 @@
+import { memo, useMemo } from 'react'
 import type { Ref } from 'react'
-import { Link, useLocation } from 'react-router'
+import { Link } from 'react-router'
 import { useDraggable, type DraggableAttributes } from '@dnd-kit/core'
 import { Flag } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +10,7 @@ import { Chip } from '@/components/common/Chip'
 import { LabelChips } from '@/components/common/LabelPicker'
 import { displayName, type Application, type Stage } from '@/data/seed'
 import { refKey } from '@/lib/ids'
-import { appPath, listStateOf } from '@/lib/links'
+import { appPath } from '@/lib/links'
 import { cn } from '@/lib/utils'
 import { useDomain } from '@/i18n/domain'
 
@@ -28,6 +29,7 @@ export function BoardCardBody({
   onMoveStage,
   open,
   lifted,
+  keep = '',
   className,
   ref,
 }: {
@@ -42,12 +44,17 @@ export function BoardCardBody({
   open?: boolean
   /** Raises the card off the board while it is being carried. */
   lifted?: boolean
+  /**
+   * The board's search and stage filter, carried on the card's link
+   * (`listStateOf`). Read once by the board and passed down: each card read
+   * `useLocation()` itself, so every URL change re-rendered every card.
+   */
+  keep?: string
   className?: string
   ref?: Ref<HTMLDivElement>
 }) {
   const { t } = useTranslation('applications')
   const domain = useDomain()
-  const keep = listStateOf(useLocation().search)
   return (
     // `relative`, because the title's link stretches across the whole card.
     // The left padding is the drag rail's gutter: the rail is positioned out of
@@ -204,6 +211,13 @@ export function BoardCardBody({
 }
 
 /**
+ * The body as drawn in a column, memoised (finding performance-1): a card
+ * re-renders when its record, its open state or its drag state changes, not
+ * whenever the board does. The overlay copy uses `BoardCardBody` directly.
+ */
+const CardBody = memo(BoardCardBody)
+
+/**
  * A card in its column.
  *
  * It no longer moves with the pointer — DragOverlay does that. The card used to
@@ -213,29 +227,36 @@ export function BoardCardBody({
  * entirely, which is exactly what the overlay is for. What stays behind is a
  * dimmed placeholder holding the slot open.
  */
-export function BoardCard({
+export const BoardCard = memo(function BoardCard({
   app,
   onMoveStage,
   open,
+  keep,
   ref,
 }: {
   app: Application
   onMoveStage: (a: Application, stage: Stage) => void
   open?: boolean
+  keep?: string
   ref?: Ref<HTMLDivElement>
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: app.id })
+  // Stable while the card's own drag state is: dnd-kit re-renders every
+  // draggable when a drag starts or crosses a column, and only the carried
+  // card's attributes change — so the others' bodies skip (`CardBody` is memo).
+  const handle = useMemo(() => ({ attributes, listeners }), [attributes, listeners])
 
   return (
     <div ref={setNodeRef}>
-      <BoardCardBody
+      <CardBody
         ref={ref}
         app={app}
-        handle={{ attributes, listeners }}
+        handle={handle}
         onMoveStage={onMoveStage}
         open={open}
+        keep={keep}
         className={isDragging ? 'opacity-35' : undefined}
       />
     </div>
   )
-}
+})

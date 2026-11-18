@@ -528,12 +528,19 @@
     "emptyTitle": "Nulla da disegnare",
     "emptyDescription": "Ogni nodo qui è uno dei tuoi record. Aggiungi una candidatura e compare il primo.",
     "subtitle": "Un'anteprima di come appare jojo quando i record smettono di essere sette elenchi separati",
-    "caption": "{{visible}} di {{total}} nodi · {{edges}} archi. Tocca un nodo per leggerlo; tocca un tipo qui sotto per nasconderlo.",
+    "caption": "{{nodes}} · {{edges}}. Tocca un nodo per leggerlo; tocca un tipo qui sotto per nasconderlo.",
+    "captionNodes_one": "{{visible}} di {{count}} nodo",
+    "captionNodes_many": "{{visible}} di {{count}} nodi",
+    "captionNodes_other": "{{visible}} di {{count}} nodi",
+    "captionEdges_one": "{{count}} arco",
+    "captionEdges_many": "{{count}} archi",
+    "captionEdges_other": "{{count}} archi",
     "legend": "Legenda",
     "legendHint": "tocca per nascondere un tipo",
     "joinedTo": "Collegato a",
     "noEdges": "Ancora nulla punta a questo.",
     "openRecord": "Apri il record",
+    "derivedRecord": "Ricavato dai tuoi record: non ha una pagina propria.",
     "ask": "Interroga il grafo",
     "askHint": "chiedi con una frase, o scegline una",
     "andMore_one": "e {{count}} altro",
@@ -1076,7 +1083,9 @@
       "confirmUsed_one": "Viene tolta da {{count}} record. Il record resta; se ne va solo la parola chiave.",
       "confirmUsed_many": "Viene tolta da {{count}} di record. I record restano; se ne va solo la parola chiave.",
       "confirmUsed_other": "Viene tolta da {{count}} record. I record restano; se ne va solo la parola chiave.",
-      "confirmUnused": "Nulla ha questa etichetta, quindi non cambia nient'altro."
+      "confirmUnused": "Nulla ha questa etichetta, quindi non cambia nient'altro.",
+      "confirmTitle": "Eliminare la parola chiave {{name}}?",
+      "deletedTitle": "Parola chiave {{name}} eliminata"
     }
   }
 }

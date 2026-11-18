@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "நினைவூட்டல்களும் நிகழ்வுகளும்",
-      "hint": "{{reminders}} நினைவூட்டுகின்றன, {{events}} தேதியிட்ட நிகழ்வுகள்",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} நினைவூட்டுகிறது",
+      "reminders_other": "{{count}} நினைவூட்டுகின்றன",
+      "events_one": "{{count}} தேதியிட்ட நிகழ்வு",
+      "events_other": "{{count}} தேதியிட்ட நிகழ்வுகள்",
       "summary_one": "{{count}} நினைவூட்டல் அல்லது நிகழ்வு",
       "summary_other": "{{count}} நினைவூட்டல்களும் நிகழ்வுகளும்"
     },
     "vault": {
       "label": "இணைப்புகளும் துணுக்குகளும்",
-      "hint": "{{links}} இணைப்புகள் · {{snippets}} துணுக்குகள்",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} இணைப்பு",
+      "links_other": "{{count}} இணைப்புகள்",
+      "snippets_one": "{{count}} துணுக்கு",
+      "snippets_other": "{{count}} துணுக்குகள்",
       "summary_one": "{{count}} இணைப்பு அல்லது துணுக்கு",
       "summary_other": "{{count}} இணைப்புகளும் துணுக்குகளும்"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "வேலை தேடி",
-      "hint": "{{pipelines}} செயல்முறைகள் · {{postings}} சேமித்த அறிவிப்புகள் · {{matches}} பொருத்தங்கள்",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} செயல்முறை",
+      "pipelines_other": "{{count}} செயல்முறைகள்",
+      "postings_one": "{{count}} சேமித்த அறிவிப்பு",
+      "postings_other": "{{count}} சேமித்த அறிவிப்புகள்",
+      "matches_one": "{{count}} பொருத்தம்",
+      "matches_other": "{{count}} பொருத்தங்கள்",
       "summary_one": "{{count}} வேலை தேடிப் பதிவு",
       "summary_other": "{{count}} வேலை தேடிப் பதிவுகள்"
     },

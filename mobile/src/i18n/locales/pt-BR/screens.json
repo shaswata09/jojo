@@ -501,12 +501,19 @@
     "emptyTitle": "Nada para desenhar",
     "emptyDescription": "Cada nó aqui é um dos seus registros. Adicione uma candidatura e o primeiro aparece.",
     "subtitle": "Uma prévia do jojo quando os registros deixam de ser sete listas separadas",
-    "caption": "{{visible}} de {{total}} nós · {{edges}} arestas. Toque em um nó para lê-lo; toque em um tipo abaixo para ocultá-lo.",
+    "caption": "{{nodes}} · {{edges}}. Toque em um nó para lê-lo; toque em um tipo abaixo para ocultá-lo.",
+    "captionNodes_one": "{{visible}} de {{count}} nó",
+    "captionNodes_many": "{{visible}} de {{count}} nós",
+    "captionNodes_other": "{{visible}} de {{count}} nós",
+    "captionEdges_one": "{{count}} aresta",
+    "captionEdges_many": "{{count}} arestas",
+    "captionEdges_other": "{{count}} arestas",
     "legend": "Legenda",
     "legendHint": "toque para ocultar um tipo",
     "joinedTo": "Ligado a",
     "noEdges": "Nada aponta para cá ainda.",
     "openRecord": "Abrir o registro",
+    "derivedRecord": "Derivado dos seus registros — não tem página própria.",
     "ask": "Pergunte ao grafo",
     "askHint": "pergunte em uma frase ou escolha uma",
     "andMore_one": "e mais {{count}}",
@@ -1026,7 +1033,9 @@
       "placeholder": "ex.: Aguardando retorno",
       "confirmUsed_one": "Ela será removida de {{count}} registro. O registro fica; só a palavra-chave sai.",
       "confirmUsed_other": "Ela será removida de {{count}} registros. Os registros ficam; só a palavra-chave sai.",
-      "confirmUnused": "Nada está marcado com ela, então nada mais muda."
+      "confirmUnused": "Nada está marcado com ela, então nada mais muda.",
+      "confirmTitle": "Excluir a palavra-chave {{name}}?",
+      "deletedTitle": "Palavra-chave {{name}} excluída"
     }
   }
 }

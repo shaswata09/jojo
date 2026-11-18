@@ -215,6 +215,15 @@
       "hintEmpty": "Önce bir metni vurgulayın ya da yorum ekleyin.",
       "hint": "{{summary}} belgeye işlenecek.",
       "action": "İşaretli hâlini kaydet"
+    },
+    "names": {
+      "annotated": "notlu",
+      "pages_one": "{{count}} sayfa",
+      "pages_other": "{{count}} sayfa",
+      "pagesFile": "sayfalar",
+      "merged": "birleştirilmiş",
+      "more_one": "{{count}} tane daha",
+      "more_other": "{{count}} tane daha"
     }
   },
   "instruments": {

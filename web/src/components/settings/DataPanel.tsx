@@ -340,6 +340,16 @@ export function DataPanel() {
      *
      * The phone already did this (`forgetDocuments` in its settings screen) and
      * `restoreBackup` already does it on the other path; only this one did not.
+     *
+     * WHAT IT DOES NOT DO: erase the bytes at once. `replaceAll` moves each
+     * document to `jojo/Trash`, and since the 30-day hold (TRASH_RETENTION_MS
+     * in lib/vault-blobs.ts) the sweep keeps a trashed copy whose record is gone
+     * for that long. Nothing can bring one back after a clear — `memory.clear`
+     * empties the undo history — so the hold buys nothing here, but until the
+     * blob store has a purge to call, the confirmation says what happens: the
+     * files leave every screen now and are erased within 30 days, and Clear
+     * browser storage erases them at once (`pending.empty.documentsKept`,
+     * finding docs-1).
      */
     await blobs.replaceAll([])
 

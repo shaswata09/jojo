@@ -1,6 +1,7 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import { X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { Field, FormField } from '@/components/common/Field'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { ExpandButton, FullScreenDialog } from '@/components/common/FullScreen'
@@ -12,8 +13,6 @@ import { Button } from '@/components/ui/button'
 import type { Draft } from '@/components/vault/snippets/model'
 import { SNIPPET_TAGS } from '@/data/vault'
 import { cn } from '@/lib/utils'
-
-const TAG_OPTIONS = SNIPPET_TAGS.map((t) => ({ value: t, label: t }))
 
 /**
  * One form, rendered either in the side panel or full screen.
@@ -50,6 +49,7 @@ export function SnippetEditor({
   onDelete: (id: string) => void
 }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const form = (
     /* noValidate: `required` stays on the fields for assistive tech,
        and without it the browser's own bubble fires over the message
@@ -98,7 +98,7 @@ export function SnippetEditor({
       <FormField label={t('snippets.editor.kind.label')} hint={t('snippets.editor.kind.hint')}>
         <Segment
           label={t('snippets.editor.kind.label')}
-          options={TAG_OPTIONS}
+          options={SNIPPET_TAGS.map((tag) => ({ value: tag, label: domain.snippetTag(tag) }))}
           value={editing.tag}
           onChange={(next) => setEditing((prev) => (prev ? { ...prev, tag: next } : prev))}
           className="flex-wrap gap-1 rounded-xl"

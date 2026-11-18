@@ -275,7 +275,7 @@ export function StatisticsScreen() {
           <View style={styles.donutRow}>
             <Donut
               slices={sourceCounts.map((source, i) => ({
-                label: source.source,
+                label: domain.source(source.source),
                 value: source.count,
                 color: c.ramp[i % c.ramp.length],
               }))}
@@ -295,7 +295,7 @@ export function StatisticsScreen() {
                     ]}
                   />
                   <Txt size="sm" tone="secondary" style={s.fill} numberOfLines={1}>
-                    {source.source}
+                    {domain.source(source.source)}
                   </Txt>
                   <Txt size="sm" mono>
                     {source.count}

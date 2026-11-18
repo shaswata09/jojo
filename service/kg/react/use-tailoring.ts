@@ -40,7 +40,7 @@ import type { PostingSource } from '../core/posting-source'
 import { dayOf } from '../core/project'
 import type { ModelSettings } from '../core/provider'
 import { TAILOR_STEP_LABEL } from './use-tailor'
-import { candidatesFor, tailoredFor, titleFor } from '../core/tailoring'
+import { candidatesFor, tailoredFor } from '../core/tailoring'
 import type { TailorCandidate } from '../core/tailoring'
 import type { HasBytes } from '../core/twin'
 import type { ToolResult } from '../tools/runtime'
@@ -154,7 +154,7 @@ export function useTailoring<S extends Cancellation>({
   documentsReady?: boolean
 }): TailoringView {
   const graph = useGraph()
-  const { repo, today, projections } = useKg()
+  const { repo, today, projections, text } = useKg()
   const run = useRun()
 
   /*
@@ -218,7 +218,13 @@ export function useTailoring<S extends Cancellation>({
       queue.start({
         id: `${KIND}:${applicationId}:${candidate.id}`,
         kind: KIND,
-        label: titleFor(candidate.kind, org),
+        /*
+         * In the language on screen: the label is what the job list and the
+         * "ready" toast show, and nothing the agent or a tool reads. The
+         * snippet's stored title stays core's English (`titleFor`, written by
+         * `use-tailor.ts`), because those do read it.
+         */
+        label: text.tailoredTitle(candidate.kind, org),
         about: applicationId,
         /*
          * The point of the queue, from the person's side: they asked for this
@@ -271,7 +277,7 @@ export function useTailoring<S extends Cancellation>({
         },
       })
     },
-    [queue, applicationId, tailor, settings, org],
+    [queue, applicationId, tailor, settings, org, text],
   )
 
   const remove = useCallback(

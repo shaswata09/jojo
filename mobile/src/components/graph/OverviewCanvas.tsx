@@ -33,9 +33,11 @@ import { useGraphWords } from './use-graph-words'
  * lines until a record is selected — the phone's half of the web's
  * `OverviewCanvas`, laid out by the same `clusterLayout`.
  *
- * TWO LAYERS. The marks are one SVG group built once per layout and moved by
- * the zoom's matrix on the UI thread (`use-canvas-zoom.ts`): selecting a record
- * or pinching never re-renders them. Everything else is the SCREEN layer,
+ * TWO LAYERS. The marks are one SVG group moved by the zoom's matrix on the UI
+ * thread (`use-canvas-zoom.ts`): selecting a record, panning or a pinch in
+ * progress never re-renders them. They are rebuilt once per layout and once per
+ * COMMITTED zoom level (a pinch's end, a zoom button), because a dot's radius is
+ * capped in screen pixels. Everything else is the SCREEN layer,
  * drawn in screen pixels so text stays the size it was written at whatever the
  * zoom: group names, the selected record's lines and its linked records drawn
  * again at full strength, the records counted on it unfolded round it, names,
@@ -664,7 +666,9 @@ export function OverviewCanvas({
 
 /**
  * The marks: group discs and one dot per record, in layout units. Memoised on
- * the layout alone — selection, zoom and answers are never its props.
+ * the layout and the committed zoom (`scale`, for the dot cap) — so rebuilt once
+ * per pinch end or zoom button, never per frame, per pan or per selection;
+ * selection and answers are never its props.
  */
 const StaticMarks = memo(function StaticMarks({
   layout,

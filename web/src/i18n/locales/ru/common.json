@@ -11,6 +11,12 @@
     "upcoming": "Предстоит",
     "done": "Выполнено"
   },
+  "bucketsInline": {
+    "overdue": "Просрочено",
+    "today": "Сегодня",
+    "upcoming": "Предстоит",
+    "done": "Выполнено"
+  },
   "snooze": {
     "day": {
       "soon": "Завтра",
@@ -283,6 +289,7 @@
     "description": "Найдите команду для запуска…"
   },
   "rows": {
-    "showMore": "Показать ещё ({{shown}} из {{total}})"
+    "showMore": "Показать ещё ({{shown}} из {{total}})",
+    "allShown": "Показаны все ({{total}})"
   }
 }

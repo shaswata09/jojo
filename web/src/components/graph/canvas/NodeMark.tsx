@@ -101,7 +101,12 @@ export function NodeMark({
           y={r + LABEL_DY}
           textAnchor="middle"
           fill="var(--text-2)"
-          style={{ fontSize: LABEL_SIZE, pointerEvents: 'none' }}
+          // Grown on a small box by `--label-scale` (GraphCanvas) so a name
+          // stays legible on a phone; the collision pass reads the same scale.
+          style={{
+            fontSize: `calc(${LABEL_SIZE}px * var(--label-scale, 1))`,
+            pointerEvents: 'none',
+          }}
         >
           {truncate(node.label)}
         </text>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { fromReactKey, shouldSend } from '@/lib/composer-keys'
 import { vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
@@ -20,6 +21,7 @@ export function useScriptedConversation() {
 
   const { addSnippet } = useVault()
   const { t } = useTranslation('assistant')
+  const domain = useDomain()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -79,7 +81,10 @@ export function useScriptedConversation() {
     const snippet = addSnippet({ title: script.title, tag: script.tag, body: message.text })
     toast({
       title: t('common.savedToSnippets'),
-      description: t('common.filedUnder', { title: snippet.title, tag: snippet.tag }),
+      description: t('common.filedUnder', {
+        title: snippet.title,
+        tag: domain.snippetTag(snippet.tag),
+      }),
       action: {
         label: t('common.openVault'),
         onClick: () => navigate(vaultPath({ tool: 'snippets' })),

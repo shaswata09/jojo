@@ -99,8 +99,11 @@
     "resetHint": "नोंदी त्यांच्या नेहमीच्या मांडणीत परत ठेवा",
     "noMatches": "या प्रश्नाशी एकही नोंद जुळत नाही",
     "clearQuery": "प्रश्न साफ करा",
-    "counts_one": "{{count}} पैकी {{shown}} नोंद · {{edges}} जोडण्या",
-    "counts_other": "{{count}} पैकी {{shown}} नोंदी · {{edges}} जोडण्या",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_one": "{{count}} पैकी {{shown}} नोंद",
+    "countsRecords_other": "{{count}} पैकी {{shown}} नोंदी",
+    "countsConnections_one": "{{count}} जोडणी",
+    "countsConnections_other": "{{count}} जोडण्या",
     "panelTitle": "सर्व काही, जोडलेले",
     "help": "नोडचा परिसर पाहण्यासाठी त्यावर पॉइंटर न्या किंवा Tab ने जा, निवडण्यासाठी दाबा, हलवण्यासाठी ओढा. नोडचा रंग त्याचा प्रकार दाखवतो, आकार त्याच्याकडे किती दुवे येतात ते दाखवतो."
   },

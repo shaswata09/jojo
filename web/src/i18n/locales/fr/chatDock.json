@@ -12,8 +12,8 @@
     "labelCorner": "Déplacer le chat latéralement — dans le coin. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
     "labelFarLeft": "Déplacer le chat latéralement — tout à gauche. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
     "labelFarRight": "Déplacer le chat latéralement — tout à droite. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
-    "labelPartWay": "Déplacer le chat latéralement — à {{percent}} % vers la gauche. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
-    "labelPartWayRight": "Déplacer le chat latéralement — à {{percent}} % vers la droite. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "labelPartWay": "Déplacer le chat latéralement — à {{percent}} % vers la gauche. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
+    "labelPartWayRight": "Déplacer le chat latéralement — à {{percent}} % vers la droite. Les flèches le déplacent ; un double-clic le ramène dans le coin.",
     "title": "Faites glisser pour écarter le chat · double-cliquez pour le ramener dans le coin"
   },
   "prompts": {

@@ -104,6 +104,10 @@ describe('the gestures', () => {
   it('moves every bone smoothly: no frame-to-frame snap of a limb', () => {
     // 0.16 rad a frame is a fast, deliberate swing at 60 fps — an arm thrown
     // up in a hop. More than that and the limb teleports between frames.
+    // The largest step found, asserted once: an `expect` per bone, axis and
+    // frame — a label string built for each — made this the slowest test in
+    // the suite, and it timed out under load (review 3, coverage-13).
+    let worst = { step: 0, at: '' }
     for (const pose of POSES) {
       const frames = Math.ceil(gestureSeconds(pose) * 60)
       let prev = gestureBones(pose, 0)
@@ -111,15 +115,15 @@ describe('the gestures', () => {
         const next = gestureBones(pose, f / frames)
         for (const key of BONE_KEYS) {
           for (let i = 0; i < 3; i++) {
-            expect(
-              Math.abs(next[key][i] - prev[key][i]),
-              `${pose} ${key}[${i}] @${f}`,
-            ).toBeLessThan(0.16)
+            const step = Math.abs(next[key][i] - prev[key][i])
+            if (step > worst.step)
+              worst = { step, at: `${pose} ${key}[${String(i)}] @${String(f)}` }
           }
         }
         prev = next
       }
     }
+    expect(worst.step, worst.at).toBeLessThan(0.16)
   })
 
   it('never folds a forearm across the chest, where the hand sinks into the armour (Q321)', () => {

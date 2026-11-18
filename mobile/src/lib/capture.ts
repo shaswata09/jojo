@@ -8,6 +8,7 @@ import {
   type CaptureRejection,
 } from '@jojo/service/core/capture'
 import { isLocalTarget } from '@jojo/service/core/local-target'
+import { ownDocumentPath } from '@/lib/document-path'
 
 /**
  * The half of a capture that runs outside the WebView.
@@ -75,13 +76,26 @@ export type CaptureOutcome =
  * deterministic applies one level up, and the capture's timestamp is a fact the
  * caller already holds.
  */
-export async function inlineCapture(raw: RawCapture, now: string): Promise<CaptureOutcome> {
+export async function inlineCapture(
+  raw: RawCapture,
+  now: string,
+  /**
+   * The address the WebView ITSELF reports for the page that posted — the
+   * native event's, never the message's. The message is written by script
+   * running in the page's own world, which the page owns: it can replace
+   * `JSON.stringify` and claim to be `http://192.168.1.1/`, unlocking the
+   * local-network fetches refused below (review 2026-11-18, security-3). When
+   * given it decides `localPage` and is the url the capture is filed under.
+   */
+  pageUrl?: string,
+): Promise<CaptureOutcome> {
   if (raw.type === 'jojo:capture-failed') {
     return { ok: false, reason: 'script-failed', detail: raw.message }
   }
   if (typeof raw.html !== 'string' || typeof raw.url !== 'string') {
     return { ok: false, reason: 'not-a-page' }
   }
+  const url = pageUrl !== undefined && pageUrl !== '' ? pageUrl : raw.url
 
   const assets = [...(raw.assets ?? [])]
   const resolved = new Map<string, string>()
@@ -119,7 +133,7 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
    * so a public name pointed at a private address still passes — the limit
    * the extension's rule documents too.
    */
-  const localPage = /^https?:\/\//i.test(raw.url) && isLocalTarget(raw.url)
+  const localPage = /^https?:\/\//i.test(url) && isLocalTarget(url)
 
   // Indexed rather than for-of because the loop appends to what it is walking:
   // a stylesheet's own url() references are discovered only once its text has
@@ -352,7 +366,7 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
   )
 
   const read = readCapture({
-    url: raw.url,
+    url,
     title: raw.title ?? '',
     html,
     capturedAt: now,
@@ -441,9 +455,10 @@ export async function writeCapture(id: string, html: string): Promise<string> {
 
 /** Reads a capture back for the viewer. */
 export async function readStoredCapture(uri: string | undefined): Promise<string | null> {
-  if (uri === undefined) return null
+  // Only a page this app stored: a record's uri can name any file (security-2).
+  const path = ownDocumentPath(uri)
+  if (path === null) return null
   try {
-    const path = uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
     if (!(await ReactNativeBlobUtil.fs.exists(path))) return null
     return await ReactNativeBlobUtil.fs.readFile(path, 'utf8')
   } catch {

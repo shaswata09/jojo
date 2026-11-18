@@ -142,6 +142,28 @@ export function armRefresh(
   return () => clearTimeout(id)
 }
 
+/**
+ * Which offer a response is checked against: the one whose path it came in on.
+ *
+ * The rolled-over previous offer only when the token names it and it is not
+ * also the live one; the live offer in every other case, including no token at
+ * all and no previous offer. Pure so the choice is tested on its own (review 3,
+ * coverage-8): a slip here refuses every good response that arrives just after
+ * the code on screen was replaced.
+ */
+export function offerFor<S>(
+  token: string | undefined,
+  live: { readonly state: S | null; readonly token: string | null },
+  previous: { readonly state: S; readonly token: string } | null,
+): S | null {
+  return token !== undefined &&
+    previous !== null &&
+    token === previous.token &&
+    token !== live.token
+    ? previous.state
+    : live.state
+}
+
 export function usePairingSession(
   active: boolean,
   /** Which way the records go; part of the path, so a phone set the other way cannot pair. */
@@ -268,14 +290,11 @@ export function usePairingSession(
   const complete = useCallback(
     async (response: Uint8Array, token?: string): Promise<SessionKeys | null> => {
       // The offer this phone scanned: the one whose path it answered on.
-      const older = previous.current
-      const current =
-        token !== undefined &&
-        older !== null &&
-        token === older.token &&
-        token !== liveToken.current
-          ? older.state
-          : state.current
+      const current = offerFor(
+        token,
+        { state: state.current, token: liveToken.current },
+        previous.current,
+      )
       if (current === null) return null
 
       const result = await completePairing(secrets, current, response, Date.now())

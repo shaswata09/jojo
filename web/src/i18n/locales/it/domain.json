@@ -92,6 +92,34 @@
     "recommender": "Referente",
     "contact": "Persona di contatto"
   },
+  "linkCategory": {
+    "posting": "Annuncio",
+    "institution": "Istituzione",
+    "person": "Persona",
+    "guide": "Guida"
+  },
+  "snippetTag": {
+    "coverLetter": "Lettera di presentazione",
+    "applicationForm": "Modulo di candidatura",
+    "email": "Email",
+    "bio": "Biografia",
+    "cv": "CV",
+    "researchStatement": "Dichiarazione di ricerca",
+    "teachingStatement": "Dichiarazione didattica"
+  },
+  "source": {
+    "jobScout": "Scout offerte",
+    "jobBoard": "Portale di lavoro",
+    "referral": "Segnalazione",
+    "careersPage": "Pagina carriere"
+  },
+  "fileBucket": {
+    "toRead": "Da leggere",
+    "applications": "Candidature",
+    "jobPostings": "Annunci di lavoro",
+    "talks": "Presentazioni",
+    "admin": "Amministrazione"
+  },
   "approval": {
     "manual": "Manuale",
     "semi": "Semiautomatica",
@@ -376,6 +404,7 @@
   },
   "readBy": "Letto da {{model}} · {{ago}}",
   "missingSource": "un documento che non è più nella Cassaforte",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Niente da annullare.",

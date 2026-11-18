@@ -24,9 +24,10 @@ import { fileURLToPath } from 'node:url'
  * go unchecked: a `slopFor` that quietly stopped reaching 44 would leave every
  * call site reading correctly and every target too small.
  *
- * Still scoped to those three, and the screens are still out. They
- * are React Native components, and testing them needs a renderer, a native
- * module mock table and a decision about which of the two this project wants.
+ * Rendering the screens is still out. They are React Native components, and
+ * testing them needs a renderer, a native module mock table and a decision
+ * about which of the two this project wants — the include below now reaches
+ * their folders, for the pure modules that live beside them.
  * The cost of leaving them out is higher than it was: with the graph layer gone
  * from this package, `buildMonth`'s today marker and the label-tone swatches are
  * the sort of thing only a person looking at a phone will catch, which is why
@@ -38,12 +39,27 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: [
-      'src/kg/**/*.test.ts',
-      'src/lib/**/*.test.ts',
-      'src/theme/**/*.test.ts',
-      // The translation catalogs: JSON and the index that imports it.
-      'src/i18n/**/*.test.ts',
-    ],
+    /**
+     * Every `*.test.ts` under `src`, components and screens included (review
+     * 2026-11-18, coverage-14). The list of four folders meant a test placed
+     * next to a pure module in `src/components` (`tour-logic.ts`,
+     * `scanner-page.ts`, …) never ran and the gate stayed green — the trap R35
+     * closed for the service. Still `.ts` only and still `node`: a test that
+     * needs to RENDER a screen is the decision deferred above, and would fail
+     * here loudly rather than be skipped quietly.
+     */
+    include: ['src/**/*.test.ts'],
+    /**
+     * Thirty seconds, as the service's suite has (see its config for the
+     * measurements). Alone, every file here finishes in well under the 5 s
+     * default; with the web and service suites running beside it — as
+     * concurrent sessions and review agents do in this repo — the launcher-icon
+     * redraws and a first import that pulled in twenty locales' catalogs ran
+     * past it (coverage-13). It failed for the machine's load rather than for
+     * anything in the code, and a suite that goes red when something else is
+     * compiling teaches people to re-run it rather than read it. 30 s still
+     * fails a genuine hang.
+     */
+    testTimeout: 30_000,
   },
 })

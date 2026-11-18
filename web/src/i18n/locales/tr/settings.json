@@ -433,6 +433,7 @@
       "demoMemory": "Demo başvuruları, zaman çizelgesi, kasa, kayıtlı ilanlar, anahtar kelimeler ve profil silinir; ancak şu anda hiçbir şey kaydedilmiyor, bu yüzden yeniden yükleme demo verileriyle baştan başlar. Buradakilerin hiçbiri sizin değildi — demo verileri yüklendiğinden beri bu depoya hiçbir şey yazılmadı.",
       "ownDurable": "Başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, kişiler, notlar, konuşmalar, CV bilgileri ve profiliniz, bu oturumda eklediğiniz her şey dahil silinir ve yeniden yüklemeden sonra da böyle kalır. Geri alınamaz. Anahtar kelimeleriniz korunur — kendi başlarına kayıttırlar — ama onları taşıyan hiçbir şey kalmaz; bu yüzden anahtar kelime panelindeki her sayı sıfıra iner.",
       "ownMemory": "Başvurular, zaman çizelgesi, kasa, kayıtlı ilanlar, kişiler, notlar, konuşmalar, CV bilgileri ve profiliniz, bu oturumda eklediğiniz her şey dahil silinir; ancak şu anda hiçbir şey kaydedilmiyor, bu yüzden yeniden yükleme demo verileriyle baştan başlar. Geri alınamaz. Anahtar kelimeleriniz korunur — kendi başlarına kayıttırlar — ama onları taşıyan hiçbir şey kalmaz; bu yüzden anahtar kelime panelindeki her sayı sıfıra iner.",
+      "documentsKept": "Eklediğiniz belgeler hemen her ekrandan kalkar, ancak dosyaları kalıcı olarak silinmeden önce 30 gün bu tarayıcının çöp kutusunda kalır. Hemen silmek için “{{storage}}” seçeneğini kullanın.",
       "confirm": "Her şeyi temizle"
     },
     "demo": {

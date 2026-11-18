@@ -358,7 +358,7 @@
     "createHint": "nichts gefunden? leg es an",
     "noneTitle": "Nichts passt zu „{{query}}“",
     "noneDescription": "Die Suche liest Titel, Notiz und Kategorie jedes Eintrags und den Namen jeder Einstellung. Nichts davon wird von anderswo geladen.",
-    "fit": "{{fit}} % Passung",
+    "fit": "{{fit}} % Passung",
     "results_one": "{{count}} Ergebnis",
     "results_other": "{{count}} Ergebnisse",
     "showAll_one": "Alle {{count}} anzeigen",
@@ -466,7 +466,7 @@
       "title": "Wie weit die Bewerbungen kamen",
       "emptyTitle": "Noch nichts verschickt",
       "emptyDescription": "Antwort-, Gesprächs- und Angebotsquoten zählen Bewerbungen, die wirklich rausgegangen sind. Hol eine aus dem Entwurf, und das hier füllt sich.",
-      "carried": "{{pct}} % kamen weiter"
+      "carried": "{{pct}} % kamen weiter"
     },
     "outcomes": {
       "title": "Ergebnisse",
@@ -501,12 +501,17 @@
     "emptyTitle": "Nichts zu zeichnen",
     "emptyDescription": "Jeder Knoten hier ist einer deiner Einträge. Füge eine Bewerbung hinzu, und der erste erscheint.",
     "subtitle": "Ein Ausblick darauf, wie jojo aussieht, wenn Einträge keine sieben getrennten Listen mehr sind",
-    "caption": "{{visible}} von {{total}} Knoten · {{edges}} Kanten. Tippe auf einen Knoten, um ihn zu lesen; tippe unten auf einen Typ, um ihn auszublenden.",
+    "caption": "{{nodes}} · {{edges}}. Tippe auf einen Knoten, um ihn zu lesen; tippe unten auf einen Typ, um ihn auszublenden.",
+    "captionNodes_one": "{{visible}} von {{count}} Knoten",
+    "captionNodes_other": "{{visible}} von {{count}} Knoten",
+    "captionEdges_one": "{{count}} Kante",
+    "captionEdges_other": "{{count}} Kanten",
     "legend": "Legende",
     "legendHint": "tippen, um einen Typ auszublenden",
     "joinedTo": "Verbunden mit",
     "noEdges": "Noch verweist nichts hierher.",
     "openRecord": "Eintrag öffnen",
+    "derivedRecord": "Aus deinen Einträgen abgeleitet – es hat keine eigene Seite.",
     "ask": "Den Graphen fragen",
     "askHint": "frag in einem Satz oder wähle eine Frage",
     "andMore_one": "und {{count}} weiterer",
@@ -1026,7 +1031,9 @@
       "placeholder": "z. B. Warte auf Antwort",
       "confirmUsed_one": "Es wird von {{count}} Eintrag entfernt. Der Eintrag bleibt; nur das Schlagwort verschwindet.",
       "confirmUsed_other": "Es wird von {{count}} Einträgen entfernt. Die Einträge bleiben; nur das Schlagwort verschwindet.",
-      "confirmUnused": "Nichts ist damit markiert, daher ändert sich sonst nichts."
+      "confirmUnused": "Nichts ist damit markiert, daher ändert sich sonst nichts.",
+      "confirmTitle": "Schlagwort {{name}} löschen?",
+      "deletedTitle": "Schlagwort {{name}} gelöscht"
     }
   }
 }

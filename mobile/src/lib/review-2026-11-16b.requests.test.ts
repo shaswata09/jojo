@@ -143,7 +143,7 @@ describe('the posting browser takes only the capture it asked for (mobile-6)', (
     const screen = read('screens/PostingBrowserScreen.tsx')
     const gate = screen.indexOf('if (!acceptsCapture(raw, pending.current)) return')
     expect(gate).toBeGreaterThan(-1)
-    expect(gate).toBeLessThan(screen.indexOf('await inlineCapture(raw, now())'))
+    expect(gate).toBeLessThan(screen.indexOf('await inlineCapture(raw, now()'))
     expect(screen).toMatch(
       /pending\.current = nonce[\s\S]*injectJavaScript\(captureScript\(nonce\)\)/,
     )

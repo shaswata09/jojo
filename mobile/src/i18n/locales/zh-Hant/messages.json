@@ -208,7 +208,8 @@
     "timeout": "這個求職網站回應的時間太久。",
     "unreachable": "無法連上這個求職網站。",
     "status": "這個求職網站回應了 {{status}}。",
-    "browserOnly": "{{host}} 只會向真正的瀏覽器顯示職缺清單，所以無法從手機讀取。在電腦上，jojo 瀏覽器擴充功能可以讀取。"
+    "browserOnly": "{{host}} 只會向真正的瀏覽器顯示職缺清單，所以無法從手機讀取。在電腦上，jojo 瀏覽器擴充功能可以讀取。",
+    "cancelled": "已取消讀取。"
   },
   "timelineForm": {
     "title": "請取一個你認得出來的標題。",

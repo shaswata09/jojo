@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { kindOfFile, mimeOfFile, sizeLabel } from '@/lib/files'
 import { DOCUMENT_TRASH_SUFFIX } from '@/lib/restore-documents'
+import { ownDocumentPath } from '@/lib/document-path'
 import type { FileBucket, FileKind } from '@jojo/service/data/vault'
 
 /**
@@ -226,9 +227,11 @@ async function sizeOnDisk(uri: string): Promise<number> {
  * known. See `FileViewer` for what it says while it waits.
  */
 export async function documentExists(uri: string | undefined): Promise<boolean> {
-  if (!uri) return false
+  // A path outside the app's own documents is not a copy this app holds.
+  const path = ownDocumentPath(uri)
+  if (path === null) return false
   try {
-    return await ReactNativeBlobUtil.fs.exists(pathOf(uri))
+    return await ReactNativeBlobUtil.fs.exists(path)
   } catch {
     return false
   }
@@ -253,11 +256,14 @@ export async function documentExists(uri: string | undefined): Promise<boolean> 
  * aside instead, and a launch past the retention window sweeps it.
  */
 export async function forgetDocument(uri: string | undefined): Promise<void> {
-  if (!uri) return
+  // Only ever the app's own copies: a record's uri can be written by the
+  // assistant or a backup, and naming a path is not a licence to delete it.
+  const own = ownDocumentPath(uri)
+  if (own === null) return
   // The set-aside copy as well: a wipe empties the store, that commit can move
   // the bytes into the trash before this runs (`reconcileTrashedDocuments`),
   // and "your vault is gone" must not mean "in a month".
-  for (const path of [pathOf(uri), `${pathOf(uri)}${TRASH_SUFFIX}`]) {
+  for (const path of [own, `${own}${TRASH_SUFFIX}`]) {
     try {
       await ReactNativeBlobUtil.fs.unlink(path)
     } catch {
@@ -268,27 +274,6 @@ export async function forgetDocument(uri: string | undefined): Promise<void> {
   }
 }
 
-/**
- * Every copy behind a set of records, for the one action that takes them all.
- *
- * WHY THIS EXISTS AT ALL. Wiping the store is the only place in this app where
- * deleting the bytes is unambiguously right: there is no Undo on it — Settings
- * says so in the confirmation — so there is no restored record left to point at
- * a file, which is the objection that keeps `forgetDocument` off the
- * single-row delete path. Without it the store emptied, the confirmation said
- * the vault was gone, and every document a user had ever attached stayed on the
- * device until they uninstalled the app.
- *
- * DEDUPED, and that is load-bearing rather than tidy. `onDuplicate` in
- * `FilesTool` copies `uri` verbatim, so two records can and do name one file.
- * A second unlink of the same path rejects with ENOENT, which `forgetDocument`
- * swallows — so the dedupe changes no outcome today and states the sharing, so
- * that a future caller which reports failures does not report a phantom one.
- *
- * Never rejects, for the same reason `forgetDocument` never does: the caller is
- * a press handler that has already emptied the store, and a leaked copy is a
- * few kilobytes that leave with the app.
- */
 /**
  * A copy set aside so an Undo can bring it back, and swept at a launch once
  * it has waited out the retention window.
@@ -424,6 +409,10 @@ const writeTrashList = async (entries: readonly TrashedDocument[]): Promise<void
  * `serially`. Resolves the trashed path, or null when nothing moved.
  */
 async function setAside(from: string, now: number): Promise<string | null> {
+  // Never a path outside the app's own documents (security-2): a record the
+  // assistant pointed at the store's own database, then re-pointed, would
+  // otherwise have that database renamed aside on the next commit.
+  if (ownDocumentPath(from) === null) return null
   const to = `${from}${TRASH_SUFFIX}`
   if ((await trashList()).some((entry) => entry.path === to)) return null
   try {
@@ -550,6 +539,13 @@ export function trashDocument(
         } catch {
           // The Undo restores the record either way; `documentExists` is what
           // the row uses to tell the person the document did not come back.
+          // But while the set-aside copy is the record's ONLY copy it stays
+          // listed, as `reconcileTrashedDocuments` keeps it: unlisted, a move
+          // that failed once was never tried again and the bytes were never
+          // swept either (coverage-3).
+          const there = await ReactNativeBlobUtil.fs.exists(from).catch(() => false)
+          const here = await ReactNativeBlobUtil.fs.exists(to).catch(() => false)
+          if (!there && here) return
         }
         await writeTrashList((await trashList()).filter((entry) => entry.path !== to))
       })
@@ -610,6 +606,9 @@ export function reconcileTrashedDocuments(
     }
     await Promise.all(
       plan.purge.map(async (path) => {
+        // A list written by an older build could name anything; only the app's
+        // own documents are ever deleted.
+        if (ownDocumentPath(path) === null) return
         try {
           await ReactNativeBlobUtil.fs.unlink(path)
         } catch {
@@ -621,6 +620,27 @@ export function reconcileTrashedDocuments(
   }).catch(() => undefined)
 }
 
+/**
+ * Every copy behind a set of records, for the one action that takes them all.
+ *
+ * WHY THIS EXISTS AT ALL. Wiping the store is the only place in this app where
+ * deleting the bytes is unambiguously right: there is no Undo on it — Settings
+ * says so in the confirmation — so there is no restored record left to point at
+ * a file, which is the objection that keeps `forgetDocument` off the
+ * single-row delete path. Without it the store emptied, the confirmation said
+ * the vault was gone, and every document a user had ever attached stayed on the
+ * device until they uninstalled the app.
+ *
+ * DEDUPED, and that is load-bearing rather than tidy. `onDuplicate` in
+ * `FilesTool` copies `uri` verbatim, so two records can and do name one file.
+ * A second unlink of the same path rejects with ENOENT, which `forgetDocument`
+ * swallows — so the dedupe changes no outcome today and states the sharing, so
+ * that a future caller which reports failures does not report a phantom one.
+ *
+ * Never rejects, for the same reason `forgetDocument` never does: the caller is
+ * a press handler that has already emptied the store, and a leaked copy is a
+ * few kilobytes that leave with the app.
+ */
 export async function forgetDocuments(uris: readonly (string | undefined)[]): Promise<void> {
   const paths = new Set(uris.filter((uri): uri is string => Boolean(uri)))
   await Promise.all([...paths].map(forgetDocument))
@@ -648,6 +668,10 @@ export async function forgetDocuments(uris: readonly (string | undefined)[]): Pr
  * sentence: nothing offered to open it.
  */
 export async function openDocument(uri: string): Promise<void> {
+  // Handing another app a path outside this app's documents would share a
+  // file nobody chose to share — the FileProvider would mint a grant for it.
+  const path = ownDocumentPath(uri)
+  if (path === null) throw new Error(i18next.t('messages:reader.gone'))
   if (Platform.OS === 'android') {
     // One call where there were two. `actionViewIntent` mints the content URI
     // through the package's own FileProvider and sets the read grant itself, so
@@ -658,7 +682,7 @@ export async function openDocument(uri: string): Promise<void> {
     // `storedName` guarantees still carries the extension. It rejects with
     // ENOAPP when nothing handles the type, which is the sentence the caller
     // already knows how to show.
-    await ReactNativeBlobUtil.android.actionViewIntent(pathOf(uri), mimeOfFile(uri))
+    await ReactNativeBlobUtil.android.actionViewIntent(path, mimeOfFile(uri))
     return
   }
 

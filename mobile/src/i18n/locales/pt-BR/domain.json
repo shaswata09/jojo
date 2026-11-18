@@ -92,6 +92,34 @@
     "recommender": "Referência",
     "contact": "Contato"
   },
+  "linkCategory": {
+    "posting": "Vaga",
+    "institution": "Instituição",
+    "person": "Pessoa",
+    "guide": "Guia"
+  },
+  "snippetTag": {
+    "coverLetter": "Carta de apresentação",
+    "applicationForm": "Formulário de candidatura",
+    "email": "E-mail",
+    "bio": "Biografia",
+    "cv": "Currículo",
+    "researchStatement": "Declaração de pesquisa",
+    "teachingStatement": "Declaração de docência"
+  },
+  "source": {
+    "jobScout": "Explorador de vagas",
+    "jobBoard": "Site de vagas",
+    "referral": "Indicação",
+    "careersPage": "Página de carreiras"
+  },
+  "fileBucket": {
+    "toRead": "Para ler",
+    "applications": "Candidaturas",
+    "jobPostings": "Anúncios de vagas",
+    "talks": "Palestras",
+    "admin": "Administrativo"
+  },
   "approval": {
     "manual": "Manual",
     "semi": "Semiautomático",
@@ -376,6 +404,7 @@
   },
   "readBy": "Lido por {{model}} · {{ago}}",
   "missingSource": "um documento que não está mais no Cofre",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "Nada para desfazer.",

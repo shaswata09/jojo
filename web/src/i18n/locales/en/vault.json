@@ -215,6 +215,15 @@
       "hintEmpty": "Highlight some text or add a comment first.",
       "hint": "{{summary}} will be written in.",
       "action": "Save with markup"
+    },
+    "names": {
+      "annotated": "annotated",
+      "pages_one": "{{count}} page",
+      "pages_other": "{{count}} pages",
+      "pagesFile": "pages",
+      "merged": "merged",
+      "more_one": "{{count}} more",
+      "more_other": "{{count}} more"
     }
   },
   "instruments": {

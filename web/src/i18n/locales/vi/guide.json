@@ -613,5 +613,6 @@
       "address": "<lead>Trên thanh địa chỉ</lead> chính là trang đó. Trang đầu tiên là <code>/guide</code> chứ không phải <code>/guide/overview</code>, để mọi liên kết và dấu trang tạo ra trước khi có bốn trang vẫn dẫn tới một nơi thật."
     }
   },
-  "englishOnly": "Trang này bằng tiếng Anh: nó gọi mã nguồn, các gói và điều khoản giấy phép đúng bằng những từ chúng được viết."
+  "englishOnly": "Trang này bằng tiếng Anh: nó gọi mã nguồn, các gói và điều khoản giấy phép đúng bằng những từ chúng được viết.",
+  "englishData": "Bảng này bằng tiếng Anh: nó trình bày bài đánh giá đúng như khi chạy, bằng chính lời của các tình huống kiểm thử, công cụ và mô hình."
 }

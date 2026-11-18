@@ -202,6 +202,13 @@
       "hintEmpty": "先にテキストをハイライトするか、コメントを追加してください。",
       "hint": "{{summary}}が書き込まれます。",
       "action": "注釈付きで保存"
+    },
+    "names": {
+      "annotated": "注釈付き",
+      "pages_other": "{{count}} ページ",
+      "pagesFile": "ページ",
+      "merged": "結合",
+      "more_other": "他 {{count}} 件"
     }
   },
   "instruments": {

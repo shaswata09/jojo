@@ -90,7 +90,9 @@
     "resetHint": "把记录恢复到通常的排列方式",
     "noMatches": "没有记录符合这个问题",
     "clearQuery": "清除查询",
-    "counts_other": "{{count}} 条记录中的 {{shown}} 条 · {{edges}} 个连接",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_other": "{{count}} 条记录中的 {{shown}} 条",
+    "countsConnections_other": "{{count}} 个连接",
     "panelTitle": "一切，彼此相连",
     "help": "将指针悬停在节点上或用 Tab 移到节点，可以查看它的邻近关系；按下即可选中，拖动即可移动。节点颜色代表类型，大小代表有多少内容指向它。"
   },

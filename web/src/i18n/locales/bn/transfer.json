@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "রিমাইন্ডার ও ইভেন্ট",
-      "hint": "{{reminders}}টি আপনাকে মনে করিয়ে দেয়, {{events}}টি তারিখযুক্ত ইভেন্ট",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}}টি আপনাকে মনে করিয়ে দেয়",
+      "reminders_other": "{{count}}টি আপনাকে মনে করিয়ে দেয়",
+      "events_one": "{{count}}টি তারিখযুক্ত ইভেন্ট",
+      "events_other": "{{count}}টি তারিখযুক্ত ইভেন্ট",
       "summary_one": "{{count}}টি রিমাইন্ডার বা ইভেন্ট",
       "summary_other": "{{count}}টি রিমাইন্ডার ও ইভেন্ট"
     },
     "vault": {
       "label": "লিংক ও স্নিপেট",
-      "hint": "{{links}}টি লিংক · {{snippets}}টি স্নিপেট",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}}টি লিংক",
+      "links_other": "{{count}}টি লিংক",
+      "snippets_one": "{{count}}টি স্নিপেট",
+      "snippets_other": "{{count}}টি স্নিপেট",
       "summary_one": "{{count}}টি লিংক বা স্নিপেট",
       "summary_other": "{{count}}টি লিংক ও স্নিপেট"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "জব স্কাউট",
-      "hint": "{{pipelines}}টি পাইপলাইন · {{postings}}টি সংরক্ষিত বিজ্ঞপ্তি · {{matches}}টি মিল",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}}টি পাইপলাইন",
+      "pipelines_other": "{{count}}টি পাইপলাইন",
+      "postings_one": "{{count}}টি সংরক্ষিত বিজ্ঞপ্তি",
+      "postings_other": "{{count}}টি সংরক্ষিত বিজ্ঞপ্তি",
+      "matches_one": "{{count}}টি মিল",
+      "matches_other": "{{count}}টি মিল",
       "summary_one": "জব স্কাউটের {{count}}টি রেকর্ড",
       "summary_other": "জব স্কাউটের {{count}}টি রেকর্ড"
     },

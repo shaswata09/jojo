@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link2, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useDomain } from '@/i18n/domain'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
 import { FormField } from '@/components/common/Field'
@@ -35,6 +36,7 @@ import { announceRefusal } from '@/components/common/write-result'
  */
 export function LinksTool({ focus }: { focus?: string }) {
   const { t } = useTranslation('vault')
+  const domain = useDomain()
   const [bucket, setBucket] = useState<LinkCategory | 'all'>('all')
   const [query, setQuery] = useState('')
   // The paste field used to be open permanently, which put a text input, a
@@ -79,7 +81,15 @@ export function LinksTool({ focus }: { focus?: string }) {
     (l) =>
       (bucket === 'all' || l.category === bucket) &&
       matches(l.id) &&
-      matchesQuery(query, l.title, l.url, l.note, l.category, ...l.applicationIds.map(nameOf)),
+      matchesQuery(
+        query,
+        l.title,
+        l.url,
+        l.note,
+        l.category,
+        domain.linkCategory(l.category),
+        ...l.applicationIds.map(nameOf),
+      ),
   )
 
   // A new link lands in whatever category is being looked at, so saving while
@@ -123,8 +133,8 @@ export function LinksTool({ focus }: { focus?: string }) {
     toast({
       title: t('common.saved', { title: link.title }),
       description: hidden
-        ? t('links.toast.savedHidden', { category: newCategory })
-        : t('links.toast.saved', { category: newCategory }),
+        ? t('links.toast.savedHidden', { category: domain.linkCategory(newCategory) })
+        : t('links.toast.saved', { category: domain.linkCategory(newCategory) }),
       action: { label: t('common.undo'), onClick: () => removeLink(link.id) },
     })
   }
@@ -141,7 +151,7 @@ export function LinksTool({ focus }: { focus?: string }) {
     if (keywords.length > 0) setRecord(copy.id, keywords)
     toast({
       title: t('reminders.toast.duplicated', { title: link.title }),
-      description: t('links.toast.duplicated', { category: copy.category }),
+      description: t('links.toast.duplicated', { category: domain.linkCategory(copy.category) }),
       action: {
         label: t('common.undo'),
         onClick: () => {
@@ -159,8 +169,11 @@ export function LinksTool({ focus }: { focus?: string }) {
       title: t('reminders.toast.moved', { title: link.title }),
       description:
         bucket !== 'all' && bucket !== next
-          ? t('snippets.toast.movedOut', { tag: next, filter: bucket })
-          : t('snippets.toast.moved', { tag: next }),
+          ? t('snippets.toast.movedOut', {
+              tag: domain.linkCategory(next),
+              filter: domain.linkCategory(bucket),
+            })
+          : t('snippets.toast.moved', { tag: domain.linkCategory(next) }),
       action: {
         label: t('common.undo'),
         onClick: () => updateLink(link.id, { category: before }),
@@ -233,9 +246,9 @@ export function LinksTool({ focus }: { focus?: string }) {
         action: addButton,
       },
       search: (q) => t('links.empty.search', { query: q }),
-      both: t('links.empty.both', { category: bucket }),
+      both: t('links.empty.both', { category: domain.linkCategory(bucket) }),
       bucket: {
-        title: t('links.empty.bucketTitle', { category: bucket }),
+        title: t('links.empty.bucketTitle', { category: domain.linkCategory(bucket) }),
         description: t('links.empty.bucketDescription', { count: links.length }),
         clearLabel: t('links.empty.showAll'),
       },
@@ -251,6 +264,7 @@ export function LinksTool({ focus }: { focus?: string }) {
             <BucketFilter
               label={t('links.filterLabel')}
               options={LINK_CATEGORIES}
+              labels={Object.fromEntries(LINK_CATEGORIES.map((c) => [c, domain.linkCategory(c)]))}
               counts={counts}
               value={bucket}
               onChange={setBucket}
@@ -275,7 +289,7 @@ export function LinksTool({ focus }: { focus?: string }) {
             label={t('links.form.label')}
             htmlFor={urlId}
             error={draftError}
-            hint={t('links.form.hint', { category: newCategory })}
+            hint={t('links.form.hint', { category: domain.linkCategory(newCategory) })}
           >
             <div className="flex flex-wrap items-center gap-2">
               <Input
@@ -284,6 +298,9 @@ export function LinksTool({ focus }: { focus?: string }) {
                 // a phone. Validation stays ours — the browser's rejects
                 // everything without a scheme, which is most of what gets pasted.
                 type="url"
+                // An address reads left to right in an Arabic or Urdu page too, so it
+                // shows its start (https://…) rather than its end (review 3, responsive-4).
+                dir="ltr"
                 inputMode="url"
                 autoFocus
                 autoComplete="off"

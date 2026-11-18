@@ -22,6 +22,7 @@ import { blobPath } from '@jojo/service/core/blob-path'
 import type { StoredNode } from '@jojo/service/core/model'
 import {
   createDocumentStore,
+  forgetUris,
   heldDocuments,
   orphanedUris,
   plannedPath,
@@ -316,5 +317,21 @@ describe('heldDocuments and orphanedUris', () => {
       ['file_b', 'file:///b.pdf'],
     ])
     expect(orphanedUris(before, [fileNode('file_a', 'file:///a.pdf')])).toEqual(['file:///b.pdf'])
+  })
+})
+
+describe("a restore touches only the app's own documents (security-2)", () => {
+  it('neither keeps nor deletes a uri outside the document directory', async () => {
+    const store = '/data/user/0/dev.jojo/databases/RKStorage'
+    present.add(store)
+    const held = await heldDocuments([fileNode('file_a', `file://${store}`)])
+    expect([...held.keys()]).toEqual([])
+    await forgetUris([`file://${store}`, `file://${DIR}/../databases/RKStorage`])
+    expect(unlinked).toEqual([])
+    await forgetUris([`file://${DIR}/restored/file_b__CV.pdf`])
+    expect(unlinked).toEqual([
+      `${DIR}/restored/file_b__CV.pdf`,
+      `${DIR}/restored/file_b__CV.pdf.jojo-trashed`,
+    ])
   })
 })

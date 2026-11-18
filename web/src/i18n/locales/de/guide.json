@@ -601,5 +601,6 @@
       "address": "<lead>Die Adressleiste</lead> ist die Seite selbst. Die erste Seite ist <code>/guide</code> statt <code>/guide/overview</code>, damit jeder Link und jedes Lesezeichen aus der Zeit, als es noch nicht vier Seiten gab, weiterhin irgendwo Echtes landet."
     }
   },
-  "englishOnly": "Diese Seite ist auf Englisch: Sie nennt Code, Pakete und Lizenzbedingungen in den Worten, in denen sie geschrieben sind."
+  "englishOnly": "Diese Seite ist auf Englisch: Sie nennt Code, Pakete und Lizenzbedingungen in den Worten, in denen sie geschrieben sind.",
+  "englishData": "Diese Tabelle ist auf Englisch: Sie gibt den Benchmark so wieder, wie er lief – in den Worten seiner Testfälle, Werkzeuge und Modelle."
 }

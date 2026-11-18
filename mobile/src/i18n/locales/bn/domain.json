@@ -92,6 +92,34 @@
     "recommender": "সুপারিশকারী",
     "contact": "যোগাযোগকারী ব্যক্তি"
   },
+  "linkCategory": {
+    "posting": "চাকরির বিজ্ঞপ্তি",
+    "institution": "প্রতিষ্ঠান",
+    "person": "ব্যক্তি",
+    "guide": "নির্দেশিকা"
+  },
+  "snippetTag": {
+    "coverLetter": "কভার লেটার",
+    "applicationForm": "আবেদনপত্র",
+    "email": "ইমেইল",
+    "bio": "পরিচিতি",
+    "cv": "সিভি",
+    "researchStatement": "গবেষণা বিবৃতি",
+    "teachingStatement": "শিক্ষাদান বিবৃতি"
+  },
+  "source": {
+    "jobScout": "জব স্কাউট",
+    "jobBoard": "চাকরির বোর্ড",
+    "referral": "রেফারেল",
+    "careersPage": "ক্যারিয়ার পেজ"
+  },
+  "fileBucket": {
+    "toRead": "পড়তে হবে",
+    "applications": "আবেদন",
+    "jobPostings": "চাকরির বিজ্ঞপ্তি",
+    "talks": "বক্তৃতা",
+    "admin": "প্রশাসনিক"
+  },
   "approval": {
     "manual": "ম্যানুয়াল",
     "semi": "সেমি-অটো",
@@ -364,6 +392,7 @@
   },
   "readBy": "{{model}} পড়েছে · {{ago}}",
   "missingSource": "এমন একটি নথি যা আর ভল্টে নেই",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "পূর্বাবস্থায় ফেরানোর কিছু নেই।",

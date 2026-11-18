@@ -499,9 +499,23 @@ html[data-theme='dark'] {
      name, a URL — overflowed from the text's START, so "Finalize UT Austin
      statements" read "…atements". Plaintext resolves each box's direction from
      its own first strong character, so Latin text is cut at its end and Arabic
-     or Urdu text is untouched. Title elements also carry `dir="auto"`. */
+     or Urdu text is untouched. Title elements also carry `dir="auto"`.
+
+     Only the ellipsis was meant to move, not the alignment. `start` resolves
+     against the box's own direction, which plaintext had made ltr for any
+     Latin value and for a '—' with no strong character at all — so in ar/ur
+     every such value sat LEFT under its right-aligned label: the record's
+     Details list zig-zagged, board titles sat opposite their chips (finding
+     responsive-2). `match-parent` takes the alignment from the parent
+     instead — `start` resolved against the PARENT's direction. Chrome knows it
+     only as `-webkit-match-parent` (CSS.supports says no to the plain name),
+     and `right` is the floor for a browser with neither. A `text-center` or
+     `text-end` utility still wins: this is the base layer. */
   [dir='rtl'] .truncate {
     unicode-bidi: plaintext;
+    text-align: right;
+    text-align: -webkit-match-parent;
+    text-align: match-parent;
   }
 
   body {
@@ -629,6 +643,13 @@ html[data-theme='dark'] {
    */
   .diagram :is(line, path, rect, circle, ellipse, polyline, polygon) {
     vector-effect: non-scaling-stroke;
+  }
+
+  /* `text-start` on an ellipsis box in an RTL page means the page's start —
+     the right — not the start of a Latin value that plaintext (base layer,
+     above) made the box's own direction (finding responsive-2). */
+  [dir='rtl'] .truncate.text-start {
+    text-align: right;
   }
 }
 

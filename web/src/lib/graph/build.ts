@@ -217,21 +217,21 @@ function describe(
       return {
         ...base,
         label: node.props.title,
-        detail: node.props.category,
+        detail: domain.linkCategory(node.props.category),
         href: vaultPath({ tool: 'links', focus: node.id }),
       }
     case 'file':
       return {
         ...base,
         label: node.props.name,
-        detail: node.props.bucket,
+        detail: domain.fileBucket(node.props.bucket),
         href: vaultPath({ tool: 'files', focus: node.id }),
       }
     case 'snippet':
       return {
         ...base,
         label: node.props.title,
-        detail: node.props.tag,
+        detail: domain.snippetTag(node.props.tag),
         href: vaultPath({ tool: 'snippets', focus: node.id }),
       }
     case 'posting':

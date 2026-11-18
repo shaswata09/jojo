@@ -358,7 +358,7 @@
     "createHint": "¿no hay nada? créalo",
     "noneTitle": "Nada coincide con «{{query}}»",
     "noneDescription": "La búsqueda lee el título, la nota y la categoría de cada registro, y el nombre de cada ajuste. Nada se obtiene de ningún otro sitio.",
-    "fit": "{{fit}} % de encaje",
+    "fit": "{{fit}} % de encaje",
     "results_one": "{{count}} resultado",
     "results_other": "{{count}} resultados",
     "showAll_one": "Mostrar {{count}}",
@@ -466,7 +466,7 @@
       "title": "Hasta dónde llegaron las solicitudes",
       "emptyTitle": "Aún no se ha enviado nada",
       "emptyDescription": "Las tasas de respuesta, entrevista y oferta cuentan solicitudes que realmente se enviaron. Saca una de Borrador y esto se llenará.",
-      "carried": "{{pct}} % pasó a la siguiente"
+      "carried": "{{pct}} % pasó a la siguiente"
     },
     "outcomes": {
       "title": "Resultados",
@@ -501,12 +501,19 @@
     "emptyTitle": "Nada que dibujar",
     "emptyDescription": "Cada nodo aquí es uno de tus registros. Añade una solicitud y aparecerá el primero.",
     "subtitle": "Un anticipo de jojo cuando los registros dejan de ser siete listas separadas",
-    "caption": "{{visible}} de {{total}} nodos · {{edges}} aristas. Toca un nodo para leerlo; toca un tipo abajo para ocultarlo.",
+    "caption": "{{nodes}} · {{edges}}. Toca un nodo para leerlo; toca un tipo abajo para ocultarlo.",
+    "captionNodes_one": "{{visible}} de {{count}} nodo",
+    "captionNodes_many": "{{visible}} de {{count}} nodos",
+    "captionNodes_other": "{{visible}} de {{count}} nodos",
+    "captionEdges_one": "{{count}} arista",
+    "captionEdges_many": "{{count}} aristas",
+    "captionEdges_other": "{{count}} aristas",
     "legend": "Leyenda",
     "legendHint": "toca para ocultar un tipo",
     "joinedTo": "Unido a",
     "noEdges": "Aún nada apunta aquí.",
     "openRecord": "Abrir el registro",
+    "derivedRecord": "Derivado de tus registros: no tiene página propia.",
     "ask": "Pregunta al grafo",
     "askHint": "pregunta con una frase o elige una",
     "andMore_one": "y {{count}} más",
@@ -1026,7 +1033,9 @@
       "placeholder": "p. ej. Esperando su respuesta",
       "confirmUsed_one": "Se quitará de {{count}} registro. Ese registro se queda; solo se va la palabra clave.",
       "confirmUsed_other": "Se quitará de {{count}} registros. Esos registros se quedan; solo se va la palabra clave.",
-      "confirmUnused": "No hay nada etiquetado con ella, así que no cambia nada más."
+      "confirmUnused": "No hay nada etiquetado con ella, así que no cambia nada más.",
+      "confirmTitle": "¿Eliminar la palabra clave {{name}}?",
+      "deletedTitle": "Palabra clave {{name}} eliminada"
     }
   }
 }

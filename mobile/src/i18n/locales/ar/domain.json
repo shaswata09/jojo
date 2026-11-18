@@ -92,6 +92,34 @@
     "recommender": "مزكٍّ",
     "contact": "جهة اتصال"
   },
+  "linkCategory": {
+    "posting": "إعلان وظيفة",
+    "institution": "مؤسسة",
+    "person": "شخص",
+    "guide": "دليل"
+  },
+  "snippetTag": {
+    "coverLetter": "خطاب تقديم",
+    "applicationForm": "استمارة الطلب",
+    "email": "بريد إلكتروني",
+    "bio": "نبذة تعريفية",
+    "cv": "سيرة ذاتية",
+    "researchStatement": "بيان بحثي",
+    "teachingStatement": "بيان تدريسي"
+  },
+  "source": {
+    "jobScout": "مستكشف الوظائف",
+    "jobBoard": "موقع وظائف",
+    "referral": "إحالة",
+    "careersPage": "صفحة التوظيف"
+  },
+  "fileBucket": {
+    "toRead": "للقراءة",
+    "applications": "الطلبات",
+    "jobPostings": "إعلانات الوظائف",
+    "talks": "المحاضرات",
+    "admin": "الشؤون الإدارية"
+  },
   "approval": {
     "manual": "يدوي",
     "semi": "شبه تلقائي",
@@ -412,6 +440,7 @@
   },
   "readBy": "قرأه {{model}} · {{ago}}",
   "missingSource": "مستند لم يعد في الخزنة",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "لا شيء للتراجع عنه.",

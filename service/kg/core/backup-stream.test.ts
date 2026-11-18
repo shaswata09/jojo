@@ -191,3 +191,93 @@ describe('reading in chunks', () => {
     if (!read.ok) expect(read.error.message).toContain('truncated')
   })
 })
+
+describe('review 3: escapes, literals and large documents', () => {
+  it('reads base64 that another tool wrapped with \\n escapes or wrote as \\u escapes', () => {
+    const good = whole()
+    // MIME-style wrapping, written as JSON escapes inside the string.
+    const wrapped = good.replace(/("data":")([^"]*)(")/g, (_m, a: string, data: string, z: string) =>
+      a + (data.match(/.{1,76}/g) ?? []).join('\\r\\n') + '\\t' + z,
+    )
+    expect(wrapped).toContain('\\r\\n')
+    // Every `A` in the base64 spelled as its \u escape.
+    const unicode = good.replace(/("data":")([^"]*)(")/g, (_m, a: string, data: string, z: string) =>
+      a + data.replace(/A/g, '\\u0041') + z,
+    )
+    expect(unicode).toContain('\\u0041')
+    for (const text of [wrapped, unicode]) {
+      const expected = readBackup(text)
+      expect(expected.ok).toBe(true)
+      for (const size of [...SIZES, 2, 64]) expect(readInChunks(text, size), String(size)).toEqual(expected)
+    }
+  })
+
+  it('refuses inside base64 what JSON.parse refuses, with readBackup’s code', () => {
+    const doc = (data: string) =>
+      `{"format":"${BACKUP_FORMAT}","version":1,"graph":{"nodes":[],"edges":[]},"documents":[{"path":"a","data":"${data}"}]}`
+    // A bad escape, a bad \u escape, a raw line break, and an escaped quote
+    // that decodes to a character base64 does not have.
+    for (const text of [doc('QUJD\\xRA=='), doc('QUJD\\u00G1'), doc('QUJD\nQUJD'), doc('QUJD\\"QUJD')]) {
+      const expected = readBackup(text)
+      expect(expected.ok, text).toBe(false)
+      for (const size of [1, 2, 3, 1000]) {
+        const got = readInChunks(text, size)
+        expect(got.ok, `${text} @${String(size)}`).toBe(false)
+        if (!got.ok && !expected.ok) expect(got.error.code, `${text} @${String(size)}`).toBe(expected.error.code)
+      }
+    }
+  })
+
+  it('reads \\u escapes, a lone surrogate, false and null in a record the way JSON.parse does', () => {
+    const odd = {
+      ...node('app_odd'),
+      props: { slug: 'odd', role: 'a\u0001b\u001fc \ud800 😀', stage: 'draft', remote: false, closedAt: null },
+    } as unknown as StoredNode
+    const text = JSON.stringify(buildBackup({ ...INPUT, nodes: [odd], documents: DOCS }))
+    expect(text).toContain('\\u0001')
+    expect(text).toContain('\\ud800')
+    const expected = readBackup(text)
+    expect(expected.ok).toBe(true)
+    for (const size of SIZES) expect(readInChunks(text, size), String(size)).toEqual(expected)
+  })
+
+  it('joins a document bigger than its first buffer, when data comes before bytes', () => {
+    // A writer that puts `data` before `bytes` — any key order is legal — so
+    // the reader cannot size the buffer and has to grow it past its first
+    // megabyte, then join the pieces.
+    const big = noise(1_500_000, 11)
+    const built = JSON.parse(
+      JSON.stringify(buildBackup({ ...INPUT, documents: [{ path: 'Documents/file:big__scan.pdf', data: big }] })),
+    ) as { documents: { path: string; bytes: number; data: string }[] }
+    built.documents = built.documents.map(({ path, data, bytes }) => ({ path, data, bytes }))
+    const text = JSON.stringify(built)
+    expect(text.indexOf('"data"')).toBeLessThan(text.indexOf('"bytes"'))
+    const read = readInChunks(text, 64 * 1024)
+    expect(read.ok).toBe(true)
+    if (read.ok) {
+      const got = read.value.documents[0]?.data
+      expect(got?.length).toBe(big.length)
+      expect(got && got.every((b, i) => b === big[i])).toBe(true)
+    }
+  })
+
+  it('refuses a bad escape, a bad \\u escape and a leading zero in the record half too', () => {
+    const good = whole()
+    const cases = [
+      good.replace('"stage":"draft"', '"stage":"dr\\xaft"'),
+      good.replace('"stage":"draft"', '"stage":"dr\\u12G4aft"'),
+      good.replace('"version":1', '"version":01'),
+      good.replace('"stage":"draft"', '"stage":"dr\u0001aft"'),
+    ]
+    for (const text of cases) {
+      expect(text).not.toBe(good)
+      const expected = readBackup(text)
+      expect(expected.ok).toBe(false)
+      for (const size of [1, 7, 1000]) {
+        const got = readInChunks(text, size)
+        expect(got.ok).toBe(false)
+        if (!got.ok && !expected.ok) expect(got.error.code).toBe(expected.error.code)
+      }
+    }
+  })
+})

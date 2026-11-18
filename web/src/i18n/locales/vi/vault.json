@@ -202,6 +202,13 @@
       "hintEmpty": "Hãy tô sáng văn bản hoặc thêm bình luận trước.",
       "hint": "{{summary}} sẽ được ghi vào.",
       "action": "Lưu bản đã chú thích"
+    },
+    "names": {
+      "annotated": "có chú thích",
+      "pages_other": "{{count}} trang",
+      "pagesFile": "trang",
+      "merged": "đã gộp",
+      "more_other": "thêm {{count}}"
     }
   },
   "instruments": {

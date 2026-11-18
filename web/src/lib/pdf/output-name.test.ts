@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
-import { derivedName, mergedName, safeName } from './output-name'
+import { afterEach, describe, expect, it } from 'vitest'
+import { i18next, loadLocale } from '@/i18n/i18n'
+import { annotatedName, derivedName, mergedName, pagesName, safeName } from './output-name'
 
 describe('naming a document derived from another', () => {
   it('puts the reason in brackets before the extension', () => {
@@ -89,5 +90,31 @@ describe('making a name safe to write', () => {
     const long = safeName(`${'word '.repeat(80)}.pdf`)
     expect(long.length).toBeLessThanOrEqual(124)
     expect(long.endsWith('.pdf')).toBe(true)
+  })
+})
+
+describe('the words a suggested name is made of (review 3, i18n-10)', () => {
+  afterEach(async () => {
+    await i18next.changeLanguage('en')
+  })
+
+  it('says them in English from the catalog, with the count agreeing', () => {
+    expect(annotatedName('cv.pdf')).toBe('cv (annotated).pdf')
+    expect(annotatedName(null)).toBe('annotated.pdf')
+    expect(pagesName('cv.pdf', 1)).toBe('cv (1 page).pdf')
+    expect(pagesName('cv.pdf', 3)).toBe('cv (3 pages).pdf')
+    expect(pagesName(undefined, 3)).toBe('pages.pdf')
+    expect(mergedName(['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf'])).toBe('a + b + 2 more.pdf')
+  })
+
+  it('says them in the reader’s language', async () => {
+    await loadLocale('ja')
+    await i18next.changeLanguage('ja')
+    expect(annotatedName('CV.pdf')).toBe('CV (注釈付き).pdf')
+    expect(pagesName('CV.pdf', 3)).toBe('CV (3 ページ).pdf')
+    expect(mergedName([])).toBe('結合.pdf')
+    expect(mergedName(['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf'])).toBe('a + b + 他 2 件.pdf')
+    // And marking up the marked-up copy still counts rather than nesting.
+    expect(annotatedName(annotatedName('CV.pdf'))).toBe('CV (注釈付き) 2.pdf')
   })
 })

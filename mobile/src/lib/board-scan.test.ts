@@ -137,3 +137,41 @@ describe('what the phone can read', () => {
     expect((out as { rows: unknown[] }).rows).toHaveLength(2)
   })
 })
+
+describe('a Stop while the phone reads a board (leaks-2)', () => {
+  it('gives up the fetch at once instead of waiting out the timeout', async () => {
+    let listener: (() => void) | undefined
+    const signal = {
+      aborted: false,
+      onAbort: (fn: () => void) => {
+        listener = fn
+      },
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init: { signal: AbortSignal }) =>
+          new Promise((_resolve, reject) => {
+            init.signal.addEventListener('abort', () => {
+              const error = new Error('Aborted')
+              error.name = 'AbortError'
+              reject(error)
+            })
+          }),
+      ),
+    )
+    const scanning = scanBoard('https://acme.test/jobs', signal)
+    signal.aborted = true
+    listener?.()
+    const out = await scanning
+    expect(out).toEqual({ ok: false, reason: 'The read was cancelled.' })
+  })
+
+  it('does not fetch at all once already stopped', async () => {
+    const fetching = vi.fn()
+    vi.stubGlobal('fetch', fetching)
+    const out = await scanBoard('https://acme.test/jobs', { aborted: true })
+    expect(out.ok).toBe(false)
+    expect(fetching).not.toHaveBeenCalled()
+  })
+})

@@ -208,7 +208,8 @@
     "timeout": "Quel sito ha impiegato troppo a rispondere.",
     "unreachable": "Non è stato possibile raggiungere quel sito.",
     "status": "Quel sito ha risposto {{status}}.",
-    "browserOnly": "{{host}} mostra i suoi annunci solo a un vero browser, quindi non può essere letto dal telefono. Su un computer l'estensione jojo per il browser può leggerlo."
+    "browserOnly": "{{host}} mostra i suoi annunci solo a un vero browser, quindi non può essere letto dal telefono. Su un computer l'estensione jojo per il browser può leggerlo.",
+    "cancelled": "La lettura è stata annullata."
   },
   "timelineForm": {
     "title": "Dagli un titolo che riconoscerai.",

@@ -1358,7 +1358,7 @@ function KeywordManager() {
     setDeleting(null)
     const { restore } = removeLabel(target.id)
     toast({
-      title: t('rowActions.deletedTitle', { name: target.name }),
+      title: t('settings.keywords.deletedTitle', { name: target.name }),
       description:
         target.used > 0 ? t('settings.keywords.takenOff', { count: target.used }) : undefined,
       tone: 'danger',
@@ -1557,7 +1557,9 @@ function KeywordManager() {
       <ConfirmSheet
         open={deleting !== null}
         onClose={() => setDeleting(null)}
-        title={deleting === null ? '' : t('rowActions.confirmTitle', { name: deleting.name })}
+        title={
+          deleting === null ? '' : t('settings.keywords.confirmTitle', { name: deleting.name })
+        }
         description={
           deleting === null
             ? ''

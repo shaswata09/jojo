@@ -45,6 +45,12 @@ type Row = {
   called: string[]
 }
 
+/**
+ * The run date, spelled out in English like the sentence it sits in (the
+ * table is marked `lang="en"`, see `EnglishData`) — not in whatever locale the
+ * browser defaults to.
+ */
+const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }
 const summary = report.summary as Summary[]
 const rows = report.rows as Row[]
 const failures = rows.filter((r) => !r.pass)
@@ -92,7 +98,7 @@ export function ToolEvalTable() {
                       </span>
                     </td>
                     <td className="tabular py-1.5 pe-3 text-text-2">
-                      {s.meanPromptTokens.toLocaleString()}
+                      {s.meanPromptTokens.toLocaleString('en')}
                     </td>
                     <td className="tabular py-1.5 text-text-3">
                       {(s.medianMs / 1000).toFixed(1)}s
@@ -129,8 +135,8 @@ export function ToolEvalTable() {
       )}
 
       <p className="mt-4 text-xs text-text-3">
-        Run on {ran.toLocaleDateString()} against {String(models.length)} vLLM servers. Re-running
-        the evaluation is what updates this table — the numbers are generated, not typed.
+        Run on {ran.toLocaleDateString('en', DATE)} against {String(models.length)} vLLM servers.
+        Re-running the evaluation is what updates this table — the numbers are generated, not typed.
       </p>
     </div>
   )

@@ -2837,3 +2837,18 @@ Guarded by:
 - `mobile/src/lib/graph-view.requests.test.ts` › "opens a large store on the overview and a small one on the radial layout"
 - `mobile/src/lib/graph-view.requests.test.ts` › "draws lines only for the selected record"
 Note: Measured on a 2,700-record store: 74% of records had exactly one link, and five synthesised role nodes knotted 500 small bundles together; time to a painted graph went from 1,357 ms to about 700 ms (13,200 records: 3,919 ms to 1,239 ms). Pinch zoom on the phone was not exercised on the emulator (adb sends one finger); TalkBack was not switched on.
+
+### Q338 — Thoroughly review the code again with multiple agents — documentation, declarations, modularity, bugs, leaks, performance, responsiveness and tests — and fix what is found.
+`fix` · 2026-11-18 · cross · active
+Must stay true: The web Applications board mounts a page of cards per column and keeps the open and just-moved card mounted. One finger on the phone graph at fit scrolls the page, and only a pinch claims it. A backup restore never ends with an older trash copy, and a backup taken while the documents cannot be listed refuses rather than saving none. Leaving Transfer disposes its WebGPU renderer, so visits do not accumulate render loops. A swipe on the web graph scrolls the page unless zoomed. The ledger counts only real test titles. Stored link categories, snippet tags, sources and drawers show in the viewer's language. A percentage never breaks from its % sign. A phone file record can only name a path inside the app's own document directory.
+Guarded by:
+- `web/src/components/common/ui-review3.requests.test.ts` › "caps each column at ROW_PAGE with a Show more at its foot"
+- `mobile/src/lib/review3-mobile.requests.test.ts` › "does not stop the page scrolling until a second finger is down or the pinch starts"
+- `web/src/lib/vault-blobs-races.test.ts` › "ends with the backup’s bytes, not the trash copy’s, when the delete was an earlier session’s"
+- `web/src/components/transfer/DataTransferScene.requests.test.ts` › "disposes the WebGPU renderer after R3F’s own teardown, and not on a StrictMode rehearsal"
+- `web/src/components/graph/overview.requests.test.ts` › "lets a swipe on the canvas scroll the page unless zoomed in, and claims a pinch itself"
+- `service/test/check-requests.requests.test.ts` › "reads it, test and describe titles, with each and other modifiers between"
+- `service/kg/core/domain-text.test.ts` › "says every stored link category, snippet tag, source and file drawer, and anything else as stored"
+- `web/src/i18n/percent-space.test.ts` › "never breaks the line between the number and its % sign"
+- `mobile/src/lib/document-path.test.ts` › "refuses the store, a sibling with the same prefix, and the directory itself"
+Note: Eleven reviewers (bugs, leaks, performance, responsive/RTL/a11y, security, i18n, documentation/declarations/modularity, test coverage), each followed by an adversarial verifier: 86 findings confirmed, 2 refuted; fixed by six agents with disjoint files, plus follow-ups. Board on a 3,000-application store: 39,457 → 8,275 DOM nodes, longest load task 1.3–1.5 s → 0.3 s. "Clear every record" now says documents stay in the trash for 30 days (purging them there is left as a possible change).

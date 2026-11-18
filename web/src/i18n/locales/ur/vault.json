@@ -215,6 +215,15 @@
       "hintEmpty": "پہلے کچھ متن نمایاں کریں یا تبصرہ شامل کریں۔",
       "hint": "{{summary}} اس میں لکھے جائیں گے۔",
       "action": "نشانات سمیت محفوظ کریں"
+    },
+    "names": {
+      "annotated": "تشریح شدہ",
+      "pages_one": "{{count}} صفحہ",
+      "pages_other": "{{count}} صفحات",
+      "pagesFile": "صفحات",
+      "merged": "یکجا",
+      "more_one": "مزید {{count}}",
+      "more_other": "مزید {{count}}"
     }
   },
   "instruments": {

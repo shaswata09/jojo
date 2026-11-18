@@ -17,6 +17,9 @@ import graphSource from '@/routes/Graph.tsx?raw'
 import overviewSource from './OverviewCanvas.tsx?raw'
 import focusSource from './FocusCanvas.tsx?raw'
 import barSource from './GraphViewBar.tsx?raw'
+import graphCanvasSource from './GraphCanvas.tsx?raw'
+import nodeMarkSource from './canvas/NodeMark.tsx?raw'
+import labelsSource from './canvas/labels.ts?raw'
 import marksSource from './canvas/overview-marks.tsx?raw'
 import zoomSource from './canvas/use-zoom.ts?raw'
 import { MAX_ZOOM, clampView, zoomAbout } from './canvas/use-zoom'
@@ -25,6 +28,7 @@ import { i18next } from '@/i18n/i18n'
 import type { Graph, GraphEdge, GraphNode, GraphRel } from '@/lib/graph/model'
 import {
   TYPE_ORDER,
+  basePicture,
   foldGraph,
   foldedPhrase,
   groupName,
@@ -78,7 +82,9 @@ describe('the graph page picks its picture by size', () => {
 
   it('chooses the mode from the folded size, and draws each mode with its own canvas', () => {
     expect(graphSource).toMatch(/const large = wantsOverview\(folding\)/)
-    expect(graphSource).toMatch(/layout === 'auto'\s*\?\s*large\s*\?\s*'overview'\s*:\s*'free'/)
+    expect(graphSource).toMatch(/const base = basePicture\(layout, \{ large, freeAllowed \}\)/)
+    expect(basePicture('auto', { large: true, freeAllowed: true })).toBe('overview')
+    expect(basePicture('auto', { large: false, freeAllowed: true })).toBe('free')
     expect(graphSource).toMatch(/mode === 'free' \? \(\s*<GraphCanvas/)
     expect(graphSource).toContain('<FocusCanvas')
     expect(graphSource).toContain('<OverviewCanvas')
@@ -250,5 +256,65 @@ describe('the second pass on the overview (owner review, 2026-11-17)', () => {
       /id\?\.startsWith\(MORE_PREFIX\) \? \(layout\.more\.get\(id\)\?\.hub \?\? null\) : id/,
     )
     expect(focusSource).toMatch(/t\('view\.moreLabel', \{/)
+  })
+})
+
+describe('the graph canvases after the third review (2026-11-18)', () => {
+  it('lets a swipe on the canvas scroll the page unless zoomed in, and claims a pinch itself', () => {
+    expect(overviewSource).toMatch(/view\.k > 1 \? 'touch-none' : 'touch-pan-y'/)
+    expect(overviewSource).not.toMatch(/'graph-overview[^']*touch-none/)
+    expect(focusSource).not.toMatch(/touch-none/)
+    expect(focusSource).toMatch(/touch-manipulation/)
+    expect(zoomSource).toMatch(/event\.touches\.length > 1 \|\| viewRef\.current\.k > 1\.001/)
+    expect(zoomSource).toMatch(/addEventListener\('touchmove', onTouchMove, \{ passive: false \}\)/)
+  })
+
+  it('takes Tab into a host’s unfolded records and back out after them', () => {
+    expect(overviewSource).toMatch(/<g data-layer="satellites">/)
+    expect(overviewSource).toMatch(
+      /event\.key === 'Tab' && tabThroughRing\(event\.target, id, event\.shiftKey\)/,
+    )
+    expect(overviewSource).toMatch(/ring\[0\]\?\.focus\(\)/)
+    expect(overviewSource).toMatch(/hostEl\.compareDocumentPosition\(el\)/)
+  })
+
+  it('moves focus to the new centre or the mode control when a pressed view-bar button goes away', () => {
+    expect(barSource).toMatch(/onClick=\{\(\) => thenFocus\(action\.onFocus, 'centre'\)\}/)
+    expect(barSource).toMatch(/onClick=\{\(\) => thenFocus\(\(\) => onCrumb\(index\), 'centre'\)\}/)
+    expect(barSource).toMatch(/onClick=\{\(\) => thenFocus\(onBack, 'mode'\)\}/)
+    expect(barSource).toMatch(
+      /if \(active && active !== document\.body && active\.isConnected\) return/,
+    )
+    expect(focusSource).toMatch(/data-centre=\{id === centreId \? '' : undefined\}/)
+  })
+
+  it('keeps an idle zoom button focusable instead of disabling it under the keyboard', () => {
+    expect(marksSource).not.toMatch(/(?<![-\w])disabled=\{/)
+    expect(marksSource).toMatch(/onClick=\{idle\(atMax, onIn\)\}\s*aria-disabled=\{atMax\}/)
+    expect(marksSource).toMatch(/onClick=\{idle\(!zoomed, onOut\)\}\s*aria-disabled=\{!zoomed\}/)
+    expect(marksSource).toMatch(/onClick=\{idle\(!zoomed, onFit\)\}\s*aria-disabled=\{!zoomed\}/)
+  })
+
+  it('answers + − 0 on the canvas and its buttons, and a click on the background focuses it', () => {
+    expect(overviewSource).toMatch(/tabIndex=\{-1\}\s*aria-label=\{t\('view\.overviewLabel'/)
+    // The keys are on the frame round the svg and the zoom buttons.
+    const frame = /<div\s+ref=\{frameRef\}[\s\S]*?<svg/.exec(overviewSource)?.[0] ?? ''
+    expect(frame).toMatch(/event\.key === '\+' \|\| event\.key === '='/)
+    expect(frame).toMatch(/zoom\.fit\(\)/)
+  })
+
+  it('goes to the overview from “Back to overview”, whatever the store’s size', () => {
+    expect(graphSource).toMatch(/onBack=\{backFromFocus\}/)
+    expect(graphSource).toMatch(
+      /const backFromFocus = useCallback\(\(\) => \{\s*backToOverview\(\)\s*setLayout\('overview'\)/,
+    )
+  })
+
+  it('draws free-layout labels at a legible size on a phone', () => {
+    expect(graphCanvasSource).toMatch(/style=\{\{ '--label-scale': scale \} as CSSProperties\}/)
+    expect(graphCanvasSource).toMatch(/scale: scaleRef\.current/)
+    expect(nodeMarkSource).toMatch(/var\(--label-scale, 1\)/)
+    // The record pointed at or selected keeps its name even where it crosses marks.
+    expect(labelsSource).toMatch(/over: node\.id === selected \|\| node\.id === active/)
   })
 })

@@ -5,7 +5,12 @@
 // in a refactor would leave a line saying "guarded by" something that no longer
 // guards anything, and the regression it was written for could come back with
 // the ledger still reading green. So each cited test is checked here: the file
-// must exist and must still contain the quoted title.
+// must exist and must still hold a test whose TITLE contains the quoted text —
+// the first argument of it/test/describe (with .each/.only/.concurrent/… in
+// between), read past comments, not any string anywhere in the file. A header
+// comment saying "the glance stats are four small tiles" used to keep Q006's
+// "are four" green with its test deleted. A test marked .skip, .todo or
+// .skipIf guards nothing and does not count.
 //
 // Format, per request (see the head of docs/REQUESTS.md):
 //   ### Q001 — what was asked
@@ -21,6 +26,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { testTitles } from './test-titles.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const ledgerPath = join(root, 'docs', 'REQUESTS.md')
@@ -34,6 +40,12 @@ const fileText = new Map()
 const read = (rel) => {
   if (!fileText.has(rel)) fileText.set(rel, readFileSync(join(root, rel), 'utf8'))
   return fileText.get(rel)
+}
+
+const titlesOf = new Map()
+const titles = (rel) => {
+  if (!titlesOf.has(rel)) titlesOf.set(rel, testTitles(read(rel)))
+  return titlesOf.get(rel)
 }
 
 let guarded = 0
@@ -75,7 +87,7 @@ for (const block of blocks) {
       problems.push(`${id}: ${file} does not exist`)
       continue
     }
-    if (!read(file).includes(title)) problems.push(`${id}: ${file} has no test titled "${title}"`)
+    if (!titles(file).some((t) => t.includes(title))) problems.push(`${id}: ${file} has no test titled "${title}"`)
   }
 }
 

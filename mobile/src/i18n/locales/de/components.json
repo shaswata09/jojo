@@ -465,7 +465,7 @@
     "title": "Was als Nächstes"
   },
   "working": {
-    "arm": "{{count}} von {{of}} · {{rate}} % · wahrscheinlich {{range}}",
+    "arm": "{{count}} von {{of}} · {{rate}} % · wahrscheinlich {{range}}",
     "repliesBy": "Antworten, nach {{dimension}}",
     "interviewsBy": "Gespräche, nach {{dimension}}",
     "confident": "Die Spannen überschneiden sich nicht, das ist also ein echter Unterschied – {{best}} verdient mehr deiner Mühe.",

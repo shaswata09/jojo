@@ -171,6 +171,13 @@ class Base64Stream {
   #pads = 0
   #finished = false
   bad = false
+  /**
+   * A raw control character in the string's own text — not a valid JSON
+   * string at all, which `JSON.parse` refuses before base64 is looked at. Seen
+   * even after `bad`, so the verdict is "unreadable" exactly when
+   * `readBackup`'s is.
+   */
+  control = false
 
   constructor(expected: number | undefined) {
     // Sized from the entry's own `bytes` when it came first, so a large
@@ -192,20 +199,30 @@ class Base64Stream {
     this.#total += 1
   }
 
-  push(text: string, from: number, to: number): void {
-    if (this.bad) return
+  /**
+   * `raw`: these characters are the JSON text itself, where a control
+   * character is illegal; otherwise they are what an escape decoded to, where
+   * `\n` is only whitespace.
+   */
+  push(text: string, from: number, to: number, raw = false): void {
+    if (this.control || (this.bad && !raw)) return
     for (let i = from; i < to; i += 1) {
       const c = text.charCodeAt(i)
+      if (raw && c < 32) {
+        this.control = true
+        return
+      }
+      if (this.bad) continue
       if (c === 10 || c === 13 || c === 9 || c === 32) continue
       if (this.#finished) {
         this.bad = true
-        return
+        continue
       }
       if (c === PAD) {
         // `=` only in the last two places of a quad, and only padding after it.
         if (this.#inQuad < 2) {
           this.bad = true
-          return
+          continue
         }
         this.#pads += 1
         this.#quad[this.#inQuad++] = 0
@@ -213,7 +230,7 @@ class Base64Stream {
         const v = c < 128 ? REVERSE[c]! : -1
         if (v < 0 || this.#pads > 0) {
           this.bad = true
-          return
+          continue
         }
         this.#quad[this.#inQuad++] = v
       }
@@ -261,6 +278,18 @@ type Mode =
   | 'done'
 
 const WS = (c: number) => c === 32 || c === 10 || c === 13 || c === 9
+
+/** The one-character escapes JSON allows, and what each stands for. */
+const SIMPLE_ESCAPES: Readonly<Record<string, string>> = {
+  '"': '"',
+  '\\': '\\',
+  '/': '/',
+  b: '\b',
+  f: '\f',
+  n: '\n',
+  r: '\r',
+  t: '\t',
+}
 
 /** Sets a key the way `JSON.parse` does — as an own property, `__proto__` included. */
 function setKey(target: Record<string, unknown>, key: string, value: unknown): void {
@@ -329,6 +358,37 @@ class ChunkedJson {
     this.#mode = 'after'
   }
 
+  /**
+   * One character of an escape: what it decodes to once the escape is whole,
+   * '' while a `\uXXXX` is still arriving, undefined (with the parser failed)
+   * for an escape `JSON.parse` refuses.
+   */
+  #escaped(c: string): string | undefined {
+    if (this.#escape === '') {
+      if (c === 'u') {
+        this.#escape = 'u'
+        return ''
+      }
+      const simple = SIMPLE_ESCAPES[c]
+      if (simple === undefined) {
+        this.#fail('Bad escape')
+        return undefined
+      }
+      this.#escape = null
+      return simple
+    }
+    const hex = (this.#escape ?? '') + c
+    this.#escape = hex
+    if (!/^u[0-9a-fA-F]*$/.test(hex)) {
+      this.#fail('Bad unicode escape')
+      return undefined
+    }
+    if (hex.length < 5) return ''
+    const decoded = String.fromCharCode(parseInt(hex.slice(1), 16))
+    this.#escape = null
+    return decoded
+  }
+
   #finishToken(): boolean {
     const t = this.#token
     this.#token = ''
@@ -358,34 +418,34 @@ class ChunkedJson {
 
       if (mode === 'base64') {
         const b64 = this.#b64!
-        if (this.#escape === '') {
-          // The second half of a `\/` split across two chunks.
-          this.#escape = null
-          if (text[i] !== '/') b64.bad = true
-          else b64.push('/', 0, 1)
+        if (this.#escape !== null) {
+          // Inside an escape, possibly begun in an earlier chunk. Decoded the
+          // way `JSON.parse` decodes it, then handed to base64 as the
+          // character it stands for — so `\n` from a MIME-wrapped writer is
+          // skipped as whitespace and `\u0041` is an `A`, as `fromBase64`
+          // reads them after `JSON.parse` in `readBackup`.
+          const decoded = this.#escaped(text[i]!)
+          if (decoded === undefined) return
+          if (decoded !== '') b64.push(decoded, 0, decoded.length)
           this.#offset += 1
           i += 1
           continue
         }
         const close = text.indexOf('"', i)
         const end = close === -1 ? n : close
-        // A JSON writer may escape `/` as `\/`; nothing else is legal in base64.
         const slash = text.indexOf('\\', i)
-        if (slash !== -1 && slash < end) {
-          b64.push(text, i, slash)
-          if (slash + 1 >= n) {
-            // The escape straddles chunks; very rare, and only `\/` is valid.
-            this.#escape = ''
-            this.#offset += n - i
-            return
-          }
-          if (text[slash + 1] !== '/') b64.bad = true
-          else b64.push('/', 0, 1)
-          this.#offset += slash + 2 - i
-          i = slash + 2
+        const stop = slash !== -1 && slash < end ? slash : end
+        b64.push(text, i, stop, true)
+        if (b64.control) {
+          this.#fail('Control character in string')
+          return
+        }
+        if (stop === slash) {
+          this.#escape = ''
+          this.#offset += slash + 1 - i
+          i = slash + 1
           continue
         }
-        b64.push(text, i, end)
         this.#offset += end - i
         if (close === -1) return
         this.#b64 = null
@@ -398,28 +458,9 @@ class ChunkedJson {
 
       if (mode === 'string') {
         if (this.#escape !== null) {
-          const c = text[i]!
-          if (this.#escape === '') {
-            const simple: Record<string, string> = { '"': '"', '\\': '\\', '/': '/', b: '\b', f: '\f', n: '\n', r: '\r', t: '\t' }
-            if (c === 'u') this.#escape = 'u'
-            else if (c in simple) {
-              this.#str.push(simple[c]!)
-              this.#escape = null
-            } else {
-              this.#fail('Bad escape')
-              return
-            }
-          } else {
-            this.#escape += c
-            if (!/^u[0-9a-fA-F]*$/.test(this.#escape)) {
-              this.#fail('Bad unicode escape')
-              return
-            }
-            if (this.#escape.length === 5) {
-              this.#str.push(String.fromCharCode(parseInt(this.#escape.slice(1), 16)))
-              this.#escape = null
-            }
-          }
+          const decoded = this.#escaped(text[i]!)
+          if (decoded === undefined) return
+          if (decoded !== '') this.#str.push(decoded)
           this.#offset += 1
           i += 1
           continue

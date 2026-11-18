@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "Erinnerungen und Termine",
-      "hint": "{{reminders}} erinnern dich, {{events}} sind datierte Termine",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} erinnert dich",
+      "reminders_other": "{{count}} erinnern dich",
+      "events_one": "{{count}} ist ein datierter Termin",
+      "events_other": "{{count}} sind datierte Termine",
       "summary_one": "{{count}} Erinnerung oder Termin",
       "summary_other": "{{count}} Erinnerungen und Termine"
     },
     "vault": {
       "label": "Links und Textbausteine",
-      "hint": "{{links}} Links · {{snippets}} Textbausteine",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} Link",
+      "links_other": "{{count}} Links",
+      "snippets_one": "{{count}} Textbaustein",
+      "snippets_other": "{{count}} Textbausteine",
       "summary_one": "{{count}} Link oder Textbaustein",
       "summary_other": "{{count}} Links und Textbausteine"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "Jobsuche",
-      "hint": "{{pipelines}} Suchen · {{postings}} gespeicherte Stellen · {{matches}} Treffer",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} Suche",
+      "pipelines_other": "{{count}} Suchen",
+      "postings_one": "{{count}} gespeicherte Stelle",
+      "postings_other": "{{count}} gespeicherte Stellen",
+      "matches_one": "{{count}} Treffer",
+      "matches_other": "{{count}} Treffer",
       "summary_one": "{{count}} Jobsuche-Eintrag",
       "summary_other": "{{count}} Jobsuche-Einträge"
     },
@@ -181,7 +195,7 @@
     "progress": "Fortschritt der Übertragung",
     "reaching": "Verbinde mit deinem Handy …",
     "gathering": "Sammle deine Einträge …",
-    "percentSent": "{{percent}} % gesendet",
+    "percentSent": "{{percent}} % gesendet",
     "cancel": "Abbrechen",
     "another": "An ein anderes Gerät senden"
   },

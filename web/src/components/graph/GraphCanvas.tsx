@@ -1,5 +1,6 @@
 import { intlLocale } from '@jojo/service/core/intl-locale'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Graph } from '@/lib/graph/model'
 import type { QueryResult } from '@/lib/graph/query'
@@ -7,7 +8,7 @@ import { neighbourhood } from '@/lib/graph/traversal'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 import { NodeMark } from './canvas/NodeMark'
-import { placeLabels } from './canvas/labels'
+import { labelScale, placeLabels } from './canvas/labels'
 import { useNodeDrag } from './canvas/use-node-drag'
 import { createSim, positionsOf, settle, step } from './force'
 import type { Sim } from './force'
@@ -128,6 +129,14 @@ export function GraphCanvas({
    * band across the middle with dead space above and below it.
    */
   const [width, setWidth] = useState(DEFAULT_WIDTH)
+  /** The box in CSS pixels, for how large the scaled SVG draws a label. */
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null)
+  /**
+   * How much labels grow so they stay legible: the SVG fits a `width × HEIGHT`
+   * space into the box, which on a phone is 0.6 of a pixel per unit.
+   */
+  const scale = box ? labelScale(Math.min(box.w / width, box.h / HEIGHT)) : 1
+  const scaleRef = useRef(scale)
 
   const simRef = useRef<Sim | null>(null)
   const indexRef = useRef<Map<string, number>>(new Map())
@@ -184,6 +193,7 @@ export function GraphCanvas({
       selected: selectedRef.current,
       active: activeRef.current,
       labelAll: labelAllRef.current,
+      scale: scaleRef.current,
     })
   }, [])
 
@@ -237,6 +247,7 @@ export function GraphCanvas({
       const aspect = Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, w / h))
       const next = Math.round((HEIGHT * aspect) / WIDTH_STEP) * WIDTH_STEP
       setWidth((current) => (current === next ? current : next))
+      setBox((current) => (current && current.w === w && current.h === h ? current : { w, h }))
     })
     observer.observe(el)
     return () => observer.disconnect()
@@ -391,8 +402,13 @@ export function GraphCanvas({
     selectedRef.current = selectedId
     activeRef.current = active
     labelAllRef.current = showAllLabels
+    if (scaleRef.current !== scale) {
+      // Widths were measured at the old size.
+      scaleRef.current = scale
+      labelWidths.current.clear()
+    }
     layoutLabels()
-  }, [lit, selectedId, active, showAllLabels, layoutLabels])
+  }, [lit, selectedId, active, showAllLabels, scale, layoutLabels])
 
   // Cleared when the graph changes under them — a node id that no longer exists
   // would otherwise keep the whole canvas dimmed against nothing.
@@ -429,6 +445,7 @@ export function GraphCanvas({
           connections: t('common.connections', { count: graph.edges.length }),
         })}
         className="h-full w-full touch-none select-none"
+        style={{ '--label-scale': scale } as CSSProperties}
         onPointerDown={(event) => {
           // A press on the background clears the selection; a press on a node is
           // stopped before it gets here by the node's own handler.

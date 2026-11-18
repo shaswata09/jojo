@@ -136,3 +136,54 @@ describe('the row cap (performance-4)', () => {
     expect(strip(rowCapSource)).toMatch(/if \(keep \+ 1 > limit\) setLimit\(keep \+ 1\)/)
   })
 })
+
+describe('a snippet toast fired while the editor is elsewhere (webui-2)', () => {
+  const code = strip(snippetsSource)
+
+  it('closes the editor on a new snippet’s Undo only while it is still on that record', () => {
+    const create = code.slice(
+      code.indexOf('const record = addSnippet('),
+      code.indexOf('const onDuplicate'),
+    )
+    expect(create).toMatch(/if \(openId\.current === record\.id\) closeEditor\(\)/)
+  })
+
+  it('moves the editor’s baseline with a move and its Undo, so neither reads as unsaved', () => {
+    const move = code.slice(code.indexOf('const onMove'), code.indexOf('const onDelete'))
+    expect(move).toMatch(/setClean\(\(prev\) => \(prev \? \{ \.\.\.prev, tag \} : prev\)\)/)
+    expect(move).toMatch(/refile\(next\)/)
+    expect(move).toMatch(/refile\(before\)/)
+  })
+})
+
+describe('a PDF still opening when the Pages or Annotate panel unmounts (leaks-5)', () => {
+  it('closes a document that finishes opening after unmount rather than keeping it', () => {
+    for (const code of [strip(annotateSource), strip(pagesSource)]) {
+      expect(code).toMatch(/mounted\.current = true\s*return \(\) => \{\s*mounted\.current = false/)
+      expect(code).toMatch(/if \(!mounted\.current\) \{\s*opened\.close\(\)\s*return/)
+    }
+  })
+})
+
+describe('the reminders empty state names a bucket mid-sentence (i18n-9)', () => {
+  it('takes the catalog’s running-text form instead of lower-casing the label', () => {
+    const code = strip(remindersSource)
+    expect(code).toMatch(/t\(`common:bucketsInline\.\$\{bucket\}`\)/)
+    expect(code).not.toMatch(/BUCKET_LABEL\[bucket\]\.toLowerCase\(\)/)
+  })
+
+  it('has the running-text form in every language, capitalised where the frame opens on it', () => {
+    const catalogs = import.meta.glob('@/i18n/locales/*/common.json', {
+      eager: true,
+      import: 'default',
+    }) as Record<string, { bucketsInline?: Record<string, string> }>
+    expect(Object.keys(catalogs)).toHaveLength(20)
+    for (const [path, catalog] of Object.entries(catalogs)) {
+      for (const bucket of ['overdue', 'today', 'upcoming', 'done']) {
+        expect(catalog.bucketsInline?.[bucket], `${path} ${bucket}`).toBeTruthy()
+      }
+    }
+    const tr = Object.entries(catalogs).find(([p]) => p.includes('/tr/'))?.[1]
+    expect(tr?.bucketsInline?.overdue).toBe('Gecikmiş')
+  })
+})

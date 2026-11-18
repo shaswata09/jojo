@@ -228,6 +228,17 @@
       "hintEmpty": "Surlignez du texte ou ajoutez d’abord un commentaire.",
       "hint": "{{summary}} sera inscrit dans le document.",
       "action": "Enregistrer avec les annotations"
+    },
+    "names": {
+      "annotated": "annoté",
+      "pages_one": "{{count}} page",
+      "pages_many": "{{count}} pages",
+      "pages_other": "{{count}} pages",
+      "pagesFile": "pages",
+      "merged": "fusionné",
+      "more_one": "{{count}} autre",
+      "more_many": "{{count}} autres",
+      "more_other": "{{count}} autres"
     }
   },
   "instruments": {

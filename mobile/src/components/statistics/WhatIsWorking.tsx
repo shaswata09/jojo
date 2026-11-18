@@ -33,8 +33,9 @@ import { useDomain } from '@/i18n/domain'
  */
 const pct = (n: number): `${number}%` => `${n}%`
 
-function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
+function Row({ arm, leader, dimension }: { arm: Arm; leader: boolean; dimension: string }) {
   const { t } = useTranslation('components')
+  const domain = useDomain()
   const c = useColors()
   const low = arm.interval.low * 100
   const width = Math.max(arm.interval.high * 100 - low, 1)
@@ -43,7 +44,7 @@ function Row({ arm, leader }: { arm: Arm; leader: boolean }) {
     <View style={{ gap: space[1] }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space[2] }}>
         <Txt size="sm" weight={leader ? 'medium' : 'regular'} style={{ flexShrink: 1 }}>
-          {arm.label}
+          {domain.armLabel(dimension, arm.label)}
         </Txt>
         <Txt size="xs" tone="secondary">
           {t('working.arm', {
@@ -98,14 +99,19 @@ function Group({ c }: { c: Comparison }) {
       </Txt>
       <View style={{ gap: space[2.5] }}>
         {c.arms.map((arm) => (
-          <Row key={arm.label} arm={arm} leader={c.confident && arm.label === c.best.label} />
+          <Row
+            key={arm.label}
+            arm={arm}
+            dimension={c.dimension}
+            leader={c.confident && arm.label === c.best.label}
+          />
         ))}
       </View>
       <Txt size="xs" tone="muted">
         {c.confident
           ? // As stored, not lowercased: an arm is a source or a role tag, a name
             // the person wrote, and lowercasing it breaks a German noun.
-            t('working.confident', { best: c.best.label })
+            t('working.confident', { best: domain.armLabel(c.dimension, c.best.label) })
           : t('working.overlap')}
         {c.tooFew > 0 ? ` ${t('working.tooFew', { count: c.tooFew, min: MIN_ARM })}` : ''}
       </Txt>

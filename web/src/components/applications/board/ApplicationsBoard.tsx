@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Ref } from 'react'
+import { useLocation } from 'react-router'
 import {
   DndContext,
   DragOverlay,
@@ -15,10 +16,15 @@ import {
 import { BoardCardBody } from '@/components/applications/board/BoardCard'
 import { BoardColumn } from '@/components/applications/board/BoardColumn'
 import { PanelScroll } from '@/components/common/Panel'
+import { revealFocused } from '@/components/common/reveal-focus'
 import { STAGES, STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
 import { dragAnnouncements, dragInstructions } from '@/components/common/drag-announcements'
+import { listStateOf } from '@/lib/links'
 import { cn } from '@/lib/utils'
 import { useDomain } from '@/i18n/domain'
+
+/** Keyboard focus in a column the board has not scrolled to brings it into view (a11y-5). */
+const revealControl = revealFocused()
 
 /**
  * The six stages, side by side, and the drag that moves a record between them.
@@ -54,6 +60,32 @@ export function ApplicationsBoard({
     useSensor(KeyboardSensor),
   )
 
+  /**
+   * The last card moved to another column, by drag or by its stage menu. Each
+   * column mounts a page of cards (`useRowCap` in BoardColumn), and a card can
+   * sort far past the page in its new column — it is kept mounted there, so a
+   * move never makes the card vanish (the phone board's `dropped`).
+   */
+  const [dropped, setDropped] = useState<string | undefined>(undefined)
+  /*
+   * Read once here and handed to every card. Each card read the location
+   * itself, so every URL change — a search keystroke writes `q`, opening a
+   * record writes its id — re-rendered all of them (finding performance-1).
+   */
+  const keep = listStateOf(useLocation().search)
+  const columns = useMemo(
+    () => STAGES.map((stage) => apps.filter((a) => a.stage === stage.id)),
+    [apps],
+  )
+
+  const moveStage = useCallback(
+    (app: Application, stage: Stage) => {
+      if (app.stage !== stage) setDropped(app.id)
+      onMoveStage(app, stage)
+    },
+    [onMoveStage],
+  )
+
   const activeCard = activeId ? apps.find((a) => a.id === activeId) : undefined
 
   const onDragStart = (event: DragStartEvent) => setActiveId(String(event.active.id))
@@ -65,7 +97,7 @@ export function ApplicationsBoard({
     // Through the same call as the stage pill and the table chip, so the drag
     // gets the toast and the undo it never had. A mis-drop is the likeliest
     // slip on this page and it used to be the only one with no way back.
-    if (stage && app) onMoveStage(app, stage)
+    if (stage && app) moveStage(app, stage)
   }
 
   return (
@@ -94,15 +126,17 @@ export function ApplicationsBoard({
       onDragEnd={onDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
-      <PanelScroll axis="x" className="flex gap-3">
-        {STAGES.map((stage) => (
+      <PanelScroll axis="x" className="flex gap-3" onFocus={revealControl}>
+        {STAGES.map((stage, i) => (
           <BoardColumn
             key={stage.id}
             stage={stage}
-            items={apps.filter((a) => a.stage === stage.id)}
+            items={columns[i] ?? []}
             onAdd={onAdd}
-            onMoveStage={onMoveStage}
+            onMoveStage={moveStage}
             openId={openId}
+            dropped={dropped}
+            keep={keep}
             openRef={openRef}
           />
         ))}

@@ -444,6 +444,7 @@
       "demoMemory": "As candidaturas, a linha do tempo, o Cofre, as vagas salvas, as palavras-chave e o perfil de demonstração somem, mas nada está sendo salvo agora, então recarregar recomeça a partir dos dados de demonstração. Nada disso era seu — nada foi gravado neste armazenamento desde que os dados de demonstração foram carregados.",
       "ownDurable": "Candidaturas, a linha do tempo, o Cofre, vagas salvas, contatos, notas, conversas, fatos do currículo e seu perfil somem, incluindo tudo o que você adicionou nesta sessão, e continua assim depois de recarregar. Não há como desfazer. Suas palavras-chave são mantidas — elas são registros próprios —, mas nada mais as usa, então todas as contagens no painel de palavras-chave vão a zero.",
       "ownMemory": "Candidaturas, a linha do tempo, o Cofre, vagas salvas, contatos, notas, conversas, fatos do currículo e seu perfil somem, incluindo tudo o que você adicionou nesta sessão, mas nada está sendo salvo agora, então recarregar recomeça a partir dos dados de demonstração. Não há como desfazer. Suas palavras-chave são mantidas — elas são registros próprios —, mas nada mais as usa, então todas as contagens no painel de palavras-chave vão a zero.",
+      "documentsKept": "Os documentos que você anexou somem agora de todas as telas, mas os arquivos ficam 30 dias na lixeira deste navegador antes de serem apagados de vez. Para apagá-los na hora, use “{{storage}}”.",
       "confirm": "Limpar tudo"
     },
     "demo": {

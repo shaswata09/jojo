@@ -45,7 +45,10 @@ export function DetailFacts({ application: a }: { application: Application }) {
         a.org
       ),
     },
-    { label: t('facts.source'), value: a.source },
+    {
+      label: t('facts.source'),
+      value: a.source === undefined ? undefined : domain.source(a.source),
+    },
     { label: t('facts.location'), value: a.location },
     // Falls through to the offer. Baylor's record states "$112k + $15k startup"
     // in the offer block and printed "Compensation —" 200px underneath it,

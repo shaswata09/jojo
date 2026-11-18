@@ -153,3 +153,38 @@ describe('what arrives is restored the way a backup file is (Q129)', () => {
     expect(confirm).toBeGreaterThan(staged)
   })
 })
+
+describe('leaving while the restore runs (review 3, races-3)', () => {
+  const code = strip(pullSource)
+  const body = (head: string) => {
+    const from = code.indexOf(head)
+    return code.slice(from, code.indexOf('}, [', from))
+  }
+
+  it('does not tell the phone "declined" over a restore that cannot be stopped', () => {
+    // Transfer runs `cancel` on every role switch and on unmount.
+    expect(strip(transferSource)).toContain('useEffect(() => cancelPull, [role, cancelPull])')
+    const cancel = body('const cancel = useCallback(')
+    expect(cancel).toContain('if (restoring.current) return')
+    expect(cancel.indexOf('if (restoring.current) return')).toBeLessThan(
+      cancel.indexOf("tell('declined')"),
+    )
+  })
+
+  it('tells the phone the real outcome, and paints it only over its own pull', () => {
+    const confirm = body('const confirm = useCallback(')
+    const flagged = confirm.indexOf('restoring.current = true')
+    const restored = confirm.indexOf('await restoreFromPhone(')
+    const cleared = confirm.indexOf('restoring.current = false')
+    const told = confirm.indexOf("tell(done.ok ? 'applied' : 'failed')")
+    const current = confirm.indexOf('if (attempt.current !== mine) return')
+    expect(flagged).toBeGreaterThan(-1)
+    expect(flagged).toBeLessThan(restored)
+    // Cleared in a `finally`, so a restore that throws does not hold `cancel` off for good.
+    expect(confirm.slice(restored, cleared)).toContain('finally {')
+    expect(told).toBeGreaterThan(cleared)
+    expect(current).toBeGreaterThan(told)
+    expect(current).toBeLessThan(confirm.indexOf("setStage('done')"))
+    expect(body('const start = useCallback(')).toContain('attempt.current += 1')
+  })
+})

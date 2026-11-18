@@ -24,7 +24,7 @@ export const MAX_ZOOM = 8
 const STEP = 1.6
 const GLIDE_MS = 180
 /** A press that moves less than this is a click, not a pan. */
-const DRAG_SLOP = 4
+export const DRAG_SLOP = 4
 
 const IDENTITY: ZoomView = { k: 1, x: 0, y: 0 }
 
@@ -48,6 +48,119 @@ export function zoomAbout(
   const k = Math.max(1, Math.min(MAX_ZOOM, view.k * factor))
   const ratio = k / view.k
   return clampView({ k, x: cx - (cx - view.x) * ratio, y: cy - (cy - view.y) * ratio }, box)
+}
+
+/* ------------------------------ gesture math ------------------------------ */
+
+/**
+ * A press in progress: the view when it (or its latest change of fingers)
+ * began, the point it is measured from — one finger's, or the midpoint of two —
+ * the fingers' spread for a pinch, and whether it has become a pan.
+ */
+export type Gesture = {
+  readonly start: ZoomView
+  readonly at: Point
+  readonly dist: number
+  readonly moved: boolean
+}
+type Point = { readonly x: number; readonly y: number }
+
+/** One finger's point, or two fingers' midpoint and spread. */
+const centroid = (pts: readonly Point[]) => {
+  const a = pts[0]
+  const b = pts[1]
+  if (!a) return null
+  return b
+    ? { at: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, dist: Math.hypot(a.x - b.x, a.y - b.y) }
+    : { at: a, dist: 0 }
+}
+
+/**
+ * (Re)starts a gesture from the pointers now down, anchored on the CURRENT
+ * view. Called when a finger lands and when one lifts, so the picture does not
+ * jump: the remaining finger's movement is measured from where it is now, not
+ * from where the pair's midpoint was. Whether the press has already panned is
+ * carried over — a pinch that lost a finger is still not a click.
+ */
+export function gestureStart(
+  view: ZoomView,
+  pts: readonly Point[],
+  previous: Gesture | null,
+): Gesture | null {
+  const c = centroid(pts)
+  if (!c) return null
+  return { start: view, at: c.at, dist: c.dist, moved: previous?.moved ?? false }
+}
+
+/**
+ * The view for the pointers' new positions, or `view: null` while a single
+ * pointer is still inside the slop (a click in the making). Panning follows the
+ * point; two pointers also scale by how their spread changed, about their
+ * midpoint, clamped to fit … `MAX_ZOOM`.
+ */
+export function gestureMove(
+  g: Gesture,
+  pts: readonly Point[],
+  box: { width: number; height: number },
+): { view: ZoomView | null; moved: boolean } {
+  const c = centroid(pts)
+  if (!c) return { view: null, moved: g.moved }
+  const pinching = pts.length > 1
+  if (!g.moved && !pinching && Math.hypot(c.at.x - g.at.x, c.at.y - g.at.y) < DRAG_SLOP) {
+    return { view: null, moved: false }
+  }
+  let next: ZoomView = {
+    k: g.start.k,
+    x: g.start.x + c.at.x - g.at.x,
+    y: g.start.y + c.at.y - g.at.y,
+  }
+  if (pinching && g.dist > 0) next = zoomAbout(next, c.dist / g.dist, c.at.x, c.at.y, box)
+  return { view: clampView(next, box), moved: true }
+}
+
+/** Whether a pointer may start a gesture: any touch or pen, a mouse's main button only. */
+export const startsGesture = (pointerType: string, button: number) =>
+  pointerType !== 'mouse' || button === 0
+
+/**
+ * The view that brings a point of the picture on screen with `pad` round it,
+ * or null when it already is — or when the view is at fit, where everything is.
+ */
+export function revealView(
+  view: ZoomView,
+  p: Point,
+  box: { width: number; height: number },
+  pad = 48,
+): ZoomView | null {
+  if (view.k <= 1.001) return null
+  const sx = p.x * view.k + view.x
+  const sy = p.y * view.k + view.y
+  if (sx >= pad && sx <= box.width - pad && sy >= pad && sy <= box.height - pad) return null
+  return clampView(
+    { k: view.k, x: box.width / 2 - p.x * view.k, y: box.height / 2 - p.y * view.k },
+    box,
+  )
+}
+
+/**
+ * Remembers that a press became a pan or a pinch, for the click that follows
+ * it: `consume` answers true once, then false, so a pan is never also a select.
+ */
+export function dragLatch() {
+  let dragged = false
+  return {
+    reset: () => {
+      dragged = false
+    },
+    mark: () => {
+      dragged = true
+    },
+    consume: () => {
+      const was = dragged
+      dragged = false
+      return was
+    },
+  }
 }
 
 export function useZoom({
@@ -127,13 +240,8 @@ export function useZoom({
   /** Pans so a point of the picture is on screen with room round it; does nothing at fit. */
   const ensureVisible = useCallback(
     (p: { x: number; y: number }, pad = 48) => {
-      const v = viewRef.current
-      if (v.k <= 1.001) return
-      const { width, height } = boxRef.current
-      const sx = p.x * v.k + v.x
-      const sy = p.y * v.k + v.y
-      if (sx >= pad && sx <= width - pad && sy >= pad && sy <= height - pad) return
-      animateTo({ k: v.k, x: width / 2 - p.x * v.k, y: height / 2 - p.y * v.k })
+      const next = revealView(viewRef.current, p, boxRef.current, pad)
+      if (next) animateTo(next)
     },
     [animateTo],
   )
@@ -168,41 +276,24 @@ export function useZoom({
     return () => svg.removeEventListener('wheel', onWheel)
   }, [svgRef, toLocal, setView])
 
-  // Drag to pan, two pointers to pinch.
-  const pointers = useRef(new Map<number, { x: number; y: number }>())
-  const gesture = useRef<{
-    start: ZoomView
-    at: { x: number; y: number }
-    dist: number
-    moved: boolean
-  } | null>(null)
-  const dragged = useRef(false)
+  // Drag to pan, two pointers to pinch. The arithmetic is `gestureStart` /
+  // `gestureMove` above; this is the wiring.
+  const pointers = useRef(new Map<number, Point>())
+  const gesture = useRef<Gesture | null>(null)
+  const [latch] = useState(dragLatch)
 
   const begin = useCallback(() => {
-    const pts = [...pointers.current.values()]
-    const a = pts[0]
-    const b = pts[1]
-    if (!a) {
-      gesture.current = null
-      return
-    }
-    const at = b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : a
-    gesture.current = {
-      start: viewRef.current,
-      at,
-      dist: b ? Math.hypot(a.x - b.x, a.y - b.y) : 0,
-      moved: gesture.current?.moved ?? false,
-    }
+    gesture.current = gestureStart(viewRef.current, [...pointers.current.values()], gesture.current)
   }, [])
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
-      if (event.pointerType === 'mouse' && event.button !== 0) return
+      if (!startsGesture(event.pointerType, event.button)) return
       pointers.current.set(event.pointerId, toLocal(event.clientX, event.clientY))
-      dragged.current = false
+      latch.reset()
       begin()
     },
-    [toLocal, begin],
+    [toLocal, begin, latch],
   )
 
   const onPointerMove = useCallback(
@@ -211,30 +302,17 @@ export function useZoom({
       pointers.current.set(event.pointerId, toLocal(event.clientX, event.clientY))
       const g = gesture.current
       if (!g) return
-      const pts = [...pointers.current.values()]
-      const a = pts[0]
-      const b = pts[1]
-      if (!a) return
-      const at = b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : a
-      if (!g.moved && Math.hypot(at.x - g.at.x, at.y - g.at.y) < DRAG_SLOP && !b) return
+      const step = gestureMove(g, [...pointers.current.values()], boxRef.current)
+      if (!step.view) return
       if (!g.moved) {
-        g.moved = true
-        dragged.current = true
+        gesture.current = { ...g, moved: true }
+        latch.mark()
         cancelAnimationFrame(glide.current)
         event.currentTarget.setPointerCapture?.(event.pointerId)
       }
-      let next: ZoomView = {
-        k: g.start.k,
-        x: g.start.x + at.x - g.at.x,
-        y: g.start.y + at.y - g.at.y,
-      }
-      if (b && g.dist > 0) {
-        const factor = Math.hypot(a.x - b.x, a.y - b.y) / g.dist
-        next = zoomAbout(next, factor, at.x, at.y, boxRef.current)
-      }
-      setView(next)
+      setView(step.view)
     },
-    [toLocal, setView],
+    [toLocal, setView, latch],
   )
 
   const onPointerEnd = useCallback(
@@ -245,12 +323,26 @@ export function useZoom({
     [begin],
   )
 
+  /*
+   * Touch: at fit the canvas lets a one-finger swipe scroll the page (the
+   * overview sets `touch-action: pan-y` there), so it has to claim a pinch
+   * itself — a non-passive touchmove that cancels the browser's scroll while
+   * two fingers are down, or while zoomed in, where a drag is a pan.
+   */
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    const onTouchMove = (event: TouchEvent) => {
+      if (event.cancelable && (event.touches.length > 1 || viewRef.current.k > 1.001)) {
+        event.preventDefault()
+      }
+    }
+    svg.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => svg.removeEventListener('touchmove', onTouchMove)
+  }, [svgRef])
+
   /** True once, right after a press that turned into a pan or a pinch — so it is not also a click. */
-  const consumeDrag = useCallback(() => {
-    const was = dragged.current
-    dragged.current = false
-    return was
-  }, [])
+  const consumeDrag = latch.consume
 
   return {
     view,

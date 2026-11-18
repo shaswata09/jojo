@@ -92,6 +92,34 @@
     "recommender": "推薦者",
     "contact": "窓口"
   },
+  "linkCategory": {
+    "posting": "求人",
+    "institution": "機関",
+    "person": "人物",
+    "guide": "ガイド"
+  },
+  "snippetTag": {
+    "coverLetter": "カバーレター",
+    "applicationForm": "応募フォーム",
+    "email": "メール",
+    "bio": "略歴",
+    "cv": "履歴書",
+    "researchStatement": "研究ステートメント",
+    "teachingStatement": "教育ステートメント"
+  },
+  "source": {
+    "jobScout": "求人スカウト",
+    "jobBoard": "求人サイト",
+    "referral": "紹介",
+    "careersPage": "採用ページ"
+  },
+  "fileBucket": {
+    "toRead": "読むもの",
+    "applications": "応募",
+    "jobPostings": "求人",
+    "talks": "講演",
+    "admin": "事務"
+  },
   "approval": {
     "manual": "手動",
     "semi": "半自動",
@@ -352,6 +380,7 @@
   },
   "readBy": "{{model}} が読み取り · {{ago}}",
   "missingSource": "保管庫にもう存在しない文書",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "元に戻すものはありません。",

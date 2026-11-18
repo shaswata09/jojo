@@ -202,6 +202,13 @@
       "hintEmpty": "Sorot teks atau tambahkan komentar dulu.",
       "hint": "{{summary}} akan dituliskan.",
       "action": "Simpan dengan anotasi"
+    },
+    "names": {
+      "annotated": "beranotasi",
+      "pages_other": "{{count}} halaman",
+      "pagesFile": "halaman",
+      "merged": "gabungan",
+      "more_other": "{{count}} lainnya"
     }
   },
   "instruments": {

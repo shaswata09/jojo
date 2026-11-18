@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "Rappels et événements",
-      "hint": "{{reminders}} vous rappellent quelque chose, {{events}} sont des événements datés",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} vous rappelle quelque chose",
+      "reminders_other": "{{count}} vous rappellent quelque chose",
+      "events_one": "{{count}} est un événement daté",
+      "events_other": "{{count}} sont des événements datés",
       "summary_one": "{{count}} rappel ou événement",
       "summary_other": "{{count}} rappels et événements"
     },
     "vault": {
       "label": "Liens et extraits",
-      "hint": "{{links}} liens · {{snippets}} extraits",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} lien",
+      "links_other": "{{count}} liens",
+      "snippets_one": "{{count}} extrait",
+      "snippets_other": "{{count}} extraits",
       "summary_one": "{{count}} lien ou extrait",
       "summary_other": "{{count}} liens et extraits"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "Veille d’offres",
-      "hint": "{{pipelines}} recherches · {{postings}} offres enregistrées · {{matches}} correspondances",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} recherche",
+      "pipelines_other": "{{count}} recherches",
+      "postings_one": "{{count}} offre enregistrée",
+      "postings_other": "{{count}} offres enregistrées",
+      "matches_one": "{{count}} correspondance",
+      "matches_other": "{{count}} correspondances",
       "summary_one": "{{count}} enregistrement de veille d’offres",
       "summary_other": "{{count}} enregistrements de veille d’offres"
     },
@@ -181,7 +195,7 @@
     "progress": "Progression du transfert",
     "reaching": "Connexion à votre téléphone…",
     "gathering": "Rassemblement de vos enregistrements…",
-    "percentSent": "{{percent}} % envoyé",
+    "percentSent": "{{percent}} % envoyé",
     "cancel": "Annuler",
     "another": "Envoyer à un autre appareil"
   },

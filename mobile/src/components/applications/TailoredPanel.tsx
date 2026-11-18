@@ -41,10 +41,17 @@ import { toTab } from '@/navigation/to-tab'
  * panel between the dates and the notes.
  */
 
-const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+/**
+ * A document kind at the start of a menu line, its first letter raised by the
+ * language's own rules (Turkish i). The catalogs keep the kinds in running-text
+ * case for the sentences they are spliced into; scripts without case are left
+ * as they are. The web's `sentenceStart`.
+ */
+const capitalise = (word: string, language: string) =>
+  word.charAt(0).toLocaleUpperCase(language) + word.slice(1)
 
 export function TailoredPanel({ applicationId }: { applicationId: string }) {
-  const { t: tr } = useTranslation(['components', 'common'])
+  const { t: tr, i18n } = useTranslation(['components', 'common'])
   const { text } = useKg()
   const c = useColors()
   const t = useTailoring(applicationId)
@@ -66,17 +73,23 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
 
   const busy = t.running !== null
 
-  const chooser: MenuAction[] = t.candidates.map((cand) => ({
-    id: cand.id,
-    label: cand.already
-      ? tr('tailored.tailoredBefore', { label: capitalise(cand.label) })
-      : capitalise(cand.label),
-    hint: cand.name,
-    icon: 'edit-3',
-    onPress: () => {
-      void begin(cand)
-    },
-  }))
+  /*
+   * The translated kind, not the candidate's `label`: that is core's English
+   * (`DOCUMENT_LABEL`), which every catalog already translates as
+   * `domain:document.*`.
+   */
+  const chooser: MenuAction[] = t.candidates.map((cand): MenuAction => {
+    const kind = capitalise(domain.document(cand.kind), i18n.language)
+    return {
+      id: cand.id,
+      label: cand.already ? tr('tailored.tailoredBefore', { label: kind }) : kind,
+      hint: cand.name,
+      icon: 'edit-3',
+      onPress: () => {
+        void begin(cand)
+      },
+    }
+  })
 
   return (
     <Panel>

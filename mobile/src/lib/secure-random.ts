@@ -34,7 +34,7 @@
  * on every launch. `@jojo/service`'s `core/ref.ts` selects its random source with
  * `typeof source.getRandomValues === 'function'` and no `try`/`catch`, so a
  * throwing function is strictly worse there than a missing one: it passes the
- * check, throws inside `uuidv7()`, and takes `mintNodeId()` and every record
+ * check, throws inside `uuidv7()`, and takes `newNodeId()` (core/ref.ts) and every record
  * creation with it. `ref.ts` says so in its own comment — "a boot that threw
  * here would take the whole app down over a random number" — and a thrower is
  * exactly how that happens.

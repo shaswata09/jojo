@@ -57,7 +57,7 @@ export function InterestsPanel({
                   type="button"
                   onClick={() => update({ matchTerms: without(matchTerms, term) })}
                   aria-label={t('interests.matchTerms.remove', { term })}
-                  className="ms-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
+                  className="touch-target ms-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
                 >
                   <X className="size-3" aria-hidden />
                 </button>

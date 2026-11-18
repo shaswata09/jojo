@@ -109,8 +109,17 @@ function KeywordRow({
             ) : null}
           </div>
         ) : (
-          <Chip tone={label.tone} ink={label.ink} shape="capsule">
-            {label.name}
+          // Never wider than its column: a long name was drawn on past it and
+          // under the first swatch (finding responsive-1). The full name stays
+          // in the title and in the rename field.
+          <Chip
+            tone={label.tone}
+            ink={label.ink}
+            shape="capsule"
+            className="max-w-full"
+            title={label.name}
+          >
+            <span className="min-w-0 truncate">{label.name}</span>
           </Chip>
         )
       }
@@ -125,7 +134,7 @@ function KeywordRow({
             className="me-1"
           />
           {/* Rendered in both states rather than swapped out: SettingRow's
-              control cell is shrink-0, so a button appearing and disappearing
+              control cell is sized to its content, so a button appearing and disappearing
               would shunt the swatches sideways every time an edit started. */}
           <Button
             variant="ghost"

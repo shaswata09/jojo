@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ToolHost } from '@jojo/service/agent/execute'
 import { MCP_PROTOCOL_VERSION, mcpAllowed, mcpManifest } from '@jojo/service/agent/mcp'
 import { MutableSnapshot } from '@jojo/service/core/snapshot'
@@ -62,7 +62,10 @@ const http = (await import('node:http')) as {
       headers: Record<string, string>
     },
     onResponse: (res: Incoming) => void,
-  ) => { on: (event: 'error', listener: (error: Error) => void) => void; end: (body: string) => void }
+  ) => {
+    on: (event: 'error', listener: (error: Error) => void) => void
+    end: (body: string) => void
+  }
 }
 
 const TOKEN = 't'.repeat(43)
@@ -233,7 +236,7 @@ const call = (id: number, name: string, args: unknown = {}) => ({
 })
 
 const textOf = (body: { result?: Record<string, unknown> } | null) =>
-  ((body?.result?.['content'] as { text: string }[] | undefined)?.[0]?.text ?? '')
+  (body?.result?.['content'] as { text: string }[] | undefined)?.[0]?.text ?? ''
 
 describe('a Claude Code session, end to end', () => {
   it('answers the handshake, the tool list and real calls against the live graph', async () => {
@@ -244,7 +247,9 @@ describe('a Claude Code session, end to end', () => {
     expect(hello.body?.result?.['protocolVersion']).toBe(MCP_PROTOCOL_VERSION)
 
     // The notification never reaches the tab: the bridge answers it.
-    expect((await client(port, { jsonrpc: '2.0', method: 'notifications/initialized' })).status).toBe(202)
+    expect(
+      (await client(port, { jsonrpc: '2.0', method: 'notifications/initialized' })).status,
+    ).toBe(202)
 
     const listed = await client(port, { jsonrpc: '2.0', id: 2, method: 'tools/list' })
     const names = ((listed.body?.result?.['tools'] ?? []) as { name: string }[]).map((t) => t.name)
@@ -368,7 +373,7 @@ describe('what the tab says about the link', () => {
    * connection, carried up as the reason and preferred over the panel's
    * "Start jojo-bridge with the first command".
    */
-  it('keeps the browser\'s transport error off the status line', async () => {
+  it("keeps the browser's transport error off the status line", async () => {
     const statuses: LinkStatus[] = []
     const controller = new AbortController()
     const linked = runLink({
@@ -378,7 +383,9 @@ describe('what the tab says about the link', () => {
       signal: controller.signal,
       onStatus: (status) => statuses.push(status),
       wait: () => new Promise((resolve) => setTimeout(resolve, 5)),
-      transport: async () => ({ failed: { kind: 'transport' as const, reason: 'Failed to fetch' } }),
+      transport: async () => ({
+        failed: { kind: 'transport' as const, reason: 'Failed to fetch' },
+      }),
     })
     await until(() => statuses.length >= 3)
     controller.abort()
@@ -411,7 +418,9 @@ describe('what the tab says about the link', () => {
    * then on the bridge's attach budget, and a loaded machine stretches both.
    */
   it('stops when switched off, and the client is told jojo is not connected', async () => {
-    const { port, statuses, controller, linked, bridge, server } = await world({ attachWaitMs: 300 })
+    const { port, statuses, controller, linked, bridge, server } = await world({
+      attachWaitMs: 300,
+    })
     await until(() => statuses.some((s) => s.state === 'ready'))
     controller.abort()
     await linked
@@ -529,7 +538,9 @@ describe('what the tab checks before it sends its token', () => {
     await until(() => seen.length >= 3)
     controller.abort()
     await linked
-    expect(seen.every((s) => s.url.endsWith('/tab/hello') && s.authorization === undefined)).toBe(true)
+    expect(seen.every((s) => s.url.endsWith('/tab/hello') && s.authorization === undefined)).toBe(
+      true,
+    )
     expect(statuses.at(-1)).toMatchObject({ state: 'searching' })
     expect(JSON.stringify(statuses)).toContain('Something other than jojo-bridge')
   })
@@ -646,5 +657,52 @@ describe('electing one tab', () => {
     holder.abort()
     await held
     expect(ran).toBe(false)
+  })
+})
+
+/**
+ * Counts the `abort` listeners on a signal: added minus taken off. (Node's
+ * `getEventListeners` would do, but this project's types are the browser's.)
+ */
+function abortListeners(signal: AbortSignal): () => number {
+  const live = new Set<unknown>()
+  const add = signal.addEventListener.bind(signal)
+  const remove = signal.removeEventListener.bind(signal)
+  signal.addEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.add(fn)
+    add(type, fn as EventListener, options as AddEventListenerOptions)
+  }) as typeof signal.addEventListener
+  signal.removeEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.delete(fn)
+    remove(type, fn as EventListener, options as EventListenerOptions)
+  }) as typeof signal.removeEventListener
+  return () => live.size
+}
+
+describe('backing off while the bridge is not started (review 3, leaks-3)', () => {
+  it('does not leave a listener on the link’s signal per back-off', async () => {
+    vi.useFakeTimers()
+    try {
+      const controller = new AbortController()
+      const listening = abortListeners(controller.signal)
+      const counts: number[] = []
+      const linked = runLink({
+        token: 'x'.repeat(43),
+        transport: async () => ({ failed: { kind: 'transport', reason: 'Failed to fetch' } }),
+        host: {} as never,
+        signal: controller.signal,
+        onStatus: () => {},
+      })
+      for (let minute = 1; minute <= 60; minute += 1) {
+        await vi.advanceTimersByTimeAsync(60_000)
+        if (minute % 20 === 0) counts.push(listening())
+      }
+      // One wait in flight at a time; before the fix this read [23, 43, 63].
+      expect(Math.max(...counts)).toBeLessThanOrEqual(2)
+      controller.abort()
+      await linked
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

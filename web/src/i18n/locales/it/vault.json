@@ -228,6 +228,17 @@
       "hintEmpty": "Prima evidenzia del testo o aggiungi un commento.",
       "hint": "{{summary}} verrà scritto nel file.",
       "action": "Salva il PDF annotato"
+    },
+    "names": {
+      "annotated": "annotato",
+      "pages_one": "{{count}} pagina",
+      "pages_many": "{{count}} pagine",
+      "pages_other": "{{count}} pagine",
+      "pagesFile": "pagine",
+      "merged": "unito",
+      "more_one": "{{count}} altro",
+      "more_many": "{{count}} altri",
+      "more_other": "{{count}} altri"
     }
   },
   "instruments": {

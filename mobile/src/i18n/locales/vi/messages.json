@@ -208,7 +208,8 @@
     "timeout": "Trang tuyển dụng đó trả lời quá lâu.",
     "unreachable": "Không kết nối được tới trang tuyển dụng đó.",
     "status": "Trang tuyển dụng đó trả lời {{status}}.",
-    "browserOnly": "{{host}} chỉ hiển thị tin tuyển dụng cho trình duyệt thật, nên không đọc được từ điện thoại. Trên máy tính, tiện ích mở rộng jojo có thể đọc nó."
+    "browserOnly": "{{host}} chỉ hiển thị tin tuyển dụng cho trình duyệt thật, nên không đọc được từ điện thoại. Trên máy tính, tiện ích mở rộng jojo có thể đọc nó.",
+    "cancelled": "Đã hủy việc đọc."
   },
   "timelineForm": {
     "title": "Đặt một tiêu đề mà bạn sẽ nhận ra.",

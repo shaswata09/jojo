@@ -21,6 +21,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   BACKUP_NUDGE_AT,
   DOCUMENTS_NOT_READY,
+  DOCUMENTS_UNAVAILABLE,
   DOCUMENTS_UNREADABLE,
   backupNudge,
   backupPromptText,
@@ -28,8 +29,11 @@ import {
   collectDocuments,
   dismissBackupNudge,
   markRestoredFromBackup,
+  runDownload,
   streamDocuments,
   type BackupBlobs,
+  type DownloadSteps,
+  type SavePicker,
 } from '@/lib/backup'
 import { readBackup } from '@jojo/service/core/backup'
 import { BACKUP_TAIL, backupHead } from '@jojo/service/core/backup-stream'
@@ -53,8 +57,10 @@ const blobs = (
   listed: readonly { id: string; name: string }[],
   readable: Record<string, string>,
   ready = true,
+  failed = false,
 ): BackupBlobs => ({
   ready,
+  failed,
   all: async () => [...listed],
   get: async (id: string) => (id in readable ? file(readable[id]!) : null),
 })
@@ -165,6 +171,23 @@ describe('streaming the documents into a backup', () => {
     expect(sink).not.toHaveBeenCalled()
   })
 
+  it('refuses, before writing anything, when the documents could not be listed (races-2)', async () => {
+    /*
+     * Another jojo tab holding the documents database, or a store that opened
+     * and would not list: the index is ready and EMPTY. Read as "no documents"
+     * it wrote a file holding none, and the toast said it held every one.
+     */
+    const sink = vi.fn(async () => undefined)
+    await expect(streamDocuments(blobs([], {}, true, true), sink)).rejects.toThrow(
+      DOCUMENTS_UNAVAILABLE,
+    )
+    expect(sink).not.toHaveBeenCalled()
+    await expect(collectDocuments(blobs([], {}, true, true))).rejects.toThrow(DOCUMENTS_UNAVAILABLE)
+    // And the toast says why, not "every document you have attached".
+    const said = backupToast({ kind: 'failed', reason: DOCUMENTS_UNAVAILABLE }, 'x.json')
+    expect(said?.description).toBe(DOCUMENTS_UNAVAILABLE)
+  })
+
   it('refuses when everything listed will not read', async () => {
     const two = [
       { id: 'a', name: 'CV.pdf' },
@@ -200,6 +223,7 @@ describe('streaming the documents into a backup', () => {
     const whole = vi.spyOn(big, 'arrayBuffer')
     const { text } = await streamed({
       ready: true,
+      failed: false,
       all: async () => [{ id: 'x', name: 'big.bin' }],
       get: async () => big,
     })
@@ -238,20 +262,146 @@ describe('the hook is wired to it', () => {
      * safe and what `changed` counts from, so a stamp that ran before the file
      * was complete would put the app's own reassurance in front of it.
      */
-    const download = code.slice(code.indexOf('const download = useCallback('))
+    const from = code.indexOf('export async function runDownload(')
+    const download = code.slice(from, code.indexOf('\n}\n', from))
     const closed = download.indexOf('await file.close()')
-    const firstStamp = download.indexOf('writeLastBackup(')
+    const firstStamp = download.indexOf('steps.taken(')
     expect(closed).toBeGreaterThan(-1)
     expect(firstStamp).toBeGreaterThan(closed)
 
-    const assembled = download.indexOf('await assemble({}, onProgress)')
-    const clicked = download.indexOf('anchor.click()')
-    const lastStamp = download.lastIndexOf('writeLastBackup(')
+    // The fallback block alone (review 3, coverage-2): searched across the
+    // whole function, the picker branch's own `try {` satisfied this check
+    // with the fallback's `assemble` hoisted out of its try.
+    const fallback = download.slice(download.indexOf('let documents: DocumentCount\n  try {'))
+    const assembled = fallback.indexOf('await steps.assemble({}, onProgress)')
+    const delivered = fallback.indexOf('steps.deliver(')
+    const lastStamp = fallback.lastIndexOf('steps.taken(')
     expect(assembled).toBeGreaterThan(-1)
-    expect(lastStamp).toBeGreaterThan(clicked)
+    expect(lastStamp).toBeGreaterThan(delivered)
     // Inside a try, so a refusal becomes `failed` rather than an unhandled
     // rejection out of `void download(...)`.
-    expect(download.lastIndexOf('try {', assembled)).toBeGreaterThan(-1)
+    expect(fallback.indexOf('try {')).toBeGreaterThan(-1)
+    expect(fallback.indexOf('try {')).toBeLessThan(assembled)
+    // And the hook really is this function, with the stamp in `taken`.
+    const hook = code.slice(code.indexOf('const download = useCallback('))
+    expect(hook).toContain('runDownload(name, onProgress, {')
+    const taken = hook.slice(hook.indexOf('taken: (at) => {'))
+    expect(taken.indexOf('writeLastBackup(at.toISOString())')).toBeGreaterThan(-1)
+  })
+})
+
+/**
+ * Every way a download ends, run (review 3, coverage-2).
+ *
+ * `runDownload` is the hook's body with each effect handed in, so the outcomes
+ * the source-text check above only describes are exercised: a cancelled save
+ * dialog, a sink that fails midway, a refusal on the fallback path.
+ */
+describe('how a backup download ends', () => {
+  const counted = { written: 1, total: 1 }
+  const big = 300 * 1024 * 1024
+
+  function steps(over: Partial<DownloadSteps> = {}) {
+    const taken = vi.fn()
+    const deliver = vi.fn()
+    const all: DownloadSteps = {
+      picker: null,
+      storedBytes: async () => 0,
+      write: async () => counted,
+      assemble: async () => ({ file: new Blob(['{}']), documents: counted }),
+      deliver,
+      taken,
+      ...over,
+    }
+    return { all, taken, deliver }
+  }
+
+  /** A save picker whose file records what happened to it. */
+  function picker(writeFails = false) {
+    const file = {
+      write: vi.fn(async () => {
+        if (writeFails) throw new Error('disk full')
+      }),
+      close: vi.fn(async () => undefined),
+      abort: vi.fn(async () => undefined),
+    }
+    const open: SavePicker = async () => ({ createWritable: async () => file })
+    return { open, file }
+  }
+
+  it('says cancelled, and stamps nothing, when the save dialog is closed', async () => {
+    const closed: SavePicker = async () => {
+      throw new DOMException('closed', 'AbortError')
+    }
+    const { all, taken } = steps({ picker: closed, storedBytes: async () => big })
+    await expect(runDownload('x.json', undefined, all)).resolves.toBe('cancelled')
+    expect(taken).not.toHaveBeenCalled()
+  })
+
+  it('aborts the file and stamps nothing when writing to disk fails midway', async () => {
+    const { open, file } = picker(true)
+    const { all, taken } = steps({
+      picker: open,
+      storedBytes: async () => big,
+      write: async (sink) => {
+        await sink('{')
+        return counted
+      },
+    })
+    await expect(runDownload('x.json', undefined, all)).resolves.toBe('failed')
+    expect(file.abort).toHaveBeenCalledTimes(1)
+    expect(file.close).not.toHaveBeenCalled()
+    expect(taken).not.toHaveBeenCalled()
+    expect(reported).toHaveBeenCalledWith('backup', expect.any(Error))
+  })
+
+  it('says saved, and stamps, once the picked file has closed', async () => {
+    const { open, file } = picker()
+    const { all, taken } = steps({ picker: open, storedBytes: async () => big })
+    await expect(runDownload('x.json', undefined, all)).resolves.toEqual({
+      kind: 'saved',
+      documents: counted,
+    })
+    expect(file.close).toHaveBeenCalledTimes(1)
+    expect(taken).toHaveBeenCalledTimes(1)
+  })
+
+  it('resolves failed, never rejects, when the fallback is refused', async () => {
+    const { all, taken, deliver } = steps({
+      assemble: async () => {
+        throw new Error(DOCUMENTS_NOT_READY)
+      },
+    })
+    await expect(runDownload('x.json', undefined, all)).resolves.toEqual({
+      kind: 'failed',
+      reason: DOCUMENTS_NOT_READY,
+    })
+    expect(deliver).not.toHaveBeenCalled()
+    expect(taken).not.toHaveBeenCalled()
+  })
+
+  it('says started, and stamps after the hand-off, on the fallback', async () => {
+    const order: string[] = []
+    const { all } = steps({
+      deliver: () => void order.push('deliver'),
+      taken: () => void order.push('taken'),
+    })
+    await expect(runDownload('x.json', undefined, all)).resolves.toEqual({
+      kind: 'started',
+      documents: counted,
+    })
+    expect(order).toEqual(['deliver', 'taken'])
+  })
+
+  it('falls through to the download when the store is small, without asking where', async () => {
+    const { open } = picker()
+    const asked = vi.fn(open)
+    const { all, deliver } = steps({ picker: asked, storedBytes: async () => 1024 })
+    await expect(runDownload('x.json', undefined, all)).resolves.toMatchObject({
+      kind: 'started',
+    })
+    expect(asked).not.toHaveBeenCalled()
+    expect(deliver).toHaveBeenCalledTimes(1)
   })
 })
 

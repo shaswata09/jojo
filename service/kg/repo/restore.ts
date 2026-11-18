@@ -46,9 +46,9 @@ import type { StoreMeta } from './meta'
  * Somewhere document bytes can be put, wholesale.
  *
  * The narrowest thing a restore needs, stated structurally rather than imported,
- * so this layer never learns what OPFS or a phone sandbox is. Web passes
- * `VaultBlobs`, which satisfies it already; the phone passes a writer over its
- * own document directory.
+ * so this layer never learns what kind of file store sits underneath. Web
+ * passes `VaultBlobs` (its `FileStore` over IndexedDB), which satisfies it
+ * already; the phone passes a writer over its own document directory.
  *
  * Returns how many LANDED, not how many were offered — a store that cannot
  * place a document is expected to skip it, and the count is what the person is

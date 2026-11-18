@@ -89,58 +89,81 @@ export function StageMenu({
         )}
       </PopoverTrigger>
 
+      {/* The options are their own component so that a closed menu builds
+          none of them. PopoverContent does not mount while closed, but the
+          JSX handed to it used to be built anyway — six translated buttons
+          per closed menu, which on a 3,000-card board was 706 ms of a
+          3,416 ms load (finding performance-1). */}
       <PopoverContent align={align} className="w-48 gap-1 p-1.5">
-        <div className="px-1 text-xs tracking-wide text-text-3 uppercase">
-          {t('stageMenu.moveTo')}
-        </div>
-        {/*
-          Plain buttons rather than role="radio": the radiogroup pattern owes a
-          roving tabindex and arrow-key selection, and claiming the role without
-          them promises behaviour that is not there. Tab moves between six
-          buttons perfectly well.
-        */}
-        <ul className="flex flex-col">
-          {STAGES.map((stage) => {
-            const current = stage.id === value
-            return (
-              <li key={stage.id}>
-                <button
-                  type="button"
-                  // Selecting the stage it is already in would be a button that
-                  // does nothing, so it says why instead.
-                  disabled={current}
-                  title={
-                    current
-                      ? t('stageMenu.alreadyIn', { stage: domain.stage(stage.id) })
-                      : undefined
-                  }
-                  aria-current={current ? 'true' : undefined}
-                  onClick={() => {
-                    triggerRef.current?.focus({ preventScroll: true })
-                    onSelect(stage.id)
-                    setOpen(false)
-                  }}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-xs transition-colors',
-                    // A disabled button still matches :hover, so the hover
-                    // styling is withheld by branch rather than by a variant.
-                    current ? 'text-text-3' : 'text-text-2 hover:bg-well hover:text-text-1',
-                  )}
-                >
-                  <span className={cn('size-1.5 shrink-0 rounded-full', stage.dot)} aria-hidden />
-                  {domain.stage(stage.id)}
-                  {current ? (
-                    <>
-                      <Check className="ms-auto size-3.5 shrink-0 text-accent" aria-hidden />
-                      <span className="sr-only">{t('stageMenu.current')}</span>
-                    </>
-                  ) : null}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
+        <StageOptions
+          value={value}
+          onPick={(stage) => {
+            triggerRef.current?.focus({ preventScroll: true })
+            onSelect(stage.id)
+            setOpen(false)
+          }}
+        />
       </PopoverContent>
     </Popover>
+  )
+}
+
+/** The six stages in an open menu; mounted only while the popover is. */
+function StageOptions({
+  value,
+  onPick,
+}: {
+  value: Stage
+  onPick: (stage: (typeof STAGES)[number]) => void
+}) {
+  const { t } = useTranslation('applications')
+  const domain = useDomain()
+  return (
+    <>
+      <div className="px-1 text-xs tracking-wide text-text-3 uppercase">
+        {t('stageMenu.moveTo')}
+      </div>
+      {/*
+      Plain buttons rather than role="radio": the radiogroup pattern owes a
+      roving tabindex and arrow-key selection, and claiming the role without
+      them promises behaviour that is not there. Tab moves between six
+      buttons perfectly well.
+    */}
+      <ul className="flex flex-col">
+        {STAGES.map((stage) => {
+          const current = stage.id === value
+          return (
+            <li key={stage.id}>
+              <button
+                type="button"
+                // Selecting the stage it is already in would be a button that
+                // does nothing, so it says why instead.
+                disabled={current}
+                title={
+                  current ? t('stageMenu.alreadyIn', { stage: domain.stage(stage.id) }) : undefined
+                }
+                aria-current={current ? 'true' : undefined}
+                onClick={() => onPick(stage)}
+                className={cn(
+                  'flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-xs transition-colors',
+                  // A disabled button still matches :hover, so the hover
+                  // styling is withheld by branch rather than by a variant.
+                  current ? 'text-text-3' : 'text-text-2 hover:bg-well hover:text-text-1',
+                )}
+              >
+                <span className={cn('size-1.5 shrink-0 rounded-full', stage.dot)} aria-hidden />
+                {domain.stage(stage.id)}
+                {current ? (
+                  <>
+                    <Check className="ms-auto size-3.5 shrink-0 text-accent" aria-hidden />
+                    <span className="sr-only">{t('stageMenu.current')}</span>
+                  </>
+                ) : null}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </>
   )
 }

@@ -21,11 +21,19 @@
     },
     "timeline": {
       "label": "Recordatorios y eventos",
-      "hint": "{{reminders}} te recuerdan algo, {{events}} son eventos con fecha"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} te recuerda algo",
+      "reminders_other": "{{count}} te recuerdan algo",
+      "events_one": "{{count}} es un evento con fecha",
+      "events_other": "{{count}} son eventos con fecha"
     },
     "vault": {
       "label": "Enlaces y fragmentos",
-      "hint": "{{links}} enlaces · {{snippets}} fragmentos"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} enlace",
+      "links_other": "{{count}} enlaces",
+      "snippets_one": "{{count}} fragmento",
+      "snippets_other": "{{count}} fragmentos"
     },
     "files": {
       "label": "Archivos",
@@ -37,7 +45,13 @@
     },
     "scout": {
       "label": "Buscador de empleo",
-      "hint": "{{pipelines}} búsquedas · {{postings}} ofertas guardadas · {{matches}} coincidencias"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} búsqueda",
+      "pipelines_other": "{{count}} búsquedas",
+      "postings_one": "{{count}} oferta guardada",
+      "postings_other": "{{count}} ofertas guardadas",
+      "matches_one": "{{count}} coincidencia",
+      "matches_other": "{{count}} coincidencias"
     },
     "profile": {
       "label": "Perfil",

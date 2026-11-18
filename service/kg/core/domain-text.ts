@@ -71,6 +71,8 @@ import type { TwinGap } from './twin'
 import type { DuplicateOf } from './duplicates'
 import { CAPTURE_REJECTION_MESSAGE } from './capture'
 import type { CaptureRejection } from './capture'
+import { FILE_BUCKET_VALUES, LINK_CATEGORY_VALUES, SNIPPET_TAG_VALUES } from './model-vault'
+import { SOURCES } from './model-application'
 
 /** The shape of `i18next.t` this file uses: a key, and values to put in it. */
 export type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -87,6 +89,43 @@ const each = <K extends string>(
   keys: readonly K[],
   write: (key: K) => string,
 ): Record<K, string> => Object.fromEntries(keys.map((k) => [k, write(k)])) as Record<K, string>
+
+/**
+ * A stored enum value's catalog key: 'Cover letter' → 'coverLetter', 'CV' →
+ * 'cv', 'To read' → 'toRead' (the web's `vault:files.buckets` keys already).
+ */
+const valueKey = (value: string) =>
+  value
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, i) => (i === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+    .join('')
+
+/** A table of stored English values, keyed for the catalog. */
+const byValue = (values: readonly string[]): Record<string, string> =>
+  Object.fromEntries(values.map((v) => [valueKey(v), v]))
+
+/**
+ * The record fields whose values are a fixed English list: stored as written,
+ * because the tools, the agent and a backup read them, and shown through
+ * `domainText(t).<field>` in the language on screen. A value outside the list
+ * — an older build's, one a person typed — is shown exactly as stored.
+ */
+const STORED_ENUMS = {
+  linkCategory: LINK_CATEGORY_VALUES,
+  snippetTag: SNIPPET_TAG_VALUES,
+  source: SOURCES,
+  fileBucket: FILE_BUCKET_VALUES,
+} as const
+type StoredEnum = keyof typeof STORED_ENUMS
+const keysOf = (field: StoredEnum): ReadonlyMap<string, string> =>
+  new Map(STORED_ENUMS[field].map((v: string) => [v, `${field}.${valueKey(v)}`]))
+const STORED_KEYS: Readonly<Record<StoredEnum, ReadonlyMap<string, string>>> = {
+  linkCategory: keysOf('linkCategory'),
+  snippetTag: keysOf('snippetTag'),
+  source: keysOf('source'),
+  fileBucket: keysOf('fileBucket'),
+}
 
 const FORMATS = Object.keys(FORMAT_LABEL) as Format[]
 const STAGES = Object.keys(STAGE_LABEL) as Stage[]
@@ -126,6 +165,11 @@ export const DOMAIN_EN = {
   document: { ...DOCUMENT_LABEL },
   how: { ...HOW_LABEL },
   contactRole: { ...CONTACT_ROLE_LABEL },
+  /** A link's category, a snippet's tag, an application's source, a file's drawer — see `STORED_ENUMS`. */
+  linkCategory: byValue(LINK_CATEGORY_VALUES),
+  snippetTag: byValue(SNIPPET_TAG_VALUES),
+  source: byValue(SOURCES),
+  fileBucket: byValue(FILE_BUCKET_VALUES),
   approval: { ...APPROVAL_LABEL },
   approvalSaid: { ...APPROVAL_SAID },
   /** The statistics funnel's steps and the outcome bands, by position. */
@@ -291,6 +335,13 @@ export const DOMAIN_EN = {
   readBy: 'Read by {{model}} · {{ago}}',
   /** A tailored snippet whose source document has since left the Vault. */
   missingSource: 'a document no longer in the Vault',
+  /**
+   * A tailoring job's label, in the job list and its "ready" toast:
+   * 'CV — Rice University'. The words `titleFor` (`core/tailoring.ts`) stores
+   * on the snippet, which stays English because the agent and the tools read
+   * it; this is only what the person is shown while the job runs.
+   */
+  tailoredTitle: '{{document}} — {{org}}',
   /**
    * The ⌘Z / Ctrl+Z toast (`react/kg.tsx`) and the Undo on a shared tool's
    * toast (`react/use-tool.ts`). `nothing` and `changed` are the runtime's
@@ -534,6 +585,10 @@ export function domainText(t: Translate) {
    * this table knows is said in the language on screen, and any other is
    * stored English, shown only where English is the language.
    */
+  const storedEnum = (field: StoredEnum, value: string) => {
+    const key = STORED_KEYS[field].get(value)
+    return key === undefined ? value : d(key)
+  }
   const journal = (english: string): string | undefined => {
     const key = ANNOUNCE_KEYS.get(english)
     if (key !== undefined) return d(key)
@@ -552,6 +607,15 @@ export function domainText(t: Translate) {
     document: (doc: ProfileDocument) => d(`document.${doc}`),
     how: (how: PostingSource['how']) => d(`how.${how}`),
     contactRole: (role: ContactRole) => d(`contactRole.${role}`),
+    /**
+     * A stored link category, snippet tag, application source or file drawer,
+     * in the language on screen; anything not on the fixed list exactly as
+     * stored. Takes `string` because the value comes off a record.
+     */
+    linkCategory: (value: string) => storedEnum('linkCategory', value),
+    snippetTag: (value: string) => storedEnum('snippetTag', value),
+    source: (value: string) => storedEnum('source', value),
+    fileBucket: (value: string) => storedEnum('fileBucket', value),
     approval: (mode: ApprovalMode) => d(`approval.${mode}`),
     rel: (rel: Rel) => d(`rel.${rel}`),
     provider: (id: ProviderId) => d(`provider.${id}`),
@@ -566,6 +630,13 @@ export function domainText(t: Translate) {
       const key = BAND_KEYS.get(label)
       return key === undefined ? label : d(key)
     },
+    /**
+     * An `Arm.label` of a comparison: a source, said in the language on screen,
+     * when the comparison is by where the applications came from; a role tag
+     * the person named otherwise, as written.
+     */
+    armLabel: (dimension: string, label: string) =>
+      dimension === DOMAIN_EN.dimension.source ? storedEnum('source', label) : label,
     /** A `Comparison.dimension`. */
     dimension: (english: string) => {
       const key = DIMENSION_KEYS.get(english)
@@ -702,6 +773,19 @@ export function domainText(t: Translate) {
     readBy: (model: string, day: string, today: string) =>
       d('readBy', { model, ago: ago(day, today) }),
     missingSource: () => d('missingSource'),
+    /**
+     * `titleFor` (`core/tailoring.ts`) in the language on screen: the document
+     * kind, its first letter raised because it heads a line, then the employer
+     * when there is one. Raised with `toUpperCase` because `t` does not say the
+     * language; no catalog's kind starts with a letter whose capital is
+     * language-dependent (Turkish i), and scripts without case are unchanged.
+     */
+    tailoredTitle: (doc: ProfileDocument, org: string) => {
+      const word = d(`document.${doc}`)
+      const head = word.charAt(0).toUpperCase() + word.slice(1)
+      const employer = org.trim()
+      return employer === '' ? head : d('tailoredTitle', { document: head, org: employer })
+    },
 
     /** 'Rice — CS and Baylor', '3 applications', or '' for none. Names are display names. */
     picked: (names: readonly string[]) =>

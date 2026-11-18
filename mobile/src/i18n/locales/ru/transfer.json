@@ -23,11 +23,27 @@
     },
     "timeline": {
       "label": "Напоминания и события",
-      "hint": "Напоминаний: {{reminders}}, событий с датой: {{events}}"
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} напоминание",
+      "reminders_few": "{{count}} напоминания",
+      "reminders_many": "{{count}} напоминаний",
+      "reminders_other": "{{count}} напоминания",
+      "events_one": "{{count}} событие с датой",
+      "events_few": "{{count}} события с датой",
+      "events_many": "{{count}} событий с датой",
+      "events_other": "{{count}} события с датой"
     },
     "vault": {
       "label": "Ссылки и фрагменты",
-      "hint": "Ссылок: {{links}} · фрагментов: {{snippets}}"
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} ссылка",
+      "links_few": "{{count}} ссылки",
+      "links_many": "{{count}} ссылок",
+      "links_other": "{{count}} ссылки",
+      "snippets_one": "{{count}} фрагмент",
+      "snippets_few": "{{count}} фрагмента",
+      "snippets_many": "{{count}} фрагментов",
+      "snippets_other": "{{count}} фрагмента"
     },
     "files": {
       "label": "Файлы",
@@ -39,7 +55,19 @@
     },
     "scout": {
       "label": "Скаут вакансий",
-      "hint": "Конвейеров: {{pipelines}} · сохранённых вакансий: {{postings}} · совпадений: {{matches}}"
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} конвейер",
+      "pipelines_few": "{{count}} конвейера",
+      "pipelines_many": "{{count}} конвейеров",
+      "pipelines_other": "{{count}} конвейера",
+      "postings_one": "{{count}} сохранённая вакансия",
+      "postings_few": "{{count}} сохранённые вакансии",
+      "postings_many": "{{count}} сохранённых вакансий",
+      "postings_other": "{{count}} сохранённой вакансии",
+      "matches_one": "{{count}} совпадение",
+      "matches_few": "{{count}} совпадения",
+      "matches_many": "{{count}} совпадений",
+      "matches_other": "{{count}} совпадения"
     },
     "profile": {
       "label": "Профиль",

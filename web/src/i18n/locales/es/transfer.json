@@ -25,13 +25,21 @@
     },
     "timeline": {
       "label": "Recordatorios y eventos",
-      "hint": "{{reminders}} te recuerdan algo, {{events}} son eventos con fecha",
+      "hint": "{{reminders}}, {{events}}",
+      "reminders_one": "{{count}} te recuerda algo",
+      "reminders_other": "{{count}} te recuerdan algo",
+      "events_one": "{{count}} es un evento con fecha",
+      "events_other": "{{count}} son eventos con fecha",
       "summary_one": "{{count}} recordatorio o evento",
       "summary_other": "{{count}} recordatorios y eventos"
     },
     "vault": {
       "label": "Enlaces y fragmentos",
-      "hint": "{{links}} enlaces · {{snippets}} fragmentos",
+      "hint": "{{links}} · {{snippets}}",
+      "links_one": "{{count}} enlace",
+      "links_other": "{{count}} enlaces",
+      "snippets_one": "{{count}} fragmento",
+      "snippets_other": "{{count}} fragmentos",
       "summary_one": "{{count}} enlace o fragmento",
       "summary_other": "{{count}} enlaces y fragmentos"
     },
@@ -49,7 +57,13 @@
     },
     "scout": {
       "label": "Buscador de empleo",
-      "hint": "{{pipelines}} búsquedas · {{postings}} ofertas guardadas · {{matches}} coincidencias",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_one": "{{count}} búsqueda",
+      "pipelines_other": "{{count}} búsquedas",
+      "postings_one": "{{count}} oferta guardada",
+      "postings_other": "{{count}} ofertas guardadas",
+      "matches_one": "{{count}} coincidencia",
+      "matches_other": "{{count}} coincidencias",
       "summary_one": "{{count}} registro del buscador de empleo",
       "summary_other": "{{count}} registros del buscador de empleo"
     },
@@ -181,7 +195,7 @@
     "progress": "Progreso de la transferencia",
     "reaching": "Contactando con tu teléfono…",
     "gathering": "Reuniendo tus registros…",
-    "percentSent": "{{percent}} % enviado",
+    "percentSent": "{{percent}} % enviado",
     "cancel": "Cancelar",
     "another": "Enviar a otro dispositivo"
   },

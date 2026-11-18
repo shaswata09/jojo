@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { MatchesPanel } from '@/components/scout/MatchesPanel'
@@ -71,6 +71,17 @@ export function JobScout() {
   useFocusArrival(focus?.kind === 'pipeline' || focus?.kind === 'section' ? token : undefined, {
     arrival,
   })
+
+  // A search result naming a paused pipeline while "Only active" is on would
+  // look for a row this page is hiding and light nothing. The option is put
+  // back, the way the calendar turns a hidden kind back on for an arrival.
+  const revealPaused =
+    onlyActive &&
+    focus?.kind === 'pipeline' &&
+    pipelines.some((p) => p.id === focus.id && !p.enabled)
+  useEffect(() => {
+    if (revealPaused) setOnlyActive(false)
+  }, [revealPaused])
 
   const pages = usePostingPages()
   const [snapshot, setSnapshot] = useState<VaultFile | null>(null)

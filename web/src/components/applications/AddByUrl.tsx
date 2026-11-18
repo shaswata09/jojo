@@ -81,7 +81,11 @@ export function AddByUrl({
         {t('addByUrl.fieldLabel')}
       </label>
 
-      <div className={cn('relative min-w-0 flex-1', fieldClassName)}>
+      {/* `dir="ltr"` on the box, not just the input: a URL reads left to
+          right in every locale, and in ar/ur an rtl box clipped its start
+          (':tps://…') instead of its end (finding responsive-4). On the box so
+          the icon and the input's `ps-8` gutter flip together. */}
+      <div dir="ltr" className={cn('relative min-w-0 flex-1', fieldClassName)}>
         <LinkIcon
           aria-hidden
           strokeWidth={1.8}

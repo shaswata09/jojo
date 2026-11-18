@@ -474,12 +474,15 @@
     "emptyTitle": "没有可绘制的内容",
     "emptyDescription": "这里的每个节点都是你的一条记录。添加一个申请，第一个节点就会出现。",
     "subtitle": "预览当记录不再是七个独立列表时 jojo 的样子",
-    "caption": "{{visible}}/{{total}} 个节点 · {{edges}} 条边。点按节点查看详情；点按下方的类型可将其隐藏。",
+    "caption": "{{nodes}} · {{edges}}。点按节点查看详情；点按下方的类型可将其隐藏。",
+    "captionNodes_other": "{{visible}}/{{count}} 个节点",
+    "captionEdges_other": "{{count}} 条边",
     "legend": "图例",
     "legendHint": "点按可隐藏某个类型",
     "joinedTo": "关联到",
     "noEdges": "还没有任何内容指向它。",
     "openRecord": "打开记录",
+    "derivedRecord": "由你的记录推导而来——没有自己的页面。",
     "ask": "向关系图提问",
     "askHint": "用一句话提问，或从中选一个",
     "andMore_other": "还有 {{count}} 个",
@@ -976,7 +979,9 @@
       "added": "已添加 {{name}}",
       "placeholder": "例如：等待对方回复",
       "confirmUsed_other": "它将从 {{count}} 条记录中移除。这些记录会保留，只有关键词会被删除。",
-      "confirmUnused": "没有内容使用它，因此不会有其他变化。"
+      "confirmUnused": "没有内容使用它，因此不会有其他变化。",
+      "confirmTitle": "删除关键词“{{name}}”？",
+      "deletedTitle": "已删除关键词“{{name}}”"
     }
   }
 }

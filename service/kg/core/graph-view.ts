@@ -67,10 +67,24 @@ export type Point = { readonly x: number; readonly y: number }
 export const OVERVIEW_THRESHOLD = 150
 
 /**
- * Group keys this module mints. Real dimension values never start with '@';
- * a caller may mint its own '@' key for records that are always a group of
- * their own however few (the web's '@you' for the person's own records).
+ * Group keys this module mints, all starting with '@'. A caller may mint its
+ * own '@' key for records that are always a group of their own however few —
+ * the apps' '@you' for the person's own records — by naming it in
+ * `GroupOptions.specialKeys`.
+ *
+ * Real dimension values come off records (a keyword '@remote', an employer
+ * '@Road') and may start with '@' too. `groupOf` escapes those with
+ * `GROUP_ESCAPE`, so a keyword '@shared' can never merge into the Shared group
+ * and a run of '@' employers is pooled like any other value. The escape is an
+ * invisible WORD JOINER, so a group key printed as it is still reads as the
+ * value; `groupValue` strips it.
  */
+export const GROUP_ESCAPE = '\u2060'
+/** The record value a group key stands for: the key, unescaped. */
+export const groupValue = (key: string) => (key.startsWith(GROUP_ESCAPE) ? key.slice(GROUP_ESCAPE.length) : key)
+/** What `GroupOptions.specialKeys` is when not given: the apps' own key for the person's records. */
+export const CALLER_SPECIAL_KEYS: readonly string[] = ['@you']
+
 export const GROUP_SHARED = '@shared'
 /** Anchors whose value list for the dimension is empty — "no keyword". */
 export const GROUP_NONE = '@none'
@@ -326,6 +340,12 @@ export type GroupOptions = {
   readonly minGroupSize?: number
   /** At most this many named groups; the smallest beyond it are pooled. Default 20. */
   readonly maxGroups?: number
+  /**
+   * The '@' values the caller minted itself, each always a group of its own.
+   * Every other value starting with '@' is a real value and is escaped (see
+   * `GROUP_ESCAPE`). Default `CALLER_SPECIAL_KEYS`.
+   */
+  readonly specialKeys?: Iterable<string>
 }
 
 const compareText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
@@ -358,6 +378,9 @@ export function groupOf(graph: ViewGraph, options: GroupOptions): Map<string, st
   const ids = folding ? folding.visible : graph.nodes.map((n) => n.id)
   const drawn = new Set(ids)
   const adj = adjacency(graph)
+  const callerKeys = new Set(options.specialKeys ?? CALLER_SPECIAL_KEYS)
+  const keyOf = (value: string) =>
+    isSpecialGroup(value) && !callerKeys.has(value) ? GROUP_ESCAPE + value : value
 
   // 1. How many anchors carry each value.
   const frequency = new Map<string, number>()
@@ -365,7 +388,7 @@ export function groupOf(graph: ViewGraph, options: GroupOptions): Map<string, st
   for (const id of ids) {
     const values = byId.get(id)?.groupKeys?.[by]
     if (values === undefined) continue
-    const distinct = [...new Set(values)]
+    const distinct = [...new Set(values.map(keyOf))]
     anchors.push({ id, values: distinct })
     for (const value of distinct) frequency.set(value, (frequency.get(value) ?? 0) + 1)
   }
@@ -1010,7 +1033,14 @@ export function focusLayout(graph: ViewGraph, centreId: string, options: FocusOp
       hop.set(r.id, k)
       parentOf.set(r.id, r.parent)
     }
-    for (const id of more.keys()) if (!hop.has(id)) more.delete(id)
+    // A "+N more" item the budget cut takes its records with it: they are no
+    // longer behind any item, so they go back to being counted in `omitted`
+    // rather than vanishing from the picture and from every count.
+    for (const [id, entry] of more) {
+      if (hop.has(id)) continue
+      for (const x of entry.ids) listed.delete(x)
+      more.delete(id)
+    }
     rings.push(ring.map((r) => r.id))
   }
 
@@ -1058,8 +1088,20 @@ export function focusLayout(graph: ViewGraph, centreId: string, options: FocusOp
   // like a tree's first level, rather than a full ring of spokes.
   const fan = isHub(centreId)
 
-  rings.forEach((ids, k) => {
+  rings.forEach((walked, k) => {
     if (k === 0) return
+    // An outer ring in the order of its parents' angles, so sectors are pushed
+    // apart the way the angles run. Ring 1 runs either way — up round the full
+    // circle, but DOWN across a hub's fan (left to right is π towards 0) — and
+    // without this the families of a fan's two expanded neighbours swap sides. Stable, so a ring
+    // already in angle order (every ring off a full circle) is unchanged.
+    const ids =
+      k === 1
+        ? walked
+        : walked
+            .map((id, j) => ({ id, j, a: angleOf.get(parentOf.get(id) ?? centreId) ?? 0 }))
+            .sort((x, y) => x.a - y.a || x.j - y.j)
+            .map((x) => x.id)
     const m = ids.length
     let family = 0
     if (k > 1) {

@@ -11,6 +11,12 @@
     "upcoming": "即將到來",
     "done": "已完成"
   },
+  "bucketsInline": {
+    "overdue": "已逾期",
+    "today": "今天",
+    "upcoming": "即將到來",
+    "done": "已完成"
+  },
   "snooze": {
     "day": {
       "soon": "明天",
@@ -268,6 +274,7 @@
     "description": "搜尋要執行的命令…"
   },
   "rows": {
-    "showMore": "顯示更多（{{shown}}/{{total}}）"
+    "showMore": "顯示更多（{{shown}}/{{total}}）",
+    "allShown": "已全部顯示（{{total}}）"
   }
 }

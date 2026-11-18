@@ -74,10 +74,13 @@ type FormState = {
 type FieldKey = 'org' | 'role' | 'roleTag' | 'url'
 type Errors = Partial<Record<FieldKey, string>>
 
-/** Built at render, so the 'Not set' label follows the language. */
-const sourceOptions = (notSet: string): { value: Source | 'none'; label: string }[] => [
+/** Built at render, so every label — 'Not set' and each stored source — follows the language. */
+const sourceOptions = (
+  notSet: string,
+  say: (source: string) => string,
+): { value: Source | 'none'; label: string }[] => [
   { value: 'none', label: notSet },
-  ...SOURCES.map((s) => ({ value: s, label: s })),
+  ...SOURCES.map((s) => ({ value: s, label: say(s) })),
 ]
 
 function formFrom(initial?: ApplicationInitial): FormState {
@@ -624,7 +627,7 @@ export function ApplicationSheet({
           <Segment
             label={t('application.fields.source')}
             scroll
-            options={sourceOptions(t('application.fields.sourceNotSet'))}
+            options={sourceOptions(t('application.fields.sourceNotSet'), domain.source)}
             value={form.source}
             onChange={(s) => set('source', s)}
           />

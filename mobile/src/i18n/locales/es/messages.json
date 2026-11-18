@@ -13,7 +13,7 @@
       "keyword": "Palabra clave"
     },
     "isA": "es un",
-    "fit": "{{fit}} % de encaje",
+    "fit": "{{fit}} % de encaje",
     "query": {
       "undated": {
         "question": "Solicitudes sin ninguna fecha asociada",
@@ -208,7 +208,8 @@
     "timeout": "Ese portal tardó demasiado en responder.",
     "unreachable": "No se pudo conectar con ese portal.",
     "status": "Ese portal respondió {{status}}.",
-    "browserOnly": "{{host}} solo muestra sus ofertas a un navegador real, así que no se puede leer desde el teléfono. En una computadora, la extensión de navegador de jojo puede leerlo."
+    "browserOnly": "{{host}} solo muestra sus ofertas a un navegador real, así que no se puede leer desde el teléfono. En una computadora, la extensión de navegador de jojo puede leerlo.",
+    "cancelled": "Se canceló la lectura."
   },
   "timelineForm": {
     "title": "Ponle un título que reconozcas.",

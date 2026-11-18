@@ -89,8 +89,18 @@ export function StackGlyph({ x, y, r }: { x: number; y: number; r: number }) {
 
 /**
  * Zoom in, zoom out, fit. Real buttons in the Tab order, named, with the key
- * each one answers to in its tooltip (+, −, 0 work anywhere on the canvas).
+ * each one answers to in its tooltip (+, −, 0 work while the canvas or these
+ * buttons have focus — a click on the canvas's background gives it focus).
+ *
+ * A button that has nothing to do (Zoom in at the maximum, Zoom out and Fit at
+ * fit) is `aria-disabled` and ignores the press rather than `disabled`: the
+ * native attribute on the button just pressed dropped keyboard focus to
+ * <body>, so stepping out to fit lost your place on the last press.
  */
+/** What `disabled` looked like, for a button that stays focusable. */
+const IDLE =
+  'aria-disabled:cursor-default aria-disabled:opacity-50 aria-disabled:active:translate-y-0'
+
 export function ZoomControls({
   zoomed,
   atMax,
@@ -105,6 +115,9 @@ export function ZoomControls({
   onFit: () => void
 }) {
   const { t } = useTranslation('graph')
+  const idle = (off: boolean, run: () => void) => () => {
+    if (!off) run()
+  }
   return (
     <div
       role="group"
@@ -115,8 +128,9 @@ export function ZoomControls({
         type="button"
         variant="ghost"
         size="icon-sm"
-        onClick={onIn}
-        disabled={atMax}
+        onClick={idle(atMax, onIn)}
+        aria-disabled={atMax}
+        className={IDLE}
         aria-label={t('view.zoom.in')}
         title={`${t('view.zoom.in')} (+)`}
       >
@@ -126,8 +140,9 @@ export function ZoomControls({
         type="button"
         variant="ghost"
         size="icon-sm"
-        onClick={onOut}
-        disabled={!zoomed}
+        onClick={idle(!zoomed, onOut)}
+        aria-disabled={!zoomed}
+        className={IDLE}
         aria-label={t('view.zoom.out')}
         title={`${t('view.zoom.out')} (−)`}
       >
@@ -137,8 +152,9 @@ export function ZoomControls({
         type="button"
         variant="ghost"
         size="icon-sm"
-        onClick={onFit}
-        disabled={!zoomed}
+        onClick={idle(!zoomed, onFit)}
+        aria-disabled={!zoomed}
+        className={IDLE}
         aria-label={t('view.zoom.fit')}
         title={`${t('view.zoom.fit')} (0)`}
       >

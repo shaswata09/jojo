@@ -10,6 +10,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  GROUP_ESCAPE,
   GROUP_LOOSE,
   GROUP_NONE,
   GROUP_REST,
@@ -27,6 +28,7 @@ import {
   foldLeaves,
   foldedSummary,
   groupOf,
+  groupValue,
   hostOf,
   satellites,
   wantsOverview,
@@ -600,6 +602,172 @@ describe('satellites round an unfolded host', () => {
     const seats = satellites(30, { x: 100, y: 100 }, { radius: 8, spacing: 12 })
     expect(seats).toHaveLength(30)
     for (const s of seats) expect(Math.hypot(s.x - 100, s.y - 100)).toBeGreaterThan(8 + 12)
+  })
+})
+
+describe('review 3: what the focus and overview layouts promise at their edges', () => {
+  /** A hub `H` with `n` neighbours `c00`…, each holding `kids` children of its own. */
+  const fanStore = (n: number, kids: number) => {
+    const nodes = [node('H', 'role')]
+    const links: [string, string][] = []
+    for (let i = 0; i < n; i++) {
+      const c = `c${String(i).padStart(2, '0')}`
+      nodes.push(node(c, 'application'))
+      links.push(['H', c])
+      for (let j = 0; j < kids; j++) {
+        nodes.push(node(`${c}k${j}`, 'item'))
+        links.push([c, `${c}k${j}`])
+      }
+    }
+    return graphOf(nodes, links)
+  }
+  const SECTOR_ARC = (2 * Math.PI) / 3
+  const off = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)))
+
+  it.each([
+    [20, ['c02', 'c17']],
+    [30, ['c00', 'c15', 'c29']],
+  ])('keeps each expanded neighbour’s family behind it on a hub’s fan (%i neighbours)', (n, open) => {
+    const F = focusLayout(fanStore(n, 5), 'H', { width: 960, height: 560, expanded: open })
+    const angle = (id: string) => {
+      const p = F.positions.get(id)
+      return p ? Math.atan2(p.y - F.y, p.x - F.x) : NaN
+    }
+    for (const parent of open) {
+      const kids = [...F.parentOf].filter(([, p]) => p === parent).map(([id]) => id)
+      expect(kids).toHaveLength(5)
+      // Mean direction of the family, measured from the centre.
+      const sx = kids.reduce((sum, id) => sum + Math.cos(angle(id)), 0)
+      const sy = kids.reduce((sum, id) => sum + Math.sin(angle(id)), 0)
+      expect(off(Math.atan2(sy, sx), angle(parent))).toBeLessThan(SECTOR_ARC / 2)
+    }
+  })
+
+  /** Every record the focus view accounts for: drawn, behind a "+N more" item, or counted as omitted. */
+  const accounted = (F: ReturnType<typeof focusLayout>) => {
+    const drawn = [...F.positions.keys()].filter((id) => !id.startsWith(MORE_PREFIX)).length
+    const behind = [...F.more.values()].reduce((sum, m) => sum + m.ids.length, 0)
+    return drawn + behind + F.omitted
+  }
+
+  it('counts the records behind a "+N more" item the budget cut as not shown', () => {
+    // Ten expanded hubs of a hundred each round one record, on the phone's budget.
+    const nodes = [node('C', 'application')]
+    const links: [string, string][] = []
+    for (let h = 0; h < 10; h++) {
+      nodes.push(node(`h${h}`, 'role'))
+      links.push(['C', `h${h}`])
+      for (let i = 0; i < 100; i++) {
+        nodes.push(node(`h${h}a${i}`, 'application'))
+        links.push([`h${h}`, `h${h}a${i}`])
+      }
+    }
+    const hubs = Array.from({ length: 10 }, (_, h) => `h${h}`)
+    const F = focusLayout(graphOf(nodes, links), 'C', { width: 400, height: 700, expanded: hubs, maxNodes: 160 })
+    expect(F.positions.size).toBeLessThanOrEqual(160)
+    expect(accounted(F)).toBe(1 + 10 + 1000)
+
+    // A hub at the centre whose own "+N more" item is past the budget.
+    const role = graphOf(
+      [node('role', 'role'), ...Array.from({ length: 99 }, (_, i) => node(`a${i}`, 'application'))],
+      Array.from({ length: 99 }, (_, i): [string, string] => ['role', `a${i}`]),
+    )
+    const R = focusLayout(role, 'role', { width: 960, height: 620, maxNodes: 30 })
+    expect(R.more.size).toBe(0)
+    expect(R.omitted).toBe(99 - 29)
+    expect(accounted(R)).toBe(100)
+  })
+
+  it('falls back to even slots when an outer ring cannot fit its sectors, still a cell apart', () => {
+    // Many small families round the whole circle: their sectors cannot all sit
+    // behind their parents, so the ring is spread evenly in the same order.
+    const nodes = [node('c')]
+    const links: [string, string][] = []
+    for (let i = 0; i < 12; i++) {
+      nodes.push(node(`p${i}`))
+      links.push(['c', `p${i}`])
+      for (let j = 0; j < 20; j++) {
+        nodes.push(node(`p${i}k${j}`))
+        links.push([`p${i}`, `p${i}k${j}`])
+      }
+    }
+    const open = Array.from({ length: 12 }, (_, i) => `p${i}`)
+    const F = focusLayout(graphOf(nodes, links), 'c', { width: 960, height: 620, expanded: open, hubDegree: 100 })
+    const ring2 = [...F.hop].filter(([, k]) => k === 2).map(([id]) => id)
+    expect(ring2).toHaveLength(240)
+    const pts = [...F.positions.values()]
+    let min = Infinity
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i]
+        const b = pts[j]
+        if (a && b) min = Math.min(min, Math.hypot(a.x - b.x, a.y - b.y))
+      }
+    }
+    expect(min).toBeGreaterThan(F.cell * 0.9)
+  })
+
+  it('finds the host of a record folded two levels deep, and nothing for a record not held', () => {
+    const g = graphOf(
+      [node('app', 'application'), node('note', 'note'), node('item', 'item')],
+      [
+        ['item', 'app'],
+        ['note', 'item'],
+      ],
+    )
+    const f = foldLeaves(g, { canFold: notApplication })
+    expect(f.visible).toEqual(['app'])
+    expect(f.host.get('note')).toBe('app')
+    expect(f.host.get('item')).toBe('app')
+    expect(hostOf(f, 'note')).toBe('app')
+    expect(hostOf(f, 'app')).toBe('app')
+    expect(hostOf(f, 'ghost')).toBeUndefined()
+  })
+
+  it('folds a leaf into a protected record that has no other link', () => {
+    const f = foldLeaves(graphOf([node('app', 'application'), node('x')], [['x', 'app']]), {
+      canFold: notApplication,
+    })
+    expect(f.visible).toEqual(['app'])
+    expect(hostOf(f, 'x')).toBe('app')
+  })
+
+  it('pools the holders a kept value is left with when most went to a commoner one', () => {
+    // X is held by two (enough to keep), but `a` goes to the commoner Y,
+    // leaving X with one member: that one is pooled with the one-each.
+    const g = graphOf(
+      [
+        node('a', 'application', { kw: ['X', 'Y'] }),
+        node('b', 'application', { kw: ['X'] }),
+        node('c', 'application', { kw: ['Y'] }),
+        node('d', 'application', { kw: ['Y'] }),
+      ],
+      [],
+    )
+    const groups = groupOf(g, { by: 'kw' })
+    expect(groups.get('a')).toBe('Y')
+    expect(groups.get('b')).toBe(GROUP_SINGLES)
+  })
+
+  it('treats a real value starting with @ as a value, never as a key the module minted', () => {
+    const g = graphOf(
+      [
+        ...Array.from({ length: 10 }, (_, i) => node(`o${i}`, 'application', { org: [`@Org${i}`] })),
+        ...['k1', 'k2', 'k3'].map((id) => node(id, 'application', { org: ['@shared'] })),
+        node('me', 'background', { org: ['@you'] }),
+      ],
+      [],
+    )
+    const groups = groupOf(g, { by: 'org' })
+    // Ten employers with one application each are pooled like any other value.
+    for (let i = 0; i < 10; i++) expect(groups.get(`o${i}`)).toBe(GROUP_SINGLES)
+    // A value spelled like the Shared key is its own group, not Shared.
+    expect(groups.get('k1')).not.toBe(GROUP_SHARED)
+    expect(groupValue(groups.get('k1') ?? '')).toBe('@shared')
+    expect(groups.get('k1')?.startsWith(GROUP_ESCAPE)).toBe(true)
+    // The caller's own key still stands alone, however small.
+    expect(groups.get('me')).toBe('@you')
+    expect(groupOf(g, { by: 'org', specialKeys: [] }).get('me')).toBe(GROUP_SINGLES)
   })
 })
 

@@ -93,7 +93,10 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
    */
   const pending = useRef<string | null>(null)
 
+  /** `current` for the message handler, which is not rebuilt per navigation. */
+  const currentRef = useRef(url)
   const onNavigate = useCallback((event: WebViewNavigation) => {
+    currentRef.current = event.url
     setCurrent(event.url)
   }, [])
 
@@ -129,7 +132,11 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
         pending.current = null
 
         try {
-          const outcome = await inlineCapture(raw, now())
+          // The page's address as the WebView knows it, not as the page's own
+          // script reported it — that script runs where the page can rewrite it
+          // (security-3).
+          const pageUrl = event.nativeEvent.url || currentRef.current
+          const outcome = await inlineCapture(raw, now(), pageUrl)
           if (!outcome.ok) {
             toast({
               tone: 'danger',

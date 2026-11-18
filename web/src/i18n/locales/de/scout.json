@@ -27,7 +27,7 @@
     "emptyDescription": "Pipelines legen hier bewertete Anzeigen ab, sobald ein Modell verbunden ist. Bis dahin sind die Anzeigen, die du unten speicherst, der Weg hinein.",
     "matched": "passt bei {{list}}",
     "notScored": "nicht bewertet",
-    "fit": "{{score}} % Passung",
+    "fit": "{{score}} % Passung",
     "added": "hinzugefügt"
   },
   "dialog": {

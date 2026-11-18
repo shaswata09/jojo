@@ -92,6 +92,34 @@
     "recommender": "سفارش کنندہ",
     "contact": "رابطہ شخص"
   },
+  "linkCategory": {
+    "posting": "ملازمت کا اشتہار",
+    "institution": "ادارہ",
+    "person": "شخص",
+    "guide": "رہنما"
+  },
+  "snippetTag": {
+    "coverLetter": "کور لیٹر",
+    "applicationForm": "درخواست فارم",
+    "email": "ای میل",
+    "bio": "تعارف",
+    "cv": "CV",
+    "researchStatement": "تحقیقی بیان",
+    "teachingStatement": "تدریسی بیان"
+  },
+  "source": {
+    "jobScout": "جاب اسکاؤٹ",
+    "jobBoard": "جاب بورڈ",
+    "referral": "سفارش",
+    "careersPage": "کیریئر پیج"
+  },
+  "fileBucket": {
+    "toRead": "پڑھنے کے لیے",
+    "applications": "درخواستیں",
+    "jobPostings": "ملازمت کے اشتہارات",
+    "talks": "لیکچرز",
+    "admin": "انتظامی"
+  },
   "approval": {
     "manual": "دستی",
     "semi": "نیم خودکار",
@@ -364,6 +392,7 @@
   },
   "readBy": "{{model}} نے پڑھا · {{ago}}",
   "missingSource": "ایک دستاویز جو اب والٹ میں نہیں",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "کالعدم کرنے کو کچھ نہیں۔",

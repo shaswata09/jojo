@@ -36,6 +36,10 @@ import messagesSource from '../../extension/worker/messages.js?raw'
 import relayVerbsSource from '../../extension/worker/relay-verbs.js?raw'
 
 import bridgeCallerSource from './capture-bridge.ts?raw'
+// Static, not `await import(...)` inside the test: a dynamic import compiled
+// `mcp-link` and its graph on the test's clock, ~800 ms alone and past the 5 s
+// timeout when several suites shared the machine (review 3, coverage-13).
+import { BRIDGE_ADDRESS } from './mcp-link'
 import bridgeSource from '../../extension/bridge.js?raw'
 
 afterEach(() => {
@@ -552,12 +556,11 @@ describe('which loopback server each relay may reach', () => {
     expect(read.indexOf('sameLoopbackServer')).toBeLessThan(read.indexOf('await relay('))
   })
 
-  it('pins the link to jojo-bridge’s port, the one the page dials', async () => {
+  it('pins the link to jojo-bridge’s port, the one the page dials', () => {
     const link = handler('onMcpLink')
     expect(link).toContain('sameLoopbackServer(url, JOJO_BRIDGE_ADDRESS)')
     expect(link.indexOf('sameLoopbackServer')).toBeLessThan(link.indexOf('await relay('))
     const pinned = JOJO_BRIDGE_ADDRESS as string
-    const { BRIDGE_ADDRESS } = await import('./mcp-link')
     expect(pinned).toBe(BRIDGE_ADDRESS)
   })
 })

@@ -474,12 +474,15 @@
     "emptyTitle": "沒有可以繪製的內容",
     "emptyDescription": "這裡的每個節點都是你自己的一筆紀錄。新增一份申請，就會出現第一個節點。",
     "subtitle": "預覽一下，當紀錄不再是七份各自獨立的清單時，jojo 會是什麼樣子",
-    "caption": "{{total}} 個節點中的 {{visible}} 個 · {{edges}} 條邊。點一下節點即可查看；點一下下方的類型即可隱藏。",
+    "caption": "{{nodes}} · {{edges}}。點一下節點即可查看；點一下下方的類型即可隱藏。",
+    "captionNodes_other": "{{count}} 個節點中的 {{visible}} 個",
+    "captionEdges_other": "{{count}} 條邊",
     "legend": "圖例",
     "legendHint": "點一下即可隱藏某種類型",
     "joinedTo": "連結到",
     "noEdges": "目前還沒有任何項目指向這裡。",
     "openRecord": "開啟紀錄",
+    "derivedRecord": "從你的紀錄推導而來——它沒有自己的頁面。",
     "ask": "詢問圖譜",
     "askHint": "用一句話提問，或從中選一個",
     "andMore_other": "還有 {{count}} 個",
@@ -976,7 +979,9 @@
       "added": "已新增「{{name}}」",
       "placeholder": "例如：等對方回覆",
       "confirmUsed_other": "它會從 {{count}} 筆紀錄中移除。這些紀錄會保留；只有關鍵字會被移除。",
-      "confirmUnused": "沒有任何項目帶有這個關鍵字，所以不會影響其他內容。"
+      "confirmUnused": "沒有任何項目帶有這個關鍵字，所以不會影響其他內容。",
+      "confirmTitle": "要刪除關鍵字「{{name}}」嗎？",
+      "deletedTitle": "已刪除關鍵字「{{name}}」"
     }
   }
 }

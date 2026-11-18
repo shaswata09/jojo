@@ -29,7 +29,8 @@ const GLIDE_MS = 180
  *
  * A one-finger drag pans only once zoomed in; at fit the page under it scrolls
  * as it always did. While a pinch or a pan is under way `onGesture(true)` lets
- * the screen stop its own scrolling, the way the board's drag does.
+ * the screen stop its own scrolling, the way the board's drag does — a pinch
+ * from its second finger, a pan (zoomed only) from touch-down.
  */
 export function useCanvasZoom({
   width,
@@ -53,6 +54,8 @@ export function useCanvasZoom({
   /** 1 while the picture is moving and the screen-pixel layer is out of date. */
   const moving = useSharedValue(0)
   const last = useSharedValue({ scale: 1, tx: 0, ty: 0 })
+  /** Whether the pinch has stopped the page scrolling — so only it restarts it. */
+  const pinchLocked = useSharedValue(false)
   const [view, setView] = useState<ZoomView>(FIT)
   const viewRef = useRef(view)
   const box = useRef({ width, height })
@@ -137,11 +140,22 @@ export function useCanvasZoom({
       moving.value = 2
       runOnJS(commit)({ k: k.value, x: x.value, y: y.value })
     }
+    // NOT `.onBegin`: RNGH begins a pinch on the first finger, before it knows
+    // a second is coming, so locking there froze the page under every one-finger
+    // drag or tap that started on the canvas. The lock waits for two fingers (or
+    // activation), and only a pinch that took it hands it back.
+    const lockForPinch = () => {
+      'worklet'
+      if (pinchLocked.value) return
+      pinchLocked.value = true
+      runOnJS(onGesture)(true)
+    }
     const pinch = Gesture.Pinch()
-      .onBegin(() => {
-        runOnJS(onGesture)(true)
+      .onTouchesDown((e) => {
+        if (e.numberOfTouches >= 2) lockForPinch()
       })
       .onStart(() => {
+        lockForPinch()
         moving.value = 1
         last.value = { ...last.value, scale: 1 }
       })
@@ -162,8 +176,12 @@ export function useCanvasZoom({
       })
       .onEnd(settle)
       .onFinalize(() => {
+        if (!pinchLocked.value) return
+        pinchLocked.value = false
         runOnJS(onGesture)(false)
       })
+    // The pan exists only while zoomed in, where locking on touch-down is the
+    // point: it has to beat the page's own scroll to the finger.
     const pan = Gesture.Pan()
       .enabled(zoomed)
       .minDistance(6)
@@ -193,7 +211,7 @@ export function useCanvasZoom({
         if (success) runOnJS(onTap)(e.x, e.y)
       })
     return Gesture.Race(Gesture.Simultaneous(pinch, pan), tap)
-  }, [zoomed, width, height, onTap, onGesture, commit, k, x, y, moving, last])
+  }, [zoomed, width, height, onTap, onGesture, commit, k, x, y, moving, last, pinchLocked])
 
   /**
    * The marks' layer. `matrix` is react-native-svg's NATIVE transform prop —

@@ -12,6 +12,7 @@
     "failedTitle": "Non è stato possibile scrivere il backup",
     "failedDescription": "I tuoi record sono invariati e non è stato salvato nulla. Se il browser ha bloccato il download, controlla le sue impostazioni di download.",
     "documentsNotReady": "L'indice dei documenti non aveva finito di caricarsi, quindi un backup fatto adesso direbbe che non ne hai. Non è stato scritto nulla.",
+    "documentsUnavailable": "Non è stato possibile elencare i documenti salvati, quindi un backup fatto adesso direbbe che non ne hai. Se è aperta un'altra scheda di jojo, chiudila e riprova. Non è stato scritto nulla.",
     "documentsUnreadable": "Nessuno dei documenti memorizzati era leggibile, quindi il backup avrebbe contenuto solo i record. Non è stato scritto nulla.",
     "savedTitle": "Backup salvato",
     "startedTitle": "Backup avviato",

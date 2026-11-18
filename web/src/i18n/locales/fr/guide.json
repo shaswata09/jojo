@@ -601,5 +601,6 @@
       "address": "<lead>La barre d’adresse</lead> est la page elle-même. La première page est <code>/guide</code> plutôt que <code>/guide/overview</code>, afin que chaque lien et chaque favori créés avant qu’il y en ait quatre mènent toujours quelque part."
     }
   },
-  "englishOnly": "Cette page est en anglais : elle désigne le code, les paquets et les termes des licences avec les mots dans lesquels ils sont écrits."
+  "englishOnly": "Cette page est en anglais : elle désigne le code, les paquets et les termes des licences avec les mots dans lesquels ils sont écrits.",
+  "englishData": "Ce tableau est en anglais : il rend compte du banc d’essai tel qu’il a été exécuté, dans les mots de ses cas de test, de ses outils et des modèles."
 }

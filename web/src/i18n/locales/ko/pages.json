@@ -90,7 +90,9 @@
     "resetHint": "기록을 원래 배치로 되돌려요",
     "noMatches": "이 질문과 일치하는 기록이 없어요",
     "clearQuery": "쿼리 지우기",
-    "counts_other": "기록 {{count}}개 중 {{shown}}개 · 연결 {{edges}}개",
+    "counts": "{{records}} · {{connections}}",
+    "countsRecords_other": "기록 {{count}}개 중 {{shown}}개",
+    "countsConnections_other": "연결 {{count}}개",
     "panelTitle": "모든 것, 연결된 채로",
     "help": "노드에 포인터를 올리거나 Tab으로 이동하면 주변 연결을 따라가요. 누르면 선택하고, 끌면 옮겨요. 노드 색은 종류를, 크기는 그 노드를 가리키는 수를 나타내요."
   },

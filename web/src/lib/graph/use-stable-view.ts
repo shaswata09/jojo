@@ -24,9 +24,35 @@ export function viewKeyOf(graph: ViewGraph): string {
   return parts.join('\u0001')
 }
 
-export function useStableView(next: ViewGraph): ViewGraph {
-  const held = useRef<{ key: string; graph: ViewGraph } | null>(null)
+/** What `useStableView` holds between renders. */
+export type HeldView = {
+  /** The view graph handed out — the first one with this key. */
+  readonly graph: ViewGraph
+  /** `viewKeyOf` of it. */
+  readonly key: string
+  /** The last view graph passed in, so the same one again skips the key. */
+  readonly input: ViewGraph
+}
+
+/**
+ * The next thing to hold, given the last and a view graph.
+ *
+ * The key is computed only for a view graph that is a new object (review 3,
+ * performance-5). It used to be computed on every render of the Graph page,
+ * and the page re-renders on every selection, legend toggle, query and trail
+ * step with the same memoised view graph — a join of six parts per node and
+ * three per edge each time: 2.6 ms at 2,700 records, 23 ms at 26,400, on
+ * every click.
+ */
+export function nextHeldView(held: HeldView | null, next: ViewGraph): HeldView {
+  if (held !== null && held.input === next) return held
   const key = viewKeyOf(next)
-  if (held.current?.key !== key) held.current = { key, graph: next }
+  if (held !== null && held.key === key) return { ...held, input: next }
+  return { graph: next, key, input: next }
+}
+
+export function useStableView(next: ViewGraph): ViewGraph {
+  const held = useRef<HeldView | null>(null)
+  held.current = nextHeldView(held.current, next)
   return held.current.graph
 }

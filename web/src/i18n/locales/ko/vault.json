@@ -202,6 +202,13 @@
       "hintEmpty": "먼저 텍스트를 강조하거나 댓글을 추가하세요.",
       "hint": "{{summary}}이(가) 문서에 기록돼요.",
       "action": "주석과 함께 저장"
+    },
+    "names": {
+      "annotated": "주석 포함",
+      "pages_other": "{{count}}페이지",
+      "pagesFile": "페이지",
+      "merged": "병합",
+      "more_other": "외 {{count}}개"
     }
   },
   "instruments": {

@@ -208,7 +208,8 @@
     "timeout": "该招聘网站响应太慢。",
     "unreachable": "无法连接该招聘网站。",
     "status": "该招聘网站返回了 {{status}}。",
-    "browserOnly": "{{host}} 只向真正的浏览器显示职位列表，因此无法在手机上读取。在电脑上，jojo 浏览器扩展可以读取它。"
+    "browserOnly": "{{host}} 只向真正的浏览器显示职位列表，因此无法在手机上读取。在电脑上，jojo 浏览器扩展可以读取它。",
+    "cancelled": "读取已取消。"
   },
   "timelineForm": {
     "title": "起一个你认得出的标题。",

@@ -3,6 +3,8 @@ import indexCss from '@/index.css?raw'
 import keywordChipSource from './KeywordChip.tsx?raw'
 import pageHeaderSource from './PageHeader.tsx?raw'
 import toneSwatchesSource from './ToneSwatches.tsx?raw'
+import interestsPanelSource from '@/components/profile/InterestsPanel.tsx?raw'
+import roleTagsSource from '@/components/profile/RoleTags.tsx?raw'
 
 /**
  * Controls that a finger has to hit, checked against the rule that grows them.
@@ -94,6 +96,22 @@ describe('controls the enumeration cannot reach on its own', () => {
   it("covers PageHeader's settings trigger, which is bigger than the list, not smaller", () => {
     const classes = triggerClasses('PageHeader.tsx', pageHeaderSource).split(/\s+/)
     expect(classes).toContain('size-9')
+    expect(classes.some((c) => classesTheRuleReaches().has(c))).toBe(true)
+  })
+})
+
+describe("the profile's chip remove buttons (a11y-6)", () => {
+  it.each([
+    ['InterestsPanel.tsx', interestsPanelSource, 'interests.matchTerms.remove'],
+    ['RoleTags.tsx', roleTagsSource, 'roleTags.remove'],
+  ])('%s gives its 16px remove button a catch area', (file, source, key) => {
+    // The `<button>` whose label is the remove string: `p-0.5` around a
+    // `size-3` icon, 16x16, with no size class for the rule to match.
+    const at = source.indexOf(`t('${key}'`)
+    expect(at, file).toBeGreaterThan(-1)
+    const button = source.slice(source.lastIndexOf('<button', at), source.indexOf('>', at))
+    const classes = /className="([^"]*)"/.exec(button)?.[1]?.split(/\s+/) ?? []
+    expect(classes, file).toContain('p-0.5')
     expect(classes.some((c) => classesTheRuleReaches().has(c))).toBe(true)
   })
 })

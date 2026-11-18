@@ -598,5 +598,6 @@
       "address": "<lead>In the address bar</lead> is the page itself. The first page is <code>/guide</code> rather than <code>/guide/overview</code>, so every link and bookmark taken before there were four of them still lands somewhere real."
     }
   },
-  "englishOnly": "This page is in English: it names code, packages and licence terms in the words they are written in."
+  "englishOnly": "This page is in English: it names code, packages and licence terms in the words they are written in.",
+  "englishData": "This table is in English: it reports the benchmark as it was run, in the words of its test cases, tools and models."
 }

@@ -56,9 +56,10 @@ import {
 /**
  * The received bytes as a plan, WITHOUT writing anything.
  *
- * Split from `applyReceived` so a confirmation can happen between reading and
- * destroying. Applying used to begin the instant the last chunk authenticated:
- * the poll saw `complete`, called `applyReceived`, and `replaceAll` took every
+ * Split from the apply step (`applyPlan` below, once called `applyReceived`) so
+ * a confirmation can happen between reading and destroying. Applying used to
+ * begin the instant the last chunk authenticated: the poll saw `complete`,
+ * applied at once, and `replaceAll` took every
  * record, every document and the journal off the phone with nothing on screen
  * asking first.
  *

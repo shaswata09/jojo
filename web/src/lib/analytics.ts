@@ -137,6 +137,44 @@ export function setAnalyticsEnabled(on: boolean): void {
 }
 
 /**
+ * Another tab turned the switch: tell THIS tab's SDK too (review 3, multitab-1).
+ *
+ * `setAnalyticsEnabled` reaches only the SDK loaded in the tab it ran in. jojo's
+ * own `report()` re-reads the stored answer every time, so it stopped in every
+ * tab — but an SDK already loaded in another tab kept collection on, kept
+ * sending what it sends of its own accord, and wrote `_ga` straight back after
+ * the first tab had forgotten it. A switch that appears to work and does not,
+ * which is what the setter's own comment warns about.
+ *
+ * `key` is the `StorageEvent`'s: null when the whole of storage was cleared,
+ * which takes the answer with it. The two effects are parameters so a test can
+ * watch them; the defaults are the page's.
+ */
+export function followAnalyticsSwitch(
+  key: string | null,
+  apply: (on: boolean) => void = (on) => {
+    // Only an SDK this tab already loaded: another tab's "off" must never be
+    // the thing that fetches it here.
+    if (loaded) void applyCollection(on)
+  },
+  forget: () => void = () => {
+    forgetAnalyticsIdentity()
+  },
+): void {
+  if (key !== ENABLED_KEY && key !== null) return
+  const on = analyticsEnabled()
+  apply(on)
+  if (!on) forget()
+}
+
+// Once per page, for the life of the page, like the SDK it governs.
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('storage', (event) => {
+    followAnalyticsSwitch(event.key)
+  })
+}
+
+/**
  * The SDK's identifiers for this browser, as it leaves them.
  *
  * GA keeps a client id in `_ga` and a session in `_ga_<measurement id>` (and
@@ -183,7 +221,10 @@ export function forgetAnalyticsIdentity(env: Leftovers | null = browserLeftovers
   if (env === null) return
   try {
     const labels = env.hostname.split('.')
-    const domains = ['', ...labels.slice(0, -1).map((_, i) => `; domain=.${labels.slice(i).join('.')}`)]
+    const domains = [
+      '',
+      ...labels.slice(0, -1).map((_, i) => `; domain=.${labels.slice(i).join('.')}`),
+    ]
     for (const pair of env.readCookies().split(';')) {
       const name = pair.split('=')[0]?.trim() ?? ''
       if (!ANALYTICS_LEFTOVERS.cookie.test(name)) continue

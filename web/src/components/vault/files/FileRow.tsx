@@ -169,7 +169,7 @@ export function FileRow({
             >
               {f.name}
             </button>
-            <div className="mt-0.5 flex items-center gap-x-2 overflow-hidden text-xs text-text-3">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 overflow-hidden text-xs text-text-3 sm:flex-nowrap">
               <span className="shrink-0">{fileBucketLabel(f.bucket)}</span>
               <span aria-hidden>·</span>
               <span className="tabular shrink-0">{f.size}</span>
@@ -194,7 +194,10 @@ export function FileRow({
                   · {displayName(app)}
                 </Link>
               ))}
-              <LabelChips recordId={f.id} className="shrink-0" />
+              {/* Their own line below sm. Sharing one at 360, chips that do not
+                shrink squeezed the application, note and URL — the part the
+                row exists to show — down to two or three letters. */}
+              <LabelChips recordId={f.id} className="shrink-0 basis-full sm:basis-auto" />
             </div>
           </>
         )}

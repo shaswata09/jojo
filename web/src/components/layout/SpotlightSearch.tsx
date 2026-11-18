@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -439,10 +439,13 @@ function Section({
 function PaletteBody({
   onOpenChange,
   onPickTool,
+  closeThen,
 }: {
   onOpenChange: (open: boolean) => void
   /** A tool row was chosen: its form opens once the palette has closed. */
   onPickTool: (row: ToolRow) => void
+  /** Closes the palette, then runs `next` with focus back on its trigger. */
+  closeThen: (next: () => void) => void
 }) {
   const { t, i18n } = useTranslation('layout')
   const language = i18n.language
@@ -745,13 +748,7 @@ function PaletteBody({
               <CommandItem
                 key={action.id}
                 value={`${action.label} ${action.hint ?? ''}`}
-                onSelect={() => {
-                  onOpenChange(false)
-                  // Deferred a frame: this dialog returns focus to its trigger
-                  // as it unmounts, and a dialog mounted in the same commit
-                  // would have that focus pulled straight back out of it.
-                  requestAnimationFrame(() => runCreate(action))
-                }}
+                onSelect={() => closeThen(() => runCreate(action))}
                 className="gap-2.5"
               >
                 <action.icon
@@ -791,13 +788,7 @@ function PaletteBody({
                 // architecture document and the audit log call it, and someone
                 // who has read either should be able to type it.
                 value={`${row.plan.tool.title} ${row.plan.tool.summary} ${row.name}`}
-                onSelect={() => {
-                  onOpenChange(false)
-                  // A frame later, for the same reason the create rows defer:
-                  // this dialog hands focus back to its trigger as it unmounts,
-                  // and a dialog mounted in the same commit loses it again.
-                  requestAnimationFrame(() => onPickTool(row))
-                }}
+                onSelect={() => closeThen(() => onPickTool(row))}
                 className="gap-2.5"
               >
                 <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
@@ -856,6 +847,37 @@ export function SpotlightSearch({
   const { t } = useTranslation('layout')
   const [pending, setPending] = useState<ToolRow | null>(null)
 
+  /*
+   * What had focus when the palette opened — the search button, or whatever
+   * ⌘K was pressed over. Read in a layout effect, before the palette's focus
+   * scope moves focus into its input.
+   *
+   * A dialog opened from the palette records its return target as it mounts,
+   * and a frame after the palette closed that was still the palette's own input
+   * or item: gone by the time the dialog closed, so focus fell to <body> and
+   * the next Tab went to the skip link. Handing focus back to this first makes
+   * it what the dialog records, the same idea as `survivingTrigger` mapping a
+   * closing menu's item back to the menu's trigger.
+   */
+  const returnTo = useRef<HTMLElement | null>(null)
+  useLayoutEffect(() => {
+    if (!open) return
+    const active = document.activeElement
+    returnTo.current = active instanceof HTMLElement && active !== document.body ? active : null
+  }, [open])
+
+  const closeThen = (next: () => void) => {
+    onOpenChange(false)
+    // Deferred a frame: the palette returns focus to its trigger as it
+    // unmounts, and a dialog mounted in the same commit would have that focus
+    // pulled straight back out of it.
+    requestAnimationFrame(() => {
+      const back = returnTo.current
+      if (back?.isConnected) back.focus({ preventScroll: true })
+      next()
+    })
+  }
+
   return (
     <>
       <CommandDialog
@@ -865,7 +887,7 @@ export function SpotlightSearch({
         description={t('spotlight.label')}
         className="top-[15%] w-[min(92vw,44rem)] max-w-none sm:max-w-none"
       >
-        <PaletteBody onOpenChange={onOpenChange} onPickTool={setPending} />
+        <PaletteBody onOpenChange={onOpenChange} onPickTool={setPending} closeThen={closeThen} />
       </CommandDialog>
 
       {/* Outside the palette, and only while a tool is pending: the palette is

@@ -228,6 +228,17 @@
       "hintEmpty": "Destaque algum texto ou adicione um comentário primeiro.",
       "hint": "{{summary}} será gravado no documento.",
       "action": "Salvar com anotações"
+    },
+    "names": {
+      "annotated": "anotado",
+      "pages_one": "{{count}} página",
+      "pages_many": "{{count}} páginas",
+      "pages_other": "{{count}} páginas",
+      "pagesFile": "páginas",
+      "merged": "mesclado",
+      "more_one": "mais {{count}}",
+      "more_many": "mais {{count}}",
+      "more_other": "mais {{count}}"
     }
   },
   "instruments": {

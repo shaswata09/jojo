@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { failed, send, type Sent } from './local-service'
+import { failed, send, sendStream, type Sent } from './local-service'
 import type { ModelRequest } from '@jojo/service/core/model-server'
 
 /**
@@ -102,4 +102,52 @@ describe('loopback over http from an https page', () => {
       expect(whyOf(sent)).toBe('unreachable')
     })
   }
+})
+
+/**
+ * Counts the `abort` listeners on a signal: added minus taken off. (Node's
+ * `getEventListeners` would do, but this project's types are the browser's.)
+ */
+function abortListeners(signal: AbortSignal): () => number {
+  const live = new Set<unknown>()
+  const add = signal.addEventListener.bind(signal)
+  const remove = signal.removeEventListener.bind(signal)
+  signal.addEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.add(fn)
+    add(type, fn as EventListener, options as AddEventListenerOptions)
+  }) as typeof signal.addEventListener
+  signal.removeEventListener = ((type: string, fn: unknown, options?: unknown) => {
+    if (type === 'abort') live.delete(fn)
+    remove(type, fn as EventListener, options as EventListenerOptions)
+  }) as typeof signal.removeEventListener
+  return () => live.size
+}
+
+describe('what a model call leaves behind (review 3, leaks-4)', () => {
+  const posted = { url: 'http://127.0.0.1:1/x', method: 'POST', headers: {}, body: '{}' } as const
+
+  it('takes its listener off the run’s signal when the call is over', async () => {
+    vi.stubGlobal('fetch', async () => new Response('{}', { status: 200 }))
+    const run = new AbortController()
+    const listening = abortListeners(run.signal)
+    for (let i = 0; i < 20; i += 1) await send(posted, 'http://127.0.0.1:1', run.signal)
+    for (let i = 0; i < 20; i += 1) {
+      await sendStream(posted, 'http://127.0.0.1:1', () => {}, run.signal)
+    }
+    // Before the fix: 40, one per call, for as long as the run lasted.
+    expect(listening()).toBe(0)
+  })
+
+  it('arms no timer for a call stopped before it was sent', async () => {
+    vi.useFakeTimers()
+    try {
+      const run = new AbortController()
+      run.abort()
+      await send(posted, 'http://127.0.0.1:1', run.signal, 600_000)
+      await sendStream(posted, 'http://127.0.0.1:1', () => {}, run.signal)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

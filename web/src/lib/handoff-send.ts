@@ -182,17 +182,26 @@ export async function awaitOutcome({
   }
 }
 
-const sleepFor = (ms: number, signal: AbortSignal) =>
+/**
+ * A wait that ends early when the run is stopped. The abort listener comes off
+ * again when the timer wins, so a run's signal does not collect one per poll
+ * (review 3, leaks-3) — the same shape as `pause` in `mcp-link.ts`.
+ */
+export const sleepFor = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {
-    const id = setTimeout(resolve, ms)
-    signal.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(id)
-        resolve()
-      },
-      { once: true },
-    )
+    if (signal.aborted) {
+      resolve()
+      return
+    }
+    const onAbort = () => {
+      clearTimeout(id)
+      resolve()
+    }
+    const id = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal.addEventListener('abort', onAbort, { once: true })
   })
 
 export function useHandoffSend({

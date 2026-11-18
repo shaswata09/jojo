@@ -24,12 +24,16 @@
     },
     "timeline": {
       "label": "リマインダーと予定",
-      "hint": "リマインダー {{reminders}} 件、日付付きの予定 {{events}} 件",
+      "hint": "{{reminders}}、{{events}}",
+      "reminders_other": "リマインダー {{count}} 件",
+      "events_other": "日付付きの予定 {{count}} 件",
       "summary_other": "リマインダーと予定 {{count}} 件"
     },
     "vault": {
       "label": "リンクとスニペット",
-      "hint": "リンク {{links}} 件 · スニペット {{snippets}} 件",
+      "hint": "{{links}} · {{snippets}}",
+      "links_other": "リンク {{count}} 件",
+      "snippets_other": "スニペット {{count}} 件",
       "summary_other": "リンクとスニペット {{count}} 件"
     },
     "files": {
@@ -44,7 +48,10 @@
     },
     "scout": {
       "label": "求人スカウト",
-      "hint": "パイプライン {{pipelines}} 件 · 保存した求人 {{postings}} 件 · マッチ {{matches}} 件",
+      "hint": "{{pipelines}} · {{postings}} · {{matches}}",
+      "pipelines_other": "パイプライン {{count}} 件",
+      "postings_other": "保存した求人 {{count}} 件",
+      "matches_other": "マッチ {{count}} 件",
       "summary_other": "求人スカウトの記録 {{count}} 件"
     },
     "notes": {

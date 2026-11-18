@@ -27,7 +27,7 @@
     "emptyDescription": "Los pipelines ponen aquí ofertas puntuadas en cuanto hay un modelo conectado. Hasta entonces, las ofertas que guardes abajo son la vía de entrada.",
     "matched": "coincide en {{list}}",
     "notScored": "sin puntuar",
-    "fit": "{{score}} % de encaje",
+    "fit": "{{score}} % de encaje",
     "added": "añadida"
   },
   "dialog": {

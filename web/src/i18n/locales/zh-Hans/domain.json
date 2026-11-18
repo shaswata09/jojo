@@ -92,6 +92,34 @@
     "recommender": "推荐人",
     "contact": "联系人"
   },
+  "linkCategory": {
+    "posting": "职位",
+    "institution": "机构",
+    "person": "人物",
+    "guide": "指南"
+  },
+  "snippetTag": {
+    "coverLetter": "求职信",
+    "applicationForm": "申请表",
+    "email": "电子邮件",
+    "bio": "个人简介",
+    "cv": "简历",
+    "researchStatement": "研究陈述",
+    "teachingStatement": "教学陈述"
+  },
+  "source": {
+    "jobScout": "职位侦察",
+    "jobBoard": "招聘网站",
+    "referral": "推荐",
+    "careersPage": "招聘页面"
+  },
+  "fileBucket": {
+    "toRead": "待读",
+    "applications": "申请",
+    "jobPostings": "职位发布",
+    "talks": "讲座",
+    "admin": "行政"
+  },
   "approval": {
     "manual": "手动",
     "semi": "半自动",
@@ -352,6 +380,7 @@
   },
   "readBy": "由 {{model}} 读取 · {{ago}}",
   "missingSource": "一份已不在保险库中的文档",
+  "tailoredTitle": "{{document}} — {{org}}",
   "undo": {
     "nothing": {
       "undo": "没有可撤销的内容。",

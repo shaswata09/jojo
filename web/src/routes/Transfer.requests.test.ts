@@ -66,3 +66,41 @@ describe('only the phone reads it (Q125)', () => {
     expect(page.match(/<PairingQrCard\b/g)).toBeNull()
   })
 })
+
+describe('the group hints count in words that agree (review 3: i18n-8)', () => {
+  it('words each count by its own plural key and joins the pieces', async () => {
+    const code = strip(transferSource)
+    expect(code).toMatch(/links: t\('groups\.vault\.links', \{ count: links\.length \}\)/)
+    expect(code).toMatch(
+      /reminders: t\('groups\.timeline\.reminders', \{ count: reminders\.length \}\)/,
+    )
+    expect(code).toMatch(/matches: t\('groups\.scout\.matches', \{ count: matches\.length \}\)/)
+
+    const { createInstance } = await import('i18next')
+    const en = (await import('@/i18n/locales/en/transfer.json')).default
+    const ar = (await import('@/i18n/locales/ar/transfer.json')).default
+    const i18n = createInstance()
+    await i18n.init({
+      lng: 'en',
+      resources: { en: { transfer: en }, ar: { transfer: ar } },
+      ns: ['transfer'],
+      defaultNS: 'transfer',
+      interpolation: { escapeValue: false },
+    })
+    const vault = (lng: string, links: number, snippets: number) =>
+      i18n.t('groups.vault.hint', {
+        lng,
+        links: i18n.t('groups.vault.links', { lng, count: links }),
+        snippets: i18n.t('groups.vault.snippets', { lng, count: snippets }),
+      })
+    expect(vault('en', 1, 2)).toBe('1 link · 2 snippets')
+    expect(
+      i18n.t('groups.timeline.hint', {
+        reminders: i18n.t('groups.timeline.reminders', { count: 1 }),
+        events: i18n.t('groups.timeline.events', { count: 1 }),
+      }),
+    ).toBe('1 reminds you, 1 is a dated event')
+    // Arabic's dual and its 3–10 plural are different words, not one form.
+    expect(vault('ar', 2, 5)).toBe('2 رابطان · 5 مقتطفات')
+  })
+})

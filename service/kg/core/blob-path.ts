@@ -7,19 +7,20 @@
  * ## Why this is in core rather than next to a file store
  *
  * It was in `web/src/lib/vault-blobs.ts`, which is where it started life and
- * where it made sense while OPFS was the only thing that ever wrote one. It is
- * not a storage layout any more. `buildBackup` writes these paths into the
- * backup file, so they cross to whatever reads that file — including a phone
- * over the local network, which has no OPFS and no `VaultBlobs` and still has
- * to work out which record each document belongs to.
+ * where it made sense while the web's own file store was the only thing that
+ * ever wrote one. It is not a storage layout any more. `buildBackup` writes
+ * these paths into the backup file, so they cross to whatever reads that file —
+ * including a phone over the local network, which has no `VaultBlobs` and
+ * still has to work out which record each document belongs to.
  *
  * That makes it a format, and a format with two implementations is a format
  * with two spellings. Parsed here once, by both.
  *
  * ## The three decisions inside it
  *
- * A SEPARATOR rather than a nested directory, because OPFS `list` is
- * non-recursive by contract: `Documents/<id>/<name>` lists as nothing at all,
+ * A SEPARATOR rather than a nested directory, because the `FileStore` port's
+ * `list` is non-recursive by contract (`storage/file-store.ts`), on every
+ * adapter that implements it: `Documents/<id>/<name>` lists as nothing at all,
  * so the index comes back empty on every reload — a silent "your files are
  * gone" that reads exactly like data loss.
  *

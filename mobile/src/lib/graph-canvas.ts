@@ -111,6 +111,16 @@ export function pickLabels(
   return out
 }
 
+/**
+ * The canvas's height: taller than wide on a phone, capped on a tablet — and
+ * never more than three quarters of the window, so a phone on its side shows
+ * the whole picture with the zoom buttons along its bottom edge, rather than a
+ * 560dp canvas on a ~400dp screen.
+ */
+export function canvasHeightFor(width: number, windowHeight: number): number {
+  return Math.round(Math.min(560, Math.max(260, Math.min(width * 1.3, windowHeight * 0.75))))
+}
+
 /* ---------------------------------- zoom ---------------------------------- */
 
 /** Screen = layout · k + (x, y). Fit is k = 1, which is what the layout already is. */
