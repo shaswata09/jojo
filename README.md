@@ -166,6 +166,9 @@ layer 3; the two below it are a tracker that never asks you for anything.
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
 
+**Setting up layers 3 and 4** — Ollama, LM Studio, vLLM, llama.cpp, Anthropic, OpenAI,
+OpenRouter, Groq, NVIDIA and MarkItDown, step by step: [docs/MODELS.md](docs/MODELS.md).
+
 ---
 
 ## Repository layout
@@ -518,6 +521,9 @@ MarkItDown is reached through its own MCP server:
 pip install markitdown-mcp
 markitdown-mcp --http --host 127.0.0.1 --port 3001
 ```
+
+Step-by-step setup for every model provider and for the reader, with the fixes for the
+usual failures, is in [docs/MODELS.md](docs/MODELS.md).
 
 The phone app talks to it directly. A browser cannot: `markitdown-mcp` sends no
 CORS headers and answers the preflight with 405, so the web app reaches it

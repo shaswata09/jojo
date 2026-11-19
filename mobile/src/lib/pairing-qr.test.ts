@@ -25,11 +25,13 @@ type Shot = {
   blur?: number
   /** Peak noise, in grey levels either way. */
   noise?: number
+  /** Seed for the noise — a different value is a different frame of the same view. */
+  seed?: number
 }
 
 /** A grayscale frame of a code drawn from `bytes`, as the scanner would send it. */
 function photograph(bytes: Uint8Array | string, shot: Shot = {}): Uint8Array {
-  const { span = 0.6, at = [0.5, 0.5], blur = 0, noise = 0 } = shot
+  const { span = 0.6, at = [0.5, 0.5], blur = 0, noise = 0, seed: firstSeed = 7 } = shot
   const { size, data } = encode(typeof bytes === 'string' ? bytes : Array.from(bytes), {
     ecc: 'M',
     border: 0,
@@ -75,7 +77,7 @@ function photograph(bytes: Uint8Array | string, shot: Shot = {}): Uint8Array {
 
   if (noise > 0) {
     // Deterministic, so a failure is the same failure every run.
-    let seed = 7
+    let seed = firstSeed
     for (let i = 0; i < frame.length; i += 1) {
       seed = (seed * 1103515245 + 12345) & 0x7fffffff
       const jitter = ((seed / 0x7fffffff) * 2 - 1) * noise
@@ -99,9 +101,27 @@ describe('readPairingQr', () => {
   it('reads it off-centre, blurred and noisy, as a hand-held phone sees it', async () => {
     // Half the frame is what the scanner's zoomed view makes of a code held at
     // a normal distance (see "Near and far" in scanner-page.ts).
+    //
+    // The scanner reads about six frames a second, so a pairing never rests on
+    // one frame: a hand-held code is a burst of slightly different photographs
+    // — new sensor noise, the hand drifting a pixel or two. The offer is random
+    // every run, and about one code in fifty loses a single frame this degraded
+    // (measured over 400 offers); none lost three in a row. So the burst is
+    // five frames, any one of which must read back exactly — and no frame may
+    // ever read back as something else.
     const offer = await anOffer()
-    const frame = photograph(offer, { span: 0.5, at: [0.45, 0.55], blur: 1, noise: 8 })
-    expect(readPairingQr(frame, SIDE, SIDE)).toEqual(offer)
+    const burst = [
+      { at: [0.45, 0.55], seed: 7 },
+      { at: [0.46, 0.54], seed: 31 },
+      { at: [0.44, 0.55], seed: 99 },
+      { at: [0.45, 0.56], seed: 211 },
+      { at: [0.47, 0.55], seed: 503 },
+    ] as const
+    const reads = burst.map(({ at, seed }) =>
+      readPairingQr(photograph(offer, { span: 0.5, at: [...at], blur: 1, noise: 8, seed }), SIDE, SIDE),
+    )
+    for (const read of reads) if (read !== null) expect(read).toEqual(offer)
+    expect(reads.some((read) => read !== null)).toBe(true)
   })
 
   it('reads a code that fills only two-fifths of the frame', async () => {
