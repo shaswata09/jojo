@@ -130,6 +130,14 @@ const strike = (v: number, peaks: readonly number[]): [number, number][] => [
   ]),
   [1, 0],
 ]
+/**
+ * The right hand turned −1.2 rad about its forearm's rest axis, as the YXZ
+ * Euler `[x, y, z]` RobotScene composes — so Hi shows the palm, not the edge.
+ * The axis is the model's wrist pivot minus its elbow pivot,
+ * (−0.107, −0.304, 0.194); robot-rig.test re-derives this from those numbers.
+ */
+export const HAND_TWIST = [0.56, 0.891, -0.407] as const
+
 const LEFT_PUNCHES = [0.24, 0.64] as const
 const RIGHT_PUNCHES = [0.44, 0.84] as const
 
@@ -192,28 +200,39 @@ export const GESTURES: Record<Exclude<MascotPose, 'idle'>, Track[]> = {
     r('rUpper', 'x', hold(-0.3, 0.16, 0.8, 0.18)),
     r('rFore', 'x', hold(-1.8, 0.18, 0.8, 0.18)),
     // Swung mostly inward, toward the face: an outward swing as wide carried
-    // the hand behind the moves button in the card's corner.
+    // the hand behind the moves button in the card's corner, and the open
+    // palm below is broader than the old edge-on hand, so the outward stroke
+    // stops short of upright.
     r('rFore', 'z', [
       [0, 0],
       [0.26, 0],
       [0.34, 0.35],
-      [0.42, -0.1],
+      [0.42, 0.05],
       [0.5, 0.35],
-      [0.58, -0.1],
+      [0.58, 0.05],
       [0.66, 0.35],
       [0.74, 0],
       [1, 0],
     ]),
-    // An open, flat palm: the fingers straightened out of their resting
-    // curl (one index chain carries all four), the thumb spread away from
-    // them, and the hand turned a little so the palm faces out. Measured on
-    // frozen frames: a wave with the rig's resting hand read as a fist.
-    r('rIndex1', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
-    r('rIndex2', 'z', hold(-0.5, 0.18, 0.8, 0.18)),
-    r('rIndex3', 'z', hold(-0.4, 0.18, 0.8, 0.18)),
+    // An open, flat palm facing the viewer: the fingers straightened out of
+    // their resting curl (one index chain carries all four), the thumb spread
+    // away from them, and the hand twisted about its own forearm.
+    //
+    // The twist is HAND_TWIST: −1.2 rad about the forearm's rest axis (wrist
+    // pivot minus elbow pivot, which points down AND forward in the A-pose),
+    // written as the YXZ Euler the rig composes. A turn about plain y — the
+    // first try, −0.35 — tilted the hand instead of twisting it, and the
+    // raised hand showed its thumb edge: the "sideways" hand. Measured on
+    // frozen close-ups: −1.0 still shows the edge, −1.4 turns past flat, and
+    // straightening the fingers beyond −0.8/−0.7/−0.6 bends them backwards.
+    r('rIndex1', 'z', hold(-0.8, 0.18, 0.8, 0.18)),
+    r('rIndex2', 'z', hold(-0.7, 0.18, 0.8, 0.18)),
+    r('rIndex3', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
     r('rThumb1', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
     r('rThumb2', 'z', hold(-0.4, 0.18, 0.8, 0.18)),
-    r('rHand', 'y', hold(-0.35, 0.18, 0.8, 0.18)),
+    r('rHand', 'x', hold(HAND_TWIST[0], 0.18, 0.8, 0.18)),
+    r('rHand', 'y', hold(HAND_TWIST[1], 0.18, 0.8, 0.18)),
+    r('rHand', 'z', hold(HAND_TWIST[2], 0.18, 0.8, 0.18)),
     r('head', 'z', hold(0.12, 0.2, 0.8, 0.18)),
     r('chest', 'z', hold(-0.05, 0.2, 0.8, 0.18)),
     k('bot', 'position', 'y', [

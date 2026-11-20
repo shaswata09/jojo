@@ -2863,3 +2863,24 @@ Guarded by:
 - `service/test/models-doc.requests.test.ts` › "tells a vLLM user the flags without which the assistant cannot call a tool"
 - `mobile/src/lib/pairing-qr.test.ts` › "reads it off-centre, blurred and noisy, as a hand-held phone sees it"
 Note: Measured 2026-11-19. Web Analytics: nothing is requested before the reporting question is answered or after "off"; with consent, Firebase webConfig, installations and gtag load and two GA4 hits reach google-analytics.com with 204 (net-log; CDP shows keepalive beacons as "canceled"). Phone Analytics (API 33 emulator, debug build): collection off until consent, then app_opened and screen_viewed uploaded with 204. Phone Crashlytics: forced off in any debug build by @react-native-firebase unless firebase.json sets crashlytics_debug_enabled; on the release APK with consent, a shell-induced crash was caught and uploaded to crashlyticsreports-pa with 200. Test Lab and App Distribution steps in CI are skipped because the FIREBASE_SERVICE_ACCOUNT and FIREBASE_ANDROID_APP_ID secrets are not set. App Check is deliberately absent: it guards Firebase backends (Firestore, Functions, Storage…), and jojo has none. The pairing flake: 8 of 400 random offers lost the single degraded frame, none lost three; 0 of 1,000 lose the five-frame burst. MarkItDown (markitdown-mcp 0.0.1a4) converted a document through the dev server's /reader/mcp/ proxy.
+
+### Q340 — Make tailoring actually correct: when jojo tailors a CV for a posting, the changes it highlights must be the changes it made.
+`fix` · 2026-11-20 · cross · active
+Must stay true: The marks on a tailored document are measured against the source, not taken from the model. A word the person's document does not contain is always marked, so an invented or altered claim — a changed paper title — is visible. A line that is the source word for word carries no "new" or "reworded" mark, and is underlined only when it now comes before something it used to follow. The check moves marks and never changes a character of the text. A reply in which, measured, nothing changed is refused rather than saved as a tailored document, and the card says how many of the model's marks were corrected.
+Guarded by:
+- `service/kg/core/mark-check.test.ts` › "unmarks lines that are the source word for word, however the model marked them"
+- `service/kg/core/mark-check.test.ts` › "marks an invented claim the model presented as original"
+- `service/kg/core/mark-check.test.ts` › "marks a publication title the model altered and did not mark"
+- `service/kg/core/mark-check.test.ts` › "underlines a publication moved above the ones it followed, and not the ones it passed"
+- `service/kg/core/mark-check.test.ts` › "does not underline a line the model claimed it moved but left in place"
+- `service/kg/core/mark-check.test.ts` › "never changes a character of the text, only where the marks sit"
+- `service/kg/agent/tailor-material.test.ts` › "refuses a reply whose only marks were on text it did not change"
+- `service/kg/agent/tailor-material.test.ts` › "marks a change the model left unmarked, and says it did"
+Note: Measured 2026-11-20 with MiniMax-M2.1 on a fictional CV read through MarkItDown and one posting, five runs: the model's marks were wrong in every run that produced a document (one run bolded 8 passages over a single one-word change; another changed a publication title from "tool-calling" to "tool-using" and did not mark it). After the check, no word absent from the CV was left unmarked in any run. One run returned an empty reply and was refused as before. Deleted passages cannot be marked; the existing "much shorter" note still covers them.
+
+### Q341 — The mascot's waving hand looks odd: the fingers are not flat and visible, and the hand looks sideways.
+`fix` · 2026-11-20 · web · active
+Must stay true: When the robot waves Hi, its right hand shows its open palm to the viewer, not its thumb edge, with the fingers straightened out of their resting curl. The hand is turned about its own forearm, so it stays in the hand's place rather than tilting off it.
+Guarded by:
+- `web/src/lib/robot-rig.test.ts` › "waves Hi with the palm to the viewer: the hand twisted about its own forearm"
+Note: Measured 2026-11-20 on frozen close-ups of the Hi pose. The old hand turn (y −0.35) was about the vertical axis, but in the model's A-pose the forearm points down and forward (wrist pivot minus elbow pivot, (−0.107, −0.304, 0.194)), so it tilted the hand and left the thumb edge to the camera. A −1.2 rad twist about that axis faces the palm out; −1.0 still shows the edge and −1.4 turns past flat. The finger chain straightens to −0.8/−0.7/−0.6; beyond that the fingers bend backwards. The broader palm reached the moves button on the outward stroke, so that stroke stops at 0.05 instead of −0.1.

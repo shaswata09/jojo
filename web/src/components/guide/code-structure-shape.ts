@@ -58,8 +58,11 @@ export const SHAPE: DirRow[] = [
     // Four more on 2026-11-16 (i18n): `domain-text.ts` and `advice-text.ts`
     // with a test each — the model's own words in any language, the translator
     // passed in, the English held to core's word for word.
-    files: 198,
-    tests: 83,
+    // Two more on 2026-11-20 (Q340): `mark-check.ts` and its test — a tailored
+    // document's marks measured against the source instead of taken on the
+    // model's word.
+    files: 200,
+    tests: 84,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the

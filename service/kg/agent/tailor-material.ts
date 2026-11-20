@@ -29,6 +29,7 @@
  */
 
 import { DOCUMENT_LABEL } from '../core/document-kind'
+import { checkMarks } from '../core/mark-check'
 import { hasMarks, stripMarks } from '../core/marks'
 import type { Requirement } from '../core/assess'
 import type { ProfileDocument } from '../core/model'
@@ -271,8 +272,9 @@ const REFUSAL =
  * Lenient about the wrapping and strict about the substance: a fence or a
  * "Here is your tailored CV:" line is stripped, an empty or tiny reply is
  * refused, and everything in between is kept WITH notes rather than rejected.
- * A tailored document with nothing marked is still the person's document; the
- * card says the marks are missing, and they decide.
+ * The marks on what is kept are redrawn by comparing it with the source
+ * (`core/mark-check.ts`), so they say what changed rather than what the model
+ * said it changed; a reply in which nothing changed is refused.
  */
 export function readTailored(reply: string, brief: TailorBrief): TailoredRead {
   /*
@@ -326,9 +328,45 @@ export function readTailored(reply: string, brief: TailorBrief): TailoredRead {
       }
     }
   }
-  if (!marked) {
+  /*
+   * The marks are MEASURED, not taken on the model's word — see
+   * `core/mark-check.ts`. What the card's legend promises ("bold: new or
+   * rewritten") is then true of the saved text: every word the person did not
+   * write is marked, and nothing they did write is marked as new.
+   */
+  const check = checkMarks(text, stripMarks(plainSource(brief.base)))
+  text = check.body
+  const corrected: string[] = []
+  if (check.unmarked > 0) {
+    corrected.push(
+      `${plural(check.unmarked, 'passage')} the model marked as changed ${check.unmarked === 1 ? 'is' : 'are'} word for word your original, so ${check.unmarked === 1 ? 'it is' : 'they are'} no longer marked`,
+    )
+  }
+  if (check.marked > 0) {
+    corrected.push(
+      `${plural(check.marked, 'changed passage')} the model left unmarked ${check.marked === 1 ? 'is' : 'are'} now marked`,
+    )
+  }
+  if (corrected.length > 0) {
+    notes.push(`jojo checked the marks against ${brief.baseName}: ${corrected.join('; ')}.`)
+  }
+  if (!hasMarks(text)) {
+    /*
+     * Measured: no word that is not the person's, and nothing moved up. That is
+     * the document handed back, whatever marks the model drew on it — unless it
+     * is noticeably shorter, in which case the one thing it did was leave
+     * passages out, which the marks cannot show and the person should compare.
+     */
+    const shorter = stripMarks(text).length < stripMarks(plainSource(brief.base)).length * 0.9
+    if (mode === 'sections' || !shorter) {
+      return {
+        ok: false,
+        reason:
+          'The model returned the document without changing anything in it. Try again, or try a different model.',
+      }
+    }
     notes.push(
-      'Nothing in it is marked as changed — the model may have returned the document as it was, or left the marks out.',
+      'Nothing was added or moved — the model only left passages out. Compare it with your original before using it.',
     )
   }
   if (mode === 'whole' && stripMarks(text).length < brief.base.length * 0.4) {
@@ -341,5 +379,7 @@ export function readTailored(reply: string, brief: TailorBrief): TailoredRead {
       'No section headings came back, so it is not clear which parts of the document these replace.',
     )
   }
-  return { ok: true, body: text, marked, notes }
+  return { ok: true, body: text, marked: hasMarks(text), notes }
 }
+
+const plural = (n: number, noun: string): string => `${String(n)} ${noun}${n === 1 ? '' : 's'}`

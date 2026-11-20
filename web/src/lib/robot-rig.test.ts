@@ -1,4 +1,7 @@
+import { Euler, Quaternion, Vector3 } from 'three'
 import { describe, expect, it } from 'vitest'
+// The model's JSON chunk is plain text inside the binary, so `?raw` carries it.
+import robotModel from '@/assets/jojo-robot.glb?raw'
 import { GESTURES as LABELLED, POSE_MS, type MascotPose } from '@/lib/mascot-context'
 import {
   BONE_KEYS,
@@ -14,6 +17,7 @@ import {
   BLINK_S,
   GAZE_DEPTH,
   GESTURES,
+  HAND_TWIST,
   HEAD_PITCH,
   HEAD_YAW,
   REST,
@@ -124,6 +128,27 @@ describe('the gestures', () => {
       }
     }
     expect(worst.step, worst.at).toBeLessThan(0.16)
+  })
+
+  it('waves Hi with the palm to the viewer: the hand twisted about its own forearm', () => {
+    // The joints the model was prepared with (prepare_model.py's `pivots`).
+    // The A-pose forearm points down and forward, so a turn about plain y
+    // tilted the raised hand and showed its thumb edge instead of its palm.
+    const found = /"extras":(\{[^{}]*\}),"name":"pivots"/.exec(robotModel)
+    expect(found, 'the model has a "pivots" anchor').not.toBeNull()
+    const pivots = JSON.parse(found![1]!) as Record<string, [number, number, number]>
+    const elbow = new Vector3(...pivots[BONE_NAMES.rFore]!)
+    const wrist = new Vector3(...pivots[BONE_NAMES.rHand]!)
+    const forearm = wrist.sub(elbow).normalize()
+
+    const turn = new Quaternion().setFromEuler(new Euler(...HAND_TWIST, 'YXZ'))
+    // A twist leaves its own axis where it was, and turns by the measured 1.2 rad.
+    expect(forearm.clone().applyQuaternion(turn).distanceTo(forearm)).toBeLessThan(0.002)
+    expect(2 * Math.acos(Math.min(1, Math.abs(turn.w)))).toBeCloseTo(1.2, 2)
+    // And Hi holds that twist, with the fingers out of their resting curl.
+    const b = gestureBones('hi', 0.5)
+    expect(b.rHand).toEqual([...HAND_TWIST])
+    expect(b.rIndex1[2]).toBeLessThan(-0.6)
   })
 
   it('never folds a forearm across the chest, where the hand sinks into the armour (Q321)', () => {

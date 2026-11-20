@@ -9,6 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import { stripMarks } from '../core/marks'
 import {
   CUT_OFF,
   modeFor,
@@ -130,10 +131,18 @@ describe('the document as the model sees it', () => {
 })
 
 describe('reading the reply', () => {
-  const DOC = `## Summary\n**I build distributed systems for hiring committees.**\n\n## Publications\nA paper.\n${'More.\n'.repeat(40)}`
+  /*
+   * A source and a tailoring of it that differ the way a real one does: one
+   * phrase added, everything else the person's own. The marks are measured
+   * against the source (`core/mark-check.ts`), so a fixture whose "unchanged"
+   * lines are not in its source would be read, correctly, as all new.
+   */
+  const DOC_BASE = `## Summary\nI build distributed systems.\n\n## Publications\n${'A paper about things.\n'.repeat(12)}`
+  const DOC = DOC_BASE.replace('I build distributed systems.', 'I build distributed systems **for hiring committees**.')
+  const DOC_BRIEF = { ...BRIEF, base: DOC_BASE }
 
   it('keeps a good document and says it is marked', () => {
-    const out = readTailored(DOC, BRIEF)
+    const out = readTailored(DOC, DOC_BRIEF)
     expect(out.ok && out.body.startsWith('## Summary')).toBe(true)
     expect(out.ok && out.marked).toBe(true)
     expect(out.ok && out.notes).toEqual([])
@@ -141,27 +150,28 @@ describe('reading the reply', () => {
 
   it('strips a code fence and a preamble line', () => {
     const wrapped = `Here is your tailored CV:\n\n\`\`\`markdown\n${DOC}\n\`\`\``
-    const out = readTailored(wrapped, BRIEF)
+    const out = readTailored(wrapped, DOC_BRIEF)
     expect(out.ok && out.body.startsWith('## Summary')).toBe(true)
     expect(out.ok && out.body.includes('```')).toBe(false)
   })
 
   it('strips a preamble that runs straight into the document, and an unclosed fence', () => {
-    const noBlank = readTailored(`Here is the tailored CV:\n${DOC}`, BRIEF)
+    const noBlank = readTailored(`Here is the tailored CV:\n${DOC}`, DOC_BRIEF)
     expect(noBlank.ok && noBlank.body.startsWith('## Summary')).toBe(true)
     const cutFence = '```\n' + DOC
-    const out = readTailored(cutFence, BRIEF)
+    const out = readTailored(cutFence, DOC_BRIEF)
     expect(out.ok && out.body.startsWith('## Summary')).toBe(true)
   })
 
   it('strips a mark wrapped around the placeholder, and does not count it as a change', () => {
     // What Qwen3 14B actually returned: the literal word from the rule, in
-    // front of each passage it had changed, with the passage itself unmarked.
+    // front of each passage, over passages it had not in fact changed. With the
+    // echo stripped, nothing is left that differs — so nothing was tailored.
+    const base = `My research focuses on trustworthy AI.\n${'More prose. '.repeat(30)}`
     const echoed = `**text** My research focuses on trustworthy AI.\n_text_ ${'More prose. '.repeat(30)}`
-    const out = readTailored(echoed, BRIEF)
-    expect(out.ok && out.body.startsWith('My research focuses')).toBe(true)
-    expect(out.ok && out.marked).toBe(false)
-    expect(out.ok && out.notes.join(' ')).toMatch(/Nothing in it is marked/)
+    const out = readTailored(echoed, { ...BRIEF, base })
+    expect(out.ok).toBe(false)
+    expect(!out.ok && out.reason).toMatch(/unchanged|without changing anything/)
   })
 
   it('refuses a refusal', () => {
@@ -183,12 +193,30 @@ describe('reading the reply', () => {
     expect(short.ok).toBe(true)
   })
 
-  it('keeps an unmarked document that differs from the source, but says nothing was marked', () => {
-    // A real rewrite with the marks forgotten: the text is not the source.
+  it('marks a change the model left unmarked, and says it did', () => {
+    // A real rewrite with the marks forgotten: the added phrase is not the source.
     const plain = DOC.replaceAll('**', '')
-    const out = readTailored(plain, BRIEF)
-    expect(out.ok && out.marked).toBe(false)
-    expect(out.ok && out.notes.join(' ')).toMatch(/Nothing in it is marked/)
+    const out = readTailored(plain, DOC_BRIEF)
+    expect(out.ok && out.marked).toBe(true)
+    expect(out.ok && out.body).toContain('**for hiring committees**')
+    expect(out.ok && out.notes.join(' ')).toMatch(/1 changed passage the model left unmarked is now marked/)
+  })
+
+  it('unmarks a passage the model marked but did not change, and says it did', () => {
+    const overMarked = DOC.replace('A paper about things.', '**A paper about things.**')
+    const out = readTailored(overMarked, DOC_BRIEF)
+    // The paper loses its mark; the real change keeps its own. (The reader trims.)
+    expect(out.ok && out.body).toBe(DOC.trim())
+    expect(out.ok && out.notes.join(' ')).toMatch(
+      /1 passage the model marked as changed is word for word your original/,
+    )
+  })
+
+  it('refuses a reply whose only marks were on text it did not change', () => {
+    // The take that bolded lines and changed none: measured, it is the source.
+    const out = readTailored(DOC_BASE.replace('I build distributed systems.', '**I build distributed systems.**'), DOC_BRIEF)
+    expect(out.ok).toBe(false)
+    expect(!out.ok && out.reason).toMatch(/without changing anything/)
   })
 
   it('refuses the source handed back unchanged, and the source repeated', () => {
@@ -243,7 +271,8 @@ describe('the placeholder echo, and the words it is not', () => {
     const body = `Builds **text** retrieval systems for low-resource languages. ${base}`
     const read = readTailored(body, { ...BRIEF, base })
     expect(read.ok).toBe(true)
-    if (read.ok) expect(read.body).toContain('**text** retrieval systems')
+    // The word survives; the whole line is new against this source, so it is marked as a whole.
+    if (read.ok) expect(stripMarks(read.body)).toContain('Builds text retrieval systems')
   })
 
   it('strips the echo on a bullet, which is where a CV changes', () => {
@@ -260,7 +289,7 @@ describe('the placeholder echo, and the words it is not', () => {
     if (read.ok) {
       expect(read.body).not.toContain('**text**')
       // The bullet survives: stripping an echo must not flatten the list.
-      expect(read.body.startsWith('- Rebuilt the ingest path')).toBe(true)
+      expect(stripMarks(read.body).startsWith('- Rebuilt the ingest path')).toBe(true)
     }
   })
 
@@ -269,7 +298,7 @@ describe('the placeholder echo, and the words it is not', () => {
     const read = readTailored(body, { ...BRIEF, base })
     expect(read.ok).toBe(true)
     if (read.ok) {
-      expect(read.body.startsWith('The candidate rebuilt')).toBe(true)
+      expect(stripMarks(read.body).startsWith('The candidate rebuilt')).toBe(true)
       expect(read.body).not.toContain('**text**')
     }
   })
