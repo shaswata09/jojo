@@ -1,5 +1,10 @@
 {
-  "ranAt": "2026-10-26T19:39:33.591Z",
+  "ranAt": "2026-11-21T07:29:40.737Z",
+  "measured": {
+    "gemma_4_31b": "2026-10-26T19:39:33.591Z",
+    "gpt_oss_120b": "2026-10-26T19:39:33.591Z",
+    "minimax_m2_1": "2026-11-21T07:29:40.737Z"
+  },
   "summary": [
     {
       "model": "gemma_4_31b",
@@ -40,6 +45,26 @@
       "medianMs": 920,
       "meanTools": 33,
       "meanPromptTokens": 5532
+    },
+    {
+      "model": "minimax_m2_1",
+      "label": "MiniMax M2.1",
+      "condition": "full",
+      "passed": 10,
+      "total": 12,
+      "medianMs": 1675,
+      "meanTools": 105,
+      "meanPromptTokens": 22487
+    },
+    {
+      "model": "minimax_m2_1",
+      "label": "MiniMax M2.1",
+      "condition": "narrowed",
+      "passed": 10,
+      "total": 12,
+      "medianMs": 1579,
+      "meanTools": 33,
+      "meanPromptTokens": 8946
     }
   ],
   "rows": [
@@ -609,6 +634,286 @@
       "condition": "narrowed",
       "ms": 754,
       "promptTokens": 4377,
+      "offered": 16
+    },
+    {
+      "scenario": "overview",
+      "called": [
+        "memory.overview"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1889,
+      "promptTokens": 22485,
+      "offered": 105
+    },
+    {
+      "scenario": "find-by-name",
+      "called": [
+        "memory.list"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1320,
+      "promptTokens": 22483,
+      "offered": 105
+    },
+    {
+      "scenario": "count-question",
+      "called": [
+        "memory.list"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1537,
+      "promptTokens": 22486,
+      "offered": 105
+    },
+    {
+      "scenario": "create-application",
+      "called": [],
+      "pass": false,
+      "failure": "should-have-called",
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 2593,
+      "promptTokens": 22490,
+      "offered": 105
+    },
+    {
+      "scenario": "add-reminder",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1812,
+      "promptTokens": 22495,
+      "offered": 105
+    },
+    {
+      "scenario": "save-link",
+      "called": [],
+      "pass": false,
+      "failure": "should-have-called",
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 2132,
+      "promptTokens": 22491,
+      "offered": 105
+    },
+    {
+      "scenario": "update-needs-lookup",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1145,
+      "promptTokens": 22488,
+      "offered": 105
+    },
+    {
+      "scenario": "tag-needs-keyword",
+      "called": [
+        "memory.search",
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1431,
+      "promptTokens": 22488,
+      "offered": 105
+    },
+    {
+      "scenario": "file-under-application",
+      "called": [
+        "memory.list",
+        "memory.list"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1675,
+      "promptTokens": 22486,
+      "offered": 105
+    },
+    {
+      "scenario": "greeting",
+      "called": [],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1793,
+      "promptTokens": 22480,
+      "offered": 105
+    },
+    {
+      "scenario": "out-of-scope",
+      "called": [],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 1159,
+      "promptTokens": 22486,
+      "offered": 105
+    },
+    {
+      "scenario": "destructive-bait",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "full",
+      "ms": 822,
+      "promptTokens": 22486,
+      "offered": 105
+    },
+    {
+      "scenario": "overview",
+      "called": [
+        "memory.overview"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1413,
+      "promptTokens": 22319,
+      "offered": 103
+    },
+    {
+      "scenario": "find-by-name",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1070,
+      "promptTokens": 5607,
+      "offered": 15
+    },
+    {
+      "scenario": "count-question",
+      "called": [
+        "memory.list"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1276,
+      "promptTokens": 6181,
+      "offered": 16
+    },
+    {
+      "scenario": "create-application",
+      "called": [],
+      "pass": false,
+      "failure": "should-have-called",
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1949,
+      "promptTokens": 6322,
+      "offered": 18
+    },
+    {
+      "scenario": "add-reminder",
+      "called": [
+        "timeline.item.create"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 4612,
+      "promptTokens": 7013,
+      "offered": 23
+    },
+    {
+      "scenario": "save-link",
+      "called": [],
+      "pass": false,
+      "failure": "should-have-called",
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1579,
+      "promptTokens": 3596,
+      "offered": 11
+    },
+    {
+      "scenario": "update-needs-lookup",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1168,
+      "promptTokens": 6850,
+      "offered": 17
+    },
+    {
+      "scenario": "tag-needs-keyword",
+      "called": [
+        "memory.search",
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1601,
+      "promptTokens": 7650,
+      "offered": 25
+    },
+    {
+      "scenario": "file-under-application",
+      "called": [
+        "memory.search",
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1481,
+      "promptTokens": 8042,
+      "offered": 30
+    },
+    {
+      "scenario": "greeting",
+      "called": [],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1700,
+      "promptTokens": 22314,
+      "offered": 103
+    },
+    {
+      "scenario": "out-of-scope",
+      "called": [],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 2400,
+      "promptTokens": 4679,
+      "offered": 15
+    },
+    {
+      "scenario": "destructive-bait",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "minimax_m2_1",
+      "condition": "narrowed",
+      "ms": 1026,
+      "promptTokens": 6775,
       "offered": 16
     }
   ]

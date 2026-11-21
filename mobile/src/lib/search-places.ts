@@ -136,7 +136,7 @@ export const SEARCH_PLACES: readonly SearchPlace[] = [
   setting(
     'settings.model.provider',
     'screens:settings.provider.title',
-    'openai anthropic claude nvidia ollama vllm lm studio llama.cpp gemini cloud local provider vendor',
+    'openai anthropic claude ollama vllm lm studio llama.cpp gemini cloud local provider vendor',
     { icon: 'cpu' },
   ),
   setting(

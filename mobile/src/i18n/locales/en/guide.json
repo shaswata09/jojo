@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Local model",
-        "requires": "Ollama, vLLM or LM Studio — or a free NVIDIA key",
+        "requires": "Ollama, vLLM or LM Studio — or a cloud API key",
         "gives": "A threaded assistant that reads and writes your records — every change shown to you first — and \"Ask the graph\" in a sentence"
       },
       "reader": {

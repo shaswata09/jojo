@@ -11,7 +11,6 @@ Type `model` or `documents` into the search bar to jump straight to the right ca
 | A GUI that downloads models for you     | [LM Studio](#lm-studio)                 | No                   | Nothing      |
 | The fastest local serving, NVIDIA GPU   | [vLLM](#vllm)                           | No                   | Nothing      |
 | One binary, any GGUF file               | [llama.cpp](#llamacpp)                  | No                   | Nothing      |
-| The agentic half with no GPU or card    | [NVIDIA build.nvidia.com](#nvidia)      | Yes                  | Free, rate-limited |
 | Claude                                  | [Anthropic](#anthropic-claude)          | Yes                  | Per token    |
 | GPT models                              | [OpenAI](#openai)                       | Yes                  | Per token    |
 | Many vendors behind one key             | [OpenRouter](#openrouter)               | Yes                  | Per token    |
@@ -139,21 +138,12 @@ for you.
 
 ## Cloud models
 
+NVIDIA's build.nvidia.com is not offered: its trial terms allow evaluation only, not
+a real job search.
+
 Each needs an API key, pasted into **API key**. The endpoint is fixed, so there is
 nothing else to fill in. Press **Test connection**, and the **Model** field fills in
 where the provider lists its models. Otherwise, type the id.
-
-### NVIDIA
-
-**build.nvidia.com: free, rate-limited.** It is the way to try the agentic half without a
-GPU or a card.
-
-1. Sign in at <https://build.nvidia.com/> and generate a key (`nvapi-…`).
-2. **Provider → NVIDIA (build.nvidia.com) — free, rate limited**, paste the key, and test.
-3. Model: for example `nvidia/nemotron-3-ultra-550b-a55b`, or any chat model in their
-   catalogue.
-
-NVIDIA's trial terms are for evaluation, and jojo shows them next to the key.
 
 ### Anthropic (Claude)
 

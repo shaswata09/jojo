@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "モデルを接続する",
-      "body": "アシスタントのモデルを動かす場所を選びます。ローカルサーバー（vLLM、LM Studio、llama.cpp、Ollama）はアドレスを指定し、レコードをこのマシンに保ちます。OpenAI、Anthropic（Claude）、OpenRouter、Groq、NVIDIA は API キーを使います。「接続をテスト」で保存前に確認できます。"
+      "body": "アシスタントのモデルを動かす場所を選びます。ローカルサーバー（vLLM、LM Studio、llama.cpp、Ollama）はアドレスを指定し、レコードをこのマシンに保ちます。OpenAI、Anthropic（Claude）、OpenRouter、Groq は API キーを使います。「接続をテスト」で保存前に確認できます。"
     },
     "reader": {
       "title": "ドキュメントを読めるようにする",

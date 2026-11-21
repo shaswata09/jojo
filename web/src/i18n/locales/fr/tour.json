@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Connecter un modèle",
-      "body": "Choisissez où tourne le modèle de l’assistant. Un serveur local — vLLM, LM Studio, llama.cpp ou Ollama — prend son adresse et garde vos enregistrements sur cette machine. OpenAI, Anthropic (Claude), OpenRouter, Groq ou NVIDIA demandent une clé d’API. Tester la connexion vérifie tout avant d’enregistrer quoi que ce soit."
+      "body": "Choisissez où tourne le modèle de l’assistant. Un serveur local — vLLM, LM Studio, llama.cpp ou Ollama — prend son adresse et garde vos enregistrements sur cette machine. OpenAI, Anthropic (Claude), OpenRouter ou Groq demandent une clé d’API. Tester la connexion vérifie tout avant d’enregistrer quoi que ce soit."
     },
     "reader": {
       "title": "Lui faire lire vos documents",

@@ -278,9 +278,18 @@
     "savePath": {
       "title": "Qué pasa cuando guardas algo",
       "desc": "Pulsar Guardar cambia al instante lo que hay en pantalla, y la escritura se pone en cola y se hace en la base de datos del navegador un momento después. Si esa escritura falla, el cambio se conserva en la cola y se informa en una franja encima de la página en lugar de tirarse.",
-      "press": { "line1": "Pulsas", "line2": "Guardar" },
-      "screen": { "line1": "En pantalla,", "line2": "al instante" },
-      "saved": { "line1": "Guardado en", "line2": "este navegador" },
+      "press": {
+        "line1": "Pulsas",
+        "line2": "Guardar"
+      },
+      "screen": {
+        "line1": "En pantalla,",
+        "line2": "al instante"
+      },
+      "saved": {
+        "line1": "Guardado en",
+        "line2": "este navegador"
+      },
       "fail": {
         "line1": "Una escritura fallida se conserva",
         "line2": "y se informa, no se descarta."
@@ -303,7 +312,7 @@
         },
         "model": {
           "name": "+ Modelo local",
-          "requires": "Ollama, vLLM o LM Studio, o una clave gratuita de NVIDIA",
+          "requires": "Ollama, vLLM o LM Studio, o una clave de API en la nube",
           "gives": "La mitad agéntica: un asistente con hilos que lee y escribe tus registros con tu aprobación, flujos de Job Scout que completan tu perfil y vigilan nuevas ofertas, «Preguntar al grafo» en una frase y puntuación real del scout"
         },
         "reader": {
@@ -334,7 +343,7 @@
         "hint": "no conectado",
         "title": "Añade un modelo local",
         "connectTitle": "Conéctalo",
-        "connect": "Ejecuta vLLM, Ollama o LM Studio e introduce el endpoint en <settings>Ajustes</settings>. Funciona cualquier servidor compatible con OpenAI. ¿Sin GPU? Una clave gratuita de build.nvidia.com ejecuta el mismo agente desde la misma pantalla, con límite de uso en lugar de facturación; el único coste es que tus registros salen del dispositivo.",
+        "connect": "Ejecuta vLLM, Ollama o LM Studio e introduce el endpoint en <settings>Ajustes</settings>. Funciona cualquier servidor compatible con OpenAI.",
         "changesTitle": "Qué cambia",
         "changes": "Redactar deja de ser una plantilla con huecos y empieza a leer tu perfil y tus documentos. Hasta entonces, la página del <assistant>Asistente</assistant> muestra los ejemplos resueltos con los que responde.",
         "scoringTitle": "Los flujos del scout empiezan a puntuar",
@@ -396,7 +405,10 @@
       "desc": "Las seis filas de la barra lateral abren Panel, Candidaturas, Calendario, Bóveda, Job scout y Estadísticas. Los cuatro mosaicos de debajo abren Grafo, Transferir y, para el puente y el modelo, Ajustes. Los cuatro iconos a la derecha de la barra superior abren Mi perfil, Ajustes, el Asistente y esta guía. Nada en la lista de la barra lateral lleva a esas últimas seis.",
       "search": "Buscar…",
       "new": "Nuevo",
-      "topBar": { "line1": "Mi perfil · Ajustes ·", "line2": "Asistente · Cómo se usa" },
+      "topBar": {
+        "line1": "Mi perfil · Ajustes ·",
+        "line2": "Asistente · Cómo se usa"
+      },
       "sidebar": {
         "line1": "Panel · Candidaturas · Calendario",
         "line2": "Bóveda · Job scout · Estadísticas"

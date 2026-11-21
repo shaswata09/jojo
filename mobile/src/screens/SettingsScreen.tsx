@@ -145,9 +145,9 @@ export function SettingsScreen() {
    * The saved rows for THIS provider only — same rule as the web panel.
    *
    * The stored list spans every provider this device has reached, and offering
-   * all of it here would put a local vLLM box in the NVIDIA picker, where
+   * all of it here would put a local vLLM box in the OpenRouter picker, where
    * choosing it swaps the endpoint, the dialect and the key underneath a form
-   * that still says NVIDIA.
+   * that still says OpenRouter.
    */
   const shown = serversFor(servers, provider.id)
 
@@ -259,8 +259,9 @@ export function SettingsScreen() {
     }
     // The person's choice wins when the server lists it (Q172). Taking the
     // first unconditionally suits vLLM, which serves one model, and Ollama,
-    // which lists most-recent first; NVIDIA lists over a hundred alphabetically,
-    // and its first was measured to 404 for the account it replaced a typed id on.
+    // which lists most-recent first; a hosted catalogue lists hundreds
+    // alphabetically, and its first was measured to 404 for the account it
+    // replaced a typed id on (NVIDIA's, before Q345 removed it).
     const current = model.trim()
     const found = current && result.models.includes(current) ? current : (result.models[0] ?? '')
     const label = saved?.name ?? found
@@ -273,7 +274,7 @@ export function SettingsScreen() {
     // keeping the address is a consequence of it rather than a second button.
     // With its provider and key, as the web saves it: the Saved servers list is
     // filtered by provider, and a row without one was filed under
-    // OpenAI-compatible, out of sight of an Ollama or NVIDIA user. The key is
+    // OpenAI-compatible, out of sight of an Ollama or Groq user. The key is
     // kept beside the settings that already hold it, in the app's own storage.
     remember({
       name: label,
@@ -1129,16 +1130,9 @@ function ProviderPicker({
  * What choosing this provider actually commits you to. The phone's copy of the
  * web panel's `CloudTerms`, and deliberately the same words.
  *
- * The warning this replaces said "and is billed to your account" for every cloud
- * provider, which is FALSE of NVIDIA's free tier — telling somebody they are
- * being charged for something free, on the screen where they decide whether to
- * use it, is not a small inaccuracy. The web app had already split that into two
- * facts; the phone had not, so it kept saying it.
- *
- * NVIDIA gets different words rather than louder ones: its free tier is licensed
- * for evaluation and NOT production, and forbids uploading personal data — which
- * is most of what the assistant sends. Every other provider here sells
- * production use, which is what the bill buys.
+ * Every provider offered here sells production use, which is what the bill
+ * buys. NVIDIA's free tier, licensed for evaluation only, had different words
+ * until it was removed altogether (Q345).
  */
 function CloudTerms({ provider }: { provider: ProviderMeta }) {
   const { t } = useTranslation('screens')
@@ -1173,8 +1167,7 @@ function CloudTerms({ provider }: { provider: ProviderMeta }) {
 
       {/* Rendered from `@jojo/service/core/cloud-terms`, not written here. This
           file used to hold the prose and a comment saying it was deliberately
-          the same words as web's; it was three sentences short, including the
-          one about NVIDIA's licence to store and reproduce what is sent. */}
+          the same words as web's; it was three sentences short. */}
       {terms.paragraphs.map((paragraph, i) => (
         <Txt key={i} size="xs" tone="secondary">
           {paragraph.map((segment, j) => (
@@ -1235,8 +1228,8 @@ function SavedServers({
   servers: readonly ModelServer[]
   /*
    * The address AND the model: a hosted provider has several saved rows sharing
-   * one endpoint, so comparing addresses alone marked every NVIDIA model "In
-   * use" at once. Same fix as the web panel.
+   * one endpoint, so comparing addresses alone marked every OpenRouter model
+   * "In use" at once. Same fix as the web panel.
    */
   current: { endpoint: string; model: string }
   onClose: () => void

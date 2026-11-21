@@ -13,7 +13,7 @@ import { PROVIDERS, PROVIDER_IDS, contextOf, providerMeta } from './provider'
 
 describe('the providers the agent can run on', () => {
   it('offers Ollama and the cloud providers beside a local vLLM-style server', () => {
-    for (const id of ['openai-compatible', 'ollama', 'anthropic', 'openai', 'nvidia']) {
+    for (const id of ['openai-compatible', 'ollama', 'anthropic', 'openai', 'openrouter', 'groq']) {
       expect(PROVIDER_IDS as readonly string[], id).toContain(id)
     }
     expect(providerMeta('openai-compatible').cloud).toBe(false)

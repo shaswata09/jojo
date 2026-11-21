@@ -1,3 +1,4 @@
+import { measuredText, serversText } from '@/components/guide/measured-dates'
 import report from '@/components/guide/tool-eval.json'
 
 /**
@@ -45,12 +46,6 @@ type Row = {
   called: string[]
 }
 
-/**
- * The run date, spelled out in English like the sentence it sits in (the
- * table is marked `lang="en"`, see `EnglishData`) — not in whatever locale the
- * browser defaults to.
- */
-const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }
 const summary = report.summary as Summary[]
 const rows = report.rows as Row[]
 const failures = rows.filter((r) => !r.pass)
@@ -59,7 +54,6 @@ const failures = rows.filter((r) => !r.pass)
 const models = [...new Set(summary.map((s) => s.model))]
 
 export function ToolEvalTable() {
-  const ran = new Date(report.ranAt)
 
   return (
     <div>
@@ -135,7 +129,13 @@ export function ToolEvalTable() {
       )}
 
       <p className="mt-4 text-xs text-text-3">
-        Run on {ran.toLocaleDateString('en', DATE)} against {String(models.length)} vLLM servers.
+        Run on{' '}
+        {measuredText(
+          report.ranAt,
+          (report as { measured?: Record<string, string> }).measured,
+          (m) => summary.find((s) => s.model === m)?.label ?? m,
+        )}{' '}
+        against {serversText(models.length)}.
         Re-running the evaluation is what updates this table — the numbers are generated, not typed.
       </p>
     </div>

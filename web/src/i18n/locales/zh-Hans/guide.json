@@ -278,10 +278,22 @@
     "savePath": {
       "title": "保存时会发生什么",
       "desc": "按下保存会立刻改变屏幕上的内容，写入操作进入队列，片刻后写入浏览器的数据库。如果写入失败，这次更改会保留在队列中，并通过页面上方的横幅报告，而不会被丢弃。",
-      "press": { "line1": "你按下", "line2": "保存" },
-      "screen": { "line1": "屏幕上", "line2": "立即显示" },
-      "saved": { "line1": "保存在", "line2": "此浏览器中" },
-      "fail": { "line1": "失败的写入会被保留", "line2": "并报告，而不会丢弃。" }
+      "press": {
+        "line1": "你按下",
+        "line2": "保存"
+      },
+      "screen": {
+        "line1": "屏幕上",
+        "line2": "立即显示"
+      },
+      "saved": {
+        "line1": "保存在",
+        "line2": "此浏览器中"
+      },
+      "fail": {
+        "line1": "失败的写入会被保留",
+        "line2": "并报告，而不会丢弃。"
+      }
     },
     "ladder": {
       "title": "电脑上装得更多，jojo 能做得更多",
@@ -300,7 +312,7 @@
         },
         "model": {
           "name": "+ 本地模型",
-          "requires": "Ollama、vLLM 或 LM Studio——或一个免费的 NVIDIA 密钥",
+          "requires": "Ollama、vLLM 或 LM Studio——或一个云端 API 密钥",
           "gives": "智能体的那一半：一个支持多会话的助手，经你批准后读写你的记录；Job Scout 流水线会补全你的个人资料并留意新的招聘信息；用一句话“向图谱提问”；以及真正的 scout 评分"
         },
         "reader": {
@@ -331,7 +343,7 @@
         "hint": "未接通",
         "title": "添加本地模型",
         "connectTitle": "接通它",
-        "connect": "运行 vLLM、Ollama 或 LM Studio，并在<settings>设置</settings>中输入端点。任何兼容 OpenAI 的服务器都可以。没有 GPU？来自 build.nvidia.com 的免费密钥可以在同一页面运行同样的智能体——有速率限制但不收费，唯一的代价是你的记录会离开设备。",
+        "connect": "运行 vLLM、Ollama 或 LM Studio，并在<settings>设置</settings>中输入端点。任何兼容 OpenAI 的服务器都可以。",
         "changesTitle": "会有什么变化",
         "changes": "起草不再是填空模板，而是开始读取你的个人资料和文档。在此之前，<assistant>助手</assistant>页面会展示它用来回答的完整示例。",
         "scoringTitle": "Scout 流水线开始打分",
@@ -393,8 +405,14 @@
       "desc": "侧边栏的六行分别打开仪表盘、申请、日历、资料库、Job scout 和统计。下方的四个磁贴打开图谱、传输，以及——针对桥接和模型——设置。顶栏右侧的四个图标打开我的资料、设置、助手和本指南。侧边栏列表中没有任何一项通往最后这六个。",
       "search": "搜索…",
       "new": "新建",
-      "topBar": { "line1": "我的资料 · 设置 ·", "line2": "助手 · 使用方法" },
-      "sidebar": { "line1": "仪表盘 · 申请 · 日历", "line2": "资料库 · Job scout · 统计" },
+      "topBar": {
+        "line1": "我的资料 · 设置 ·",
+        "line2": "助手 · 使用方法"
+      },
+      "sidebar": {
+        "line1": "仪表盘 · 申请 · 日历",
+        "line2": "资料库 · Job scout · 统计"
+      },
       "tiles": "图谱 · 传输 · 设置"
     },
     "applications": {

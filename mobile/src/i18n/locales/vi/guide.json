@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Mô hình cục bộ",
-        "requires": "Ollama, vLLM hoặc LM Studio — hoặc một khóa NVIDIA miễn phí",
+        "requires": "Ollama, vLLM hoặc LM Studio — hoặc một khóa API đám mây",
         "gives": "Một trợ lý theo chuỗi hội thoại đọc và ghi bản ghi của bạn — mọi thay đổi đều được hiển thị cho bạn trước — và \"Hỏi đồ thị\" bằng một câu"
       },
       "reader": {

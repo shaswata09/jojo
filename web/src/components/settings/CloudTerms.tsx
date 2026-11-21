@@ -18,30 +18,28 @@ import type { ProviderMeta } from '@jojo/service/core/provider'
  *    a phrase people skim. Applications, notes, CV text, and the names and email
  *    addresses of referees and recruiters — those last are somebody ELSE's
  *    personal details, which is the part nobody thinks about.
- * 2. What it costs — money, or a licence that does not permit this use.
+ * 2. What it costs, and on whose terms.
  * 3. Who carries the consequence. jojo is not a party to the agreement: it ships
  *    no key and makes no call of its own, so the account, the bill and any
  *    breach are the user's. Saying so is not a disclaimer to hide behind, it is
  *    the accurate description of who signed what.
  *
- * NVIDIA GETS ITS OWN TREATMENT because its terms differ in kind, not degree:
- * the free tier is licensed for evaluation and NOT production, and it forbids
- * uploading personal data — which is most of what the assistant sends. Every
- * other provider here sells production use; that is what the bill is for.
+ * Every provider offered here sells production use; that is what the bill is
+ * for. NVIDIA's free tier, which did not, had its own notice until it was
+ * removed altogether (Q345).
  */
 export function CloudTerms({ provider }: { provider: ProviderMeta }) {
   const { t } = useTranslation('settings')
   const terms = cloudTerms(provider)
 
-  // The dropdown entry reads "NVIDIA (build.nvidia.com) — free, rate limited",
-  // which is right in a list and a stammer inside a sentence about to repeat it.
+  // A dropdown entry can carry a trailing " — note", which is right in a list
+  // and a stammer inside a sentence about to repeat it.
   const name = provider.label.split(' —')[0] ?? provider.label
   /*
    * Without the parenthetical, for the two places the full name reads badly: a
-   * possessive ("NVIDIA (build.nvidia.com)'s terms") and a link label, where the
-   * address is noise because the link goes there anyway. The full name stays in
-   * the headline and the first mention, where identifying WHICH NVIDIA endpoint
-   * is the useful part.
+   * possessive ("Anthropic (Claude)'s terms") and a link label, where the
+   * parenthetical is noise. The full name stays in the headline and the first
+   * mention, where identifying WHICH service is the useful part.
    */
   const short = name.replace(/\s*\([^)]*\)\s*$/, '')
 
@@ -52,7 +50,7 @@ export function CloudTerms({ provider }: { provider: ProviderMeta }) {
       {/* Rendered from `core/cloud-terms.ts`, not written here. Both apps used
           to hold this prose and both said in a comment that they were saying
           the same thing; by the time anyone checked, the phone was three
-          sentences short — including the NVIDIA storage licence. A consent
+          sentences short. A consent
           notice is the one piece of copy where two versions means one of them
           is not what the reader was told. */}
       <div className="mt-1.5 space-y-1.5 text-xs text-text-2">

@@ -278,9 +278,18 @@
     "savePath": {
       "title": "O que acontece quando você salva algo",
       "desc": "Clicar em Salvar muda na hora o que está na tela, e a gravação entra na fila e é feita no banco de dados do navegador um momento depois. Se essa gravação falhar, a mudança fica na fila e é informada em uma faixa acima da página em vez de ser descartada.",
-      "press": { "line1": "Você clica", "line2": "em Salvar" },
-      "screen": { "line1": "Na tela,", "line2": "na hora" },
-      "saved": { "line1": "Salvo neste", "line2": "navegador" },
+      "press": {
+        "line1": "Você clica",
+        "line2": "em Salvar"
+      },
+      "screen": {
+        "line1": "Na tela,",
+        "line2": "na hora"
+      },
+      "saved": {
+        "line1": "Salvo neste",
+        "line2": "navegador"
+      },
       "fail": {
         "line1": "Uma gravação que falha é mantida",
         "line2": "e informada, não descartada."
@@ -303,7 +312,7 @@
         },
         "model": {
           "name": "+ Modelo local",
-          "requires": "Ollama, vLLM ou LM Studio — ou uma chave gratuita da NVIDIA",
+          "requires": "Ollama, vLLM ou LM Studio — ou uma chave de API de nuvem",
           "gives": "A metade agêntica: um assistente com conversas que lê e grava seus registros com a sua aprovação, pipelines do Job Scout que completam seu perfil e vigiam novas vagas, “Perguntar ao grafo” em uma frase e pontuação real do scout"
         },
         "reader": {
@@ -334,7 +343,7 @@
         "hint": "não conectado",
         "title": "Adicione um modelo local",
         "connectTitle": "Conecte",
-        "connect": "Rode o vLLM, o Ollama ou o LM Studio e informe o endpoint em <settings>Configurações</settings>. Qualquer servidor compatível com a OpenAI funciona. Sem GPU? Uma chave gratuita de build.nvidia.com roda o mesmo agente na mesma tela — com limite de uso em vez de cobrança, e o único custo é que seus registros saem do dispositivo.",
+        "connect": "Rode o vLLM, o Ollama ou o LM Studio e informe o endpoint em <settings>Configurações</settings>. Qualquer servidor compatível com a OpenAI funciona.",
         "changesTitle": "O que muda",
         "changes": "Escrever deixa de ser um modelo de preencher lacunas e passa a ler seu perfil e seus documentos. Até lá, a página do <assistant>Assistente</assistant> mostra os exemplos prontos com que ele responde.",
         "scoringTitle": "Os pipelines do scout começam a pontuar",
@@ -396,7 +405,10 @@
       "desc": "As seis linhas da barra lateral abrem Painel, Candidaturas, Calendário, Cofre, Job scout e Estatísticas. Os quatro blocos abaixo delas abrem Grafo, Transferência e — para a ponte e o modelo — Configurações. Os quatro ícones à direita da barra superior abrem Meu perfil, Configurações, o Assistente e este guia. Nada na lista da barra lateral leva a essas últimas seis.",
       "search": "Buscar…",
       "new": "Novo",
-      "topBar": { "line1": "Meu perfil · Configurações ·", "line2": "Assistente · Como usar" },
+      "topBar": {
+        "line1": "Meu perfil · Configurações ·",
+        "line2": "Assistente · Como usar"
+      },
       "sidebar": {
         "line1": "Painel · Candidaturas · Calendário",
         "line2": "Cofre · Job scout · Estatísticas"

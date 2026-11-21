@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ 本機模型",
-        "requires": "Ollama、vLLM 或 LM Studio——或免費的 NVIDIA 金鑰",
+        "requires": "Ollama、vLLM 或 LM Studio——或雲端 API 金鑰",
         "gives": "一個分對話串的助理，可以讀寫你的紀錄——每項變更都會先讓你看過——以及用一句話「詢問圖譜」"
       },
       "reader": {

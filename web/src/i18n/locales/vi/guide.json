@@ -312,7 +312,7 @@
         },
         "model": {
           "name": "+ Mô hình cục bộ",
-          "requires": "Ollama, vLLM hoặc LM Studio — hoặc một khóa NVIDIA miễn phí",
+          "requires": "Ollama, vLLM hoặc LM Studio — hoặc một khóa API đám mây",
           "gives": "Nửa tác tử: một trợ lý theo chuỗi hội thoại đọc và ghi bản ghi của bạn dưới sự phê duyệt của bạn, các quy trình của Trình tìm việc hoàn thiện hồ sơ cá nhân và theo dõi tin tuyển dụng, \"Hỏi đồ thị\" bằng một câu, và chấm điểm thật của trình tìm việc"
         },
         "reader": {
@@ -343,7 +343,7 @@
         "hint": "chưa kết nối",
         "title": "Thêm mô hình cục bộ",
         "connectTitle": "Kết nối nó",
-        "connect": "Chạy vLLM, Ollama hoặc LM Studio và nhập điểm cuối trong <settings>Cài đặt</settings>. Mọi máy chủ tương thích OpenAI đều dùng được. Không có GPU? Một khóa miễn phí từ build.nvidia.com chạy cùng tác tử từ cùng màn hình — bị giới hạn tần suất chứ không tính phí, và cái giá duy nhất là các bản ghi của bạn rời khỏi thiết bị.",
+        "connect": "Chạy vLLM, Ollama hoặc LM Studio và nhập điểm cuối trong <settings>Cài đặt</settings>. Mọi máy chủ tương thích OpenAI đều dùng được.",
         "changesTitle": "Điều gì thay đổi",
         "changes": "Việc soạn thảo không còn là mẫu điền vào chỗ trống mà bắt đầu đọc hồ sơ cá nhân và tài liệu của bạn. Trang <assistant>Trợ lý</assistant> hiển thị các ví dụ mẫu mà nó trả lời cho đến lúc đó.",
         "scoringTitle": "Các quy trình của trình tìm việc bắt đầu chấm điểm",

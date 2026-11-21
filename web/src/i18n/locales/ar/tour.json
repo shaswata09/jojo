@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "ربط نموذج",
-      "body": "اختر أين يعمل نموذج المساعد. الخادم المحلي — vLLM أو LM Studio أو llama.cpp أو Ollama — يأخذ عنوانه ويبقي سجلاتك على هذا الجهاز. أما OpenAI وAnthropic (Claude) وOpenRouter وGroq وNVIDIA فتحتاج إلى مفتاح API. «اختبار الاتصال» يتحقق قبل حفظ أي شيء."
+      "body": "اختر أين يعمل نموذج المساعد. الخادم المحلي — vLLM أو LM Studio أو llama.cpp أو Ollama — يأخذ عنوانه ويبقي سجلاتك على هذا الجهاز. أما OpenAI وAnthropic (Claude) وOpenRouter وGroq فتحتاج إلى مفتاح API. «اختبار الاتصال» يتحقق قبل حفظ أي شيء."
     },
     "reader": {
       "title": "دعه يقرأ مستنداتك",

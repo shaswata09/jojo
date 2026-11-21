@@ -193,8 +193,10 @@ export const SHAPE: DirRow[] = [
     // `transfer/PairingQrCard.tsx`: the pairing key as a QR code (Q329), in
     // place of `PulseOverlay.tsx` and `pulse-paint.ts` and its test.
     // `scout/ProposalFilters.tsx`: the suggestions' search box and filter menu (Q343).
-    files: 523,
-    tests: 148,
+    // `guide/measured-dates.ts` and its test: a published table's per-model
+    // run dates, once MiniMax M2.1 was measured a month after the others (Q344).
+    files: 525,
+    tests: 149,
     lines: 77198,
     what: 'every surface you can see',
   },
@@ -245,9 +247,9 @@ export const SHAPE: DirRow[] = [
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
     // 217 with `search-places.ts` — every setting, profile field and place the
     // search palette can reach — its completeness guard, and the arrival test.
-    files: 229,
-    tests: 108,
-    lines: 40769,
+    files: 230,
+    tests: 109,
+    lines: 40785,
     what: 'web-only adapters and URL state',
   },
   {
@@ -277,4 +279,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 280
+export const WEB_TEST_FILES = 282

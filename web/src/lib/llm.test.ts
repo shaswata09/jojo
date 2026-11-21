@@ -34,12 +34,12 @@ const LOCAL: ModelSettings = {
   model: 'test-model',
 }
 
-/** NVIDIA is cloud, so its stream goes through the extension instead of `fetch`. */
+/** Groq is cloud, so its stream goes through the extension instead of `fetch`. */
 const CLOUD: ModelSettings = {
-  provider: 'nvidia',
+  provider: 'groq',
   endpoint: '',
   model: 'test-model',
-  apiKey: 'nvapi-test',
+  apiKey: 'gsk_test',
 }
 
 /** An SSE body, as a server that was asked for `include_usage` actually sends it. */

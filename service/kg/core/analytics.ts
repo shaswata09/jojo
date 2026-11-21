@@ -139,7 +139,6 @@ export const PROVIDERS_REPORTED = [
   'anthropic',
   'openrouter',
   'groq',
-  'nvidia',
   'other',
 ] as const
 
@@ -175,7 +174,7 @@ export type EventParams = {
    * above `PROVIDERS_REPORTED` says why that is a fact about them rather than
    * about jojo — and an error string is free text, which is exactly what this
    * table has no `string` in it to prevent. `kind` and `phase` are enough to
-   * tell "nobody can reach NVIDIA from a browser" from "one person's laptop was
+   * tell "nobody can reach this provider from a browser" from "one person's laptop was
    * asleep", which is the question worth answering.
    */
   model_failed: {

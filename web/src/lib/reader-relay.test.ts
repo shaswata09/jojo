@@ -160,9 +160,13 @@ describe('what the extension will relay a MODEL request to', () => {
   const isKnownModelHost = workerIsKnownModelHost as (url: string) => boolean
 
   it('allows the providers in its own list', () => {
-    expect(isKnownModelHost('https://integrate.api.nvidia.com/v1/chat/completions')).toBe(true)
+    expect(isKnownModelHost('https://api.groq.com/openai/v1/chat/completions')).toBe(true)
     expect(isKnownModelHost('https://api.openai.com/v1/chat/completions')).toBe(true)
     expect(isKnownModelHost('https://api.anthropic.com/v1/messages')).toBe(true)
+  })
+
+  it('no longer relays to NVIDIA, which was removed as a provider (Q345)', () => {
+    expect(isKnownModelHost('https://integrate.api.nvidia.com/v1/chat/completions')).toBe(false)
   })
 
   it('is an exact host match, not a suffix test', () => {

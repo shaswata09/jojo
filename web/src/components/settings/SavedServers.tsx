@@ -24,7 +24,7 @@ export function SavedServers({
   servers: readonly ModelServer[]
   /*
    * The address AND the model, because a hosted provider has several saved rows
-   * sharing one endpoint. Comparing addresses alone marked every NVIDIA model
+   * sharing one endpoint. Comparing addresses alone marked every OpenRouter model
    * "In use" at once — a badge that is true of everything says nothing.
    */
   current: { endpoint: string; model: string }
@@ -63,7 +63,7 @@ export function SavedServers({
               <span className="block truncate text-xs text-text-3">{server.model}</span>
               {/* Which provider, and whether it can be used without pasting a
                   key again. A list of addresses answered "which server"; a list
-                  that has to cover Claude and NVIDIA has to answer "which
+                  that has to cover Claude and OpenRouter has to answer "which
                   setup", and the key is the part that used to be missing. */}
               <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-text-3">
                 <span>

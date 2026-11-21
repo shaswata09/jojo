@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { removeServer, renameServer, saveServer } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
+import { isRetiredServer, withoutRetired } from '@jojo/service/core/provider'
 import type { ModelSettings } from '@/lib/llm'
 import {
   DEFAULTS,
@@ -132,7 +133,12 @@ function readSettings(): ModelSettings {
   const raw = readStored(STORAGE_KEY)
   if (!raw) return DEFAULTS
   try {
-    return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<ModelSettings>) }
+    const stored = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<ModelSettings>) }
+    const kept = withoutRetired(stored, DEFAULTS)
+    // A retired provider (NVIDIA, Q345) is cleared from storage too, key and
+    // all, rather than left behind under a setting nothing reads.
+    if (kept !== stored) writeStored(STORAGE_KEY, JSON.stringify(DEFAULTS))
+    return kept
   } catch {
     // A corrupt settings blob is not worth a banner: the defaults are empty,
     // which reads as "not connected", which is the truth.
@@ -160,4 +166,7 @@ const isServer = (v: unknown): v is ModelServer =>
   typeof (v as ModelServer).id === 'string' &&
   typeof (v as ModelServer).name === 'string' &&
   typeof (v as ModelServer).endpoint === 'string' &&
-  typeof (v as ModelServer).model === 'string'
+  typeof (v as ModelServer).model === 'string' &&
+  // A row for a retired provider is dropped here, and so from storage on the
+  // list's next write (Q345).
+  !isRetiredServer(v as ModelServer)

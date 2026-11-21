@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Bir model bağlayın",
-      "body": "Asistanın modelinin nerede çalışacağını seçin. Yerel bir sunucu — vLLM, LM Studio, llama.cpp ya da Ollama — adresini alır ve kayıtlarınızı bu bilgisayarda tutar. OpenAI, Anthropic (Claude), OpenRouter, Groq ya da NVIDIA bir API anahtarı alır. Bağlantıyı test et, hiçbir şey kaydedilmeden önce kontrol eder."
+      "body": "Asistanın modelinin nerede çalışacağını seçin. Yerel bir sunucu — vLLM, LM Studio, llama.cpp ya da Ollama — adresini alır ve kayıtlarınızı bu bilgisayarda tutar. OpenAI, Anthropic (Claude), OpenRouter ya da Groq bir API anahtarı alır. Bağlantıyı test et, hiçbir şey kaydedilmeden önce kontrol eder."
     },
     "reader": {
       "title": "Belgelerinizi okuyabilsin",

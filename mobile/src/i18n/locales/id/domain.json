@@ -183,8 +183,7 @@
     "anthropic": "Anthropic (Claude)",
     "openai": "OpenAI",
     "openrouter": "OpenRouter",
-    "groq": "Groq",
-    "nvidia": "NVIDIA (build.nvidia.com) — gratis, dengan batas laju"
+    "groq": "Groq"
   },
   "month": {
     "1": "Januari",

@@ -312,7 +312,7 @@
         },
         "model": {
           "name": "+ Model lokal",
-          "requires": "Ollama, vLLM, atau LM Studio — atau kunci NVIDIA gratis",
+          "requires": "Ollama, vLLM, atau LM Studio — atau kunci API cloud",
           "gives": "Separuh yang agentik: asisten berutas yang membaca dan menulis entri Anda dengan persetujuan Anda, alur kerja Pencari lowongan yang melengkapi profil Anda dan memantau lowongan, \"Tanya graf\" dalam satu kalimat, dan penilaian pencari yang sesungguhnya"
         },
         "reader": {
@@ -343,7 +343,7 @@
         "hint": "belum terhubung",
         "title": "Tambahkan model lokal",
         "connectTitle": "Hubungkan",
-        "connect": "Jalankan vLLM, Ollama, atau LM Studio dan masukkan endpoint-nya di <settings>Pengaturan</settings>. Server apa pun yang kompatibel dengan OpenAI dapat dipakai. Tidak punya GPU? Kunci gratis dari build.nvidia.com menjalankan agen yang sama dari layar yang sama — dibatasi lajunya alih-alih ditagih, dan satu-satunya konsekuensinya adalah entri Anda keluar dari perangkat.",
+        "connect": "Jalankan vLLM, Ollama, atau LM Studio dan masukkan endpoint-nya di <settings>Pengaturan</settings>. Server apa pun yang kompatibel dengan OpenAI dapat dipakai.",
         "changesTitle": "Yang berubah",
         "changes": "Penulisan draf tidak lagi berupa templat isian, melainkan membaca profil dan dokumen Anda. Halaman <assistant>Asisten</assistant> menampilkan contoh yang dikerjakan sampai saat itu.",
         "scoringTitle": "Alur kerja pencari mulai menilai",

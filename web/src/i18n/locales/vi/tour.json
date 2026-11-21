@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Kết nối một mô hình",
-      "body": "Chọn nơi mô hình của trợ lý chạy. Máy chủ cục bộ — vLLM, LM Studio, llama.cpp, hoặc Ollama — cần địa chỉ của nó và giữ các bản ghi của bạn trên máy này. OpenAI, Anthropic (Claude), OpenRouter, Groq hoặc NVIDIA cần khóa API. Kiểm tra kết nối sẽ kiểm tra trước khi lưu bất cứ thứ gì."
+      "body": "Chọn nơi mô hình của trợ lý chạy. Máy chủ cục bộ — vLLM, LM Studio, llama.cpp, hoặc Ollama — cần địa chỉ của nó và giữ các bản ghi của bạn trên máy này. OpenAI, Anthropic (Claude), OpenRouter hoặc Groq cần khóa API. Kiểm tra kết nối sẽ kiểm tra trước khi lưu bất cứ thứ gì."
     },
     "reader": {
       "title": "Cho phép đọc tài liệu của bạn",

@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "모델 연결",
-      "body": "어시스턴트의 모델을 어디서 실행할지 고르세요. 로컬 서버(vLLM, LM Studio, llama.cpp, Ollama)는 주소를 입력하고 기록을 이 컴퓨터에 그대로 둬요. OpenAI, Anthropic(Claude), OpenRouter, Groq, NVIDIA는 API 키가 필요해요. '연결 테스트'로 저장하기 전에 확인해요."
+      "body": "어시스턴트의 모델을 어디서 실행할지 고르세요. 로컬 서버(vLLM, LM Studio, llama.cpp, Ollama)는 주소를 입력하고 기록을 이 컴퓨터에 그대로 둬요. OpenAI, Anthropic(Claude), OpenRouter, Groq은 API 키가 필요해요. '연결 테스트'로 저장하기 전에 확인해요."
     },
     "reader": {
       "title": "문서를 읽게 하기",

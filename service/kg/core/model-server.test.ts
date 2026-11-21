@@ -127,7 +127,7 @@ describe('the saved list', () => {
      * "because that is the server's fact and not a preference". That reasoning
      * fits a vLLM process, which serves one model and whose URL is the identity
      * of both. It does not fit a hosted catalogue, where one fixed address
-     * answers for dozens of models, and under the old rule NVIDIA could never
+     * answers for dozens of models, and under the old rule OpenRouter could never
      * hold more than one saved model to switch between.
      *
      * One rule for both, and the cost is named rather than hidden: re-pointing a
@@ -664,8 +664,8 @@ describe('the truncation guard, which is what the apps actually call', () => {
 
 describe('a rate limit, which the free tier makes routine', () => {
   /*
-   * NVIDIA's free tier is in the provider table precisely so somebody without a
-   * card can run the agent, and meeting its limit is not a misconfiguration —
+   * A free or low-tier hosted plan meets its rate limit routinely, and that is not
+   * a misconfiguration —
    * it is Tuesday. A run that stops with a quoted status reads as broken; one
    * that says "rate limited, ask again" reads as throttled, which is what it is.
    */
@@ -722,7 +722,7 @@ describe('a status of zero, which is the browser and not the server', () => {
    * A server cannot reply 0 — it is what a browser puts on a response it refused
    * to let the page read. The wording has said so for a while; the REPORTING did
    * not, and that is the half that mattered. `why` exists so that "nobody on
-   * this origin can reach NVIDIA" and "one laptop went to sleep" stop arriving
+   * this origin can reach this provider" and "one laptop went to sleep" stop arriving
    * as the same number, and without it here `blocked` was a FailureKind nothing
    * could ever produce.
    */
@@ -758,25 +758,25 @@ describe('a saved connection, whole', () => {
    * The point of the list is "do not set this up again", and for a cloud
    * provider that means four things, not two: the address, the model, WHICH
    * provider it is, and the key. It used to keep the first two, so a saved
-   * NVIDIA row loaded back as an anonymous OpenAI-compatible server with no
+   * OpenRouter row loaded back as an anonymous OpenAI-compatible server with no
    * credentials — useless for exactly the providers that take the most setting
    * up, while working fine for vLLM, which needs neither.
    */
-  const nvidia = {
-    name: 'NVIDIA',
-    endpoint: 'https://integrate.api.nvidia.com/v1',
-    model: 'nvidia/nemotron-3.5-lightning-30b-a3b',
-    provider: 'nvidia',
-    apiKey: 'nvapi-secret',
+  const hosted = {
+    name: 'OpenRouter',
+    endpoint: 'https://openrouter.ai/api/v1',
+    model: 'meta-llama/llama-3.3-70b-instruct',
+    provider: 'openrouter',
+    apiKey: 'sk-or-secret',
   }
 
   it('keeps the provider and the key alongside the address and model', () => {
-    const [saved] = saveServer([], nvidia)
+    const [saved] = saveServer([], hosted)
     expect(saved).toMatchObject({
-      endpoint: 'https://integrate.api.nvidia.com/v1',
-      model: 'nvidia/nemotron-3.5-lightning-30b-a3b',
-      provider: 'nvidia',
-      apiKey: 'nvapi-secret',
+      endpoint: 'https://openrouter.ai/api/v1',
+      model: 'meta-llama/llama-3.3-70b-instruct',
+      provider: 'openrouter',
+      apiKey: 'sk-or-secret',
     })
   })
 
@@ -793,27 +793,27 @@ describe('a saved connection, whole', () => {
   })
 
   it('keeps the user’s name when the same model is reached again', () => {
-    const first = saveServer([], { ...nvidia, name: 'My NVIDIA' })
-    const again = saveServer(first, { ...nvidia, name: 'ignored', apiKey: 'nvapi-rotated' })
+    const first = saveServer([], { ...hosted, name: 'My OpenRouter' })
+    const again = saveServer(first, { ...hosted, name: 'ignored', apiKey: 'sk-or-rotated' })
     expect(again).toHaveLength(1)
-    expect(again[0]?.name).toBe('My NVIDIA')
+    expect(again[0]?.name).toBe('My OpenRouter')
     // A rotated key must replace the old one, or the row keeps failing.
-    expect(again[0]?.apiKey).toBe('nvapi-rotated')
+    expect(again[0]?.apiKey).toBe('sk-or-rotated')
   })
 
   it('saves every model reached at one address, so they can be switched between', () => {
     /*
-     * The whole point of the (endpoint, model) key. NVIDIA serves a catalogue
+     * The whole point of the (endpoint, model) key. OpenRouter serves a catalogue
      * from ONE address, so keying on the endpoint alone meant the second model
      * overwrote the first and the saved list could never offer a choice.
      */
     const models = [
-      'nvidia/nemotron-3.5-lightning-30b-a3b',
+      'meta-llama/llama-3.3-70b-instruct',
       'meta/llama-3.3-70b-instruct',
       'qwen/qwen3-coder-480b',
     ]
     const list = models.reduce(
-      (acc, model) => saveServer(acc, { ...nvidia, name: model, model }),
+      (acc, model) => saveServer(acc, { ...hosted, name: model, model }),
       [] as ReturnType<typeof saveServer>,
     )
     expect(list).toHaveLength(3)
@@ -821,8 +821,8 @@ describe('a saved connection, whole', () => {
     // Distinct ids, or React draws one row and Delete takes all three.
     expect(new Set(list.map((s) => s.id)).size).toBe(3)
     // All at the one address, all carrying the provider's key.
-    expect(list.every((s) => s.endpoint === nvidia.endpoint)).toBe(true)
-    expect(list.every((s) => s.apiKey === 'nvapi-secret')).toBe(true)
+    expect(list.every((s) => s.endpoint === hosted.endpoint)).toBe(true)
+    expect(list.every((s) => s.apiKey === 'sk-or-secret')).toBe(true)
   })
 
   it('rotates the key on every row at that address, not just the one saved', () => {
@@ -831,33 +831,33 @@ describe('a saved connection, whole', () => {
      * the row being saved would leave the other four failing with a key the
      * person had already replaced, and nothing on screen to explain it.
      */
-    const first = saveServer([], nvidia)
-    const second = saveServer(first, { ...nvidia, model: 'meta/llama-3.3-70b-instruct' })
+    const first = saveServer([], hosted)
+    const second = saveServer(first, { ...hosted, model: 'meta/llama-3.3-70b-instruct' })
     const rotated = saveServer(second, {
-      ...nvidia,
+      ...hosted,
       model: 'qwen/qwen3-coder-480b',
-      apiKey: 'nvapi-new',
+      apiKey: 'sk-or-new',
     })
     expect(rotated).toHaveLength(3)
-    expect(rotated.every((s) => s.apiKey === 'nvapi-new')).toBe(true)
+    expect(rotated.every((s) => s.apiKey === 'sk-or-new')).toBe(true)
   })
 
   it('does not touch rows at a different address when a key rotates', () => {
-    const mixed = saveServer(saveServer([], nvidia), {
+    const mixed = saveServer(saveServer([], hosted), {
       name: 'Workstation',
       endpoint: 'http://localhost:8000/v1',
       model: 'meta-llama/Llama-3.1-8B',
     })
-    const after = saveServer(mixed, { ...nvidia, model: 'other/model', apiKey: 'nvapi-new' })
+    const after = saveServer(mixed, { ...hosted, model: 'other/model', apiKey: 'sk-or-new' })
     expect(after.find((s) => s.endpoint === 'http://localhost:8000/v1')?.apiKey).toBeUndefined()
   })
 
   it('does not wipe a stored key when a caller saves without one', () => {
     // `exactOptionalPropertyTypes` makes omitting the only spelling that
     // compiles, and it is also the behaviour that does not lose a credential.
-    const first = saveServer([], nvidia)
-    const again = saveServer(first, { name: 'NVIDIA', endpoint: nvidia.endpoint, model: 'x' })
-    expect(again[0]?.apiKey).toBe('nvapi-secret')
+    const first = saveServer([], hosted)
+    const again = saveServer(first, { name: 'OpenRouter', endpoint: hosted.endpoint, model: 'x' })
+    expect(again[0]?.apiKey).toBe('sk-or-secret')
   })
 
   it('is one row per model, even when a trailing slash differs', () => {
@@ -904,33 +904,33 @@ describe('the saved list, per provider', () => {
     row({ id: 'b', endpoint: 'http://localhost:11434/v1', model: 'qwen', provider: 'ollama' }),
     row({
       id: 'c',
-      endpoint: 'https://integrate.api.nvidia.com/v1',
-      model: 'nvidia/a',
-      provider: 'nvidia',
+      endpoint: 'https://openrouter.ai/api/v1',
+      model: 'vendor/a',
+      provider: 'openrouter',
     }),
     row({
       id: 'd',
-      endpoint: 'https://integrate.api.nvidia.com/v1',
-      model: 'nvidia/b',
-      provider: 'nvidia',
+      endpoint: 'https://openrouter.ai/api/v1',
+      model: 'vendor/b',
+      provider: 'openrouter',
     }),
     // Saved before `provider` was carried on this record.
     row({ id: 'legacy', endpoint: 'http://localhost:1234/v1', model: 'old' }),
   ]
 
   it('shows only the selected provider’s rows', () => {
-    expect(serversFor(list, 'nvidia').map((s) => s.id)).toEqual(['c', 'd'])
+    expect(serversFor(list, 'openrouter').map((s) => s.id)).toEqual(['c', 'd'])
     expect(serversFor(list, 'ollama').map((s) => s.id)).toEqual(['b'])
   })
 
   it('does not offer a local server on a cloud provider’s panel', () => {
     // Picking one would swap the endpoint, the dialect and the key underneath a
-    // form that still said NVIDIA.
-    expect(serversFor(list, 'nvidia').some((s) => s.endpoint.includes('localhost'))).toBe(false)
+    // form that still said OpenRouter.
+    expect(serversFor(list, 'openrouter').some((s) => s.endpoint.includes('localhost'))).toBe(false)
   })
 
-  it('keeps every NVIDIA model, which is the point of the list', () => {
-    expect(serversFor(list, 'nvidia')).toHaveLength(2)
+  it('keeps every OpenRouter model, which is the point of the list', () => {
+    expect(serversFor(list, 'openrouter')).toHaveLength(2)
   })
 
   it('treats a row saved before `provider` existed as the local one', () => {
@@ -1231,7 +1231,7 @@ describe('thinking control', () => {
    * failure, for a feature those providers do not expose this way anyway.
    */
   it('sends nothing to a hosted provider, whatever the mode', () => {
-    for (const provider of ['openai', 'groq', 'openrouter', 'nvidia'] as const) {
+    for (const provider of ['openai', 'groq', 'openrouter'] as const) {
       for (const mode of ['on', 'off', 'low'] as const) {
         expect(thinkingFields(provider, mode)).toEqual({})
         const body = bodyOf(local({ provider, model: 'gpt-4o', apiKey: 'k' }), mode)
@@ -1357,9 +1357,8 @@ describe('retrying a turn that said nothing', () => {
   })
 
   /*
-   * The narrow scope, asserted. NVIDIA's entry in the provider table warns in
-   * writing that "a silent retry against a rate limit is how one slow answer
-   * becomes four", and every failure below is a FACT about the request or the
+   * The narrow scope, asserted. A silent retry against a rate limit is how one
+   * slow answer becomes four, and every failure below is a FACT about the request or the
    * server: asking again produces the same fact more slowly.
    */
   it('retries nothing else — not a refusal, a rate limit, or an unreadable body', async () => {

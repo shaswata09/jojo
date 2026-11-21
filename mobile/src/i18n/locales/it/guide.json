@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Modello locale",
-        "requires": "Ollama, vLLM o LM Studio, oppure una chiave NVIDIA gratuita",
+        "requires": "Ollama, vLLM o LM Studio, oppure una chiave API cloud",
         "gives": "Un assistente con conversazioni che legge e scrive i tuoi record, mostrandoti prima ogni modifica, e \"Interroga il grafo\" con una frase"
       },
       "reader": {

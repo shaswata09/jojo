@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Ein Modell verbinden",
-      "body": "Wähle, wo das Modell des Assistenten läuft. Ein lokaler Server – vLLM, LM Studio, llama.cpp oder Ollama – braucht seine Adresse und hält deine Einträge auf diesem Rechner. OpenAI, Anthropic (Claude), OpenRouter, Groq oder NVIDIA brauchen einen API-Schlüssel. Verbindung testen prüft alles, bevor etwas gespeichert wird."
+      "body": "Wähle, wo das Modell des Assistenten läuft. Ein lokaler Server – vLLM, LM Studio, llama.cpp oder Ollama – braucht seine Adresse und hält deine Einträge auf diesem Rechner. OpenAI, Anthropic (Claude), OpenRouter oder Groq brauchen einen API-Schlüssel. Verbindung testen prüft alles, bevor etwas gespeichert wird."
     },
     "reader": {
       "title": "Lass es deine Dokumente lesen",

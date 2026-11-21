@@ -278,9 +278,18 @@
     "savePath": {
       "title": "Ce qui se passe quand vous enregistrez",
       "desc": "Appuyer sur Enregistrer modifie immédiatement ce qui est à l’écran, et l’écriture est mise en file puis faite dans la base de données du navigateur un instant plus tard. Si cette écriture échoue, le changement reste dans la file et est signalé dans un bandeau au-dessus de la page au lieu d’être perdu.",
-      "press": { "line1": "Vous appuyez", "line2": "sur Enregistrer" },
-      "screen": { "line1": "À l’écran,", "line2": "aussitôt" },
-      "saved": { "line1": "Enregistré dans", "line2": "ce navigateur" },
+      "press": {
+        "line1": "Vous appuyez",
+        "line2": "sur Enregistrer"
+      },
+      "screen": {
+        "line1": "À l’écran,",
+        "line2": "aussitôt"
+      },
+      "saved": {
+        "line1": "Enregistré dans",
+        "line2": "ce navigateur"
+      },
       "fail": {
         "line1": "Une écriture échouée est gardée",
         "line2": "et signalée, pas abandonnée."
@@ -303,7 +312,7 @@
         },
         "model": {
           "name": "+ Modèle local",
-          "requires": "Ollama, vLLM ou LM Studio — ou une clé NVIDIA gratuite",
+          "requires": "Ollama, vLLM ou LM Studio — ou une clé d’API cloud",
           "gives": "La moitié agentique : un assistant à fils de discussion qui lit et écrit vos enregistrements avec votre accord, des pipelines Job Scout qui complètent votre profil et surveillent les annonces, « Interroger le graphe » en une phrase, et un vrai scoring du scout"
         },
         "reader": {
@@ -334,7 +343,7 @@
         "hint": "non connecté",
         "title": "Ajoutez un modèle local",
         "connectTitle": "Connectez-le",
-        "connect": "Lancez vLLM, Ollama ou LM Studio et saisissez l’adresse du point de terminaison dans <settings>Réglages</settings>. N’importe quel serveur compatible OpenAI fonctionne. Pas de GPU ? Une clé gratuite de build.nvidia.com fait tourner le même agent depuis le même écran — avec un débit limité plutôt qu’une facturation, et le seul prix à payer est que vos enregistrements quittent l’appareil.",
+        "connect": "Lancez vLLM, Ollama ou LM Studio et saisissez l’adresse du point de terminaison dans <settings>Réglages</settings>. N’importe quel serveur compatible OpenAI fonctionne.",
         "changesTitle": "Ce qui change",
         "changes": "La rédaction cesse d’être un modèle à trous et commence à lire votre profil et vos documents. D’ici là, la page <assistant>Assistant</assistant> montre les exemples rédigés avec lesquels il répond.",
         "scoringTitle": "Les pipelines du scout commencent à noter",
@@ -396,7 +405,10 @@
       "desc": "Les six lignes de la barre latérale ouvrent le Tableau de bord, Candidatures, Calendrier, Coffre, Job scout et Statistiques. Les quatre tuiles en dessous ouvrent le Graphe, Transfert et — pour la passerelle et le modèle — Réglages. Les quatre icônes à droite de la barre supérieure ouvrent Mon profil, Réglages, l’Assistant et ce guide. Rien dans la liste de la barre latérale ne mène à ces six dernières.",
       "search": "Rechercher…",
       "new": "Nouveau",
-      "topBar": { "line1": "Mon profil · Réglages ·", "line2": "Assistant · Mode d’emploi" },
+      "topBar": {
+        "line1": "Mon profil · Réglages ·",
+        "line2": "Assistant · Mode d’emploi"
+      },
       "sidebar": {
         "line1": "Tableau de bord · Candidatures · Calendrier",
         "line2": "Coffre · Job scout · Statistiques"

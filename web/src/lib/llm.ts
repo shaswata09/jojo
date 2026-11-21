@@ -31,8 +31,8 @@ import { providerMeta } from '@jojo/service/core/provider'
  * page can reach it.
  *
  * A CLOUD provider goes through the extension when one is installed, because
- * several of them cannot be called from a page at all. Measured against
- * `integrate.api.nvidia.com`: the preflight answers 200 with `vary: Origin` and
+ * several of them cannot be called from a page at all. Measured against a
+ * hosted API with no CORS headers (NVIDIA's, before Q345 removed it): the preflight answers 200 with `vary: Origin` and
  * no `access-control-allow-origin`, so the browser blocks the real request and
  * the page gets a bare "Failed to fetch" naming nothing. The extension fetches
  * under its own permissions and is not subject to that; the worker will only
@@ -550,7 +550,7 @@ export async function agentTurn(
    * Streamed on BOTH roads now, which it was not before.
    *
    * A direct request reads the response body here in the page. A cloud one
-   * cannot be made from the page at all — NVIDIA, OpenAI and Anthropic send no
+   * cannot be made from the page at all — OpenAI and Anthropic send no
    * `access-control-allow-origin` to a browser origin — so it goes through the
    * extension, which used to hand back one finished string. The result was that
    * exactly the slowest models showed nothing at all until they were done,

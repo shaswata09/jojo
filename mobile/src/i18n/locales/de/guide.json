@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Lokales Modell",
-        "requires": "Ollama, vLLM oder LM Studio – oder ein kostenloser NVIDIA-Schlüssel",
+        "requires": "Ollama, vLLM oder LM Studio – oder ein Cloud-API-Schlüssel",
         "gives": "Ein Assistent mit Unterhaltungen, der deine Einträge liest und schreibt – jede Änderung wird dir zuerst gezeigt – und „Den Graphen fragen“ in einem Satz"
       },
       "reader": {

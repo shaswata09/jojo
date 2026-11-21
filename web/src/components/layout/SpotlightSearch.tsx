@@ -102,7 +102,7 @@ const GUIDE_KEYWORDS: Record<GuidePage, string> = {
   'control-flow':
     'control flow graph code flow graph dependency imports modules architecture layers mvc where does it go structure developer contributing faq',
   licence:
-    'licence license mit free open source copyright terms disclaimer warranty nvidia microsoft markitdown legal cost commercial',
+    'licence license mit free open source copyright terms disclaimer warranty microsoft markitdown legal cost commercial',
 }
 
 /**

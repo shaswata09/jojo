@@ -278,9 +278,18 @@
     "savePath": {
       "title": "Was passiert, wenn du etwas speicherst",
       "desc": "Ein Klick auf Speichern ändert sofort, was auf dem Bildschirm steht; der Schreibvorgang kommt in eine Warteschlange und erreicht die Datenbank des Browsers einen Augenblick später. Schlägt er fehl, bleibt die Änderung in der Warteschlange und wird in einem Streifen über der Seite gemeldet, statt verworfen zu werden.",
-      "press": { "line1": "Du drückst", "line2": "Speichern" },
-      "screen": { "line1": "Auf dem Bildschirm,", "line2": "sofort" },
-      "saved": { "line1": "Gespeichert in", "line2": "diesem Browser" },
+      "press": {
+        "line1": "Du drückst",
+        "line2": "Speichern"
+      },
+      "screen": {
+        "line1": "Auf dem Bildschirm,",
+        "line2": "sofort"
+      },
+      "saved": {
+        "line1": "Gespeichert in",
+        "line2": "diesem Browser"
+      },
       "fail": {
         "line1": "Ein fehlgeschlagener Schreibvorgang",
         "line2": "wird behalten und gemeldet."
@@ -303,7 +312,7 @@
         },
         "model": {
           "name": "+ Lokales Modell",
-          "requires": "Ollama, vLLM oder LM Studio – oder ein kostenloser NVIDIA-Schlüssel",
+          "requires": "Ollama, vLLM oder LM Studio – oder ein Cloud-API-Schlüssel",
           "gives": "Die agentische Hälfte: ein Assistent mit Verläufen, der deine Einträge mit deiner Zustimmung liest und schreibt, Job-Scout-Pipelines, die dein Profil vervollständigen und nach Stellenanzeigen Ausschau halten, „Den Graphen fragen“ in einem Satz und echte Scout-Bewertungen"
         },
         "reader": {
@@ -334,7 +343,7 @@
         "hint": "nicht angebunden",
         "title": "Lokales Modell hinzufügen",
         "connectTitle": "Anbinden",
-        "connect": "Starte vLLM, Ollama oder LM Studio und trag den Endpunkt in den <settings>Einstellungen</settings> ein. Jeder OpenAI-kompatible Server funktioniert. Keine GPU? Ein kostenloser Schlüssel von build.nvidia.com betreibt denselben Agenten aus derselben Ansicht – mit Ratenlimit statt Abrechnung, und der einzige Preis ist, dass deine Einträge das Gerät verlassen.",
+        "connect": "Starte vLLM, Ollama oder LM Studio und trag den Endpunkt in den <settings>Einstellungen</settings> ein. Jeder OpenAI-kompatible Server funktioniert.",
         "changesTitle": "Was sich ändert",
         "changes": "Das Entwerfen ist dann keine Lückentext-Vorlage mehr, sondern liest dein Profil und deine Dokumente. Bis dahin zeigt die Seite <assistant>Assistent</assistant> die ausgearbeiteten Beispiele, mit denen er antwortet.",
         "scoringTitle": "Scout-Pipelines fangen an zu bewerten",
@@ -396,7 +405,10 @@
       "desc": "Die sechs Zeilen in der Seitenleiste öffnen Dashboard, Bewerbungen, Kalender, Tresor, Job scout und Statistiken. Die vier Kacheln darunter öffnen Graph, Übertragung und – für die Brücke und das Modell – Einstellungen. Die vier Symbole rechts in der oberen Leiste öffnen Mein Profil, Einstellungen, den Assistenten und diese Anleitung. Nichts in der Liste der Seitenleiste führt zu diesen letzten sechs.",
       "search": "Suchen…",
       "new": "Neu",
-      "topBar": { "line1": "Mein Profil · Einstellungen ·", "line2": "Assistent · So geht’s" },
+      "topBar": {
+        "line1": "Mein Profil · Einstellungen ·",
+        "line2": "Assistent · So geht’s"
+      },
       "sidebar": {
         "line1": "Dashboard · Bewerbungen · Kalender",
         "line2": "Tresor · Job scout · Statistiken"

@@ -24,11 +24,12 @@ import { EnglishOnlyNotice } from '@/components/guide/EnglishOnlyNotice'
  * ## The rule this page is written under
  *
  * Every claim here is either quoted from a licence or checked against one, and
- * where the answer is uncomfortable it is written down anyway. NVIDIA's free
- * API is licensed for evaluation and explicitly not for production — which is
- * what most people will actually use it for. A licence page that omitted that
- * would be worse than no page, because a reader has no way to tell a careful
- * list from a comfortable one. (It used to name a second: the 3D mascot's
+ * where the answer is uncomfortable it is written down anyway. A licence page
+ * that omitted an awkward term would be worse than no page, because a reader
+ * has no way to tell a careful list from a comfortable one. (It used to name
+ * two. NVIDIA's free API was licensed for evaluation and not for production,
+ * which is what people would have used it for, so the provider was removed
+ * rather than explained (Q345). And the 3D mascot's
  * third-party runtime shipped in the bundle with no licence grant at all. That
  * gap was closed by replacing the mascot — first with a robot modelled in
  * code, then with a CC BY model credited on the Built with page — rather than
@@ -114,45 +115,6 @@ export function GuideLicence() {
 
         <div className="divide-y divide-hairline">
           <Term
-            title="NVIDIA (build.nvidia.com)"
-            chip={<Chip tone="amber">Evaluation only</Chip>}
-            body={
-              <>
-                <p>
-                  The free API catalogue is licensed for trial use. NVIDIA’s API Trial Terms of
-                  Service say you may use it{' '}
-                  <span className="text-text-1">
-                    “for internal testing and evaluation purposes, not in production”
-                  </span>{' '}
-                  unless you buy a subscription, and that access is{' '}
-                  <span className="text-text-1">
-                    “for limited trial purposes only and without use of the API Service or Generated
-                    Content in production”
-                  </span>
-                  . Running your actual job search on it, day after day, is not what that permits.
-                  The documented production route is to self-host an NVIDIA NIM container under a
-                  separate licence.
-                </p>
-                <p className="mt-2">
-                  The same terms tell you{' '}
-                  <span className="text-text-1">not to upload personal data</span>: “you will not
-                  upload any personal information relating to an identifiable individual, financial,
-                  health or governmental information”. jojo’s assistant sends your profile, your CV
-                  text, salary figures, and the names and email addresses of referees and recruiters
-                  — people who never agreed to anything. NVIDIA specifically disclaims that its
-                  servers are appropriate for processing personal data.
-                </p>
-                <p className="mt-2">
-                  And submitting content grants NVIDIA a worldwide licence to “use, host, store,
-                  reproduce, modify, create derivative works … display and transmit” it. That is
-                  ordinary for a free tier and it is not what “local-first” means, so it is said
-                  here plainly.
-                </p>
-              </>
-            }
-          />
-
-          <Term
             title="Anthropic · OpenAI · OpenRouter · Groq"
             chip={<Chip tone="gray">Billed to you</Chip>}
             body={
@@ -235,8 +197,8 @@ export function GuideLicence() {
           </p>
           <p>
             <span className="text-text-1">No affiliation.</span> jojo is an independent project. It
-            is not endorsed by, sponsored by or affiliated with NVIDIA, Microsoft, Anthropic,
-            OpenAI, Groq or OpenRouter. Those names appear here because jojo can talk to their
+            is not endorsed by, sponsored by or affiliated with Microsoft, Anthropic, OpenAI,
+            Groq or OpenRouter. Those names appear here because jojo can talk to their
             services, and every trademark belongs to its owner.
           </p>
           <p>

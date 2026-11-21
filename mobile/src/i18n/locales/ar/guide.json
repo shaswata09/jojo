@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ نموذج محلي",
-        "requires": "Ollama أو vLLM أو LM Studio، أو مفتاح NVIDIA مجاني",
+        "requires": "Ollama أو vLLM أو LM Studio، أو مفتاح API سحابي",
         "gives": "مساعد بمحادثات متسلسلة يقرأ سجلاتك ويكتبها، مع عرض كل تغيير عليك أولًا، و«اسأل الرسم البياني» بجملة واحدة"
       },
       "reader": {

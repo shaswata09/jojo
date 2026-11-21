@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Connect a model",
-      "body": "Pick where the assistant’s model runs. A local server — vLLM, LM Studio, llama.cpp, or Ollama — takes its address and keeps your records on this machine. OpenAI, Anthropic (Claude), OpenRouter, Groq or NVIDIA take an API key. Test connection checks it before anything is saved."
+      "body": "Pick where the assistant’s model runs. A local server — vLLM, LM Studio, llama.cpp, or Ollama — takes its address and keeps your records on this machine. OpenAI, Anthropic (Claude), OpenRouter or Groq take an API key. Test connection checks it before anything is saved."
     },
     "reader": {
       "title": "Let it read your documents",

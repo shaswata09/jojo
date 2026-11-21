@@ -21,6 +21,7 @@ const LABEL = {
   gemma_4_31b: 'Gemma 4 31B',
   qwen3_14b: 'Qwen3 14B',
   gpt_oss_120b: 'GPT-OSS 120B',
+  minimax_m2_1: 'MiniMax M2.1',
 }
 
 /*
@@ -289,6 +290,18 @@ export const recount = (row, scores) => ({
 const publish = () => {
   const ranAt = process.argv[2]
   if (!ranAt) throw new Error('pass the run timestamp as ISO-8601 — the clock is not read here (D26)')
+  /*
+   * When each model was measured, where that is not one day for all of them.
+   *
+   * MiniMax M2.1 was added on 2026-11-21, a month after Gemma and GPT-OSS,
+   * whose servers were down that day. It was run on the same build those two
+   * were measured on, so the table is like for like in everything but the
+   * date — and the date is then said per model rather than letting the one
+   * `ranAt` claim all three. Optional third argument, JSON:
+   * `{"gemma_4_31b":"2026-10-23T21:28:00Z", …}`; every key must be a model
+   * this table publishes.
+   */
+  const measured = process.argv[3] ? JSON.parse(process.argv[3]) : null
 
   /*
    * The setup every row must agree on.
@@ -319,6 +332,7 @@ const publish = () => {
     gemma_4_31b: '/tmp/bench-gemma.json',
     qwen3_14b: '/tmp/bench-qwen.json',
     gpt_oss_120b: '/tmp/bench-gptoss.json',
+    minimax_m2_1: '/tmp/bench-minimax.json',
   })) {
     /*
      * A model with no run is left out and said to be, not refused. The Qwen3
@@ -361,12 +375,21 @@ const publish = () => {
     }
   }
 
+  if (measured !== null) {
+    const published = new Set(report.map((r) => r.model))
+    for (const model of Object.keys(measured))
+      if (!published.has(model)) throw new Error(`a measured date for ${model}, which has no run in this table`)
+    for (const model of published)
+      if (!(model in measured)) throw new Error(`no measured date for ${model} — give every model one or none`)
+  }
+
   const out = 'web/src/components/guide/tool-bench.json'
   writeFileSync(
     `../${out}`,
     `${JSON.stringify(
       {
         ranAt,
+        ...(measured === null ? {} : { measured }),
         setup,
         runs,
         ...(runs > 1 ? { noise } : {}),

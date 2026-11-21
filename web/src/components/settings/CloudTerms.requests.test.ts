@@ -4,9 +4,9 @@ import localModel from '@/components/settings/LocalModelPanel.tsx?raw'
 import setupSteps from '@/components/common/SetupSteps.tsx?raw'
 
 /**
- * Q188, Q189 — choosing a cloud provider in setup shows its terms: NVIDIA's,
- * with jojo's disclaimer of liability, and for any other provider, by name,
- * that the records leave this device.
+ * Q189 — choosing a cloud provider in setup shows its terms: by name, that the
+ * records leave this device, with jojo's disclaimer of liability. (Q188 was
+ * NVIDIA's own notice, superseded when Q345 removed NVIDIA.)
  *
  * The words are `core/cloud-terms.ts`'s and the service tests pin them. This
  * pins that setup actually shows them. Source reads (D20); comments stripped.

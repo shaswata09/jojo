@@ -32,7 +32,7 @@ export const failed = (r: Sent): r is { failed: ReturnType<typeof unreachable> }
  *
  * The old version blamed mixed content whenever the PAGE was https, without
  * looking at where the request was going. So a hosted copy calling
- * `https://integrate.api.nvidia.com/v1` — https to https, not mixed content at
+ * `https://api.openai.com/v1` — https to https, not mixed content at
  * all — was told "browsers forbid calling a plain http address … put the model
  * behind https", about a model that was already behind https. That sends
  * somebody to fix a configuration that is already correct, which is worse than

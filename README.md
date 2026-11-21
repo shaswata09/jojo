@@ -56,13 +56,11 @@ that vocabulary — no employer, no role, no filename, nothing typed — and cou
 
 **The one thing that can leave your device is the assistant, and only if you send it there.** jojo
 speaks to a local model — Ollama, vLLM, LM Studio — and that is the default, with nothing leaving
-the machine. It also speaks to Anthropic, OpenAI, OpenRouter, Groq and **NVIDIA**, which need an API
+the machine. It also speaks to Anthropic, OpenAI, OpenRouter and Groq, which need an API
 key you supply in Settings. Choose one of those and your prompts, and the records the assistant reads
-while answering, go to that provider. Four of the five bill you for it; NVIDIA's
-[build.nvidia.com](https://build.nvidia.com/) does not — it is free within a rate limit, which makes
-it the way to run the agentic half without either a GPU or a card. jojo says which providers are
-which where you pick one, and keeps "this leaves your device" and "this costs money" as separate
-sentences, because they are separate questions. Your API key is stored beside the graph rather than inside it, so a backup file cannot
+while answering, go to that provider, which bills you for it. jojo says so where you pick one, and
+keeps "this leaves your device" and "this costs money" as separate sentences, because they are
+separate questions. Your API key is stored beside the graph rather than inside it, so a backup file cannot
 carry it. Connections are remembered whole — provider, address, model and key — so a
 provider is set up once and picked from a list afterwards, the same way a local server is.
 
@@ -160,14 +158,14 @@ layer 3; the two below it are a tracker that never asks you for anything.
 | --------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **1 — Browser only**        | Nothing                                                  | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage.                                                                                                                                                               |
 | **2 — + A backup you keep** | Somewhere to put a file                                  | One file holding every record, every link and every document. Restoring it puts all three back.                                                                                                                                                                                     |
-| **3 — + A model**           | Ollama, vLLM or LM Studio locally — or a free NVIDIA key | The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and scoring against what you are looking for.                                  |
+| **3 — + A model**           | Ollama, vLLM or LM Studio locally — or a cloud API key | The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and scoring against what you are looking for.                                  |
 | **4 — + Document reader**   | MarkItDown, running locally                              | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you.                                                                                                                                          |
 | **5 — + The extension**     | Chrome, Edge, Brave or Arc                               | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board, and what lets a **hosted** copy reach the document reader on your own machine — nothing else here can open a web page, or call `127.0.0.1` from an https page. |
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
 
 **Setting up layers 3 and 4** — Ollama, LM Studio, vLLM, llama.cpp, Anthropic, OpenAI,
-OpenRouter, Groq, NVIDIA and MarkItDown, step by step: [docs/MODELS.md](docs/MODELS.md).
+OpenRouter, Groq and MarkItDown, step by step: [docs/MODELS.md](docs/MODELS.md).
 
 ---
 
@@ -576,17 +574,13 @@ third party who never touched this code.
 **The services you point it at are not covered by that.** jojo ships no API key
 and calls nothing on its own, so every connection is one you configure with your
 own credentials — which makes you, not this project, the party to that
-provider's agreement. One is worth knowing before you rely on it:
+provider's agreement.
 
-- **NVIDIA's free API catalogue is licensed for evaluation, not production.**
-  Its [API Trial Terms of Service][nv] permit use "for internal testing and
-  evaluation purposes, not in production" absent a subscription, and separately
-  tell you not to upload "personal information relating to an identifiable
-  individual". jojo's assistant sends your profile, your CV text and your
-  contacts' names and email addresses. Running a real job search on the free
-  tier is outside what that licence grants.
+jojo does not offer NVIDIA's free build.nvidia.com catalogue. Its trial terms
+permit evaluation only, not production use, and ask that no personal
+information be uploaded, while a job search is real use and the assistant sends
+personal records. So the provider was removed rather than explained.
 
 Guide → **Licence** says all of this inside the app, where somebody deciding
 what to connect will actually meet it. None of it is legal advice.
 
-[nv]: https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf

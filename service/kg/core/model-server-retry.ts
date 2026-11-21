@@ -145,9 +145,8 @@ export type SendTurnOptions = {
  * Anything else. A refusal, a rate limit, a truncated prompt, an unreachable
  * server and a malformed body are all left exactly as they were: they are facts
  * about the request or the server, and asking again produces the same fact more
- * slowly. NVIDIA's entry in the provider table makes the point in writing — "a
- * silent retry against a rate limit is how one slow answer becomes four" — and
- * this retries a strictly narrower thing than that warning forbids.
+ * slowly. A silent retry against a rate limit is how one slow answer becomes
+ * four, and this retries a strictly narrower thing than that.
  *
  * ## Exhaustion is still an empty turn
  *

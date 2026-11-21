@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Model lokal",
-        "requires": "Ollama, vLLM, atau LM Studio — atau kunci NVIDIA gratis",
+        "requires": "Ollama, vLLM, atau LM Studio — atau kunci API cloud",
         "gives": "Asisten berutas yang membaca dan menulis entri Anda — setiap perubahan ditunjukkan kepada Anda lebih dulu — dan \"Tanya graf\" dalam satu kalimat"
       },
       "reader": {

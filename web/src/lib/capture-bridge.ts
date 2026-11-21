@@ -747,8 +747,8 @@ export async function relayToBridge(
  * One request to a model provider, sent by the extension instead of the page.
  *
  * The same move as `readDocument` and for the same reason, one host further out.
- * Several providers send no CORS headers: measured against
- * `integrate.api.nvidia.com`, the preflight answers 200 carrying `vary: Origin`
+ * Several providers send no CORS headers: measured against a hosted API
+ * (NVIDIA's, before Q345 removed it), the preflight answers 200 carrying `vary: Origin`
  * and no `access-control-allow-origin`, so the browser refuses to let the page
  * read the reply and reports a bare "Failed to fetch" that names nothing. The
  * extension fetches under its own permissions and is not subject to that.

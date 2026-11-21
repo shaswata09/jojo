@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Conectar um modelo",
-      "body": "Escolha onde o modelo do assistente roda. Um servidor local — vLLM, LM Studio, llama.cpp ou Ollama — usa o endereço dele e mantém seus registros neste computador. OpenAI, Anthropic (Claude), OpenRouter, Groq ou NVIDIA usam uma chave de API. Testar conexão verifica tudo antes de salvar."
+      "body": "Escolha onde o modelo do assistente roda. Um servidor local — vLLM, LM Studio, llama.cpp ou Ollama — usa o endereço dele e mantém seus registros neste computador. OpenAI, Anthropic (Claude), OpenRouter ou Groq usam uma chave de API. Testar conexão verifica tudo antes de salvar."
     },
     "reader": {
       "title": "Deixe-o ler seus documentos",

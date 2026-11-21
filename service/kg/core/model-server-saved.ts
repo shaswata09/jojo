@@ -33,7 +33,7 @@ export type ModelServer = {
    * The key this connection needs, when it needs one.
    *
    * HERE RATHER THAN NOWHERE, and the alternative was worse. A key lived only in
-   * the current settings document, so switching from Claude to NVIDIA and back
+   * the current settings document, so switching from Claude to Groq and back
    * meant pasting a key each time — and the saved list, whose entire purpose is
    * "do not set this up again", was useless for exactly the providers that need
    * the most setting up.
@@ -59,9 +59,9 @@ export type ModelServer = {
  * provider usable. This was keyed on the endpoint alone, on the reasoning that
  * the model "is a fact about the server rather than a preference" — which is
  * true of a self-hosted vLLM, where one process serves one model and the URL is
- * the identity of both. It is false of every hosted provider: NVIDIA, OpenAI,
+ * the identity of both. It is false of every hosted provider: OpenAI,
  * Anthropic, Groq and OpenRouter each answer for a whole catalogue at ONE fixed
- * address. Under the old key, connecting to a second NVIDIA model overwrote the
+ * address. Under the old key, connecting to a second OpenRouter model overwrote the
  * first, so the saved list could never hold more than one of them and there was
  * nothing to switch between.
  *
@@ -76,7 +76,7 @@ export type ModelServer = {
  *
  * THE KEY IS WRITTEN TO EVERY ROW AT THAT ENDPOINT, not only the one being
  * saved. A credential belongs to the provider, not to the model — so rotating
- * it while connecting to one NVIDIA model has to fix the other four rows too,
+ * it while connecting to one OpenRouter model has to fix the other four rows too,
  * or they keep failing with a key the user already replaced and no way to see
  * why.
  */
@@ -128,7 +128,7 @@ export function saveServer(
  * one.
  *
  * THE MODEL IS IN IT because the id is a React key and a delete target. When
- * this was the endpoint alone, five NVIDIA models shared one id — React would
+ * this was the endpoint alone, five OpenRouter models shared one id — React would
  * have drawn them as one row and Delete would have taken all five.
  *
  * It still is not the raw endpoint, and the prefix is why: giving an id the same
@@ -155,9 +155,9 @@ export function removeServer(list: readonly ModelServer[], id: string): ModelSer
  * The saved rows belonging to one provider.
  *
  * The list is per-browser and holds every model this device has reached, across
- * every provider — so on the NVIDIA panel it would otherwise offer a vLLM box on
+ * every provider — so on the OpenRouter panel it would otherwise offer a vLLM box on
  * someone's desk, and picking it would swap the endpoint, the dialect and the
- * key underneath a form that still said NVIDIA. A saved row is only useful where
+ * key underneath a form that still said OpenRouter. A saved row is only useful where
  * it can actually be selected, which is the panel for its own provider.
  *
  * A ROW WITH NO `provider` IS TREATED AS `openai-compatible`, and that is a

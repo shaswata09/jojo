@@ -9,49 +9,53 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { chatUrl, modelsUrl } from './model-server'
-import { PROVIDERS, PROVIDER_IDS, contextOf, isLoopbackEndpoint, parseContextWindow, providerMeta } from './provider'
+import {
+  PROVIDERS,
+  PROVIDER_IDS,
+  contextOf,
+  isLoopbackEndpoint,
+  isRetiredProvider,
+  isRetiredServer,
+  parseContextWindow,
+  providerMeta,
+  withoutRetired,
+} from './provider'
 
 
-describe('NVIDIA, the one that is free', () => {
-  const nvidia = providerMeta('nvidia')
-
-  it('is in the list and speaks the OpenAI shape', () => {
-    /*
-     * The reason it costs a table row rather than an adapter: build.nvidia.com
-     * serves an OpenAI-compatible API, so `chatUrl`/`modelsUrl` and the whole
-     * request builder already work. This pins that it was added as data.
-     */
-    expect(PROVIDER_IDS).toContain('nvidia')
-    expect(nvidia.dialect).toBe('openai')
-    expect(nvidia.endpoint).toBe('https://integrate.api.nvidia.com/v1')
-    expect(chatUrl(nvidia.endpoint)).toBe('https://integrate.api.nvidia.com/v1/chat/completions')
-    expect(modelsUrl(nvidia.endpoint)).toBe('https://integrate.api.nvidia.com/v1/models')
+describe('NVIDIA, retired (Q345)', () => {
+  /*
+   * build.nvidia.com was a provider here until the owner removed it: NVIDIA's
+   * API Trial Terms allow internal evaluation only, and a job tracker sending
+   * personal records is neither. Removing the row is half of it — an unknown id
+   * reads as `openai-compatible`, so the other half is that a setting or a saved
+   * row written before the removal does not quietly keep reaching NVIDIA.
+   */
+  it('is no longer offered, and no provider points at its API', () => {
+    expect(PROVIDER_IDS as readonly string[]).not.toContain('nvidia')
+    expect(PROVIDERS.some((p) => /nvidia/i.test(p.endpoint + p.label + p.keyUrl))).toBe(false)
+    expect(isRetiredProvider('nvidia')).toBe(true)
   })
 
-  it('needs a key, and says where to get one', () => {
-    expect(nvidia.needsKey).toBe(true)
-    expect(nvidia.keyLooksLike).toBe('nvapi-…')
-    expect(nvidia.keyUrl).toContain('build.nvidia.com')
+  it('drops stored settings that still name it, and keeps any other provider', () => {
+    const empty = { provider: 'openai-compatible', endpoint: '', model: '' }
+    const stale = { provider: 'nvidia', endpoint: 'https://integrate.api.nvidia.com/v1', model: 'm', apiKey: 'nvapi-x' }
+    expect(withoutRetired(stale, empty)).toBe(empty)
+    const groq = { provider: 'groq', endpoint: 'https://api.groq.com/openai/v1', model: 'm' }
+    expect(withoutRetired(groq, empty)).toBe(groq)
   })
 
-  it('leaves the device but does NOT bill — the two facts that made them separate fields', () => {
-    /*
-     * The distinction this provider forced. The settings warning used to read
-     * "and is billed to your account" for anything with `cloud: true`, which is
-     * false here: NVIDIA's free tier charges nothing and rate-limits instead.
-     * Telling somebody they are being charged for something free, on the screen
-     * where they decide whether to use it, is not a small inaccuracy.
-     */
-    expect(nvidia.cloud).toBe(true)
-    expect(nvidia.billed).toBe(false)
+  it('marks its saved rows for removal, and leaves rows with no provider alone', () => {
+    expect(isRetiredServer({ provider: 'nvidia' })).toBe(true)
+    expect(isRetiredServer({ provider: 'openrouter' })).toBe(false)
+    expect(isRetiredServer({})).toBe(false)
   })
+})
 
-  it('is the only free cloud provider, and every local one is free', () => {
-    // Guards the guard: if `billed` ever gets copy-pasted as `true` everywhere,
-    // the case above still passes on its own and this does not.
-    const freeCloud = PROVIDERS.filter((p) => p.cloud && !p.billed).map((p) => p.id)
-    expect(freeCloud).toEqual(['nvidia'])
+describe('billing and keys', () => {
+  it('bills for every cloud provider and for no local one', () => {
+    // Separate fields, kept separate: a free hosted tier would be cloud and not
+    // billed, and the warning copy reads `billed` rather than assuming it.
+    expect(PROVIDERS.filter((p) => p.cloud).every((p) => p.billed)).toBe(true)
     expect(PROVIDERS.filter((p) => !p.cloud).every((p) => !p.billed)).toBe(true)
   })
 

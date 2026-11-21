@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Modèle local",
-        "requires": "Ollama, vLLM ou LM Studio, ou une clé NVIDIA gratuite",
+        "requires": "Ollama, vLLM ou LM Studio, ou une clé d’API cloud",
         "gives": "Un assistant à fils de discussion qui lit et écrit vos enregistrements (chaque modification vous est montrée d’abord) et « Interroger le graphe » en une phrase"
       },
       "reader": {

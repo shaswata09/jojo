@@ -135,7 +135,7 @@ Guarded by:
 
 ### Q146 — Enable Ollama and cloud providers (Claude/OpenAI/other API keys) as LLM service.
 `feature` · 2026-08-23 · service · active
-Must stay true: Settings offers Ollama and cloud providers (Anthropic, OpenAI, NVIDIA and others with an API key) besides vLLM as the agent's model.
+Must stay true: Settings offers Ollama and cloud providers (Anthropic, OpenAI and others with an API key) besides vLLM as the agent's model.
 Guarded by:
 - `service/kg/core/provider.requests.test.ts` › "offers Ollama and the cloud providers beside a local vLLM-style server"
 - `service/kg/core/provider.requests.test.ts` › "asks every cloud provider for a key, and no local one"
@@ -193,11 +193,9 @@ Guarded by:
 - `web/src/components/assistant/thread-search.test.ts` › "finds a conversation by what was SAID, not only by its title"
 
 ### Q169 — NVIDIA build.ai as LLM provider with key and model id.
-`feature` · 2026-08-24 · service · active
-Must stay true: NVIDIA build is a provider in Settings, taking an API key and a model id.
-Guarded by:
-- `service/kg/core/provider.test.ts` › "is in the list and speaks the OpenAI shape"
-- `service/kg/core/provider.test.ts` › "needs a key, and says where to get one"
+`feature` · 2026-08-24 · service · superseded
+Must stay true: n/a (superseded).
+Note: Superseded by Q345 on 2026-11-21: the owner removed NVIDIA as a provider, because its API Trial Terms permit evaluation only.
 
 ### Q170 — Eye icon to show API key in key field.
 `feature` · 2026-08-24 · web · active
@@ -209,16 +207,16 @@ Guarded by:
 
 ### Q171 — Store NVIDIA/OpenAI/Claude keys securely in the saved model list, and keep every model that connected successfully so the user can switch between them.
 `feature` · 2026-08-24 · cross · active
-Must stay true: NVIDIA, OpenAI and Claude keys are stored securely with their entries in the saved model list, and every model that connected successfully stays saved and selectable.
+Must stay true: Cloud provider keys (OpenAI, Claude and the rest) are stored securely with their entries in the saved model list, and every model that connected successfully stays saved and selectable.
 Guarded by:
 - `service/kg/core/model-server.test.ts` › "keeps the provider and the key alongside the address and model"
 - `service/kg/core/model-server.test.ts` › "saves every model reached at one address, so they can be switched between"
-- `service/kg/core/model-server.test.ts` › "keeps every NVIDIA model, which is the point of the list"
+- `service/kg/core/model-server.test.ts` › "keeps every OpenRouter model, which is the point of the list"
 - `web/src/lib/keys-stay-local.test.ts` › "is not a node type, so a backup cannot serialise one"
 
 ### Q172 — NVIDIA test-connection must not reset the form, no GET-with-body error, and re-entering a model key must not falsely show connected.
 `fix` · 2026-08-24 · web · active
-Must stay true: NVIDIA Test connection keeps the form as filled, sends no GET with a body, and re-entering a key does not show "connected" until a test succeeds.
+Must stay true: A hosted provider's Test connection keeps the form as filled, sends no GET with a body, and re-entering a key does not show "connected" until a test succeeds.
 Guarded by:
 - `web/src/components/settings/LocalModelPanel.requests.test.ts` › "keeps the model the person typed when the test fails"
 - `web/src/components/settings/LocalModelPanel.requests.test.ts` › "calls the card connected only after a successful test"
@@ -962,10 +960,10 @@ Guarded by:
 
 ### Q179 — The same popup menu shows MCP server status with enable/disable and routing, and routing of the NVIDIA API.
 `feature` · 2026-08-24 · extension · active
-Must stay true: The extension popup shows MCP server status with enable/disable and routing, and routing of the NVIDIA API.
+Must stay true: The extension popup shows MCP server status with enable/disable and routing, and the routing of each model provider by name.
 Guarded by:
 - `web/src/lib/popup-wiring.test.ts` › "Q179 switches the document reader on and shows whether it answers"
-- `web/src/lib/popup-wiring.test.ts` › "Q179 lists NVIDIA among the model providers, and its switch stops routing to it"
+- `web/src/lib/popup-wiring.test.ts` › "Q179 lists each model provider by name, and its switch stops routing to it"
 
 ### Q211 — The agent can only read the first page of a long CV; make it read full documents by paging via MarkItDown.
 `fix` · 2026-08-26 · service · active
@@ -2236,14 +2234,9 @@ Guarded by:
 - `web/src/lib/theme.requests.test.ts` › "is painted dark by index.html before the app runs"
 
 ### Q188 — When the user selects NVIDIA in the tutorial dropdown, show NVIDIA terms and state jojo is not liable for NVIDIA policy breaches.
-`feature` · 2026-08-25 · web · active
-Must stay true: Choosing NVIDIA in setup shows the NVIDIA terms and says jojo is not liable for breaches of NVIDIA policy (CloudTerms).
-Guarded by:
-- `service/kg/core/cloud-terms.test.ts` › "keeps the two clauses of NVIDIA’s terms that are in tension with this app"
-- `service/kg/core/cloud-terms.test.ts` › "always names who is party to the agreement"
-- `service/kg/core/cloud-terms.requests.test.ts` › "says jojo accepts no liability for a breach of NVIDIA’s terms"
-- `web/src/components/settings/CloudTerms.requests.test.ts` › "the setup step for a model is the model panel itself"
-- `web/src/components/settings/CloudTerms.requests.test.ts` › "the model panel shows the terms for any cloud provider chosen"
+`feature` · 2026-08-25 · web · superseded
+Must stay true: n/a (superseded).
+Note: Superseded by Q345 on 2026-11-21: NVIDIA is no longer a provider, so it has no notice of its own. Every remaining cloud provider's notice, liability line included, is Q189's.
 
 ### Q189 — When the user selects any other cloud LLM, state that data will no longer be private with that provider, naming the provider.
 `feature` · 2026-08-25 · web · active
@@ -2502,11 +2495,11 @@ Guarded by:
 
 ### Q187 — Add a sixth License tab in the How to page stating the open source licence, free use, and disclaimers about NVIDIA, Microsoft and other third-party licences.
 `feature` · 2026-08-25 · web · active
-Must stay true: The guide has a Licence page (/guide/licence, GuideLicence) stating the open-source licence and free use, with disclaimers for NVIDIA, Microsoft and other third-party licences.
+Must stay true: The guide has a Licence page (/guide/licence, GuideLicence) stating the open-source licence and free use, with disclaimers for Microsoft and other third-party licences (NVIDIA's dropped with the provider, Q345).
 Guarded by:
 - `web/src/components/guide/GuideLicence.requests.test.ts` › "is a guide page of its own, at /guide/licence"
 - `web/src/components/guide/GuideLicence.requests.test.ts` › "states the open-source licence and that use is free"
-- `web/src/components/guide/GuideLicence.requests.test.ts` › "carries a disclaimer for NVIDIA, Microsoft and the other third parties"
+- `web/src/components/guide/GuideLicence.requests.test.ts` › "carries a disclaimer for Microsoft and the other third parties"
 
 ### Q192 — Capture errors of any type, excluding personal data, in Crashlytics or Analytics as appropriate.
 `feature` · 2026-08-25 · cross · active
@@ -2916,3 +2909,25 @@ Guarded by:
 - `web/src/components/scout/ProposalQueue.requests.test.ts` › "has a search box and a filter for every category, over both lists"
 - `web/src/components/scout/ProposalQueue.requests.test.ts` › "does not offer Approve all over a filtered list"
 Note: Built 2026-11-20. "Tags" read as role tags (the top bar's role filter) and "keywords" as the person's own keywords, as the posting's background reading matched them; a card whose page has not been read carries neither and is found by search. An approved job awaiting "Add to applications" stays active on the web because that button is the step left; the phone has no such button on the card, so there an approved card is closed. Checked on the web with eight fixture cards at 1280 px (light) and 400 px (dark): search, the filter menu (scrolls inside itself), chips, and the Closed box. The phone was type-checked and linted, not run on a device.
+
+### Q344 — Run the full evaluation for the MiniMax model and add its results beside Gemma 4 and GPT-OSS.
+`change` · 2026-11-21 · web · active
+Must stay true: Both evaluation tables in the guide (the multi-turn benchmark and the tool-choice check) list MiniMax M2.1 beside Gemma 4 31B and GPT-OSS 120B, measured on the same cases and settings as those two. A table whose models were measured on different days gives each model its own date, and its footer counts the servers rather than naming a fixed number.
+Guarded by:
+- `web/src/components/guide/measured-dates.test.ts` › "says each model’s own date when they differ, naming the models that share one"
+- `web/src/components/guide/measured-dates.test.ts` › "counts the servers rather than claiming three"
+- `web/src/components/guide/measured-dates.test.ts` › "dates every model a published table carries, and no model it does not"
+- `web/src/components/guide/bench-payload.test.ts` › "says how many times the suite ran, and carries a band for every row exactly when that is more than once"
+Note: Measured 2026-11-21 against MiniMaxAI/MiniMax-M2.1 (vLLM, 196,608 context). The published Gemma and GPT-OSS rows came from build 3655f43 on 2026-10-23; the suite was rewritten on 2026-11-11 (92 cases now, some changed) and their servers are unreachable, so MiniMax was run on an archived copy of 3655f43, same 100 conversations and same recorded setup (reasoning off, temperature 0, two runs). Clean conversations: full 77.5 ± 2.1 (79, 76), narrowed 72.5 ± 2.1 (74, 71), against Gemma 81.5/76.5 and GPT-OSS 63.5/64.5. Tool choice: 10/12 with all 105 tools and 10/12 narrowed; both misses (add an application, bookmark a link) were the model asking for a required detail (stage and role tag; title and category) instead of calling the tool. MiniMax reasons whatever the setting (`enable_thinking: false` is ignored); on four probe prompts it chose the same tools either way. The October rows were merged in byte-for-byte rather than re-published from their run files, because their check explanations had been edited since; MiniMax's matching explanations were given the same wording.
+
+### Q345 — Disable connecting an LLM through NVIDIA (build.nvidia.com): its proprietary trial licence does not allow this use.
+`change` · 2026-11-21 · cross · active
+Must stay true: NVIDIA is not a model provider on web or phone: it is gone from the provider table, the extension's relay list, Settings, search, the guide and every locale. A stored setting or saved server that names `nvidia` is cleared when the app loads (`withoutRetired`, `isRetiredServer` in `core/provider.ts`), key included, so nothing keeps reaching NVIDIA under the open-ended provider's label.
+Guarded by:
+- `service/kg/core/provider.test.ts` › "is no longer offered, and no provider points at its API"
+- `service/kg/core/provider.test.ts` › "drops stored settings that still name it, and keeps any other provider"
+- `service/kg/core/provider.test.ts` › "marks its saved rows for removal, and leaves rows with no provider alone"
+- `web/src/lib/reader-relay.test.ts` › "no longer relays to NVIDIA, which was removed as a provider (Q345)"
+- `web/src/lib/model-settings.requests.test.ts` › "clears a stored NVIDIA setting and its saved rows on load"
+- `mobile/src/lib/model-settings.requests.test.ts` › "clears a stored NVIDIA setting and its saved rows on load, on the phone too"
+Note: Supersedes Q169 and Q188, and revises Q146, Q171, Q172, Q179 and Q187. NVIDIA's API Trial Terms permit "internal testing and evaluation purposes, not in production" and ask that no personal information be uploaded; a job tracker's assistant is production use that sends personal records. Mentions of NVIDIA as an employer (Workday posting URLs in board and capture tests) and as GPU hardware (vLLM docs) are not the provider and stay. A model id or address someone types by hand into the open-ended "local server" option is not blocked.

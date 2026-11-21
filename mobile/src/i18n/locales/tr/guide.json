@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ Yerel model",
-        "requires": "Ollama, vLLM ya da LM Studio — veya ücretsiz bir NVIDIA anahtarı",
+        "requires": "Ollama, vLLM ya da LM Studio — veya bir bulut API anahtarı",
         "gives": "Kayıtlarınızı okuyan ve yazan konuşma tabanlı bir asistan — her değişiklik önce size gösterilir — ve tek cümleyle \"Grafiğe sor\""
       },
       "reader": {

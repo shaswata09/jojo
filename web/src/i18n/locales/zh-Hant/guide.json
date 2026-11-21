@@ -312,7 +312,7 @@
         },
         "model": {
           "name": "+ 本機模型",
-          "requires": "Ollama、vLLM 或 LM Studio——或免費的 NVIDIA 金鑰",
+          "requires": "Ollama、vLLM 或 LM Studio——或雲端 API 金鑰",
           "gives": "代理功能的部分：一個分對話串的助理，可以在你核准下讀寫你的紀錄；補齊你個人檔案並留意職缺的職缺偵察管線；用一句話「詢問圖譜」；以及真正的職缺偵察評分"
         },
         "reader": {
@@ -343,7 +343,7 @@
         "hint": "未連接",
         "title": "加入本機模型",
         "connectTitle": "連接模型",
-        "connect": "執行 vLLM、Ollama 或 LM Studio，並在<settings>設定</settings>中輸入端點。任何與 OpenAI 相容的伺服器都可以。沒有 GPU？從 build.nvidia.com 取得的免費金鑰，可以在同一個畫面執行同一個代理程式——有速率限制但不收費，唯一的代價是你的紀錄會離開裝置。",
+        "connect": "執行 vLLM、Ollama 或 LM Studio，並在<settings>設定</settings>中輸入端點。任何與 OpenAI 相容的伺服器都可以。",
         "changesTitle": "會有什麼改變",
         "changes": "草擬不再是填空範本，而會開始讀取你的個人檔案和文件。在那之前，<assistant>助理</assistant>頁面會以範例回答。",
         "scoringTitle": "職缺偵察管線開始評分",

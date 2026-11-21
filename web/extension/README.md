@@ -171,8 +171,8 @@ machine, so it cannot.
 ## And the same argument again, for model providers
 
 Several of the providers in jojo's list cannot be called from a page either, for
-the first of the two reasons above. Measured against `integrate.api.nvidia.com`,
-which is the free one and therefore the one most people will meet: the preflight
+the first of the two reasons above. Measured against a hosted API (NVIDIA's,
+before jojo removed it as a provider): the preflight
 answers **200** carrying `vary: Origin` and **no `access-control-allow-origin`
 at all**, so the browser blocks the real request and the page reports a bare
 `Failed to fetch` that names nothing.

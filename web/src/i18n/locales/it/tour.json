@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Collega un modello",
-      "body": "Scegli dove gira il modello dell'assistente. Un server locale (vLLM, LM Studio, llama.cpp o Ollama) richiede il suo indirizzo e tiene i tuoi record su questo computer. OpenAI, Anthropic (Claude), OpenRouter, Groq o NVIDIA richiedono una chiave API. Verifica connessione lo controlla prima che venga salvato qualcosa."
+      "body": "Scegli dove gira il modello dell'assistente. Un server locale (vLLM, LM Studio, llama.cpp o Ollama) richiede il suo indirizzo e tiene i tuoi record su questo computer. OpenAI, Anthropic (Claude), OpenRouter o Groq richiedono una chiave API. Verifica connessione lo controlla prima che venga salvato qualcosa."
     },
     "reader": {
       "title": "Fagli leggere i tuoi documenti",

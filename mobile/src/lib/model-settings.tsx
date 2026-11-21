@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { removeServer, renameServer, saveServer } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
+import { isRetiredServer, withoutRetired } from '@jojo/service/core/provider'
 import type { ModelSettings } from '@/lib/llm'
 import {
   DEFAULTS,
@@ -41,7 +42,12 @@ export function ModelSettingsProvider({ children }: { children: ReactNode }) {
         const rawSettings = stored.get(STORAGE_KEY)
         if (rawSettings) {
           try {
-            setSettings({ ...DEFAULTS, ...(JSON.parse(rawSettings) as Partial<ModelSettings>) })
+            const parsed = { ...DEFAULTS, ...(JSON.parse(rawSettings) as Partial<ModelSettings>) }
+            const kept = withoutRetired(parsed, DEFAULTS)
+            // A retired provider (NVIDIA, Q345) is cleared from storage too,
+            // key and all, rather than left behind under a setting nothing reads.
+            if (kept !== parsed) void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS))
+            setSettings(kept)
           } catch {
             // A corrupt settings blob is not worth a banner: the defaults are
             // empty, which reads as "not connected", which is the truth.
@@ -137,4 +143,7 @@ const isServer = (v: unknown): v is ModelServer =>
   typeof (v as ModelServer).id === 'string' &&
   typeof (v as ModelServer).name === 'string' &&
   typeof (v as ModelServer).endpoint === 'string' &&
-  typeof (v as ModelServer).model === 'string'
+  typeof (v as ModelServer).model === 'string' &&
+  // A row for a retired provider is dropped here, and so from storage on the
+  // list's next write (Q345).
+  !isRetiredServer(v as ModelServer)

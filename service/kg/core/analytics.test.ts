@@ -39,7 +39,7 @@ describe('the vocabulary is closed', () => {
       { event: 'assistant_asked', params: { tools_available: 3, question: 'what about Rice' } },
       {
         event: 'model_connected',
-        params: { provider: 'nvidia', endpoint: 'http://10.0.0.4:8000' },
+        params: { provider: 'groq', endpoint: 'http://10.0.0.4:8000' },
       },
       { event: 'screen_viewed', params: { screen: '/applications/app:01a1-2b3c' } },
     ]) {
@@ -62,7 +62,7 @@ describe('the vocabulary is closed', () => {
       { event: 'backup_used', params: { direction: 'export', records: '21-50' } },
       { event: 'transfer_completed', params: { records: '6-20' } },
       { event: 'tour_used', params: { outcome: 'finished' } },
-      { event: 'model_failed', params: { provider: 'nvidia', kind: 'timeout', phase: 'chat' } },
+      { event: 'model_failed', params: { provider: 'groq', kind: 'timeout', phase: 'chat' } },
       { event: 'model_failed', params: { provider: 'other', kind: 'blocked', phase: 'models' } },
       { event: 'error_caught', params: { where: 'render', kind: 'TypeError', fatal: true } },
       { event: 'error_caught', params: { where: 'storage', kind: 'QuotaExceededError', fatal: false } },
@@ -102,7 +102,7 @@ describe('the vocabulary is closed', () => {
       { event: 'screen_viewed', params: { screen: 'offer' } },
       { event: 'application_advanced', params: { to: 'draft' } },
       // A missing parameter is a wrong event too.
-      { event: 'model_failed', params: { provider: 'nvidia', kind: 'timeout' } },
+      { event: 'model_failed', params: { provider: 'groq', kind: 'timeout' } },
       // A number where a word belongs, and a word where a flag belongs.
       { event: 'backup_used', params: { direction: 'export', records: 37 } },
       { event: 'assistant_asked', params: { tools_available: 86, has_model: 'other' } },
@@ -151,7 +151,7 @@ describe('the parameter table itself carries no free text', () => {
       {
         event: 'model_failed',
         params: {
-          provider: 'nvidia',
+          provider: 'groq',
           kind: 'timeout',
           phase: 'chat',
           endpoint: 'http://10.0.0.5:8103/v1',
@@ -159,11 +159,11 @@ describe('the parameter table itself carries no free text', () => {
       },
       {
         event: 'model_failed',
-        params: { provider: 'nvidia', kind: 'timeout', phase: 'chat', reason: 'Nothing answered' },
+        params: { provider: 'groq', kind: 'timeout', phase: 'chat', reason: 'Nothing answered' },
       },
       {
         event: 'model_failed',
-        params: { provider: 'nvidia', kind: 'http://10.0.0.5', phase: 'chat' },
+        params: { provider: 'groq', kind: 'http://10.0.0.5', phase: 'chat' },
       },
     ]) {
       expect(isReportable(leak), JSON.stringify(leak)).toBe(false)

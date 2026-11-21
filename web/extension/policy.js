@@ -68,7 +68,8 @@ export const CAPTURE_SCHEMES = ['http:', 'https:']
  * here is — so the rule still has one owner and this cannot drift from it.
  *
  * WHY THERE IS A LIST AT ALL. Several of these providers send no CORS headers:
- * measured against `integrate.api.nvidia.com`, the preflight answers 200 with
+ * measured against a hosted API (NVIDIA's, before Q345 removed it), the
+ * preflight answers 200 with
  * `vary: Origin` and no `access-control-allow-origin` at all, so a browser
  * blocks the real request and the page reports a bare "Failed to fetch". The
  * extension is not a page and is not subject to that — which is why it can carry
@@ -84,5 +85,4 @@ export const MODEL_HOSTS = [
   'api.openai.com',
   'openrouter.ai',
   'api.groq.com',
-  'integrate.api.nvidia.com',
 ]

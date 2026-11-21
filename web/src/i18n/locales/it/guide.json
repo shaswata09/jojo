@@ -312,7 +312,7 @@
         },
         "model": {
           "name": "+ Modello locale",
-          "requires": "Ollama, vLLM o LM Studio, oppure una chiave NVIDIA gratuita",
+          "requires": "Ollama, vLLM o LM Studio, oppure una chiave API cloud",
           "gives": "La metà agentica: un assistente con conversazioni che legge e scrive i tuoi record con la tua approvazione, pipeline di Scout offerte che completano il tuo profilo e cercano annunci, \"Interroga il grafo\" con una frase, e una vera valutazione dello scout"
         },
         "reader": {
@@ -343,7 +343,7 @@
         "hint": "non collegato",
         "title": "Aggiungi un modello locale",
         "connectTitle": "Collegalo",
-        "connect": "Esegui vLLM, Ollama o LM Studio e inserisci l'endpoint in <settings>Impostazioni</settings>. Funziona qualsiasi server compatibile con OpenAI. Niente GPU? Una chiave gratuita da build.nvidia.com esegue lo stesso agente dalla stessa schermata, con limiti di frequenza anziché a pagamento; l'unico costo è che i tuoi record lasciano il dispositivo.",
+        "connect": "Esegui vLLM, Ollama o LM Studio e inserisci l'endpoint in <settings>Impostazioni</settings>. Funziona qualsiasi server compatibile con OpenAI.",
         "changesTitle": "Cosa cambia",
         "changes": "Scrivere bozze smette di essere un modello da compilare e inizia a leggere il tuo profilo e i tuoi documenti. La pagina <assistant>Assistente</assistant> mostra fino ad allora gli esempi svolti con cui risponde.",
         "scoringTitle": "Le pipeline dello scout iniziano a valutare",

@@ -1,6 +1,7 @@
 import report from '@/components/guide/tool-bench.json'
 import { costText, noiseText, RUNS, rowTelemetry, stopsText } from '@/components/guide/bench-runs'
 import { cn } from '@/lib/utils'
+import { measuredText, serversText } from '@/components/guide/measured-dates'
 
 /**
  * What happened when models were given a real store and a real conversation.
@@ -127,12 +128,6 @@ type Run = {
 const rate = (n: number | null | undefined): string =>
   n === null || n === undefined ? '—' : `${String(Math.round(n * 100))}%`
 
-/**
- * The run date, spelled out in English like the sentence it sits in (the
- * table is marked `lang="en"`, see `EnglishData`) — not in whatever locale the
- * browser defaults to.
- */
-const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }
 const runs = report.report as Run[]
 const models = [...new Set(runs.map((r) => r.model))]
 /** The band is a column only when there is a band to print. */
@@ -187,7 +182,6 @@ const PLAIN: Record<string, string> = {
 }
 
 export function ToolBenchTable() {
-  const ran = new Date(report.ranAt)
   /*
    * The configuration, said out loud beside the numbers.
    *
@@ -430,7 +424,13 @@ export function ToolBenchTable() {
       ) : null}
 
       <p className="mt-4 text-xs text-text-3">
-        Run on {ran.toLocaleDateString('en', DATE)} against three vLLM servers,{' '}
+        Run on{' '}
+        {measuredText(
+          report.ranAt,
+          (report as { measured?: Record<string, string> }).measured,
+          (m) => runs.find((r) => r.model === m)?.label ?? m,
+        )}{' '}
+        against {serversText(models.length)},{' '}
         {RUNS === null || RUNS === 1 ? 'one pass each' : `${String(RUNS)} passes each`}, {setupSaid}
         . Re-running the benchmark is what updates this — the numbers are generated, not typed.
       </p>

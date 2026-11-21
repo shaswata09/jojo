@@ -108,7 +108,7 @@ export const SETTINGS_PLACES: readonly Place[] = [
   model(
     'model-provider',
     'settings:model.provider',
-    'llm provider ollama openai anthropic claude gemini nvidia groq openrouter lm studio vllm cloud local',
+    'llm provider ollama openai anthropic claude gemini groq openrouter lm studio vllm cloud local',
   ),
   model('model-saved-servers', 'settings:model.savedServers', 'saved servers list history switch'),
   model(

@@ -278,10 +278,22 @@
     "savePath": {
       "title": "What happens when you save something",
       "desc": "Pressing Save changes what is on screen at once, and the write is queued and made to the browser’s database a moment later. If that write fails, the change is kept in the queue and reported in a strip above the page rather than being thrown away.",
-      "press": { "line1": "You press", "line2": "Save" },
-      "screen": { "line1": "On screen,", "line2": "at once" },
-      "saved": { "line1": "Saved in this", "line2": "browser" },
-      "fail": { "line1": "A write that fails is kept", "line2": "and reported, not dropped." }
+      "press": {
+        "line1": "You press",
+        "line2": "Save"
+      },
+      "screen": {
+        "line1": "On screen,",
+        "line2": "at once"
+      },
+      "saved": {
+        "line1": "Saved in this",
+        "line2": "browser"
+      },
+      "fail": {
+        "line1": "A write that fails is kept",
+        "line2": "and reported, not dropped."
+      }
     },
     "ladder": {
       "title": "What jojo does with more on the machine",
@@ -300,7 +312,7 @@
         },
         "model": {
           "name": "+ Local model",
-          "requires": "Ollama, vLLM or LM Studio — or a free NVIDIA key",
+          "requires": "Ollama, vLLM or LM Studio — or a cloud API key",
           "gives": "The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, \"Ask the graph\" in a sentence, and real scout scoring"
         },
         "reader": {
@@ -331,7 +343,7 @@
         "hint": "not connected",
         "title": "Add a local model",
         "connectTitle": "Connect it",
-        "connect": "Run vLLM, Ollama or LM Studio and enter the endpoint in <settings>Settings</settings>. Any OpenAI-compatible server works. No GPU? A free key from build.nvidia.com runs the same agent from the same screen — rate limited rather than billed, and the only cost is that your records leave the device.",
+        "connect": "Run vLLM, Ollama or LM Studio and enter the endpoint in <settings>Settings</settings>. Any OpenAI-compatible server works.",
         "changesTitle": "What changes",
         "changes": "Drafting stops being a fill-in-the-blanks template and starts reading your profile and your documents. The <assistant>Assistant</assistant> page shows the worked examples it answers with until then.",
         "scoringTitle": "Scout pipelines start scoring",
@@ -393,7 +405,10 @@
       "desc": "The six rows down the sidebar open the Dashboard, Applications, Calendar, Vault, Job scout and Statistics. The four tiles beneath them open the Graph, Transfer and — for the bridge and the model — Settings. The four icons at the right of the top bar open My profile, Settings, the Assistant and this guide. Nothing in the sidebar list leads to those last six.",
       "search": "Search…",
       "new": "New",
-      "topBar": { "line1": "My profile · Settings ·", "line2": "Assistant · How to use" },
+      "topBar": {
+        "line1": "My profile · Settings ·",
+        "line2": "Assistant · How to use"
+      },
       "sidebar": {
         "line1": "Dashboard · Applications · Calendar",
         "line2": "Vault · Job scout · Statistics"

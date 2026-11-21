@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "連接模型",
-      "body": "選擇助理的模型在哪裡執行。本機伺服器——vLLM、LM Studio、llama.cpp 或 Ollama——只需要填入位址，你的紀錄會保留在這台電腦上。OpenAI、Anthropic（Claude）、OpenRouter、Groq 或 NVIDIA 則需要 API 金鑰。「測試連線」會在儲存任何內容之前先做檢查。"
+      "body": "選擇助理的模型在哪裡執行。本機伺服器——vLLM、LM Studio、llama.cpp 或 Ollama——只需要填入位址，你的紀錄會保留在這台電腦上。OpenAI、Anthropic（Claude）、OpenRouter 或 Groq 則需要 API 金鑰。「測試連線」會在儲存任何內容之前先做檢查。"
     },
     "reader": {
       "title": "讓它讀取你的文件",

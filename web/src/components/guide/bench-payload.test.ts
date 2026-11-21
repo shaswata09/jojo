@@ -80,6 +80,7 @@ const SOURCES: Record<string, string> = {
   gemma_4_31b: '/tmp/bench-gemma.json',
   qwen3_14b: '/tmp/bench-qwen.json',
   gpt_oss_120b: '/tmp/bench-gptoss.json',
+  minimax_m2_1: '/tmp/bench-minimax.json',
 }
 
 /**

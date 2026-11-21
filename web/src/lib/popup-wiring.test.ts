@@ -428,7 +428,7 @@ describe('every control the popup ships', () => {
  * Owner requests Q178 and Q179 (2026-08-24): clicking the extension's icon
  * opens a menu that keeps the page, LISTS what was kept and deletes an entry
  * from that list, and shows the document reader's (markitdown-mcp's) status
- * with a switch, and the routing of each model provider — NVIDIA named.
+ * with a switch, and the routing of each model provider — each one named.
  * "Keep this page" is pinned above; these are the other three, run against
  * the real `popup.js` through the same harness.
  */
@@ -485,8 +485,8 @@ describe('owner requests: what the toolbar popup offers', () => {
     expect(popup.at('reader-status').textContent).toContain('Answering')
   })
 
-  it('Q179 lists NVIDIA among the model providers, and its switch stops routing to it', async () => {
-    const nvidia = 'integrate.api.nvidia.com'
+  it('Q179 lists each model provider by name, and its switch stops routing to it', async () => {
+    const groq = 'api.groq.com'
     const popup = mount({
       tab: page,
       reply: (message) =>
@@ -494,21 +494,21 @@ describe('owner requests: what the toolbar popup offers', () => {
           ? {
               response: {
                 routing: { reader: { enabled: false, endpoint: '' }, models: {} },
-                hosts: [...HOSTS, nvidia],
+                hosts: [...HOSTS, groq],
               },
             }
           : awake(message),
     })
     await popup.start()
 
-    const row = popup.at('models').kids.find((kid) => kid.textContent.includes(nvidia))
-    expect(row?.textContent).toContain('NVIDIA')
+    const row = popup.at('models').kids.find((kid) => kid.textContent.includes(groq))
+    expect(row?.textContent).toContain('Groq')
     const toggle = row?.kids[1]?.kids[0]
     expect(toggle?.checked).toBe(true)
-    expect(toggle?.attributes['aria-label']).toBe('Route to NVIDIA')
+    expect(toggle?.attributes['aria-label']).toBe('Route to Groq')
 
     if (toggle) toggle.checked = false
     await toggle?.fire('change')
-    expect(popup.sent).toContainEqual({ type: 'jojo:set-routing', models: { [nvidia]: false } })
+    expect(popup.sent).toContainEqual({ type: 'jojo:set-routing', models: { [groq]: false } })
   })
 })

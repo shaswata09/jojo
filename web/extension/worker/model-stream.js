@@ -18,7 +18,7 @@ const MODEL_STREAM_PORT = 'jojo:model-stream'
  *
  * ## Why this exists
  *
- * A cloud provider cannot be called from the page: NVIDIA, OpenAI and Anthropic
+ * A cloud provider cannot be called from the page: OpenAI and Anthropic
  * do not send `access-control-allow-origin` to a browser origin, so the request
  * is made here instead. Until now that meant `await response.text()` — the
  * whole answer, handed back in one piece — and a person watching a slow model

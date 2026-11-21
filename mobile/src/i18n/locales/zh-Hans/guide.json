@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ 本地模型",
-        "requires": "Ollama、vLLM 或 LM Studio——或一个免费的 NVIDIA 密钥",
+        "requires": "Ollama、vLLM 或 LM Studio——或一个云端 API 密钥",
         "gives": "一个能读写你记录的多轮对话助手——每项更改都会先给你看——以及用一句话“询问图谱”"
       },
       "reader": {

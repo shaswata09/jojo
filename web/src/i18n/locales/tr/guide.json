@@ -312,7 +312,7 @@
         },
         "model": {
           "name": "+ Yerel model",
-          "requires": "Ollama, vLLM ya da LM Studio — veya ücretsiz bir NVIDIA anahtarı",
+          "requires": "Ollama, vLLM ya da LM Studio — veya bir bulut API anahtarı",
           "gives": "Ajan yarısı: onayınızla kayıtlarınızı okuyan ve yazan konuşma tabanlı bir asistan, profilinizi tamamlayan ve ilanları izleyen İş gözcüsü işlem hatları, tek cümleyle \"Grafiğe sor\" ve gerçek gözcü puanlaması"
         },
         "reader": {
@@ -343,7 +343,7 @@
         "hint": "bağlı değil",
         "title": "Yerel bir model ekleyin",
         "connectTitle": "Bağlayın",
-        "connect": "vLLM, Ollama ya da LM Studio çalıştırın ve uç noktayı <settings>Ayarlar</settings> bölümüne girin. OpenAI uyumlu her sunucu çalışır. GPU yok mu? build.nvidia.com'dan alınan ücretsiz bir anahtar aynı ajanı aynı ekrandan çalıştırır — ücretlendirilmez, hız sınırlıdır; tek bedeli kayıtlarınızın cihazdan çıkmasıdır.",
+        "connect": "vLLM, Ollama ya da LM Studio çalıştırın ve uç noktayı <settings>Ayarlar</settings> bölümüne girin. OpenAI uyumlu her sunucu çalışır.",
         "changesTitle": "Ne değişir",
         "changes": "Taslak hazırlamak boşluk doldurmalı bir şablon olmaktan çıkar ve profilinizi ve belgelerinizi okumaya başlar. <assistant>Asistan</assistant> sayfası o zamana kadar yanıt olarak verdiği örnekleri gösterir.",
         "scoringTitle": "Gözcü işlem hatları puanlamaya başlar",

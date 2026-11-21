@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import source from './LocalModelPanel.tsx?raw'
 
 /**
- * Owner request Q172: NVIDIA's Test connection must not reset the form, and
+ * Owner request Q172: a hosted provider's Test connection must not reset the form, and
  * re-entering a key must not show "Connected" until a test succeeds.
  *
  * Both are React state transitions in the panel, so (D20) they are pinned on

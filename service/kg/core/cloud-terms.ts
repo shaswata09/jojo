@@ -6,9 +6,8 @@
  * It was two screens. Web's panel and the phone's Settings both wrote the
  * warning out in prose, both said in a comment that they were deliberately the
  * same words, and by the time anybody checked the phone was missing three
- * sentences — including the one saying that submitting content grants NVIDIA a
- * licence to store and reproduce it, and the one inviting the reader to go and
- * decide for themselves.
+ * sentences — including the one saying what a provider may retain, and the one
+ * saying whose agreement it is.
  *
  * That is a worse class of drift than a diverged button. Every other copy in
  * this app describes what the app does; this copy is the basis on which
@@ -24,7 +23,7 @@
  * ## Why segments rather than strings
  *
  * Web emphasises certain phrases inline: that some of the data is other
- * people's, and the two quotations from NVIDIA's terms. Flattening to plain
+ * people's, and whose problem a breach of the provider's terms is. Flattening to plain
  * strings would silently drop that, and the emphasised phrases are precisely
  * the ones somebody skimming needs to catch. A segment carries the phrase and
  * whether it is emphasised; each app decides what emphasis looks like.
@@ -51,8 +50,8 @@ const strong = (text: string): Segment => ({ text, emphasis: true })
  * The notice for one provider.
  *
  * `name` is the provider's full label and `short` the same without the
- * parenthesised host — "NVIDIA (build.nvidia.com)" reads correctly in a
- * headline and badly in a possessive, which is the distinction both apps were
+ * parenthesised name — "Anthropic (Claude)" reads correctly in a headline and badly
+ * in a possessive, which is the distinction both apps were
  * already making and is kept here so they cannot disagree about it either.
  */
 export function cloudTerms(provider: ProviderMeta): CloudTerms {
@@ -67,39 +66,17 @@ export function cloudTerms(provider: ProviderMeta): CloudTerms {
     plain(' jojo is local-first everywhere else; this is the one part that is not.'),
   ]
 
-  const paragraphs: readonly Segment[][] = provider.evaluationOnly
-    ? [
-        [...sent],
-        [
-          plain('NVIDIA’s terms permit use '),
-          strong('“for internal testing and evaluation purposes, not in production”'),
-          plain(' without a subscription, and separately say you '),
-          strong(
-            '“will not upload any personal information relating to an identifiable individual”',
-          ),
-          plain(
-            '. Tracking a real job search is production use, and the records above are personal information. Submitting content also grants NVIDIA a licence to store and reproduce it.',
-          ),
-        ],
-        [
-          plain(
-            'It is free rather than billed — rate limited, and it refuses rather than charging you. Read the terms and decide for yourself whether your use fits them.',
-          ),
-        ],
-      ]
-    : [
-        [...sent],
-        [
-          plain(
-            `${short} is paid, billed to your account, and governed by its own terms — including what it may retain and whether prompts may be used to improve its models. That is a different bargain from the local option, not a worse one, but it is worth reading before your records are part of it.`,
-          ),
-        ],
-      ]
+  const paragraphs: readonly Segment[][] = [
+    [...sent],
+    [
+      plain(
+        `${short} is paid, billed to your account, and governed by its own terms — including what it may retain and whether prompts may be used to improve its models. That is a different bargain from the local option, not a worse one, but it is worth reading before your records are part of it.`,
+      ),
+    ],
+  ]
 
   return {
-    headline: provider.evaluationOnly
-      ? `${name}: free, and licensed for evaluation only`
-      : `Your records leave this device when you use ${name}`,
+    headline: `Your records leave this device when you use ${name}`,
     paragraphs,
     liability: [
       plain(

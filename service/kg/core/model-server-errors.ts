@@ -25,8 +25,8 @@ export type ModelFailure = {
    *
    * `kind` decides what the app DOES — retry, refuse, send them to Settings —
    * and three different causes want the same handling, so it stays coarse. This
-   * says which of the three it was, because "nobody can reach NVIDIA from a
-   * browser" and "one laptop went to sleep" are the same `kind` and completely
+   * says which of the three it was, because "nobody can reach this provider
+   * from a browser" and "one laptop went to sleep" are the same `kind` and completely
    * different problems.
    *
    * Set where the failure is CONSTRUCTED, which is the only place that knows.
@@ -92,9 +92,8 @@ export const MODEL_TIMEOUT_MS = 60_000
  * the server here produced "The server answered 429 — Too Many Requests.",
  * which spends its whole length restating the number.
  *
- * It matters more than it looks because of NVIDIA's free tier, which is in the
- * provider list precisely so somebody without a card can run the agent. Meeting
- * the limit there is not a misconfiguration, it is Tuesday, and an agent run
+ * It matters more than it looks because of free and low-tier hosted plans, where
+ * meeting the limit is not a misconfiguration, it is Tuesday, and an agent run
  * that stops with a puzzling error reads as broken rather than as throttled.
  *
  * `retry-after` is passed through when the server sent one, because the only
@@ -118,7 +117,7 @@ const rateLimited = (retryAfter: string | null): ModelFailure => ({
  * let the page read — an opaque or CORS-blocked one — and the old wording turned
  * that into "The server answered 0.", which reads as a broken server and sent
  * people to check a provider that was working perfectly. Confirmed against
- * NVIDIA: Chrome reports `PreflightMissingAllowOriginHeader` and the page is
+ * a hosted API with no CORS headers: Chrome reports `PreflightMissingAllowOriginHeader` and the page is
  * handed a zero.
  */
 const blockedByBrowser = (): ModelFailure => ({

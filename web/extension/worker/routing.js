@@ -17,7 +17,7 @@ import { hostOf, isLoopback, isPrivateNetwork } from './targets.js'
  *
  * Per PROVIDER rather than one flag for all of them, because the providers are
  * not interchangeable to the person paying: a key for one is not a key for
- * another, and "route to NVIDIA but not to OpenAI" is a real preference.
+ * another, and "route to Groq but not to OpenAI" is a real preference.
  *
  * Absent means ON for the reader and the named providers. An extension that
  * arrives switched off looks broken, and the failure — a relay that refuses —
@@ -140,8 +140,8 @@ function portOf(raw) {
 /**
  * A model provider jojo knows about, over https.
  *
- * Several of them send no CORS headers — measured against
- * `integrate.api.nvidia.com`, whose preflight answers 200 with `vary: Origin`
+ * Several of them send no CORS headers — measured against a
+ * hosted API (NVIDIA's, before Q345 removed it), whose preflight answers 200 with `vary: Origin`
  * and no `access-control-allow-origin`, so the browser blocks the real request
  * and the page reports a bare "Failed to fetch". The extension is not a page and
  * is not subject to that.

@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ ローカルモデル",
-        "requires": "Ollama、vLLM、LM Studio、または無料の NVIDIA キー",
+        "requires": "Ollama、vLLM、LM Studio、またはクラウドの API キー",
         "gives": "記録を読み書きするスレッド型アシスタント（変更はすべて事前に表示）と、一文で「グラフに聞く」機能"
       },
       "reader": {

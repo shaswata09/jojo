@@ -32,13 +32,14 @@ describe('Q187: the Licence page', () => {
     expect(prose).toContain('There is no fee')
   })
 
-  it('carries a disclaimer for NVIDIA, Microsoft and the other third parties', () => {
-    expect(prose).toContain('title="NVIDIA (build.nvidia.com)"')
+  it('carries a disclaimer for Microsoft and the other third parties', () => {
     expect(prose).toContain('title="MarkItDown (Microsoft)"')
     expect(prose).toContain('title="Anthropic · OpenAI · OpenRouter · Groq"')
     expect(prose).toMatch(
-      /not endorsed by, sponsored by or affiliated with NVIDIA, Microsoft, Anthropic, OpenAI, Groq or OpenRouter\./,
+      /not endorsed by, sponsored by or affiliated with Microsoft, Anthropic, OpenAI, Groq or OpenRouter\./,
     )
+    // NVIDIA's evaluation-only API was removed as a provider (Q345).
+    expect(prose).not.toMatch(/nvidia/i)
   })
 })
 

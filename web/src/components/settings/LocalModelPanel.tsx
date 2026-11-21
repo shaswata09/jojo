@@ -78,9 +78,9 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
    * The saved rows for THIS provider only.
    *
    * The stored list spans every provider this browser has reached, and offering
-   * all of it here would put a vLLM box on someone's desk in the NVIDIA panel —
+   * all of it here would put a vLLM box on someone's desk in the OpenRouter panel —
    * where picking it swaps the endpoint, the dialect and the key underneath a
-   * form that still says NVIDIA. `serversFor` also folds in rows saved before
+   * form that still says OpenRouter. `serversFor` also folds in rows saved before
    * this record carried a provider; see its note.
    */
   const shown = serversFor(servers, provider.id)
@@ -117,7 +117,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
    * This was `model.trim().length > 0`, which was true enough while the model
    * could only be filled in BY a successful test — the field was disabled until
    * then. It stopped being true the moment the field became typeable for hosted
-   * catalogues: typing a model id, or pasting a key and typing the id NVIDIA's
+   * catalogues: typing a model id, or pasting a key and typing the id the provider's
    * own site gave you, flipped the chip to "Connected" without a single request
    * having been made. A green light that means "you have typed something" is
    * worse than no light.
@@ -160,7 +160,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
    *
    * It used to put back the endpoint and the model, which is everything a local
    * server is. A cloud one is also a provider and a key, and without those a
-   * saved NVIDIA row loaded as an `openai-compatible` server with no
+   * saved Claude row loaded as an `openai-compatible` server with no
    * credentials — the list's whole purpose is "do not set this up again", and it
    * was useless for exactly the providers that take the most setting up.
    */
@@ -206,7 +206,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
        * It used to be, on the reasoning that a model id belongs to a server that
        * answered. That reads as "reset the form" the moment the id is something
        * the user typed rather than something the server reported — press Test
-       * against NVIDIA, get a transport error, and the id you pasted from their
+       * against a hosted provider, get a transport error, and the id you pasted from their
        * site is gone and has to be found again. A local server never showed this
        * because its test rarely fails and its id was never hand-typed.
        *
@@ -231,7 +231,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
      * serves exactly one model and lists it, and Ollama lists most-recent first.
      * Both true, and both about servers with a handful of models.
      *
-     * A hosted catalogue breaks it. NVIDIA lists over a hundred, alphabetically,
+     * A hosted catalogue breaks it. NVIDIA's (removed in Q345) listed over a hundred, alphabetically,
      * so the first is `01-ai/yi-large` — and pressing Test connection silently
      * replaced a deliberately typed `nvidia/nemotron-3.5-lightning-30b-a3b` with
      * a model the account cannot call. Measured against the live API: three
@@ -406,8 +406,8 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             }}
           />
         ) : null}
-        {/* Where to get one. It matters most for the free provider, where "sign
-            in and it hands you a key" is the entire setup and somebody who
+        {/* Where to get one. For a hosted provider "sign in and it hands you a
+            key" is the entire setup and somebody who
             cannot find the page does not get an agent at all. */}
         {provider.needsKey && provider.keyUrl ? (
           <p className="-mt-1 text-xs text-text-3">
@@ -437,10 +437,10 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          * which lists what it is serving and will 404 a guess — and it fails
          * completely for a hosted catalogue.
          *
-         * NVIDIA is the case that broke it. Its `/v1/models` cannot be read from
-         * a page at all, so `connected` never becomes true, so the field never
-         * unlocks, so there is no way to enter `nvidia/nemotron-3-ultra-550b-a55b`
-         * — a name the user got from the provider's own website and is not
+         * A provider whose `/v1/models` cannot be read from a page is the case
+         * that broke it (NVIDIA's, before Q345 removed it): `connected` never
+         * becomes true, so the field never unlocks, so there is no way to enter
+         * a model id — a name the user got from the provider's own website and is not
          * guessing at. A control that cannot be filled in is worse than one that
          * accepts a wrong answer: the wrong answer produces a 404 that names
          * itself.

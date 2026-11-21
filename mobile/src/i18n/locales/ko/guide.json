@@ -37,7 +37,7 @@
       },
       "model": {
         "name": "+ 로컬 모델",
-        "requires": "Ollama, vLLM, LM Studio 또는 무료 NVIDIA 키",
+        "requires": "Ollama, vLLM, LM Studio 또는 클라우드 API 키",
         "gives": "기록을 읽고 쓰는 대화형 어시스턴트(모든 변경은 먼저 보여 줘요)와 한 문장으로 하는 ‘그래프에 묻기’"
       },
       "reader": {

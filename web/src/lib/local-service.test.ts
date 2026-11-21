@@ -53,8 +53,8 @@ describe('what a thrown fetch is reported as', () => {
     vi.stubGlobal('location', { protocol: 'https:' })
     rejecting(new TypeError('Failed to fetch'))
     const sent = await send(
-      request('https://integrate.api.nvidia.com/v1/models'),
-      'https://integrate.api.nvidia.com/v1',
+      request('https://api.groq.com/openai/v1/models'),
+      'https://api.groq.com/openai/v1',
     )
     expect(whyOf(sent)).toBe('unreachable')
   })

@@ -113,7 +113,7 @@
     },
     "model": {
       "title": "Hubungkan model",
-      "body": "Pilih tempat model asisten berjalan. Server lokal — vLLM, LM Studio, llama.cpp, atau Ollama — cukup alamatnya dan entri Anda tetap di perangkat ini. OpenAI, Anthropic (Claude), OpenRouter, Groq, atau NVIDIA memerlukan kunci API. Uji koneksi memeriksanya sebelum apa pun disimpan."
+      "body": "Pilih tempat model asisten berjalan. Server lokal — vLLM, LM Studio, llama.cpp, atau Ollama — cukup alamatnya dan entri Anda tetap di perangkat ini. OpenAI, Anthropic (Claude), OpenRouter, atau Groq memerlukan kunci API. Uji koneksi memeriksanya sebelum apa pun disimpan."
     },
     "reader": {
       "title": "Izinkan membaca dokumen Anda",

@@ -248,7 +248,7 @@ async function drawRouting() {
  *
  * The allowlist is a list of hostnames because that is what a URL can be
  * compared against; nobody thinks of their account as
- * `integrate.api.nvidia.com`. Both are shown — the name to find the row, the
+ * `api.anthropic.com`. Both are shown — the name to find the row, the
  * host so it is clear exactly what is being switched.
  */
 const PROVIDER_NAMES = {
@@ -256,7 +256,6 @@ const PROVIDER_NAMES = {
   'api.openai.com': 'OpenAI',
   'openrouter.ai': 'OpenRouter',
   'api.groq.com': 'Groq',
-  'integrate.api.nvidia.com': 'NVIDIA',
 }
 
 /* -------------------------------------------------------------------- wire */
