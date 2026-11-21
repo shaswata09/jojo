@@ -151,7 +151,38 @@
     "unreadable": "페이지를 읽을 수 없었어요: {{reason}}",
     "unreadableKept": "페이지를 읽을 수 없었어요: {{reason}} 페이지 자체는 저장됐어요.",
     "applyBy": "{{date}}까지 지원",
-    "pageSaved": "페이지 저장됨"
+    "pageSaved": "페이지 저장됨",
+    "search": {
+      "label": "제안 검색",
+      "placeholder": "직무, 고용주, 장소, 키워드로 검색…"
+    },
+    "filter": {
+      "button": "필터",
+      "buttonAria": "제안 필터({{picked}}개 선택됨)",
+      "pipeline": "파이프라인",
+      "type": "유형",
+      "roleTag": "직무 태그",
+      "keyword": "키워드",
+      "employer": "고용주",
+      "types": {
+        "posting": "공고",
+        "match": "매칭",
+        "change": "기록 변경"
+      },
+      "none": "이 제안들에는 없음",
+      "noPipeline": "파이프라인 없음(삭제됨)",
+      "clear": "필터 지우기",
+      "clearAll": "검색 및 필터 지우기",
+      "active": "적용된 필터",
+      "remove": "필터 제거: {{value}}"
+    },
+    "closed": {
+      "title": "종료됨",
+      "countOf": "{{total}}개 중 {{shown}}개"
+    },
+    "noActive": "기다리는 항목이 없습니다. 완료된 제안은 '종료됨'에 있습니다.",
+    "noActiveMatch": "검색 및 필터와 일치하는 진행 중인 제안이 없습니다.",
+    "noClosedMatch": "일치하는 종료된 제안이 없습니다."
   },
   "toasts": {
     "alreadyHaveTitle": "이미 지원에 있어요 — 다시 추가하지 않았어요",

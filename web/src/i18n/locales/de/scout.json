@@ -153,7 +153,38 @@
     "unreadable": "Die Seite konnte nicht gelesen werden: {{reason}}",
     "unreadableKept": "Die Seite konnte nicht gelesen werden: {{reason}} Die Seite selbst wurde gespeichert.",
     "applyBy": "bewerben bis {{date}}",
-    "pageSaved": "Seite gespeichert"
+    "pageSaved": "Seite gespeichert",
+    "search": {
+      "label": "Vorschläge durchsuchen",
+      "placeholder": "Nach Stelle, Arbeitgeber, Ort, Stichwort suchen…"
+    },
+    "filter": {
+      "button": "Filtern",
+      "buttonAria": "Vorschläge filtern ({{picked}} ausgewählt)",
+      "pipeline": "Pipeline",
+      "type": "Typ",
+      "roleTag": "Rollen-Tag",
+      "keyword": "Stichwort",
+      "employer": "Arbeitgeber",
+      "types": {
+        "posting": "Anzeigen",
+        "match": "Treffer",
+        "change": "Datensatzänderungen"
+      },
+      "none": "In diesen Vorschlägen nicht vorhanden",
+      "noPipeline": "Keine Pipeline (gelöscht)",
+      "clear": "Filter entfernen",
+      "clearAll": "Suche und Filter entfernen",
+      "active": "Aktive Filter",
+      "remove": "Filter entfernen: {{value}}"
+    },
+    "closed": {
+      "title": "Abgeschlossen",
+      "countOf": "{{shown}} von {{total}}"
+    },
+    "noActive": "Nichts wartet auf dich. Erledigte Vorschläge findest du unter Abgeschlossen.",
+    "noActiveMatch": "Kein aktiver Vorschlag passt zu Suche und Filtern.",
+    "noClosedMatch": "Kein abgeschlossener Vorschlag passt."
   },
   "toasts": {
     "alreadyHaveTitle": "Schon in deinen Bewerbungen – nicht erneut hinzugefügt",

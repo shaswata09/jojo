@@ -151,7 +151,38 @@
     "unreadable": "無法讀取頁面：{{reason}}",
     "unreadableKept": "無法讀取頁面：{{reason}}頁面本身已儲存。",
     "applyBy": "{{date}} 前申請",
-    "pageSaved": "已儲存頁面"
+    "pageSaved": "已儲存頁面",
+    "search": {
+      "label": "搜尋建議",
+      "placeholder": "依職務、雇主、地點、關鍵字搜尋…"
+    },
+    "filter": {
+      "button": "篩選",
+      "buttonAria": "篩選建議（已選 {{picked}} 項）",
+      "pipeline": "管線",
+      "type": "類型",
+      "roleTag": "職務標籤",
+      "keyword": "關鍵字",
+      "employer": "雇主",
+      "types": {
+        "posting": "職缺",
+        "match": "符合結果",
+        "change": "紀錄變更"
+      },
+      "none": "這些建議中沒有",
+      "noPipeline": "無管線（已刪除）",
+      "clear": "清除篩選",
+      "clearAll": "清除搜尋和篩選",
+      "active": "目前的篩選",
+      "remove": "移除篩選：{{value}}"
+    },
+    "closed": {
+      "title": "已結束",
+      "countOf": "{{total}} 項中的 {{shown}} 項"
+    },
+    "noActive": "目前沒有待處理的項目。已完成的建議在「已結束」中。",
+    "noActiveMatch": "沒有符合搜尋和篩選條件的進行中建議。",
+    "noClosedMatch": "沒有符合條件的已結束建議。"
   },
   "toasts": {
     "alreadyHaveTitle": "已在你的申請中——不會重複加入",

@@ -155,7 +155,38 @@
     "unreadable": "No se pudo leer la página: {{reason}}",
     "unreadableKept": "No se pudo leer la página: {{reason}} La página en sí se guardó.",
     "applyBy": "postular antes del {{date}}",
-    "pageSaved": "Página guardada"
+    "pageSaved": "Página guardada",
+    "search": {
+      "label": "Buscar sugerencias",
+      "placeholder": "Buscar por puesto, empleador, lugar, palabra clave…"
+    },
+    "filter": {
+      "button": "Filtrar",
+      "buttonAria": "Filtrar sugerencias ({{picked}} seleccionados)",
+      "pipeline": "Pipeline",
+      "type": "Tipo",
+      "roleTag": "Etiqueta de puesto",
+      "keyword": "Palabra clave",
+      "employer": "Empleador",
+      "types": {
+        "posting": "Ofertas",
+        "match": "Coincidencias",
+        "change": "Cambios en registros"
+      },
+      "none": "No hay ninguno en estas sugerencias",
+      "noPipeline": "Sin pipeline (eliminado)",
+      "clear": "Quitar filtros",
+      "clearAll": "Quitar búsqueda y filtros",
+      "active": "Filtros activos",
+      "remove": "Quitar filtro: {{value}}"
+    },
+    "closed": {
+      "title": "Cerradas",
+      "countOf": "{{shown}} de {{total}}"
+    },
+    "noActive": "No tienes nada pendiente. Las sugerencias terminadas están en Cerradas.",
+    "noActiveMatch": "Ninguna sugerencia activa coincide con la búsqueda y los filtros.",
+    "noClosedMatch": "Ninguna sugerencia cerrada coincide."
   },
   "toasts": {
     "alreadyHaveTitle": "Ya está en tus candidaturas; no se añadió de nuevo",

@@ -151,7 +151,38 @@
     "unreadable": "无法读取页面：{{reason}}",
     "unreadableKept": "无法读取页面：{{reason}} 页面本身已保存。",
     "applyBy": "截止申请 {{date}}",
-    "pageSaved": "页面已保存"
+    "pageSaved": "页面已保存",
+    "search": {
+      "label": "搜索建议",
+      "placeholder": "按职位、雇主、地点、关键词搜索…"
+    },
+    "filter": {
+      "button": "筛选",
+      "buttonAria": "筛选建议（已选 {{picked}} 项）",
+      "pipeline": "流程",
+      "type": "类型",
+      "roleTag": "职位标签",
+      "keyword": "关键词",
+      "employer": "雇主",
+      "types": {
+        "posting": "职位发布",
+        "match": "匹配结果",
+        "change": "记录变更"
+      },
+      "none": "这些建议中没有",
+      "noPipeline": "无流程（已删除）",
+      "clear": "清除筛选",
+      "clearAll": "清除搜索和筛选",
+      "active": "当前筛选",
+      "remove": "移除筛选：{{value}}"
+    },
+    "closed": {
+      "title": "已结束",
+      "countOf": "{{total}} 项中的 {{shown}} 项"
+    },
+    "noActive": "没有待处理的事项。已完成的建议在“已结束”中。",
+    "noActiveMatch": "没有符合搜索和筛选条件的进行中建议。",
+    "noClosedMatch": "没有符合条件的已结束建议。"
   },
   "toasts": {
     "alreadyHaveTitle": "已在你的申请中——未重复添加",

@@ -153,7 +153,38 @@
     "unreadable": "Sayfa okunamadı: {{reason}}",
     "unreadableKept": "Sayfa okunamadı: {{reason}} Sayfanın kendisi kaydedildi.",
     "applyBy": "son başvuru: {{date}}",
-    "pageSaved": "Sayfa kaydedildi"
+    "pageSaved": "Sayfa kaydedildi",
+    "search": {
+      "label": "Önerilerde ara",
+      "placeholder": "Pozisyon, işveren, konum veya anahtar kelimeye göre ara…"
+    },
+    "filter": {
+      "button": "Filtrele",
+      "buttonAria": "Önerileri filtrele ({{picked}} seçili)",
+      "pipeline": "İşlem hattı",
+      "type": "Tür",
+      "roleTag": "Pozisyon etiketi",
+      "keyword": "Anahtar kelime",
+      "employer": "İşveren",
+      "types": {
+        "posting": "İlanlar",
+        "match": "Eşleşmeler",
+        "change": "Kayıt değişiklikleri"
+      },
+      "none": "Bu önerilerde yok",
+      "noPipeline": "İşlem hattı yok (silindi)",
+      "clear": "Filtreleri temizle",
+      "clearAll": "Aramayı ve filtreleri temizle",
+      "active": "Etkin filtreler",
+      "remove": "Filtreyi kaldır: {{value}}"
+    },
+    "closed": {
+      "title": "Kapananlar",
+      "countOf": "{{total}} içinden {{shown}}"
+    },
+    "noActive": "Sizi bekleyen bir şey yok. Tamamlanan öneriler Kapananlar bölümünde.",
+    "noActiveMatch": "Arama ve filtrelerle eşleşen etkin öneri yok.",
+    "noClosedMatch": "Eşleşen kapanmış öneri yok."
   },
   "toasts": {
     "alreadyHaveTitle": "Zaten başvurularınızda — yeniden eklenmedi",

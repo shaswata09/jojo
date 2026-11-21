@@ -151,7 +151,38 @@
     "unreadable": "Không đọc được trang: {{reason}}",
     "unreadableKept": "Không đọc được trang: {{reason}} Bản thân trang đã được lưu.",
     "applyBy": "ứng tuyển trước {{date}}",
-    "pageSaved": "Đã lưu trang"
+    "pageSaved": "Đã lưu trang",
+    "search": {
+      "label": "Tìm đề xuất",
+      "placeholder": "Tìm theo vị trí, nhà tuyển dụng, địa điểm, từ khóa…"
+    },
+    "filter": {
+      "button": "Lọc",
+      "buttonAria": "Lọc đề xuất (đã chọn {{picked}})",
+      "pipeline": "Quy trình",
+      "type": "Loại",
+      "roleTag": "Thẻ vị trí",
+      "keyword": "Từ khóa",
+      "employer": "Nhà tuyển dụng",
+      "types": {
+        "posting": "Tin tuyển dụng",
+        "match": "Gợi ý",
+        "change": "Thay đổi hồ sơ"
+      },
+      "none": "Không có trong các đề xuất này",
+      "noPipeline": "Không có quy trình (đã xóa)",
+      "clear": "Xóa bộ lọc",
+      "clearAll": "Xóa tìm kiếm và bộ lọc",
+      "active": "Bộ lọc đang dùng",
+      "remove": "Bỏ bộ lọc: {{value}}"
+    },
+    "closed": {
+      "title": "Đã đóng",
+      "countOf": "{{shown}} trên {{total}}"
+    },
+    "noActive": "Không có gì đang chờ bạn. Các đề xuất đã xong nằm trong mục Đã đóng.",
+    "noActiveMatch": "Không có đề xuất đang mở nào khớp với tìm kiếm và bộ lọc.",
+    "noClosedMatch": "Không có đề xuất đã đóng nào khớp."
   },
   "toasts": {
     "alreadyHaveTitle": "Đã có trong Đơn ứng tuyển — không thêm lại",

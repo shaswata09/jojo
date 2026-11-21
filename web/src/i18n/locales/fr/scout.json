@@ -155,7 +155,38 @@
     "unreadable": "La page n’a pas pu être lue : {{reason}}",
     "unreadableKept": "La page n’a pas pu être lue : {{reason}} La page elle-même a été enregistrée.",
     "applyBy": "postuler avant le {{date}}",
-    "pageSaved": "Page enregistrée"
+    "pageSaved": "Page enregistrée",
+    "search": {
+      "label": "Rechercher dans les suggestions",
+      "placeholder": "Rechercher par poste, employeur, lieu, mot-clé…"
+    },
+    "filter": {
+      "button": "Filtrer",
+      "buttonAria": "Filtrer les suggestions ({{picked}} sélectionnés)",
+      "pipeline": "Pipeline",
+      "type": "Type",
+      "roleTag": "Étiquette de poste",
+      "keyword": "Mot-clé",
+      "employer": "Employeur",
+      "types": {
+        "posting": "Offres",
+        "match": "Correspondances",
+        "change": "Modifications de fiches"
+      },
+      "none": "Aucun dans ces suggestions",
+      "noPipeline": "Aucun pipeline (supprimé)",
+      "clear": "Effacer les filtres",
+      "clearAll": "Effacer la recherche et les filtres",
+      "active": "Filtres actifs",
+      "remove": "Retirer le filtre : {{value}}"
+    },
+    "closed": {
+      "title": "Clôturées",
+      "countOf": "{{shown}} sur {{total}}"
+    },
+    "noActive": "Rien ne vous attend. Les suggestions terminées se trouvent dans Clôturées.",
+    "noActiveMatch": "Aucune suggestion active ne correspond à la recherche et aux filtres.",
+    "noClosedMatch": "Aucune suggestion clôturée ne correspond."
   },
   "toasts": {
     "alreadyHaveTitle": "Déjà dans vos candidatures — pas ajoutée une seconde fois",

@@ -433,7 +433,39 @@
     "clearAll": "全部清除",
     "confirmTitle": "要清除所有建議嗎？",
     "confirmPending_other": "有 {{count}} 項建議仍在等待回覆，將會被婉拒。你的紀錄不會有任何變更，管線也會繼續執行——但它們不會再提出這些建議。",
-    "confirmAnswered": "已回覆的卡片會從清單中移除。你的紀錄不會有任何變更。"
+    "confirmAnswered": "已回覆的卡片會從清單中移除。你的紀錄不會有任何變更。",
+    "search": {
+      "label": "搜尋建議",
+      "placeholder": "依職務、雇主、地點搜尋…"
+    },
+    "filter": {
+      "button": "篩選",
+      "title": "篩選建議",
+      "done": "完成",
+      "pipeline": "管線",
+      "type": "類型",
+      "roleTag": "職務標籤",
+      "keyword": "關鍵字",
+      "employer": "雇主",
+      "types": {
+        "posting": "職缺",
+        "match": "符合結果",
+        "change": "紀錄變更"
+      },
+      "none": "這些建議中沒有",
+      "noPipeline": "無管線（已刪除）",
+      "clear": "清除篩選",
+      "clearAll": "清除搜尋和篩選",
+      "active": "目前的篩選",
+      "remove": "移除篩選：{{value}}"
+    },
+    "closed": {
+      "title": "已結束",
+      "countOf": "{{total}} 項中的 {{shown}} 項"
+    },
+    "noActive": "目前沒有待處理的項目。已完成的建議在「已結束」中。",
+    "noActiveMatch": "沒有符合搜尋和篩選條件的進行中建議。",
+    "noClosedMatch": "沒有符合條件的已結束建議。"
   },
   "nextSteps": {
     "measured": "實測",

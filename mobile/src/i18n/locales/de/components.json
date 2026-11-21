@@ -456,7 +456,39 @@
     "confirmTitle": "Alle Vorschläge entfernen?",
     "confirmPending_one": "{{count}} Vorschlag wartet noch und wird abgelehnt. An deinen Einträgen ändert sich nichts, und die Pipelines laufen weiter – sie bieten ihn aber nicht noch einmal an.",
     "confirmPending_other": "{{count}} Vorschläge warten noch und werden abgelehnt. An deinen Einträgen ändert sich nichts, und die Pipelines laufen weiter – sie bieten sie aber nicht noch einmal an.",
-    "confirmAnswered": "Die beantworteten Karten verschwinden aus der Liste. An deinen Einträgen ändert sich nichts."
+    "confirmAnswered": "Die beantworteten Karten verschwinden aus der Liste. An deinen Einträgen ändert sich nichts.",
+    "search": {
+      "label": "Vorschläge durchsuchen",
+      "placeholder": "Nach Stelle, Arbeitgeber, Ort suchen…"
+    },
+    "filter": {
+      "button": "Filtern",
+      "title": "Vorschläge filtern",
+      "done": "Fertig",
+      "pipeline": "Pipeline",
+      "type": "Typ",
+      "roleTag": "Rollen-Tag",
+      "keyword": "Stichwort",
+      "employer": "Arbeitgeber",
+      "types": {
+        "posting": "Anzeigen",
+        "match": "Treffer",
+        "change": "Datensatzänderungen"
+      },
+      "none": "In diesen Vorschlägen nicht vorhanden",
+      "noPipeline": "Keine Pipeline (gelöscht)",
+      "clear": "Filter entfernen",
+      "clearAll": "Suche und Filter entfernen",
+      "active": "Aktive Filter",
+      "remove": "Filter entfernen: {{value}}"
+    },
+    "closed": {
+      "title": "Abgeschlossen",
+      "countOf": "{{shown}} von {{total}}"
+    },
+    "noActive": "Nichts wartet auf dich. Erledigte Vorschläge findest du unter Abgeschlossen.",
+    "noActiveMatch": "Kein aktiver Vorschlag passt zu Suche und Filtern.",
+    "noClosedMatch": "Kein abgeschlossener Vorschlag passt."
   },
   "nextSteps": {
     "measured": "Gemessen",

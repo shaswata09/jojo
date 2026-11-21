@@ -433,7 +433,39 @@
     "clearAll": "すべて消去",
     "confirmTitle": "すべての提案を消去しますか？",
     "confirmPending_other": "{{count}} 件の提案がまだ保留中で、拒否されます。記録は何も変わらず、パイプラインも動き続けますが、これらが再び提案されることはありません。",
-    "confirmAnswered": "対応済みのカードがリストから外れます。記録は何も変わりません。"
+    "confirmAnswered": "対応済みのカードがリストから外れます。記録は何も変わりません。",
+    "search": {
+      "label": "提案を検索",
+      "placeholder": "職種、雇用主、場所で検索…"
+    },
+    "filter": {
+      "button": "絞り込み",
+      "title": "提案を絞り込む",
+      "done": "完了",
+      "pipeline": "パイプライン",
+      "type": "種類",
+      "roleTag": "職種タグ",
+      "keyword": "キーワード",
+      "employer": "雇用主",
+      "types": {
+        "posting": "求人",
+        "match": "マッチ",
+        "change": "記録の変更"
+      },
+      "none": "これらの提案にはありません",
+      "noPipeline": "パイプラインなし（削除済み）",
+      "clear": "絞り込みを解除",
+      "clearAll": "検索と絞り込みを解除",
+      "active": "適用中の絞り込み",
+      "remove": "絞り込みを外す：{{value}}"
+    },
+    "closed": {
+      "title": "終了済み",
+      "countOf": "{{total}} 件中 {{shown}} 件"
+    },
+    "noActive": "対応待ちの項目はありません。完了した提案は「終了済み」にあります。",
+    "noActiveMatch": "検索と絞り込みに一致する進行中の提案はありません。",
+    "noClosedMatch": "一致する終了済みの提案はありません。"
   },
   "nextSteps": {
     "measured": "実績あり",

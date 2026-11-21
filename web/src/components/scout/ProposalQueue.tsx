@@ -11,7 +11,7 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Chip } from '@/components/common/Chip'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
@@ -26,6 +26,17 @@ import { useReadingNow } from '@/lib/scout-reading-hooks'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
 import { useDomain } from '@/i18n/domain'
+import { useLabels } from '@/lib/labels-context'
+import { ProposalFilters } from '@/components/scout/ProposalFilters'
+import {
+  NO_PROPOSAL_FILTER,
+  isFiltering,
+  proposalFacets,
+  proposalFacts,
+  proposalMatches,
+  splitProposals,
+} from '@jojo/service/core/proposal-filter'
+import type { ProposalFilter } from '@jojo/service/core/proposal-filter'
 
 /**
  * The queue, as cards a person answers one at a time.
@@ -38,7 +49,9 @@ import { useDomain } from '@/i18n/domain'
  * the wrong way round for a control that writes to someone's records.
  *
  * Answered cards stay until swept, so the Undo in the toast has something to
- * point at. See `pipeline.proposal.sweep`.
+ * point at. See `pipeline.proposal.sweep`. They stay in the Closed box at the
+ * bottom, not in the main list (Q343), and both are searched and filtered by
+ * `ProposalFilters`.
  *
  * An approved SCOUT card keeps one more button: Add to applications. Approving
  * files the job into Matches or Postings and deliberately stops there, and the
@@ -70,11 +83,49 @@ export function ProposalQueue({
   onPromote: (job: ApprovedJob) => void
 }) {
   const { t } = useTranslation('scout')
+  const { labels } = useLabels()
+  const closedId = useId()
   const [confirming, setConfirming] = useState(false)
+  const [filter, setFilter] = useState<ProposalFilter>(NO_PROPOSAL_FILTER)
   const pending = proposals.filter((p) => p.status === 'pending')
   const answered = proposals.filter((p) => p.status !== 'pending')
   const nameOf = (id: string | null) =>
     pipelines.find((p) => p.id === id)?.name ?? t('proposals.aPipeline')
+
+  /*
+   * Active and closed (Q343). The main list is what still needs the person —
+   * a question not yet answered, or an approved job not yet added to the
+   * applications — and everything finished goes to its own box at the bottom,
+   * which scrolls on its own so a long history never pushes the next pipeline
+   * round's cards off the screen. The rule is `isActiveProposal`, shared with
+   * the phone.
+   */
+  const jobs = new Map(proposals.map((p) => [p.id, p.status === 'approved' ? jobFor(p) : null]))
+  const { active, closed } = splitProposals(proposals, (p) => jobs.get(p.id) ?? null)
+
+  // Each card's facts, read once per render for the search, the filters and
+  // their counts. A keyword is named as the person's vocabulary names it now,
+  // which is not always what it was called when the page was read.
+  const keywordName = new Map(labels.map((l) => [l.id, l.name]))
+  const facts = new Map(
+    proposals.map((p) => {
+      const f = proposalFacts(p, nameOf(p.pipelineId))
+      return [
+        p.id,
+        { ...f, keywords: f.keywords.map((k) => ({ ...k, name: keywordName.get(k.id) ?? k.name })) },
+      ]
+    }),
+  )
+  const passes = (p: Proposal) => proposalMatches(facts.get(p.id)!, filter)
+  const shownActive = active.filter(passes)
+  const shownClosed = closed.filter(passes)
+  const filtering = isFiltering(filter)
+  const facets = proposalFacets(
+    [...facts.values()],
+    filter,
+    (id) => (id === '' ? t('proposals.filter.noPipeline') : nameOf(id)),
+    (type) => t(`proposals.filter.types.${type}`),
+  )
 
   /*
    * Approve all and Clear are per-pipeline, not global, so they are only
@@ -90,6 +141,18 @@ export function ProposalQueue({
   const pendingFrom = onePipeline(pending)
   const answeredFrom = onePipeline(answered)
 
+  const cardFor = (p: Proposal) => (
+    <ProposalCard
+      key={p.id}
+      proposal={p}
+      pipelineName={nameOf(p.pipelineId)}
+      onApprove={() => onApprove(p.id)}
+      onDiscard={() => onDiscard(p.id)}
+      job={jobs.get(p.id) ?? null}
+      onPromote={onPromote}
+    />
+  )
+
   return (
     <Panel focusId="section:proposals">
       <div className="mb-3.5 flex flex-wrap items-baseline justify-between gap-2">
@@ -97,25 +160,21 @@ export function ProposalQueue({
           {t('proposals.title')}
         </PanelTitle>
         <div className="flex items-center gap-2">
-          {answered.length > 0 && answeredFrom ? (
-            <Button size="sm" variant="ghost" onClick={() => onSweep(answeredFrom)}>
-              {t('proposals.clearAnswered')}
-            </Button>
-          ) : null}
-          {pending.length > 1 && pendingFrom ? (
+          {/* Not while filtering: "Approve all 12" over the three cards a
+              search left on screen would approve nine nobody was looking at. */}
+          {pending.length > 1 && pendingFrom && !filtering ? (
             <Button size="sm" variant="outline" onClick={() => onApproveAll(pendingFrom)}>
               <ListChecks className="size-3.5" strokeWidth={1.8} aria-hidden />
               {t('proposals.approveAll', { count: pending.length })}
             </Button>
           ) : null}
-          {/* Not restricted to one pipeline, unlike its two neighbours.
-              Approve all is limited that way because approving writes to the
-              person's records and a single press spanning two searches is a
-              gesture they could not describe afterwards. Clearing writes to
-              nothing but the queue, and the queue is exactly what someone
-              wants gone when two pipelines have both been filling it — the
-              restriction would withhold the button at the one moment it is
-              worth having. */}
+          {/* Not restricted to one pipeline, unlike Approve all. Approve all is
+              limited that way because approving writes to the person's records
+              and a single press spanning two searches is a gesture they could
+              not describe afterwards. Clearing writes to nothing but the queue,
+              and the queue is exactly what someone wants gone when two
+              pipelines have both been filling it — the restriction would
+              withhold the button at the one moment it is worth having. */}
           {proposals.length > 0 ? (
             <Button size="sm" variant="ghost" onClick={() => setConfirming(true)}>
               <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
@@ -132,29 +191,66 @@ export function ProposalQueue({
           description={t('proposals.emptyDescription')}
         />
       ) : (
-        /*
-         * `grid-cols-1`, not a bare `grid`. A bare grid's one column is `auto`,
-         * which grows to the widest thing any card cannot wrap — and a card's
-         * posting link is single-line by design (it ends in "…"), so one long
-         * Workday or LinkedIn address made every card in the list wider than
-         * the panel. Measured 2026-10-27: a 190-character link pushed all three
-         * cards 450px past the panel's edge at 1200px, and the page scrolled
-         * sideways. `grid-cols-1` is `minmax(0, 1fr)`: the column is the
-         * panel's width, and the link is what gives way.
-         */
-        <ul className="grid grid-cols-1 gap-2.5">
-          {[...pending, ...answered].map((p) => (
-            <ProposalCard
-              key={p.id}
-              proposal={p}
-              pipelineName={nameOf(p.pipelineId)}
-              onApprove={() => onApprove(p.id)}
-              onDiscard={() => onDiscard(p.id)}
-              job={p.status === 'approved' ? jobFor(p) : null}
-              onPromote={onPromote}
+        <>
+          <ProposalFilters filter={filter} facets={facets} onChange={setFilter} />
+
+          {shownActive.length > 0 ? (
+            /*
+             * `grid-cols-1`, not a bare `grid`. A bare grid's one column is `auto`,
+             * which grows to the widest thing any card cannot wrap — and a card's
+             * posting link is single-line by design (it ends in "…"), so one long
+             * Workday or LinkedIn address made every card in the list wider than
+             * the panel. Measured 2026-10-27: a 190-character link pushed all three
+             * cards 450px past the panel's edge at 1200px, and the page scrolled
+             * sideways. `grid-cols-1` is `minmax(0, 1fr)`: the column is the
+             * panel's width, and the link is what gives way.
+             */
+            <ul className="grid grid-cols-1 gap-2.5">{shownActive.map(cardFor)}</ul>
+          ) : (
+            <NothingShown
+              text={
+                filtering && active.length > 0
+                  ? t('proposals.noActiveMatch')
+                  : t('proposals.noActive')
+              }
+              onClear={filtering ? () => setFilter(NO_PROPOSAL_FILTER) : null}
             />
-          ))}
-        </ul>
+          )}
+
+          {closed.length > 0 ? (
+            <section aria-labelledby={closedId} className="mt-4 border-t border-hairline pt-3">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h3 id={closedId} className="text-xs font-medium text-text-2">
+                  {t('proposals.closed.title')}{' '}
+                  <span className="text-text-3 [unicode-bidi:isolate]">
+                    {filtering
+                      ? t('proposals.closed.countOf', { shown: shownClosed.length, total: closed.length })
+                      : closed.length}
+                  </span>
+                </h3>
+                {answeredFrom ? (
+                  <Button size="sm" variant="ghost" onClick={() => onSweep(answeredFrom)}>
+                    {t('proposals.clearAnswered')}
+                  </Button>
+                ) : null}
+              </div>
+              {shownClosed.length > 0 ? (
+                /* Its own scroll, so a long history stays one box tall. Focusable,
+                   so the keyboard can scroll it too; named by its heading. */
+                <div
+                  tabIndex={0}
+                  role="region"
+                  aria-labelledby={closedId}
+                  className="max-h-[22rem] overflow-y-auto rounded-lg border border-hairline bg-well/30 p-2 outline-none focus-visible:ring-2 focus-visible:ring-accent-border"
+                >
+                  <ul className="grid grid-cols-1 gap-2.5">{shownClosed.map(cardFor)}</ul>
+                </div>
+              ) : (
+                <p className="text-xs text-text-3">{t('proposals.noClosedMatch')}</p>
+              )}
+            </section>
+          ) : null}
+        </>
       )}
 
       {/* Asked for, because it declines things. The answered half is only a
@@ -177,6 +273,21 @@ export function ProposalQueue({
         onConfirm={onClearAll}
       />
     </Panel>
+  )
+}
+
+/** The main list when it has nothing to show: why, and the way back when a filter did it. */
+function NothingShown({ text, onClear }: { text: string; onClear: (() => void) | null }) {
+  const { t } = useTranslation('scout')
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-hairline px-3.5 py-3 text-xs text-text-3">
+      <span>{text}</span>
+      {onClear ? (
+        <Button size="sm" variant="ghost" onClick={onClear}>
+          {t('proposals.filter.clearAll')}
+        </Button>
+      ) : null}
+    </div>
   )
 }
 

@@ -433,7 +433,39 @@
     "clearAll": "Bersihkan semua",
     "confirmTitle": "Bersihkan semua saran?",
     "confirmPending_other": "{{count}} saran masih menunggu dan akan ditolak. Tidak ada yang berubah di entri Anda, dan alur kerja tetap berjalan — tetapi saran ini tidak akan ditawarkan lagi.",
-    "confirmAnswered": "Kartu yang sudah dijawab dihapus dari daftar. Tidak ada yang berubah di entri Anda."
+    "confirmAnswered": "Kartu yang sudah dijawab dihapus dari daftar. Tidak ada yang berubah di entri Anda.",
+    "search": {
+      "label": "Cari saran",
+      "placeholder": "Cari menurut peran, pemberi kerja, lokasi…"
+    },
+    "filter": {
+      "button": "Filter",
+      "title": "Filter saran",
+      "done": "Selesai",
+      "pipeline": "Alur kerja",
+      "type": "Jenis",
+      "roleTag": "Tag peran",
+      "keyword": "Kata kunci",
+      "employer": "Pemberi kerja",
+      "types": {
+        "posting": "Lowongan",
+        "match": "Kecocokan",
+        "change": "Perubahan catatan"
+      },
+      "none": "Tidak ada di antara saran ini",
+      "noPipeline": "Tanpa alur kerja (dihapus)",
+      "clear": "Hapus filter",
+      "clearAll": "Hapus pencarian dan filter",
+      "active": "Filter aktif",
+      "remove": "Hapus filter: {{value}}"
+    },
+    "closed": {
+      "title": "Ditutup",
+      "countOf": "{{shown}} dari {{total}}"
+    },
+    "noActive": "Tidak ada yang menunggu Anda. Saran yang sudah selesai ada di Ditutup.",
+    "noActiveMatch": "Tidak ada saran aktif yang cocok dengan pencarian dan filter.",
+    "noClosedMatch": "Tidak ada saran tertutup yang cocok."
   },
   "nextSteps": {
     "measured": "Terukur",

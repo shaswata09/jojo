@@ -153,7 +153,38 @@
     "unreadable": "The page could not be read: {{reason}}",
     "unreadableKept": "The page could not be read: {{reason}} The page itself was saved.",
     "applyBy": "apply by {{date}}",
-    "pageSaved": "Page saved"
+    "pageSaved": "Page saved",
+    "search": {
+      "label": "Search suggestions",
+      "placeholder": "Search by role, employer, place, keyword…"
+    },
+    "filter": {
+      "button": "Filter",
+      "buttonAria": "Filter suggestions ({{picked}} picked)",
+      "pipeline": "Pipeline",
+      "type": "Type",
+      "roleTag": "Role tag",
+      "keyword": "Keyword",
+      "employer": "Employer",
+      "types": {
+        "posting": "Postings",
+        "match": "Matches",
+        "change": "Record changes"
+      },
+      "none": "None among these suggestions",
+      "noPipeline": "No pipeline (deleted)",
+      "clear": "Clear filters",
+      "clearAll": "Clear search and filters",
+      "active": "Active filters",
+      "remove": "Remove filter: {{value}}"
+    },
+    "closed": {
+      "title": "Closed",
+      "countOf": "{{shown}} of {{total}}"
+    },
+    "noActive": "Nothing is waiting for you. Finished suggestions are under Closed.",
+    "noActiveMatch": "No active suggestion matches the search and filters.",
+    "noClosedMatch": "No closed suggestion matches."
   },
   "toasts": {
     "alreadyHaveTitle": "Already in your applications — not added again",

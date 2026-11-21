@@ -2897,3 +2897,22 @@ Guarded by:
 - `service/kg/core/board.test.ts` › "moves it within the site the person named, so the board guard still holds"
 - `service/kg/agent/queries.test.ts` › "reads CRA from the address people type: its list, then the pages behind Load more"
 Note: Measured 2026-11-20 with the extension's own harvest and expandListing in Chrome for Testing, fed to crawlBoard. HigherEdJobs: page 1 offers pages 2–10 and each later page its next; 25 postings a page. AcademicJobsOnline: "next..." followed page to page, 40 a page. CRA: cra.org/ads landed on careercenter.cra.org/ with 5 featured jobs and no pager, so the scout saw 5 of 155; its list /jobs pages by a "Load more..." LINK to ?page=N, and the pages are cumulative (page 3 lists jobs 1–76), so the old 40-per-page cap before the known filter left page 3 onward with 1–2 new jobs each. After the fix: 27, 25, 27, 25, 24 new over five pages, 128 of 155. AcademicCareers: "Load more" is pressed, but on its first page the site's own request answered 200 and appended nothing for 12 s+ (headless); the same press worked twice on /jobs/?page=2. Left as is: it is the site's response, and the page as first shown is still read. A transient: one HigherEdJobs and one AJO page came back short on a 9 s wait and full on a re-read.
+
+### Q343 — Job scout suggestions: add a search bar; move closed suggestions (not added) out of the main list into a dedicated scrollable box at the bottom, so the main list shows only active ones; and filter suggestions by tags, keywords and other categories.
+`feature` · 2026-11-20 · cross · active
+Must stay true: The main list shows only suggestions that still need the person: one not yet answered, or an approved job not yet added to the applications. Discarded, failed and finished ones (an approved job already in the applications, an approved record change) sit in a Closed box below it that scrolls on its own. A search box finds a card by every word typed, in any of its fields, ignoring case and accents. A filter narrows by pipeline, type (posting, match, record change), role tag, keyword and employer; values widen within a category and narrow across them, each picked value shows as a chip that turns it off, and Approve all is not offered over a filtered list. The phone has the same split, search and filters, from the same rules.
+Guarded by:
+- `service/kg/core/proposal-filter.test.ts` › "keeps a pending card active, and closes a discarded or failed one"
+- `service/kg/core/proposal-filter.test.ts` › "keeps an approved job active until it is in the applications, then closes it"
+- `service/kg/core/proposal-filter.test.ts` › "closes an approved change to a record: there is no second step after it"
+- `service/kg/core/proposal-filter.test.ts` › "splits the queue in order, asking about a job only for an approved card"
+- `service/kg/core/proposal-filter.test.ts` › "finds a card by any word on it, whatever the case or accents"
+- `service/kg/core/proposal-filter.test.ts` › "needs every word, but in any field: a role in one place and a city in another"
+- `service/kg/core/proposal-filter.test.ts` › "filters by role tag, keyword, employer, pipeline and type"
+- `service/kg/core/proposal-filter.test.ts` › "widens within a category and narrows across them"
+- `service/kg/core/proposal-filter.test.ts` › "keeps a picked value listed after its last card has gone, so it can be turned off"
+- `web/src/components/scout/ProposalQueue.requests.test.ts` › "lists only the active suggestions in the main list, by the shared rule"
+- `web/src/components/scout/ProposalQueue.requests.test.ts` › "puts the closed ones in their own scrolling box below the main list"
+- `web/src/components/scout/ProposalQueue.requests.test.ts` › "has a search box and a filter for every category, over both lists"
+- `web/src/components/scout/ProposalQueue.requests.test.ts` › "does not offer Approve all over a filtered list"
+Note: Built 2026-11-20. "Tags" read as role tags (the top bar's role filter) and "keywords" as the person's own keywords, as the posting's background reading matched them; a card whose page has not been read carries neither and is found by search. An approved job awaiting "Add to applications" stays active on the web because that button is the step left; the phone has no such button on the card, so there an approved card is closed. Checked on the web with eight fixture cards at 1280 px (light) and 400 px (dark): search, the filter menu (scrolls inside itself), chips, and the Closed box. The phone was type-checked and linted, not run on a device.

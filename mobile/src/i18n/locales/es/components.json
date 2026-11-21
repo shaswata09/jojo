@@ -456,7 +456,39 @@
     "confirmTitle": "¿Quitar todas las sugerencias?",
     "confirmPending_one": "{{count}} sugerencia sigue esperando y se rechazará. Nada cambia en tus registros y las canalizaciones siguen en marcha, pero no volverán a ofrecerla.",
     "confirmPending_other": "{{count}} sugerencias siguen esperando y se rechazarán. Nada cambia en tus registros y las canalizaciones siguen en marcha, pero no volverán a ofrecerlas.",
-    "confirmAnswered": "Las tarjetas respondidas salen de la lista. Nada cambia en tus registros."
+    "confirmAnswered": "Las tarjetas respondidas salen de la lista. Nada cambia en tus registros.",
+    "search": {
+      "label": "Buscar sugerencias",
+      "placeholder": "Buscar por puesto, empleador, lugar…"
+    },
+    "filter": {
+      "button": "Filtrar",
+      "title": "Filtrar sugerencias",
+      "done": "Listo",
+      "pipeline": "Pipeline",
+      "type": "Tipo",
+      "roleTag": "Etiqueta de puesto",
+      "keyword": "Palabra clave",
+      "employer": "Empleador",
+      "types": {
+        "posting": "Ofertas",
+        "match": "Coincidencias",
+        "change": "Cambios en registros"
+      },
+      "none": "No hay ninguno en estas sugerencias",
+      "noPipeline": "Sin pipeline (eliminado)",
+      "clear": "Quitar filtros",
+      "clearAll": "Quitar búsqueda y filtros",
+      "active": "Filtros activos",
+      "remove": "Quitar filtro: {{value}}"
+    },
+    "closed": {
+      "title": "Cerradas",
+      "countOf": "{{shown}} de {{total}}"
+    },
+    "noActive": "No tienes nada pendiente. Las sugerencias terminadas están en Cerradas.",
+    "noActiveMatch": "Ninguna sugerencia activa coincide con la búsqueda y los filtros.",
+    "noClosedMatch": "Ninguna sugerencia cerrada coincide."
   },
   "nextSteps": {
     "measured": "Medido",

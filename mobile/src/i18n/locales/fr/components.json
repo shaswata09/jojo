@@ -456,7 +456,39 @@
     "confirmTitle": "Retirer toutes les suggestions ?",
     "confirmPending_one": "{{count}} suggestion est encore en attente et sera refusée. Rien ne change dans vos fiches et les pipelines continuent de tourner — mais ils ne la proposeront plus.",
     "confirmPending_other": "{{count}} suggestions sont encore en attente et seront refusées. Rien ne change dans vos fiches et les pipelines continuent de tourner — mais ils ne les proposeront plus.",
-    "confirmAnswered": "Les cartes traitées quittent la liste. Rien ne change dans vos fiches."
+    "confirmAnswered": "Les cartes traitées quittent la liste. Rien ne change dans vos fiches.",
+    "search": {
+      "label": "Rechercher dans les suggestions",
+      "placeholder": "Rechercher par poste, employeur, lieu…"
+    },
+    "filter": {
+      "button": "Filtrer",
+      "title": "Filtrer les suggestions",
+      "done": "Terminé",
+      "pipeline": "Pipeline",
+      "type": "Type",
+      "roleTag": "Étiquette de poste",
+      "keyword": "Mot-clé",
+      "employer": "Employeur",
+      "types": {
+        "posting": "Offres",
+        "match": "Correspondances",
+        "change": "Modifications de fiches"
+      },
+      "none": "Aucun dans ces suggestions",
+      "noPipeline": "Aucun pipeline (supprimé)",
+      "clear": "Effacer les filtres",
+      "clearAll": "Effacer la recherche et les filtres",
+      "active": "Filtres actifs",
+      "remove": "Retirer le filtre : {{value}}"
+    },
+    "closed": {
+      "title": "Clôturées",
+      "countOf": "{{shown}} sur {{total}}"
+    },
+    "noActive": "Rien ne vous attend. Les suggestions terminées se trouvent dans Clôturées.",
+    "noActiveMatch": "Aucune suggestion active ne correspond à la recherche et aux filtres.",
+    "noClosedMatch": "Aucune suggestion clôturée ne correspond."
   },
   "nextSteps": {
     "measured": "Mesuré",

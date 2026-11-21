@@ -433,7 +433,39 @@
     "clearAll": "全部清除",
     "confirmTitle": "清除所有建议？",
     "confirmPending_other": "还有 {{count}} 条建议在等待，将被拒绝。你的记录不会有任何变化，流程也会继续运行——但不会再提供这些建议。",
-    "confirmAnswered": "已处理的卡片会从列表中移除。你的记录不会有任何变化。"
+    "confirmAnswered": "已处理的卡片会从列表中移除。你的记录不会有任何变化。",
+    "search": {
+      "label": "搜索建议",
+      "placeholder": "按职位、雇主、地点搜索…"
+    },
+    "filter": {
+      "button": "筛选",
+      "title": "筛选建议",
+      "done": "完成",
+      "pipeline": "流程",
+      "type": "类型",
+      "roleTag": "职位标签",
+      "keyword": "关键词",
+      "employer": "雇主",
+      "types": {
+        "posting": "职位发布",
+        "match": "匹配结果",
+        "change": "记录变更"
+      },
+      "none": "这些建议中没有",
+      "noPipeline": "无流程（已删除）",
+      "clear": "清除筛选",
+      "clearAll": "清除搜索和筛选",
+      "active": "当前筛选",
+      "remove": "移除筛选：{{value}}"
+    },
+    "closed": {
+      "title": "已结束",
+      "countOf": "{{total}} 项中的 {{shown}} 项"
+    },
+    "noActive": "没有待处理的事项。已完成的建议在“已结束”中。",
+    "noActiveMatch": "没有符合搜索和筛选条件的进行中建议。",
+    "noClosedMatch": "没有符合条件的已结束建议。"
   },
   "nextSteps": {
     "measured": "有数据支持",

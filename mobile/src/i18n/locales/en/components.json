@@ -456,7 +456,39 @@
     "confirmTitle": "Clear all suggestions?",
     "confirmPending_one": "{{count}} suggestion is still waiting and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.",
     "confirmPending_other": "{{count}} suggestions are still waiting and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.",
-    "confirmAnswered": "The answered cards come off the list. Nothing in your records changes."
+    "confirmAnswered": "The answered cards come off the list. Nothing in your records changes.",
+    "search": {
+      "label": "Search suggestions",
+      "placeholder": "Search by role, employer, place…"
+    },
+    "filter": {
+      "button": "Filter",
+      "title": "Filter suggestions",
+      "done": "Done",
+      "pipeline": "Pipeline",
+      "type": "Type",
+      "roleTag": "Role tag",
+      "keyword": "Keyword",
+      "employer": "Employer",
+      "types": {
+        "posting": "Postings",
+        "match": "Matches",
+        "change": "Record changes"
+      },
+      "none": "None among these suggestions",
+      "noPipeline": "No pipeline (deleted)",
+      "clear": "Clear filters",
+      "clearAll": "Clear search and filters",
+      "active": "Active filters",
+      "remove": "Remove filter: {{value}}"
+    },
+    "closed": {
+      "title": "Closed",
+      "countOf": "{{shown}} of {{total}}"
+    },
+    "noActive": "Nothing is waiting for you. Finished suggestions are under Closed.",
+    "noActiveMatch": "No active suggestion matches the search and filters.",
+    "noClosedMatch": "No closed suggestion matches."
   },
   "nextSteps": {
     "measured": "Measured",

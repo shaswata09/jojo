@@ -60,16 +60,18 @@ export const SHAPE: DirRow[] = [
     // passed in, the English held to core's word for word.
     // Two more on 2026-11-20 (Q340): `mark-check.ts` and its test — a tailored
     // document's marks measured against the source instead of taken on the
-    // model's word.
-    files: 200,
-    tests: 84,
+    // model's word. And two for Q343: `proposal-filter.ts` and its test — the
+    // suggestions queue's search, filters and active/closed split, shared by
+    // both apps.
+    files: 202,
+    tests: 85,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
     // Re-measured 2026-10-22 with `backup-stream.ts`, and 2026-11-16 without
     // the pulse code.
-    lines: 49009,
+    lines: 50745,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8461, what: 'transactions, journal, boot' },
@@ -190,7 +192,8 @@ export const SHAPE: DirRow[] = [
     // `diagrams/StackDiagram.tsx`.
     // `transfer/PairingQrCard.tsx`: the pairing key as a QR code (Q329), in
     // place of `PulseOverlay.tsx` and `pulse-paint.ts` and its test.
-    files: 522,
+    // `scout/ProposalFilters.tsx`: the suggestions' search box and filter menu (Q343).
+    files: 523,
     tests: 148,
     lines: 77198,
     what: 'every surface you can see',

@@ -456,7 +456,39 @@
     "confirmTitle": "Tüm öneriler temizlensin mi?",
     "confirmPending_one": "{{count}} öneri hâlâ bekliyor ve reddedilecek. Kayıtlarınızda hiçbir şey değişmez ve işlem hatları çalışmaya devam eder — ama bunları bir daha önermezler.",
     "confirmPending_other": "{{count}} öneri hâlâ bekliyor ve reddedilecek. Kayıtlarınızda hiçbir şey değişmez ve işlem hatları çalışmaya devam eder — ama bunları bir daha önermezler.",
-    "confirmAnswered": "Yanıtlanan kartlar listeden kalkar. Kayıtlarınızda hiçbir şey değişmez."
+    "confirmAnswered": "Yanıtlanan kartlar listeden kalkar. Kayıtlarınızda hiçbir şey değişmez.",
+    "search": {
+      "label": "Önerilerde ara",
+      "placeholder": "Pozisyon, işveren veya konuma göre ara…"
+    },
+    "filter": {
+      "button": "Filtrele",
+      "title": "Önerileri filtrele",
+      "done": "Bitti",
+      "pipeline": "İşlem hattı",
+      "type": "Tür",
+      "roleTag": "Pozisyon etiketi",
+      "keyword": "Anahtar kelime",
+      "employer": "İşveren",
+      "types": {
+        "posting": "İlanlar",
+        "match": "Eşleşmeler",
+        "change": "Kayıt değişiklikleri"
+      },
+      "none": "Bu önerilerde yok",
+      "noPipeline": "İşlem hattı yok (silindi)",
+      "clear": "Filtreleri temizle",
+      "clearAll": "Aramayı ve filtreleri temizle",
+      "active": "Etkin filtreler",
+      "remove": "Filtreyi kaldır: {{value}}"
+    },
+    "closed": {
+      "title": "Kapananlar",
+      "countOf": "{{total}} içinden {{shown}}"
+    },
+    "noActive": "Sizi bekleyen bir şey yok. Tamamlanan öneriler Kapananlar bölümünde.",
+    "noActiveMatch": "Arama ve filtrelerle eşleşen etkin öneri yok.",
+    "noClosedMatch": "Eşleşen kapanmış öneri yok."
   },
   "nextSteps": {
     "measured": "Ölçülmüş",

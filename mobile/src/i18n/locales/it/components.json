@@ -479,7 +479,39 @@
     "confirmPending_one": "{{count}} suggerimento è ancora in attesa e verrà rifiutato. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non lo riproporranno.",
     "confirmPending_many": "{{count}} di suggerimenti sono ancora in attesa e verranno rifiutati. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non li riproporranno.",
     "confirmPending_other": "{{count}} suggerimenti sono ancora in attesa e verranno rifiutati. Nei tuoi record non cambia nulla e le pipeline continuano a girare, ma non li riproporranno.",
-    "confirmAnswered": "Le schede già gestite escono dall'elenco. Nei tuoi record non cambia nulla."
+    "confirmAnswered": "Le schede già gestite escono dall'elenco. Nei tuoi record non cambia nulla.",
+    "search": {
+      "label": "Cerca nei suggerimenti",
+      "placeholder": "Cerca per ruolo, datore di lavoro, luogo…"
+    },
+    "filter": {
+      "button": "Filtra",
+      "title": "Filtra suggerimenti",
+      "done": "Fine",
+      "pipeline": "Pipeline",
+      "type": "Tipo",
+      "roleTag": "Etichetta ruolo",
+      "keyword": "Parola chiave",
+      "employer": "Datore di lavoro",
+      "types": {
+        "posting": "Annunci",
+        "match": "Risultati",
+        "change": "Modifiche ai record"
+      },
+      "none": "Nessuno tra questi suggerimenti",
+      "noPipeline": "Nessuna pipeline (eliminata)",
+      "clear": "Rimuovi filtri",
+      "clearAll": "Rimuovi ricerca e filtri",
+      "active": "Filtri attivi",
+      "remove": "Rimuovi filtro: {{value}}"
+    },
+    "closed": {
+      "title": "Chiusi",
+      "countOf": "{{shown}} di {{total}}"
+    },
+    "noActive": "Non c'è nulla in attesa. I suggerimenti conclusi sono in Chiusi.",
+    "noActiveMatch": "Nessun suggerimento attivo corrisponde alla ricerca e ai filtri.",
+    "noClosedMatch": "Nessun suggerimento chiuso corrisponde."
   },
   "nextSteps": {
     "measured": "Misurato",

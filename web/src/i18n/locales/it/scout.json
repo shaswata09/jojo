@@ -155,7 +155,38 @@
     "unreadable": "Non è stato possibile leggere la pagina: {{reason}}",
     "unreadableKept": "Non è stato possibile leggere la pagina: {{reason}} La pagina in sé è stata salvata.",
     "applyBy": "candidati entro il {{date}}",
-    "pageSaved": "Pagina salvata"
+    "pageSaved": "Pagina salvata",
+    "search": {
+      "label": "Cerca nei suggerimenti",
+      "placeholder": "Cerca per ruolo, datore di lavoro, luogo, parola chiave…"
+    },
+    "filter": {
+      "button": "Filtra",
+      "buttonAria": "Filtra suggerimenti ({{picked}} selezionati)",
+      "pipeline": "Pipeline",
+      "type": "Tipo",
+      "roleTag": "Etichetta ruolo",
+      "keyword": "Parola chiave",
+      "employer": "Datore di lavoro",
+      "types": {
+        "posting": "Annunci",
+        "match": "Risultati",
+        "change": "Modifiche ai record"
+      },
+      "none": "Nessuno tra questi suggerimenti",
+      "noPipeline": "Nessuna pipeline (eliminata)",
+      "clear": "Rimuovi filtri",
+      "clearAll": "Rimuovi ricerca e filtri",
+      "active": "Filtri attivi",
+      "remove": "Rimuovi filtro: {{value}}"
+    },
+    "closed": {
+      "title": "Chiusi",
+      "countOf": "{{shown}} di {{total}}"
+    },
+    "noActive": "Non c'è nulla in attesa. I suggerimenti conclusi sono in Chiusi.",
+    "noActiveMatch": "Nessun suggerimento attivo corrisponde alla ricerca e ai filtri.",
+    "noClosedMatch": "Nessun suggerimento chiuso corrisponde."
   },
   "toasts": {
     "alreadyHaveTitle": "Già nelle tue candidature: non aggiunto di nuovo",
