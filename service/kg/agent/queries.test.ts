@@ -7,6 +7,7 @@
  * props it really sets. A fixture would test the fixture.
  */
 import { describe, expect, it } from 'vitest'
+import { parseSources } from '../core/board'
 import { applicationFrom } from '../core/project'
 import { statsFor } from '../core/statistics'
 import { FUNCTION_NAMES } from '../core/expression'
@@ -746,6 +747,33 @@ describe('reading a job board', () => {
     expect(opened).toEqual(['https://a.test/jobs'])
     expect(out.pagesRead).toBe(1)
     expect(out.postings.map((p) => p.title)).toEqual(['Job 1'])
+  })
+
+  it('reads CRA from the address people type: its list, then the pages behind Load more', async () => {
+    // The shapes measured on careercenter.cra.org on 2026-11-20.
+    const opened: string[] = []
+    const scan = async (url: string) => {
+      opened.push(url)
+      const page = url.endsWith('page=2') ? 2 : 1
+      return {
+        ok: true as const,
+        rows: [
+          {
+            url: `https://careercenter.cra.org/job/assistant-professor-berkeley-california-${String(2600 + page)}`,
+            title: `Assistant Professor ${String(page)}`,
+          },
+          ...(page === 1 ? [{ url: 'https://careercenter.cra.org/jobs?page=2', title: 'Load more... Loading...' }] : []),
+        ],
+      }
+    }
+    const out = (await board.read(memory, { url: 'cra.org/ads' }, {
+      today: TODAY,
+      scan,
+      boards: parseSources('cra.org/ads'),
+    })) as { ok: boolean; pagesRead: number; count: number }
+    expect(opened).toEqual(['https://careercenter.cra.org/jobs', 'https://careercenter.cra.org/jobs?page=2'])
+    expect(out.pagesRead).toBe(2)
+    expect(out.count).toBe(2)
   })
 
   it('says a board is done for now when everything on it has been seen', async () => {

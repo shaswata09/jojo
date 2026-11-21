@@ -3,7 +3,7 @@
  * person named, with what they have already been shown taken out.
  */
 
-import { crawlBoard, onOneOf, parseSources } from '../../core/board'
+import { crawlBoard, listingAddress, onOneOf, parseSources } from '../../core/board'
 import type { BoardScan } from '../../core/board'
 import { knownPostingUrls, postingKey } from '../../core/proposal'
 import { s } from '../../core/schema'
@@ -155,7 +155,9 @@ function boardTarget(
           : `I can only open the boards this pipeline watches: ${allowed.join(', ')}.`,
     }
   }
-  return { ok: true, target, scan: ctx.scan, allowed }
+  // Checked as typed, opened where the list now is: a board that moved its
+  // listing (`listingAddress`) moved it within its own site.
+  return { ok: true, target: listingAddress(target), scan: ctx.scan, allowed }
 }
 
 function hintFor(

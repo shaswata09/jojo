@@ -12,6 +12,7 @@ import {
   BOARD_MAX_RESULTS,
   crawlBoard,
   isJobPostingUrl,
+  listingAddress,
   onOneOf,
   pageLinks,
   parseSources,
@@ -318,11 +319,53 @@ describe('finding the next pages of a board', () => {
     expect(pageLinks(rows, 'https://cra.org/ads/')).toEqual(['https://cra.org/ads/page/2/'])
   })
 
+  it('follows a Load more that is a link to the next page of the same list', () => {
+    // CRA's career centre, measured 2026-11-20: the spinner's label is part of
+    // the link's text, and the page after it is a full page of its own.
+    expect(
+      pageLinks(
+        [{ url: 'https://careercenter.cra.org/jobs?page=2', title: 'Load more... Loading...' }],
+        'https://careercenter.cra.org/jobs',
+      ),
+    ).toEqual(['https://careercenter.cra.org/jobs?page=2'])
+  })
+
+  it('does not take a See more that leads to another part of the site for a page', () => {
+    const rows = [
+      { url: '/news/', title: 'See more news' },
+      { url: '/employers?page=2', title: 'Show more employers' },
+    ]
+    expect(pageLinks(rows, 'https://careercenter.cra.org/jobs')).toEqual([])
+  })
+
   it('takes an icon-only next link by its accessible name', () => {
     // The harvest falls back to aria-label when a link has no text.
     expect(pageLinks([{ url: '?page=2', title: 'Next page' }], 'https://jobs.example.edu/search')).toEqual([
       'https://jobs.example.edu/search?page=2',
     ])
+  })
+})
+
+describe('a board that moved its list', () => {
+  it('opens CRA’s list, not the home page its old address now lands on', () => {
+    // Measured 2026-11-20: cra.org/ads redirects to careercenter.cra.org/, five
+    // featured jobs and no pager; the list and its pages are at /jobs.
+    for (const typed of ['https://cra.org/ads', 'https://www.cra.org/ads/', 'https://careercenter.cra.org/'])
+      expect(listingAddress(typed), typed).toBe('https://careercenter.cra.org/jobs')
+  })
+
+  it('leaves a search the person typed, and every other board, as it was', () => {
+    for (const typed of [
+      'https://cra.org/ads?type=faculty',
+      'https://cra.org/ads/4411',
+      'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31',
+      'not a url',
+    ])
+      expect(listingAddress(typed), typed).toBe(typed)
+  })
+
+  it('moves it within the site the person named, so the board guard still holds', () => {
+    expect(onOneOf(listingAddress('https://cra.org/ads'), parseSources('cra.org/ads'))).toBe(true)
   })
 })
 
@@ -372,6 +415,27 @@ describe('reading a board page by page', () => {
     expect(out.ok && out.alreadySeen).toBe(5)
     expect(out.ok && out.listings.map((l) => l.title)[0]).toBe('Job 2.0')
     expect(out.ok && out.listings.length).toBe(10)
+  })
+
+  it('finds the new jobs on a page that repeats the ones before it', async () => {
+    // CRA's pages are cumulative, like any list grown by Load more: page 2
+    // lists page 1's jobs first, then its own. Measured 2026-11-20.
+    const job = (n: number) => ({ url: `https://board.test/jobs/${String(1000 + n)}`, title: `Job ${String(n)}` })
+    const scan: BoardScan = async (url) => ({
+      ok: true,
+      rows: url.endsWith('page=2')
+        ? Array.from({ length: 60 }, (_, i) => job(i + 1))
+        : [...Array.from({ length: 30 }, (_, i) => job(i + 1)), { url: '/jobs?page=2', title: 'Load more' }],
+    })
+    const crawl = await crawlBoard({
+      start: 'https://board.test/jobs',
+      scan,
+      allowed: () => true,
+      known: (url) => Number(url.split('/').pop()) <= 1030,
+    })
+    if (!crawl.ok) throw new Error(crawl.reason)
+    expect(crawl.alreadySeen).toBe(30)
+    expect(crawl.listings.map((l) => l.title)).toEqual(Array.from({ length: 30 }, (_, i) => `Job ${String(i + 31)}`))
   })
 
   it('stops when the answer is full, and says where to carry on', async () => {

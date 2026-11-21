@@ -223,6 +223,40 @@ export function parseSources(source: string): string[] {
 }
 
 /**
+ * Boards that moved their listing, by the address people still type: where the
+ * old one lands now, and where the list itself is.
+ *
+ * `cra.org/ads` is the address both pipeline dialogs suggest. Since CRA moved
+ * its board it redirects to the career centre's HOME page, which shows five
+ * featured jobs and no pager, so a scout reading it saw five jobs and stopped;
+ * the list with its pages is `careercenter.cra.org/jobs` (measured
+ * 2026-11-20). The bare career-centre root lands on the same home page.
+ *
+ * Exact paths only, with no query: someone who typed a search on the board
+ * (`cra.org/ads?type=faculty`) meant that search, and it is left alone. The new
+ * address is on the same site as the old (`sameSite`), so it passes the same
+ * check the person's own address did.
+ */
+const MOVED_BOARDS: readonly { host: string; path: string; to: string }[] = [
+  { host: 'cra.org', path: '/ads', to: 'https://careercenter.cra.org/jobs' },
+  { host: 'careercenter.cra.org', path: '', to: 'https://careercenter.cra.org/jobs' },
+]
+
+/** Where a board's listing now is, for an address `MOVED_BOARDS` knows; otherwise `url` itself. */
+export function listingAddress(url: string): string {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return url
+  }
+  if (parsed.search !== '') return url
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, '')
+  const path = parsed.pathname.replace(/\/+$/, '')
+  return MOVED_BOARDS.find((m) => m.host === host && m.path === path)?.to ?? url
+}
+
+/**
  * Is `url` on one of the boards in `allowed`?
  *
  * Host-only, because a board paginates: a person who typed `cra.org/ads` means
@@ -288,14 +322,14 @@ export function sameSite(host: string, named: string): boolean {
  * dropped — most boards link their rows relatively, so dropping them would
  * return nothing from exactly the boards that work best.
  */
-export function readListings(raw: unknown, from: string): BoardListing[] {
+export function readListings(raw: unknown, from: string, limit = BOARD_MAX_RESULTS): BoardListing[] {
   if (!Array.isArray(raw)) return []
 
   const out: BoardListing[] = []
   const seen = new Set<string>()
 
   for (const row of raw) {
-    if (out.length >= BOARD_MAX_RESULTS) break
+    if (out.length >= limit) break
     if (typeof row !== 'object' || row === null) continue
 
     const fields = row as Record<string, unknown>
@@ -366,6 +400,13 @@ export type ScanCancellation = {
   readonly onAbort?: (fn: () => void) => void
 }
 
+/**
+ * The most postings one PAGE is vetted for. Generous on purpose — it is only a
+ * bound on the work, matching the extension's harvest limit; what reaches the
+ * model is still `BOARD_MAX_RESULTS` new postings.
+ */
+export const BOARD_PAGE_POSTINGS = 400
+
 /** How many pages of one board a single read follows before handing back a `next`. */
 export const BOARD_MAX_PAGES = 10
 
@@ -373,6 +414,12 @@ export const BOARD_MAX_PAGES = 10
 const NEXT_TEXT =
   /^(?:(?:next(?:\s+(?:page|\d+))?|more\s+(?:results|jobs|listings)|older(?:\s+(?:posts|jobs|entries))?)\s*(?:[›»>→]|\.{2,3}|…)?|[›»>→]{1,2})$/i
 const PREVIOUS_TEXT = /^(?:[‹«<←]|prev(?:ious)?\b.*|newer\b.*|first\b.*|last\b.*)$/i
+/**
+ * "Load more", "Show more jobs", "View more…" — a list that grows in place. Its
+ * whole text can carry a spinner's label after it (CRA's reads "Load more...
+ * Loading..."), so only the start is matched, and only on a short text.
+ */
+const MORE_TEXT = /^(?:load|show|view|see)\s+more\b/i
 
 /**
  * A page's identity for "have I read this one": `pageIdentity`, the listing
@@ -401,6 +448,13 @@ const listingOf = (pathname: string) =>
  * a footnote. A "Next" link is trusted wherever it points on the same site —
  * AcademicJobsOnline's goes from `/ajo/jobs` to `/ajo?joblst-…` — because the
  * word is the board saying what the link is.
+ *
+ * A "Load more" that is a real LINK is a next page too, read as one: CRA's
+ * career centre pages `/jobs` through "Load more..." pointing at
+ * `/jobs?page=2` (measured 2026-11-20), which the extension rightly never
+ * presses — a link that navigates is not a button. Unlike "Next" it has to stay
+ * on the same listing, because "See more" is also how a page links its news
+ * or its employers.
  *
  * Same site only, by `sameSite`: a page of a board is on that board.
  */
@@ -441,6 +495,10 @@ export function pageLinks(raw: unknown, from: string): string[] {
     if (/\bprev\b/.test(rel) || PREVIOUS_TEXT.test(text)) continue
 
     if (/\bnext\b/.test(rel) || (text.length <= 24 && NEXT_TEXT.test(text))) {
+      declared.push(url)
+      continue
+    }
+    if (text.length <= 40 && MORE_TEXT.test(text) && listingOf(target.pathname) === listing) {
       declared.push(url)
       continue
     }
@@ -536,7 +594,13 @@ export async function crawlBoard(options: {
     const base = out.landed !== undefined && onOneOf(out.landed, [page]) ? out.landed : page
     queued.add(pageKey(base))
 
-    for (const listing of readListings(out.rows, base)) {
+    // The whole page, not its first `want`: the cap is on what is NEW, and it
+    // is applied below, after the known postings are out. Capped before, a
+    // page whose first forty were already seen handed back nothing — and
+    // CRA's pages are cumulative (page 3 lists jobs 1–76; measured
+    // 2026-11-20), as is any list grown by "Load more", so every new job sat
+    // past row forty.
+    for (const listing of readListings(out.rows, base, BOARD_PAGE_POSTINGS)) {
       if (counted.has(listing.url)) continue
       counted.add(listing.url)
       if (known(listing.url)) alreadySeen += 1
