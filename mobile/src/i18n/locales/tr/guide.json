@@ -255,10 +255,15 @@
       "title": "Lisanslar",
       "hint_one": "{{count}} paket, istediği bildirimle birlikte",
       "hint_other": "{{count}} paket, istedikleri bildirimlerle birlikte",
-      "intro": "Bu uygulamanın üzerine kurulduğu her npm paketi, lisansı ve beraberinde taşınmasını istediği telif hakkı bildirimiyle birlikte; yüklü paketlerden üretilir ve bir testle onlara karşı denetlenir. Uygulamanın bağladığı yerel Android ve iOS kitaplıkları henüz listelenmedi. Önce yazı tipleri ve bu yerel kitaplıklar hakkında bir not gelir.",
+      "intro": "Bu uygulamanın oluşturulduğu her npm paketi ve yerel kitaplık, lisansıyla ve yanında bulunmasını istediği telif hakkı bildirimiyle birlikte. npm paketleri kurulu paketlerden, Android ve iOS kitaplıkları uygulamanın Gradle ve CocoaPods derlemelerinden okunur; testler iki listeyi de bunlarla karşılaştırır. Yazı tipleri ve Google'ın koşulları en başta gelir.",
       "open": "Lisansları oku",
       "sheetTitle": "Üçüncü taraf lisansları",
       "sheetDescription": "jojo, Apache-2.0 lisansıyla lisanslanmıştır. Bunlar, üzerine kurulduğu çalışmaların koşullarıdır; yazarlarının yazdığı biçimde gösterilir.",
+      "sections": {
+        "android": "Android uygulaması: yerel kitaplıklar",
+        "ios": "iOS uygulaması: yerel kitaplıklar",
+        "npm": "npm paketleri (iki uygulama)"
+      },
       "search": "Pakete ya da lisansa göre filtrele",
       "searchLabel": "Lisansları filtrele",
       "empty": "Buna uyan paket yok.",

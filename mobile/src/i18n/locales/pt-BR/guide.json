@@ -256,10 +256,15 @@
       "hint_one": "{{count}} pacote, com o aviso que ele pede",
       "hint_many": "{{count}} pacotes, com os avisos que eles pedem",
       "hint_other": "{{count}} pacotes, com os avisos que eles pedem",
-      "intro": "Cada pacote npm com que este app é construído, com sua licença e o aviso de direitos autorais que ele pede para acompanhá-lo, gerados a partir dos pacotes instalados e conferidos com eles por um teste. As bibliotecas nativas de Android e iOS que o app vincula ainda faltam ser listadas. As fontes e uma nota sobre essas bibliotecas nativas vêm primeiro.",
+      "intro": "Cada pacote npm e cada biblioteca nativa com que este app é feito, com a licença e o aviso de direitos autorais que pede para acompanhá-lo. Os pacotes npm são lidos dos pacotes instalados, e as bibliotecas de Android e iOS, dos builds Gradle e CocoaPods do app; testes conferem as duas listas com eles. As fontes e os termos do Google vêm primeiro.",
       "open": "Ler as licenças",
       "sheetTitle": "Licenças de terceiros",
       "sheetDescription": "O jojo é licenciado sob Apache-2.0. Estes são os termos das obras em que ele se baseia, mostrados como seus autores os escreveram.",
+      "sections": {
+        "android": "App Android: bibliotecas nativas",
+        "ios": "App iOS: bibliotecas nativas",
+        "npm": "Pacotes npm (os dois apps)"
+      },
       "search": "Filtrar por pacote ou licença",
       "searchLabel": "Filtrar as licenças",
       "empty": "Nenhum pacote corresponde.",

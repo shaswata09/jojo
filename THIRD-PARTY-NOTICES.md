@@ -33,8 +33,10 @@ Three kinds of third-party work are named here.
   dependency tree (the set `npm ls --omit=dev --all -w mobile` prints), is
   compiled into the app and shown on the phone's Guide → Built with →
   Licences. It holds each package's licence file and NOTICE, with the MIT, ISC
-  and Apache-2.0 bodies printed once. A test regenerates it and fails when it
-  is stale.
+  and Apache-2.0 bodies printed once, and the native Android and iOS libraries
+  from the committed `mobile/scripts/native-inventory.json` (see "Native
+  libraries on the phone" below). A test regenerates it and fails when it is
+  stale.
 
 ---
 
@@ -297,26 +299,39 @@ file.
   (<https://developers.google.com/terms>) and the Firebase terms
   (<https://firebase.google.com/terms>); the parts Google publishes as open
   source carry their own licences, mostly Apache-2.0, inside the SDK artefacts.
-  They are not npm packages, so they are not in the generated list; the phone
-  names them in its Licences sheet, under "Native libraries not yet listed".
+  The phone's Licences sheet lists each of them, artefact by artefact and pod
+  by pod, with the third-party code Google bundles inside them (see below), and
+  states Google's terms first, under "Firebase and Google Play services".
 
 Collection by both phone SDKs is off by default (`mobile/firebase.json`) and is
 switched on only from Settings.
 
-**To confirm — native libraries on the phone.** The phone's generated list
-covers npm packages only. React Native and its modules also link native
-libraries into the Android app (from Maven, through Gradle) and the iOS app
-(from CocoaPods), and their notices are not yet listed or shown in the app.
-The main ones are AndroidX and the Kotlin standard library (Apache-2.0), OkHttp
-and Okio (Apache-2.0), Fresco and the Hermes engine (MIT), SoLoader and fbjni
-(Apache-2.0), the C++ libraries React Native builds in — Folly (Apache-2.0),
-glog (BSD-3-Clause), boost (Boost Software License 1.0), fmt (MIT) and
-double-conversion (BSD-3-Clause) — and Google's native Firebase SDKs and Play
-services libraries on Android and the Firebase pods on iOS. The fix is a
-Gradle licence plugin (such as Google's `oss-licenses` plugin) to collect the
-Android libraries' notices, and the CocoaPods acknowledgements plist for the
-iOS pods, both shown beside the generated list. Until then the phone's
-Licences sheet says, in its first sections, that the list is incomplete.
+**Native libraries on the phone.** Besides npm packages, React Native and its
+modules link native libraries into the Android app (Maven artefacts, through
+Gradle) and the iOS app (CocoaPods pods). They are credited in the same
+generated file, `mobile/src/screens/guide/third-party-notices.json`, in a
+`native` section with one list per platform, shown on the phone's Licences
+sheet under a heading per platform: 169 Android artefacts (AndroidX, the Kotlin
+standard library, OkHttp and Okio, Fresco, SoLoader, fbjni, Hermes, the
+Firebase SDK and Play services, …) from `:app`'s release runtime classpath, and
+24 iOS pods (the Firebase pods, GoogleUtilities, nanopb, PromisesObjC, and the
+C++ libraries React Native fetches — Folly, glog, boost, fmt, double-conversion,
+fast_float). On Android those C++ libraries are compiled into react-android's
+`libreactnative.so` and are credited under it. Each entry carries the licence
+its POM or podspec states, the LICENSE and NOTICE files inside the artefact,
+and the `third_party_licenses` list Google's artefacts carry for what they
+bundle. The list comes from `mobile/scripts/native-inventory.json`, which
+`node mobile/scripts/third-party-notices.mjs --native` writes from Gradle and
+the CocoaPods Pods tree; it has to be rerun after a native dependency change,
+and the phone's notices test fails when `Podfile.lock` or the Android
+dependency declarations no longer match it.
+
+Still open: several closed-source Google artefacts state only the Android
+Software Development Kit License (Android) or no licence at all (the
+FirebaseAnalytics and GoogleAppMeasurement pods), and are governed by Google's
+terms above. Fresco's native GIF and WebP decoders compile in giflib and
+libwebp, for which the Fresco artefacts ship no licence text, so they are not
+credited separately yet.
 
 ## Vendored into this repository
 
@@ -350,26 +365,6 @@ Copyright (c) 2023 shadcn
 ```
 
 under the MIT permission notice quoted above.
-
-### Spotlight (Aceternity UI)
-
-`web/src/components/ui/spotlight.tsx`, the light sweep behind the mascot in the
-sidebar, is derived from the "Spotlight" component of Aceternity UI
-(<https://ui.aceternity.com>, by Manu Arora). The SVG geometry — the
-ellipse, its transform and the blur filter — and the `spotlight` keyframes in
-`web/src/index.css` that animate it are Aceternity's; jojo's changes are small
-(the props, the filter's id, the class list). It is not shadcn/ui output, which
-the Built with page used to say.
-
-**To confirm.** Aceternity UI's free components are offered under the site's
-own licence terms, not under a standard open-source licence such as MIT, and
-those terms place limits on redistribution (for example, on republishing the
-components as a library or template). Whether shipping this derived component
-inside an Apache-2.0 application, in source and in the bundle, is within them
-has not been checked against the current terms. Until it is, this component is
-not covered by jojo's Apache-2.0 licence — jojo can only license what its own
-authors wrote — and it should be confirmed, or redrawn, before the app is
-distributed further.
 
 ### pdf.js text-layer CSS
 

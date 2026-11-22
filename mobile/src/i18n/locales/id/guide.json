@@ -249,10 +249,15 @@
     "licences": {
       "title": "Lisensi",
       "hint_other": "{{count}} paket, beserta pemberitahuan yang dimintanya",
-      "intro": "Setiap paket npm yang membangun aplikasi ini, beserta lisensinya dan pemberitahuan hak cipta yang dimintanya untuk disertakan, dihasilkan dari paket yang terpasang dan dicocokkan dengannya oleh sebuah tes. Pustaka native Android dan iOS yang ditautkan aplikasi masih belum dicantumkan. Huruf dan catatan tentang pustaka native itu ada di bagian awal.",
+      "intro": "Setiap paket npm dan pustaka native yang menyusun aplikasi ini, beserta lisensinya dan pemberitahuan hak cipta yang diminta untuk menyertainya. Paket npm dibaca dari paket yang terpasang, pustaka Android dan iOS dari build Gradle dan CocoaPods aplikasi, dan pengujian mencocokkan kedua daftar dengannya. Font dan ketentuan Google ditampilkan lebih dulu.",
       "open": "Baca lisensinya",
       "sheetTitle": "Lisensi pihak ketiga",
       "sheetDescription": "jojo dilisensikan di bawah Apache-2.0. Ini adalah ketentuan karya yang menjadi dasarnya, ditampilkan sebagaimana ditulis oleh penulisnya.",
+      "sections": {
+        "android": "Aplikasi Android: pustaka native",
+        "ios": "Aplikasi iOS: pustaka native",
+        "npm": "Paket npm (kedua aplikasi)"
+      },
       "search": "Saring menurut paket atau lisensi",
       "searchLabel": "Saring lisensi",
       "empty": "Tidak ada paket yang cocok.",

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { FlatList, Pressable, View } from 'react-native'
+import { Platform, Pressable, SectionList, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
@@ -17,7 +17,7 @@ import {
   loadNotices,
   noticeBody,
 } from '@/screens/guide/third-party-notices'
-import type { PackageNotice } from '@/screens/guide/third-party-notices'
+import type { Notices, PackageNotice } from '@/screens/guide/third-party-notices'
 
 /**
  * The licences of everything the phone app is built from, on the phone.
@@ -28,7 +28,10 @@ import type { PackageNotice } from '@/screens/guide/third-party-notices'
  * BSD and Apache-2.0 all ask for their notice to go with the code. A minified
  * bundle keeps none of them, and a list on the web app's Guide is not "with"
  * an APK somebody side-loaded — so the notices are in the app, generated from
- * the installed packages (`mobile/scripts/third-party-notices.mjs`).
+ * the installed packages (`mobile/scripts/third-party-notices.mjs`). The same
+ * goes for the native libraries the two apps link — the Maven artefacts in the
+ * APK, the pods in the iOS app — which come from a committed inventory the
+ * same script writes from Gradle and CocoaPods, one section per platform.
  *
  * ## Why a sheet with a list
  *
@@ -37,20 +40,25 @@ import type { PackageNotice } from '@/screens/guide/third-party-notices'
  * not scroll on Android. So the Built with page carries one panel — how many,
  * under which licences — and the full list opens in a tall sheet with its own
  * virtualised list and a filter. A row expands in place to the package's own
- * licence file, its NOTICE if it has one, and the shared licence text it
- * points at. The legal texts are shown as written, in English; translating a
- * licence would be publishing a different licence.
+ * licence file, its NOTICE if it has one, the third-party code bundled inside
+ * it, and the shared licence text it points at. The legal texts are shown as
+ * written, in English; translating a licence would be publishing a different
+ * licence. The section headings are the app's own words and are translated.
  */
 export function ThirdPartyNotices() {
   const { t } = useTranslation('guide')
   const [open, setOpen] = useState(false)
   // Parsed once the panel draws, not at launch — see `loadNotices`.
   const notices = useMemo(() => loadNotices(), [])
-  const tally = useMemo(() => licenceTally(notices.packages), [notices])
+  const everything = useMemo(
+    () => [...notices.native.android, ...notices.native.ios, ...notices.packages],
+    [notices],
+  )
+  const tally = useMemo(() => licenceTally(everything), [everything])
 
   return (
     <Panel>
-      <PanelTitle hint={t('builtWith.licences.hint', { count: notices.packages.length })}>
+      <PanelTitle hint={t('builtWith.licences.hint', { count: everything.length })}>
         {t('builtWith.licences.title')}
       </PanelTitle>
       <Txt size="sm" tone="secondary" style={{ marginBottom: space[2] }}>
@@ -80,13 +88,32 @@ export function ThirdPartyNotices() {
   )
 }
 
+type SectionKey = 'android' | 'ios' | 'npm'
+
+/**
+ * The three lists in reading order: the platform the reader is holding first,
+ * then the other platform's, then the npm packages both apps share. A section
+ * the filter empties is dropped, heading and all.
+ */
+function sectionsFor(notices: Notices, query: string) {
+  const native: SectionKey[] = Platform.OS === 'ios' ? ['ios', 'android'] : ['android', 'ios']
+  const rows: Record<SectionKey, readonly PackageNotice[]> = {
+    android: notices.native.android,
+    ios: notices.native.ios,
+    npm: notices.packages,
+  }
+  return [...native, 'npm' as const]
+    .map((key) => ({ key, data: filterNotices(rows[key], query) }))
+    .filter((section) => section.data.length > 0)
+}
+
 /** The filter and the list. Mounted only while the sheet is open. */
 function NoticeList() {
   const { t } = useTranslation('guide')
   const notices = loadNotices()
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
-  const rows = useMemo(() => filterNotices(notices.packages, query), [notices, query])
+  const sections = useMemo(() => sectionsFor(notices, query), [notices, query])
 
   return (
     <View style={{ flex: 1, gap: space[3] }}>
@@ -96,9 +123,10 @@ function NoticeList() {
         placeholder={t('builtWith.licences.search')}
         label={t('builtWith.licences.searchLabel')}
       />
-      <FlatList
-        data={rows}
-        keyExtractor={(p) => `${p.name}@${p.version}`}
+      <SectionList
+        sections={sections}
+        keyExtractor={(p, index) => `${p.name}@${p.version}#${String(index)}`}
+        stickySectionHeadersEnabled={false}
         ItemSeparatorComponent={Divider}
         keyboardShouldPersistTaps="handled"
         initialNumToRender={20}
@@ -127,14 +155,27 @@ function NoticeList() {
             {t('builtWith.licences.empty')}
           </Txt>
         }
-        renderItem={({ item }) => {
-          const key = `${item.name}@${item.version}`
+        renderSectionHeader={({ section }) => (
+          <View
+            accessibilityRole="header"
+            style={[s.row, { paddingTop: space[3], paddingBottom: space[1.5] }]}
+          >
+            <Txt size="sm" weight="semibold" style={s.fill}>
+              {t(`builtWith.licences.sections.${section.key}`)}
+            </Txt>
+            <Txt size="xs" tone="muted" mono>
+              {String(section.data.length)}
+            </Txt>
+          </View>
+        )}
+        renderItem={({ item, section }) => {
+          const key = `${section.key}:${item.name}@${item.version}`
           return (
             <NoticeRow
               notice={item}
               open={expanded === key}
               onToggle={() => setExpanded((was) => (was === key ? null : key))}
-              body={expanded === key ? noticeBody(item, notices.shared) : ''}
+              body={expanded === key ? noticeBody(item, notices.shared, notices.native) : ''}
             />
           )
         }}

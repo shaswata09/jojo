@@ -255,10 +255,15 @@
       "title": "Licences",
       "hint_one": "{{count}} package, with the notice it asks for",
       "hint_other": "{{count}} packages, with the notices they ask for",
-      "intro": "Every npm package this app is built from, with its licence and the copyright notice it asks to travel with it, generated from the installed packages and checked against them by a test. The native Android and iOS libraries the app links are still to be listed. The fonts and a note on those native libraries come first.",
+      "intro": "Every npm package and native library this app is built from, with its licence and the copyright notice it asks to travel with it. The npm packages are read from the installed packages, the Android and iOS libraries from the app's Gradle and CocoaPods builds, and tests check both lists against them. The fonts and Google's terms come first.",
       "open": "Read the licences",
       "sheetTitle": "Third-party licences",
       "sheetDescription": "jojo is licensed under Apache-2.0. These are the terms of the work it is built on, shown as their authors wrote them.",
+      "sections": {
+        "android": "Android app: native libraries",
+        "ios": "iOS app: native libraries",
+        "npm": "npm packages (both apps)"
+      },
       "search": "Filter by package or licence",
       "searchLabel": "Filter the licences",
       "empty": "No package matches that.",

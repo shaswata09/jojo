@@ -255,10 +255,15 @@
       "title": "Lizenzen",
       "hint_one": "{{count}} Paket, mit dem Hinweis, den es verlangt",
       "hint_other": "{{count}} Pakete, mit den Hinweisen, die sie verlangen",
-      "intro": "Jedes npm-Paket, aus dem diese App gebaut ist, mit seiner Lizenz und dem Urheberrechtshinweis, der es begleiten soll – aus den installierten Paketen erzeugt und von einem Test mit ihnen abgeglichen. Die nativen Android- und iOS-Bibliotheken, die die App einbindet, sind noch nicht aufgeführt. Die Schriften und ein Hinweis zu diesen nativen Bibliotheken stehen am Anfang.",
+      "intro": "Jedes npm-Paket und jede native Bibliothek, aus denen diese App gebaut ist, mit ihrer Lizenz und dem Urheberrechtshinweis, der sie begleiten soll. Die npm-Pakete werden aus den installierten Paketen gelesen, die Android- und iOS-Bibliotheken aus den Gradle- und CocoaPods-Builds der App, und Tests gleichen beide Listen damit ab. Die Schriften und die Bedingungen von Google stehen am Anfang.",
       "open": "Lizenzen lesen",
       "sheetTitle": "Lizenzen von Drittanbietern",
       "sheetDescription": "jojo steht unter der Lizenz Apache-2.0. Dies sind die Bedingungen der Werke, auf denen es aufbaut, so wiedergegeben, wie ihre Autoren sie geschrieben haben.",
+      "sections": {
+        "android": "Android-App: native Bibliotheken",
+        "ios": "iOS-App: native Bibliotheken",
+        "npm": "npm-Pakete (beide Apps)"
+      },
       "search": "Nach Paket oder Lizenz filtern",
       "searchLabel": "Lizenzen filtern",
       "empty": "Kein Paket passt dazu.",

@@ -256,10 +256,15 @@
       "hint_one": "{{count}} paquet, avec l’avis qu’il demande",
       "hint_many": "{{count}} paquets, avec les avis qu’ils demandent",
       "hint_other": "{{count}} paquets, avec les avis qu’ils demandent",
-      "intro": "Chaque paquet npm à partir duquel cette application est construite, avec sa licence et l’avis de droit d’auteur qu’il demande de faire suivre, généré à partir des paquets installés et vérifié par un test. Les bibliothèques natives Android et iOS liées par l’application restent à lister. Les polices et une note sur ces bibliothèques natives viennent en premier.",
+      "intro": "Chaque paquet npm et chaque bibliothèque native à partir desquels cette application est construite, avec sa licence et l’avis de droit d’auteur qu’il demande de faire suivre. Les paquets npm sont lus dans les paquets installés, les bibliothèques Android et iOS dans les builds Gradle et CocoaPods de l’application, et des tests vérifient les deux listes par rapport à eux. Les polices et les conditions de Google viennent en premier.",
       "open": "Lire les licences",
       "sheetTitle": "Licences tierces",
       "sheetDescription": "jojo est distribué sous licence Apache-2.0. Voici les conditions des œuvres sur lesquelles il repose, telles que leurs auteurs les ont écrites.",
+      "sections": {
+        "android": "Application Android : bibliothèques natives",
+        "ios": "Application iOS : bibliothèques natives",
+        "npm": "Paquets npm (les deux applications)"
+      },
       "search": "Filtrer par paquet ou licence",
       "searchLabel": "Filtrer les licences",
       "empty": "Aucun paquet ne correspond.",

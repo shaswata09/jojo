@@ -226,7 +226,11 @@ no human review, seconds — can be served from any site as
 prompt. No store listing, no browsing the add-ons site. `manifest.json` already
 carries the `browser_specific_settings.gecko.id` that signing requires, and the
 `background` key names both a `service_worker` and a `scripts` array because
-Firefox does not support the former.
+Firefox does not support the former. It needs Firefox 140 or later
+(`strict_min_version`): that is the first version whose install prompt shows
+the data the add-on declares under `data_collection_permissions` and asks about
+it, which Mozilla requires of new add-ons; on older versions the add-on would
+have to ask with a screen of its own.
 
 What is missing is the signing step. Until it exists, load it temporarily:
 `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → pick

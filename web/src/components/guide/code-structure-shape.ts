@@ -200,9 +200,11 @@ export const SHAPE: DirRow[] = [
     // `guide/measured-dates.ts` and its test: a published table's per-model
     // run dates, once MiniMax M2.1 was measured a month after the others (Q344).
     // Q346 (2026-11-21, legal fixes): counts re-measured after the privacy,
-    // robots.txt, notices and demo-data changes.
-    files: 528,
-    tests: 152,
+    // robots.txt, notices and demo-data changes. `brand/MascotLight.tsx` and its
+    // test in place of `ui/spotlight.tsx`: the light behind the mascot, redrawn
+    // as jojo's own.
+    files: 529,
+    tests: 153,
     lines: 80216,
     what: 'every surface you can see',
   },
@@ -289,4 +291,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 289
+export const WEB_TEST_FILES = 290

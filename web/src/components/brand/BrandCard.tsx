@@ -6,7 +6,7 @@ import { useTheme } from '@/lib/theme-context'
 import { JojoRobot } from '@/components/brand/JojoRobot'
 import { MascotCredit, MoveList } from '@/components/brand/MascotMoves'
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Spotlight } from '@/components/ui/spotlight'
+import { MascotLight } from '@/components/brand/MascotLight'
 import {
   HOLD_MS,
   HOLD_PX,
@@ -189,7 +189,7 @@ export function BrandCard({ action, className }: { action?: ReactNode; className
           )}
           style={{ borderColor: 'var(--hairline)' }}
         >
-          <Spotlight className="-top-24 left-0" fill="white" />
+          <MascotLight />
 
           {/* The whole card is the hit target — the robot is decoration, so there is
           nothing smaller worth aiming at. It is also the gesture pad: pointer

@@ -249,10 +249,15 @@
     "licences": {
       "title": "Giấy phép",
       "hint_other": "{{count}} gói, kèm thông báo mà chúng yêu cầu",
-      "intro": "Mọi gói npm tạo nên ứng dụng này, kèm giấy phép và thông báo bản quyền mà gói yêu cầu đi cùng, được tạo từ các gói đã cài đặt và được một bài kiểm thử đối chiếu với chúng. Các thư viện gốc Android và iOS mà ứng dụng liên kết vẫn chưa được liệt kê. Phông chữ và một ghi chú về các thư viện gốc đó được đặt lên đầu.",
+      "intro": "Mọi gói npm và thư viện gốc tạo nên ứng dụng này, kèm giấy phép và thông báo bản quyền mà chúng yêu cầu đi cùng. Các gói npm được đọc từ các gói đã cài, thư viện Android và iOS từ bản dựng Gradle và CocoaPods của ứng dụng, và các bài kiểm thử đối chiếu cả hai danh sách với chúng. Phông chữ và điều khoản của Google được đặt lên đầu.",
       "open": "Đọc giấy phép",
       "sheetTitle": "Giấy phép của bên thứ ba",
       "sheetDescription": "jojo được cấp phép theo Apache-2.0. Đây là điều khoản của những tác phẩm mà nó dựa trên, hiển thị đúng như tác giả của chúng đã viết.",
+      "sections": {
+        "android": "Ứng dụng Android: thư viện gốc",
+        "ios": "Ứng dụng iOS: thư viện gốc",
+        "npm": "Gói npm (cả hai ứng dụng)"
+      },
       "search": "Lọc theo gói hoặc giấy phép",
       "searchLabel": "Lọc giấy phép",
       "empty": "Không có gói nào khớp.",

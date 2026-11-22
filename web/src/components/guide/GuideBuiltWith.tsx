@@ -30,12 +30,12 @@ import { EnglishOnlyNotice } from '@/components/guide/EnglishOnlyNotice'
  * One thing on this page is unusual and it is deliberate.
  *
  * It says out loud where the provenance runs out, and names a gap rather than
- * smoothing it over. Today that is the Spotlight component, derived from
- * Aceternity UI under terms that are not a standard open-source licence and
- * have not been checked. (Two earlier gaps were named here the same way and
- * then closed: a mascot runtime that stated no licence at all, replaced by a
- * CC BY model credited below; and two Transfer scene images with no recorded
- * source, replaced by images a script in this repository draws.) A credits
+ * smoothing it over. None is open today. (Three gaps were named here that way
+ * and then closed: a mascot runtime that stated no licence at all, replaced by
+ * a CC BY model credited below; two Transfer scene images with no recorded
+ * source, replaced by images a script in this repository draws; and the light
+ * behind the mascot, derived from Aceternity UI's Spotlight under terms that
+ * forbid redistributing its source, redrawn as jojo's own MascotLight.) A credits
  * page is the one page in an app where a confident guess is worse than an
  * admitted gap, because a reader has no way to tell the two apart and every
  * other line loses its weight.
@@ -205,24 +205,6 @@ export function GuideBuiltWith() {
                 command, dialog, input, input group, label, popover, separator, switch, textarea,
                 toast — began as shadcn/ui output and live in this repository, edited since. The app
                 does not import them from a package; it owns them. Copyright (c) 2023 shadcn.
-              </>
-            }
-          />
-          <OtherCredit
-            title="Spotlight, from Aceternity UI"
-            meta="Aceternity UI's own terms — to confirm"
-            warn
-            body={
-              <>
-                The light sweep behind the mascot,{' '}
-                <span className="font-mono text-xs break-all">src/components/ui/spotlight.tsx</span>
-                , is derived from the &ldquo;Spotlight&rdquo; component of Aceternity UI
-                (ui.aceternity.com): its shape, blur and animation are Aceternity&rsquo;s. This page
-                used to list it as shadcn/ui output, which it is not. Aceternity offers its free
-                components under its own terms rather than a standard open-source licence, and
-                whether those terms allow shipping it inside an Apache-2.0 app has not been checked.
-                It is named here as a gap to close, not as a settled licence, and jojo&rsquo;s
-                licence does not cover it.
               </>
             }
           />

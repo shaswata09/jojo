@@ -1,0 +1,72 @@
+/*
+ * The haze of light behind the sidebar mascot (see MascotLight.tsx).
+ *
+ * The beam is one rotated box filled with an elliptical gradient. Its stops
+ * trace exp(-0.5 (2.3 t)^2.9): a slightly flatter core than a Gaussian and a
+ * quicker fall-off, down to under 0.5% of the peak at the box's edge, so it
+ * reads as haze with no visible rim and needs no blur filter.
+ *
+ * All lengths are percentages of the (square) card, so the light scales with
+ * it. The resting values below are the final state; the entrance only says
+ * where it starts from, so reduced motion (animation: none) is the end frame.
+ */
+
+.jojo-mascot-light {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.jojo-mascot-light-beam {
+  position: absolute;
+  /* Narrow screens: a diagonal streak across the top-left third. */
+  left: -28.8%;
+  top: -19.1%;
+  width: 115.5%;
+  height: 39.6%;
+  rotate: 32deg;
+  opacity: 0.19;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 255 255) 0%,
+    rgb(255 255 255 / 0.993) 10%,
+    rgb(255 255 255 / 0.949) 20%,
+    rgb(255 255 255 / 0.843) 30%,
+    rgb(255 255 255 / 0.675) 40%,
+    rgb(255 255 255 / 0.472) 50%,
+    rgb(255 255 255 / 0.28) 60%,
+    rgb(255 255 255 / 0.137) 70%,
+    rgb(255 255 255 / 0.053) 80%,
+    rgb(255 255 255 / 0.016) 90%,
+    rgb(255 255 255 / 0) 100%
+  );
+  animation: jojo-mascot-light-enter 2s cubic-bezier(0.33, 1, 0.68, 1) 0.6s 1 both;
+}
+
+/* Tailwind's lg (64rem): only a small, dim smudge at the top edge. */
+@media (width >= 64rem) {
+  .jojo-mascot-light-beam {
+    left: 1%;
+    top: -15.9%;
+    width: 45.5%;
+    height: 23.9%;
+    rotate: 34deg;
+    opacity: 0.17;
+  }
+}
+
+/* Fades in, drifting down-right from further up-left, growing from half size. */
+@keyframes jojo-mascot-light-enter {
+  from {
+    opacity: 0;
+    translate: -20% -45%;
+    scale: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jojo-mascot-light-beam {
+    animation: none;
+  }
+}

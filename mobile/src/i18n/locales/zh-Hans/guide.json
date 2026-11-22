@@ -249,10 +249,15 @@
     "licences": {
       "title": "许可证",
       "hint_other": "{{count}} 个软件包，以及它们要求附带的声明",
-      "intro": "构建此应用所用的每个 npm 软件包，连同其许可证和要求随附的版权声明，均由已安装的软件包生成，并由测试与之核对。应用链接的 Android 和 iOS 原生库尚待列出。字体以及关于这些原生库的说明排在最前面。",
+      "intro": "构建此应用所用的每个 npm 软件包和原生库，连同其许可证和要求随附的版权声明。npm 软件包读取自已安装的软件包，Android 和 iOS 库读取自应用的 Gradle 和 CocoaPods 构建，并由测试将两份列表与之核对。字体和 Google 条款排在最前面。",
       "open": "阅读许可证",
       "sheetTitle": "第三方许可证",
       "sheetDescription": "jojo 采用 Apache-2.0 许可证。以下是它所依赖作品的条款，按作者原文显示。",
+      "sections": {
+        "android": "Android 应用：原生库",
+        "ios": "iOS 应用：原生库",
+        "npm": "npm 软件包（两个应用共用）"
+      },
       "search": "按软件包或许可证筛选",
       "searchLabel": "筛选许可证",
       "empty": "没有匹配的软件包。",

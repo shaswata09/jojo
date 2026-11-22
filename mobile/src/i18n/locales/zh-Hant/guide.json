@@ -249,10 +249,15 @@
     "licences": {
       "title": "授權條款",
       "hint_other": "{{count}} 個套件，以及它們要求附上的聲明",
-      "intro": "建構這個應用程式所用的每個 npm 套件，連同其授權條款和要求隨附的著作權聲明，皆由已安裝的套件產生，並由測試與之核對。應用程式連結的 Android 和 iOS 原生程式庫尚待列出。字型以及關於這些原生程式庫的說明排在最前面。",
+      "intro": "建構本應用程式所用的每個 npm 套件與原生程式庫，連同其授權條款與要求隨附的著作權聲明。npm 套件讀取自已安裝的套件，Android 與 iOS 程式庫讀取自應用程式的 Gradle 與 CocoaPods 建置，並由測試將兩份清單與之核對。字型與 Google 條款列在最前面。",
       "open": "閱讀授權條款",
       "sheetTitle": "第三方授權條款",
       "sheetDescription": "jojo 採用 Apache-2.0 授權。以下是它所依據之作品的條款，依作者原文顯示。",
+      "sections": {
+        "android": "Android 應用程式：原生程式庫",
+        "ios": "iOS 應用程式：原生程式庫",
+        "npm": "npm 套件（兩個應用程式共用）"
+      },
       "search": "依套件或授權條款篩選",
       "searchLabel": "篩選授權條款",
       "empty": "沒有符合的套件。",

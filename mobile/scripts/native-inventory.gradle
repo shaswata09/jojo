@@ -1,0 +1,74 @@
+/*
+ * Gradle init script for `node mobile/scripts/third-party-notices.mjs --native`.
+ *
+ * Not part of any build: nothing applies it except that command, which passes it
+ * with `-I` and runs the task below on `:app`. It prints, one tab-separated line
+ * each, what the release APK's runtime classpath resolves to:
+ *
+ *   JOJO-ARTIFACT   group:module:version   /path/to/the/file/in/the/gradle/cache
+ *   JOJO-COMPONENT  group:module:version
+ *   JOJO-POM        group:module:version   /path/to/its/pom
+ *   JOJO-NOPOM      group:module:version
+ *
+ * A COMPONENT with no ARTIFACT is a BOM or a Kotlin Multiplatform root module —
+ * resolved, but nothing of it is packaged. POMs are walked up their <parent>
+ * chain, because many artefacts state their licence only in a parent.
+ *
+ * POMs come through Gradle's own artifact resolution, so they honour the
+ * repositories the build declares and land in the Gradle cache; with
+ * `--offline` a POM the cache lacks prints as NOPOM rather than failing.
+ */
+
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
+import org.gradle.maven.MavenModule
+import org.gradle.maven.MavenPomArtifact
+
+allprojects {
+  if (path != ':app') return
+  tasks.register('jojoNativeInventory') {
+    notCompatibleWithConfigurationCache('reads configurations at execution time')
+    doLast {
+      def cfg = configurations.getByName('releaseRuntimeClasspath')
+      cfg.incoming.artifactView { lenient = true }.artifacts.each { a ->
+        def id = a.id.componentIdentifier
+        if (id instanceof ModuleComponentIdentifier) {
+          println "JOJO-ARTIFACT\t${id.group}:${id.module}:${id.version}\t${a.file}"
+        }
+      }
+      def seen = [] as Set
+      def pom
+      pom = { String g, String m, String v ->
+        def key = "${g}:${m}:${v}".toString()
+        if (!seen.add(key)) return
+        def result = dependencies.createArtifactResolutionQuery()
+          .forModule(g, m, v)
+          .withArtifacts(MavenModule, MavenPomArtifact)
+          .execute()
+        File file = null
+        result.resolvedComponents.each { rc ->
+          rc.getArtifacts(MavenPomArtifact).each { ar ->
+            if (ar instanceof ResolvedArtifactResult) file = ar.file
+          }
+        }
+        if (file == null) {
+          println "JOJO-NOPOM\t${key}"
+          return
+        }
+        println "JOJO-POM\t${key}\t${file}"
+        def xml = new groovy.xml.XmlSlurper(false, false).parse(file)
+        def parent = xml.parent
+        if (parent.size() > 0 && parent.groupId.text()) {
+          pom(parent.groupId.text(), parent.artifactId.text(), parent.version.text())
+        }
+      }
+      cfg.incoming.resolutionResult.allComponents.each { c ->
+        def id = c.id
+        if (id instanceof ModuleComponentIdentifier) {
+          println "JOJO-COMPONENT\t${id.group}:${id.module}:${id.version}"
+          pom(id.group, id.module, id.version)
+        }
+      }
+    }
+  }
+}

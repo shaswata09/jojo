@@ -122,6 +122,18 @@ describe('the extension manifest', () => {
     expect(gecko.data_collection_permissions.required).not.toContain('none')
   })
 
+  /**
+   * Firefox shows that declaration in its own install prompt only from 140
+   * (desktop). On anything older Mozilla requires the add-on to ask with a
+   * consent screen of its own, which this one does not have — so it must not
+   * install there at all.
+   * https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/
+   */
+  it('installs only on a Firefox that asks the person about that data itself', () => {
+    const min = manifest.browser_specific_settings.gecko.strict_min_version
+    expect(Number.parseFloat(min)).toBeGreaterThanOrEqual(140)
+  })
+
   it('runs the bridge at document_idle, not document_start', () => {
     // `document_start` runs before the page's own scripts and before jojo has
     // decided anything. Nothing here needs to be that early.
