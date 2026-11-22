@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Dein Browser ist die Datenbank",
-      "body": "Jeder Eintrag wird während der Arbeit in die Datenbank in diesem Browser geschrieben, es ist also sicher, den Tab zu schließen. Nichts verlässt diesen Rechner und nichts wird synchronisiert – lösch deine Browserdaten, wechsle den Browser oder verliere die Festplatte, und alles ist mit weg. Exportiere in den <settings>Einstellungen</settings> eine <kbd>.json</kbd>-Sicherung für alles, was du woanders aufheben willst."
+      "body": "Jeder Eintrag wird während der Arbeit in die Datenbank in diesem Browser geschrieben, es ist also sicher, den Tab zu schließen. jojo bewahrt nirgendwo sonst eine Kopie auf, und nichts wird synchronisiert: Deine Einträge verlassen diesen Browser nur, wenn du sie an einen von dir gewählten Modellanbieter sendest oder sie selbst woandershin bringst. Lösch deine Browserdaten, wechsle den Browser oder verliere die Festplatte, und sie sind mit weg. Exportiere in den <settings>Einstellungen</settings> eine <kbd>.json</kbd>-Sicherung für alles, was du woanders aufheben willst."
     },
     "savePath": {
       "title": "Was passiert, wenn du etwas speicherst",
@@ -333,7 +333,7 @@
         "hint": "eingebaut",
         "title": "Leg eine Sicherung an",
         "storedTitle": "Deine Dokumente werden hier gespeichert",
-        "stored": "Lebensläufe und Anschreiben, die du anhängst, werden in diesem Browser gespeichert und überstehen das Schließen des Tabs. Nichts wird irgendwohin hochgeladen – und nichts verlässt diesen Rechner, außer du lädst es selbst herunter.",
+        "stored": "Lebensläufe und Anschreiben, die du anhängst, werden in diesem Browser gespeichert und überstehen das Schließen des Tabs. Die Dateien werden nicht hochgeladen, und jojo bewahrt nirgendwo sonst eine Kopie auf; ihr Text geht nur dann an ein Modell, wenn du einen gehosteten Anbieter wählst.",
         "oneFileTitle": "Eine Datei enthält alles",
         "oneFile": "In den <settings>Einstellungen</settings> wird eine Sicherung geschrieben, die jeden Eintrag, jede Verbindung zwischen ihnen und jedes Dokument enthält – alles in einer Datei. Beim Wiederherstellen kommt alles drei zurück.",
         "whyTitle": "Warum das wichtig ist",

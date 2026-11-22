@@ -211,7 +211,7 @@
     },
     "crash": {
       "title": "Relatórios de falhas e uso",
-      "description": "Duas coisas separadas, ambas ativadas — desative qualquer uma aqui ou depois em Configurações. Nenhuma pode levar seus registros: nem uma candidatura, um documento, uma nota, um perfil ou uma conversa.",
+      "description": "Duas coisas separadas, e ambas ficam desativadas a menos que você as ative — aqui ou depois em Configurações. Nenhuma pode levar seus registros: nem uma candidatura, um documento, uma nota, um perfil ou uma conversa.",
       "inReport": "O que vai em um relatório",
       "inError": "A mensagem de erro e onde no jojo ela aconteceu.",
       "inStack": "O stack trace, que nomeia o código que falhou.",
@@ -222,12 +222,13 @@
       "keep": "Manter relatórios de falhas",
       "keepHint": "O erro e onde ele aconteceu. No navegador, fica neste dispositivo.",
       "share": "Compartilhar quais recursos eu uso",
-      "shareHint": "Só contagens — quais telas são abertas e com que frequência. Nunca o que há nelas.",
-      "usageNote": "O segundo é a única coisa que o jojo envia sobre o que você FAZ, e ele só consegue dizer coisas de uma lista fixa — “o cofre foi aberto”, “uma candidatura foi adicionada”, “há de 6 a 20”. Ele não consegue citar um empregador, um cargo, um arquivo ou qualquer coisa que você digitou, porque essas palavras não estão na lista. Vai para o Google Analytics para vermos quais partes do jojo merecem mais trabalho.",
+      "shareHint": "Só contagens — quais telas são abertas e com que frequência —, nunca o que há nelas. O Google Analytics também guarda um ID aleatório neste navegador e registra informações básicas como o navegador, o tipo de dispositivo, o idioma e o país ou a região de onde vem sua conexão.",
+      "usageNote": "O segundo é a única coisa que o jojo envia sobre o que você FAZ, e ele só consegue dizer coisas de uma lista fixa — “o cofre foi aberto”, “uma candidatura foi adicionada”, “há de 6 a 20”. Ele não consegue citar um empregador, um cargo, um arquivo ou qualquer coisa que você digitou, porque essas palavras não estão na lista. Vai para o Google Analytics para vermos quais partes do jojo merecem mais trabalho, junto com o que o Google Analytics acrescenta a cada envio: um ID aleatório que ele guarda neste navegador e informações básicas como o navegador, o tipo de dispositivo, o idioma e o país ou a região de onde vem sua conexão. Desativá-lo apaga esse ID.",
       "bothOff": "Desativar os dois",
       "save": "Salvar escolhas",
       "continueOff": "Continuar com os dois desativados",
-      "later": "Você pode mudar qualquer um deles a qualquer momento em Configurações, e desativar um também descarta o que ele guardou."
+      "later": "Você pode mudar qualquer um deles a qualquer momento em Configurações, e desativar um também descarta o que ele guardou.",
+      "privacy": "Aviso de privacidade"
     },
     "extension": {
       "title": "Guarde as vagas para as quais você se candidata",

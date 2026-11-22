@@ -51,6 +51,7 @@
     "sources": "Quellen",
     "sourcesHint": "Die Börse oder Karriereseite, die sie beobachtet. Mehrere durch Kommas trennen.",
     "sourceError": "Ein Scout ohne Quelle hat nichts zu lesen.",
+    "sourceRefused": "{{sites}} erlaubt in den Nutzungsbedingungen kein automatisiertes Lesen, deshalb liest der Scout dort nicht. Entferne die Adresse, oder öffne die Stellenanzeigen dort selbst und speichere sie mit dem Button der jojo-Erweiterung.",
     "terms": {
       "twin": "Worauf achten",
       "scout": "Suchbegriffe"

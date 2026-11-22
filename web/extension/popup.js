@@ -27,6 +27,16 @@
 
 const $ = (id) => document.getElementById(id)
 
+/*
+ * The published privacy notice. Hard-coded, and deliberately the same string
+ * as `PRIVACY_URL` in `service/kg/core/privacy.ts`: the extension is plain JS
+ * loaded unpacked, with no build step and no way to import service code. The
+ * web app links the copy shipped with its own build; the extension has no
+ * page of its own to resolve a relative address against, so it opens the
+ * published one, as the phone does. `popup-privacy.test.ts` holds the two equal.
+ */
+const PRIVACY_URL = 'https://shaswata09.github.io/jojo/privacy.html'
+
 /** One round trip to the worker. Rejects rather than resolving undefined. */
 const ask = (message) =>
   new Promise((resolve, reject) => {
@@ -375,6 +385,15 @@ async function start() {
 
   $('network-on').addEventListener('change', async () => {
     await ask({ type: 'jojo:set-routing', network: $('network-on').checked })
+  })
+
+  /*
+   * In a tab through `tabs.create`, for the reason `Save` uses it: the popup
+   * closes the moment it loses focus, and the browser takes the request
+   * immediately, so the tab opens even if the popup is already gone.
+   */
+  $('privacy').addEventListener('click', () => {
+    void chrome.tabs.create({ url: PRIVACY_URL })
   })
 
   await draw(drawTab, (why) => {

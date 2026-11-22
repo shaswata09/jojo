@@ -77,7 +77,7 @@
       "description": "Drop your CV and statements here, or choose them — they are filed in the Vault under {{bucket}}, where the rest of the app can reach them.",
       "upload": "Upload a document"
     },
-    "footer": "The same files as the Vault's <anchor>Files tool</anchor>, filtered to {{bucket}}. Drop a document here or choose one and the file itself is kept in this browser — nothing is uploaded anywhere. Click one to read it."
+    "footer": "The same files as the Vault's <anchor>Files tool</anchor>, filtered to {{bucket}}. Drop a document here or choose one and the file itself is kept in this browser — it is not uploaded, and its text goes to a model only if you choose a hosted provider. Click one to read it."
   },
   "documentTile": {
     "open": "Open {{name}}",

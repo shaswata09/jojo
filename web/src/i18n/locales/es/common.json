@@ -211,7 +211,7 @@
     },
     "crash": {
       "title": "Informes de errores y uso",
-      "description": "Dos cosas distintas, ambas activadas: desactiva cualquiera aquí o más tarde en Ajustes. Ninguna puede contener tus registros: ni una candidatura, ni un documento, ni una nota, ni un perfil, ni una conversación.",
+      "description": "Dos cosas distintas, y ambas están desactivadas a menos que las actives, aquí o más tarde en Ajustes. Ninguna puede contener tus registros: ni una candidatura, ni un documento, ni una nota, ni un perfil, ni una conversación.",
       "inReport": "Qué contiene un informe",
       "inError": "El mensaje de error y en qué parte de jojo ocurrió.",
       "inStack": "La traza de la pila, que nombra el código que falló.",
@@ -222,12 +222,13 @@
       "keep": "Guardar informes de errores",
       "keepHint": "El error y dónde ocurrió. En el navegador se queda en este dispositivo.",
       "share": "Compartir qué funciones uso",
-      "shareHint": "Solo recuentos: qué pantallas se abren y con qué frecuencia. Nunca su contenido.",
-      "usageNote": "El segundo es lo único que jojo envía sobre lo que HACES, y solo puede decir cosas de una lista fija: «se abrió la bóveda», «se añadió una candidatura», «hay entre 6 y 20». No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito, porque esas palabras no están en la lista. Va a Google Analytics para que podamos ver qué partes de jojo merecen más trabajo.",
+      "shareHint": "Solo recuentos: qué pantallas se abren y con qué frecuencia, nunca su contenido. Google Analytics también guarda un identificador aleatorio en este navegador y registra datos básicos como el navegador, el tipo de dispositivo, el idioma y el país o la región de donde procede tu conexión.",
+      "usageNote": "El segundo es lo único que jojo envía sobre lo que HACES, y solo puede decir cosas de una lista fija: «se abrió la bóveda», «se añadió una candidatura», «hay entre 6 y 20». No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito, porque esas palabras no están en la lista. Va a Google Analytics para que podamos ver qué partes de jojo merecen más trabajo, junto con lo que Google Analytics añade a cada envío: un identificador aleatorio que guarda en este navegador y datos básicos como el navegador, el tipo de dispositivo, el idioma y el país o la región de donde procede tu conexión. Desactivarlo borra ese identificador.",
       "bothOff": "Desactivar ambos",
       "save": "Guardar opciones",
       "continueOff": "Continuar con ambos desactivados",
-      "later": "Puedes cambiar cualquiera de los dos en cualquier momento en Ajustes, y al desactivar uno también se descarta lo que había guardado."
+      "later": "Puedes cambiar cualquiera de los dos en cualquier momento en Ajustes, y al desactivar uno también se descarta lo que había guardado.",
+      "privacy": "Aviso de privacidad"
     },
     "extension": {
       "title": "Conserva las ofertas a las que te postulas",

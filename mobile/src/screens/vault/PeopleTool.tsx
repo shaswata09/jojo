@@ -311,7 +311,7 @@ function PersonSheet({
             value={draft.email ?? ''}
             autoCapitalize="none"
             keyboardType="email-address"
-            placeholder="n.okafor@rice.edu"
+            placeholder="n.okafor@example.edu"
             onChangeText={set('email')}
           />
           <TextField

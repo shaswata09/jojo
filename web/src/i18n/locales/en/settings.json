@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Endpoint",
       "hintOllama": "The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.",
-      "hint": "The base URL, ending in /v1."
+      "hint": "The base URL, ending in /v1.",
+      "remote": "This address is not on this device or your local network, so your records will be sent to it — and to whoever runs it."
     },
     "apiKey": {
       "label": "API key",
@@ -91,6 +92,26 @@
     "providerTerms": "{{provider}} terms",
     "privacy": "Privacy policy",
     "licence": "jojo’s licence page"
+  },
+  "cloudNotice": {
+    "headline": "Your records leave this device when you use {{name}}",
+    "sent": {
+      "what": "Everything the assistant reads to answer you is sent to {{name}}: your applications and notes, your profile, your CV text once a document is read, and the names and email addresses of any referees or recruiters it looks at.",
+      "others": "Some of that is other people’s personal information, not just yours.",
+      "local": "With a model on your own machine instead, none of it leaves."
+    },
+    "background": "It is not only when you chat. While {{name}} is selected, jojo also sends it records for work done in the background: the duplicate check when you save an application, reading the postings your scout finds, fit readings against your profile, tailoring your CV and letters, and shortening a long conversation so it fits.",
+    "cost": {
+      "paid": "{{short}} bills your account, and its own terms govern what it may keep and whether what you send may be used to improve its models.",
+      "freeTier": "{{short}} has a free tier with limits as well as paid use billed to your account. Either way its own terms govern what it may keep and whether what you send may be used to improve its models.",
+      "bargain": "That is a different bargain from the local option, not a worse one, but it is worth reading before your records are part of it."
+    },
+    "openrouter": "OpenRouter passes each request on to the company that makes the model you pick, under that company’s terms as well as its own. OpenRouter’s own terms let it log requests and use their content in anonymised form.",
+    "business": "These API terms are written for businesses and developers. jojo cannot tell you whether they fit a personal job search; checking that they fit your use is up to you.",
+    "liability": {
+      "party": "You are the account holder and the party to that agreement — jojo ships no key and makes no request of its own.",
+      "breach": "Compliance with {{short}}’s terms is yours, and jojo accepts no liability for any breach of them."
+    }
   },
   "mcp": {
     "title": "Connect from an MCP client",
@@ -142,7 +163,7 @@
     "cors": "It listens on <mono>{{endpoint}}</mono>, but it sends no CORS headers — so a browser will not let this page call it across ports. jojo's dev server forwards <mono>{{path}}</mono> to it, which is why the address above is a path rather than a URL. The phone app talks to it directly and needs none of this.",
     "hosted": "<em>On a hosted copy, install the extension.</em> A page served from the web cannot call <mono>127.0.0.1</mono> — there is no proxy to forward a path, and https:// pages are barred from the local network. The extension is not a page: it reaches the reader directly, and jojo asks it to. Put the reader's own address above and it relays each request; it will only ever relay to this machine.",
     "fillAddress": "Fill in an address first",
-    "connectedNote": "Documents are sent to that address and nowhere else. Nothing is uploaded.",
+    "connectedNote": "Documents are sent to that address and nowhere else.",
     "separate": "{{name}} is a separate program, not part of jojo.",
     "notAffiliated": "jojo is not affiliated with Microsoft."
   },
@@ -183,13 +204,14 @@
     "where": "In this browser and in the extension, crash reports <em>stay on this device</em> — nothing is uploaded, and a backup file does not carry them. The phone app also sends them to Firebase Crashlytics, which adds the device model, its OS version and a random id used to count how many people hit the same crash. Crash reports are about crashes only — what you do in jojo is the separate question below, answered separately.",
     "keep": {
       "label": "Keep crash reports",
-      "description": "On, so a crash you hit is one we can see. Turn it off and nothing is recorded."
+      "description": "Off unless you turn it on. When on, a crash you hit is kept here so you can read it back; when off, nothing is recorded."
     },
     "usage": {
       "label": "Share which features I use",
-      "description": "Counts only, from a fixed list — never what is in your records.",
-      "note": "It can only say things from a fixed list — which screen was opened, that an application was added, roughly how many there are. It cannot name an employer, a role, a file or anything you typed. Goes to Google Analytics."
+      "description": "Counts only, from a fixed list — never what is in your records. Sent with a random id for this browser and basic device details.",
+      "note": "It can only say things from a fixed list — which screen was opened, that an application was added, roughly how many there are. It cannot name an employer, a role, a file or anything you typed. Goes to Google Analytics, which adds a random id it keeps in this browser and basics such as the browser, device type, language and the country or region your connection comes from. Turning it off deletes that id."
     },
+    "privacy": "Privacy notice",
     "kept_one": "{{count}} report kept",
     "kept_other": "{{count}} reports kept",
     "clear": "Clear",
@@ -251,7 +273,7 @@
   "documents": {
     "title": "Your documents",
     "hint": "on this device",
-    "intro": "The CVs, cover letters and statements you attach are saved in this browser, on this machine. Nothing is uploaded anywhere.",
+    "intro": "The CVs, cover letters and statements you attach are saved in this browser, on this machine. The files are not uploaded; their text goes to a model only if you choose a hosted provider.",
     "count_one": "{{count}} document",
     "count_other": "{{count}} documents",
     "noneReadable": {

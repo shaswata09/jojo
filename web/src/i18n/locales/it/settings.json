@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Endpoint",
       "hintOllama": "Host e porta. Senza /v1: jojo usa l'endpoint proprio di Ollama per potergli chiedere di non troncare.",
-      "hint": "L'URL di base, che termina con /v1."
+      "hint": "L'URL di base, che termina con /v1.",
+      "remote": "Questo indirizzo non è su questo dispositivo né sulla tua rete locale, quindi i tuoi record verranno inviati lì, e a chiunque lo gestisca."
     },
     "apiKey": {
       "label": "Chiave API",
@@ -91,6 +92,26 @@
     "providerTerms": "Termini di {{provider}}",
     "privacy": "Informativa sulla privacy",
     "licence": "Pagina della licenza di jojo"
+  },
+  "cloudNotice": {
+    "headline": "I tuoi record lasciano questo dispositivo quando usi {{name}}",
+    "sent": {
+      "what": "Tutto ciò che l'assistente legge per risponderti viene inviato a {{name}}: le tue candidature e le tue note, il tuo profilo, il testo del tuo CV una volta letto un documento, e i nomi e gli indirizzi email di eventuali referenti o recruiter che consulta.",
+      "others": "In parte si tratta di dati personali di altre persone, non solo tuoi.",
+      "local": "Con un modello sul tuo computer, invece, non esce nulla di tutto questo."
+    },
+    "background": "Non succede solo quando chatti. Finché {{name}} è selezionato, jojo gli invia record anche per il lavoro svolto in background: il controllo dei duplicati quando salvi una candidatura, la lettura degli annunci trovati dal tuo scout, le letture di compatibilità con il tuo profilo, l'adattamento del tuo CV e delle tue lettere, e l'accorciamento di una conversazione lunga perché ci stia.",
+    "cost": {
+      "paid": "{{short}} addebita i costi sul tuo account, e i suoi termini stabiliscono cosa può conservare e se ciò che invii può essere usato per migliorare i suoi modelli.",
+      "freeTier": "{{short}} ha un piano gratuito con dei limiti oltre all'uso a pagamento addebitato sul tuo account. In entrambi i casi sono i suoi termini a stabilire cosa può conservare e se ciò che invii può essere usato per migliorare i suoi modelli.",
+      "bargain": "È un accordo diverso dall'opzione locale, non peggiore, ma vale la pena leggerlo prima che i tuoi record ne facciano parte."
+    },
+    "openrouter": "OpenRouter passa ogni richiesta all'azienda che produce il modello che scegli, secondo i termini di quell'azienda oltre ai propri. I termini di OpenRouter gli consentono di registrare le richieste e di usarne il contenuto in forma anonimizzata.",
+    "business": "Questi termini API sono scritti per aziende e sviluppatori. jojo non può dirti se si adattano a una ricerca di lavoro personale; verificare che si adattino al tuo uso spetta a te.",
+    "liability": {
+      "party": "Sei tu il titolare dell'account e la parte di quell'accordo: jojo non include alcuna chiave e non fa alcuna richiesta per conto proprio.",
+      "breach": "Il rispetto dei termini di {{short}} spetta a te, e jojo non si assume alcuna responsabilità per eventuali violazioni."
+    }
   },
   "mcp": {
     "title": "Collegati da un client MCP",
@@ -144,7 +165,7 @@
     "cors": "È in ascolto su <mono>{{endpoint}}</mono>, ma non invia intestazioni CORS, quindi un browser non permetterà a questa pagina di chiamarlo tra porte diverse. Il server di sviluppo di jojo inoltra <mono>{{path}}</mono> a esso, ed è per questo che l'indirizzo qui sopra è un percorso e non un URL. L'app per telefono comunica con esso direttamente e non ha bisogno di nulla di tutto ciò.",
     "hosted": "<em>Su una copia ospitata, installa l'estensione.</em> Una pagina servita dal web non può chiamare <mono>127.0.0.1</mono>: non c'è un proxy che inoltri un percorso, e alle pagine https:// è vietata la rete locale. L'estensione non è una pagina: raggiunge il lettore direttamente, e jojo glielo chiede. Inserisci qui sopra l'indirizzo del lettore e inoltrerà ogni richiesta; inoltrerà sempre e solo verso questo computer.",
     "fillAddress": "Prima compila un indirizzo",
-    "connectedNote": "I documenti vengono inviati a quell'indirizzo e a nessun altro. Non viene caricato nulla.",
+    "connectedNote": "I documenti vengono inviati a quell'indirizzo e a nessun altro.",
     "separate": "{{name}} è un programma separato, non fa parte di jojo.",
     "notAffiliated": "jojo non è affiliato a Microsoft."
   },
@@ -185,13 +206,14 @@
     "where": "In questo browser e nell'estensione, le segnalazioni di arresto anomalo <em>restano su questo dispositivo</em>: nulla viene caricato, e un file di backup non le contiene. L'app per telefono le invia anche a Firebase Crashlytics, che aggiunge il modello del dispositivo, la versione del sistema operativo e un id casuale usato per contare quante persone incontrano lo stesso arresto anomalo. Le segnalazioni riguardano solo gli arresti anomali: ciò che fai in jojo è la questione separata qui sotto, con una risposta separata.",
     "keep": {
       "label": "Conserva le segnalazioni di arresto anomalo",
-      "description": "Attivo, così un arresto anomalo che incontri è uno che possiamo vedere. Disattivalo e non viene registrato nulla."
+      "description": "Disattivato finché non lo attivi tu. Se è attivo, un arresto anomalo che incontri viene conservato qui così puoi rileggerlo; se è disattivato, non viene registrato nulla."
     },
     "usage": {
       "label": "Condividi quali funzioni uso",
-      "description": "Solo conteggi, da un elenco fisso: mai cosa c'è nei tuoi record.",
-      "note": "Può dire solo cose tratte da un elenco fisso: quale schermata è stata aperta, che è stata aggiunta una candidatura, più o meno quante ce ne sono. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto. Va a Google Analytics."
+      "description": "Solo conteggi, da un elenco fisso: mai cosa c'è nei tuoi record. Inviati con un id casuale per questo browser e dati di base sul dispositivo.",
+      "note": "Può dire solo cose tratte da un elenco fisso: quale schermata è stata aperta, che è stata aggiunta una candidatura, più o meno quante ce ne sono. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto. Va a Google Analytics, che aggiunge un id casuale che conserva in questo browser e dati di base come il browser, il tipo di dispositivo, la lingua e il paese o la regione da cui proviene la tua connessione. Disattivarlo elimina quell'id."
     },
+    "privacy": "Informativa sulla privacy",
     "kept_one": "{{count}} segnalazione conservata",
     "kept_many": "{{count}} di segnalazioni conservate",
     "kept_other": "{{count}} segnalazioni conservate",
@@ -258,7 +280,7 @@
   "documents": {
     "title": "I tuoi documenti",
     "hint": "su questo dispositivo",
-    "intro": "I CV, le lettere di presentazione e le dichiarazioni che alleghi vengono salvati in questo browser, su questo computer. Non viene caricato nulla da nessuna parte.",
+    "intro": "I CV, le lettere di presentazione e le dichiarazioni che alleghi vengono salvati in questo browser, su questo computer. I file non vengono caricati; il loro testo va a un modello solo se scegli un fornitore ospitato.",
     "count_one": "{{count}} documento",
     "count_many": "{{count}} di documenti",
     "count_other": "{{count}} documenti",

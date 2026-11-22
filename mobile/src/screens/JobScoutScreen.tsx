@@ -28,6 +28,7 @@ import { draftFromUrl } from '@jojo/service/core/parse-posting'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { isAuto, kindOf } from '@jojo/service/react/use-pipelines'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
+import { refusedSources } from '@jojo/service/core/board'
 import { AUTO_CAPABLE, PIPELINE_SCHEDULES, scheduleOf } from '@jojo/service/core/proposal'
 import type { PipelineKind } from '@jojo/service/core/model'
 import { ProposalQueue } from '@/components/scout/ProposalQueue'
@@ -648,6 +649,15 @@ function PipelineEditor({
    * requirement it always had.
    */
   const needsSource = kind === 'scout'
+  /*
+   * A site whose terms forbid automated reading — LinkedIn, Indeed, Glassdoor,
+   * ZipRecruiter (`NO_AUTOMATED_ACCESS`) — is never read by the scout. Said as
+   * the address is typed, so the person learns it now rather than from a
+   * pipeline that quietly finds nothing there. It does NOT block Save: a
+   * pipeline saved before the rule existed must stay editable, and its other
+   * boards are still read.
+   */
+  const refused = needsSource ? refusedSources(source) : []
 
   const submit = () => {
     setAttempted(true)
@@ -722,7 +732,13 @@ function PipelineEditor({
             mono
             autoCapitalize="none"
             value={source}
-            error={attempted && !source.trim() ? t('jobScout.editor.sourcesError') : undefined}
+            error={
+              attempted && !source.trim()
+                ? t('jobScout.editor.sourcesError')
+                : refused.length > 0
+                  ? t('jobScout.editor.sourceRefused', { sites: refused.join(', ') })
+                  : undefined
+            }
             hint={t('jobScout.editor.sourcesHint')}
             placeholder="cra.org/ads"
             onChangeText={setSource}

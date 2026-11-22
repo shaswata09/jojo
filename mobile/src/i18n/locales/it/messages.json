@@ -209,7 +209,12 @@
     "unreachable": "Non è stato possibile raggiungere quel sito.",
     "status": "Quel sito ha risposto {{status}}.",
     "browserOnly": "{{host}} mostra i suoi annunci solo a un vero browser, quindi non può essere letto dal telefono. Su un computer l'estensione jojo per il browser può leggerlo.",
-    "cancelled": "La lettura è stata annullata."
+    "cancelled": "La lettura è stata annullata.",
+    "noAutomatedAccess": "{{host}} non consente la lettura automatica nei suoi termini d'uso, quindi jojo non lo leggerà in modo programmato. Apri tu un annuncio lì e salvalo invece in jojo.",
+    "robots": "{{host}} chiede ai lettori automatici di non aprire questa pagina (il suo robots.txt lo vieta), quindi jojo non l'ha letta.",
+    "dailyBudget": "jojo ha già letto oggi {{pages}} pagine di {{host}}, cioè quante ne legge da un sito in un giorno. Il resto si può leggere domani.",
+    "tooSoon": "{{host}} chiede ai lettori automatici di aspettare {{seconds}} secondi tra una pagina e l'altra, quindi jojo si è fermato qui. Il resto si può leggere in un passaggio successivo.",
+    "botWall": "Questo sito chiede una verifica umana; aprilo tu."
   },
   "timelineForm": {
     "title": "Dagli un titolo che riconoscerai.",

@@ -14,6 +14,7 @@ import {
   PROVIDER_IDS,
   contextOf,
   isLoopbackEndpoint,
+  isRemoteEndpoint,
   isRetiredProvider,
   isRetiredServer,
   parseContextWindow,
@@ -59,6 +60,14 @@ describe('billing and keys', () => {
     expect(PROVIDERS.filter((p) => !p.cloud).every((p) => !p.billed)).toBe(true)
   })
 
+  it('marks the two free tiers, and only on hosted providers', () => {
+    // Both true at once for Groq and OpenRouter: a free tier with limits, and
+    // billing above it. The consent notice reads this to avoid telling
+    // somebody on a free tier that they are paying.
+    expect(PROVIDERS.filter((p) => p.freeTier).map((p) => p.id).sort()).toEqual(['groq', 'openrouter'])
+    expect(PROVIDERS.filter((p) => !p.cloud).every((p) => !p.freeTier)).toBe(true)
+  })
+
   it('gives every provider a key shape, so the placeholder is never another vendor’s', () => {
     for (const p of PROVIDERS) {
       if (p.needsKey) {
@@ -69,6 +78,60 @@ describe('billing and keys', () => {
     // The specific lie this replaced: everyone showed OpenAI's prefix.
     expect(providerMeta('anthropic').keyLooksLike).toBe('sk-ant-…')
     expect(providerMeta('groq').keyLooksLike).toBe('gsk_…')
+  })
+})
+
+describe('the terms each hosted provider links to (2026-11-21)', () => {
+  /*
+   * The link is shown at the moment somebody decides to be bound by it, so the
+   * wrong document is not a typo: Groq's pointed at its website's terms of use
+   * rather than the agreement the API is offered under.
+   */
+  it('names the agreement that governs the API', () => {
+    expect(providerMeta('groq').termsUrl).toBe('https://console.groq.com/docs/legal/services-agreement')
+    expect(providerMeta('openai').termsUrl).toBe('https://openai.com/policies/services-agreement/')
+    for (const p of PROVIDERS.filter((x) => x.cloud)) {
+      expect(p.termsUrl, p.id).toMatch(/^https:\/\//)
+      expect(p.privacyUrl, p.id).toMatch(/^https:\/\//)
+    }
+  })
+})
+
+/**
+ * Whether a server typed under "Ollama" or "a local server" is in fact
+ * somewhere else, which is when the settings screens say so (2026-11-21).
+ *
+ * Wrong one way, records go to a stranger's server with no word said; wrong the
+ * other, the LAN address the phone's own warning recommends gets a notice
+ * saying it is on the internet.
+ */
+describe('isRemoteEndpoint', () => {
+  it('flags a public address, typed with or without a scheme', () => {
+    expect(isRemoteEndpoint('https://gpu.example.com/v1')).toBe(true)
+    expect(isRemoteEndpoint('http://203.0.113.7:8000/v1')).toBe(true)
+    expect(isRemoteEndpoint('gpu.example.com:8000/v1')).toBe(true)
+    expect(isRemoteEndpoint('  https://api.openai.com/v1  ')).toBe(true)
+  })
+
+  it('leaves this machine and the home network alone', () => {
+    for (const local of [
+      'http://localhost:11434',
+      'http://127.0.0.1:1234/v1',
+      'http://[::1]:11434',
+      'http://192.168.1.20:11434',
+      'http://10.116.34.124:8103/v1',
+      'http://172.16.0.5:8000/v1',
+      'http://studio.local:1234/v1',
+      'http://nas.lan:8000',
+      'http://gpubox:8000/v1',
+      '192.168.1.20:8000/v1',
+    ])
+      expect(isRemoteEndpoint(local), local).toBe(false)
+  })
+
+  it('says nothing about an empty field', () => {
+    expect(isRemoteEndpoint('')).toBe(false)
+    expect(isRemoteEndpoint('   ')).toBe(false)
   })
 })
 

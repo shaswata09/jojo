@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Uç nokta",
       "hintOllama": "Sunucu ve bağlantı noktası. /v1 yok — jojo, kesmemesini isteyebilmek için Ollama'nın kendi uç noktasını kullanır.",
-      "hint": "/v1 ile biten temel URL."
+      "hint": "/v1 ile biten temel URL.",
+      "remote": "Bu adres bu cihazda ya da yerel ağınızda değil, bu yüzden kayıtlarınız oraya — ve onu işleten kişiye — gönderilecek."
     },
     "apiKey": {
       "label": "API anahtarı",
@@ -91,6 +92,26 @@
     "providerTerms": "{{provider}} koşulları",
     "privacy": "Gizlilik politikası",
     "licence": "jojo'nun lisans sayfası"
+  },
+  "cloudNotice": {
+    "headline": "{{name}} kullandığınızda kayıtlarınız bu cihazdan çıkar",
+    "sent": {
+      "what": "Asistanın size yanıt vermek için okuduğu her şey {{name}} hizmetine gönderilir: başvurularınız ve notlarınız, profiliniz, bir belge okunduktan sonra CV metniniz ve baktığı referansların ya da işe alım uzmanlarının adları ve e-posta adresleri.",
+      "others": "Bunların bir kısmı yalnızca sizin değil, başka insanların kişisel bilgileridir.",
+      "local": "Bunun yerine kendi bilgisayarınızdaki bir modelle hiçbiri dışarı çıkmaz."
+    },
+    "background": "Bu yalnızca sohbet ettiğinizde olmaz. {{name}} seçili olduğu sürece jojo arka planda yapılan işler için de kayıt gönderir: bir başvuruyu kaydettiğinizde yapılan yinelenen kayıt kontrolü, gözcünüzün bulduğu ilanların okunması, profilinize göre uyum değerlendirmeleri, CV'nizin ve mektuplarınızın uyarlanması ve uzun bir konuşmanın sığması için kısaltılması.",
+    "cost": {
+      "paid": "{{short}} hesabınıza fatura keser ve neyi saklayabileceğini ve gönderdiklerinizin modellerini geliştirmek için kullanılıp kullanılamayacağını kendi koşulları belirler.",
+      "freeTier": "{{short}} sınırları olan ücretsiz bir katmanın yanı sıra hesabınıza faturalanan ücretli kullanım da sunar. Her iki durumda da neyi saklayabileceğini ve gönderdiklerinizin modellerini geliştirmek için kullanılıp kullanılamayacağını kendi koşulları belirler.",
+      "bargain": "Bu, yerel seçenekten farklı bir anlaşmadır, daha kötüsü değil; ama kayıtlarınız bunun bir parçası olmadan önce okumaya değer."
+    },
+    "openrouter": "OpenRouter her isteği, seçtiğiniz modeli yapan şirkete, kendi koşullarının yanı sıra o şirketin koşulları altında iletir. OpenRouter'ın kendi koşulları, istekleri kaydetmesine ve içeriklerini anonimleştirilmiş biçimde kullanmasına izin verir.",
+    "business": "Bu API koşulları işletmeler ve geliştiriciler için yazılmıştır. jojo bunların kişisel bir iş aramasına uyup uymadığını size söyleyemez; kullanımınıza uyup uymadığını kontrol etmek size kalmıştır.",
+    "liability": {
+      "party": "Hesap sahibi ve o sözleşmenin tarafı sizsiniz — jojo hiçbir anahtar sağlamaz ve kendi adına hiçbir istek yapmaz.",
+      "breach": "{{short}} koşullarına uymak sizin sorumluluğunuzdadır ve jojo bunların ihlali için hiçbir sorumluluk kabul etmez."
+    }
   },
   "mcp": {
     "title": "Bir MCP istemcisinden bağlanın",
@@ -142,7 +163,7 @@
     "cors": "<mono>{{endpoint}}</mono> adresini dinler, ama CORS başlığı göndermez — bu yüzden bir tarayıcı bu sayfanın onu farklı bir bağlantı noktası üzerinden çağırmasına izin vermez. jojo'nun geliştirme sunucusu <mono>{{path}}</mono> yolunu ona yönlendirir; yukarıdaki adresin bir URL değil de yol olmasının nedeni budur. Telefon uygulaması onunla doğrudan konuşur ve bunların hiçbirine ihtiyaç duymaz.",
     "hosted": "<em>Barındırılan bir kopyada uzantıyı kurun.</em> Web'den sunulan bir sayfa <mono>127.0.0.1</mono> adresini çağıramaz — bir yolu yönlendirecek proxy yoktur ve https:// sayfalarının yerel ağa erişimi yasaktır. Uzantı bir sayfa değildir: okuyucuya doğrudan ulaşır ve jojo bunu ondan ister. Okuyucunun kendi adresini yukarıya girin; uzantı her isteği aktarır ve yalnızca bu bilgisayara aktarır.",
     "fillAddress": "Önce bir adres girin",
-    "connectedNote": "Belgeler bu adrese gönderilir, başka hiçbir yere değil. Hiçbir şey yüklenmez.",
+    "connectedNote": "Belgeler bu adrese gönderilir, başka hiçbir yere değil.",
     "separate": "{{name}} ayrı bir programdır, jojo'nun parçası değildir.",
     "notAffiliated": "jojo'nun Microsoft ile bir bağlantısı yoktur."
   },
@@ -183,13 +204,14 @@
     "where": "Bu tarayıcıda ve uzantıda çökme raporları <em>bu cihazda kalır</em> — hiçbir şey yüklenmez ve yedek dosyası bunları taşımaz. Telefon uygulaması bunları ayrıca Firebase Crashlytics'e gönderir; bu hizmet cihaz modelini, işletim sistemi sürümünü ve aynı çökmeyi kaç kişinin yaşadığını saymak için kullanılan rastgele bir kimliği ekler. Çökme raporları yalnızca çökmelerle ilgilidir — jojo'da ne yaptığınız aşağıdaki ayrı bir sorudur ve ayrı yanıtlanır.",
     "keep": {
       "label": "Çökme raporlarını sakla",
-      "description": "Açık; böylece yaşadığınız bir çökmeyi görebiliriz. Kapatırsanız hiçbir şey kaydedilmez."
+      "description": "Siz açmadıkça kapalı. Açıkken yaşadığınız bir çökme burada saklanır, böylece sonradan okuyabilirsiniz; kapalıyken hiçbir şey kaydedilmez."
     },
     "usage": {
       "label": "Hangi özellikleri kullandığımı paylaş",
-      "description": "Yalnızca sabit bir listeden sayılar — kayıtlarınızın içeriği asla.",
-      "note": "Yalnızca sabit bir listedeki şeyleri söyleyebilir — hangi ekranın açıldığı, bir başvurunun eklendiği, kabaca kaç tane olduğu. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz. Google Analytics'e gider."
+      "description": "Yalnızca sabit bir listeden sayılar — kayıtlarınızın içeriği asla. Bu tarayıcıya ait rastgele bir kimlik ve temel cihaz bilgileriyle gönderilir.",
+      "note": "Yalnızca sabit bir listedeki şeyleri söyleyebilir — hangi ekranın açıldığı, bir başvurunun eklendiği, kabaca kaç tane olduğu. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz. Google Analytics'e gider; o da bu tarayıcıda tuttuğu rastgele bir kimliği ve tarayıcı, cihaz türü, dil ve bağlantınızın geldiği ülke ya da bölge gibi temel bilgileri ekler. Kapatmak bu kimliği siler."
     },
+    "privacy": "Gizlilik bildirimi",
     "kept_one": "{{count}} rapor saklanıyor",
     "kept_other": "{{count}} rapor saklanıyor",
     "clear": "Temizle",
@@ -251,7 +273,7 @@
   "documents": {
     "title": "Belgeleriniz",
     "hint": "bu cihazda",
-    "intro": "Eklediğiniz CV'ler, ön yazılar ve beyanlar bu tarayıcıda, bu bilgisayarda saklanır. Hiçbir yere bir şey yüklenmez.",
+    "intro": "Eklediğiniz CV'ler, ön yazılar ve beyanlar bu tarayıcıda, bu bilgisayarda saklanır. Dosyalar yüklenmez; metinleri yalnızca barındırılan bir sağlayıcı seçerseniz bir modele gider.",
     "count_one": "{{count}} belge",
     "count_other": "{{count}} belge",
     "noneReadable": {

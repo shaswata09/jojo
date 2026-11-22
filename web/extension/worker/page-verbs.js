@@ -5,6 +5,8 @@
 
 import { capturePage } from './capture.js'
 import { QUEUE, read, withQueue } from './queue.js'
+import { noAutomatedAccess } from './crawl-rules.js'
+import { forbiddenRefusal } from './manners.js'
 import { scanBoard } from './scan-board.js'
 import { isLocalTarget } from './targets.js'
 
@@ -68,6 +70,17 @@ export async function onScanBoard(message, sendResponse) {
     sendResponse({ ok: false, reason: 'That address is on this machine or your own network, so it was not opened.' })
     return
   }
+  /*
+   * A scan is the scout reading a board on a schedule, with nobody watching —
+   * so a site whose terms forbid automated reading is refused here, whichever
+   * page asked. A person capturing a posting they opened themselves (the
+   * toolbar button, `onCaptureTab`) is a different act and is not touched.
+   */
+  const forbidden = noAutomatedAccess(url)
+  if (forbidden !== null) {
+    sendResponse({ ok: false, reason: forbiddenRefusal(forbidden) })
+    return
+  }
   sendResponse(await scanBoard(url))
 }
 
@@ -77,6 +90,14 @@ export async function onScanBoard(message, sendResponse) {
  * Bounded like the scan — a content script on jojo's own origin is the only
  * sender, and the only thing it can ask for is one http(s) page opened and
  * read — and for the same reason: opening a public page IS the feature.
+ *
+ * Two callers send it, and `unattended` tells them apart. "From link" is a
+ * person waiting on a page they asked for, and is read as a person would read
+ * it. The scout's background reader opening a posting a board listed is a
+ * program reading on its own — it sets `unattended`, and then the page gets
+ * everything a board scan gets: terms, robots.txt, the host's pace and daily
+ * budget, and a stop at a bot check (`capturePage`, `manners.js`). Only a
+ * literal `true` counts; `bridge.js` forwards nothing else.
  */
 export async function onCaptureUrl(message, sendResponse) {
   const url = typeof message.url === 'string' ? message.url : ''
@@ -88,5 +109,5 @@ export async function onCaptureUrl(message, sendResponse) {
     sendResponse({ ok: false, reason: 'That address is on this machine or your own network, so it was not opened.' })
     return
   }
-  sendResponse(await capturePage(url))
+  sendResponse(await capturePage(url, { unattended: message.unattended === true }))
 }

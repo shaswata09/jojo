@@ -154,14 +154,16 @@
     "what": "Quando algo quebra, o jojo pode guardar o erro para você ler depois — útil quando o que falhou já sumiu. Um relatório contém a mensagem de erro, onde no jojo aconteceu e o stack trace. Ele nunca contém suas candidaturas, documentos, notas, perfil ou conversas, e chaves de API, endereços e endereços de e-mail são removidos antes de o relatório ser escrito.",
     "where": "Os relatórios ficam neste celular e também são enviados ao Firebase Crashlytics, que adiciona o modelo do seu dispositivo, a versão do sistema e um id aleatório usado para contar quantas pessoas tiveram a mesma falha. O Google guarda isso por 90 dias. Nenhum dos seus registros vai junto.",
     "report": "Relatar falhas",
-    "reportHint": "Ativado, para que possamos ver as falhas que você encontra. Desative e nada é registrado.",
+    "reportHint": "Desativado a menos que você o ative. Ativado, uma falha que você encontrar é enviada ao Firebase Crashlytics para que possa ser corrigida; desativado, nada é registrado e os relatórios ainda não enviados são apagados.",
     "usage": "Compartilhar quais recursos eu uso",
-    "usageHint": "Só contagens, de uma lista fixa — nunca o que está nos seus registros.",
-    "usageDetail": "Ele só pode dizer coisas de uma lista fixa — qual tela foi aberta, que uma candidatura foi adicionada, mais ou menos quantas existem. Não pode citar um empregador, um cargo, um arquivo nem nada que você digitou. Vai para o Google Analytics. Com isto desativado, o jojo também desativa as visualizações de tela e as contagens de sessão que o Firebase coletaria por conta própria.",
+    "usageHint": "Só contagens, de uma lista fixa — nunca o que está nos seus registros. Enviado com um ID aleatório da instância do app e dados básicos do dispositivo.",
+    "usageDetail": "Ele só pode dizer coisas de uma lista fixa — qual tela foi aberta, que uma candidatura foi adicionada, mais ou menos quantas existem. Não pode citar um empregador, um cargo, um arquivo nem nada que você digitou. Vai para o Google Analytics, que acrescenta um ID aleatório da instância do app e dados básicos como o modelo do dispositivo, a versão do sistema, o idioma, a versão do app e o país ou a região de onde vem sua conexão. Com isto desativado, o jojo também desativa as visualizações de tela e as contagens de sessão que o Firebase coletaria por conta própria, e desativar apaga esse ID e tudo o que ainda não foi enviado.",
     "kept_one": "{{count}} relatório guardado",
     "kept_other": "{{count}} relatórios guardados",
     "nothingBroken": "Nada quebrou desde que você ativou isto.",
-    "notRecording": "Nada está sendo registrado."
+    "notRecording": "Nada está sendo registrado.",
+    "restartNote": "Desativado. O jojo para de enviar na hora e já apagou os relatórios ainda não enviados; o capturador de falhas do próprio Crashlytics termina de se desligar na próxima vez que o jojo iniciar.",
+    "privacy": "Aviso de privacidade"
   },
   "date": {
     "today": "Hoje",
@@ -290,7 +292,7 @@
   },
   "reporting": {
     "title": "Relatórios de falhas e uso",
-    "description": "Duas coisas separadas, ambas ativadas. Desative qualquer uma aqui ou depois nas Configurações. Nenhuma pode levar seus registros: nem uma candidatura, um documento, uma nota, um perfil ou uma conversa.",
+    "description": "Duas coisas separadas, e ambas ficam desativadas a menos que você as ative — aqui ou depois nas Configurações. Nenhuma pode levar seus registros: nem uma candidatura, um documento, uma nota, um perfil ou uma conversa.",
     "bothOff": "Desativar os dois",
     "save": "Salvar escolhas",
     "inReport": "O que vai em um relatório de falhas",
@@ -305,9 +307,10 @@
       "secrets": "· Suas chaves de API, os endereços que você usa ou qualquer endereço de e-mail — removidos antes de o relatório ser escrito, não antes de ser enviado."
     },
     "crashHint": "O erro e onde ele aconteceu. Vai para o Firebase Crashlytics.",
-    "usageHint": "Só contagens — quais telas são abertas e com que frequência. Nunca o que há nelas.",
-    "usageDetail": "O segundo é a única coisa que o jojo envia sobre o que você FAZ, e ele só pode dizer coisas de uma lista fixa — “o cofre foi aberto”, “uma candidatura foi adicionada”, “há de 6 a 20 delas”. Ele não pode citar um empregador, um cargo, um arquivo nem nada que você digitou, porque essas palavras não estão na lista. Desativá-lo também interrompe as visualizações de tela que o Firebase coletaria por conta própria.",
-    "later": "Os dois ficam nas Configurações quando você quiser mudá-los, e desativar um descarta o que ele guardou."
+    "usageHint": "Só contagens — quais telas são abertas e com que frequência — nunca o que há nelas. Enviado com um ID aleatório da instância do app e dados básicos do dispositivo.",
+    "usageDetail": "O segundo é a única coisa que o jojo envia sobre o que você FAZ, e ele só pode dizer coisas de uma lista fixa — “o cofre foi aberto”, “uma candidatura foi adicionada”, “há de 6 a 20 delas”. Ele não pode citar um empregador, um cargo, um arquivo nem nada que você digitou, porque essas palavras não estão na lista. O Firebase Analytics acrescenta um ID aleatório da instância do app e dados básicos como o modelo do dispositivo, a versão do sistema, o idioma, a versão do app e o país ou a região de onde vem sua conexão. Desativá-lo também interrompe as visualizações de tela que o Firebase coletaria por conta própria, e apaga esse ID e tudo o que ainda não foi enviado.",
+    "later": "Os dois ficam nas Configurações quando você quiser mudá-los, e desativar um descarta o que ele guardou.",
+    "privacy": "Aviso de privacidade"
   },
   "stagePicker": {
     "label": "Etapa de {{name}}: {{stage}}. Mudar etapa",

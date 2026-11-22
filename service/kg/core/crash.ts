@@ -158,6 +158,44 @@ const RULES: readonly (readonly [RegExp, Replacement])[] = [
     /((?:«user»|«install»|\/data\/(?:user\/\d+|data)\/[A-Za-z0-9_.]+))([/\\])(?!«path»)[^\s"')]+/g,
     (_match, root: string, separator: string) => `${root}${separator}«path»`,
   ],
+  /*
+   * Android's two other spellings of "a file the user owns", neither of which
+   * the rules above anchor on.
+   *
+   *   content://com.android.providers.downloads.documents/document/msf%3A31
+   *   content://com.android.externalstorage.documents/document/primary%3AOffer.pdf
+   *   /storage/emulated/0/Download/Offer - Fujitsu - signed.pdf
+   *
+   * A `content://` URI is what the document picker hands back, and the part
+   * after the authority is the provider's own name for the file — for the
+   * external-storage provider that IS the file name. `/storage/…` is shared
+   * storage, where a downloaded offer letter lives. Both reach a message the
+   * moment a read fails, and both say who is hiring the user as plainly as a
+   * `/Users/…` path does.
+   *
+   * The authority is kept for `content://` because "the downloads provider
+   * refused" and "Drive refused" are different bugs, and an authority is a
+   * package name, which is public. Everything after it goes. For `/storage/`
+   * the volume (`emulated/0`, or an SD card's id) is kept for the same reason
+   * — internal storage and a removable card fail differently — and the tail
+   * goes, with the extension kept when one can be found, as above. The first
+   * `/storage/` rule crosses spaces for the same reason the one above does: a
+   * file name with a space in it is the normal case. A `content://` URI is
+   * percent-encoded, so it has none to cross and ends at whitespace.
+   */
+  [/(content:\/\/[A-Za-z0-9_.-]+)\/[^\s"')]*/gi, '$1/«path»'],
+  [
+    /(\/storage\/(?:emulated\/\d+|self\/primary|[A-Za-z0-9-]+))\/[^\r\n"'()]{0,200}?(\.[A-Za-z0-9]{1,8})(?![A-Za-z0-9])/g,
+    '$1/«path»$2',
+  ],
+  // The lookahead spans the whole tail, not just its start: `emulated` alone
+  // also matches the volume pattern, and a lookahead at the start let this rule
+  // re-match `/storage/emulated` + `/0/«path».pdf` and eat the extension the
+  // rule above had just kept.
+  [
+    /(\/storage\/(?:emulated\/\d+|self\/primary|[A-Za-z0-9-]+))\/(?![^\s"')]*«path»)[^\s"')]+/g,
+    '$1/«path»',
+  ],
   // An email address, which a profile or a contact can put into a message.
   [/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, '«redacted-email»'],
 ]
@@ -192,7 +230,7 @@ export function redact(text: string): string {
  * inside the handler for a throw, which is the worst place to have a bug.
  */
 export function toCrashReport(thrown: unknown, where: string, at: string, id: string): CrashReport {
-  const error = thrown instanceof Error ? thrown : null
+  const error = isError(thrown) ? thrown : null
   const raw =
     error?.message ??
     (typeof thrown === 'string'
@@ -213,13 +251,51 @@ export function toCrashReport(thrown: unknown, where: string, at: string, id: st
   }
 }
 
-/** `String(x)` on a proxy or a getter can itself throw. This one cannot. */
-function safeString(value: unknown): string {
+/**
+ * `instanceof`, guarded. It walks the prototype chain, and on a revoked proxy
+ * that walk throws — inside the handler for a throw, which is the one place a
+ * second throw replaces the report with the reporter's own failure.
+ */
+function isError(value: unknown): value is Error {
   try {
-    return JSON.stringify(value) ?? String(value)
+    return value instanceof Error
   } catch {
-    return 'An error that could not be described.'
+    return false
   }
+}
+
+/**
+ * Describes a thrown value that is not an Error, by its TYPE and nothing else.
+ *
+ * This used to be `JSON.stringify(value)`, and that is the wrong instinct for a
+ * report that can leave the device. Code throws objects for convenience — a
+ * failed tool result, a settings object, a record that did not validate — and
+ * stringifying one sends every field of it. Redaction only catches what has a
+ * recognisable SHAPE: an employer's name, a note, a job title have none, so a
+ * thrown `{ employer: 'Fujitsu', notes: '…' }` went to Crashlytics whole. No
+ * rule can be written for "text the user typed", so the only safe move is not
+ * to read the value at all.
+ *
+ * What survives is what a developer needs to find the throw: that it was not
+ * an Error, and what kind of value it was — `non-Error: object`,
+ * `non-Error: number`, `non-Error: array`. Not the constructor's name either,
+ * tempting as it is: it would take a prototype walk on a value that may be a
+ * hostile proxy, to report something the calling code's stack already says.
+ *
+ * A thrown STRING is not routed here and is still redacted and kept, on
+ * purpose: it is written by code the way an Error's message is, and the two
+ * carry the same risk. Treating one as data and the other as a message would
+ * be drawing the line by syntax rather than by where the text came from.
+ */
+function safeString(value: unknown): string {
+  // `Array.isArray` throws on a revoked proxy, and this runs inside a handler
+  // for a throw — the one place a second throw is worst. `typeof` cannot.
+  try {
+    if (Array.isArray(value)) return 'non-Error: array'
+  } catch {
+    /* fall through to the type, which is always readable */
+  }
+  return `non-Error: ${typeof value}`
 }
 
 /**

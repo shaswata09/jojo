@@ -203,7 +203,7 @@
     },
     "crash": {
       "title": "Laporan kerusakan dan penggunaan",
-      "description": "Dua hal terpisah, keduanya aktif — matikan salah satunya di sini atau nanti di Pengaturan. Tidak satu pun dapat membawa entri Anda: baik lamaran, dokumen, catatan, profil, maupun percakapan.",
+      "description": "Dua hal terpisah, dan keduanya nonaktif kecuali Anda menyalakannya — di sini atau nanti di Pengaturan. Tidak satu pun dapat membawa entri Anda: baik lamaran, dokumen, catatan, profil, maupun percakapan.",
       "inReport": "Isi sebuah laporan",
       "inError": "Pesan kesalahan dan di bagian jojo mana itu terjadi.",
       "inStack": "Stack trace, yang menyebutkan kode yang gagal.",
@@ -214,12 +214,13 @@
       "keep": "Simpan laporan kerusakan",
       "keepHint": "Kesalahan dan tempat terjadinya. Tetap di perangkat ini di browser.",
       "share": "Bagikan fitur yang saya gunakan",
-      "shareHint": "Hanya hitungan — layar mana yang dibuka, seberapa sering. Tidak pernah isinya.",
-      "usageNote": "Yang kedua adalah satu-satunya hal yang dikirim jojo tentang apa yang Anda LAKUKAN, dan hanya dapat menyebutkan hal dari daftar tetap — “brankas dibuka”, “sebuah lamaran ditambahkan”, “ada 6–20 lamaran”. Ia tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik, karena kata-kata itu tidak ada di daftar. Data ini dikirim ke Google Analytics agar kami dapat melihat bagian jojo mana yang layak dikembangkan lebih lanjut.",
+      "shareHint": "Hanya hitungan — layar mana yang dibuka, seberapa sering — tidak pernah isinya. Google Analytics juga menyimpan ID acak di browser ini dan mencatat hal dasar seperti browser, jenis perangkat, bahasa, serta negara atau wilayah asal koneksi Anda.",
+      "usageNote": "Yang kedua adalah satu-satunya hal yang dikirim jojo tentang apa yang Anda LAKUKAN, dan hanya dapat menyebutkan hal dari daftar tetap — “brankas dibuka”, “sebuah lamaran ditambahkan”, “ada 6–20 lamaran”. Ia tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik, karena kata-kata itu tidak ada di daftar. Data ini dikirim ke Google Analytics agar kami dapat melihat bagian jojo mana yang layak dikembangkan lebih lanjut, bersama apa yang ditambahkan Google Analytics ke setiap kiriman: ID acak yang disimpannya di browser ini, serta hal dasar seperti browser, jenis perangkat, bahasa, dan negara atau wilayah asal koneksi Anda. Mematikannya menghapus ID tersebut.",
       "bothOff": "Matikan keduanya",
       "save": "Simpan pilihan",
       "continueOff": "Lanjutkan dengan keduanya mati",
-      "later": "Anda dapat mengubah keduanya kapan saja di Pengaturan, dan mematikan salah satunya juga membuang apa yang telah disimpannya."
+      "later": "Anda dapat mengubah keduanya kapan saja di Pengaturan, dan mematikan salah satunya juga membuang apa yang telah disimpannya.",
+      "privacy": "Pemberitahuan privasi"
     },
     "extension": {
       "title": "Simpan lowongan yang Anda lamar",

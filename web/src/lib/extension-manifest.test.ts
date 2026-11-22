@@ -27,6 +27,10 @@ import { isDevMatch, isDevPack, shippedMatches } from '../../scripts/extension-o
 const WHY: Record<string, string> = {
   scripting: 'running the harvester in the tab being captured',
   tabs: 'reading the URL and title of the tab being captured',
+  // Not redundant beside the broad host grant: a person can set the extension's
+  // site access to "on click" (Chrome) or leave host access ungranted
+  // (Firefox), and then the toolbar click's activeTab grant is the only thing
+  // that lets "Keep this page" read the tab.
   activeTab: 'temporary access to the current tab, granted by the toolbar click',
   storage: 'the extension’s own settings — which boards, which model hosts',
   unlimitedStorage: 'a captured posting is the whole page text, and can be large',
@@ -85,6 +89,37 @@ describe('the extension manifest', () => {
     expect(isDevPack(['--dev'], {})).toBe(true)
     expect(isDevPack([], { JOJO_PACK_DEV: '1' })).toBe(true)
     expect(isDevPack([], {})).toBe(false)
+  })
+
+  /*
+   * The store description is the extension's one-line privacy claim. It said
+   * "Nothing is uploaded anywhere", which was false: the extension relays the
+   * model requests jojo writes to the provider the person chose, and those
+   * carry a posting's text and parts of their records. The stores cut a
+   * description at 132 characters.
+   */
+  it('says what it sends where, in a description the stores will show whole', () => {
+    expect(manifest.description.length).toBeLessThanOrEqual(132)
+    expect(manifest.description).not.toMatch(/nothing is uploaded/i)
+    expect(manifest.description).toMatch(/model provider/i)
+  })
+
+  /*
+   * Firefox requires new add-ons to declare what they transmit
+   * (`data_collection_permissions`). Declared as `required` because the relay
+   * is part of what the extension does and it asks no runtime opt-in; the two
+   * categories are what a relayed model request can carry — a page's text,
+   * and whatever of the person's own records jojo puts in the prompt. `none`
+   * would be the false "nothing is uploaded" again, in another file.
+   */
+  it('declares to Firefox what it transmits, under an id on a domain jojo owns', () => {
+    const gecko = manifest.browser_specific_settings.gecko
+    expect(gecko.id).toBe('capture@askjojo.app')
+    expect([...gecko.data_collection_permissions.required].sort()).toEqual([
+      'personallyIdentifyingInfo',
+      'websiteContent',
+    ])
+    expect(gecko.data_collection_permissions.required).not.toContain('none')
   })
 
   it('runs the bridge at document_idle, not document_start', () => {

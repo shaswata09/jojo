@@ -73,8 +73,10 @@ const REPLY = 'jojo:capture-reply'
  *   8 — capture by address shrinks an oversized page to fit, as Capture does (the page asks
  *       for 8 so a worker that would refuse it outright is named stale instead)
  *   9 — a scan says where the board LANDED, and follows a same-site redirect and "Load more"
+ *  10 — a capture by address may say `unattended` (the scout's background reader), and is then
+ *       read with a scan's manners: terms, robots.txt, the host's pace, a stop at a bot check
  */
-const BRIDGE_PROTOCOL = 9
+const BRIDGE_PROTOCOL = 10
 
 /** Must match `worker/model-stream.js`. A mismatch is a silent no-op, not an error. */
 const MODEL_STREAM_PORT = 'jojo:model-stream'
@@ -238,6 +240,9 @@ window.addEventListener('message', (event) => {
       ids: data.ack,
       // One field for both verbs that take an address. Only a string crosses.
       url: typeof data.capture === 'string' ? data.capture : data.scan,
+      // Only on a capture, and only a literal true: a read nobody is watching,
+      // which the worker then holds to a crawler's manners. See `onCaptureUrl`.
+      unattended: typeof data.capture === 'string' && data.unattended === true,
       request: read,
       on: crash ? crash.on : undefined,
       clear: crash ? crash.clear : undefined,

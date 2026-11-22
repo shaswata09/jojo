@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Your browser is the database",
-      "body": "Every record is written to the database inside this browser as you work, so closing the tab is safe. Nothing leaves this machine and nothing syncs — clear your browser data, switch browsers or lose the disk and it goes with them. Export a <kbd>.json</kbd> backup from <settings>Settings</settings> for anything you want to keep elsewhere."
+      "body": "Every record is written to the database inside this browser as you work, so closing the tab is safe. jojo keeps no copy anywhere else and nothing syncs: your records leave this browser only when you send them to a model provider you chose, or move them yourself. Clear your browser data, switch browsers or lose the disk and they go with them. Export a <kbd>.json</kbd> backup from <settings>Settings</settings> for anything you want to keep elsewhere."
     },
     "savePath": {
       "title": "What happens when you save something",
@@ -333,7 +333,7 @@
         "hint": "built in",
         "title": "Keep a backup",
         "storedTitle": "Your documents are stored here",
-        "stored": "The CVs and cover letters you attach are saved in this browser and survive closing the tab. Nothing is uploaded anywhere — and nothing leaves this machine unless you download it yourself.",
+        "stored": "The CVs and cover letters you attach are saved in this browser and survive closing the tab. The files are not uploaded and jojo keeps no copy anywhere else; their text goes to a model only if you choose a hosted provider.",
         "oneFileTitle": "One file holds everything",
         "oneFile": "<settings>Settings</settings> writes a backup carrying every record, every link between them and every document, all in one file. Restoring it puts all three back.",
         "whyTitle": "Why it matters",

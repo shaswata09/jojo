@@ -107,7 +107,7 @@
       "hint": "tú eliges, y eso cambia adónde van tus palabras",
       "title": "Qué modelo hace esto",
       "p1": "jojo habla con lo que le indiques en <go>Ajustes</go>. Un modelo que se ejecuta en tu propio equipo (Ollama, vLLM, LM Studio) es la opción predeterminada, y es la única configuración en la que nada de lo que escribes sale del dispositivo.",
-      "p2": "También puedes usar Claude, OpenAI y otros con una clave de API. Es una contrapartida real y la pantalla lo dice claramente: tus registros van a esa empresa y se facturan a tu cuenta. La clave se guarda en este navegador, nunca se incluye en una copia de seguridad y nunca se envía a ningún sitio salvo al proveedor que elegiste.",
+      "p2": "También puedes usar Claude, OpenAI y otros con una clave de API. Es una contrapartida real y la pantalla lo dice claramente: tus registros van a esa empresa, bajo sus términos, y algunos proveedores facturan a tu cuenta. La clave se guarda en este navegador, nunca se incluye en una copia de seguridad y nunca se envía a ningún sitio salvo al proveedor que elegiste.",
       "stoppedTitle": "Si parece que el asistente ha dejado de leer",
       "stopped": "Un modelo local con poco espacio descarta en silencio el principio de lo que se le envió y luego responde con seguridad a una pregunta que nunca vio entera. jojo compara ahora lo que el servidor dice haber leído con lo que realmente se envió, y te avisa cuando no coinciden, porque la alternativa es un asistente que parece hacer mal su trabajo cuando en realidad le falta espacio."
     },

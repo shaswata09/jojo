@@ -107,7 +107,7 @@
       "hint": "your choice, and it changes where your words go",
       "title": "Which model does this",
       "p1": "jojo talks to whatever you point it at in <go>Settings</go>. A model running on your own machine — Ollama, vLLM, LM Studio — is the default, and it is the only arrangement where nothing you write leaves the device.",
-      "p2": "You can also use Claude, OpenAI and others with an API key. That is a real trade and the screen says so plainly: your records go to that company and are billed to your account. The key is kept in this browser, is never included in a backup, and is never sent anywhere but the provider you chose.",
+      "p2": "You can also use Claude, OpenAI and others with an API key. That is a real trade and the screen says so plainly: your records go to that company, under its terms, and some providers bill your account. The key is kept in this browser, is never included in a backup, and is never sent anywhere but the provider you chose.",
       "stoppedTitle": "If the assistant seems to have stopped reading",
       "stopped": "A local model with too little room silently drops the front of what it was sent, and then answers confidently about a question it never fully saw. jojo now compares what the server says it read against what was actually sent, and tells you when the two disagree — because the alternative is an assistant that appears to be bad at its job rather than short of room."
     },

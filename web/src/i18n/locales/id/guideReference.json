@@ -107,7 +107,7 @@
       "hint": "pilihan Anda, dan menentukan ke mana kata-kata Anda pergi",
       "title": "Model mana yang melakukan ini",
       "p1": "jojo berkomunikasi dengan apa pun yang Anda arahkan di <go>Pengaturan</go>. Model yang berjalan di perangkat Anda sendiri — Ollama, vLLM, LM Studio — adalah bawaan, dan satu-satunya pengaturan di mana tidak ada yang Anda tulis keluar dari perangkat.",
-      "p2": "Anda juga dapat memakai Claude, OpenAI, dan lainnya dengan kunci API. Itu pertukaran nyata dan layar menyatakannya terus terang: entri Anda dikirim ke perusahaan itu dan ditagihkan ke akun Anda. Kunci disimpan di browser ini, tidak pernah dimasukkan ke cadangan, dan tidak pernah dikirim ke mana pun selain penyedia yang Anda pilih.",
+      "p2": "Anda juga dapat memakai Claude, OpenAI, dan lainnya dengan kunci API. Itu pertukaran nyata dan layar menyatakannya terus terang: entri Anda dikirim ke perusahaan itu, di bawah ketentuannya, dan sebagian penyedia menagih akun Anda. Kunci disimpan di browser ini, tidak pernah dimasukkan ke cadangan, dan tidak pernah dikirim ke mana pun selain penyedia yang Anda pilih.",
       "stoppedTitle": "Jika asisten tampaknya berhenti membaca",
       "stopped": "Model lokal dengan ruang yang terlalu sedikit diam-diam membuang bagian depan dari apa yang dikirim kepadanya, lalu menjawab dengan yakin tentang pertanyaan yang tidak pernah dilihatnya secara utuh. jojo kini membandingkan apa yang dinyatakan server telah dibacanya dengan apa yang benar-benar dikirim, dan memberi tahu Anda jika keduanya berbeda — karena alternatifnya adalah asisten yang tampak buruk dalam pekerjaannya padahal hanya kekurangan ruang."
     },

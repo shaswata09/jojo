@@ -78,7 +78,7 @@
       "description": "Solte aqui seu currículo e suas declarações, ou escolha-os — eles são arquivados no Cofre em {{bucket}}, onde o resto do app consegue acessá-los.",
       "upload": "Enviar um documento"
     },
-    "footer": "Os mesmos arquivos da <anchor>ferramenta Arquivos</anchor> do Cofre, filtrados por {{bucket}}. Solte um documento aqui ou escolha um, e o arquivo em si fica neste navegador — nada é enviado para lugar nenhum. Clique em um para lê-lo."
+    "footer": "Os mesmos arquivos da <anchor>ferramenta Arquivos</anchor> do Cofre, filtrados por {{bucket}}. Solte um documento aqui ou escolha um, e o arquivo em si fica neste navegador — ele não é enviado, e o texto dele só vai para um modelo se você escolher um provedor hospedado. Clique em um para lê-lo."
   },
   "documentTile": {
     "open": "Abrir {{name}}",

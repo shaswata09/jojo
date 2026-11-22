@@ -209,7 +209,12 @@
     "unreachable": "無法連上這個求職網站。",
     "status": "這個求職網站回應了 {{status}}。",
     "browserOnly": "{{host}} 只會向真正的瀏覽器顯示職缺清單，所以無法從手機讀取。在電腦上，jojo 瀏覽器擴充功能可以讀取。",
-    "cancelled": "已取消讀取。"
+    "cancelled": "已取消讀取。",
+    "noAutomatedAccess": "{{host}} 的使用條款不允許自動讀取，因此 jojo 不會定期讀取它。請改為自己在那裡開啟職缺，並儲存到 jojo。",
+    "robots": "{{host}} 要求自動讀取程式不要開啟這個頁面（其 robots.txt 不允許），因此 jojo 沒有讀取。",
+    "dailyBudget": "jojo 今天已經讀取了 {{host}} 的 {{pages}} 個頁面，這是它一天內從單一網站讀取的上限。其餘的可以明天再讀。",
+    "tooSoon": "{{host}} 要求自動讀取程式在頁面之間等待 {{seconds}} 秒，因此 jojo 在這裡停下了。其餘的可以在之後執行時讀取。",
+    "botWall": "這個求職網站要求進行真人驗證；請自己開啟。"
   },
   "timelineForm": {
     "title": "請取一個你認得出來的標題。",

@@ -18,6 +18,8 @@ import {
 } from '../policy.js'
 import { badge } from './badge.js'
 import { captureNonce, inline } from './inline.js'
+import { noAutomatedAccess } from './crawl-rules.js'
+import { BOT_WALL_REASON, afterLanding, beforeOpening, forbiddenRefusal, showsBotWall } from './manners.js'
 import { QUEUE, read, withQueue } from './queue.js'
 import { SETTLE_MS, sleep, waitForLoad } from './tabs.js'
 import { hostOf, isLocalTarget, looksLikeSignIn } from './targets.js'
@@ -68,10 +70,27 @@ export const CAPTURE_PAGE_INLINE_BY_MS = 65000
  * carries the person's own cookies, which is the point — a posting behind a
  * sign-in reads as it does for them — and a sign-in wall is refused rather than
  * saved, because a login form filed under a job is worse than nothing.
+ *
+ * `unattended` is the scout's background reader asking, with nobody watching
+ * (see `onCaptureUrl`). Then, and only then, the page is read with a crawler's
+ * manners, the same ones a board scan keeps (`manners.js`): a site whose terms
+ * forbid automated reading is not opened, nor is anything robots.txt
+ * disallows; the host's gap and daily budget are kept and counted in the one
+ * book scans use; a bot check stops the read the moment the page loads, before
+ * the settle in which a real browser might pass it on its own; and a redirect
+ * onto a forbidden site, or onto another site's robots.txt that disallows the
+ * page, is refused before anything is serialised. All of that comes out of
+ * the same `started` clock, so inlining still stops in time for the page.
  */
-export async function capturePage(url) {
+export async function capturePage(url, options) {
   // The page's clock started when it asked, so this one does too.
   const started = Date.now()
+  // Only a literal true: anything else is a person's own "From link".
+  const unattended = options?.unattended === true
+  if (unattended) {
+    const before = await beforeOpening(url)
+    if ('reason' in before) return { ok: false, reason: before.reason }
+  }
   let tabId = null
   try {
     const tab = await chrome.tabs.create({ url, active: false })
@@ -80,11 +99,17 @@ export async function capturePage(url) {
 
     const loaded = await waitForLoad(tabId)
     if (!loaded) return { ok: false, reason: 'That page took too long to load.' }
+    if (unattended && (await showsBotWall(tabId))) return { ok: false, reason: BOT_WALL_REASON }
     await sleep(SETTLE_MS)
+    if (unattended && (await showsBotWall(tabId))) return { ok: false, reason: BOT_WALL_REASON }
 
     const landed = await chrome.tabs.get(tabId)
     const refused = landingRefusal(url, landed.url)
     if (refused !== null) return { ok: false, reason: refused }
+    if (unattended) {
+      const elsewhere = await afterLanding(url, landed.url)
+      if (elsewhere !== null) return { ok: false, reason: elsewhere }
+    }
 
     const { page, nonce } = await serialiseTab(tabId)
 
@@ -107,6 +132,11 @@ export async function capturePage(url) {
         ok: false,
         reason: 'That page moved to an address on this machine or your own network, so it was not kept.',
       }
+    }
+    // And, read unattended, of whether it moved onto a site that forbids it.
+    if (unattended) {
+      const forbidden = noAutomatedAccess(page.url)
+      if (forbidden !== null) return { ok: false, reason: forbiddenRefusal(forbidden) }
     }
 
     let { html, dropped } = await inline(page, nonce, started + CAPTURE_PAGE_INLINE_BY_MS)

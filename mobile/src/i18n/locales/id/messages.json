@@ -209,7 +209,12 @@
     "unreachable": "Papan itu tidak dapat dijangkau.",
     "status": "Papan itu menjawab {{status}}.",
     "browserOnly": "{{host}} hanya menampilkan daftar lowongannya ke browser sungguhan, jadi tidak dapat dibaca dari ponsel. Di komputer, ekstensi browser jojo dapat membacanya.",
-    "cancelled": "Pembacaan dibatalkan."
+    "cancelled": "Pembacaan dibatalkan.",
+    "noAutomatedAccess": "{{host}} tidak mengizinkan pembacaan otomatis dalam ketentuan penggunaannya, jadi jojo tidak akan membacanya secara terjadwal. Sebagai gantinya, buka sendiri lowongan di sana dan simpan ke jojo.",
+    "robots": "{{host}} meminta pembaca otomatis untuk tidak membuka halaman ini (robots.txt-nya melarangnya), jadi jojo tidak membacanya.",
+    "dailyBudget": "jojo sudah membaca {{pages}} halaman {{host}} hari ini, sebanyak yang dibacanya dari satu situs dalam sehari. Sisanya dapat dibaca besok.",
+    "tooSoon": "{{host}} meminta pembaca otomatis menunggu {{seconds}} detik di antara halaman, jadi jojo berhenti di sini. Sisanya dapat dibaca pada putaran berikutnya.",
+    "botWall": "Papan ini meminta verifikasi manusia; bukalah sendiri."
   },
   "timelineForm": {
     "title": "Beri judul yang akan Anda kenali.",

@@ -18,7 +18,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { ANALYTICS_INIT } from './analytics'
+import { ANALYTICS_CONSENT, ANALYTICS_INIT } from './analytics'
 
 describe('what the analytics SDK is initialised with', () => {
   it('turns off the automatic page_view', () => {
@@ -44,6 +44,48 @@ describe('what the analytics SDK is initialised with', () => {
   it('sends a fixed title rather than the document’s', () => {
     // A document title on an application page carries the employer too.
     expect(ANALYTICS_INIT.config.page_title).toBe('jojo')
+  })
+})
+
+describe('the advertising half of Google Analytics', () => {
+  it('turns Google signals and ad personalisation off in the config itself', () => {
+    /*
+     * Signals joins the GA client id to a signed-in Google account; ad
+     * personalisation feeds the data to ads. Both default to whatever the
+     * property's console says, which nobody reading this repository can see —
+     * so they are pinned here, where somebody who agreed to "counts of which
+     * screens are opened" can have that checked.
+     */
+    expect(ANALYTICS_INIT.config.allow_google_signals).toBe(false)
+    expect(ANALYTICS_INIT.config.allow_ad_personalization_signals).toBe(false)
+  })
+
+  it('denies every advertising consent type, and only those', () => {
+    expect(ANALYTICS_CONSENT).toEqual({
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+    })
+    // `analytics_storage` is what the usage switch asked for. Denying it would
+    // make a yes do nothing; leaving it out is what keeps the switch working.
+    expect('analytics_storage' in ANALYTICS_CONSENT).toBe(false)
+  })
+
+  it('sets that consent BEFORE initialising, so it is the default and not a late update', async () => {
+    /*
+     * `setConsent` before `initializeAnalytics` becomes `gtag('consent',
+     * 'default', …)` ahead of the first config call. After it, it is an
+     * `update` that lands once the config has already gone out under the SDK's
+     * own default of "granted". The order is the whole difference, and a
+     * refactor that swapped the two lines would compile and pass every other
+     * test in this file.
+     */
+    const source = (await import('./analytics.ts?raw')).default as string
+    const body = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+    const consent = body.indexOf('setConsent(ANALYTICS_CONSENT)')
+    const init = body.indexOf('initializeAnalytics(firebaseApp, ANALYTICS_INIT)')
+    expect(consent).toBeGreaterThan(-1)
+    expect(init).toBeGreaterThan(consent)
   })
 })
 

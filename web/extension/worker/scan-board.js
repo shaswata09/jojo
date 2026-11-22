@@ -1,8 +1,17 @@
 /** Reading a job board: opened in a background tab, "Load more" pressed, links harvested. */
 
 import { expandListing, harvest } from '../harvest.js'
+import { robotsAddress, robotsAllows } from './crawl-rules.js'
+import { BOT_WALL_REASON, beforeOpening, robotsFor, robotsRefusal, showsBotWall } from './manners.js'
 import { hostOf, isLocalTarget, looksLikeSignIn, sameSite } from './targets.js'
 import { SETTLE_MS, sleep, waitForLoad } from './tabs.js'
+
+/*
+ * Re-exported from `manners.js`, where they moved when the background reader's
+ * posting reads started asking the same questions a scan does. Tests and
+ * `reader-relay.test.ts` read them here.
+ */
+export { BOT_WALL_REASON, PACE_BOOK, PACE_MAX_WAIT_MS, ROBOTS_TIMEOUT_MS } from './manners.js'
 
 /**
  * The most links one harvest hands back, before the package filters them.
@@ -42,6 +51,18 @@ export const MORE_BUDGET_MS = 10000
  * malware.
  */
 export async function scanBoard(url) {
+  /*
+   * BEFORE A TAB IS OPENED, three things a well-behaved crawler checks, in the
+   * order that opens the fewest pages: a site whose terms forbid automated
+   * reading is never opened (`onScanBoard` asks too, and this is the backstop
+   * for any other caller); the site's robots.txt must allow the address; and
+   * the host must be owed no wait longer than this can give, and must have
+   * budget left today. `beforeOpening` in `manners.js`, shared with the
+   * background reader's posting reads so both keep one book.
+   */
+  const before = await beforeOpening(url)
+  if ('reason' in before) return { ok: false, reason: before.reason }
+
   let tabId = null
   try {
     const tab = await chrome.tabs.create({ url, active: false })
@@ -50,7 +71,17 @@ export async function scanBoard(url) {
 
     const loaded = await waitForLoad(tabId)
     if (!loaded) return { ok: false, reason: 'That board took too long to load.' }
+    /*
+     * A bot check is looked for the moment the page has loaded, BEFORE the
+     * settle: a Cloudflare or Imperva challenge in a real browser often passes
+     * itself within that wait, and a background tab quietly solving a "are you
+     * human?" check is exactly what the check is there to stop. The tab is
+     * closed by the `finally` and the read stops with a sentence.
+     */
+    if (await showsBotWall(tabId)) return { ok: false, reason: BOT_WALL_REASON }
     await sleep(SETTLE_MS)
+    // And again after: a challenge some boards only put up once their script has run.
+    if (await showsBotWall(tabId)) return { ok: false, reason: BOT_WALL_REASON }
 
     /*
      * Where it actually ENDED UP, which is not always where it was sent. A board
@@ -70,6 +101,17 @@ export async function scanBoard(url) {
     const at = typeof landed.url === 'string' && landed.url.length > 0 ? landed.url : url
     const refused = boardRefusal(url, at)
     if (refused !== null) return { ok: false, reason: refused }
+    /*
+     * A redirect to another part of the same site (`cra.org/ads` →
+     * `careercenter.cra.org/jobs`) lands under THAT host's robots.txt, which
+     * was never asked. Asked now, before anything on the page is read; the
+     * page has loaded, but nothing is harvested from a page its site asked
+     * crawlers not to read.
+     */
+    if (robotsAddress(at) !== robotsAddress(url)) {
+      const there = await robotsFor(at)
+      if (!robotsAllows(there, at)) return { ok: false, reason: robotsRefusal(at) }
+    }
 
     // Best effort: a board with nothing to press, or a press that throws,
     // still gets read as it stands.

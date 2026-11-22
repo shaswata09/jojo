@@ -4,6 +4,7 @@ import { Chip } from '@/components/ui/Chip'
 import { Columns } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
+import { ThirdPartyNotices } from '@/screens/guide/ThirdPartyNotices'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -11,12 +12,19 @@ import { space } from '@/theme/tokens'
 /**
  * What this is made of, and what it deliberately is not.
  *
- * The web guide's equivalent page carries licences and a code tour. Both are
- * kept short here for the reason the rest of the app is: a phone is not where
+ * The web guide's equivalent page carries licences and a code tour. The tour
+ * is kept short here for the reason the rest of the app is: a phone is not where
  * anyone reads a dependency list, and a page that pretends otherwise is a page
  * nobody scrolls. What survives the cut is the part a reader can act on —
  * which packages are load-bearing, and which claims in this build are honest
  * placeholders rather than finished features.
+ *
+ * The licences are NOT cut. The APK redistributes every package below and some
+ * seven hundred more, and their licences ask for their notices to travel with
+ * it — which, for an app, means inside it. They sit at the foot of the page in
+ * one panel that opens the full list (`ThirdPartyNotices`), generated from the
+ * installed packages rather than typed, so the page stays one screen long and
+ * the notices stay complete.
  */
 
 /** Package names stay as written; each `role` is a key under `builtWith.stack` in the guide catalog. */
@@ -34,6 +42,10 @@ const STACK: { name: string; role: string }[] = [
   { name: 'Reanimated 4', role: 'drag' },
   { name: 'react-native-svg', role: 'charts' },
   { name: 'Inter · JetBrains Mono', role: 'type' },
+  // Was missing while the app linked it: the Firebase SDKs (and Google's native
+  // ones underneath) are in every build, whether or not anyone agreed to
+  // reporting, so they belong on a list of what the app is made of.
+  { name: 'React Native Firebase · Google Firebase SDKs', role: 'reporting' },
 ]
 
 /** Keys under `builtWith.unfinished` in the guide catalog, each with a `title` and a `detail`. */
@@ -96,6 +108,8 @@ export function GuideBuiltWith() {
           ))}
         </Panel>
       </Columns>
+
+      <ThirdPartyNotices />
     </>
   )
 }

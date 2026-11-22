@@ -291,6 +291,12 @@ export const vaultFiles: VaultFile[] = filed(vaultFilesRaw)
  * writes for every job you name them on, and the whole argument for
  * `FILED_UNDER` being many-to-many is that filing them under the last one
  * edited would lose them from the other two.
+ *
+ * The people are invented, and so are their addresses: every one is on an RFC
+ * 2606 reserved domain (`example.edu`, `example.com`). These used to be
+ * plausible mailboxes at the real employers named in `affiliation`, shipped in
+ * every bundle, so a "send" from the demo could reach a real inbox. Only data
+ * seeded from now on carries the new addresses; nothing stored is rewritten.
  */
 const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] })[] = [
   {
@@ -298,7 +304,7 @@ const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] }
     name: 'Anita Mehta',
     role: 'Referee — advisor',
     affiliation: 'Texas Tech',
-    email: 'a.mehta@ttu.edu',
+    email: 'a.mehta@example.edu',
     note: 'Third letter still outstanding. Said to remind her the week of the deadline.',
     applicationIds: ['texas-tech', 'rice', 'unt'],
   },
@@ -307,7 +313,7 @@ const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] }
     name: 'D. Chen',
     role: 'Referral — former colleague',
     affiliation: 'Stripe',
-    email: 'dchen@stripe.com',
+    email: 'dchen@example.com',
     note: 'Offered to put the ML engineer application in front of the hiring manager.',
     applicationIds: ['stripe'],
   },
@@ -316,7 +322,7 @@ const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] }
     name: 'Prof. Ngozi Okafor',
     role: 'Search committee chair',
     affiliation: 'Rice',
-    email: 'n.okafor@rice.edu',
+    email: 'n.okafor@example.edu',
     note: 'Ran the first call. Asked for the teaching statement to say more about assessment.',
     applicationIds: ['rice', 'rice-research'],
   },
@@ -325,7 +331,7 @@ const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] }
     name: 'Sam Alvarez',
     role: 'Recruiter',
     affiliation: 'Databricks',
-    email: 'salvarez@databricks.com',
+    email: 'salvarez@example.com',
     phone: '+1 415 555 0134',
     applicationIds: ['databricks'],
   },
@@ -334,7 +340,7 @@ const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] }
     name: 'Erik Lindqvist',
     role: 'Referee',
     affiliation: 'KTH',
-    email: 'lindqvist@kth.se',
+    email: 'lindqvist@example.edu',
     note: 'Submitted for Baylor and UT Austin already.',
     applicationIds: ['baylor', 'ut-austin'],
   },

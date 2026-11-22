@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { refusedSources } from '@jojo/service/core/board'
 import { PIPELINE_SCHEDULES, scheduleOf } from '@jojo/service/core/proposal'
 import type { PipelineKind } from '@jojo/service/core/model'
 import type { Pipeline } from '@/data/scout'
@@ -65,8 +66,21 @@ export function PipelineDialog({
    */
   const needsSource = kind === 'scout'
   const nameError = submitted && !name.trim() ? t('dialog.nameError') : undefined
+  /*
+   * A site whose terms forbid automated reading — LinkedIn, Indeed, Glassdoor,
+   * ZipRecruiter (`NO_AUTOMATED_ACCESS`) — is never read by the scout, which
+   * skips it with a note in the log. Said here, as the address is typed, so
+   * the person learns it now rather than from a pipeline that quietly finds
+   * nothing there. It does NOT block Save: a pipeline saved before the rule
+   * existed must stay editable, and its other boards are still read.
+   */
+  const refused = needsSource ? refusedSources(source) : []
   const sourceError =
-    submitted && needsSource && !source.trim() ? t('dialog.sourceError') : undefined
+    submitted && needsSource && !source.trim()
+      ? t('dialog.sourceError')
+      : refused.length > 0
+        ? t('dialog.sourceRefused', { sites: refused.join(', ') })
+        : undefined
 
   const submit = (event: FormEvent) => {
     event.preventDefault()

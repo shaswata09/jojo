@@ -51,6 +51,7 @@
     "sources": "Sources",
     "sourcesHint": "Le site d’offres ou la page carrières qu’il surveille. Séparez-en plusieurs par des virgules.",
     "sourceError": "Un éclaireur sans source n’a rien à lire.",
+    "sourceRefused": "{{sites}} n’autorise pas la lecture automatisée dans ses conditions d’utilisation, donc l’éclaireur ne le lira pas. Retirez-le, ou ouvrez-y les offres vous-même et enregistrez-les avec le bouton de l’extension jojo.",
     "terms": {
       "twin": "Points d’attention",
       "scout": "Termes de correspondance"

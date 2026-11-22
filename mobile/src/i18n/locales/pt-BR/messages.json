@@ -209,7 +209,12 @@
     "unreachable": "Não foi possível acessar esse site de vagas.",
     "status": "Esse site de vagas respondeu {{status}}.",
     "browserOnly": "{{host}} só mostra as vagas para um navegador de verdade, então não dá para ler pelo celular. No computador, a extensão de navegador do jojo consegue ler.",
-    "cancelled": "A leitura foi cancelada."
+    "cancelled": "A leitura foi cancelada.",
+    "noAutomatedAccess": "{{host}} não permite leitura automatizada nos termos de uso, então o jojo não vai lê-lo de forma programada. Abra uma vaga lá você mesmo e salve-a no jojo.",
+    "robots": "{{host}} pede que leitores automatizados não abram esta página (o robots.txt dele proíbe), então o jojo não a leu.",
+    "dailyBudget": "O jojo já leu {{pages}} páginas de {{host}} hoje, que é o máximo que ele lê de um site em um dia. O resto pode ser lido amanhã.",
+    "tooSoon": "{{host}} pede que leitores automatizados esperem {{seconds}} segundos entre páginas, então o jojo parou aqui. O resto pode ser lido numa próxima rodada.",
+    "botWall": "Este site de vagas está pedindo uma verificação humana; abra-o você mesmo."
   },
   "timelineForm": {
     "title": "Dê um título que você vá reconhecer.",

@@ -47,8 +47,8 @@ installLastResortHandlers()
  * what settles the SDK's collection state; reporting first would send an event
  * through a collector that had not been told the answer yet. On a fresh install
  * it sends nothing at all — `analyticsEnabled()` is false until `ReportingStep`
- * has been shown, and `report` checks it. That is the intended shape: the first
- * launch of a never-asked phone is silent, and the second one is not.
+ * has been shown and the person has turned usage on, and `report` checks it.
+ * Every launch is silent until then: the switches start off (Q346).
  *
  * Not awaited: nothing here should hold the first frame.
  */

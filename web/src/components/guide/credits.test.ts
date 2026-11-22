@@ -14,7 +14,16 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { BSD_3_TEXT, BUNDLED, DEVELOPMENT, PHONE, RUNTIME, ZLIB_TEXT, creditProblems, packageOfModule } from './credits'
+import {
+  BSD_3_TEXT,
+  BUNDLED,
+  DEVELOPMENT,
+  PHONE,
+  RUNTIME,
+  ZLIB_TEXT,
+  creditProblems,
+  packageOfModule,
+} from './credits'
 import type { Credit } from './credits'
 
 // @ts-expect-error TS2307 — node:fs has no types under tsconfig.app.json; reading node_modules is the point.
@@ -46,7 +55,10 @@ function installed(name: string, fromDir: string): Manifest | null {
 const OWN = new Set(
   ['service', 'web', 'mobile'].map((w) => {
     try {
-      return (JSON.parse(fs.readFileSync(`${ROOT}${w}/package.json`, 'utf8')) as { name?: string }).name ?? ''
+      return (
+        (JSON.parse(fs.readFileSync(`${ROOT}${w}/package.json`, 'utf8')) as { name?: string })
+          .name ?? ''
+      )
     } catch {
       return ''
     }
@@ -70,15 +82,42 @@ describe('credits', () => {
   it('states the installed version and licence for every web credit', () => {
     const wrong: string[] = []
     for (const credit of [...RUNTIME, ...DEVELOPMENT]) {
+      // Compiled into another package's files; checked against them below.
+      if (credit.inside !== undefined) continue
       const pkg = installed(credit.name, `${ROOT}web/`)
       if (pkg === null) continue // Not installed in this checkout (an optional tool); nothing to compare.
-      if (pkg.version !== credit.version) wrong.push(`${credit.name}: ${credit.version} ≠ installed ${String(pkg.version)}`)
+      if (pkg.version !== credit.version)
+        wrong.push(`${credit.name}: ${credit.version} ≠ installed ${String(pkg.version)}`)
       // A null licence is the page saying "the manifest states none" — which
       // must then be true. Otherwise the two must agree.
       const declared = pkg.license ?? null
-      if (credit.licence === null ? declared !== null : declared !== null && declared !== credit.licence) {
-        wrong.push(`${credit.name}: licence ${String(credit.licence)} ≠ declared ${String(declared)}`)
+      if (
+        credit.licence === null
+          ? declared !== null
+          : declared !== null && declared !== credit.licence
+      ) {
+        wrong.push(
+          `${credit.name}: licence ${String(credit.licence)} ≠ declared ${String(declared)}`,
+        )
       }
+    }
+    expect(wrong).toEqual([])
+  })
+
+  it('states the installed version and licence for every phone credit', () => {
+    // The same rule, read from where the phone resolves its packages. The
+    // Firebase modules went uncredited while they were in every build; a
+    // version that drifts here is the same kind of quiet wrongness.
+    const wrong: string[] = []
+    for (const credit of PHONE) {
+      const pkg = installed(credit.name, `${ROOT}mobile/`)
+      if (pkg === null) continue
+      if (pkg.version !== credit.version)
+        wrong.push(`${credit.name}: ${credit.version} ≠ installed ${String(pkg.version)}`)
+      if ((pkg.license ?? null) !== credit.licence)
+        wrong.push(
+          `${credit.name}: licence ${String(credit.licence)} ≠ declared ${String(pkg.license)}`,
+        )
     }
     expect(wrong).toEqual([])
   })
@@ -89,9 +128,47 @@ describe('credits', () => {
   })
 })
 
+describe('code compiled into another package', () => {
+  /**
+   * core-js shipped inside pdf.js's legacy build and was credited nowhere: no
+   * module of the bundle resolves to a `core-js` folder, so the build's trace
+   * never saw it. The credit is written by hand, so it is held to what the
+   * inlined code says about itself — the version and copyright core-js
+   * registers in its shared store, in both files the editor loads.
+   */
+  it('credits core-js at the version and copyright pdf.js inlines', () => {
+    const credit = RUNTIME.find((c) => c.name === 'core-js')
+    expect(credit?.inside).toBe('pdfjs-dist')
+    const dir = ['web/', '']
+      .map((w) => `${ROOT}${w}node_modules/pdfjs-dist/legacy/build/`)
+      .find((d) => fs.existsSync(`${d}pdf.mjs`))
+    if (dir === undefined) return // pdf.js not installed in this checkout.
+    for (const file of ['pdf.mjs', 'pdf.worker.mjs']) {
+      const source = fs.readFileSync(`${dir}${file}`, 'utf8')
+      const block =
+        /version: '([^']+)',\s*mode:[^\n]*\n\s*copyright: '© ([^']+?)\. All rights reserved\.'/.exec(
+          source,
+        )
+      expect(block, `${file} no longer inlines core-js — drop the credit if so`).not.toBeNull()
+      expect(block?.[1]).toBe(credit?.version)
+      expect(block?.[2]).toBe(credit?.holder)
+    }
+  })
+
+  it('names the package it is inside, and that package is credited', () => {
+    const names = new Set(RUNTIME.map((c) => c.name))
+    for (const credit of RUNTIME.filter((c) => c.inside !== undefined)) {
+      expect(names.has(credit.inside ?? ''), credit.name).toBe(true)
+    }
+  })
+})
+
 describe('what the build bundles, traced to its package', () => {
   it('names the package a module came from, and the folder its manifest is in', () => {
-    expect(packageOfModule('/r/node_modules/d3-zoom/src/zoom.js')).toEqual({ name: 'd3-zoom', dir: '/r/node_modules/d3-zoom' })
+    expect(packageOfModule('/r/node_modules/d3-zoom/src/zoom.js')).toEqual({
+      name: 'd3-zoom',
+      dir: '/r/node_modules/d3-zoom',
+    })
     expect(packageOfModule('/r/web/node_modules/@radix-ui/react-dialog/dist/index.mjs')).toEqual({
       name: '@radix-ui/react-dialog',
       dir: '/r/web/node_modules/@radix-ui/react-dialog',
@@ -99,14 +176,16 @@ describe('what the build bundles, traced to its package', () => {
   })
 
   it('takes the innermost copy when one package nests another', () => {
-    expect(packageOfModule('/r/node_modules/@xyflow/react/node_modules/zustand/esm/index.mjs')?.dir).toBe(
-      '/r/node_modules/@xyflow/react/node_modules/zustand',
-    )
+    expect(
+      packageOfModule('/r/node_modules/@xyflow/react/node_modules/zustand/esm/index.mjs')?.dir,
+    ).toBe('/r/node_modules/@xyflow/react/node_modules/zustand')
   })
 
   it('reads Windows paths, queries and virtual ids, and skips what is not a package', () => {
     expect(packageOfModule('C:\\r\\node_modules\\pako\\lib\\zlib\\deflate.js')?.name).toBe('pako')
-    expect(packageOfModule('/r/node_modules/three/build/three.module.js?commonjs-es-import')?.name).toBe('three')
+    expect(
+      packageOfModule('/r/node_modules/three/build/three.module.js?commonjs-es-import')?.name,
+    ).toBe('three')
     expect(packageOfModule('\0/r/node_modules/tslib/tslib.es6.mjs')?.name).toBe('tslib')
     expect(packageOfModule('/r/web/src/main.tsx')).toBeNull()
     expect(packageOfModule('\0vite/preload-helper.js')).toBeNull()
@@ -117,7 +196,14 @@ describe('what the build bundles, traced to its package', () => {
 
 describe('the build check', () => {
   const credits: readonly Credit[] = [
-    { name: 'radix-ui', version: '1', licence: 'MIT', holder: null, what: '', covers: '@radix-ui/' },
+    {
+      name: 'radix-ui',
+      version: '1',
+      licence: 'MIT',
+      holder: null,
+      what: '',
+      covers: '@radix-ui/',
+    },
     { name: 'd3-ease', version: '3', licence: 'BSD-3-Clause', holder: null, what: '' },
     { name: 'scene-loader', version: '4', licence: 'MIT', holder: null, what: '' },
   ]
@@ -145,12 +231,18 @@ describe('the build check', () => {
       credits,
     )
     expect(problems).toHaveLength(2)
-    expect(problems.every((p) => p.startsWith('tslib ') && p.includes('credited nowhere'))).toBe(true)
+    expect(problems.every((p) => p.startsWith('tslib ') && p.includes('credited nowhere'))).toBe(
+      true,
+    )
   })
 
   it('names a package credited under a licence it does not state, umbrella or not', () => {
-    expect(creditProblems([{ name: 'd3-ease', version: '3', licence: 'ISC' }], credits)).toHaveLength(1)
-    expect(creditProblems([{ name: '@radix-ui/x', version: '1', licence: 'Apache-2.0' }], credits)).toHaveLength(1)
+    expect(
+      creditProblems([{ name: 'd3-ease', version: '3', licence: 'ISC' }], credits),
+    ).toHaveLength(1)
+    expect(
+      creditProblems([{ name: '@radix-ui/x', version: '1', licence: 'Apache-2.0' }], credits),
+    ).toHaveLength(1)
   })
 
   it('credits every package the reviewed production build shipped', () => {
@@ -159,12 +251,39 @@ describe('the build check', () => {
     // came only with the old third-party mascot's loader and left the bundle
     // with it. The build re-checks the real list every time.
     const shipped = [
-      'd3-color', 'd3-dispatch', 'd3-drag', 'd3-ease', 'd3-interpolate', 'd3-selection', 'd3-timer', 'd3-transition',
-      'd3-zoom', 'zustand', 'pako', 'tslib', '@floating-ui/core', '@floating-ui/dom', '@floating-ui/react-dom',
-      '@floating-ui/utils', 'react-remove-scroll', 'react-remove-scroll-bar', 'aria-hidden', 'use-sidecar', 'its-fine',
-      'suspend-react', 'classcat', '@xyflow/system', '@dnd-kit/accessibility', '@dnd-kit/utilities',
-      '@pdf-lib/standard-fonts', '@pdf-lib/upng', 'get-nonce', 'react-style-singleton',
-      'react-use-measure', 'use-callback-ref', 'use-sync-external-store',
+      'd3-color',
+      'd3-dispatch',
+      'd3-drag',
+      'd3-ease',
+      'd3-interpolate',
+      'd3-selection',
+      'd3-timer',
+      'd3-transition',
+      'd3-zoom',
+      'zustand',
+      'pako',
+      'tslib',
+      '@floating-ui/core',
+      '@floating-ui/dom',
+      '@floating-ui/react-dom',
+      '@floating-ui/utils',
+      'react-remove-scroll',
+      'react-remove-scroll-bar',
+      'aria-hidden',
+      'use-sidecar',
+      'its-fine',
+      'suspend-react',
+      'classcat',
+      '@xyflow/system',
+      '@dnd-kit/accessibility',
+      '@dnd-kit/utilities',
+      '@pdf-lib/standard-fonts',
+      '@pdf-lib/upng',
+      'get-nonce',
+      'react-style-singleton',
+      'react-use-measure',
+      'use-callback-ref',
+      'use-sync-external-store',
     ]
     const credited = new Set(BUNDLED.map((c) => c.name))
     expect(shipped.filter((name) => !credited.has(name))).toEqual([])
@@ -180,8 +299,25 @@ describe('the notices that travel with the bundle', () => {
     expect(notices).toContain(flat(ZLIB_TEXT))
   })
 
+  it('names the Firebase modules and native SDKs the phone links', () => {
+    for (const name of [
+      '@react-native-firebase/app',
+      '@react-native-firebase/analytics',
+      '@react-native-firebase/crashlytics',
+    ]) {
+      expect(
+        PHONE.some((c) => c.name === name),
+        name,
+      ).toBe(true)
+      expect(notices, name).toContain(name)
+    }
+    expect(notices).toMatch(/Firebase native SDKs/)
+  })
+
   it('names the holder of every bundled package with a notice to keep', () => {
-    const missing = BUNDLED.filter((c) => c.licence !== '0BSD' && !notices.includes(c.name)).map((c) => c.name)
+    const missing = BUNDLED.filter((c) => c.licence !== '0BSD' && !notices.includes(c.name)).map(
+      (c) => c.name,
+    )
     expect(missing).toEqual([])
   })
 })

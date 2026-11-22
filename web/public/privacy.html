@@ -1,0 +1,550 @@
+<!doctype html>
+<!--
+  jojo's privacy notice, as served with the web app (copied to the build root by
+  Vite, so it is at <base>/privacy.html: https://shaswata09.github.io/jojo/privacy.html
+  on Pages). The phone, the extension and the README link the published copy;
+  the web app links the copy shipped with its own build (`core/privacy.ts`).
+
+  THE TEXT IS docs/PRIVACY.md, and this page says the same thing. Change one,
+  change the other: `web/src/lib/privacy-notice.test.ts` fails when a heading or
+  the effective date of one is missing from the other.
+
+  SELF-CONTAINED ON PURPOSE. No script, no web font, no stylesheet or image from
+  anywhere: a page that explains what leaves your device should not itself make
+  a request to a third party to be read. The policy below forbids every load and
+  allows only the styles written on this page.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="What jojo keeps on your device, what can leave it and when, and how to say no."
+    />
+    <title>Privacy notice · jojo</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page: #ffffff;
+        --panel: #f6f6f4;
+        --text-1: #161616;
+        --text-2: #3d3d3d;
+        --text-3: #6b6b6b;
+        --hairline: #e2e2de;
+        --accent: #1d5fbf;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page: #0a0a0a;
+          --panel: #151515;
+          --text-1: #f2f2f2;
+          --text-2: #c9c9c9;
+          --text-3: #9a9a9a;
+          --hairline: #2a2a2a;
+          --accent: #8ab4f8;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text-2);
+        font:
+          16px/1.6 system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif;
+        padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+          max(32px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      }
+      main {
+        max-width: 42rem;
+        margin: 0 auto;
+      }
+      header {
+        padding-block: 1.5rem 1rem;
+        border-bottom: 1px solid var(--hairline);
+        margin-bottom: 1.5rem;
+      }
+      .brand {
+        margin: 0 0 0.25rem;
+        font-size: 0.8125rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-3);
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        line-height: 1.2;
+        color: var(--text-1);
+      }
+      .date {
+        margin: 0.5rem 0 0;
+        color: var(--text-3);
+        font-size: 0.9375rem;
+      }
+      h2 {
+        margin: 2.25rem 0 0.5rem;
+        font-size: 1.3125rem;
+        line-height: 1.3;
+        color: var(--text-1);
+      }
+      h3 {
+        margin: 1.75rem 0 0.375rem;
+        font-size: 1.0625rem;
+        line-height: 1.35;
+        color: var(--text-1);
+      }
+      p,
+      ul {
+        margin: 0 0 0.875rem;
+      }
+      ul {
+        padding-inline-start: 1.25rem;
+      }
+      li {
+        margin-bottom: 0.375rem;
+      }
+      strong {
+        color: var(--text-1);
+        font-weight: 600;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 2px;
+        overflow-wrap: anywhere;
+      }
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+      code {
+        font:
+          0.875em/1.4 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        background: var(--panel);
+        border: 1px solid var(--hairline);
+        border-radius: 4px;
+        padding: 0.05em 0.3em;
+        overflow-wrap: anywhere;
+      }
+      footer {
+        margin-top: 2.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--hairline);
+        font-size: 0.875rem;
+        color: var(--text-3);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="brand">jojo</p>
+        <h1>Privacy notice</h1>
+        <p class="date">Effective date: 21 November 2026</p>
+      </header>
+
+      <p>
+        This notice explains what happens to information when you use jojo. jojo is local-first: it
+        has no accounts and no server of its own, and your records stay on your device. A few things
+        can leave it, each only when you turn it on or point jojo at it. This notice lists all of
+        them.
+      </p>
+      <p>
+        The same text is kept in the jojo repository as
+        <a href="https://github.com/shaswata09/jojo/blob/main/docs/PRIVACY.md"
+          ><code>docs/PRIVACY.md</code></a
+        >, where every earlier version can be read in its history.
+      </p>
+      <h2 id="who-is-responsible">Who is responsible</h2>
+      <p>
+        jojo is an open-source project maintained by <strong>Shaswata Mitra</strong>. This notice
+        covers the copy of jojo he publishes:
+      </p>
+      <ul>
+        <li>
+          the web app at
+          <a href="https://shaswata09.github.io/jojo/">https://shaswata09.github.io/jojo/</a>,
+        </li>
+        <li>the Android and iOS app built from this repository, and</li>
+        <li>the jojo browser extension.</li>
+      </ul>
+      <p>
+        Shaswata Mitra runs the hosted web app and the Firebase project that receives usage
+        analytics and crash reports from it. For that data he is the person responsible for it (the
+        "controller", in data-protection terms).
+      </p>
+      <p>
+        A copy of jojo that somebody else builds or hosts, such as a fork, is that person's
+        responsibility. Their copy reports to their own analytics, if it reports anywhere at all,
+        and this notice does not cover it.
+      </p>
+      <p>
+        <strong>Contact.</strong> Open an issue at
+        <a href="https://github.com/shaswata09/jojo/issues"
+          >https://github.com/shaswata09/jojo/issues</a
+        >. Issues are public, so do not put personal details in one. If you need to discuss
+        something privately, open an issue that says so and leave the details out, and the
+        maintainer will reply there with a way to continue.
+      </p>
+      <h2 id="the-short-version">The short version</h2>
+      <ul>
+        <li>
+          jojo has no accounts and no server of its own. Your applications, notes, documents,
+          profile, contacts and API keys stay on your device. The maintainer never receives a copy.
+        </li>
+        <li>
+          Two things can be sent to Google's Firebase, and both are
+          <strong>off until you turn them on</strong>: usage analytics (web and phone) and crash
+          reports (phone only).
+        </li>
+        <li>
+          Anything else leaves only because you point jojo at it: a model provider you choose, the
+          job boards your own scout pipelines read, your other device during Transfer, or an
+          assistant you connect through the jojo bridge.
+        </li>
+        <li>jojo shows no ads and sells no data.</li>
+      </ul>
+      <h2 id="what-stays-on-your-device">What stays on your device</h2>
+      <p>Everything you put into jojo is kept on the device you are using:</p>
+      <ul>
+        <li>applications, stages, notes, reminders and the timeline,</li>
+        <li>people you record, such as referees, recruiters and hiring managers,</li>
+        <li>your profile, CV text and the documents you attach,</li>
+        <li>postings you keep, scout pipelines and what they find,</li>
+        <li>conversations with the assistant,</li>
+        <li>your settings, including any API key you enter.</li>
+      </ul>
+      <p>
+        On the web these are kept in your browser's storage for jojo's site. On the phone they are
+        kept in the app's own storage. In the browser extension, pages you keep are stored in the
+        extension until jojo files them. Nothing syncs between devices unless you move it yourself,
+        and no copy is held anywhere else. That also means nobody else can recover your records if
+        the device or browser data is lost, so take backups: on the web, Settings → Download a
+        backup; on the phone, the export in Settings, or Transfer under More (see "Your choices and
+        your rights" for what each one carries).
+      </p>
+      <p>
+        On the web and in the extension, crash logs also stay on the device. You can read them in
+        Settings. They are never sent anywhere, and a backup file does not carry them.
+      </p>
+      <h2 id="what-can-leave-your-device-and-when">What can leave your device, and when</h2>
+      <h3 id="1-usage-analytics-web-and-phone-off-until-you-turn-it-on">
+        1. Usage analytics (web and phone): off until you turn it on
+      </h3>
+      <p>
+        If you turn on "Share which features I use", jojo sends usage events to
+        <strong>Google Analytics for Firebase</strong>.
+      </p>
+      <p>
+        <strong>What jojo sends.</strong> Only events from a fixed list, defined in
+        <a href="https://github.com/shaswata09/jojo/blob/main/service/kg/core/analytics.ts"
+          ><code>service/kg/core/analytics.ts</code></a
+        >. A test fails the build if any of them is widened to free text. The events are:
+      </p>
+      <ul>
+        <li>
+          the app was opened, and which screen was opened (one of a fixed list of twelve, such as
+          "applications" or "settings");
+        </li>
+        <li>
+          an application was created, and how (typed in, from a link, from the scout or from a
+          captured page), or moved to a stage;
+        </li>
+        <li>
+          the assistant was asked something, with how many tools it had and whether a model was set
+          up; a change it proposed was approved or declined, and whether that change was
+          destructive;
+        </li>
+        <li>a scout pipeline was started, and a suggestion was approved or declined;</li>
+        <li>
+          the kind of item added to the vault (file, link, snippet, reminder, person or posting);
+        </li>
+        <li>
+          a model connected or failed, with the type of provider (for example "ollama" or
+          "anthropic"), the kind of failure and the step that failed. The address and the key are
+          never sent;
+        </li>
+        <li>a document reader connected, and by which route;</li>
+        <li>
+          a backup was exported or restored, or a Transfer completed, with the number of records in
+          bands (0, 1, 2–5, 6–20, 21–50, 50+), never the exact count;
+        </li>
+        <li>the guided tour was started or finished;</li>
+        <li>
+          an error was caught, with where in the app it happened, the type of error and whether it
+          was fatal. The error message is not sent.
+        </li>
+      </ul>
+      <p>
+        No event contains free text, an employer, a role, a person's name, a file name or anything
+        you type.
+      </p>
+      <p>
+        <strong>What Google's software adds.</strong> Like any analytics tool, the Firebase SDK
+        adds:
+      </p>
+      <ul>
+        <li>
+          a random identifier for this installation. On the web this is a Google Analytics client ID
+          in a <code>_ga</code> cookie and a Firebase installation ID in browser storage. On the
+          phone it is an app-instance ID and a Firebase installation ID;
+        </li>
+        <li>
+          the type of device, operating system or browser, the app version, the language and the
+          screen size;
+        </li>
+        <li>
+          an approximate location (country and region), which Google works out from your IP address;
+        </li>
+        <li>
+          its own session events, such as a first visit or first open, the start of a session and
+          time spent in the app.
+        </li>
+      </ul>
+      <p>
+        On the web, the page address sent is only the site's origin, with no path or query. Google
+        signals and ad personalisation are switched off in jojo's code. On the phone, the
+        advertising ID, the Android ID and the iOS identifier for vendors are not collected,
+        Firebase's automatic screen reporting is off, and the advertising consent settings are off.
+      </p>
+      <p>
+        <strong>Legal basis.</strong> Your consent. The switch starts off, and nothing is sent until
+        you turn it on.
+      </p>
+      <p>
+        <strong>How to stop.</strong> Turn the switch off in Settings at any time. On the web,
+        turning it off also deletes the analytics cookies and Firebase's stored installation data
+        from this browser. On the phone, it resets the analytics data, which clears the app-instance
+        ID and any events not yet uploaded.
+      </p>
+      <p>
+        <strong>How long it is kept.</strong> Event data is kept for as long as set in the analytics
+        property, at most 14 months, and then deleted by Google.
+      </p>
+      <h3 id="2-crash-reports-phone-only-off-until-you-turn-it-on">
+        2. Crash reports (phone only): off until you turn it on
+      </h3>
+      <p>
+        If you turn crash reports on in the phone app, a report is sent to
+        <strong>Firebase Crashlytics</strong> when something breaks.
+      </p>
+      <p>
+        <strong>What jojo sends.</strong> The error message and stack trace, and a label saying
+        where in the app it happened. Before a report is kept or sent, jojo removes API keys,
+        authorisation headers, web-address query strings, your home directory and file paths, and
+        email addresses. A report never contains your applications, documents, notes, profile or
+        conversations.
+      </p>
+      <p>
+        <strong>What Crashlytics adds.</strong> A random Crashlytics installation ID, the device
+        model, operating system version, app version, the time, and the device's state when it
+        crashed (such as orientation, free memory and disk space, and whether it is rooted or
+        jailbroken).
+      </p>
+      <p><strong>Legal basis.</strong> Your consent. The switch starts off.</p>
+      <p>
+        <strong>How to stop.</strong> Turn it off in Settings. Collection stops, and reports that
+        have not been sent yet are deleted.
+      </p>
+      <p><strong>How long it is kept.</strong> Crashlytics keeps crash reports for 90 days.</p>
+      <p>
+        On the web and in the extension, crash logs are never sent anywhere; see "What stays on your
+        device".
+      </p>
+      <h3 id="google-s-role-and-transfers-outside-your-country">
+        Google's role, and transfers outside your country
+      </h3>
+      <p>
+        For both usage analytics and crash reports, Google acts as a processor for the maintainer,
+        under a different set of terms for each:
+      </p>
+      <ul>
+        <li>
+          <strong>Crash reports</strong> (Firebase Crashlytics): the Firebase Data Processing and
+          Security Terms.
+        </li>
+        <li>
+          <strong>Usage analytics</strong> (Google Analytics for Firebase): the Google Ads Data
+          Processing Terms, which the maintainer accepts for the analytics property. The property's
+          settings for sharing data with Google are turned off.
+        </li>
+      </ul>
+      <p>
+        Google processes the data on servers in the United States and elsewhere. For data from the European Economic Area, the United Kingdom
+        and Switzerland, the transfer relies on the EU–US Data Privacy Framework (and its UK and
+        Swiss extensions), under which Google LLC is certified, and on the Standard Contractual
+        Clauses in Google's terms.
+      </p>
+      <h3 id="3-a-model-provider-you-choose">3. A model provider you choose</h3>
+      <p>
+        jojo does not need an AI model to work as a tracker. If you connect one, where your records
+        go depends on which one:
+      </p>
+      <ul>
+        <li>
+          <strong>A model on your own machine or network</strong> (Ollama, vLLM, LM Studio,
+          llama.cpp): nothing leaves. The requests go to the address you enter.
+        </li>
+        <li>
+          <strong>A hosted provider</strong> (Anthropic, OpenAI, OpenRouter or Groq),
+          <strong>or a server at an address that is not on your device or local network</strong>:
+          your records are sent to it. jojo shows a notice when you choose one.
+        </li>
+      </ul>
+      <p>
+        While a hosted provider is selected, records are sent to it when you use the assistant and
+        also when jojo does background work with the model: the duplicate check when you save an
+        application, reading postings your scout finds, fit readings against your profile, tailoring
+        your CV and letters, and shortening a long conversation so it fits. What is sent can include
+        your applications and notes, your profile, the text of your CV and other documents, and
+        <strong>other people's details</strong>, such as the names and email addresses of referees
+        and recruiters.
+      </p>
+      <p>
+        This happens under <strong>your own agreement with that provider</strong>. You use your own
+        API key. The request goes from your device to the provider, or through the jojo extension
+        when your browser needs it to, and never through the maintainer, who cannot see it and is
+        not a party to that agreement. The provider's own terms and privacy policy decide what it
+        keeps and whether it may use what you send to improve its models. OpenRouter passes each
+        request on to the company that makes the model you pick, so that company's terms apply as
+        well. jojo links each provider's terms and privacy policy where you choose it.
+      </p>
+      <p>
+        Your API key is stored on your device, is never put in a backup, and is only ever sent to
+        the provider it belongs to.
+      </p>
+      <h3 id="4-job-boards-your-scout-reads">4. Job boards your scout reads</h3>
+      <p>
+        Scout pipelines that you set up and run read job boards and careers pages that you choose.
+        Opening a posting address you paste works the same way. The request comes from your device,
+        either from the phone app or, on a computer, from your browser through the jojo extension.
+        The site sees what it sees on any visit: your IP address, your browser, and, when the
+        extension opens the page in your browser, any account you are signed in to on that site.
+        That site's own privacy policy applies. What the scout finds is kept on your device.
+      </p>
+      <h3 id="5-transfer-between-your-devices">5. Transfer between your devices</h3>
+      <p>
+        Transfer moves your records directly between your phone and your computer. The two devices
+        pair using the camera, connect to each other at a private network address with no relay and
+        no server in between, and encrypt everything they send (X25519 key agreement and AES-GCM).
+        Nothing goes to the maintainer.
+      </p>
+      <p>
+        A backup file is different. It is a file you save and move yourself, and it goes wherever
+        you put it.
+      </p>
+      <h3 id="6-assistants-you-connect-through-the-jojo-bridge">
+        6. Assistants you connect through the jojo bridge
+      </h3>
+      <p>
+        If you turn on "Connect from an MCP client" in Settings, the small
+        <code>jojo-bridge</code> program runs on your computer and listens only on
+        <code>127.0.0.1</code>. It passes messages between an assistant you run, such as Claude
+        Code, and the open jojo tab. What that assistant reads through jojo's tools goes to its own
+        model provider (for Claude Code, Anthropic) under <strong>your</strong> plan and that
+        provider's terms. jojo sends nothing anywhere else.
+      </p>
+      <h3 id="7-a-document-reader">7. A document reader</h3>
+      <p>
+        jojo can read PDFs, Word files and postings through Microsoft's MarkItDown, which you run
+        yourself. Documents are sent to the address you set for it and nowhere else. If you set an
+        address that is not on your machine, your documents go there.
+      </p>
+      <h3 id="hosting">Hosting</h3>
+      <p>
+        The web app is served by GitHub Pages, and the phone app and the extension are downloaded
+        from GitHub. Like any web host, GitHub receives your IP address and browser details when you
+        load a page or download a file, and handles them under
+        <a
+          href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement"
+          >GitHub's privacy statement</a
+        >. The maintainer does not receive GitHub's access logs.
+      </p>
+      <h2 id="your-choices-and-your-rights">Your choices and your rights</h2>
+      <p>
+        <strong>Your records.</strong> You hold them, so you exercise your rights over them on your
+        own device:
+      </p>
+      <ul>
+        <li>
+          <strong>See and take a copy:</strong> everything is in the app. On the web, Settings →
+          Download a backup exports all of it in one file, documents included. On the phone, the
+          export in Settings (Export as JSON) carries every record but not the contents of the
+          documents you attached; Transfer, under More, moves everything, documents included, to a
+          computer.
+        </li>
+        <li><strong>Correct:</strong> edit any record in the app.</li>
+        <li>
+          <strong>Delete:</strong> Settings → Clear every record removes them. You can also clear
+          jojo's site data in your browser, remove the extension, or uninstall the phone app.
+        </li>
+      </ul>
+      <p>
+        The maintainer holds no copy of your records, so he cannot access, correct, delete or
+        recover them for you.
+      </p>
+      <p>
+        <strong>Analytics and crash data.</strong> You can withdraw consent at any time with the
+        switches in Settings. Withdrawing does not affect what was sent before. Because jojo has no
+        accounts, this data is tied only to a random installation identifier, not to your name, so
+        turning the switches off on your device is the most reliable way to remove your identifier.
+        You can also raise a request through the contact above.
+      </p>
+      <p>
+        <strong>Your rights under data-protection law.</strong> Depending on where you live,
+        including under the EU and UK GDPR, you have the right to access, correct and delete your
+        personal data, to restrict or object to its use, to receive it in a portable form, and to
+        withdraw consent. You also have the right to complain to a data-protection supervisory
+        authority, in particular in the country where you live or work (in the UK, the Information
+        Commissioner's Office).
+      </p>
+      <h2 id="other-people-s-details">Other people's details</h2>
+      <p>
+        People you record in jojo, such as referees, recruiters and contacts, are kept on your
+        device like everything else. If you choose a hosted model provider, their details can be
+        sent to it as described above. You decide whether that happens.
+      </p>
+      <h2 id="children">Children</h2>
+      <p>
+        jojo is meant for adults looking for work. It is not intended for anyone under 16, and
+        nobody under 16 should turn on usage analytics or crash reports.
+      </p>
+      <h2 id="changes-to-this-notice">Changes to this notice</h2>
+      <p>
+        This notice is kept in the jojo repository as <code>docs/PRIVACY.md</code>, so every earlier
+        version is in its history. When it changes, the effective date at the top changes, and a
+        change to what can leave your device is described in the release notes.
+      </p>
+
+      <footer>
+        <p>
+          <a href="./">Open jojo</a> ·
+          <a href="https://github.com/shaswata09/jojo/issues">Contact (GitHub Issues)</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "jojo \u2014 keep this posting",
   "version": "0.1.0",
-  "description": "Saves a job posting exactly as it reads today, and lets jojo read the job boards you follow. Nothing is uploaded anywhere.",
+  "description": "Saves a job posting as it reads today and reads job boards you follow. Stays on your device unless you choose a model provider.",
   "permissions": [
     "scripting",
     "tabs",
@@ -64,8 +64,14 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "capture@jojo.app",
-      "strict_min_version": "121.0"
+      "id": "capture@askjojo.app",
+      "strict_min_version": "121.0",
+      "data_collection_permissions": {
+        "required": [
+          "websiteContent",
+          "personallyIdentifyingInfo"
+        ]
+      }
     }
   },
   "icons": {

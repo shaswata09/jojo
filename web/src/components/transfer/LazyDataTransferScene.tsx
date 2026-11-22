@@ -1,67 +1,53 @@
-import { lazy, Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-import { cn } from '@/lib/utils'
 import { useWebGPU } from '@/lib/use-webgpu'
+import { cn } from '@/lib/utils'
 import type { DataTransferSceneProps } from './DataTransferScene'
 import { COLOR_MAP } from './textures'
 import './transfer.css'
 
-/**
- * The split point. `three/webgpu` plus the TSL node graph is by a wide margin
- * the largest thing this app can load, and it is worth nothing on a device
- * without an adapter — so the import lives behind both a `lazy()` and the
- * capability check below, and a browser that cannot run it never fetches it.
+/*
+ * The only dynamic import of the scene: Vite names its chunk after the module,
+ * and the precache guard keeps that chunk out of the service worker.
  */
-const Scene = lazy(() => import('./DataTransferScene'))
+const DataTransferScene = lazy(() => import('./DataTransferScene'))
 
 /**
- * The transfer scene with every way it can fail already handled.
+ * The transfer scene behind three guards.
  *
- * Three separate failures, three separate guards, because they happen at
- * different moments:
- *
- * - No adapter at all (Safari, older Chrome, a blocklisted GPU). Caught before
- *   mount by `useWebGPU`, so the chunk is never requested.
- * - Chunk still in flight. Covered by Suspense, showing the same still image
- *   the fallback uses, so there is no reflow when the canvas takes over.
- * - `init()` rejects anyway, or a shader fails to compile on this particular
- *   driver. Caught by the boundary — the same rule the 3D mascot (`JojoRobot`)
- *   follows: a decorative canvas must never be able to take a route down with it.
-
+ * - **Capability.** Without a usable WebGPU adapter the scene's chunk is never
+ *   requested, and while the probe is still asking, the still shows rather
+ *   than an empty box.
+ * - **Loading.** The still covers the wait for the chunk.
+ * - **Failure.** A renderer that fails to start, or loses its device, falls
+ *   back to the still.
  */
-export function LazyDataTransferScene({ className, ...props }: DataTransferSceneProps) {
+export function LazyDataTransferScene(props: DataTransferSceneProps) {
   const status = useWebGPU()
-
-  if (status !== 'supported') return <TransferFallback className={className} />
-
-  const fallback = <TransferFallback className={className} />
+  const still = <TransferFallback className={props.className} />
+  if (status !== 'supported') return still
   return (
-    <ErrorBoundary fallback={fallback}>
-      <Suspense fallback={fallback}>
-        <Scene className={className} {...props} />
+    <ErrorBoundary fallback={still}>
+      <Suspense fallback={still}>
+        <DataTransferScene {...props} />
       </Suspense>
     </ErrorBoundary>
   )
 }
 
 /**
- * What the scene degrades to when there is no WebGPU adapter.
- *
- * Deliberately the same *picture*, not a spinner and not an apology: the point
- * of the panel is the image, and the shader's contribution is motion. So this
- * shows the colour texture with a CSS approximation of the dot grid and the red
- * scan band, and loses only the depth parallax and the bloom.
- *
- * Also used as the Suspense fallback while the `three/webgpu` chunk downloads,
- * which means the layout never reflows when the real scene arrives.
-
+ * The scene as a still: the same picture, framed and grounded exactly as the
+ * live canvas draws it, with two soft lights drifting along the arc of cards
+ * (none under reduced motion). Decoration only.
  */
 export function TransferFallback({ className }: { className?: string }) {
   return (
-    <div className={cn('transfer-scope relative overflow-hidden', className)}>
-      <img src={COLOR_MAP} alt="" aria-hidden className="transfer-fallback-img" />
-      <span aria-hidden className="transfer-fallback-dots" />
-      <span aria-hidden className="transfer-fallback-scan" />
+    <div aria-hidden className={cn('transfer-scene', className)}>
+      <div className="transfer-scene__frame">
+        <img className="transfer-scene__picture" src={COLOR_MAP} alt="" draggable={false} />
+        <span className="transfer-scene__relay" />
+        <span className="transfer-scene__relay" />
+      </div>
     </div>
   )
 }

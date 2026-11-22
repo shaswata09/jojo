@@ -450,7 +450,10 @@ describe('a scan whose "Load more" navigates the tab', () => {
         remove: async () => undefined,
       },
       scripting: {
-        executeScript: async ({ func }: { func: unknown }) => {
+        executeScript: async ({ func }: { func: { name?: string } }) => {
+          // The bot-check look (`pageSignals`) reads the page and judges
+          // nothing here; it is not a press or a harvest, so it is not counted.
+          if (func.name === 'pageSignals') return [{ result: null }]
           ran.push(func === expandListing ? 'expand' : 'harvest')
           return [{ result: [] }]
         },
@@ -460,6 +463,9 @@ describe('a scan whose "Load more" navigates the tab', () => {
     /** The real `scanBoard`, run against this scanner's `chrome`. */
     const scan = (url: string) => {
       vi.stubGlobal('chrome', chrome)
+      // The scan asks the site's robots.txt first; no site here has one, and a
+      // test must not reach the real one over the network.
+      vi.stubGlobal('fetch', async () => ({ ok: false, status: 404, text: async () => '' }))
       return (scanBoard as (url: string) => Promise<{ ok: boolean; reason?: string; landed?: string }>)(url)
     }
     return { scan, ran }

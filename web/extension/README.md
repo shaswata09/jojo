@@ -116,10 +116,11 @@ fails to parse, because that failure is otherwise completely silent.
 
 The app cannot do this, and the reason is not a missing feature.
 
-A posting worth keeping is usually behind a login: Workday, LinkedIn, a
-university portal. The session for that login lives in your browser, so the
-capture has to happen **in the tab**, after the page's own JavaScript has run and
-with your cookies attached. Nothing else has that view:
+A posting worth keeping is often behind a login: an employer's Workday or
+other applicant-tracking portal, a university's HR system. The session for that
+login lives in your browser, so the capture has to happen **in the tab**, after
+the page's own JavaScript has run and with your cookies attached. Nothing else
+has that view:
 
 - The web app's own `fetch` is refused cross-origin. Measured against three real
   job boards: `TypeError: Failed to fetch`, every time. This is CORS, not a
@@ -297,9 +298,16 @@ re-renders the page against an API that is no longer there, and usually leaves
 it blank; the scripts that do run are the site's trackers, which would report
 every time the file is opened. The rendered page is what you wanted to keep.
 
-Nothing is uploaded anywhere. The extension fetches subresources your browser
-was already showing you, holds the result in `chrome.storage.local` on your own
-machine, and hands it to jojo the next time you open it.
+A kept page is not uploaded anywhere. The extension fetches subresources your
+browser was already showing you, holds the result in `chrome.storage.local` on
+your own machine, and hands it to jojo the next time you open it. What does
+leave the machine, and only when you set it up: model requests jojo writes are
+relayed to the model provider you chose (see "And the same argument again, for
+model providers"), and they can carry a posting's text and whatever of your own
+records jojo puts in the prompt. That is why the store description says "stays
+on your device unless you choose a model provider" rather than "nothing is
+uploaded", and why the Firefox manifest declares `websiteContent` and
+`personallyIdentifyingInfo` under `data_collection_permissions`.
 
 ## The files
 
@@ -315,6 +323,7 @@ machine, and hands it to jojo the next time you open it.
 | `save.html`, `save.js` | The tab Save opens to download a kept page. A tab rather than the popup, because a popup closes on blur and takes its download with it. |
 | `save-file.js`  | A kept page as one file: doctype, provenance comment, filename. No side effects, so it is checked by `web/src/lib/capture-save.test.ts`. |
 | `harvest.js`    | The link sweep on a job board. Injected into a background tab; judges nothing.    |
+| `worker/crawl-rules.js` | The crawler's manners: sites never read on a schedule, robots.txt, pacing, bot checks. A transcription of `service/kg/core/robots.ts` and part of `core/board.ts`, checked by `web/src/lib/extension-crawl-rules.test.ts`. |
 | `icons/`        | Four PNGs, 16 to 128. Generated — see below — never edited by hand.               |
 
 The icons are drawn by `web/scripts/make-extension-icons.mjs`, which runs before
@@ -349,6 +358,42 @@ again. Both halves of that are forced:
 If the board redirects to another host — which is what a sign-in wall does — the
 scan is refused rather than harvested, because the links on a login page are not
 jobs.
+
+### What it will not read, and how politely it reads the rest
+
+The scout reads unattended, in your signed-in browser, so it reads the way a
+well-behaved crawler does. That covers both things it opens on its own: a board
+a pipeline reads, and each posting the background reader then opens from that
+board's list to fill in its suggestion card. Both go through `worker/manners.js`
+and keep one pacing book. The rules are `service/kg/core/robots.ts` and
+`NO_AUTOMATED_ACCESS` in `service/kg/core/board.ts`, transcribed in
+`worker/crawl-rules.js`:
+
+- **Sites whose terms forbid automated access are never read on a schedule:**
+  LinkedIn, Indeed, Glassdoor and ZipRecruiter. A pipeline that names one is
+  told why and skips it, and the background reader never opens a posting there
+  — nor one whose listed link redirects there. Saving a posting you opened
+  yourself, with the toolbar button, or reading one you asked for with "From
+  link", is you reading a page and is not affected.
+- **robots.txt is honoured.** Before a board or a posting is opened the worker
+  fetches the site's robots.txt (once per site per browser session, without
+  your cookies) and refuses an address its `User-agent: *` rules disallow —
+  longest match wins, Allow wins a tie. A page that redirected to another host
+  is checked against that host's robots.txt before anything on it is read. A
+  missing or unreachable robots.txt means allowed.
+- **Pages are paced.** At least five seconds between two pages of one site, or
+  the site's `Crawl-delay` if that is longer, and at most a hundred pages of one
+  site a day — board pages and postings counted together. A site that asks for
+  a longer gap than the worker will wait (five seconds) is not waited on: the
+  read stops there and the rest is read later.
+- **A bot check stops the read.** If a board or a posting answers with a
+  Cloudflare, Imperva or captcha "are you human?" page, the tab is closed at
+  once — before a real browser would quietly pass the check — and the scout
+  reports "This board is asking for a human check; open it yourself".
+
+An extension older than this (bridge revision 10) is never asked to open a
+posting in the background: the app says it is out of date instead, and the
+background reader waits until it is reloaded.
 
 `harvest.js` returns **every** link it can see and judges none of them.
 `isJobPostingUrl` in `service/kg/core/board.ts` decides what a posting is, so

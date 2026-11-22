@@ -207,7 +207,7 @@
     },
     "crash": {
       "title": "Crash reports and usage",
-      "description": "Two separate things, both on — turn off either one here or later in Settings. Neither can carry your records: not an application, a document, a note, a profile or a conversation.",
+      "description": "Two separate things, and both are off unless you turn them on — here or later in Settings. Neither can carry your records: not an application, a document, a note, a profile or a conversation.",
       "inReport": "What is in a report",
       "inError": "The error message and where in jojo it happened.",
       "inStack": "The stack trace, which names the code that failed.",
@@ -218,12 +218,13 @@
       "keep": "Keep crash reports",
       "keepHint": "The error and where it happened. Stays on this device in the browser.",
       "share": "Share which features I use",
-      "shareHint": "Counts only — which screens are opened, how often. Never what is in them.",
-      "usageNote": "The second one is the only thing jojo sends about what you DO, and it can only ever say things from a fixed list — “the vault was opened”, “an application was added”, “there are 6–20 of them”. It cannot name an employer, a role, a file or anything you typed, because those words are not in the list. It goes to Google Analytics so we can see which parts of jojo are worth more work.",
+      "shareHint": "Counts only — which screens are opened, how often — never what is in them. Google Analytics also keeps a random id in this browser and records basics such as the browser, device type, language and the country or region your connection comes from.",
+      "usageNote": "The second one is the only thing jojo sends about what you DO, and it can only ever say things from a fixed list — “the vault was opened”, “an application was added”, “there are 6–20 of them”. It cannot name an employer, a role, a file or anything you typed, because those words are not in the list. It goes to Google Analytics so we can see which parts of jojo are worth more work, along with what Google Analytics adds to every report: a random id it keeps in this browser, and basics such as the browser, device type, language and the country or region your connection comes from. Turning it off deletes that id.",
       "bothOff": "Turn both off",
       "save": "Save choices",
       "continueOff": "Continue with both off",
-      "later": "You can change either of these at any time under Settings, and turning one off also discards what it kept."
+      "later": "You can change either of these at any time under Settings, and turning one off also discards what it kept.",
+      "privacy": "Privacy notice"
     },
     "extension": {
       "title": "Keep the postings you apply to",

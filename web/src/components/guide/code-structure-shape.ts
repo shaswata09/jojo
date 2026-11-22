@@ -63,15 +63,17 @@ export const SHAPE: DirRow[] = [
     // model's word. And two for Q343: `proposal-filter.ts` and its test — the
     // suggestions queue's search, filters and active/closed split, shared by
     // both apps.
-    files: 202,
-    tests: 85,
+    // Q346 (2026-11-21, legal fixes): counts re-measured after the privacy,
+    // robots.txt, notices and demo-data changes.
+    files: 207,
+    tests: 87,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
     // Re-measured 2026-10-22 with `backup-stream.ts`, and 2026-11-16 without
     // the pulse code.
-    lines: 50745,
+    lines: 51899,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8461, what: 'transactions, journal, boot' },
@@ -104,8 +106,10 @@ export const SHAPE: DirRow[] = [
     // application a conversation is about, so "this one" has a referent.
     // `record-query.ts` and its test: filter, sort, group and add up over a
     // record's stored and derived fields, for `memory.list`.
-    files: 105,
-    tests: 41,
+    // Q346 (2026-11-21, legal fixes): counts re-measured after the privacy,
+    // robots.txt, notices and demo-data changes.
+    files: 106,
+    tests: 42,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -119,7 +123,7 @@ export const SHAPE: DirRow[] = [
     // keywords to the model and match the reply back onto the ones that exist.
     // Re-measured 2026-10-22, when `memory.list` became a query tool:
     // `record-query.ts` and its test, and the window-sized result cap.
-    lines: 47591,
+    lines: 48271,
     what: 'the loop, the catalog, 10 reads, the pipelines, the weak-model guards',
   },
   {
@@ -195,9 +199,11 @@ export const SHAPE: DirRow[] = [
     // `scout/ProposalFilters.tsx`: the suggestions' search box and filter menu (Q343).
     // `guide/measured-dates.ts` and its test: a published table's per-model
     // run dates, once MiniMax M2.1 was measured a month after the others (Q344).
-    files: 525,
-    tests: 149,
-    lines: 77198,
+    // Q346 (2026-11-21, legal fixes): counts re-measured after the privacy,
+    // robots.txt, notices and demo-data changes.
+    files: 528,
+    tests: 152,
+    lines: 80216,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -247,16 +253,20 @@ export const SHAPE: DirRow[] = [
     // `pairing-qr.ts` and its test: the pairing offer laid out as a QR code.
     // 217 with `search-places.ts` — every setting, profile field and place the
     // search palette can reach — its completeness guard, and the arrival test.
-    files: 230,
-    tests: 109,
-    lines: 40785,
+    // Q346 (2026-11-21, legal fixes): counts re-measured after the privacy,
+    // robots.txt, notices and demo-data changes.
+    files: 234,
+    tests: 113,
+    lines: 41691,
     what: 'web-only adapters and URL state',
   },
   {
     dir: 'service/data',
-    files: 9,
-    tests: 2,
-    lines: 1625,
+    // Q346 (2026-11-21, legal fixes): counts re-measured after the privacy,
+    // robots.txt, notices and demo-data changes.
+    files: 10,
+    tests: 3,
+    lines: 1724,
     what: 'demo fixtures, below the model',
   },
   {
@@ -279,4 +289,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 282
+export const WEB_TEST_FILES = 289

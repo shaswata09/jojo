@@ -436,7 +436,8 @@
     "footer": "jojo — Jarvis fOr Job Organization. Everything runs on this device.",
     "statusEnglish": "Kept in English, word for word, so it cannot drift from the licence it summarises.",
     "overdue_one": "{{count}} reminder overdue.",
-    "overdue_other": "{{count}} reminders overdue."
+    "overdue_other": "{{count}} reminders overdue.",
+    "privacy": "Privacy notice"
   },
   "statistics": {
     "title": "Statistics",
@@ -716,7 +717,8 @@
       "focusPlaceholder": "follow-ups and deadlines",
       "termsPlaceholder": "assistant professor, CS/ECE",
       "often": "How often",
-      "oftenHint": "How long it waits between rounds."
+      "oftenHint": "How long it waits between rounds.",
+      "sourceRefused": "{{sites}} does not allow automated reading in its terms of use, so the scout will not read it. Remove it, or open postings there yourself and save them to jojo."
     }
   },
   "postingBrowser": {
@@ -923,7 +925,8 @@
       "reasoning": "Reasoning",
       "reasoningDescription": "Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model.",
       "endpointFirst": "Fill in an endpoint first.",
-      "kept": "Kept on this device. The assistant will use this model."
+      "kept": "Kept on this device. The assistant will use this model.",
+      "remote": "This address is not on this device or your local network, so your records will be sent to it — and to whoever runs it."
     },
     "test": {
       "testing": "Testing…",
@@ -994,13 +997,33 @@
     "provider": {
       "title": "Provider",
       "description": "Choosing one sets its address for you. The cloud ones need a key, and your records go to them.",
-      "cloud": "Your words go to this company, and are billed to you",
-      "localKey": "On a machine you control. Needs a key.",
-      "local": "On a machine you control. Nothing leaves it."
+      "cloud": "Your records go to this company, under its terms",
+      "localKey": "Runs where you point it. Needs a key, and nothing leaves your network unless that address is elsewhere.",
+      "local": "Runs where you point it. Nothing leaves your network unless that address is elsewhere."
     },
     "cloud": {
       "terms": "{{name}} terms",
       "privacy": "Privacy policy"
+    },
+    "cloudNotice": {
+      "headline": "Your records leave this device when you use {{name}}",
+      "sent": {
+        "what": "Everything the assistant reads to answer you is sent to {{name}}: your applications and notes, your profile, your CV text once a document is read, and the names and email addresses of any referees or recruiters it looks at.",
+        "others": "Some of that is other people’s personal information, not just yours.",
+        "local": "With a model on your own machine instead, none of it leaves."
+      },
+      "background": "It is not only when you chat. While {{name}} is selected, jojo also sends it records for work done in the background: the duplicate check when you save an application, reading the postings your scout finds, fit readings against your profile, tailoring your CV and letters, and shortening a long conversation so it fits.",
+      "cost": {
+        "paid": "{{short}} bills your account, and its own terms govern what it may keep and whether what you send may be used to improve its models.",
+        "freeTier": "{{short}} has a free tier with limits as well as paid use billed to your account. Either way its own terms govern what it may keep and whether what you send may be used to improve its models.",
+        "bargain": "That is a different bargain from the local option, not a worse one, but it is worth reading before your records are part of it."
+      },
+      "openrouter": "OpenRouter passes each request on to the company that makes the model you pick, under that company’s terms as well as its own. OpenRouter’s own terms let it log requests and use their content in anonymised form.",
+      "business": "These API terms are written for businesses and developers. jojo cannot tell you whether they fit a personal job search; checking that they fit your use is up to you.",
+      "liability": {
+        "party": "You are the account holder and the party to that agreement — jojo ships no key and makes no request of its own.",
+        "breach": "Compliance with {{short}}’s terms is yours, and jojo accepts no liability for any breach of them."
+      }
     },
     "servers": {
       "title": "Saved servers",

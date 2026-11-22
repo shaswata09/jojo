@@ -7,8 +7,9 @@
  * model moving on and a model concluding the search is exhausted.
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { scanBoard } from './board-scan'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { i18next } from '@/i18n/i18n'
+import { resetBoardPacing, scanBoard } from './board-scan'
 
 const html = (body: string) => ({
   ok: true,
@@ -23,8 +24,14 @@ const stubFetch = (value: unknown) => {
   )
 }
 
+// Each test is a fresh launch: no robots.txt remembered, no host recently read.
+beforeEach(() => {
+  resetBoardPacing()
+})
+
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 describe('what the phone can read', () => {
@@ -79,17 +86,27 @@ describe('what the phone can read', () => {
   })
 
   /*
-   * Named up front rather than discovered by fetching. LinkedIn answers a
-   * phone with 200 and an empty shell, so the honest failure is otherwise
-   * indistinguishable from a board with no jobs on it.
+   * Named up front rather than discovered by fetching — not even their
+   * robots.txt is asked. Their terms forbid automated reading, and that is
+   * the reason now (it used to be the empty shell they serve a phone), shared
+   * with the web through `noAutomatedAccess` in core.
    */
-  it('refuses the boards that only answer a real browser, before asking', async () => {
+  it('refuses the sites whose terms forbid automated reading, before asking', async () => {
     const fetcher = vi.fn()
     vi.stubGlobal('fetch', fetcher)
-    for (const host of ['linkedin.com', 'www.linkedin.com', 'indeed.com', 'www.glassdoor.com']) {
+    for (const [host, site] of [
+      ['linkedin.com', 'linkedin.com'],
+      ['www.linkedin.com', 'linkedin.com'],
+      ['indeed.com', 'indeed.com'],
+      ['uk.indeed.com', 'indeed.com'],
+      ['www.glassdoor.com', 'glassdoor.com'],
+      ['www.ziprecruiter.com', 'ziprecruiter.com'],
+    ] as const) {
       const out = await scanBoard(`https://${host}/jobs/search?q=ml`)
       expect(out.ok).toBe(false)
-      if (!out.ok) expect(out.reason).toContain('real browser')
+      if (!out.ok) {
+        expect(out.reason).toBe(i18next.t('messages:boardScan.noAutomatedAccess', { host: site }))
+      }
     }
     expect(fetcher).not.toHaveBeenCalled()
   })
@@ -173,5 +190,83 @@ describe('a Stop while the phone reads a board (leaks-2)', () => {
     const out = await scanBoard('https://acme.test/jobs', { aborted: true })
     expect(out.ok).toBe(false)
     expect(fetching).not.toHaveBeenCalled()
+  })
+})
+
+/** A fetch that answers robots.txt with `robots` and every other address with `page`. */
+const sites = (robots: { ok: boolean; status: number; text: () => Promise<string> }, page: unknown) => {
+  const asked: string[] = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string) => {
+      asked.push(url)
+      return url.endsWith('/robots.txt') ? robots : page
+    }),
+  )
+  return asked
+}
+
+describe('reading a board politely', () => {
+  it('does not fetch an address the site’s robots.txt disallows', async () => {
+    const asked = sites(
+      html('User-agent: *\nDisallow: /search/\nDisallow: /search?*\n'),
+      html('<a href="/jobs/1234567">Engineer</a>'),
+    )
+    const out = await scanBoard('https://careercenter.cra.org/search?keywords=ml')
+    expect(out).toEqual({
+      ok: false,
+      reason: i18next.t('messages:boardScan.robots', { host: 'careercenter.cra.org' }),
+    })
+    expect(asked).toEqual(['https://careercenter.cra.org/robots.txt'])
+  })
+
+  it('reads a site with no robots.txt, and asks for it once', async () => {
+    vi.useFakeTimers()
+    const asked = sites({ ok: false, status: 404, text: async () => '' }, html('<a href="/jobs/1234567">Engineer</a>'))
+    expect((await scanBoard('https://acme.test/jobs')).ok).toBe(true)
+    const second = scanBoard('https://acme.test/jobs?page=2')
+    await vi.advanceTimersByTimeAsync(5000)
+    expect((await second).ok).toBe(true)
+    expect(asked.filter((u) => u.endsWith('/robots.txt'))).toHaveLength(1)
+  })
+
+  /*
+   * Five seconds at least between two pages of one host. The second page is
+   * not fetched until the gap has passed.
+   */
+  it('keeps a gap between two pages of one host', async () => {
+    vi.useFakeTimers()
+    const asked = sites({ ok: false, status: 404, text: async () => '' }, html('<a href="/jobs/1234567">Engineer</a>'))
+    await scanBoard('https://acme.test/jobs')
+    const second = scanBoard('https://acme.test/jobs?page=2')
+    await vi.advanceTimersByTimeAsync(4000)
+    expect(asked).not.toContain('https://acme.test/jobs?page=2')
+    await vi.advanceTimersByTimeAsync(1100)
+    await second
+    expect(asked).toContain('https://acme.test/jobs?page=2')
+  })
+
+  it('stops rather than waiting a minute when a site asks for one', async () => {
+    sites(html('User-agent: *\nCrawl-delay: 60\n'), html('<a href="/jobs/1234567">Engineer</a>'))
+    expect((await scanBoard('https://slow.test/jobs')).ok).toBe(true)
+    const out = await scanBoard('https://slow.test/jobs?page=2')
+    expect(out).toEqual({
+      ok: false,
+      reason: i18next.t('messages:boardScan.tooSoon', { host: 'slow.test', seconds: 60 }),
+    })
+  })
+
+  it('stops at a bot check instead of calling it an empty board or a 403', async () => {
+    sites(
+      { ok: false, status: 404, text: async () => '' },
+      {
+        ok: false,
+        status: 403,
+        text: async () =>
+          '<html><head><title>Just a moment...</title></head><body><div id="challenge-form"></div></body></html>',
+      },
+    )
+    const out = await scanBoard('https://guarded.test/jobs')
+    expect(out).toEqual({ ok: false, reason: i18next.t('messages:boardScan.botWall') })
   })
 })

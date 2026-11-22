@@ -107,7 +107,7 @@
       "hint": "escolha sua, e ela muda para onde vão suas palavras",
       "title": "Qual modelo faz isso",
       "p1": "O jojo conversa com o que você indicar nas <go>Configurações</go>. Um modelo rodando na sua própria máquina — Ollama, vLLM, LM Studio — é o padrão, e é a única configuração em que nada do que você escreve sai do dispositivo.",
-      "p2": "Você também pode usar Claude, OpenAI e outros com uma chave de API. É uma troca real, e a tela diz isso com clareza: seus registros vão para essa empresa e são cobrados na sua conta. A chave fica guardada neste navegador, nunca entra em um backup e nunca é enviada a lugar nenhum além do provedor que você escolheu.",
+      "p2": "Você também pode usar Claude, OpenAI e outros com uma chave de API. É uma troca real, e a tela diz isso com clareza: seus registros vão para essa empresa, sob os termos dela, e alguns provedores cobram na sua conta. A chave fica guardada neste navegador, nunca entra em um backup e nunca é enviada a lugar nenhum além do provedor que você escolheu.",
       "stoppedTitle": "Se o assistente parece ter parado de ler",
       "stopped": "Um modelo local com pouco espaço descarta em silêncio o começo do que recebeu e depois responde com confiança a uma pergunta que nunca viu inteira. Agora o jojo compara o que o servidor diz ter lido com o que foi realmente enviado e avisa quando os dois não batem — porque a alternativa é um assistente que parece ruim no que faz quando, na verdade, está sem espaço."
     },

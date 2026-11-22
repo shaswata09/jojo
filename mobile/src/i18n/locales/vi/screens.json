@@ -411,7 +411,8 @@
     },
     "footer": "jojo — Jarvis fOr Job Organization. Mọi thứ chạy trên thiết bị này.",
     "statusEnglish": "Giữ nguyên tiếng Anh từng chữ, để không lệch khỏi giấy phép mà nó tóm tắt.",
-    "overdue_other": "{{count}} lời nhắc quá hạn."
+    "overdue_other": "{{count}} lời nhắc quá hạn.",
+    "privacy": "Thông báo quyền riêng tư"
   },
   "statistics": {
     "title": "Thống kê",
@@ -669,7 +670,8 @@
       "focusPlaceholder": "liên hệ lại và hạn chót",
       "termsPlaceholder": "phó giáo sư, CS/ECE",
       "often": "Tần suất",
-      "oftenHint": "Thời gian chờ giữa các lượt."
+      "oftenHint": "Thời gian chờ giữa các lượt.",
+      "sourceRefused": "{{sites}} không cho phép đọc tự động trong điều khoản sử dụng, nên trình tìm việc sẽ không đọc nó. Hãy gỡ bỏ, hoặc tự mở tin tuyển dụng ở đó và lưu vào jojo."
     }
   },
   "postingBrowser": {
@@ -874,7 +876,8 @@
       "reasoning": "Suy luận",
       "reasoningDescription": "Cho phép các mô hình có khả năng suy nghĩ — gpt-oss, Gemma 4, Qwen3 — suy luận trước khi trả lời. Hãy tắt nếu câu trả lời trống khi dùng mô hình nhỏ.",
       "endpointFirst": "Hãy điền điểm cuối trước.",
-      "kept": "Được giữ trên thiết bị này. Trợ lý sẽ dùng mô hình này."
+      "kept": "Được giữ trên thiết bị này. Trợ lý sẽ dùng mô hình này.",
+      "remote": "Địa chỉ này không nằm trên thiết bị này hay mạng nội bộ của bạn, nên các bản ghi của bạn sẽ được gửi tới đó — và tới bất kỳ ai vận hành nó."
     },
     "test": {
       "testing": "Đang kiểm tra…",
@@ -945,13 +948,33 @@
     "provider": {
       "title": "Nhà cung cấp",
       "description": "Chọn một nhà cung cấp sẽ tự đặt địa chỉ cho bạn. Các nhà cung cấp đám mây cần khóa, và các bản ghi của bạn sẽ được gửi tới họ.",
-      "cloud": "Lời bạn được gửi tới công ty này, và bạn bị tính phí",
-      "localKey": "Trên máy bạn kiểm soát. Cần khóa.",
-      "local": "Trên máy bạn kiểm soát. Không có gì rời khỏi đó."
+      "cloud": "Các bản ghi của bạn được gửi tới công ty này, theo điều khoản của họ",
+      "localKey": "Chạy ở nơi bạn trỏ tới. Cần khóa, và không có gì rời khỏi mạng của bạn trừ khi địa chỉ đó ở nơi khác.",
+      "local": "Chạy ở nơi bạn trỏ tới. Không có gì rời khỏi mạng của bạn trừ khi địa chỉ đó ở nơi khác."
     },
     "cloud": {
       "terms": "Điều khoản của {{name}}",
       "privacy": "Chính sách quyền riêng tư"
+    },
+    "cloudNotice": {
+      "headline": "Các bản ghi của bạn rời khỏi thiết bị này khi bạn dùng {{name}}",
+      "sent": {
+        "what": "Mọi thứ trợ lý đọc để trả lời bạn đều được gửi tới {{name}}: các đơn ứng tuyển và ghi chú của bạn, hồ sơ cá nhân của bạn, nội dung CV của bạn khi một tài liệu đã được đọc, cùng tên và địa chỉ email của bất kỳ người giới thiệu hay nhà tuyển dụng nào mà nó xem.",
+        "others": "Một phần trong đó là thông tin cá nhân của người khác, không chỉ của bạn.",
+        "local": "Ngược lại, với một mô hình trên máy của chính bạn, không thứ gì trong đó rời đi."
+      },
+      "background": "Không chỉ khi bạn trò chuyện. Khi {{name}} đang được chọn, jojo còn gửi bản ghi cho nó để làm các việc chạy nền: kiểm tra trùng lặp khi bạn lưu một đơn ứng tuyển, đọc các tin tuyển dụng mà trình tìm việc tìm thấy, đánh giá mức phù hợp với hồ sơ của bạn, điều chỉnh CV và thư của bạn, và rút gọn một cuộc trò chuyện dài cho vừa.",
+      "cost": {
+        "paid": "{{short}} tính phí vào tài khoản của bạn, và điều khoản riêng của họ quy định những gì họ được giữ lại và liệu những gì bạn gửi có được dùng để cải thiện mô hình của họ hay không.",
+        "freeTier": "{{short}} có gói miễn phí kèm giới hạn cùng với mức dùng trả phí tính vào tài khoản của bạn. Dù thế nào, điều khoản riêng của họ cũng quy định những gì họ được giữ lại và liệu những gì bạn gửi có được dùng để cải thiện mô hình của họ hay không.",
+        "bargain": "Đó là một thỏa thuận khác với lựa chọn chạy cục bộ, không phải tệ hơn, nhưng đáng đọc trước khi các bản ghi của bạn trở thành một phần của nó."
+      },
+      "openrouter": "OpenRouter chuyển mỗi yêu cầu tới công ty làm ra mô hình bạn chọn, theo điều khoản của công ty đó cũng như của chính OpenRouter. Điều khoản riêng của OpenRouter cho phép họ ghi nhật ký các yêu cầu và dùng nội dung của chúng ở dạng ẩn danh.",
+      "business": "Các điều khoản API này được viết cho doanh nghiệp và nhà phát triển. jojo không thể cho bạn biết chúng có phù hợp với việc tìm việc cá nhân hay không; kiểm tra xem chúng có phù hợp với cách bạn dùng hay không là việc của bạn.",
+      "liability": {
+        "party": "Bạn là chủ tài khoản và là một bên của thỏa thuận đó — jojo không kèm theo khóa nào và không tự gửi yêu cầu nào.",
+        "breach": "Việc tuân thủ điều khoản của {{short}} là trách nhiệm của bạn, và jojo không chịu trách nhiệm cho bất kỳ vi phạm nào đối với chúng."
+      }
     },
     "servers": {
       "title": "Máy chủ đã lưu",

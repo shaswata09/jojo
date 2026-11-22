@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Il tuo browser è il database",
-      "body": "Ogni record viene scritto nel database di questo browser mentre lavori, quindi chiudere la scheda è sicuro. Nulla lascia questo computer e nulla si sincronizza: cancella i dati del browser, cambia browser o perdi il disco e se ne vanno con loro. Esporta un backup <kbd>.json</kbd> da <settings>Impostazioni</settings> per tutto ciò che vuoi conservare altrove."
+      "body": "Ogni record viene scritto nel database di questo browser mentre lavori, quindi chiudere la scheda è sicuro. jojo non ne tiene copia altrove e nulla si sincronizza: i tuoi record lasciano questo browser solo quando li invii a un fornitore di modelli che hai scelto, o quando li sposti tu. Cancella i dati del browser, cambia browser o perdi il disco e se ne vanno con loro. Esporta un backup <kbd>.json</kbd> da <settings>Impostazioni</settings> per tutto ciò che vuoi conservare altrove."
     },
     "savePath": {
       "title": "Cosa succede quando salvi qualcosa",
@@ -333,7 +333,7 @@
         "hint": "integrato",
         "title": "Fai un backup",
         "storedTitle": "I tuoi documenti sono memorizzati qui",
-        "stored": "I CV e le lettere di presentazione che alleghi vengono salvati in questo browser e sopravvivono alla chiusura della scheda. Nulla viene caricato da nessuna parte, e nulla lascia questo computer a meno che non lo scarichi tu.",
+        "stored": "I CV e le lettere di presentazione che alleghi vengono salvati in questo browser e sopravvivono alla chiusura della scheda. I file non vengono caricati e jojo non ne tiene copia altrove; il loro testo va a un modello solo se scegli un fornitore ospitato.",
         "oneFileTitle": "Un unico file contiene tutto",
         "oneFile": "<settings>Impostazioni</settings> scrive un backup con ogni record, ogni collegamento tra di essi e ogni documento, tutto in un unico file. Ripristinarlo rimette al loro posto tutte e tre le cose.",
         "whyTitle": "Perché è importante",

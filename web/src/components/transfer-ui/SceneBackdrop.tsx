@@ -14,9 +14,9 @@ import { cn } from '@/lib/utils'
  * to its parent and would otherwise collapse or, worse, take part in the flex
  * column and push the copy off the bottom of the panel.
  *
- * `fullScreenEffect` is off: the scan line sweeping the whole canvas would run
- * straight through the progress bar and the step list, which is exactly the
- * kind of movement that makes a status readout hard to trust.
+ * The scene's motion stays on the picture — packets of light along the arc of
+ * cards between the two devices — and never crosses the copy on the reading
+ * side, the progress bar or the step list.
  *
  * Decoration only. The pairing key is the QR code `TransferStage` draws in its
  * own column (Q329); nothing here is read by a camera, so the whole box is
@@ -30,7 +30,7 @@ export function SceneBackdrop({ className }: { className?: string }) {
     >
       {/* Held back to 85%, so the picture sits behind the copy rather than
           competing with it. */}
-      <LazyDataTransferScene className="size-full opacity-85" fullScreenEffect={false} />
+      <LazyDataTransferScene className="size-full opacity-85" />
       {/* Legibility, not decoration: the scene is a photograph and the copy on
           top of it has to stay readable on a laptop with the brightness down.
           Weighted to the left, where the text is, so the picture survives on

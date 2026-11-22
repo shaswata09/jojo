@@ -51,6 +51,7 @@
     "sources": "Fontes",
     "sourcesHint": "O site ou a página de carreiras que ele vigia. Separe várias com vírgulas.",
     "sourceError": "Um explorador sem fonte não tem nada para ler.",
+    "sourceRefused": "{{sites}} não permite leitura automatizada nos seus termos de uso, então o explorador não vai lê-lo. Remova-o, ou abra as vagas lá você mesmo e salve-as com o botão da extensão do jojo.",
     "terms": {
       "twin": "No que focar",
       "scout": "Termos de correspondência"

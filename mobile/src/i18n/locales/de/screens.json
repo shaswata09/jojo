@@ -436,7 +436,8 @@
     "footer": "jojo — Jarvis fOr Job Organization. Alles läuft auf diesem Gerät.",
     "statusEnglish": "Bewusst wörtlich auf Englisch, damit der Text nicht von der Lizenz abweicht, die er zusammenfasst.",
     "overdue_one": "{{count}} Erinnerung überfällig.",
-    "overdue_other": "{{count}} Erinnerungen überfällig."
+    "overdue_other": "{{count}} Erinnerungen überfällig.",
+    "privacy": "Datenschutzhinweis"
   },
   "statistics": {
     "title": "Statistik",
@@ -716,7 +717,8 @@
       "focusPlaceholder": "Nachfragen und Fristen",
       "termsPlaceholder": "Assistant Professor, CS/ECE",
       "often": "Wie oft",
-      "oftenHint": "Wie lange sie zwischen zwei Durchläufen wartet."
+      "oftenHint": "Wie lange sie zwischen zwei Durchläufen wartet.",
+      "sourceRefused": "{{sites}} erlaubt in den Nutzungsbedingungen kein automatisiertes Lesen, daher liest der Scout es nicht. Entferne es oder öffne die Anzeigen dort selbst und speichere sie in jojo."
     }
   },
   "postingBrowser": {
@@ -923,7 +925,8 @@
       "reasoning": "Schlussfolgern",
       "reasoningDescription": "Lässt Modelle, die denken können – gpt-oss, Gemma 4, Qwen3 –, vor der Antwort nachdenken. Schalte es aus, wenn Antworten bei einem kleinen Modell leer zurückkommen.",
       "endpointFirst": "Gib zuerst einen Endpunkt ein.",
-      "kept": "Auf diesem Gerät gespeichert. Der Assistent nutzt dieses Modell."
+      "kept": "Auf diesem Gerät gespeichert. Der Assistent nutzt dieses Modell.",
+      "remote": "Diese Adresse liegt nicht auf diesem Gerät und nicht in deinem lokalen Netzwerk, also werden deine Einträge dorthin gesendet – und an wen auch immer sie betreibt."
     },
     "test": {
       "testing": "Teste…",
@@ -994,13 +997,33 @@
     "provider": {
       "title": "Anbieter",
       "description": "Mit der Wahl wird seine Adresse für dich eingestellt. Cloud-Anbieter brauchen einen Schlüssel, und deine Einträge gehen an sie.",
-      "cloud": "Deine Texte gehen an dieses Unternehmen und werden dir berechnet",
-      "localKey": "Auf einem Rechner, den du kontrollierst. Braucht einen Schlüssel.",
-      "local": "Auf einem Rechner, den du kontrollierst. Nichts verlässt ihn."
+      "cloud": "Deine Einträge gehen an dieses Unternehmen, unter seinen Bedingungen",
+      "localKey": "Läuft dort, wohin du es richtest. Braucht einen Schlüssel, und nichts verlässt dein Netzwerk, außer diese Adresse liegt woanders.",
+      "local": "Läuft dort, wohin du es richtest. Nichts verlässt dein Netzwerk, außer diese Adresse liegt woanders."
     },
     "cloud": {
       "terms": "Bedingungen von {{name}}",
       "privacy": "Datenschutzerklärung"
+    },
+    "cloudNotice": {
+      "headline": "Deine Einträge verlassen dieses Gerät, wenn du {{name}} nutzt",
+      "sent": {
+        "what": "Alles, was der Assistent liest, um dir zu antworten, wird an {{name}} gesendet: deine Bewerbungen und Notizen, dein Profil, der Text deines Lebenslaufs, sobald ein Dokument gelesen wurde, und die Namen und E-Mail-Adressen aller Referenzgeber oder Recruiter, die er sich ansieht.",
+        "others": "Einiges davon sind personenbezogene Daten anderer Menschen, nicht nur deine.",
+        "local": "Mit einem Modell auf deinem eigenen Rechner dagegen geht nichts davon nach außen."
+      },
+      "background": "Es geht nicht nur ums Chatten. Solange {{name}} ausgewählt ist, sendet jojo ihm auch Einträge für Arbeit im Hintergrund: die Duplikatprüfung beim Speichern einer Bewerbung, das Lesen der Stellenanzeigen, die dein Scout findet, Passungsbewertungen gegen dein Profil, das Zuschneiden deines Lebenslaufs und deiner Anschreiben und das Kürzen einer langen Unterhaltung, damit sie passt.",
+      "cost": {
+        "paid": "{{short}} stellt deinem Konto die Nutzung in Rechnung, und seine eigenen Bedingungen regeln, was es behalten darf und ob das, was du sendest, zur Verbesserung seiner Modelle verwendet werden darf.",
+        "freeTier": "{{short}} hat eine kostenlose Stufe mit Begrenzungen und dazu kostenpflichtige Nutzung, die deinem Konto berechnet wird. So oder so regeln seine eigenen Bedingungen, was es behalten darf und ob das, was du sendest, zur Verbesserung seiner Modelle verwendet werden darf.",
+        "bargain": "Das ist ein anderer Handel als die lokale Option, kein schlechterer, aber es lohnt sich, die Bedingungen zu lesen, bevor deine Einträge Teil davon werden."
+      },
+      "openrouter": "OpenRouter gibt jede Anfrage an das Unternehmen weiter, das das gewählte Modell herstellt – unter dessen Bedingungen und zusätzlich unter den eigenen. Die eigenen Bedingungen von OpenRouter erlauben es, Anfragen zu protokollieren und ihren Inhalt in anonymisierter Form zu nutzen.",
+      "business": "Diese API-Bedingungen sind für Unternehmen und Entwickler geschrieben. jojo kann dir nicht sagen, ob sie zu einer privaten Jobsuche passen; zu prüfen, ob sie zu deiner Nutzung passen, liegt bei dir.",
+      "liability": {
+        "party": "Du bist der Kontoinhaber und Vertragspartei dieser Vereinbarung – jojo liefert keinen Schlüssel mit und stellt keine eigenen Anfragen.",
+        "breach": "Die Einhaltung der Bedingungen von {{short}} liegt bei dir, und jojo übernimmt keine Haftung für Verstöße dagegen."
+      }
     },
     "servers": {
       "title": "Gespeicherte Server",

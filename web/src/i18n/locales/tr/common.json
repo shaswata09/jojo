@@ -207,7 +207,7 @@
     },
     "crash": {
       "title": "Çökme raporları ve kullanım",
-      "description": "İki ayrı şey, ikisi de açık — birini ya da ikisini burada ya da daha sonra Ayarlar'da kapatabilirsiniz. Hiçbiri kayıtlarınızı taşıyamaz: ne bir başvuru, ne bir belge, ne bir not, ne bir profil, ne de bir konuşma.",
+      "description": "İki ayrı şey ve siz açmadıkça ikisi de kapalı — burada ya da daha sonra Ayarlar'da açabilirsiniz. Hiçbiri kayıtlarınızı taşıyamaz: ne bir başvuru, ne bir belge, ne bir not, ne bir profil, ne de bir konuşma.",
       "inReport": "Bir raporda neler var",
       "inError": "Hata mesajı ve hatanın jojo'nun neresinde oluştuğu.",
       "inStack": "Başarısız olan kodu adlandıran yığın izi.",
@@ -218,12 +218,13 @@
       "keep": "Çökme raporlarını sakla",
       "keepHint": "Hata ve nerede oluştuğu. Tarayıcıda bu cihazda kalır.",
       "share": "Hangi özellikleri kullandığımı paylaş",
-      "shareHint": "Yalnızca sayılar — hangi ekranların ne sıklıkla açıldığı. İçlerinde ne olduğu asla.",
-      "usageNote": "İkincisi, jojo'nun sizin NE yaptığınız hakkında gönderdiği tek şeydir ve yalnızca sabit bir listedeki şeyleri söyleyebilir — “kasa açıldı”, “bir başvuru eklendi”, “6–20 tane var”. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz, çünkü bu sözcükler listede yok. Google Analytics'e gider; böylece jojo'nun hangi bölümlerinin daha fazla emeğe değer olduğunu görebiliriz.",
+      "shareHint": "Yalnızca sayılar — hangi ekranların ne sıklıkla açıldığı —, içlerinde ne olduğu asla. Google Analytics ayrıca bu tarayıcıda rastgele bir kimlik tutar ve tarayıcı, cihaz türü, dil ve bağlantınızın geldiği ülke ya da bölge gibi temel bilgileri kaydeder.",
+      "usageNote": "İkincisi, jojo'nun sizin NE yaptığınız hakkında gönderdiği tek şeydir ve yalnızca sabit bir listedeki şeyleri söyleyebilir — “kasa açıldı”, “bir başvuru eklendi”, “6–20 tane var”. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz, çünkü bu sözcükler listede yok. Google Analytics'e gider; böylece jojo'nun hangi bölümlerinin daha fazla emeğe değer olduğunu görebiliriz. Google Analytics her gönderime şunları ekler: bu tarayıcıda tuttuğu rastgele bir kimlik ve tarayıcı, cihaz türü, dil ve bağlantınızın geldiği ülke ya da bölge gibi temel bilgiler. Kapatmak bu kimliği siler.",
       "bothOff": "İkisini de kapat",
       "save": "Seçimleri kaydet",
       "continueOff": "İkisi de kapalı devam et",
-      "later": "Bunların ikisini de istediğiniz zaman Ayarlar altında değiştirebilirsiniz; birini kapatmak, onun sakladıklarını da siler."
+      "later": "Bunların ikisini de istediğiniz zaman Ayarlar altında değiştirebilirsiniz; birini kapatmak, onun sakladıklarını da siler.",
+      "privacy": "Gizlilik bildirimi"
     },
     "extension": {
       "title": "Başvurduğunuz ilanları saklayın",

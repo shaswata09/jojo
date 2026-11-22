@@ -78,7 +78,7 @@
       "description": "Suelta aquí tu CV y tus declaraciones, o elígelos: se archivan en la Bóveda, en {{bucket}}, donde el resto de la app puede acceder a ellos.",
       "upload": "Subir un documento"
     },
-    "footer": "Los mismos archivos que la <anchor>herramienta Archivos</anchor> de la Bóveda, filtrados por {{bucket}}. Suelta aquí un documento o elige uno, y el archivo se guarda en este navegador: no se sube nada a ninguna parte. Haz clic en uno para leerlo."
+    "footer": "Los mismos archivos que la <anchor>herramienta Archivos</anchor> de la Bóveda, filtrados por {{bucket}}. Suelta aquí un documento o elige uno, y el archivo se guarda en este navegador: no se sube, y su texto solo va a un modelo si eliges un proveedor alojado. Haz clic en uno para leerlo."
   },
   "documentTile": {
     "open": "Abrir {{name}}",

@@ -162,15 +162,17 @@
     "what": "Quando qualcosa si rompe, jojo può conservare l'errore così puoi rileggerlo: utile quando ciò che non ha funzionato è già sparito. Una segnalazione contiene il messaggio di errore, il punto di jojo in cui si è verificato e lo stack trace. Non contiene mai le tue candidature, documenti, note, profilo o conversazioni, e chiavi API, indirizzi e indirizzi email vengono rimossi prima che una segnalazione venga scritta.",
     "where": "Le segnalazioni vengono conservate su questo telefono e inviate anche a Firebase Crashlytics, che aggiunge il modello del dispositivo, la versione del sistema operativo e un id casuale usato per contare quante persone incontrano lo stesso arresto anomalo. Google le conserva per 90 giorni. Nessuno dei tuoi record le accompagna.",
     "report": "Segnala gli arresti anomali",
-    "reportHint": "Attivo, così un arresto anomalo che incontri è uno che possiamo vedere. Disattivalo e non viene registrato nulla.",
+    "reportHint": "Disattivo finché non lo attivi tu. Se è attivo, un arresto anomalo che incontri viene inviato a Firebase Crashlytics perché possa essere corretto; se è disattivo, non viene registrato nulla e le segnalazioni non ancora inviate vengono eliminate.",
     "usage": "Condividi quali funzioni uso",
-    "usageHint": "Solo conteggi, da un elenco fisso: mai cosa c'è nei tuoi record.",
-    "usageDetail": "Può dire solo cose tratte da un elenco fisso: quale schermata è stata aperta, che è stata aggiunta una candidatura, più o meno quante ce ne sono. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto. Va a Google Analytics. Con questa opzione disattivata, jojo disattiva anche le visualizzazioni di schermata e i conteggi di sessione che Firebase raccoglierebbe altrimenti da solo.",
+    "usageHint": "Solo conteggi, da un elenco fisso: mai cosa c'è nei tuoi record. Inviati con un ID casuale dell'istanza dell'app e dati di base sul dispositivo.",
+    "usageDetail": "Può dire solo cose tratte da un elenco fisso: quale schermata è stata aperta, che è stata aggiunta una candidatura, più o meno quante ce ne sono. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto. Va a Google Analytics, che aggiunge un ID casuale dell'istanza dell'app e dati di base come il modello del dispositivo, la versione del sistema operativo, la lingua, la versione dell'app e il paese o la regione da cui arriva la tua connessione. Con questa opzione disattivata, jojo disattiva anche le visualizzazioni di schermata e i conteggi di sessione che Firebase raccoglierebbe altrimenti da solo, e disattivarla elimina quell'ID e tutto ciò che non è ancora stato inviato.",
     "kept_one": "{{count}} segnalazione conservata",
     "kept_many": "{{count}} di segnalazioni conservate",
     "kept_other": "{{count}} segnalazioni conservate",
     "nothingBroken": "Da quando l'hai attivato non si è rotto nulla.",
-    "notRecording": "Non viene registrato nulla."
+    "notRecording": "Non viene registrato nulla.",
+    "restartNote": "Disattivato. jojo smette subito di inviare e ha eliminato le segnalazioni non ancora inviate; il rilevatore di arresti anomali di Crashlytics finisce di spegnersi al prossimo avvio di jojo.",
+    "privacy": "Informativa sulla privacy"
   },
   "date": {
     "today": "Oggi",
@@ -301,7 +303,7 @@
   },
   "reporting": {
     "title": "Segnalazioni di arresto anomalo e utilizzo",
-    "description": "Due cose distinte, entrambe attive. Disattivane una qui o più tardi in Impostazioni. Nessuna delle due può contenere i tuoi record: né una candidatura, né un documento, né una nota, né un profilo, né una conversazione.",
+    "description": "Due cose distinte, ed entrambe restano disattivate finché non le attivi tu, qui o più tardi in Impostazioni. Nessuna delle due può contenere i tuoi record: né una candidatura, né un documento, né una nota, né un profilo, né una conversazione.",
     "bothOff": "Disattiva entrambi",
     "save": "Salva le scelte",
     "inReport": "Cosa c'è in una segnalazione",
@@ -316,9 +318,10 @@
       "secrets": "· Le tue chiavi API, gli indirizzi che usi o qualsiasi indirizzo email: vengono rimossi prima che una segnalazione venga scritta, non prima che venga inviata."
     },
     "crashHint": "L'errore e dove si è verificato. Va a Firebase Crashlytics.",
-    "usageHint": "Solo conteggi: quali schermate vengono aperte, e quanto spesso. Mai cosa contengono.",
-    "usageDetail": "Il secondo è l'unica cosa che jojo invia su ciò che FAI, e può dire solo cose tratte da un elenco fisso: “è stata aperta la Cassaforte”, “è stata aggiunta una candidatura”, “ce ne sono 6–20”. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto, perché quelle parole non sono nell'elenco. Disattivarlo ferma anche le visualizzazioni di schermata che Firebase raccoglierebbe altrimenti da solo.",
-    "later": "Li trovi entrambi in Impostazioni quando vuoi cambiarli, e disattivandone uno elimini ciò che ha conservato."
+    "usageHint": "Solo conteggi (quali schermate vengono aperte, e quanto spesso), mai cosa contengono. Inviati con un ID casuale dell'istanza dell'app e dati di base sul dispositivo.",
+    "usageDetail": "Il secondo è l'unica cosa che jojo invia su ciò che FAI, e può dire solo cose tratte da un elenco fisso: “è stata aperta la Cassaforte”, “è stata aggiunta una candidatura”, “ce ne sono 6–20”. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto, perché quelle parole non sono nell'elenco. Firebase Analytics aggiunge un ID casuale dell'istanza dell'app e dati di base come il modello del dispositivo, la versione del sistema operativo, la lingua, la versione dell'app e il paese o la regione da cui arriva la tua connessione. Disattivarlo ferma anche le visualizzazioni di schermata che Firebase raccoglierebbe altrimenti da solo, ed elimina quell'ID e tutto ciò che non è ancora stato inviato.",
+    "later": "Li trovi entrambi in Impostazioni quando vuoi cambiarli, e disattivandone uno elimini ciò che ha conservato.",
+    "privacy": "Informativa sulla privacy"
   },
   "stagePicker": {
     "label": "Fase di {{name}}: {{stage}}. Cambia fase",

@@ -211,7 +211,7 @@
     },
     "crash": {
       "title": "Segnalazioni di arresto anomalo e utilizzo",
-      "description": "Due cose distinte, entrambe attive: disattivane una qui o più tardi in Impostazioni. Nessuna delle due può contenere i tuoi record: né una candidatura, né un documento, né una nota, né un profilo, né una conversazione.",
+      "description": "Due cose distinte, ed entrambe sono disattivate finché non le attivi tu, qui o più tardi in Impostazioni. Nessuna delle due può contenere i tuoi record: né una candidatura, né un documento, né una nota, né un profilo, né una conversazione.",
       "inReport": "Cosa c'è in una segnalazione",
       "inError": "Il messaggio di errore e il punto di jojo in cui si è verificato.",
       "inStack": "Lo stack trace, che indica il codice che non ha funzionato.",
@@ -222,12 +222,13 @@
       "keep": "Conserva le segnalazioni di arresto anomalo",
       "keepHint": "L'errore e dove si è verificato. Resta su questo dispositivo, nel browser.",
       "share": "Condividi quali funzioni uso",
-      "shareHint": "Solo conteggi: quali schermate vengono aperte, e quanto spesso. Mai cosa contengono.",
-      "usageNote": "Il secondo è l'unica cosa che jojo invia su ciò che FAI, e può dire solo cose tratte da un elenco fisso: “è stata aperta la Cassaforte”, “è stata aggiunta una candidatura”, “ce ne sono 6–20”. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto, perché quelle parole non sono nell'elenco. Va a Google Analytics, così possiamo vedere quali parti di jojo meritano più lavoro.",
+      "shareHint": "Solo conteggi: quali schermate vengono aperte, e quanto spesso, mai cosa contengono. Google Analytics conserva anche un id casuale in questo browser e registra dati di base come il browser, il tipo di dispositivo, la lingua e il paese o la regione da cui proviene la tua connessione.",
+      "usageNote": "Il secondo è l'unica cosa che jojo invia su ciò che FAI, e può dire solo cose tratte da un elenco fisso: “è stata aperta la Cassaforte”, “è stata aggiunta una candidatura”, “ce ne sono 6–20”. Non può nominare un datore di lavoro, un ruolo, un file o qualsiasi cosa tu abbia scritto, perché quelle parole non sono nell'elenco. Va a Google Analytics, così possiamo vedere quali parti di jojo meritano più lavoro, insieme a ciò che Google Analytics aggiunge a ogni invio: un id casuale che conserva in questo browser e dati di base come il browser, il tipo di dispositivo, la lingua e il paese o la regione da cui proviene la tua connessione. Disattivarlo elimina quell'id.",
       "bothOff": "Disattiva entrambi",
       "save": "Salva le scelte",
       "continueOff": "Continua con entrambi disattivati",
-      "later": "Puoi cambiare entrambe le scelte in qualsiasi momento in Impostazioni, e disattivandone una elimini anche ciò che ha conservato."
+      "later": "Puoi cambiare entrambe le scelte in qualsiasi momento in Impostazioni, e disattivandone una elimini anche ciò che ha conservato.",
+      "privacy": "Informativa sulla privacy"
     },
     "extension": {
       "title": "Conserva gli annunci a cui ti candidi",

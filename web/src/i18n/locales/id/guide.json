@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Browser Anda adalah database-nya",
-      "body": "Setiap entri ditulis ke database di dalam browser ini sambil Anda bekerja, jadi menutup tab aman. Tidak ada yang keluar dari perangkat ini dan tidak ada yang disinkronkan — bersihkan data browser, ganti browser, atau kehilangan disk, maka data ikut hilang. Ekspor cadangan <kbd>.json</kbd> dari <settings>Pengaturan</settings> untuk apa pun yang ingin Anda simpan di tempat lain."
+      "body": "Setiap entri ditulis ke database di dalam browser ini sambil Anda bekerja, jadi menutup tab aman. jojo tidak menyimpan salinan di tempat lain dan tidak ada yang disinkronkan: entri Anda keluar dari browser ini hanya saat Anda mengirimnya ke penyedia model yang Anda pilih, atau memindahkannya sendiri. Bersihkan data browser, ganti browser, atau kehilangan disk, maka entri ikut hilang. Ekspor cadangan <kbd>.json</kbd> dari <settings>Pengaturan</settings> untuk apa pun yang ingin Anda simpan di tempat lain."
     },
     "savePath": {
       "title": "Yang terjadi saat Anda menyimpan sesuatu",
@@ -333,7 +333,7 @@
         "hint": "sudah tersedia",
         "title": "Simpan cadangan",
         "storedTitle": "Dokumen Anda disimpan di sini",
-        "stored": "CV dan surat pengantar yang Anda lampirkan disimpan di browser ini dan tetap ada setelah tab ditutup. Tidak ada yang diunggah ke mana pun — dan tidak ada yang keluar dari perangkat ini kecuali Anda sendiri yang mengunduhnya.",
+        "stored": "CV dan surat pengantar yang Anda lampirkan disimpan di browser ini dan tetap ada setelah tab ditutup. Berkasnya tidak diunggah dan jojo tidak menyimpan salinan di tempat lain; teksnya dikirim ke model hanya jika Anda memilih penyedia yang di-hosting.",
         "oneFileTitle": "Satu berkas berisi semuanya",
         "oneFile": "<settings>Pengaturan</settings> menulis cadangan yang membawa setiap entri, setiap tautan di antaranya, dan setiap dokumen, semuanya dalam satu berkas. Memulihkannya mengembalikan ketiganya.",
         "whyTitle": "Mengapa ini penting",

@@ -189,7 +189,7 @@
       "title": "Qual modelo faz isso",
       "hint": "a escolha é sua, e ela muda para onde suas palavras vão",
       "local": "O jojo conversa com o que você indicar em Configurações. Um modelo rodando em uma máquina que você controla — Ollama, vLLM, LM Studio — é o padrão, e é a única configuração em que nada do que você escreve sai deste dispositivo.",
-      "cloud": "Você também pode usar Claude, OpenAI e outros com uma chave de API. É uma troca real e a tela diz isso claramente: seus registros vão para essa empresa e são cobrados na sua conta. A chave fica neste dispositivo, nunca entra em um backup e nunca é enviada a lugar nenhum além do provedor que você escolheu.",
+      "cloud": "Você também pode usar Claude, OpenAI e outros com uma chave de API. É uma troca real e a tela diz isso claramente: seus registros vão para essa empresa, sob os termos dela, e alguns provedores cobram na sua conta. A chave fica neste dispositivo, nunca entra em um backup e nunca é enviada a lugar nenhum além do provedor que você escolheu.",
       "openSettings": "Abrir Configurações",
       "truncatedTitle": "Se o assistente parecer ter parado de ler",
       "truncated": "Um modelo local com pouco espaço descarta em silêncio o começo do que recebeu e depois responde com confiança a uma pergunta que nunca viu inteira. O jojo compara o que o servidor diz ter lido com o que foi realmente enviado, e avisa quando os dois não batem — senão o assistente pareceria ruim no que faz, quando na verdade só falta espaço."
@@ -234,7 +234,8 @@
       "navigation": "A barra de abas e a pilha de telas",
       "drag": "O arrastar com toque longo do quadro, na thread da interface",
       "charts": "A rosca, o radar e o grafo",
-      "type": "A tipografia, incluída em vez de baixada"
+      "type": "A tipografia, incluída em vez de baixada",
+      "reporting": "Relatórios de falhas e uso, desativados a menos que você os ative"
     },
     "unfinished": {
       "assistant": {
@@ -249,6 +250,21 @@
         "title": "Nada sai deste dispositivo, exceto para onde você aponta",
         "detail": "Não há conta, sincronização nem envio. Dois endereços podem ser acessados, ambos seus e ambos definidos em Configurações: o modelo e o leitor de documentos — que também busca uma vaga quando você adiciona uma candidatura a partir de um link, então essa URL vai para o seu leitor, e não para nós. A transferência move uma cópia entre os seus dispositivos pela rede local — neste celular, ela recebe, e o computador é o lado que envia. Nada mais vai a lugar nenhum."
       }
+    },
+    "licences": {
+      "title": "Licenças",
+      "hint_one": "{{count}} pacote, com o aviso que ele pede",
+      "hint_many": "{{count}} pacotes, com os avisos que eles pedem",
+      "hint_other": "{{count}} pacotes, com os avisos que eles pedem",
+      "intro": "Cada pacote npm com que este app é construído, com sua licença e o aviso de direitos autorais que ele pede para acompanhá-lo, gerados a partir dos pacotes instalados e conferidos com eles por um teste. As bibliotecas nativas de Android e iOS que o app vincula ainda faltam ser listadas. As fontes e uma nota sobre essas bibliotecas nativas vêm primeiro.",
+      "open": "Ler as licenças",
+      "sheetTitle": "Licenças de terceiros",
+      "sheetDescription": "O jojo é licenciado sob Apache-2.0. Estes são os termos das obras em que ele se baseia, mostrados como seus autores os escreveram.",
+      "search": "Filtrar por pacote ou licença",
+      "searchLabel": "Filtrar as licenças",
+      "empty": "Nenhum pacote corresponde.",
+      "rowLabel": "{{name}} {{version}}, {{licence}}. Mostrar ou ocultar o texto da licença.",
+      "noLicence": "nenhuma licença informada"
     }
   }
 }

@@ -13,10 +13,14 @@ import {
   crawlBoard,
   isJobPostingUrl,
   listingAddress,
+  NO_AUTOMATED_ACCESS,
+  noAutomatedAccess,
+  noAutomatedAccessReason,
   onOneOf,
   pageLinks,
   parseSources,
   readListings,
+  refusedSources,
 } from './board'
 import type { BoardScan } from './board'
 
@@ -488,5 +492,67 @@ describe('reading a board page by page', () => {
     })
     const out = await crawlBoard({ start: 'https://cra.org/ads/', scan, allowed: everywhere, known: nothingKnown })
     expect(out.ok && out.listings[0]?.url).toBe('https://careercenter.cra.org/jobs/21587304/assistant-professor')
+  })
+})
+
+/*
+ * LinkedIn, Indeed, Glassdoor and ZipRecruiter forbid automated access in
+ * their terms, so nothing unattended reads them — on either platform, through
+ * this one rule. A person capturing a posting they opened is not this path.
+ */
+describe('sites whose terms forbid automated reading', () => {
+  it('names the four, on any subdomain or country domain', () => {
+    expect([...NO_AUTOMATED_ACCESS].sort()).toEqual(['glassdoor.com', 'indeed.com', 'linkedin.com', 'ziprecruiter.com'])
+    expect(noAutomatedAccess('https://www.linkedin.com/jobs/search/?keywords=ml')).toBe('linkedin.com')
+    expect(noAutomatedAccess('https://uk.linkedin.com/jobs/view/123')).toBe('linkedin.com')
+    expect(noAutomatedAccess('https://ca.indeed.com/jobs?q=ml')).toBe('indeed.com')
+    expect(noAutomatedAccess('https://www.indeed.co.uk/viewjob?jk=abc')).toBe('indeed.com')
+    expect(noAutomatedAccess('https://www.glassdoor.de/Job/index.htm')).toBe('glassdoor.com')
+    expect(noAutomatedAccess('https://www.ziprecruiter.com/jobs-search')).toBe('ziprecruiter.com')
+    // What a pipeline's field holds: no scheme.
+    expect(noAutomatedAccess('linkedin.com/jobs')).toBe('linkedin.com')
+  })
+
+  it('does not catch a lookalike or an ordinary board', () => {
+    for (const url of [
+      'https://notlinkedin.com/jobs',
+      'https://linkedin.com.attacker.net/jobs',
+      'https://careercenter.cra.org/jobs',
+      'https://www.higheredjobs.com/faculty/search.cfm',
+      'https://boards.greenhouse.io/acme/jobs/1234',
+      'not a url at all',
+    ]) {
+      expect(noAutomatedAccess(url), url).toBeNull()
+    }
+  })
+
+  it('says why, naming the site', () => {
+    expect(noAutomatedAccessReason('linkedin.com')).toContain('linkedin.com does not allow automated reading')
+  })
+
+  it('picks them out of a pipeline’s sources, once each', () => {
+    expect(refusedSources('cra.org/ads, linkedin.com/jobs, www.linkedin.com/jobs/search, indeed.com')).toEqual([
+      'linkedin.com',
+      'indeed.com',
+    ])
+    expect(refusedSources('cra.org/ads, higheredjobs.com/faculty')).toEqual([])
+    expect(refusedSources('—')).toEqual([])
+  })
+
+  it('opens no page of one in a crawl, and says why', async () => {
+    const opened: string[] = []
+    const scan: BoardScan = async (url) => {
+      opened.push(url)
+      return { ok: true, rows: [] }
+    }
+    const out = await crawlBoard({
+      start: 'https://www.linkedin.com/jobs/search/?keywords=lecturer',
+      scan,
+      allowed: () => true,
+      known: () => false,
+    })
+    expect(out.ok).toBe(false)
+    if (!out.ok) expect(out.reason).toBe(noAutomatedAccessReason('linkedin.com'))
+    expect(opened).toEqual([])
   })
 })

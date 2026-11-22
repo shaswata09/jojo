@@ -672,7 +672,8 @@ matches `@react-native-async-storage/async-storage`, so the moment the guard
 reached `rn-driver.ts` it flagged the one correctly-platform-specific file in
 the repo as "Only kg/react may import React". The tempting fix — narrow `@react-`
 to `@react-navigation/` or `@react-native-` — was rejected on a measurement:
-`@react-three/drei` and `@react-three/fiber` are direct dependencies of `web`,
+`@react-three/fiber` (and `@react-three/drei`, until the Transfer scene was
+rewritten without it on 2026-11-21) are direct dependencies of `web`,
 and `@react-` is the *only* rule keeping React out of `storage`, `repo` and
 `tools`, all three of which have `packages: true`. Narrowing it would legalise a
 3-D renderer inside a tool. The exemption is one prefix, in one target,

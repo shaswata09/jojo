@@ -206,7 +206,10 @@ async function openPage(
   // Before either route: the extension refuses these for itself, the reader
   // never did, and its fetch runs on the person's own machine (R6).
   if (isLocalTarget(target)) return { reason: localTarget() }
-  const captured = await capturePage(target, signal)
+  // Unattended, the extension reads it the way it reads a board: the site's
+  // terms, robots.txt, the host's pace and a stop at a bot check. See
+  // `capturePage` and `worker/manners.js`.
+  const captured = await capturePage(target, signal, { unattended })
   if (captured.ok) {
     return {
       via: 'extension',

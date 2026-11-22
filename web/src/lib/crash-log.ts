@@ -39,10 +39,10 @@ const ENABLED_KEY = 'jojo/crash-reporting/v1'
 
 /** Whether the user has opted in. Off unless the stored value says otherwise. */
 /*
- * UNSET MEANS ON, and the shape of this expression is the whole point.
- *
- * `=== 'on'` would make an unanswered question read as "no", which was the old
- * default. Now only an explicit 'off' turns it off, so somebody who has never
+ * UNSET MEANS `CRASH_DEFAULTS.enabled` — false since 2026-11-21 (Q346): an
+ * unanswered question is a no, because a pre-ticked switch is not consent.
+ * The shape of this expression is still the point: only a stored answer
+ * overrides the default, so somebody who has never
  * opened Settings gets the default from `CRASH_DEFAULTS` and somebody who said
  * no keeps saying no across restarts. Reading it as `!== 'off'` rather than
  * storing a default on first launch means there is no migration and no moment

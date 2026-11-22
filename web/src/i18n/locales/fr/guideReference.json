@@ -107,7 +107,7 @@
       "hint": "votre choix, et il change où vont vos mots",
       "title": "Quel modèle fait cela",
       "p1": "jojo dialogue avec ce que vous lui indiquez dans les <go>Réglages</go>. Un modèle qui tourne sur votre propre machine (Ollama, vLLM, LM Studio) est l’option par défaut, et c’est la seule configuration où rien de ce que vous écrivez ne quitte l’appareil.",
-      "p2": "Vous pouvez aussi utiliser Claude, OpenAI et d’autres avec une clé d’API. C’est un vrai compromis, et l’écran le dit clairement : vos fiches sont envoyées à cette entreprise et facturées sur votre compte. La clé est conservée dans ce navigateur, n’est jamais incluse dans une sauvegarde et n’est jamais envoyée ailleurs qu’au fournisseur choisi.",
+      "p2": "Vous pouvez aussi utiliser Claude, OpenAI et d’autres avec une clé d’API. C’est un vrai compromis, et l’écran le dit clairement : vos fiches sont envoyées à cette entreprise, selon ses conditions, et certains fournisseurs facturent votre compte. La clé est conservée dans ce navigateur, n’est jamais incluse dans une sauvegarde et n’est jamais envoyée ailleurs qu’au fournisseur choisi.",
       "stoppedTitle": "Si l’assistant semble avoir cessé de lire",
       "stopped": "Un modèle local qui manque de place abandonne silencieusement le début de ce qu’on lui a envoyé, puis répond avec assurance à une question qu’il n’a jamais vue en entier. jojo compare désormais ce que le serveur dit avoir lu avec ce qui a réellement été envoyé, et vous prévient en cas de désaccord, car sinon on obtient un assistant qui semble mal faire son travail alors qu’il manque simplement de place."
     },

@@ -44,11 +44,33 @@ describe('the postings', () => {
     }
   })
 
-  it('keeps the real one real: the UTK page rules out AI-only candidates in prose', () => {
-    const utk = POSTINGS.find((p) => p.id === 'utk-cs')
-    expect(utk?.text).toContain(
-      'Candidates whose only research area is AI/ML will not be considered',
+  /*
+   * `cs-faculty` replaced a real posting that was committed verbatim. The two
+   * properties that made it a hard read have to survive the rewrite, or the
+   * live run stops measuring what it was built to measure: the AI-only rule is
+   * prose, and nothing on the page is headed "Required".
+   */
+  it('keeps the hard parts of the faculty posting: the AI-only rule is prose', () => {
+    const posting = POSTINGS.find((p) => p.id === 'cs-faculty')
+    expect(posting?.text).toContain(
+      'Applicants whose research is solely in AI/ML will not be considered',
     )
+    expect(posting?.text).not.toMatch(/required/i)
+    expect(posting?.text).toContain('(1) carry out and publish scholarly research;')
+  })
+
+  /*
+   * Fixtures ship in a public, Apache-2.0 repository. A real person's address
+   * there is published by us, and only RFC 2606's reserved domains are
+   * guaranteed to reach nobody.
+   */
+  it('carries no address outside the reserved example domains', () => {
+    for (const posting of POSTINGS) {
+      const addresses = posting.text.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []
+      for (const address of addresses) {
+        expect(address, posting.id).toMatch(/@example\.(?:com|org|edu|net)$/)
+      }
+    }
   })
 })
 

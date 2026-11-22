@@ -36,6 +36,7 @@
  * work, which is the half that can be wrong in an interesting way.
  */
 
+import { isLocalTarget } from './local-target'
 import type { Thinking } from './model-server'
 
 /** The providers this app knows how to talk to. */
@@ -112,6 +113,17 @@ export type ProviderMeta = {
    */
   readonly billed: boolean
   /**
+   * Whether the provider also offers a free, rate-limited way in.
+   *
+   * Beside `billed` rather than instead of it, because both are true at once
+   * for Groq and OpenRouter: a free tier with limits, and paid use billed to
+   * the account above them. The consent notice said "is paid, billed to your
+   * account" of every cloud provider, which is wrong for somebody on either
+   * free tier — and a notice whose first checkable claim is wrong is a notice
+   * the reader stops trusting at that sentence.
+   */
+  readonly freeTier: boolean
+  /**
    * Whether jojo can set the context window in the request.
    *
    * Only the Ollama dialect can: its native endpoint takes `options.num_ctx`.
@@ -166,6 +178,7 @@ export const PROVIDERS = [
     fixedEndpoint: false,
     needsKey: false,
     billed: false,
+    freeTier: false,
     cloud: false,
     termsUrl: '',
     privacyUrl: '',
@@ -184,6 +197,7 @@ export const PROVIDERS = [
     fixedEndpoint: false,
     needsKey: false,
     billed: false,
+    freeTier: false,
     cloud: false,
     termsUrl: '',
     privacyUrl: '',
@@ -214,6 +228,7 @@ export const PROVIDERS = [
     fixedEndpoint: true,
     needsKey: true,
     billed: true,
+    freeTier: false,
     cloud: true,
     termsUrl: 'https://www.anthropic.com/legal/commercial-terms',
     privacyUrl: 'https://www.anthropic.com/legal/privacy',
@@ -231,8 +246,14 @@ export const PROVIDERS = [
     fixedEndpoint: true,
     needsKey: true,
     billed: true,
+    freeTier: false,
     cloud: true,
-    termsUrl: 'https://openai.com/policies/business-terms/',
+    /*
+     * The Services Agreement: the document OpenAI names as governing use of
+     * its API, which is what a key from platform.openai.com is. It pointed at
+     * the "Business Terms" address before.
+     */
+    termsUrl: 'https://openai.com/policies/services-agreement/',
     privacyUrl: 'https://openai.com/policies/privacy-policy/',
     canSetContext: false,
     modelLooksLike: 'gpt-4o',
@@ -248,6 +269,7 @@ export const PROVIDERS = [
     fixedEndpoint: true,
     needsKey: true,
     billed: true,
+    freeTier: true,
     cloud: true,
     termsUrl: 'https://openrouter.ai/terms',
     privacyUrl: 'https://openrouter.ai/privacy',
@@ -265,8 +287,15 @@ export const PROVIDERS = [
     fixedEndpoint: true,
     needsKey: true,
     billed: true,
+    freeTier: true,
     cloud: true,
-    termsUrl: 'https://groq.com/terms-of-use/',
+    /*
+     * The Services Agreement, which governs the API (GroqCloud). It pointed at
+     * groq.com/terms-of-use, the terms for Groq's website rather than the
+     * agreement a key is issued under — the wrong document to hand somebody
+     * deciding whether to send their records to it.
+     */
+    termsUrl: 'https://console.groq.com/docs/legal/services-agreement',
     privacyUrl: 'https://groq.com/privacy-policy/',
     canSetContext: false,
     modelLooksLike: 'llama-3.3-70b-versatile',
@@ -480,4 +509,43 @@ export function isLoopbackEndpoint(raw: string): boolean {
   // The whole 127/8 block, not just 127.0.0.1 — `127.0.0.2` is equally the
   // machine asking, and someone who has read a tutorial may well have it.
   return /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)
+}
+
+/**
+ * Whether an endpoint is somewhere other than this device or the person's own
+ * network — a model server on the open internet.
+ *
+ * ## Why this exists
+ *
+ * Only the four hosted providers are `cloud`, and the consent notice is shown
+ * only for them. But "Ollama" and "a local server" are names for a KIND of
+ * server, not a promise about where it is: somebody can type a rented GPU box's
+ * public address, or a colleague's server, into either, and the app then sent
+ * their records to it with the panel still saying "on a machine you control".
+ * So for those two the address decides, and an address that is not local gets a
+ * short notice of its own (both settings screens show it).
+ *
+ * ## Why it reuses `isLocalTarget`
+ *
+ * That is the rule the posting readers and the extension already apply to
+ * "is this the person's own machine or network", tested line for line against
+ * the extension's copy. A second rule here would be a second answer to the same
+ * question. It is deliberately the generous direction for this purpose: a
+ * single-label host, a `.local` / `.lan` name and every private range count as
+ * local, so the notice never appears over the LAN address the phone's own
+ * loopback warning tells people to use.
+ *
+ * Two adjustments, both about what people type rather than what a URL is:
+ *
+ * - No scheme. `isLocalTarget` reads a string that does not parse as an http(s)
+ *   URL as local (refusing is the safe answer for a reader). Typed into the
+ *   endpoint field, `gpu.example.com:8000/v1` is still a remote server, so a
+ *   missing scheme is read as `http://` first.
+ * - Empty. Nothing typed is nowhere, and says nothing.
+ */
+export function isRemoteEndpoint(raw: string): boolean {
+  const typed = raw.trim()
+  if (typed === '') return false
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(typed) ? typed : `http://${typed}`
+  return !isLocalTarget(withScheme)
 }

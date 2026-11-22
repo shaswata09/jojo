@@ -358,7 +358,7 @@ function PersonForm({
           type="email"
           mono
           value={draft.email ?? ''}
-          placeholder="n.okafor@rice.edu"
+          placeholder="n.okafor@example.edu"
           onChange={set('email')}
         />
         <Field

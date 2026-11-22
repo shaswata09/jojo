@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nothing of jojo's leaves the phone by Android's own backup or transfer.
+
+  Android 12+ reads this instead of `allowBackup` for device-to-device
+  transfer, which otherwise copies the app's private storage — the record store
+  and any API keys, which are kept in plain text — onto the new phone. Cloud
+  backup is listed too, so the two answers cannot drift if `allowBackup` is
+  ever turned on for some other reason. See the comment on `<application>` in
+  `AndroidManifest.xml`.
+
+  Every domain is excluded rather than the ones jojo is known to write to
+  today: a new library that writes somewhere else would otherwise be backed up
+  by default, and nobody would notice. The `device_` domains are the
+  device-protected (direct-boot) copies of the same four places. `path="."`
+  is the whole domain.
+
+  jojo's own Transfer is the way to move to a new phone: it says what it
+  carries, and the person starts it.
+-->
+<data-extraction-rules>
+  <cloud-backup>
+    <exclude domain="root" path="."/>
+    <exclude domain="file" path="."/>
+    <exclude domain="database" path="."/>
+    <exclude domain="sharedpref" path="."/>
+    <exclude domain="external" path="."/>
+    <exclude domain="device_root" path="."/>
+    <exclude domain="device_file" path="."/>
+    <exclude domain="device_database" path="."/>
+    <exclude domain="device_sharedpref" path="."/>
+  </cloud-backup>
+  <device-transfer>
+    <exclude domain="root" path="."/>
+    <exclude domain="file" path="."/>
+    <exclude domain="database" path="."/>
+    <exclude domain="sharedpref" path="."/>
+    <exclude domain="external" path="."/>
+    <exclude domain="device_root" path="."/>
+    <exclude domain="device_file" path="."/>
+    <exclude domain="device_database" path="."/>
+    <exclude domain="device_sharedpref" path="."/>
+  </device-transfer>
+</data-extraction-rules>

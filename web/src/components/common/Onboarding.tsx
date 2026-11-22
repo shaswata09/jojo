@@ -188,13 +188,29 @@ export function Onboarding() {
    *
    * BOTH capabilities are tested, not just the crash one. Testing only
    * CRASH_CAPABILITY skipped the whole consent step in a build that had
-   * VITE_ANALYTICS set and VITE_CRASH_REPORTING unset — and analytics defaults
-   * to on, so that build reported usage to Google having asked nobody. The
-   * phone's `REPORTING_ASKABLE` is the same test, spelled the same way.
+   * VITE_ANALYTICS set and VITE_CRASH_REPORTING unset — and analytics then
+   * defaulted to on, so that build reported usage to Google having asked
+   * nobody. The phone's `REPORTING_ASKABLE` is the same test, spelled the same
+   * way.
+   *
+   * NOTHING ASKED, NOTHING MARKED. When the build allows neither, the step is
+   * passed over for this session but NOT recorded as offered. It used to call
+   * `finish('crash')`, which wrote the stage's key — and `analyticsEnabled()`
+   * reads "offered, nothing stored" as "asked, and took the default". So a
+   * person on a build with both compiled out, who then got a build with
+   * analytics on, was read as having answered a dialog that was never drawn,
+   * and was never shown it either, because the key said it had been. The
+   * default is now off, so that read is no longer a yes; this is the other
+   * half, so the question is still asked when a build can first act on it.
+   * The phone already skips without marking (`REPORTING_ASKABLE` in its
+   * `Onboarding.tsx`), and `wasOffered` records that we ASKED — here we did
+   * not.
    */
   if (stage === 'crash') {
     if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
-      finish('crash')
+      // State only — advances past the step without writing the key. Set
+      // during render like `setSawFork` above: guarded, so it runs once.
+      if (!crashOffered) setCrashOffered(true)
       return null
     }
     return <CrashStep onSkip={() => finish('crash')} onDone={() => finish('crash')} />

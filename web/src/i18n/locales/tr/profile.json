@@ -77,7 +77,7 @@
       "description": "CV'nizi ve beyanlarınızı buraya bırakın ya da seçin — Kasa'da {{bucket}} altında dosyalanırlar ve uygulamanın geri kalanı onlara oradan ulaşır.",
       "upload": "Belge yükle"
     },
-    "footer": "Kasa'nın <anchor>Dosyalar aracı</anchor> ile aynı dosyalar, {{bucket}} ile filtrelenmiş. Buraya bir belge bırakın ya da seçin; dosyanın kendisi bu tarayıcıda saklanır — hiçbir yere yüklenmez. Okumak için birine tıklayın."
+    "footer": "Kasa'nın <anchor>Dosyalar aracı</anchor> ile aynı dosyalar, {{bucket}} ile filtrelenmiş. Buraya bir belge bırakın ya da seçin; dosyanın kendisi bu tarayıcıda saklanır — yüklenmez ve metni yalnızca barındırılan bir sağlayıcı seçerseniz bir modele gider. Okumak için birine tıklayın."
   },
   "documentTile": {
     "open": "Aç: {{name}}",

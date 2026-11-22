@@ -189,7 +189,7 @@
       "title": "Which model does this",
       "hint": "your choice, and it changes where your words go",
       "local": "jojo talks to whatever you point it at in Settings. A model running on a machine you control — Ollama, vLLM, LM Studio — is the default, and it is the only arrangement where nothing you write leaves this device.",
-      "cloud": "You can also use Claude, OpenAI and others with an API key. That is a real trade and the screen says so plainly: your records go to that company and are billed to your account. The key is kept on this device, is never included in a backup, and is never sent anywhere but the provider you chose.",
+      "cloud": "You can also use Claude, OpenAI and others with an API key. That is a real trade and the screen says so plainly: your records go to that company, under its terms, and some providers bill your account. The key is kept on this device, is never included in a backup, and is never sent anywhere but the provider you chose.",
       "openSettings": "Open Settings",
       "truncatedTitle": "If the assistant seems to have stopped reading",
       "truncated": "A local model with too little room silently drops the front of what it was sent, and then answers confidently about a question it never fully saw. jojo compares what the server says it read against what was actually sent, and tells you when the two disagree — because the alternative is an assistant that appears to be bad at its job rather than short of room."
@@ -234,7 +234,8 @@
       "navigation": "The tab bar and the screen stack",
       "drag": "The board's long-press drag, on the UI thread",
       "charts": "The donut, the radar and the graph",
-      "type": "The type, bundled rather than fetched"
+      "type": "The type, bundled rather than fetched",
+      "reporting": "Crash reports and usage, off unless you switch them on"
     },
     "unfinished": {
       "assistant": {
@@ -249,6 +250,20 @@
         "title": "Nothing leaves this device except where you point it",
         "detail": "There is no account, no sync and no upload. Two addresses can be reached, both yours and both set in Settings: the model, and the document reader — which also fetches a job posting when you add an application from a link, so that URL goes to your reader rather than to us. Transfer moves a copy between your devices over the local network — on this phone it receives, and the computer is the side that sends. Nothing else goes anywhere."
       }
+    },
+    "licences": {
+      "title": "Licences",
+      "hint_one": "{{count}} package, with the notice it asks for",
+      "hint_other": "{{count}} packages, with the notices they ask for",
+      "intro": "Every npm package this app is built from, with its licence and the copyright notice it asks to travel with it, generated from the installed packages and checked against them by a test. The native Android and iOS libraries the app links are still to be listed. The fonts and a note on those native libraries come first.",
+      "open": "Read the licences",
+      "sheetTitle": "Third-party licences",
+      "sheetDescription": "jojo is licensed under Apache-2.0. These are the terms of the work it is built on, shown as their authors wrote them.",
+      "search": "Filter by package or licence",
+      "searchLabel": "Filter the licences",
+      "empty": "No package matches that.",
+      "rowLabel": "{{name}} {{version}}, {{licence}}. Show or hide its licence text.",
+      "noLicence": "no licence stated"
     }
   }
 }

@@ -22,6 +22,8 @@ import { SettingRow } from '@/components/common/Field'
 import { usageSwitchStart } from '@/components/common/consent-start'
 import { wasOffered } from '@/lib/onboarding'
 import { CRASH_DEFAULTS } from '@jojo/service/core/crash-config'
+import { PRIVACY_PAGE } from '@jojo/service/core/privacy'
+import { publicUrl } from '@/lib/public-url'
 import { Switch } from '@/components/ui/switch'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { contentModal } from '@/components/ui/dialog-width'
@@ -170,10 +172,11 @@ export function DocumentReaderStep({ onSkip, onDone }: { onSkip: () => void; onD
  * own — a model, a reader and the extension are each useless without the thing
  * behind them, and this is a switch.
  *
- * A REAL QUESTION, WITH A REAL NO. Both buttons say what they do — "Keep them"
- * and "No thanks" — because a dialog whose dismissal is the answer to a
- * yes/no question is a dialog that collected a shrug and recorded consent.
- * Skipping and declining are the same thing here, and both mean no.
+ * A REAL QUESTION, WITH A REAL NO. Both buttons say what they do — "Turn both
+ * off" and "Save choices" — and carry the same weight, because a dialog whose
+ * dismissal is the answer to a yes/no question is a dialog that collected a
+ * shrug and recorded consent. Skipping and declining are the same thing here,
+ * and both mean no; the switches start off, so doing nothing is also no.
  *
  * ONE ANSWER, BOTH HALVES. It sets the browser's setting and pushes it to the
  * extension, which cannot read it — see `syncExtensionCrashReporting`. Asking
@@ -194,19 +197,26 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
    * clicks through, and clicking through is not consent either.
    */
   /*
-   * BOTH START ON, matching the shipped default rather than showing two off
-   * switches and then reporting anyway. A dialog whose controls disagree with
-   * what the app is doing is worse than no dialog: it tells somebody they have
-   * opted out when they have not.
+   * BOTH START OFF, because the shipped default is off — and the switches still
+   * match the default rather than being hardcoded, for the reason they always
+   * did: a dialog whose controls disagree with what the app is doing tells
+   * somebody they have opted out when they have not, or in.
    *
-   * Read from the live setting rather than hardcoded `true`, so somebody who
-   * reaches this step a second time — a reset, a second browser — sees what is
-   * actually set.
+   * This said "both start on" until the owner reversed the default on
+   * 2026-11-21. A switch that is already on when somebody first sees it is a
+   * pre-ticked box, and a pre-ticked box is not consent (CJEU, Planet49) — the
+   * person has to DO something to say yes. `core/crash-config.ts` holds the
+   * reasoning; this is where it shows.
+   *
+   * Read from the live setting rather than hardcoded `false`, so somebody who
+   * reaches this step a second time — a reset, a second browser — sees what
+   * they actually answered. A stored yes still draws the switch on.
    */
   const { t } = useTranslation()
   const [crashes, setCrashes] = useState(crashEnabled)
   // Not `analyticsEnabled` alone: it reads false until this very question has
-  // been answered, which drew the usage switch off under "both on".
+  // been answered, whatever the default. With the default off the two agree,
+  // and the helper keeps them agreeing if the default ever moves again.
   const [usage, setUsage] = useState(() =>
     usageSwitchStart(analyticsEnabled(), wasOffered('crash'), CRASH_DEFAULTS.enabled),
   )
@@ -315,10 +325,19 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
           <p className="text-sm text-text-2">{t('setup.crash.usageNote')}</p>
         )}
 
+        {/*
+         * EQUAL WEIGHT, on purpose. The refusal used to be a ghost button and
+         * the save a filled one — the shape consent guidance warns against as
+         * nudging (the EDPB's on deceptive design, for one): saying no must be
+         * as easy and as visible as saying yes. Both are outline buttons now, and the save
+         * keeps one label whatever the switches say — a label that changed to
+         * "Continue with both off" made the primary button read as the way past
+         * the dialog rather than as one of two answers.
+         */}
         <DialogFooter>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={() => {
               choose(false, false)
             }}
@@ -327,15 +346,26 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
           </Button>
           <Button
             type="button"
+            variant="outline"
             onClick={() => {
               choose(crashes, usage)
             }}
           >
-            {crashes || usage ? t('setup.crash.save') : t('setup.crash.continueOff')}
+            {t('setup.crash.save')}
           </Button>
         </DialogFooter>
 
-        <p className="text-xs text-text-3">{t('setup.crash.later')}</p>
+        <p className="text-xs text-text-3">
+          {t('setup.crash.later')}{' '}
+          <a
+            href={publicUrl(PRIVACY_PAGE)}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-accent underline decoration-1 underline-offset-4"
+          >
+            {t('setup.crash.privacy')}
+          </a>
+        </p>
       </DialogContent>
     </Dialog>
   )

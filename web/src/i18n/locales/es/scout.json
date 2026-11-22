@@ -51,6 +51,7 @@
     "sources": "Fuentes",
     "sourcesHint": "La bolsa o página de empleo que vigila. Separa varias con comas.",
     "sourceError": "Un explorador sin fuente no tiene nada que leer.",
+    "sourceRefused": "{{sites}} no permite la lectura automatizada en sus condiciones de uso, así que el explorador no lo leerá. Quítalo, o abre allí las ofertas tú mismo y guárdalas con el botón de la extensión de jojo.",
     "terms": {
       "twin": "En qué centrarse",
       "scout": "Términos de búsqueda"

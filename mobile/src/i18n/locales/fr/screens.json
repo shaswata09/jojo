@@ -436,7 +436,8 @@
     "footer": "jojo — Jarvis fOr Job Organization. Tout fonctionne sur cet appareil.",
     "statusEnglish": "Conservé en anglais, mot pour mot, pour ne pas s’écarter de la licence qu’il résume.",
     "overdue_one": "{{count}} rappel en retard.",
-    "overdue_other": "{{count}} rappels en retard."
+    "overdue_other": "{{count}} rappels en retard.",
+    "privacy": "Avis de confidentialité"
   },
   "statistics": {
     "title": "Statistiques",
@@ -718,7 +719,8 @@
       "focusPlaceholder": "relances et échéances",
       "termsPlaceholder": "maître de conférences, CS/ECE",
       "often": "Fréquence",
-      "oftenHint": "Le temps d’attente entre deux passages."
+      "oftenHint": "Le temps d’attente entre deux passages.",
+      "sourceRefused": "{{sites}} n’autorise pas la lecture automatisée dans ses conditions d’utilisation, donc l’éclaireur ne le lira pas. Retirez-le, ou ouvrez-y vous-même les offres et enregistrez-les dans jojo."
     }
   },
   "postingBrowser": {
@@ -925,7 +927,8 @@
       "reasoning": "Raisonnement",
       "reasoningDescription": "Permet aux modèles capables de réfléchir — gpt-oss, Gemma 4, Qwen3 — de raisonner avant de répondre. Désactivez-le si les réponses arrivent vides sur un petit modèle.",
       "endpointFirst": "Indiquez d’abord un point de terminaison.",
-      "kept": "Gardé sur cet appareil. L’assistant utilisera ce modèle."
+      "kept": "Gardé sur cet appareil. L’assistant utilisera ce modèle.",
+      "remote": "Cette adresse n’est ni sur cet appareil ni sur votre réseau local : vos enregistrements y seront donc envoyés — ainsi qu’à quiconque la gère."
     },
     "test": {
       "testing": "Test en cours…",
@@ -996,13 +999,33 @@
     "provider": {
       "title": "Fournisseur",
       "description": "En choisir un règle son adresse pour vous. Ceux du cloud demandent une clé, et vos enregistrements leur sont envoyés.",
-      "cloud": "Vos mots sont envoyés à cette entreprise, et vous sont facturés",
-      "localKey": "Sur une machine que vous contrôlez. Nécessite une clé.",
-      "local": "Sur une machine que vous contrôlez. Rien n’en sort."
+      "cloud": "Vos enregistrements vont à cette entreprise, selon ses conditions",
+      "localKey": "Fonctionne là où vous le dirigez. Nécessite une clé, et rien ne quitte votre réseau, sauf si cette adresse est ailleurs.",
+      "local": "Fonctionne là où vous le dirigez. Rien ne quitte votre réseau, sauf si cette adresse est ailleurs."
     },
     "cloud": {
       "terms": "Conditions de {{name}}",
       "privacy": "Politique de confidentialité"
+    },
+    "cloudNotice": {
+      "headline": "Vos enregistrements quittent cet appareil quand vous utilisez {{name}}",
+      "sent": {
+        "what": "Tout ce que l’assistant lit pour vous répondre est envoyé à {{name}} : vos candidatures et vos notes, votre profil, le texte de votre CV une fois un document lu, ainsi que les noms et adresses e-mail des référents ou recruteurs qu’il consulte.",
+        "others": "Une partie de ces données sont des informations personnelles d’autres personnes, pas seulement les vôtres.",
+        "local": "Avec un modèle sur votre propre machine, en revanche, rien de tout cela ne sort."
+      },
+      "background": "Ce n’est pas seulement quand vous discutez. Tant que {{name}} est sélectionné, jojo lui envoie aussi des enregistrements pour le travail fait en arrière-plan : la vérification des doublons quand vous enregistrez une candidature, la lecture des offres que votre éclaireur trouve, les évaluations d’adéquation avec votre profil, l’adaptation de votre CV et de vos lettres, et le raccourcissement d’une longue conversation pour qu’elle tienne.",
+      "cost": {
+        "paid": "{{short}} facture votre compte, et ses propres conditions déterminent ce qu’il peut conserver et si ce que vous envoyez peut servir à améliorer ses modèles.",
+        "freeTier": "{{short}} propose une offre gratuite avec des limites ainsi qu’un usage payant facturé sur votre compte. Dans les deux cas, ses propres conditions déterminent ce qu’il peut conserver et si ce que vous envoyez peut servir à améliorer ses modèles.",
+        "bargain": "C’est un autre marché que l’option locale, pas un moins bon, mais il vaut la peine de lire ses conditions avant que vos enregistrements en fassent partie."
+      },
+      "openrouter": "OpenRouter transmet chaque requête à l’entreprise qui fait le modèle choisi, selon les conditions de cette entreprise en plus des siennes. Les propres conditions d’OpenRouter l’autorisent à journaliser les requêtes et à utiliser leur contenu sous forme anonymisée.",
+      "business": "Ces conditions d’API sont rédigées pour les entreprises et les développeurs. jojo ne peut pas vous dire si elles conviennent à une recherche d’emploi personnelle ; c’est à vous de vérifier qu’elles conviennent à votre usage.",
+      "liability": {
+        "party": "Vous êtes le titulaire du compte et la partie à ce contrat — jojo ne fournit aucune clé et n’envoie aucune requête de lui-même.",
+        "breach": "Le respect des conditions de {{short}} vous incombe, et jojo décline toute responsabilité en cas de manquement à celles-ci."
+      }
     },
     "servers": {
       "title": "Serveurs enregistrés",

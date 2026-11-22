@@ -314,6 +314,64 @@ describe('capturing a page by its address', () => {
 })
 
 /**
+ * The scout's background reader, which opens a posting with nobody watching.
+ *
+ * The worker reads such a page with a board scan's manners only when the
+ * request says `unattended`, and a bridge older than revision 10 drops the
+ * flag — its worker would open the page as if a person had asked. So the page
+ * asks the revision BEFORE every unattended read, even once something has
+ * answered, and names an old extension stale instead of handing it the read.
+ */
+describe('a capture nobody is watching', () => {
+  beforeEach(freshPage)
+  const url = 'https://cra.test/ads/4411'
+  const page = {
+    url,
+    title: 'Lecturer',
+    html: '<!doctype html><html><body><h1>Lecturer</h1></body></html>',
+    capturedAt: '2026-11-21T10:00:00.000Z',
+    dropped: 0,
+    shadowRoots: 0,
+  }
+
+  it('says so to the worker, and only on this read', async () => {
+    const read = capturePage(url, undefined, { unattended: true })
+    reply({ protocol: 10, count: 0 })
+    await settle()
+    expect(posted.at(-1)).toMatchObject({ capture: url, unattended: true })
+    reply({ protocol: 10, ok: true, capture: page })
+    await expect(read).resolves.toEqual({ ok: true, capture: page })
+
+    // "From link" is a person waiting on a page: not marked.
+    const attended = capturePage(url)
+    await settle()
+    expect(posted.at(-1)).toMatchObject({ capture: url, unattended: false })
+    reply({ protocol: 10, ok: true, capture: page })
+    await attended
+  })
+
+  it('never hands it to a bridge that would drop the flag, even one that answered before', async () => {
+    // Something has answered on this page, so "From link" would skip the probe.
+    const first = capturePage(url)
+    reply({ protocol: 9, count: 0 })
+    await settle()
+    reply({ protocol: 9, ok: true, capture: page })
+    await first
+    posted.length = 0
+
+    const read = capturePage(url, undefined, { unattended: true })
+    expect(posted).toHaveLength(1)
+    expect(posted[0]?.capture).toBeUndefined()
+    reply({ protocol: 9, count: 0 })
+    const out = await read
+    expect(out).toMatchObject({ ok: false, absent: false })
+    expect(out.ok === false && out.reason).toContain('older than this page')
+    // The address was never sent.
+    expect(posted).toHaveLength(1)
+  })
+})
+
+/**
  * The probe before a model call or a "From link" read.
  *
  * 400 ms decided "no extension", and an MV3 worker that had gone idle often

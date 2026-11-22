@@ -9,10 +9,13 @@
  *    is running, and a licence can change between two versions inside one
  *    caret.
  *  - LICENCES. The `license` field is what the publisher declared, and where it
- *    is missing the LICENSE file beside it is the next authority. Two packages
- *    here disagree with the obvious guess: `lucide-react` and `idb` are ISC
- *    rather than MIT, and `class-variance-authority`, `typescript` and
- *    `fake-indexeddb` are Apache-2.0. A package that states nothing at all is
+ *    is missing the LICENSE file beside it is the next authority. Several
+ *    packages here disagree with the obvious guess: `lucide-react`, `idb` and
+ *    the d3 modules are ISC rather than MIT, and `firebase`, `pdfjs-dist`,
+ *    `class-variance-authority`, `jsqr`, the React Native Firebase modules,
+ *    `typescript` and `fake-indexeddb` are Apache-2.0. The Built with page
+ *    counts them from these lists rather than saying a number that goes stale.
+ *    A package that states nothing at all is
  *    recorded as nothing rather than filled in — `licence: null` renders as
  *    "not stated", which is the honest answer and the only one that cannot be
  *    wrong. None does today; the third-party mascot runtime that did is gone.
@@ -44,6 +47,15 @@ export type Credit = {
    * on the umbrella's credit, and still checks the part's licence against it.
    */
   covers?: string
+  /**
+   * The package whose files this one is compiled into, for code that ships
+   * without a folder of its own. core-js is the case: pdf.js's legacy build
+   * carries the polyfills it needs inlined into `pdf.mjs` and the worker, so no
+   * module of the bundle resolves to a `core-js` package and the build's trace
+   * can never see it — and nothing in node_modules has its version to compare.
+   * Credited by hand, from the copyright and version the inlined code states.
+   */
+  inside?: string
 }
 
 /** What jojo itself imports, and what runs in the app because of it. */
@@ -160,14 +172,6 @@ const DIRECT: readonly Credit[] = [
     holder: 'Paul Henschel and contributors',
     what: 'Lets both scenes be written as React components rather than as an imperative render loop.',
     where: 'src/components/brand/RobotScene.tsx, src/components/transfer/DataTransferScene.tsx',
-  },
-  {
-    name: '@react-three/drei',
-    version: '10.7.8',
-    licence: 'MIT',
-    holder: '2020 react-spring',
-    what: 'Helpers in the scene on the Transfer page: fitting the plane to the viewport and loading its two textures. The mascot does not use it — its studio lighting is baked with three.js alone, which keeps drei’s environment helper, and the CDN address of its lighting presets, out of the mascot’s chunk.',
-    where: 'src/components/transfer/DataTransferScene.tsx',
   },
   {
     name: 'pdf-lib',
@@ -489,7 +493,7 @@ export const BUNDLED: readonly Credit[] = [
     version: '0.1.3',
     licence: 'MIT',
     holder: '2021 Paul Henschel',
-    what: 'Brought in by @react-three/fiber and drei: waits for the scene’s textures without blocking the page.',
+    what: 'Brought in by @react-three/fiber: lets a scene wait for its assets without blocking the page.',
   },
   {
     name: 'react-use-measure',
@@ -546,6 +550,14 @@ export const BUNDLED: readonly Credit[] = [
     licence: 'MIT',
     holder: '2020 Anton Korzunov',
     what: 'Brought in by Radix, under the scroll lock: the nonce for the style tag it writes, when a page sets one.',
+  },
+  {
+    name: 'core-js',
+    version: '3.50.0',
+    licence: 'MIT',
+    holder: '2013–2025 Denis Pushkarev (zloirock.ru), 2025–2026 CoreJS Company (core-js.io)',
+    what: 'Compiled into pdfjs-dist’s legacy build, which jojo uses so the PDF editor runs on Safari before 18.2: the polyfills that build carries for the newer JavaScript it is written in. Not a package in the bundle — its code is inside pdf.js’s own files — which is why the build’s check cannot see it and it is credited by hand, from the version and copyright the inlined code states.',
+    inside: 'pdfjs-dist',
   },
   {
     name: 'html-parse-stringify',
@@ -619,9 +631,14 @@ export function creditProblems(
  *
  * A separate list rather than more rows in `RUNTIME`, because none of it is in
  * the bundle you are reading this page from — a browser never loads React
- * Native. It is here at all because "what jojo is built on" is one question and
- * splitting the answer across two apps would mean the phone's dependencies had
- * no acknowledgements page anywhere.
+ * Native. It is here because "what jojo is built on" is one question, and the
+ * answer should not depend on which app a reader happens to have open.
+ *
+ * These are the packages the phone's code names and what each does there. The
+ * full set the APK carries — some seven hundred, with their licence texts — is
+ * generated from the installed tree into
+ * `mobile/src/screens/guide/third-party-notices.json` and shown on the phone's
+ * own Built with page; its test fails if that file is stale.
  *
  * Versions read from `mobile/node_modules`, on the same rule as the lists above.
  */
@@ -763,6 +780,30 @@ export const PHONE: readonly Credit[] = [
     what: "A `URL` that parses the way the shared layer expects. Hermes's own is partial, and the posting parser reads pathnames.",
   },
   {
+    name: '@react-native-firebase/app',
+    version: '25.1.0',
+    licence: 'Apache-2.0',
+    holder: '2016-present Invertase Limited',
+    what: 'The bridge to Google’s native Firebase SDKs, which it links into the Android and iOS builds (Firebase BoM 34.15.0 on Android, Firebase 12.15.0 on iOS). Those SDKs are Google’s, under the Google APIs Terms of Service and the Firebase terms rather than an open-source licence; see THIRD-PARTY-NOTICES.md. Analytics 25.1.0 and Crashlytics 25.1.0 ride on it, below.',
+    where: 'mobile/src/lib/analytics.ts',
+  },
+  {
+    name: '@react-native-firebase/analytics',
+    version: '25.1.0',
+    licence: 'Apache-2.0',
+    holder: '2016-present Invertase Limited',
+    what: 'Usage analytics on the phone, through Firebase Analytics, when it is switched on in Settings.',
+    where: 'mobile/src/lib/analytics.ts',
+  },
+  {
+    name: '@react-native-firebase/crashlytics',
+    version: '25.1.0',
+    licence: 'Apache-2.0',
+    holder: '2016-present Invertase Limited',
+    what: 'Crash reports on the phone, through Firebase Crashlytics, when they are switched on in Settings.',
+    where: 'mobile/src/lib/crash.ts',
+  },
+  {
     name: 'jsqr',
     version: '1.4.0',
     licence: 'Apache-2.0',
@@ -893,9 +934,11 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
  * appendix, and the trademark and warranty-acceptance clauses that do not change
  * a reader's rights.
  *
- * THE FULL TEXT SHIPS WITH THE SOFTWARE, in `LICENSE` at the repository root,
- * which is what the licence itself requires — this page points at it rather than
- * standing in for it.
+ * THE FULL TEXT SHIPS WITH THE SOFTWARE, which is what the licence itself
+ * requires: in `LICENSE` at the repository root, and, in the built web app, as
+ * `LICENSE.txt` and inside `THIRD-PARTY-NOTICES.txt` beside the bundle (written
+ * by `jojo:licence-notices` in `vite.config.ts`). This page points at it rather
+ * than standing in for it.
  */
 export const APACHE_CLAUSES: readonly { heading: string; text: string }[] = [
   {

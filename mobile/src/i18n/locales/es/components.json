@@ -154,14 +154,16 @@
     "what": "Cuando algo falla, jojo puede guardar el error para que lo consultes después, algo útil cuando lo que falló ya no está. Un informe contiene el mensaje de error, en qué parte de jojo ocurrió y la traza de la pila. Nunca contiene tus solicitudes, documentos, notas, perfil ni conversaciones, y las claves de API, direcciones y direcciones de correo se eliminan antes de escribir el informe.",
     "where": "Los informes se guardan en este teléfono y también se envían a Firebase Crashlytics, que añade el modelo de tu dispositivo, la versión del sistema y un identificador aleatorio para contar cuántas personas sufren el mismo fallo. Google los conserva 90 días. Ninguno de tus registros va con ellos.",
     "report": "Informar de fallos",
-    "reportHint": "Activado, para que podamos ver los fallos que sufres. Desactívalo y no se registra nada.",
+    "reportHint": "Desactivado a menos que lo actives. Activado, un fallo que sufras se envía a Firebase Crashlytics para que pueda corregirse; desactivado, no se registra nada y se borran los informes que aún no se hayan enviado.",
     "usage": "Compartir qué funciones uso",
-    "usageHint": "Solo recuentos, de una lista fija; nunca lo que hay en tus registros.",
-    "usageDetail": "Solo puede decir cosas de una lista fija: qué pantalla se abrió, que se añadió una solicitud, aproximadamente cuántas hay. No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito. Va a Google Analytics. Con esto desactivado, jojo también desactiva las vistas de pantalla y los recuentos de sesión que Firebase recogería por su cuenta.",
+    "usageHint": "Solo recuentos, de una lista fija; nunca lo que hay en tus registros. Se envía con un identificador aleatorio de instancia de la app y datos básicos del dispositivo.",
+    "usageDetail": "Solo puede decir cosas de una lista fija: qué pantalla se abrió, que se añadió una solicitud, aproximadamente cuántas hay. No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito. Va a Google Analytics, que añade un identificador aleatorio de instancia de la app y datos básicos como el modelo del dispositivo, la versión del sistema, el idioma, la versión de la app y el país o la región desde donde se conecta. Con esto desactivado, jojo también desactiva las vistas de pantalla y los recuentos de sesión que Firebase recogería por su cuenta, y desactivarlo borra ese identificador y todo lo que aún no se haya enviado.",
     "kept_one": "{{count}} informe guardado",
     "kept_other": "{{count}} informes guardados",
     "nothingBroken": "No ha fallado nada desde que lo activaste.",
-    "notRecording": "No se está registrando nada."
+    "notRecording": "No se está registrando nada.",
+    "restartNote": "Desactivado. jojo deja de enviar al instante y ha borrado los informes que aún no se habían enviado; el capturador de fallos propio de Crashlytics termina de apagarse la próxima vez que se inicie jojo.",
+    "privacy": "Aviso de privacidad"
   },
   "date": {
     "today": "Hoy",
@@ -290,7 +292,7 @@
   },
   "reporting": {
     "title": "Informes de errores y uso",
-    "description": "Dos cosas distintas, ambas activadas. Desactiva cualquiera aquí o más tarde en Ajustes. Ninguna puede llevar tus registros: ni una solicitud, ni un documento, ni una nota, ni un perfil, ni una conversación.",
+    "description": "Dos cosas distintas, y ambas están desactivadas a menos que las actives, aquí o más tarde en Ajustes. Ninguna puede llevar tus registros: ni una solicitud, ni un documento, ni una nota, ni un perfil, ni una conversación.",
     "bothOff": "Desactivar ambos",
     "save": "Guardar opciones",
     "inReport": "Qué hay en un informe de errores",
@@ -305,9 +307,10 @@
       "secrets": "· Tus claves de API, las direcciones que usas o cualquier dirección de correo: se eliminan antes de escribir el informe, no antes de enviarlo."
     },
     "crashHint": "El error y dónde ocurrió. Va a Firebase Crashlytics.",
-    "usageHint": "Solo recuentos: qué pantallas se abren y con qué frecuencia. Nunca lo que contienen.",
-    "usageDetail": "El segundo es lo único que jojo envía sobre lo que HACES, y solo puede decir cosas de una lista fija: «se abrió la bóveda», «se añadió una solicitud», «hay entre 6 y 20». No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito, porque esas palabras no están en la lista. Desactivarlo también detiene las vistas de pantalla que Firebase recogería por su cuenta.",
-    "later": "Ambos están en Ajustes cuando quieras cambiarlos, y al desactivar uno se descarta lo que guardó."
+    "usageHint": "Solo recuentos (qué pantallas se abren y con qué frecuencia), nunca lo que contienen. Se envía con un identificador aleatorio de instancia de la app y datos básicos del dispositivo.",
+    "usageDetail": "El segundo es lo único que jojo envía sobre lo que HACES, y solo puede decir cosas de una lista fija: «se abrió la bóveda», «se añadió una solicitud», «hay entre 6 y 20». No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito, porque esas palabras no están en la lista. Firebase Analytics añade un identificador aleatorio de instancia de la app y datos básicos como el modelo del dispositivo, la versión del sistema, el idioma, la versión de la app y el país o la región desde donde se conecta. Desactivarlo también detiene las vistas de pantalla que Firebase recogería por su cuenta, y borra ese identificador y todo lo que aún no se haya enviado.",
+    "later": "Ambos están en Ajustes cuando quieras cambiarlos, y al desactivar uno se descarta lo que guardó.",
+    "privacy": "Aviso de privacidad"
   },
   "stagePicker": {
     "label": "Etapa de {{name}}: {{stage}}. Cambiar etapa",

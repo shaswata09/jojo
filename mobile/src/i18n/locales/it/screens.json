@@ -461,7 +461,8 @@
     "statusEnglish": "Mantenuto in inglese, parola per parola, perché non si discosti dalla licenza che riassume.",
     "overdue_one": "{{count}} promemoria in ritardo.",
     "overdue_many": "{{count}} di promemoria in ritardo.",
-    "overdue_other": "{{count}} promemoria in ritardo."
+    "overdue_other": "{{count}} promemoria in ritardo.",
+    "privacy": "Informativa sulla privacy"
   },
   "statistics": {
     "title": "Statistiche",
@@ -763,7 +764,8 @@
       "focusPlaceholder": "solleciti e scadenze",
       "termsPlaceholder": "assistant professor, CS/ECE",
       "often": "Ogni quanto",
-      "oftenHint": "Quanto attende tra un giro e l'altro."
+      "oftenHint": "Quanto attende tra un giro e l'altro.",
+      "sourceRefused": "{{sites}} non consente la lettura automatica nei suoi termini d'uso, quindi lo scout non lo leggerà. Rimuovilo, oppure apri tu gli annunci lì e salvali in jojo."
     }
   },
   "postingBrowser": {
@@ -972,7 +974,8 @@
       "reasoning": "Ragionamento",
       "reasoningDescription": "Permette ai modelli in grado di pensare (gpt-oss, Gemma 4, Qwen3) di ragionare prima di rispondere. Disattivalo se con un modello piccolo le risposte tornano vuote.",
       "endpointFirst": "Prima compila un endpoint.",
-      "kept": "Conservato su questo dispositivo. L'assistente userà questo modello."
+      "kept": "Conservato su questo dispositivo. L'assistente userà questo modello.",
+      "remote": "Questo indirizzo non è su questo dispositivo né sulla tua rete locale, quindi i tuoi record verranno inviati lì, e a chiunque lo gestisca."
     },
     "test": {
       "testing": "Verifica in corso…",
@@ -1043,13 +1046,33 @@
     "provider": {
       "title": "Fornitore",
       "description": "Sceglierne uno imposta il suo indirizzo per te. Quelli cloud richiedono una chiave, e i tuoi record vanno a loro.",
-      "cloud": "Le tue parole vanno a questa azienda, e ti vengono addebitate",
-      "localKey": "Su un computer che controlli tu. Richiede una chiave.",
-      "local": "Su un computer che controlli tu. Nulla lo lascia."
+      "cloud": "I tuoi record vanno a questa azienda, secondo i suoi termini",
+      "localKey": "Gira dove lo indirizzi. Richiede una chiave, e nulla lascia la tua rete, a meno che quell'indirizzo non sia altrove.",
+      "local": "Gira dove lo indirizzi. Nulla lascia la tua rete, a meno che quell'indirizzo non sia altrove."
     },
     "cloud": {
       "terms": "Termini di {{name}}",
       "privacy": "Informativa sulla privacy"
+    },
+    "cloudNotice": {
+      "headline": "I tuoi record lasciano questo dispositivo quando usi {{name}}",
+      "sent": {
+        "what": "Tutto ciò che l'assistente legge per risponderti viene inviato a {{name}}: le tue candidature e note, il tuo profilo, il testo del tuo CV una volta letto un documento, e i nomi e gli indirizzi email di eventuali referenti o recruiter che consulta.",
+        "others": "Una parte sono dati personali di altre persone, non solo tuoi.",
+        "local": "Con un modello sul tuo computer, invece, nulla di tutto questo esce."
+      },
+      "background": "Non succede solo quando chatti. Finché {{name}} è selezionato, jojo gli invia record anche per il lavoro svolto in background: il controllo dei duplicati quando salvi una candidatura, la lettura degli annunci che il tuo scout trova, le valutazioni di affinità con il tuo profilo, l'adattamento del tuo CV e delle tue lettere, e l'accorciamento di una conversazione lunga perché ci stia.",
+      "cost": {
+        "paid": "{{short}} addebita i costi sul tuo account, e i suoi termini stabiliscono cosa può conservare e se ciò che invii può essere usato per migliorare i suoi modelli.",
+        "freeTier": "{{short}} ha un livello gratuito con dei limiti oltre all'uso a pagamento addebitato sul tuo account. In entrambi i casi, i suoi termini stabiliscono cosa può conservare e se ciò che invii può essere usato per migliorare i suoi modelli.",
+        "bargain": "È un accordo diverso da quello dell'opzione locale, non peggiore, ma vale la pena leggerlo prima che i tuoi record ne facciano parte."
+      },
+      "openrouter": "OpenRouter inoltra ogni richiesta all'azienda che produce il modello che scegli, secondo i termini di quell'azienda oltre ai propri. I termini di OpenRouter gli consentono di registrare le richieste e di usarne il contenuto in forma anonimizzata.",
+      "business": "Questi termini API sono scritti per aziende e sviluppatori. jojo non può dirti se si adattano a una ricerca di lavoro personale; verificare che si adattino al tuo uso spetta a te.",
+      "liability": {
+        "party": "Sei tu il titolare dell'account e la parte di quell'accordo: jojo non fornisce alcuna chiave e non fa richieste per conto proprio.",
+        "breach": "Il rispetto dei termini di {{short}} spetta a te, e jojo non si assume alcuna responsabilità per eventuali violazioni."
+      }
     },
     "servers": {
       "title": "Server salvati",

@@ -21,48 +21,65 @@ postings worth your attention. Every change it wants to make is shown to you fir
 the same undo a button press does.
 
 Everything runs on your own machine. Your applications, documents and profile live in your browser
-or on your phone — there is no account, no backend of ours, and nothing is uploaded anywhere by
-default. What the app can reach is only what you point it at, and every piece of it is optional: an
-LLM for the assistant, the pipelines, the graph box and scout scoring; a document reader for PDFs,
-Word files and job postings; the browser extension for keeping a posting, reading a job board, and reaching a
-local document reader from a hosted copy;
-and your own other device over the local network for Transfer. With none of it configured the app
-is still a complete tracker, and a backup file you keep is how records move between machines.
+or on your phone — there is no account and no backend of ours, and the maintainer never receives a
+copy of your records. What the app can reach is only what you point it at, and every piece of it is
+optional: an LLM for the assistant, the pipelines, the graph box and scout scoring; a document reader
+for PDFs, Word files and job postings; the browser extension for keeping a posting, reading a job
+board, and reaching a local document reader from a hosted copy; and your own other device over the
+local network for Transfer. With none of it configured the app is still a complete tracker, and a
+backup file you keep is how records move between machines.
 
-**Crash reports are off, and are the one thing that can leave a phone.** jojo can keep the error when
-something breaks, so you can read it back instead of describing it from memory. On the web that is
-all it does — the reports stay on the device, in Settings, and a backup file does not carry them,
-because Google ships no browser Crashlytics and there is nowhere honest to send them. On Android and
-iOS, and only when you turn it on, the same report also goes to Firebase Crashlytics. Keys, query
-strings, home directories and email addresses are stripped before a report exists, so what is kept
-and what is sent are the same redacted text. Two switches govern it and both must say yes: a build
-flag decides whether a copy of jojo can report at all, and a setting decides whether it does. On
-web that flag is `VITE_CRASH_REPORTING`; on the phone it is `crashes` in
+**What can leave your device, and when, is set out in the privacy notice:
+[`docs/PRIVACY.md`](docs/PRIVACY.md), published at
+<https://shaswata09.github.io/jojo/privacy.html> and linked from the Guide's Licence page, the
+phone's More screen and the extension.** In short, three kinds of thing can leave, and none of them
+happens until you choose it: usage analytics and crash reports (both off until you turn them on),
+and whatever you point jojo at — a model provider, the job boards your scout reads, your other
+device during Transfer, an assistant connected through the bridge.
+
+**Crash reports start off.** jojo can keep the error when something breaks, so you can read it back
+instead of describing it from memory. On the web and in the extension that is all it does — the
+reports stay on the device, in Settings, and a backup file does not carry them, because Google ships
+no browser Crashlytics and there is nowhere honest to send them. On Android and iOS, and only when
+you turn it on, the same report also goes to Firebase Crashlytics, which keeps it for 90 days. Keys,
+query strings, home directories and email addresses are stripped before a report exists, so what is
+kept and what is sent are the same redacted text. Two switches govern it and both must say yes: a
+build flag decides whether a copy of jojo can report at all, and a setting decides whether it does.
+On web that flag is `VITE_CRASH_REPORTING`; on the phone it is `crashes` in
 `mobile/src/lib/reporting-config.ts`, a source file rather than an environment variable because
 React Native inlines none — Metro replaces `process.env.NODE_ENV` and nothing else. Where the build
-allows it, the setting defaults to **on**, and the last page of setup asks; Settings has both
-switches whenever you want to change them.
+allows it, the setting starts **off**: the last page of setup asks, with the switch off until you
+move it, and Settings has both switches whenever you want to change them. Turning it off on the
+phone also deletes any report not yet sent.
 
-**Usage analytics is a second, separate switch.** Turned on, jojo reports which parts
-of it get used — so time goes to the screens people open rather than the ones we guess about. It can
-only ever say things from a closed list declared in `service/kg/core/analytics.ts`: which screen was
-opened, that an application was added, roughly how many there are. There is no free text anywhere in
-that vocabulary — no employer, no role, no filename, nothing typed — and counts are bucketed
-(`6-20`, not `14`) so a number cannot fingerprint anybody. On the phone its build flag is
-`analytics` in the same config file. That is enforced rather than promised:
-`analytics.test.ts` fails the build if any event parameter is widened to a bare `string`, and
-`isReportable` refuses an unknown value at the wire. It needs `VITE_ANALYTICS` and a
-`VITE_ANALYTICS_ID`, and sends to Google Analytics with ad signals and personalisation off.
+**Usage analytics is a second, separate switch, and it also starts off.** Turned on, jojo reports
+which parts of it get used — so time goes to the screens people open rather than the ones we guess
+about. It can only ever say things from a closed list declared in `service/kg/core/analytics.ts`:
+which screen was opened, that an application was added, roughly how many there are. There is no free
+text anywhere in that vocabulary — no employer, no role, no filename, nothing typed — and counts are
+bucketed (`6-20`, not `14`) so a number cannot fingerprint anybody. Google's SDK adds what any
+analytics SDK adds: a random identifier for the install, the device or browser type, the app
+version, and a rough location from your IP address. On the phone its build flag is `analytics` in
+the same config file. That is enforced rather than promised: `analytics.test.ts` fails the build if
+any event parameter is widened to a bare `string`, and `isReportable` refuses an unknown value at the
+wire. It needs `VITE_ANALYTICS` and a `VITE_ANALYTICS_ID`, and sends to Google Analytics for Firebase
+with Google signals and ad personalisation off. Turning it off deletes the analytics cookies and
+stored identifiers on the web, and resets the analytics data on the phone.
 
-**The one thing that can leave your device is the assistant, and only if you send it there.** jojo
-speaks to a local model — Ollama, vLLM, LM Studio — and that is the default, with nothing leaving
-the machine. It also speaks to Anthropic, OpenAI, OpenRouter and Groq, which need an API
-key you supply in Settings. Choose one of those and your prompts, and the records the assistant reads
-while answering, go to that provider, which bills you for it. jojo says so where you pick one, and
-keeps "this leaves your device" and "this costs money" as separate sentences, because they are
-separate questions. Your API key is stored beside the graph rather than inside it, so a backup file cannot
-carry it. Connections are remembered whole — provider, address, model and key — so a
-provider is set up once and picked from a list afterwards, the same way a local server is.
+**The assistant sends your records to a provider only if you choose one.** jojo speaks to a local
+model — Ollama, vLLM, LM Studio — and that is the default, with nothing leaving the machine. It also
+speaks to Anthropic, OpenAI, OpenRouter and Groq, which need an API key you supply in Settings.
+Choose one of those, or type the address of a model server that is not on your device or local
+network, and your records go there: what the assistant reads while answering you, and also what
+background work sends while that provider is selected — the duplicate check at Save, scout readings,
+fit readings, tailoring and compaction. That includes other people's details, such as referees'
+names and email addresses. It happens under your own agreement with that provider, whose terms are
+written for businesses and developers; whether they fit your use is for you to check. Some bill your
+account and some also have free tiers. jojo says all of this where you pick one, in your language,
+and keeps "this leaves your device" and "this costs money" as separate sentences, because they are
+separate questions. Your API key is stored beside the graph rather than inside it, so a backup file
+cannot carry it. Connections are remembered whole — provider, address, model and key — so a provider
+is set up once and picked from a list afterwards, the same way a local server is.
 
 The web app opens with the network down. A service worker keeps the shell and the boot bundle, so
 a reload on a plane gets the dashboard rather than the browser's offline page — which it has to,

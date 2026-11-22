@@ -53,6 +53,9 @@ afterEach(() => {
 describe('Q192: errors are reported without personal data, and only when on', () => {
   it('keeps a report of any thrown value, with the email and the key stripped', async () => {
     const { log, errors } = await load('true')
+    // Said yes explicitly: since 2026-11-21 an unanswered question reads as no
+    // (`core/crash-config.ts`), so nothing would be kept without this.
+    log.setCrashEnabled(true)
     errors.reportError('render', new Error(`could not save ${EMAIL} using ${KEY}`))
     errors.reportError('render', `a bare string naming ${EMAIL}`)
     errors.reportError('render', { odd: 'object', key: KEY })
@@ -63,6 +66,15 @@ describe('Q192: errors are reported without personal data, and only when on', ()
     expect(stored).not.toContain(EMAIL)
     expect(stored).not.toContain(KEY)
     expect(stored).toContain('«redacted-email»')
+    // A thrown object is kept by its type alone — its fields are not read.
+    expect(stored).toContain('non-Error: object')
+  })
+
+  it('keeps nothing for somebody who was never asked, because the default is no', async () => {
+    const { log, errors } = await load('true')
+    errors.reportError('render', new Error('boom'))
+    expect(log.crashEnabled()).toBe(false)
+    expect(log.readCrashes()).toEqual([])
   })
 
   it('keeps nothing once the person has turned reporting off', async () => {

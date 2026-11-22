@@ -107,7 +107,7 @@
       "hint": "una tua scelta, e cambia dove vanno le tue parole",
       "title": "Quale modello lo fa",
       "p1": "jojo comunica con qualsiasi cosa tu indichi in <go>Impostazioni</go>. Un modello che gira sul tuo computer (Ollama, vLLM, LM Studio) è la scelta predefinita, ed è l'unica configurazione in cui nulla di ciò che scrivi lascia il dispositivo.",
-      "p2": "Puoi anche usare Claude, OpenAI e altri con una chiave API. È un compromesso reale e la schermata lo dice chiaramente: i tuoi record vanno a quell'azienda e vengono addebitati sul tuo account. La chiave viene conservata in questo browser, non viene mai inclusa in un backup e non viene mai inviata ad altri che al fornitore che hai scelto.",
+      "p2": "Puoi anche usare Claude, OpenAI e altri con una chiave API. È un compromesso reale e la schermata lo dice chiaramente: i tuoi record vanno a quell'azienda, secondo i suoi termini, e alcuni fornitori addebitano i costi sul tuo account. La chiave viene conservata in questo browser, non viene mai inclusa in un backup e non viene mai inviata ad altri che al fornitore che hai scelto.",
       "stoppedTitle": "Se l'assistente sembra aver smesso di leggere",
       "stopped": "Un modello locale con troppo poco spazio scarta silenziosamente l'inizio di ciò che gli è stato inviato, e poi risponde con sicurezza a una domanda che non ha mai visto per intero. jojo ora confronta ciò che il server dice di aver letto con ciò che è stato effettivamente inviato, e ti avvisa quando non coincidono, perché l'alternativa è un assistente che sembra incapace anziché a corto di spazio."
     },

@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Endpunkt",
       "hintOllama": "Host und Port. Kein /v1 – jojo nutzt Ollamas eigenen Endpunkt, um es bitten zu können, nicht zu kürzen.",
-      "hint": "Die Basis-URL, endend auf /v1."
+      "hint": "Die Basis-URL, endend auf /v1.",
+      "remote": "Diese Adresse liegt weder auf diesem Gerät noch in deinem lokalen Netzwerk, deshalb werden deine Einträge dorthin gesendet – und an den, der sie betreibt."
     },
     "apiKey": {
       "label": "API-Schlüssel",
@@ -91,6 +92,26 @@
     "providerTerms": "Bedingungen von {{provider}}",
     "privacy": "Datenschutzerklärung",
     "licence": "Lizenzseite von jojo"
+  },
+  "cloudNotice": {
+    "headline": "Deine Einträge verlassen dieses Gerät, wenn du {{name}} nutzt",
+    "sent": {
+      "what": "Alles, was der Assistent liest, um dir zu antworten, wird an {{name}} gesendet: deine Bewerbungen und Notizen, dein Profil, der Text deines Lebenslaufs, sobald ein Dokument gelesen wurde, und die Namen und E-Mail-Adressen aller Referenzgeber oder Recruiter, die er sich ansieht.",
+      "others": "Einiges davon sind personenbezogene Daten anderer Menschen, nicht nur deine.",
+      "local": "Mit einem Modell auf deinem eigenen Rechner verlässt nichts davon das Gerät."
+    },
+    "background": "Es geht nicht nur ums Chatten. Solange {{name}} ausgewählt ist, sendet jojo dorthin auch Einträge für Arbeit im Hintergrund: die Duplikatprüfung, wenn du eine Bewerbung speicherst, das Lesen der Stellenanzeigen, die dein Scout findet, Passungsbewertungen anhand deines Profils, das Anpassen deines Lebenslaufs und deiner Anschreiben und das Kürzen eines langen Gesprächs, damit es passt.",
+    "cost": {
+      "paid": "{{short}} stellt die Nutzung deinem Konto in Rechnung, und seine eigenen Bedingungen regeln, was es behalten darf und ob das, was du sendest, zur Verbesserung seiner Modelle genutzt werden darf.",
+      "freeTier": "{{short}} hat ein kostenloses Kontingent mit Grenzen und daneben kostenpflichtige Nutzung, die deinem Konto in Rechnung gestellt wird. So oder so regeln seine eigenen Bedingungen, was es behalten darf und ob das, was du sendest, zur Verbesserung seiner Modelle genutzt werden darf.",
+      "bargain": "Das ist ein anderer Handel als die lokale Option, kein schlechterer – aber es lohnt sich, das zu lesen, bevor deine Einträge Teil davon sind."
+    },
+    "openrouter": "OpenRouter gibt jede Anfrage an das Unternehmen weiter, das das von dir gewählte Modell herstellt – unter dessen Bedingungen ebenso wie unter seinen eigenen. Die eigenen Bedingungen von OpenRouter erlauben es, Anfragen zu protokollieren und ihren Inhalt in anonymisierter Form zu nutzen.",
+    "business": "Diese API-Bedingungen sind für Unternehmen und Entwickler geschrieben. jojo kann dir nicht sagen, ob sie zu einer privaten Jobsuche passen; zu prüfen, ob sie zu deiner Nutzung passen, ist deine Sache.",
+    "liability": {
+      "party": "Du bist der Kontoinhaber und die Vertragspartei dieser Vereinbarung – jojo liefert keinen Schlüssel mit und stellt keine eigene Anfrage.",
+      "breach": "Die Einhaltung der Bedingungen von {{short}} liegt bei dir, und jojo übernimmt keine Haftung für einen Verstoß dagegen."
+    }
   },
   "mcp": {
     "title": "Von einem MCP-Client aus verbinden",
@@ -142,7 +163,7 @@
     "cors": "Es lauscht auf <mono>{{endpoint}}</mono>, sendet aber keine CORS-Header – deshalb lässt ein Browser diese Seite es nicht portübergreifend aufrufen. jojos Entwicklungsserver leitet <mono>{{path}}</mono> dorthin weiter, darum ist die Adresse oben ein Pfad und keine URL. Die Handy-App spricht direkt damit und braucht nichts davon.",
     "hosted": "<em>Installiere bei einer gehosteten Kopie die Erweiterung.</em> Eine aus dem Web geladene Seite kann <mono>127.0.0.1</mono> nicht aufrufen – es gibt keinen Proxy, der einen Pfad weiterleitet, und https://-Seiten ist das lokale Netzwerk verwehrt. Die Erweiterung ist keine Seite: Sie erreicht den Reader direkt, und jojo bittet sie darum. Trag oben die eigene Adresse des Readers ein, dann leitet sie jede Anfrage weiter; sie leitet nur an diesen Rechner weiter.",
     "fillAddress": "Gib zuerst eine Adresse ein",
-    "connectedNote": "Dokumente werden an diese Adresse gesendet und nirgendwo sonst hin. Nichts wird hochgeladen.",
+    "connectedNote": "Dokumente werden an diese Adresse gesendet und nirgendwo sonst hin.",
     "separate": "{{name}} ist ein eigenständiges Programm und kein Teil von jojo.",
     "notAffiliated": "jojo steht in keiner Verbindung zu Microsoft."
   },
@@ -183,13 +204,14 @@
     "where": "In diesem Browser und in der Erweiterung <em>bleiben Absturzberichte auf diesem Gerät</em> – nichts wird hochgeladen, und eine Backup-Datei enthält sie nicht. Die Handy-App sendet sie außerdem an Firebase Crashlytics, das das Gerätemodell, die Betriebssystemversion und eine zufällige ID hinzufügt, um zu zählen, wie viele Leute denselben Absturz haben. Absturzberichte betreffen nur Abstürze – was du in jojo tust, ist die separate Frage unten, getrennt beantwortet.",
     "keep": {
       "label": "Absturzberichte behalten",
-      "description": "An, damit ein Absturz, den du erlebst, für uns sichtbar ist. Schalte es aus, und nichts wird aufgezeichnet."
+      "description": "Aus, solange du es nicht einschaltest. Wenn es an ist, wird ein Absturz, den du erlebst, hier aufbewahrt, damit du ihn nachlesen kannst; wenn es aus ist, wird nichts aufgezeichnet."
     },
     "usage": {
       "label": "Teilen, welche Funktionen ich nutze",
-      "description": "Nur Zählungen aus einer festen Liste – nie, was in deinen Einträgen steht.",
-      "note": "Es kann nur Dinge aus einer festen Liste sagen – welcher Bildschirm geöffnet wurde, dass eine Bewerbung hinzugefügt wurde, ungefähr wie viele es gibt. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen. Geht an Google Analytics."
+      "description": "Nur Zählungen aus einer festen Liste – nie, was in deinen Einträgen steht. Gesendet mit einer zufälligen ID für diesen Browser und grundlegenden Geräteangaben.",
+      "note": "Es kann nur Dinge aus einer festen Liste sagen – welcher Bildschirm geöffnet wurde, dass eine Bewerbung hinzugefügt wurde, ungefähr wie viele es gibt. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen. Geht an Google Analytics, das eine zufällige ID hinzufügt, die es in diesem Browser speichert, sowie Grunddaten wie Browser, Gerätetyp, Sprache und das Land oder die Region, aus der deine Verbindung kommt. Wenn du es ausschaltest, wird diese ID gelöscht."
     },
+    "privacy": "Datenschutzhinweis",
     "kept_one": "{{count}} Bericht gespeichert",
     "kept_other": "{{count}} Berichte gespeichert",
     "clear": "Leeren",
@@ -251,7 +273,7 @@
   "documents": {
     "title": "Deine Dokumente",
     "hint": "auf diesem Gerät",
-    "intro": "Die Lebensläufe, Anschreiben und Statements, die du anhängst, werden in diesem Browser auf diesem Rechner gespeichert. Nichts wird irgendwohin hochgeladen.",
+    "intro": "Die Lebensläufe, Anschreiben und Statements, die du anhängst, werden in diesem Browser auf diesem Rechner gespeichert. Die Dateien werden nicht hochgeladen; ihr Text geht nur dann an ein Modell, wenn du einen gehosteten Anbieter wählst.",
     "count_one": "{{count}} Dokument",
     "count_other": "{{count}} Dokumente",
     "noneReadable": {

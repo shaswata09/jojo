@@ -209,7 +209,12 @@
     "unreachable": "Bu siteye ulaşılamadı.",
     "status": "Bu site şu yanıtı verdi: {{status}}.",
     "browserOnly": "{{host}} ilanlarını yalnızca gerçek bir tarayıcıya gösteriyor; bu yüzden telefondan okunamaz. Bilgisayarda jojo tarayıcı uzantısı onu okuyabilir.",
-    "cancelled": "Okuma iptal edildi."
+    "cancelled": "Okuma iptal edildi.",
+    "noAutomatedAccess": "{{host}} kullanım koşullarında otomatik okumaya izin vermiyor, bu yüzden jojo onu bir zamanlamayla okumayacak. Bunun yerine orada bir ilanı kendiniz açıp jojo'ya kaydedin.",
+    "robots": "{{host}}, otomatik okuyuculardan bu sayfayı açmamalarını istiyor (robots.txt dosyası buna izin vermiyor), bu yüzden jojo onu okumadı.",
+    "dailyBudget": "jojo bugün {{host}} sitesinden zaten {{pages}} sayfa okudu; bu, bir siteden bir günde okuduğu en fazla sayfa sayısı. Geri kalanı yarın okunabilir.",
+    "tooSoon": "{{host}}, otomatik okuyuculardan sayfalar arasında {{seconds}} saniye beklemelerini istiyor, bu yüzden jojo burada durdu. Geri kalanı daha sonraki bir çalıştırmada okunabilir.",
+    "botWall": "Bu site bir insan doğrulaması istiyor; kendiniz açın."
   },
   "timelineForm": {
     "title": "Tanıyacağınız bir başlık verin.",

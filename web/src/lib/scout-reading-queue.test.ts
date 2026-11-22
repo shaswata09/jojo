@@ -61,36 +61,48 @@ describe('what the reader opens on its own', () => {
    * sent to the model.
    */
   it('opens only a posting on a watched board, never another page there', () => {
-    const linkedin = {
-      id: 'pl_1',
-      source: 'https://www.linkedin.com/jobs/search/?keywords=lecturer',
-    }
+    // Round 3 was found with LinkedIn watched; LinkedIn is now never opened
+    // unattended at all (below), so the same rule is held on a board that
+    // still can be: a signed-in applicant-tracking site.
+    const greenhouse = { id: 'pl_1', source: 'https://job-boards.greenhouse.io/acme' }
     for (const page of [
-      'https://www.linkedin.com/messaging/',
-      'https://www.linkedin.com/psettings/email',
-      'https://www.linkedin.com/mypreferences/d/',
-      'https://www.linkedin.com/jobs/search/?keywords=lecturer',
+      'https://job-boards.greenhouse.io/acme',
+      'https://my.greenhouse.io/users/sign_in',
+      'https://my.greenhouse.io/profile/settings',
       'https://careercenter.cra.org/account/',
     ]) {
-      expect(autoReadable(page, page.includes('cra') ? cra : linkedin, nothingListed), page).toBe(
+      expect(autoReadable(page, page.includes('cra') ? cra : greenhouse, nothingListed), page).toBe(
         false,
       )
     }
     expect(
-      autoReadable('https://www.linkedin.com/jobs/view/4012345/', linkedin, nothingListed),
+      autoReadable('https://job-boards.greenhouse.io/acme/jobs/4012345', greenhouse, nothingListed),
     ).toBe(true)
   })
 
-  it('judges the address that will be opened, not only the one written', () => {
+  /*
+   * LinkedIn, Indeed, Glassdoor and ZipRecruiter forbid automated access in
+   * their terms. A card for a posting there waits for the person's own
+   * Approve — even on a pipeline that watches the site, even when a board read
+   * listed it, and even when the address written is somewhere else that
+   * opens as one of theirs.
+   */
+  it('never opens a posting on a site whose terms forbid robots', () => {
+    const everything = () => true
     const linkedin = { id: 'pl_1', source: 'https://www.linkedin.com/jobs/' }
-    // Folded onto the posting by `canonicalPostingUrl` before it is opened.
     expect(
-      autoReadable(
-        'https://www.linkedin.com/messaging/?currentJobId=4012345',
-        linkedin,
-        nothingListed,
-      ),
-    ).toBe(true)
+      autoReadable('https://www.linkedin.com/jobs/view/4012345/', linkedin, nothingListed),
+    ).toBe(false)
+    expect(autoReadable('https://www.linkedin.com/jobs/view/4012345/', cra, everything)).toBe(false)
+    expect(
+      autoReadable('https://www.linkedin.com/messaging/?currentJobId=4012345', linkedin, everything),
+    ).toBe(false)
+    expect(
+      autoReadable('https://www.indeed.com/viewjob?jk=abc123', { id: 'pl_1', source: 'indeed.com' }, everything),
+    ).toBe(false)
+  })
+
+  it('judges the address that will be opened, not only the one written', () => {
     // Greenhouse's embed spelling is not a posting's shape as written, and is
     // opened as the posting it names.
     const greenhouse = { id: 'pl_1', source: 'https://job-boards.greenhouse.io/acme' }

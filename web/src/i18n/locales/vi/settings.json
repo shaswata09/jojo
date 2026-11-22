@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Điểm cuối",
       "hintOllama": "Máy chủ và cổng. Không có /v1 — jojo dùng điểm cuối riêng của Ollama để có thể yêu cầu không cắt ngắn.",
-      "hint": "URL gốc, kết thúc bằng /v1."
+      "hint": "URL gốc, kết thúc bằng /v1.",
+      "remote": "Địa chỉ này không nằm trên thiết bị này hay mạng cục bộ của bạn, nên bản ghi của bạn sẽ được gửi tới đó — và tới bất kỳ ai vận hành nó."
     },
     "apiKey": {
       "label": "Khóa API",
@@ -91,6 +92,26 @@
     "providerTerms": "Điều khoản của {{provider}}",
     "privacy": "Chính sách quyền riêng tư",
     "licence": "Trang giấy phép của jojo"
+  },
+  "cloudNotice": {
+    "headline": "Bản ghi của bạn rời khỏi thiết bị này khi bạn dùng {{name}}",
+    "sent": {
+      "what": "Mọi thứ trợ lý đọc để trả lời bạn đều được gửi tới {{name}}: các đơn ứng tuyển và ghi chú, hồ sơ cá nhân, nội dung CV của bạn khi một tài liệu đã được đọc, cùng tên và địa chỉ email của bất kỳ người giới thiệu hay nhà tuyển dụng nào mà nó xem tới.",
+      "others": "Một phần trong đó là thông tin cá nhân của người khác, không chỉ của bạn.",
+      "local": "Nếu thay vào đó dùng mô hình trên máy của chính bạn, không có gì rời đi."
+    },
+    "background": "Không chỉ khi bạn trò chuyện. Khi {{name}} đang được chọn, jojo còn gửi bản ghi tới đó cho các việc chạy nền: kiểm tra trùng lặp khi bạn lưu một đơn ứng tuyển, đọc các tin tuyển dụng mà trình tìm việc của bạn tìm thấy, đánh giá mức phù hợp với hồ sơ của bạn, điều chỉnh CV và thư của bạn, và rút gọn một cuộc trò chuyện dài cho vừa.",
+    "cost": {
+      "paid": "{{short}} tính phí vào tài khoản của bạn, và điều khoản riêng của họ quy định những gì họ được giữ lại và liệu những gì bạn gửi có thể được dùng để cải thiện mô hình của họ hay không.",
+      "freeTier": "{{short}} có gói miễn phí có giới hạn, bên cạnh mức dùng trả phí tính vào tài khoản của bạn. Dù thế nào, điều khoản riêng của họ quy định những gì họ được giữ lại và liệu những gì bạn gửi có thể được dùng để cải thiện mô hình của họ hay không.",
+      "bargain": "Đó là một thỏa thuận khác với lựa chọn chạy cục bộ, không phải tệ hơn, nhưng đáng đọc trước khi bản ghi của bạn trở thành một phần của nó."
+    },
+    "openrouter": "OpenRouter chuyển mỗi yêu cầu tới công ty làm ra mô hình bạn chọn, theo điều khoản của công ty đó cũng như của chính OpenRouter. Điều khoản riêng của OpenRouter cho phép họ ghi nhật ký các yêu cầu và sử dụng nội dung của chúng ở dạng đã ẩn danh.",
+    "business": "Các điều khoản API này được viết cho doanh nghiệp và nhà phát triển. jojo không thể cho bạn biết chúng có phù hợp với việc tìm việc cá nhân hay không; việc kiểm tra xem chúng có phù hợp với cách bạn dùng hay không là việc của bạn.",
+    "liability": {
+      "party": "Bạn là chủ tài khoản và là một bên của thỏa thuận đó — jojo không kèm khóa nào và không tự gửi yêu cầu nào.",
+      "breach": "Việc tuân thủ điều khoản của {{short}} là trách nhiệm của bạn, và jojo không chịu bất kỳ trách nhiệm nào cho việc vi phạm các điều khoản đó."
+    }
   },
   "mcp": {
     "title": "Kết nối từ một ứng dụng MCP",
@@ -140,7 +161,7 @@
     "cors": "Nó lắng nghe tại <mono>{{endpoint}}</mono>, nhưng không gửi tiêu đề CORS — nên trình duyệt sẽ không cho trang này gọi tới nó qua cổng khác. Máy chủ phát triển của jojo chuyển tiếp <mono>{{path}}</mono> tới nó, đó là lý do địa chỉ ở trên là một đường dẫn chứ không phải URL. Ứng dụng điện thoại giao tiếp trực tiếp với nó và không cần những thứ này.",
     "hosted": "<em>Với bản được lưu trữ trên web, hãy cài tiện ích mở rộng.</em> Một trang được phục vụ từ web không thể gọi tới <mono>127.0.0.1</mono> — không có proxy để chuyển tiếp đường dẫn, và các trang https:// bị chặn truy cập mạng cục bộ. Tiện ích mở rộng không phải là một trang: nó kết nối trực tiếp tới trình đọc, và jojo nhờ nó làm việc đó. Hãy điền địa chỉ riêng của trình đọc ở trên và nó sẽ chuyển tiếp từng yêu cầu; nó chỉ chuyển tiếp tới máy này mà thôi.",
     "fillAddress": "Hãy điền địa chỉ trước",
-    "connectedNote": "Tài liệu được gửi tới địa chỉ đó và không nơi nào khác. Không có gì được tải lên.",
+    "connectedNote": "Tài liệu được gửi tới địa chỉ đó và không nơi nào khác.",
     "separate": "{{name}} là một chương trình riêng, không thuộc jojo.",
     "notAffiliated": "jojo không liên kết với Microsoft."
   },
@@ -181,13 +202,14 @@
     "where": "Trong trình duyệt này và trong tiện ích mở rộng, báo cáo sự cố <em>ở lại trên thiết bị này</em> — không có gì được tải lên, và tệp sao lưu không mang theo chúng. Ứng dụng điện thoại còn gửi chúng tới Firebase Crashlytics, kèm mẫu thiết bị, phiên bản hệ điều hành và một mã ngẫu nhiên dùng để đếm số người gặp cùng một sự cố. Báo cáo sự cố chỉ nói về sự cố — những gì bạn làm trong jojo là câu hỏi riêng bên dưới, được trả lời riêng.",
     "keep": {
       "label": "Giữ báo cáo sự cố",
-      "description": "Bật, để sự cố bạn gặp là thứ chúng tôi thấy được. Tắt đi thì không có gì được ghi lại."
+      "description": "Tắt trừ khi bạn bật lên. Khi bật, sự cố bạn gặp được giữ lại ở đây để bạn đọc lại; khi tắt, không có gì được ghi lại."
     },
     "usage": {
       "label": "Chia sẻ những tính năng tôi dùng",
-      "description": "Chỉ là số đếm, từ một danh sách cố định — không bao giờ là nội dung trong bản ghi của bạn.",
-      "note": "Nó chỉ có thể nói những điều trong một danh sách cố định — màn hình nào được mở, một đơn ứng tuyển đã được thêm, có khoảng bao nhiêu đơn. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập. Dữ liệu được gửi tới Google Analytics."
+      "description": "Chỉ là số đếm, từ một danh sách cố định — không bao giờ là nội dung trong bản ghi của bạn. Được gửi kèm một mã định danh ngẫu nhiên cho trình duyệt này và thông tin cơ bản về thiết bị.",
+      "note": "Nó chỉ có thể nói những điều trong một danh sách cố định — màn hình nào được mở, một đơn ứng tuyển đã được thêm, có khoảng bao nhiêu đơn. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập. Dữ liệu được gửi tới Google Analytics, nơi thêm vào một mã định danh ngẫu nhiên mà nó giữ trong trình duyệt này cùng các thông tin cơ bản như trình duyệt, loại thiết bị, ngôn ngữ và quốc gia hoặc khu vực nơi kết nối của bạn xuất phát. Tắt mục này sẽ xóa mã định danh đó."
     },
+    "privacy": "Thông báo quyền riêng tư",
     "kept_other": "Đã giữ {{count}} báo cáo",
     "clear": "Xóa",
     "stack": "Ngăn xếp",
@@ -244,7 +266,7 @@
   "documents": {
     "title": "Tài liệu của bạn",
     "hint": "trên thiết bị này",
-    "intro": "CV, thư xin việc và các bản trình bày bạn đính kèm được lưu trong trình duyệt này, trên máy này. Không có gì được tải lên đâu cả.",
+    "intro": "CV, thư xin việc và các bản trình bày bạn đính kèm được lưu trong trình duyệt này, trên máy này. Các tệp không được tải lên; nội dung chữ của chúng chỉ được gửi tới mô hình nếu bạn chọn một nhà cung cấp trực tuyến.",
     "count_other": "{{count}} tài liệu",
     "noneReadable": {
       "title": "Không đọc được tài liệu nào",

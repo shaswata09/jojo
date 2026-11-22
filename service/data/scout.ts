@@ -7,6 +7,15 @@ import type { Match, Pipeline, SavedPosting } from '../kg/core/model'
 
 export type { Match, Pipeline, SavedPosting } from '../kg/core/model'
 
+/*
+ * The two academic boards are real sites, so they are seeded SWITCHED OFF.
+ * They used to be seeded on, which meant a new person who did nothing but add
+ * a model found the scout already crawling cra.org and higheredjobs.com on a
+ * daily timer in their browser — reading somebody else's server because of
+ * demo data they never chose. A person turns one on when they want it. Only
+ * new seeds are affected: a pipeline already in someone's store keeps whatever
+ * they set.
+ */
 export const pipelines: Pipeline[] = [
   {
     id: 'cra',
@@ -14,7 +23,7 @@ export const pipelines: Pipeline[] = [
     source: 'cra.org/ads',
     schedule: 'daily',
     filter: 'assistant professor, CS/ECE',
-    enabled: true,
+    enabled: false,
   },
   {
     id: 'higheredjobs',
@@ -22,7 +31,7 @@ export const pipelines: Pipeline[] = [
     source: 'higheredjobs.com/faculty',
     schedule: 'daily',
     filter: 'region: TX, remote',
-    enabled: true,
+    enabled: false,
   },
   {
     id: 'stripe',

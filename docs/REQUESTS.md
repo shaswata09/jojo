@@ -2468,7 +2468,7 @@ Guarded by:
 Must stay true: Firebase Analytics records feature-usage events only when enabled (analytics.ts, analytics-optout.test.ts).
 Guarded by:
 - `web/src/lib/analytics.requests.test.ts` › "stays off before the reporting question has been asked, whatever the build allows"
-- `web/src/lib/analytics.requests.test.ts` › "is on once asked and not declined, and off again once declined"
+- `web/src/lib/analytics.requests.test.ts` › "is on after an explicit yes, and off again once declined"
 - `web/src/lib/analytics.requests.test.ts` › "stays off in a build without the capability, even after a yes"
 - `service/kg/core/analytics.test.ts` › "accepts only the events declared here"
 - `web/src/lib/analytics-optout.test.ts` › "expires the GA cookies on whichever domain gtag set them"
@@ -2931,3 +2931,34 @@ Guarded by:
 - `web/src/lib/model-settings.requests.test.ts` › "clears a stored NVIDIA setting and its saved rows on load"
 - `mobile/src/lib/model-settings.requests.test.ts` › "clears a stored NVIDIA setting and its saved rows on load, on the phone too"
 Note: Supersedes Q169 and Q188, and revises Q146, Q171, Q172, Q179 and Q187. NVIDIA's API Trial Terms permit "internal testing and evaluation purposes, not in production" and ask that no personal information be uploaded; a job tracker's assistant is production use that sends personal records. Mentions of NVIDIA as an employer (Workday posting URLs in board and capture tests) and as GPU hardware (vLLM docs) are not the provider and stay. A model id or address someone types by hand into the open-ended "local server" option is not blocked.
+
+### Q346 — Fix the legal side found by the review: licences and notices, privacy and consent, and third-party terms (job boards, model providers, stores).
+`fix` · 2026-11-21 · cross · active
+Must stay true: Crash reports and usage statistics start off on web and phone; closing the question without answering is a no; a stored answer is read exactly as before. The web analytics config turns Google signals and ad personalisation off and denies the advertising consent types before it starts. A thrown non-Error is reported as its type only. Android excludes everything from cloud backup and device transfer; the iOS privacy manifest declares what opt-in reporting collects. A privacy notice exists in docs/PRIVACY.md and at privacy.html beside the web app, with the same sections in both, and says what a model provider receives, including background work and other people's details. The cloud notice says the providers' terms are written for businesses without claiming a job search is allowed. The scout never reads LinkedIn, Indeed, Glassdoor or ZipRecruiter on its own, honours robots.txt and its Crawl-delay with a five-second floor and a daily budget per host, and stops at a bot check instead of passing it; the demo pipelines are seeded off. The web build ships LICENSE, NOTICE and generated third-party notices, and the phone shows the notices of its whole production tree. The Transfer scene's images are drawn by a script in this repository. Demo data uses only reserved example domains.
+Guarded by:
+- `mobile/src/lib/reporting-consent.test.ts` › "starts both switches off, so a yes is the person’s own act"
+- `mobile/src/lib/reporting-consent.test.ts` › "records no for both when the sheet is closed without an answer"
+- `web/src/lib/analytics.requests.test.ts` › "stays off once asked and left unanswered, because the default is no"
+- `web/src/lib/analytics-init.test.ts` › "turns Google signals and ad personalisation off in the config itself"
+- `web/src/lib/analytics-init.test.ts` › "sets that consent BEFORE initialising, so it is the default and not a late update"
+- `service/kg/core/crash.test.ts` › "sends only the TYPE of a thrown non-Error, never its contents"
+- `mobile/src/lib/reporting-consent.test.ts` › "excludes every domain from both cloud backup and device transfer"
+- `mobile/src/lib/reporting-consent.test.ts` › "declares none of it as linked or used for tracking"
+- `web/src/lib/privacy-notice.test.ts` › "has the same sections, in the same order, in both copies"
+- `web/src/lib/privacy-notice.test.ts` › "says both reporting switches start off, and how to stop each"
+- `web/src/lib/privacy-notice.test.ts` › "says what a model provider receives, including other people’s details and background work"
+- `service/kg/core/cloud-terms.test.ts` › "says records go in the background too, naming each task that sends them"
+- `service/kg/core/cloud-terms.test.ts` › "says the terms are written for businesses, without saying a job search is allowed"
+- `web/src/lib/extension-scan-manners.test.ts` › "a site whose terms forbid automated reading, without even asking its robots.txt"
+- `web/src/lib/extension-scan-manners.test.ts` › "an address the site’s robots.txt disallows"
+- `service/kg/core/robots.test.ts` › "never goes faster than five seconds, and slower when a site asks"
+- `service/kg/core/robots.test.ts` › "stops a host at its daily budget, and starts again the next day"
+- `service/kg/core/robots.test.ts` › "telling a bot check from a board"
+- `service/data/scout.test.ts` › "are all seeded switched off"
+- `web/src/lib/extension-manifest.test.ts` › "says what it sends where, in a description the stores will show whole"
+- `web/src/components/guide/licence-notices.test.ts` › "attaches the full Apache text to a package whose file is only the short header"
+- `mobile/src/screens/guide/third-party-notices.test.ts` › "are exactly what the generator writes from node_modules today"
+- `web/src/components/transfer/textures.test.ts` › "are drawn by a script in this repository, which writes exactly these two files"
+- `service/kg/agent/fit-fixtures.test.ts` › "carries no address outside the reserved example domains"
+- `service/data/profile.requests.test.ts` › "give every demo person an address on a reserved domain"
+Note: From a seven-reviewer legal and security review on 2026-11-21, fixed by six writer agents with disjoint files, each reviewed independently and judged (four needed one fix round), then translated into all 20 locales. Decided by the owner: switches start off; the Transfer images are generated; the privacy contact is GitHub Issues; third-party agent skills stay with licence notes (.agents/skills/THIRD-PARTY.md, .claude/skills/THIRD-PARTY.md). Left for a lawyer or the owner: whether personal job-search use is "consumer use" under the Anthropic, OpenAI and Groq API terms; whether a capture the person clicks on LinkedIn breaches its terms; trademark clearance for "jojo"; Aceternity UI's Spotlight terms; and the native Android/iOS libraries' notices inside the app (needs a Gradle licence plugin and the CocoaPods acknowledgements). The removed University of Tennessee posting and the old Transfer images remain in git history. The Transfer scene itself (DataTransferScene.tsx, its lazy wrapper and transfer.css) had been adapted from the 21st.dev component "Futuristic Hero" by David Hakobyan (@larsen66), published with no licence; on the owner's decision it was rewritten clean-room the same day (a spec written without code, a writer who never read the old file, a provenance review comparing old and new, and a judge), and @react-three/drei, which only that scene used, was removed.

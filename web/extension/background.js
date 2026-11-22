@@ -29,6 +29,8 @@
  *   - `inline-css.js`    a fetched stylesheet, tokenised and made safe
  *   - `splice.js`        tokens spliced, strays removed, the final sweep
  *   - `scan-board.js`    a board opened in a tab, pressed and harvested
+ *   - `manners.js`       what a read nobody watches asks first: terms, robots.txt, pace, bot checks
+ *   - `crawl-rules.js`   the rules those use, copied from the package
  *   - `tabs.js`          waiting on a background tab
  *   - `queue.js`         the capture queue and its lock
  *   - `crash.js`         the opt-in crash log

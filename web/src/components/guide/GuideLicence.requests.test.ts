@@ -68,3 +68,46 @@ describe('Q231: the research-preview notice heads the page', () => {
     expect(byLabel.get('No warranty, and no liability')).toMatch(/no liability for any loss/)
   })
 })
+
+/**
+ * 2026-11-21, the legal pass: the page no longer reads other companies'
+ * contracts for the person, its non-affiliation notice reaches the job boards
+ * and demo employers the app names, and it links the privacy notice.
+ */
+describe('the licence page after the legal pass', () => {
+  it('makes no claim that a provider’s terms permit production use', () => {
+    expect(prose).not.toMatch(/generally do permit/)
+    expect(prose).not.toMatch(/production use/)
+    expect(prose).toContain('written for businesses and developers')
+    // Not every provider is paid: two have free tiers.
+    expect(prose).toContain('Groq and OpenRouter also have free tiers')
+    expect(prose).not.toContain('Billed to you')
+  })
+
+  it('disclaims affiliation with the job boards and the demo employers too', () => {
+    for (const name of [
+      'LinkedIn',
+      'Indeed',
+      'Glassdoor',
+      'ZipRecruiter',
+      'HigherEdJobs',
+      'CRA job board',
+      'AcademicJobsOnline',
+      'AcademicCareers',
+      'Workday',
+      'Google',
+      'Stripe',
+      'Databricks',
+      'Rice University',
+      'Texas A&amp;M University',
+      'The University of Texas at Austin',
+    ])
+      expect(prose, name).toContain(name)
+    expect(prose).toContain('The demo records are invented')
+  })
+
+  it('links the privacy notice shipped with this build', () => {
+    expect(page).toContain("from '@jojo/service/core/privacy'")
+    expect(page).toMatch(/href=\{publicUrl\(PRIVACY_PAGE\)\}/)
+  })
+})

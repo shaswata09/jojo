@@ -207,7 +207,7 @@
     },
     "crash": {
       "title": "Absturzberichte und Nutzung",
-      "description": "Zwei getrennte Dinge, beide an – schalte eines davon hier oder später in den Einstellungen aus. Keines kann deine Einträge enthalten: keine Bewerbung, kein Dokument, keine Notiz, kein Profil, kein Gespräch.",
+      "description": "Zwei getrennte Dinge, und beide sind aus, solange du sie nicht einschaltest – hier oder später in den Einstellungen. Keines kann deine Einträge enthalten: keine Bewerbung, kein Dokument, keine Notiz, kein Profil, kein Gespräch.",
       "inReport": "Was in einem Bericht steht",
       "inError": "Die Fehlermeldung und wo in jojo sie auftrat.",
       "inStack": "Der Stacktrace, der den fehlgeschlagenen Code nennt.",
@@ -218,12 +218,13 @@
       "keep": "Absturzberichte behalten",
       "keepHint": "Der Fehler und wo er auftrat. Bleibt im Browser auf diesem Gerät.",
       "share": "Teilen, welche Funktionen ich nutze",
-      "shareHint": "Nur Zählungen – welche Bildschirme wie oft geöffnet werden. Nie, was darin steht.",
-      "usageNote": "Der zweite ist das Einzige, was jojo darüber sendet, was du TUST, und er kann nur Dinge aus einer festen Liste sagen – „der Tresor wurde geöffnet“, „eine Bewerbung wurde hinzugefügt“, „es sind 6–20 davon“. Er kann keinen Arbeitgeber, keine Rolle, keine Datei und nichts, was du getippt hast, nennen, weil diese Wörter nicht in der Liste stehen. Er geht an Google Analytics, damit wir sehen, welche Teile von jojo mehr Arbeit verdienen.",
+      "shareHint": "Nur Zählungen – welche Bildschirme wie oft geöffnet werden –, nie, was darin steht. Google Analytics speichert außerdem eine zufällige ID in diesem Browser und erfasst Grunddaten wie Browser, Gerätetyp, Sprache und das Land oder die Region, aus der deine Verbindung kommt.",
+      "usageNote": "Der zweite ist das Einzige, was jojo darüber sendet, was du TUST, und er kann nur Dinge aus einer festen Liste sagen – „der Tresor wurde geöffnet“, „eine Bewerbung wurde hinzugefügt“, „es sind 6–20 davon“. Er kann keinen Arbeitgeber, keine Rolle, keine Datei und nichts, was du getippt hast, nennen, weil diese Wörter nicht in der Liste stehen. Er geht an Google Analytics, damit wir sehen, welche Teile von jojo mehr Arbeit verdienen – zusammen mit dem, was Google Analytics jedem Bericht hinzufügt: einer zufälligen ID, die es in diesem Browser speichert, und Grunddaten wie Browser, Gerätetyp, Sprache und dem Land oder der Region, aus der deine Verbindung kommt. Wenn du ihn ausschaltest, wird diese ID gelöscht.",
       "bothOff": "Beide ausschalten",
       "save": "Auswahl speichern",
       "continueOff": "Mit beiden aus fortfahren",
-      "later": "Du kannst beides jederzeit in den Einstellungen ändern, und wenn du eines ausschaltest, wird auch verworfen, was es gesammelt hat."
+      "later": "Du kannst beides jederzeit in den Einstellungen ändern, und wenn du eines ausschaltest, wird auch verworfen, was es gesammelt hat.",
+      "privacy": "Datenschutzhinweis"
     },
     "extension": {
       "title": "Behalte die Stellen, auf die du dich bewirbst",

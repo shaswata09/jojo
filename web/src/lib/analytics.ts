@@ -88,14 +88,14 @@ export const ANALYTICS_CAPABILITY =
 const ENABLED_KEY = 'jojo/analytics/v1'
 
 /*
- * UNSET MEANS ON, and the shape of this expression is the whole point.
+ * UNSET MEANS THE DEFAULT, and the default is NO.
  *
- * `=== 'on'` would make an unanswered question read as "no", which was the old
- * default. Now only an explicit 'off' turns it off, so somebody who has never
- * opened Settings gets the default from `CRASH_DEFAULTS` and somebody who said
- * no keeps saying no across restarts. Reading it as `!== 'off'` rather than
- * storing a default on first launch means there is no migration and no moment
- * where a fresh install and a cleared storage disagree.
+ * Only a stored 'on' or 'off' is an answer. Anything else — nothing stored, an
+ * empty string — falls through to `CRASH_DEFAULTS.enabled`, which is false
+ * since the owner reversed it on 2026-11-21 (pre-ticked boxes are not consent;
+ * see `core/crash-config.ts`). Reading the stored value as `!== 'off'` is
+ * unchanged, so somebody who answered keeps exactly the answer they gave, and
+ * there is still no migration and no first-launch write.
  */
 /** Whether usage reporting is on. Its own key: agreeing to crashes is not this. */
 export function analyticsEnabled(): boolean {
@@ -107,16 +107,18 @@ export function analyticsEnabled(): boolean {
    * person declined and we wrote 'off' (handled above), or they have NOT BEEN
    * ASKED YET.
    *
-   * This used to return `CRASH_DEFAULTS.enabled` — true — for the unasked case,
-   * and `main.tsx` reports `app_opened` at module scope before React even
+   * This used to return `CRASH_DEFAULTS.enabled` — then true — for the unasked
+   * case, and `main.tsx` reports `app_opened` at module scope before React even
    * mounts. So a first-run user in the EU was reported to Google before the
-   * reporting question had been drawn on screen, under a comment two lines
-   * above the call claiming it fires "only when the person using it has said
-   * yes". They had not said anything.
+   * reporting question had been drawn on screen. `wasOffered('crash')` is the
+   * one fact that separates "asked" from "not asked", and it stays even now
+   * the default is off: it is what keeps a future flip of the default from
+   * reporting before the question exists, which was a bug whatever the policy.
    *
-   * A default of on is a policy choice and it stays; reporting before the
-   * question exists is not a policy, it is a bug. `wasOffered('crash')` is the
-   * one fact that separates them.
+   * It is also why `Onboarding` must not mark the stage offered when it asked
+   * nothing (a build with both capabilities off). That silent mark, plus a
+   * later build that turned analytics on, read here as "asked, and took the
+   * default" — consent from a dialog that was never drawn.
    */
   return wasOffered('crash') && CRASH_DEFAULTS.enabled
 }
@@ -283,13 +285,49 @@ type FirebaseAnalytics = import('firebase/analytics').Analytics
  * overrides it, and jojo reports events from every screen. The origin alone is
  * what a vendor gets — no path, no query, no record.
  */
+/*
+ * …and the advertising half of Google Analytics, which jojo has no use for.
+ *
+ * `allow_google_signals` is what joins a GA client id to the visitor's signed-in
+ * Google account, for cross-device reports and demographics; it is on whenever
+ * the property has it enabled in the console, and the property's console is not
+ * something a reader of this repository can check. `allow_ad_personalization_
+ * signals` is what lets the data feed ad personalisation. A person who agreed
+ * to "counts of which screens are opened" agreed to neither, so both are turned
+ * off here, in the code, where the claim can be read and a test can pin it —
+ * rather than in a console setting that a property owner can flip back.
+ */
 export const ANALYTICS_INIT = {
   config: {
     send_page_view: false,
     page_location: typeof location === 'undefined' ? '' : location.origin,
     page_referrer: '',
     page_title: 'jojo',
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false,
   },
+} as const
+
+/**
+ * Google consent mode, set to "denied" for every advertising purpose.
+ *
+ * Handed to `setConsent` BEFORE `initializeAnalytics`, because that is the
+ * order in which it is a DEFAULT: the SDK keeps a settings object passed
+ * before initialisation and issues `gtag('consent', 'default', …)` ahead of
+ * its first `config` (`@firebase/analytics` `_setConsentDefaultForInit`, read
+ * in `initializeAnalyticsInternal`). Called after, it is an `update` — which
+ * arrives after the config call has already gone out with the SDK's own
+ * default of "granted" for every type.
+ *
+ * `analytics_storage` is deliberately absent. It is the one jojo asked for —
+ * the usage switch IS consent to it — and denying it would turn the switch the
+ * person moved into a switch that does nothing. Everything listed here is
+ * advertising, which jojo does not do and nobody was asked about.
+ */
+export const ANALYTICS_CONSENT = {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
 } as const
 
 let loading: Promise<FirebaseAnalytics | null> | null = null
@@ -316,6 +354,8 @@ async function ensureLoaded(): Promise<FirebaseAnalytics | null> {
       // `getApps()` first: React's StrictMode double-invokes effects in
       // development, and initialising a second app with the same name warns.
       const firebaseApp = app.getApps()[0] ?? app.initializeApp(FIREBASE_CONFIG)
+      // Before initialising, so it is the consent DEFAULT — see ANALYTICS_CONSENT.
+      analyticsSdk.setConsent(ANALYTICS_CONSENT)
       /*
        * `initializeAnalytics`, not `getAnalytics`. They differ in exactly one
        * way that matters: only the first takes settings, and `getAnalytics`

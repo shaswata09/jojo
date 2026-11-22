@@ -154,14 +154,16 @@
     "what": "Quand quelque chose plante, jojo peut conserver l’erreur pour que vous la relisiez — utile quand ce qui a échoué a déjà disparu. Un rapport contient le message d’erreur, l’endroit de jojo où c’est arrivé et la trace de la pile. Il ne contient jamais vos candidatures, documents, notes, profil ou conversations, et les clés d’API, adresses et adresses e-mail sont retirées avant l’écriture du rapport.",
     "where": "Les rapports sont conservés sur ce téléphone et envoyés aussi à Firebase Crashlytics, qui ajoute le modèle de votre appareil, sa version de système et un identifiant aléatoire servant à compter combien de personnes rencontrent le même plantage. Google les conserve 90 jours. Aucune de vos fiches ne part avec eux.",
     "report": "Signaler les plantages",
-    "reportHint": "Activé, pour que nous voyions les plantages que vous rencontrez. Désactivez-le et rien n’est enregistré.",
+    "reportHint": "Désactivé tant que vous ne l’activez pas. Activé, un plantage que vous rencontrez est envoyé à Firebase Crashlytics pour pouvoir être corrigé ; désactivé, rien n’est enregistré et les rapports pas encore envoyés sont supprimés.",
     "usage": "Partager les fonctions que j’utilise",
-    "usageHint": "Des comptages uniquement, issus d’une liste fixe — jamais le contenu de vos fiches.",
-    "usageDetail": "Il ne peut dire que des choses issues d’une liste fixe : quel écran a été ouvert, qu’une candidature a été ajoutée, combien il y en a à peu près. Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi. Envoyé à Google Analytics. Quand c’est désactivé, jojo désactive aussi les vues d’écran et les comptages de session que Firebase collecterait de lui-même.",
+    "usageHint": "Des comptages uniquement, issus d’une liste fixe — jamais le contenu de vos fiches. Envoyé avec un identifiant d’instance d’application aléatoire et des informations de base sur l’appareil.",
+    "usageDetail": "Il ne peut dire que des choses issues d’une liste fixe : quel écran a été ouvert, qu’une candidature a été ajoutée, combien il y en a à peu près. Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi. Envoyé à Google Analytics, qui y ajoute un identifiant d’instance d’application aléatoire et des informations de base comme le modèle de l’appareil, la version du système, la langue, la version de l’application et le pays ou la région d’où vient votre connexion. Quand c’est désactivé, jojo désactive aussi les vues d’écran et les comptages de session que Firebase collecterait de lui-même, et le désactiver supprime cet identifiant ainsi que tout ce qui n’a pas encore été envoyé.",
     "kept_one": "{{count}} rapport conservé",
     "kept_other": "{{count}} rapports conservés",
     "nothingBroken": "Rien n’a planté depuis que vous l’avez activé.",
-    "notRecording": "Rien n’est enregistré."
+    "notRecording": "Rien n’est enregistré.",
+    "restartNote": "Désactivé. jojo cesse aussitôt d’envoyer et a supprimé les rapports pas encore envoyés ; le capteur de plantages propre à Crashlytics finit de se désactiver au prochain démarrage de jojo.",
+    "privacy": "Avis de confidentialité"
   },
   "date": {
     "today": "Aujourd’hui",
@@ -290,7 +292,7 @@
   },
   "reporting": {
     "title": "Rapports de plantage et utilisation",
-    "description": "Deux choses distinctes, toutes deux activées. Désactivez l’une ou l’autre ici ou plus tard dans Réglages. Aucune ne peut transporter vos fiches : ni candidature, ni document, ni note, ni profil, ni conversation.",
+    "description": "Deux choses distinctes, et toutes deux restent désactivées tant que vous ne les activez pas — ici ou plus tard dans Réglages. Aucune ne peut transporter vos fiches : ni candidature, ni document, ni note, ni profil, ni conversation.",
     "bothOff": "Tout désactiver",
     "save": "Enregistrer mes choix",
     "inReport": "Ce que contient un rapport de plantage",
@@ -305,9 +307,10 @@
       "secrets": "· Vos clés d’API, les adresses que vous utilisez ou toute adresse e-mail — retirées avant l’écriture du rapport, pas avant son envoi."
     },
     "crashHint": "L’erreur et l’endroit où elle s’est produite. Envoyé à Firebase Crashlytics.",
-    "usageHint": "Des comptages uniquement — quels écrans sont ouverts, à quelle fréquence. Jamais leur contenu.",
-    "usageDetail": "Le second est la seule chose que jojo envoie sur ce que vous FAITES, et il ne peut dire que des choses issues d’une liste fixe — « le coffre a été ouvert », « une candidature a été ajoutée », « il y en a entre 6 et 20 ». Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi, car ces mots ne sont pas dans la liste. Le désactiver arrête aussi les vues d’écran que Firebase collecterait de lui-même.",
-    "later": "Les deux sont dans Réglages quand vous voulez les changer, et en désactiver un efface ce qu’il avait conservé."
+    "usageHint": "Des comptages uniquement — quels écrans sont ouverts, à quelle fréquence — jamais leur contenu. Envoyé avec un identifiant d’instance d’application aléatoire et des informations de base sur l’appareil.",
+    "usageDetail": "Le second est la seule chose que jojo envoie sur ce que vous FAITES, et il ne peut dire que des choses issues d’une liste fixe — « le coffre a été ouvert », « une candidature a été ajoutée », « il y en a entre 6 et 20 ». Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi, car ces mots ne sont pas dans la liste. Firebase Analytics y ajoute un identifiant d’instance d’application aléatoire et des informations de base comme le modèle de l’appareil, la version du système, la langue, la version de l’application et le pays ou la région d’où vient votre connexion. Le désactiver arrête aussi les vues d’écran que Firebase collecterait de lui-même, et supprime cet identifiant ainsi que tout ce qui n’a pas encore été envoyé.",
+    "later": "Les deux sont dans Réglages quand vous voulez les changer, et en désactiver un efface ce qu’il avait conservé.",
+    "privacy": "Avis de confidentialité"
   },
   "stagePicker": {
     "label": "Étape de {{name}} : {{stage}}. Changer d’étape",

@@ -59,15 +59,16 @@ import { REPORTING } from '@/lib/reporting-config'
  * `BuildConfig.FIREBASE_JSON_RAW` at gradle time and iOS into `Info.plist` under
  * `firebase_json_raw` at `pod install` time. Metro never sees it.
  *
- * ## Nothing is on until the question has actually been ASKED
+ * ## Nothing is on until somebody has actually said YES
  *
- * `CRASH_DEFAULTS.enabled` is true, and it is the default for somebody who has
- * been asked and not answered — not for somebody who has never been asked.
- * Reading it as "unset means on" alone opted a fresh install in: measured on an
- * empty AsyncStorage, `analyticsEnabled()` returned true and `index.ts` sent
- * `app_opened` from a phone whose owner had not yet been shown `ReportingStep`.
- * `readOffered().reporting` is the missing half — the onboarding sequencer marks
- * that stage when the sheet is dismissed, however it is dismissed.
+ * `CRASH_DEFAULTS.enabled` is false since the owner reversed it on 2026-11-21
+ * (a switch that starts on is a pre-ticked box, which is not consent — see
+ * `core/crash-config.ts`). It used to be true, and reading it as "unset means
+ * on" opted a fresh install in: measured on an empty AsyncStorage,
+ * `analyticsEnabled()` returned true and `index.ts` sent `app_opened` from a
+ * phone whose owner had not yet been shown `ReportingStep`. The
+ * `readOffered().reporting` check that fixed that stays, so a future flip of
+ * the default cannot bring it back.
  *
  * ## Every event still goes through the closed list
  *
@@ -101,6 +102,7 @@ let resolved = false
 let analytics: {
   logEvent: (name: string, params?: Record<string, unknown>) => Promise<void>
   setAnalyticsCollectionEnabled: (enabled: boolean) => Promise<void>
+  resetAnalyticsData: () => Promise<void>
 } | null = null
 
 function nativeAnalytics() {
@@ -120,24 +122,19 @@ function nativeAnalytics() {
 
 /** Whether usage reporting is on. Its own key: agreeing to crashes is not this. */
 /*
- * UNSET MEANS ON ONCE ASKED, and the two halves of that are the whole point.
+ * UNSET MEANS THE DEFAULT, AND THE DEFAULT IS NO.
  *
- * `=== 'on'` would make an unanswered question read as "no", which was the old
- * default. Only an explicit 'off' turns it off, so somebody who has never opened
- * Settings gets the default from `CRASH_DEFAULTS` and somebody who said no keeps
- * saying no across restarts. Reading it as `!== 'off'` rather than storing a
- * default on first launch means there is no migration and no moment where a
- * fresh install and a cleared storage disagree.
+ * Only a stored 'on' or 'off' is an answer, read as `!== 'off'` exactly as it
+ * always was, so somebody who answered keeps their answer across restarts and
+ * there is no migration. Anything else falls to `CRASH_DEFAULTS.enabled`,
+ * false since 2026-11-21.
  *
- * The second half is newer and was a live defect. `CRASH_DEFAULTS.enabled` is
- * the answer to "they were asked and did not choose" — but on a fresh install
- * nobody has been asked yet, and this returned true anyway, which is reporting
- * before consent rather than a default. So an unset preference also needs the
- * reporting stage of onboarding to have been PUT to them.
- *
- * Deliberately not "onboarding finished": the stage is marked whenever
- * `ReportingStep` is dismissed, including by swiping it away, and the thing that
- * matters is that the question was on screen.
+ * The "once asked" half is from when that default was true: on a fresh install
+ * nobody had been asked, and this returned true anyway, which is reporting
+ * before consent rather than a default. It is kept so the default cannot move
+ * back and bring that with it. `ReportingStep` writes an answer on every exit
+ * path — swiping it away is a no for both — so unset-after-asked is only a
+ * failed write.
  */
 export async function analyticsEnabled(): Promise<boolean> {
   try {
@@ -165,6 +162,31 @@ export async function setAnalyticsEnabled(on: boolean): Promise<void> {
     /* a phone that cannot write its settings has a bigger problem */
   }
   await applyCollection(on)
+  if (!on) await forgetAnalyticsIdentity()
+}
+
+/**
+ * Off also means forgotten — the phone's twin of the web's
+ * `forgetAnalyticsIdentity`.
+ *
+ * Stopping collection stops NEW events and leaves the rest: the app-instance id
+ * the earlier events were filed under, and any events batched on the device
+ * and not yet uploaded. `resetAnalyticsData` clears both, so somebody who says
+ * no does not keep carrying the id their yes was counted under, and a batch
+ * queued before the no is not sent after it. A later yes starts a new id, which
+ * is the honest outcome — it is a new consent, not the old one resumed.
+ *
+ * Only on the switch moving to off, not at every launch: with collection off
+ * nothing is queued, and resetting on each start would mint an id per launch
+ * for nothing. Resolves the SDK, which constructs it if this is the first
+ * call — harmless, since collection is already off by then.
+ */
+async function forgetAnalyticsIdentity(): Promise<void> {
+  try {
+    await nativeAnalytics()?.resetAnalyticsData()
+  } catch {
+    /* analytics must never take a feature down */
+  }
 }
 
 /**

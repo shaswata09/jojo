@@ -209,7 +209,12 @@
     "unreachable": "Impossible de joindre ce site d’offres.",
     "status": "Ce site d’offres a répondu {{status}}.",
     "browserOnly": "{{host}} n’affiche ses offres qu’à un vrai navigateur ; il ne peut donc pas être lu depuis le téléphone. Sur un ordinateur, l’extension de navigateur jojo peut le lire.",
-    "cancelled": "La lecture a été annulée."
+    "cancelled": "La lecture a été annulée.",
+    "noAutomatedAccess": "{{host}} n’autorise pas la lecture automatisée dans ses conditions d’utilisation, donc jojo ne le lira pas de façon programmée. Ouvrez-y vous-même une offre et enregistrez-la plutôt dans jojo.",
+    "robots": "{{host}} demande aux lecteurs automatisés de ne pas ouvrir cette page (son robots.txt l’interdit), donc jojo ne l’a pas lue.",
+    "dailyBudget": "jojo a déjà lu {{pages}} pages de {{host}} aujourd’hui, soit autant qu’il en lit sur un même site en une journée. Le reste pourra être lu demain.",
+    "tooSoon": "{{host}} demande aux lecteurs automatisés d’attendre {{seconds}} secondes entre deux pages, donc jojo s’est arrêté ici. Le reste pourra être lu lors d’un prochain passage.",
+    "botWall": "Ce site d’offres demande une vérification humaine ; ouvrez-le vous-même."
   },
   "timelineForm": {
     "title": "Donnez-lui un titre que vous reconnaîtrez.",

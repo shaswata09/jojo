@@ -163,6 +163,30 @@ describe('redaction', () => {
     expect(redact('/data/data/dev.jojo/files/vault.db')).toContain('/data/data/dev.jojo/«path».db')
   })
 
+  it('redacts an Android content URI and a shared-storage path', () => {
+    /*
+     * The document picker hands back `content://` URIs, and a downloaded offer
+     * letter lives under `/storage/emulated/0/Download`. Neither was anchored
+     * by any rule above, so a failed read quoted the user's file name whole.
+     * The authority and the volume are kept — they say WHICH provider or disk
+     * failed, and both are public — and the file's own name goes.
+     */
+    const picked = redact(
+      'open failed: content://com.android.externalstorage.documents/document/primary%3ADownload%2FOffer%20Fujitsu.pdf',
+    )
+    expect(picked).not.toContain('Fujitsu')
+    expect(picked).toContain('content://com.android.externalstorage.documents/«path»')
+
+    const shared = redact('ENOENT: open /storage/emulated/0/Download/Offer - Fujitsu - signed.pdf')
+    expect(shared).not.toContain('Fujitsu')
+    expect(shared).toContain('/storage/emulated/0/«path».pdf')
+
+    // No extension to anchor on: the tail still goes, up to the whitespace.
+    expect(redact('mkdir /storage/emulated/0/Documents/Fujitsu failed')).toBe(
+      'mkdir /storage/emulated/0/«path» failed',
+    )
+  })
+
   it('removes an email address', () => {
     // The profile holds one, and a validation error quotes the value it rejected.
     expect(redact('invalid contact: a.person@example.co.uk')).not.toContain('a.person@example')
@@ -216,6 +240,29 @@ describe('turning a throw into a report', () => {
       const report = toCrashReport(thrown, 'boot', at, 'c')
       expect(report.message.length, String(thrown)).toBeGreaterThan(0)
     }
+  })
+
+  it('sends only the TYPE of a thrown non-Error, never its contents', () => {
+    /*
+     * This used to `JSON.stringify` the value. Redaction catches what has a
+     * shape — a key, a path, an address — and an employer, a note or a job
+     * title has none, so a thrown record went out whole. Now nothing of the
+     * value is read but its type.
+     */
+    const record = { employer: 'Fujitsu', notes: 'second interview went badly' }
+    expect(toCrashReport(record, 'boot', at, 'c').message).toBe('non-Error: object')
+    expect(toCrashReport(['Fujitsu'], 'boot', at, 'c').message).toBe('non-Error: array')
+    expect(toCrashReport(42, 'boot', at, 'c').message).toBe('non-Error: number')
+    // A thrown string is written by code, like an Error's message, and is kept
+    // (redacted) for the same reason a message is.
+    expect(toCrashReport('plain words', 'boot', at, 'c').message).toBe('plain words')
+  })
+
+  it('survives a revoked proxy, which throws on almost any inspection', () => {
+    const { proxy, revoke } = Proxy.revocable({}, {})
+    revoke()
+    expect(() => toCrashReport(proxy, 'boot', at, 'c')).not.toThrow()
+    expect(toCrashReport(proxy, 'boot', at, 'c').message).toBe('non-Error: object')
   })
 
   it('does not throw on a value whose own toString throws', () => {
@@ -276,19 +323,19 @@ describe('the two dials', () => {
     expect(crashReportingOn('off', { enabled: false })).toBe(false)
   })
 
-  it('ships on where the build allows it, and the build is still the veto', () => {
-    // Changed deliberately — see the header of `crash-config.ts`. The default
-    // is on so that the crashes reported are a sample of everybody rather than
-    // of the people who go looking through Settings.
-    expect(CRASH_DEFAULTS.enabled).toBe(true)
-    expect(crashReportingOn('allowed', CRASH_DEFAULTS)).toBe(true)
+  it('ships OFF, so only a yes somebody gave turns it on', () => {
     /*
-     * And this is the line that keeps the default honest: a build that did not
-     * ask for the capability reports nothing, whatever the default says. That
-     * is what a packager who needs opt-in ships, and it is why flipping the
-     * default above cannot turn reporting on anywhere it was previously off.
+     * Reversed by the owner on 2026-11-21 — see the header of
+     * `crash-config.ts`. A switch that starts on is a pre-ticked box, and a
+     * pre-ticked box is not consent (CJEU, Planet49). Both setup steps draw
+     * their switches from this value, so if it reads true again they are
+     * pre-ticked again, on both platforms, with no other test to say so.
      */
+    expect(CRASH_DEFAULTS.enabled).toBe(false)
+    expect(crashReportingOn('allowed', CRASH_DEFAULTS)).toBe(false)
     expect(crashReportingOn('off', CRASH_DEFAULTS)).toBe(false)
+    // A stored yes still turns it on: the default answers only the unanswered.
+    expect(crashReportingOn('allowed', { ...CRASH_DEFAULTS, enabled: true })).toBe(true)
   })
 
   it('reads only an explicit yes out of a build flag', () => {

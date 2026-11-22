@@ -306,3 +306,82 @@ describe('what a board read listed', () => {
     expect(listedByBoard('pipeline:listed', 'https://mail.example/inbox')).toBe(false)
   })
 })
+
+describe('a pipeline that names a site whose terms forbid automated reading', () => {
+  /*
+   * LinkedIn's and Indeed's terms forbid automated access, and the scout runs
+   * unattended. `board.search` refuses them, but the round still told the
+   * model to read linkedin.com, and logged "Read https://www.linkedin.com/…"
+   * for the refusal — the log, which is what an unattended pipeline leaves
+   * behind, said the opposite of what happened.
+   */
+  const scout: Pipeline = {
+    ...pipeline,
+    id: 'pipeline:forbidden',
+    source: 'linkedin.com/jobs, cra.org/ads',
+  }
+
+  function capturing(agent: RoundDeps['agent']) {
+    const { deps } = harness(agent)
+    const lines: { text: string; tone: PipelineLogEntry['tone'] }[] = []
+    deps.note = (_id, text, tone) => lines.push({ text, tone })
+    return { deps, lines }
+  }
+
+  const searched = (url: string, output: unknown) =>
+    ({
+      type: 'step',
+      step: {
+        id: 's1',
+        name: 'board.search',
+        title: 'Read a job board',
+        effect: 'read',
+        destructive: false,
+        args: { url },
+        status: 'done',
+        output,
+      },
+    }) as never
+
+  it('leaves the site out of the prompt and says why in the log, every round', async () => {
+    let prompt = ''
+    const { deps, lines } = capturing(async (options) => {
+      prompt = options.prompt
+      return { messages: [], answer: null, steps: [], stopped: 'answered', offered: null }
+    })
+    await runPipelineRound(scout, deps)
+    expect(prompt).toContain('https://cra.org/ads')
+    expect(prompt).not.toContain('linkedin')
+    expect(lines).toContainEqual({
+      text: expect.stringContaining('linkedin.com does not allow automated reading'),
+      tone: 'note',
+    })
+  })
+
+  it('tells the model not to search when every board it names is refused', async () => {
+    let prompt = ''
+    const { deps } = capturing(async (options) => {
+      prompt = options.prompt
+      return { messages: [], answer: null, steps: [], stopped: 'answered', offered: null }
+    })
+    await runPipelineRound({ ...scout, source: 'uk.indeed.com' }, deps)
+    expect(prompt).not.toContain('indeed')
+    expect(prompt).toContain('do not call board.search')
+  })
+
+  it('logs "Read" only for a board.search that read', async () => {
+    const { deps, lines } = capturing(async (options) => {
+      options.onEvent?.(
+        searched('https://www.linkedin.com/jobs', {
+          ok: false,
+          hint: 'linkedin.com does not allow automated reading in its terms of use.',
+        }),
+      )
+      options.onEvent?.(searched('https://cra.org/ads', { ok: true, postings: [] }))
+      return { messages: [], answer: null, steps: [], stopped: 'answered', offered: null }
+    })
+    await runPipelineRound(scout, deps)
+    const reads = lines.filter((l) => l.text.startsWith('Read '))
+    expect(reads).toEqual([{ text: 'Read https://cra.org/ads', tone: 'note' }])
+  })
+})

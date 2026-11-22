@@ -48,7 +48,7 @@ import type { ToolHost } from '../agent/execute'
 import { pipelinePrompt, proposingHost, toolsForKind } from '../agent/pipelines'
 import { dayOf } from '../core/project'
 import { AUTO_CAPABLE, WORKING_GAP_MS, isDue, shouldOfferShutdown } from '../core/proposal'
-import { parseSources } from '../core/board'
+import { noAutomatedAccess, noAutomatedAccessReason, parseSources, refusedSources } from '../core/board'
 import { sectorRule } from '../core/profile'
 import { twinBriefing, twinState } from '../core/twin'
 import type { GraphSnapshot } from '../core/snapshot'
@@ -629,6 +629,20 @@ export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Pro
   const stop = roundStop()
   cancel.current = stop
 
+  /*
+   * A board this pipeline names on a site whose terms forbid automated reading
+   * (`NO_AUTOMATED_ACCESS`) is left out of the prompt and never read, and the
+   * log says so every round — the log is the whole of what an unattended
+   * pipeline leaves behind, and a site silently skipped reads as a board with
+   * nothing on it. A pipeline stored before the rule existed lands here too:
+   * it keeps running on its other boards.
+   */
+  if (kind === 'scout') {
+    for (const site of refusedSources(pipeline.source)) {
+      note(pipeline.id, noAutomatedAccessReason(site), 'note')
+    }
+  }
+
   // The model's own prose, kept so the proposing host can use the latest of
   // it as a rationale. See `ProposalSink.rationale`.
   let latest = ''
@@ -812,9 +826,20 @@ function promptFor(
     const sector = profile ? sectorRule(profile) : ''
     if (sector) parts.push(sector)
 
-    const boards = parseSources(pipeline.source)
+    /*
+     * Without the sites whose terms forbid automated reading: telling the model
+     * to read linkedin.com and then refusing it costs a step and invites a
+     * retry. `board.search` refuses them anyway, and the round's log says why
+     * (`runPipelineRound`).
+     */
+    const named = parseSources(pipeline.source)
+    const boards = named.filter((url) => noAutomatedAccess(url) === null)
     if (boards.length > 0) {
       parts.push(`The boards to read, one at a time: ${boards.join(', ')}.`)
+    } else if (named.length > 0) {
+      parts.push(
+        'None of the boards this search names may be read automatically, so do not call board.search — work from the records instead.',
+      )
     } else if (pipeline.source && pipeline.source !== '—') {
       parts.push(
         `They described where to look as “${pipeline.source}”, which is not an address you can open — work from the records instead.`,
@@ -845,6 +870,14 @@ function recordStep(
    */
   if (step.effect === 'read') {
     if (step.name !== 'board.search' || step.status !== 'done') return
+    /*
+     * Only a read that READ. A refused board — a forbidden site, robots.txt, a
+     * bot check, the day's budget — still finishes as a `done` step whose
+     * output is `{ ok: false, hint }`, and logging "Read linkedin.com" for it
+     * said the opposite of what happened. Its reason reaches the model, and
+     * the forbidden sites are logged once per round with theirs.
+     */
+    if ((step.output as { ok?: unknown } | null | undefined)?.ok !== true) return
     const url = (step.args as { url?: unknown } | null)?.url
     note(pipelineId, `Read ${typeof url === 'string' ? url : 'a job board'}`, 'note')
     return

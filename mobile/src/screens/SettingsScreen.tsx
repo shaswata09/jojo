@@ -18,6 +18,7 @@ import {
   PROVIDERS,
   cleanKey,
   isLoopbackEndpoint,
+  isRemoteEndpoint,
   parseContextWindow,
   providerMeta,
   type ProviderMeta,
@@ -636,6 +637,28 @@ export function SettingsScreen() {
                   onChangeText={onEndpointChange}
                 />
               )}
+              {/*
+               * A server that is not on this phone or its network. "Ollama" and
+               * "a local server" name a kind of server, not a place, and neither
+               * is `cloud`, so the consent notice above never appears for them —
+               * while the picker still calls them "on a machine you control".
+               * Somebody who types a rented server's public address sends their
+               * records to it, and this says so. Same rule as the web panel,
+               * from core (`isRemoteEndpoint`).
+               */}
+              {!provider.fixedEndpoint && isRemoteEndpoint(endpoint) ? (
+                <View
+                  accessibilityRole="text"
+                  style={[
+                    styles.warning,
+                    { backgroundColor: c.warningSoft, borderColor: c.warningBorder },
+                  ]}
+                >
+                  <Txt size="xs" tone="warning">
+                    {t('settings.model.remote')}
+                  </Txt>
+                </View>
+              ) : null}
 
               {/* Written straight to the settings document, which lives in
                 AsyncStorage BESIDE the graph rather than inside it — so a
@@ -1127,17 +1150,24 @@ function ProviderPicker({
 }
 
 /**
- * What choosing this provider actually commits you to. The phone's copy of the
- * web panel's `CloudTerms`, and deliberately the same words.
+ * What choosing this provider actually commits you to. The phone's rendering
+ * of the web panel's `CloudTerms`: the words are core's
+ * (`core/cloud-terms.ts`), so the two cannot say different things.
  *
- * Every provider offered here sells production use, which is what the bill
- * buys. NVIDIA's free tier, licensed for evaluation only, had different words
- * until it was removed altogether (Q345).
+ * In the reader's language: core's English is read through this screen's `t`
+ * under `settings.cloudNotice.*`. It used to be rendered with no `t()` on the
+ * path, which left the consent notice English in all twenty languages.
+ *
+ * It does not say whether a provider's terms allow a personal job search —
+ * that is a reading of another company's contract and not this app's to give;
+ * the notice says the terms are written for businesses and developers and
+ * links them. (NVIDIA's evaluation-only API was removed rather than explained,
+ * Q345.)
  */
 function CloudTerms({ provider }: { provider: ProviderMeta }) {
   const { t } = useTranslation('screens')
   const { colors: c } = useTheme()
-  const terms = cloudTerms(provider)
+  const terms = cloudTerms(provider, (key, options) => t(`settings.cloudNotice.${key}`, options))
   const name = provider.label.split(' \u2014')[0]
   // Without the parenthetical, for the possessive and the links.
   const short = name.replace(/\s*\([^)]*\)\s*$/, '')

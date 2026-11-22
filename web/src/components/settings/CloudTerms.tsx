@@ -18,19 +18,32 @@ import type { ProviderMeta } from '@jojo/service/core/provider'
  *    a phrase people skim. Applications, notes, CV text, and the names and email
  *    addresses of referees and recruiters — those last are somebody ELSE's
  *    personal details, which is the part nobody thinks about.
- * 2. What it costs, and on whose terms.
+ *    And when: not only in the chat, but in every background task that uses
+ *    the selected model (the duplicate check at Save, scout readings, fit
+ *    readings, tailoring, compaction).
+ * 2. What it costs, and on whose terms — a bill for some, a free tier with
+ *    limits for others, and terms written for businesses and developers that
+ *    the person has to check against their own use.
  * 3. Who carries the consequence. jojo is not a party to the agreement: it ships
  *    no key and makes no call of its own, so the account, the bill and any
  *    breach are the user's. Saying so is not a disclaimer to hide behind, it is
  *    the accurate description of who signed what.
  *
- * Every provider offered here sells production use; that is what the bill is
- * for. NVIDIA's free tier, which did not, had its own notice until it was
- * removed altogether (Q345).
+ * What this notice deliberately does NOT say is whether a provider's terms
+ * allow a personal job search. That is a reading of somebody else's contract,
+ * it changes when they rewrite it, and it is not this app's to answer; the
+ * notice says so and links the terms instead. (NVIDIA's evaluation-only API was
+ * the one case clear enough to act on, and it was removed rather than
+ * explained — Q345.)
+ *
+ * In the reader's language: the sentences are core's English
+ * (`CLOUD_TERMS_EN`), read through this panel's `t` under `cloudNotice.*`.
+ * They used to be rendered straight from core with no `t()` at all, which made
+ * the consent notice English in all twenty languages.
  */
 export function CloudTerms({ provider }: { provider: ProviderMeta }) {
   const { t } = useTranslation('settings')
-  const terms = cloudTerms(provider)
+  const terms = cloudTerms(provider, (key, options) => t(`cloudNotice.${key}`, options))
 
   // A dropdown entry can carry a trailing " — note", which is right in a list
   // and a stammer inside a sentence about to repeat it.

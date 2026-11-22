@@ -51,6 +51,7 @@
     "sources": "Fonti",
     "sourcesHint": "Il sito o la pagina carriere che tiene d'occhio. Separane più di una con virgole.",
     "sourceError": "Uno scout senza fonte non ha nulla da leggere.",
+    "sourceRefused": "{{sites}} non consente la lettura automatizzata nei suoi termini d'uso, quindi lo scout non lo leggerà. Rimuovilo, oppure apri lì gli annunci tu stesso e salvali con il pulsante dell'estensione di jojo.",
     "terms": {
       "twin": "Su cosa concentrarsi",
       "scout": "Termini di ricerca"

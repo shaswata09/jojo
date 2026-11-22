@@ -3,6 +3,7 @@ import type { ScoutReading } from '@jojo/service/core/proposal'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { listedByBoard } from '@jojo/service/react/use-pipelines'
 import { useRun } from '@jojo/service/react/use-tool'
+import { staleExtension } from '@/lib/capture-bridge'
 import { unshout } from '@/lib/fill-from-posting'
 import { isConfigured } from '@/lib/llm'
 import { useLabels } from '@/lib/labels-context'
@@ -31,7 +32,9 @@ import { nextToRead, readingQueue } from '@/lib/scout-reading-queue'
  * the reader opens only a posting's address that a board read listed or that
  * is on a board the pipeline watches, and never this machine or the person's
  * network
- * (`autoReadable`). Anything else waits for Approve. Nothing is read for a
+ * (`autoReadable`) — and never one on a site whose terms forbid automated
+ * reading (LinkedIn, Indeed, Glassdoor, ZipRecruiter: `NO_AUTOMATED_ACCESS`).
+ * Anything else waits for Approve. Nothing is read for a
  * pipeline that is paused or gone, and a read in flight is stopped when its
  * pipeline is paused, the settings change, or the reader unmounts.
  *
@@ -119,7 +122,15 @@ export function ScoutReader(): null {
         if (out.file && out.created === true) dropUnclaimed(out.file.id, url, proposal.id)
         return null
       }
-      if (!out.ok && (out.reason === nothingToReadWith() || out.reason === noBackgroundRoute())) {
+      if (
+        !out.ok &&
+        (out.reason === nothingToReadWith() ||
+          out.reason === noBackgroundRoute() ||
+          // An extension too old to read a page with a crawler's manners is
+          // never handed this read (`capturePage`); reloading it is the fix,
+          // and every card would otherwise be marked unreadable meanwhile.
+          out.reason === staleExtension())
+      ) {
         // Not this card's fault: it is read once something can open a page.
         tried.current.delete(proposal.id)
         setBlocked(true)

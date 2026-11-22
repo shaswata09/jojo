@@ -78,7 +78,7 @@
       "description": "Trascina qui il tuo CV e le tue dichiarazioni, o sceglili: vengono archiviati nella Cassaforte sotto {{bucket}}, dove il resto dell'app può raggiungerli.",
       "upload": "Carica un documento"
     },
-    "footer": "Gli stessi file dello <anchor>strumento File</anchor> della Cassaforte, filtrati su {{bucket}}. Trascina qui un documento o sceglilo e il file viene conservato in questo browser: nulla viene caricato altrove. Fai clic su uno per leggerlo."
+    "footer": "Gli stessi file dello <anchor>strumento File</anchor> della Cassaforte, filtrati su {{bucket}}. Trascina qui un documento o sceglilo e il file viene conservato in questo browser: non viene caricato, e il suo testo va a un modello solo se scegli un fornitore ospitato. Fai clic su uno per leggerlo."
   },
   "documentTile": {
     "open": "Apri {{name}}",

@@ -146,13 +146,15 @@
     "what": "Saat ada yang rusak, jojo dapat menyimpan kesalahannya agar Anda bisa membacanya kembali — berguna ketika hal yang gagal sudah hilang. Laporan berisi pesan kesalahan, di bagian jojo mana itu terjadi, dan stack trace. Laporan tidak pernah berisi lamaran, dokumen, catatan, profil, atau percakapan Anda, dan kunci API, alamat, serta alamat email dihapus sebelum laporan ditulis.",
     "where": "Laporan disimpan di ponsel ini, dan juga dikirim ke Firebase Crashlytics, yang menambahkan model perangkat Anda, versi OS-nya, dan id acak yang dipakai untuk menghitung berapa orang mengalami kerusakan yang sama. Google menyimpannya selama 90 hari. Tidak ada entri Anda yang ikut terkirim.",
     "report": "Laporkan kerusakan",
-    "reportHint": "Aktif, agar kerusakan yang Anda alami dapat kami lihat. Matikan dan tidak ada yang dicatat.",
+    "reportHint": "Mati kecuali Anda menyalakannya. Jika aktif, kerusakan yang Anda alami dikirim ke Firebase Crashlytics agar dapat diperbaiki; jika mati, tidak ada yang dicatat dan laporan yang belum terkirim dihapus.",
     "usage": "Bagikan fitur yang saya gunakan",
-    "usageHint": "Hanya hitungan, dari daftar tetap — tidak pernah isi entri Anda.",
-    "usageDetail": "Hanya dapat menyebutkan hal dari daftar tetap — layar mana yang dibuka, bahwa sebuah lamaran ditambahkan, kira-kira berapa jumlahnya. Tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik. Dikirim ke Google Analytics. Jika ini dimatikan, jojo juga mematikan tampilan layar dan hitungan sesi yang akan dikumpulkan Firebase dengan sendirinya.",
+    "usageHint": "Hanya hitungan, dari daftar tetap — tidak pernah isi entri Anda. Dikirim bersama ID instans aplikasi acak dan detail dasar perangkat.",
+    "usageDetail": "Hanya dapat menyebutkan hal dari daftar tetap — layar mana yang dibuka, bahwa sebuah lamaran ditambahkan, kira-kira berapa jumlahnya. Tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik. Dikirim ke Google Analytics, yang menambahkan ID instans aplikasi acak dan hal dasar seperti model perangkat, versi OS, bahasa, versi aplikasi, serta negara atau wilayah asal koneksi Anda. Jika ini dimatikan, jojo juga mematikan tampilan layar dan hitungan sesi yang akan dikumpulkan Firebase dengan sendirinya, dan mematikannya menghapus ID itu dan apa pun yang belum terkirim.",
     "kept_other": "{{count}} laporan disimpan",
     "nothingBroken": "Tidak ada yang rusak sejak Anda mengaktifkan ini.",
-    "notRecording": "Tidak ada yang dicatat."
+    "notRecording": "Tidak ada yang dicatat.",
+    "restartNote": "Dimatikan. jojo langsung berhenti mengirim dan telah menghapus laporan yang belum terkirim; penangkap kerusakan milik Crashlytics sendiri selesai dimatikan saat jojo dimulai lagi.",
+    "privacy": "Pemberitahuan privasi"
   },
   "date": {
     "today": "Hari ini",
@@ -279,7 +281,7 @@
   },
   "reporting": {
     "title": "Laporan kerusakan dan penggunaan",
-    "description": "Dua hal terpisah, keduanya aktif. Matikan salah satunya di sini atau nanti di Pengaturan. Tidak satu pun dapat membawa entri Anda: baik lamaran, dokumen, catatan, profil, maupun percakapan.",
+    "description": "Dua hal terpisah, dan keduanya mati kecuali Anda menyalakannya — di sini atau nanti di Pengaturan. Tidak satu pun dapat membawa entri Anda: baik lamaran, dokumen, catatan, profil, maupun percakapan.",
     "bothOff": "Matikan keduanya",
     "save": "Simpan pilihan",
     "inReport": "Isi laporan kerusakan",
@@ -294,9 +296,10 @@
       "secrets": "· Kunci API Anda, alamat yang Anda gunakan, atau alamat email apa pun — dihapus sebelum laporan ditulis, bukan sebelum dikirim."
     },
     "crashHint": "Kesalahan dan tempat terjadinya. Dikirim ke Firebase Crashlytics.",
-    "usageHint": "Hanya hitungan — layar mana yang dibuka, seberapa sering. Tidak pernah isinya.",
-    "usageDetail": "Yang kedua adalah satu-satunya hal yang dikirim jojo tentang apa yang Anda LAKUKAN, dan hanya dapat menyebutkan hal dari daftar tetap — “brankas dibuka”, “sebuah lamaran ditambahkan”, “ada 6–20 lamaran”. Ia tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik, karena kata-kata itu tidak ada di daftar. Mematikannya juga menghentikan tampilan layar yang akan dikumpulkan Firebase dengan sendirinya.",
-    "later": "Keduanya ada di Pengaturan kapan pun Anda ingin mengubahnya, dan mematikan salah satunya membuang apa yang telah disimpannya."
+    "usageHint": "Hanya hitungan — layar mana yang dibuka, seberapa sering — tidak pernah isinya. Dikirim bersama ID instans aplikasi acak dan detail dasar perangkat.",
+    "usageDetail": "Yang kedua adalah satu-satunya hal yang dikirim jojo tentang apa yang Anda LAKUKAN, dan hanya dapat menyebutkan hal dari daftar tetap — “brankas dibuka”, “sebuah lamaran ditambahkan”, “ada 6–20 lamaran”. Ia tidak dapat menyebut pemberi kerja, posisi, berkas, atau apa pun yang Anda ketik, karena kata-kata itu tidak ada di daftar. Firebase Analytics menambahkan ID instans aplikasi acak dan hal dasar seperti model perangkat, versi OS, bahasa, versi aplikasi, serta negara atau wilayah asal koneksi Anda. Mematikannya juga menghentikan tampilan layar yang akan dikumpulkan Firebase dengan sendirinya, serta menghapus ID itu dan apa pun yang belum terkirim.",
+    "later": "Keduanya ada di Pengaturan kapan pun Anda ingin mengubahnya, dan mematikan salah satunya membuang apa yang telah disimpannya.",
+    "privacy": "Pemberitahuan privasi"
   },
   "stagePicker": {
     "label": "Tahap {{name}}: {{stage}}. Ubah tahap",

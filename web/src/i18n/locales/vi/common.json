@@ -203,7 +203,7 @@
     },
     "crash": {
       "title": "Báo cáo sự cố và mức sử dụng",
-      "description": "Hai thứ riêng biệt, cả hai đều đang bật — tắt từng cái ở đây hoặc sau này trong Cài đặt. Không cái nào có thể mang theo bản ghi của bạn: không đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện nào.",
+      "description": "Hai thứ riêng biệt, và cả hai đều tắt trừ khi bạn bật lên — ở đây hoặc sau này trong Cài đặt. Không cái nào có thể mang theo bản ghi của bạn: không đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện nào.",
       "inReport": "Báo cáo gồm những gì",
       "inError": "Thông báo lỗi và nơi xảy ra lỗi trong jojo.",
       "inStack": "Dấu vết ngăn xếp, cho biết đoạn mã nào bị lỗi.",
@@ -214,12 +214,13 @@
       "keep": "Giữ báo cáo sự cố",
       "keepHint": "Lỗi và nơi xảy ra. Ở lại trên thiết bị này trong trình duyệt.",
       "share": "Chia sẻ những tính năng tôi dùng",
-      "shareHint": "Chỉ là số đếm — màn hình nào được mở, bao nhiêu lần. Không bao giờ là nội dung bên trong.",
-      "usageNote": "Mục thứ hai là thứ duy nhất jojo gửi về những gì bạn LÀM, và nó chỉ có thể nói những điều trong một danh sách cố định — “Kho lưu trữ đã được mở”, “một đơn ứng tuyển đã được thêm”, “có 6–20 đơn”. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập, vì những từ đó không có trong danh sách. Dữ liệu được gửi tới Google Analytics để chúng tôi biết phần nào của jojo đáng đầu tư thêm.",
+      "shareHint": "Chỉ là số đếm — màn hình nào được mở, bao nhiêu lần — không bao giờ là nội dung bên trong. Google Analytics cũng giữ một mã định danh ngẫu nhiên trong trình duyệt này và ghi lại các thông tin cơ bản như trình duyệt, loại thiết bị, ngôn ngữ và quốc gia hoặc khu vực nơi kết nối của bạn xuất phát.",
+      "usageNote": "Mục thứ hai là thứ duy nhất jojo gửi về những gì bạn LÀM, và nó chỉ có thể nói những điều trong một danh sách cố định — “Kho lưu trữ đã được mở”, “một đơn ứng tuyển đã được thêm”, “có 6–20 đơn”. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập, vì những từ đó không có trong danh sách. Dữ liệu được gửi tới Google Analytics để chúng tôi biết phần nào của jojo đáng đầu tư thêm, kèm theo những gì Google Analytics thêm vào mỗi lần gửi: một mã định danh ngẫu nhiên mà nó giữ trong trình duyệt này, cùng các thông tin cơ bản như trình duyệt, loại thiết bị, ngôn ngữ và quốc gia hoặc khu vực nơi kết nối của bạn xuất phát. Tắt mục này sẽ xóa mã định danh đó.",
       "bothOff": "Tắt cả hai",
       "save": "Lưu lựa chọn",
       "continueOff": "Tiếp tục với cả hai đều tắt",
-      "later": "Bạn có thể thay đổi bất kỳ mục nào bất cứ lúc nào trong Cài đặt, và tắt một mục cũng sẽ xóa những gì nó đã lưu."
+      "later": "Bạn có thể thay đổi bất kỳ mục nào bất cứ lúc nào trong Cài đặt, và tắt một mục cũng sẽ xóa những gì nó đã lưu.",
+      "privacy": "Thông báo quyền riêng tư"
     },
     "extension": {
       "title": "Giữ lại các tin tuyển dụng bạn ứng tuyển",

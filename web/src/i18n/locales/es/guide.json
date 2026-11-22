@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Tu navegador es la base de datos",
-      "body": "Cada registro se escribe en la base de datos de este navegador mientras trabajas, así que cerrar la pestaña es seguro. Nada sale de este equipo y nada se sincroniza: si borras los datos del navegador, cambias de navegador o pierdes el disco, se va con ellos. Exporta una copia de seguridad <kbd>.json</kbd> desde <settings>Ajustes</settings> para todo lo que quieras guardar en otro sitio."
+      "body": "Cada registro se escribe en la base de datos de este navegador mientras trabajas, así que cerrar la pestaña es seguro. jojo no guarda ninguna copia en otro sitio y nada se sincroniza: tus registros solo salen de este navegador cuando los envías a un proveedor de modelos que elegiste, o cuando los mueves tú. Si borras los datos del navegador, cambias de navegador o pierdes el disco, se van con ellos. Exporta una copia de seguridad <kbd>.json</kbd> desde <settings>Ajustes</settings> para todo lo que quieras guardar en otro sitio."
     },
     "savePath": {
       "title": "Qué pasa cuando guardas algo",
@@ -333,7 +333,7 @@
         "hint": "integrado",
         "title": "Guarda una copia de seguridad",
         "storedTitle": "Tus documentos se guardan aquí",
-        "stored": "Los CV y las cartas de presentación que adjuntas se guardan en este navegador y sobreviven al cierre de la pestaña. No se sube nada a ninguna parte, y nada sale de este equipo a menos que lo descargues tú.",
+        "stored": "Los CV y las cartas de presentación que adjuntas se guardan en este navegador y sobreviven al cierre de la pestaña. Los archivos no se suben y jojo no guarda ninguna copia en otro sitio; su texto solo va a un modelo si eliges un proveedor alojado.",
         "oneFileTitle": "Un archivo lo contiene todo",
         "oneFile": "<settings>Ajustes</settings> escribe una copia de seguridad con todos los registros, todos los vínculos entre ellos y todos los documentos, en un solo archivo. Restaurarla devuelve las tres cosas.",
         "whyTitle": "Por qué importa",

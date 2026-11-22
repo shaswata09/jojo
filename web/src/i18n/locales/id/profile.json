@@ -76,7 +76,7 @@
       "description": "Letakkan CV dan pernyataan Anda di sini, atau pilih berkasnya — semuanya diarsipkan di Brankas di bawah {{bucket}}, tempat bagian lain aplikasi dapat menjangkaunya.",
       "upload": "Unggah dokumen"
     },
-    "footer": "Berkas yang sama dengan <anchor>alat Berkas</anchor> di Brankas, difilter ke {{bucket}}. Letakkan dokumen di sini atau pilih satu, dan berkasnya disimpan di browser ini — tidak ada yang diunggah ke mana pun. Klik untuk membacanya."
+    "footer": "Berkas yang sama dengan <anchor>alat Berkas</anchor> di Brankas, difilter ke {{bucket}}. Letakkan dokumen di sini atau pilih satu, dan berkasnya disimpan di browser ini — tidak diunggah, dan teksnya dikirim ke model hanya jika Anda memilih penyedia yang di-hosting. Klik untuk membacanya."
   },
   "documentTile": {
     "open": "Buka {{name}}",

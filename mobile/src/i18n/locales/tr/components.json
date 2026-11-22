@@ -154,14 +154,16 @@
     "what": "Bir şey bozulduğunda jojo hatayı saklayabilir; böylece sonradan okuyabilirsiniz — başarısız olan şey çoktan gittiğinde işe yarar. Bir rapor hata mesajını, hatanın jojo'nun neresinde oluştuğunu ve yığın izini içerir. Başvurularınızı, belgelerinizi, notlarınızı, profilinizi ya da konuşmalarınızı asla içermez; API anahtarları, adresler ve e-posta adresleri rapor yazılmadan önce çıkarılır.",
     "where": "Raporlar bu telefonda saklanır ve ayrıca Firebase Crashlytics'e gönderilir; bu hizmet cihaz modelinizi, işletim sistemi sürümünü ve aynı çökmeyi kaç kişinin yaşadığını saymak için kullanılan rastgele bir kimliği ekler. Google bunları 90 gün saklar. Kayıtlarınızın hiçbiri onlarla birlikte gitmez.",
     "report": "Çökmeleri bildir",
-    "reportHint": "Açık; böylece yaşadığınız bir çökmeyi görebiliriz. Kapatırsanız hiçbir şey kaydedilmez.",
+    "reportHint": "Siz açmadıkça kapalı. Açıkken yaşadığınız bir çökme düzeltilebilmesi için Firebase Crashlytics'e gönderilir; kapalıyken hiçbir şey kaydedilmez ve henüz gönderilmemiş raporlar silinir.",
     "usage": "Hangi özellikleri kullandığımı paylaş",
-    "usageHint": "Yalnızca sabit bir listeden sayılar — kayıtlarınızın içeriği asla.",
-    "usageDetail": "Yalnızca sabit bir listedeki şeyleri söyleyebilir — hangi ekranın açıldığı, bir başvurunun eklendiği, kabaca kaç tane olduğu. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz. Google Analytics'e gider. Bu kapalıyken jojo, Firebase'in aksi hâlde kendiliğinden toplayacağı ekran görüntülemelerini ve oturum sayılarını da kapatır.",
+    "usageHint": "Yalnızca sabit bir listeden sayılar — kayıtlarınızın içeriği asla. Rastgele bir uygulama örneği kimliği ve temel cihaz bilgileriyle gönderilir.",
+    "usageDetail": "Yalnızca sabit bir listedeki şeyleri söyleyebilir — hangi ekranın açıldığı, bir başvurunun eklendiği, kabaca kaç tane olduğu. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz. Google Analytics'e gider; o da buna rastgele bir uygulama örneği kimliği ve cihaz modeli, işletim sistemi sürümü, dil, uygulama sürümü ve bağlantınızın geldiği ülke ya da bölge gibi temel bilgileri ekler. Bu kapalıyken jojo, Firebase'in aksi hâlde kendiliğinden toplayacağı ekran görüntülemelerini ve oturum sayılarını da kapatır; kapatmak bu kimliği ve henüz gönderilmemiş her şeyi siler.",
     "kept_one": "{{count}} rapor saklanıyor",
     "kept_other": "{{count}} rapor saklanıyor",
     "nothingBroken": "Bunu açtığınızdan beri hiçbir şey bozulmadı.",
-    "notRecording": "Hiçbir şey kaydedilmiyor."
+    "notRecording": "Hiçbir şey kaydedilmiyor.",
+    "restartNote": "Kapatıldı. jojo göndermeyi hemen durdurur ve henüz gönderilmemiş raporları sildi; Crashlytics'in kendi çökme yakalayıcısı jojo bir sonraki açılışında tamamen kapanır.",
+    "privacy": "Gizlilik bildirimi"
   },
   "date": {
     "today": "Bugün",
@@ -290,7 +292,7 @@
   },
   "reporting": {
     "title": "Çökme raporları ve kullanım",
-    "description": "İki ayrı şey, ikisi de açık. Birini ya da ikisini burada ya da daha sonra Ayarlar'da kapatabilirsiniz. Hiçbiri kayıtlarınızı taşıyamaz: ne bir başvuru, ne bir belge, ne bir not, ne bir profil, ne de bir konuşma.",
+    "description": "İki ayrı şey ve siz açmadıkça ikisi de kapalı — burada ya da daha sonra Ayarlar'da açabilirsiniz. Hiçbiri kayıtlarınızı taşıyamaz: ne bir başvuru, ne bir belge, ne bir not, ne bir profil, ne de bir konuşma.",
     "bothOff": "İkisini de kapat",
     "save": "Seçimleri kaydet",
     "inReport": "Bir çökme raporunda neler var",
@@ -305,9 +307,10 @@
       "secrets": "· API anahtarlarınız, kullandığınız adresler ya da herhangi bir e-posta adresi — rapor gönderilmeden önce değil, yazılmadan önce çıkarılır."
     },
     "crashHint": "Hata ve nerede oluştuğu. Firebase Crashlytics'e gider.",
-    "usageHint": "Yalnızca sayılar — hangi ekranların ne sıklıkla açıldığı. İçlerinde ne olduğu asla.",
-    "usageDetail": "İkincisi, jojo'nun sizin NE yaptığınız hakkında gönderdiği tek şeydir ve yalnızca sabit bir listedeki şeyleri söyleyebilir — “kasa açıldı”, “bir başvuru eklendi”, “6–20 tane var”. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz, çünkü bu sözcükler listede yok. Kapatmak, Firebase'in aksi hâlde kendiliğinden toplayacağı ekran görüntülemelerini de durdurur.",
-    "later": "İkisi de istediğiniz zaman değiştirmek için Ayarlar altında; birini kapatmak, onun sakladıklarını da siler."
+    "usageHint": "Yalnızca sayılar — hangi ekranların ne sıklıkla açıldığı — içlerinde ne olduğu asla. Rastgele bir uygulama örneği kimliği ve temel cihaz bilgileriyle gönderilir.",
+    "usageDetail": "İkincisi, jojo'nun sizin NE yaptığınız hakkında gönderdiği tek şeydir ve yalnızca sabit bir listedeki şeyleri söyleyebilir — “kasa açıldı”, “bir başvuru eklendi”, “6–20 tane var”. Bir işvereni, rolü, dosyayı ya da yazdığınız herhangi bir şeyi adlandıramaz, çünkü bu sözcükler listede yok. Firebase Analytics buna rastgele bir uygulama örneği kimliği ve cihaz modeli, işletim sistemi sürümü, dil, uygulama sürümü ve bağlantınızın geldiği ülke ya da bölge gibi temel bilgileri ekler. Kapatmak, Firebase'in aksi hâlde kendiliğinden toplayacağı ekran görüntülemelerini de durdurur ve bu kimliği ve henüz gönderilmemiş her şeyi siler.",
+    "later": "İkisi de istediğiniz zaman değiştirmek için Ayarlar altında; birini kapatmak, onun sakladıklarını da siler.",
+    "privacy": "Gizlilik bildirimi"
   },
   "stagePicker": {
     "label": "{{name}} aşaması: {{stage}}. Aşamayı değiştir",

@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Tarayıcınız veritabanıdır",
-      "body": "Her kayıt siz çalışırken bu tarayıcının içindeki veritabanına yazılır; bu yüzden sekmeyi kapatmak güvenlidir. Hiçbir şey bu bilgisayardan çıkmaz ve hiçbir şey eşitlenmez — tarayıcı verilerinizi temizlerseniz, tarayıcı değiştirirseniz ya da diski kaybederseniz onunla birlikte gider. Başka bir yerde saklamak istediğiniz her şey için <settings>Ayarlar</settings> bölümünden bir <kbd>.json</kbd> yedeği dışa aktarın."
+      "body": "Her kayıt siz çalışırken bu tarayıcının içindeki veritabanına yazılır; bu yüzden sekmeyi kapatmak güvenlidir. jojo başka hiçbir yerde kopya tutmaz ve hiçbir şey eşitlenmez: kayıtlarınız bu tarayıcıdan yalnızca onları seçtiğiniz bir model sağlayıcısına gönderdiğinizde ya da kendiniz taşıdığınızda çıkar. Tarayıcı verilerinizi temizlerseniz, tarayıcı değiştirirseniz ya da diski kaybederseniz onlarla birlikte gider. Başka bir yerde saklamak istediğiniz her şey için <settings>Ayarlar</settings> bölümünden bir <kbd>.json</kbd> yedeği dışa aktarın."
     },
     "savePath": {
       "title": "Bir şeyi kaydettiğinizde ne olur",
@@ -333,7 +333,7 @@
         "hint": "yerleşik",
         "title": "Bir yedek tutun",
         "storedTitle": "Belgeleriniz burada saklanır",
-        "stored": "Eklediğiniz CV'ler ve ön yazılar bu tarayıcıda saklanır ve sekmeyi kapattıktan sonra da kalır. Hiçbir yere bir şey yüklenmez — ve kendiniz indirmedikçe hiçbir şey bu bilgisayardan çıkmaz.",
+        "stored": "Eklediğiniz CV'ler ve ön yazılar bu tarayıcıda saklanır ve sekmeyi kapattıktan sonra da kalır. Dosyalar yüklenmez ve jojo başka hiçbir yerde kopya tutmaz; metinleri yalnızca barındırılan bir sağlayıcı seçerseniz bir modele gider.",
         "oneFileTitle": "Her şeyi tek bir dosya tutar",
         "oneFile": "<settings>Ayarlar</settings>, tüm kayıtları, aralarındaki tüm bağlantıları ve tüm belgeleri taşıyan bir yedeği tek bir dosyaya yazar. Geri yüklemek üçünü de geri koyar.",
         "whyTitle": "Neden önemli",

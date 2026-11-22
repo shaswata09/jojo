@@ -55,14 +55,37 @@ describe('Q175: analytics records only when enabled', () => {
     expect(analytics.analyticsOn()).toBe(false)
   })
 
-  it('is on once asked and not declined, and off again once declined', async () => {
+  it('stays off once asked and left unanswered, because the default is no', async () => {
+    /*
+     * Reversed on 2026-11-21 (see `core/crash-config.ts`): this used to read
+     * as yes, which made a question nobody answered into consent. Asked-and-
+     * unanswered is the narrow case where the setup step's own write failed,
+     * or a build that asked nothing marked the stage anyway.
+     */
     const analytics = await load(ALLOWED_BUILD)
     fake.store.set(ASKED, new Date(0).toISOString())
+    expect(analytics.analyticsOn()).toBe(false)
+  })
+
+  it('is on after an explicit yes, and off again once declined', async () => {
+    const analytics = await load(ALLOWED_BUILD)
+    fake.store.set(ASKED, new Date(0).toISOString())
+    analytics.setAnalyticsEnabled(true)
+    expect(fake.store.get('jojo/analytics/v1')).toBe('on')
     expect(analytics.analyticsOn()).toBe(true)
 
     analytics.setAnalyticsEnabled(false)
     expect(fake.store.get('jojo/analytics/v1')).toBe('off')
     expect(analytics.analyticsOn()).toBe(false)
+  })
+
+  it('keeps a yes stored before the default changed, read exactly as before', async () => {
+    // Somebody who already said yes is not silently opted out by the new
+    // default: the default answers only the unanswered.
+    const analytics = await load(ALLOWED_BUILD)
+    fake.store.set(ASKED, new Date(0).toISOString())
+    fake.store.set('jojo/analytics/v1', 'on')
+    expect(analytics.analyticsOn()).toBe(true)
   })
 
   it('stays off in a build without the capability, even after a yes', async () => {

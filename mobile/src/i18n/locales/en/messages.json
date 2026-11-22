@@ -209,7 +209,12 @@
     "unreachable": "That board could not be reached.",
     "status": "That board answered {{status}}.",
     "browserOnly": "{{host}} only shows its listings to a real browser, so it cannot be read from the phone. On a computer the jojo browser extension can read it.",
-    "cancelled": "The read was cancelled."
+    "cancelled": "The read was cancelled.",
+    "noAutomatedAccess": "{{host}} does not allow automated reading in its terms of use, so jojo will not read it on a schedule. Open a posting there yourself and save it to jojo instead.",
+    "robots": "{{host}} asks automated readers not to open this page (its robots.txt disallows it), so jojo did not read it.",
+    "dailyBudget": "jojo has already read {{pages}} pages of {{host}} today, which is as many as it reads from one site in a day. The rest can be read tomorrow.",
+    "tooSoon": "{{host}} asks automated readers to wait {{seconds}} seconds between pages, so jojo stopped here. The rest can be read on a later run.",
+    "botWall": "This board is asking for a human check; open it yourself."
   },
   "timelineForm": {
     "title": "Give it a title you will recognise.",

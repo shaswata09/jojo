@@ -154,14 +154,16 @@
     "what": "When something breaks, jojo can keep the error so you can read it back — useful when the thing that failed has already gone. A report holds the error message, where in jojo it happened, and the stack trace. It never holds your applications, documents, notes, profile or conversations, and API keys, addresses and email addresses are stripped out before a report is written.",
     "where": "Reports are kept on this phone, and also sent to Firebase Crashlytics, which adds your device model, its OS version, and a random id used to count how many people hit the same crash. Google keeps those for 90 days. None of your records go with them.",
     "report": "Report crashes",
-    "reportHint": "On, so a crash you hit is one we can see. Turn it off and nothing is recorded.",
+    "reportHint": "Off unless you turn it on. When on, a crash you hit is sent to Firebase Crashlytics so it can be fixed; when off, nothing is recorded and reports not yet sent are deleted.",
     "usage": "Share which features I use",
-    "usageHint": "Counts only, from a fixed list — never what is in your records.",
-    "usageDetail": "It can only say things from a fixed list — which screen was opened, that an application was added, roughly how many there are. It cannot name an employer, a role, a file or anything you typed. Goes to Google Analytics. With this off, jojo also turns off the screen views and session counts Firebase would otherwise collect on its own.",
+    "usageHint": "Counts only, from a fixed list — never what is in your records. Sent with a random app-instance id and basic device details.",
+    "usageDetail": "It can only say things from a fixed list — which screen was opened, that an application was added, roughly how many there are. It cannot name an employer, a role, a file or anything you typed. Goes to Google Analytics, which adds a random app-instance id and basics such as the device model, OS version, language, app version and the country or region your connection comes from. With this off, jojo also turns off the screen views and session counts Firebase would otherwise collect on its own, and turning it off deletes that id and anything not yet sent.",
     "kept_one": "{{count}} report kept",
     "kept_other": "{{count}} reports kept",
     "nothingBroken": "Nothing has broken since you turned this on.",
-    "notRecording": "Nothing is being recorded."
+    "notRecording": "Nothing is being recorded.",
+    "restartNote": "Turned off. jojo stops sending at once and has deleted any reports not yet sent; Crashlytics' own crash catcher finishes switching off the next time jojo starts.",
+    "privacy": "Privacy notice"
   },
   "date": {
     "today": "Today",
@@ -290,7 +292,7 @@
   },
   "reporting": {
     "title": "Crash reports and usage",
-    "description": "Two separate things, both on. Turn off either one here or later in Settings. Neither can carry your records: not an application, a document, a note, a profile or a conversation.",
+    "description": "Two separate things, and both are off unless you turn them on — here or later in Settings. Neither can carry your records: not an application, a document, a note, a profile or a conversation.",
     "bothOff": "Turn both off",
     "save": "Save choices",
     "inReport": "What is in a crash report",
@@ -305,9 +307,10 @@
       "secrets": "· Your API keys, the addresses you use, or any email address — stripped out before a report is written, not before it is sent."
     },
     "crashHint": "The error and where it happened. Goes to Firebase Crashlytics.",
-    "usageHint": "Counts only — which screens are opened, how often. Never what is in them.",
-    "usageDetail": "The second one is the only thing jojo sends about what you DO, and it can only ever say things from a fixed list — “the vault was opened”, “an application was added”, “there are 6–20 of them”. It cannot name an employer, a role, a file or anything you typed, because those words are not in the list. Turning it off also stops the screen views Firebase would otherwise collect on its own.",
-    "later": "Both are under Settings whenever you want to change them, and turning one off discards what it kept."
+    "usageHint": "Counts only — which screens are opened, how often — never what is in them. Sent with a random app-instance id and basic device details.",
+    "usageDetail": "The second one is the only thing jojo sends about what you DO, and it can only ever say things from a fixed list — “the vault was opened”, “an application was added”, “there are 6–20 of them”. It cannot name an employer, a role, a file or anything you typed, because those words are not in the list. Firebase Analytics adds a random app-instance id and basics such as the device model, OS version, language, app version and the country or region your connection comes from. Turning it off also stops the screen views Firebase would otherwise collect on its own, and deletes that id and anything not yet sent.",
+    "later": "Both are under Settings whenever you want to change them, and turning one off discards what it kept.",
+    "privacy": "Privacy notice"
   },
   "stagePicker": {
     "label": "Stage of {{name}}: {{stage}}. Change stage",

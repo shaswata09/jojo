@@ -209,7 +209,12 @@
     "unreachable": "No se pudo conectar con ese portal.",
     "status": "Ese portal respondió {{status}}.",
     "browserOnly": "{{host}} solo muestra sus ofertas a un navegador real, así que no se puede leer desde el teléfono. En una computadora, la extensión de navegador de jojo puede leerlo.",
-    "cancelled": "Se canceló la lectura."
+    "cancelled": "Se canceló la lectura.",
+    "noAutomatedAccess": "{{host}} no permite la lectura automatizada en sus condiciones de uso, así que jojo no lo leerá de forma programada. Abre tú una oferta allí y guárdala en jojo.",
+    "robots": "{{host}} pide a los lectores automatizados que no abran esta página (su robots.txt lo prohíbe), así que jojo no la leyó.",
+    "dailyBudget": "jojo ya ha leído {{pages}} páginas de {{host}} hoy, que es lo máximo que lee de un sitio en un día. El resto se puede leer mañana.",
+    "tooSoon": "{{host}} pide a los lectores automatizados que esperen {{seconds}} segundos entre páginas, así que jojo se detuvo aquí. El resto se puede leer en una pasada posterior.",
+    "botWall": "Este portal pide una verificación humana; ábrelo tú."
   },
   "timelineForm": {
     "title": "Ponle un título que reconozcas.",

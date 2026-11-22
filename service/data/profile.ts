@@ -52,7 +52,11 @@ export { emptyProfile, profileIsBlank } from '../kg/core/profile'
  * the name and the three profile links simply had not followed.
  *
  * The links point at `example.com`, which is reserved by RFC 2606 precisely so
- * that documentation cannot accidentally name somebody real.
+ * that documentation cannot accidentally name somebody real. The email and
+ * website followed on 2026-11-21: they had been `mockemail@email.com` and
+ * `www.mockwebsite.com`, which LOOK invented but sit on ordinary registrable
+ * domains, so a demo that sent mail or opened the site reached whoever owns
+ * them. Only newly seeded profiles change; a stored profile keeps what it has.
  *
  * The name is the owner's choice (2026-11-15): Lonardo Jenson, spelled so.
  */
@@ -61,8 +65,8 @@ export const seedProfile = (): Profile => ({
     fullName: 'Lonardo Jenson',
     position: 'PhD candidate, Computer Science',
     location: 'Santa Clara, CA',
-    email: 'mockemail@email.com',
-    website: 'https://www.mockwebsite.com',
+    email: 'lonardo.jenson@example.com',
+    website: 'https://lonardojenson.example.com',
     scholar: 'https://scholar.example.com/citations?user=demo',
     github: 'https://github.example.com/lonardojenson',
     linkedin: 'https://www.linkedin.example.com/in/lonardojenson',

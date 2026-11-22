@@ -189,7 +189,7 @@
       "title": "Bunu hangi model yapar",
       "hint": "sizin seçiminiz ve sözlerinizin nereye gittiğini değiştirir",
       "local": "jojo, Ayarlar'da neye yönlendirirseniz onunla konuşur. Kontrol ettiğiniz bir bilgisayarda çalışan bir model — Ollama, vLLM, LM Studio — varsayılandır ve yazdığınız hiçbir şeyin bu cihazdan çıkmadığı tek düzenleme budur.",
-      "cloud": "Claude, OpenAI ve diğerlerini bir API anahtarıyla da kullanabilirsiniz. Bu gerçek bir ödünleşimdir ve ekran bunu açıkça söyler: kayıtlarınız o şirkete gider ve hesabınıza faturalanır. Anahtar bu cihazda saklanır, asla bir yedeğe dahil edilmez ve seçtiğiniz sağlayıcı dışında hiçbir yere gönderilmez.",
+      "cloud": "Claude, OpenAI ve diğerlerini bir API anahtarıyla da kullanabilirsiniz. Bu gerçek bir ödünleşimdir ve ekran bunu açıkça söyler: kayıtlarınız o şirkete, onun koşullarıyla gider ve bazı sağlayıcılar hesabınıza fatura keser. Anahtar bu cihazda saklanır, asla bir yedeğe dahil edilmez ve seçtiğiniz sağlayıcı dışında hiçbir yere gönderilmez.",
       "openSettings": "Ayarlar'ı aç",
       "truncatedTitle": "Asistan okumayı bırakmış gibi görünüyorsa",
       "truncated": "Yeterli alanı olmayan yerel bir model, kendisine gönderilenin başını sessizce düşürür ve sonra hiç tam olarak görmediği bir soru hakkında kendinden emin bir yanıt verir. jojo sunucunun okuduğunu söylediği ile gerçekte gönderileni karşılaştırır ve ikisi uyuşmadığında size söyler — çünkü alternatifi, alanı yetmeyen değil de işinde kötü görünen bir asistandır."
@@ -234,7 +234,8 @@
       "navigation": "Sekme çubuğu ve ekran yığını",
       "drag": "Panonun uzun basmayla sürüklemesi, UI iş parçacığında",
       "charts": "Halka, radar ve grafik",
-      "type": "Yazı tipleri, getirilmek yerine paketlenmiş"
+      "type": "Yazı tipleri, getirilmek yerine paketlenmiş",
+      "reporting": "Çökme raporları ve kullanım, siz açmadıkça kapalı"
     },
     "unfinished": {
       "assistant": {
@@ -249,6 +250,20 @@
         "title": "Siz yönlendirmedikçe hiçbir şey bu cihazdan çıkmaz",
         "detail": "Hesap yok, eşitleme yok, yükleme yok. İki adrese ulaşılabilir, ikisi de sizin ve ikisi de Ayarlar'da belirlenir: model ve belge okuyucu — okuyucu, bir bağlantıdan başvuru eklediğinizde iş ilanını da getirir; böylece o URL bize değil okuyucunuza gider. Aktarım, yerel ağ üzerinden cihazlarınız arasında bir kopya taşır — bu telefonda alan taraftır, gönderen taraf bilgisayardır. Başka hiçbir şey hiçbir yere gitmez."
       }
+    },
+    "licences": {
+      "title": "Lisanslar",
+      "hint_one": "{{count}} paket, istediği bildirimle birlikte",
+      "hint_other": "{{count}} paket, istedikleri bildirimlerle birlikte",
+      "intro": "Bu uygulamanın üzerine kurulduğu her npm paketi, lisansı ve beraberinde taşınmasını istediği telif hakkı bildirimiyle birlikte; yüklü paketlerden üretilir ve bir testle onlara karşı denetlenir. Uygulamanın bağladığı yerel Android ve iOS kitaplıkları henüz listelenmedi. Önce yazı tipleri ve bu yerel kitaplıklar hakkında bir not gelir.",
+      "open": "Lisansları oku",
+      "sheetTitle": "Üçüncü taraf lisansları",
+      "sheetDescription": "jojo, Apache-2.0 lisansıyla lisanslanmıştır. Bunlar, üzerine kurulduğu çalışmaların koşullarıdır; yazarlarının yazdığı biçimde gösterilir.",
+      "search": "Pakete ya da lisansa göre filtrele",
+      "searchLabel": "Lisansları filtrele",
+      "empty": "Buna uyan paket yok.",
+      "rowLabel": "{{name}} {{version}}, {{licence}}. Lisans metnini göster ya da gizle.",
+      "noLicence": "lisans belirtilmemiş"
     }
   }
 }

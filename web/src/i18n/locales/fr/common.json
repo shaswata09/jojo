@@ -211,7 +211,7 @@
     },
     "crash": {
       "title": "Rapports de plantage et utilisation",
-      "description": "Deux choses distinctes, toutes deux activées — désactivez l’une ou l’autre ici ou plus tard dans les Paramètres. Aucune ne peut contenir vos enregistrements : ni candidature, ni document, ni note, ni profil, ni conversation.",
+      "description": "Deux choses distinctes, toutes deux désactivées tant que vous ne les activez pas — ici ou plus tard dans les Paramètres. Aucune ne peut contenir vos enregistrements : ni candidature, ni document, ni note, ni profil, ni conversation.",
       "inReport": "Ce que contient un rapport",
       "inError": "Le message d’erreur et l’endroit de jojo où elle s’est produite.",
       "inStack": "La pile d’appels, qui nomme le code qui a échoué.",
@@ -222,12 +222,13 @@
       "keep": "Conserver les rapports de plantage",
       "keepHint": "L’erreur et où elle s’est produite. Reste sur cet appareil dans le navigateur.",
       "share": "Partager les fonctions que j’utilise",
-      "shareHint": "Des comptages uniquement — quels écrans sont ouverts, à quelle fréquence. Jamais leur contenu.",
-      "usageNote": "Le second est la seule chose que jojo envoie sur ce que vous FAITES, et il ne peut dire que des choses tirées d’une liste fixe — « le coffre a été ouvert », « une candidature a été ajoutée », « il y en a de 6 à 20 ». Il ne peut nommer ni employeur, ni poste, ni fichier, ni rien de ce que vous avez tapé, car ces mots ne figurent pas dans la liste. Il va à Google Analytics pour que nous voyions quelles parties de jojo méritent plus de travail.",
+      "shareHint": "Des comptages uniquement — quels écrans sont ouverts, à quelle fréquence — jamais leur contenu. Google Analytics conserve aussi un identifiant aléatoire dans ce navigateur et enregistre des informations de base comme le navigateur, le type d’appareil, la langue et le pays ou la région d’où vient votre connexion.",
+      "usageNote": "Le second est la seule chose que jojo envoie sur ce que vous FAITES, et il ne peut dire que des choses tirées d’une liste fixe — « le coffre a été ouvert », « une candidature a été ajoutée », « il y en a de 6 à 20 ». Il ne peut nommer ni employeur, ni poste, ni fichier, ni rien de ce que vous avez tapé, car ces mots ne figurent pas dans la liste. Il va à Google Analytics pour que nous voyions quelles parties de jojo méritent plus de travail, avec ce que Google Analytics ajoute à chaque envoi : un identifiant aléatoire qu’il conserve dans ce navigateur, et des informations de base comme le navigateur, le type d’appareil, la langue et le pays ou la région d’où vient votre connexion. Le désactiver supprime cet identifiant.",
       "bothOff": "Désactiver les deux",
       "save": "Enregistrer mes choix",
       "continueOff": "Continuer avec les deux désactivés",
-      "later": "Vous pouvez modifier l’un ou l’autre à tout moment dans les Paramètres, et en désactiver un efface aussi ce qu’il avait conservé."
+      "later": "Vous pouvez modifier l’un ou l’autre à tout moment dans les Paramètres, et en désactiver un efface aussi ce qu’il avait conservé.",
+      "privacy": "Avis de confidentialité"
     },
     "extension": {
       "title": "Conserver les offres auxquelles vous postulez",

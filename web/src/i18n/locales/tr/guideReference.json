@@ -107,7 +107,7 @@
       "hint": "sizin seçiminiz ve sözlerinizin nereye gittiğini değiştirir",
       "title": "Bunu hangi model yapar",
       "p1": "jojo, <go>Ayarlar</go>'da neye yönlendirirseniz onunla konuşur. Kendi bilgisayarınızda çalışan bir model — Ollama, vLLM, LM Studio — varsayılandır ve yazdığınız hiçbir şeyin cihazdan çıkmadığı tek düzenleme budur.",
-      "p2": "Claude, OpenAI ve diğerlerini bir API anahtarıyla da kullanabilirsiniz. Bu gerçek bir ödünleşimdir ve ekran bunu açıkça söyler: kayıtlarınız o şirkete gider ve hesabınıza faturalanır. Anahtar bu tarayıcıda saklanır, asla bir yedeğe dahil edilmez ve seçtiğiniz sağlayıcı dışında hiçbir yere gönderilmez.",
+      "p2": "Claude, OpenAI ve diğerlerini bir API anahtarıyla da kullanabilirsiniz. Bu gerçek bir ödünleşimdir ve ekran bunu açıkça söyler: kayıtlarınız o şirkete, onun koşulları altında gider ve bazı sağlayıcılar hesabınıza fatura keser. Anahtar bu tarayıcıda saklanır, asla bir yedeğe dahil edilmez ve seçtiğiniz sağlayıcı dışında hiçbir yere gönderilmez.",
       "stoppedTitle": "Asistan okumayı bırakmış gibi görünüyorsa",
       "stopped": "Yeterli alanı olmayan yerel bir model, kendisine gönderilenin başını sessizce düşürür ve sonra hiç tam olarak görmediği bir soru hakkında kendinden emin bir yanıt verir. jojo artık sunucunun okuduğunu söylediği ile gerçekte gönderileni karşılaştırır ve ikisi uyuşmadığında size söyler — çünkü alternatifi, alanı yetmeyen değil de işinde kötü görünen bir asistandır."
     },

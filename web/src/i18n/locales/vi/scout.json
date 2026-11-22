@@ -51,6 +51,7 @@
     "sources": "Nguồn",
     "sourcesHint": "Trang tuyển dụng hoặc trang nghề nghiệp mà nó theo dõi. Ngăn cách nhiều nguồn bằng dấu phẩy.",
     "sourceError": "Trình tìm việc không có nguồn thì không có gì để đọc.",
+    "sourceRefused": "{{sites}} không cho phép đọc tự động trong điều khoản sử dụng, nên trình tìm việc sẽ không đọc trang đó. Hãy xóa nó, hoặc tự mở các tin tuyển dụng ở đó và lưu chúng bằng nút của tiện ích mở rộng jojo.",
     "terms": {
       "twin": "Cần tập trung vào đâu",
       "scout": "Từ khóa đối chiếu"

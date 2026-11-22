@@ -19,7 +19,13 @@ import { listModels } from '@/lib/llm'
 import { report } from '@/lib/analytics'
 import { reportableProvider } from '@jojo/service/core/analytics'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { PROVIDERS, cleanKey, parseContextWindow, providerMeta } from '@jojo/service/core/provider'
+import {
+  PROVIDERS,
+  cleanKey,
+  isRemoteEndpoint,
+  parseContextWindow,
+  providerMeta,
+} from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
 import { Shell } from '@/components/settings/PanelShell'
 import { SavedServers } from '@/components/settings/SavedServers'
@@ -376,6 +382,25 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             }}
           />
         )}
+        {/*
+         * A server that is not on this machine or this network.
+         *
+         * "Ollama" and "a local server" name a kind of server, not a place, and
+         * neither is `cloud`, so the consent notice above never appears for
+         * them. Somebody who types a rented GPU box's public address into
+         * either sends their records to it — and to whoever runs it — with
+         * the provider list still describing it as "on a machine you control".
+         * Short, because unlike the hosted providers there is no company and
+         * no terms to name: only the fact that the records leave.
+         */}
+        {!provider.fixedEndpoint && isRemoteEndpoint(endpoint) ? (
+          <p
+            role="note"
+            className="-mt-1 rounded-md border border-warning-border bg-warning-soft p-2.5 text-xs text-warning"
+          >
+            {t('model.endpoint.remote')}
+          </p>
+        ) : null}
 
         {provider.needsKey ? (
           <Field

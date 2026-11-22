@@ -50,6 +50,23 @@ describe('Q174: the reporting question and the switch that changes it', () => {
     expect(onboardingSource).toMatch(/return <CrashStep onSkip=\{\(\) => finish\('crash'\)\}/)
   })
 
+  it('does not record the question as asked when a build could ask nothing', () => {
+    /*
+     * The silent opt-in. With both capabilities compiled out the step is
+     * passed over, and it used to call `finish('crash')` on the way — writing
+     * the stage key that `analyticsEnabled()` reads as "asked, took the
+     * default". A later build with analytics on then never asked, and read the
+     * person as having answered. D20 rules out mounting the sequence, so the
+     * branch is read from source: between the capability test and its
+     * `return null`, nothing may mark the stage.
+     */
+    const start = at(onboardingSource, "if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {")
+    const branch = onboardingSource.slice(start, onboardingSource.indexOf('return null', start))
+    expect(branch).not.toContain("finish('crash')")
+    expect(branch).not.toContain('markOffered')
+    expect(branch).toContain('setCrashOffered(true)')
+  })
+
   it('asks on the phone before the tour, too', () => {
     const source = mobile('components/common/Onboarding.tsx')
     const ask = at(source, 'if (!offered.reporting && REPORTING_ASKABLE) {')

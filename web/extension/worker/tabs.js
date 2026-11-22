@@ -9,9 +9,10 @@ export const LOAD_TIMEOUT_MS = 25000
  * `complete` means the document finished loading, which on a board that renders
  * its results client-side is the moment BEFORE there are any results. There is
  * no event for "the framework has finished", so this is a wait, and it is the
- * least honest number in the extension. Two and a half seconds is measured
- * against LinkedIn and Workday on a warm connection; a slower board returns
- * fewer rows rather than wrong ones, which is the right way round.
+ * least honest number in the extension. Two and a half seconds was measured
+ * against client-rendered boards (Workday among them) on a warm connection; a
+ * slower board returns fewer rows rather than wrong ones, which is the right
+ * way round.
  */
 export const SETTLE_MS = 2500
 

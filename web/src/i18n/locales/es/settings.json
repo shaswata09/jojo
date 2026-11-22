@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Endpoint",
       "hintOllama": "El host y el puerto. Sin /v1: jojo usa el endpoint propio de Ollama para poder pedirle que no recorte.",
-      "hint": "La URL base, terminada en /v1."
+      "hint": "La URL base, terminada en /v1.",
+      "remote": "Esta dirección no está en este dispositivo ni en tu red local, así que tus registros se enviarán a ella, y a quien la gestione."
     },
     "apiKey": {
       "label": "Clave de API",
@@ -91,6 +92,26 @@
     "providerTerms": "Términos de {{provider}}",
     "privacy": "Política de privacidad",
     "licence": "Página de licencia de jojo"
+  },
+  "cloudNotice": {
+    "headline": "Tus registros salen de este dispositivo cuando usas {{name}}",
+    "sent": {
+      "what": "Todo lo que el asistente lee para responderte se envía a {{name}}: tus candidaturas y notas, tu perfil, el texto de tu CV una vez leído un documento, y los nombres y direcciones de correo de cualquier referencia o reclutador que consulte.",
+      "others": "Parte de eso es información personal de otras personas, no solo tuya.",
+      "local": "Con un modelo en tu propio equipo, en cambio, nada de eso sale."
+    },
+    "background": "No es solo cuando chateas. Mientras {{name}} esté seleccionado, jojo también le envía registros para el trabajo que se hace en segundo plano: la comprobación de duplicados al guardar una candidatura, la lectura de las ofertas que encuentra tu explorador, las lecturas de encaje con tu perfil, la adaptación de tu CV y tus cartas, y el acortamiento de una conversación larga para que quepa.",
+    "cost": {
+      "paid": "{{short}} factura a tu cuenta, y sus propios términos rigen lo que puede conservar y si lo que envías puede usarse para mejorar sus modelos.",
+      "freeTier": "{{short}} tiene un nivel gratuito con límites, además de un uso de pago que se factura a tu cuenta. En ambos casos, sus propios términos rigen lo que puede conservar y si lo que envías puede usarse para mejorar sus modelos.",
+      "bargain": "Es un trato distinto al de la opción local, no peor, pero vale la pena leerlo antes de que tus registros formen parte de él."
+    },
+    "openrouter": "OpenRouter pasa cada solicitud a la empresa que hace el modelo que eliges, bajo los términos de esa empresa además de los suyos. Los propios términos de OpenRouter le permiten registrar las solicitudes y usar su contenido de forma anonimizada.",
+    "business": "Estos términos de API están escritos para empresas y desarrolladores. jojo no puede decirte si encajan con una búsqueda de empleo personal; comprobar que encajan con tu uso te corresponde a ti.",
+    "liability": {
+      "party": "Tú eres el titular de la cuenta y la parte de ese acuerdo: jojo no incluye ninguna clave ni hace ninguna solicitud por su cuenta.",
+      "breach": "Cumplir los términos de {{short}} te corresponde a ti, y jojo no acepta ninguna responsabilidad por ningún incumplimiento de ellos."
+    }
   },
   "mcp": {
     "title": "Conectar desde un cliente MCP",
@@ -144,7 +165,7 @@
     "cors": "Escucha en <mono>{{endpoint}}</mono>, pero no envía cabeceras CORS, así que un navegador no deja que esta página lo llame entre puertos. El servidor de desarrollo de jojo reenvía <mono>{{path}}</mono> hacia él; por eso la dirección de arriba es una ruta y no una URL. La app del móvil habla con él directamente y no necesita nada de esto.",
     "hosted": "<em>En una copia alojada, instala la extensión.</em> Una página servida desde la web no puede llamar a <mono>127.0.0.1</mono>: no hay proxy que reenvíe una ruta, y las páginas https:// tienen prohibida la red local. La extensión no es una página: llega al lector directamente, y jojo se lo pide. Pon arriba la dirección propia del lector y reenviará cada solicitud; solo reenvía a este equipo.",
     "fillAddress": "Primero indica una dirección",
-    "connectedNote": "Los documentos se envían a esa dirección y a ninguna otra. No se sube nada.",
+    "connectedNote": "Los documentos se envían a esa dirección y a ninguna otra.",
     "separate": "{{name}} es un programa independiente, no forma parte de jojo.",
     "notAffiliated": "jojo no está afiliado a Microsoft."
   },
@@ -185,13 +206,14 @@
     "where": "En este navegador y en la extensión, los informes de errores <em>se quedan en este dispositivo</em>: no se sube nada, y una copia de seguridad no los incluye. La app del móvil también los envía a Firebase Crashlytics, que añade el modelo del dispositivo, su versión del sistema y un id aleatorio para contar cuántas personas tienen el mismo fallo. Los informes de errores tratan solo de fallos; lo que haces en jojo es la pregunta aparte de abajo, que se responde por separado.",
     "keep": {
       "label": "Guardar informes de errores",
-      "description": "Activado, para que un fallo que sufras sea uno que podamos ver. Desactívalo y no se registra nada."
+      "description": "Desactivado a menos que lo actives. Si está activado, un fallo que sufras se guarda aquí para que puedas consultarlo; si está desactivado, no se registra nada."
     },
     "usage": {
       "label": "Compartir qué funciones uso",
-      "description": "Solo recuentos, de una lista fija; nunca lo que hay en tus registros.",
-      "note": "Solo puede decir cosas de una lista fija: qué pantalla se abrió, que se añadió una solicitud, aproximadamente cuántas hay. No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito. Se envía a Google Analytics."
+      "description": "Solo recuentos, de una lista fija; nunca lo que hay en tus registros. Se envía con un identificador aleatorio de este navegador y datos básicos del dispositivo.",
+      "note": "Solo puede decir cosas de una lista fija: qué pantalla se abrió, que se añadió una solicitud, aproximadamente cuántas hay. No puede nombrar a un empleador, un puesto, un archivo ni nada que hayas escrito. Se envía a Google Analytics, que añade un identificador aleatorio que guarda en este navegador y datos básicos como el navegador, el tipo de dispositivo, el idioma y el país o la región de donde procede tu conexión. Desactivarlo borra ese identificador."
     },
+    "privacy": "Aviso de privacidad",
     "kept_one": "{{count}} informe guardado",
     "kept_many": "{{count}} informes guardados",
     "kept_other": "{{count}} informes guardados",
@@ -258,7 +280,7 @@
   "documents": {
     "title": "Tus documentos",
     "hint": "en este dispositivo",
-    "intro": "Los CV, cartas de presentación y declaraciones que adjuntas se guardan en este navegador, en este equipo. No se sube nada a ninguna parte.",
+    "intro": "Los CV, cartas de presentación y declaraciones que adjuntas se guardan en este navegador, en este equipo. Los archivos no se suben; su texto solo va a un modelo si eliges un proveedor alojado.",
     "count_one": "{{count}} documento",
     "count_many": "{{count}} documentos",
     "count_other": "{{count}} documentos",

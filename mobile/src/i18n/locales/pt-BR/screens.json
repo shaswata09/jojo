@@ -436,7 +436,8 @@
     "footer": "jojo — Jarvis fOr Job Organization. Tudo roda neste dispositivo.",
     "statusEnglish": "Mantido em inglês, palavra por palavra, para não se afastar da licença que resume.",
     "overdue_one": "{{count}} lembrete atrasado.",
-    "overdue_other": "{{count}} lembretes atrasados."
+    "overdue_other": "{{count}} lembretes atrasados.",
+    "privacy": "Aviso de privacidade"
   },
   "statistics": {
     "title": "Estatísticas",
@@ -718,7 +719,8 @@
       "focusPlaceholder": "acompanhamentos e prazos",
       "termsPlaceholder": "professor assistente, CS/ECE",
       "often": "Com que frequência",
-      "oftenHint": "Quanto tempo espera entre uma rodada e outra."
+      "oftenHint": "Quanto tempo espera entre uma rodada e outra.",
+      "sourceRefused": "{{sites}} não permite leitura automatizada nos termos de uso, então o explorador não vai lê-lo. Remova-o, ou abra as vagas lá você mesmo e salve-as no jojo."
     }
   },
   "postingBrowser": {
@@ -925,7 +927,8 @@
       "reasoning": "Raciocínio",
       "reasoningDescription": "Permite que modelos capazes de pensar — gpt-oss, Gemma 4, Qwen3 — raciocinem antes de responder. Desative se as respostas voltarem vazias em um modelo pequeno.",
       "endpointFirst": "Preencha um endpoint primeiro.",
-      "kept": "Guardado neste dispositivo. O assistente vai usar este modelo."
+      "kept": "Guardado neste dispositivo. O assistente vai usar este modelo.",
+      "remote": "Este endereço não está neste dispositivo nem na sua rede local, então seus registros serão enviados a ele — e a quem quer que o mantenha."
     },
     "test": {
       "testing": "Testando…",
@@ -996,13 +999,33 @@
     "provider": {
       "title": "Provedor",
       "description": "Escolher um define o endereço dele para você. Os de nuvem precisam de uma chave, e seus registros vão para eles.",
-      "cloud": "Seus textos vão para esta empresa e são cobrados de você",
-      "localKey": "Em uma máquina que você controla. Precisa de uma chave.",
-      "local": "Em uma máquina que você controla. Nada sai dela."
+      "cloud": "Seus registros vão para esta empresa, sob os termos dela",
+      "localKey": "Roda onde você apontar. Precisa de uma chave, e nada sai da sua rede, a menos que esse endereço esteja em outro lugar.",
+      "local": "Roda onde você apontar. Nada sai da sua rede, a menos que esse endereço esteja em outro lugar."
     },
     "cloud": {
       "terms": "Termos de {{name}}",
       "privacy": "Política de privacidade"
+    },
+    "cloudNotice": {
+      "headline": "Seus registros saem deste dispositivo quando você usa {{name}}",
+      "sent": {
+        "what": "Tudo o que o assistente lê para responder a você é enviado para {{name}}: suas candidaturas e notas, seu perfil, o texto do seu currículo depois que um documento é lido, e os nomes e endereços de e-mail de quaisquer referências ou recrutadores que ele consultar.",
+        "others": "Parte disso são informações pessoais de outras pessoas, não só suas.",
+        "local": "Com um modelo na sua própria máquina, por outro lado, nada disso sai."
+      },
+      "background": "Não é só quando você conversa. Enquanto {{name}} estiver selecionado, o jojo também envia registros para ele em trabalhos feitos em segundo plano: a verificação de duplicatas quando você salva uma candidatura, a leitura das vagas que seu explorador encontra, as avaliações de adequação ao seu perfil, a adaptação do seu currículo e das suas cartas, e o encurtamento de uma conversa longa para que ela caiba.",
+      "cost": {
+        "paid": "{{short}} cobra na sua conta, e os próprios termos dele definem o que ele pode guardar e se o que você envia pode ser usado para melhorar os modelos dele.",
+        "freeTier": "{{short}} tem um plano gratuito com limites, além do uso pago cobrado na sua conta. De um jeito ou de outro, os próprios termos dele definem o que ele pode guardar e se o que você envia pode ser usado para melhorar os modelos dele.",
+        "bargain": "É um acordo diferente da opção local, não um pior, mas vale a pena lê-lo antes que seus registros façam parte dele."
+      },
+      "openrouter": "O OpenRouter repassa cada solicitação à empresa que faz o modelo escolhido, sob os termos dessa empresa e também os dele. Os próprios termos do OpenRouter permitem que ele registre as solicitações e use o conteúdo delas de forma anonimizada.",
+      "business": "Estes termos de API foram escritos para empresas e desenvolvedores. O jojo não pode dizer se eles servem para uma busca de emprego pessoal; verificar se servem para o seu uso cabe a você.",
+      "liability": {
+        "party": "Você é o titular da conta e a parte nesse contrato — o jojo não traz nenhuma chave e não faz nenhuma solicitação por conta própria.",
+        "breach": "Cumprir os termos de {{short}} é responsabilidade sua, e o jojo não aceita nenhuma responsabilidade por qualquer violação deles."
+      }
     },
     "servers": {
       "title": "Servidores salvos",

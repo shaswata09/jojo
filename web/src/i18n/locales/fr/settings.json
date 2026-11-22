@@ -57,7 +57,8 @@
     "endpoint": {
       "label": "Point d’accès",
       "hintOllama": "L’hôte et le port. Sans /v1 : jojo utilise le point d’accès propre à Ollama pour pouvoir lui demander de ne pas tronquer.",
-      "hint": "L’URL de base, se terminant par /v1."
+      "hint": "L’URL de base, se terminant par /v1.",
+      "remote": "Cette adresse n’est ni sur cet appareil ni sur votre réseau local : vos fiches y seront donc envoyées — ainsi qu’à quiconque la gère."
     },
     "apiKey": {
       "label": "Clé d’API",
@@ -91,6 +92,26 @@
     "providerTerms": "Conditions de {{provider}}",
     "privacy": "Politique de confidentialité",
     "licence": "Page de licence de jojo"
+  },
+  "cloudNotice": {
+    "headline": "Vos fiches quittent cet appareil quand vous utilisez {{name}}",
+    "sent": {
+      "what": "Tout ce que l’assistant lit pour vous répondre est envoyé à {{name}} : vos candidatures et vos notes, votre profil, le texte de votre CV dès qu’un document est lu, ainsi que les noms et adresses e-mail des référents ou recruteurs qu’il consulte.",
+      "others": "Une partie de ces informations sont des données personnelles d’autres personnes, pas seulement les vôtres.",
+      "local": "Avec un modèle sur votre propre machine, rien de tout cela ne sort."
+    },
+    "background": "Ce n’est pas seulement quand vous discutez. Tant que {{name}} est sélectionné, jojo lui envoie aussi des fiches pour le travail fait en arrière-plan : la vérification des doublons quand vous enregistrez une candidature, la lecture des offres que votre éclaireur trouve, les évaluations d’adéquation avec votre profil, l’adaptation de votre CV et de vos lettres, et le raccourcissement d’une longue conversation pour qu’elle tienne.",
+    "cost": {
+      "paid": "{{short}} facture votre compte, et ses propres conditions déterminent ce qu’il peut conserver et si ce que vous envoyez peut servir à améliorer ses modèles.",
+      "freeTier": "{{short}} propose une offre gratuite limitée ainsi qu’un usage payant facturé sur votre compte. Dans les deux cas, ses propres conditions déterminent ce qu’il peut conserver et si ce que vous envoyez peut servir à améliorer ses modèles.",
+      "bargain": "C’est un autre marché que l’option locale, pas un moins bon, mais il vaut la peine de le lire avant que vos fiches en fassent partie."
+    },
+    "openrouter": "OpenRouter transmet chaque requête à l’entreprise qui fait le modèle que vous choisissez, selon les conditions de cette entreprise en plus des siennes. Les propres conditions d’OpenRouter lui permettent de journaliser les requêtes et d’utiliser leur contenu sous forme anonymisée.",
+    "business": "Ces conditions d’API sont rédigées pour les entreprises et les développeurs. jojo ne peut pas vous dire si elles conviennent à une recherche d’emploi personnelle ; vérifier qu’elles conviennent à votre usage vous revient.",
+    "liability": {
+      "party": "C’est vous le titulaire du compte et la partie à ce contrat — jojo ne fournit aucune clé et n’envoie aucune requête de son propre chef.",
+      "breach": "Le respect des conditions de {{short}} vous incombe, et jojo n’accepte aucune responsabilité en cas de manquement à celles-ci."
+    }
   },
   "mcp": {
     "title": "Se connecter depuis un client MCP",
@@ -144,7 +165,7 @@
     "cors": "Il écoute sur <mono>{{endpoint}}</mono>, mais n’envoie aucun en-tête CORS — un navigateur ne laisse donc pas cette page l’appeler d’un port à l’autre. Le serveur de développement de jojo lui transmet <mono>{{path}}</mono>, c’est pourquoi l’adresse ci-dessus est un chemin et non une URL. L’application mobile lui parle directement et n’a besoin de rien de tout cela.",
     "hosted": "<em>Sur une copie hébergée, installez l’extension.</em> Une page servie depuis le web ne peut pas appeler <mono>127.0.0.1</mono> — il n’y a pas de proxy pour transmettre un chemin, et les pages https:// n’ont pas accès au réseau local. L’extension n’est pas une page : elle atteint le lecteur directement, et jojo le lui demande. Indiquez ci-dessus l’adresse propre du lecteur et elle relaiera chaque requête ; elle ne relaie jamais qu’à cette machine.",
     "fillAddress": "Indiquez d’abord une adresse",
-    "connectedNote": "Les documents sont envoyés à cette adresse et nulle part ailleurs. Rien n’est téléversé.",
+    "connectedNote": "Les documents sont envoyés à cette adresse et nulle part ailleurs.",
     "separate": "{{name}} est un programme distinct, qui ne fait pas partie de jojo.",
     "notAffiliated": "jojo n’est pas affilié à Microsoft."
   },
@@ -185,13 +206,14 @@
     "where": "Dans ce navigateur et dans l’extension, les rapports de plantage <em>restent sur cet appareil</em> — rien n’est envoyé, et un fichier de sauvegarde ne les contient pas. L’application mobile les envoie aussi à Firebase Crashlytics, qui ajoute le modèle de l’appareil, la version de son système et un identifiant aléatoire servant à compter combien de personnes rencontrent le même plantage. Les rapports de plantage ne concernent que les plantages — ce que vous faites dans jojo est la question distincte ci-dessous, traitée séparément.",
     "keep": {
       "label": "Conserver les rapports de plantage",
-      "description": "Activé, pour qu’un plantage que vous rencontrez soit visible pour nous. Désactivez-le et rien n’est enregistré."
+      "description": "Désactivé tant que vous ne l’activez pas. Activé, un plantage que vous rencontrez est conservé ici pour que vous puissiez le relire ; désactivé, rien n’est enregistré."
     },
     "usage": {
       "label": "Partager les fonctionnalités que j’utilise",
-      "description": "Uniquement des comptages, issus d’une liste fixe — jamais le contenu de vos fiches.",
-      "note": "Il ne peut dire que des choses issues d’une liste fixe — quel écran a été ouvert, qu’une candidature a été ajoutée, à peu près combien il y en a. Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi. Envoyé à Google Analytics."
+      "description": "Uniquement des comptages, issus d’une liste fixe — jamais le contenu de vos fiches. Envoyés avec un identifiant aléatoire propre à ce navigateur et des informations de base sur l’appareil.",
+      "note": "Il ne peut dire que des choses issues d’une liste fixe — quel écran a été ouvert, qu’une candidature a été ajoutée, à peu près combien il y en a. Il ne peut nommer ni un employeur, ni un poste, ni un fichier, ni rien de ce que vous avez saisi. Envoyé à Google Analytics, qui y ajoute un identifiant aléatoire qu’il conserve dans ce navigateur et des informations de base comme le navigateur, le type d’appareil, la langue et le pays ou la région d’où vient votre connexion. Le désactiver supprime cet identifiant."
     },
+    "privacy": "Avis de confidentialité",
     "kept_one": "{{count}} rapport conservé",
     "kept_many": "{{count}} rapports conservés",
     "kept_other": "{{count}} rapports conservés",
@@ -258,7 +280,7 @@
   "documents": {
     "title": "Vos documents",
     "hint": "sur cet appareil",
-    "intro": "Les CV, lettres de motivation et déclarations que vous joignez sont enregistrés dans ce navigateur, sur cette machine. Rien n’est envoyé nulle part.",
+    "intro": "Les CV, lettres de motivation et déclarations que vous joignez sont enregistrés dans ce navigateur, sur cette machine. Les fichiers ne sont pas téléversés ; leur texte n’est envoyé à un modèle que si vous choisissez un fournisseur hébergé.",
     "count_one": "{{count}} document",
     "count_many": "{{count}} documents",
     "count_other": "{{count}} documents",

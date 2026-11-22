@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { i18next } from '@/i18n/i18n'
 import type { PersistenceHealth } from '@jojo/service/repo/repository'
@@ -21,6 +21,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
+import { PRIVACY_URL } from '@jojo/service/core/privacy'
 import { TourTarget } from '@/components/tour/TourTarget'
 import { useDomain } from '@/i18n/domain'
 import { Icon } from '@/components/ui/Icon'
@@ -315,6 +316,33 @@ export function MoreScreen() {
         ))}
       </Panel>
 
+      {/*
+       * The privacy notice: who runs the hosted app and its analytics, what
+       * stays on this phone, what can leave and when, and how to say no.
+       *
+       * Here because More is where somebody goes to find out what jojo is, and
+       * the notice belongs beside the status notice above it. The published
+       * copy, by address (`core/privacy.ts`): the phone has no page of its own
+       * to resolve a relative one against. Opened in the browser rather than
+       * drawn here, so the one text that says what happens to somebody's data
+       * is the same text on every device and cannot fall behind a build.
+       */}
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={t('more.privacy')}
+        onPress={() => {
+          void Linking.openURL(PRIVACY_URL).catch(() => {
+            /* No browser, or the person cancelled. Nothing is lost; the address
+               is in the README and on the Guide's licence page too. */
+          })
+        }}
+        style={styles.privacy}
+      >
+        <Txt size="sm" tone="info" center>
+          {t('more.privacy')}
+        </Txt>
+      </Pressable>
+
       <Txt size="xs" tone="muted" center>
         {t('more.footer')}
         {overdue > 0 ? ` ${t('more.overdue', { count: overdue })}` : ''}
@@ -327,4 +355,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space[3], minHeight: 60 },
   badge: { paddingHorizontal: space[2], paddingVertical: 2, borderRadius: radius.full },
   runtimeRow: { flexDirection: 'row', alignItems: 'center', gap: space[2.5], minHeight: 48 },
+  // 44pt tall, so the link is a thumb's target and not a line of text.
+  privacy: { minHeight: 44, justifyContent: 'center' },
 })

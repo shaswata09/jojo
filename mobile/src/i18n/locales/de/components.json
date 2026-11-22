@@ -154,14 +154,16 @@
     "what": "Wenn etwas kaputtgeht, kann jojo den Fehler aufbewahren, damit du ihn nachlesen kannst – praktisch, wenn das, was fehlschlug, schon verschwunden ist. Ein Bericht enthält die Fehlermeldung, die Stelle in jojo und den Stacktrace. Er enthält nie deine Bewerbungen, Dokumente, Notizen, dein Profil oder deine Unterhaltungen, und API-Schlüssel, Adressen und E-Mail-Adressen werden entfernt, bevor ein Bericht geschrieben wird.",
     "where": "Berichte bleiben auf diesem Handy und gehen außerdem an Firebase Crashlytics, das dein Gerätemodell, die Betriebssystemversion und eine zufällige ID hinzufügt, mit der gezählt wird, wie viele Menschen denselben Absturz haben. Google bewahrt sie 90 Tage auf. Keiner deiner Einträge geht mit.",
     "report": "Abstürze melden",
-    "reportHint": "Eingeschaltet, damit wir Abstürze sehen, die dich treffen. Schalte es aus, dann wird nichts erfasst.",
+    "reportHint": "Aus, bis du es einschaltest. Ist es an, wird ein Absturz, der dich trifft, an Firebase Crashlytics gesendet, damit er behoben werden kann; ist es aus, wird nichts erfasst, und noch nicht gesendete Berichte werden gelöscht.",
     "usage": "Teilen, welche Funktionen ich nutze",
-    "usageHint": "Nur Zählungen aus einer festen Liste – nie, was in deinen Einträgen steht.",
-    "usageDetail": "Es kann nur Dinge aus einer festen Liste sagen – welcher Bildschirm geöffnet wurde, dass eine Bewerbung hinzugefügt wurde, ungefähr wie viele es gibt. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen. Geht an Google Analytics. Ist das aus, schaltet jojo auch die Bildschirmaufrufe und Sitzungszählungen ab, die Firebase sonst selbst sammeln würde.",
+    "usageHint": "Nur Zählungen aus einer festen Liste – nie, was in deinen Einträgen steht. Gesendet mit einer zufälligen App-Instanz-ID und grundlegenden Geräteangaben.",
+    "usageDetail": "Es kann nur Dinge aus einer festen Liste sagen – welcher Bildschirm geöffnet wurde, dass eine Bewerbung hinzugefügt wurde, ungefähr wie viele es gibt. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen. Geht an Google Analytics, das eine zufällige App-Instanz-ID und Grundangaben hinzufügt, etwa Gerätemodell, Betriebssystemversion, Sprache, App-Version und das Land oder die Region, aus der deine Verbindung kommt. Ist das aus, schaltet jojo auch die Bildschirmaufrufe und Sitzungszählungen ab, die Firebase sonst selbst sammeln würde, und das Ausschalten löscht diese ID und alles noch nicht Gesendete.",
     "kept_one": "{{count}} Bericht gespeichert",
     "kept_other": "{{count}} Berichte gespeichert",
     "nothingBroken": "Seit du das eingeschaltet hast, ist nichts kaputtgegangen.",
-    "notRecording": "Es wird nichts erfasst."
+    "notRecording": "Es wird nichts erfasst.",
+    "restartNote": "Ausgeschaltet. jojo hört sofort auf zu senden und hat alle noch nicht gesendeten Berichte gelöscht; der eigene Absturzfänger von Crashlytics schaltet sich beim nächsten Start von jojo vollständig ab.",
+    "privacy": "Datenschutzhinweis"
   },
   "date": {
     "today": "Heute",
@@ -290,7 +292,7 @@
   },
   "reporting": {
     "title": "Absturzberichte und Nutzung",
-    "description": "Zwei getrennte Dinge, beide eingeschaltet. Schalte eins davon hier oder später in den Einstellungen aus. Keins davon kann deine Einträge mitnehmen: keine Bewerbung, kein Dokument, keine Notiz, kein Profil und keine Unterhaltung.",
+    "description": "Zwei getrennte Dinge, und beide sind aus, bis du sie einschaltest – hier oder später in den Einstellungen. Keins davon kann deine Einträge mitnehmen: keine Bewerbung, kein Dokument, keine Notiz, kein Profil und keine Unterhaltung.",
     "bothOff": "Beide ausschalten",
     "save": "Auswahl speichern",
     "inReport": "Was in einem Absturzbericht steht",
@@ -305,9 +307,10 @@
       "secrets": "· Deine API-Schlüssel, die Adressen, die du nutzt, oder E-Mail-Adressen – entfernt, bevor ein Bericht geschrieben wird, nicht erst vor dem Senden."
     },
     "crashHint": "Der Fehler und wo er passiert ist. Geht an Firebase Crashlytics.",
-    "usageHint": "Nur Zählungen – welche Bildschirme geöffnet werden und wie oft. Nie, was darin steht.",
-    "usageDetail": "Das Zweite ist das Einzige, was jojo darüber sendet, was du TUST, und es kann nur Dinge aus einer festen Liste sagen – „der Tresor wurde geöffnet“, „eine Bewerbung wurde hinzugefügt“, „es sind 6–20“. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen, weil diese Wörter nicht in der Liste stehen. Ausschalten stoppt auch die Bildschirmaufrufe, die Firebase sonst selbst sammeln würde.",
-    "later": "Beides findest du jederzeit in den Einstellungen, und wenn du eins ausschaltest, wird verworfen, was es gespeichert hat."
+    "usageHint": "Nur Zählungen – welche Bildschirme geöffnet werden und wie oft –, nie, was darin steht. Gesendet mit einer zufälligen App-Instanz-ID und grundlegenden Geräteangaben.",
+    "usageDetail": "Das Zweite ist das Einzige, was jojo darüber sendet, was du TUST, und es kann nur Dinge aus einer festen Liste sagen – „der Tresor wurde geöffnet“, „eine Bewerbung wurde hinzugefügt“, „es sind 6–20“. Es kann keinen Arbeitgeber, keine Stelle, keine Datei und nichts von dir Getipptes nennen, weil diese Wörter nicht in der Liste stehen. Firebase Analytics fügt eine zufällige App-Instanz-ID und Grundangaben hinzu, etwa Gerätemodell, Betriebssystemversion, Sprache, App-Version und das Land oder die Region, aus der deine Verbindung kommt. Ausschalten stoppt auch die Bildschirmaufrufe, die Firebase sonst selbst sammeln würde, und löscht diese ID und alles noch nicht Gesendete.",
+    "later": "Beides findest du jederzeit in den Einstellungen, und wenn du eins ausschaltest, wird verworfen, was es gespeichert hat.",
+    "privacy": "Datenschutzhinweis"
   },
   "stagePicker": {
     "label": "Phase von {{name}}: {{stage}}. Phase ändern",

@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Trình duyệt của bạn là cơ sở dữ liệu",
-      "body": "Mọi bản ghi được ghi vào cơ sở dữ liệu bên trong trình duyệt này trong lúc bạn làm việc, nên đóng thẻ là an toàn. Không có gì rời khỏi máy này và không có gì được đồng bộ — xóa dữ liệu trình duyệt, đổi trình duyệt hoặc mất ổ đĩa thì dữ liệu cũng mất theo. Hãy xuất bản sao lưu <kbd>.json</kbd> từ <settings>Cài đặt</settings> cho những gì bạn muốn giữ ở nơi khác."
+      "body": "Mọi bản ghi được ghi vào cơ sở dữ liệu bên trong trình duyệt này trong lúc bạn làm việc, nên đóng thẻ là an toàn. jojo không giữ bản sao nào ở nơi khác và không có gì được đồng bộ: bản ghi của bạn chỉ rời khỏi trình duyệt này khi bạn gửi chúng tới một nhà cung cấp mô hình bạn đã chọn, hoặc tự mình chuyển chúng đi. Xóa dữ liệu trình duyệt, đổi trình duyệt hoặc mất ổ đĩa thì bản ghi cũng mất theo. Hãy xuất bản sao lưu <kbd>.json</kbd> từ <settings>Cài đặt</settings> cho những gì bạn muốn giữ ở nơi khác."
     },
     "savePath": {
       "title": "Điều gì xảy ra khi bạn lưu một thứ gì đó",
@@ -333,7 +333,7 @@
         "hint": "có sẵn",
         "title": "Giữ bản sao lưu",
         "storedTitle": "Tài liệu của bạn được lưu ở đây",
-        "stored": "CV và thư xin việc bạn đính kèm được lưu trong trình duyệt này và vẫn còn sau khi đóng thẻ. Không có gì được tải lên đâu cả — và không có gì rời khỏi máy này trừ khi bạn tự tải xuống.",
+        "stored": "CV và thư xin việc bạn đính kèm được lưu trong trình duyệt này và vẫn còn sau khi đóng thẻ. Các tệp không được tải lên và jojo không giữ bản sao nào ở nơi khác; nội dung chữ của chúng chỉ được gửi tới mô hình nếu bạn chọn một nhà cung cấp trực tuyến.",
         "oneFileTitle": "Một tệp chứa mọi thứ",
         "oneFile": "<settings>Cài đặt</settings> ghi một bản sao lưu mang theo mọi bản ghi, mọi liên kết giữa chúng và mọi tài liệu, tất cả trong một tệp. Khôi phục nó sẽ đưa cả ba trở lại.",
         "whyTitle": "Vì sao điều này quan trọng",

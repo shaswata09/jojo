@@ -13,8 +13,20 @@ import type { Plugin } from 'vite'
 import { withScriptPolicy } from './scripts/csp.mjs'
 import { buildCodeGraph, collectSources } from './scripts/code-graph.mjs'
 import { readFileSync as readManifest } from 'node:fs'
-import { creditProblems, packageOfModule } from './src/components/guide/credits.ts'
+import {
+  MIT_TEXT,
+  RUNTIME,
+  creditProblems,
+  packageOfModule,
+} from './src/components/guide/credits.ts'
 import type { BundledCopy } from './src/components/guide/credits.ts'
+import {
+  noticeFor,
+  renderNotices,
+  resolvePackage,
+  uniqueNotices,
+} from './scripts/licence-notices.mjs'
+import type { PackageNotice } from './scripts/licence-notices.mjs'
 
 // https://vite.dev/config/
 /**
@@ -202,6 +214,110 @@ function creditedBundle(): Plugin {
   }
 }
 
+/**
+ * Writes the licence texts the bundle owes into `dist/`, beside the code.
+ *
+ * The minifier strips every licence comment, so without this the built app
+ * redistributed MIT, ISC, BSD and Apache-2.0 code — firebase, pdfjs-dist and
+ * class-variance-authority among it — with none of the notices those licences
+ * require to go with it, and the Guide said the Apache text "ships at
+ * node_modules/<pkg>/LICENSE", which is not a place a visitor to GitHub Pages
+ * can look. Three files, linked from Guide → Built with:
+ *
+ *   LICENSE.txt               jojo's own licence, the full Apache-2.0 text.
+ *   NOTICE.txt                the repository's NOTICE, which §4(d) asks to pass on.
+ *   THIRD-PARTY-NOTICES.txt   every package this build put in the bundle, with
+ *                             its own licence and NOTICE files verbatim and the
+ *                             Apache-2.0 terms once (`scripts/licence-notices.mjs`),
+ *                             then THIRD-PARTY-NOTICES.md for what is not a
+ *                             package (the model, the vendored components).
+ *
+ * The package list is the bundle's own: every module of every chunk traced to
+ * its package folder, as `jojo:credited-bundle` does. Added to it are the
+ * credited packages whose output reaches `dist/` without being a module of a
+ * chunk — the fonts' .woff2 files and the CSS Tailwind compiles in — and the
+ * credits marked `inside` another package (core-js, compiled into pdf.js),
+ * which no trace can see. A `.txt` name rather than a bare `LICENSE`, because
+ * GitHub Pages serves an extensionless file as a download.
+ *
+ * Build only: the dev server has no bundle to read, and a list made up for it
+ * would be the kind of notices file this replaces.
+ */
+function licenceNotices(): Plugin {
+  const web = fileURLToPath(new URL('.', import.meta.url))
+  const repo = path.join(web, '..')
+  return {
+    name: 'jojo:licence-notices',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const dirs = new Set<string>()
+      for (const output of Object.values(bundle)) {
+        if (output.type !== 'chunk') continue
+        for (const [id, rendered] of Object.entries(output.modules)) {
+          if (rendered.renderedLength === 0) continue
+          const pkg = packageOfModule(id)
+          if (pkg !== null) dirs.add(pkg.dir)
+        }
+      }
+      for (const credit of RUNTIME) {
+        if (credit.inside !== undefined) continue
+        const dir = resolvePackage(credit.name, web)
+        if (dir !== null) dirs.add(dir)
+      }
+      const embedded: PackageNotice[] = RUNTIME.filter((c) => c.inside !== undefined).map((c) => ({
+        name: c.name,
+        version: c.version,
+        licence: c.licence,
+        texts: [
+          {
+            file: `compiled into ${c.inside ?? ''}`,
+            text: `Copyright (c) ${c.holder ?? ''}\n\n${c.licence === 'MIT' ? MIT_TEXT : ''}`.trim(),
+          },
+        ],
+        notices: [],
+        missing: null,
+        shared: [],
+      }))
+      // A folder with no readable manifest still shipped code: it is named
+      // from its path, with the gap said, rather than dropped or fatal.
+      const read = (dir: string): PackageNotice => {
+        try {
+          return noticeFor(dir)
+        } catch {
+          return {
+            name: path.basename(dir),
+            version: '?',
+            licence: null,
+            texts: [],
+            notices: [],
+            missing: `No readable package.json in ${path.relative(repo, dir)}; see the Built with page's credit.`,
+            shared: [],
+          }
+        }
+      }
+      const notices = uniqueNotices([...[...dirs].map(read), ...embedded])
+      const text = (file: string) => readManifest(path.join(repo, file), 'utf8')
+      this.emitFile({
+        type: 'asset',
+        fileName: 'THIRD-PARTY-NOTICES.txt',
+        source: renderNotices({
+          title: 'jojo web app: third-party notices',
+          preface: `The web app at this address is jojo, Copyright 2026 Shaswata Mitra, licensed under the Apache License, Version 2.0 (LICENSE.txt beside this file; NOTICE.txt carries the project's notice). It is built from the open-source packages listed below, each under its own licence. This file was generated by the build from the packages the bundle contains: each package's own licence and NOTICE files are reproduced as the package ships them, and where a package ships the full Apache-2.0 text it is printed once, under "Apache License 2.0", instead of once per package.`,
+          notices,
+          extra: [
+            {
+              heading: 'What is not an npm package (THIRD-PARTY-NOTICES.md)',
+              text: text('THIRD-PARTY-NOTICES.md'),
+            },
+          ],
+        }),
+      })
+      this.emitFile({ type: 'asset', fileName: 'LICENSE.txt', source: text('LICENSE') })
+      this.emitFile({ type: 'asset', fileName: 'NOTICE.txt', source: text('NOTICE') })
+    },
+  }
+}
+
 const envDir = fileURLToPath(new URL('..', import.meta.url))
 /** Same test as `ANALYTICS_CAPABILITY` needs at least: a measurement id to load gtag for. */
 const analyticsBuilt =
@@ -216,6 +332,7 @@ export default defineConfig({
     contentSecurityPolicy(analyticsBuilt),
     codeGraph(),
     creditedBundle(),
+    licenceNotices(),
   ],
   /*
    * `.env` lives at the REPO ROOT, not in `web/`.

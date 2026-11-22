@@ -25,11 +25,13 @@
  *   - `ai-faculty`: a HigherEdJobs-style tenure-track AI post. Priya should be
  *     at least worth tailoring; Amara, the systems researcher, should not be
  *     strong.
- *   - `utk-cs`: a REAL posting (University of Tennessee, Knoxville, fetched
- *     2026-09-12), which lists expectations without "Required:" headings and
+ *   - `cs-faculty`: an invented university posting built on the structure of
+ *     a real one, which lists expectations without "Required:" headings and
  *     says in prose that AI/ML-only candidates will not be considered. A test
  *     of the reader's judgement about what is essential, and a posting no
- *     AI-only candidate should come out of as strong.
+ *     AI-only candidate should come out of as strong. It was the real page,
+ *     verbatim, until 2026-11-21; the comment on `CS_FACULTY` says why that
+ *     changed and what was kept.
  *   - `ml-engineer`: an industry ML platform role in the style of a Greenhouse
  *     board, with explicit Required/Preferred headings.
  *
@@ -295,37 +297,60 @@ Meridian State University is an equal opportunity employer and welcomes applicat
 Salary: Commensurate with experience. Benefits include health insurance, retirement contributions, and relocation assistance.
 `
 
-const UTK_CS = `Description:
-The University of Tennessee, Knoxville
- (UTK) seeks exceptional candidates for two tenure-track faculty positions in the Min H. Kao Department of Electrical Engineering and Computer Science (
-EECS
-) at the rank of Assistant Professor. Primary consideration will be given to candidates in the areas of security and privacy, computer graphics (including VR/AR), programming languages, robotics, or human-computer interaction. Strong candidates from other areas of research will also be considered. Candidates whose only research area is AI/ML will not be considered for this search.
-The successful candidate will be expected to (1) conduct and publish scholarly research; (2) pursue funding to support an active research agenda; (3) teach undergraduate and graduate courses in computer science and related areas; (4) mentor graduate students; and (5) participate in departmental service.
-Information about the University, College, Department, and Knoxville
-UTK
- is the state's flagship campus and leading research institution with a strong partnership with nearby Oak Ridge National Laboratory (ORNL), where many UTK faculty have ongoing joint positions and/or joint research projects.
-The Tickle College of Engineering
- (TCE) is in the midst of an unprecedented period of growth and success, including adding over 30 new faculty at all levels to the college over 4 years as part of ambitious hiring campaigns led by Chancellor Donde Plowman and Dean Matthew Mench. The college has set records in research expenditures, enrollment, incoming student GPA, intellectual property development, and USNWR rank in the past three years. Key partnerships with Oak Ridge National Lab (ORNL) through the University of Tennessee Oak Ridge Innovation Institute (UTORII) and Consolidated Nuclear Security (CNS) that manages the Y-12 National Security Complex have created an expanded opportunity space for faculty and students in the region. New facilities include the state-of-the art Zeanah Engineering Complex, the University of Tennessee Manufacturing and Design Enterprise (TN-MADE) facility, and the Innovation South building that houses UTK's Fibers and Composites Manufacturing Facility (FCMF), a National Prototype Research Center (NSPC) as part of a partnership with CNS Y-12 under construction, and new facilities for the Biomedical Engineering department and a quantum foundry in planning stages.
-TCE currently has 213 tenure/tenure track and over 80 non-tenure track faculty in its nine academic departments and offers 11 undergraduate, 16 MS, and 15 PhD/DE degree programs. Affiliated with TCE and located in Tullahoma, Tennessee, the UT Space Institute is a hub of aerospace and defense research. The college is also home to eight research centers and three interdisciplinary institutes. With approximately 4,800 undergraduate and 1,500 graduate students, the college sits 28th among public universities in the most recent U.S. News and World Report graduate rankings. Faculty in the college have won 33 early career awards (NSF, DOE, DARPA, AFOSR, AHA, and Sloan) since 2016. In FY25, the college had annual research expenditures of $113.9M.
-EECS
- at UTK has 50 full-time T/TT faculty members, three members of the National Academy of Engineering Fellows, 15 IEEE Fellows, 15 NSF/DOE CAREER awardees, and 19 ranked in World's Top 2% Scientists as compiled by Stanford. The department has a growing enrollment of more than 1000 undergraduate and more than 450 graduate students across the three majors of Electrical Engineering, Computer Engineering, and Computer Science. In addition, the department offers undergraduate minors in computer science, cybersecurity, datacenter technology and management, and machine learning. Successful faculty candidates will be expected to contribute to the continued growth and excellence of EECS.
-The city of Knoxville is a hidden gem with an elegant and walkable downtown, rich and varied nightlife, vibrant neighborhoods, eclectic restaurants, and amazing access to outdoor activities of all kinds as well as exciting cultural events throughout the year. UTK is in Knoxville, Tennessee, within an easy driving distance to Nashville, Atlanta, Asheville, and the Great Smoky Mountains National Park. From Knoxville's TYS Airport, Knoxville has nonstop flights to 22 major airports in the US, including direct flights to cities such as DC, NYC, Atlanta, Boston, Charlotte, Chicago, Dallas, Denver, Detroit, Houston, Las Vegas, Miami, Orlando, Philadelphia, Phoenix.
-In addition, Knoxville and the surrounding areas boast great K-12 schools and one of the most highly educated populations in the entire US. With one of the lowest costs of living in the country, Knoxville was recently recognized in U.S. News and World Report as the 29th best place to live in the U.S. In 2024, US News ranked the State of Tennessee as #5 in fiscal stability, #12 in economy, and #21 in infrastructure.
+/*
+ * An INVENTED posting with the shape of a real one.
+ *
+ * Until 2026-11-21 this constant held a real university's posting, copied
+ * verbatim from HigherEdJobs on 2026-09-12 — named officials, the search
+ * chair's email and all. The repository is public and Apache-2.0, and jojo
+ * cannot license somebody else's text, nor publish a stranger's address. So the
+ * institution, the people, the places and every sentence are now made up.
+ *
+ * What was kept is what the test was for: the reading is hard in the same ways.
+ * Expectations are a numbered list inside one sentence, and there is no
+ * "Required:" heading anywhere. The rule that matters most to an AI-only
+ * applicant is a sentence of prose, not a bullet. The doctorate is spelled
+ * "Ph. D." where it is asked for, so a reader that keys on "PhD" has to find it
+ * by meaning (the folded word still appears once, in the college's list of
+ * programmes, which is all the fixture guard checks). Most of the page is
+ * campus and city promotion that asks for nothing, and the scraped line breaks
+ * around the institution's name and acronym are left in, because a captured
+ * page arrives that way.
+ *
+ * Results from runs before that date read the real text under the id
+ * `utk-cs`; they are not comparable with runs against this one.
+ */
+const CS_FACULTY = `Description:
+Larkspur Valley University
+ (LVU) invites applications for two tenure-track faculty positions in the Department of Computing and Electrical Engineering (
+CEE
+) at the rank of Assistant Professor. The search gives first priority to candidates working in security and privacy, computer graphics (including VR/AR), programming languages, robotics, or human-computer interaction. Excellent applicants from other areas are also welcome. Applicants whose research is solely in AI/ML will not be considered for this search.
+Faculty hired in this search will be expected to (1) carry out and publish scholarly research; (2) seek external funding for an active research program; (3) teach undergraduate and graduate courses in computer science and allied areas; (4) mentor graduate students; and (5) take part in departmental service.
+About the University, College, Department, and Larkspur
+LVU
+ is the state's principal public research university and works closely with a nearby national laboratory, where a number of LVU faculty hold joint appointments or run joint projects.
+The College of Engineering
+ (CoE) has grown quickly over the last several years, adding more than two dozen faculty at every rank through a sustained hiring initiative. Research spending, enrollment and incoming student preparation have all reached new highs in the last three years. Partnerships with the national laboratory and with regional manufacturers give faculty and students access to shared instruments, testbeds and internships. Recent additions to campus include a new engineering building, an advanced manufacturing center, and a fabrication facility, with a further laboratory building for bioengineering in the planning stage.
+CoE has about 200 tenure-line faculty and roughly 80 teaching and research faculty across nine departments, and offers 11 bachelor's, 16 master's, and 15 PhD programs. The college also runs a satellite research campus focused on aerospace, eight research centers and three interdisciplinary institutes. It enrolls roughly 4,500 undergraduate and 1,400 graduate students, and its faculty have received more than thirty early-career awards from federal agencies and private foundations in the past decade.
+CEE
+ at LVU has about 50 tenure-line faculty, several members of national academies, more than a dozen IEEE Fellows, and more than a dozen early-career award recipients. The department enrolls over 1,000 undergraduates and over 400 graduate students across majors in Electrical Engineering, Computer Engineering, and Computer Science, and offers minors in computer science, cybersecurity, data center operations, and machine learning. New faculty will be expected to help the department continue to grow.
+Larkspur is a mid-sized city with a walkable downtown, a lively music and restaurant scene, distinctive neighborhoods, and easy access to rivers, lakes and mountain trails, with cultural festivals throughout the year. Several larger cities are within a half-day's drive, and the regional airport offers nonstop service to around twenty major US airports.
+The surrounding area has well-regarded public schools, a highly educated population, and a cost of living well below the national average, and it regularly appears on national lists of good places to live.
 Qualifications:
-Applicants must hold a Ph. D. in Computer Science, or a closely related field, at the time of appointment.
-The candidate is expected to show potential to establish an independent research program, secure external funding, and contribute to interdisciplinary collaboration. The candidate is also expected to show effective, high-quality teaching skills, and the ability to effectively mentor undergraduate and graduate students.
+Applicants must hold a Ph. D. in Computer Science, or a closely related field, by the start of the appointment.
+The successful candidate should show the potential to build an independent research program, obtain external funding, and collaborate across disciplines. The candidate should also show effective, high-quality teaching and the ability to mentor undergraduate and graduate students well.
 Application Instructions:
-For full consideration, applications should be received by October 15, 2026. Review of applications will continue until the position is filled. Please submit the following items via Interfolio to complete your application:
+For full consideration, apply by October 15, 2026. Review will continue until the positions are filled. Please submit the following through the university's application portal:
 Cover Letter
 Curriculum Vitae
 Research Statement
 Teaching Statement
 Names and Contact Information of Three References
-For questions, please email the Search Committee Chair, Dr. Scott Ruoti (
-ruoti@utk.edu
+Questions may be sent to the chair of the search committee (
+cee-search@example.edu
 ). 
- The University of Tennessee is an EEO/AA/Title VI/Title IX/Section 504/ADA/ADEA institution in the provision of its education and employment programs and services. All qualified applicants will receive equal consideration for employment without regard to, and will not be discriminated against on the basis of, race, color, national origin, religion, sex, pregnancy, marital status, sexual orientation, gender identity, age, physical or mental disability, or covered veteran status. 
-Inquiries and charges of violation of Title VI (race, color, national origin), Title IX (sex), Section 504 (disability), ADA (disability), ADEA (age), sexual orientation, or veteran status should be directed to the (EEO). Requests for accommodation of a disability should be directed to the ADA Coordinator at the EEO office.
+ Larkspur Valley University is an equal opportunity and affirmative action employer. All qualified applicants will receive equal consideration for employment without regard to race, color, national origin, religion, sex, pregnancy, marital status, sexual orientation, gender identity, age, disability, or veteran status. 
+Questions about discrimination or requests for a disability accommodation should be directed to the university's equal opportunity office.
 `
 
 const ML_ENGINEER = `Machine Learning Engineer, LLM Platform
@@ -378,14 +403,15 @@ export const POSTINGS: readonly PostingFixture[] = [
     ],
   },
   {
-    id: 'utk-cs',
+    id: 'cs-faculty',
     title:
-      'Tenure-Track Assistant Professor Positions in Computer Science — University of Tennessee, Knoxville',
-    url: 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=179545452',
-    // Fetched 2026-09-12 and trimmed to the posting itself. Real prose, real
-    // structure: expectations are numbered in a sentence and there is no
-    // "Required:" heading anywhere.
-    text: UTK_CS,
+      'Tenure-Track Assistant Professor Positions in Computer Science — Larkspur Valley University',
+    url: 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=180000002',
+    // Invented, modelled on the structure of a real posting (see the comment
+    // on `CS_FACULTY`): expectations are numbered in a sentence and there is
+    // no "Required:" heading anywhere. The job code is made up too, next to
+    // `ai-faculty`'s, so the URL leads to no real vacancy.
+    text: CS_FACULTY,
     expect: [
       { says: 'phd', essential: true, label: 'the doctorate' },
       { says: 'research', essential: true, label: 'publishing research' },
@@ -427,6 +453,6 @@ export const EXPECTED_FIT: readonly {
 }[] = [
   { person: 'priya', posting: 'ai-faculty', atLeastTailoring: true },
   { person: 'amara', posting: 'ai-faculty', notStrong: true },
-  { person: 'priya', posting: 'utk-cs', notStrong: true },
+  { person: 'priya', posting: 'cs-faculty', notStrong: true },
   { person: 'priya', posting: 'ml-engineer', atLeastTailoring: true },
 ]

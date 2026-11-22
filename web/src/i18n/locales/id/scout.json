@@ -51,6 +51,7 @@
     "sources": "Sumber",
     "sourcesHint": "Papan lowongan atau halaman karier yang dipantaunya. Pisahkan beberapa dengan koma.",
     "sourceError": "Pencari tanpa sumber tidak punya apa pun untuk dibaca.",
+    "sourceRefused": "{{sites}} tidak mengizinkan pembacaan otomatis dalam ketentuan penggunaannya, jadi pencari tidak akan membacanya. Hapus, atau buka sendiri lowongan di sana dan simpan dengan tombol ekstensi jojo.",
     "terms": {
       "twin": "Yang menjadi fokus",
       "scout": "Istilah pencocokan"

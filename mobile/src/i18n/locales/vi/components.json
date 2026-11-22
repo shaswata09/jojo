@@ -146,13 +146,15 @@
     "what": "Khi có lỗi, jojo có thể giữ lại lỗi đó để bạn đọc lại — hữu ích khi thứ bị lỗi đã biến mất. Một báo cáo chứa thông báo lỗi, nơi xảy ra lỗi trong jojo, và dấu vết ngăn xếp. Nó không bao giờ chứa đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện của bạn, và khóa API, địa chỉ và địa chỉ email đều bị loại bỏ trước khi báo cáo được ghi.",
     "where": "Báo cáo được giữ trên điện thoại này, và cũng được gửi tới Firebase Crashlytics, kèm mẫu thiết bị, phiên bản hệ điều hành và một mã ngẫu nhiên dùng để đếm số người gặp cùng một sự cố. Google giữ chúng trong 90 ngày. Không bản ghi nào của bạn đi kèm.",
     "report": "Báo cáo sự cố",
-    "reportHint": "Bật, để sự cố bạn gặp là thứ chúng tôi thấy được. Tắt đi thì không có gì được ghi lại.",
+    "reportHint": "Tắt trừ khi bạn bật lên. Khi bật, sự cố bạn gặp sẽ được gửi tới Firebase Crashlytics để có thể sửa; khi tắt, không có gì được ghi lại và các báo cáo chưa gửi sẽ bị xóa.",
     "usage": "Chia sẻ những tính năng tôi dùng",
-    "usageHint": "Chỉ là số đếm, từ một danh sách cố định — không bao giờ là nội dung trong bản ghi của bạn.",
-    "usageDetail": "Nó chỉ có thể nói những điều trong một danh sách cố định — màn hình nào được mở, một đơn ứng tuyển đã được thêm, có khoảng bao nhiêu đơn. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập. Dữ liệu được gửi tới Google Analytics. Khi tắt mục này, jojo cũng tắt số lượt xem màn hình và số phiên mà Firebase lẽ ra sẽ tự thu thập.",
+    "usageHint": "Chỉ là số đếm, từ một danh sách cố định — không bao giờ là nội dung trong bản ghi của bạn. Được gửi kèm một mã phiên bản ứng dụng ngẫu nhiên và thông tin cơ bản về thiết bị.",
+    "usageDetail": "Nó chỉ có thể nói những điều trong một danh sách cố định — màn hình nào được mở, một đơn ứng tuyển đã được thêm, có khoảng bao nhiêu đơn. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập. Dữ liệu được gửi tới Google Analytics, nơi thêm một mã phiên bản ứng dụng ngẫu nhiên và các thông tin cơ bản như mẫu thiết bị, phiên bản hệ điều hành, ngôn ngữ, phiên bản ứng dụng và quốc gia hoặc khu vực mà kết nối của bạn đến từ đó. Khi tắt mục này, jojo cũng tắt số lượt xem màn hình và số phiên mà Firebase lẽ ra sẽ tự thu thập, và việc tắt sẽ xóa mã đó cùng mọi thứ chưa được gửi.",
     "kept_other": "Đã giữ {{count}} báo cáo",
     "nothingBroken": "Chưa có lỗi nào kể từ khi bạn bật tính năng này.",
-    "notRecording": "Không có gì đang được ghi lại."
+    "notRecording": "Không có gì đang được ghi lại.",
+    "restartNote": "Đã tắt. jojo ngừng gửi ngay lập tức và đã xóa mọi báo cáo chưa gửi; bộ bắt sự cố riêng của Crashlytics sẽ tắt hẳn vào lần tới jojo khởi động.",
+    "privacy": "Thông báo quyền riêng tư"
   },
   "date": {
     "today": "Hôm nay",
@@ -279,7 +281,7 @@
   },
   "reporting": {
     "title": "Báo cáo sự cố và mức sử dụng",
-    "description": "Hai thứ riêng biệt, cả hai đều đang bật. Tắt từng cái ở đây hoặc sau này trong Cài đặt. Không cái nào có thể mang theo bản ghi của bạn: không đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện nào.",
+    "description": "Hai thứ riêng biệt, và cả hai đều tắt trừ khi bạn bật lên — ở đây hoặc sau này trong Cài đặt. Không cái nào có thể mang theo bản ghi của bạn: không đơn ứng tuyển, tài liệu, ghi chú, hồ sơ cá nhân hay cuộc trò chuyện nào.",
     "bothOff": "Tắt cả hai",
     "save": "Lưu lựa chọn",
     "inReport": "Báo cáo sự cố gồm những gì",
@@ -294,9 +296,10 @@
       "secrets": "· Khóa API, các địa chỉ bạn dùng, hay bất kỳ địa chỉ email nào — bị loại bỏ trước khi báo cáo được ghi, chứ không phải trước khi gửi."
     },
     "crashHint": "Lỗi và nơi xảy ra. Được gửi tới Firebase Crashlytics.",
-    "usageHint": "Chỉ là số đếm — màn hình nào được mở, bao nhiêu lần. Không bao giờ là nội dung bên trong.",
-    "usageDetail": "Mục thứ hai là thứ duy nhất jojo gửi về những gì bạn LÀM, và nó chỉ có thể nói những điều trong một danh sách cố định — “Kho lưu trữ đã được mở”, “một đơn ứng tuyển đã được thêm”, “có 6–20 đơn”. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập, vì những từ đó không có trong danh sách. Tắt nó cũng dừng số lượt xem màn hình mà Firebase lẽ ra sẽ tự thu thập.",
-    "later": "Cả hai đều nằm trong Cài đặt khi bạn muốn thay đổi, và tắt một mục sẽ xóa những gì nó đã lưu."
+    "usageHint": "Chỉ là số đếm — màn hình nào được mở, bao nhiêu lần — không bao giờ là nội dung bên trong. Được gửi kèm một mã phiên bản ứng dụng ngẫu nhiên và thông tin cơ bản về thiết bị.",
+    "usageDetail": "Mục thứ hai là thứ duy nhất jojo gửi về những gì bạn LÀM, và nó chỉ có thể nói những điều trong một danh sách cố định — “Kho lưu trữ đã được mở”, “một đơn ứng tuyển đã được thêm”, “có 6–20 đơn”. Nó không thể nêu tên nhà tuyển dụng, vị trí, tệp hay bất cứ thứ gì bạn đã nhập, vì những từ đó không có trong danh sách. Firebase Analytics thêm một mã phiên bản ứng dụng ngẫu nhiên và các thông tin cơ bản như mẫu thiết bị, phiên bản hệ điều hành, ngôn ngữ, phiên bản ứng dụng và quốc gia hoặc khu vực mà kết nối của bạn đến từ đó. Tắt nó cũng dừng số lượt xem màn hình mà Firebase lẽ ra sẽ tự thu thập, đồng thời xóa mã đó và mọi thứ chưa được gửi.",
+    "later": "Cả hai đều nằm trong Cài đặt khi bạn muốn thay đổi, và tắt một mục sẽ xóa những gì nó đã lưu.",
+    "privacy": "Thông báo quyền riêng tư"
   },
   "stagePicker": {
     "label": "Giai đoạn của {{name}}: {{stage}}. Đổi giai đoạn",

@@ -51,6 +51,7 @@
     "sources": "Sources",
     "sourcesHint": "The board or careers page it watches. Separate several with commas.",
     "sourceError": "A scout with no source has nothing to read.",
+    "sourceRefused": "{{sites}} does not allow automated reading in its terms of use, so the scout will not read it. Remove it, or open postings there yourself and save them with the jojo extension's button.",
     "terms": {
       "twin": "What to focus on",
       "scout": "Match terms"

@@ -6,6 +6,8 @@ import { GuideContents } from '@/components/guide/GuideNav'
 import { APACHE_CLAUSES } from '@/components/guide/credits'
 import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
 import { useTitle } from '@/lib/links'
+import { publicUrl } from '@/lib/public-url'
+import { PRIVACY_PAGE } from '@jojo/service/core/privacy'
 import { EnglishOnlyNotice } from '@/components/guide/EnglishOnlyNotice'
 
 /**
@@ -114,16 +116,32 @@ export function GuideLicence() {
         </p>
 
         <div className="divide-y divide-hairline">
+          {/*
+           * Neutral on purpose (2026-11-21). This used to say these were
+           * "commercial terms, which generally do permit production use" —
+           * a reading of four other companies' contracts, offered as
+           * reassurance on the page where somebody decides whether to send
+           * their records. Whether a personal job search fits terms written
+           * for businesses and developers is not this project's to answer, so
+           * the page says what is checkable (who bills, who routes, when
+           * records go) and leaves the reading to the person, with the terms
+           * linked from Settings where they choose.
+           */}
           <Term
             title="Anthropic · OpenAI · OpenRouter · Groq"
-            chip={<Chip tone="gray">Billed to you</Chip>}
+            chip={<Chip tone="gray">Your key · your account</Chip>}
             body={
               <p>
-                Paid APIs under each vendor’s own commercial terms, which generally do permit
-                production use — that is what you are paying for. Your key, your account, your bill.
-                Read the one you choose: they differ on whether prompts may be retained, whether
-                they may be used for training, and what you may build. jojo does not negotiate any
-                of that on your behalf and cannot.
+                Hosted APIs, each under its vendor’s own terms. Anthropic and OpenAI bill your
+                account; Groq and OpenRouter also have free tiers with limits. OpenRouter passes
+                each request on to the company whose model you pick, so that company’s terms apply
+                as well as OpenRouter’s. These terms are written for businesses and developers, and
+                jojo does not tell you whether a personal job search fits them — read the one you
+                choose and decide. They differ on whether prompts may be retained, whether they may
+                be used for training, and what you may build. While one is selected it receives your
+                records not only when you chat but in background work too: the duplicate check at
+                Save, scout readings, fit readings, tailoring and compaction. jojo does not
+                negotiate any of that on your behalf and cannot.
               </p>
             }
           />
@@ -169,10 +187,12 @@ export function GuideLicence() {
             chip={<Chip tone="green">Nothing leaves</Chip>}
             body={
               <p>
-                A local server you run. Nothing is sent anywhere and no third-party terms come into
-                it — the model weights you load have their own licences, which are between you and
-                whoever published them. This is the configuration with the fewest strings attached,
-                and it is why it is the default.
+                A server you run, on your own machine or your own network. Nothing is sent anywhere
+                else and no third-party terms come into it — the model weights you load have their
+                own licences, which are between you and whoever published them. This is the
+                configuration with the fewest strings attached, and it is why it is the default.
+                Point one of these at an address somewhere else and your records go there instead;
+                Settings says so when the address you type is not local.
               </p>
             }
           />
@@ -195,11 +215,24 @@ export function GuideLicence() {
             fall out of date the moment a vendor rewrites their terms, and the agreement you are
             bound by is the one you accepted — not this summary of it.
           </p>
+          {/* Extended 2026-11-21 past the model vendors: the app names job boards
+              in its copy and reads some of them, and its demo data is made of
+              real employers' names. Each is somebody's mark, and naming it is
+              not a claim of any relationship. */}
           <p>
             <span className="text-text-1">No affiliation.</span> jojo is an independent project. It
-            is not endorsed by, sponsored by or affiliated with Microsoft, Anthropic, OpenAI,
-            Groq or OpenRouter. Those names appear here because jojo can talk to their
-            services, and every trademark belongs to its owner.
+            is not endorsed by, sponsored by or affiliated with Microsoft, Anthropic, OpenAI, Groq
+            or OpenRouter. Nor is it endorsed by, sponsored by or affiliated with the job boards and
+            hiring systems it names or can read — among them LinkedIn, Indeed, Glassdoor,
+            ZipRecruiter, HigherEdJobs, the CRA job board (Computing Research Association),
+            AcademicJobsOnline, AcademicCareers, Workday, Greenhouse, Lever, Ashby, iCIMS, Taleo and
+            Interfolio — or with the employers named in its demo data: Google, Stripe, Databricks,
+            Rice University, Baylor University, Southern Methodist University, Texas A&amp;M
+            University, Texas Tech University, the University of Houston, the University of North
+            Texas and The University of Texas at Austin. The demo records are invented and say
+            nothing about how any of them hires. These names appear because jojo can talk to those
+            services, can read their public pages when you point it at them, or uses them as sample
+            data, and every trademark belongs to its owner.
           </p>
           <p>
             <span className="text-text-1">Your data is yours, and so is the responsibility.</span>{' '}
@@ -207,6 +240,25 @@ export function GuideLicence() {
             somebody else’s personal details — a referee’s email, a hiring manager’s name — to a
             third party, that is your call to make and, under most data-protection law, yours to
             answer for. jojo’s job is to make sure you know when it is happening.
+          </p>
+          {/* The privacy notice, linked from the page about obligations because
+              it is the other half of them: this page says what you take on,
+              that one says what jojo's own hosted copy does with data. A plain
+              link to the copy shipped with this build (`core/privacy.ts`), so a
+              fork's notice is the fork's. */}
+          <p>
+            <span className="text-text-1">Privacy.</span> What stays on your device, what can leave
+            it and when — the optional usage analytics and crash reports, a model provider you
+            choose, the job boards your scout reads — and how to say no are set out in the{' '}
+            <a
+              href={publicUrl(PRIVACY_PAGE)}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-accent underline decoration-1 underline-offset-4"
+            >
+              privacy notice
+            </a>
+            .
           </p>
         </div>
       </Panel>

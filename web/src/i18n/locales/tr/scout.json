@@ -51,6 +51,7 @@
     "sources": "Kaynaklar",
     "sourcesHint": "İzlediği ilan sitesi ya da kariyer sayfası. Birden fazlasını virgülle ayırın.",
     "sourceError": "Kaynağı olmayan bir gözcünün okuyacağı bir şey yoktur.",
+    "sourceRefused": "{{sites}} kullanım koşullarında otomatik okumaya izin vermiyor, bu yüzden gözcü onu okumayacak. Kaldırın ya da oradaki ilanları kendiniz açıp jojo uzantısının düğmesiyle kaydedin.",
     "terms": {
       "twin": "Neye odaklanmalı",
       "scout": "Eşleştirme terimleri"

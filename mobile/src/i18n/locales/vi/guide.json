@@ -184,7 +184,7 @@
       "title": "Mô hình nào làm việc này",
       "hint": "lựa chọn của bạn, và nó thay đổi nơi lời bạn được gửi tới",
       "local": "jojo giao tiếp với bất cứ thứ gì bạn trỏ tới trong Cài đặt. Một mô hình chạy trên máy bạn kiểm soát — Ollama, vLLM, LM Studio — là mặc định, và đó là cách bố trí duy nhất mà không có gì bạn viết rời khỏi thiết bị này.",
-      "cloud": "Bạn cũng có thể dùng Claude, OpenAI và các nhà cung cấp khác với khóa API. Đó là một sự đánh đổi thực sự và màn hình nói rõ điều đó: các bản ghi của bạn được gửi tới công ty đó và tính phí vào tài khoản của bạn. Khóa được giữ trên thiết bị này, không bao giờ có trong bản sao lưu, và không bao giờ được gửi tới đâu ngoài nhà cung cấp bạn đã chọn.",
+      "cloud": "Bạn cũng có thể dùng Claude, OpenAI và các nhà cung cấp khác với khóa API. Đó là một sự đánh đổi thực sự và màn hình nói rõ điều đó: các bản ghi của bạn được gửi tới công ty đó, theo điều khoản của họ, và một số nhà cung cấp tính phí vào tài khoản của bạn. Khóa được giữ trên thiết bị này, không bao giờ có trong bản sao lưu, và không bao giờ được gửi tới đâu ngoài nhà cung cấp bạn đã chọn.",
       "openSettings": "Mở Cài đặt",
       "truncatedTitle": "Nếu trợ lý có vẻ đã ngừng đọc",
       "truncated": "Một mô hình cục bộ thiếu chỗ sẽ lặng lẽ bỏ phần đầu của những gì được gửi tới, rồi tự tin trả lời một câu hỏi mà nó chưa từng thấy đầy đủ. jojo so sánh những gì máy chủ báo đã đọc với những gì thực sự được gửi, và báo cho bạn khi hai bên không khớp — vì nếu không, trợ lý sẽ trông như làm việc kém thay vì chỉ là thiếu chỗ."
@@ -229,7 +229,8 @@
       "navigation": "Thanh thẻ và ngăn xếp màn hình",
       "drag": "Thao tác nhấn giữ để kéo trên bảng, chạy trên luồng giao diện",
       "charts": "Biểu đồ vành khuyên, radar và đồ thị",
-      "type": "Phông chữ, đóng gói sẵn thay vì tải về"
+      "type": "Phông chữ, đóng gói sẵn thay vì tải về",
+      "reporting": "Báo cáo sự cố và mức sử dụng, tắt trừ khi bạn bật lên"
     },
     "unfinished": {
       "assistant": {
@@ -244,6 +245,19 @@
         "title": "Không có gì rời khỏi thiết bị này trừ nơi bạn chỉ định",
         "detail": "Không có tài khoản, không đồng bộ và không tải lên. Có thể kết nối tới hai địa chỉ, cả hai đều của bạn và đều được đặt trong Cài đặt: mô hình, và trình đọc tài liệu — trình đọc cũng tải tin tuyển dụng về khi bạn thêm đơn ứng tuyển từ liên kết, nên URL đó đi tới trình đọc của bạn chứ không phải tới chúng tôi. Chuyển dữ liệu chuyển một bản sao giữa các thiết bị của bạn qua mạng cục bộ — trên điện thoại này nó nhận, còn máy tính là bên gửi. Không có gì khác đi đâu cả."
       }
+    },
+    "licences": {
+      "title": "Giấy phép",
+      "hint_other": "{{count}} gói, kèm thông báo mà chúng yêu cầu",
+      "intro": "Mọi gói npm tạo nên ứng dụng này, kèm giấy phép và thông báo bản quyền mà gói yêu cầu đi cùng, được tạo từ các gói đã cài đặt và được một bài kiểm thử đối chiếu với chúng. Các thư viện gốc Android và iOS mà ứng dụng liên kết vẫn chưa được liệt kê. Phông chữ và một ghi chú về các thư viện gốc đó được đặt lên đầu.",
+      "open": "Đọc giấy phép",
+      "sheetTitle": "Giấy phép của bên thứ ba",
+      "sheetDescription": "jojo được cấp phép theo Apache-2.0. Đây là điều khoản của những tác phẩm mà nó dựa trên, hiển thị đúng như tác giả của chúng đã viết.",
+      "search": "Lọc theo gói hoặc giấy phép",
+      "searchLabel": "Lọc giấy phép",
+      "empty": "Không có gói nào khớp.",
+      "rowLabel": "{{name}} {{version}}, {{licence}}. Hiện hoặc ẩn văn bản giấy phép.",
+      "noLicence": "không ghi giấy phép"
     }
   }
 }

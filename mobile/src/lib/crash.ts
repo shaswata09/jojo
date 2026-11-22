@@ -109,6 +109,7 @@ let crashlytics: {
   recordError: (e: Error) => void
   log: (m: string) => void
   setCrashlyticsCollectionEnabled: (enabled: boolean) => Promise<void>
+  deleteUnsentReports: () => Promise<void>
 } | null = null
 
 function nativeCrashlytics() {
@@ -118,6 +119,9 @@ function nativeCrashlytics() {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const mod = require('@react-native-firebase/crashlytics') as { default: () => unknown }
     crashlytics = mod.default() as typeof crashlytics
+    // Constructing it just installed the SDK's global handler OUTSIDE ours —
+    // see `shieldGlobalHandler`.
+    shieldGlobalHandler()
   } catch {
     // Not installed, or installed without its config files. Both are fine.
     crashlytics = null
@@ -125,26 +129,96 @@ function nativeCrashlytics() {
   return crashlytics
 }
 
+/**
+ * Turns whatever was thrown into an Error that carries nothing but its type,
+ * unless it already was an Error.
+ *
+ * WHY. Crashlytics' own global handler — installed by the module's
+ * constructor, above — does not go through `core/crash.ts`. For a thrown
+ * non-Error it runs `nativeModule.logPromise("Unknown Error: ${error}")`
+ * whenever collection is on (`@react-native-firebase/crashlytics/lib/
+ * handlers.ts`), and that log line rides along with the next report. So a
+ * thrown record — an object, a string built from a note — reached the vendor
+ * verbatim beside a report `recordCrash` had carefully redacted.
+ *
+ * An Error passes through untouched: it is what React Native's own handler
+ * expects, and with `crashlytics_is_error_generation_on_js_crash_enabled` off
+ * in `firebase.json` the SDK's handler builds no report from it. Anything else
+ * becomes `non-Error thrown: <type>`, the same description `core/crash.ts`
+ * keeps for one. The development red box loses the value as a result; the
+ * console line `reportError` prints still has it, and never leaves the phone.
+ *
+ * Cannot throw: `instanceof` and `Array.isArray` both throw on a revoked proxy,
+ * and this runs inside the handler for a throw.
+ */
+export function asError(error: unknown): Error {
+  try {
+    if (error instanceof Error) return error
+  } catch {
+    /* a revoked proxy; it is not an Error either way */
+  }
+  let kind: string = typeof error
+  try {
+    if (Array.isArray(error)) kind = 'array'
+  } catch {
+    /* as above */
+  }
+  return new Error(`non-Error thrown: ${kind}`)
+}
+
+/**
+ * Puts a thin handler IN FRONT of Crashlytics', so it is never handed a raw
+ * non-Error.
+ *
+ * The chain is built in the order modules come up: `index.ts` installs
+ * `installLastResortHandlers` first, and Crashlytics' constructor — run when
+ * `setUp` first resolves the module, a line later — wraps whatever is there.
+ * So the SDK's handler is the OUTERMOST, and sees the raw value before any
+ * jojo code does; `last-resort.ts` passing an Error to its `previous` only
+ * covers the opposite order. This covers this one, and between them the order
+ * stops mattering.
+ *
+ * Everything behind it, jojo's own handler included, then receives the Error
+ * `asError` made. That costs nothing: `core/crash.ts` already keeps only the
+ * type of a non-Error, so the local report reads the same.
+ *
+ * Once per process, which `nativeCrashlytics` guarantees by resolving once.
+ */
+function shieldGlobalHandler(): void {
+  const errorUtils = (
+    globalThis as typeof globalThis & {
+      ErrorUtils?: {
+        getGlobalHandler?: () => (error: unknown, isFatal?: boolean) => void
+        setGlobalHandler?: (handler: (error: unknown, isFatal?: boolean) => void) => void
+      }
+    }
+  ).ErrorUtils
+  if (!errorUtils?.getGlobalHandler || !errorUtils.setGlobalHandler) return
+  const inner = errorUtils.getGlobalHandler()
+  errorUtils.setGlobalHandler((error, isFatal) => {
+    inner(asError(error), isFatal)
+  })
+}
+
 /** Whether crash reporting is on. Read from storage; the default is below. */
 /*
- * UNSET MEANS ON ONCE ASKED, and the two halves of that are the whole point.
+ * UNSET MEANS THE DEFAULT, AND THE DEFAULT IS NO.
  *
- * `=== 'on'` would make an unanswered question read as "no", which was the old
- * default. Only an explicit 'off' turns it off, so somebody who has never opened
- * Settings gets the default from `CRASH_DEFAULTS` and somebody who said no keeps
- * saying no across restarts. Reading it as `!== 'off'` rather than storing a
- * default on first launch means there is no migration and no moment where a
- * fresh install and a cleared storage disagree.
+ * Only a stored 'on' or 'off' is an answer, read as `!== 'off'` exactly as it
+ * always was, so somebody who answered keeps their answer and there is no
+ * migration. Anything else falls to `CRASH_DEFAULTS.enabled`, which the owner
+ * turned to false on 2026-11-21 — a switch that starts on is a pre-ticked box,
+ * and that is not consent (see `core/crash-config.ts`).
  *
- * The second half is newer and was a live defect, the same one as in
- * `lib/analytics.ts` and fixed the same way. `CRASH_DEFAULTS.enabled` answers
- * "they were asked and did not choose"; on a fresh install nobody has been asked
- * at all, and this returned true anyway — measured on an empty AsyncStorage,
- * `setUp` then handed the SDK a yes nobody had given. So an unset preference
- * also needs the reporting stage of onboarding to have been PUT to them.
+ * The "once asked" half predates that and stays. While the default was on, a
+ * fresh install read as yes — measured on an empty AsyncStorage, `setUp` handed
+ * the SDK a yes nobody had given — and the fix was to require the reporting
+ * stage of onboarding to have been PUT to them as well. With the default off it
+ * changes nothing today; it is what stops a future flip of the default from
+ * reporting before the question exists.
  *
- * The stage is marked whenever `ReportingStep` is dismissed, however it is
- * dismissed, because what matters is that the question was on screen.
+ * `ReportingStep` writes an answer on every exit path — dismissing it is a no
+ * for both — so the unset case after the stage is marked is only a failed write.
  */
 export async function crashEnabled(): Promise<boolean> {
   try {
@@ -194,7 +268,29 @@ async function applyCollection(on: boolean): Promise<void> {
     const native = nativeCrashlytics()
     if (!native) return
     // Never on when the BUILD says no, whatever is stored.
-    await native.setCrashlyticsCollectionEnabled(CRASH_CAPABILITY === 'allowed' && on)
+    const enabled = CRASH_CAPABILITY === 'allowed' && on
+    await native.setCrashlyticsCollectionEnabled(enabled)
+    /*
+     * OFF ALSO MEANS DISCARD, and it has to happen on every launch, not only
+     * when the switch is moved.
+     *
+     * With collection off, Crashlytics does not stop catching native crashes —
+     * it writes them to disk as "unsent reports" and waits for the app to call
+     * `sendUnsentReports` or `deleteUnsentReports`. So a person who said no
+     * and then hit a crash had a report sitting on the phone, and if they ever
+     * turned reporting ON, the SDK sent it: a crash from the months they had
+     * refused, uploaded on the strength of a yes given later. Deleting here
+     * means the queue only ever holds reports made while the answer was yes.
+     *
+     * Why every launch and not just on the switch: the SDK only honours
+     * `deleteUnsentReports` while collection is disabled, and on iOS a change
+     * to collection "does not apply until the next run of the app"
+     * (`FIRCrashlytics.h`). So the call made when the switch is turned off may
+     * find collection still on for this run and do nothing; the call at the
+     * next launch, from `setUp`, is the one that is sure to land. `CrashPanel`
+     * tells the person that the switch finishes taking effect at restart.
+     */
+    if (!enabled) await native.deleteUnsentReports()
   } catch {
     /* never let the reporter break a launch */
   }

@@ -184,7 +184,7 @@
       "title": "Model mana yang melakukan ini",
       "hint": "pilihan Anda, dan menentukan ke mana kata-kata Anda pergi",
       "local": "jojo berkomunikasi dengan apa pun yang Anda arahkan di Pengaturan. Model yang berjalan di perangkat yang Anda kendalikan — Ollama, vLLM, LM Studio — adalah bawaan, dan satu-satunya pengaturan di mana tidak ada yang Anda tulis keluar dari perangkat ini.",
-      "cloud": "Anda juga dapat memakai Claude, OpenAI, dan lainnya dengan kunci API. Itu pertukaran nyata dan layar menyatakannya terus terang: entri Anda dikirim ke perusahaan itu dan ditagihkan ke akun Anda. Kunci disimpan di perangkat ini, tidak pernah dimasukkan ke cadangan, dan tidak pernah dikirim ke mana pun selain penyedia yang Anda pilih.",
+      "cloud": "Anda juga dapat memakai Claude, OpenAI, dan lainnya dengan kunci API. Itu pertukaran nyata dan layar menyatakannya terus terang: entri Anda dikirim ke perusahaan itu, di bawah ketentuannya, dan sebagian penyedia menagih akun Anda. Kunci disimpan di perangkat ini, tidak pernah dimasukkan ke cadangan, dan tidak pernah dikirim ke mana pun selain penyedia yang Anda pilih.",
       "openSettings": "Buka Pengaturan",
       "truncatedTitle": "Jika asisten tampaknya berhenti membaca",
       "truncated": "Model lokal dengan ruang yang terlalu sedikit diam-diam membuang bagian depan dari apa yang dikirim kepadanya, lalu menjawab dengan yakin tentang pertanyaan yang tidak pernah dilihatnya secara utuh. jojo membandingkan apa yang dinyatakan server telah dibacanya dengan apa yang benar-benar dikirim, dan memberi tahu Anda jika keduanya berbeda — karena alternatifnya adalah asisten yang tampak buruk dalam pekerjaannya padahal hanya kekurangan ruang."
@@ -229,7 +229,8 @@
       "navigation": "Bilah tab dan tumpukan layar",
       "drag": "Seret dengan tekan lama di papan, di thread UI",
       "charts": "Donat, radar, dan graf",
-      "type": "Huruf, dibundel alih-alih diambil"
+      "type": "Huruf, dibundel alih-alih diambil",
+      "reporting": "Laporan kerusakan dan penggunaan, mati kecuali Anda menyalakannya"
     },
     "unfinished": {
       "assistant": {
@@ -244,6 +245,19 @@
         "title": "Tidak ada yang keluar dari perangkat ini kecuali ke tempat yang Anda tunjuk",
         "detail": "Tidak ada akun, tidak ada sinkronisasi, dan tidak ada unggahan. Dua alamat dapat dijangkau, keduanya milik Anda dan keduanya diatur di Pengaturan: model, dan pembaca dokumen — yang juga mengambil lowongan kerja saat Anda menambahkan lamaran dari tautan, jadi URL itu dikirim ke pembaca Anda, bukan ke kami. Transfer memindahkan salinan antarperangkat Anda melalui jaringan lokal — di ponsel ini ia menerima, dan komputer adalah pihak yang mengirim. Tidak ada hal lain yang dikirim ke mana pun."
       }
+    },
+    "licences": {
+      "title": "Lisensi",
+      "hint_other": "{{count}} paket, beserta pemberitahuan yang dimintanya",
+      "intro": "Setiap paket npm yang membangun aplikasi ini, beserta lisensinya dan pemberitahuan hak cipta yang dimintanya untuk disertakan, dihasilkan dari paket yang terpasang dan dicocokkan dengannya oleh sebuah tes. Pustaka native Android dan iOS yang ditautkan aplikasi masih belum dicantumkan. Huruf dan catatan tentang pustaka native itu ada di bagian awal.",
+      "open": "Baca lisensinya",
+      "sheetTitle": "Lisensi pihak ketiga",
+      "sheetDescription": "jojo dilisensikan di bawah Apache-2.0. Ini adalah ketentuan karya yang menjadi dasarnya, ditampilkan sebagaimana ditulis oleh penulisnya.",
+      "search": "Saring menurut paket atau lisensi",
+      "searchLabel": "Saring lisensi",
+      "empty": "Tidak ada paket yang cocok.",
+      "rowLabel": "{{name}} {{version}}, {{licence}}. Tampilkan atau sembunyikan teks lisensinya.",
+      "noLicence": "tidak ada lisensi yang dinyatakan"
     }
   }
 }

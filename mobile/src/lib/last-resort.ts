@@ -1,3 +1,4 @@
+import { asError } from '@/lib/crash'
 import { reportError } from '@/lib/report-error'
 
 /**
@@ -55,7 +56,11 @@ export function installLastResortHandlers(): void {
       reportError('uncaught', error, { fatal: isFatal === true })
       // LAST, and this ordering matters: on a fatal, React Native's own handler
       // is what ends the process. Anything after it may never run.
-      previous(error, isFatal)
+      //
+      // Handed an Error, never the raw value: if Crashlytics' own handler is
+      // the one before this, it logs a non-Error to the vendor verbatim. See
+      // `asError` in `lib/crash.ts`, which also covers the other order.
+      previous(asError(error), isFatal)
     })
   }
 

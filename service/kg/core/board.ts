@@ -176,6 +176,89 @@ export function isJobPostingUrl(url: string): boolean {
   return segments.slice(namesAJob + 1).some(looksLikeAnId)
 }
 
+/* ------------------------- boards that forbid robots ----------------------- */
+
+/**
+ * Job sites whose terms forbid automated reading, so jojo never reads them
+ * without a person.
+ *
+ * LinkedIn's User Agreement (8.2) forbids scraping and automated access to the
+ * service; Indeed's terms forbid any automated system reaching the site
+ * without written permission; Glassdoor and ZipRecruiter say the same. The
+ * scout reads boards unattended, on a timer, in the person's own signed-in
+ * browser — exactly what those terms are written against, and the account at
+ * risk is the person's, not jojo's.
+ *
+ * The phone always refused these four (`mobile/src/lib/board-scan.ts`), but
+ * for a technical reason — they serve an empty shell to anything without a
+ * browser — so the web scout, which HAS a browser, read them. This is the one
+ * rule both platforms now use, and the reason is the terms, not the shell.
+ *
+ * What stays allowed is a person capturing a posting they are looking at:
+ * clicking the extension's button on a LinkedIn job they opened themselves is
+ * a person saving a page, not a robot reading a site. So `isJobPostingUrl`
+ * keeps its LinkedIn and Indeed shapes — a captured posting still needs to be
+ * recognised as one — and only the unattended paths ask this: a pipeline's
+ * sources (`board.search`), a page followed during a read (`crawlBoard`), the
+ * background reader (`autoReadable` on the web), and the scanners themselves.
+ *
+ * The extension carries a transcription in `web/extension/worker/crawl-rules.js`,
+ * held to this list by `web/src/lib/extension-crawl-rules.test.ts`.
+ */
+export const NO_AUTOMATED_ACCESS: readonly string[] = [
+  'linkedin.com',
+  'indeed.com',
+  'glassdoor.com',
+  'ziprecruiter.com',
+]
+
+/**
+ * The site in `NO_AUTOMATED_ACCESS` this address is on, or null.
+ *
+ * Any subdomain and any country domain of the same name: LinkedIn and Indeed
+ * serve the same service from `uk.linkedin.com`, `ca.indeed.com`,
+ * `indeed.co.uk` and `glassdoor.de`, and their terms do not end at `.com`. A
+ * lookalike that merely contains the name (`notlinkedin.com`) is not matched.
+ */
+export function noAutomatedAccess(url: string): string | null {
+  let host: string
+  try {
+    host = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(url) ? url : `https://${url}`).hostname.toLowerCase()
+  } catch {
+    return null
+  }
+  for (const site of NO_AUTOMATED_ACCESS) {
+    if (onBoard(host, site)) return site
+    // The same name under another country's domain: `indeed.co.uk`, `glassdoor.de`.
+    const name = site.slice(0, site.indexOf('.'))
+    if (new RegExp(`(?:^|\\.)${name}\\.(?:[a-z]{2,3})(?:\\.[a-z]{2})?$`).test(host)) return site
+  }
+  return null
+}
+
+/**
+ * The sentence a person (or the model) is given when a pipeline names one of
+ * those sites. English, like every other `board.search` hint: it is read by the
+ * model, and the screens show their own translated version of the same reason.
+ */
+export function noAutomatedAccessReason(site: string): string {
+  return `${site} does not allow automated reading in its terms of use, so jojo will not read it on a schedule. Open a posting there yourself and save it with the jojo extension's button instead.`
+}
+
+/**
+ * The sources in a pipeline's free-text field that name one of those sites —
+ * what a pipeline dialog can show as an error before the person saves, and
+ * what a stored pipeline that already names one is quietly skipping.
+ */
+export function refusedSources(source: string): string[] {
+  const out: string[] = []
+  for (const url of parseSources(source)) {
+    const site = noAutomatedAccess(url)
+    if (site !== null && !out.includes(site)) out.push(site)
+  }
+  return out
+}
+
 /* -------------------------------- the sources ----------------------------- */
 
 /**
@@ -557,6 +640,13 @@ export type BoardCrawl =
  * more after proposing from these. `allowed` is the same guard `board.search`
  * puts on the model's own address — every page followed is one more tab opened
  * in the person's browser, and a "next" link is text somebody else wrote.
+ *
+ * What this does NOT do is pace itself or read robots.txt: this layer has no
+ * timer and no network. Both happen inside `scan`, where the page is actually
+ * loaded — the extension worker on the web, `board-scan.ts` on the phone — with
+ * the rules in `core/robots.ts`. A page they refuse (disallowed, over the day's
+ * budget, a bot check) comes back as a failed scan, which this already treats
+ * as "the board failed" on the first page and "stopped here" on a later one.
  */
 export async function crawlBoard(options: {
   start: string
@@ -569,6 +659,12 @@ export async function crawlBoard(options: {
   const { start, scan, allowed, known } = options
   const maxPages = options.maxPages ?? BOARD_MAX_PAGES
   const want = options.want ?? BOARD_MAX_RESULTS
+
+  // A site whose terms forbid automated reading is never opened here, however
+  // the read was reached — see `NO_AUTOMATED_ACCESS`. Before the first scan,
+  // so not even one tab is opened on it.
+  const forbidden = noAutomatedAccess(start)
+  if (forbidden !== null) return { ok: false, reason: noAutomatedAccessReason(forbidden) }
 
   const queue = [start]
   const queued = new Set([pageKey(start)])
@@ -609,7 +705,7 @@ export async function crawlBoard(options: {
 
     for (const next of pageLinks(out.rows, base)) {
       const key = pageKey(next)
-      if (queued.has(key) || !allowed(next)) continue
+      if (queued.has(key) || !allowed(next) || noAutomatedAccess(next) !== null) continue
       queued.add(key)
       queue.push(next)
     }

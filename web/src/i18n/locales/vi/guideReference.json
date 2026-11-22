@@ -107,7 +107,7 @@
       "hint": "lựa chọn của bạn, và nó thay đổi nơi lời bạn được gửi tới",
       "title": "Mô hình nào làm việc này",
       "p1": "jojo giao tiếp với bất cứ thứ gì bạn trỏ tới trong <go>Cài đặt</go>. Một mô hình chạy trên chính máy của bạn — Ollama, vLLM, LM Studio — là mặc định, và đó là cách bố trí duy nhất mà không có gì bạn viết rời khỏi thiết bị.",
-      "p2": "Bạn cũng có thể dùng Claude, OpenAI và các nhà cung cấp khác với khóa API. Đó là một sự đánh đổi thực sự và màn hình nói rõ điều đó: các bản ghi của bạn được gửi tới công ty đó và tính phí vào tài khoản của bạn. Khóa được giữ trong trình duyệt này, không bao giờ có trong bản sao lưu, và không bao giờ được gửi tới đâu ngoài nhà cung cấp bạn đã chọn.",
+      "p2": "Bạn cũng có thể dùng Claude, OpenAI và các nhà cung cấp khác với khóa API. Đó là một sự đánh đổi thực sự và màn hình nói rõ điều đó: các bản ghi của bạn được gửi tới công ty đó, theo điều khoản của họ, và một số nhà cung cấp tính phí vào tài khoản của bạn. Khóa được giữ trong trình duyệt này, không bao giờ có trong bản sao lưu, và không bao giờ được gửi tới đâu ngoài nhà cung cấp bạn đã chọn.",
       "stoppedTitle": "Nếu trợ lý có vẻ đã ngừng đọc",
       "stopped": "Một mô hình cục bộ thiếu chỗ sẽ lặng lẽ bỏ phần đầu của những gì được gửi tới, rồi tự tin trả lời một câu hỏi mà nó chưa từng thấy đầy đủ. Giờ jojo so sánh những gì máy chủ báo đã đọc với những gì thực sự được gửi, và báo cho bạn khi hai bên không khớp — vì nếu không, trợ lý sẽ trông như làm việc kém thay vì chỉ là thiếu chỗ."
     },

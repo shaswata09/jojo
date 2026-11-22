@@ -71,13 +71,13 @@ describe.each([
     expect(await enabled()).toBe(false)
   })
 
-  it('takes the default once the question HAS been asked and left unanswered', async () => {
+  it('is still off once the question HAS been asked and left unanswered', async () => {
     // `ReportingStep` writes an answer on every exit path, so this is the
-    // narrow case where the write itself failed. `CRASH_DEFAULTS.enabled` is
-    // what settles it, and it must keep settling it — the fix is a second
-    // condition on the unset case, not a new default of off.
+    // narrow case where the write itself failed. `CRASH_DEFAULTS.enabled`
+    // settles it, and since 2026-11-21 it settles it as NO: an answer nobody
+    // gave is not consent (`core/crash-config.ts`). This read true before.
     disk.set(ASKED, '2026-08-26T00:00:00.000Z')
-    expect(await enabled()).toBe(true)
+    expect(await enabled()).toBe(false)
   })
 
   it('keeps an explicit yes', async () => {
@@ -167,5 +167,129 @@ describe('mobile/firebase.json', () => {
     // and the loop below would pass while checking nothing.
     expect(known.length).toBeGreaterThan(10)
     for (const dial of Object.keys(dials)) expect(known).toContain(dial)
+  })
+})
+
+/*
+ * The native half of the same promises, read from the files the toolchains
+ * consume — the same reason the firebase.json block above reads a file.
+ */
+const MOBILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+const read = (rel: string) => readFileSync(path.join(MOBILE, rel), 'utf8')
+
+describe('the Android manifest', () => {
+  const manifest = read('android/app/src/main/AndroidManifest.xml')
+
+  it.each([
+    'com.google.android.gms.permission.AD_ID',
+    'android.permission.ACCESS_ADSERVICES_AD_ID',
+    'android.permission.ACCESS_ADSERVICES_ATTRIBUTION',
+    'com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE',
+  ])('removes the advertising permission %s that Firebase merges in', (name) => {
+    // A removal is only a removal with `tools:node="remove"` on the same
+    // element; the bare name would DECLARE it. Spelled exactly as
+    // `play-services-measurement` declares it, or the merger ignores the line.
+    expect(manifest).toContain(`<uses-permission android:name="${name}" tools:node="remove"/>`)
+  })
+
+  it('keeps the removals that were already there', () => {
+    for (const name of [
+      'SYSTEM_ALERT_WINDOW',
+      'READ_EXTERNAL_STORAGE',
+      'WRITE_EXTERNAL_STORAGE',
+      'VIBRATE',
+    ]) {
+      expect(manifest).toContain(`android.permission.${name}" tools:node="remove"`)
+    }
+  })
+
+  it('points Android 12+ at extraction rules, because allowBackup no longer covers device transfer', () => {
+    expect(manifest).toContain('android:allowBackup="false"')
+    expect(manifest).toContain('android:dataExtractionRules="@xml/data_extraction_rules"')
+  })
+
+  it('excludes every domain from both cloud backup and device transfer', () => {
+    const rules = read('android/app/src/main/res/xml/data_extraction_rules.xml')
+    for (const section of ['cloud-backup', 'device-transfer']) {
+      const body = rules.slice(rules.indexOf(`<${section}>`), rules.indexOf(`</${section}>`))
+      expect(body.length, section).toBeGreaterThan(0)
+      // `include` anywhere would turn the section into an allow-list.
+      expect(body).not.toContain('<include')
+      for (const domain of ['root', 'file', 'database', 'sharedpref', 'external']) {
+        expect(body, `${section}/${domain}`).toContain(`<exclude domain="${domain}" path="."/>`)
+      }
+    }
+  })
+})
+
+describe('the iOS privacy manifest', () => {
+  const plist = read('ios/jojo/PrivacyInfo.xcprivacy')
+
+  it.each([
+    'NSPrivacyCollectedDataTypeCrashData',
+    'NSPrivacyCollectedDataTypeOtherDiagnosticData',
+    'NSPrivacyCollectedDataTypeProductInteraction',
+    'NSPrivacyCollectedDataTypeDeviceID',
+  ])('declares %s, which Crashlytics or Analytics sends after a yes', (type) => {
+    // It was an empty array: what an app that sends nothing declares.
+    expect(plist).toContain(`<string>${type}</string>`)
+  })
+
+  it('declares none of it as linked or used for tracking', () => {
+    const declared = plist.slice(plist.indexOf('<key>NSPrivacyCollectedDataTypes</key>'))
+    expect(declared).not.toMatch(/<key>NSPrivacyCollectedDataTypeLinked<\/key>\s*<true\/>/)
+    expect(declared).not.toMatch(/<key>NSPrivacyCollectedDataTypeTracking<\/key>\s*<true\/>/)
+    expect(plist).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/)
+  })
+})
+
+describe('turning a switch off discards, not just stops', () => {
+  /*
+   * The native SDKs are resolved with `require` and are absent under this
+   * runner, so the calls are read from source, comments stripped — the same
+   * technique `analytics-init.test.ts` uses on the web. What is pinned is that
+   * the discard is on the OFF path and not removed by a tidy-up.
+   */
+  const code = (rel: string) =>
+    read(rel)
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '')
+
+  it('deletes unsent Crashlytics reports whenever collection is applied as off', () => {
+    // On every launch as well as on the switch: on iOS a collection change
+    // only applies at the next run, and the SDK only deletes while it is off.
+    const crash = code('src/lib/crash.ts')
+    const apply = crash.slice(crash.indexOf('async function applyCollection'))
+    expect(apply.slice(0, apply.indexOf('\n}\n'))).toContain(
+      'if (!enabled) await native.deleteUnsentReports()',
+    )
+  })
+
+  it('resets the Analytics app-instance id and queued events when usage is turned off', () => {
+    const analytics = code('src/lib/analytics.ts')
+    const setter = analytics.slice(analytics.indexOf('export async function setAnalyticsEnabled'))
+    expect(setter.slice(0, setter.indexOf('\n}\n'))).toContain(
+      'if (!on) await forgetAnalyticsIdentity()',
+    )
+    expect(analytics).toContain('resetAnalyticsData()')
+  })
+})
+
+describe('the consent sheet itself', () => {
+  /*
+   * Q346. Pinned on the source because the sheet is React Native and is not
+   * rendered here. The two facts consent law turns on: nothing is pre-ticked,
+   * and closing the sheet any way at all (Back, the backdrop, the X — every one
+   * of them reaches `onClose`) is a no, never the switches' current state.
+   */
+  const sheet = read('src/components/common/ReportingStep.tsx')
+
+  it('starts both switches off, so a yes is the person’s own act', () => {
+    expect(sheet).toMatch(/const \[crashes, setCrashes\] = useState\(false\)/)
+    expect(sheet).toMatch(/const \[usage, setUsage\] = useState\(false\)/)
+  })
+
+  it('records no for both when the sheet is closed without an answer', () => {
+    expect(sheet).toContain('onClose={() => choose(false, false)}')
   })
 })

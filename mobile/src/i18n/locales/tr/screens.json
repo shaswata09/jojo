@@ -436,7 +436,8 @@
     "footer": "jojo — Jarvis fOr Job Organization. Her şey bu cihazda çalışır.",
     "statusEnglish": "Özetlediği lisanstan sapmasın diye kelimesi kelimesine İngilizce bırakıldı.",
     "overdue_one": "{{count}} hatırlatıcı gecikmiş.",
-    "overdue_other": "{{count}} hatırlatıcı gecikmiş."
+    "overdue_other": "{{count}} hatırlatıcı gecikmiş.",
+    "privacy": "Gizlilik bildirimi"
   },
   "statistics": {
     "title": "İstatistikler",
@@ -716,7 +717,8 @@
       "focusPlaceholder": "takipler ve son tarihler",
       "termsPlaceholder": "dr. öğretim üyesi, bilgisayar/elektrik müh.",
       "often": "Ne sıklıkla",
-      "oftenHint": "Turlar arasında ne kadar beklediği."
+      "oftenHint": "Turlar arasında ne kadar beklediği.",
+      "sourceRefused": "{{sites}} kullanım koşullarında otomatik okumaya izin vermiyor, bu yüzden gözcü onu okumayacak. Kaldırın ya da ilanları orada kendiniz açıp jojo'ya kaydedin."
     }
   },
   "postingBrowser": {
@@ -923,7 +925,8 @@
       "reasoning": "Akıl yürütme",
       "reasoningDescription": "Düşünebilen modellerin — gpt-oss, Gemma 4, Qwen3 — yanıt vermeden önce akıl yürütmesini sağlar. Küçük bir modelde yanıtlar boş geliyorsa kapatın.",
       "endpointFirst": "Önce bir uç nokta girin.",
-      "kept": "Bu cihazda saklandı. Asistan bu modeli kullanacak."
+      "kept": "Bu cihazda saklandı. Asistan bu modeli kullanacak.",
+      "remote": "Bu adres bu cihazda ya da yerel ağınızda değil; bu yüzden kayıtlarınız oraya — ve orayı kim işletiyorsa ona — gönderilecek."
     },
     "test": {
       "testing": "Test ediliyor…",
@@ -994,13 +997,33 @@
     "provider": {
       "title": "Sağlayıcı",
       "description": "Birini seçmek adresini sizin için ayarlar. Bulut sağlayıcıları bir anahtar gerektirir ve kayıtlarınız onlara gider.",
-      "cloud": "Sözleriniz bu şirkete gider ve size faturalanır",
-      "localKey": "Kontrol ettiğiniz bir bilgisayarda. Anahtar gerekir.",
-      "local": "Kontrol ettiğiniz bir bilgisayarda. Hiçbir şey dışarı çıkmaz."
+      "cloud": "Kayıtlarınız bu şirkete, onun koşullarıyla gider",
+      "localKey": "Nereyi gösterirseniz orada çalışır. Anahtar gerekir ve o adres başka bir yerde değilse hiçbir şey ağınızdan çıkmaz.",
+      "local": "Nereyi gösterirseniz orada çalışır. O adres başka bir yerde değilse hiçbir şey ağınızdan çıkmaz."
     },
     "cloud": {
       "terms": "{{name}} koşulları",
       "privacy": "Gizlilik politikası"
+    },
+    "cloudNotice": {
+      "headline": "{{name}} kullandığınızda kayıtlarınız bu cihazdan çıkar",
+      "sent": {
+        "what": "Asistanın size yanıt vermek için okuduğu her şey {{name}} sağlayıcısına gönderilir: başvurularınız ve notlarınız, profiliniz, bir belge okunduğunda özgeçmişinizin metni ve baktığı referansların ya da işe alım uzmanlarının adları ve e-posta adresleri.",
+        "others": "Bunların bir kısmı yalnızca sizin değil, başka insanların kişisel bilgileridir.",
+        "local": "Bunun yerine kendi bilgisayarınızdaki bir modelle hiçbiri dışarı çıkmaz."
+      },
+      "background": "Bu yalnızca sohbet ettiğinizde olmaz. {{name}} seçili olduğu sürece jojo arka planda yapılan işler için de ona kayıt gönderir: bir başvuruyu kaydettiğinizde yinelenen kaydı denetlemek, gözcünüzün bulduğu ilanları okumak, profilinize göre uygunluk değerlendirmeleri, özgeçmişinizi ve mektuplarınızı uyarlamak ve uzun bir konuşmayı sığması için kısaltmak.",
+      "cost": {
+        "paid": "{{short}} hesabınıza fatura keser ve neyi saklayabileceğini ve gönderdiklerinizin modellerini geliştirmek için kullanılıp kullanılamayacağını kendi koşulları belirler.",
+        "freeTier": "{{short}} sınırları olan ücretsiz bir katmanın yanı sıra hesabınıza faturalanan ücretli kullanım da sunar. Her iki durumda da neyi saklayabileceğini ve gönderdiklerinizin modellerini geliştirmek için kullanılıp kullanılamayacağını kendi koşulları belirler.",
+        "bargain": "Bu, yerel seçenekten farklı bir anlaşmadır, daha kötüsü değil; ama kayıtlarınız bunun bir parçası olmadan önce okumaya değer."
+      },
+      "openrouter": "OpenRouter her isteği, seçtiğiniz modeli yapan şirkete, kendi koşullarının yanı sıra o şirketin koşullarıyla iletir. OpenRouter'ın kendi koşulları, istekleri kaydetmesine ve içeriklerini anonimleştirilmiş biçimde kullanmasına izin verir.",
+      "business": "Bu API koşulları işletmeler ve geliştiriciler için yazılmıştır. jojo bunların kişisel bir iş aramasına uyup uymadığını size söyleyemez; kullanımınıza uyup uymadığını denetlemek size kalmıştır.",
+      "liability": {
+        "party": "Hesap sahibi ve o sözleşmenin tarafı sizsiniz — jojo hiçbir anahtar sağlamaz ve kendi adına hiçbir istek yapmaz.",
+        "breach": "{{short}} koşullarına uymak sizin sorumluluğunuzdadır ve jojo bunların herhangi bir ihlali için hiçbir sorumluluk kabul etmez."
+      }
     },
     "servers": {
       "title": "Kayıtlı sunucular",

@@ -27,6 +27,28 @@
   <uses-permission android:name="android.permission.VIBRATE" tools:node="remove"/>
   <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" tools:node="remove"/>
   <!--
+    Four more that arrive with Firebase Analytics (`play-services-measurement`
+    and its install-referrer dependency) and are about advertising, which jojo
+    does not do.
+
+    AD_ID reads the Google advertising id; the two ADSERVICES ones are the
+    Privacy Sandbox's ad id and ad attribution APIs; BIND_GET_INSTALL_REFERRER_
+    SERVICE asks the Play Store which ad or link the install came from. With
+    them merged in, Play's Data safety form has to declare advertising-id
+    collection, and a person who agreed to "counts of which screens are opened"
+    had agreed to none of it. `firebase.json` already turns the advertising-id
+    dials off; removing the permissions is what makes that a fact about the
+    APK rather than a setting the SDK is trusted to honour. Analytics itself
+    needs none of the four.
+
+    Check the merged result with `aapt dump permissions` after touching this:
+    a removal whose name is misspelled is silently a no-op.
+  -->
+  <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove"/>
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" tools:node="remove"/>
+  <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE" tools:node="remove"/>
+  <!--
     Reading the pairing code off the other device's screen. Requested at the
     moment the transfer screen asks for it, never at launch — and the app works
     without it, minus that one feature.
@@ -79,7 +101,19 @@
       <data android:scheme="https"/>
     </intent>
   </queries>
-  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:networkSecurityConfig="@xml/network_security_config" android:theme="@style/AppTheme" android:supportsRtl="true">
+  <!--
+    `allowBackup="false"` stops Google's cloud backup on Android 11 and below,
+    and stopped being enough at Android 12, which is jojo's floor. From 12 on,
+    a DEVICE-TO-DEVICE transfer (the "copy your apps and data" step when setting
+    up a new phone) ignores `allowBackup` and copies the app's private storage
+    unless `dataExtractionRules` says otherwise. That storage holds the whole
+    record store and, in plain text, any API keys the person entered — copied
+    to a phone they may be handing on, through a channel jojo neither sees nor
+    names. `res/xml/data_extraction_rules.xml` excludes every domain from both
+    cloud backup and device transfer. jojo has its own Transfer, which says what
+    it carries and asks before it does.
+  -->
+  <application android:dataExtractionRules="@xml/data_extraction_rules" android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:networkSecurityConfig="@xml/network_security_config" android:theme="@style/AppTheme" android:supportsRtl="true">
     <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="unspecified">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

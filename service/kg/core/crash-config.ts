@@ -7,23 +7,33 @@
  * privacy-sensitive audience needs. A USER sets whether the capability is used.
  * The build can only ever take away.
  *
- * ON BY DEFAULT once a build allows it — changed deliberately, and the reasoning
- * is worth keeping because it used to be the other way round.
+ * OFF BY DEFAULT, for everybody, until they say yes. This has gone back and
+ * forth, and the history is worth keeping so it does not go round again.
  *
- * The old default was off, on the argument that jojo's own copy ("nothing is
- * uploaded anywhere") had to stay true for anybody who had not deliberately made
- * it false. That copy has been corrected instead: what the app now claims, on
- * every screen that mentions this, is the narrower thing that stays true either
- * way — no RECORD of yours leaves, which `core/crash.ts` and `core/analytics.ts`
- * enforce rather than promise.
+ * It started off, on the argument that jojo's own copy ("nothing is uploaded
+ * anywhere") had to stay true for anybody who had not deliberately made it
+ * false. It was then flipped ON, on the argument that opt-in reporting from a
+ * product with no backend produces a sample of the people who go looking
+ * through Settings, which is not the population whose crashes matter — and the
+ * copy was narrowed to the claim that stays true either way: no RECORD of yours
+ * leaves, which `core/crash.ts` and `core/analytics.ts` enforce rather than
+ * promise.
  *
- * The reason to flip it is that opt-in reporting from a product with no backend
- * produces a sample of people who go looking through Settings, which is not the
- * population whose crashes matter. The cost is that a build shipped to the EU
- * needs its consent step SEEN before first use rather than merely available —
- * which is why the setup flow asks on the last page and Settings keeps both
- * switches, and why the build dial below still exists: a packager who needs
- * opt-in ships with the capability off and turns nothing on.
+ * The owner reversed that on 2026-11-21, for consent law rather than for
+ * sampling. A switch that is already on when somebody first sees it is a
+ * pre-ticked box, and the EU's top court said in Planet49 (CJEU C-673/17, 2019)
+ * that a pre-ticked box is not consent — the person has to DO something to say
+ * yes. The ruling read the ePrivacy storage rule together with the GDPR's
+ * meaning of consent, and the UK's PECR is the same rule under another name. Usage analytics writes an identifier to
+ * the device and Crashlytics sends one, so both need a real yes, and a default
+ * cannot give one. The sampling cost is real and is accepted: a biased sample
+ * of consenting users is a better thing to have than an unbiased sample nobody
+ * agreed to.
+ *
+ * What this changes for somebody who already answered: nothing. A stored
+ * answer is read exactly as before and always wins over this default. What it
+ * changes is the person who was never asked, or whose answer never got
+ * written — they now read as no.
  *
  * The BUILD dial is unchanged and still can only take away.
  *
@@ -43,11 +53,12 @@ export type CrashSettings = {
 
 export const CRASH_DEFAULTS: CrashSettings = {
   /*
-   * True, and it only ever applies where a build already said `allowed` —
-   * `crashReportingOn` needs both, so this cannot switch anything on by itself.
+   * False: no until somebody says yes (see the header for why this stopped
+   * being true on 2026-11-21). The setup step draws both switches from this,
+   * so they start off, and somebody has to move one to report anything.
    * The stored answer, once somebody gives one, always wins over this.
    */
-  enabled: true,
+  enabled: false,
 }
 
 /**

@@ -13,6 +13,8 @@ import {
 } from '@/lib/crash-log'
 import { syncExtensionCrashReporting } from '@/lib/capture-bridge'
 import { ANALYTICS_CAPABILITY, analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics'
+import { publicUrl } from '@/lib/public-url'
+import { PRIVACY_PAGE } from '@jojo/service/core/privacy'
 
 /**
  * Crash reports, and the switch that decides whether there are any.
@@ -167,6 +169,21 @@ export function CrashPanel() {
       ) : (
         <p className="mt-3 text-xs text-text-3">{on ? t('crash.emptyOn') : t('crash.emptyOff')}</p>
       )}
+
+      {/* The full account — what each switch sends, to whom, for how long — is
+          longer than a settings panel should be, so it is one link away rather
+          than paraphrased here. The same notice the setup step links, from
+          `core/privacy.ts`, so the two cannot point at different pages. */}
+      <p className="mt-3 text-xs">
+        <a
+          href={publicUrl(PRIVACY_PAGE)}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-accent underline decoration-1 underline-offset-4"
+        >
+          {t('crash.privacy')}
+        </a>
+      </p>
     </Panel>
   )
 }

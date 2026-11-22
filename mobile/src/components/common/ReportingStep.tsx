@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { View } from 'react-native'
+import { useEffect, useState } from 'react'
+import { Linking, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { SettingRow, Toggle } from '@/components/ui/Field'
@@ -7,8 +7,9 @@ import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
-import { CRASH_CAPABILITY, setCrashEnabled } from '@/lib/crash'
-import { ANALYTICS_CAPABILITY, setAnalyticsEnabled } from '@/lib/analytics'
+import { CRASH_CAPABILITY, crashEnabled, setCrashEnabled } from '@/lib/crash'
+import { ANALYTICS_CAPABILITY, analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics'
+import { PRIVACY_URL } from '@jojo/service/core/privacy'
 
 /**
  * The reporting question, asked once during setup.
@@ -20,11 +21,25 @@ import { ANALYTICS_CAPABILITY, setAnalyticsEnabled } from '@/lib/analytics'
  * device profile and install id on top. Saying the reassuring web sentence on
  * this screen would be false.
  *
- * ## Both switches start ON, matching what the app is already doing
+ * ## Both switches start OFF, and every way out that is not "Save" means no
  *
- * Showing two off switches while the app reports anyway is worse than not asking
- * — it tells somebody they have opted out when they have not. `CRASH_DEFAULTS`
- * is on, so these are on, and "Turn both off" is one press away.
+ * They used to start on, matching a default of on, on the argument that two
+ * off switches over an app that reports anyway would lie. The argument still
+ * holds and the default moved instead: the owner reversed it on 2026-11-21,
+ * because a switch already on when somebody first sees it is a pre-ticked box
+ * and a pre-ticked box is not consent (CJEU, Planet49). `core/crash-config.ts`
+ * has the reasoning. So these start off, the app does not report, and the
+ * switches and the app still agree.
+ *
+ * Dismissing the sheet — Back, the backdrop, the close button — records NO for
+ * both, the same as the web's `CrashStep`. It used to save whatever the
+ * switches showed, which with switches that started on was a yes collected
+ * from somebody pressing Back to get past a sheet. Saying no to a question you
+ * did not read is the only safe reading of a dismissal; saying yes is the one
+ * reading a consent question must never make.
+ *
+ * "Turn both off" and "Save choices" are the same weight, for the same reason:
+ * refusing has to be as easy and as visible as agreeing.
  *
  * ## Two switches, because they are two questions
  *
@@ -35,8 +50,25 @@ import { ANALYTICS_CAPABILITY, setAnalyticsEnabled } from '@/lib/analytics'
 export function ReportingStep({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation('components')
   const c = useColors()
-  const [crashes, setCrashes] = useState(true)
-  const [usage, setUsage] = useState(true)
+  // Off to begin with, which is the default and what the app is doing. Then
+  // the stored answer, if there somehow is one — the stage marker and the
+  // answer are separate writes and can land apart — so the switches never
+  // show a different answer from the one in force. Same rule as the web's
+  // `CrashStep`, which reads the live setting; storage is async here.
+  const [crashes, setCrashes] = useState(false)
+  const [usage, setUsage] = useState(false)
+  useEffect(() => {
+    let live = true
+    void crashEnabled().then((on) => {
+      if (live) setCrashes(on)
+    })
+    void analyticsEnabled().then((on) => {
+      if (live) setUsage(on)
+    })
+    return () => {
+      live = false
+    }
+  }, [])
 
   const choose = (crashesOn: boolean, usageOn: boolean) => {
     void setCrashEnabled(crashesOn)
@@ -47,18 +79,23 @@ export function ReportingStep({ onDone }: { onDone: () => void }) {
   return (
     <Sheet
       open
-      onClose={() => choose(crashes, usage)}
+      onClose={() => choose(false, false)}
       title={t('reporting.title')}
       description={t('reporting.description')}
       footer={
         <>
           <Button
             label={t('reporting.bothOff')}
-            variant="ghost"
+            variant="outline"
             size="md"
             onPress={() => choose(false, false)}
           />
-          <Button label={t('reporting.save')} size="md" onPress={() => choose(crashes, usage)} />
+          <Button
+            label={t('reporting.save')}
+            variant="outline"
+            size="md"
+            onPress={() => choose(crashes, usage)}
+          />
         </>
       }
     >
@@ -131,6 +168,20 @@ export function ReportingStep({ onDone }: { onDone: () => void }) {
 
         <Txt size="xs" tone="muted">
           {t('reporting.later')}
+        </Txt>
+        {/* The full notice, in the browser. The absolute address, because the
+            phone has no copy of the page to resolve a relative one against. */}
+        <Txt
+          size="xs"
+          tone="info"
+          accessibilityRole="link"
+          onPress={() => {
+            void Linking.openURL(PRIVACY_URL).catch(() => {
+              /* No browser, or the user cancelled. Nothing is lost. */
+            })
+          }}
+        >
+          {t('reporting.privacy')}
         </Txt>
       </View>
     </Sheet>

@@ -1,4 +1,4 @@
-import { isJobPostingUrl, onOneOf, parseSources } from '@jojo/service/core/board'
+import { isJobPostingUrl, noAutomatedAccess, onOneOf, parseSources } from '@jojo/service/core/board'
 import { canonicalPostingUrl } from '@jojo/service/core/capture'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
 import { postingPreview, scoutReading } from '@jojo/service/core/proposal'
@@ -126,6 +126,14 @@ export function unread(p: Proposal): string | null {
  * address carrying `?currentJobId=` is opened as that job whatever its path
  * says; `canonicalPostingUrl` only ever moves an address onto a board's own
  * posting shape, never onto this machine, so the local check before it holds.
+ *
+ * AND NEVER A SITE THAT FORBIDS ROBOTS. LinkedIn, Indeed, Glassdoor and
+ * ZipRecruiter forbid automated access in their terms (`NO_AUTOMATED_ACCESS`),
+ * and this reader is automated access by definition: nobody has looked at the
+ * card yet. Checked on the address as written AND as it will be opened, and
+ * ahead of `listed`, because a board elsewhere can list a LinkedIn link and
+ * that does not make opening it on a timer any more allowed. Such a card is
+ * left for the person; approving it is their own click.
  */
 export function autoReadable(
   url: string,
@@ -134,6 +142,7 @@ export function autoReadable(
 ): boolean {
   if (isLocalTarget(url)) return false
   const opened = canonicalPostingUrl(url)
+  if (noAutomatedAccess(url) !== null || noAutomatedAccess(opened) !== null) return false
   if (!isJobPostingUrl(opened)) return false
   if (listed(pipeline.id, url)) return true
   return onOneOf(opened, parseSources(pipeline.source))

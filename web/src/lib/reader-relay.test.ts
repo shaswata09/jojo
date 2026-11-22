@@ -25,7 +25,7 @@ import { READ_TIMEOUT_MS as WORKER_READ_TIMEOUT_MS, relay } from '../../extensio
 // @ts-expect-error — as above.
 import { LOAD_TIMEOUT_MS, SETTLE_MS } from '../../extension/worker/tabs.js'
 // @ts-expect-error — as above.
-import { MORE_BUDGET_MS } from '../../extension/worker/scan-board.js'
+import { MORE_BUDGET_MS, PACE_MAX_WAIT_MS, ROBOTS_TIMEOUT_MS } from '../../extension/worker/scan-board.js'
 // @ts-expect-error — as above.
 import { onMcpLink, onReadDocument } from '../../extension/worker/relay-verbs.js'
 // @ts-expect-error — as above.
@@ -585,8 +585,23 @@ describe('how long the page waits for a scan', () => {
       (MORE_BUDGET_MS as number) +
       // The last "Load more" wait checks the budget BEFORE sleeping, so it can
       // overrun by one step of its poll.
-      250
+      250 +
+      // Before the tab: the board's robots.txt and the host's gap; after a
+      // redirect to another of the board's hosts, that host's robots.txt too.
+      // Left out, this passed while the worker could spend ~48.75 s against
+      // the page's 50.
+      2 * (ROBOTS_TIMEOUT_MS as number) +
+      (PACE_MAX_WAIT_MS as number)
     expect(numberIn(bridgeCallerSource, 'SCAN_TIMEOUT_MS') - worst).toBeGreaterThanOrEqual(7500)
+  })
+
+  it('never hands the background reader to a bridge that would read without manners', () => {
+    // An older bridge drops `unattended` and opens the page as if a person
+    // asked for it; the page asks for the revision that keeps it.
+    expect(numberIn(bridgeSource, 'BRIDGE_PROTOCOL')).toBeGreaterThanOrEqual(
+      numberIn(bridgeCallerSource, 'MANNERED_CAPTURE'),
+    )
+    expect(bridgeSource).toMatch(/unattended: typeof data\.capture === 'string' && data\.unattended === true/)
   })
 
   it('is not what somebody with no extension waits on a relayed read', () => {

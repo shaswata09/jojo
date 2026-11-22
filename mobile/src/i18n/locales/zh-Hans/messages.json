@@ -209,7 +209,12 @@
     "unreachable": "无法连接该招聘网站。",
     "status": "该招聘网站返回了 {{status}}。",
     "browserOnly": "{{host}} 只向真正的浏览器显示职位列表，因此无法在手机上读取。在电脑上，jojo 浏览器扩展可以读取它。",
-    "cancelled": "读取已取消。"
+    "cancelled": "读取已取消。",
+    "noAutomatedAccess": "{{host}} 的使用条款不允许自动读取，因此 jojo 不会按计划读取它。请改为自己在那里打开职位，并保存到 jojo。",
+    "robots": "{{host}} 要求自动读取程序不要打开此页面（其 robots.txt 不允许），因此 jojo 没有读取。",
+    "dailyBudget": "jojo 今天已经读取了 {{host}} 的 {{pages}} 个页面，这是它一天内从一个网站读取的上限。其余的可以明天再读。",
+    "tooSoon": "{{host}} 要求自动读取程序在页面之间等待 {{seconds}} 秒，因此 jojo 在这里停下了。其余的可以在之后的运行中读取。",
+    "botWall": "这个招聘网站要求进行真人验证；请自己打开。"
   },
   "timelineForm": {
     "title": "起一个你认得出的标题。",

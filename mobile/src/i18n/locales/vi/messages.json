@@ -209,7 +209,12 @@
     "unreachable": "Không kết nối được tới trang tuyển dụng đó.",
     "status": "Trang tuyển dụng đó trả lời {{status}}.",
     "browserOnly": "{{host}} chỉ hiển thị tin tuyển dụng cho trình duyệt thật, nên không đọc được từ điện thoại. Trên máy tính, tiện ích mở rộng jojo có thể đọc nó.",
-    "cancelled": "Đã hủy việc đọc."
+    "cancelled": "Đã hủy việc đọc.",
+    "noAutomatedAccess": "{{host}} không cho phép đọc tự động trong điều khoản sử dụng, nên jojo sẽ không đọc nó theo lịch. Thay vào đó, hãy tự mở một tin tuyển dụng ở đó và lưu vào jojo.",
+    "robots": "{{host}} yêu cầu các trình đọc tự động không mở trang này (robots.txt của trang không cho phép), nên jojo đã không đọc nó.",
+    "dailyBudget": "Hôm nay jojo đã đọc {{pages}} trang của {{host}}, bằng số trang tối đa nó đọc từ một trang web trong một ngày. Phần còn lại có thể đọc vào ngày mai.",
+    "tooSoon": "{{host}} yêu cầu các trình đọc tự động chờ {{seconds}} giây giữa các trang, nên jojo đã dừng ở đây. Phần còn lại có thể đọc trong lần chạy sau.",
+    "botWall": "Trang tuyển dụng này đang yêu cầu xác minh bạn là người; hãy tự mở nó."
   },
   "timelineForm": {
     "title": "Đặt một tiêu đề mà bạn sẽ nhận ra.",

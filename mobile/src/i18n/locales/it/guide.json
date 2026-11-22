@@ -194,7 +194,7 @@
       "title": "Quale modello lo fa",
       "hint": "una tua scelta, e cambia dove vanno le tue parole",
       "local": "jojo comunica con qualsiasi cosa tu indichi in Impostazioni. Un modello che gira su un computer che controlli tu (Ollama, vLLM, LM Studio) è la scelta predefinita, ed è l'unica configurazione in cui nulla di ciò che scrivi lascia questo dispositivo.",
-      "cloud": "Puoi anche usare Claude, OpenAI e altri con una chiave API. È un compromesso reale e la schermata lo dice chiaramente: i tuoi record vanno a quell'azienda e vengono addebitati sul tuo account. La chiave viene conservata su questo dispositivo, non viene mai inclusa in un backup e non viene mai inviata ad altri che al fornitore che hai scelto.",
+      "cloud": "Puoi anche usare Claude, OpenAI e altri con una chiave API. È un compromesso reale e la schermata lo dice chiaramente: i tuoi record vanno a quell'azienda, secondo i suoi termini, e alcuni fornitori addebitano i costi sul tuo account. La chiave viene conservata su questo dispositivo, non viene mai inclusa in un backup e non viene mai inviata ad altri che al fornitore che hai scelto.",
       "openSettings": "Apri Impostazioni",
       "truncatedTitle": "Se l'assistente sembra aver smesso di leggere",
       "truncated": "Un modello locale con troppo poco spazio scarta silenziosamente l'inizio di ciò che gli è stato inviato, e poi risponde con sicurezza a una domanda che non ha mai visto per intero. jojo confronta ciò che il server dice di aver letto con ciò che è stato effettivamente inviato, e ti avvisa quando non coincidono, perché l'alternativa è un assistente che sembra incapace anziché a corto di spazio."
@@ -239,7 +239,8 @@
       "navigation": "La barra delle schede e la pila delle schermate",
       "drag": "Il trascinamento con pressione prolungata della bacheca, sul thread dell'interfaccia",
       "charts": "La ciambella, il radar e il grafo",
-      "type": "I caratteri, inclusi anziché scaricati"
+      "type": "I caratteri, inclusi anziché scaricati",
+      "reporting": "Segnalazioni di arresto anomalo e utilizzo, disattivate finché non le attivi"
     },
     "unfinished": {
       "assistant": {
@@ -254,6 +255,21 @@
         "title": "Nulla lascia questo dispositivo, tranne dove lo indichi tu",
         "detail": "Non c'è nessun account, nessuna sincronizzazione e nessun caricamento. Si possono raggiungere due indirizzi, entrambi tuoi ed entrambi impostati in Impostazioni: il modello e il lettore di documenti, che scarica anche un annuncio di lavoro quando aggiungi una candidatura da un link, così quell'URL va al tuo lettore e non a noi. Trasferimento sposta una copia tra i tuoi dispositivi sulla rete locale: su questo telefono riceve, e il computer è il lato che invia. Nient'altro va da nessuna parte."
       }
+    },
+    "licences": {
+      "title": "Licenze",
+      "hint_one": "{{count}} pacchetto, con l'avviso che richiede",
+      "hint_many": "{{count}} pacchetti, con gli avvisi che richiedono",
+      "hint_other": "{{count}} pacchetti, con gli avvisi che richiedono",
+      "intro": "Ogni pacchetto npm con cui è costruita questa app, con la sua licenza e l'avviso di copyright che chiede di portare con sé, generati dai pacchetti installati e confrontati con essi da un test. Le librerie native Android e iOS collegate dall'app sono ancora da elencare. Per primi vengono i caratteri e una nota su quelle librerie native.",
+      "open": "Leggi le licenze",
+      "sheetTitle": "Licenze di terze parti",
+      "sheetDescription": "jojo è distribuito con licenza Apache-2.0. Questi sono i termini delle opere su cui si basa, riportati come li hanno scritti i loro autori.",
+      "search": "Filtra per pacchetto o licenza",
+      "searchLabel": "Filtra le licenze",
+      "empty": "Nessun pacchetto corrisponde.",
+      "rowLabel": "{{name}} {{version}}, {{licence}}. Mostra o nascondi il testo della licenza.",
+      "noLicence": "nessuna licenza indicata"
     }
   }
 }

@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Seu navegador é o banco de dados",
-      "body": "Cada registro é gravado no banco de dados deste navegador enquanto você trabalha, então fechar a aba é seguro. Nada sai desta máquina e nada é sincronizado — limpe os dados do navegador, troque de navegador ou perca o disco, e tudo vai junto. Exporte um backup <kbd>.json</kbd> em <settings>Configurações</settings> de tudo o que você quiser guardar em outro lugar."
+      "body": "Cada registro é gravado no banco de dados deste navegador enquanto você trabalha, então fechar a aba é seguro. O jojo não guarda cópia em nenhum outro lugar e nada é sincronizado: seus registros só saem deste navegador quando você os envia a um provedor de modelos que escolheu, ou quando você mesmo os move. Limpe os dados do navegador, troque de navegador ou perca o disco, e eles vão junto. Exporte um backup <kbd>.json</kbd> em <settings>Configurações</settings> de tudo o que você quiser guardar em outro lugar."
     },
     "savePath": {
       "title": "O que acontece quando você salva algo",
@@ -333,7 +333,7 @@
         "hint": "integrado",
         "title": "Mantenha um backup",
         "storedTitle": "Seus documentos ficam guardados aqui",
-        "stored": "Os currículos e cartas de apresentação que você anexa são salvos neste navegador e sobrevivem ao fechamento da aba. Nada é enviado para lugar nenhum — e nada sai desta máquina a menos que você mesmo baixe.",
+        "stored": "Os currículos e cartas de apresentação que você anexa são salvos neste navegador e sobrevivem ao fechamento da aba. Os arquivos não são enviados e o jojo não guarda cópia em nenhum outro lugar; o texto deles só vai para um modelo se você escolher um provedor hospedado.",
         "oneFileTitle": "Um arquivo guarda tudo",
         "oneFile": "<settings>Configurações</settings> grava um backup com cada registro, cada vínculo entre eles e cada documento, tudo em um único arquivo. Restaurá-lo devolve as três coisas.",
         "whyTitle": "Por que isso importa",

@@ -78,7 +78,7 @@
       "description": "Déposez ici votre CV et vos déclarations, ou choisissez-les — ils sont classés dans le Coffre sous {{bucket}}, où le reste de l’app peut les atteindre.",
       "upload": "Importer un document"
     },
-    "footer": "Les mêmes fichiers que l’<anchor>outil Fichiers</anchor> du Coffre, filtrés sur {{bucket}}. Déposez un document ici ou choisissez-en un, et le fichier lui-même est conservé dans ce navigateur — rien n’est envoyé nulle part. Cliquez sur un document pour le lire."
+    "footer": "Les mêmes fichiers que l’<anchor>outil Fichiers</anchor> du Coffre, filtrés sur {{bucket}}. Déposez un document ici ou choisissez-en un, et le fichier lui-même est conservé dans ce navigateur — il n’est pas téléversé, et son texte n’est envoyé à un modèle que si vous choisissez un fournisseur hébergé. Cliquez sur un document pour le lire."
   },
   "documentTile": {
     "open": "Ouvrir {{name}}",

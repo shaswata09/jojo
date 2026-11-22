@@ -411,7 +411,8 @@
     },
     "footer": "jojo — Jarvis fOr Job Organization. Semuanya berjalan di perangkat ini.",
     "statusEnglish": "Dibiarkan dalam bahasa Inggris, kata demi kata, agar tidak menyimpang dari lisensi yang diringkasnya.",
-    "overdue_other": "{{count}} pengingat terlambat."
+    "overdue_other": "{{count}} pengingat terlambat.",
+    "privacy": "Pemberitahuan privasi"
   },
   "statistics": {
     "title": "Statistik",
@@ -669,7 +670,8 @@
       "focusPlaceholder": "tindak lanjut dan tenggat",
       "termsPlaceholder": "asisten profesor, CS/ECE",
       "often": "Seberapa sering",
-      "oftenHint": "Berapa lama ia menunggu di antara putaran."
+      "oftenHint": "Berapa lama ia menunggu di antara putaran.",
+      "sourceRefused": "{{sites}} tidak mengizinkan pembacaan otomatis dalam ketentuan penggunaannya, jadi pencari lowongan tidak akan membacanya. Hapus, atau buka sendiri lowongan di sana dan simpan ke jojo."
     }
   },
   "postingBrowser": {
@@ -874,7 +876,8 @@
       "reasoning": "Penalaran",
       "reasoningDescription": "Mengizinkan model yang bisa berpikir — gpt-oss, Gemma 4, Qwen3 — bernalar sebelum menjawab. Matikan jika balasan kembali kosong pada model kecil.",
       "endpointFirst": "Isi endpoint dulu.",
-      "kept": "Disimpan di perangkat ini. Asisten akan memakai model ini."
+      "kept": "Disimpan di perangkat ini. Asisten akan memakai model ini.",
+      "remote": "Alamat ini tidak berada di perangkat ini atau jaringan lokal Anda, jadi entri Anda akan dikirim ke sana — dan kepada siapa pun yang menjalankannya."
     },
     "test": {
       "testing": "Menguji…",
@@ -945,13 +948,33 @@
     "provider": {
       "title": "Penyedia",
       "description": "Memilih salah satunya mengatur alamatnya untuk Anda. Yang berbasis cloud memerlukan kunci, dan entri Anda dikirim ke sana.",
-      "cloud": "Kata-kata Anda dikirim ke perusahaan ini, dan ditagihkan kepada Anda",
-      "localKey": "Di perangkat yang Anda kendalikan. Memerlukan kunci.",
-      "local": "Di perangkat yang Anda kendalikan. Tidak ada yang keluar darinya."
+      "cloud": "Entri Anda dikirim ke perusahaan ini, di bawah ketentuannya",
+      "localKey": "Berjalan di tempat yang Anda tunjuk. Memerlukan kunci, dan tidak ada yang keluar dari jaringan Anda kecuali alamat itu berada di tempat lain.",
+      "local": "Berjalan di tempat yang Anda tunjuk. Tidak ada yang keluar dari jaringan Anda kecuali alamat itu berada di tempat lain."
     },
     "cloud": {
       "terms": "Ketentuan {{name}}",
       "privacy": "Kebijakan privasi"
+    },
+    "cloudNotice": {
+      "headline": "Entri Anda meninggalkan perangkat ini saat Anda memakai {{name}}",
+      "sent": {
+        "what": "Semua yang dibaca asisten untuk menjawab Anda dikirim ke {{name}}: lamaran dan catatan Anda, profil Anda, teks CV Anda setelah sebuah dokumen dibaca, serta nama dan alamat email referensi atau perekrut mana pun yang dilihatnya.",
+        "others": "Sebagian di antaranya adalah informasi pribadi orang lain, bukan hanya milik Anda.",
+        "local": "Dengan model di mesin Anda sendiri, tidak ada satu pun yang keluar."
+      },
+      "background": "Bukan hanya saat Anda mengobrol. Selama {{name}} dipilih, jojo juga mengirim entri kepadanya untuk pekerjaan di latar belakang: pemeriksaan duplikat saat Anda menyimpan lamaran, membaca lowongan yang ditemukan pencari lowongan Anda, penilaian kecocokan terhadap profil Anda, menyesuaikan CV dan surat Anda, serta memendekkan percakapan panjang agar muat.",
+      "cost": {
+        "paid": "{{short}} menagih akun Anda, dan ketentuannya sendiri mengatur apa yang boleh disimpannya dan apakah yang Anda kirim boleh dipakai untuk meningkatkan modelnya.",
+        "freeTier": "{{short}} memiliki tingkat gratis dengan batasan, selain penggunaan berbayar yang ditagihkan ke akun Anda. Bagaimanapun juga, ketentuannya sendiri mengatur apa yang boleh disimpannya dan apakah yang Anda kirim boleh dipakai untuk meningkatkan modelnya.",
+        "bargain": "Itu kesepakatan yang berbeda dari opsi lokal, bukan yang lebih buruk, tetapi layak dibaca sebelum entri Anda menjadi bagian darinya."
+      },
+      "openrouter": "OpenRouter meneruskan setiap permintaan ke perusahaan pembuat model yang Anda pilih, di bawah ketentuan perusahaan itu sekaligus ketentuannya sendiri. Ketentuan OpenRouter sendiri mengizinkannya mencatat permintaan dan memakai isinya dalam bentuk anonim.",
+      "business": "Ketentuan API ini ditulis untuk bisnis dan pengembang. jojo tidak dapat memberi tahu Anda apakah ketentuan itu cocok untuk pencarian kerja pribadi; memeriksa kecocokannya dengan penggunaan Anda adalah tanggung jawab Anda.",
+      "liability": {
+        "party": "Anda adalah pemegang akun dan pihak dalam perjanjian itu — jojo tidak menyertakan kunci dan tidak membuat permintaan sendiri.",
+        "breach": "Kepatuhan terhadap ketentuan {{short}} adalah tanggung jawab Anda, dan jojo tidak menerima tanggung jawab apa pun atas pelanggarannya."
+      }
     },
     "servers": {
       "title": "Server tersimpan",

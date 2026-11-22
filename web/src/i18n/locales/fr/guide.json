@@ -273,7 +273,7 @@
     },
     "browserDb": {
       "title": "Votre navigateur est la base de données",
-      "body": "Chaque enregistrement est écrit dans la base de données de ce navigateur pendant que vous travaillez : fermer l’onglet est donc sans risque. Rien ne quitte cette machine et rien n’est synchronisé — effacez les données de votre navigateur, changez de navigateur ou perdez le disque, et tout part avec. Exportez une sauvegarde <kbd>.json</kbd> depuis <settings>Réglages</settings> pour tout ce que vous voulez garder ailleurs."
+      "body": "Chaque enregistrement est écrit dans la base de données de ce navigateur pendant que vous travaillez : fermer l’onglet est donc sans risque. jojo n’en garde aucune copie ailleurs et rien n’est synchronisé : vos enregistrements ne quittent ce navigateur que si vous les envoyez à un fournisseur de modèle que vous avez choisi, ou si vous les déplacez vous-même. Effacez les données de votre navigateur, changez de navigateur ou perdez le disque, et ils partent avec. Exportez une sauvegarde <kbd>.json</kbd> depuis <settings>Réglages</settings> pour tout ce que vous voulez garder ailleurs."
     },
     "savePath": {
       "title": "Ce qui se passe quand vous enregistrez",
@@ -333,7 +333,7 @@
         "hint": "intégré",
         "title": "Gardez une sauvegarde",
         "storedTitle": "Vos documents sont stockés ici",
-        "stored": "Les CV et lettres de motivation que vous joignez sont enregistrés dans ce navigateur et survivent à la fermeture de l’onglet. Rien n’est envoyé nulle part — et rien ne quitte cette machine à moins que vous ne le téléchargiez vous-même.",
+        "stored": "Les CV et lettres de motivation que vous joignez sont enregistrés dans ce navigateur et survivent à la fermeture de l’onglet. Les fichiers ne sont pas téléversés et jojo n’en garde aucune copie ailleurs ; leur texte n’est envoyé à un modèle que si vous choisissez un fournisseur hébergé.",
         "oneFileTitle": "Un seul fichier contient tout",
         "oneFile": "<settings>Réglages</settings> écrit une sauvegarde contenant chaque enregistrement, chaque lien entre eux et chaque document, dans un seul fichier. La restaurer remet les trois en place.",
         "whyTitle": "Pourquoi c’est important",

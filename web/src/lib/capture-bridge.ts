@@ -73,6 +73,14 @@ const NEEDS_PROTOCOL = 3
 const stale = (): string => i18next.t('messages:extension.stale')
 
 /**
+ * Said when the extension is too old for a read nobody is watching. Exported
+ * so the scout's background reader can tell it from a page that failed: it
+ * stops the queue until the extension is reloaded, rather than marking every
+ * card it reaches as unreadable. The same sentence as any stale extension.
+ */
+export const staleExtension = stale
+
+/**
  * How long a relay gets to answer a PROBE before it is treated as absent.
  *
  * Short on purpose: this runs on mount and decides whether to render an install
@@ -198,6 +206,12 @@ type Ask = {
   scan?: string
   /** A posting to open, render and bring back whole. See `capturePage`. */
   capture?: string
+  /**
+   * Set with `capture` when nobody is watching the read — the scout's
+   * background reader. The worker then reads the page with a board scan's
+   * manners. See `capturePage`.
+   */
+  unattended?: boolean
   /** A request to relay to a reader on this machine. See `readDocument`. */
   read?: { url: string; method: string; headers: Record<string, string>; body?: string }
   /** A request to relay to a model provider. See `callModel`. */
@@ -232,11 +246,16 @@ type Ask = {
  * hop, and this was 40 s: a slow board that the worker read successfully was
  * reported here as "no boards could be read" two seconds earlier.
  *
- * Fifty, and `reader-relay.test.ts` imports all four numbers from the worker
- * (`worker/tabs.js` and `worker/scan-board.js`) and fails if the worker's worst
- * case comes within 7.5 s of it.
+ * Before the tab, since revision 10, the worker also asks the board's
+ * robots.txt (up to `ROBOTS_TIMEOUT_MS`, 3 s) and waits out the host's gap (up
+ * to `PACE_MAX_WAIT_MS`, 5 s), and asks robots.txt once more when the board
+ * redirected to another of its hosts — up to 11 s more, which put the worst
+ * case at ~48.75 s against the 50 this was. Sixty, and `reader-relay.test.ts`
+ * imports every one of those numbers from the worker (`worker/tabs.js` and
+ * `worker/scan-board.js`) and fails if the worker's worst case comes within
+ * 7.5 s of it.
  */
-const SCAN_TIMEOUT_MS = 50000
+const SCAN_TIMEOUT_MS = 60000
 
 /**
  * How long a relayed read or model call waits BEFORE anything has answered on
@@ -389,6 +408,8 @@ function ask(request: Ask): Promise<Reply | null> {
         ack: request.ack,
         scan: request.scan,
         capture: request.capture,
+        // Only a capture carries it; `bridge.js` forwards nothing else.
+        unattended: request.capture !== undefined && request.unattended === true,
         // Forwarded, which they were not. The bridge picks its verb from the
         // SHAPE of what arrives, so a `read` that never crossed the wire was
         // read as a peek — the relay could not have worked at all.
@@ -521,6 +542,18 @@ export async function scanBoard(url: string, signal?: ScanCancellation): ReturnT
 const CAPTURES_BY_ADDRESS = 8
 
 /**
+ * The bridge revision that reads an UNATTENDED capture with a crawler's
+ * manners: the site's terms, its robots.txt, the host's pace and daily budget,
+ * and a stop at a bot check — what a board scan already kept.
+ *
+ * An older bridge forwards the address and drops the flag, and its worker
+ * then opens the page as if a person had asked for it. So the background
+ * reader is never handed to one: it is named stale instead, before anything is
+ * opened.
+ */
+const MANNERED_CAPTURE = 10
+
+/**
  * The worker's sentence, or a readable one where Chrome wrote it instead.
  *
  * The worker hands back its own refusals in words, but a page that never
@@ -582,7 +615,19 @@ export type PageCapture =
  * What comes back passes `readCapture` — the gate the capture inbox and the
  * phone's captures pass through — before anything is filed.
  */
-export async function capturePage(url: string, signal?: AbortSignal): Promise<PageCapture> {
+export async function capturePage(
+  url: string,
+  signal?: AbortSignal,
+  /**
+   * `unattended`: nobody is watching this read — the scout's background reader
+   * opening a posting a board listed. The worker then refuses a site whose
+   * terms forbid automated reading, asks robots.txt, keeps the host's pace and
+   * stops at a bot check, as it does for a board (`worker/manners.js`). Left
+   * unset for "From link", which is a person waiting on a page they asked for.
+   */
+  options: { unattended?: boolean } = {},
+): Promise<PageCapture> {
+  const unattended = options.unattended === true
   const waiting = signal === undefined ? {} : { signal }
   const cancelled: PageCapture = {
     ok: false,
@@ -590,7 +635,21 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
     reason: i18next.t('messages:readCancelled'),
   }
 
-  const probe = await probeExtension(signal)
+  /*
+   * An unattended read always asks the revision first, even when something has
+   * already answered on this page. The capture's own reply carries one too,
+   * but by then an old worker has already opened the page without any of the
+   * manners above — so for this caller the check has to come before, and a
+   * 400 ms probe is cheap next to a read nobody is waiting on.
+   */
+  const probe = unattended
+    ? await ask({
+        ...(typeof document !== 'undefined' && document.documentElement.hasAttribute(BRIDGE_MARK)
+          ? { patience: PROBE_COLD_TIMEOUT_MS }
+          : {}),
+        ...waiting,
+      })
+    : await probeExtension(signal)
   if (probe === null) {
     if (signal?.aborted === true) return cancelled
     return {
@@ -599,13 +658,14 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
       reason: i18next.t('messages:extension.noAnswerPage'),
     }
   }
+  const needs = unattended ? MANNERED_CAPTURE : CAPTURES_BY_ADDRESS
   // A probe skipped because something already answered carries no revision;
   // the capture's own reply does, and is checked below.
-  if (probe !== 'known' && (probe.protocol ?? 0) < CAPTURES_BY_ADDRESS) {
+  if (probe !== 'known' && (probe.protocol ?? 0) < needs) {
     return { ok: false, absent: false, reason: stale() }
   }
 
-  const reply = await ask({ capture: url, ...waiting })
+  const reply = await ask({ capture: url, ...(unattended ? { unattended: true } : {}), ...waiting })
   if (reply === null) {
     if (signal?.aborted === true) return cancelled
     return {
@@ -614,8 +674,7 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
       reason: i18next.t('messages:extension.captureTimeout'),
     }
   }
-  if ((reply.protocol ?? 0) < CAPTURES_BY_ADDRESS)
-    return { ok: false, absent: false, reason: stale() }
+  if ((reply.protocol ?? 0) < needs) return { ok: false, absent: false, reason: stale() }
   if (reply.ok !== true) {
     return { ok: false, absent: false, reason: workerReason(reply.error, url) }
   }

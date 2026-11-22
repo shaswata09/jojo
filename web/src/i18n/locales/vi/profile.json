@@ -76,7 +76,7 @@
       "description": "Thả CV và các bản trình bày vào đây, hoặc chọn chúng — chúng được xếp trong Kho lưu trữ dưới nhóm {{bucket}}, nơi các phần khác của ứng dụng có thể dùng tới.",
       "upload": "Tải lên tài liệu"
     },
-    "footer": "Cùng các tệp với <anchor>công cụ Tệp</anchor> trong Kho lưu trữ, lọc theo {{bucket}}. Thả một tài liệu vào đây hoặc chọn một tệp, và tệp đó được giữ trong trình duyệt này — không có gì được tải lên đâu cả. Nhấp vào một tệp để đọc."
+    "footer": "Cùng các tệp với <anchor>công cụ Tệp</anchor> trong Kho lưu trữ, lọc theo {{bucket}}. Thả một tài liệu vào đây hoặc chọn một tệp, và tệp đó được giữ trong trình duyệt này — nó không được tải lên, và nội dung chữ của nó chỉ được gửi tới mô hình nếu bạn chọn một nhà cung cấp trực tuyến. Nhấp vào một tệp để đọc."
   },
   "documentTile": {
     "open": "Mở {{name}}",

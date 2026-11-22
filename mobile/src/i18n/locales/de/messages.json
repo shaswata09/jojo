@@ -209,7 +209,12 @@
     "unreachable": "Diese Jobbörse war nicht erreichbar.",
     "status": "Diese Jobbörse hat mit {{status}} geantwortet.",
     "browserOnly": "{{host}} zeigt seine Stellenanzeigen nur einem echten Browser, daher kann es nicht vom Handy aus gelesen werden. Auf einem Computer kann die jojo-Browsererweiterung es lesen.",
-    "cancelled": "Das Lesen wurde abgebrochen."
+    "cancelled": "Das Lesen wurde abgebrochen.",
+    "noAutomatedAccess": "{{host}} erlaubt in den Nutzungsbedingungen kein automatisiertes Lesen, daher liest jojo es nicht nach Zeitplan. Öffne dort stattdessen selbst eine Anzeige und speichere sie in jojo.",
+    "robots": "{{host}} bittet automatisierte Leser, diese Seite nicht zu öffnen (die robots.txt der Website verbietet es), daher hat jojo sie nicht gelesen.",
+    "dailyBudget": "jojo hat heute schon {{pages}} Seiten von {{host}} gelesen – so viele, wie es an einem Tag von einer Website liest. Der Rest kann morgen gelesen werden.",
+    "tooSoon": "{{host}} bittet automatisierte Leser, zwischen zwei Seiten {{seconds}} Sekunden zu warten, daher hat jojo hier aufgehört. Der Rest kann bei einem späteren Durchlauf gelesen werden.",
+    "botWall": "Diese Jobbörse verlangt eine Prüfung, ob du ein Mensch bist; öffne sie selbst."
   },
   "timelineForm": {
     "title": "Gib ihm einen Titel, den du wiedererkennst.",

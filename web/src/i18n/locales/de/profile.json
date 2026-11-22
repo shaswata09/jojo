@@ -77,7 +77,7 @@
       "description": "Zieh deinen Lebenslauf und deine Statements hierher oder wähle sie aus – sie werden im Tresor unter {{bucket}} abgelegt, wo der Rest der App sie erreicht.",
       "upload": "Ein Dokument hochladen"
     },
-    "footer": "Dieselben Dateien wie im <anchor>Dateien-Werkzeug</anchor> des Tresors, gefiltert auf {{bucket}}. Zieh ein Dokument hierher oder wähle eines aus, und die Datei selbst bleibt in diesem Browser – nichts wird irgendwohin hochgeladen. Klicke eines an, um es zu lesen."
+    "footer": "Dieselben Dateien wie im <anchor>Dateien-Werkzeug</anchor> des Tresors, gefiltert auf {{bucket}}. Zieh ein Dokument hierher oder wähle eines aus, und die Datei selbst bleibt in diesem Browser – sie wird nicht hochgeladen, und ihr Text geht nur dann an ein Modell, wenn du einen gehosteten Anbieter wählst. Klicke eines an, um es zu lesen."
   },
   "documentTile": {
     "open": "{{name}} öffnen",
