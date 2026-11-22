@@ -48,6 +48,17 @@ describe('the committed notices', () => {
     expect(data.packages.length).toBeGreaterThan(300)
   })
 
+  it('leave out add-ons built for one desktop platform, which a Linux install does not have (Q348)', () => {
+    // fsevents (macOS only, reached through React Native's Jest file watcher)
+    // was listed from a Mac's node_modules, and CI's Linux runner, which never
+    // installs it, then found the committed file stale on every push.
+    expect(data.packages.some((p) => p.name === 'fsevents')).toBe(false)
+    for (const p of productionTree(MOBILE)) {
+      const manifest = JSON.parse(readFileSync(`${p.dir}/package.json`, 'utf8')) as { os?: unknown; cpu?: unknown }
+      expect(manifest.os === undefined && manifest.cpu === undefined, p.name).toBe(true)
+    }
+  })
+
   it('carry the packages a review found credited nowhere', () => {
     const names = new Set(data.packages.map((p) => p.name))
     for (const name of [

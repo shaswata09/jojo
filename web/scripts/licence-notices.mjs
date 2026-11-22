@@ -292,6 +292,9 @@ export function resolvePackage(name, from, top = REPO) {
   }
 }
 
+/** Declares the operating systems or CPUs it installs on: a prebuilt add-on for one platform. */
+const isPlatformAddon = (manifest) => manifest.os !== undefined || manifest.cpu !== undefined
+
 /**
  * Every package the production dependency tree of `root` installs, once per
  * folder, the way Node would resolve it.
@@ -302,6 +305,14 @@ export function resolvePackage(name, from, top = REPO) {
  * from each package's own folder upward. A peer or an optional package that is
  * not installed is skipped, as npm skips it. jojo's own workspace packages are
  * walked through but not listed — they are jojo, under the project's licence.
+ *
+ * A package that declares an `os` or `cpu` is left out, with everything only
+ * it brings in. Those are prebuilt Node add-ons for one desktop platform
+ * (fsevents, reached through React Native's Jest file watcher, is the one in
+ * the tree): they never ship in the bundle or the APK, and whether they are
+ * installed at all depends on the machine that ran `npm install`. Listed, the
+ * notices written on a Mac named fsevents and CI's Linux runner, which does
+ * not install it, found the committed file stale (Q348).
  *
  * `root` is the folder holding the app's package.json; `top` is the outermost
  * folder resolution may climb to (the repository).
@@ -314,6 +325,7 @@ export function productionTree(root, top = REPO) {
     if (seen.has(dir)) return
     seen.add(dir)
     const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    if (!isRoot && isPlatformAddon(manifest)) return
     const own = isRoot || !dir.split(sep).includes('node_modules')
     if (!own) found.set(dir, { name: manifest.name, version: manifest.version, dir })
     const names = new Set([

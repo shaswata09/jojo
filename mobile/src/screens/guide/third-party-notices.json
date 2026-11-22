@@ -8614,22 +8614,6 @@
       ]
     },
     {
-      "name": "fsevents",
-      "version": "2.3.3",
-      "licence": "MIT",
-      "texts": [
-        {
-          "file": "LICENSE",
-          "text": "MIT License\n-----------\n\nCopyright (C) 2010-2020 by Philipp Dunkel, Ben Noordhuis, Elan Shankar, Paul Miller\n\n[The MIT permission notice, printed once under \"MIT\"]"
-        }
-      ],
-      "notices": [],
-      "missing": null,
-      "shared": [
-        "MIT"
-      ]
-    },
-    {
       "name": "function-bind",
       "version": "1.1.2",
       "licence": "MIT",
