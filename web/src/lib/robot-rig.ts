@@ -131,12 +131,77 @@ const strike = (v: number, peaks: readonly number[]): [number, number][] => [
   [1, 0],
 ]
 /**
- * The right hand turned −1.2 rad about its forearm's rest axis, as the YXZ
- * Euler `[x, y, z]` RobotScene composes — so Hi shows the palm, not the edge.
- * The axis is the model's wrist pivot minus its elbow pivot,
- * (−0.107, −0.304, 0.194); robot-rig.test re-derives this from those numbers.
+ * The axis the right hand's fingers curl about, in the robot's rest frame: the
+ * normal of the plane through the Index1, Index2 and Index3 pivots. A finger
+ * bends in its own plane, and that plane is tilted 0.67 rad (38°) off the
+ * robot's z axis, because the A-pose hand hangs angled forward and in. The
+ * knuckle row runs along this axis too, so a turn about it through the index
+ * knuckle opens all four fingers, which share the one index chain.
  */
-export const HAND_TWIST = [0.56, 0.891, -0.407] as const
+export const FINGER_HINGE = [0.593, 0.176, 0.786] as const
+
+/**
+ * A turn of `angle` about the unit `axis`, as the YXZ Euler `[x, y, z]` that
+ * `setBone` composes. Three's own conversion, written out so the rig stays
+ * free of three; robot-rig.test checks it against three.
+ */
+export function aboutAxis(
+  axis: readonly [number, number, number],
+  angle: number,
+): [number, number, number] {
+  const [ax, ay, az] = axis
+  const h = angle / 2
+  const sh = Math.sin(h)
+  const x = ax * sh
+  const y = ay * sh
+  const z = az * sh
+  const w = Math.cos(h)
+  const m13 = 2 * (x * z + w * y)
+  const m21 = 2 * (x * y + w * z)
+  const m22 = 1 - 2 * (x * x + z * z)
+  const m23 = 2 * (y * z - w * x)
+  const m33 = 1 - 2 * (x * x + y * y)
+  const ex = Math.asin(-Math.min(1, Math.max(-1, m23)))
+  if (Math.abs(m23) < 0.9999999) return [ex, Math.atan2(m13, m33), Math.atan2(m21, m22)]
+  const m11 = 1 - 2 * (y * y + z * z)
+  const m31 = 2 * (x * z - w * y)
+  return [ex, Math.atan2(-m31, m11), 0]
+}
+
+/** The right forearm's rest axis, elbow pivot to wrist pivot: (−0.107, −0.304, 0.194), normalised. */
+export const FOREARM_AXIS = [-0.2844, -0.8081, 0.5157] as const
+
+/**
+ * How far Hi twists the hand about its forearm, so the open hand faces the
+ * viewer rather than showing its edge. Measured on close-ups once the fingers
+ * bent about their own hinge (Q347): −0.6 shows the four fingers side by side;
+ * −0.9 starts to stack them, −1.5 crowds them, and −0.3 turns the tips toward
+ * the camera. (−1.2 was right only while the old finger bend twisted the hand
+ * the other way.)
+ */
+export const HAND_TURN = -0.6
+
+/** HAND_TURN as the YXZ Euler `[x, y, z]` RobotScene composes; robot-rig.test re-derives the axis. */
+export const HAND_TWIST = aboutAxis(FOREARM_AXIS, HAND_TURN)
+
+/** A bone held at a turn about `axis` over Hi's hold: one track per Euler axis. */
+const holdTurn = (
+  joint: BoneKey,
+  axis: readonly [number, number, number],
+  angle: number,
+): Track[] => {
+  const e = aboutAxis(axis, angle)
+  return (['x', 'y', 'z'] as const).map((a, i) => r(joint, a, hold(e[i]!, 0.18, 0.8, 0.18)))
+}
+
+/**
+ * How far Hi opens each finger joint, about FINGER_HINGE (negative opens).
+ * Index2's resting bend is 0.61 rad (the angle between the pivot segments), so
+ * it may open by that much and no more: past it the finger bends backwards.
+ * Measured on close-ups (Q347): the knuckle at −0.45 left the hand half
+ * closed, and at −1.0 it opened past straight and crumpled the mesh.
+ */
+export const FINGER_OPEN = { rIndex1: -0.75, rIndex2: -0.6, rIndex3: -0.45 } as const
 
 const LEFT_PUNCHES = [0.24, 0.64] as const
 const RIGHT_PUNCHES = [0.44, 0.84] as const
@@ -218,16 +283,14 @@ export const GESTURES: Record<Exclude<MascotPose, 'idle'>, Track[]> = {
     // their resting curl (one index chain carries all four), the thumb spread
     // away from them, and the hand twisted about its own forearm.
     //
-    // The twist is HAND_TWIST: −1.2 rad about the forearm's rest axis (wrist
-    // pivot minus elbow pivot, which points down AND forward in the A-pose),
-    // written as the YXZ Euler the rig composes. A turn about plain y — the
-    // first try, −0.35 — tilted the hand instead of twisting it, and the
-    // raised hand showed its thumb edge: the "sideways" hand. Measured on
-    // frozen close-ups: −1.0 still shows the edge, −1.4 turns past flat, and
-    // straightening the fingers beyond −0.8/−0.7/−0.6 bends them backwards.
-    r('rIndex1', 'z', hold(-0.8, 0.18, 0.8, 0.18)),
-    r('rIndex2', 'z', hold(-0.7, 0.18, 0.8, 0.18)),
-    r('rIndex3', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
+    // The twist is HAND_TWIST (see HAND_TURN). The fingers open about
+    // FINGER_HINGE, the axis they actually curl about: bent about plain z
+    // instead (Q341), each joint also swung 16° sideways, and the four fingers
+    // sheared into one melted shape (Q347). −1.0 at the knuckle opens it past
+    // straight and the mesh crumples again.
+    ...holdTurn('rIndex1', FINGER_HINGE, FINGER_OPEN.rIndex1),
+    ...holdTurn('rIndex2', FINGER_HINGE, FINGER_OPEN.rIndex2),
+    ...holdTurn('rIndex3', FINGER_HINGE, FINGER_OPEN.rIndex3),
     r('rThumb1', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
     r('rThumb2', 'z', hold(-0.4, 0.18, 0.8, 0.18)),
     r('rHand', 'x', hold(HAND_TWIST[0], 0.18, 0.8, 0.18)),

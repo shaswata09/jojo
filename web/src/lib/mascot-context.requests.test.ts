@@ -43,7 +43,7 @@ describe('the gestures the mascot knows (Q033)', () => {
   const jointsOf = (pose: string) => {
     const text = tracksOf(pose)
     return new Set([
-      ...[...text.matchAll(/\b(?:k|r)\('([^']+)'/g)].map((m) => m[1]!),
+      ...[...text.matchAll(/\b(?:k|r|holdTurn)\('([^']+)'/g)].map((m) => m[1]!),
       ...[...text.matchAll(/\bboth\('([^']+)'/g)].map((m) => `arm:${m[1]!}`),
     ])
   }

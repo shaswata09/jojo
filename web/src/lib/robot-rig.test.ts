@@ -18,6 +18,10 @@ import {
   GAZE_DEPTH,
   GESTURES,
   HAND_TWIST,
+  HAND_TURN,
+  FINGER_HINGE,
+  FINGER_OPEN,
+  aboutAxis,
   HEAD_PITCH,
   HEAD_YAW,
   REST,
@@ -142,13 +146,53 @@ describe('the gestures', () => {
     const forearm = wrist.sub(elbow).normalize()
 
     const turn = new Quaternion().setFromEuler(new Euler(...HAND_TWIST, 'YXZ'))
-    // A twist leaves its own axis where it was, and turns by the measured 1.2 rad.
+    // A twist leaves its own axis where it was, and turns by HAND_TURN (0.6 rad,
+    // measured on close-ups once the fingers bent about their own hinge, Q347).
     expect(forearm.clone().applyQuaternion(turn).distanceTo(forearm)).toBeLessThan(0.002)
-    expect(2 * Math.acos(Math.min(1, Math.abs(turn.w)))).toBeCloseTo(1.2, 2)
+    expect(2 * Math.acos(Math.min(1, Math.abs(turn.w)))).toBeCloseTo(Math.abs(HAND_TURN), 2)
     // And Hi holds that twist, with the fingers out of their resting curl.
     const b = gestureBones('hi', 0.5)
     expect(b.rHand).toEqual([...HAND_TWIST])
-    expect(b.rIndex1[2]).toBeLessThan(-0.6)
+    expect(FINGER_OPEN.rIndex1).toBeLessThan(-0.6)
+  })
+
+  it('opens the Hi fingers about their own hinge, so they stay flat and apart (Q347)', () => {
+    // A finger bends in the plane of its three joints. The wave used to bend
+    // them about the robot's z axis, 38° off that plane: every joint swung
+    // sideways too, the error compounded down the chain, and the four fingers
+    // (one index chain carries them all) sheared into each other.
+    const found = /"extras":(\{[^{}]*\}),"name":"pivots"/.exec(robotModel)
+    const pivots = JSON.parse(found![1]!) as Record<string, [number, number, number]>
+    const [i1, i2, i3] = (['rIndex1', 'rIndex2', 'rIndex3'] as const).map(
+      (k) => new Vector3(...pivots[BONE_NAMES[k]]!),
+    )
+    const toMiddle = i2!.clone().sub(i1!)
+    const toTip = i3!.clone().sub(i2!)
+    const hinge = toMiddle.clone().cross(toTip).normalize()
+    expect(new Vector3(...FINGER_HINGE).distanceTo(hinge)).toBeLessThan(0.002)
+
+    const b = gestureBones('hi', 0.5)
+    for (const key of ['rIndex1', 'rIndex2', 'rIndex3'] as const) {
+      // What Hi holds is a turn about the hinge alone: the hinge stays put, so
+      // the finger opens in its own plane.
+      const turn = new Quaternion().setFromEuler(new Euler(...b[key], 'YXZ'))
+      expect(hinge.clone().applyQuaternion(turn).distanceTo(hinge), key).toBeLessThan(0.002)
+      expect(2 * Math.acos(Math.min(1, Math.abs(turn.w))), key).toBeCloseTo(
+        Math.abs(FINGER_OPEN[key]),
+        3,
+      )
+      // The rig's own conversion agrees with three's.
+      const want = new Euler().setFromQuaternion(
+        new Quaternion().setFromAxisAngle(hinge, FINGER_OPEN[key]),
+        'YXZ',
+      )
+      aboutAxis(FINGER_HINGE, FINGER_OPEN[key]).forEach((v, i) =>
+        expect(v, key).toBeCloseTo([want.x, want.y, want.z][i]!, 3),
+      )
+    }
+    // The middle joint opens no further than it is bent at rest, or the
+    // fingertip folds backwards.
+    expect(Math.abs(FINGER_OPEN.rIndex2)).toBeLessThanOrEqual(toMiddle.angleTo(toTip))
   })
 
   it('never folds a forearm across the chest, where the hand sinks into the armour (Q321)', () => {
